@@ -174,17 +174,6 @@ class Processor
     {
         $this->setMethodForInput($input);
 
-        //
-        // We do this here and not after building payment entity, because
-        // of validations like bank account and auth_type being mandatory.
-        //
-        $ret = $this->preProcessPaymentInputsForEmandate($input);
-
-        if ($ret !== null)
-        {
-            return $ret;
-        }
-
         $payment = $this->buildPaymentEntity($input);
 
         $ret = $this->preProcessPaymentInputs($input, $payment);
@@ -207,49 +196,64 @@ class Processor
         return $this->authorize($payment, $input);
     }
 
-    protected function preProcessPaymentInputsForEmandate(array $input)
+    protected function preProcessPaymentInputs(array $input, Payment\Entity $payment)
+    {
+        $coproto = $this->preProcessPaymentInputsForEmandate($input, $payment);
+
+        if ($coproto === null)
+        {
+            $coproto = $this->preProcessPaymentInputsForWallet($input, $payment);
+        }
+
+        return $coproto;
+    }
+
+    protected function preProcessPaymentInputsForEmandate(array $input, Payment\Entity $payment)
     {
         $coproto = null;
 
-        if ((isset($input[Payment\Entity::METHOD]) === true) and
-            (is_string($input[Payment\Entity::METHOD]) === true) and
-            ($input[Payment\Entity::METHOD] === Payment\Method::EMANDATE))
+        if ($payment->isEmandate() === true)
         {
             //
             // We need this flow only if either bank_account or auth_type is missing.
             // TODO: Handle for aadhaar also
             //
-            if ((isset($input['bank_account']) === true) and
-                (isset($input['auth_type']) === true))
+            if ((empty($input['bank_account']) === false) and
+                (empty($payment->getAuthType()) === false))
             {
                 return null;
             }
 
+            $methods = [];
+
+            (new Methods\Core)->addRecurringEmandateToMethodsIfApplicable($this->merchant, $methods);
+
             //
-            // Valid bank is mandatory for us to go through this flow.
+            // This can happen when the required features are not enabled
+            // or when there's not a single bank for any auth type.
             //
-            if ((isset($input[Payment\Entity::BANK]) === false) or
-                (is_string($input[Payment\Entity::BANK]) === false) or
-                (Payment\Processor\Netbanking::isSupportedBank($input[Payment\Entity::BANK]) === false))
+            if (empty($methods) === true)
             {
                 return null;
             }
 
             $bank = $input[Payment\Entity::BANK];
 
-            $methods = [];
-
-            $methods = (new Methods\Core)->addRecurringEmandateToMethodsIfApplicable($this->merchant, $methods);
-
             //
-            // This case should ideally never come up. But if it did,
-            // we throw an exception!
+            // This case should ideally never come up because the bank
+            // passed by the client would be based on the methods API only.
+            // Even here, we are using the methods API. If the bank did
+            // not come up in the methods API now, then most likely someone
+            // is tampering with the request on the frontend.
             //
             if (isset($methods['emandate'][$bank]) === false)
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_INVALID_BANK_FOR_EMANDATE,
-                    Payment\Entity::BANK);
+                    Payment\Entity::BANK,
+                    [
+                        'bank' => $bank
+                    ]);
             }
 
             $coproto = [
@@ -269,7 +273,7 @@ class Processor
         return $coproto;
     }
 
-    protected function preProcessPaymentInputs(array $input, Payment\Entity $payment)
+    protected function preProcessPaymentInputsForWallet(array $input, Payment\Entity $payment)
     {
         $coproto = null;
 
@@ -970,6 +974,14 @@ class Processor
             $payment = $this->buildPaymentEntity($input);
         }
 
+        //
+        // Temporary only. To be removed later.
+        //
+        if ($payment->getMethod() === Payment\Method::EMANDATE)
+        {
+            $payment->setMethod(Payment\Method::NETBANKING);
+        }
+
         // $this->segment->trackPayment($payment, TraceCode::PAYMENT_NEW_REQUEST);
 
         if ($this->merchant->isFeeBearerCustomer())
@@ -1117,14 +1129,6 @@ class Processor
         $payment->merchant()->associate($this->merchant);
 
         $payment->build($input);
-
-        //
-        // Temporary only. To be removed later.
-        //
-        if ($payment->getMethod() === Payment\Method::EMANDATE)
-        {
-            $payment->setMethod(Payment\Method::NETBANKING);
-        }
 
         $this->payment = $payment;
 

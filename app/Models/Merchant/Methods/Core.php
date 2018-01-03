@@ -214,11 +214,15 @@ class Core extends Base\Core
 
             if (empty($banks) === false)
             {
-                $recurringData['emandate'][$type] = $this->getBankNames($banks);
+                $banks = $this->getBankNames($banks);
+
+                foreach ($banks as $ifsc => $name)
+                {
+                    $recurringData['emandate'][$ifsc]['auth_types'][] = $type;
+                    $recurringData['emandate'][$ifsc]['name'] = $name;
+                }
             }
         }
-
-        $recurringData['emandate'] = $this->restructureEmandateBlock($recurringData['emandate']);
     }
 
     public function getEnabledAndDisabledBanks($merchant)
@@ -407,22 +411,6 @@ class Core extends Base\Core
 
             return $data;
         }
-    }
-
-    protected function restructureEmandateBlock(array $recurringEmandateData): array
-    {
-        $newRecurringEmandateData = [];
-
-        foreach ($recurringEmandateData as $type => $banks)
-        {
-            foreach ($banks as $ifsc => $name)
-            {
-                $newRecurringEmandateData[$ifsc]['auth_types'][] = $type;
-                $newRecurringEmandateData[$ifsc]['name'] = $name;
-            }
-        }
-
-        return $newRecurringEmandateData;
     }
 
     protected function getEmandateBanksEnabledForNetbanking(Merchant\Entity $merchant): array

@@ -83,8 +83,6 @@ abstract class Controller extends BaseController
             $url = $input['checkout'];
         }
 
-        $url = 'http://checkout.pronav.in/dist';
-
         $data['checkout'] = $url;
         $data['framejs'] = $url . $framejs;
         $data['css'] = $url . $css;

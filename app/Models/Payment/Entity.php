@@ -314,7 +314,7 @@ class Entity extends Base\PublicEntity
         self::EMAIL,
         self::CONTACT,
         self::BANK,
-        'recurring',
+        self::RECURRING,
         'ifsc',
         'method_based_input',
         'convert_empty_strings_to_null'
@@ -1164,6 +1164,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::METHOD) === Payment\Method::NETBANKING);
     }
 
+    public function isEmandate()
+    {
+        return ($this->getAttribute(self::METHOD) === Payment\Method::EMANDATE);
+    }
+
     public function isWallet()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::WALLET);
@@ -1353,6 +1358,11 @@ class Entity extends Base\PublicEntity
     public function getMethod()
     {
         return $this->getAttribute(self::METHOD);
+    }
+
+    public function getAuthType()
+    {
+        return $this->getAttribute(self::AUTH_TYPE);
     }
 
     public function getStatus()

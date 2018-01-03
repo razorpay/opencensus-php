@@ -3,7 +3,6 @@
 namespace RZP\Models\Payment;
 
 use App;
-use Razorpay\IFSC\IFSC;
 use Route;
 use Cache;
 use Carbon\Carbon;
@@ -11,13 +10,12 @@ use Lib\PhoneBook;
 
 use RZP\Base;
 use RZP\Exception;
-use RZP\Constants\Mode;
-use RZP\Error\ErrorCode;
-use RZP\Models\Upi;
-use RZP\Models\Card;
-use RZP\Models\Currency\Currency;
 use RZP\Models\Payment;
+use Razorpay\IFSC\IFSC;
+use RZP\Constants\Mode;
 use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
+use RZP\Models\Currency\Currency;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\Payment\Processor\Wallet;
 
@@ -35,7 +33,7 @@ class Validator extends Base\Validator
         'aadhaar.hmac'               => 'sometimes_if:method,aeps|size:64|string',
         'aadhaar.cert_expiry'        => 'sometimes_if:method,aeps|size:8|string',
         'card'                       => 'sometimes',
-        'bank'                       => 'required_if:method,netbanking,aeps,emandate',
+        'bank'                       => 'required_if:method,netbanking,aeps,emandate|string|between:3,6',
         'wallet'                     => 'required_if:method,wallet|custom',
         'emi_duration'               => 'required_if:method,emi|integer|in:3,6,9,12,18,24',
         'description'                => 'sometimes|string|max:255|utf8',
@@ -51,7 +49,7 @@ class Validator extends Base\Validator
         'app_token'                  => 'sometimes',
         'token'                      => 'sometimes',
         'save'                       => 'sometimes|in:0,1',
-        'recurring'                  => 'sometimes_if:method,card,emandate|in:0,1',
+        'recurring'                  => 'sometimes_if:method,card,emandate|in:1',
         'fee'                        => 'sometimes|filled|integer|max:50000000',
         Entity::TAX                  => 'sometimes|filled|integer|max:50000000',
         'on_hold'                    => 'sometimes_if:method,transfer|boolean',
@@ -64,11 +62,11 @@ class Validator extends Base\Validator
         'subscription_card_change'   => 'sometimes|boolean',
         'upi'                        => 'sometimes_if:method,upi|array',
         'upi.expiry_time'            => 'sometimes_if:method,upi|integer|between:5,30|filled',
-        'auth_type'                  => 'required_if:method,emandate|string|max:10|filled|in:netbanking',
-        'bank_account'               => 'required_if:method,emandate|associative_array',
-        'bank_account.number'        => 'required_if:method,emandate|filled|alpha_num|between:5,20',
-        'bank_account.ifsc'          => 'required_if:method,emandate|filled|alpha_num|size:11',
-        'bank_account.name'          => 'required_if:method,emandate|filled|alpha_space_num|between:4,120',
+        'auth_type'                  => 'sometimes_if:method,emandate|string|max:10|filled|in:netbanking',
+        'bank_account'               => 'sometimes_if:method,emandate|associative_array|filled',
+        'bank_account.number'        => 'required_with:bank_account|filled|alpha_num|between:5,20',
+        'bank_account.ifsc'          => 'required_with:bank_account|filled|alpha_num|size:11',
+        'bank_account.name'          => 'required_with:bank_account|filled|alpha_space_num|between:4,120',
     ];
 
     protected static $editRules = [
@@ -122,32 +120,10 @@ class Validator extends Base\Validator
         'test_success',
         'upi_expiry_time',
         'upi_vpa',
-        'auth_type',
-        'bank_account',
         // Ideally, we should be using custom. But
         // due to dot notation, we cannot use it.
         'ifsc',
     ];
-
-    protected function validateAuthType(array $input)
-    {
-        if ((isset($input[Entity::AUTH_TYPE]) === true) and
-            ($input[Entity::METHOD] !== Method::EMANDATE))
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'The auth_type field is required when method is ' . Method::EMANDATE);
-        }
-    }
-
-    protected function validateBankAccount(array $input)
-    {
-        if ((isset($input['bank_account']) === true) and
-            ($input[Entity::METHOD] !== Method::EMANDATE))
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'The bank_account field is required when method is ' . Method::EMANDATE);
-        }
-    }
 
     protected function validateIfsc(array $input)
     {
@@ -157,8 +133,6 @@ class Validator extends Base\Validator
         }
 
         $ifsc = $input['bank_account']['ifsc'];
-
-        $ifsc = strtoupper($ifsc);
 
         if (IFSC::validate($ifsc) === false)
         {

@@ -1011,6 +1011,30 @@ trait Authorize
     protected function validateRecurringForNetbanking(
         Payment\Entity $payment, Token\Entity $token = null, array $input)
     {
+        //
+        // The below two validations are being done here and not as part of
+        // Validator Rules because after the payment build, we give the
+        // control to frontend to take missing attributes from the customer.
+        // So, as part of validation, we use `sometimes` for these fields.
+        // Ideally, this should never happen since we anyway ensure that
+        // we collect the missing attributes from the customer before
+        // proceeding further.
+        //
+
+        if (empty($input['bank_account']) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The bank_account field is required when method is ' . Method::EMANDATE
+            );
+        }
+
+        if ($payment->getAuthType() === null)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The auth_type field is required when method is ' . Method::EMANDATE
+            );
+        }
+
         if ($token === null)
         {
             return;
@@ -1020,7 +1044,10 @@ trait Authorize
 
         // TODO: Handle first recurring / second recurring based on token and route
 
-        if (Payment\Gateway::isRecurringSupportedOnBank($bank) === false)
+        if (in_array(
+                $bank,
+                Payment\Gateway::getAvailableEmandateBanksForAuthType($payment->getAuthType()),
+                true) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_BANK_RECURRING_NOT_SUPPORTED,

@@ -714,18 +714,6 @@ class Gateway
         return (in_array($gateway, self::$fileBasedEMandateDebitGateways) === true);
     }
 
-    /**
-     * @param string $bank
-     *
-     * @return bool
-     */
-    public static function isRecurringSupportedOnBank(string $bank) : bool
-    {
-        $gateway = self::$netbankingToGatewayMap[$bank];
-
-        return self::isRecurringGateway($gateway);
-    }
-
     public static function getAvailableEmandateBanksForAuthType(string $authType): array
     {
         return self::$emandateBanks[$authType];
