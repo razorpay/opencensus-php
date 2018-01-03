@@ -21,6 +21,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Plan\Subscription;
+use RZP\Models\Merchant\Methods;
 use RZP\Models\Plan\Subscription\Addon;
 use RZP\Models\Payment\Processor\Notify;
 use RZP\Models\Payment\Status;
@@ -212,16 +213,54 @@ class Processor
 
         if ((isset($input[Payment\Entity::METHOD]) === true) and
             (is_string($input[Payment\Entity::METHOD]) === true) and
-            ($input[Payment\Entity::METHOD] === Payment\Method::EMANDATE) and
-            ((isset($input['bank_account']) === false) or
-             (isset($input['auth_type']) === false)))
+            ($input[Payment\Entity::METHOD] === Payment\Method::EMANDATE))
         {
+            //
+            // We need this flow only if either bank_account or auth_type is missing.
+            // TODO: Handle for aadhaar also
+            //
+            if ((isset($input['bank_account']) === true) and
+                (isset($input['auth_type']) === true))
+            {
+                return null;
+            }
+
+            //
+            // Valid bank is mandatory for us to go through this flow.
+            //
+            if ((isset($input[Payment\Entity::BANK]) === false) or
+                (is_string($input[Payment\Entity::BANK]) === false) or
+                (Payment\Processor\Netbanking::isSupportedBank($input[Payment\Entity::BANK]) === false))
+            {
+                return null;
+            }
+
+            $bank = $input[Payment\Entity::BANK];
+
+            $methods = [];
+
+            $methods = (new Methods\Core)->addRecurringEmandateToMethodsIfApplicable($this->merchant, $methods);
+
+            //
+            // This case should ideally never come up. But if it did,
+            // we throw an exception!
+            //
+            if (isset($methods['emandate'][$bank]) === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_BANK_FOR_EMANDATE,
+                    Payment\Entity::BANK);
+            }
+
             $coproto = [
-                'type'    => 'wallet',
+                'type'    => 'emandate',
                 'request' => [
                     'url'     => $this->route->getUrlWithPublicAuthInQueryParam('payment_create'),
                     'method'  => 'POST',
-                    'content' => $input,
+                    'content' => [
+                        'input' => $input,
+                        'bank_details' => $methods['emandate'][$input[Payment\Entity::BANK]],
+                    ]
                 ],
                 'version' => '1',
             ];
