@@ -440,4 +440,23 @@ class Service extends Base\Service
 
         return ['success' => true];
     }
+
+    public function addUtmParameters(& $data)
+    {
+        if (empty($_COOKIE['rzp_utm']) === false)
+        {
+            $utmParams = json_decode($_COOKIE['rzp_utm']);
+
+            $data[Constants::CTA]       = $utmParams[Constants::CTA] ?? "";
+            $data[Constants::WEBSITE]   = $utmParams[Constants::WEBSITE] ?? "";
+
+            $utmParams[Constants::ATTRIBUTIONS][1] = $utmParams[Constants::ATTRIBUTIONS][1] ??
+                $utmParams[Constants::ATTRIBUTIONS][0];
+            foreach(Constants::$attributionList as $attrbution)
+            {
+                $data['first' . $attrbution] = $utmParams[Constants::ATTRIBUTIONS][0];
+                $data['final' . $attrbution] = $utmParams[Constants::ATTRIBUTIONS][1];
+            }
+        }
+    }
 }

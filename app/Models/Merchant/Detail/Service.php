@@ -426,7 +426,7 @@ class Service extends Base\Service
 
         $referrer = $merchant->referrer ?? '';
 
-        return [
+        $data = [
             Entity::ID                 => $merchant->id,
             Merchant\Entity::EMAIL     => $merchant->email,
             Constants::INDIVIDUAL      => $userName,
@@ -439,6 +439,10 @@ class Service extends Base\Service
             Entity::ROLE               => $role,
             Entity::DEPARTMENT         => $department,
         ];
+
+        (new User\Service)->addUtmParameters($data);
+
+        return $data;
     }
 
     /**
