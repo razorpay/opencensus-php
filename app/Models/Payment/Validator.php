@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment;
 
 use App;
+use Razorpay\IFSC\IFSC;
 use Route;
 use Cache;
 use Carbon\Carbon;
@@ -122,7 +123,10 @@ class Validator extends Base\Validator
         'upi_expiry_time',
         'upi_vpa',
         'auth_type',
-        'bank_account'
+        'bank_account',
+        // Ideally, we should be using custom. But
+        // due to dot notation, we cannot use it.
+        'ifsc',
     ];
 
     protected function validateAuthType(array $input)
@@ -142,6 +146,24 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'The bank_account field is required when method is ' . Method::EMANDATE);
+        }
+    }
+
+    protected function validateIfsc(array $input)
+    {
+        if (isset($input['bank_account']['ifsc']) === false)
+        {
+            return;
+        }
+
+        $ifsc = $input['bank_account']['ifsc'];
+
+        $ifsc = strtoupper($ifsc);
+
+        if (!IFSC::validate($ifsc))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid IFSC Code in Bank Account');
         }
     }
 

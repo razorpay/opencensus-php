@@ -314,6 +314,7 @@ class Entity extends Base\PublicEntity
         self::CONTACT,
         self::BANK,
         'recurring',
+        'ifsc',
         'method_based_input',
         'convert_empty_strings_to_null'
     ];
@@ -463,6 +464,15 @@ class Entity extends Base\PublicEntity
             (empty($input[Entity::SUBSCRIPTION_ID]) === false))
         {
             $input['recurring'] = '1';
+        }
+    }
+
+    protected function modifyIfsc(& $input)
+    {
+        if ((isset($input['bank_account']['ifsc']) === true) and
+            (is_string($input['bank_account']['ifsc'])))
+        {
+            $input['bank_account']['ifsc'] = strtoupper($input['bank_account']['ifsc']);
         }
     }
 
