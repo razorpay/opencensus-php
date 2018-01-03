@@ -126,6 +126,8 @@ class CardGatewaysFailedRefundFileTest extends TestCase
     {
         Mail::fake();
 
+        $this->mockTokenex();
+
         $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal');
 
         $this->fixtures->create('terminal:shared_cybersource_hdfc_recurring_terminals');
