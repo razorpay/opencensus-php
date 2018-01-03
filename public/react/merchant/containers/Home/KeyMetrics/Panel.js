@@ -8,6 +8,7 @@ import ChangeRange from 'rzp/ui/ChangeRange';
 import { BtnGroup, Btn } from 'rzp/ui/BtnGroup';
 import { titleCase } from 'rzp/utils/rzp-utils';
 import { timeScale } from 'rzp/utils/chart/index.js';
+import takeScreenshot from 'rzp/utils/screenshot';
 import {
   humanReadableIndian,
   humanReadableIndianCurrency,
@@ -57,6 +58,7 @@ class Panel extends Component {
     this.meta = tabsMeta[props.tabName];
     this.handleGroupingChange = ::this.handleGroupingChange;
     this.handleBreakdownChange = ::this.handleBreakdownChange;
+    this.handleImageExportClick = ::this.handleImageExportClick;
   }
 
   handleGroupingChange(e) {
@@ -69,6 +71,23 @@ class Panel extends Component {
     const { tabName, onBreakdownChange } = this.props;
 
     return onBreakdownChange && onBreakdownChange(tabName, value);
+  }
+
+  handleImageExportClick(e) {
+    const a = e.target;
+
+    const { tabName, data } = this.props,
+      { png } = data;
+
+    if (!png.url) {
+      e.preventDefault();
+
+      takeScreenshot(this.panelBody).then(url => {
+        this.props.onScreenshot(tabName, url, () => {
+          a.click();
+        });
+      });
+    }
   }
 
   render() {
@@ -141,31 +160,40 @@ class Panel extends Component {
               })}
             </BtnGroup>
             <div className="panel-action-item">
-              <MoreOptionsButton csvData={data.csv} />
+              <MoreOptionsButton
+                csvData={data.csv}
+                pngData={data.png}
+                onImageExport={this.handleImageExportClick}
+              />
             </div>
           </div>
         </PanelTopbar>
 
         <PanelBody>
-          <div className="chart-container">
+          <div
+            className="panel-body-content"
+            ref={node => (this.panelBody = node)}
+          >
+            <div className="chart-container">
+              {!data.loading &&
+                data.histogram && (
+                  <Line options={chartOptions} data={data.histogram} />
+                )}
+            </div>
             {!data.loading &&
-              data.histogram && (
-                <Line options={chartOptions} data={data.histogram} />
+              data.legendData && (
+                <div className="p-t">
+                  <Legend
+                    data={data.legendData}
+                    valueTransformer={
+                      isCurrency
+                        ? humanReadableIndianCurrency
+                        : humanReadableIndian
+                    }
+                  />
+                </div>
               )}
           </div>
-          {!data.loading &&
-            data.legendData && (
-              <div className="p-t">
-                <Legend
-                  data={data.legendData}
-                  valueTransformer={
-                    isCurrency
-                      ? humanReadableIndianCurrency
-                      : humanReadableIndian
-                  }
-                />
-              </div>
-            )}
         </PanelBody>
 
         <PanelFooter>

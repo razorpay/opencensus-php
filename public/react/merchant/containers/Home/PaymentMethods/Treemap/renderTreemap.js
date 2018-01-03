@@ -118,7 +118,7 @@ function main(node, o, data, d3, onTransition, groupTitleMap) {
     root.depth = 0;
   }
 
-  function colorize(node, color) {
+  function rollup(node, color) {
     node.color = color || colors[node.method] || 'black';
 
     if (node.depth === 1 && node.parent) {
@@ -131,7 +131,7 @@ function main(node, o, data, d3, onTransition, groupTitleMap) {
         node.percent = (node.value / sum * 100).toFixed(2);
       }
 
-      colorize(node.parent, node.color);
+      rollup(node.parent, node.color);
     }
   }
 
@@ -172,7 +172,7 @@ function main(node, o, data, d3, onTransition, groupTitleMap) {
         layout(c);
       });
     } else {
-      colorize(d);
+      rollup(d);
     }
   }
 

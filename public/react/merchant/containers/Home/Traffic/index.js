@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 
 import { getPieData } from 'rzp/utils/chart/transformers';
 import { paiseToRupees, shortenText, titleCase } from 'rzp/utils/rzp-utils';
+import takeScreenshot from 'rzp/utils/screenshot';
 
 import { fetch } from 'merchant/modules/pokedex';
 import {
@@ -49,6 +50,7 @@ class Traffic extends Component {
     });
 
     this.onGroupChange = ::this.onGroupChange;
+    this.handleImageExportClick = ::this.handleImageExportClick;
 
     this.data = null;
   }
@@ -97,6 +99,10 @@ class Traffic extends Component {
         name: `${downloadFileName}.csv`,
         url: csv,
       };
+      groupState.pngData = {
+        name: `${downloadFileName}.png`,
+        url: '',
+      };
 
       if (isInitialLoad) {
         this.state.loading = false;
@@ -138,6 +144,24 @@ class Traffic extends Component {
     }
   }
 
+  handleImageExportClick(e) {
+    const { selectedGrouping, groupsState } = this.state,
+      groupState = groupsState[selectedGrouping],
+      anchor = e.target;
+
+    if (!groupState.pngData.url) {
+      e.preventDefault();
+
+      takeScreenshot(this.panelBody).then(url => {
+        groupState.pngData.url = url;
+
+        this.setState(this.state, () => {
+          anchor.click();
+        });
+      });
+    }
+  }
+
   render() {
     const { loading, selectedGrouping, groupsState } = this.state,
       groupState = groupsState[selectedGrouping],
@@ -169,12 +193,16 @@ class Traffic extends Component {
               </select>
             </div>
             <div className="panel-action-item">
-              <MoreOptionsButton csvData={groupState.csvData} />
+              <MoreOptionsButton
+                onImageExport={this.handleImageExportClick}
+                csvData={groupState.csvData}
+                pngData={groupState.pngData}
+              />
             </div>
           </div>
         </PanelTopbar>
         <PanelBody>
-          <div className="row">
+          <div className="row" ref={node => (this.panelBody = node)}>
             <div className="col-md-5 col-sm-12 column">
               {!groupState.loading &&
                 chartData && <Pie options={chartOptions} data={chartData} />}

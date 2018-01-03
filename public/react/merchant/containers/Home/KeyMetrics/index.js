@@ -113,6 +113,7 @@ class KeyMetricsContainer extends Component {
     this.onGroupingChange = ::this.onGroupingChange;
     this.onBreakdownChange = ::this.onBreakdownChange;
     this.handleTabChange = ::this.handleTabChange;
+    this.onScreenshot = ::this.onScreenshot;
   }
 
   fetchData(fetchAllCounts) {
@@ -127,6 +128,8 @@ class KeyMetricsContainer extends Component {
     const { tabsState, selectedTab } = this.state,
       tabState = tabsState[selectedTab],
       { startDate, endDate } = this.props;
+
+    console.log('Fetching new data');
 
     const query = getQuery({
       merchantId: '10000000000000',
@@ -181,12 +184,17 @@ class KeyMetricsContainer extends Component {
             )
           );
 
+          tabState.data.downloadFileName = downloadFileName;
           tabState.data.histogram = { labels, datasets };
           tabState.lastUpdatedAt = histogram.last_updated_at;
           tabState.data.legendData = aggregates;
           tabState.data.csv = {
             name: `${downloadFileName}.csv`,
             url: csv,
+          };
+          tabState.data.png = {
+            name: `${downloadFileName}.png`,
+            url: '',
           };
         }
       });
@@ -198,8 +206,24 @@ class KeyMetricsContainer extends Component {
       tabState.data.loading = false;
       tabState.data.fetchData = false;
 
-      this.setState(this.state);
+      this.setState(this.state, () => {
+        const { tabsState, selectedTab } = this.state,
+          tabState = tabsState[selectedTab];
+
+        this.setState(this.state);
+      });
     });
+  }
+
+  onScreenshot(tabName, url, cb) {
+    const tabState = this.state.tabsState[tabName];
+
+    tabState.data.png = {
+      name: `${tabState.data.downloadFileName}.png`,
+      url: url,
+    };
+
+    this.setState(this.state, cb);
   }
 
   componentWillMount() {
@@ -315,6 +339,7 @@ class KeyMetricsContainer extends Component {
                 endDate={endDate}
                 lastUpdatedAt={tabsState[tabName].lastUpdatedAt}
                 isCurrency={isCurrency}
+                onScreenshot={this.onScreenshot}
               />
             </TabPanel>
           );
