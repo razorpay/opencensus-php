@@ -6,7 +6,7 @@ use RZP\Models\Order\Entity as OrderEntity;
 
 class Order extends Base
 {
-    public function createTpvOrder(Array $attributes = array())
+    public function createTpvOrder(array $attributes = array())
     {
         $defaultValues = array(
             'merchant_id'               => '10000000000000',
@@ -23,7 +23,7 @@ class Order extends Base
         return parent::create($attributes);
     }
 
-    public function createPaymentCaptureOrder(Array $attributes = array())
+    public function createPaymentCaptureOrder(array $attributes = array())
     {
         $defaultValues = array(
             'merchant_id'               => '10000000000000',
@@ -45,6 +45,22 @@ class Order extends Base
             'receipt'                   => 'test_tpv_receipt',
             'currency'                  => 'INR',
             'amount'                    => 100000,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return parent::create($attributes);
+    }
+
+    public function createEmandateOrder(array $attributes = [])
+    {
+        $defaultValues = [
+            'merchant_id'      => '10000000000000',
+            'receipt'          => 'test_tpv_receipt',
+            'currency'         => 'INR',
+            'method'           => 'netbanking',
+            'amount'           => 100000,
+            'payment_capture'  => true
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

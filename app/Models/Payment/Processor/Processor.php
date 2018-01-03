@@ -1232,6 +1232,14 @@ class Processor
                     Payment\Entity::ORDER_ID);
             }
 
+            if (($payment->isNetbanking() === true) and
+                ($payment->isRecurring() === true))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED,
+                    Payment\Entity::ORDER_ID);
+            }
+
             return;
         }
 
@@ -1487,6 +1495,22 @@ class Processor
         if ($payment->hasSubscription() === true)
         {
             return false;
+        }
+
+        //
+        // We do auto capture for eMandate in two ways.
+        // For file based registration, we auto capture once the
+        // registration is complete.
+        // For normal flow, we auto capture the payment as soon as
+        // it is authorized
+        if (($payment->isNetbanking() === true) and
+            ($payment->isRecurring() === true) and
+            ($payment->isRecurringTypeInitial() === true))
+        {
+            if (Payment\Gateway::isFileBasedEMandateRegistrationGateway($payment->getGateway()) === true)
+            {
+                return false;
+            }
         }
 
         return $this->shouldAutoCaptureOrder($payment);

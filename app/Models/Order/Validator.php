@@ -11,16 +11,16 @@ use RZP\Error\ErrorCode;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        Entity::AMOUNT          =>  'required|integer|min:100',
-        Entity::CURRENCY        =>  'required|size:3|in:INR,USD',
-        Entity::RECEIPT         =>  'sometimes|nullable|string|max:40',
-        Entity::PAYMENT_CAPTURE =>  'filled|boolean',
-        Entity::CUSTOMER_ID     =>  'sometimes|filled',
-        Entity::NOTES           =>  'sometimes|notes',
-        Entity::METHOD          =>  'sometimes|in:netbanking',
-        Entity::BANK            =>  'sometimes|filled|custom',
-        Entity::ACCOUNT_NUMBER  =>  'sometimes|filled|string|max:50|min:5',
-        Entity::OFFER_ID        =>  'sometimes|string|size:20'
+        Entity::AMOUNT          => 'required|integer|min:0',
+        Entity::CURRENCY        => 'required|size:3|in:INR,USD',
+        Entity::RECEIPT         => 'sometimes|nullable|string|max:40',
+        Entity::PAYMENT_CAPTURE => 'filled|boolean',
+        Entity::CUSTOMER_ID     => 'sometimes|filled',
+        Entity::NOTES           => 'sometimes|notes',
+        Entity::METHOD          => 'sometimes|in:netbanking',
+        Entity::BANK            => 'sometimes|filled|custom',
+        Entity::ACCOUNT_NUMBER  => 'sometimes|filled|string|max:50|min:5',
+        Entity::OFFER_ID        => 'sometimes|string|size:20'
     );
 
     protected static $createValidators = [
@@ -30,6 +30,16 @@ class Validator extends Base\Validator
 
     protected function validateAmount($input)
     {
+        // @todo: add emandate method check here for 0 ruppee payment
+        if ((isset($input['method']) === false) and
+            ($input['amount'] < 100))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The amount must be at least 100.',
+                'amount',
+                ['amount' => $amount]);
+        }
+
         $maxAmountAllowed = $this->entity->merchant->getMaxPaymentAmount();
 
         $amount = $input['amount'];
@@ -56,6 +66,8 @@ class Validator extends Base\Validator
         $this->validateOrderAmount($payment->getAdjustedAmountWrtCustFeeBearer());
 
         $this->validateOrderCurrency($payment->getCurrency());
+
+        $this->validateAutoCapture($payment);
 
         // TPV Check is done before check for generic order payment match.
         $this->validateMerchantSpecificData($payment);
@@ -155,6 +167,17 @@ class Validator extends Base\Validator
     public function validateMerchantSpecificData(Payment\Entity $payment = null)
     {
         $this->validateOrderTpvChecks($payment);
+    }
+
+    public function validateAutoCapture(Payment\Entity $payment)
+    {
+        if (($payment->isNetbanking() === true) and
+            ($payment->isRecurring() === true) and
+            ($this->entity->getPaymentCapture() === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Payment capture should be true for eMandate payments.');
+        }
     }
 
     protected function validateOrderTpvChecks(Payment\Entity $payment = null)

@@ -1336,7 +1336,8 @@ class Entity extends Base\PublicEntity
     {
         $amount = $this->getAmount();
 
-        if ($this->merchant->isFeeBearerCustomer() === true)
+        if (($this->merchant->isFeeBearerCustomer() === true) and
+            ($amount !== 0))
         {
             $amount -= $this->getFee();
         }

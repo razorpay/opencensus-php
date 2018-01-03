@@ -286,7 +286,24 @@ class Validator extends Base\Validator
 
     protected function validateAmount(array $input)
     {
-        $amount = $input['amount'];
+        $amount = (int) $input['amount'];
+
+        // Zero ruppee payment validation for authentication payments
+        // TODO: Add more checks
+        if (($input['method'] === 'netbanking') and
+            (isset($input['recurring']) === true) and
+            (boolval($input['recurring']) === true))
+        {
+            if ($amount !== 0)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Amount should be 0 for mandate registration.',
+                    'amount',
+                    ['amount' => $amount]);
+            }
+
+            return;
+        }
 
         if ($amount < 100)
         {

@@ -60,6 +60,10 @@ class NetbankingAxisEMandateTest extends TestCase
     {
         $payment = $this->payment;
 
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 0]);
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = 0;
+
         $this->doAuthPayment($payment);
 
         $this->assertEMandateEntities();
@@ -67,6 +71,12 @@ class NetbankingAxisEMandateTest extends TestCase
 
     public function testEmandateInitialPaymentFailure()
     {
+        $payment = $this->payment;
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 0]);
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = 0;
+
         $this->mockServerContentFunction(function (& $content, $action = null)
         {
             if ($action === 'emandateauth')
@@ -77,9 +87,9 @@ class NetbankingAxisEMandateTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function()
+        $this->runRequestResponseFlow($data, function() use ($payment)
         {
-            $this->doAuthPayment($this->payment);
+            $this->doAuthPayment($payment);
         });
     }
 
