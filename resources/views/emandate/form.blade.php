@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    <title>Processing, Please wait...</title>
+    <title>Emandate Processing...</title>
     <meta name="viewport" content="width=device-width">
     <meta charset="utf-8">
     <style>
@@ -41,39 +41,39 @@
         font-size: 22px;
         float: right;
       }
+
       .heading {
-          padding: 4px 15px;
-          margin: 20px 0 10px;
-          color: #606060;
+        margin: 16px 0;
+        color: #606060;
+        font-weight: 600;
       }
-      main {
-        padding: 0 20px;
+
+      main:nth-of-type(2) {
+        border-top: 1px dashed #ccc;
+        margin-top: 16px;
       }
-      main input {
+
+      .common input {
         margin: 5px 0 12px;
       }
       input {
         border: 1px solid #bbb;
-        box-shadow: 0 2px 3px rgba(0,0,0,0.1) inset;
-        border-radius: 2px;
         height: 36px;
         outline: none;
         width: 100%;
         box-sizing: border-box;
         -webkit-box-sizing: border-box;
-        padding: 0 16px;
+        padding: 0 12px;
         font-size: 14px;
         font-family: inherit;
         color: #111;
       }
       .action {
-        width: 100%;
-        text-align: center;
+        padding: 30px 12px 12px;
       }
       button {
+        width: 100%;
         height: 42px;
-        padding: 0 20px;
-        margin: 16px 10px;
         font-size: 14px;
         border: 1px solid #3395FF;
         background: #3395FF;
@@ -86,7 +86,6 @@
       }
 
       .accordion-container {
-        margin: 12px;
         border: 1px solid #ccc;
         border-radius: 0 2px 2px 0;
       }
@@ -94,13 +93,15 @@
       .accordion-heading {
         padding: 10px;
         display: block;
-        //background-color: rgba(0,0,0,0.04);
-        background: linear-gradient(180deg,rgba(0,0,0,0.01), rgba(0,0,0,0.06));
         cursor: pointer;
       }
 
       .accordion-heading:hover {
-          background-color: rgba(0,0,0,0.04);
+          background: #fcfcfc;
+      }
+
+      main {
+        padding: 0 12px;
       }
 
       .content {
@@ -112,7 +113,7 @@
       }
 
       .content > div {
-        padding: 20px 15px;
+        padding: 20px 12px;
       }
 
       #section1 {
@@ -151,10 +152,6 @@
         height: 85px;
       }
 
-      input[name="accordion"]:checked + .arrow:before {
-        opacity: 1;
-      }
-
       .arrow {
         width: 20px;
         height: 20px;
@@ -164,19 +161,29 @@
         background: #fff;
         border: 1px solid #ccc;
         pointer-events: none;
+        border-radius: 50%;
       }
 
       .arrow:before {
         content: '✓';
         position: absolute;
-        font-size: 20px;
+        font-size: 14px;
         font-weight: bold;
-        top: -6px;
-        left: 2px;
-        color: #35b61b;
-        opacity: 0;
+        top: -1px;
+        left: 4px;
+        color: #ccc;
         transition: all 0.3s;
       }
+
+    input[name="accordion"]:checked + .arrow {
+      background: #3395FF;
+      border-color: #3395FF;
+    }
+
+    input[name="accordion"]:checked + .arrow:before {
+      color: #fff;
+    }
+
 
     </style>
   </head>
@@ -197,51 +204,54 @@
         <div><b>Punjab And Maharashtra Bank</b></div>
         <span>₹ {{ $data['request']['content']['amount']/100 }}</span>
       </header>
+      <main>
         <div class="heading">Please fill Bank accounts details:</div>
-        <main>
-            @include('emandate.commonFields')
-        </main>
+        <div class="common">
+          @include('emandate.commonFields')
+        </div>
+      </main>
+      <main>
         <div class="heading">Please select Authentication method:</div>
         <div class="accordion-container">
-            <div id="section1">
-                <label class="accordion-heading pickable" for="content1">
-                    <img src="https://cdn.razorpay.com/bank/HDFC.gif" height="25px" />
-                    <span class="title">
-                        Netbanking
-                        <div class="sub-title">Via Netbanking login</div>
-                    </span>
+          <div id="section1">
+            <label class="accordion-heading pickable" for="content1">
+              <img src="https://cdn.razorpay.com/bank/HDFC.gif" height="25px" />
+              <span class="title">
+                Netbanking
+                <div class="sub-title">Via Netbanking login</div>
+              </span>
+            </label>
+            <input type="radio" id="content1" name="accordion" hidden />
+            <span class="arrow"></span>
+          </div>
 
-                </label>
-                <input type="radio" id="content1" name="accordion" hidden />
-                <span class="arrow"></span>
+          <div id="section2">
+            <label class="accordion-heading pickable" for="content2">
+              <img src="https://cdn.razorpay.com/bank/HDFC.gif" height="25px" />
+              <span class="title">
+                Aadhaar
+                <div class="sub-title">Via Aadhaar linked mobile OTP</div>
+              </span>
+            </label>
+            <input type="radio" id="content2" name="accordion" hidden />
+            <span class="arrow"></span>
+            <div class="content">
+                <div>
+                  <input
+                    name='aadhaar_number'
+                    type='number'
+                    pattern='^\d{12}$'
+                    required
+                    placeholder='Enter your Aadhaar number'
+                    value={{ $data['request']['content']['aadhaar_number'] ?? "" }} />
+              </div>
             </div>
-
-            <div id="section2">
-                <label class="accordion-heading pickable" for="content2">
-                    <img src="https://cdn.razorpay.com/bank/HDFC.gif" height="25px" />
-                    <span class="title">
-                        Aadhaar
-                        <div class="sub-title">Via Aadhaar linked mobile OTP</div>
-                    </span>
-                </label>
-                <input type="radio" id="content2" name="accordion" hidden />
-                <span class="arrow"></span>
-                <div class="content">
-                    <div class="form">
-                        <input
-                          name='aadhaar_number'
-                          type='number'
-                          pattern='^\d{12}$'
-                          required
-                          placeholder='Enter your Aadhaar number'
-                          value={{ $data['request']['content']['aadhaar_number'] ?? "" }} />
-                    </div>
-                </div>
-            </div>
+          </div>
         </div>
-        <div class="action">
-           <button type="submit">Authenticate</button>
-        </div>
+      </main>
+      <div class="action">
+         <button type="submit">Authenticate</button>
+      </div>
     </form>
   </body>
 </html>

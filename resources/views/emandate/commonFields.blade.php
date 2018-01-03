@@ -14,6 +14,6 @@
     <input
       name='bank_code'
       required
-      placeholder='IFSC Code/Branch Name'
+      placeholder='IFSC Code'
       value={{ $data['request']['content']['bank_code'] ?? "" }}>
 </div>
