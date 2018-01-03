@@ -1387,3 +1387,11 @@ WHERE id = 3348308
 UPDATE billdesk SET RefundId = 'LIDB59009304141' WHERE id = 3420030;
 
 UPDATE billdesk SET RefundId = 'LSBI58877532881' WHERE id = 3420029;
+
+# UTIB0000001 is not a valid IFSC, but we were still receiving it for
+# RTGS payments from Axis. Those are now being replaced with a different
+# Axis IFSC, and this queries updates the older payer bank accounts.
+UPDATE bank_accounts INNER JOIN bank_transfers
+  ON bank_accounts.id=bank_transfers.payer_bank_account_id
+  SET bank_accounts.ifsc_code = 'UTIB0001918'
+  WHERE bank_transfers.mode='rtgs' and bank_accounts.ifsc_code='UTIB0000001';
