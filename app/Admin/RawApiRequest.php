@@ -56,6 +56,8 @@ class RawApiRequest
             ]
         ];
 
+        $this->setUpCookies($input);
+
         // Create the guzzle client
         $this->client = new Guzzle($options);
 
@@ -147,6 +149,18 @@ class RawApiRequest
 
                 $this->setApiCredentials($input['mode']);
                 break;
+        }
+    }
+
+    /**
+     * Sets utm cookies for proxy routes.
+     * @param array $input
+     */
+    protected function setupCookies(array $input)
+    {
+        if ($input['auth'] === 'proxy' and empty($_COOKIE['rzp_utm']) === false)
+        {
+            $this->params['headers']['Cookie'] = 'rzp_utm=' . $_COOKIE['rzp_utm'];
         }
     }
 
