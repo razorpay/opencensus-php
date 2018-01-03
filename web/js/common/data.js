@@ -166,6 +166,7 @@ const statusPillClasses = {
   // Common
   // created: 'label-semi-muted',
   failed: 'label-danger',
+  pending: 'label-pending',
 
   // payment
   authorized: 'label-info',
@@ -201,6 +202,10 @@ const statusPillClasses = {
   under_review: 'label-pending',
   won: 'label-success',
   lost: 'label-danger',
+
+  // public features
+  approved: 'label-success',
+  rejected: 'label-danger',
 
   closed: 'label-danger',
 };

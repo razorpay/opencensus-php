@@ -4,6 +4,7 @@ import { SelectField } from 'ui/Field';
 import Collection from 'model/collection';
 import { adminFetch } from 'common/fetch';
 import { featuresAkaMap, showEntity } from './Entity';
+import { statusPill } from 'common/data';
 
 const defaultFilters = {
   status: 'pending',
@@ -75,5 +76,5 @@ export default class PublicFeaturesList extends Component {
 const fields = [
   ['Merchant ID', item => item.merchant_id],
   ['Product', item => item.product],
-  ['Status', item => item.status],
+  ['Status', item => statusPill(item.status)],
 ];
