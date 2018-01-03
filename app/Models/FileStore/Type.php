@@ -46,7 +46,7 @@ class Type
 
     const SBI_UPI_REFUND                    = 'sbi_upi_refund';
 
-    const AMEX_REFUND                       = 'amex_refund';
+    const AXIS_MIGS_REFUND                  = 'axis_migs_refund';
 
     const FIRST_DATA_REFUND                 = 'first_data_refund';
 
@@ -142,7 +142,7 @@ class Type
             self::ICICI_EMI_FILE_SFTP,
             self::PNB_NETBANKING_REFUND,
             self::PNB_NETBANKING_CLAIMS,
-            self::AMEX_REFUND,
+            self::AXIS_MIGS_REFUND,
             self::FIRST_DATA_REFUND,
             self::CYBERSOURCE_REFUND,
             self::HDFC_REFUND,
@@ -218,7 +218,7 @@ class Type
         self::FUND_TRANSFER_H2H,
         self::PNB_NETBANKING_REFUND,
         self::PNB_NETBANKING_CLAIMS,
-        self::AMEX_REFUND,
+        self::AXIS_MIGS_REFUND,
         self::FIRST_DATA_REFUND,
         self::CYBERSOURCE_REFUND,
         self::HDFC_REFUND,
@@ -255,7 +255,8 @@ class Type
             self::PNB_NETBANKING_REFUND,
             self::PNB_NETBANKING_CLAIMS,
             self::FIRST_DATA_REFUND,
-            self::CYBERSOURCE_REFUND
+            self::CYBERSOURCE_REFUND,
+            self::AXIS_MIGS_REFUND,
         ],
 
         self::INVOICE_BUCKET_CONFIG => [

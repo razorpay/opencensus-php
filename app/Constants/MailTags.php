@@ -30,7 +30,7 @@ class MailTags
     const KOTAK_NETBANKING_REFUNDS_MAIL         = 'kotak_netbanking_refunds_mail';
     const RBL_NETBANKING_REFUNDS_MAIL           = 'rbl_netbanking_refunds_mail';
     const INDUSIND_NETBANKING_REFUNDS_MAIL      = 'indusind_netbanking_refunds_mail';
-    const AMEX_FAILED_REFUNDS_MAIL              = 'amex failed refunds mail';
+    const AXIS_MIGS_FAILED_REFUNDS_MAIL         = 'Axis Migs failed refunds mail';
     const FIRST_DATA_FAILED_REFUNDS_MAIL        = 'firstdata failed refunds mail';
     const CYBERSOURCE_FAILED_REFUNDS_MAIL       = 'cybersource failed refunds mail';
     const HDFC_FAILED_REFUNDS_MAIL              = 'HDFC failed refunds mail';

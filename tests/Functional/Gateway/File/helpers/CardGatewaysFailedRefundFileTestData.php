@@ -5,11 +5,11 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
 return [
-    'testAmexFailedRefundFile' => [
+    'testAxisMigsFailedRefundFile' => [
         'request' => [
             'content' => [
                 'type'    => 'refund_failed',
-                'targets' => ['amex'],
+                'targets' => ['axis_migs'],
                 'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
                 'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp(),
             ],
@@ -28,7 +28,7 @@ return [
                         'partially_processed' => false,
                         'attempts'            => 1,
                         'type'                => 'refund_failed',
-                        'target'              => 'amex',
+                        'target'              => 'axis_migs',
                         'entity'              => 'gateway_file',
                         'admin'               => true,
                     ],

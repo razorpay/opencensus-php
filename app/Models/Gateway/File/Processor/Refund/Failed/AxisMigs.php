@@ -9,12 +9,12 @@ use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Base\PublicCollection;
 
-class Amex extends Base
+class AxisMigs extends Base
 {
-    const GATEWAY            = Payment\Gateway::AMEX;
+    const GATEWAY            = Payment\Gateway::AXIS_MIGS;
     const EXTENSION          = FileStore\Format::XLSX;
-    const FILE_NAME          = 'Amex_Wallet_Failed_Refunds';
-    const FILE_TYPE          = FileStore\Type::AMEX_REFUND;
+    const FILE_NAME          = 'Axis_Failed_Refunds';
+    const FILE_TYPE          = FileStore\Type::AXIS_MIGS_REFUND;
 
     const SR_NO                = 'Sr No';
     const REFUND_ID            = 'refund_id';

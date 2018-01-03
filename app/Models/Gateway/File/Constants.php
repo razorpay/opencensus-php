@@ -17,7 +17,7 @@ class Constants
     const SCBL            = 'scbl';
     const UPI_ICICI       = 'upi_icici';
     const AIRTEL_MONEY    = 'airtel_money';
-    const AMEX            = 'amex';
+    const AXIS_MIGS       = 'axis_migs';
     const FIRST_DATA      = 'first_data';
     const CYBERSOURCE     = 'cybersource';
 
@@ -55,7 +55,7 @@ class Constants
         TYPE::REFUND_FAILED => [
             self::UPI_ICICI,
             self::AIRTEL_MONEY,
-            self::AMEX,
+            self::AXIS_MIGS,
             self::FIRST_DATA,
             self::CYBERSOURCE,
             self::HDFC,
@@ -106,7 +106,7 @@ class Constants
         TYPE::REFUND_FAILED => [
             self::UPI_ICICI    => ['supportteam@razorpay.com'],
             self::AIRTEL_MONEY => ['supportteam@razorpay.com'],
-            self::AMEX         => ['supportteam@razorpay.com'],
+            self::AXIS_MIGS    => ['supportteam@razorpay.com'],
             self::FIRST_DATA   => ['supportteam@razorpay.com'],
             self::CYBERSOURCE  => ['supportteam@razorpay.com'],
             self::HDFC         => ['supportteam@razorpay.com'],
