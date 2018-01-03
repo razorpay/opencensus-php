@@ -167,6 +167,7 @@ const statusPillClasses = {
   // Common
   // created: 'label-semi-muted',
   failed: 'label-danger',
+  pending: 'label-pending',
 
   // payment
   authorized: 'label-info',
@@ -206,6 +207,8 @@ const statusPillClasses = {
   // activation form status
   needs_clarification: 'label-pending',
   activated: 'label-success',
+  // public features
+  approved: 'label-success',
   rejected: 'label-danger',
 
   closed: 'label-danger',

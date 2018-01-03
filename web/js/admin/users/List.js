@@ -15,6 +15,12 @@ import { prevent } from 'common/util';
 import { removeEntity } from './Entity';
 import AsyncButton from 'ui/AsyncButton';
 
+function compare(a, b) {
+  if (a.name < b.name) return -1;
+  if (a.name > b.name) return 1;
+  return 0;
+}
+
 @observer
 export default class UserList extends Component {
   collection = new Collection({
@@ -26,6 +32,9 @@ export default class UserList extends Component {
   });
 
   render() {
+    const items = this.collection.items.sort(compare);
+    items.length && (this.collection.items = items);
+
     return (
       <div class="list-container">
         <div class="box">
