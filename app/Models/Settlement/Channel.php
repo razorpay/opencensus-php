@@ -48,6 +48,7 @@ class Channel
             self::KOTAK,
             self::YESBANK,
             self::AXIS,
+            self::ICICI,
         ];
     }
 
