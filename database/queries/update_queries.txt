@@ -1393,3 +1393,23 @@ UPDATE bank_accounts INNER JOIN bank_transfers
   ON bank_accounts.id=bank_transfers.payer_bank_account_id
   SET bank_accounts.ifsc_code = 'UTIB0001918'
   WHERE bank_transfers.mode='rtgs' and bank_accounts.ifsc_code='UTIB0000001';
+
+# Update activation status
+UPDATE `merchant_details` INNER JOIN `merchants`
+ON `merchant_details`.`merchant_id` = `merchants`.`id`
+SET `merchant_details`.`activation_status` = 'activated'
+WHERE `merchant_details`.`submitted_at` IS NOT NULL AND `merchants`.`activated_at` IS NOT NULL AND `merchants`.`archived_at` IS NULL;
+
+UPDATE `merchant_details` INNER JOIN `merchants`
+ON `merchant_details`.`merchant_id` = `merchants`.`id`
+SET `merchant_details`.`activation_status` = 'under_review'
+WHERE `merchant_details`.`submitted_at` IS NOT NULL AND `merchants`.`activated_at` IS NULL AND `merchants`.`archived_at` IS NULL;
+
+UPDATE `merchant_details` INNER JOIN `merchants`
+ON `merchant_details`.`merchant_id` = `merchants`.`id`
+SET `merchant_details`.`activation_status` = 'needs_clarification', `merchant_details`.`clarification_mode` = 'email'
+WHERE `merchant_details`.`submitted_at` IS NOT NULL AND `merchants`.`activated_at` IS NULL AND `merchants`.`archived_at` IS NOT NULL;
+
+UPDATE `merchant_details` INNER JOIN `merchants`
+ON `merchant_details`.`merchant_id` = `merchants`.`id`
+SET `merchant_details`.`archived_at` = `merchants`.`archived_at`;
