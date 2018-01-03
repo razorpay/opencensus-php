@@ -176,4 +176,51 @@ class CardGatewaysFailedRefundFileTest extends TestCase
         Mail::assertSent(RefundFileMail::class);
     }
 
+    public function testHdfcFaileddRefundFile()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('terminal:shared_hdfc_recurring_terminals');
+
+        $this->payment = $this->getDefaultPaymentArray();
+
+        $authResponse = $this->doAuthPayment($this->payment);
+
+        $payment = $this->capturePayment($authResponse['razorpay_payment_id'], $this->payment['amount']);
+
+        $this->refundPayment($payment['id'], 100);
+
+        $this->refundPayment($payment['id'], 100);
+
+        $this->refundPayment($payment['id'], 100);
+
+        $refunds = $this->getEntities('refund', [], true);
+
+        $time = Carbon::now()->getTimestamp() - 15780000;
+
+        foreach ($refunds['items'] as $refund)
+        {
+            $this->fixtures->edit('refund', $refund['id'], ['status' => 'failed', 'created_at' => $time]);
+        }
+
+        $this->ba->appAuth();
+
+        $data = $this->startTest();
+
+        $entity_id = $data['items']['0']['id'];
+
+        $file = $this->getLastEntity('file_store', true);
+
+        $expectedFileContent = [
+            'type'        => 'hdfc refund',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $entity_id,
+            'extension'   => 'xlsx',
+        ];
+        $this->assertArraySelectiveEquals($expectedFileContent, $file);
+
+        Mail::assertSent(RefundFileMail::class);
+    }
+
+
 }

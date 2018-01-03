@@ -52,6 +52,8 @@ class Type
 
     const CYBERSOURCE_REFUND                = 'cybersource refund';
 
+    const HDFC_REFUND                       = 'hdfc refund';
+
     const PNB_NETBANKING_REFUND             = 'pnb_netbanking_refund';
 
     const PNB_NETBANKING_CLAIMS             = 'pnb_netbanking_claims';
@@ -143,6 +145,7 @@ class Type
             self::AMEX_REFUND,
             self::FIRST_DATA_REFUND,
             self::CYBERSOURCE_REFUND,
+            self::HDFC_REFUND,
         ],
 
         Constants\Entity::BATCH => [
@@ -218,6 +221,7 @@ class Type
         self::AMEX_REFUND,
         self::FIRST_DATA_REFUND,
         self::CYBERSOURCE_REFUND,
+        self::HDFC_REFUND,
     ];
 
     /**

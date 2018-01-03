@@ -33,6 +33,8 @@ class MailTags
     const AMEX_FAILED_REFUNDS_MAIL              = 'amex failed refunds mail';
     const FIRST_DATA_FAILED_REFUNDS_MAIL        = 'firstdata failed refunds mail';
     const CYBERSOURCE_FAILED_REFUNDS_MAIL       = 'cybersource failed refunds mail';
+    const HDFC_FAILED_REFUNDS_MAIL              = 'HDFC failed refunds mail';
+
 
     const PAYU_MONEY_REFUNDS_MAIL          = 'payu_money_refunds_mail';
     const ICICI_UPI_REFUNDS_MAIL           = 'icici_upi_refunds_mail';

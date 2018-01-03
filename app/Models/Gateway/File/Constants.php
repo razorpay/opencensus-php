@@ -58,6 +58,7 @@ class Constants
             self::AMEX,
             self::FIRST_DATA,
             self::CYBERSOURCE,
+            self::HDFC,
         ],
     ];
 
@@ -108,6 +109,7 @@ class Constants
             self::AMEX         => ['supportteam@razorpay.com'],
             self::FIRST_DATA   => ['supportteam@razorpay.com'],
             self::CYBERSOURCE  => ['supportteam@razorpay.com'],
+            self::HDFC         => ['supportteam@razorpay.com'],
         ],
     ];
 }
