@@ -8,6 +8,7 @@ const fields = [
   'descriptor',
   'customer_id',
   'status',
+  'receivers',
 ];
 
 export default class VirtualAccount extends GenericEntity {
@@ -15,13 +16,8 @@ export default class VirtualAccount extends GenericEntity {
   detailsRouteName = 'virtual_account_fetch';
   deleteRouteName = 'virtual_account_delete';
 
-  receiver_types = ['bank_account'];
-
   resourceFields() {
     let resourceFields = fields.slice();
-    if (this.isNew) {
-      resourceFields.push('receiver_types');
-    }
     return resourceFields;
   }
 

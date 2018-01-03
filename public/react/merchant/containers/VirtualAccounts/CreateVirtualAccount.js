@@ -46,9 +46,7 @@ const VirtualAccountDetails = ({ virtualAccount, onCopy }) => {
       </div>
 
       <CustomClipboard
-        value={`Account Number: ${
-          bankAccount.account_number
-        }\nBeneficiary Name: ${virtualAccount.name}\nIFSC: ${bankAccount.ifsc}`}
+        value={`Account Number: ${bankAccount.account_number}\nBeneficiary Name: ${virtualAccount.name}\nIFSC: ${bankAccount.ifsc}`}
         onCopy={() => {
           onCopy(virtualAccount);
         }}
@@ -67,9 +65,16 @@ const selector = formValueSelector('createVirtualAccount');
     const customers = state.customers.items;
     return {
       descriptor: selector(state, 'descriptor'),
+      numeric: selector(state, 'numeric'),
       customers,
       customersLoading: state.customers.loading,
       customer: findBy(customers, 'id', selector(state, 'customer_id')),
+      initialValues: {
+        numeric: true,
+        receivers: {
+          types: ['bank_account'],
+        },
+      },
       ...state.config.config,
     };
   },
@@ -111,9 +116,20 @@ export default class CreateVirtualAccount extends Component {
     }
   }
 
-  save = props => {
+  save = ({ numeric, descriptor, receivers, ...props }) => {
     return this.props
-      .saveVirtualAccount(props)
+      .saveVirtualAccount({
+        ...props,
+        receivers: {
+          ...receivers,
+          bank_account: !numeric
+            ? {
+                numeric,
+                descriptor: descriptor || undefined,
+              }
+            : undefined,
+        },
+      })
       .then(virtualAccount => {
         this.props.onCreateVA && this.props.onCreateVA(props);
         this.props.luminateRow(virtualAccount.id);
@@ -174,6 +190,7 @@ export default class CreateVirtualAccount extends Component {
       untouch,
       handle = '',
       descriptor = '',
+      numeric,
       customersLoading,
       customers = [],
       onCopy = () => {},
@@ -216,9 +233,9 @@ export default class CreateVirtualAccount extends Component {
                   disabled={customersLoading}
                   class="virtual-account-powerselect"
                   searchIndices={['id', 'name', 'email', 'contact']}
-                  placeholder={`${
-                    customersLoading ? 'Loading...' : 'Select a customer'
-                  }`}
+                  placeholder={`${customersLoading
+                    ? 'Loading...'
+                    : 'Select a customer'}`}
                   showClear={true}
                   selected={this.state.customerId}
                   selectedOptionLabelPath="selectedDisplayName"
@@ -255,16 +272,26 @@ export default class CreateVirtualAccount extends Component {
                 </small>
               </div>
 
-              {handle ? (
+              <div class="form-group checkbox rzpCheckbox">
+                <Field
+                  name="numeric"
+                  id="numeric"
+                  class="form-control"
+                  component="input"
+                  type="checkbox"
+                  normalize={value => Number(value)}
+                />
+                <label for="numeric">Numeric</label>
+              </div>
+
+              {handle && !numeric ? (
                 <div class="form-group">
                   <label>Descriptor</label>
                   <Field
                     name="descriptor"
                     component="input"
                     class="form-control"
-                    placeholder={`Accepts alphanumberic, upto ${
-                      descriptorLimit
-                    } chars`}
+                    placeholder={`Accepts alphanumberic, upto ${descriptorLimit} chars`}
                     normalize={value => value.toUpperCase()}
                     onChange={event => {
                       let value = event.target.value;
