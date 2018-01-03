@@ -130,44 +130,53 @@ class Validator extends Base\Validator
         {
             if ($input[Entity::METHOD] === Method::EMANDATE)
             {
-                if ($input[Entity::AUTH_TYPE] === AuthType::AADHAAR)
-                {
-                    throw new Exception\BadRequestValidationFailureException(
-                        'account_number is required when method is emandate ' .
-                        'and auth_type is ' . AuthType::AADHAAR);
-                }
-                else if (($input[Entity::AUTH_TYPE] === AuthType::NETBANKING) and
-                         (in_array(
-                             $input['bank'],
-                             Payment\Gateway::getAvailableEmandateBanksForAuthType(AuthType::NETBANKING),
-                             true) === true))
-                {
-                    throw new Exception\BadRequestValidationFailureException(
-                        'account_number is required when method is emandate ' .
-                        'and auth_type is ' . AuthType::NETBANKING . 'and bank is ' . $input['bank']);
-                }
+                throw new Exception\BadRequestValidationFailureException(
+                    'account_number is required when method is emandate.');
+
+                // if ($input[Entity::AUTH_TYPE] === AuthType::AADHAAR)
+                // {
+                //     throw new Exception\BadRequestValidationFailureException(
+                //         'account_number is required when method is emandate ' .
+                //         'and auth_type is ' . AuthType::AADHAAR);
+                // }
+                // else if (($input[Entity::AUTH_TYPE] === AuthType::NETBANKING) and
+                //          (in_array(
+                //              $input['bank'],
+                //              Payment\Gateway::getAvailableEmandateBanksForAuthType(AuthType::NETBANKING),
+                //              true) === true))
+                // {
+                //     throw new Exception\BadRequestValidationFailureException(
+                //         'account_number is required when method is emandate ' .
+                //         'and auth_type is ' . AuthType::NETBANKING . 'and bank is ' . $input['bank']);
+                // }
             }
         }
         else
         {
-            if ($input[Entity::METHOD] === Method::EMANDATE)
-            {
-                if (($input[Entity::AUTH_TYPE] === AuthType::NETBANKING) and
-                    (in_array(
-                        $input['bank'],
-                        Payment\Gateway::getAvailableEmandateBanksForAuthType(AuthType::NETBANKING),
-                        true) === false))
-                {
-                    throw new Exception\BadRequestValidationFailureException(
-                        'account_number is not required when method is emandate ' .
-                        'and auth_type is ' . AuthType::NETBANKING . 'and bank is ' . $input['bank']);
-                }
-            }
-            else
+            if ($input[Entity::METHOD] !== Method::EMANDATE)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'account_number passed for invalid method: ' . $input[Entity::METHOD]);
             }
+
+            // if ($input[Entity::METHOD] === Method::EMANDATE)
+            // {
+            //     if (($input[Entity::AUTH_TYPE] === AuthType::NETBANKING) and
+            //         (in_array(
+            //             $input['bank'],
+            //             Payment\Gateway::getAvailableEmandateBanksForAuthType(AuthType::NETBANKING),
+            //             true) === false))
+            //     {
+            //         throw new Exception\BadRequestValidationFailureException(
+            //             'account_number is not required when method is emandate ' .
+            //             'and auth_type is ' . AuthType::NETBANKING . 'and bank is ' . $input['bank']);
+            //     }
+            // }
+            // else
+            // {
+            //     throw new Exception\BadRequestValidationFailureException(
+            //         'account_number passed for invalid method: ' . $input[Entity::METHOD]);
+            // }
         }
     }
 
