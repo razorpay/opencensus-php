@@ -142,6 +142,15 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function updateChannelForMultipleSettlements()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->updateChannelForMultipleSettlements($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postInitiateTransfer()
     {
         $input = Request::all();

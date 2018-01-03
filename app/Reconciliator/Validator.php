@@ -14,7 +14,7 @@ class Validator
         // Ensure that this is always above 'xlsx' because of `getExtensionFromContentType`
         'zip'   => ['application/x-compressed', 'application/x-zip-compressed', 'application/zip', 'multipart/x-zip'],
         'xlsx'  => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                    'application/zip', 'application/octet-stream'],
+                    'application/zip', 'application/octet-stream', 'application/vnd.ms-excel'],
         // `text/plain` is being added here because HDFC sends CSV files with XLS extension. kthxbye
         // `application/CDFV2-unknown` is being sent for FirstData files. sigh.
         'xls'   => ['application/excel', 'application/vnd.ms-excel', 'application/msexcel',

@@ -41,47 +41,49 @@ class Channel
 
     public static function decideChannelForTransaction($txn)
     {
-        $type = $txn->getType();
+        // $type = $txn->getType();
 
-        $channel = null;
-        $gateway = null;
+        // $channel = null;
+        // $gateway = null;
 
-        $entity = $txn->source;
+        // $entity = $txn->source;
 
-        $payment = null;
+        // $payment = null;
 
-        switch ($type)
-        {
-            case Type::PAYMENT:
-                $payment = $entity;
-                $gateway = $entity->getGateway();
-                break;
+        // switch ($type)
+        // {
+        //     case Type::PAYMENT:
+        //         $payment = $entity;
+        //         $gateway = $entity->getGateway();
+        //         break;
 
-            case Type::REFUND:
-                $payment = $entity->payment;
-                $gateway = $entity->payment->getGateway();
-                break;
+        //     case Type::REFUND:
+        //         $payment = $entity->payment;
+        //         $gateway = $entity->payment->getGateway();
+        //         break;
 
-            case Type::SETTLEMENT:
-            case Type::ADJUSTMENT:
-                $channel = $entity->getChannel();
-                break;
+        //     case Type::SETTLEMENT:
+        //     case Type::ADJUSTMENT:
+        //         $channel = $entity->getChannel();
+        //         break;
 
-            default:
-                throw new LogicException(
-                    'Invalid type',
-                    null,
-                    [
-                        'transaction_id'    => $txn->getId(),
-                        'type'              => $type,
-                    ]);
-        }
+        //     default:
+        //         throw new LogicException(
+        //             'Invalid type',
+        //             null,
+        //             [
+        //                 'transaction_id'    => $txn->getId(),
+        //                 'type'              => $type,
+        //             ]);
+        // }
 
-        if ($channel === null)
-        {
-            $channel = Payment\Gateway::getChannel($gateway);
-        }
+        // if ($channel === null)
+        // {
+        //     $channel = Payment\Gateway::getChannel($gateway);
+        // }
 
-        return $channel;
+        // return $channel;
+
+        return $txn->merchant->getChannel();
     }
 }
