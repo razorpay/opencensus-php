@@ -173,6 +173,17 @@ class Processor
     {
         $this->setMethodForInput($input);
 
+        //
+        // We do this here and not after building payment entity, because
+        // of validations like bank account and auth_type being mandatory.
+        //
+        $ret = $this->preProcessPaymentInputsForEmandate($input);
+
+        if ($ret !== null)
+        {
+            return $ret;
+        }
+
         $payment = $this->buildPaymentEntity($input);
 
         $ret = $this->preProcessPaymentInputs($input, $payment);
@@ -193,6 +204,30 @@ class Processor
         $this->checkSignature($input, $payment);
 
         return $this->authorize($payment, $input);
+    }
+
+    protected function preProcessPaymentInputsForEmandate(array $input)
+    {
+        $coproto = null;
+
+        if ((isset($input[Payment\Entity::METHOD]) === true) and
+            (is_string($input[Payment\Entity::METHOD]) === true) and
+            ($input[Payment\Entity::METHOD] === Payment\Method::EMANDATE) and
+            ((isset($input['bank_account']) === false) or
+             (isset($input['auth_type']) === false)))
+        {
+            $coproto = [
+                'type'    => 'wallet',
+                'request' => [
+                    'url'     => $this->route->getUrlWithPublicAuthInQueryParam('payment_create'),
+                    'method'  => 'POST',
+                    'content' => $input,
+                ],
+                'version' => '1',
+            ];
+        }
+
+        return $coproto;
     }
 
     protected function preProcessPaymentInputs(array $input, Payment\Entity $payment)
@@ -236,14 +271,6 @@ class Processor
                 unset($coproto['request']['content']['email']);
             }
         }
-
-        //
-        // - If method=emandate and bank_account or/and auth_type is missing, return
-        //   back a view which would accept these details from the customer. If either
-        //   of bank_account or auth_type is present, pre fill this data.
-        // - If method=emandate and the above details are present, don't have to do anything.
-        //   Just have to go through the normal flow.
-        //
 
         return $coproto;
     }

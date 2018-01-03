@@ -341,6 +341,11 @@ class PaymentCreateController extends Controller
                 return View::make('gateway.gatewayWalletForm')
                            ->with('data', $data);
             }
+            else if ($data['type'] === 'emandate')
+            {
+                return View::make('emandate.form')
+                           ->with('data', $data);
+            }
             else
             {
                 assertTrue(false, 'Should not reach here');
