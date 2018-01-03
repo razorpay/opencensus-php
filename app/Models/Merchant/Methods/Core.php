@@ -437,12 +437,20 @@ class Core extends Base\Core
 
         foreach ($availableGatewaysForMerchant as $availableGateway)
         {
-            $availableEmandateBanks = array_merge(
-                $availableEmandateBanks,
-                Payment\Gateway::$gatewaysEmandateBanksMap[$availableGateway]);
+            if (isset(Payment\Gateway::$gatewaysEmandateBanksMap[$availableGateway]) === true)
+            {
+                $availableEmandateBanks = array_merge(
+                                                $availableEmandateBanks,
+                                                Payment\Gateway::$gatewaysEmandateBanksMap[$availableGateway]);
+            }
         }
 
         return array_values(array_unique($availableEmandateBanks));
+    }
+
+    protected function getEmandateBanksEnabledForAadhaar(Merchant\Entity $merchant): array
+    {
+        return [];
     }
 
     protected function getBankNames($banks)

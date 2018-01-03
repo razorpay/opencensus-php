@@ -171,6 +171,7 @@ class Entity extends Base\PublicEntity
         self::REFERENCE1,
         self::REFERENCE2,
         self::DISPUTED,
+        self::AUTH_TYPE,
     ];
 
     protected $visible = [
@@ -470,7 +471,7 @@ class Entity extends Base\PublicEntity
     protected function modifyIfsc(& $input)
     {
         if ((isset($input['bank_account']['ifsc']) === true) and
-            (is_string($input['bank_account']['ifsc'])))
+            (is_string($input['bank_account']['ifsc']) === true))
         {
             $input['bank_account']['ifsc'] = strtoupper($input['bank_account']['ifsc']);
         }
@@ -1532,11 +1533,6 @@ class Entity extends Base\PublicEntity
     public function getTerminalId()
     {
         return $this->getAttribute(self::TERMINAL_ID);
-    }
-
-    public function getAuthType()
-    {
-        return $this->getAttribute(self::AUTH_TYPE);
     }
 
     public function getReference1()

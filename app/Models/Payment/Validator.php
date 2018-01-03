@@ -160,7 +160,7 @@ class Validator extends Base\Validator
 
         $ifsc = strtoupper($ifsc);
 
-        if (!IFSC::validate($ifsc))
+        if (IFSC::validate($ifsc) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid IFSC Code in Bank Account');

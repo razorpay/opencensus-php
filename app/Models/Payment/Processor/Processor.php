@@ -199,6 +199,15 @@ class Processor
     {
         $coproto = null;
 
+        //
+        // TODO: This needs to be fixed since we use dummy phone and email
+        // in subscriptions subsequent charges too. We could be using
+        // these values at other places also.
+        // Also, need to add this in S2S wallet docs.
+        // We currently return back JSON response.
+        // Actually, this won't even work for S2S since we remove
+        // `content` and `missing` attributes completely before returning
+        //
         if (($payment->isWallet() === true) and
             ((($payment->merchant->isPhoneOptional() === true) and
               ($payment->getContact() === Payment\Entity::DUMMY_PHONE)) or
@@ -227,6 +236,14 @@ class Processor
                 unset($coproto['request']['content']['email']);
             }
         }
+
+        //
+        // - If method=emandate and bank_account or/and auth_type is missing, return
+        //   back a view which would accept these details from the customer. If either
+        //   of bank_account or auth_type is present, pre fill this data.
+        // - If method=emandate and the above details are present, don't have to do anything.
+        //   Just have to go through the normal flow.
+        //
 
         return $coproto;
     }
@@ -326,6 +343,9 @@ class Processor
 
             $input[Payment\Entity::METHOD] = $tokenMethod;
 
+            //
+            // Temporary only. To be removed later.
+            //
             if (($tokenMethod === Payment\Method::NETBANKING) or
                 ($tokenMethod === Payment\Method::EMANDATE))
             {

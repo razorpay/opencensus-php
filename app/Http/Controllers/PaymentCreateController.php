@@ -24,7 +24,6 @@ class PaymentCreateController extends Controller
             $this->trace->info(
                 TraceCode::PAYMENT_CREATE_ON_PUBLIC,
                 ['merchant_id' => $this->app['basicauth']->getMerchantId()]);
-
         }
 
         $ret = $this->createPayment();
