@@ -25,7 +25,11 @@ class Method
         self::EMI           => 'EMI',
         self::TRANSFER      => 'Marketplace Transfer',
         self::BANK_TRANSFER => 'Bank Transfer',
-        self::EMANDATE      => 'E-Mandate',
+        // TODO: Uncomment this when we actually want to start
+        // using emandate as a method Currently we are just
+        // accepting emandate as a method from the request
+        // but not actually setting the method as emandate.
+        // self::EMANDATE      => 'E-Mandate',
     ];
 
     protected static $asynchronous = [

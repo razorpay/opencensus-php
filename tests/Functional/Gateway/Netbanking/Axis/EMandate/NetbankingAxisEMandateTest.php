@@ -25,7 +25,9 @@ class NetbankingAxisEMandateTest extends TestCase
 
     protected $payment;
 
-    const ACCOUNT_NUMBER = '914010009305862';
+    const ACCOUNT_NUMBER    = '914010009305862';
+    const IFSC              = 'UTIB0002766';
+    const NAME              = 'Test account';
 
     public function setUp()
     {
@@ -43,9 +45,13 @@ class NetbankingAxisEMandateTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['charge_at_will', 'e_mandate']);
 
-        $this->payment = $this->getNetbankingRecurringPaymentArray('UTIB');
+        $this->payment = $this->getEmandateNetbankingRecurringPaymentArray('UTIB');
 
-        $this->payment['account_number'] = self::ACCOUNT_NUMBER;
+        $this->payment['bank_account'] = [
+                                            'number'    => self::ACCOUNT_NUMBER,
+                                            'ifsc'      => self::IFSC,
+                                            'name'      => self::NAME,
+                                         ];
 
         unset($this->payment[Entity::CARD]);
     }

@@ -1621,7 +1621,7 @@ class MerchantTest extends TestCase
 
         $expectedTokenCount = $response['customer']['tokens']['count'];
 
-        $payment = $this->getNetbankingRecurringPaymentArray('ICIC');
+        $payment = $this->getEmandateNetbankingRecurringPaymentArray('ICIC');
         unset($payment['card']);
 
         // We create a new nb recurring token via payment

@@ -411,13 +411,17 @@ class Processor
 
             $tokenMethod = $token->getMethod();
 
+            //
+            // TODO: Remove this after we move netbanking recurring to emandate method
+            //
+            if ($tokenMethod === Payment\Method::NETBANKING)
+            {
+                $tokenMethod = Payment\Method::EMANDATE;
+            }
+
             $input[Payment\Entity::METHOD] = $tokenMethod;
 
-            //
-            // Temporary only. To be removed later.
-            //
-            if (($tokenMethod === Payment\Method::NETBANKING) or
-                ($tokenMethod === Payment\Method::EMANDATE))
+            if ($tokenMethod === Payment\Method::EMANDATE)
             {
                 $input[Payment\Entity::BANK] = $token->getBank();
             }

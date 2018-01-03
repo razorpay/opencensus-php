@@ -197,7 +197,11 @@ class Validator extends Base\Validator
 
     protected function validateMethod($attribute, $method)
     {
-        if (Method::isValid($method) === false)
+        //
+        // TODO: Remove the emandate check once it is added in the methods class.
+        //
+        if ((Method::isValid($method) === false) and
+            ($method !== Method::EMANDATE))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid payment method given: ' . $method);

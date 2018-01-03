@@ -1032,6 +1032,20 @@ trait PaymentTrait
         return $payment;
     }
 
+    protected function getEmandateNetbankingRecurringPaymentArray($bank = 'HDFC')
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray($bank);
+
+        $payment['amount'] = 2000;
+
+        $payment['method'] = Payment\Method::EMANDATE;
+        $payment['auth_type'] = Payment\AuthType::NETBANKING;
+
+        $payment['customer_id'] = 'cust_100000customer';
+
+        return $payment;
+    }
+
     protected function getDefaultEmiPaymentArray($saved)
     {
         $card = null;
