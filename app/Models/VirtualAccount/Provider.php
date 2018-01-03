@@ -63,11 +63,11 @@ class Provider
         self::KOTAK     => [
             'numeric' => [
                 // Numeric used for merchants who have not set handle
-                'default' => '139913',
+                'default' => '139914',
                 // Numeric used for merchants who have set a 4-char handle
-                'handle'  => '139913',
+                'handle'  => '139914',
                 // Numeric used for merchants who have set a 3-char handle
-                'special' => '139914',
+                'special' => '139913',
             ],
             'alpha_numeric' => [
                 // Alphanumeric used for merchants who have not set handle

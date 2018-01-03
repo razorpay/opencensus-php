@@ -1368,3 +1368,22 @@ UPDATE settings
 UPDATE billdesk SET RefundId = 'LSBI58696359251' WHERE id = 3067096;
 
 UPDATE billdesk SET RefundId = 'LSCB58725353091' WHERE id = 3179575;
+
+UPDATE billdesk SET RefundId = 'LSBI58763693201' WHERE id = 3249625;
+
+// Refer the Slack thread for more details: https://razorpay.slack.com/archives/C45BK145A/p1513802939000164
+UPDATE billdesk
+SET TxnAmount = '840.00',
+    TxnDate='20171215',
+    RefAmount='110.00',
+    RefDateTime='20171218083139',
+    RefStatus='0799',
+    RefundId = 'LUNI58866614001',
+    ErrorCode = 'NA',
+    ErrorReason='NA',
+    ProcessStatus = 'Y'
+WHERE id = 3348308
+
+UPDATE billdesk SET RefundId = 'LIDB59009304141' WHERE id = 3420030;
+
+UPDATE billdesk SET RefundId = 'LSBI58877532881' WHERE id = 3420029;
