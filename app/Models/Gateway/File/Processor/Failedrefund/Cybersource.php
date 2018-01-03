@@ -11,19 +11,19 @@ use RZP\Models\Base\PublicCollection;
 
 class Cybersource extends Base
 {
-    const GATEWAY            = Payment\Gateway::CYBERSOURCE;
-    const EXTENSION          = FileStore\Format::XLSX;
-    const FILE_NAME          = 'Cybersource_Failed_Refunds';
-    const FILE_TYPE          = FileStore\Type::CYBERSOURCE_REFUND;
+    const GATEWAY          = Payment\Gateway::CYBERSOURCE;
+    const EXTENSION        = FileStore\Format::XLSX;
+    const FILE_NAME        = 'Cybersource_Failed_Refunds';
+    const FILE_TYPE        = FileStore\Type::CYBERSOURCE_REFUND;
 
-    const SR_NO                = 'Sr No';
-    const REFUND_ID            = 'refund_id';
-    const TRANSACTION_DATE     = 'Transaction date';
-    const REFUND_DATE          = 'refund Date';
-    const PAYMENT_ID           = 'Payment ID';
-    const REFUND_AMOUNT        = 'Refund Amount';
-    const PAYMENT_AMOUNT       = 'Payment Amount';
-    const MERCHANT_CODE        = 'Merchant Code';
+    const SR_NO            = 'Sr No';
+    const REFUND_ID        = 'refund_id';
+    const TRANSACTION_DATE = 'Transaction date';
+    const REFUND_DATE      = 'refund Date';
+    const PAYMENT_ID       = 'Payment ID';
+    const REFUND_AMOUNT    = 'Refund Amount';
+    const PAYMENT_AMOUNT   = 'Payment Amount';
+    const MERCHANT_CODE    = 'Merchant Code';
 
     protected function formatDataForFile(array $data)
     {
@@ -40,14 +40,14 @@ class Cybersource extends Base
                 $row['refund']['created_at'], Timezone::IST)->format('Y/m/d');
 
             $formattedData[] = [
-                self::SR_NO                 => $i,
-                self::REFUND_ID             => $row['refund']['id'],
-                self::TRANSACTION_DATE      => $date,
-                self::REFUND_DATE           => $refundDate,
-                self::PAYMENT_ID            => $row['payment']['id'],
-                self::PAYMENT_AMOUNT        => $this->getFormattedAmount($row['payment']['amount']),
-                self::REFUND_AMOUNT         => $this->getFormattedAmount($row['refund']['amount']),
-                self::MERCHANT_CODE         => $row['terminal']['gateway_merchant_id']
+                self::SR_NO             => $i,
+                self::REFUND_ID         => $row['refund']['id'],
+                self::TRANSACTION_DATE  => $date,
+                self::REFUND_DATE       => $refundDate,
+                self::PAYMENT_ID        => $row['payment']['id'],
+                self::PAYMENT_AMOUNT    => $this->getFormattedAmount($row['payment']['amount']),
+                self::REFUND_AMOUNT     => $this->getFormattedAmount($row['refund']['amount']),
+                self::MERCHANT_CODE     => $row['terminal']['gateway_merchant_id']
             ];
 
             $i++;
