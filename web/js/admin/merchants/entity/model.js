@@ -343,10 +343,11 @@ export default class Model extends BaseModel {
     const data = {
       route_name: 'admin_fetch_entity_multiple',
       url_params: {
-        type: 'settlement',
+        type: 'schedule_task',
       },
       query_params: {
         merchant_id: this.merchantId,
+        type: 'settlement',
       },
     };
 
