@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Gateway\File\Processor\Refund\Failed;
+namespace RZP\Models\Gateway\File\Processor\Failedrefund;
 
 use Carbon\Carbon;
 
@@ -34,7 +34,7 @@ class UpiIcici extends Base
                 RefundFile::BANKADJREF         => $row['refund']['id'],
                 RefundFile::FLAG               => 'C',
                 RefundFile::SHTDAT             => $date,
-                RefundFile::ADJAMT             =>  $this->getFormattedAmount($row['refund']['amount']),
+                RefundFile::ADJAMT             => $this->getFormattedAmount($row['refund']['amount']),
                 RefundFile::SHSER              => $row['gateway']['gateway_payment_id'],
                 RefundFile::SHCRD              => $row['payment']['vpa'],
                 RefundFile::FILENAME           => self::FILE_NAME,

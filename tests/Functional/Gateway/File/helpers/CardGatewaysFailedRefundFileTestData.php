@@ -8,7 +8,7 @@ return [
     'testAxisMigsFailedRefundFile' => [
         'request' => [
             'content' => [
-                'type'    => 'refund_failed',
+                'type'    => 'failedrefund',
                 'targets' => ['axis_migs'],
                 'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
                 'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp(),
@@ -27,7 +27,7 @@ return [
                         'scheduled'           => true,
                         'partially_processed' => false,
                         'attempts'            => 1,
-                        'type'                => 'refund_failed',
+                        'type'                => 'failedrefund',
                         'target'              => 'axis_migs',
                         'entity'              => 'gateway_file',
                         'admin'               => true,
@@ -40,7 +40,7 @@ return [
     'testFirstDatadRefundFile' => [
         'request' => [
             'content' => [
-                'type'    => 'refund_failed',
+                'type'    => 'failedrefund',
                 'targets' => ['first_data'],
                 'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
                 'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp(),
@@ -59,7 +59,7 @@ return [
                         'scheduled'           => true,
                         'partially_processed' => false,
                         'attempts'            => 1,
-                        'type'                => 'refund_failed',
+                        'type'                => 'failedrefund',
                         'target'              => 'first_data',
                         'entity'              => 'gateway_file',
                         'admin'               => true,
@@ -72,7 +72,7 @@ return [
     'testCybersourcedRefundFile' => [
         'request' => [
             'content' => [
-                'type'    => 'refund_failed',
+                'type'    => 'failedrefund',
                 'targets' => ['cybersource'],
                 'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
                 'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp(),
@@ -91,7 +91,7 @@ return [
                         'scheduled'           => true,
                         'partially_processed' => false,
                         'attempts'            => 1,
-                        'type'                => 'refund_failed',
+                        'type'                => 'failedrefund',
                         'target'              => 'cybersource',
                         'entity'              => 'gateway_file',
                         'admin'               => true,
@@ -104,7 +104,7 @@ return [
     'testHdfcFaileddRefundFile' => [
         'request' => [
             'content' => [
-                'type'    => 'refund_failed',
+                'type'    => 'failedrefund',
                 'targets' => ['hdfc'],
                 'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
                 'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp(),
@@ -123,7 +123,7 @@ return [
                         'scheduled'           => true,
                         'partially_processed' => false,
                         'attempts'            => 1,
-                        'type'                => 'refund_failed',
+                        'type'                => 'failedrefund',
                         'target'              => 'hdfc',
                         'entity'              => 'gateway_file',
                         'admin'               => true,

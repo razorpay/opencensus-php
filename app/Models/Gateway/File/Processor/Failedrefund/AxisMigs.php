@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Gateway\File\Processor\Refund\Failed;
+namespace RZP\Models\Gateway\File\Processor\Failedrefund;
 
 use Carbon\Carbon;
 
@@ -9,21 +9,24 @@ use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Base\PublicCollection;
 
-class FirstData extends Base
+class AxisMigs extends Base
 {
-    const GATEWAY            = Payment\Gateway::FIRST_DATA;
+    const GATEWAY            = Payment\Gateway::AXIS_MIGS;
     const EXTENSION          = FileStore\Format::XLSX;
-    const FILE_NAME          = 'FirstData_Failed_Refunds';
-    const FILE_TYPE          = FileStore\Type::FIRST_DATA_REFUND;
+    const FILE_NAME          = 'Axis_Failed_Refunds';
+    const FILE_TYPE          = FileStore\Type::AXIS_MIGS_REFUND;
 
-    const SR_NO              = 'Sr No';
-    const REFUND_ID          = 'refund_id';
-    const TRANSACTION_DATE   = 'Transaction date';
-    const REFUND_DATE        = 'refund Date';
-    const PAYMENT_ID         = 'Payment ID';
-    const REFUND_AMOUNT      = 'Refund Amount';
-    const PAYMENT_AMOUNT     = 'Payment Amount';
-    const MERCHANT_CODE      = 'Merchant Code';
+    const SR_NO                = 'Sr No';
+    const REFUND_ID            = 'refund_id';
+    const TRANSACTION_DATE     = 'Transaction date';
+    const REFUND_DATE          = 'refund Date';
+    const VPC_MERCHANT_TXN_REF = 'VPC Merchant Txn Reference';
+    const VPC_RRN              = 'VPC rrn';
+    const PAYMENT_ID           = 'Payment ID';
+    const ORDER_AMOUNT         = 'Order Amount';
+    const REFUND_AMOUNT        = 'Refund Amount';
+    const PAYMENT_AMOUNT       = 'Payment Amount';
+    const MERCHANT_CODE        = 'Merchant Code';
 
     protected function formatDataForFile(array $data)
     {
@@ -44,6 +47,8 @@ class FirstData extends Base
                 self::REFUND_ID             => $row['refund']['id'],
                 self::TRANSACTION_DATE      => $date,
                 self::REFUND_DATE           => $refundDate,
+                self::VPC_MERCHANT_TXN_REF  => $row['gateway']['vpc_MerchTxnRef'],
+                self::VPC_RRN               => $row['gateway']['vpc_ReceiptNo'],
                 self::PAYMENT_ID            => $row['payment']['id'],
                 self::PAYMENT_AMOUNT        => $this->getFormattedAmount($row['payment']['amount']),
                 self::REFUND_AMOUNT         => $this->getFormattedAmount($row['refund']['amount']),

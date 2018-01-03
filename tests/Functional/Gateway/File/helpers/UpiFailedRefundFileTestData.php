@@ -8,7 +8,7 @@ return [
    'testUpiFailedRefundFile' => [
         'request' => [
             'content' => [
-                'type'    => 'refund_failed',
+                'type'    => 'failedrefund',
                 'targets' => ['upi_icici'],
                 'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
                 'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp(),
@@ -30,7 +30,7 @@ return [
                         'attempts'            => 1,
                         'sender'              => 'refunds@razorpay.com',
                         'recipients'          => ['test@razorpay.com'],
-                        'type'                => 'refund_failed',
+                        'type'                => 'failedrefund',
                         'target'              => 'upi_icici',
                         'entity'              => 'gateway_file',
                         'admin'               => true,
@@ -43,7 +43,7 @@ return [
     'testNoFailedRefunds' => [
         'request' => [
             'content' => [
-                'type'    => 'refund_failed',
+                'type'    => 'failedrefund',
                 'targets' => ['upi_icici'],
                 'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
                 'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp(),
@@ -64,7 +64,7 @@ return [
                         'attempts'            => 1,
                         'sender'              => 'refunds@razorpay.com',
                         'comments'            => 'No data present for gateway file processing in the given time period',
-                        'type'                => 'refund_failed',
+                        'type'                => 'failedrefund',
                         'target'              => 'upi_icici',
                         'entity'              => 'gateway_file',
                         'admin'               => true,
