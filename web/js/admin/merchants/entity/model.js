@@ -343,7 +343,7 @@ export default class Model extends BaseModel {
     const data = {
       route_name: 'admin_fetch_entity_multiple',
       url_params: {
-        type: 'schedule_task',
+        type: 'settlement',
       },
       query_params: {
         merchant_id: this.merchantId,
@@ -358,12 +358,12 @@ export default class Model extends BaseModel {
     ).then(data => {
       // Check if merchant has Settlement Schedule
       if (data) {
-        for (let key in data.items) {
-          if (data.items[key]['type'] === 'settlement') {
-            this.merchant.scheduleTasks.push(data.items[key]);
-            this.merchant.hasSettlementSchedule = true;
-          }
+        if (data.items.length) {
+          this.merchant.hasSettlementSchedule = true;
         }
+
+        this.merchant.scheduleTasks = data.items;
+
         if (this.merchant.hasSettlementSchedule === undefined) {
           this.merchant.hasSettlementSchedule = false;
         }
