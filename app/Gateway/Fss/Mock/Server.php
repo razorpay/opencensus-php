@@ -141,7 +141,7 @@ class Server extends Base\Mock\Server
     {
         $tranData = Fss\Utility::createRequestXml($responseTrandata, false);
 
-        $secretKey = $this->getGatewayInstance()->getSecret();
+        $secretKey = $this->getGatewayInstance()->setInput($this->input)->getSecret();
 
         $crypto = new Fss\TripleDESCrypto(Fss\TripleDESCrypto::MODE_ECB, $secretKey, false);
 
@@ -157,11 +157,11 @@ class Server extends Base\Mock\Server
      */
     protected function getDecryptedData(string $str): array
     {
-        $secretKey = $this->getGatewayInstance()->getSecret();
+        $secretKey = $this->getGatewayInstance()->setInput($this->input)->getSecret();
 
         $crypto = new Fss\TripleDESCrypto(Fss\TripleDESCrypto::MODE_ECB, $secretKey, true);
 
-        $decryptedString = $crypto->decryptString($str, true);
+        $decryptedString = $crypto->decryptString($str);
 
         $decryptedResult = (array) simplexml_load_string($decryptedString);
 

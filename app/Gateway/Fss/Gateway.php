@@ -271,7 +271,7 @@ class Gateway extends Base\Gateway
             Fields::TRACK_ID      => $input[E::PAYMENT][Payment\Entity::ID],
             Fields::ERROR_URL     => $input['callbackUrl'],
             Fields::RESPONSE_URL  => $input['callbackUrl'],
-            Fields::ID            => $input[E::TERMINAL][Terminal\Entity::ID],
+            Fields::ID            => $input[E::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_ID],
             Fields::LANGUAGE_ID   => Constants::LANGUAGE_USA,
         ];
 
@@ -331,7 +331,7 @@ class Gateway extends Base\Gateway
 
     /**
      * @param array $requestContent
-     * @array array $input
+     * @param array $input
      *
      * @return array
      */
@@ -346,7 +346,7 @@ class Gateway extends Base\Gateway
             Fields::TRAN_DATA     => $tranData,
             Fields::ERROR_URL     => $input['callbackUrl'],
             Fields::RESPONSE_URL  => $input['callbackUrl'],
-            Fields::TRANPORTAL_ID => '10000435',
+            Fields::TRANPORTAL_ID => $input[E::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_ID],
         ];
 
         return $content;
