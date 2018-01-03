@@ -50,9 +50,9 @@ class Type
 
     const FIRST_DATA_REFUND                 = 'first_data_refund';
 
-    const CYBERSOURCE_REFUND                = 'cybersource refund';
+    const CYBERSOURCE_REFUND                = 'cybersource_refund';
 
-    const HDFC_REFUND                       = 'hdfc refund';
+    const HDFC_REFUND                       = 'hdfc_refund';
 
     const PNB_NETBANKING_REFUND             = 'pnb_netbanking_refund';
 
