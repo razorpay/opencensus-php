@@ -5,6 +5,8 @@ import Field, { SelectField, CheckField } from 'ui/Field';
 import Table from 'ui/Table';
 import MultiSelectField from 'ui//MultiSelectField';
 
+import AsyncButton from 'ui/AsyncButton';
+
 @observer
 export default class UserForm extends Component {
   groupFields = () => {
@@ -54,7 +56,7 @@ export default class UserForm extends Component {
           {user.id ? `Edit User – ${user.id}` : 'Add a User'}
         </header>
         <div class="box">
-          <Form class="full-span full-elements" onSubmit={onSubmit}>
+          <Form class="full-span full-elements">
             {fields.indexOf('name') > -1 && (
               <Field
                 name="name"
@@ -181,7 +183,12 @@ export default class UserForm extends Component {
               </div>
             )}
 
-            <button>Save</button>
+            <AsyncButton
+              text="Save"
+              class="btn"
+              pendingClass="small spinner"
+              onSubmit={onSubmit}
+            />
           </Form>
         </div>
       </div>

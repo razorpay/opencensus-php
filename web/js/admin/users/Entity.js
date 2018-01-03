@@ -85,13 +85,17 @@ export default class EditUser extends Component {
     let data = { body };
     let request = null;
 
+    let successMsg;
+
     if (id !== 'new') {
       data.route_name = 'admin_edit';
       data.url_params = { adminId: id };
       request = adminPut;
+      successMsg = 'User is created successfully';
     } else {
       data.route_name = 'admin_create';
       request = adminPost;
+      successMsg = 'User is updated successfully';
     }
 
     data.body.groups = groups.keys();
@@ -104,7 +108,8 @@ export default class EditUser extends Component {
         if (isWorkflow(response)) {
           return;
         }
-        notifyDone();
+
+        notifySuccess(successMsg);
       }
     });
   };
