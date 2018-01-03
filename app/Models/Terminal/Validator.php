@@ -46,11 +46,12 @@ class Validator extends Base\Validator
     protected static $editTerminalGateways = [
         Payment\Gateway::HDFC,
         Payment\Gateway::HITACHI,
-        Payment\Gateway::CYBERSOURCE,
+        Payment\Gateway::BILLDESK,
         Payment\Gateway::AXIS_MIGS,
         Payment\Gateway::UPI_ICICI,
-        Payment\Gateway::BILLDESK,
         Payment\Gateway::FIRST_DATA,
+        Payment\Gateway::CYBERSOURCE,
+        Payment\Gateway::NETBANKING_ICICI,
         Payment\Gateway::NETBANKING_INDUSIND,
     ];
 
@@ -85,6 +86,8 @@ class Validator extends Base\Validator
         Entity::GATEWAY                    => 'required|in:hitachi',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string|max:15',
         Entity::GATEWAY_TERMINAL_ID        => 'required|string|max:8',
+        Entity::INTERNATIONAL              => 'sometimes|boolean',
+        Entity::CURRENCY                   => 'sometimes|alpha|size:3'
     ];
 
     protected static $aepsIciciTerminalRules = [
@@ -188,6 +191,7 @@ class Validator extends Base\Validator
     protected static $hitachiEditTerminalRules = [
         Entity::GATEWAY                    => 'required|in:hitachi',
         Entity::GATEWAY_TERMINAL_ID        => 'sometimes|string|max:8',
+        Entity::INTERNATIONAL              => 'sometimes|boolean',
     ];
 
     protected static $firstDataEditTerminalRules = [

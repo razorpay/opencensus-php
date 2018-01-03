@@ -116,15 +116,15 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code'        => PublicErrorCode::SERVER_ERROR,
-                    'description' => 'The server encountered an error. The incident has been reported to admins.',
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Merchant does not have enough balance for negative adjustment',
                 ],
             ],
-            'status_code' => 500,
+            'status_code' => 400,
         ],
         'exception' => [
-            'class'               => RZP\Exception\LogicException::class,
-            'internal_error_code' => ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE_FOR_ADJUSTMENT,
         ],
     ],
 
@@ -766,6 +766,36 @@ return [
         'exception' => [
             'class'               => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testDisputeFetchForMerchant' => [
+        'request'   => [
+            'method'        => 'get',
+            'url'           => '/disputes',
+        ],
+        'response'  => [
+            'content'       => [
+                'count'         => 2,
+                'items'         => [
+                    [
+                        'merchant_id'       => '10000000000000',
+                        'amount'            => 1000000,
+                        'currency'          => 'INR',
+                        'reason_code'       => 'SOMETHING_BAD',
+                        'status'            => 'open',
+                        'phase'             => 'chargeback',
+                    ],
+                    [
+                        'merchant_id'       => '10000000000000',
+                        'amount'            => 1000000,
+                        'currency'          => 'INR',
+                        'reason_code'       => 'SOMETHING_BAD',
+                        'status'            => 'open',
+                        'phase'             => 'chargeback',
+                    ],
+                ]
+            ],
         ],
     ],
 ];

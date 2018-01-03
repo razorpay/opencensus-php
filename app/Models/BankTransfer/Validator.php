@@ -68,31 +68,41 @@ class Validator extends Base\Validator
                     ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,
                     $bankTransfer);
         }
-
-        if ($bankTransfer->getPayeeIfsc() === Provider::IFSC[Provider::YESBANK])
-        {
-            throw new Exception\LogicException(
-                    'Not refunding YesBank payments at the moment.',
-                    ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,
-                    $bankTransfer->toArray());
-        }
     }
 
     public function validateRefundIsAllowed()
     {
         $bankTransfer = $this->entity;
 
+        if ($bankTransfer->getPayeeIfsc() === Provider::IFSC[Provider::YESBANK])
+        {
+            // Not refunding YesBank payments at the moment
+            throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,
+                    $bankTransfer);
+        }
+
+        // Refunds are not permitted if payer bank account is unknown
+        if ($bankTransfer->getPayerBankAccountId() === null)
+        {
+            throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,
+                    $bankTransfer);
+        }
+
+        // If payer bank account exists, but without an IFSC, it means we
+        // did not have the bank-code-to-IFSC mapping for an IMPS payment.
+        //
+        // If we do have the mapping now, the payer account will
+        // be updated and the refund can be safely retried.
         if ($bankTransfer->getMode() === Mode::IMPS)
         {
             $ifsc = $bankTransfer->getPayerIfsc();
 
             $bankCode = substr($ifsc, 0, -10);
 
-            // Refunds are not permitted for 2 cases:
-            //  1. IMPS bank code is not mapped to ay valida IFSC
-            //  2. Payer bank account is unknown
-            if ((BankCodes::hasIfscMapping($bankCode) === false) or
-                ($bankTransfer->getPayerBankAccountId() === null))
+            if (($bankTransfer->payerBankAccount->getIfscCode() === null) and
+                (BankCodes::hasIfscMapping($bankCode) === false))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,

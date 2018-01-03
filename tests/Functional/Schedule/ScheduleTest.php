@@ -426,6 +426,10 @@ class ScheduleTest extends TestCase
 
         $this->fixtures->edit('merchant', $merchantId, $merchantAttributes);
 
+        $this->fixtures->on('live')->edit('merchant_detail', $merchantId, ['submitted' => true]);
+
+        $this->fixtures->on('test')->edit('merchant_detail', $merchantId, ['submitted' => true]);
+
         $activationRequest = [
             'url' => '/merchants/' . $merchantId .  '/activate',
             'method' => 'post',

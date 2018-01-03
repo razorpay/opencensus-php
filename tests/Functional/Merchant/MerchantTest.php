@@ -375,6 +375,12 @@ class MerchantTest extends TestCase
     {
         $this->ba->appAuthLive();
 
+        $this->fixtures->on('live')->create('merchant_detail', [
+            'merchant_id' => '1cXSLlUU8V9sXl',
+            'submitted'   => true,
+            'locked'      => false
+        ]);
+
         $this->startTest();
     }
 
@@ -397,9 +403,9 @@ class MerchantTest extends TestCase
             'hostname'  => 'dashboard.razorpay.com'
         ]);
 
-        $this->fixtures->create('merchant_detail', [
+        $this->fixtures->on('live')->create('merchant_detail', [
             'merchant_id' => '1cXSLlUU8V9sXl',
-            'submitted'   => false,
+            'submitted'   => true,
             'locked'      => false
         ]);
 

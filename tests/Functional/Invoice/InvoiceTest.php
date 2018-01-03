@@ -3,16 +3,21 @@
 namespace RZP\Tests\Functional\Invoice;
 
 use Mail;
+use Queue;
 use Carbon\Carbon;
 
+use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Jobs\Invoice\Job as InvoiceJob;
+use RZP\Models\Invoice\Entity as InvoiceEntity;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Mail\Invoice\Issued as InvoiceIssuedMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Mail\Invoice\Payment\Captured as InvoiceCapturedMail;
 use RZP\Mail\Invoice\Payment\Authorized as InvoiceAuthorizedMail;
+
 
 /**
  * @group dns-sensitive
@@ -2208,6 +2213,46 @@ class InvoiceTest extends TestCase
         ];
 
         $payment = $this->doAuthAndGetPayment($payment, $expectedPaymentResponse);
+    }
+
+    /**
+     * Asserts that after invoice's payment, Invoice\Job's captured handler is
+     * triggered which updates the invoice's pdf version and does few other things.
+     *
+     * @return void
+     */
+    public function testInvoicePaidAndCapturedJobQueued()
+    {
+        Queue::fake();
+
+        $order   = $this->createOrder();
+        $invoice = $this->createIssuedInvoice();
+
+        // Makes a payment on the invoice
+        $payment             = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount']   = 100000;
+
+        $expectedPaymentResponse = [
+            'status'     => 'captured',
+            'order_id'   => $order->getPublicId(),
+            'invoice_id' => $invoice->getPublicId(),
+        ];
+
+        $payment = $this->doAuthAndGetPayment($payment, $expectedPaymentResponse);
+
+        // Now we assert that an invoice job was queued with proper even name
+        // and payload.
+        Queue::assertPushed(
+            InvoiceJob::class,
+            function($job) use ($invoice, $payment)
+            {
+                $this->assertEquals(Mode::TEST, $job->getMode());
+                $this->assertEquals(InvoiceJob::CAPTURED, $job->getEvent());
+                $this->assertEquals($invoice->getId(), $job->getId());
+
+                return true;
+            });
     }
 
     // -------------------- Protected methods --------------------

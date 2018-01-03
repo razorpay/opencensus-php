@@ -20,7 +20,7 @@ return [
     | Default: null
     |
     */
-    'driver' => null,
+    'driver' => env('THROTTLE_DRIVER', 'throttle_redis'),
 
     'skip' => env('SKIP_THROTTLE', false),
 
@@ -29,28 +29,30 @@ return [
 
     'limits' => [
         'live' => [
-            'default'                             => 100,
-            RZP\Http\BasicAuth\Type::ADMIN_AUTH   => 1000,
-            RZP\Http\BasicAuth\Type::DIRECT_AUTH  => 1000,
-            RZP\Http\BasicAuth\Type::PRIVATE_AUTH => 150,
-            RZP\Http\BasicAuth\Type::DEVICE_AUTH  => 100,
+            'default'                               => 100,
+            RZP\Http\BasicAuth\Type::PRIVILEGE_AUTH => 200,
+            RZP\Http\BasicAuth\Type::ADMIN_AUTH     => 1000,
+            RZP\Http\BasicAuth\Type::DIRECT_AUTH    => 1000,
+            RZP\Http\BasicAuth\Type::PRIVATE_AUTH   => 150,
+            RZP\Http\BasicAuth\Type::DEVICE_AUTH    => 100,
 
             // Highest we have seen is 50
             // Making it 4x as this involves callback as well.
-            RZP\Http\BasicAuth\Type::PUBLIC_AUTH  => 500,
+            RZP\Http\BasicAuth\Type::PUBLIC_AUTH    => 500,
 
             // Shared between all users of a merchant
-            RZP\Http\BasicAuth\Type::PROXY_AUTH   => 200,
+            RZP\Http\BasicAuth\Type::PROXY_AUTH     => 200,
         ],
 
         'test' => [
-            'default'                             => 20,
-            RZP\Http\BasicAuth\Type::ADMIN_AUTH   => 100,
-            RZP\Http\BasicAuth\Type::DIRECT_AUTH  => 100,
-            RZP\Http\BasicAuth\Type::PRIVATE_AUTH => 150,
-            RZP\Http\BasicAuth\Type::DEVICE_AUTH  => 100,
-            RZP\Http\BasicAuth\Type::PUBLIC_AUTH  => 100,
-            RZP\Http\BasicAuth\Type::PROXY_AUTH   => 500,
+            'default'                               => 20,
+            RZP\Http\BasicAuth\Type::PRIVILEGE_AUTH => 200,
+            RZP\Http\BasicAuth\Type::ADMIN_AUTH     => 100,
+            RZP\Http\BasicAuth\Type::DIRECT_AUTH    => 100,
+            RZP\Http\BasicAuth\Type::PRIVATE_AUTH   => 150,
+            RZP\Http\BasicAuth\Type::DEVICE_AUTH    => 100,
+            RZP\Http\BasicAuth\Type::PUBLIC_AUTH    => 100,
+            RZP\Http\BasicAuth\Type::PROXY_AUTH     => 500,
         ],
     ]
 ];

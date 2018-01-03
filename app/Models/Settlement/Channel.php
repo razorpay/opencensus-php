@@ -11,6 +11,7 @@ class Channel
     const ATOM      = 'atom';
     const ICICI     = 'icici';
     const AXIS      = 'axis';
+    const YESBANK   = 'yesbank';
 
     public static $gateways = [
         self::KOTAK => [
@@ -43,7 +44,11 @@ class Channel
 
     public static function getChannels()
     {
-        return [self::KOTAK];
+        return [
+            self::KOTAK,
+            self::YESBANK,
+            self::AXIS,
+        ];
     }
 
     public static function getGateways($channel)
@@ -62,5 +67,10 @@ class Channel
         }
 
         throw new Exception\LogicException('Channel not found for gateway ' . $gateway);
+    }
+
+    public static function exists($channel)
+    {
+        return defined(get_class() . '::' . strtolower($channel));
     }
 }

@@ -3,6 +3,7 @@
 namespace RZP\Models\BankTransfer;
 
 use App;
+use Cache;
 
 use Exception;
 use RZP\Models\Base;
@@ -13,6 +14,7 @@ use RZP\Models\BankAccount;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Currency\Currency;
 use RZP\Trace\TraceCode;
+use RZP\Models\Admin\ConfigKey;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
@@ -50,25 +52,7 @@ class Processor extends VirtualAccount\Processor
     {
         $this->setUtrInTestMode($bankTransfer);
 
-        $isPaymentExpected = $this->isPaymentExpected($bankTransfer);
-
-        if (($this->isDuplicate($bankTransfer) === false) and
-            ($isPaymentExpected === true))
-        {
-            $bankTransfer->setExpected(true);
-
-            $this->setMerchant();
-        }
-        else if ($isPaymentExpected === false)
-        {
-            if ($this->checkReservedAccount($bankTransfer) === true)
-            {
-                return null;
-            }
-
-            $this->preProcessUnexpectedPayment($bankTransfer);
-        }
-        else
+        if ($this->isDuplicate($bankTransfer) === true)
         {
             //
             // The transfer is an expected one, i.e. it is made to a valid account
@@ -77,6 +61,22 @@ class Processor extends VirtualAccount\Processor
             //
 
             return null;
+        }
+
+        if ($this->isPaymentExpected($bankTransfer) === true)
+        {
+            $bankTransfer->setExpected(true);
+
+            $this->setMerchant();
+        }
+        else
+        {
+            if ($this->checkReservedAccount($bankTransfer) === true)
+            {
+                return null;
+            }
+
+            $this->preProcessUnexpectedPayment($bankTransfer);
         }
 
         $this->processBankTransfer($bankTransfer);
@@ -159,6 +159,46 @@ class Processor extends VirtualAccount\Processor
         }
     }
 
+    protected function isPaymentExpected(Base\PublicEntity $bankTransfer): bool
+    {
+        //
+        // This needs to be done first because isPaymentExpected sets
+        // $this->virtualAccount which is required in the below block
+        //
+        $isExpected = parent::isPaymentExpected($bankTransfer);
+
+        // VA payments for crypto merchants are blocked based on cache key
+        if (($this->virtualAccount !== null) and
+            ($this->virtualAccount->merchant->isCategory2Cryptocurrency() === true) and
+            ($this->areBankTransfersBlockedForCrypto() === true))
+        {
+            return false;
+        }
+
+        return $isExpected;
+    }
+
+    protected function areBankTransfersBlockedForCrypto(): bool
+    {
+        try
+        {
+            $block = (bool) Cache::get(ConfigKey::BLOCK_BANK_TRANSFERS_FOR_CRYPTO);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::CRITICAL,
+                [
+                    'virtual_account_id' => $this->virtualAccount->getId()
+                ]);
+
+            $block = false;
+        }
+
+        return $block;
+    }
+
     /**
      * Check if the UTR received has ever been encountered before for the same
      * account. If it has, this is a duplicate payment, being processed again.
@@ -177,11 +217,11 @@ class Processor extends VirtualAccount\Processor
     {
         $utr = $bankTransfer->getUtr();
 
-        $payeeIfsc = $bankTransfer->getPayeeIfsc();
+        $payerIfsc = $bankTransfer->getPayerIfsc();
 
         $duplicateBankTransfer = $this->repo
                                       ->bank_transfer
-                                      ->findByUtrAndPayeeIfsc($utr, $payeeIfsc);
+                                      ->findByUtrAndPayerIfsc($utr, $payerIfsc);
 
         if ($duplicateBankTransfer === null)
         {

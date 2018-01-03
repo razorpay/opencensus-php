@@ -76,6 +76,7 @@ trait Notify
                 break;
 
             case SlackActions::SUBMIT_ACTIVATION:
+            case SlackActions::ACTIVATE:
                 return $this->app->config->get('slack.channels.activations');
                 break;
 

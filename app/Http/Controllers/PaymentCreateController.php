@@ -331,7 +331,8 @@ class PaymentCreateController extends Controller
             {
                 return $this->returnMerchantFullRedirectView($data);
             }
-            else if ($data['type'] === 'async')
+            else if (($data['type'] === 'async') or
+                     ($data['type'] === 'intent'))
             {
                 return View::make('gateway.gatewayAsyncForm')
                            ->with('data', $data);

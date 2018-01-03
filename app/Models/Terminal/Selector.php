@@ -101,7 +101,7 @@ class Selector extends Base\Core
         $merchantTerminals = $this->repo
                                   ->terminal
                                   ->getTerminalsForMerchantAndSharedMerchant(
-                                        $this->input['merchant']->getId());
+                                        $this->input['merchant']);
 
         return $merchantTerminals->all();
     }

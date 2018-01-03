@@ -243,6 +243,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::IFSC_CODE);
     }
 
+    public function getBankName()
+    {
+        return $this->getAttribute(self::BANK_NAME);
+    }
+
     public function getType()
     {
         return $this->getAttribute(self::TYPE);
