@@ -66,13 +66,6 @@ class Base extends Mailable
             'body' => Constants::BODY_MAP[$this->type],
         ];
 
-        // For ICICI netbanking refunds we are adding the subject to template data
-        // as the template used for this requires the subject
-        if ($this->type === Gateway::NETBANKING_ICICI)
-        {
-            $mailData['subject'] = $this->getSubject();
-        }
-
         $mailData = array_merge($mailData, $this->data);
 
         $this->with($mailData);
