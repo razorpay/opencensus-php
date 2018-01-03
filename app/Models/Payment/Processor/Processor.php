@@ -228,22 +228,6 @@ class Processor
             }
         }
 
-        if (($payment->isNetbanking() === true) and
-            ($payment->isRecurring() === true) and
-            ($payment->getAuthType() === null))
-        {
-            $coproto = [
-                'type'      => 'wallet',
-                'request'   => [
-                    'url'       => $this->route->getUrlWithPublicAuthInQueryParam('payment_create'),
-                    'method'    => 'POST',
-                    'content'   => $input,
-                ],
-                'version'   => '1',
-                'missing'   =>  [Payment\Entity::AUTH_TYPE]
-            ];
-        }
-
         return $coproto;
     }
 

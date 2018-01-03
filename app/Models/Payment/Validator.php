@@ -64,9 +64,10 @@ class Validator extends Base\Validator
         'upi'                        => 'sometimes_if:method,upi|array',
         'upi.expiry_time'            => 'sometimes_if:method,upi|integer|between:5,30|filled',
         'auth_type'                  => 'required_if:method,emandate|string|max:10|filled|in:netbanking',
-        // This needs to be after bank and method and auth_type compulsorily.
-        'account_number'             => 'sometimes_if:method,emandate|filled|alpha_num|between:5,20',
-        'ifsc'                       => 'sometimes_if:method,emandate|filled|alpha_num|size:11',
+        'bank_account'               => 'required_if:method,emandate|associative_array',
+        'bank_account.number'        => 'required_if:method,emandate|filled|alpha_num|between:5,20',
+        'bank_account.ifsc'          => 'required_if:method,emandate|filled|alpha_num|size:11',
+        'bank_account.name'          => 'required_if:method,emandate|filled|alpha_space_num|between:4,120',
     ];
 
     protected static $editRules = [
@@ -118,113 +119,29 @@ class Validator extends Base\Validator
         'hold_parameters',
         'customer_id',
         'test_success',
-        'account_number',
-        'ifsc',
         'upi_expiry_time',
         'upi_vpa',
+        'auth_type',
+        'bank_account'
     ];
 
-    protected function validateAccountNumber(array $input)
+    protected function validateAuthType(array $input)
     {
-        if (isset($input['account_number']) === false)
+        if ((isset($input[Entity::AUTH_TYPE]) === true) and
+            ($input[Entity::METHOD] !== Method::EMANDATE))
         {
-            if ($input[Entity::METHOD] === Method::EMANDATE)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'account_number is required when method is emandate.');
-
-                // if ($input[Entity::AUTH_TYPE] === AuthType::AADHAAR)
-                // {
-                //     throw new Exception\BadRequestValidationFailureException(
-                //         'account_number is required when method is emandate ' .
-                //         'and auth_type is ' . AuthType::AADHAAR);
-                // }
-                // else if (($input[Entity::AUTH_TYPE] === AuthType::NETBANKING) and
-                //          (in_array(
-                //              $input['bank'],
-                //              Payment\Gateway::getAvailableEmandateBanksForAuthType(AuthType::NETBANKING),
-                //              true) === true))
-                // {
-                //     throw new Exception\BadRequestValidationFailureException(
-                //         'account_number is required when method is emandate ' .
-                //         'and auth_type is ' . AuthType::NETBANKING . 'and bank is ' . $input['bank']);
-                // }
-            }
-        }
-        else
-        {
-            if ($input[Entity::METHOD] !== Method::EMANDATE)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'account_number passed for invalid method: ' . $input[Entity::METHOD]);
-            }
-
-            // if ($input[Entity::METHOD] === Method::EMANDATE)
-            // {
-            //     if (($input[Entity::AUTH_TYPE] === AuthType::NETBANKING) and
-            //         (in_array(
-            //             $input['bank'],
-            //             Payment\Gateway::getAvailableEmandateBanksForAuthType(AuthType::NETBANKING),
-            //             true) === false))
-            //     {
-            //         throw new Exception\BadRequestValidationFailureException(
-            //             'account_number is not required when method is emandate ' .
-            //             'and auth_type is ' . AuthType::NETBANKING . 'and bank is ' . $input['bank']);
-            //     }
-            // }
-            // else
-            // {
-            //     throw new Exception\BadRequestValidationFailureException(
-            //         'account_number passed for invalid method: ' . $input[Entity::METHOD]);
-            // }
+            throw new Exception\BadRequestValidationFailureException(
+                'The auth_type field is required when method is ' . Method::EMANDATE);
         }
     }
 
-    protected function validateIfsc(array $input)
+    protected function validateBankAccount(array $input)
     {
-        if (isset($input['ifsc']) === false)
+        if ((isset($input['bank_account']) === true) and
+            ($input[Entity::METHOD] !== Method::EMANDATE))
         {
-            if ($input[Entity::METHOD] === Method::EMANDATE)
-            {
-                if ($input[Entity::AUTH_TYPE] === AuthType::AADHAAR)
-                {
-                    throw new Exception\BadRequestValidationFailureException(
-                        'ifsc is required when method is emandate ' .
-                        'and auth_type is ' . AuthType::AADHAAR);
-                }
-                // TODO: Get the banks which require ifsc properly
-                else if (($input[Entity::AUTH_TYPE] === AuthType::NETBANKING) and
-                    (in_array(
-                        $input['bank'],
-                        Payment\Gateway::getAvailableEmandateBanksForAuthType(AuthType::NETBANKING),
-                        true) === true))
-                {
-                    throw new Exception\BadRequestValidationFailureException(
-                        'ifsc is required when method is emandate ' .
-                        'and auth_type is ' . AuthType::NETBANKING . 'and bank is ' . $input['bank']);
-                }
-            }
-        }
-        else
-        {
-            if ($input[Entity::METHOD] === Method::EMANDATE)
-            {
-                if (($input[Entity::AUTH_TYPE] === AuthType::NETBANKING) and
-                    (in_array(
-                        $input['bank'],
-                        Payment\Gateway::getAvailableEmandateBanksForAuthType(AuthType::NETBANKING),
-                        true) === false))
-                {
-                    throw new Exception\BadRequestValidationFailureException(
-                        'ifsc is not required when method is emandate ' .
-                        'and auth_type is ' . AuthType::NETBANKING . 'and bank is ' . $input['bank']);
-                }
-            }
-            else
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'ifsc passed for invalid method: ' . $input[Entity::METHOD]);
-            }
+            throw new Exception\BadRequestValidationFailureException(
+                'The bank_account field is required when method is ' . Method::EMANDATE);
         }
     }
 

@@ -320,7 +320,6 @@ class Entity extends Base\PublicEntity
 
     protected static $generators = [
         self::METADATA,
-        self::RECURRING,
     ];
 
     protected $dates = [

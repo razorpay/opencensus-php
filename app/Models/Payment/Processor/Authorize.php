@@ -1961,7 +1961,7 @@ trait Authorize
                 'customer_id'       => $customer->getId(),
                 'local'             => $customer->isLocal(),
                 'card_id'           => $savedCardId,
-                'account_number'    => $input[Token\Entity::ACCOUNT_NUMBER] ?? null,
+                'account_number'    => $input['bank_account']['number'] ?? null,
             ]);
 
         $saveMethodInput = [
@@ -1981,7 +1981,7 @@ trait Authorize
             // TODO: We need to get this from user input - hard coding for now
             $saveMethodInput[Token\Entity::MAX_AMOUNT] = Token\Entity::DEFAULT_MAX_AMOUNT;
 
-            $saveMethodInput[Token\Entity::ACCOUNT_NUMBER] = $input[Token\Entity::ACCOUNT_NUMBER] ?? null;
+            $saveMethodInput[Token\Entity::ACCOUNT_NUMBER] = $input['bank_account']['number'] ?? null;
         }
         else if ($payment->isMethod(Payment\Method::WALLET))
         {
