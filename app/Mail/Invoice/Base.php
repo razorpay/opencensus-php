@@ -38,7 +38,7 @@ class Base extends Mailable
 
     protected function addSender()
     {
-        $fromEmail = Constants::MAIL_ADDRESSES[Constants::INVOICES];
+        $fromEmail = Constants::MAIL_ADDRESSES[Constants::NOREPLY];
 
         $fromHeader = $this->data['merchant']['name'];
 
@@ -70,7 +70,7 @@ class Base extends Mailable
 
     protected function addReplyTo()
     {
-        $email = Constants::MAIL_ADDRESSES[Constants::SUPPORT];
+        $email = Constants::MAIL_ADDRESSES[Constants::NOREPLY];
 
         $header = Constants::HEADERS[Constants::SUPPORT];
 

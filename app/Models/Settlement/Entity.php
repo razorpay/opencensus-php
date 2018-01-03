@@ -81,11 +81,11 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::ATTEMPTS => 1,
+        self::ATTEMPTS          => 1,
     ];
 
     protected $casts = [
-        self::ATTEMPTS => 'int',
+        self::ATTEMPTS          => 'int',
     ];
 
     protected $dates = [
@@ -202,6 +202,11 @@ class Entity extends Base\PublicEntity
     public function getBatchFundTransferId()
     {
         return $this->getAttribute(self::BATCH_FUND_TRANSFER_ID);
+    }
+
+    public function hasTransaction()
+    {
+        return ($this->isAttributeNotNull(self::TRANSACTION_ID));
     }
 
     // --------------------------------- setters -------------------------------
