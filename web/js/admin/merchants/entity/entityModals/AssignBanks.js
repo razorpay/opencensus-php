@@ -71,12 +71,15 @@ export default class PricingPlanModal extends Component {
         body: banksData,
       })
         .then(response => {
-          if (isWorkflow(response)) {
-            return;
-          }
+          if (response) {
+            closeModal();
 
-          notifySuccess('Banks Assigned successfully');
-          closeModal();
+            if (isWorkflow(response)) {
+              notifySuccess('Workflow is created successfully.');
+              return;
+            }
+            notifySuccess('Banks Assigned successfully');
+          }
         })
         .catch(err => {
           notifyError(JSON.stringify(err.response));

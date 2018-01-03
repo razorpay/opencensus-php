@@ -60,12 +60,15 @@ export default class ScheduleModal extends Component {
       body: schedulePlanData,
     })
       .then(response => {
-        if (isWorkflow(response)) {
-          return;
-        }
+        if (response) {
+          closeModal();
 
-        notifySuccess('Schedule Plan assigned successfully.');
-        closeModal();
+          if (isWorkflow(response)) {
+            notifySuccess('Workflow is created successfully.');
+            return;
+          }
+          notifySuccess('Schedule Plan assigned successfully.');
+        }
       })
       .catch(err => {
         notifyError(JSON.stringify(err.response));

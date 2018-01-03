@@ -173,9 +173,9 @@ const ActionsList = ({ model, merchantId, actions }) => {
     })
       .then(response => {
         notifySuccess(
-          `Activation Form is now ${
-            isCurrentlyLocked ? 'Unlocked' : 'Locked'
-          } successfully`
+          `Activation Form is now ${isCurrentlyLocked
+            ? 'Unlocked'
+            : 'Locked'} successfully`
         );
         model.updateMerchantDetails(response);
       })
@@ -204,12 +204,14 @@ const ActionsList = ({ model, merchantId, actions }) => {
     })
       .then(response => {
         if (response) {
+          closeModal();
+
           if (isWorkflow(response)) {
+            notifySuccess('Workflow is created successfully.');
             return;
           }
-
-          closeModal();
           notifySuccess(successMsg);
+
           model.updateDetails(response);
         }
       })
@@ -233,9 +235,11 @@ const ActionsList = ({ model, merchantId, actions }) => {
         if (data && (typeof data.success === 'undefined' || data.success)) {
           // In some cases, data is not data.data, but {success, data, error}
           if (isWorkflow(data)) {
+            notifySuccess('Workflow is created successfully.');
             return;
           }
           notifySuccess(successMsg);
+
           model.updateDetails(data);
         }
       })
@@ -303,10 +307,10 @@ const ActionsList = ({ model, merchantId, actions }) => {
         if (response) {
           notifySuccess('Merchant is successfully updated');
           if (isWorkflow(response)) {
+            notifySuccess('Workflow is created successfully.');
             return;
-          } else {
-            model.updateDetails(response);
           }
+          model.updateDetails(response);
         }
       })
       .catch(err => {
@@ -393,13 +397,16 @@ const ActionsList = ({ model, merchantId, actions }) => {
               onClick={toggleLockOnActivationForm}
               pendingClass="btn-pending"
             >
-              {merchant.details.merchant_details.locked ? 'Unlock' : 'Lock'}{' '}
+              {merchant.details.merchant_details.locked
+                ? 'Unlock'
+                : 'Lock'}{' '}
               Activation Form
               <span class="spin-btn" />
               <i
-                class={`pull-right i i-${
-                  merchant.details.merchant_details.locked ? 'unlock' : 'lock'
-                }`}
+                class={`pull-right i i-${merchant.details.merchant_details
+                  .locked
+                  ? 'unlock'
+                  : 'lock'}`}
               />
             </AsyncButton>
           </ShowWhen>
@@ -595,7 +602,9 @@ const ActionsList = ({ model, merchantId, actions }) => {
               pendingClass="btn-pending"
               confirm={toggleSuspensionCM()}
             >
-              {merchant.details.suspended_at === null ? 'Suspend' : 'Unsuspend'}{' '}
+              {merchant.details.suspended_at === null
+                ? 'Suspend'
+                : 'Unsuspend'}{' '}
               <i class="pull-right i i-power" />
               Merchant
               <span class="spin-btn" />

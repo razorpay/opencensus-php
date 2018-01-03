@@ -46,11 +46,13 @@ export default class PricingPlanModal extends Component {
       })
         .then(data => {
           if (data) {
+            closeModal();
+
             if (isWorkflow(data)) {
+              notifySuccess('Workflow is created successfully.');
               return;
             }
             notifySuccess('Pricing Plan assigned successfully.');
-            closeModal();
           }
         })
         .catch(err => {

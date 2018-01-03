@@ -76,12 +76,15 @@ export default ({ props, merchantId }) => {
     })
       .then(data => {
         if (data) {
+          closeModal();
+
           if (isWorkflow(data)) {
+            notifySuccess('Workflow is created successfully.');
             return;
           }
           notifySuccess('Methods updated successfully.');
+
           props.updateDetails({ ...props.merchant.details, methods: data });
-          closeModal();
         }
       })
       .catch(err => {

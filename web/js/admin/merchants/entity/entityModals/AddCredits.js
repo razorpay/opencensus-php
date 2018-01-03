@@ -24,13 +24,14 @@ export default ({ merchantId }) => {
     })
       .then(response => {
         if (response) {
+          closeModal();
+
           if (isWorkflow(response)) {
+            notifySuccess('Workflow is created successfully.');
             return;
           }
-
-          notifySuccess('Credits updated successfully.');
           // TODO: Update credits in the model
-          closeModal();
+          notifySuccess('Credits updated successfully.');
         }
       })
       .catch(err => {

@@ -35,12 +35,14 @@ export default class EditBankAccountDetails extends Component {
       body,
     })
       .then(response => {
-        if (isWorkflow(response)) {
-          return;
+        if (response) {
+          closeModal();
+          if (isWorkflow(response)) {
+            notifySuccess('Workflow is created successfully.');
+            return;
+          }
+          notifySuccess('Merchant bank details changed successfully');
         }
-
-        closeModal();
-        notifySuccess('Merchant bank details changed successfully');
       })
       .catch(err => {
         notifyError(err);
