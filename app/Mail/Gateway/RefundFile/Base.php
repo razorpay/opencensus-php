@@ -35,8 +35,6 @@ class Base extends Mailable
 
         $fromHeader = Constants::HEADER_MAP[$this->type];
 
-        s($fromHeader);
-
         $this->from($fromEmail, $fromHeader);
 
         return $this;
@@ -108,8 +106,6 @@ class Base extends Mailable
     protected function addHeaders()
     {
         $header = Constants::MAILTAG_MAP[$this->type];
-
-        s($header);
 
         $this->withSwiftMessage(function ($message) use ($header)
         {
