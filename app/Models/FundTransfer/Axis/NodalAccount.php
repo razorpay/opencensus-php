@@ -75,19 +75,6 @@ class NodalAccount extends NodalBase\NodalAccount
         return [$rzpFile, $excelFile];
     }
 
-    public function initiateTransfer(string $amount): array
-    {
-        $rows = $this->getRows($amount);
-
-        list($excelFile, $rzpFile) = $this->createFile($rows);
-
-        $fileData = $this->getFileData($rzpFile);
-
-        $this->sendAxisTransferMail($fileData);
-
-        return ['file' => $fileData['file_path']];
-    }
-
     protected function createFile(array $values): array
     {
         $fileName = 'axis/outgoing/' . $this->id;
