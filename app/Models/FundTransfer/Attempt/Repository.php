@@ -67,12 +67,13 @@ class Repository extends Base\Repository
      * @param  int    $timestamp Upper limit on created_at, usually set to now
      * @param  array  $relations Relations required in the process
      */
-    public function getCreatedAttemptsBeforeTimestamp(int $timestamp, array $relations = [])
+    public function getCreatedAttemptsBeforeTimestamp(int $timestamp, string $channel, array $relations = [])
     {
         $query = $this->newQuery()
                       ->where(Entity::STATUS, '=', Status::CREATED)
                       ->where(Entity::SOURCE_TYPE, '!=', Constants\Entity::SETTLEMENT)
                       ->where(Entity::CREATED_AT, '<=', $timestamp)
+                      ->where(Entity::CHANNEL, '=', $channel)
                       ->orderBy(Entity::ID);
 
         if (count($relations) > 0)

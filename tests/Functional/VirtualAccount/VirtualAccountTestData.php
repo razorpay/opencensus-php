@@ -20,6 +20,23 @@ return [
         ],
     ],
 
+    'testCreateVirtualAccountCrypto' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Creation of new virtual accounts is '.
+                                        'currently blocked for your account.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_DISALLOWED_FOR_ACCOUNT,
+        ],
+    ],
+
     'testCreateVirtualAccountWithBharatQr' => [
         'name'            => 'Test virtual account',
         'entity'          => 'virtual_account',

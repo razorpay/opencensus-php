@@ -9,6 +9,7 @@ use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Terminal\TpvType;
 use RZP\Models\Emi\Subvention as EmiSubvention;
 
@@ -285,6 +286,11 @@ class Entity extends Base\PublicEntity
     public function getCurrency()
     {
         return $this->getAttribute(self::CURRENCY);
+    }
+
+    public function isCurrencyInr()
+    {
+        return ($this->getCurrency() === Currency::INR);
     }
 
     public function getNetworkCategory()

@@ -317,9 +317,9 @@ class Service extends Base\Service
         return $result;
     }
 
-    public function updateSmsStatus($id, $input)
+    public function updateSmsStatus($gateway, $input)
     {
-        $data = (new Customer\Raven)->updateSmsStatus($id, $input);
+        $data = (new Customer\Raven)->updateSmsStatus($gateway, $input);
 
         return $data;
     }

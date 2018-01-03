@@ -244,7 +244,11 @@ class Core extends Base\Core
     {
         $this->repo->assertTransactionActive();
 
-        $adj->setChannel(Settlement\Channel::KOTAK);
+        // set channel if not set already from input
+        if ($adj->getChannel() === null)
+        {
+            $adj->setChannel($merchant->getChannel());
+        }
 
         $adj->merchant()->associate($merchant);
 

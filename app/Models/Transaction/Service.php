@@ -6,6 +6,7 @@ use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Transaction;
 use RZP\Models\Report\Types\BasicEntityReport;

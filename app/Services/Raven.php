@@ -115,9 +115,9 @@ class Raven
         return $response;
     }
 
-    public function smsCallback($id, $input)
+    public function smsCallback($gateway, $input)
     {
-        $relativeUrl = 'sms/' . $id . '/callback';
+        $relativeUrl = 'callback/' . $gateway;
 
         $response = $this->sendRequest($relativeUrl, 'post', $input);
 

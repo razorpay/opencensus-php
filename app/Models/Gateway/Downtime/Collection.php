@@ -179,7 +179,13 @@ class Collection extends Base\PublicCollection
             }
         }
 
+        //
         // For directly supporteed gateways we always dsiplay the data
+        // @TODO : This will show the downtime notification without
+        //         distinction between corporate and Non corporate banking options
+        //         for certain banks like ICIC. Need to fix this detecting icici netbanking
+        //         downtimes separately.
+        //
         if (Payment\Gateway::isDirectNetbankingGateway($gateway) === true)
         {
             $data[Entity::ISSUER] = (array) Payment\Gateway::getBankForDirectNetbankingGateway($gateway);
