@@ -709,11 +709,11 @@ class Gateway extends Base\Gateway
         return $status;
     }
 
-    public function alreadyRefunded(array $input)
-    {
-        // TODO: Implement this properly
-        return true;
-    }
+      // TODO: Implement this properly
+//    public function alreadyRefunded(array $input)
+//    {
+//        return true;
+//    }
 
     public function verifyRefund(array $input)
     {

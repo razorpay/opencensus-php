@@ -7,7 +7,6 @@ use RZP\Reconciliator\FileProcessor;
 
 class Reconciliate extends Base\Reconciliate
 {
-    // TODO: Check this - is this the correct file name?
     const RECON_FILE_NAME    = 'merchantreport';
     const START_ROW          = 2;
 

@@ -108,6 +108,8 @@ class UpiIciciGatewayReconTest extends TestCase
 
     public function testReconRefundNotFoundInDb()
     {
+        $this->markTestSkipped();
+
         $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
 
         list($refunds, $payments) = $this->makeUpiIciciRefundsSince(3, $createdAt);
@@ -176,7 +178,6 @@ class UpiIciciGatewayReconTest extends TestCase
     {
         $this->assertFileExists($file);
 
-        // TODO: Is file xlsx?
         $mimeType = "application/octet-stream";
 
         $uploadedFile = new UploadedFile(
