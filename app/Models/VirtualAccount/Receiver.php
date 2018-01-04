@@ -183,11 +183,7 @@ class Receiver extends Base\Core
         $provider = Provider::KOTAK;
 
         // Kotak does not support crypto merchants
-        //
-        // Hardcoding YesBank for StayAbode for a quick migration
-        // TODO: Better way to do this for merchants
-        if (($this->merchant->isCategory2Cryptocurrency() === true) or
-            ($this->merchant->getId() === '8H56Ep6dYjAWxE'))
+        if ($this->merchant->isCategory2Cryptocurrency() === true)
         {
             $provider = Provider::YESBANK;
         }
