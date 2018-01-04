@@ -41,6 +41,25 @@ return [
                 'notes' => [
                     'custom_account_id' => 'Qwerty123',
                     'custom_attribute' => 'some_value',
+                ],
+                'account_details' => [
+                    'business_name' => 'Acme solutions',
+                    'business_type' => 'individual',
+                ],
+                'bank_account' => [
+                    'ifsc_code'             => 'ICIC0001206',
+                    'account_number'        => '0002020000304030434',
+                    'beneficiary_name'      => 'Test R4zorpay',
+                    'beneficiary_address1'  => 'address 1',
+                    'beneficiary_address2'  => 'address 2',
+                    'beneficiary_address3'  => 'address 3',
+                    'beneficiary_address4'  => 'address 4',
+                    'beneficiary_email'     => 'random@email.com',
+                    'beneficiary_mobile'    => '9988776655',
+                    'beneficiary_city'      => 'Kolkata',
+                    'beneficiary_state'     => 'WB',
+                    'beneficiary_country'   => 'IN',
+                    'beneficiary_pin'       => '123456',
                 ]
             ],
         ],
@@ -54,10 +73,9 @@ return [
                 'managed'            => true,
                 'activation_details' => [
 //                    'activated'      => true,
-//                    'activated_at'   => null,
 //                    'status'         => null,
 //                    'can_submit'     => true,
-//                    'fields_pending' => [],
+                    'required_fields' => [ ],
                 ],
                 'secondary_emails'   => [
                     'transaction_report_email' => 'linked1@account.com',

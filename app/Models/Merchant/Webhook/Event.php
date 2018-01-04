@@ -144,7 +144,12 @@ class Event
         self::TOKEN_CONFIRMED,
         self::TOKEN_REJECTED,
         self::SETTLEMENT_PROCESSED,
-        self::ACCOUNT_ACTIVATED,
+
+        //
+        // The account_activated webhook has not been enabled yet,
+        // It will be enabled and released in subsequent phases of Account APIs.
+        //
+        // self::ACCOUNT_ACTIVATED,
     ];
 
     /**
@@ -185,6 +190,13 @@ class Event
         self::INVOICE_PARTIALLY_PAID    => Feature\Constants::INVOICE_PARTIAL_PAYMENTS,
         self::TOKEN_CONFIRMED           => Feature\Constants::E_MANDATE,
         self::TOKEN_REJECTED            => Feature\Constants::E_MANDATE,
+
+        //
+        // The webhook for account activated is triggered when a marketplace merchant
+        // uses the Create Account API to create a linked account. Hence, this should
+        // only be available to the marketplace parent merchants.
+        //
+        self::ACCOUNT_ACTIVATED         => Feature\Constants::MARKETPLACE,
     ];
 
     /**

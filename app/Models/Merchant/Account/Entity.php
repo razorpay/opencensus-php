@@ -20,6 +20,7 @@ class Entity extends Merchant\Entity
     const STATE                    = 'state';
     const STATUS                   = 'status';
     const MOBILE                   = 'mobile';
+    const SUBMIT                   = 'submit';
     const P_GSTIN                  = 'p_gstin';
     const ADDRESS                  = 'address';
     const COUNTRY                  = 'country';
@@ -30,15 +31,18 @@ class Entity extends Merchant\Entity
     const CAN_SUBMIT               = 'can_submit';
     const DESTINATION              = 'destination';
     const KYC_DETAILS              = 'kyc_details';
+    const BANK_ACCOUNT             = 'bank_account';
     const PROMOTER_PAN             = 'promoter_pan';
     const TNC_ACCEPTED             = 'tnc_accepted';
+    const BUSINESS_NAME            = 'business_name';
+    const BUSINESS_TYPE            = 'business_type';
     const FUND_TRANSFER            = 'fund_transfer';
     const FUNDS_ON_HOLD            = 'funds_on_hold';
     const BUSINESS_MODEL           = 'business_model';
     const CONFIGURATIONS           = 'configurations';
-    const FIELDS_PENDING           = 'fields_pending';
     const PAYMENTDETAILS           = 'paymentdetails';
     const ACCOUNT_DETAILS          = 'account_details';
+    const REQUIRED_FIELDS          = 'required_fields';
     const DATE_ESTABLISHED         = 'date_established';
     const SECONDARY_EMAILS         = 'secondary_emails';
     const ACTIVATION_STATUS        = 'activation_status';
@@ -75,6 +79,7 @@ class Entity extends Merchant\Entity
 
     protected $publicSetters = [
         self::ID,
+        self::ENTITY,
         self::MANAGED,
         self::NOTES,
         self::TNC_ACCEPTED,
@@ -89,11 +94,6 @@ class Entity extends Merchant\Entity
         self::ID,
         self::INVOICE_CODE,
     ];
-
-    public function settlementSchedules()
-    {
-        return $this->morphOne(ScheduleTask\Entity::class, 'entity');
-    }
 
     public function getMorphClass()
     {
@@ -180,11 +180,7 @@ class Entity extends Merchant\Entity
 
     public function setPublicActivationDetailsAttribute(array & $array)
     {
-        $array[self::ACTIVATION_DETAILS] = [
-            self::ACTIVATED      => $this->isActivated(),
-            self::ACTIVATED_AT   => $this->getActivatedAt(),
-            self::STATUS         => $this->getActivationStatus(),
-        ];
+        $array[self::ACTIVATION_DETAILS] = $this->getActivationDetails();
     }
 
     public function setPublicManagedAttribute(array & $array)
@@ -264,7 +260,12 @@ class Entity extends Merchant\Entity
         return ($this->isLinkedAccount() === true);
     }
 
-    protected function getAccountDetails()
+    /**
+     * Returns the public response array for the key account_details
+     *
+     * @return array
+     */
+    protected function getAccountDetails(): array
     {
         $merchantDetail = $this->merchantDetail;
 
@@ -283,5 +284,21 @@ class Entity extends Merchant\Entity
         ];
 
         return $accountDetails;
+    }
+
+    /**
+     * Returns the public response for the key activation_details
+     *
+     * @return array
+     */
+    protected function getActivationDetails(): array
+    {
+        $activation_details = [
+            self::ACTIVATED    => $this->isActivated(),
+            self::ACTIVATED_AT => $this->getActivatedAt(),
+            self::STATUS       => $this->getActivationStatus(),
+        ];
+
+        return $activation_details;
     }
 }

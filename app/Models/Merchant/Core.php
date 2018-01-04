@@ -327,8 +327,8 @@ class Core extends Base\Core
     {
         $this->repo->saveOrFail($merchant);
 
-        // Dont notify for account changes
-        if ($merchant instanceof Account\Entity)
+        // Dont notify for linked account changes
+        if ($merchant->isLinkedAccount() === true)
         {
             return;
         }

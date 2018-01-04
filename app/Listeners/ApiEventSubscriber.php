@@ -113,8 +113,6 @@ class ApiEventSubscriber extends Base\Core
         // updated_at and other things like that.
         //
 
-//        $this->setMerchant($this->mainEntity);
-
         $this->webhookEnabledForEvent = $this->isWebhookEnabledForEvent($this->mainEntity);
 
         //
@@ -558,7 +556,14 @@ class ApiEventSubscriber extends Base\Core
      */
     protected function getMerchantFromEntity(Base\PublicEntity $entity): Merchant\Entity
     {
-        $merchant = $entity->merchant;
+        if (($entity instanceof Merchant\Account\Entity) === true)
+        {
+            $merchant = $entity;
+        }
+        else
+        {
+            $merchant = $entity->merchant;
+        }
 
         if ($merchant->isLinkedAccount() === true)
         {

@@ -95,6 +95,9 @@ class Entity extends Base\PublicEntity
     const ARCHIVED                         = 'archived';
     const REJECTION_REASONS                = 'rejection_reasons';
     const ALLOWED_NEXT_ACTIVATION_STATUSES = 'allowed_next_activation_statuses';
+    const CAN_SUBMIT                       = 'can_submit';
+    const REQUIRED_FIELDS                  = 'required_fields';
+    const VERIFICATION                     = 'verification';
 
     // Enum values used for product activation status
     const PENDING  = 'pending';
