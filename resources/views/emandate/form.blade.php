@@ -118,6 +118,9 @@
 
       #section2 {
         position: relative;
+      }
+
+      .separate {
         border-top: 1px solid rgba(0,0,0,0.2);
       }
 
@@ -207,6 +210,11 @@
         font-weight: 600;
     }
 
+    .disabled {
+      background: #e8e8e8;
+      opacity: 0.6;
+    }
+
 
     </style>
   </head>
@@ -215,7 +223,7 @@
     <form>
       <header>
         <img src="https://cdn.razorpay.com/bank/UTIB.gif" height= "30px">
-        <div><b>{{ $data['request']['content']['bank'] }}</b></div>
+        <div><b>{{ $data['request']['content']['bank_details']['name'] }}</b></div>
         <span>₹ {{ $data['request']['content']['amount']/100 }}</span>
       </header>
       <main>
@@ -227,7 +235,7 @@
       <main>
         <div class="heading">Please select Authentication method:</div>
         <div class="accordion-container">
-          <div id="section1">
+          <div id="section1" class={{ in_array('netbanking', $data['request']['content']['bank_details']['authentication_type']) ? '' : 'disabled'}}>
             <label class="accordion-heading pickable" for="content1">
               <img src="https://cdn.razorpay.com/bank/HDFC.gif" height="25px" />
               <span class="title">
@@ -235,11 +243,14 @@
                 <div class="sub-title">Via Netbanking login</div>
               </span>
             </label>
-            <input type="radio" id="content1" name="accordion" hidden>
-            <span class="arrow"></span>
+            <input type="radio" id="content1" name="accordion" hidden disabled={{ !in_array('netbanking', $data['request']['content']['bank_details']['authentication_type']) }}>
+            @if (!in_array('netbanking', $data['request']['content']['bank_details']['authentication_type']))
+                <span class="arrow"></span>
+            @endif
           </div>
 
-          <div id="section2">
+          <div class="separate"></div>
+          <div id="section2" class={{ in_array('aadhar', $data['request']['content']['bank_details']['authentication_type']) ? '' : 'disabled'}}>
             <label class="accordion-heading pickable" for="content2">
               <img src="https://cdn.razorpay.com/bank/HDFC.gif" height="25px" />
               <span class="title">
@@ -247,8 +258,11 @@
                 <div class="sub-title">Via Aadhaar linked mobile OTP</div>
               </span>
             </label>
-            <input type="radio" id="content2" name="accordion" hidden>
-            <span class="arrow"></span>
+            <input type="radio" id="content2" name="accordion" hidden disabled={{ !in_array('aadhar', $data['request']['content']['bank_details']['authentication_type']) }}>
+            @if (!in_array('aadhar', $data['request']['content']['bank_details']['authentication_type']))
+              <span class="arrow"></span>
+            @endif
+
             <div class="content">
                 <div>
                   <input
@@ -257,7 +271,8 @@
                     pattern='^\d{12}$'
                     required
                     placeholder='Enter your Aadhaar number'
-                    value={{ $data['request']['content']['aadhaar']['number'] ?? "" }} >
+                    disabled={{!in_array('aadhar',$data['request']['content']['bank_details']['authentication_type'])}}
+                    value={{ $data['request']['content']['input']['aadhaar']['number'] ?? "" }} >
               </div>
             </div>
           </div>
@@ -305,8 +320,8 @@
       var data = {!! json_encode($data) !!};
       console.log('Data..', data);
 
-      for (var key in data['request']['content']) {
-        var value = data['request']['content'][key];
+      for (var key in data['request']['content']['input']) {
+        var value = data['request']['content']['input'][key];
 
         if (typeof value === 'object') {
           for (var key2 in value) {
