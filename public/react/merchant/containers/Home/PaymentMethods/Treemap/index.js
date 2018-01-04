@@ -4,6 +4,8 @@ import { connect } from 'react-redux';
 
 import './styles.styl';
 
+let timer = null;
+
 @connect(null, null)
 export default class Treemap extends Component {
   constructor(props) {
@@ -17,8 +19,7 @@ export default class Treemap extends Component {
     this.componentMounted = false;
 
     this.onTransition = ::this.onTransition;
-
-    this.dataChanged = false;
+    this.handleResize = ::this.handleResize;
   }
 
   async componentWillMount() {
@@ -57,8 +58,21 @@ export default class Treemap extends Component {
     );
   }
 
+  handleResize() {
+    window.clearTimeout(timer);
+
+    this.node.style.width = this.node.parentNode.clientWidth + 'px';
+
+    timer = window.setTimeout(() => {
+      console.log('render treemap');
+      this.renderTreemap(this.props.data);
+    }, 250);
+  }
+
   componentDidMount() {
     this.componentMounted = true;
+
+    window.addEventListener('resize', this.handleResize);
 
     return (
       this.props.data &&
@@ -79,6 +93,10 @@ export default class Treemap extends Component {
     ) {
       this.treemapApi.transition(nextProps.currentLevel);
     }
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.handleResize);
   }
 
   render() {
