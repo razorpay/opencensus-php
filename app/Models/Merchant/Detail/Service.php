@@ -407,6 +407,8 @@ class Service extends Base\Service
 
     private function getZapierData($merchant, $input)
     {
+        $this->merchant->reload();
+
         // This is the same format we'll set in the google spreadsheet
         $timestamp = Carbon::createFromTimeStamp(time(), Timezone::IST)->format('j/m/Y');
 
