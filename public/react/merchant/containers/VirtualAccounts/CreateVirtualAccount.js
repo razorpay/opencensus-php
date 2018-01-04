@@ -272,17 +272,19 @@ export default class CreateVirtualAccount extends Component {
                 </small>
               </div>
 
-              <div class="form-group checkbox rzpCheckbox">
-                <Field
-                  name="numeric"
-                  id="numeric"
-                  class="form-control"
-                  component="input"
-                  type="checkbox"
-                  normalize={value => Number(value)}
-                />
-                <label for="numeric">Numeric</label>
-              </div>
+              {handle && (
+                <div class="form-group checkbox rzpCheckbox">
+                  <Field
+                    name="numeric"
+                    id="numeric"
+                    class="form-control"
+                    component="input"
+                    type="checkbox"
+                    normalize={value => Number(value)}
+                  />
+                  <label for="numeric">Numeric</label>
+                </div>
+              )}
 
               {handle && !numeric ? (
                 <div class="form-group">
