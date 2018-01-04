@@ -21,7 +21,7 @@ trait PaymentFssTrait
         return $this->submitPaymentCallbackRedirect($url);
     }
 
-    public function setNotCapturedInReturn()
+    public function setFailedStatusInReturn()
     {
         $this->mockServerContentFunction(function (& $content)
         {

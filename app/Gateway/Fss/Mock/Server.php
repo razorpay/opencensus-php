@@ -71,12 +71,12 @@ class Server extends Base\Mock\Server
         $this->validateRefundInput($input);
 
         $refundResponse = [
-            Fields::RESULT                      => Fss\Status::CAPTURED,
-            Entity::GATEWAY_TRANSACTION_ID      => $this->generateId(15),
-            Fields::TRACK_ID                    => $input[Fields::TRACK_ID],
-            Fields::PAY_ID                      => $this->generateId(15),
-            Fields::AMOUNT                      => $input[Fields::AMOUNT],
-            Fields::AUTH_RES_CODE               => $this->generateId(3),
+            Fields::RESULT                 => Fss\Status::CAPTURED,
+            Entity::GATEWAY_TRANSACTION_ID => $this->generateId(15),
+            Fields::TRACK_ID               => $input[Fields::TRACK_ID],
+            Fields::PAY_ID                 => $this->generateId(15),
+            Fields::AMOUNT                 => $input[Fields::AMOUNT],
+            Fields::AUTH_RES_CODE          => $this->generateId(3),
         ];
 
         $this->content($refundResponse);
@@ -95,9 +95,9 @@ class Server extends Base\Mock\Server
         $input = (array) simplexml_load_string($input);
 
         $responseData = [
-            Fields::RESULT => Fss\Status::SUCCESS,
-            Fields::AMOUNT  => $input[Fields::AMOUNT],
-            Fields::TRACK_ID => $input[Fields::TRACK_ID],
+            Fields::RESULT         => Fss\Status::SUCCESS,
+            Fields::AMOUNT         => $input[Fields::AMOUNT],
+            Fields::TRACK_ID       => $input[Fields::TRACK_ID],
             Fields::TRANSACTION_ID => $input[Fields::TRANSACTION_ID],
         ];
 

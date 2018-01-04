@@ -105,13 +105,13 @@ class BobGatewayTest extends TestCase
     }
 
     /**
-     * TODO Refactor and move this function to base gateway test. it's almost same for all the gateways.
+     * Verify Refunds are tested.
      */
     public function testVerifyRefund()
     {
         $payment = $this->doAuthAndCapturePayment();
 
-        $this->setNotCapturedInReturn();
+        $this->setFailedStatusInReturn();
 
         $this->refundPayment($payment['id']);
 
