@@ -81,10 +81,6 @@
         cursor: pointer;
       }
 
-      input[name=aadhaar] {
-        padding-left: 58px;
-      }
-
       .accordion-container {
         border: 1px solid #ccc;
         border-radius: 0 2px 2px 0;
@@ -184,24 +180,42 @@
       color: #fff;
     }
 
+    #tooltip-container {
+      position: relative;
+    }
+    #tooltip {
+       position: absolute;
+       opacity: 0;
+       background: #fff;
+       border: 1px solid black;
+       transition: all 0.2s;
+       z-index: 10;
+       right: -250px;
+       top: 0;
+       width: 250px;
+       padding: 0 10px;
+    }
+
+    #tooltip pre {
+      white-space: pre-wrap;
+    }
+    .show {
+       opacity: 1 !important;
+    }
+
+    #tooltip .key {
+        font-weight: 600;
+    }
+
 
     </style>
   </head>
   <body>
     <img src="https://cdn.razorpay.com/logo.svg" id="logo" height="35px" style="height: 35px; margin: 20px auto;display: block;">
-    <form action="<?= $data['request']['url'] ?>" method="<?= $data['request']['method'] ?>">
-      @foreach ($data['request']['content'] as $key => $value)
-        @if (is_array($value))
-          @foreach ($value as $key2=>$value2)
-            <input type='hidden' name='{{$key}}[{{$key2}}]' value='{{$value2}}'>
-          @endforeach
-        @else
-          <input type='hidden' name='{{$key}}' value='{{$value}}'>
-        @endif
-      @endforeach
+    <form>
       <header>
         <img src="https://cdn.razorpay.com/bank/UTIB.gif" height= "30px">
-        <div><b>Punjab And Maharashtra Bank</b></div>
+        <div><b>{{ $data['request']['content']['bank'] }}</b></div>
         <span>₹ {{ $data['request']['content']['amount']/100 }}</span>
       </header>
       <main>
@@ -221,7 +235,7 @@
                 <div class="sub-title">Via Netbanking login</div>
               </span>
             </label>
-            <input type="radio" id="content1" name="accordion" hidden />
+            <input type="radio" id="content1" name="accordion" hidden>
             <span class="arrow"></span>
           </div>
 
@@ -233,25 +247,114 @@
                 <div class="sub-title">Via Aadhaar linked mobile OTP</div>
               </span>
             </label>
-            <input type="radio" id="content2" name="accordion" hidden />
+            <input type="radio" id="content2" name="accordion" hidden>
             <span class="arrow"></span>
             <div class="content">
                 <div>
                   <input
-                    name='aadhaar_number'
+                    name='aadhaar[number]''
                     type='number'
                     pattern='^\d{12}$'
                     required
                     placeholder='Enter your Aadhaar number'
-                    value={{ $data['request']['content']['aadhaar_number'] ?? "" }} />
+                    value={{ $data['request']['content']['aadhaar']['number'] ?? "" }} >
               </div>
             </div>
           </div>
         </div>
       </main>
       <div class="action">
-         <button type="submit">Authenticate</button>
+         <button type="submit" onclick="authenticate()">Authenticate</button>
       </div>
     </form>
   </body>
+  <script type="text/javascript">
+    document.getElementsByName('bank_account[ifsc]')[0].addEventListener('input', function(e) {
+        document.getElementById('tooltip').className = '';
+        if(e.target.value.length === 11) {
+           var IFSC = e.target.value;
+            //httpGetAsync('https://ifsc.razorpay.com/' + IFSC, function(data) {
+            xhr('get', 'https://ifsc.razorpay.com/' + IFSC, '', function(data) {
+                if (data) {
+                    var tooltipMsg = '';
+
+                    var info = {
+                        Bank: data.BANK,
+                        Branch: data.BRANCH,
+                        City: data.CITY,
+                        State: data.STATE
+                    }
+                    for (var i in info) {
+                      tooltipMsg += '\n' + '<span class="key">' + i + '</span>' + ': ' + info[i];
+                    }
+
+                    document.getElementById('tooltip').className = 'show';
+                    document.getElementById('tooltip').innerHTML = '<pre>' + tooltipMsg + '</pre>';
+                } else {
+                    console.log('Invalid IFSC');
+                }
+            });
+        }
+        if (e.target.value.length > 11) {
+            e.target.value = e.target.value.substring(0,11);
+        }
+    })
+
+    function authenticate(e) {
+      var formData = new FormData();
+      var data = {!! json_encode($data) !!};
+      console.log('Data..', data);
+
+      for (var key in data['request']['content']) {
+        var value = data['request']['content'][key];
+
+        if (typeof value === 'object') {
+          for (var key2 in value) {
+            formData.append(key + '[' + key2 + ']', value[key2]);
+          }
+        } else {
+          formData.append(key, value);
+        }
+      }
+
+      var fields = document.querySelectorAll('form input');
+      for (let f = 0; f < fields.length; f++) {
+        if (fields[f].name && !fields[f].hidden && fields[f].value) {
+          formData.append(fields[f].name, fields[f].value);
+        }
+      }
+
+      console.log('form value..');
+      for (var i of formData.entries()){console.log(i);}
+
+      xhr(data.request.method, data.request.url, formData, function(data){ console.log('Authenticate..', data)});
+    }
+
+
+    function xhr(method, uri, body, handler) {
+      var req = (window.XMLHttpRequest) ? new XMLHttpRequest() : new ActiveXObject('Microsoft.XMLHTTP');
+      req.onreadystatechange = function ()
+      {
+          if (req.readyState == 4 && handler)
+          {
+              eval('var o=' + req.responseText);
+              handler(o);
+          }
+      }
+      req.open(method, uri, true);
+      req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+      req.send(body);
+    }
+
+
+    function httpGetAsync(theUrl, callback) {
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.onreadystatechange = function() {
+            if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+                callback(xmlHttp.responseText);
+        }
+        xmlHttp.open("GET", theUrl, true); // true for asynchronous
+        xmlHttp.send(null);
+    }
+  </script>
 </html>

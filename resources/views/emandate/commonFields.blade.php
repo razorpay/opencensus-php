@@ -1,19 +1,23 @@
 <div>
     <input
-      name='name'
+      name='bank_account[name]'
       required
       placeholder='Name as in bank account'
-      value={{ $data['request']['content']['name'] ?? "" }}>
+      value={{ $data['request']['content']['bank_account']['name'] ?? "" }}>
     <input
-      name='bank_account'
+      name='bank_account[number]'
       type='number'
       required
       placeholder='Bank Account No.'
-      value={{ $data['request']['content']['bank_account'] ?? "" }}>
+      value={{ $data['request']['content']['bank_account']['number'] ?? "" }}>
 
-    <input
-      name='bank_code'
-      required
-      placeholder='IFSC Code'
-      value={{ $data['request']['content']['bank_code'] ?? "" }}>
+    <div id="tooltip-container">
+      <input
+        name='bank_account[ifsc]'
+        required
+        placeholder='IFSC Code'
+        value={{ $data['request']['content']['bank_account']['ifsc'] ?? "" }}>
+
+      <span id="tooltip"></span>
+    </div>
 </div>
