@@ -173,6 +173,8 @@ class NodalAccount extends NodalBase\NodalAccount
 
     protected function sendIciciTransferMail(array $fileData, array $rows = null)
     {
+        $data['body'] = 'PFA ICICI Settlement file';
+        
         if ($rows !== null)
         {
             $data['body'] = json_encode($rows, JSON_PRETTY_PRINT);
