@@ -27,7 +27,7 @@ class RefundReconciliate extends Base\RefundReconciliate
         }
     }
 
-    protected function getPaymentId($row)
+    protected function getPaymentId(array $row)
     {
         $paymentId = $this->getRefundId($row);
 
