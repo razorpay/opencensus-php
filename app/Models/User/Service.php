@@ -456,8 +456,8 @@ class Service extends Base\Service
 
                 foreach (Constants::$attributionList as $attribution)
                 {
-                    $data['first_' . $attribution] = $utmParams[Constants::ATTRIBUTIONS][0][$attribution];
-                    $data['final_' . $attribution] = $utmParams[Constants::ATTRIBUTIONS][1][$attribution];
+                    $data['first_' . $attribution] = $utmParams[Constants::ATTRIBUTIONS][0][$attribution] ?? "";
+                    $data['final_' . $attribution] = $utmParams[Constants::ATTRIBUTIONS][1][$attribution] ?? "";
                 }
             }
         }
