@@ -333,8 +333,8 @@ class RefundReconciliate extends Foundation\SubReconciliate
         if (UniqueIdEntity::verifyUniqueId($refundId, false) === false)
         {
             $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
                 [
-                    'trace_code' => TraceCode::RECON_INFO_ALERT,
                     'message'    => 'Refund ID being sent in the file is not as expected.',
                     'row'        => $row,
                     'refund_id'  => $refundId,
