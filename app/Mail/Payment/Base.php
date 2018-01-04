@@ -138,4 +138,54 @@ class Base extends Mailable
                     Constants::HEADERS[Constants::CARE] :
                     Constants::HEADERS[Constants::REPORTS];
     }
+
+    protected function getCustomerSupportText()
+    {
+        $merchantId = $this->data['merchant']['id'];
+
+        // Default text
+        $supportTextPlain = 'You can contact us at contact@razorpay.com in case of any discrepancy.';
+        $supportTextHtml  = "Please <a title=\"Click to send us a mail\" href=\"mailto:contact@razorpay.com\" "
+                            . "style=\"font-family: \'Century Gothic\', \'Lucida Sans\', \'Tahoma\', \'Arial\' !important; color: #2ba6cb; text-decoration: none;\">contact us</a> in case of any discrepancy.";
+
+        // Zebpay
+        if ($merchantId === '8iMbVsEnv1HCo0')
+        {
+            $supportTextPlain = $supportTextHtml =
+                'Please contact the Zebpay team for any service related queries. '
+                . 'File a ticket here - ticket.zebpay.com';
+        }
+        // Koinex
+        else if ($merchantId === '8Gx5vN29m83OUY')
+        {
+            $supportTextPlain = $supportTextHtml =
+                'Please contact the Koinex team for any service related queries. Email: team@koinex.in '
+                . 'Contact link: https://koinex.in/contact_us';
+        }
+
+        return [
+            'support_text_plain' => $supportTextPlain,
+            'support_text_html'  => $supportTextHtml
+        ];
+    }
+
+    protected function getCustomCustomerReplyToEmail(): string
+    {
+        $merchantId = $this->data['merchant']['id'];
+
+        $email = Constants::MAIL_ADDRESSES[Constants::SUPPORT];
+
+        // Zebpay
+        if ($merchantId === '8iMbVsEnv1HCo0')
+        {
+            $email = 'support@zebpay.com';
+        }
+        // Koinex
+        else if ($merchantId === '8Gx5vN29m83OUY')
+        {
+            $email = 'team@koinex.in';
+        }
+
+        return $email;
+    }
 }

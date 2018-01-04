@@ -10,7 +10,7 @@ use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Payment\Verify\Action;
 use Symfony\Component\DomCrawler\Crawler;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
-use RZP\Models\Payment\Entity as PaymentEntity;
+use RZP\Models\Payment;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\Fixtures\Entity\MerchantFluid;
@@ -153,6 +153,32 @@ trait PaymentTrait
         $this->ba->publicAuth();
 
         return $this->runRequestResponseFlow($testData);
+    }
+
+    protected function authorizeEmandateFileBasedDebitPayment(array $debitPayment)
+    {
+        assert($debitPayment[Payment\Entity::STATUS] === Payment\Status::CREATED);
+
+        assert($debitPayment[Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::AUTO);
+
+        assert($debitPayment[Payment\Entity::RECURRING] === true);
+
+        $debitPaymentId = substr($debitPayment[Payment\Entity::ID], 4);
+
+        $this->fixtures->create('netbanking', [
+            'payment_id'        => $debitPaymentId,
+            'action'            => Payment\Action::AUTHORIZE,
+            'amount'            => $debitPayment[Payment\Entity::AMOUNT],
+            'bank'              => $debitPayment[Payment\Entity::BANK],
+            'received'          => 1,
+            'caps_payment_id'   => strtoupper($debitPaymentId),
+        ]);
+
+        $this->fixtures->edit('payment', $debitPaymentId, [
+            'status'                => Payment\Status::AUTHORIZED,
+            'amount_authorized'     => $debitPayment[Payment\Entity::AMOUNT],
+            'authorized_at'         => time(),
+        ]);
     }
 
     protected function doAutoCapture()
@@ -394,7 +420,7 @@ trait PaymentTrait
         return $this->doAuthPayment($payment);
     }
 
-    protected function doAuthPaymentViaAjaxRoute($payment)
+    protected function doAuthPaymentViaAjaxRoute($payment = null)
     {
         if ($payment === null)
         {
@@ -747,7 +773,7 @@ trait PaymentTrait
         return $refund;
     }
 
-    protected function disputePayment(PaymentEntity $payment, int $deduct = 0): array
+    protected function disputePayment(Payment\Entity $payment, int $deduct = 0): array
     {
         $this->ba->appAuth();
 
@@ -975,7 +1001,7 @@ trait PaymentTrait
             'number'            => '4012001038443335',
             'name'              => 'Harshil',
             'expiry_month'      => '12',
-            'expiry_year'       => '2017',
+            'expiry_year'       => '2024',
             'cvv'               => '566',
         );
 
@@ -1022,7 +1048,7 @@ trait PaymentTrait
                 'number'       => '41476700000006',
                 'name'         => 'Harshil',
                 'expiry_month' => '12',
-                'expiry_year'  => '2017',
+                'expiry_year'  => '2024',
                 'cvv'          => '566'
             ];
         }
@@ -1048,6 +1074,20 @@ trait PaymentTrait
 
         $payment['method'] = 'upi';
         $payment['vpa'] = 'vishnu@icici';
+
+        return $payment;
+    }
+
+    protected function getDefaultAepsPaymentArray()
+    {
+        $payment = $this->getDefaultPaymentArrayNeutral();
+
+        $payment['method']                 = 'aeps';
+        $payment['aadhaar']['fingerprint'] = 'sample fingerprint data';
+        $payment['aadhaar']['session_key'] = str_repeat('abcdefgh', 43);
+        $payment['aadhaar']['hmac']        = str_repeat('smplhmac', 8);
+        $payment['aadhaar']['number']      = '123456789012';
+        $payment['aadhaar']['cert_expiry'] = '20191230';
 
         return $payment;
     }
@@ -1409,6 +1449,13 @@ trait PaymentTrait
         $class = $this->app['gateway']->getServerClass($gateway);
 
         return Mockery::mock($class, [])->makePartial();
+    }
+
+    protected function getMockServer($gateway = null)
+    {
+        $gateway = $gateway ?: $this->gateway;
+
+        return $this->app['gateway']->server($gateway);
     }
 
     protected function setMockServer($server, $gateway = null)

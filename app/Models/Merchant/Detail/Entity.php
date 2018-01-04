@@ -88,10 +88,11 @@ class Entity extends Base\PublicEntity
     const CREATED_AT                         = 'created_at';
     const UPDATED_AT                         = 'updated_at';
 
-    const SUBMIT            = 'submit';
-    const ARCHIVE           = 'archive';
-    const ARCHIVED          = 'archived';
-    const REJECTION_REASONS = 'rejection_reasons';
+    const SUBMIT                           = 'submit';
+    const ARCHIVE                          = 'archive';
+    const ARCHIVED                         = 'archived';
+    const REJECTION_REASONS                = 'rejection_reasons';
+    const ALLOWED_NEXT_ACTIVATION_STATUSES = 'allowed_next_activation_statuses';
 
     // Enum values used for product activation status
     const PENDING  = 'pending';
@@ -218,6 +219,7 @@ class Entity extends Base\PublicEntity
         self::ACTIVATION_STATUS,
         self::CLARIFICATION_MODE,
         self::ARCHIVED,
+        self::ALLOWED_NEXT_ACTIVATION_STATUSES,
         self::MARKETPLACE_ACTIVATION_STATUS,
         self::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS,
         self::SUBSCRIPTIONS_ACTIVATION_STATUS,
@@ -290,6 +292,7 @@ class Entity extends Base\PublicEntity
 
     protected $publicSetters = [
         self::ARCHIVED_AT,
+        self::ALLOWED_NEXT_ACTIVATION_STATUSES,
     ];
 
     public function merchant()
@@ -312,6 +315,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::SUBMITTED) === true);
     }
 
+    public function isArchived()
+    {
+        return ($this->isAttributeNotNull(self::ARCHIVED_AT));
+    }
+
     public function setArchivedAt($archived_at)
     {
         $this->setAttribute(self::ARCHIVED_AT, $archived_at);
@@ -322,6 +330,20 @@ class Entity extends Base\PublicEntity
         $array[self::ARCHIVED] = (isset($array[self::ARCHIVED_AT]) === true) ? 1 : 0;
 
         unset($array[self::ARCHIVED_AT]);
+    }
+
+    protected function setPublicAllowedNextActivationStatusesAttribute(array & $array)
+    {
+        $activationStatus = $this->getActivationStatus();
+
+        $allowedNextActivationStatuses = [];
+
+        if (empty($activationStatus) === false)
+        {
+            $allowedNextActivationStatuses = Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING[$activationStatus];
+        }
+
+        $array[self::ALLOWED_NEXT_ACTIVATION_STATUSES] = $allowedNextActivationStatuses;
     }
 
     public function getActivationStatus()

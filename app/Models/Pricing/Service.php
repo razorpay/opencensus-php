@@ -92,13 +92,6 @@ class Service extends Base\Service
         }
     }
 
-    public function replacePricingPlanRule($input)
-    {
-        $this->core->checkPlanId($id);
-
-        $this->replacePlanRule($ruleId);
-    }
-
     public function deletePricingPlan($input)
     {
         ;
@@ -121,5 +114,4 @@ class Service extends Base\Service
 
         return $networks;
     }
-
 }

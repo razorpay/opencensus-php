@@ -3,6 +3,7 @@
 namespace RZP\Mail\Payment;
 
 use RZP\Constants\MailTags;
+use RZP\Mail\Base\Constants;
 
 class FailedToAuthorized extends Base
 {
@@ -37,6 +38,22 @@ class FailedToAuthorized extends Base
     protected function getMailTag()
     {
         return MailTags::FAILED_TO_AUTHORIZED;
+    }
+
+    protected function addMailData()
+    {
+        $this->data['data'] = $this->getCustomerSupportText();
+
+        return parent::addMailData();
+    }
+
+    protected function addReplyTo()
+    {
+        $email = $this->getCustomCustomerReplyToEmail();
+
+        $this->replyTo($email);
+
+        return $this;
     }
 
     public function isCustomerReceiptEmail()

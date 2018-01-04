@@ -10,7 +10,6 @@ use Symfony\Component\DomCrawler\Crawler;
 
 use RZP\Exception;
 use RZP\Http\Route;
-use RZP\Models\Card;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
@@ -18,6 +17,7 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Utility;
 use RZP\Models\Payment\Status;
+use RZP\Constants\Entity as ConstantsEntity;
 
 class Gateway
 {
@@ -316,8 +316,10 @@ class Gateway
 
         $input = $verify->input;
 
-        if (($input['payment'][Payment\Entity::STATUS] === Payment\Status::FAILED) or
-            ($input['payment'][Payment\Entity::STATUS] === Payment\Status::CREATED))
+        // If payment status is either failed or created,
+        // this is an api failure
+        if (($input[ConstantsEntity::PAYMENT][Payment\Entity::STATUS] === Payment\Status::FAILED) or
+            ($input[ConstantsEntity::PAYMENT][Payment\Entity::STATUS] === Payment\Status::CREATED))
         {
             $verify->apiSuccess = false;
         }
@@ -950,7 +952,7 @@ class Gateway
 
     protected function getProcessedRefunds()
     {
-        $refunds =  $this->cache->get(strtoupper($this->gateway) . '_PROCESSED_REFUNDS');
+        $refunds =  $this->cache->get('GATEWAY_PROCESSED_REFUNDS');
 
         if (empty($refunds) === true)
         {
@@ -962,7 +964,7 @@ class Gateway
 
     protected function getUnprocessedRefunds()
     {
-        $refunds = $this->cache->get(strtoupper($this->gateway) . '_UNPROCESSED_REFUNDS');
+        $refunds = $this->cache->get('GATEWAY_UNPROCESSED_REFUNDS');
 
         if (empty($refunds) === true)
         {

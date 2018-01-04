@@ -44,6 +44,8 @@ class Type
 
     const ICICI_UPI_REFUND                  = 'icici_upi_refund';
 
+    const SBI_UPI_REFUND                    = 'sbi_upi_refund';
+
     const PNB_NETBANKING_REFUND             = 'pnb_netbanking_refund';
 
     const PNB_NETBANKING_CLAIMS             = 'pnb_netbanking_claims';
@@ -87,6 +89,7 @@ class Type
     const ACTIVATION_BUCKET_CONFIG              = 'activation_bucket_config';
     const H2H_BUCKET_CONFIG                     = 'h2h_bucket_config';
     const RECON_BUCKET_CONFIG                   = 'recon_bucket_config';
+    const MOCK_RECONCILIATION_FILE              = 'mock_reconciliation_file';
 
     // File contants required for merchant feature onboarding
     const FEATURE_ONBOARDING                = FeatureConstants::ONBOARDING;
@@ -117,6 +120,7 @@ class Type
             self::PAYUMONEY_WALLET_REFUND,
             self::RBL_NETBANKING_CLAIM,
             self::ICICI_UPI_REFUND,
+            self::SBI_UPI_REFUND,
             self::REPORT,
             self::BENEFICIARY_FILE,
             self::EMI_FILE,
@@ -131,6 +135,7 @@ class Type
             self::ICICI_EMI_FILE_SFTP,
             self::PNB_NETBANKING_REFUND,
             self::PNB_NETBANKING_CLAIMS,
+            self::MOCK_RECONCILIATION_FILE,
         ],
 
         Constants\Entity::BATCH => [
@@ -198,10 +203,12 @@ class Type
         self::AIRTELMONEY_WALLET_REFUND,
         self::PAYUMONEY_WALLET_REFUND,
         self::ICICI_UPI_REFUND,
+        self::SBI_UPI_REFUND,
         self::FUND_TRANSFER_DEFAULT,
         self::FUND_TRANSFER_H2H,
         self::PNB_NETBANKING_REFUND,
         self::PNB_NETBANKING_CLAIMS,
+        self::MOCK_RECONCILIATION_FILE
     ];
 
     /**
@@ -218,6 +225,7 @@ class Type
             self::AIRTELMONEY_WALLET_REFUND,
             self::PAYUMONEY_WALLET_REFUND,
             self::ICICI_UPI_REFUND,
+            self::SBI_UPI_REFUND,
             self::FUND_TRANSFER_DEFAULT,
             self::REPORT,
             self::BENEFICIARY_FILE,

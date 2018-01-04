@@ -75,7 +75,7 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * We recieve callback from atom after bank net-banking
+     * We receive callback from atom after bank net-banking
      * transaction is complete
      *
      * @param  array $input
@@ -266,7 +266,7 @@ class Gateway extends Base\Gateway
         }
 
         // Using created_at because this value must match the one that we sent in payment request
-        $date = Carbon::createFromTimestamp($payment['created_at'], Timezone::IST)
+        $date = Carbon::createFromTimestamp($input['payment']['created_at'], Timezone::IST)
                       ->format('d/m/Y H:i:s');
 
         // if (empty($payment['date']) === false)

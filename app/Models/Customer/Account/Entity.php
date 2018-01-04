@@ -82,6 +82,9 @@ class Entity extends Base\PublicEntity
     );
 
     protected $defaults = array(
+        self::NAME                  => null,
+        self::CONTACT               => null,
+        self::EMAIL                 => null,
         self::ACTIVE                => true,
         self::NOTES                 => [],
         self::GLOBAL_CUSTOMER_ID    => null,
@@ -178,10 +181,19 @@ class Entity extends Base\PublicEntity
 
     // ----------------------------------- MUTATORS -----------------------------------
 
+    protected function setNameAttribute($name)
+    {
+        $trimmedName = ($name === null) ? null : trim($name);
+
+        $this->attributes[self::NAME] = $trimmedName;
+
+    }
+
     protected function setEmailAttribute($email)
     {
-        // Multi-byte function to handle unicode
-        $this->attributes[self::EMAIL] = mb_strtolower($email);
+        $formattedEmail = ($email === null) ? null : mb_strtolower($email);
+
+        $this->attributes[self::EMAIL] =  $formattedEmail;
     }
 
     // ----------------------------------- END MUTATORS -----------------------------------

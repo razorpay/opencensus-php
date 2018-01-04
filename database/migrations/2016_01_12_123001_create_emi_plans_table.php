@@ -57,6 +57,10 @@ class CreateEmiPlansTable extends Migration {
 
             $table->integer(Emi\Entity::DELETED_AT)
                   ->nullable();
+
+            $table->index(Emi\Entity::BANK);
+            $table->index(Emi\Entity::NETWORK);
+            $table->index(Emi\Entity::SUBVENTION);
         });
 
         Schema::table(Table::PAYMENT, function($table)

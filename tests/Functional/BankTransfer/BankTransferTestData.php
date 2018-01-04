@@ -304,6 +304,23 @@ return [
         ],
     ],
 
+    'testBankTransferProcessDuplicateUtr' => [
+        'url'     => '/ecollect/validate',
+        'method'  => 'post',
+        'content' => [
+            'payee_account'  => null,
+            'payee_ifsc'     => null,
+            'payer_name'     => 'Name of account holder',
+            'payer_account'  => '9876543210123456789',
+            'payer_ifsc'     => null,
+            'mode'           => 'imps',
+            'transaction_id' => null,
+            'time'           => 148415544000,
+            'amount'         => 50000,
+            'description'    => 'NEFT payment of 50,000 rupees',
+        ],
+    ],
+
     'testBankTransferNotifyFailure' => [
         'request' => [
             'url' => '/ecollect/pay',

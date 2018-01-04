@@ -22,6 +22,7 @@ class Constants
     const IRCTC         = 'irctc';
     const EMANDATE      = 'emandate';
     const DISPUTES      = 'disputes';
+    const NOREPLY       = 'noreply';
 
     const MAIL_ADDRESSES = [
         self::SUPPORT       => 'support@razorpay.com',
@@ -42,6 +43,7 @@ class Constants
         self::IRCTC         => 'support@razorpay.com',
         self::EMANDATE      => 'emandate@razorpay.com',
         self::DISPUTES      => 'disputes@razorpay.com',
+        self::NOREPLY       => 'no-reply@razorpay.com',
     ];
 
     const HEADERS = [

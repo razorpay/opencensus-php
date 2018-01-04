@@ -20,6 +20,9 @@ class AdminAccess
     const ORG_HOSTNAME_HEADER_KEY = 'X-Org-Hostname';
 
     protected $app;
+    protected $repo;
+    protected $ba;
+    protected $router;
 
     public function __construct(Application $app)
     {

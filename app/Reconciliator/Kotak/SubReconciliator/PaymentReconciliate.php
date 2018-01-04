@@ -11,7 +11,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      *******************/
     const COLUMN_INT_PAYMENT_ID = 'int_payment_id';
 
-    protected function getPaymentId($row)
+    protected function getPaymentId(array $row)
     {
         $intPaymentId = $row[self::COLUMN_INT_PAYMENT_ID];
 

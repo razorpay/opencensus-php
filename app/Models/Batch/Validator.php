@@ -75,6 +75,11 @@ class Validator extends Base\Validator
         Entity::GATEWAY     => 'required|string',
     ];
 
+    protected static $virtualBankAccountCreateRules = [
+        Entity::TYPE                 => 'required|in:virtual_bank_account',
+        Entity::FILE                 => 'required|file' . self::DEFAULT_MIME_RULE,
+    ];
+
     /**
      * Defines the required keys to be present in emandate hdfc register file
      * and the corresponding error message to be thrown when they are absent or empty
