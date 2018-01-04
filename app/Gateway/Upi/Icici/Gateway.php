@@ -654,11 +654,14 @@ class Gateway extends Base\Gateway
 
     protected function verifyPayment(Verify $verify): string
     {
-        $this->checkResponseAndThrowExceptionIfRequired($verify);
+        // Removing this for now because verify becomes successful after
+        // some delay on 5000 response
+        //$this->checkResponseAndThrowExceptionIfRequired($verify);
 
         $content = $verify->verifyResponseContent;
 
-        if ($content['success'] !== 'true')
+        if (($content['success'] !== 'true') and
+            ($content[Fields::RESPONSE] != '5006'))
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
