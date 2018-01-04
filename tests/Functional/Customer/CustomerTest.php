@@ -62,6 +62,13 @@ class CustomerTest extends TestCase
         }
     }
 
+    public function testCreateCustomerWithNameNull()
+    {
+        $this->ba->privateAuth();
+        $this->startTest();
+
+    }
+
     public function testCreateCustomerWithLeadingOrTrailingSpaces()
     {
         $this->ba->privateAuth();

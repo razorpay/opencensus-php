@@ -178,9 +178,12 @@ class Entity extends Base\PublicEntity
 
     // ----------------------------------- MUTATORS -----------------------------------
 
-    protected function setNameAttribute(string $name)
+    protected function setNameAttribute($name)
     {
-        $this->attributes[self::NAME] = trim($name);
+        if (empty($name) === false)
+        {
+            $this->attributes[self::NAME] = trim($name);
+        }
     }
 
     protected function setEmailAttribute($email)
