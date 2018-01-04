@@ -35,7 +35,7 @@ export const getQuery = ({ merchantId, startTime, endTime, group }) => {
         agg_type: meta.aggType,
         details: {
           index: 'payments',
-          group_by: [meta.groupBy],
+          group_by: ['platform', 'os', 'device'],
           ...(!!meta.column && { column: meta.column }),
         },
       },

@@ -397,12 +397,17 @@ function main(node, o, data, d3, onTransition, groupTitleMap) {
     csv: arrayToCsvDataUrl(csvBody),
   };
 }
-const getGroupingFactor = groupKey => {
+const getGroupingFactor = (groupKey, bankNames) => {
   if (groupKey === 'method') {
     return d =>
       d[groupKey] === 'card' || d[groupKey] === 'emi' ? 'card' : d[groupKey];
   } else if (groupKey === 'issuer') {
-    return d => d[groupKey] || getGroupingFactor('bank')(d);
+    return d =>
+      d[groupKey]
+        ? bankNames[d[groupKey]] || d[groupKey]
+        : getGroupingFactor('bank')(d);
+  } else if (groupKey === 'bank') {
+    return d => bankNames[d[groupKey]] || d[groupKey];
   }
 
   return d => d[groupKey];
@@ -413,7 +418,8 @@ export default function renderTreemap(
   res,
   d3,
   onTransition,
-  groupTitleMap
+  groupTitleMap,
+  bankNames
 ) {
   node.innerHTML = '';
 
@@ -431,10 +437,10 @@ export default function renderTreemap(
     if (key === 'card') {
       grouper = nester
         .key(getGroupingFactor('type'))
-        .key(getGroupingFactor('issuer'))
+        .key(getGroupingFactor('issuer', bankNames))
         .key(getGroupingFactor('network'));
     } else if (key === 'netbanking') {
-      grouper = nester.key(getGroupingFactor('bank'));
+      grouper = nester.key(getGroupingFactor('bank', bankNames));
     } else if (key === 'wallet') {
       grouper = nester.key(getGroupingFactor('wallet'));
     }

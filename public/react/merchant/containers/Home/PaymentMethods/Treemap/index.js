@@ -23,7 +23,10 @@ export default class Treemap extends Component {
   }
 
   async componentWillMount() {
-    this.d3 = await import('d3');
+    const { default: modules } = await import('./asyncModules');
+
+    this.d3 = modules.d3;
+    this.bankNames = modules.bankNames;
 
     this.setState({ scriptsLoaded: true });
 
@@ -49,7 +52,9 @@ export default class Treemap extends Component {
       this.node,
       data,
       this.d3,
-      this.onTransition
+      this.onTransition,
+      {},
+      this.bankNames
     );
 
     return (
