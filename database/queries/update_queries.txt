@@ -1371,7 +1371,5 @@ UPDATE billdesk SET RefundId = 'LSCB58725353091' WHERE id = 3179575;
 
 UPDATE merchant_details
     JOIN merchants ON merchants.id = merchant_details.merchant_id
-    SET
-        technical_spoc_email=merchants.email,
-        business_spoc_email=merchants.email;
+    SET technical_spoc_email=merchants.email, business_spoc_email=merchants.email;
 

@@ -30,15 +30,15 @@ class AccountController extends Controller
     }
 
     /**
-     * Adds a new bank account to the merchant account
+     * Adds / updates a bank account that is linked to the merchant account
      *
      * @param string $accountId
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function postBankAccount(string $accountId)
+    public function createOrChangeBankAccount(string $accountId)
     {
-        $response = $this->service()->postBankAccount($accountId, $this->input);
+        $response = $this->service()->createOrChangeBankAccount($accountId, $this->input);
 
         return ApiResponse::json($response);
     }

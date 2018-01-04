@@ -701,7 +701,7 @@ final class Route
         'beta_account_create'                     => ['post',     'beta/accounts',                                  'AccountController@create'                                          ],
         'beta_account_fetch'                      => ['get',      'beta/accounts/{id}',                             'AccountController@get'                                             ],
         'beta_account_fetch_multiple'             => ['get',      'beta/accounts',                                  'AccountController@list'                                            ],
-        'beta_account_post_bank_account'          => ['post',     'beta/accounts/{id}/bank_accounts',               'AccountController@postBankAccount'                                 ],
+        'beta_account_post_bank_account'          => ['post',     'beta/accounts/{id}/bank_accounts',               'AccountController@createOrChangeBankAccount'                       ],
         'beta_account_fetch_setl_destinations'    => ['get',      'beta/accounts/{id}/settlement_destinations',     'AccountController@fetchSettlementDestinations'                     ],
     ];
 

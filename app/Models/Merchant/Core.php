@@ -71,18 +71,18 @@ class Core extends Base\Core
     }
 
     /**
-     * @param      $input
-     * @param      $aggregatorMerchant
-     * @param bool $accountEntity
-     * @param bool $linkedAccount
+     * @param array     $input
+     * @param Entity    $aggregatorMerchant
+     * @param bool      $accountEntity
+     * @param bool      $linkedAccount
      *
-     * @return Merchant\Entity|Account\Entity
+     * @return Entity|Account\Entity
      */
     public function createSubMerchant(
-        $input,
-        $aggregatorMerchant,
-        $accountEntity = false,
-        $linkedAccount = true)
+        array $input,
+        Entity $aggregatorMerchant,
+        bool $accountEntity = false,
+        bool $linkedAccount = true)
     {
         // We only check for email uniqueness if the email
         // address is provided
@@ -107,7 +107,7 @@ class Core extends Base\Core
         }
         else
         {
-            $entity = new Merchant\Entity;
+            $entity = new Entity;
         }
 
         $subMerchant = $entity->build($input);

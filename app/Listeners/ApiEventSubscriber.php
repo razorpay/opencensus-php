@@ -113,7 +113,7 @@ class ApiEventSubscriber extends Base\Core
         // updated_at and other things like that.
         //
 
-        $this->setMerchant($this->mainEntity);
+//        $this->setMerchant($this->mainEntity);
 
         $this->webhookEnabledForEvent = $this->isWebhookEnabledForEvent($this->mainEntity);
 

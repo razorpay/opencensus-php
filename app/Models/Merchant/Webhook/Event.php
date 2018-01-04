@@ -171,6 +171,7 @@ class Event
         self::TOKEN_CONFIRMED           => Entity::TOKEN,
         self::TOKEN_REJECTED            => Entity::TOKEN,
         self::SETTLEMENT_PROCESSED      => Entity::SETTLEMENT,
+        self::ACCOUNT_ACTIVATED         => Entity::ACCOUNT
     ];
 
     public static $eventsToFeatureMap = [

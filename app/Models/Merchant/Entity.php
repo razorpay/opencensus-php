@@ -4,21 +4,21 @@ namespace RZP\Models\Merchant;
 
 use Config;
 
-use RZP\Models\User;
-use RZP\Models\Base;
-use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Emi;
+use RZP\Models\Base;
+use RZP\Models\User;
+use RZP\Models\State;
 use RZP\Models\Feature;
 use RZP\Models\Terminal;
 use RZP\Constants\Table;
-use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
-use RZP\Models\Invitation;
-use RZP\Models\Merchant\Detail;
-use RZP\Models\State;
+use RZP\Error\ErrorCode;
 use RZP\Models\Settlement;
+use RZP\Models\Invitation;
 use Conner\Tagging\Taggable;
+use RZP\Models\Merchant\Detail;
 use RZP\Exception\LogicException;
+use RZP\Models\Base\Traits\NotesTrait;
 
 /**
  * @property Detail\Entity $merchantDetail

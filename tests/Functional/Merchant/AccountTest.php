@@ -89,6 +89,8 @@ class AccountTest extends TestCase
 
         $this->startTest($testData);
 
+        Mail::assertNotSent(BankAccountChangeMail::class);
+
         $testData = $this->testData['fetchSettlementDestinations'];
 
         $testData['request']['url'] = '/beta/accounts/' . $accountId . '/settlement_destinations';

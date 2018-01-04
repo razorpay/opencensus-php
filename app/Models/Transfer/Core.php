@@ -322,17 +322,9 @@ class Core extends Base\Core
 
         $to = null;
 
-        try
-        {
-            $to = $this->repo
-                       ->account
-                       ->findByPublicIdAndMerchant($accountId, $merchant);
-        }
-        catch (\Exception $e)
-        {
-            // @todo: Add proper code.
-            $this->trace->traceException($e);
-        }
+        $to = $this->repo
+                   ->account
+                   ->findByPublicIdAndMerchant($accountId, $merchant);
 
         $originPayment = null;
 

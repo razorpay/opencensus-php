@@ -177,7 +177,7 @@ class Service extends Base\Service
         return $result;
     }
 
-    public function edit(string $id, array $input)
+    public function edit(string $id, array $input): array
     {
         $this->trace->info(
             TraceCode::MERCHANT_EDIT,
@@ -223,7 +223,7 @@ class Service extends Base\Service
         Mail::queue($createSubMerchantMail);
     }
 
-    public function editEmail($id, array $input) :array
+    public function editEmail($id, array $input): array
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
@@ -238,7 +238,7 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
-    public function editConfig(array $input)
+    public function editConfig(array $input): array
     {
         // Adds uploaded logo's url to the input.
         $this->uploadLogoIfFound($input);
@@ -248,7 +248,7 @@ class Service extends Base\Service
         return $this->merchant->toArrayConfig();
     }
 
-    public function deleteMerchantLogo()
+    public function deleteMerchantLogo(): array
     {
         $this->merchant->setLogoUrl(null);
 
@@ -271,7 +271,7 @@ class Service extends Base\Service
     }
 
     // This is on internal auth
-    public function fetch(string $id)
+    public function fetch(string $id): array
     {
         $merchant = $this->repo->merchant->findOrFailPublicWithRelations(
             $id, ['methods', Entity::GROUPS, Entity::ADMINS]);
@@ -279,7 +279,7 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
-    public function fetchMultiple($input)
+    public function fetchMultiple($input): array
     {
         $merchants = $this->repo->merchant->fetch($input);
 
@@ -287,7 +287,7 @@ class Service extends Base\Service
     }
 
     // This is on proxy auth
-    public function fetchConfig()
+    public function fetchConfig(): array
     {
         $merchantId = $this->merchant->getId();
 

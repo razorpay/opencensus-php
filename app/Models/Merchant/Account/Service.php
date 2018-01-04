@@ -17,12 +17,12 @@ class Service extends Base\Service
     /**
      * Retrieve a single account entity
      *
-     * @param  string       $accountId
+     * @param  string       $id
      * @return array
      */
-    public function fetch(string $accountId) : array
+    public function fetch(string $id): array
     {
-        $account = $this->repo->account->findByPublicIdAndMerchant($accountId, $this->merchant);
+        $account = $this->repo->account->findByPublicIdAndMerchant($id, $this->merchant);
 
         return $account->toArrayPublic();
     }
@@ -33,7 +33,7 @@ class Service extends Base\Service
      * @param  array        $input
      * @return array
      */
-    public function fetchMultiple($input) : array
+    public function fetchMultiple(array $input): array
     {
         $accounts = $this->repo->account->fetch($input, $this->merchant->getId());
 
@@ -55,14 +55,14 @@ class Service extends Base\Service
     /**
      * Returns the settlement destinations for an account
      *
-     * @param string $accountId
+     * @param string $id
      *
      * @return array
      * @throws Exception\BadRequestException
      */
-    public function fetchSettlementDestinations(string $accountId) : array
+    public function fetchSettlementDestinations(string $id): array
     {
-        $account = $this->repo->account->findByPublicIdAndMerchant($accountId, $this->merchant);
+        $account = $this->repo->account->findByPublicIdAndMerchant($id, $this->merchant);
 
         // Fetch all settlement destinations, not only the bank accounts
         $bankAccounts = $this->repo->bank_account->getAllBankAccounts($account);
@@ -73,14 +73,14 @@ class Service extends Base\Service
     }
 
     /**
-     * Adds a new settlement destination - Bank account
+     * Adds / updates a new settlement destination - Bank account
      *
      * @param string $id
      * @param array  $input
      *
      * @return array
      */
-    public function postBankAccount(string $id, array $input) : array
+    public function createOrChangeBankAccount(string $id, array $input): array
     {
         $account = $this->repo->account->findByPublicIdAndMerchant($id, $this->merchant);
 

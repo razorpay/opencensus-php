@@ -173,11 +173,6 @@ class Entity extends Merchant\Entity
 
     // ----------------------- Setters --------------------------------------------
 
-    public function setPublicIdAttribute(array & $array)
-    {
-        $array[self::ID] = self::getSignedId($this->getId());
-    }
-
     public function setPublicFundsOnHoldAttribute(array & $array)
     {
         $array[self::FUNDS_ON_HOLD] = $this->getHoldFunds();
@@ -214,21 +209,7 @@ class Entity extends Merchant\Entity
 
     public function setPublicAccountDetailsAttribute(array & $array)
     {
-        $merchantDetail = $this->merchantDetail;
-
-        $array[self::ACCOUNT_DETAILS] = [
-            self::MOBILE                   => $this->merchantDetail->getContactMobile(),
-            self::LANDLINE                 => $this->merchantDetail->getContactLandline(),
-            self::TYPE                     => $this->merchantDetail->getBusinessType(),
-            self::PAYMENTDETAILS           => $this->merchantDetail->getBusinessPaymentdetails(),
-            self::BUSINESS_MODEL           => $this->merchantDetail->getBusinessModel(),
-            self::REGISTERED_ADDRESS       => $this->getRegisteredAddress(),
-            self::OPERATIONAL_ADDRESS      => $this->getOperationAddress(),
-            self::DATE_ESTABLISHED         => $this->merchantDetail->getBusinessDateOfEstablishment(),
-            self::TRANSACTION_VOLUME       => $this->merchantDetail->getTransactionVolume(),
-            self::AVERAGE_TRANSACTION_SIZE => $merchantDetail->getTransactionValue(),
-            self::KYC_DETAILS              => $this->getKYCDetails()
-        ];
+        $array[self::ACCOUNT_DETAILS] = $this->getAccountDetails();
     }
 
     public function setPublicTncAcceptedAttribute(array & $array)
@@ -281,5 +262,26 @@ class Entity extends Merchant\Entity
     public function isManaged() : bool
     {
         return ($this->isLinkedAccount() === true);
+    }
+
+    protected function getAccountDetails()
+    {
+        $merchantDetail = $this->merchantDetail;
+
+        $accountDetails = [
+            self::MOBILE                   => $this->merchantDetail->getContactMobile(),
+            self::LANDLINE                 => $this->merchantDetail->getContactLandline(),
+            self::TYPE                     => $this->merchantDetail->getBusinessType(),
+            self::PAYMENTDETAILS           => $this->merchantDetail->getBusinessPaymentdetails(),
+            self::BUSINESS_MODEL           => $this->merchantDetail->getBusinessModel(),
+            self::REGISTERED_ADDRESS       => $this->getRegisteredAddress(),
+            self::OPERATIONAL_ADDRESS      => $this->getOperationAddress(),
+            self::DATE_ESTABLISHED         => $this->merchantDetail->getBusinessDateOfEstablishment(),
+            self::TRANSACTION_VOLUME       => $this->merchantDetail->getTransactionVolume(),
+            self::AVERAGE_TRANSACTION_SIZE => $merchantDetail->getTransactionValue(),
+            self::KYC_DETAILS              => $this->getKYCDetails()
+        ];
+
+        return $accountDetails;
     }
 }

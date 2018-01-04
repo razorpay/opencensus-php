@@ -2789,4 +2789,5 @@ ALTER TABLE merchant_details
     ADD COLUMN business_spoc_email VARCHAR(255) AFTER technical_spoc_email;
 
 ALTER TABLE merchants
-    ADD COLUMN notes TEXT NULL AFTER invoice_code;
+    ADD COLUMN notes TEXT DEFAULT NULL AFTER invoice_code;
+
