@@ -152,19 +152,6 @@ class NodalAccount extends NodalBase\NodalAccount
         ];
     }
 
-    protected function getRows(string $amount): array
-    {
-        $formattedAmount = (float) sprintf('%0.2f', $amount);
-
-        $headerValues = $this->getHeaderRow($formattedAmount);
-
-        $transactionValues = $this->getTrasactionRow($amount, 'RZRNAXISCARD');
-
-        $values = [self::HEADINGS, $headerValues, $transactionValues];
-
-        return $values;
-    }
-
     protected function getSettlementRows($entities): array
     {
         $totalAmount = 0;
@@ -178,6 +165,13 @@ class NodalAccount extends NodalBase\NodalAccount
             $totalAmount += $amount;
 
             $beneCode = $entity->bankAccount->getId();
+
+            // currently kotak is registered with below benecode, so we override
+            // the benecode until the new one gets registered.
+            if ($beneCode === '9KnioczXfED3wz')
+            {
+                $beneCode = 'RZRNAXISCARD';
+            }
 
             $rows[] = $this->getTrasactionRow($amount, $beneCode);
         }
