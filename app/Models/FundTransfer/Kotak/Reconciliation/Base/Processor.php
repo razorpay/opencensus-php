@@ -163,7 +163,7 @@ class Processor extends Base\Core
         {
             (new FundTransferAttempt\Core)->notifyMerchantViaWebhook($this->allReconciledRows);
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
             // Log only the entity ids instead of the entire entities
             $entityIds = array_map(function($reconciledRow)

@@ -107,11 +107,6 @@ class Core extends Base\Core
 
         $this->app['events']->fire('api.settlement.processed', $eventPayload);
 
-        $this->trace->info(
-            TraceCode::SETTLEMENT_PROCESSED_WEBHOOOK_SENT,
-            [
-                'settlement_id' => $settlement->getId()
-            ]);
     }
 
     /**
