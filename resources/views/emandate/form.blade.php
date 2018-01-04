@@ -92,7 +92,7 @@
         cursor: pointer;
       }
 
-      .accordion-heading:hover {
+      div:not('.disabled') .accordion-heading:hover {
           background: #fcfcfc;
       }
 
@@ -144,7 +144,7 @@
         color: rgba(0,0,0,0.4);
       }
 
-      input[name="accordion"][id="content2"]:checked + .arrow + .content {
+      input[name="auth_type"][id="content2"]:checked + .arrow + .content {
         display: block;
         opacity: 1;
         transform: scale(1);
@@ -174,39 +174,76 @@
         transition: all 0.3s;
       }
 
-    input[name="accordion"]:checked + .arrow {
+    input[name="auth_type"]:checked + .arrow {
       background: #3395FF;
       border-color: #3395FF;
     }
 
-    input[name="accordion"]:checked + .arrow:before {
+    input[name="auth_type"]:checked + .arrow:before {
       color: #fff;
     }
 
-    #tooltip-container {
+    #help-container {
       position: relative;
     }
-    #tooltip {
+    #help {
        position: absolute;
-       opacity: 0;
-       background: #fff;
-       border: 1px solid black;
-       transition: all 0.2s;
-       z-index: 10;
-       right: -250px;
-       top: 0;
-       width: 250px;
+       border-radius: 4px;
+       width: 80%;
        padding: 0 10px;
+       top: 90%;
+       right: 0;
+       font-size: 12px;
+       opacity: 0;
+       background: #555;
+       color: #fff;
+       z-index: 10;
+       transition: all 0.2s;
+       pointer-events: none;
     }
 
-    #tooltip pre {
+    #help::after {
+      content: "";
+      position: absolute;
+      width: 0;
+      height: 0;
+      border-width: 5px;
+      border-style: solid;
+      border-color: transparent transparent #555;
+      bottom: 100%;
+      right: 16px;
+      margin: 0 0 -1px -10px;
+    }
+    #icon {
+      color: blue;
+      position: absolute;
+      right: 8px;
+      top: 16px;
+      font-weight: 600;
+      font-size: 11px;
+      cursor: pointer;
+      opacity: 0;
+      transition: all 0.2s;
+    }
+
+    .error {
+        color: red !important;
+    }
+
+    #icon.show {
+      opacity: 1;
+    }
+
+    #icon.show:hover + #help {
+      opacity: 1 !important;
+    }
+
+    #help pre {
       white-space: pre-wrap;
-    }
-    .show {
-       opacity: 1 !important;
+      font-family: inherit
     }
 
-    #tooltip .key {
+    #help .key {
         font-weight: 600;
     }
 
@@ -220,11 +257,22 @@
   </head>
   <body>
     <img src="https://cdn.razorpay.com/logo.svg" id="logo" height="35px" style="height: 35px; margin: 20px auto;display: block;">
-    <form>
+    <form action="<?= $data['request']['url'] ?>" method="<?= $data['request']['method'] ?>">
+      @foreach ($data['request']['content']['input'] as $key => $value)
+        @if (is_array($value))
+          @foreach ($value as $key2=>$value2)
+            <input type='hidden' name='{{$key}}[{{$key2}}]' value='{{$value2}}'>
+          @endforeach
+        @else
+          <input type='hidden' name='{{$key}}' value='{{$value}}'>
+        @endif
+      @endforeach
+
+
       <header>
-        <img src="https://cdn.razorpay.com/bank/UTIB.gif" height= "30px">
+        <img src="https://cdn.razorpay.com/bank/{{ $data['request']['content']['input']['bank'] }}.gif" height= "30px">
         <div><b>{{ $data['request']['content']['bank_details']['name'] }}</b></div>
-        <span>₹ {{ $data['request']['content']['amount']/100 }}</span>
+        <span>₹ {{ $data['request']['content']['input']['amount']/100 }}</span>
       </header>
       <main>
         <div class="heading">Please fill Bank accounts details:</div>
@@ -235,7 +283,7 @@
       <main>
         <div class="heading">Please select Authentication method:</div>
         <div class="accordion-container">
-          <div id="section1" class={{ in_array('netbanking', $data['request']['content']['bank_details']['authentication_type']) ? '' : 'disabled'}}>
+          <div id="section1" class={{ in_array('netbanking', $data['request']['content']['bank_details']['auth_types']) ? '' : 'disabled'}}>
             <label class="accordion-heading pickable" for="content1">
               <img src="https://cdn.razorpay.com/bank/HDFC.gif" height="25px" />
               <span class="title">
@@ -243,14 +291,14 @@
                 <div class="sub-title">Via Netbanking login</div>
               </span>
             </label>
-            <input type="radio" id="content1" name="accordion" hidden disabled={{ !in_array('netbanking', $data['request']['content']['bank_details']['authentication_type']) }}>
-            @if (!in_array('netbanking', $data['request']['content']['bank_details']['authentication_type']))
+            <input type="radio" id="content1" name="auth_type" value="netbanking" hidden>
+            @if (in_array('netbanking', $data['request']['content']['bank_details']['auth_types']))
                 <span class="arrow"></span>
             @endif
           </div>
 
           <div class="separate"></div>
-          <div id="section2" class={{ in_array('aadhar', $data['request']['content']['bank_details']['authentication_type']) ? '' : 'disabled'}}>
+          <div id="section2" class={{ in_array('aadhaar', $data['request']['content']['bank_details']['auth_types']) ? '' : 'disabled'}}>
             <label class="accordion-heading pickable" for="content2">
               <img src="https://cdn.razorpay.com/bank/HDFC.gif" height="25px" />
               <span class="title">
@@ -258,8 +306,8 @@
                 <div class="sub-title">Via Aadhaar linked mobile OTP</div>
               </span>
             </label>
-            <input type="radio" id="content2" name="accordion" hidden disabled={{ !in_array('aadhar', $data['request']['content']['bank_details']['authentication_type']) }}>
-            @if (!in_array('aadhar', $data['request']['content']['bank_details']['authentication_type']))
+            <input type="radio" id="content2" name="auth_type" value="aadhaar" hidden>
+            @if (in_array('aadhaar', $data['request']['content']['bank_details']['auth_types']))
               <span class="arrow"></span>
             @endif
 
@@ -267,11 +315,10 @@
                 <div>
                   <input
                     name='aadhaar[number]''
-                    type='number'
+                    type="tel"
                     pattern='^\d{12}$'
                     required
                     placeholder='Enter your Aadhaar number'
-                    disabled={{!in_array('aadhar',$data['request']['content']['bank_details']['authentication_type'])}}
                     value={{ $data['request']['content']['input']['aadhaar']['number'] ?? "" }} >
               </div>
             </div>
@@ -279,94 +326,67 @@
         </div>
       </main>
       <div class="action">
-         <button type="submit" onclick="authenticate()">Authenticate</button>
+         <button type="submit">Authenticate</button>
       </div>
     </form>
   </body>
   <script type="text/javascript">
+    var data = {!! json_encode($data) !!};
+    console.log('Data...', data);
+
+    if (data['request']['content']['bank_details']['auth_types'].indexOf('netbanking') === -1) {
+        document.querySelector('#section1 label + input').setAttribute('disabled', true);
+    }
+
+    if (data['request']['content']['bank_details']['auth_types'].indexOf('aadhaar') === -1) {
+        document.querySelector('#section2 label + input').setAttribute('disabled', true);
+        document.querySelector('#section2 .content input').setAttribute('disabled', true);
+    }
+
+
+    console.log(document.getElementsByName('bank_account[ifsc]')[0]);
     document.getElementsByName('bank_account[ifsc]')[0].addEventListener('input', function(e) {
-        document.getElementById('tooltip').className = '';
+        document.querySelector('#help-container #icon').className = '';
+
         if(e.target.value.length === 11) {
            var IFSC = e.target.value;
-            //httpGetAsync('https://ifsc.razorpay.com/' + IFSC, function(data) {
-            xhr('get', 'https://ifsc.razorpay.com/' + IFSC, '', function(data) {
+            httpGetAsync('https://ifsc.razorpay.com/' + IFSC, function(data) {
+                var helpMsg = 'Invalid IFSC Code';
+                var cls = 'show';
                 if (data) {
-                    var tooltipMsg = '';
-
+                    helpMsg = '';
+                    var info = JSON.parse(data)
                     var info = {
-                        Bank: data.BANK,
-                        Branch: data.BRANCH,
-                        City: data.CITY,
-                        State: data.STATE
+                        Bank: info.BANK,
+                        Branch: info.BRANCH,
+                        City: info.CITY,
+                        State: info.STATE
                     }
                     for (var i in info) {
-                      tooltipMsg += '\n' + '<span class="key">' + i + '</span>' + ': ' + info[i];
+                      helpMsg += '\n' + '<span class="key">' + i + '</span>' + ': ' + info[i];
                     }
-
-                    document.getElementById('tooltip').className = 'show';
-                    document.getElementById('tooltip').innerHTML = '<pre>' + tooltipMsg + '</pre>';
                 } else {
-                    console.log('Invalid IFSC');
+                    cls += ' error';
                 }
+
+                console.log('....here...', helpMsg);
+                document.querySelector('#help-container #icon').className = cls;
+                document.getElementById('help').innerHTML = '<pre>' + helpMsg + '</pre>';
             });
         }
         if (e.target.value.length > 11) {
             e.target.value = e.target.value.substring(0,11);
         }
-    })
-
-    function authenticate(e) {
-      var formData = new FormData();
-      var data = {!! json_encode($data) !!};
-      console.log('Data..', data);
-
-      for (var key in data['request']['content']['input']) {
-        var value = data['request']['content']['input'][key];
-
-        if (typeof value === 'object') {
-          for (var key2 in value) {
-            formData.append(key + '[' + key2 + ']', value[key2]);
-          }
-        } else {
-          formData.append(key, value);
-        }
-      }
-
-      var fields = document.querySelectorAll('form input');
-      for (let f = 0; f < fields.length; f++) {
-        if (fields[f].name && !fields[f].hidden && fields[f].value) {
-          formData.append(fields[f].name, fields[f].value);
-        }
-      }
-
-      console.log('form value..');
-      for (var i of formData.entries()){console.log(i);}
-
-      xhr(data.request.method, data.request.url, formData, function(data){ console.log('Authenticate..', data)});
-    }
-
-
-    function xhr(method, uri, body, handler) {
-      var req = (window.XMLHttpRequest) ? new XMLHttpRequest() : new ActiveXObject('Microsoft.XMLHTTP');
-      req.onreadystatechange = function ()
-      {
-          if (req.readyState == 4 && handler)
-          {
-              eval('var o=' + req.responseText);
-              handler(o);
-          }
-      }
-      req.open(method, uri, true);
-      req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-      req.send(body);
-    }
-
+    });
 
     function httpGetAsync(theUrl, callback) {
         var xmlHttp = new XMLHttpRequest();
         xmlHttp.onreadystatechange = function() {
-            if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
-                callback(xmlHttp.responseText);
+            var res;
+            if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+                res = xmlHttp.responseText;
+            }
+            callback(res);
         }
         xmlHttp.open("GET", theUrl, true); // true for asynchronous
         xmlHttp.send(null);

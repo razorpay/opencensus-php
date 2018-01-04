@@ -11,13 +11,13 @@
       placeholder='Bank Account No.'
       value={{ $data['request']['content']['input']['bank_account']['number'] ?? "" }}>
 
-    <div id="tooltip-container">
+    <div id="help-container">
       <input
         name='bank_account[ifsc]'
         required
         placeholder='IFSC Code'
         value={{ $data['request']['content']['input']['bank_account']['ifsc'] ?? "" }}>
-
-      <span id="tooltip"></span>
+      <span id="icon">info</span>
+      <span id="help"></span>
     </div>
 </div>
