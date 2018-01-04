@@ -59,6 +59,7 @@ return [
                 'entity'  => 'customer',
                 'email'   => 'test@razorpay.com',
                 'contact' => '1234567899',
+                'name'    => null,
             ],
         ],
     ],
