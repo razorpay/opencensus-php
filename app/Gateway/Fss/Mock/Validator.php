@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Fss\Mock;
 
 use RZP\Base;
+use RZP\Gateway\Fss\Acquirer;
 use RZP\Gateway\Fss\Constants;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Fss\Fields;
@@ -11,24 +12,26 @@ use RZP\Exception;
 class Validator extends Base\Validator
 {
     protected static $authRules = [
-        Fields::ACTIONVPAS          => 'required|string',
+        Fields::ACTIONVPAS          => 'sometimes|string',
         Fields::TRAN_DATA           => 'required|string',
         Fields::ERROR_URL           => 'required|string',
         Fields::RESPONSE_URL        => 'required|string',
         Fields::TRANPORTAL_ID       => 'required|string',
+        Fields::PARAM               => 'sometimes|string',
     ];
 
     protected static $refundRules = [
         Fields::CURRENCY_CODE       => 'required|string',
         Fields::TYPE                => 'required|string|custom',
-        Fields::UDF5                => 'required|string|in:TrackID',
+        Fields::UDF5                => 'required|string|in:TrackID,trackid',
         Fields::LANGUAGE_ID         => 'required|string|in:USA',
         Fields::ID                  => 'required|string',
-        Fields::PASSWORD            => 'required|string',
+        Fields::PASSWORD            => 'sometimes|string',
         Fields::TRANSACTION_ID      => 'required|string',
         Fields::ACTION              => 'required|string',
         Fields::TRACK_ID            => 'required|string',
         Fields::AMOUNT              => 'required',
+        Fields::BANK_CODE           => 'sometimes|string',
     ];
 
     protected static $authTransactionDataRules = [
@@ -45,9 +48,10 @@ class Validator extends Base\Validator
         Fields::ERROR_URL           => 'required|string|url',
         Fields::RESPONSE_URL        => 'required|string|url',
         Fields::ID                  => 'required|string',
-        Fields::PASSWORD            => 'required|string',
+        Fields::PASSWORD            => 'sometimes|string',
         Fields::UDF5                => 'sometimes|string',
         Fields::LANGUAGE_ID         => 'sometimes|string',
+        Fields::BANK_CODE           => 'sometimes|string',
     ];
 
     protected function validateCurrencyCode($attribute, $value)
@@ -58,11 +62,12 @@ class Validator extends Base\Validator
         }
     }
 
-    // TODO validate type based on acquirer.
     protected function validateType($attribute, $value)
     {
-        if ($value !== 'C' and
-            $value !== 'D')
+        $bobCardTypes = array_values(Constants::$cardType[Acquirer::BOB]);
+        $fssCardTypes = array_values(Constants::$cardType[Acquirer::FSS]);
+
+        if (in_array($value, $bobCardTypes) === false and in_array($value, $fssCardTypes) === false)
         {
             throw new Exception\BadRequestValidationFailureException( "Invalid Card Type");
         }

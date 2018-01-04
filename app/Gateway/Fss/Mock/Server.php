@@ -147,9 +147,23 @@ class Server extends Base\Mock\Server
 
         list($secretKey, $gatewayAcquirer) = $this->getGatewaySecretAndAcquirer($terminalId);
 
-        $crypto = new Fss\TripleDESCrypto(Fss\TripleDESCrypto::MODE_ECB, $secretKey, false);
+        $encryptedText = "";
 
-        $encryptedText = $crypto->encryptString($tranData, false);
+        switch ($gatewayAcquirer)
+        {
+            case Fss\Acquirer::BOB:
+                $crypto = new Fss\TripleDESCrypto(Fss\TripleDESCrypto::MODE_ECB, $secretKey, false);
+
+                $encryptedText = $crypto->encryptString($tranData, false);
+                break;
+            case Fss\Acquirer::FSS:
+                $crypto = new Fss\AesCrypto(Fss\AesCrypto::MODE_CBC, $secretKey, $secretKey);
+
+                $encryptedText = $crypto->encryptString($tranData);
+                break;
+            default:
+                break;
+        }
 
         return $encryptedText;
     }

@@ -75,4 +75,6 @@ class Fields
     const POST_DATE                     = 'postdate';
 
     const TRANDATA                      = 'trandata';
+
+    const PARAM                         = 'param';
 }
