@@ -331,6 +331,7 @@ class MerchantCreateTest extends TestCase
                 Header::BANK_ACCOUNT_TYPE   => 'Current',
                 Header::BANK_ACCOUNT_NAME   => 'Test Bank Account 1',
                 Header::REFERENCE_ID        => 'REF001',
+                Header::ACCOUNT_ID          => '',
 
             ],
             [
@@ -340,6 +341,7 @@ class MerchantCreateTest extends TestCase
                 Header::BANK_ACCOUNT_TYPE   => 'Current',
                 Header::BANK_ACCOUNT_NAME   => 'Test Bank Account 2',
                 Header::REFERENCE_ID        => 'REF002',
+                Header::ACCOUNT_ID          => '',
             ],
         ];
     }

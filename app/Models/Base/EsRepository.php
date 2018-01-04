@@ -297,18 +297,7 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $res = $this->esDao->bulkUpdate($params);
 
-        $errors = $res['errors'] ?? true;
-
-        if ($errors === true)
-        {
-            throw new ServerErrorException(
-                'Errors in bulkUpdate response',
-                ErrorCode::SERVER_ERROR_ES_OPERATION_ERRORED,
-                [
-                    'params' => $params,
-                    'res'    => $res,
-                ]);
-        }
+        $this->checkForBulkUpdateOperationErrors($params, $res);
 
         return $res;
     }
@@ -329,5 +318,40 @@ class EsRepository extends \Razorpay\Spine\Repository
         ];
 
         $this->esDao->delete($params);
+    }
+
+    protected function checkForBulkUpdateOperationErrors(array $params, array $res)
+    {
+        $errors = array_get($res, 'errors', true);
+
+        if ($errors === false)
+        {
+            return;
+        }
+
+        $items         = $res['items'] ?? [];
+        $itemsPerError = collect($items)
+                            ->filter(
+                                function($v, $k)
+                                {
+                                    return (isset($v['index']['error']) === true);
+                                })
+                            ->groupBy('index.error.type');
+
+        // Temporary: (Ref: https://github.com/razorpay/api/issues/3477)
+        // Just trace if there is only mapping errors. Otherwise if it
+        // contains other type of errors too raise exception.
+        if (($itemsPerError->count() === 1) and
+            ($itemsPerError->has('mapper_parsing_exception') === true))
+        {
+            $this->trace->info(TraceCode::ES_SYNC_FAILED, $itemsPerError->all());
+        }
+        else
+        {
+            throw new ServerErrorException(
+                'Errors in bulkUpdate response',
+                ErrorCode::SERVER_ERROR_ES_OPERATION_ERRORED,
+                $itemsPerError->all());
+        }
     }
 }

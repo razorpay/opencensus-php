@@ -273,32 +273,44 @@ class Gateway extends Base\Gateway
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_TYPE_INVALID);
         }
 
+        $traceContent = $content;
+
+        $content += $this->getCardDataForAuthorizeRequestArray($input);
+
+        $request = $traceRequest = $this->getStandardRequestArray($content);
+
+        $traceRequest['content'] = $traceContent;
+
         $this->trace->info(TraceCode::GATEWAY_AUTHORIZE_REQUEST,
             [
-                'request'    => $content,
+                'request'    => $traceRequest,
                 'gateway'    => 'hitachi',
                 'payment_id' => $input['payment']['id'],
             ]);
 
-        $content += $this->getCardDataForAuthorizeRequestArray($input);
-
-        return $this->getStandardRequestArray($content);
+        return $request;
     }
 
     protected function getAuthorizeRequestArrayForNotEnrolled(array $input)
     {
         $content = $this->getDefaultAuthorizeRequestArray($input);
 
+        $traceContent = $content;
+
+        $content += $this->getCardDataForAuthorizeRequestArray($input);
+
+        $request = $traceRequest = $this->getStandardRequestArray($content);
+
+        $traceRequest['content'] = $traceContent;
+
         $this->trace->info(TraceCode::GATEWAY_AUTHORIZE_REQUEST,
             [
-                'request'    => $content,
+                'request'    => $traceRequest,
                 'gateway'    => 'hitachi',
                 'payment_id' => $input['payment']['id'],
             ]);
 
-        $content += $this->getCardDataForAuthorizeRequestArray($input);
-
-        return $this->getStandardRequestArray($content);
+        return $request;
     }
 
     protected function traceGatewayPaymentResponse(

@@ -13,7 +13,11 @@ class ResponseCode
      * @var array
      */
     const CODES = [
-        'FAILED'    =>  'Payment Failed because of Gateway Error',
+        Status::FAILURE           => 'Payment Failed because of Gateway Error',
+        Status::FAILED            => 'Payment Failed because of Gateway Error',
+        Status::VPA_NOT_AVAILABLE => 'Vpa not available',
+        Status::PENDING           => 'Transaction pending',
+        Status::TIMEOUT           => 'Transaction timed out',
     ];
 
     public static function getResponseMessage($code)

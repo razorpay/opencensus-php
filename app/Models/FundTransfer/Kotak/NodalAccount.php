@@ -100,24 +100,55 @@ class NodalAccount extends NodalBase\NodalAccount
 
             $type = $this->getPaymentType($ba, $amount, $entity);
 
-            $this->updateSummary($type, $amount);
+            // For Hike retry settlement, remove this once we can handle VA's better
+            if ((in_array($merchant->getId(), ['7I5sCUbi0P7eiL', '7C9vkxnJlNC6bY'], true) === true) and
+                ($ba->getAccountNumber() === '44449773833987'))
+            {
+                $ifsc = 'KKBK000VRTL';
+                $type = 'NEFT';
 
-            $array = [
-                Headings::CLIENT_CODE             => 'RAZORNODAL',
-                Headings::PRODUCT_CODE            => 'MERPAY',
-                Headings::PAYMENT_TYPE            => $type,
-                Headings::PAYMENT_REF_NO          => $paymentRefNo,
-                Headings::PAYMENT_DATE            => $this->date,
-                Headings::DR_AC_NO                => static::$nodalAccountNumber,
-                Headings::AMOUNT                  => $amount,
-                Headings::BANK_CODE_INDICATOR     => 'M',
-                Headings::BENEFICIARY_CODE        => $ba->getBeneficiaryCode(),
-                Headings::CREDIT_NARRATION        => 'RAZORPAY SETTLEMENT',
-                Headings::PAYMENT_DETAILS_1       => $source->getPublicId(),
-                Headings::PAYMENT_DETAILS_2       => $merchant->getPublicId(),
-                Headings::PAYMENT_DETAILS_3       => $version,
-                Headings::PAYMENT_DETAILS_4       => $entity->getBatchFundTransferId(),
-            ];
+                $array = [
+                    Headings::CLIENT_CODE             => 'RAZORNODAL',
+                    Headings::PRODUCT_CODE            => 'REFUND',
+                    Headings::PAYMENT_TYPE            => $type,
+                    Headings::PAYMENT_REF_NO          => $paymentRefNo,
+                    Headings::PAYMENT_DATE            => $this->date,
+                    Headings::INSTRUMENT_DATE         => $this->date,
+                    Headings::DR_AC_NO                => static::$nodalAccountNumber,
+                    Headings::AMOUNT                  => (string) $amount,
+                    Headings::BANK_CODE_INDICATOR     => 'M',
+                    Headings::BENEFICIARY_NAME        => $ba->getBeneficiaryName(),
+                    Headings::IFSC_CODE               => $ifsc,
+                    Headings::BENEFICIARY_ACC_NO      => $ba->getAccountNumber(),
+                    Headings::CREDIT_NARRATION        => 'RAZORPAY SETTLEMENT',
+                    Headings::PAYMENT_DETAILS_1       => $source->getPublicId(),
+                    Headings::PAYMENT_DETAILS_2       => $merchant->getPublicId(),
+                    Headings::PAYMENT_DETAILS_3       => $version,
+                    Headings::PAYMENT_DETAILS_4       => $entity->getBatchFundTransferId(),
+                ];
+            }
+            else
+            {
+                $array = [
+                    Headings::CLIENT_CODE             => 'RAZORNODAL',
+                    Headings::PRODUCT_CODE            => 'MERPAY',
+                    Headings::PAYMENT_TYPE            => $type,
+                    Headings::PAYMENT_REF_NO          => $paymentRefNo,
+                    Headings::PAYMENT_DATE            => $this->date,
+                    Headings::DR_AC_NO                => static::$nodalAccountNumber,
+                    Headings::AMOUNT                  => $amount,
+                    Headings::BANK_CODE_INDICATOR     => 'M',
+                    Headings::BENEFICIARY_CODE        => $ba->getBeneficiaryCode(),
+                    Headings::CREDIT_NARRATION        => 'RAZORPAY SETTLEMENT',
+                    Headings::PAYMENT_DETAILS_1       => $source->getPublicId(),
+                    Headings::PAYMENT_DETAILS_2       => $merchant->getPublicId(),
+                    Headings::PAYMENT_DETAILS_3       => $version,
+                    Headings::PAYMENT_DETAILS_4       => $entity->getBatchFundTransferId(),
+                ];
+            }
+
+            // moving below since we are updating type later
+            $this->updateSummary($type, $amount);
 
             $array = $this->getAllFields($array);
 
@@ -349,11 +380,12 @@ class NodalAccount extends NodalBase\NodalAccount
         }
 
         $summary = $this->summary;
+        $channel = 'Kotak';
 
         $today = Carbon::now(Timezone::IST)->format('d-m-Y');
-        $subject = "Kotak Settlement files for $today";
+        $subject = "$channel Settlement files for $today";
 
-        $data = compact('summary', 'subject');
+        $data = compact('summary', 'subject', 'channel');
 
         $excelFileEntity = $excelFileEntity->get();
         $textFileEntity = $textFileEntity->get();

@@ -13,6 +13,7 @@ use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal\Category;
 use RZP\Models\Merchant\Preferences;
+use RZP\Models\Payment\Processor\Netbanking;
 
 class TransactionFilter extends Terminal\Filter
 {
@@ -27,6 +28,7 @@ class TransactionFilter extends Terminal\Filter
         'subscription',
         'tpv',
         'pharma',
+        'corporate',
         'mcc',
     ];
 
@@ -237,6 +239,22 @@ class TransactionFilter extends Terminal\Filter
         return ($terminal->isNonRecurring() === true);
     }
 
+    protected function corporateFilter(Terminal\Entity $terminal)
+    {
+        $payment = $this->input['payment'];
+
+        if ($payment->isNetbanking() === true)
+        {
+            $bank = $payment->getBank();
+
+            // If a bank does not require a corporate terminal
+            // a corporate terminal should not allow the payment.
+            return (Netbanking::isCorporateTerminalRequired($bank) === $terminal->isCorporate());
+        }
+
+        return true;
+    }
+
     protected function subscriptionFilter(Terminal\Entity $terminal)
     {
         //
@@ -284,7 +302,9 @@ class TransactionFilter extends Terminal\Filter
         if ((empty($bank) === false) and
             (in_array($bank, Gateway::$emiBanksUsingCardTerminals)))
         {
-            return (($terminal->isCardEnabled()) and ($terminal->isEmiEnabled() === false));
+            return (($terminal->isCardEnabled()) and
+                    ($terminal->isEmiEnabled() === false) and
+                    ($terminal->isCurrencyInr() === true));
         }
 
         // validate terminal using the gateway and emi duration
