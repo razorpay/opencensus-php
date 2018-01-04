@@ -2,6 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
+use RZP\Models\Transaction;
 use ApiResponse;
 use Request;
 
@@ -44,6 +45,15 @@ class TransactionController extends Controller
     public function getEntityTransaction($entity, $id)
     {
         $data = $this->service()->getEntityTransaction($entity, $id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function updateMultipleTransactions()
+    {
+        $input = Request::all();
+
+        $data = (new Transaction\BulkUpdate)->updateMultipleTransactions($input);
 
         return ApiResponse::json($data);
     }

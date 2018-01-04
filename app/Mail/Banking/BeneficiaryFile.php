@@ -9,12 +9,7 @@ class BeneficiaryFile extends Mailable
 {
     const KOTAK_BENEFICIARY_MAIL       = 'kotak_beneficiary_file@razorpay.com';
     const KOTAK_BENEFICARY_FROM_HEADER = 'Razorpay Kotak Beneficiary File';
-    const RECIPIENT_EMAILS             = ['aanchal.wadhwani@kotak.com', 'settlements@razorpay.com'];
-    const CC_EMAILS                    = [
-                                            'uphendra.bn@kotak.com',
-                                            'Abhijit.B.Joshi@kotak.com',
-                                            'anupam.namdeo@kotak.com'
-                                         ];
+    const RECIPIENT_EMAILS             = ['kotak.beneficiary@razorpay.com'];
 
     protected $data;
 
@@ -39,13 +34,6 @@ class BeneficiaryFile extends Mailable
     protected function addRecipients()
     {
         $this->to(self::RECIPIENT_EMAILS);
-
-        return $this;
-    }
-
-    protected function addCc()
-    {
-        $this->cc(self::CC_EMAILS);
 
         return $this;
     }

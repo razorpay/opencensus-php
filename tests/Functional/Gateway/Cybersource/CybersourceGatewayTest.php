@@ -79,7 +79,8 @@ class CybersourceGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() use ($payment) {
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
             $this->doAuthPayment($payment);
         });
     }
@@ -91,7 +92,8 @@ class CybersourceGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() use ($payment) {
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
             $this->doAuthPayment($payment);
         });
     }
@@ -650,7 +652,8 @@ class CybersourceGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() use ($payment) {
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
             $this->doAuthPayment($payment);
         });
     }
@@ -693,7 +696,29 @@ class CybersourceGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() use ($payment) {
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testGatewayVerifyAuthResponseFailure()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->mockServerContentFunction(function(&$content)
+        {
+            $content['reasonCode'] = 202;
+            $content['decision'] = 'REJECT';
+            $content['ccAuthReply'] = [
+                'reasonCode' => 202
+            ];
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
             $this->doAuthPayment($payment);
         });
     }
@@ -709,7 +734,8 @@ class CybersourceGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() use ($payment) {
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
             $this->doAuthPayment($payment);
         });
     }

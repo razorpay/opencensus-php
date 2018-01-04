@@ -355,17 +355,19 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
-    public function fetchByAccountIdAndMerchant(string $accountId, Entity $marketplace)
+    public function findByAccountIdAndParent(
+        string $accountId,
+        Entity $parent,
+        bool $fail = false)
     {
         AccountEntity::verifyIdAndStripSign($accountId);
 
-        $account =  $this->newQuery()
-                         ->where(Entity::PARENT_ID, $marketplace->getId())
-                         ->find($accountId);
+        $query   = $this->newQuery()->where(Entity::PARENT_ID, $parent->getId());
+        $account = $fail ? $query->findOrFailPublic($accountId) : $query->find($accountId);
 
         if ($account !== null)
         {
-            $account->parent()->associate($marketplace);
+            $account->parent()->associate($parent);
         }
 
         return $account;

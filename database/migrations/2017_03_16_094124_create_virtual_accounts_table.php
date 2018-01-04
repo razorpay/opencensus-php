@@ -37,16 +37,20 @@ class CreateVirtualAccountsTable extends Migration
             $table->text(VirtualAccount::DESCRIPTION)
                   ->nullable();
 
-            $table->integer(VirtualAccount::AMOUNT_EXPECTED)
+            $table->bigInteger(VirtualAccount::AMOUNT_EXPECTED)
+                  ->unsigned()
                   ->nullable();
 
-            $table->integer(VirtualAccount::AMOUNT_RECEIVED)
+            $table->bigInteger(VirtualAccount::AMOUNT_RECEIVED)
+                  ->unsigned()
                   ->nullable();
 
-            $table->integer(VirtualAccount::AMOUNT_PAID)
+            $table->bigInteger(VirtualAccount::AMOUNT_PAID)
+                  ->unsigned()
                   ->nullable();
 
-            $table->integer(VirtualAccount::AMOUNT_REVERSED)
+            $table->bigInteger(VirtualAccount::AMOUNT_REVERSED)
+                  ->unsigned()
                   ->nullable();
 
             $table->string(VirtualAccount::BANK_ACCOUNT_ID, VirtualAccount::ID_LENGTH)

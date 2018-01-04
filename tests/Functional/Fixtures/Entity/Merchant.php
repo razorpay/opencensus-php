@@ -67,6 +67,24 @@ class Merchant extends Base
         $apiBalance = $this->createEntityInTestAndLive('balance', ['id' => Account::ATOM_ACCOUNT, 'balance' => '1000000']);
     }
 
+    public function createAccount($merchantId)
+    {
+        $apiMerchant = $this->fixtures->create('merchant', ['id' => $merchantId]);
+        $apiBalance = $this->createEntityInTestAndLive('balance', ['id' => $merchantId, 'balance' => '1000000']);
+
+        $this->fixtures->on('test')->create('terminal', ['id' => $merchantId, 'merchant_id' => $merchantId]);
+        $this->fixtures->on('live')->create('terminal', ['id' => $merchantId, 'merchant_id' => $merchantId]);
+        $this->fixtures->on('test')->create('key', ['merchant_id' => $merchantId, 'id' => $merchantId], 'test');
+        $this->fixtures->on('live')->create('key', ['merchant_id' => $merchantId, 'id' => $merchantId], 'live');
+        $this->fixtures->on('test')->create('bank_account', ['merchant_id' => $merchantId, 'entity_id' => $merchantId]);
+
+        $this->fixtures->on('test')->create('merchant:add_payment_banks', ['merchant_id' => $merchantId]);
+
+        $this->fixtures->create('merchant:schedule_task', ['merchant_id' => $merchantId]);
+
+        $this->fixtures->merchant->enableInternational($merchantId);
+    }
+
     public function createEventAccount()
     {
         $merchant = $this->fixtures->create('merchant', [

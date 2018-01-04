@@ -2,14 +2,26 @@
 
 namespace RZP\Http\Controllers;
 
-use ApiResponse;
-use Redirect;
-use Request;
-use RZP\Constants\Mode;
 use View;
+use Request;
+use Redirect;
+use ApiResponse;
+use RZP\Gateway\Hdfc;
+use RZP\Constants\Mode;
+use RZP\Gateway\GatewayManager;
 
 class MockGatewayController extends Controller
 {
+    /**
+     * @var GatewayManager
+     */
+    protected $gateway;
+
+    /**
+     * @var Hdfc\Mock\Server
+     */
+    protected $mockHdfcGatewayServer;
+
     public function __construct()
     {
         parent::__construct();
@@ -277,13 +289,22 @@ class MockGatewayController extends Controller
         return;
     }
 
-    public function generateNetbankingReconciliation($bank)
+    public function postAepsPayment($bank)
     {
         $input = Request::all();
 
-        $driver = 'netbanking_' . $bank;
+        $driver = 'aeps_' . $bank;
 
-        $recon = $this->gateway->recon($driver);
+        $server = $this->gateway->server($driver);
+
+        return $server->authorize($input);
+    }
+
+    public function generateGatewayReconciliationFile(string $gateway)
+    {
+        $input = Request::all();
+
+        $recon = $this->gateway->recon($gateway);
 
         return $recon->generateReconciliation($input);
     }
