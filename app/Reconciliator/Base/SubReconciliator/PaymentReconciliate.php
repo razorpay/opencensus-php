@@ -537,6 +537,17 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         return $rowDetails;
     }
 
+    /**
+     * To be overridden in the child gateway
+     * @param array $row
+     * @throws \BadMethodCallException
+     * @return null
+     */
+    protected function getPaymentId(array $row)
+    {
+        throw new \BadMethodCallException('getPaymentId method needs to be implemented by child PaymentReconciliate class');
+    }
+
     protected function setPaymentAndTransaction($row, $paymentId)
     {
         try
