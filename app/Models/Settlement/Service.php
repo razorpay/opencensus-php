@@ -104,7 +104,7 @@ class Service extends Base\Service
         return $settlements->toArrayPublic();
     }
 
-    public function getSettlementTransactions($id)
+    public function fetchSettlementTransactions($id)
     {
         $setl = $this->repo->settlement->findByPublicIdAndMerchant($id, $this->merchant);
 

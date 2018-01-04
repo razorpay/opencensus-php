@@ -17,4 +17,4 @@
 - TODO: Move ACQUIRER entirely to Terminal
 
 
-[docs]: https://drive.google.com/drive/u/1/folders/0B1MTSXtR53PfZ19rRFQySm8yQTg
+[docs]: https://drive.google.com/drive/u/0/folders/0B1MTSXtR53PfYldqNUIyLXlnSjA
