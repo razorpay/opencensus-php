@@ -65,7 +65,10 @@ class CustomerTest extends TestCase
     public function testCreateCustomerWithNameNull()
     {
         $this->ba->privateAuth();
-        $this->startTest();
+
+        $data = $this->startTest();
+
+        $this->assertNull($data['name']);
 
     }
 
