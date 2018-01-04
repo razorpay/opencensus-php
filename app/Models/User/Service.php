@@ -443,9 +443,9 @@ class Service extends Base\Service
 
     public function addUtmParameters(& $data)
     {
-        if (empty($_COOKIE['rzp_utm']) === false)
+        if (empty(\Cookie::get('rzp_utm')) === false)
         {
-            $utmParams = json_decode($_COOKIE['rzp_utm'], true);
+            $utmParams = json_decode(\Cookie::get('rzp_utm'), true);
             $data[Constants::CTA]       = $utmParams[Constants::CTA] ?? "";
             $data[Constants::WEBSITE]   = $utmParams[Constants::WEBSITE] ?? "";
 
@@ -454,10 +454,10 @@ class Service extends Base\Service
                 $utmParams[Constants::ATTRIBUTIONS][1] = $utmParams[Constants::ATTRIBUTIONS][1] ??
                     $utmParams[Constants::ATTRIBUTIONS][0];
 
-                foreach(Constants::$attributionList as $attrbution)
+                foreach (Constants::$attributionList as $attribution)
                 {
-                    $data['first_' . $attrbution] = $utmParams[Constants::ATTRIBUTIONS][0];
-                    $data['final_' . $attrbution] = $utmParams[Constants::ATTRIBUTIONS][1];
+                    $data['first_' . $attribution] = $utmParams[Constants::ATTRIBUTIONS][0];
+                    $data['final_' . $attribution] = $utmParams[Constants::ATTRIBUTIONS][1];
                 }
             }
         }
