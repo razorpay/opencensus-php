@@ -6,6 +6,7 @@ use Aws;
 use Config;
 
 use RZP\Trace\TraceCode;
+use RZP\Models\FileStore\Store;
 use RZP\Models\FileStore\Storage\Base\Handler as BaseHandler;
 use RZP\Models\FileStore\Utility;
 
@@ -53,6 +54,10 @@ class Handler extends BaseHandler
     {
         if ($this->config['mock'] === true)
         {
+            $filePath = storage_path(Store::STORAGE_DIRECTORY) . $fileDetails['key'];
+
+            copy($fileDetails['path'] , $filePath);
+
             return $fileDetails['path'];
         }
 

@@ -2625,3 +2625,6 @@ ALTER TABLE line_items
 ALTER TABLE invoices
     MODIFY COLUMN gross_amount INT(11) UNSIGNED DEFAULT NULL,
     MODIFY COLUMN tax_amount INT(11) UNSIGNED DEFAULT NULL;
+
+ALTER TABLE qr_code
+    ADD COLUMN short_url varchar(255) NOT NULL after qr_string;
