@@ -143,6 +143,14 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function getByGatewayTerminalId($gatewayTerminalId)
+    {
+        return $this->newQuery()
+                    ->withTrashed()
+                    ->where(Entity::GATEWAY_TERMINAL_ID, '=', $gatewayTerminalId)
+                    ->first();
+    }
+
     public function getByIdAndMerchantId($mid, $tid)
     {
         $query = $this->newQuery()

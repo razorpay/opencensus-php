@@ -237,7 +237,7 @@ class Terminal extends Base
             'gateway'                   => 'fss',
             'card'                      => 1,
             'gateway_merchant_id'       => 'random',
-            'gateway_terminal_id'       => '123',
+            'gateway_terminal_id'       => 'FssBobDebit123',
             'gateway_terminal_password' => 'password',
             'gateway_secure_secret'     => '12345678',
             'gateway_acquirer'          => 'bob',

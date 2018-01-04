@@ -394,7 +394,7 @@ class Gateway extends Base\Gateway
         switch ($gatewayAquirer)
         {
             case Acquirer::FSS:
-                $crypto = new AESCrypto(AESCrypto::MODE_CBC, $secretKey, $secretKey);
+                $crypto = new AesCrypto(AesCrypto::MODE_CBC, $secretKey, $secretKey);
 
                 return $crypto->encryptString($str);
                 break;

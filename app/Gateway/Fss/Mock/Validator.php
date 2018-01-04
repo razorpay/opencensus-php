@@ -46,6 +46,8 @@ class Validator extends Base\Validator
         Fields::RESPONSE_URL        => 'required|string|url',
         Fields::ID                  => 'required|string',
         Fields::PASSWORD            => 'required|string',
+        Fields::UDF5                => 'sometimes|string',
+        Fields::LANGUAGE_ID         => 'sometimes|string',
     ];
 
     protected function validateCurrencyCode($attribute, $value)

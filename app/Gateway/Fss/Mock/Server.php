@@ -2,10 +2,12 @@
 
 namespace RZP\Gateway\Fss\Mock;
 
+use Config;
 use RZP\Gateway\Fss;
 use RZP\Gateway\Fss\Fields;
 use RZP\Gateway\Fss\Entity;
 use RZP\Gateway\Base;
+use RZP\Models\Terminal\Repository as TerminalRepo;
 
 class Server extends Base\Mock\Server
 {
@@ -24,7 +26,9 @@ class Server extends Base\Mock\Server
 
         $this->validateAuthorizeInput($input);
 
-        $requestData = $this->getDecryptedData($input[Fields::TRAN_DATA]);
+        $tranportalId = $input[Fields::TRANPORTAL_ID];
+
+        $requestData = $this->getDecryptedData($input[Fields::TRAN_DATA], $tranportalId);
 
         // Validating Transaction data which we sent to server after encrypting.
         $this->validateActionInput($requestData, 'authTransactionData');
@@ -46,7 +50,7 @@ class Server extends Base\Mock\Server
 
         $responseData = [
             Fields::GATEWAY_PAYMENT_ID      => $gatewayPaymentId,
-            Fields::TRAN_DATA               => $this->getEncryptedData($responseTranData),
+            Fields::TRAN_DATA               => $this->getEncryptedData($responseTranData, $tranportalId),
         ];
 
         $url = $input[Fields::RESPONSE_URL];
@@ -113,9 +117,9 @@ class Server extends Base\Mock\Server
         $input = (array) simplexml_load_string($input);
 
         $responseData = [
-            Fields::RESULT => Fss\Status::SUCCESS,
-            Fields::AMOUNT  => $input[Fields::AMOUNT],
-            Fields::TRACK_ID => $input[Fields::TRACK_ID],
+            Fields::RESULT         => Fss\Status::SUCCESS,
+            Fields::AMOUNT         => $input[Fields::AMOUNT],
+            Fields::TRACK_ID       => $input[Fields::TRACK_ID],
             Fields::TRANSACTION_ID => $input[Fields::TRANSACTION_ID],
         ];
 
@@ -137,11 +141,11 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
-    protected function getEncryptedData($responseTrandata)
+    protected function getEncryptedData($responseTrandata, $terminalId)
     {
         $tranData = Fss\Utility::createRequestXml($responseTrandata, false);
 
-        $secretKey = $this->getGatewayInstance()->setInput($this->input)->getSecret();
+        list($secretKey, $gatewayAcquirer) = $this->getGatewaySecretAndAcquirer($terminalId);
 
         $crypto = new Fss\TripleDESCrypto(Fss\TripleDESCrypto::MODE_ECB, $secretKey, false);
 
@@ -152,16 +156,31 @@ class Server extends Base\Mock\Server
 
     /**
      * @param string $str
+     * @param string $terminalId
      *
      * @return array
      */
-    protected function getDecryptedData(string $str): array
+    protected function getDecryptedData(string $str, string $terminalId): array
     {
-        $secretKey = $this->getGatewayInstance()->setInput($this->input)->getSecret();
+        list($secretKey, $gatewayAcquirer) = $this->getGatewaySecretAndAcquirer($terminalId);
 
-        $crypto = new Fss\TripleDESCrypto(Fss\TripleDESCrypto::MODE_ECB, $secretKey, true);
+        $decryptedString = "";
 
-        $decryptedString = $crypto->decryptString($str);
+        switch ($gatewayAcquirer)
+        {
+            case Fss\Acquirer::BOB:
+                $crypto = new Fss\TripleDESCrypto(Fss\TripleDESCrypto::MODE_ECB, $secretKey, true);
+
+                $decryptedString = $crypto->decryptString($str);
+                break;
+            case Fss\Acquirer::FSS:
+                $crypto = new Fss\AesCrypto(Fss\AesCrypto::MODE_CBC, $secretKey, $secretKey);
+
+                $decryptedString = $crypto->decryptString($str);
+                break;
+            default:
+                break;
+        }
 
         $decryptedResult = (array) simplexml_load_string($decryptedString);
 
@@ -176,5 +195,14 @@ class Server extends Base\Mock\Server
     protected function generateId($size)
     {
         return random_integer($size);
+    }
+
+    private function getGatewaySecretAndAcquirer($terminalId)
+    {
+        $terminal = (new TerminalRepo)->getByGatewayTerminalId($terminalId);
+
+        $gatewayAcquirer = $terminal->getGatewayAcquirer();
+
+        return [Config::get('gateway.fss.' . $gatewayAcquirer . '_test_hash_secret'), $gatewayAcquirer];
     }
 }
