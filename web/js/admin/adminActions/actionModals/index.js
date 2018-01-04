@@ -15,7 +15,6 @@ export ConfirmUser from './ConfirmUser';
 export AuthorizeFailedPayment from './AuthorizeFailedPayment';
 export RetryFailedSettlements from './RetryFailedSettlements';
 export VerifyPayment from './VerifyPayment';
-export EditBankTransferAccount from './EditBankTransferAccount';
 
 export TriggerDummyError from './TriggerDummyError';
 export MakeAPICall from './MakeAPICall';
