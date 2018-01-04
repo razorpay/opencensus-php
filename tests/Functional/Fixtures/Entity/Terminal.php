@@ -240,7 +240,7 @@ class Terminal extends Base
             'gateway_terminal_id'       => 'FssBobDebit123',
             'gateway_terminal_password' => 'password',
             'gateway_secure_secret'     => '12345678',
-            'gateway_acquirer'          => 'fss',
+            'gateway_acquirer'          => 'bob',
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
