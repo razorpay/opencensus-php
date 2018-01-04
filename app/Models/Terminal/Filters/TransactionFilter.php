@@ -159,84 +159,88 @@ class TransactionFilter extends Terminal\Filter
     {
         $payment = $this->input['payment'];
 
-        // for cybersource, check get the terminal based on recurring type
-        if ($payment->isRecurring() === true)
+        if ($payment->isRecurring() === false)
         {
-            $recurring = Gateway::isRecurringGateway($terminal->getGateway());
-
-            if ($recurring === false)
-            {
-                return false;
-            }
-
-            if ($terminal->getGateway() === Gateway::CYBERSOURCE)
-            {
-                // for cybersource recurring payment, terminal must be hdfc acquired
-                if ($terminal->getGatewayAcquirer() !== 'hdfc')
-                {
-                    return false;
-                }
-            }
-
-            $ba = app('basicauth');
-
-            $token = $payment->getGlobalOrLocalTokenEntity();
-
-            $access = (($ba->isPrivateAuth() === true) or ($ba->isPrivilegeAuth() === true));
-
-            // Check if this is the second recurring payment
-            if (($token !== null) and
-                ($token->isRecurring() === true) and
-                ($access === true))
-            {
-                $reference = $payment->getReferenceForGatewayToken();
-
-                $gatewayTokens = $this->repo->gateway_token->findByTokenAndReference($token, $reference);
-
-                $gatewayTokensCount = $gatewayTokens->count();
-
-                if ($gatewayTokensCount === 1)
-                {
-                    //
-                    // For second recurring payment, ensure that we select a terminal
-                    // of the same gateway as for the first recurring payment and also
-                    // of the same merchant (shared, direct)
-                    //
-                    $previousGateway = $gatewayTokens->first()->terminal->getGateway();
-                    $previousMerchant = $gatewayTokens->first()->terminal->getMerchantId();
-
-                    $currentGateway = $terminal->getGateway();
-                    $currentMerchant = $terminal->getMerchantId();
-
-                    return (($terminal->isNon3DSRecurring() === true) and
-                            ($previousGateway === $currentGateway) and
-                            ($previousMerchant === $currentMerchant));
-                }
-                //
-                // If a token is present and is supposed to be subsequent charge,
-                // the corresponding gateway_token must always be present.
-                // If it's not present, there's something wrong somewhere!
-                //
-                else
-                {
-                    throw new Exception\LogicException(
-                        'Should have gotten exactly 1 gateway token.',
-                        ErrorCode::SERVER_ERROR_GATEWAY_TOKENS_INVALID_COUNT,
-                        [
-                            'gateway_tokens_count'  => $gatewayTokensCount,
-                            'payment_id'            => $payment->getId(),
-                            'token_id'              => $token->getId(),
-                            'reference'             => $reference
-                        ]);
-                }
-            }
-            else
-            {
-                return ($terminal->is3DSRecurring() === true);
-            }
+            return ($terminal->isNonRecurring() === true);
         }
 
-        return ($terminal->isNonRecurring() === true);
+        $recurringGateway = Gateway::isRecurringGateway($terminal->getGateway());
+
+        if ($recurringGateway === false)
+        {
+            return false;
+        }
+
+        // for cybersource recurring payment, terminal must be hdfc acquired
+        if (($terminal->getGateway() === Gateway::CYBERSOURCE) and
+            ($terminal->getGatewayAcquirer() !== 'hdfc'))
+        {
+            return false;
+        }
+
+        $basicAuth = $this->app['basicauth'];
+
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
+        $access = (($basicAuth->isPrivateAuth() === true) or
+                   ($basicAuth->isPrivilegeAuth() === true));
+
+        //
+        // All first recurring payments or payments made via public
+        // auth need to go via 3DS Recurring terminals only.
+        //
+        if (($token === null) or
+            ($token->isRecurring() === false) or
+            ($access === false))
+        {
+            return ($terminal->is3DSRecurring() === true);
+        }
+
+        //
+        // From here onwards, the terminal selection
+        // logic is for second recurring.
+        //
+
+        $reference = $payment->getReferenceForGatewayToken();
+
+        $gatewayTokens = $this->repo->gateway_token->findByTokenAndReference($token, $reference);
+
+        $gatewayTokensCount = $gatewayTokens->count();
+
+        if ($gatewayTokensCount === 1)
+        {
+            //
+            // For second recurring payment, ensure that we select a terminal
+            // of the same gateway as for the first recurring payment and also
+            // of the same merchant (shared, direct)
+            //
+            $previousGateway = $gatewayTokens->first()->terminal->getGateway();
+            $previousMerchant = $gatewayTokens->first()->terminal->getMerchantId();
+
+            $currentGateway = $terminal->getGateway();
+            $currentMerchant = $terminal->getMerchantId();
+
+            return (($terminal->isNon3DSRecurring() === true) and
+                    ($previousGateway === $currentGateway) and
+                    ($previousMerchant === $currentMerchant));
+        }
+        //
+        // If a token is present and is supposed to be subsequent charge,
+        // the corresponding gateway_token must always be present.
+        // If it's not present, there's something wrong somewhere!
+        //
+        else
+        {
+            throw new Exception\LogicException(
+                'Should have gotten exactly 1 gateway token.',
+                ErrorCode::SERVER_ERROR_GATEWAY_TOKENS_INVALID_COUNT,
+                [
+                    'gateway_tokens_count'  => $gatewayTokensCount,
+                    'payment_id'            => $payment->getId(),
+                    'token_id'              => $token->getId(),
+                    'reference'             => $reference
+                ]);
+        }
     }
 
     protected function corporateFilter(Terminal\Entity $terminal)
