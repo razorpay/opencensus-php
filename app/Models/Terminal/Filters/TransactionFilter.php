@@ -13,6 +13,7 @@ use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal\Category;
 use RZP\Models\Merchant\Preferences;
+use RZP\Models\Customer\GatewayToken;
 use RZP\Models\Payment\Processor\Netbanking;
 
 class TransactionFilter extends Terminal\Filter
@@ -24,6 +25,7 @@ class TransactionFilter extends Terminal\Filter
         'network',
         'bank',
         'recurring',
+        'recurring_experiment',
         'gateway',
         'subscription',
         'tpv',
@@ -159,6 +161,17 @@ class TransactionFilter extends Terminal\Filter
     {
         $payment = $this->input['payment'];
 
+        //
+        // For one particular merchant (test), we want
+        // to run an experimental recurringFilter.
+        //
+        if ($payment->getMerchantId() === '5ubLZpACTmD8D4')
+        {
+            // Basically, no filtering here.
+            // We will do the filtering for this guy in `recurringExperimentFilter`
+            return true;
+        }
+
         if ($payment->isRecurring() === false)
         {
             return ($terminal->isNonRecurring() === true);
@@ -180,10 +193,10 @@ class TransactionFilter extends Terminal\Filter
 
         $basicAuth = $this->app['basicauth'];
 
-        $token = $payment->getGlobalOrLocalTokenEntity();
-
         $access = (($basicAuth->isPrivateAuth() === true) or
                    ($basicAuth->isPrivilegeAuth() === true));
+
+        $token = $payment->getGlobalOrLocalTokenEntity();
 
         //
         // All first recurring payments or payments made via public
@@ -233,6 +246,133 @@ class TransactionFilter extends Terminal\Filter
         {
             throw new Exception\LogicException(
                 'Should have gotten exactly 1 gateway token.',
+                ErrorCode::SERVER_ERROR_GATEWAY_TOKENS_INVALID_COUNT,
+                [
+                    'gateway_tokens_count'  => $gatewayTokensCount,
+                    'payment_id'            => $payment->getId(),
+                    'token_id'              => $token->getId(),
+                    'reference'             => $reference
+                ]);
+        }
+    }
+
+    /**
+     * NOTE: REMEMBER TO REMOVE RECURRING_EXPERIMENT PROPERTY ALSO WHEN REMOVING THIS FUNCTION
+     *
+     * @param $terminal
+     *
+     * @return bool
+     * @throws Exception\LogicException
+     */
+    public function recurringExperimentFilter($terminal)
+    {
+        $payment = $this->input['payment'];
+
+        //
+        // We are running this experiment only
+        // for one particular merchant (test).
+        //
+        if ($payment->getMerchantId() !== '5ubLZpACTmD8D4')
+        {
+            // Basically, no filtering here.
+            // Filtering would have been done in `recurringFilter`
+            return true;
+        }
+
+        if ($payment->isRecurring() === false)
+        {
+            return ($terminal->isNonRecurring() === true);
+        }
+
+        $recurringGateway = Gateway::isRecurringGateway($terminal->getGateway());
+
+        if ($recurringGateway === false)
+        {
+            return false;
+        }
+
+        // for cybersource recurring payment, terminal must be hdfc acquired
+        if (($terminal->getGateway() === Gateway::CYBERSOURCE) and
+            ($terminal->getGatewayAcquirer() !== 'hdfc'))
+        {
+            return false;
+        }
+
+        $basicAuth = $this->app['basicauth'];
+
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
+        $access = (($basicAuth->isPrivateAuth() === true) or
+            ($basicAuth->isPrivilegeAuth() === true));
+
+        //
+        // All first recurring payments or payments made via public
+        // auth need to go via 3DS Recurring terminals only.
+        //
+        if (($token === null) or
+            ($token->isRecurring() === false) or
+            ($access === false))
+        {
+            return ($terminal->is3DSRecurring() === true);
+        }
+
+        //
+        // From here onwards, the terminal selection
+        // logic is for second recurring.
+        //
+
+        $reference = $payment->getReferenceForGatewayToken();
+
+        $gatewayTokens = $this->repo->gateway_token->findByTokenAndReference($token, $reference);
+
+        $gatewayTokensCount = $gatewayTokens->count();
+
+        if ($gatewayTokensCount > 0)
+        {
+            //
+            // We check if we have even one valid gateway_token for
+            // the terminal being selected If yes, we return back true.
+            // If we don't have even one valid gateway_token for the
+            // terminal being selected, we return back false.
+            //
+            foreach ($gatewayTokens as $gatewayToken)
+            {
+                //
+                // For second recurring payment, ensure that we select a terminal
+                // of the same gateway as for the first recurring payment and also
+                // of the same merchant (shared, direct)
+                //
+                $previousGateway = $gatewayToken->terminal->getGateway();
+                $previousMerchant = $gatewayToken->terminal->getMerchantId();
+
+                $currentGateway = $terminal->getGateway();
+                $currentMerchant = $terminal->getMerchantId();
+
+                $valid = (($terminal->isNon3DSRecurring() === true) and
+                          ($previousGateway === $currentGateway) and
+                          ($previousMerchant === $currentMerchant));
+
+                if ($valid === false)
+                {
+                    continue;
+                }
+                else
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+        //
+        // If a token is present and is supposed to be subsequent charge,
+        // the corresponding gateway_token must always be present.
+        // If it's not present, there's something wrong somewhere!
+        //
+        else
+        {
+            throw new Exception\LogicException(
+                'Should have gotten at least 1 gateway token.',
                 ErrorCode::SERVER_ERROR_GATEWAY_TOKENS_INVALID_COUNT,
                 [
                     'gateway_tokens_count'  => $gatewayTokensCount,

@@ -2240,7 +2240,7 @@ trait Authorize
             ]);
 
         //
-        // Update token stats. Assuming same token is not getting
+        // TODO: Update token stats. Assuming same token is not getting
         // used in multiple payments. Actually we should be locking.
         //
 
@@ -2423,19 +2423,33 @@ trait Authorize
         }
         else
         {
-            //
-            // Not throwing an exception here because it might
-            // screw up with the flow. Going to just trace as critical.
-            //
-            $this->trace->critical(
-                TraceCode::GATEWAY_TOKEN_TOO_MANY_PRESENT,
-                [
-                    'payment_id'            => $payment->getId(),
-                    'payment_terminal_id'   => $payment->terminal->getId(),
-                    'token_id'              => $token->getId(),
-                    'gateway_tokens_count'  => $gatewayTokens->count(),
-                    'gateway_tokens'        => $gatewayTokens->toArray()
-                ]);
+            $gateway = $payment->terminal->getGateway();
+
+            $gatewayTokensToUpdate = $gatewayTokens->filter(
+                                            function($gatewayToken) use ($gateway)
+                                            {
+                                                return ($gatewayToken->getGateway() === $gateway);
+                                            });
+
+            if (empty($gatewayTokensToUpdate) === true)
+            {
+                (new GatewayToken\Core)->create($payment, $token, $reference);
+            }
+            else
+            {
+                //
+                // There will be only one for sure.
+                // There can't be more than 1 because, the only time we create is
+                // when there doesn't exist a single gateway_token of the gateway.
+                // All other cases, we only update the existing one. Hence, there
+                // can never be more than one gateway_token of a gateway.
+                //
+                $gatewayTokenToUpdate = $gatewayTokensToUpdate->first();
+
+                $gatewayTokenToUpdate->terminal()->associate($payment->terminal);
+
+                $this->repo->saveOrFail($gatewayTokenToUpdate);
+            }
         }
     }
 
