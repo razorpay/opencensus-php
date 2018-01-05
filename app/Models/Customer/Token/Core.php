@@ -182,6 +182,12 @@ class Core extends Base\Core
         return $token;
     }
 
+    /**
+     * @param string $id
+     * @param string $customerId
+     *
+     * @return Entity
+     */
     public function getByTokenIdAndCustomerId(string $id, string $customerId)
     {
         $token = $this->repo->token->getByTokenAndCustomerId($id, $customerId);

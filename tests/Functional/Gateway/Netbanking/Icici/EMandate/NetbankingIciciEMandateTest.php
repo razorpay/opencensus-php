@@ -49,9 +49,9 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->payment = $this->getEmandateNetbankingRecurringPaymentArray(IFSC::ICIC);
 
         $this->payment['bank_account'] = [
-            'number'    => self::ACCOUNT_NUMBER,
-            'ifsc'      => self::IFSC,
-            'name'      => self::NAME,
+            'account_number'    => self::ACCOUNT_NUMBER,
+            'ifsc'              => self::IFSC,
+            'name'              => self::NAME,
         ];
 
         $this->mockTokenex();

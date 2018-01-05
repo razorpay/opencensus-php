@@ -2789,3 +2789,9 @@ ALTER TABLE payments
 
 ALTER TABLE payments
     ADD INDEX `payments_auth_type_index` (`auth_type`);
+
+ALTER TABLE tokens
+    ADD COLUMN beneficiary_name VARCHAR(120) DEFAULT NULL AFTER account_number;
+
+ALTER TABLE tokens
+    ADD COLUMN ifsc VARCHAR(16) DEFAULT NULL AFTER beneficiary_name;

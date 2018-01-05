@@ -62,9 +62,9 @@ class Validator extends Base\Validator
         'subscription_card_change'   => 'sometimes|boolean',
         'upi'                        => 'sometimes_if:method,upi|array',
         'upi.expiry_time'            => 'sometimes_if:method,upi|integer|between:5,30|filled',
-        'auth_type'                  => 'sometimes_if:method,emandate|string|max:10|filled|in:netbanking',
+        'auth_type'                  => 'sometimes_if:method,emandate|string|max:10|filled|in:netbanking,aadhaar',
         'bank_account'               => 'sometimes_if:method,emandate|associative_array|filled',
-        'bank_account.number'        => 'required_with:bank_account|filled|alpha_num|between:5,20',
+        'bank_account.account_number' => 'required_with:bank_account|filled|alpha_num|between:5,20',
         'bank_account.ifsc'          => 'required_with:bank_account|filled|alpha_num|size:11',
         'bank_account.name'          => 'required_with:bank_account|filled|alpha_space_num|between:4,120',
     ];
@@ -127,12 +127,12 @@ class Validator extends Base\Validator
 
     protected function validateIfsc(array $input)
     {
-        if (isset($input['bank_account']['ifsc']) === false)
+        if (isset($input[Entity::BANK_ACCOUNT][Entity::IFSC]) === false)
         {
             return;
         }
 
-        $ifsc = $input['bank_account']['ifsc'];
+        $ifsc = $input[Entity::BANK_ACCOUNT][Entity::IFSC];
 
         if (IFSC::validate($ifsc) === false)
         {

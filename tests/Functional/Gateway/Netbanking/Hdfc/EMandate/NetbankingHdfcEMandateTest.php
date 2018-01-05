@@ -58,7 +58,7 @@ class NetbankingHdfcEMandateTest extends TestCase
 
         $this->assertEquals($payment[Payment\Entity::TOKEN_ID], $token[Token\Entity::ID]);
 
-        $this->assertEquals($this->payment['bank_account']['number'], $token[Token\Entity::ACCOUNT_NUMBER]);
+        $this->assertEquals($this->payment['bank_account']['account_number'], $token[Token\Entity::ACCOUNT_NUMBER]);
 
         $this->assertTestResponse($token, 'matchInitiatedToken');
     }
@@ -372,9 +372,9 @@ class NetbankingHdfcEMandateTest extends TestCase
         $payment = $this->getEmandateNetbankingRecurringPaymentArray('HDFC');
 
         $payment['bank_account'] = [
-                                        'number' => '0123456789',
-                                        'ifsc' => 'HDFC0000186',
-                                        'name' => 'Test Account'
+                                        'account_number'    => '0123456789',
+                                        'ifsc'              => 'HDFC0000186',
+                                        'name'              => 'Test Account'
                                    ];
 
         return $payment;

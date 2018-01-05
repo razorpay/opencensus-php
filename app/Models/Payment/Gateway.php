@@ -462,6 +462,12 @@ class Gateway
         Gateway::NETBANKING_HDFC,
     ];
 
+    /**
+     * List of ALL auth types and the corresponding
+     * banks supported by that auth type.
+     *
+     * @var array
+     */
     public static $emandateBanks = [
         AuthType::NETBANKING => [
             IFSC::ICIC,
@@ -469,9 +475,9 @@ class Gateway
             IFSC::HDFC,
         ],
         AuthType::AADHAAR => [
-            IFSC::ICIC,
-            IFSC::UTIB,
-            IFSC::HDFC,
+            // IFSC::ICIC,
+            // IFSC::UTIB,
+            // IFSC::HDFC,
         ]
     ];
 
@@ -716,7 +722,14 @@ class Gateway
 
     public static function getAvailableEmandateBanksForAuthType(string $authType): array
     {
-        return self::$emandateBanks[$authType];
+        $banks = [];
+
+        if (isset(self::$emandateBanks[$authType]) === true)
+        {
+            $banks = self::$emandateBanks[$authType];
+        }
+
+        return $banks;
     }
 
     public static function getChannel($gateway)

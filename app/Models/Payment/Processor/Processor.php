@@ -210,67 +210,88 @@ class Processor
 
     protected function preProcessPaymentInputsForEmandate(array $input, Payment\Entity $payment)
     {
-        $coproto = null;
+        //
+        // We don't want to do this coproto
+        // stuff for second recurring payments.
+        //
+        // We don't want to ask the merchant to send bank_account
+        // details and auth_type for second recurring payments.
+        // bank_account details are filled into the payment create
+        // input automatically using the token.
+        // Ideally, even the bank_account details are not really needed
+        // to be filled in the input. But, we are filling it anyway.
+        // auth_type cannot be filled using the token or any other details
+        // in the payment create input. But, we don't need auth_type for
+        // second recurring payments. So, it's okay.
+        //
 
-        if ($payment->isEmandate() === true)
+        if ($this->route->getCurrentRouteName() === 'payment_create_recurring')
         {
-            //
-            // We need this flow only if either bank_account or auth_type is missing.
-            // TODO: Handle for aadhaar also
-            //
-            if ((empty($input['bank_account']) === false) and
-                (empty($payment->getAuthType()) === false))
-            {
-                return null;
-            }
-
-            $methods = [];
-
-            (new Methods\Core)->addRecurringEmandateToMethodsIfApplicable($this->merchant, $methods);
-
-            //
-            // This can happen when the required features are not enabled
-            // or when there's not a single bank for any auth type.
-            //
-            if (empty($methods) === true)
-            {
-                return null;
-            }
-
-            $bank = $input[Payment\Entity::BANK];
-
-            //
-            // This case should ideally never come up because the bank
-            // passed by the client would be based on the methods API only.
-            // Even here, we are using the methods API. If the bank did
-            // not come up in the methods API now, then most likely someone
-            // is tampering with the request on the frontend.
-            //
-            if (isset($methods['emandate'][$bank]) === false)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_INVALID_BANK_FOR_EMANDATE,
-                    Payment\Entity::BANK,
-                    [
-                        'bank' => $bank
-                    ]);
-            }
-
-            $coproto = [
-                'type'    => 'emandate',
-                'request' => [
-                    'url'     => $this->route->getUrlWithPublicAuthInQueryParam('payment_create'),
-                    'method'  => 'POST',
-                    'content' => [
-                        'input' => $input,
-                        'bank_details' => $methods['emandate'][$input[Payment\Entity::BANK]],
-                    ]
-                ],
-                'version' => '1',
-            ];
+            return null;
         }
 
+        if ($payment->isEmandate() === false)
+        {
+            return null;
+        }
+
+        //
+        // We need this flow only if either bank_account or auth_type is missing.
+        // TODO: Handle for aadhaar also
+        //
+        if ((empty($input[Payment\Entity::BANK_ACCOUNT]) === false) and
+            (empty($payment->getAuthType()) === false))
+        {
+            return null;
+        }
+
+        $methods = [];
+
+        (new Methods\Core)->addRecurringEmandateToMethodsIfApplicable($this->merchant, $methods);
+
+        //
+        // This can happen when the required features are not enabled
+        // or when there's not a single bank for any auth type.
+        //
+        if (empty($methods) === true)
+        {
+            return null;
+        }
+
+        $bank = $input[Payment\Entity::BANK];
+
+        //
+        // This case should ideally never come up because the bank
+        // passed by the client would be based on the methods API only.
+        // Even here, we are using the methods API. If the bank did
+        // not come up in the methods API now, then most likely someone
+        // is tampering with the request on the frontend.
+        //
+        if (isset($methods['emandate'][$bank]) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_BANK_FOR_EMANDATE,
+                Payment\Entity::BANK,
+                [
+                    'bank' => $bank
+                ]);
+        }
+
+        $coproto = [
+            'type'    => 'emandate',
+            'request' => [
+                'url'     => $this->route->getUrlWithPublicAuthInQueryParam('payment_create'),
+                'method'  => 'POST',
+                'content' => [
+                    'input' => $input,
+                    'bank_details' => $methods['emandate'][$input[Payment\Entity::BANK]],
+                ]
+            ],
+            'version' => '1',
+        ];
+
         return $coproto;
+
     }
 
     protected function preProcessPaymentInputsForWallet(array $input, Payment\Entity $payment)
@@ -424,6 +445,11 @@ class Processor
             if ($tokenMethod === Payment\Method::EMANDATE)
             {
                 $input[Payment\Entity::BANK] = $token->getBank();
+                $input[Payment\Entity::BANK_ACCOUNT] = [
+                    Payment\Entity::NAME            => $token->getBeneficiaryName(),
+                    Payment\Entity::IFSC            => $token->getIfsc(),
+                    Payment\Entity::ACCOUNT_NUMBER  => $token->getAccountNumber()
+                ];
             }
             else if ($tokenMethod === Payment\Method::WALLET)
             {
@@ -1152,8 +1178,8 @@ class Processor
      */
     protected function verifyProvidedFee(Payment\Entity $payment, array $input)
     {
-        // This is not needed because FeeCalculater:calculateFee()
-        // calculates the actual amount (amount - fee) in case of feebearer merchant
+        // This is not needed because FeeCalculator:calculateFee()
+        // calculates the actual amount (amount - fee) in case of fee bearer merchant
         // $input['amount'] = $payment->getAmount() - $payment->getFee();
 
         // Re-calculates fees on the amount, using a dummy payment creation flow.

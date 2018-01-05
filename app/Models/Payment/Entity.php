@@ -124,6 +124,11 @@ class Entity extends Base\PublicEntity
 
     const METADATA              = 'metadata';
 
+    const BANK_ACCOUNT          = 'bank_account';
+    const NAME                  = 'name';
+    const IFSC                  = 'ifsc';
+    const ACCOUNT_NUMBER        = 'account_number';
+
     // constants and defaults
     const CURRENCY_LENGTH                   = 3;
     const MIN_PAYMENT_AMOUNT                = 100;
@@ -315,7 +320,7 @@ class Entity extends Base\PublicEntity
         self::CONTACT,
         self::BANK,
         self::RECURRING,
-        'ifsc',
+        self::IFSC,
         'method_based_input',
         'convert_empty_strings_to_null'
     ];
@@ -470,10 +475,10 @@ class Entity extends Base\PublicEntity
 
     protected function modifyIfsc(& $input)
     {
-        if ((isset($input['bank_account']['ifsc']) === true) and
-            (is_string($input['bank_account']['ifsc']) === true))
+        if ((isset($input[self::BANK_ACCOUNT][self::IFSC]) === true) and
+            (is_string($input[self::BANK_ACCOUNT][self::IFSC]) === true))
         {
-            $input['bank_account']['ifsc'] = strtoupper($input['bank_account']['ifsc']);
+            $input[self::BANK_ACCOUNT][self::IFSC] = strtoupper($input[self::BANK_ACCOUNT][self::IFSC]);
         }
     }
 

@@ -48,9 +48,9 @@ class NetbankingAxisEMandateTest extends TestCase
         $this->payment = $this->getEmandateNetbankingRecurringPaymentArray('UTIB');
 
         $this->payment['bank_account'] = [
-                                            'number'    => self::ACCOUNT_NUMBER,
-                                            'ifsc'      => self::IFSC,
-                                            'name'      => self::NAME,
+                                            'account_number'    => self::ACCOUNT_NUMBER,
+                                            'ifsc'              => self::IFSC,
+                                            'name'              => self::NAME,
                                          ];
 
         unset($this->payment[Entity::CARD]);
