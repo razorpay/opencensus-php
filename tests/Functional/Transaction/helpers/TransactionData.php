@@ -12,6 +12,7 @@ return [
                 'amount'      => 100,
                 'description' => 'random desc',
                 'currency'    => 'INR',
+                'channel'     => 'kotak',
             ],
             'url' => '/adjustments',
             'method' => 'POST'

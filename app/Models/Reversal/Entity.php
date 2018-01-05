@@ -4,8 +4,8 @@ namespace RZP\Models\Reversal;
 
 use RZP\Models\Base;
 use RZP\Models\Transfer;
+use RZP\Constants\Entity as E;
 use RZP\Models\Base\Traits\NotesTrait;
-use RZP\Constants\Entity as EntityConstant;
 
 class Entity extends Base\PublicEntity
 {
@@ -120,7 +120,7 @@ class Entity extends Base\PublicEntity
 
     public function setPublicTransferIdAttribute(array & $array)
     {
-       if ($this->getAttribute(self::ENTITY_TYPE) === EntityConstant::TRANSFER)
+       if ($this->getAttribute(self::ENTITY_TYPE) === E::TRANSFER)
         {
             $array[self::TRANSFER_ID] = Transfer\Entity::getSignedId(
                                                 $this->getAttribute(self::ENTITY_ID));

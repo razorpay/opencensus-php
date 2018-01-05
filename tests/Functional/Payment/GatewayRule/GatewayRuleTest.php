@@ -2,12 +2,8 @@
 
 namespace RZP\Functional\Payment\GatewayRule;
 
-use Carbon\Carbon;
-use RZP\Models\Merchant;
-use RZP\Models\Payment\Method;
-use RZP\Models\Terminal\Options;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 /**
  * Tests CRUD operations on gateway_rule entity
@@ -29,12 +25,14 @@ class GatewayRuleTest extends TestCase
 
         $testCases = $this->testData[__FUNCTION__];
 
+        //
         // All test cases have the below format
         // [
         //      'fixtures' => <any rules that neds to be created via fixtures
         //      'request' => 'create request to be made'
         //      'response' => expected response
         // ]
+        //
         foreach ($testCases as $test)
         {
             $this->runTestCase($test);
@@ -47,6 +45,7 @@ class GatewayRuleTest extends TestCase
 
         $testCases = $this->testData[__FUNCTION__];
 
+        //
         // All test cases have the below format
         // [
         //      'to_update' => Existing rule which needs to be updated
@@ -54,6 +53,7 @@ class GatewayRuleTest extends TestCase
         //      'request' => 'create request to be made'
         //      'response' => expected response
         // ]
+        //
         foreach ($testCases as $test)
         {
              $this->runTestCase($test);
@@ -76,7 +76,7 @@ class GatewayRuleTest extends TestCase
 
         $this->ba->appAuth();
 
-        $content = $this->startTest();
+        $this->startTest();
     }
 
     protected function runTestCase(array $testData)
@@ -116,6 +116,8 @@ class GatewayRuleTest extends TestCase
 
     protected function createRules(array $ruleParams): array
     {
+        $ruleIds = [];
+
         foreach ($ruleParams as $params)
         {
             $rule = $this->fixtures->create('gateway_rule', $params);

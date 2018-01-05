@@ -168,6 +168,8 @@ class Service extends Base\Service
      */
     public function getOnboardingQuestions(array $input): array
     {
+        (new Validator)->validateInput('onboarding_questions', $input);
+
         $features = $input[Constants::FEATURES];
 
         $response = [];
@@ -219,7 +221,7 @@ class Service extends Base\Service
 
         $data[$feature] = $input;
 
-        $status = (new Core)->processOnboardingResponses(Constants::UPDATE, $data, $merchant);
+        $status = (new Core)->processOnboardingSubmissions(Constants::UPDATE, $data, $merchant);
 
         return $status;
     }
@@ -259,19 +261,31 @@ class Service extends Base\Service
     }
 
     /**
+     * @deprecated by getFeatureOnboardingRequests()
+     *
+     * @param array $input
+     *
+     * @return array
+     */
+    public function getFeatureOnboardingRequestsByStatus(array $input): array
+    {
+        $status = $input[Constants::STATUS];
+
+        return $this->repo->merchant_detail->getFeatureOnboardingRequestsByStatus($status);
+    }
+
+    /**
      * Returns the feature activation requests based on the status
      *
      * @param array $input
      *
-     * @return mixed
+     * @return array
      */
-    public function getFeatureOnboardingRequests(array $input)
+    public function getFeatureOnboardingRequests(array $input): array
     {
-        $status = $input['status'];
+        (new Validator)->validateInput(Constants::ONBOARDING_SUBMISSIONS_FETCH, $input);
 
-        $merchantDetails = $this->repo->merchant_detail->getFeatureOnboardingRequestsByStatus($status);
-
-        return $merchantDetails;
+        return $this->repo->merchant_detail->getFeatureOnboardingRequests($input);
     }
 
     /**
@@ -282,7 +296,7 @@ class Service extends Base\Service
      */
     public function updateFeatureActivationStatus(string $featureName, array $input): array
     {
-        $status = $input['status'];
+        $status = $input[Constants::STATUS];
 
         $merchantId = $input['merchant_id'];
 
@@ -308,7 +322,48 @@ class Service extends Base\Service
             $featureName
         );
 
-        $response['status'] = $status;
+        $response[Constants::STATUS] = $status;
+
+        return $response;
+    }
+
+    /**
+     * Bulk updates the feature activation status for multiple merchants
+     *
+     * @param array $input
+     *
+     * @return array
+     */
+    public function bulkUpdateFeatureActivationStatus(array $input): array
+    {
+        $success   = 0;
+        $failed    = 0;
+        $failedIds = [];
+
+        $core = new Core;
+
+        foreach (Constants::PRODUCT_FEATURES as $productFeature)
+        {
+            if (isset($input[$productFeature]) === true)
+            {
+                $productResponse = $core->bulkUpdateFeatureActivationStatus($productFeature, $input[$productFeature]);
+
+                $success += $productResponse['success'];
+
+                $failed += $productResponse['failed'];
+
+                if ($productResponse['failed'] > 0)
+                {
+                    $failedIds[$productFeature] = $productResponse['failed_ids'];
+                }
+            }
+        }
+
+        $response = [
+            'success'    => $success,
+            'failed'     => $failed,
+            'failed_ids' => $failedIds
+        ];
 
         return $response;
     }

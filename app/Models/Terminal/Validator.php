@@ -45,11 +45,13 @@ class Validator extends Base\Validator
 
     protected static $editTerminalGateways = [
         Payment\Gateway::HDFC,
-        Payment\Gateway::CYBERSOURCE,
+        Payment\Gateway::HITACHI,
+        Payment\Gateway::BILLDESK,
         Payment\Gateway::AXIS_MIGS,
         Payment\Gateway::UPI_ICICI,
-        Payment\Gateway::BILLDESK,
         Payment\Gateway::FIRST_DATA,
+        Payment\Gateway::CYBERSOURCE,
+        Payment\Gateway::NETBANKING_ICICI,
         Payment\Gateway::NETBANKING_INDUSIND,
     ];
 
@@ -78,6 +80,14 @@ class Validator extends Base\Validator
         Entity::EMI_SUBVENTION             => 'sometimes|in:customer,merchant',
         Entity::TYPE                       => 'sometimes|array',
         Entity::CURRENCY                   => 'sometimes|alpha|size:3',
+    ];
+
+    protected static $hitachiTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:hitachi',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string|max:15',
+        Entity::GATEWAY_TERMINAL_ID        => 'required|string|max:8',
+        Entity::INTERNATIONAL              => 'sometimes|boolean',
+        Entity::CURRENCY                   => 'sometimes|alpha|size:3'
     ];
 
     protected static $aepsIciciTerminalRules = [
@@ -176,6 +186,12 @@ class Validator extends Base\Validator
         Entity::CARD                       => 'sometimes|boolean|in:1',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
         Entity::TYPE                       => 'sometimes|array',
+    ];
+
+    protected static $hitachiEditTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:hitachi',
+        Entity::GATEWAY_TERMINAL_ID        => 'sometimes|string|max:8',
+        Entity::INTERNATIONAL              => 'sometimes|boolean',
     ];
 
     protected static $firstDataEditTerminalRules = [
@@ -281,6 +297,12 @@ class Validator extends Base\Validator
         Entity::UPI                        => 'sometimes|boolean|in:1',
     ];
 
+    protected static $upiSbiTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:upi_sbi',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::UPI                        => 'sometimes|boolean|in:1',
+    ];
+
     protected static $netbankingAirtelTerminalRules = [
         Entity::GATEWAY                    => 'required|in:netbanking_airtel',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
@@ -352,7 +374,7 @@ class Validator extends Base\Validator
 
     protected function validateMode($input)
     {
-        // Adding this for backward compatibility
+        // TODO: Adding this for backward compatibility
         // Will remove when dashboard starts sending both fields
         // Tests will also need to be updated
         if ((isset($input[Entity::MODE]) === false) or

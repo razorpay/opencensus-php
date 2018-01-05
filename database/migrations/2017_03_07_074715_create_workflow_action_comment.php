@@ -4,9 +4,10 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
+use RZP\Models\Comment\Entity as Comment;
+use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Admin\Admin\Entity as Admin;
 use RZP\Models\Workflow\Action\Entity as Action;
-use RZP\Models\Workflow\Action\Comment\Entity as Comment;
 
 class CreateWorkflowActionComment extends Migration
 {
@@ -17,18 +18,30 @@ class CreateWorkflowActionComment extends Migration
      */
     public function up()
     {
-        Schema::create(Table::ACTION_COMMENT, function (BluePrint $table)
+        Schema::create(Table::COMMENT, function (BluePrint $table)
         {
             $table->engine = 'InnoDB';
 
             $table->char(Comment::ID, Comment::ID_LENGTH)
                   ->primary();
 
-            $table->char(Comment::ACTION_ID, Comment::ID_LENGTH);
+            $table->char(Comment::ACTION_ID, Action::ID_LENGTH)->nullable();
 
-            $table->char(Comment::ADMIN_ID, Comment::ID_LENGTH);
+            $table->char(Comment::ENTITY_ID, Comment::ID_LENGTH)->nullable();
+
+            $table->char(Comment::ENTITY_TYPE, 100)->nullable();
+
+            $table->char(Comment::ADMIN_ID, Admin::ID_LENGTH)
+                  ->nullable();
+
+            $table->char(Comment::MERCHANT_ID, Merchant::ID_LENGTH)
+                  ->nullable();
 
             $table->text(Comment::COMMENT);
+
+            $table->integer(Comment::CREATED_AT);
+
+            $table->integer(Comment::UPDATED_AT);
 
             $table->foreign(Comment::ACTION_ID)
                   ->references(Action::ID)
@@ -40,9 +53,15 @@ class CreateWorkflowActionComment extends Migration
                   ->on(Table::ADMIN)
                   ->on_delete('restrict');
 
-            $table->integer(Comment::CREATED_AT);
+            $table->foreign(Comment::MERCHANT_ID)
+                  ->references(Merchant::ID)
+                  ->on(Table::MERCHANT)
+                  ->on_delete('restrict');
 
-            $table->integer(Comment::UPDATED_AT);
+            $table->index(Comment::ENTITY_ID);
+            $table->index(Comment::ENTITY_TYPE);
+            $table->index(Comment::CREATED_AT);
+
         });
     }
 
@@ -53,13 +72,13 @@ class CreateWorkflowActionComment extends Migration
      */
     public function down()
     {
-        Schema::table(Table::ACTION_COMMENT, function($table)
+        Schema::table(Table::COMMENT, function($table)
         {
-            $table->dropForeign(Table::ACTION_COMMENT . '_' . Comment::ADMIN_ID . '_foreign');
+            $table->dropForeign(Table::COMMENT . '_' . Comment::ADMIN_ID . '_foreign');
 
-            $table->dropForeign(Table::ACTION_COMMENT . '_' . Comment::ACTION_ID . '_foreign');
+            $table->dropForeign(Table::COMMENT . '_' . Comment::ACTION_ID . '_foreign');
         });
 
-        Schema::drop(Table::ACTION_COMMENT);
+        Schema::drop(Table::COMMENT);
     }
 }

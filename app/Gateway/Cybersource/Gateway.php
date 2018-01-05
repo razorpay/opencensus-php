@@ -519,6 +519,11 @@ class Gateway extends Base\Gateway
 
             foreach($requests as $request)
             {
+                if (empty($request[F::APPLICATION_REPLIES][F::APPLICATION_REPLY]) === true)
+                {
+                    continue;
+                }
+
                 $applicationReplies = $request[F::APPLICATION_REPLIES][F::APPLICATION_REPLY];
 
                 if ($this->isSequentialArray($applicationReplies) === false)
@@ -905,7 +910,7 @@ class Gateway extends Base\Gateway
             E::CV_CODE                  => $ccAuthReply[F::CV_CODE] ?? null,
             E::MERCHANT_ADVICE_CODE     => $ccAuthReply[F::MERCHANT_ADVICE_CODE] ?? null,
             E::GATEWAY_TRANSACTION_ID   => $ccAuthReply[F::PAYMENT_NETWORK_TXN_ID] ?? null,
-            E::PROCESSOR_RESPONSE       => $ccAuthReply[F::PROCESSOR_RESPONSE],
+            E::PROCESSOR_RESPONSE       => $ccAuthReply[F::PROCESSOR_RESPONSE] ?? null,
             E::STATUS                   => Status::AUTHORIZED,
             E::RECEIVED                 => true
         ];
@@ -916,9 +921,10 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            // We are doing this because paymentNetworkTransactionId should
-            // be present if payment is successful.
+            // We are doing this because paymentNetworkTransactionId and 
+            // ProcessorResponse should be present if payment is successful.
             $attributes[E::GATEWAY_TRANSACTION_ID] = $ccAuthReply[F::PAYMENT_NETWORK_TXN_ID];
+            $attributes[E::PROCESSOR_RESPONSE] = $ccAuthReply[F::PROCESSOR_RESPONSE];
         }
 
         return $attributes;

@@ -8,4 +8,6 @@ class Mode
     const IMPS = 'IMPS';
     const NEFT = 'NEFT';
     const IFT  = 'IFT';
+    const DD   = 'DD';
+    const FT   = 'FT';
 }

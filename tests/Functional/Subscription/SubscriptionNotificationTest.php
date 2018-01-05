@@ -110,7 +110,7 @@ class SubscriptionNotificationTest extends TestCase
             $this->assertNull($data['payment']['captured_at']);
 
             $this->assertEquals('#C15482', $data['card']['color']);
-            $this->assertEquals('12/2017', $data['card']['expiry']);
+            $this->assertEquals('12/2024', $data['card']['expiry']);
             $this->assertEquals('VISA', $data['card']['network']);
             $this->assertEquals('**** **** **** 3335', $data['card']['number']);
 
@@ -160,7 +160,7 @@ class SubscriptionNotificationTest extends TestCase
             $this->assertEquals($currentEnd, $data['invoice']['billing_end']);
 
             $this->assertEquals('#C15482', $data['card']['color']);
-            $this->assertEquals('12/2017', $data['card']['expiry']);
+            $this->assertEquals('12/2024', $data['card']['expiry']);
             $this->assertEquals('VISA', $data['card']['network']);
             $this->assertEquals('**** **** **** 3335', $data['card']['number']);
 
@@ -203,7 +203,7 @@ class SubscriptionNotificationTest extends TestCase
             $this->assertNull($data['invoice']['billing_end']);
 
             $this->assertEquals('#C15482', $data['card']['color']);
-            $this->assertEquals('12/2017', $data['card']['expiry']);
+            $this->assertEquals('12/2024', $data['card']['expiry']);
             $this->assertEquals('VISA', $data['card']['network']);
             $this->assertEquals('**** **** **** 3335', $data['card']['number']);
 
@@ -250,7 +250,7 @@ class SubscriptionNotificationTest extends TestCase
             $this->assertEquals($currentEnd, $data['invoice']['billing_end']);
 
             $this->assertEquals('#C15482', $data['card']['color']);
-            $this->assertEquals('12/2017', $data['card']['expiry']);
+            $this->assertEquals('12/2024', $data['card']['expiry']);
             $this->assertEquals('VISA', $data['card']['network']);
             $this->assertEquals('**** **** **** 3335', $data['card']['number']);
 
@@ -297,7 +297,7 @@ class SubscriptionNotificationTest extends TestCase
             $this->assertNotNull($data['invoice']['billing_end']);
 
             $this->assertEquals('#C15482', $data['card']['color']);
-            $this->assertEquals('12/2017', $data['card']['expiry']);
+            $this->assertEquals('12/2024', $data['card']['expiry']);
             $this->assertEquals('VISA', $data['card']['network']);
             $this->assertEquals('**** **** **** 3335', $data['card']['number']);
 
@@ -354,7 +354,7 @@ class SubscriptionNotificationTest extends TestCase
             $this->assertEquals($currentEnd, $data['invoice']['billing_end']);
 
             $this->assertEquals('#C15482', $data['card']['color']);
-            $this->assertEquals('12/2017', $data['card']['expiry']);
+            $this->assertEquals('12/2024', $data['card']['expiry']);
             $this->assertEquals('VISA', $data['card']['network']);
             $this->assertEquals('**** **** **** 3335', $data['card']['number']);
 
@@ -406,7 +406,7 @@ class SubscriptionNotificationTest extends TestCase
             $this->assertArrayNotHasKey('invoice', $data);
 
             $this->assertEquals('#C15482', $data['card']['color']);
-            $this->assertEquals('12/2017', $data['card']['expiry']);
+            $this->assertEquals('12/2024', $data['card']['expiry']);
             $this->assertEquals('VISA', $data['card']['network']);
             $this->assertEquals('**** **** **** 3335', $data['card']['number']);
 

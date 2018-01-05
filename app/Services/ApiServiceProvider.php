@@ -22,10 +22,9 @@ use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Models\BankAccount;
 use RZP\Models\Admin as Admin;
-use RZP\Models\Payment\Refund;
+use RZP\Models\Workflow\Action;
 use RZP\Gateway\GatewayManager;
 use RZP\Models\Plan\Subscription;
-use RZP\Services\GatewayFileManager;
 use RZP\Models\Plan\Subscription\Addon;
 use RZP\Models\Gateway\File as GatewayFile;
 
@@ -92,11 +91,6 @@ class ApiServiceProvider extends BaseServiceProvider
             return new TokenEx($app);
         });
 
-        $this->app->bind('raven', function($app)
-        {
-            return new Raven($app);
-        });
-
         $this->app->singleton('authservice', function($app)
         {
             return new AuthService($app);
@@ -143,6 +137,8 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerMaxMind();
 
+        $this->registerRaven();
+
         $this->registerElfin();
 
         $this->registerExchange();
@@ -160,6 +156,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerWorkflow();
 
         $this->registerHttplugMockClient();
+
+        $this->registerGeolocation();
     }
 
     /**
@@ -204,6 +202,18 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->app->singleton('Illuminate\Contracts\Queue\EntityResolver', function ()
         {
             return new \RZP\Base\QueueEntityResolver;
+        });
+    }
+
+    protected function registerRaven()
+    {
+        $this->app->bind('raven', function($app)
+        {
+            $mock = $app['config']->get('applications.raven.mock');
+
+            $implementation = $mock ? Mock\Raven::class : Raven::class;
+
+            return new $implementation($app);
         });
     }
 
@@ -305,6 +315,8 @@ class ApiServiceProvider extends BaseServiceProvider
             'promotion'       => Promotion\Entity::class,
 
             'dispute'         => Dispute\Entity::class,
+
+            'workflow_action' => Action\Entity::class,
         ]);
     }
 
@@ -372,6 +384,14 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->app['httplug']->extend('mock', function()
         {
             return new MockHttplug;
+        });
+    }
+
+    protected function registerGeolocation()
+    {
+        $this->app->singleton('geolocation', function($app)
+        {
+            return new Geolocation\Service($app);
         });
     }
 

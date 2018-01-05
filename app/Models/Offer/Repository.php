@@ -4,11 +4,8 @@ namespace RZP\Models\Offer;
 
 use DB;
 use Carbon\Carbon;
+
 use RZP\Models\Base;
-use RZP\Constants\Table;
-use RZP\Models\Merchant;
-use RZP\Models\Order;
-use RZP\Models\Merchant\Account;
 
 class Repository extends Base\Repository
 {
@@ -47,12 +44,12 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
-    public function fetchMerchantOffersForCheckout(string $merchantId)
+    public function fetchOffersForCheckout(array $merchantIds)
     {
         $now = Carbon::now()->getTimestamp();
 
         return $this->newQuery()
-                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->whereIn(Entity::MERCHANT_ID, $merchantIds)
                     ->where(Entity::ACTIVE, '=', true)
                     ->where(Entity::CHECKOUT_DISPLAY, '=', true)
                     ->where(Entity::STARTS_AT, '<=', $now)

@@ -5,10 +5,14 @@ namespace RZP\Models\Payout;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Payment;
+use RZP\Models\Card;
+use RZP\Constants\Entity as E;
 
 class Validator extends Base\Validator
 {
     protected static $createRules = [
+        Entity::PURPOSE         => 'sometimes|filled|string|max:30|in:refund',
         Entity::METHOD          => 'required|string',
         Entity::AMOUNT          => 'required|integer|max:500000000',
         Entity::CURRENCY        => 'required|size:3',
@@ -17,13 +21,19 @@ class Validator extends Base\Validator
         Entity::DESTINATION     => 'required|public_id',
     ];
 
+    protected static $merchantPayoutRules = [
+        Entity::PURPOSE         => 'required|string|max:30|in:settlement',
+        Entity::METHOD          => 'required|string',
+        Entity::AMOUNT          => 'required|integer|max:500000000',
+        Entity::CURRENCY        => 'required|size:3',
+    ];
+
     protected static $merchantRules = [
         Entity::MERCHANT_ID    => 'required|string|size:14',
-        Entity::CUSTOMER_ID    => 'required|public_id',
-        Entity::DESTINATION_ID => 'required|public_id',
         Entity::AMOUNT         => 'sometimes|integer|max:500000000',
         Entity::MIN_AMOUNT     => 'sometimes|integer|min:100',
         Entity::MODULO         => 'sometimes|integer|min:100',
+        Entity::BUFFER_AMOUNT  => 'sometimes|integer|min:10000000'
     ];
 
     protected static $createValidators = [
@@ -35,14 +45,14 @@ class Validator extends Base\Validator
         Method::validateMethod($input[Entity::METHOD]);
     }
 
-    public function validatePaymentPayout($input, $payment)
+    public function validatePayoutAmount($input, $payment)
     {
-        if (isset($input['amount']) === false)
+        if (isset($input[Entity::AMOUNT]) === false)
         {
             return;
         }
 
-        $payoutAmount = $input['amount'];
+        $payoutAmount = $input[Entity::AMOUNT];
 
         $payoutAmountPending = $payment->getAmount() - $payment->getAmountPaidout();
 
@@ -62,6 +72,48 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_PAYOUT_AMOUNT_GREATER_THAN_PENDING);
+        }
+    }
+
+    /**
+     * Validate that a payout can be created on a particular payment
+     *
+     * @param array          $input
+     * @param Payment\Entity $payment
+     */
+    public function validatePaymentForPayout(array $input, Payment\Entity $payment)
+    {
+        $this->validateBankPayoutsFromCardPayments($input, $payment);
+    }
+
+    protected function validateBankPayoutsFromCardPayments(array $input, Payment\Entity $payment)
+    {
+        //
+        // If method is not sent in input, skip the
+        // following validation and allow the call to
+        // fail during Payout build
+        //
+        if (isset($input[Entity::METHOD]) === false)
+        {
+            return;
+        }
+
+        // Only validating for card payments
+        if ($payment->isCard() === false)
+        {
+            return;
+        }
+
+        $card = $payment->card;
+
+        $payoutMethod      = $input[Entity::METHOD];
+        $destinationEntity = Method::getEntityName($payoutMethod);
+
+        if (($card->getType() === Card\Type::CREDIT) and
+            ($destinationEntity === E::BANK_ACCOUNT))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUT_FUND_TRANSFER_ON_CREDIT_CARD_PAYMENT);
         }
     }
 }

@@ -14,7 +14,7 @@ cd "$BASEDIR" && sudo chmod 777 -R storage
 
 # Install new version
 echo  "Install new version"
-cd $BASEDIR && rsync -avz --force --delete --progress --exclude-from=./.rsyncignore ./ "$API_INSTALL_DIR"
+cd $BASEDIR && rsync -avz --no-times --force --delete --progress --exclude-from=./.rsyncignore ./ "$API_INSTALL_DIR"
 
 # TODO remove this, as this is already done
 # Fix permissions
@@ -25,6 +25,13 @@ cd "$API_INSTALL_DIR" && sudo chmod 777 -R storage
 echo  "Run alohomora"
 $ALOHOMORA_BIN cast --region ap-south-1 --env $DEPLOYMENT_GROUP_NAME --app $APPLICATION_NAME "$API_INSTALL_DIR/environment/.env.vault.j2"
 $ALOHOMORA_BIN cast --region ap-south-1 --env $DEPLOYMENT_GROUP_NAME --app $APPLICATION_NAME "$API_INSTALL_DIR/environment/env.php.j2"
+
+# This clears the mod_php opcache
+echo "== apache restart =="
+sudo service apache2 restart
+
+echo "== opcache cli clear =="
+php $BASEDIR/scripts/clear_cli_opcache.php
 
 # start supervisor as root
 echo  "Supervisor Start"

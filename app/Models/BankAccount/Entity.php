@@ -243,6 +243,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::IFSC_CODE);
     }
 
+    public function getBankName()
+    {
+        return $this->getAttribute(self::BANK_NAME);
+    }
+
     public function getType()
     {
         return $this->getAttribute(self::TYPE);
@@ -266,6 +271,21 @@ class Entity extends Base\PublicEntity
     public function getMobileBankingEnabled()
     {
         return $this->getAttribute(self::MOBILE_BANKING_ENABLED);
+    }
+
+    public function getBeneficiaryAddress1()
+    {
+        return $this->getAttribute(self::BENEFICIARY_ADDRESS1);
+    }
+
+    public function getBeneficiaryAddress2()
+    {
+        return $this->getAttribute(self::BENEFICIARY_ADDRESS2);
+    }
+
+    public function getBeneficiaryAddress3()
+    {
+        return $this->getAttribute(self::BENEFICIARY_ADDRESS3);
     }
 
     public function setMobileBankingEnabled($mobileBankingEnabled)

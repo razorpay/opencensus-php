@@ -39,7 +39,9 @@ class Entity extends Base\PublicEntity
 
     const RECEIVER_TYPES       = 'receiver_types';
     const RECEIVERS            = 'receivers';
+    const TYPES                = 'types';
     const BANK_ACCOUNT         = 'bank_account';
+    const NUMERIC              = 'numeric';
 
     const DELETED_AT           = 'deleted_at';
 
@@ -232,6 +234,11 @@ class Entity extends Base\PublicEntity
         }
 
         return $receivers;
+    }
+
+    public function getReceiverBuilder()
+    {
+        return new Receiver($this);
     }
 
     // ----------------------- Setters -----------------------------------------

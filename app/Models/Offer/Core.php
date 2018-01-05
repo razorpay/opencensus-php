@@ -2,13 +2,17 @@
 
 namespace RZP\Models\Offer;
 
-use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Card\IIN;
-use RZP\Models\Merchant;
 use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
+use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payment\Gateway;
+use RZP\Models\Merchant\Account;
+use RZP\Models\Base\PublicCollection;
+use RZP\Models\Payment\Processor\Wallet;
 
 class Core extends Base\Core
 {
@@ -129,9 +133,38 @@ class Core extends Base\Core
     {
         $merchantId = $merchant->getId();
 
-        $offers = $this->repo->offer->fetchMerchantOffersForCheckout($merchantId);
+        $offers = $this->repo->offer->fetchOffersForCheckout([
+            $merchantId,
+            Account::SHARED_ACCOUNT
+        ]);
 
-        return $offers;
+        $groupedOffers = $offers->groupBy(Entity::MERCHANT_ID);
+
+        //
+        // We split the offers belonging to shared merchant
+        // and current merchant in two separate groups
+        //
+        $directOffers = $groupedOffers->get($merchantId) ?? new PublicCollection;
+
+        $sharedOffers = $groupedOffers->get(Account::SHARED_ACCOUNT) ?? new PublicCollection;
+
+        $applicableOffers = $directOffers;
+
+        //
+        // For shared merchant offers if there is no similar offer (i,e for same method,
+        // issuer, network etc defined), we also send the shared merchant offer to checkout
+        //
+        foreach ($sharedOffers as $sharedOffer)
+        {
+            $result =  $this->shouldApplySharedOffer($sharedOffer, $directOffers, $merchantId);
+
+            if ($result === true)
+            {
+                $applicableOffers->push($sharedOffer);
+            }
+        }
+
+        return $applicableOffers;
     }
 
     public function fetchSharedOffers()
@@ -139,6 +172,44 @@ class Core extends Base\Core
         $offers = $this->repo->offer->fetchSharedOffers();
 
         return $offers;
+    }
+
+    protected function shouldApplySharedOffer(
+        Entity $sharedOffer,
+        PublicCollection $directOffers,
+        string $merchantId): bool
+    {
+        if (($sharedOffer->getIssuer() === Wallet::FREECHARGE))
+        {
+            //
+            // For freecharge offers, if the merchant has a direct terminal with
+            // freecharge, we don't show the offer, as freecharge does not support
+            // offers on direct terminals.
+            //
+            $merchantsWithDirectFreechargeTerminals = $this->repo
+                                                           ->terminal
+                                                           ->getDirectTerminalsForGateway(Gateway::WALLET_FREECHARGE)
+                                                           ->pluck(Terminal\Entity::MERCHANT_ID)
+                                                           ->toArray();
+
+            if (in_array($merchantId, $merchantsWithDirectFreechargeTerminals, true) === true)
+            {
+                return false;
+            }
+        }
+
+        //
+        // Find matching direct offers for the shared offer
+        //
+        $matchingDirectOfferPresent = $directOffers->search(function ($offer) use ($sharedOffer)
+        {
+            return $offer->matches($sharedOffer);
+        });
+
+        //
+        // Only apply shared offer when no direct offer is found.
+        //
+        return ($matchingDirectOfferPresent === false);
     }
 
     protected function checkConflictingOffers(Entity $offer)
@@ -157,7 +228,9 @@ class Core extends Base\Core
      * Checks if the offer ids provided in linked_offer_ids are valid and also
      * removes public sign from them
      *
-     * @param  Entity $offer new offer entity
+     * @param  array $input
+     *
+     * @throws Exception\BadRequestValidationFailureException
      */
     protected function verifyIdAndStripSignForLinkedOfferIds(array & $input)
     {

@@ -4,6 +4,7 @@ use RZP\Gateway\Hdfc;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Merchant\Detail\RejectionReasons as RejectionReasons;
 
 return [
 
@@ -221,6 +222,30 @@ return [
         ],
     ],
 
+    'testGetMerchantRejectionReasons' => [
+        'request' => [
+            'content' => [],
+            'url'     => '/merchant/activation/rejection_reasons',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                RejectionReasons::UNSUPPORTED_BUSINESS_MODEL => [
+                    [
+                        RejectionReasons::CODE        => RejectionReasons::WEB_DEVELOPMENT_OR_WEB_HOSTING,
+                        RejectionReasons::DESCRIPTION => RejectionReasons::WEB_DEVELOPMENT_OR_WEB_HOSTING_DESCRIPTION,
+                    ],
+                ],
+                RejectionReasons::OTHERS => [
+                    [
+                        RejectionReasons::CODE        => RejectionReasons::DUPLICATE_OR_ERRENOUS_CREATION,
+                        RejectionReasons::DESCRIPTION => RejectionReasons::DUPLICATE_OR_ERRENOUS_CREATION_DESCRIPTION,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testLockMerchant' => [
         'request' => [
             'content' => [
@@ -236,6 +261,34 @@ return [
                     'disabled_reason' => 'required_fields',
                 ],
                 'can_submit' => false,
+            ],
+        ],
+    ],
+
+    'testMerchantFormArchive' => [
+        'request' => [
+            'content' => [
+                'archive' => 1,
+            ],
+            'method' => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'archived' => 1,
+            ],
+        ],
+    ],
+
+    'testMerchantActivationStatus' => [
+        'request' => [
+            'content' => [
+                'activation_status'  => 'under_review',
+            ],
+            'method' => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'activation_status'  => 'under_review',
             ],
         ],
     ],

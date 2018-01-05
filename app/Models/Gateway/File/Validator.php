@@ -2,13 +2,11 @@
 
 namespace RZP\Models\Gateway\File;
 
-use RZP\Base;
 use Carbon\Carbon;
+
+use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
-use RZP\Models\Bank\IFSC;
-use RZP\Models\Payment\Gateway;
-use RZP\Models\Gateway\File\Constants;
 
 class Validator extends Base\Validator
 {
@@ -43,7 +41,7 @@ class Validator extends Base\Validator
      * - If the processing flag is set to true then it means it is under processing
      *   and cannot be processed
      *
-     * @throws BadRequestException
+     * @throws Exception\BadRequestException
      */
     public function validateIfProcessable()
     {
@@ -85,11 +83,7 @@ class Validator extends Base\Validator
 
         $subType = $input[Entity::SUB_TYPE] ?? null;
 
-        // Currently subType is required only when target is Kotak as we need to specify
-        // tpv or non tpv
-        if (($target === Constants::KOTAK) and
-            ($type === Type::COMBINED) and
-            (Type::isValidSubType($subType) === false))
+        if (Type::isValidSubTypeForTargetAndType($target, $type, $subType) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 "$subType is not a valid subType");

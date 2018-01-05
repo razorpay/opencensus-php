@@ -136,6 +136,8 @@ return array(
         'operations_log'       => 'C0KUX9WSE',
         // reconciliation
         'reconciliation'       => 'C1GNPHC07',
+        // reconciliation 2
+        'reconciliation2'      => 'C847BUR61',
         // transactions_risky
         'risky'                => 'C0RL2C917',
         // settlements
@@ -148,6 +150,7 @@ return array(
         'subscriptions'        => 'C77PAU3JM',
         // virtual_accounts
         'virtual_accounts'     => 'C44FHBKC1',
+        'virtual_accounts_log' => 'C809AQYUC',
         // tech_logs_mail
         'tech_logs_mail'       => 'C50JZ3S5T',
         // activations

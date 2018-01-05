@@ -45,7 +45,9 @@ class AdminController extends Controller
 
     public function getEntityById($type, $id)
     {
-        $data = $this->service()->fetchEntityById($type, $id);
+        $input = Request::all();
+
+        $data = $this->service()->fetchEntityById($type, $id, $input);
 
         return ApiResponse::json($data);
     }
@@ -130,6 +132,15 @@ class AdminController extends Controller
         $limit = $input['limit'];
 
         $data = $this->service()->updateTaxColumnValue($entity, $limit);
+
+        return ApiResponse::json($data);
+    }
+
+    public function updateGeoIps()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->updateGeoIps($input);
 
         return ApiResponse::json($data);
     }

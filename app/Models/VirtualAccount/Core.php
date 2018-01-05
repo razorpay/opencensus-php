@@ -23,7 +23,7 @@ class Core extends Base\Core
 
             $virtualAccount->customer()->associate($customer);
 
-            $this->buildReceivers($virtualAccount, $input[Entity::RECEIVER_TYPES]);
+            $this->buildReceivers($virtualAccount, $input[Entity::RECEIVERS]);
 
             $this->repo->saveOrFail($virtualAccount);
 
@@ -55,21 +55,19 @@ class Core extends Base\Core
         return $virtualAccount;
     }
 
-    protected function buildReceivers(Entity $virtualAccount, array $receiverTypes)
+    protected function buildReceivers(Entity $virtualAccount, array $receivers)
     {
-        $name = $virtualAccount->getName();
+        $receiverHelper = $virtualAccount->getReceiverBuilder();
 
-        $descriptor = $virtualAccount->getDescriptor();
-
-        $receiverHelper = new Receiver($virtualAccount->merchant, $name, $descriptor);
-
-        foreach ($receiverTypes as $receiverType)
+        foreach ($receivers[Entity::TYPES] as $receiverType)
         {
-            $this->validateReceiver($receiverType);
+            $options = $receivers[$receiverType] ?? [];
+
+            $this->validateReceiver($receiverType, $virtualAccount);
 
             $func = 'build' . studly_case($receiverType);
 
-            $receiver = $receiverHelper->$func($virtualAccount);
+            $receiver = $receiverHelper->$func($virtualAccount, $options);
 
             $association = camel_case($receiverType);
 
@@ -77,12 +75,12 @@ class Core extends Base\Core
         }
     }
 
-    protected function validateReceiver(string $receiver)
+    protected function validateReceiver(string $receiver, Entity $virtualAccount)
     {
         switch ($receiver)
         {
             case Receiver::BANK_ACCOUNT:
-                $this->verifyBankTransferEnabled();
+                $this->verifyBankTransferEnabled($virtualAccount->merchant);
                 break;
 
             case Receiver::QR_CODE:
@@ -116,6 +114,14 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_DESCRIPTOR_SANS_HANDLE);
         }
 
+        // Removing the below check for crypto merchants so that they can
+        // create new VAs with the same descriptor, using a different provider.
+        // Default provider for crypto merchants has already been changed.
+        if ($virtualAccount->merchant->isCategory2Cryptocurrency() === true)
+        {
+            return;
+        }
+
         $existingVirtualAccounts = $this->repo->virtual_account
                                         ->findActiveByDescriptorAndMerchant(
                                             $virtualAccount->getDescriptor(),
@@ -133,9 +139,9 @@ class Core extends Base\Core
         }
     }
 
-    protected function verifyBankTransferEnabled()
+    protected function verifyBankTransferEnabled(Merchant $merchant)
     {
-        $merchantMethods = $this->getMethodsForMerchant($this->merchant);
+        $merchantMethods = $this->getMethodsForMerchant($merchant);
 
         if (($merchantMethods === null) or
             ($merchantMethods->isBankTransferEnabled() === false))

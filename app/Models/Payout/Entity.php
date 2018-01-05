@@ -10,6 +10,7 @@ use RZP\Constants\Table;
 use RZP\Models\Customer;
 use RZP\Constants\Timezone;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\FundTransfer\Attempt\Purpose;
 
 class Entity extends Base\PublicEntity
 {
@@ -45,8 +46,10 @@ class Entity extends Base\PublicEntity
     // These are used while creating merchant payouts.
     // Min amount refers to the minimum amount payout has to be
     // Modulo refers to the multiples in which amount should be
+    // Buffer Amount specifies the remaining merchant balance (buffer balance) after the payout
     const MIN_AMOUNT             = 'min_amount';
     const MODULO                 = 'modulo';
+    const BUFFER_AMOUNT          = 'buffer_amount';
 
     protected $entity = 'payout';
 
@@ -63,6 +66,7 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::ID,
         self::METHOD,
+        self::PURPOSE,
         self::AMOUNT,
         self::CURRENCY,
         self::STATUS,
@@ -123,7 +127,7 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = [
         self::STATUS            => Status::CREATED,
-        self::PURPOSE           => 'refund',
+        self::PURPOSE           => Purpose::REFUND,
         self::NOTES             => [],
     ];
 
@@ -174,6 +178,11 @@ class Entity extends Base\PublicEntity
     public function batchFundTransfer()
     {
         return $this->belongsTo('RZP\Models\FundTransfer\Batch\Entity');
+    }
+
+    public function getPurpose()
+    {
+        return $this->getAttribute(self::PURPOSE);
     }
 
     public function getAmount()

@@ -22,6 +22,19 @@ return [
         ],
    ],
 
+   'testCreatePaymentWithoutMethod' => [
+       'response' => [
+           'content' => [
+               'merchant_id'        => '10000000000000',
+               'amount'             => 100,
+               'currency'           => 'INR',
+               'phase'              => 'chargeback',
+               'status'             => 'open',
+               'reason_description' => 'This is a serious fraud',
+           ],
+       ],
+   ],
+
    'testCreatePaymentWithoutCardNumber' => [
         'response' => [
             'content' => [

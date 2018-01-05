@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Payment;
 
 use RZP\Error\ErrorCode;
+use RZP\Models\Feature;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -102,6 +103,35 @@ class FraudDetectionTest extends TestCase
         $response = $this->doAuthPayment($payment);
 
         $this->assertArrayHasKey('razorpay_payment_id', $response);
+    }
+
+    public function testFraudNotDetectedForSecondRecurring()
+    {
+        $this->mockMaxmind();
+        $this->mockTokenex();
+
+        $this->fixtures->merchant->enableInternational();
+        $this->fixtures->merchant->addFeatures([Feature\Constants::CHARGE_AT_WILL]);
+
+        $this->ba->publicAuth();
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+        $payment['card']['number'] = '5105105105105100';
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        unset($payment['card']);
+        unset($payment['bank']);
+
+        $payment['token'] = $paymentEntity['token_id'];;
+
+        $this->ba->privateAuth();
+
+        $this->doS2sRecurringPayment($payment);
+
+        $this->ba->publicAuth();
     }
 
     public function testFraudDetectedWithInvalidEmailTld()

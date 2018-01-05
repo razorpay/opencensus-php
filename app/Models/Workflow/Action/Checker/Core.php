@@ -3,13 +3,12 @@
 namespace RZP\Models\Workflow\Action\Checker;
 
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Models\Base;
-use RZP\Models\Workflow;
+use RZP\Models\State;
+use RZP\Error\ErrorCode;
 use RZP\Models\Workflow\Action;
-use RZP\Models\Admin\Role;
-use RZP\Models\Workflow\Action\State;
 use RZP\Models\Workflow\Action\Differ;
+use RZP\Models\Admin\Admin\Entity as Admin;
 
 class Core extends Base\Core
 {
@@ -32,7 +31,7 @@ class Core extends Base\Core
         $action = $this->repo->workflow_action->findOrFailPublic(
             $input[Entity::ACTION_ID]);
 
-        if ($action->getState() !== State\Entity::OPEN)
+        if ($action->getState() !== State\Name::OPEN)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ACTION_NOT_IN_OPEN_STATES);
@@ -109,14 +108,14 @@ class Core extends Base\Core
 
         $checker->build($input);
 
-        $this->repo->transactionOnLiveAndTest(function() use ($action, $checker)
+        $this->repo->transactionOnLiveAndTest(function() use ($action, $checker, $admin)
         {
             $this->repo->saveOrFail($checker);
 
             // State change if checker rejected
             if ($checker->isApproved() === false)
             {
-                $this->applyActionRejectionStateChanges($action, $checker);
+                $this->applyActionRejectionStateChanges($action, $checker, $admin);
             }
             else
             {
@@ -128,7 +127,7 @@ class Core extends Base\Core
                 // If all the checkers have approved then approve
                 // and close the action. This will also update
                 // action_state (state machine).
-                (new Action\Core)->checkAndMarkActionApproved($action);
+                (new Action\Core)->checkAndMarkActionApproved($action, $admin);
             }
         });
 
@@ -145,15 +144,13 @@ class Core extends Base\Core
     /*
         State changes on rejection
     */
-    protected function applyActionRejectionStateChanges($action, $checker)
+    protected function applyActionRejectionStateChanges($action, $checker, Admin $admin)
     {
-        $state = State\Entity::REJECTED;
+        $state = State\Name::REJECTED;
 
         $actionId = $action->getId();
 
-        $adminId = $checker->getAdminId();
-
-        (new State\Core)->changeActionState($actionId, $state, $adminId);
+        (new State\Core)->changeActionState($action, $state, $admin);
 
         (new Action\Core)->updateState($action, $state);
 

@@ -13,8 +13,11 @@ class Repository extends Base\Repository
     protected $entity = 'upi';
 
     protected $appFetchParamRules = array(
-        Entity::PAYMENT_ID    => 'sometimes|string|min:14|max:18',
-        Entity::BANK          => 'sometimes|in:icici'
+        Entity::BANK                    => 'sometimes|min:4|max:4',
+        Entity::GATEWAY_PAYMENT_ID      => 'sometimes|string|max:50',
+        Entity::NPCI_REFERENCE_ID       => 'sometimes|string|max:20',
+        Entity::PAYMENT_ID              => 'sometimes|string|min:14|max:18',
+        Entity::REFUND_ID               => 'sometimes|string|min:14|max:18',
     );
 
     public function fetchGatewayPaymentIdByPaymentId($paymentId)

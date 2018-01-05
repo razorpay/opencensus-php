@@ -299,30 +299,16 @@ class Gateway extends Base\Gateway
 
     public function verifyRefund(array $input)
     {
-        $processedRefund = [
-            '7nrkdwUCa5QaZJ',
-            '7nrjJeQ0JV2DQO',
-            '7ntGB12qJWUUtG'
-        ];
+        $unprocessedRefunds = $this->getUnprocessedRefunds();
 
-        $unprocessedRefund = [
-            '80gr3AA3pfHiaP',
-            '7zwdFzXDz1U1BC',
-            '81EZukEQk9Aaf4',
-            '7mvsRH7Vg0gSuD',
-            '87w1VBQsDf2reN',
-            '7zCqB1tKFeqI7k',
-            '81E2wpeQbguWdd',
-            '7zxv98X8y42R41',
-            '81LPR1MUay15ZL'
-        ];
+        $processedRefunds = $this->getProcessedRefunds();
 
-        if (in_array($input['refund']['id'], $processedRefund, true) === true)
+        if (in_array($input['refund']['id'], $processedRefunds, true) === true)
         {
             return true;
         }
 
-        if (in_array($input['refund']['id'], $unprocessedRefund, true) === true)
+        if (in_array($input['refund']['id'], $unprocessedRefunds, true) === true)
         {
             return false;
         }

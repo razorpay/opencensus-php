@@ -105,6 +105,7 @@ class Entity extends Base\PublicEntity
         self::PARENT_ID,
         self::AMOUNT,
         self::CURRENCY,
+        self::GATEWAY_DISPUTE_ID,
         self::REASON_CODE,
         self::REASON_DESCRIPTION,
         self::RAISED_ON,
@@ -216,6 +217,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::STATUS);
     }
 
+    public function getPhase()
+    {
+        return $this->getAttribute(self::PHASE);
+    }
+
     public function getExpiresOn()
     {
         return $this->getAttribute(self::EXPIRES_ON);
@@ -298,4 +304,12 @@ class Entity extends Base\PublicEntity
     {
         return ($this->getStatus() === Status::WON);
     }
+
+    public function isNonTransactional(): bool
+    {
+        $nonTransactionalPhases = Phase::getNonTransactionalPhases();
+
+        return (in_array($this->getPhase(), $nonTransactionalPhases, true) === true);
+    }
+
 }

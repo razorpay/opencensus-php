@@ -25,8 +25,8 @@ class Validator extends Base\Validator
     protected static $createRules = [
         'amount'                     => 'required|integer',
         'currency'                   => 'required|string|size:3',
-        'method'                     => 'string|custom',
-        'vpa'                        => 'required_if:method,upi|string|max:100|custom',
+        'method'                     => 'required|string|custom',
+        'vpa'                        => 'sometimes_if:method,upi|string|max:100|custom',
         'aadhaar'                    => 'required_if:method,aeps|array',
         'aadhaar.number'             => 'required_if:method,aeps|size:12|string',
         'aadhaar.fingerprint'        => 'required_if:method,aeps|max:999|string',
@@ -61,10 +61,13 @@ class Validator extends Base\Validator
         '_'                          => 'sometimes|array',
         'test_success'               => 'sometimes|boolean',
         'subscription_card_change'   => 'sometimes|boolean',
-        'account_number'             => 'sometimes_if:recurring,1,method,netbanking|alpha_num|between:5,20|nullable',
+        'account_number'             => 'filled|alpha_num|between:5,20',
+        'upi'                        => 'sometimes_if:method,upi|array',
+        'upi.expiry_time'            => 'sometimes_if:method,upi|integer|between:5,30|filled',
     ];
 
     protected static $editRules = [
+        Entity::VPA                  => 'sometimes|string|max:100',
         Entity::APPROVAL_CODE        => 'sometimes|string|max:6',
         Entity::REFERENCE1           => 'sometimes|string',
         Entity::REFERENCE2           => 'sometimes|string',
@@ -112,7 +115,62 @@ class Validator extends Base\Validator
         'hold_parameters',
         'customer_id',
         'test_success',
+        'account_number',
+        'upi_expiry_time',
+        'upi_vpa',
     ];
+
+    protected function validateAccountNumber(array $input)
+    {
+        if (isset($input['account_number']) === false)
+        {
+            return;
+        }
+
+        if ($input[Entity::METHOD] !== Method::NETBANKING)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Account Number passed for invalid method: ' . $input[Entity::METHOD]);
+        }
+
+        $recurring = $input[Entity::RECURRING] ?? null;
+
+        if ($recurring !== '1')
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Account Number passed for non-recurring payment');
+        }
+    }
+
+    protected function validateUpiExpiryTime(array $input)
+    {
+        if (isset($input['upi']['expiry_time']) === false)
+        {
+            return;
+        }
+
+        $app = App::getFacadeRoot();
+
+        if ($app['basicauth']->isPrivateAuth() === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'upi is/are not required and should not be sent');
+        }
+    }
+
+    protected function validateUpiVpa(array $input)
+    {
+        if ((isset($input['_']['flow']) === false) or
+            ($input['_']['flow'] !== 'intent'))
+        {
+            if (($input[Entity::METHOD] === Method::UPI) and
+                (empty($input[Entity::VPA]) === true))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'The vpa field is required when method is upi.');
+            }
+        }
+    }
 
     protected function validateEmail(array $input)
     {
@@ -170,6 +228,13 @@ class Validator extends Base\Validator
 
     protected function validateVpa($attribute, $vpa, $parameter)
     {
+        if ((isset($this->data['_']['flow']) === true) and
+            ($this->data['_']['flow'] === 'intent'))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The vpa field is not required and not shouldn\'t be sent.');
+        }
+
         $vpaParts = explode('@', $vpa);
 
         if ((count($vpaParts) !== 2) or

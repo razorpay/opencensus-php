@@ -4,7 +4,6 @@ namespace RZP\Models\Workflow\Action\Checker;
 
 use RZP\Models\Base;
 use RZP\Models\Workflow\Action;
-use RZP\Models\Workflow\Action\State;
 
 class Service extends Base\Service
 {

@@ -2,18 +2,22 @@
 
 namespace RZP\Models\Report\Types;
 
+use Mail;
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
-use RZP\Models\Order;
+
 use RZP\Models\Payment;
-use RZP\Models\Payment\Refund;
 use RZP\Models\FileStore;
-use RZP\Models\Feature;
+use RZP\Constants\Timezone;
+use RZP\Models\Payment\Refund;
 use RZP\Constants\Entity as E;
+use RZP\Mail\Report\IrctcRefundReport as IrctcMail;
 
 class IrctcRefundReport extends BasicEntityReport
 {
     const BATCH_LIMIT = 100000;
+
+    const AUTO_REFUND_DELAY = 5;
+
     // Maps the transaction source to the entities to be fetched for it
     protected $entityToRelationFetchMap = [
         E::REFUND => [
@@ -36,13 +40,49 @@ class IrctcRefundReport extends BasicEntityReport
 
     const FILE_PREFIX = [
         '8ST00QgEPT14cE' => 'deltarefund_WRZRMPP00000_',
-        '8YPFnW5UOM91H7' => 'deltarefund_WMRAZOR00000_'
+        '8YPFnW5UOM91H7' => 'deltarefund_WMRAZOR00000_',
     ];
+
+    public function getReport(array $input)
+    {
+        $this->setDefaults();
+
+        $timestamp = Carbon::yesterday(Timezone::IST)->subDays(self::AUTO_REFUND_DELAY)->timestamp;
+
+        if (isset($input['on']) === true)
+        {
+            $from = Carbon::createFromFormat('Y-m-d', $input['on'], Timezone::IST)->setTime(0,0,0);
+
+            $timestamp = $from->getTimestamp();
+        }
+        elseif (isset($input['from']) === true)
+        {
+            $timestamp = $input['from'];
+        }
+
+        $filename = $this->generateFilename($timestamp);
+
+        $fullpath = $this->writeDataToCsv($input, $filename);
+
+        $s3File = $this->createFileAndSave($fullpath, $filename);
+
+        $this->unlinkFile($fullpath);
+
+        $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($s3File);
+
+        $data = $this->createMailData($filename, $signedUrl, $input);
+
+        $reportingMail = new IrctcMail($data);
+
+        Mail::queue($reportingMail);
+
+        return [ 'url' => $signedUrl ];
+    }
 
     protected function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip)
     {
         return $this->repo->refund
-                        ->fetchByMerchantBetweenTimestamps($merchantId, $from, $to);
+                          ->fetchIrctcDeltaRefunds($merchantId, $from, $to);
     }
 
     protected function fetchFormattedDataForReport($entities): array
@@ -87,7 +127,7 @@ class IrctcRefundReport extends BasicEntityReport
 
     protected function getPaymentDate(Payment\Entity $payment)
     {
-        $ts = $payment->getAuthorizeTimestamp();
+        $ts = $payment->getCreatedAt();
 
         $paymentDate = Carbon::createFromTimestamp($ts, Timezone::IST)
                              ->format('Ymd');
@@ -105,21 +145,15 @@ class IrctcRefundReport extends BasicEntityReport
         return $refundDate;
     }
 
-    /**
-     * Generates filename basis merchant_id, entity and timestamp
-     *
-     * @param  $timestamp
-     * @return $filename string
-     */
     protected function generateFilename($timestamp) : string
     {
         $version = 'V1';
 
-        $time = Carbon::now(Timezone::IST)->format('Ymd');
+        $time = Carbon::createFromTimestamp($timestamp, Timezone::IST)->format('Ymd');
 
         $filePrefix = self::FILE_PREFIX[$this->merchant->getId()];
 
-        return $filePrefix . $time . '_' .$version;
+        return $filePrefix . $time . '_' . $version . '.txt';
     }
 
     protected function writeDataToCsvForMerchant(int $from,
@@ -132,42 +166,29 @@ class IrctcRefundReport extends BasicEntityReport
     {
         list($data, $count) = $this->getReportDataForMerchant($from, $to, self::BATCH_LIMIT, $skip, $merchantId);
 
-        $txt = $this->generateText($data, '|');
+        $txt = $this->generateText($data, ',');
 
         $fullpath = $this->createTxtFile($filename, $txt);
 
         return [$count, $fullpath];
     }
 
-    public function generateReport(array $input)
-    {
-        $this->setDefaults();
-
-        $now = Carbon::now()->getTimestamp();
-
-        $filename = $this->generateFilename($now);
-
-        // We do not want all the aggregator merchant to download the complete report
-        // so its behind aggregator_report feature
-        if ($this->merchant->isFeatureEnabled(Feature\Constants::AGGREGATOR_REPORT) === true)
-        {
-            $fullpath = $this->writeDataToCsvForAggregator($input, $filename);
-        }
-        else
-        {
-            $fullpath = $this->writeDataToCsv($input, $filename);
-        }
-
-        $s3File = $this->createFileAndSave($fullpath, $filename);
-
-        $this->unlinkFile($fullpath);
-    }
-
     protected function getTimestamps($input): array
     {
-        $from = Carbon::yesterday(Timezone::IST)->timestamp;
+        $from = Carbon::yesterday(Timezone::IST)->subDay(self::AUTO_REFUND_DELAY)->timestamp;
 
-        $to = Carbon::today(Timezone::IST)->timestamp - 1;
+        $to = Carbon::yesterday(Timezone::IST)->subDays(self::AUTO_REFUND_DELAY - 1)->timestamp;
+
+        if (isset($input['on']) === true)
+        {
+            $from = Carbon::createFromFormat('Y-m-d', $input['on'], Timezone::IST)->setTime(0,0,0);
+
+            $fromTimeStamp = $from->getTimestamp();
+
+            $to = $from->addDay()->getTimestamp() - 1;
+
+            $from = $fromTimeStamp;
+        }
 
         if (isset($input['from']) === true)
         {
@@ -207,5 +228,33 @@ class IrctcRefundReport extends BasicEntityReport
     protected function getFormattedAmount($amount)
     {
         return number_format($amount / 100, 2, '.', '');
+    }
+
+    protected function createMailData($filename, $signedUrl, $input)
+    {
+        list($from, $to) = $this->getTimestamps($input);
+
+        $fdate = Carbon::createFromTimestamp($from, Timezone::IST)->format('Y-m-d');
+
+        $tdate = Carbon::createFromTimestamp($to, Timezone::IST)->format('Y-m-d');
+
+        $emails = $this->merchant['transaction_report_email'];
+
+        if (isset($input['email']) === true)
+        {
+            $inputEmails = explode(',', $input['email']);
+
+            $emails = array_merge($emails, $inputEmails);
+        }
+
+        $data = [
+            'subject'    => 'Irctc Delta Refunds Report - ' . $fdate .' to ' . $tdate,
+            'body'       => '',
+            'signed_url' => $signedUrl,
+            'filename'   => $filename,
+            'emails'     => $emails,
+        ];
+
+        return $data;
     }
 }

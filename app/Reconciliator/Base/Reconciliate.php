@@ -2,16 +2,17 @@
 
 namespace RZP\Reconciliator\Base;
 
-use RZP\Reconciliator\FileProcessor;
-use RZP\Reconciliator\Orchestrator;
-use RZP\Reconciliator\Messenger;
-
-use RZP\Exception;
-use RZP\Trace\TraceCode;
-use DB;
 use App;
 
-class Reconciliate
+use RZP\Exception;
+use RZP\Models\Base;
+use RZP\Models\Batch;
+use RZP\Trace\TraceCode;
+use RZP\Reconciliator\Messenger;
+use RZP\Reconciliator\Orchestrator;
+use RZP\Reconciliator\FileProcessor;
+
+class Reconciliate extends Base\Core
 {
     /***********************
      * Reconciliation Types
@@ -78,8 +79,8 @@ class Reconciliate
 
     public function __construct()
     {
-        $this->app = App::getFacadeRoot();
-        $this->repo = $this->app['repo'];
+        parent::__construct();
+
         $this->messenger = new Messenger;
     }
 
@@ -113,12 +114,55 @@ class Reconciliate
             $allSummaries[] = $summary;
         }
 
-        $this->app['trace']->info(
+        $this->trace->info(
             TraceCode::RECON_INFO_SUMMARY,
             $allSummaries
         );
 
         return $allSummaries;
+    }
+
+    /**
+     * This is the start of the reconciliation. This is executed from the reconciliation
+     * batch processor. For each file, it figures out which type of reconciliation it is
+     * (nodal, payment, refund, combined) and calls the startReconciliation of the
+     * respective reconciliation type.
+     *
+     * The logic here is exactly the same as in startReconciliate, except that we
+     * pass the batch entity to the individual subreconciliators
+     *
+     * @param array         $allFilesContents
+     * @param Batch\Entity  $batch
+     */
+    public function startReconciliationV2(array $allFilesContents, Batch\Entity $batch)
+    {
+        foreach ($allFilesContents as $fileContents)
+        {
+            $extraDetails = $fileContents[Orchestrator::EXTRA_DETAILS];
+
+            $reconciliationType = $this->getReconciliationType($fileContents[Orchestrator::EXTRA_DETAILS]);
+
+            // If unable to get the reconciliation type, just continue on to the next file.
+            // An alert is raised in the function getReconciliationType in case of this.
+            if ($reconciliationType === null)
+            {
+                continue;
+            }
+
+            $this->updateBatchWithReconciliationType($batch, $reconciliationType, $extraDetails);
+
+            $this->setSubReconciliator($reconciliationType);
+
+            $this->subReconciliator->startReconciliationV2($fileContents, $batch);
+        }
+
+        $this->trace->info(
+            TraceCode::RECON_INFO_SUMMARY,
+            [
+                'total_count'   => $batch->getTotalCount(),
+                'success_count' => $batch->getSuccessCount(),
+                'failure_count' => $batch->getFailureCount(),
+            ]);
     }
 
     /**
@@ -176,6 +220,29 @@ class Reconciliate
     }
 
     /**
+     * Thus can be overridden from the child class.
+     * If not overriden, it fetches the mapping from FileProcessor::FILE_TYPES_MAPPINGS
+     *
+     * @param  string $mimeType
+     * @return string
+     */
+    public function getFileType(string $mimeType): string
+    {
+        return get_key_from_subarray_match($mimeType, FileProcessor::FILE_TYPES_MAPPINGS);
+    }
+
+    /**
+     * Stub method to be overriden by child classes to provide the reconciliation
+     * type for the particular gateway based on the fileName
+     *
+     * @param  string $fileName Name of the file or sheet in case of excel
+     */
+    protected function getTypeName($fileName)
+    {
+        return;
+    }
+
+    /**
      * Gets the reconciliation type by either the sheet name in case of excel files
      * or by the file name in case of csv files.
      *
@@ -184,14 +251,7 @@ class Reconciliate
      */
     protected function getReconciliationType($extraDetails)
     {
-        if (isset($extraDetails[FileProcessor::FILE_DETAILS][FileProcessor::SHEET_NAME]) === true)
-        {
-            $fileName = $extraDetails[FileProcessor::FILE_DETAILS][FileProcessor::SHEET_NAME];
-        }
-        else
-        {
-            $fileName = $extraDetails[FileProcessor::FILE_DETAILS][FileProcessor::FILE_NAME];
-        }
+        $fileName = $this->getFileName($extraDetails);
 
         $fileName = strtolower($fileName);
 
@@ -200,8 +260,7 @@ class Reconciliate
         $reconciliationType = $this->getTypeName($fileName);
 
         // Ideally, should never come here.
-        if ((in_array($reconciliationType, self::VALID_RECON_TYPES, true) === false) or
-            ($reconciliationType === null))
+        if ((in_array($reconciliationType, self::VALID_RECON_TYPES, true) === false))
         {
             $this->messenger->raiseReconAlert(
                 [
@@ -218,12 +277,45 @@ class Reconciliate
         return $reconciliationType;
     }
 
-    // This can be overriden from the child class
-    // If not overriden, it fetches the mapping from FileProcessor::FILE_TYPES_MAPPINGS
-    public function getFileType(string $mimeType)
+    /**
+     * Sets the subtype for the batch based on the reconciliation sub type. However if
+     * the file is an excel with multiple sheets, we always set the sub_type to combined.
+     *
+     * @param  Batch\Entity $batch              Batch entity for recon
+     * @param  string       $reconciliationType Recon type determined for the file
+     * @param  array        $extraDetails       Extra file metadata
+     */
+    protected function updateBatchWithReconciliationType(
+        Batch\Entity $batch,
+        string $reconciliationType,
+        array $extraDetails)
     {
-        return Orchestrator::getKeyFromSubArrayMatch(
-            $mimeType, FileProcessor::FILE_TYPES_MAPPINGS);
+        if (($extraDetails[FileProcessor::FILE_DETAILS][FileProcessor::FILE_TYPE] === FileProcessor::EXCEL) and
+            ($extraDetails[FileProcessor::FILE_DETAILS][FileProcessor::SHEET_COUNT] > 0))
+        {
+            $batch->setSubType(self::COMBINED);
+        }
+        else
+        {
+            $batch->setSubType($reconciliationType);
+        }
+    }
+
+    /**
+     * @param  array  $extraDetails  File metad data
+     * @return string               name of the file
+     */
+    protected function getFileName(array $extraDetails): string
+    {
+        //
+        // For excel recon files, we consider the sheet name if present as the file name.
+        //
+        if (isset($extraDetails[FileProcessor::FILE_DETAILS][FileProcessor::SHEET_NAME]) === true)
+        {
+            return $extraDetails[FileProcessor::FILE_DETAILS][FileProcessor::SHEET_NAME];
+        }
+
+        return $extraDetails[FileProcessor::FILE_DETAILS][FileProcessor::FILE_NAME];
     }
 
     public function getReconciliationTypeFromFileName($fileName)
@@ -271,7 +363,7 @@ class Reconciliate
      *
      * @param array $fileDetails
      *
-     * @return int number of lines to skip from end
+     * @return array number of lines to skip from top and bottom
      */
     public function getNumLinesToSkip(array $fileDetails)
     {

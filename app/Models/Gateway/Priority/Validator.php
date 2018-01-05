@@ -20,7 +20,8 @@ class Validator extends Base\Validator
         Gateway::CYBERSOURCE => 'sometimes|numeric|min:0|max:100',
         Gateway::FIRST_DATA  => 'sometimes|numeric|min:0|max:100',
         Gateway::BILLDESK    => 'sometimes|numeric|min:0|max:100',
-        Gateway::EBS         => 'sometimes|numeric|min:0|max:100'
+        Gateway::EBS         => 'sometimes|numeric|min:0|max:100',
+        Gateway::HITACHI     => 'sometimes|numeric|min:0|max:100',
     ];
 
     public function validateAddPriority(string $method, array $priorityData)

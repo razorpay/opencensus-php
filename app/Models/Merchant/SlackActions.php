@@ -43,6 +43,7 @@ class SlackActions
     const DISABLE                = 'disable';
     const LOCK                   = 'lock';
     const UNLOCK                 = 'unlock';
+    const ACTIVATE               = 'activate';
     const ASSIGN_PRICING         = 'assign_pricing';
     const TAGGED                 = 'Tagged';
     const ASSIGN_BANKS           = 'assign_banks';
@@ -66,6 +67,7 @@ class SlackActions
         self::DISABLE                => self::LIVE_DISABLED,
         self::LOCK                   => self::FORM_LOCKED,
         self::UNLOCK                 => self::FORM_UNLOCKED,
+        self::ACTIVATE               => self::ACTIVATED,
         self::ASSIGN_PRICING         => self::PRICING_PLAN_SET,
         self::TAGGED                 => self::ADD_TAGS,
         self::ASSIGN_BANKS           => self::BANK_LIST_EDITED,

@@ -6,9 +6,13 @@ use RZP\Error\ErrorCode;
 
 class StatusCode
 {
+    // Status codes in callback
     const SUCCESS = '000';
     const PENDING = '101';
     const FAILED  = '111';
+
+    // Remarks from debit recon file
+    const ERROR_INVALID_CREDS  = 'Invalid User id and Password';
 
     const EMANDATE_FAILURE = '0';
 
@@ -18,6 +22,10 @@ class StatusCode
     protected static $errorCodeMap = [
         self::FAILED  => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
         self::PENDING => ErrorCode::BAD_REQUEST_PAYMENT_PENDING,
+    ];
+
+    protected static $errorCodeMapEmandate = [
+        self::ERROR_INVALID_CREDS => ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED
     ];
 
     public static function isSuccess(string $statusCode)
@@ -51,5 +59,10 @@ class StatusCode
     public static function getErrorCodeMap($errorCode)
     {
         return self::$errorCodeMap[$errorCode] ?? ErrorCode::GATEWAY_ERROR_REQUEST_ERROR;
+    }
+
+    public static function getEmandateErrorCodeMap($errorCode)
+    {
+        return self::$errorCodeMapEmandate[$errorCode] ?? ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
     }
 }

@@ -11,6 +11,7 @@ use Box\Spout\Reader\ReaderFactory;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
+use RZP\Models\FileStore\Format;
 
 class Converter
 {
@@ -61,6 +62,44 @@ class Converter
         return $sheets;
     }
 
+    /**
+     * Convers excel sheet to in memory array, by using spout or maatwebsite excel parser
+     * depending on the extension of the excel file
+     *
+     * @param  array  $fileDetails details of the file being processed
+     * @param  array  $sheetNames  sheet names to be considered
+     * @param  int    $startRow
+     *
+     * @return array
+     */
+    public function convertExcelToArray(array $fileDetails, $sheetNames, int $startRow)
+    {
+        if ($this->shouldUseSpoutLib($fileDetails[FileProcessor::EXTENSION]) === true)
+        {
+            // getting contents using spout library for xlsx
+            $sheetsContents = $this->getRowsFromExcelSheetsSpout($fileDetails, $sheetNames);
+        }
+        else
+        {
+            $sheetsContents = $this->getRowsFromExcelSheetsOptimized($fileDetails, $sheetNames, $startRow);
+        }
+
+        $fileContents = [];
+
+        foreach ($sheetsContents as $sheetName => $rows)
+        {
+            if (empty($rows) === true)
+            {
+                // This would happen when the sheet name sent, does not exist
+                continue;
+            }
+
+            $fileContents[$sheetName] = $rows;
+        }
+
+        return $fileContents;
+    }
+
     public function getRowsFromExcelSheetsOptimized($fileDetails, $sheetNames = [], $startRow = 1)
     {
         //
@@ -86,9 +125,10 @@ class Converter
      *
      * @param $fileDetails
      * @param $sheetNames
+     * @param $startRow
      * @return array excel sheet content of mentioned file
      */
-    public function getRowsFromExcelSheetsSpout($fileDetails, $sheetNames = [])
+    public function getRowsFromExcelSheetsSpout($fileDetails, $sheetNames = [], int $startRow = 1)
     {
         $filePath = $fileDetails[FileProcessor::FILE_PATH];
 
@@ -99,10 +139,10 @@ class Converter
 
         if (empty($sheetNames) === false)
         {
-            return $this->getRowsFromExcelSheetsWithSheetNamesSpout($reader, $sheetNames);
+            return $this->getRowsFromExcelSheetsWithSheetNamesSpout($reader, $sheetNames, $startRow);
         }
 
-        return $this->getRowsFromExcelSheetsWithIndicesSpout($reader);
+        return $this->getRowsFromExcelSheetsWithIndicesSpout($reader, $startRow);
     }
 
     public function convertExcelSheetToArray($sheet)
@@ -219,7 +259,7 @@ class Converter
                         // way to get the sheet names. And we cannot let it return
                         // an array of sheets because chunk works only on a
                         // cell collection (rows) and not on a row collection (sheets)
-                        $allSheetsContent[$randomSheetName][] = $row;
+                        $allSheetsContent[$randomSheetName][] = $row->all();
                     }
                 },
                 false
@@ -247,7 +287,7 @@ class Converter
                     {
                         foreach ($results as $row)
                         {
-                            $allSheetsContent[$sheetName][] = $row;
+                            $allSheetsContent[$sheetName][] = $row->all();
                         }
                     },
                     false
@@ -278,7 +318,12 @@ class Converter
         return $allSheetsContent;
     }
 
-    protected function getRowsFromExcelSheetsWithIndicesSpout($reader)
+    protected function shouldUseSpoutLib(string $extension): bool
+    {
+        return ($extension === Format::XLSX);
+    }
+
+    protected function getRowsFromExcelSheetsWithIndicesSpout($reader, int $startRow = 1)
     {
         $allSheetsContent = [];
 
@@ -288,13 +333,13 @@ class Converter
 
             $sheetName = 'sheet' . $index;
 
-            $this->setSheetContentForSpout($allSheetsContent, $sheet, $sheetName);
+            $this->setSheetContentForSpout($allSheetsContent, $sheet, $sheetName, $startRow);
         }
 
         return $allSheetsContent;
     }
 
-    protected function getRowsFromExcelSheetsWithSheetNamesSpout($reader, array $sheetNames)
+    protected function getRowsFromExcelSheetsWithSheetNamesSpout($reader, array $sheetNames, int $startRow = 1)
     {
         $allSheetsContent = [];
 
@@ -307,13 +352,13 @@ class Converter
                 continue;
             }
 
-            $this->setSheetContentForSpout($allSheetsContent, $sheet, $sheetName);
+            $this->setSheetContentForSpout($allSheetsContent, $sheet, $sheetName, $startRow);
         }
 
         return $allSheetsContent;
     }
 
-    protected function setSheetContentForSpout(array & $allSheetsContent, $sheet, string $sheetName)
+    protected function setSheetContentForSpout(array & $allSheetsContent, $sheet, string $sheetName, int $startRow = 1)
     {
         $sheetHeaders = [];
 
@@ -323,13 +368,18 @@ class Converter
 
         foreach ($rowIterator as $row)
         {
+            if ($rowIterator->key() < $startRow)
+            {
+                continue;
+            }
+
             // this deals with the empty rows
             if (count(array_filter($row)) === 0)
             {
                 continue;
             }
 
-            if ($rowIterator->key() === 1)
+            if ($rowIterator->key() === $startRow)
             {
                 $sheetHeaders = $this->normalizeHeaders($row);
             }

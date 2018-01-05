@@ -45,6 +45,7 @@ class Repository extends \Razorpay\Spine\Repository
     const TO           = 'to';
     const COUNT        = 'count';
     const SKIP         = 'skip';
+    const DELETED      = 'deleted';
 
     protected $app;
 
@@ -371,8 +372,6 @@ class Repository extends \Razorpay\Spine\Repository
      *
      * @param Models\Base\PublicEntity $entity
      * @param bool|boolean             $withTrashed
-     *
-     * @return
      *
      * @throws Exception\LogicException
      */

@@ -2,13 +2,13 @@
 
 namespace RZP\Models\Workflow\Base;
 
+use RZP\Models\Comment;
+use RZP\Models\Workflow;
 use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Role;
 use RZP\Models\Admin\Admin;
-use RZP\Models\Workflow;
 use RZP\Models\Workflow\Step;
 use RZP\Models\Workflow\Action;
-use RZP\Models\Workflow\Action\Comment;
 use RZP\Models\Base as BaseModel;
 use RZP\Models\Admin\Permission;
 

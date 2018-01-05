@@ -4,6 +4,7 @@ namespace RZP\Gateway\Upi\Mindgate;
 
 class Url
 {
+    // TODO: Can /upi be moved to the end of this string
     const TEST_DOMAIN       = 'https://upitest.hdfcbank.com';
     const LIVE_DOMAIN       = 'https://upi.hdfcbank.com';
 

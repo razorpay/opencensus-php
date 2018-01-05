@@ -2,12 +2,12 @@
 
 namespace RZP\Models\Workflow\Action;
 
-use RZP\Models\Workflow\Base;
-use RZP\Models\Admin\Org;
-use RZP\Models\Workflow\Action\State;
-use RZP\Models\Workflow\Action\Checker;
+use RZP\Models\State;
 use RZP\Constants\Table;
+use RZP\Models\Admin\Org;
+use RZP\Models\Workflow\Base;
 use RZP\Models\Workflow\Constants;
+use RZP\Models\Workflow\Action\Checker;
 
 class Repository extends Base\Repository
 {
@@ -65,7 +65,7 @@ class Repository extends Base\Repository
     {
         if ($params['type'] === 'open')
         {
-            $openStates = State\Entity::OPEN_STATES;
+            $openStates = State\Name::OPEN_ACTION_STATES;
 
             $query->whereIn(Entity::STATE, $openStates);
         }
@@ -85,7 +85,7 @@ class Repository extends Base\Repository
     {
         $adminId = $this->auth->getAdmin()->getId();
 
-        $acsDao = $this->repo->action_state;
+        $acsDao = $this->repo->state;
 
         $acsTable = $acsDao->getTableName();
 
@@ -98,13 +98,13 @@ class Repository extends Base\Repository
         $acsAdminId = $acsDao->dbColumn(State\Entity::ADMIN_ID);
 
         $query->join($acsTable, $aId, '=', $acsActionId)
-              ->where($acsState, '=', State\Entity::CLOSED)
+              ->where($acsState, '=', State\Name::CLOSED)
               ->where($acsAdminId, '=', $adminId);
     }
 
     public function fetchOpenActionsByWorkflowId(string $workflowId)
     {
-        $openStates = State\Entity::OPEN_STATES;
+        $openStates = State\Name::OPEN_ACTION_STATES;
 
         return $this->newQuery()
                     ->where(Entity::WORKFLOW_ID, '=', $workflowId)
@@ -121,7 +121,7 @@ class Repository extends Base\Repository
                     ->where(Entity::ENTITY_ID, $entityId)
                     ->where(Entity::ENTITY_NAME, $entityName)
                     ->where(Entity::PERMISSION_ID, $permissionId)
-                    ->whereIn(Entity::STATE, State\Entity::OPEN_STATES)
+                    ->whereIn(Entity::STATE, State\Name::OPEN_ACTION_STATES)
                     ->get();
     }
 
@@ -141,7 +141,7 @@ class Repository extends Base\Repository
                     $join->on('workflow_actions.workflow_id', '=', 'workflow_steps.workflow_id')
                          ->on('workflow_actions.current_level', '=', 'workflow_steps.level');
                 })
-              ->where('workflow_actions.state', '=', State\Entity::OPEN)
+              ->where('workflow_actions.state', '=', State\Name::OPEN)
               ->whereIn('workflow_steps.role_id', $adminRoleIds);
     }
 

@@ -9,7 +9,6 @@ use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Settlement;
 use RZP\Models\Card\Network;
-use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Processor\Upi;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Processor\Netbanking;
@@ -32,6 +31,7 @@ class Gateway
     const NETBANKING_AIRTEL      = 'netbanking_airtel';
     const NETBANKING_AXIS        = 'netbanking_axis';
     const NETBANKING_FEDERAL     = 'netbanking_federal';
+    const NETBANKING_BOB         = 'netbanking_bob';
     const NETBANKING_HDFC        = 'netbanking_hdfc';
     const NETBANKING_CORPORATION = 'netbanking_corporation';
     const NETBANKING_ICICI       = 'netbanking_icici';
@@ -42,6 +42,7 @@ class Gateway
     const PAYTM                  = 'paytm';
     const SHARP                  = 'sharp';
     const UPI_MINDGATE           = 'upi_mindgate';
+    const UPI_SBI                = 'upi_sbi';
     const UPI_ICICI              = 'upi_icici';
     const AEPS_ICICI             = 'aeps_icici';
 
@@ -210,6 +211,7 @@ class Gateway
             self::BILLDESK,
             self::EBS,
             self::NETBANKING_ICICI,
+            self::NETBANKING_BOB,
             self::NETBANKING_HDFC,
             self::NETBANKING_CORPORATION,
             self::NETBANKING_KOTAK,
@@ -309,6 +311,7 @@ class Gateway
     public static $asynchronous = [
         self::UPI_MINDGATE,
         self::UPI_ICICI,
+        self::UPI_SBI,
         self::SHARP,
     ];
 
@@ -391,8 +394,9 @@ class Gateway
     ];
 
     public static $upiToGatewayMap = [
-        Upi::HDFC   => Gateway::UPI_MINDGATE,
-        Upi::ICICI  => Gateway::UPI_ICICI,
+        Upi::HDFC  => Gateway::UPI_MINDGATE,
+        Upi::ICIC  => Gateway::UPI_ICICI,
+        Upi::SBIN  => Gateway::UPI_SBI,
     ];
 
     public static $acquirerToCodeMap = [
@@ -465,6 +469,25 @@ class Gateway
     ];
 
     /**
+     * List of gateways and the banks that they support
+     * for e-mandate. This list is required because some
+     * gateways might support more than one bank for
+     * e-mandate.
+     *
+     * @var array
+     */
+    public static $gatewaysEmandateBanksMap = [
+        Gateway::NETBANKING_ICICI   => [IFSC::ICIC],
+        Gateway::NETBANKING_AXIS    => [IFSC::UTIB],
+        Gateway::NETBANKING_HDFC    => [IFSC::HDFC],
+    ];
+
+    public static $recurringCardNetworks = [
+        Network::MC,
+        Network::VISA,
+    ];
+
+    /**
      * List of netbanking gateways that process recurring payments through file send
      *
      * @var array
@@ -496,6 +519,7 @@ class Gateway
 
         Gateway::BILLDESK,
         Gateway::UPI_MINDGATE,
+        Gateway::UPI_SBI,
         Gateway::UPI_ICICI,
         Gateway::WALLET_OLAMONEY,
         Gateway::NETBANKING_CORPORATION,
@@ -513,6 +537,7 @@ class Gateway
         Gateway::AXIS_MIGS,
         Gateway::AMEX,
         Gateway::CYBERSOURCE,
+        Gateway::HITACHI,
     ];
 
     /**
@@ -549,8 +574,14 @@ class Gateway
      * @var array
      */
     public static $netbankingToGatewayMap = [
+        //corp banks
+        Netbanking::ICIC_C => Gateway::NETBANKING_ICICI,
+        Netbanking::UTIB_C => Gateway::NETBANKING_AXIS,
+
+        // retail banks
         IFSC::ICIC => Gateway::NETBANKING_ICICI,
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
+        IFSC::BARB => Gateway::NETBANKING_BOB,
         IFSC::CORP => Gateway::NETBANKING_CORPORATION,
         IFSC::AIRP => Gateway::NETBANKING_AIRTEL,
         IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
@@ -574,6 +605,7 @@ class Gateway
         IFSC::KKBK => Gateway::NETBANKING_KOTAK,
         IFSC::UTIB => Gateway::NETBANKING_AXIS,
         IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
+        IFSC::BARB => Gateway::NETBANKING_BOB,
         IFSC::RATN => Gateway::NETBANKING_RBL,
         IFSC::INDB => Gateway::NETBANKING_INDUSIND,
         IFSC::PUNB => Gateway::NETBANKING_PNB,
@@ -632,11 +664,6 @@ class Gateway
         }
 
         return BaseIFSC::getBankName($code);
-    }
-
-    public static function isNetbankingBankDirectlySupported($bank)
-    {
-        return in_array($bank, Netbanking::getDirectlyNetbankingBanks());
     }
 
     public static function isDirectNetbankingGateway(string $gateway)
@@ -872,7 +899,7 @@ class Gateway
     {
         $exclusiveNetworks = self::getExclusiveNetworksForGateway($gateway);
 
-        return in_array($network, $exclusiveNetworks, true);
+        return in_array($network, $exclusiveNetworks, true) === true;
     }
 
     public static function getGatewaysForNetbankingBank($bank, $isTPV = false)
@@ -880,7 +907,7 @@ class Gateway
         $gateways = [];
 
         // Check for direct netbanking gateway
-        if (self::isNetbankingBankDirectlySupported($bank))
+        if (Netbanking::isNetbankingBankDirectlySupported($bank) === true)
         {
             $gateways[] = self::$netbankingToGatewayMap[$bank];
         }
@@ -888,7 +915,7 @@ class Gateway
         // Add netbanking gateways that support bank
         foreach (self::$netbankingGateways as $netbankingGateway)
         {
-            if (Netbanking::isBankSupportedByGateway($bank, $netbankingGateway, $isTPV))
+            if (Netbanking::isBankSupportedByGateway($bank, $netbankingGateway, $isTPV) === true)
             {
                 $gateways[] = $netbankingGateway;
             }
@@ -902,7 +929,7 @@ class Gateway
         $gateways = [];
 
         // Check for direct netbanking gateway
-        if (self::isNetbankingBankDirectlySupported($bank))
+        if (Netbanking::isNetbankingBankDirectlySupported($bank) === true)
         {
             $gateways['direct'] = self::$netbankingToGatewayMap[$bank];
         }

@@ -7,6 +7,16 @@ use Aws;
 
 class Sns
 {
+    /**
+     * @var Aws\AwsClientInterface
+     */
+    protected $client;
+
+    /**
+     * @var array
+     */
+    protected $awsConfig;
+
     public function __construct($app)
     {
         $this->awsConfig = Config::get('aws');

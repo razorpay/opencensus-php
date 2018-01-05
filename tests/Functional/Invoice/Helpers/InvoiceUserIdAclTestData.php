@@ -174,6 +174,24 @@ return [
         ],
     ],
 
+    'testListInvoiceWithUserIdHeaderAndEsParams' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'get',
+            'content' => [],
+            'server' => [
+                'HTTP_X-Dashboard-User-Id'   => '10000000UserId',
+                'HTTP_X-Dashboard-User-Role' => 'sellerapp',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 0,
+                'items' => [],
+            ],
+        ],
+    ],
+
     'testListInvoiceWithoutUserIdHeader' => [
         'request' => [
             'url' => '/invoices',

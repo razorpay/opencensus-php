@@ -58,6 +58,9 @@ class ReconciliationTest extends TestCase
         // Reconcile settlements
         $data = $this->reconcileSettlements($setlReconciliationFile);
 
+        // Match data returned by reconciliation
+        $this->assertTestResponse($data, 'matchSummaryForReconSuccess');
+
         // Validate settlement attempt entity
         $settlementAttempt = $this->getLastEntity('fund_transfer_attempt', true);
 
@@ -118,6 +121,9 @@ class ReconciliationTest extends TestCase
         // Reconcile settlements
         $data = $this->reconcileSettlements($setlReconciliationFile);
 
+        // Match data returned by reconciliation
+        $this->assertTestResponse($data, 'matchSummaryForReconFailure');
+
         // Validate batch settlement entity
         $batchFundTransfer = $this->fetchAndMatchBatchData('settlement');
 
@@ -173,6 +179,10 @@ class ReconciliationTest extends TestCase
         $content = $this->retryIntiateSettlements([$settlement['id']]);
 
         $this->assertEquals('No settlements found!', $content['kotak']['message']);
+
+        $this->assertNotNull($content['kotak']['retry_skipped_settlements']);
+
+        $this->assertEquals(1, $content['kotak']['retry_skipped_count']);
 
         // Validate no files were created
         $content = $this->getEntities('file_store', [], true);

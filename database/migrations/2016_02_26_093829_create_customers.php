@@ -50,6 +50,7 @@ class CreateCustomers extends Migration {
                   ->nullable();
 
             $table->index(Customer::CONTACT);
+            $table->index(Customer::EMAIL);
             $table->index(Customer::CREATED_AT);
 
             $table->foreign(Customer::MERCHANT_ID)

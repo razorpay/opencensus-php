@@ -3,6 +3,7 @@
 namespace RZP\Mail\Dispute;
 
 use RZP\Constants\MailTags;
+use RZP\Models\Payment\Entity as Payment;
 
 class Creation extends Base
 {
@@ -11,7 +12,13 @@ class Creation extends Base
     {
         $merchantName = $this->data['merchant']['name'];
 
-        $this->subject('Alert - A dispute has been received against ' . $merchantName);
+        $amount = (float) ($this->data['dispute']['amount'] / 100);
+
+        $subject = 'Dispute raised for Rs. ' . $amount . ' on '
+            . Payment::getSignedId($this->data['dispute']['payment_id'])
+            . ' against ' . $merchantName;
+
+        $this->subject($subject);
 
         return $this;
     }

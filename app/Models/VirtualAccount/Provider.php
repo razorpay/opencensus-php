@@ -46,30 +46,54 @@ class Provider
     //
     // Standard root is used when handle is set.
     const ROOT = [
-        self::YESBANK   => [
+        self::YESBANK => [
             // Todo
-            'default'  => '',
-            'standard' => '',
-            'special'  => '',
+            'numeric' => [
+                'default' => '222444',
+                'handle'  => '222444',
+                'special' => '222444',
+            ],
+            'alpha_numeric' => [
+                'default' => null,
+                'handle'  => null,
+                'special' => null,
+            ],
             'reserved' => [],
         ],
         self::KOTAK     => [
-            // Used for merchants who have not set handle
-            'default'  => 'RAZO',
-            // Used for merchants who have set a 4-char handle
-            'standard' => 'RZRP',
-            // Used for merchants who have set a 3-char handle
-            'special'  => 'RAZR',
+            'numeric' => [
+                // Numeric used for merchants who have not set handle
+                'default' => '139914',
+                // Numeric used for merchants who have set a 4-char handle
+                'handle'  => '139914',
+                // Numeric used for merchants who have set a 3-char handle
+                'special' => '139913',
+            ],
+            'alpha_numeric' => [
+                // Alphanumeric used for merchants who have not set handle
+                'default' => 'RAZO',
+                // Alphanumeric used for merchants who have set a 4-char handle
+                'handle'  => 'RZRP',
+                // Alphanumeric used for merchants who have set a 3-char handle
+                'special' => 'RAZR',
+            ],
             // Used for our own nodal-to-nodal transfers
             'reserved' => [
                 // DO NOT REFUND PAYMENTS MADE HERE
                 'RZRN',
             ],
         ],
-        self::DASHBOARD       => [
-            'default'  => 'RAZO',
-            'standard' => 'RZRP',
-            'special'  => 'RAZR',
+        self::DASHBOARD => [
+            'numeric' => [
+                'default' => '111222',
+                'handle'  => '111222',
+                'special' => '111222',
+            ],
+            'alpha_numeric' => [
+                'default' => 'RAZO',
+                'handle'  => 'RZRP',
+                'special' => 'RAZR',
+            ],
             'reserved' => [
                 'RZRN',
             ],
@@ -77,7 +101,28 @@ class Provider
     ];
 
     const DEFAULT_HANDLE_MAPPING = [
-        'RAZO' => 'RPAY',
+        // Default
+        'RAZO'   => 'RPAY',
+        // Test mode
+        '111222' => '00',
+        // Kotak
+        '139913' => '00',
+        '139914' => '0',
+        // YesBank
+        '222444' => '00',
+    ];
+
+    const PRIVILEGED_NUMERIC_HANDLE_MAPPING = [
+        // Zebpay gets 2224449
+        '8iMbVsEnv1HCo0' => '9',
+        // Tests
+        '10000000000000' => '9',
+    ];
+
+    const IFSC = [
+        self::YESBANK   => 'YESB0CMSNOC',
+        self::KOTAK     => 'KKBK0000958',
+        self::DASHBOARD => 'RAZR0000001',
     ];
 
     // The default details are fixed by each provider, most specifically
@@ -87,13 +132,13 @@ class Provider
     //
     const DEFAULT_DETAILS = [
         self::YESBANK => [
-            BankAccount::IFSC_CODE => 'YESB0CMSNOC',
+            BankAccount::IFSC_CODE => self::IFSC[self::YESBANK],
         ],
         self::KOTAK => [
-            BankAccount::IFSC_CODE => 'KKBK0000958',
+            BankAccount::IFSC_CODE => self::IFSC[self::KOTAK],
         ],
         self::DASHBOARD => [
-            BankAccount::IFSC_CODE => 'RAZR0000001',
+            BankAccount::IFSC_CODE => self::IFSC[self::DASHBOARD],
         ],
     ];
 

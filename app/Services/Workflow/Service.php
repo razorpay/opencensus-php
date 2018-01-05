@@ -3,12 +3,10 @@
 namespace RZP\Services\Workflow;
 
 use RZP\Exception;
-use RZP\Http\Route;
-use Illuminate\Support\Facades\App;
-use RZP\Models\Workflow\Action;
+use RZP\Models\State;
 use RZP\Error\ErrorCode;
+use RZP\Models\Workflow\Action;
 use RZP\Models\Workflow\Action\Differ;
-use RZP\Models\Workflow\Action\State;
 use RZP\Exception\EarlyWorkflowResponse;
 use RZP\Models\Workflow\Service as WorkflowService;
 
@@ -160,7 +158,7 @@ class Service
             Differ\Entity::ROUTE_PARAMS => $routeParams,
             Differ\Entity::METHOD       => $request->getMethod(),
             Differ\Entity::PAYLOAD      => $input,
-            Differ\Entity::STATE        => State\Entity::OPEN,
+            Differ\Entity::STATE        => State\Name::OPEN,
             Differ\Entity::CONTROLLER   => $controller,
             Differ\Entity::ROUTE        => $routeName,
             Differ\Entity::PERMISSION   => $permission,
@@ -346,12 +344,14 @@ class Service
 
         $count = $workflowAction->count();
 
+        $admin = $this->ba->getAdmin();
+
         // Transaction failed and no entry was created
         if ($count === 0)
         {
             // Let's re-try creating workflow action and relevant entities
 
-            $action = $core->create($data, $retry = true);
+            $action = $core->create($data, $retry = true, $admin);
         }
         else
         {

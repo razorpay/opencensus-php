@@ -4,6 +4,8 @@ namespace RZP\Models\Settlement;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Models\Payment;
+use RZP\Models\FundTransfer\Rbl\RequestConstants;
 
 class Validator extends Base\Validator
 {
@@ -20,14 +22,41 @@ class Validator extends Base\Validator
     ];
 
     protected static $nodalTransferRules = [
-        Entity::AMOUNT  => 'required|integer|min:100|max:10000000000',
-        Entity::CHANNEL => 'required|string'
+        Entity::GATEWAY     => 'sometimes|filled|string|max:32|custom',
+        Entity::AMOUNT      => 'required_without:gateway|integer|min:100|max:100000000000',
+        Entity::CHANNEL     => 'required_without:gateway|string|max:32|custom',
+        Entity::DESTINATION => 'required|string|max:32|custom'
+    ];
+
+    protected static $rblAddBeneficiaryRules = [
+        RequestConstants::BEN_IFSC        => 'required|string',
+        RequestConstants::BEN_ACCT_NO     => 'required|string',
+        RequestConstants::BEN_NAME        => 'required|string',
+        RequestConstants::BEN_ADDRESS     => 'required|string',
+        RequestConstants::BEN_BANKNAME    => 'required|string',
+        RequestConstants::BEN_BRANCHCD    => 'required|string',
+        RequestConstants::BEN_BANKCD      => 'required|string',
+        RequestConstants::BEN_PAN         => 'required|string',
+        RequestConstants::KYC_DOC_NAME    => 'required|string',
+        RequestConstants::KYC_DOC_CONTENT => 'required|string',
+    ];
+
+    protected static $updateChannelRules = [
+        'settlement_ids'   => 'required|array',
+        'settlement_ids.*' => 'required|alpha_dash|max:20',
+        Entity::CHANNEL    => 'required|string|custom',
     ];
 
     protected static $retryRules = [
-        'settlement_ids'   => 'required|array',
-        'settlement_ids.*' => 'required|alpha_dash|max:20',
+        'settlement_ids'    => 'required|array',
+        'settlement_ids.*'  => 'required|alpha_dash|max:20',
+        'ignore_time_limit' => 'sometimes',
     ];
+
+    protected function validateGateway($attribute, $value)
+    {
+        Payment\Gateway::validateGateway($value);
+    }
 
     protected function validateChannel($attribute, $value)
     {
@@ -37,4 +66,14 @@ class Validator extends Base\Validator
                 'Invalid Channel: ' . $value);
         }
     }
+
+    protected function validateDestination($attribute, $value)
+    {
+        if (in_array($value, Channel::getChannels()) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid Channel: ' . $value);
+        }
+    }
+
 }

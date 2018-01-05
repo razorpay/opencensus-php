@@ -30,6 +30,7 @@ class Entity
     const OFFER                 = 'offer';
     const ORDER                 = 'order';
     const TOKEN                 = 'token';
+    const GEO_IP                = 'geo_ip';
     const COUPON                = 'coupon';
     const DEVICE                = 'device';
     const PAYOUT                = 'payout';
@@ -109,6 +110,11 @@ class Entity
     const ACTION_STATE          = 'action_state';
     const ACTION_COMMENT        = 'action_comment';
 
+    // Generic comment and state entities
+    const COMMENT               = 'comment';
+    const STATE                 = 'state';
+    const STATE_REASON          = 'state_reason';
+
     //
     // Gateway entities
     const EBS                    = 'ebs';
@@ -132,9 +138,11 @@ class Entity
     const CYBERSOURCE            = 'cybersource';
     const AEPS_ICICI             = 'aeps_icici';
     const UPI_MINDGATE           = 'upi_mindgate';
+    const UPI_SBI                = 'upi_sbi';
     const UPI_ICICI              = 'upi_icici';
     const NETBANKING_AXIS        = 'netbanking_axis';
     const NETBANKING_HDFC        = 'netbanking_hdfc';
+    const NETBANKING_BOB         = 'netbanking_bob';
     const NETBANKING_CORPORATION = 'netbanking_corporation';
     const NETBANKING_ICICI       = 'netbanking_icici';
     const NETBANKING_KOTAK       = 'netbanking_kotak';
@@ -173,6 +181,7 @@ class Entity
         self::ADDON                 => \RZP\Models\Plan\Subscription\Addon::class,
         self::ORDER                 => \RZP\Models\Order::class,
         self::TOKEN                 => \RZP\Models\Customer\Token::class,
+        self::GEO_IP                => \RZP\Models\GeoIP::class,
         self::REFUND                => \RZP\Models\Payment\Refund::class,
         self::REPORT                => \RZP\Models\Report::class,
         self::BALANCE               => \RZP\Models\Merchant\Balance::class,
@@ -224,6 +233,7 @@ class Entity
         self::MOBIKWIK               => \RZP\Gateway\Mobikwik::class,
         self::UPI_NPCI               => \RZP\Gateway\Upi\Npci::class,
         self::UPI_MINDGATE           => \RZP\Gateway\Upi\Mindgate::class,
+        self::UPI_SBI                => \RZP\Gateway\Upi\Sbi::class,
         self::UPI_ICICI              => \RZP\Gateway\Upi\Icici::class,
         self::AEPS                   => \RZP\Gateway\Aeps\Base::class,
         self::AEPS_ICICI             => \RZP\Gateway\Aeps\Icici::class,
@@ -238,6 +248,7 @@ class Entity
         self::WALLET_SBIBUDDY        => \RZP\Gateway\Wallet\Sbibuddy::class,
         self::NETBANKING_AXIS        => \RZP\Gateway\Netbanking\Axis::class,
         self::NETBANKING_HDFC        => \RZP\Gateway\Netbanking\Hdfc::class,
+        self::NETBANKING_BOB         => \RZP\Gateway\Netbanking\Bob::class,
         self::NETBANKING_CORPORATION => \RZP\Gateway\Netbanking\Corporation::class,
         self::NETBANKING_KOTAK       => \RZP\Gateway\Netbanking\Kotak::class,
         self::NETBANKING_ICICI       => \RZP\Gateway\Netbanking\Icici::class,
@@ -268,6 +279,7 @@ class Entity
         self::ACTION_CHECKER        => \RZP\Models\Workflow\Action\Checker::class,
         self::ACTION_STATE          => \RZP\Models\Workflow\Action\State::class,
         self::ACTION_COMMENT        => \RZP\Models\Workflow\Action\Comment::class,
+        self::STATE_REASON          => \RZP\Models\State\Reason::class,
 
         self::TAX_GROUP             => \RZP\Models\Tax\Group::class,
         self::LINE_ITEM_TAX         => \RZP\Models\LineItem\Tax::class,
@@ -286,6 +298,7 @@ class Entity
         self::NETBANKING_PNB         => \RZP\Gateway\Netbanking\Base::class,
 
         self::UPI_MINDGATE          => \RZP\Gateway\Upi\Base::class,
+        self::UPI_SBI               => \RZP\Gateway\Upi\Base::class,
         self::UPI_ICICI             => \RZP\Gateway\Upi\Base::class,
         self::UPI_NPCI              => \RZP\Gateway\Upi\Base::class,
 

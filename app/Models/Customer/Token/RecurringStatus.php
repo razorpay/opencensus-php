@@ -33,6 +33,11 @@ class RecurringStatus
         self::REJECTED
     ];
 
+    protected static $finalStatuses = [
+        self::CONFIRMED,
+        self::REJECTED,
+    ];
+
     public static function isRecurringStatusValid($recurringStatus): bool
     {
         return (defined(__CLASS__ . '::' . strtoupper($recurringStatus)));
@@ -49,5 +54,10 @@ class RecurringStatus
                     'recurring_status' => $recurringStatus
                 ]);
         }
+    }
+
+    public static function isFinalStatus($recurringStatus): bool
+    {
+        return (in_array($recurringStatus, self::$finalStatuses, true) === true);
     }
 }

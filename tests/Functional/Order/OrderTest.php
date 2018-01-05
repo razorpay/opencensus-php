@@ -51,6 +51,11 @@ class OrderTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateOrderWithoutReceipt()
+    {
+        $this->startTest();
+    }
+
     public function testCreateAutoCaptureOrder()
     {
         $order = $this->startTest();
@@ -426,6 +431,12 @@ class OrderTest extends TestCase
 
     public function testPaymentWithFailedOfferCheck()
     {
+        //
+        // Mobikwik MID was unexpectedly disabled
+        // https://github.com/razorpay/incidents/issues/157
+        //
+        $this->markTestSkipped('Mobikwik temporarily disabled.');
+
         $this->fixtures->merchant->enableMobikwik();
 
         $this->testCreateOrderWithOffer();
@@ -577,6 +588,50 @@ class OrderTest extends TestCase
         $this->assertEquals($order['status'], 'paid');
 
         $this->fixtures->merchant->disableMobikwik();
+    }
+
+    public function testPaymentWithOfferOnNullMethodAndIinAndIssuer()
+    {
+        $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
+
+        $this->mockTokenex();
+
+        $offer = $this->fixtures->create('offer', [
+            'starts_at'     => Carbon::now(Timezone::IST)->subMonth()->timestamp,
+            'iins'          => ['411111'],
+            'issuer'        => 'HDFC',
+            'error_message' => 'Custom error message'
+        ]);
+
+        $order = $this->fixtures->create('order', [
+            'merchant_id' => '10000000000000',
+            'offer_id'    => $offer->getId(),
+            'amount'      => 1000,
+        ]);
+
+        $payment = $this->getDefaultNetbankingPaymentArray('HDFC');
+
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = $order->getAmount();
+
+        // Test that HDFC netbanking payment passes with the offer
+        $this->doAuthAndCapturePayment($payment);
+
+        $order = $this->fixtures->create('order', [
+            'merchant_id' => '10000000000000',
+            'offer_id'    => $offer->getId(),
+            'amount'      => 1000,
+        ]);
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = $order->getAmount();
+
+        // Test that offer with invalid IIN fails against the offer
+        $testData = $this->testData[__FUNCTION__];
+        $this->runRequestResponseFlow($testData, function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
     }
 
     public function testPartialPaymentOnOrderWithNoPartialPaymentFlag()

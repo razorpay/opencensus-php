@@ -61,19 +61,12 @@ abstract class Base extends BaseProcessor
         }
         catch (\Throwable $e)
         {
-            $this->trace->traceException(
-                            $e,
-                            Trace::INFO,
-                            TraceCode::GATEWAY_FILE_ERROR_GENERATING_FILE,
-                            [
-                                'id' => $this->gatewayFile->getId()
-                            ]);
-
             throw new GatewayFileException(
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
                 [
                     'id' => $this->gatewayFile->getId(),
-                ]);
+                ],
+                $e);
         }
     }
 
@@ -96,19 +89,12 @@ abstract class Base extends BaseProcessor
         }
         catch (\Throwable $e)
         {
-            $this->trace->traceException(
-                            $e,
-                            Trace::INFO,
-                            TraceCode::GATEWAY_FILE_ERROR_SENDING_FILE,
-                            [
-                                'id' => $this->gatewayFile->getId()
-                            ]);
-
             throw new GatewayFileException(
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_FILE,
                 [
                     'id' => $this->gatewayFile->getId()
-                ]);
+                ],
+                $e);
         }
     }
 

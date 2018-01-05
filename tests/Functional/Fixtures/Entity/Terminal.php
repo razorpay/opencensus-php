@@ -2,6 +2,9 @@
 
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
+use RZP\Models\Merchant\Account;
+use RZP\Models\Payment\Gateway;
+use RZP\Models\Payment\Processor\Upi;
 use RZP\Models\Terminal\Shared;
 use RZP\Models\Terminal\Mode;
 use RZP\Models\Terminal\Type;
@@ -24,6 +27,7 @@ class Terminal extends Base
         $this->createSharedNetbankingAirtelTerminal();
         $this->createSharedNetbankingAxisTerminal();
         $this->createSharedNetbankingFederalTerminal();
+        $this->createSharedNetbankingBobTerminal();
         $this->createSharedNetbankingRblTerminal();
         $this->createSharedNetbankingIndusindTerminal();
         $this->createSharedNetbankingPnbTerminal();
@@ -949,6 +953,18 @@ class Terminal extends Base
         return parent::create($attributes);
     }
 
+    public function createSharedNetbankingIciciCorpTerminal(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                => Shared::NETBANKING_ICICI_CRP_TERMINAL,
+            'corporate'         => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createSharedNetbankingIciciTerminal($attributes);
+    }
+
     public function createSharedNetbankingIciciRecurringTerminal(array $attributes = [])
     {
         $attributes = [
@@ -1076,6 +1092,16 @@ class Terminal extends Base
         return $this->createSharedNetbankingAxisTerminal($attributes);
     }
 
+    public function createSharedNetbankingAxisCorpTerminal(array $attributes = [])
+    {
+        $attributes = [
+            'id'                => Shared::NETBANKING_AXIS_CRP_TERMINAL,
+            'corporate'         => 1,
+        ];
+
+        return $this->createSharedNetbankingAxisTerminal($attributes);
+    }
+
 
     public function createSharedNetbankingIndusindTerminal(array $attributes = [])
     {
@@ -1149,6 +1175,24 @@ class Terminal extends Base
         ];
 
         return $this->createSharedNetbankingFederalTerminal($attributes);
+    }
+
+    public function createSharedNetbankingBobTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+
+        $defaultValues = [
+            'id'                        => Shared::NETBANKING_BOB_TERMINAL,
+            'merchant_id'               => $merchantId,
+            'gateway'                   => 'netbanking_bob',
+            'gateway_merchant_id'       => 'netbanking_bob_merchant_id',
+            'netbanking'                => 1,
+            'shared'                    => 1
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return parent::create($attributes);
     }
 
     public function createSharedNetbankingRblTerminal(array $attributes = [])
@@ -1240,6 +1284,23 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedAepsIciciTerminal(array $attributes)
+    {
+        $termId = Shared::AEPS_ICICI_RAZORPAY_TERMINAL;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'aeps_icici',
+            'gateway_terminal_id'       => 'aeps_terminal_id',
+            'aeps'                      => true,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedOpenwalletTerminal(array $attributes = [])
     {
         $terminalId = Shared::OPENWALLET_RAZORPAY_TERMINAL;
@@ -1269,6 +1330,24 @@ class Terminal extends Base
             'gateway_terminal_password' => 'razorpay_password',
             'upi'                       => 1,
             'gateway_acquirer'          => 'hdfc',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedUpiMindgateSbiTerminal(array $attributes)
+    {
+        $termId = Shared::UPI_MINDGATE_SBI_RAZORPAY_TERMINAL;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => Account::SHARED_ACCOUNT,
+            'gateway'                   => Gateway::UPI_SBI,
+            'gateway_merchant_id2'      => 'razorpay@sbibank',
+            'upi'                       => 1,
+            'gateway_acquirer'          => Upi::SBIN,
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
