@@ -79,8 +79,6 @@ return [
                 ],
                 'secondary_emails'   => [
                     'transaction_report_email' => 'linked1@account.com',
-                    'technical_spoc_email'     => 'linked1@account.com',
-                    'business_spoc_email'      => 'linked1@account.com'
                 ],
                 'account_details'    => [
                     'mobile'                   => null,

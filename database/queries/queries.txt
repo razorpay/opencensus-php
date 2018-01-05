@@ -2784,10 +2784,5 @@ ALTER TABLE virtual_accounts
 ALTER TABLE `merchants`
     ADD COLUMN `channel` VARCHAR(32) DEFAULT 'kotak' AFTER `billing_label`;
 
-ALTER TABLE merchant_details
-    ADD COLUMN technical_spoc_email VARCHAR(255) AFTER transaction_report_email,
-    ADD COLUMN business_spoc_email VARCHAR(255) AFTER technical_spoc_email;
-
 ALTER TABLE merchants
     ADD COLUMN notes TEXT DEFAULT NULL AFTER invoice_code;
-

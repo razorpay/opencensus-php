@@ -193,12 +193,6 @@ class CreateMerchantDetailsTable extends Migration
             $table->string(MerchantDetail::TRANSACTION_REPORT_EMAIL)
                   ->nullable();
 
-            $table->string(MerchantDetail::TECHNICAL_SPOC_EMAIL)
-                  ->nullable();
-
-            $table->string(MerchantDetail::BUSINESS_SPOC_EMAIL)
-                  ->nullable();
-
             $table->string(MerchantDetail::ROLE)
                   ->nullable();
 

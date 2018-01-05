@@ -192,13 +192,9 @@ class Entity extends Merchant\Entity
         $merchantDetail = $this->merchantDetail;
 
         $transactionReportEmail = $merchantDetail->getTransactionReportEmail();
-        $technicalSpocEmail     = $merchantDetail->getTechnicalSpocEmail();
-        $businessSpocEmail      = $merchantDetail->getBusinessSpocEmail();
 
         $array[self::SECONDARY_EMAILS] = [
             MerchantDetail\Entity::TRANSACTION_REPORT_EMAIL => $transactionReportEmail,
-            MerchantDetail\Entity::TECHNICAL_SPOC_EMAIL     => $technicalSpocEmail,
-            MerchantDetail\Entity::BUSINESS_SPOC_EMAIL      => $businessSpocEmail,
         ];
     }
 

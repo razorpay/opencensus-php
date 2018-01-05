@@ -71,8 +71,6 @@ class Entity extends Base\PublicEntity
     const PROMOTER_PAN_URL                   = 'promoter_pan_url';
     const PROMOTER_ADDRESS_URL               = 'promoter_address_url';
     const TRANSACTION_REPORT_EMAIL           = 'transaction_report_email';
-    const TECHNICAL_SPOC_EMAIL               = 'technical_spoc_email';
-    const BUSINESS_SPOC_EMAIL                = 'business_spoc_email';
     const COMMENT                            = 'comment';
     const ROLE                               = 'role';
     const DEPARTMENT                         = 'department';
@@ -165,8 +163,6 @@ class Entity extends Base\PublicEntity
         self::PROMOTER_PAN_URL,
         self::PROMOTER_ADDRESS_URL,
         self::TRANSACTION_REPORT_EMAIL,
-        self::TECHNICAL_SPOC_EMAIL,
-        self::BUSINESS_SPOC_EMAIL,
         self::ROLE,
         self::DEPARTMENT,
         self::COMMENT,
@@ -233,8 +229,6 @@ class Entity extends Base\PublicEntity
         self::SUBMITTED,
         self::SUBMITTED_AT,
         self::TRANSACTION_REPORT_EMAIL,
-        self::TECHNICAL_SPOC_EMAIL,
-        self::BUSINESS_SPOC_EMAIL,
         self::BANK_ACCOUNT_NUMBER,
         self::BANK_ACCOUNT_NAME,
         self::BANK_ACCOUNT_TYPE,
@@ -487,16 +481,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::TRANSACTION_REPORT_EMAIL, $email);
     }
 
-    public function setTechnicalSpocEmail($email)
-    {
-        $this->setAttribute(self::TECHNICAL_SPOC_EMAIL, $email);
-    }
-
-    public function setBusinessSpocEmail($email)
-    {
-        $this->setAttribute(self::BUSINESS_SPOC_EMAIL, $email);
-    }
-
     public function getMarketplaceActivationStatus()
     {
         return $this->getAttribute(self::MARKETPLACE_ACTIVATION_STATUS);
@@ -540,16 +524,6 @@ class Entity extends Base\PublicEntity
     public function getTransactionReportEmail()
     {
         return $this->getAttribute(self::TRANSACTION_REPORT_EMAIL);
-    }
-
-    public function getTechnicalSpocEmail()
-    {
-        return $this->getAttribute(self::TECHNICAL_SPOC_EMAIL);
-    }
-
-    public function getBusinessSpocEmail()
-    {
-        return $this->getAttribute(self::BUSINESS_SPOC_EMAIL);
     }
 
     public function getBusinessPaymentDetails()

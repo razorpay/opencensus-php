@@ -111,16 +111,10 @@ class Core extends Base\Core
 
         $merchantDetail->setContactEmail($merchant->getEmail());
 
-        // If not present in the input, use the default email of the merchantg
+        // If not present in the input, use the default email of the merchant
         $transactionReportEmail = $input[Entity::TRANSACTION_REPORT_EMAIL] ?? $merchant->getEmail();
-        $technicalSpocEmail     = $input[Entity::TECHNICAL_SPOC_EMAIL] ?? $merchant->getEmail();
-        $businessSpocEmail      = $input[Entity::BUSINESS_SPOC_EMAIL] ?? $merchant->getEmail();
 
         $merchantDetail->setTransactionReportEmail($transactionReportEmail);
-
-        $merchantDetail->setTechnicalSpocEmail($technicalSpocEmail);
-
-        $merchantDetail->setBusinessSpocEmail($businessSpocEmail);
 
         $merchantDetail->merchant()->associate($merchant);
 
