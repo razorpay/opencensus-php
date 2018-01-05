@@ -219,6 +219,53 @@ class UpiIciciGatewayReconTest extends TestCase
                 }
             });
 
+        $this->assertFailedPaymentRecon();
+    }
+
+    public function testReconPaymentFailedReconciliation()
+    {
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        // We make just one payment
+        $this->makeUpiIciciPaymentsSince($createdAt, 1);
+
+        $this->ba->appAuth();
+
+        $this->mockReconContentFunction(
+            function(& $content, $action = null)
+            {
+                if ($action === 'col_payment_icici_recon')
+                {
+                    $content[11] = "failed";
+                }
+            });
+
+        $this->assertFailedPaymentRecon();
+    }
+
+    public function testReconAmountValidationFailedReconciliation()
+    {
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        // We make just one payment
+        $this->makeUpiIciciPaymentsSince($createdAt, 1);
+
+        $this->ba->appAuth();
+
+        $this->mockReconContentFunction(
+            function(& $content, $action = null)
+            {
+                if ($action === 'col_payment_icici_recon')
+                {
+                    $content[9] = 1840913;
+                }
+            });
+
+        $this->assertFailedPaymentRecon();
+    }
+
+    private function assertFailedPaymentRecon()
+    {
         $fileContents = $this->generateReconFile(['type' => 'payment']);
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
