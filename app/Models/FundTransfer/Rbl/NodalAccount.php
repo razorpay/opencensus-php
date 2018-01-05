@@ -85,7 +85,7 @@ class NodalAccount extends NodalBase\NodalAccount
 
         $this->trace->info(TraceCode::RBL_NODAL_TRANSFER_REQUEST, $content);
 
-        $url = $this->baseUrl . $this->config['fund_transfer_url_sufffix'] . $this->clientCreds;
+        $url = $this->baseUrl . $this->config['fund_transfer_url_suffix'] . $this->clientCreds;
 
         $responseArray = $this->getResponse($content, $url);
 
@@ -214,7 +214,7 @@ class NodalAccount extends NodalBase\NodalAccount
                     'Debit_Acct_Name'      => 'Razorpay',
                     'Debit_IFSC'           => 'RATN',
                     'Debit_Mobile'         => '9876543210',
-                    'Debit_TrnParticulars' =>  '',
+                    'Debit_TrnParticulars' => '',
                     'Debit_PartTrnRmks'    => '',
                     'Mode_of_Pay'          => $this->getTransferMode($amount),
                     'Remarks'              => 'WE',
@@ -222,7 +222,7 @@ class NodalAccount extends NodalBase\NodalAccount
                     'Ben_ID'               => '',
                     // Hardcode value of our Nodal Account
                 ],
-                'Signature' =>[
+                'Signature' => [
                     'Signature' => 'Signature'
                 ],
             ]
@@ -271,7 +271,7 @@ class NodalAccount extends NodalBase\NodalAccount
                                 'Monthly' => '3000000'
                             ]
                         ],
-                        Mode::RTGS=> [
+                        Mode::RTGS => [
                             'YN' => 'Y',
                             'Limit' => [
                                 'Daily'   => '10000000',
