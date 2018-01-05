@@ -162,14 +162,19 @@ class VirtualAccountTest extends TestCase
     {
         $this->fixtures->merchant->activate();
 
-        $input = [
-            'receiver_types'  => 'qr_code',
+        $attributes =  [
+            'name'            => 'Test virtual account',
+            'description'     => 'VA for tests',
             'amount_expected' => 10000,
+            'receivers'       => [
+                'types' => [
+                    'qr_code',
+                ],
+            ],
+            'notes'           => [
+                'a' => 'b',
+            ],
         ];
-
-        $defaultValues = $this->getDefaultVirtualAccountArray();
-
-        $attributes = array_merge($defaultValues, $input);
 
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
