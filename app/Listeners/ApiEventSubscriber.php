@@ -5,13 +5,12 @@ namespace RZP\Listeners;
 use Illuminate\Events\Dispatcher;
 
 use App;
-
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Jobs\WebHook;
 use RZP\Models\Event;
+use RZP\Models\Payment;
 use RZP\Models\Invoice;
-use RZP\Models\Merchant;
 use RZP\Jobs\DispatchRouter;
 use RZP\Models\Customer\Token;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
@@ -309,13 +308,6 @@ class ApiEventSubscriber extends Base\Core
         $this->prepareAndDispatchWebhook($payload);
     }
 
-    protected function onSettlementProcessed($settlement)
-    {
-        $payload = $this->getSettlementPayload($settlement);
-
-        $this->prepareAndDispatchWebhook($payload);
-    }
-
     protected function getP2pPayload($p2p)
     {
         $source = $p2p->source;
@@ -437,17 +429,6 @@ class ApiEventSubscriber extends Base\Core
         return $payload;
     }
 
-    protected function getSettlementPayload($settlement)
-    {
-        $payload = [
-            Constants\Entity::SETTLEMENT => [
-                'entity' => $settlement->toArrayPublic(),
-            ],
-        ];
-
-        return $payload;
-    }
-
     protected function prepareAndDispatchWebhook(array $payload)
     {
         $data = $this->getWebhookData($payload);
@@ -460,16 +441,11 @@ class ApiEventSubscriber extends Base\Core
     protected function getWebhookData($payload)
     {
         $eventFired = $this->event;
-        $entity     = $this->mainEntity;
-        $merchant   = $this->getMerchantFromEntity($entity);
-        $webhook    = $merchant->webhook;
-
-        // Send the signed account id of the merchant associated with the entity, along with the payload
-        // In case of settlements, $entity->merchant is the the merchant to whom the settlement is processed
-        $signedAccountId = Merchant\AccountEntity::getSignedId($entity->merchant->getId());
+        $entity = $this->mainEntity;
+        $webhook = $entity->merchant->webhook;
 
         $attributes = array(
-            Event\Entity::EVENT      => $eventFired,
+            Event\Entity::EVENT       => $eventFired,
             //
             // The same event may or may not contain some entities, based on the state.
             // For example, if subscription.pending is fired on an auth failure,
@@ -477,21 +453,20 @@ class ApiEventSubscriber extends Base\Core
             // If it's fired on capture failure, it'll contain both subscription and payment
             // entity. For this reason, we cannot have a static list of contains array.
             //
-            Event\Entity::ACCOUNT_ID => $signedAccountId,
-            Event\Entity::CONTAINS   => array_keys($payload),
-            Event\Entity::CREATED_AT => $entity->getUpdatedAt(),
+            Event\Entity::CONTAINS    => array_keys($payload),
+            Event\Entity::CREATED_AT  => $entity->getUpdatedAt(),
         );
 
         $event = new Event\Entity($attributes);
 
         $event->setPayload($payload);
 
-        $event->merchant()->associate($merchant);
+        $event->merchant()->associate($entity->merchant);
 
         $data = array(
-            'mode'       => $this->getMode(),
-            'event'      => json_encode($event->toArrayPublic()),
-            'webhook_id' => $webhook->getId()
+            'mode'          => $this->getMode(),
+            'event'         => json_encode($event->toArrayPublic()),
+            'webhook_id'    => $webhook->getId()
         );
 
         return $data;
@@ -517,32 +492,10 @@ class ApiEventSubscriber extends Base\Core
 
     protected function isWebhookEnabledForEvent(Base\PublicEntity $entity)
     {
-        $merchant = $this->getMerchantFromEntity($entity);
-
-        $webhook = $this->repo->webhook->findByMerchant($merchant);
+        $webhook = $this->repo->webhook->findByMerchant($entity->merchant);
 
         return (($webhook !== null) and
                 ($webhook->isActive()) and
                 ($webhook->isEventEnabled($this->event)));
-    }
-
-    /**
-     * Returns the entity's merchant.
-     * If the merchant is a linked account, returns the parent merchant.
-     *
-     * @param Base\PublicEntity $entity
-     *
-     * @return Merchant\Entity
-     */
-    protected function getMerchantFromEntity(Base\PublicEntity $entity): Merchant\Entity
-    {
-        $merchant = $entity->merchant;
-
-        if ($merchant->isLinkedAccount() === true)
-        {
-            $merchant = $merchant->parent;
-        }
-
-        return $merchant;
     }
 }
