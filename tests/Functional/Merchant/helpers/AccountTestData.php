@@ -68,13 +68,13 @@ return [
                 'name'               => 'Linked Account 1',
                 'email'              => 'linked1@account.com',
 //                'entity'             => 'account',
-//                'live'               => true,
+                'live'               => true,
                 'tnc_accepted'       => true,
                 'managed'            => true,
                 'activation_details' => [
-//                    'activated'      => true,
-//                    'status'         => null,
-//                    'can_submit'     => true,
+                    'activated'      => true,
+                    'status'         => 'activated',
+                    'can_submit'     => true,
                     'required_fields' => [ ],
                 ],
                 'secondary_emails'   => [
@@ -85,7 +85,8 @@ return [
                 'account_details'    => [
                     'mobile'                   => null,
                     'landline'                 => null,
-                    'type'                     => null,
+                    'business_name'            => 'Acme solutions',
+                    'business_type'            => 'Private Limited',
                     'paymentdetails'           => null,
                     'business_model'           => null,
                     'registered_address'       => [

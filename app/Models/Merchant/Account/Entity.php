@@ -14,7 +14,6 @@ class Entity extends Merchant\Entity
     const PAN                      = 'pan';
     const PIN                      = 'pin';
     const CITY                     = 'city';
-    const TYPE                     = 'type';
     const GSTIN                    = 'gstin';
     const NOTES                    = 'notes';
     const STATE                    = 'state';
@@ -243,6 +242,25 @@ class Entity extends Merchant\Entity
 
     // ----------------------- End of setters -------------------------------------
 
+    /**
+     * Defining this function helps us to add a filter for merchant_id in a query -
+     * Eg: $this->newQuery()->merchantId($merchant->getId())
+     *
+     * This function overrides the function defined in Base\EloquentEx class.
+     * The base function is used for fetching entities which have merchant_id. It is tightly
+     * coupled with RepositoryFetch class's fetch, fetchByIdAndMerchantId etc methods.
+     *
+     * The same behaviour is required for marketplace merchants but instead of adding a filter
+     * for merchant_id, the filter is required for parent_id. Defining a separate function named
+     * scopeParentId and usage $this->newQuery()->parentId($parentMerchant->getId()) would have
+     * been an ideal case, but would require the new function to be supported in all the above
+     * mentioned functions of RepositoryFetch class. Hence, overriding the function definition here.
+     *
+     * Though the name is scopeMerchantId, it actually adds a filter for parent_id.
+     *
+     * @param $query
+     * @param $merchantId
+     */
     public function scopeMerchantId($query, $merchantId)
     {
         $merchantIdColumn = $this->dbColumn(Entity::PARENT_ID);
@@ -255,7 +273,7 @@ class Entity extends Merchant\Entity
      *
      * @return bool
      */
-    public function isManaged() : bool
+    public function isManaged(): bool
     {
         return ($this->isLinkedAccount() === true);
     }
@@ -272,7 +290,8 @@ class Entity extends Merchant\Entity
         $accountDetails = [
             self::MOBILE                   => $this->merchantDetail->getContactMobile(),
             self::LANDLINE                 => $this->merchantDetail->getContactLandline(),
-            self::TYPE                     => $this->merchantDetail->getBusinessType(),
+            self::BUSINESS_NAME            => $this->merchantDetail->getBusinessName(),
+            self::BUSINESS_TYPE            => $this->merchantDetail->getBusinessType(),
             self::PAYMENTDETAILS           => $this->merchantDetail->getBusinessPaymentdetails(),
             self::BUSINESS_MODEL           => $this->merchantDetail->getBusinessModel(),
             self::REGISTERED_ADDRESS       => $this->getRegisteredAddress(),
@@ -287,7 +306,9 @@ class Entity extends Merchant\Entity
     }
 
     /**
-     * Returns the public response for the key activation_details
+     * Returns the public response for the key activation_details.
+     * Other attributes like can_submit and required_fields are dynamically computed and
+     * returned from the Account\Service class :: toArrayPublic function
      *
      * @return array
      */

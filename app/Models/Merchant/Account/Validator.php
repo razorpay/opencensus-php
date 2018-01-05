@@ -17,6 +17,11 @@ class Validator extends Merchant\Validator
          Entity::ACCOUNT_DETAILS                                        => 'required|array',
          Entity::ACCOUNT_DETAILS . '.' . Entity::BUSINESS_NAME          => 'required|string',
          Entity::ACCOUNT_DETAILS . '.' . Entity::BUSINESS_TYPE          => 'required|string',
+
+         //
+         // Only the key presence is validated here. The actual validation happens in
+         // BankAccount\Validator class when the BankAccount Entity is formed.
+         //
          Entity::BANK_ACCOUNT                                           => 'required|array',
          Entity::BANK_ACCOUNT . '.' . BankAccount::IFSC_CODE            => 'required|string',
          Entity::BANK_ACCOUNT . '.' . BankAccount::ACCOUNT_NUMBER       => 'required|string',

@@ -151,7 +151,7 @@ class Service extends Base\Service
      *
      * @return array
      */
-    protected function getCustomPublicAttributes(Entity $entity, & $response): array
+    protected function getCustomPublicAttributes(Entity $entity, array & $response): array
     {
         $merchantDetails = $entity->merchantDetail;
 
@@ -161,7 +161,16 @@ class Service extends Base\Service
 
         $response[$activationDetails][Entity::CAN_SUBMIT]      = $detailsResponse[MerchantDetail\Entity::CAN_SUBMIT];
 
-        $response[$activationDetails][Entity::REQUIRED_FIELDS] = $detailsResponse[MerchantDetail\Entity::VERIFICATION][MerchantDetail\Entity::REQUIRED_FIELDS];
+        $verificationDetails = $detailsResponse[MerchantDetail\Entity::VERIFICATION];
+
+        $requiredFields = [];
+
+        if (isset($verificationDetails[MerchantDetail\Entity::REQUIRED_FIELDS]) === true)
+        {
+            $requiredFields = $verificationDetails[MerchantDetail\Entity::REQUIRED_FIELDS];
+        }
+
+        $response[$activationDetails][Entity::REQUIRED_FIELDS] = $requiredFields;
 
         return $response;
     }
