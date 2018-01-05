@@ -39,7 +39,7 @@ class UpiIciciGatewayReconTest extends TestCase
     {
         $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
 
-        $this->makeUpiIciciRefundsSince(3, $createdAt);
+        $this->makeUpiIciciRefundsSince($createdAt);
 
         $this->ba->appAuth();
 
@@ -72,7 +72,7 @@ class UpiIciciGatewayReconTest extends TestCase
     {
         $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
 
-        $this->makeUpiIciciRefundsSince(3, $createdAt);
+        $this->makeUpiIciciRefundsSince($createdAt);
 
         $this->ba->appAuth();
 
@@ -118,7 +118,7 @@ class UpiIciciGatewayReconTest extends TestCase
 
         $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
 
-        list($refunds, $payments) = $this->makeUpiIciciRefundsSince(3, $createdAt);
+        list($refunds, $payments) = $this->makeUpiIciciRefundsSince($createdAt);
 
         $this->ba->appAuth();
 
@@ -200,7 +200,7 @@ class UpiIciciGatewayReconTest extends TestCase
         return $uploadedFile;
     }
 
-    private function makeUpiIciciRefundsSince(int $count = 3, int $createdAt)
+    private function makeUpiIciciRefundsSince(int $createdAt, int $count = 3)
     {
         for ($i = 0; $i < $count; $i++)
         {
