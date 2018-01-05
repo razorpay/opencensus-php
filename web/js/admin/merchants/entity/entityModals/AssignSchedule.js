@@ -21,9 +21,19 @@ const methodMapping = {
 
 const type_list = { Settlement: 'settlement' };
 
-let defaultSchedule = '30000000000000';
 export default class ScheduleModal extends Component {
   state = { settlementPlans: {}, pending: true };
+
+  getCurrentSchedule(currentMethod) {
+    let defaultScheduleId = '30000000000000';
+    const scheduleTasks = this.props.props.merchant.scheduleTasks;
+    const currentScheduleTask = scheduleTasks.find(
+      task => task.method === currentMethod
+    );
+    return currentScheduleTask
+      ? currentScheduleTask.schedule_id
+      : defaultScheduleId;
+  }
 
   componentWillMount() {
     adminFetch({
@@ -34,14 +44,13 @@ export default class ScheduleModal extends Component {
       for (let key in data.items) {
         let value = data.items[key];
         settlementPlans[value.id] = value.name;
-        if (
-          value.delay === this.props.props.merchant.details.settlement_schedule
-        ) {
-          defaultSchedule = value.id;
-        }
       }
 
-      this.setState({ settlementPlans, pending: false, defaultSchedule });
+      this.setState({
+        settlementPlans,
+        pending: false,
+        defaultSchedule: this.getCurrentSchedule(null),
+      });
     });
   }
 
@@ -76,16 +85,10 @@ export default class ScheduleModal extends Component {
   };
 
   handleMethodChange = event => {
-    const currentMethod = event.currentTarget.value;
-    const scheduleTasks = this.props.props.merchant.scheduleTasks;
-    const currentScheduleTask = scheduleTasks.find(
-      task => task.method === currentMethod
-    );
-
     this.setState({
-      defaultSchedule: currentScheduleTask
-        ? currentScheduleTask.schedule_id
-        : defaultSchedule,
+      defaultSchedule: this.getCurrentSchedule(
+        event.currentTarget.value || null
+      ),
     });
   };
 
