@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { Pie } from 'react-chartjs-2';
 import { connect } from 'react-redux';
 
-import { getPieData } from 'rzp/utils/chart/transformers';
 import { paiseToRupees, shortenText, titleCase } from 'rzp/utils/rzp-utils';
 import takeScreenshot from 'rzp/utils/screenshot';
 
@@ -16,7 +15,7 @@ import GenericPanel, {
   PanelBody,
   PanelFooter,
 } from 'merchant/components/Home/GenericPanel';
-import { groupValues, groupMeta, getQuery } from './data';
+import { groupValues, groupMeta, getQuery, getPieData } from './data';
 import Legend from 'merchant/components/Home/Legend';
 import LastUpdated from 'merchant/components/Home/LastUpdated';
 import MoreOptionsButton from 'merchant/components/Home/MoreOptionsButton';
@@ -90,6 +89,7 @@ class Traffic extends Component {
         data: distribution.result,
         groupByColumnName: meta.groupBy,
         valueTransformer: meta.isCurrency && paiseToRupees,
+        groupTitleMap: { Mobile: 'mWeb' },
       });
 
       groupState.chartData = { labels, datasets };

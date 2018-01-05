@@ -12,7 +12,6 @@ import {
   getFormattedAmount,
   getFormattedNumber,
 } from 'rzp/utils/rzp-utils';
-import { getTimelineData } from 'rzp/utils/chart/transformers';
 import {
   humanReadableIndian,
   humanReadableIndianCurrency,
@@ -20,7 +19,13 @@ import {
 import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
 
 import { fetch } from 'merchant/modules/pokedex';
-import { tabsOrder, tabsMeta, getQuery, breakdownVals } from './data';
+import {
+  tabsOrder,
+  tabsMeta,
+  getQuery,
+  breakdownVals,
+  getTimelineData,
+} from './data';
 import Panel from './Panel';
 
 import './styles.styl';
@@ -168,7 +173,7 @@ class KeyMetricsContainer extends Component {
             data: histogram.result,
             groupByColumnName:
               tabMeta.groupByColumnName || tabState.selectedGrouping,
-            groupTitleMap: tabMeta.groupTitleMap || {},
+            groupTitleMap: tabMeta.groupTitleMap || { Mobile: 'mWeb' },
             valueTransformer: isCurrency && paiseToRupees,
           });
 

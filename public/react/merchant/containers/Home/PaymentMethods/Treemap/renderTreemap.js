@@ -405,7 +405,7 @@ const getGroupingFactor = (groupKey, bankNames) => {
     return d =>
       d[groupKey]
         ? bankNames[d[groupKey]] || d[groupKey]
-        : getGroupingFactor('bank')(d);
+        : getGroupingFactor('bank', bankNames)(d);
   } else if (groupKey === 'bank') {
     return d => bankNames[d[groupKey]] || d[groupKey];
   }
