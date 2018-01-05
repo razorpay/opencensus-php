@@ -7,7 +7,6 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
-use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
 use RZP\Constants\Timezone;
