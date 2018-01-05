@@ -21,6 +21,7 @@ const methodMapping = {
 
 const type_list = { Settlement: 'settlement' };
 
+let defaultSchedule = '30000000000000';
 export default class ScheduleModal extends Component {
   state = { settlementPlans: {}, pending: true };
 
@@ -30,7 +31,6 @@ export default class ScheduleModal extends Component {
     }).then(data => {
       const settlementPlans = {};
 
-      let defaultSchedule = '30000000000000';
       for (let key in data.items) {
         let value = data.items[key];
         settlementPlans[value.id] = value.name;
@@ -75,6 +75,24 @@ export default class ScheduleModal extends Component {
       });
   };
 
+  handleMethodChange = event => {
+    const currentMethod = event.currentTarget.value;
+    const scheduleTasks = this.props.props.merchant.scheduleTasks;
+    const currentScheduleTask = scheduleTasks.find(
+      task => task.method === currentMethod
+    );
+
+    this.setState({
+      defaultSchedule: currentScheduleTask
+        ? currentScheduleTask.schedule_id
+        : defaultSchedule,
+    });
+  };
+
+  handleScheduleChange = event => {
+    this.setState({ defaultSchedule: event.currentTarget.value });
+  };
+
   render() {
     return (
       <BaseModal header="Assign Schedule Plan">
@@ -93,7 +111,8 @@ export default class ScheduleModal extends Component {
             <SelectField
               name="schedule_id"
               label="Schedules"
-              defaultValue={this.state.defaultSchedule}
+              value={this.state.defaultSchedule}
+              onChange={this.handleScheduleChange}
             >
               {Object.keys(this.state.settlementPlans).map(key => (
                 <option key={key} value={key}>
@@ -103,7 +122,12 @@ export default class ScheduleModal extends Component {
             </SelectField>
           )}
 
-          <SelectField name="method" label="Method" defaultValue={''}>
+          <SelectField
+            name="method"
+            label="Method"
+            defaultValue={''}
+            onChange={this.handleMethodChange}
+          >
             {Object.keys(methodMapping).map(key => (
               <option key={key} value={key}>
                 {methodMapping[key]}
