@@ -105,6 +105,19 @@ export default class ScheduleModal extends Component {
             ))}
           </SelectField>
 
+          <SelectField
+            name="method"
+            label="Method"
+            defaultValue={''}
+            onChange={this.handleMethodChange}
+          >
+            {Object.keys(methodMapping).map(key => (
+              <option key={key} value={key}>
+                {methodMapping[key]}
+              </option>
+            ))}
+          </SelectField>
+
           {this.state.pending ? (
             <Field label="Schedules" defaultValue="Loading..." disabled />
           ) : (
@@ -121,19 +134,6 @@ export default class ScheduleModal extends Component {
               ))}
             </SelectField>
           )}
-
-          <SelectField
-            name="method"
-            label="Method"
-            defaultValue={''}
-            onChange={this.handleMethodChange}
-          >
-            {Object.keys(methodMapping).map(key => (
-              <option key={key} value={key}>
-                {methodMapping[key]}
-              </option>
-            ))}
-          </SelectField>
 
           <AsyncButton
             text="Save"
