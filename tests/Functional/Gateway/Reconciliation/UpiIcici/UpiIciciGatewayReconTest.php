@@ -168,6 +168,40 @@ class UpiIciciGatewayReconTest extends TestCase
         }
     }
 
+    // Below are the payment recon test cases
+    public function testRefundReconciliation()
+    {
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $this->makeUpiIciciPaymentsSince(3, $createdAt);
+
+        $this->ba->appAuth();
+
+        $fileContents = $this->generateReconFile();
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $response = $this->reconcile($uploadedFile, 'UpiIcici');
+
+        // We assert that all 3 payments were reconciled
+        $this->assertEquals(3, $response['total_count']);
+        $this->assertEquals(3, $response['success_count']);
+
+        $refunds = $this->getEntities('refund', [], true);
+
+        foreach ($refunds['items'] as $refund)
+        {
+            $transactionId = $refund['transaction_id'];
+
+            $transaction = $this->getEntityById('transaction', $transactionId, true);
+
+            $this->assertNotNull($transaction['reconciled_at']);
+
+            // We hardcode 04-12-2017 05:09 PM in the upi icici reconciliator class
+            $this->assertEquals(1512387540, $transaction['gateway_settled_at']);
+        }
+    }
+
     private function updatePaymentStatusToCaptured(array $payments)
     {
         foreach ($payments as $payment)
