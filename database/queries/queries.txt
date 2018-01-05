@@ -2783,3 +2783,7 @@ ALTER TABLE virtual_accounts
 
 ALTER TABLE `merchants`
     ADD COLUMN `channel` VARCHAR(32) DEFAULT 'kotak' AFTER `billing_label`;
+
+ALTER TABLE settings
+    MODIFY COLUMN created_at INT(11) NOT NULL,
+    MODIFY COLUMN updated_at INT(11) NOT NULL;
