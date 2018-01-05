@@ -88,6 +88,7 @@ function getValue(result, mode, attributes) {
     );
   } else if (
     key.endsWith('_id') &&
+    typeof value === 'string' &&
     ['public_id', 'gateway_merchant_id', 'gateway_terminal_id'].indexOf(key) ===
       -1
   ) {
