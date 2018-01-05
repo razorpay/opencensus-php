@@ -225,8 +225,7 @@ class CreatePayments extends Migration
             $table->string(Payment::RECURRING_TYPE)
                   ->nullable();
 
-            // TODO: Use approval_code column instead.
-            $table->string(Payment::AUTH_TYPE)
+            $table->string(Payment::AUTH_TYPE, 14)
                   ->nullable();
 
             // Adds created_at and updated_at columns to the table

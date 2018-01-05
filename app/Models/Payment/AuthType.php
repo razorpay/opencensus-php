@@ -16,7 +16,7 @@ class AuthType
 
     public static function isAuthTypeValid($type): bool
     {
-        return (in_array($type, self::$types, true));
+        return (in_array($type, self::$types, true) === true);
     }
 
     public static function validateAuthType($type)

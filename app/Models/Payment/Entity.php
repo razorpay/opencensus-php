@@ -408,7 +408,7 @@ class Entity extends Base\PublicEntity
     ];
 
     // window in secs, used to fetch payments with same checkout id
-    const PAYMENT_WINDOW                = 1800;
+    const PAYMENT_WINDOW = 1800;
 
     const DUMMY_EMAIL = 'void@razorpay.com';
 
@@ -475,8 +475,7 @@ class Entity extends Base\PublicEntity
 
     protected function modifyIfsc(& $input)
     {
-        if ((isset($input[self::BANK_ACCOUNT][self::IFSC]) === true) and
-            (is_string($input[self::BANK_ACCOUNT][self::IFSC]) === true))
+        if (isset($input[self::BANK_ACCOUNT][self::IFSC]) === true)
         {
             $input[self::BANK_ACCOUNT][self::IFSC] = strtoupper($input[self::BANK_ACCOUNT][self::IFSC]);
         }

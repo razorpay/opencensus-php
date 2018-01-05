@@ -2785,7 +2785,7 @@ ALTER TABLE `merchants`
     ADD COLUMN `channel` VARCHAR(32) DEFAULT 'kotak' AFTER `billing_label`;
 
 ALTER TABLE payments
-    ADD COLUMN auth_type VARCHAR(255) DEFAULT NULL AFTER updated_at;
+    CHANGE COLUMN `global_token` `auth_type` VARCHAR(14) DEFAULT NULL;
 
 ALTER TABLE payments
     ADD INDEX `payments_auth_type_index` (`auth_type`);
@@ -2795,3 +2795,4 @@ ALTER TABLE tokens
 
 ALTER TABLE tokens
     ADD COLUMN ifsc VARCHAR(16) DEFAULT NULL AFTER beneficiary_name;
+
