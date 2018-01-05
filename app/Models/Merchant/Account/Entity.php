@@ -94,6 +94,16 @@ class Entity extends Merchant\Entity
         self::INVOICE_CODE,
     ];
 
+    /**
+     * This function is used in case of polymorphic relations where we associate one entity
+     * with multiple other entities using (entity_type and entity_id). This function determines
+     * the string that will be stored for entity_type when the association is with the Account
+     * entity. A mapping is maintained in ApiServiceProvider class :: registerMorphRelationMaps function.
+     * But since the array used there is an associative array and an entry for the key 'merchant' already
+     * exists, we are using getMorphClass function instead of the updating the map.
+     *
+     * @return string
+     */
     public function getMorphClass()
     {
         return 'merchant';
