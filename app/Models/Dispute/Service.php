@@ -4,6 +4,7 @@ namespace RZP\Models\Dispute;
 
 use RZP\Models\Base;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\Payment\Entity as PaymentEntity;
 
 class Service extends Base\Service
 {
@@ -36,6 +37,15 @@ class Service extends Base\Service
         $disputes = $this->repo->dispute->fetch($input, $merchantId);
 
         return $disputes->toArrayPublic();
+    }
+
+    public function fetchDisputesForPayment(string $paymentId)
+    {
+        $input = [
+            Entity::PAYMENT_ID  => PaymentEntity::getSignedId($paymentId),
+        ];
+
+        return $this->fetchMultiple($input);
     }
 
     public function migrateOldAdjustments($file): array
