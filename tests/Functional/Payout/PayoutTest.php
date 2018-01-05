@@ -57,7 +57,7 @@ class PayoutTest extends TestCase
     {
         $this->ba->appAuth();
 
-        $this->startTest();
+        $response = $this->startTest();
     }
 
     public function testCreateMerchantPayoutWithModulo()

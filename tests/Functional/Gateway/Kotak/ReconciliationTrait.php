@@ -153,6 +153,7 @@ trait ReconciliationTrait
             'settlement',
             [
                 'merchant_id' => $merchantId,
+                'bank_account_id' => $merchant->bankAccount->getId(),
                 'utr' => null,
                 'created_at' => $timestamp,
             ]);
@@ -187,8 +188,10 @@ trait ReconciliationTrait
                 [
                     'source_id'                 => $settlement->getId(),
                     'created_at'                => $timestamp,
+                    'bank_account_id'           => $settlement->bankAccount->getId(),
                     'batch_fund_transfer_id'    => $batchTransferEntity->getId(),
                     'merchant_id'               => $merchantId,
+                    'purpose'                   => 'settlement',
                     'status'                    => AttemptStatus::INITIATED,
                 ]
             );

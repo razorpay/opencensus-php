@@ -358,7 +358,7 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED);
         }
 
-        if ($merchant->isArchived() === true)
+        if ($merchant->merchantDetail->isArchived() === true)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_UNARCHIVE_BEFORE_ACTIVATION);
