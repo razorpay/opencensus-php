@@ -67,7 +67,7 @@ return [
             'content' => [
                 'name'               => 'Linked Account 1',
                 'email'              => 'linked1@account.com',
-//                'entity'             => 'account',
+                'entity'             => 'account',
                 'live'               => true,
                 'tnc_accepted'       => true,
                 'managed'            => true,
@@ -78,7 +78,7 @@ return [
                     'required_fields' => [ ],
                 ],
                 'secondary_emails'   => [
-                    'transaction_report_email' => 'linked1@account.com',
+                    'transaction_report_email' => null,
                 ],
                 'account_details'    => [
                     'mobile'                   => null,

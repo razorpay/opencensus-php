@@ -111,11 +111,6 @@ class Core extends Base\Core
 
         $merchantDetail->setContactEmail($merchant->getEmail());
 
-        // If not present in the input, use the default email of the merchant
-        $transactionReportEmail = $input[Entity::TRANSACTION_REPORT_EMAIL] ?? $merchant->getEmail();
-
-        $merchantDetail->setTransactionReportEmail($transactionReportEmail);
-
         $merchantDetail->merchant()->associate($merchant);
 
         try

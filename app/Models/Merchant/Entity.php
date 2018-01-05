@@ -1234,7 +1234,12 @@ class Entity extends Base\PublicEntity
 
     public function users()
     {
-        return $this->belongsToMany(User\Entity::class, Table::MERCHANT_USERS)
+        //
+        // The foreign key should be specified explicitly as it otherwise fetches from the
+        // entity name by appending '_id' to it. When this code is called from Account\Entity,
+        // it tries to look for account_id and crashes.
+        //
+        return $this->belongsToMany(User\Entity::class, Table::MERCHANT_USERS, self::MERCHANT_ID)
                     ->withPivot(User\Entity::ROLE)
                     ->orderBy(self::NAME);
     }

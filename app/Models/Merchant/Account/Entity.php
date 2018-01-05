@@ -59,6 +59,8 @@ class Entity extends Merchant\Entity
 
     protected static $delimiter = '_';
 
+    protected $entity = 'account';
+
     protected $public = [
         self::ID,
         self::ENTITY,
