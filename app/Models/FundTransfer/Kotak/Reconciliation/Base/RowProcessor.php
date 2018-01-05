@@ -71,20 +71,21 @@ class RowProcessor extends BaseCore
     {
         $this->reconciledAt = $reconciledAt;
 
-        if (($this->row['Payment_Ref_No.'] === '9J73yH9DaC7s2x') or
-            ($this->row['Credit_Narration'] === 'RAZORPAY AXIS'))
+        $this->parseRow();
+
+        $this->fetchEntities();
+
+        if ((empty($this->reconEntity) === true) or
+            (empty($this->source) === true))
         {
-            $this->trace->info(TraceCode::PAYOUT_RECON_SKIPPED,
+            $this->trace->error(TraceCode::SETTLEMENT_RECONCILIATION_SKIPPED,
                 [
-                    'row' => $this->row,
+                    'row'           => $this->row,
+                    'parsed_data'   => $this->parsedData,
                 ]);
 
             return null;
         }
-
-        $this->parseRow();
-
-        $this->fetchEntities();
 
         $this->getReconciliationStatus();
 

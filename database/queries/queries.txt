@@ -2783,3 +2783,15 @@ ALTER TABLE virtual_accounts
 
 ALTER TABLE `merchants`
     ADD COLUMN `channel` VARCHAR(32) DEFAULT 'kotak' AFTER `billing_label`;
+
+ALTER TABLE settings
+    MODIFY COLUMN created_at INT(11) NOT NULL,
+    MODIFY COLUMN updated_at INT(11) NOT NULL;
+
+ALTER TABLE fund_transfer_attempts
+    ADD COLUMN purpose VARCHAR(32) AFTER merchant_id;A
+
+# Makes customer id nullable in payouts
+ALTER TABLE payouts
+    MODIFY COLUMN customer_id VARCHAR(14);
+

@@ -107,10 +107,12 @@ return [
     ],
 
     'hitachi' => [
-        'test_merchant_id'  => env('HITACHI_GATEWAY_TEST_MERCHANT_ID'),
-        'test_terminal_id'  => env('HITACHI_GATEWAY_TEST_TERMINAL_ID'),
-        'test_hash_secret'  => env('HITACHI_GATEWAY_TEST_HASH_SECRET'),
-        'test_hash_secret2' => env('HITACHI_GATEWAY_TEST_HASH_SECRET2'),
+        'gateway_salt'       => env('HITACHI_GATEWAY_LIVE_HASH_SECRET'),
+        'gateway_salt2'      => env('HITACHI_GATEWAY_LIVE_HASH_SECRET2'),
+        'test_merchant_id'   => env('HITACHI_GATEWAY_TEST_MERCHANT_ID'),
+        'test_terminal_id'   => env('HITACHI_GATEWAY_TEST_TERMINAL_ID'),
+        'test_hash_secret'   => env('HITACHI_GATEWAY_TEST_HASH_SECRET'),
+        'test_hash_secret2'  => env('HITACHI_GATEWAY_TEST_HASH_SECRET2'),
     ],
 
     'first_data' => [

@@ -330,6 +330,7 @@ class Merchant
             FundTransferAttempt\Entity::CHANNEL         => $this->channel,
             FundTransferAttempt\Entity::VERSION         => FundTransferAttempt\Version::V3,
             FundTransferAttempt\Entity::STATUS          => FundTransferAttempt\Status::INITIATED,
+            FundTransferAttempt\Entity::PURPOSE         => FundTransferAttempt\Purpose::SETTLEMENT,
         ];
 
         $fundTransferAttempt->fillAndGenerateId($values);

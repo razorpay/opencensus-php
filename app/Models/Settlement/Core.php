@@ -77,7 +77,7 @@ class Core extends Base\Core
         return (new $nodalClass())->addBeneficiary($input);
     }
 
-    protected function getAmountFromPaymentsForLastDay(string $gateway)
+    protected function getAmountFromPaymentsForLastDay(string $gateway) : int
     {
         $from = Carbon::yesterday(Timezone::IST)->getTimestamp();
 
@@ -95,6 +95,6 @@ class Core extends Base\Core
         // Transfer 99% of the derived amount
         $amount = 0.99 * $amount;
 
-        return $amount;
+        return (int)$amount;
     }
 }
