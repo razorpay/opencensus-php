@@ -62,6 +62,9 @@ class UpiIciciGatewayReconTest extends TestCase
             $transaction = $this->getEntityById('transaction', $transactionId, true);
 
             $this->assertNotNull($transaction['reconciled_at']);
+
+            // We hardcode 04-12-2017 05:09 PM in the upi icici reconciliator class
+            $this->assertEquals(1512387540, $transaction['gateway_settled_at']);
         }
     }
 
@@ -103,6 +106,9 @@ class UpiIciciGatewayReconTest extends TestCase
             $transaction = $this->getEntityById('transaction', $transactionId, true);
 
             $this->assertNull($transaction['reconciled_at']);
+
+            // We hardcode 04-12-2017 05:09 PM in the upi icici reconciliator class
+            $this->assertEquals(1512387540, $transaction['gateway_settled_at']);
         }
     }
 
@@ -157,6 +163,8 @@ class UpiIciciGatewayReconTest extends TestCase
             $assertFunction = ($index < 3) ? 'assertNotNull' : 'assertNull';
 
             $this->$assertFunction($transaction['reconciled_at']);
+
+            // TODO: Handle assertion for persisted gateway settled at value
         }
     }
 
