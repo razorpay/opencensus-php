@@ -286,7 +286,7 @@ return [
             'internal_error_code' => ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
         ],
     ],
-
+    
     'testGatewayInvalidReasonCode' => [
         'response' => [
             'content' => [
@@ -359,5 +359,21 @@ return [
         'reason_code' => 100,
         'entity' => 'cybersource',
         'admin' => true
+    ],
+    
+    'testGatewayVerifyAuthResponseFailure' => [
+       'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE,
+        ],
     ]
 ];

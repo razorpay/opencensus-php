@@ -56,7 +56,7 @@ class Core extends Base\Core
     {
         return $this->repo->transaction(function () use ($input, $merchant)
         {
-            $payout = $this->createPayout($input, $merchant);
+            $payout = $this->createCustomerPayout($input, $merchant);
 
             $this->repo->saveOrFail($payout);
 
@@ -77,7 +77,7 @@ class Core extends Base\Core
     {
         (new Validator)->validatePaymentForPayout($input, $payment);
 
-        $payout = $this->createPayout($input, $merchant);
+        $payout = $this->createCustomerPayout($input, $merchant);
 
         $payout->payment()->associate($payment);
 
@@ -126,84 +126,45 @@ class Core extends Base\Core
      */
     public function merchantPayout(array $input, Merchant\Entity $merchant): array
     {
-        $merchantId = $merchant->getId();
-
-        $bankAccountId = $input[Entity::DESTINATION_ID];
-
-        $customerId = $input[Entity::CUSTOMER_ID];
-
-        if (isset($input[Entity::AMOUNT]) === true)
-        {
-            $amount = $input[Entity::AMOUNT];
-        }
-        else
-        {
-            $merchantBalance = $merchant->balance->getBalance();
-
-            if ((isset($input[Entity::BUFFER_AMOUNT]) === true) and
-                ($merchantBalance < $input[Entity::BUFFER_AMOUNT]))
-            {
-                $this->trace->info(
-                    TraceCode::MERCHANT_PAYOUT_SKIPPED,
-                    [
-                        'message'     => 'merchant balance is less than buffer amount',
-                        'merchant_id' => $merchantId,
-                        'input'       => $input,
-                    ]);
-
-                return ['message' => 'merchant balance is less than the buffer amount ' . $input[Entity::BUFFER_AMOUNT]];
-            }
-
-            $amount = $merchantBalance - ($input[Entity::BUFFER_AMOUNT] ?? 0);
-
-            $amount = ($amount > self::MAX_PAYOUT_AMOUNT) ? self::MAX_PAYOUT_AMOUNT : $amount;
-        }
-
-        if ((isset($input[Entity::MIN_AMOUNT]) === true) and
-            ($amount < $input[Entity::MIN_AMOUNT]))
-        {
-            $this->trace->info(
-                TraceCode::MERCHANT_PAYOUT_SKIPPED,
-                [
-                    'message'     => 'amount is less than min amount',
-                    'merchant_id' => $merchantId,
-                    'input'       => $input,
-                ]);
-
-            return ['message' =>
-                'amount to be transferred is less than ' . $input[Entity::MIN_AMOUNT]];
-
-        }
-
-        //
-        // Modulo will convert the amount into multiples
-        // of modulo value
-        //
-        if (isset($input[Entity::MODULO]) === true)
-        {
-            $moduloAmount = $amount % $input[Entity::MODULO];
-
-            $amount = $amount - $moduloAmount;
-        }
+        $amount = $this->getMerchantPayoutAmount($input, $merchant);
 
         $payoutInput = [
-            Entity::CUSTOMER_ID    => $customerId,
+            Entity::PURPOSE        => FundTransferAttempt\Purpose::SETTLEMENT,
             Entity::AMOUNT         => $amount,
             Entity::CURRENCY       => Currency::INR,
             Entity::METHOD         => Method::FUND_TRANSFER,
-            Entity::DESTINATION    => $bankAccountId,
         ];
 
-        $payout = $this->directPayout($payoutInput, $merchant);
+        $payout = $this->repo->transaction(function () use ($payoutInput, $merchant)
+        {
+            $payout = $this->createMerchantPayout($payoutInput, $merchant);
+
+            $this->repo->saveOrFail($payout);
+
+            return $payout;
+        });
 
         return $payout->toArrayPublic();
     }
 
-    protected function createPayout(array $input, Merchant\Entity $merchant): Entity
+    protected function createCustomerPayout(array $input, Merchant\Entity $merchant): Entity
     {
         $this->validateMerchantStatus($merchant);
 
-        $payout = $this->createPayoutEntity($input, $merchant);
+        $payout = $this->createCustomerPayoutEntity($input, $merchant);
+
+        $payoutAttempt = $this->createPayoutAttemptEntity($payout);
+
+        $this->updatePayoutWithTxn($payout);
+
+        return $payout;
+    }
+
+    protected function createMerchantPayout(array $input, Merchant\Entity $merchant): Entity
+    {
+        $this->validateMerchantStatus($merchant);
+
+        $payout = $this->createMerchantPayoutEntity($input, $merchant);
 
         $payoutAttempt = $this->createPayoutAttemptEntity($payout);
 
@@ -286,7 +247,7 @@ class Core extends Base\Core
         }
     }
 
-    protected function createPayoutEntity(array $input, Merchant\Entity $merchant): Entity
+    protected function createCustomerPayoutEntity(array $input, Merchant\Entity $merchant): Entity
     {
         $payout = (new Entity)->build($input);
 
@@ -305,11 +266,33 @@ class Core extends Base\Core
         return $payout;
     }
 
+    protected function createMerchantPayoutEntity(array $input, Merchant\Entity $merchant): Entity
+    {
+        $payout = new Entity;
+
+        $payout->getValidator()->validateInput('merchant_payout', $input);
+
+        $payout->generate($input);
+
+        $payout->fill($input);
+
+        $destination = $merchant->bankAccount;
+
+        $payout->setChannel($merchant->getChannel());
+
+        $payout->merchant()->associate($merchant);
+
+        $payout->destination()->associate($destination);
+
+        return $payout;
+    }
+
     protected function createPayoutAttemptEntity(Entity $payout): FundTransferAttempt\Entity
     {
         $fundTransferAttempt = new FundTransferAttempt\Entity;
 
         $values = [
+            FundTransferAttempt\Entity::PURPOSE   => $payout->getPurpose(),
             FundTransferAttempt\Entity::CHANNEL   => $payout->getChannel(),
             FundTransferAttempt\Entity::VERSION   => FundTransferAttempt\Version::V3,
             FundTransferAttempt\Entity::STATUS    => FundTransferAttempt\Status::CREATED,
@@ -355,6 +338,64 @@ class Core extends Base\Core
         }
 
         return $destination;
+    }
+
+    protected function getMerchantPayoutAmount(array $input, Merchant\Entity $merchant)
+    {
+        $merchantId = $merchant->getId();
+
+        if (isset($input[Entity::AMOUNT]) === true)
+        {
+            $amount = $input[Entity::AMOUNT];
+        }
+        else
+        {
+            $merchantBalance = $merchant->balance->getBalance();
+
+            if ((isset($input[Entity::BUFFER_AMOUNT]) === true) and
+                ($merchantBalance < $input[Entity::BUFFER_AMOUNT]))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    "merchant balance is less than buffer amount",
+                    Entity::BUFFER_AMOUNT,
+                    [
+                        'merchant_id' => $merchantId,
+                        'buffer_amount' => $input[Entity::BUFFER_AMOUNT],
+                        'balance'       => $merchantBalance
+                    ]);
+            }
+
+            $amount = $merchantBalance - ($input[Entity::BUFFER_AMOUNT] ?? 0);
+
+            $amount = ($amount > self::MAX_PAYOUT_AMOUNT) ? self::MAX_PAYOUT_AMOUNT : $amount;
+        }
+
+        if ((isset($input[Entity::MIN_AMOUNT]) === true) and
+            ($amount < $input[Entity::MIN_AMOUNT]))
+        {
+
+            throw new Exception\BadRequestValidationFailureException(
+                "amount is less than min amount",
+                Entity::MIN_AMOUNT,
+                [
+                    'merchant_id' => $merchantId,
+                    'min_amount'  => $input[Entity::MIN_AMOUNT],
+                    'amount'      => $amount
+                ]);
+        }
+
+        //
+        // Modulo will convert the amount into multiples
+        // of modulo value
+        //
+        if (isset($input[Entity::MODULO]) === true)
+        {
+            $moduloAmount = $amount % $input[Entity::MODULO];
+
+            $amount = $amount - $moduloAmount;
+        }
+
+        return $amount;
     }
 
     protected function updatePayoutWithTxn(Entity $payout)

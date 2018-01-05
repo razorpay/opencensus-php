@@ -25,7 +25,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     const GATEWAY_PAYMENT_DATE_FORMAT = 'm/d/Y H:i:s';
 
-    protected function getPaymentId($row)
+    protected function getPaymentId(array $row)
     {
         $paymentId = $row[self::COLUMN_PAYMENT_ID];
 

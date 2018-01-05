@@ -302,7 +302,9 @@ class TransactionFilter extends Terminal\Filter
         if ((empty($bank) === false) and
             (in_array($bank, Gateway::$emiBanksUsingCardTerminals)))
         {
-            return (($terminal->isCardEnabled()) and ($terminal->isEmiEnabled() === false));
+            return (($terminal->isCardEnabled()) and
+                    ($terminal->isEmiEnabled() === false) and
+                    ($terminal->isCurrencyInr() === true));
         }
 
         // validate terminal using the gateway and emi duration
