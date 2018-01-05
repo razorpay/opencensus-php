@@ -39,11 +39,13 @@ export default function EditMerchantInvoice() {
             route_name: 'merchant_invoice_update_gstin',
           }).then(response => {
             if (response) {
+              closeModal();
+
               if (isWorkflow(response)) {
+                notifySuccess('Workflow is created successfully.');
                 return;
               }
               notifySuccess('Update GSTIN Successfull');
-              closeModal();
             }
           });
         }}

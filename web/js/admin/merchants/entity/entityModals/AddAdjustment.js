@@ -27,12 +27,13 @@ export default ({ merchantId }) => {
       })
         .then(response => {
           if (response) {
+            closeModal();
+
             if (isWorkflow(response)) {
+              notifySuccess('Workflow is created successfully.');
               return;
             }
-
             notifySuccess('Adjustment added successfully.');
-            closeModal();
           }
         })
         .catch(err => {
