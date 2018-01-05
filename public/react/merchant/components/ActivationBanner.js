@@ -66,7 +66,7 @@ export default class ProductActivationBanner extends Component {
               To activate {productName} in live mode, you can request for
               activation and we will get back to you
               {productName !== 'Razorpay Subscriptions'
-                ? ' in 1 working day'
+                ? ' in 3-4 working days'
                 : ''}.
             </div>
           </div>
