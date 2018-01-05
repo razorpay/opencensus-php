@@ -229,12 +229,7 @@ export default class MerchantAnalyticStats extends Component {
       body: requestData,
     })
       .then(response => {
-        response = dummyResponse;
-        if (response) {
-          this.setState({ merchant_analytics: response });
-          notifySuccess('Adjustment added successfully.');
-          closeModal();
-        }
+        this.setState({ merchant_analytics: response || {} });
       })
       .catch(err => {
         notifyError(JSON.stringify(err.response));
