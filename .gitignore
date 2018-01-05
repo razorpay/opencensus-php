@@ -23,6 +23,7 @@ Thumbs.db
 # php & node modules
 /vendor
 /node_modules
+/web/node_modules
 
 # env
 /environment/.env

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd public/dist;
+cd ../public/dist;
 rm css/icons.css &> /dev/null;
 
 for i in `find . -name "*.js" | cut -d '/' -f2-`; do

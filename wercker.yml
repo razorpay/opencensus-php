@@ -2,12 +2,16 @@ box: pronav/node
 
 build:
     steps:
-      - npm-install
+      - script:
+          name: Packages Install
+          code: cd web && npm i
 
       - script:
           name: Build
           code: |
+            cd web
             npm run build
+            cd ..
             mkdir -p /tmp/generated
             mv scripts/s3sync.js /tmp
             cp -r public/dist /tmp/generated

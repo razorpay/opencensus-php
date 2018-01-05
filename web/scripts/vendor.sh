@@ -1,6 +1,6 @@
 #!/bin/bash
 
-mkdir -p public/dist
+mkdir -p ../public/dist
 
 # react library to use, based on environment
 
@@ -10,7 +10,7 @@ if [ "$NODE_ENV" = production ] ; then
 fi
 
 files=$(cat <<-END
-  Promise         promise-polyfill/promise.min.js
+  Promise         promise-polyfill/dist/promise.min.js
   axios           axios/dist/axios.min.js
   React           react/umd/react.$REACT_ENV.js
   ReactDOM        react-dom/umd/react-dom.$REACT_ENV.js
@@ -29,8 +29,8 @@ for i in $files; do
     even=false
   else
     even=true
-    cat node_modules/$i
+    cat ./node_modules/$i
     printf '\n'
   fi
-done > public/dist/vendor.js
+done > ../public/dist/vendor.js
 echo $files

@@ -17,16 +17,16 @@ module.exports = {
   ),
 
   entry: {
-    admin: './web/admin.js',
+    admin: './admin.js',
   },
 
   output: {
-    path: __dirname + '/public/dist/admin',
+    path: __dirname + '/../public/dist/admin',
     filename: '[name].js',
   },
 
   resolve: {
-    modules: ['web/js', 'node_modules'],
+    modules: ['js', 'node_modules'],
   },
 
   stats: {

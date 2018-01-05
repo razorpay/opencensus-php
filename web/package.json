@@ -5,7 +5,7 @@
   "devDependencies": {
     "husky": "^0.14.3",
     "lint-staged": "^6.0.0",
-    "prettier": "^1.9.1"
+    "prettier": "^1.9.2"
   },
   "dependencies": {
     "axios": "^0.17.1",
@@ -19,24 +19,24 @@
     "chart.js": "^2.7.1",
     "glob": "^7.1.2",
     "gulp": "^3.9.1",
-    "gulp-stylus": "^2.6.0",
+    "gulp-stylus": "^2.7.0",
     "icon-font-generator": "^1.1.1",
-    "mobx": "^3.3.3",
+    "mobx": "^3.4.1",
     "mobx-react": "^4.3.5",
-    "moment": "^2.19.3",
-    "promise-polyfill": "^6.1.0",
+    "moment": "^2.20.1",
+    "promise-polyfill": "^7.0.0",
     "react": "^16.2.0",
-    "react-day-picker": "^7.0.5",
+    "react-day-picker": "^7.0.6",
     "react-dom": "^16.2.0",
     "react-power-select": "1.0.0-beta.10",
     "react-router-dom": "^4.2.2",
     "react-transition-group": "^2.2.1",
-    "uglifyjs-webpack-plugin": "^1.1.2",
+    "uglifyjs-webpack-plugin": "^1.1.6",
     "webpack": "^3.10.0"
   },
   "scripts": {
-    "start": "externals=`./web/scripts/vendor.sh` webpack -w & gulp watch; kill -9 $!",
-    "build": "gulp; externals=`./web/scripts/vendor.sh` webpack; ./web/scripts/build.sh",
+    "start": "externals=`./scripts/vendor.sh` webpack -w & gulp watch; kill -9 $!",
+    "build": "gulp; externals=`./scripts/vendor.sh` webpack; ./scripts/build.sh",
     "precommit": "lint-staged",
     "prettier": "prettier"
   },
