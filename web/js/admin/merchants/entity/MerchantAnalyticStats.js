@@ -4,8 +4,9 @@ import { observer } from 'mobx-react';
 import Amount from 'ui/Amount';
 
 import fetch, { adminPost } from 'common/fetch';
-import { openModal, confirm } from 'common/modal';
-import { notifySuccess, notifyError } from 'common/modal';
+import { notifyError } from 'common/modal';
+import { formatDate } from 'common/util';
+import { statusPill } from 'common/data';
 
 import AsyncButton from 'ui/AsyncButton';
 import { FromField, ToField } from 'ui/Field';
@@ -288,7 +289,11 @@ export default class MerchantAnalyticStats extends Component {
             <div class="small spinner center" />
           ) : (
             <Table
-              items={merchant_analytics.payment_method_bars}
+              items={
+                merchant_analytics.payment_method_bars
+                  ? merchant_analytics.payment_method_bars.result
+                  : []
+              }
               fields={_getMethodsFields()}
             />
           )}
@@ -300,7 +305,11 @@ export default class MerchantAnalyticStats extends Component {
             <div class="small spinner center" />
           ) : (
             <Table
-              items={merchant_analytics.recent_payments}
+              items={
+                merchant_analytics.recent_payments
+                  ? merchant_analytics.recent_payments.result
+                  : []
+              }
               fields={_getGenericFields()}
             />
           )}
@@ -312,7 +321,11 @@ export default class MerchantAnalyticStats extends Component {
             <div class="small spinner center" />
           ) : (
             <Table
-              items={merchant_analytics.recent_refunds}
+              items={
+                merchant_analytics.recent_refunds
+                  ? merchant_analytics.recent_refunds.result
+                  : []
+              }
               fields={_getGenericFields()}
             />
           )}
@@ -324,7 +337,11 @@ export default class MerchantAnalyticStats extends Component {
             <div class="small spinner center" />
           ) : (
             <Table
-              items={merchant_analytics.recent_settlements}
+              items={
+                merchant_analytics.recent_settlements
+                  ? merchant_analytics.recent_settlements.result
+                  : []
+              }
               fields={_getGenericFields()}
             />
           )}
@@ -336,7 +353,11 @@ export default class MerchantAnalyticStats extends Component {
             <div class="small spinner center" />
           ) : (
             <Table
-              items={merchant_analytics.recent_transactions}
+              items={
+                merchant_analytics.recent_transactions
+                  ? merchant_analytics.recent_transactions.result
+                  : []
+              }
               fields={_getGenericFields()}
             />
           )}
@@ -358,9 +379,12 @@ function _getMethodsFields() {
 
 function _getGenericFields() {
   return [
-    ['Id', item => item.id],
-    ['Status', item => item.status],
-    ['Created', item => item.created_at],
+    ['Id', item => item.id || '--'],
+    ['Status', item => statusPill(item.status)],
+    [
+      'Created At',
+      item => (item.created_at ? formatDate(item.created_at) : '--'),
+    ],
   ];
 }
 
@@ -368,36 +392,43 @@ function _getPaymentDetailsFields() {
   return [
     item => [
       'Payments Volume',
-      item.payments_volume &&
-        item.payments_volume[0] && (
-          <Amount value={item.payments_volume[0].value} />
-        ),
+      item.payments_volume && item.payments_volume.result.length ? (
+        <Amount value={item.payments_volume.result[0].value} />
+      ) : (
+        '--'
+      ),
     ],
     item => [
       'Total Payments',
-      item.total_payments &&
-        item.total_payments[0] && (
-          <Amount value={item.total_payments[0].value} />
-        ),
+      item.total_payments && item.total_payments.result.length ? (
+        <Amount value={item.total_payments.result[0].value} />
+      ) : (
+        '--'
+      ),
     ],
     item => [
       'Total Refunds',
-      item.total_refunds &&
-        item.total_refunds[0] && <Amount value={item.total_refunds[0].value} />,
+      item.total_refunds && item.total_refunds.result.length ? (
+        <Amount value={item.total_refunds.result[0].value} />
+      ) : (
+        '--'
+      ),
     ],
     item => [
       'Total Settlements',
-      item.total_settlements &&
-        item.total_settlements[0] && (
-          <Amount value={item.total_settlements[0].value} />
-        ),
+      item.total_settlements && item.total_settlements.result.length ? (
+        <Amount value={item.total_settlements.result[0].value} />
+      ) : (
+        '--'
+      ),
     ],
     item => [
       'Total Balance',
-      item.recent_balance &&
-        item.recent_balance[0] && (
-          <Amount value={item.recent_balance[0].value} />
-        ),
+      item.recent_balance && item.recent_balance.result.length ? (
+        <Amount value={item.recent_balance.result[0].value} />
+      ) : (
+        '--'
+      ),
     ],
   ];
 }
