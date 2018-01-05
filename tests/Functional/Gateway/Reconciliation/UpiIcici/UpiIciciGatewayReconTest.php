@@ -187,18 +187,17 @@ class UpiIciciGatewayReconTest extends TestCase
         $this->assertEquals(3, $response['total_count']);
         $this->assertEquals(3, $response['success_count']);
 
-        $refunds = $this->getEntities('refund', [], true);
+        $payments = $this->getEntities('payment', [], true);
 
-        foreach ($refunds['items'] as $refund)
+        foreach ($payments['items'] as $payment)
         {
-            $transactionId = $refund['transaction_id'];
+            $this->assertEquals(true, $payment['gateway_captured']);
+
+            $transactionId = $payment['transaction_id'];
 
             $transaction = $this->getEntityById('transaction', $transactionId, true);
 
             $this->assertNotNull($transaction['reconciled_at']);
-
-            // We hardcode 04-12-2017 05:09 PM in the upi icici reconciliator class
-            $this->assertEquals(1512387540, $transaction['gateway_settled_at']);
         }
     }
 
