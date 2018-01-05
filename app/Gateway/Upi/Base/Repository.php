@@ -41,6 +41,13 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function fetchByRefundId(string $refundId)
+    {
+        return $this->newQuery()
+                    ->where('refund_id' , '=', $refundId)
+                    ->first();
+    }
+
     public function fetchAllForBankUpdate($limit = 100, $lastId = 0)
     {
         $paymentId = $this->repo->payment->dbColumn(Payment\Entity::ID);

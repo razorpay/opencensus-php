@@ -8,6 +8,7 @@ use RZP\Reconciliator\FileProcessor;
 class Reconciliate extends Base\Reconciliate
 {
     const REFUND_RECON_FILE_NAME    = 'merchantreport';
+    const PAYMENT_RECON_FILE_NAME   = 'paymentmerchantreport';
     const START_ROW                 = 2;
 
     public function getStartRow($fileDetails)
@@ -17,7 +18,11 @@ class Reconciliate extends Base\Reconciliate
 
     protected function getTypeName($fileName)
     {
-        if (strpos(strtolower($fileName), self::REFUND_RECON_FILE_NAME) !== false)
+        if (strpos(strtolower($fileName), self::PAYMENT_RECON_FILE_NAME) !== false)
+        {
+            return self::PAYMENT;
+        }
+        else if (strpos(strtolower($fileName), self::REFUND_RECON_FILE_NAME) !== false)
         {
             return self::REFUND;
         }

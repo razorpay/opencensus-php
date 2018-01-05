@@ -7,11 +7,11 @@ use Illuminate\Http\UploadedFile;
 
 trait ReconTrait
 {
-    protected function generateReconFile()
+    protected function generateReconFile($content = [])
     {
         $request = [
             'url'     => '/gateway/mock/reconciliation/' . $this->gateway,
-            'content' => [],
+            'content' => $content,
             'method'  => 'POST'
         ];
 

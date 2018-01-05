@@ -3,17 +3,20 @@
 namespace RZP\Gateway\Upi\Icici\Mock;
 
 use Carbon\Carbon;
+use RZP\Exception\LogicException;
 use RZP\Gateway\Base;
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\PublicCollection;
+use RZP\Reconciliator\Base\Reconciliate;
 
 class Reconciliator extends Base\Mock\Reconciliator
 {
     protected $gateway = Payment\Gateway::UPI_ICICI;
 
-    private $headers = [
+    private $refundHeaders = [
         'merchantID',
         'merchantName',
         'subMerchantID',
@@ -36,12 +39,33 @@ class Reconciliator extends Base\Mock\Reconciliator
         'Status',
     ];
 
+    private $paymentHeaders = [
+        'accountNumber',
+        'merchantID',
+        'merchantName',
+        'subMerchantID',
+        'subMerchantName',
+        'merchantTranID',
+        'bankTranID',
+        'date',
+        'time',
+        'amount',
+        'payerVA',
+        'status',
+        'Commission',
+        'Service tax',
+        'Net amount'
+    ];
+
     /**
      * @override
      * @var string
      */
     // TODO: Check what the name of the file should be
     protected static $fileToWriteName = 'MerchantReport';
+
+    // TODO: Check this once?
+    protected static $paymentFileToWriteName = 'PaymentMerchantReport';
 
     /**
      * The parent class's method gets only successful payments,
@@ -66,17 +90,82 @@ class Reconciliator extends Base\Mock\Reconciliator
                     ]);
     }
 
-    /**
-     * @override
-     * @param array $input
-     * @return array
-     */
     protected function getReconciliationData(array $input)
     {
+        switch ($this->action)
+        {
+            case Reconciliate::REFUND:
+                $data = $this->getRefundReconciliationData($input);
+                break;
+
+            case Reconciliate::PAYMENT:
+                $data = $this->getPaymentReconciliationData($input);
+                break;
+
+            default:
+                throw new LogicException('Action set incorrectly');
+        }
+
+        return $data;
+    }
+
+    private function getPaymentReconciliationData(array $input)
+    {
+        $data = [];
+
         foreach ($input as $row)
         {
             $date = Carbon::createFromTimestamp(
                 $row['payment']['created_at'],
+                Timezone::IST)
+                ->format('d-M-y H:i:s');
+
+            $col = [
+                '000205025290',
+                '116798',
+                'RAZORPAY',
+                '116798',
+                'Razorpay SUB',
+                $row['payment']['id'],
+                '734122607521',
+                $date,
+                '10:39 PM',
+                $row['payment']['amount'] / 100,
+                '9619218329@ybl',
+                'SUCCESS',
+                '0',
+                '0',
+                '0',
+            ];
+
+            $this->content($col, 'col_payment_icici_recon');
+
+            $data[] = $col;
+        }
+
+        $emptyRow = array_fill(0, sizeof($this->paymentHeaders), ' ');
+
+        $headers = [$emptyRow, $this->paymentHeaders];
+
+        $data = array_merge($headers, $data);
+
+        $this->content($data, 'icici_payment_recon');
+
+        return $data;
+    }
+
+    /**
+     * @param array $input
+     * @return array
+     */
+    private function getRefundReconciliationData(array $input)
+    {
+        $data = [];
+
+        foreach ($input as $row)
+        {
+            $date = Carbon::createFromTimestamp(
+                $row['refund']['created_at'],
                 Timezone::IST)
                 ->format('d-M-y H:i:s');
 
@@ -108,9 +197,9 @@ class Reconciliator extends Base\Mock\Reconciliator
             $data[] = $col;
         }
 
-        $emptyRow = array_fill(0, sizeof($this->headers), ' ');
+        $emptyRow = array_fill(0, sizeof($this->refundHeaders), ' ');
 
-        $headers = [$emptyRow, $this->headers];
+        $headers = [$emptyRow, $this->refundHeaders];
 
         $data = array_merge($headers, $data);
 
@@ -126,17 +215,24 @@ class Reconciliator extends Base\Mock\Reconciliator
      */
     protected function createReconFile($content)
     {
+        $fileName = ($this->action === Reconciliate::REFUND) ? self::$fileToWriteName : self::$paymentFileToWriteName;
+
         return $this->createFile(
             FileStore\Format::XLSX,
             $content,
-            self::$fileToWriteName
+            $fileName
         );
     }
 
-    protected function addRefundEntityIfNeeded(array & $data, Payment\Entity $payment)
+    protected function addGatewayEntityIfNeeded(array & $data, PublicEntity $entity)
     {
-        // Since it is via the test flow, it is expected that each payment will have just one refund
-        $data['refund'] = $payment->refunds->first()->toArray();
+        $type = $entity->getEntity();
+
+        $method = 'fetchBy' . ucfirst($type) . 'Id';
+
+        $gatewayPayment = $this->repo->upi->{$method}($data[$type]['id']);
+
+        $data['gateway'] = $gatewayPayment->toArray();
     }
 
     private function createFile(

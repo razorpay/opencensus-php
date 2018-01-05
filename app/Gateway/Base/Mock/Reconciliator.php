@@ -4,10 +4,13 @@ namespace RZP\Gateway\Base\Mock;
 
 use App;
 use Carbon\Carbon;
+use RZP\Models\Base\PublicEntity;
+use RZP\Exception\LogicException;
 use RZP\Models\Payment;
 use RZP\Constants\Timezone;
 use RZP\Base\RepositoryManager;
 use RZP\Models\Base\PublicCollection;
+use RZP\Reconciliator\Base\Reconciliate;
 
 class Reconciliator
 {
@@ -28,6 +31,13 @@ class Reconciliator
     protected $gateway;
 
     /**
+     * The current mode of reconciliation.
+     * For eg. This can be payment, refund etc
+     * @var string
+     */
+    protected $action;
+
+    /**
      * @var string
      */
     protected static $fileToWriteName;
@@ -41,6 +51,32 @@ class Reconciliator
 
     public function generateReconciliation(array $input)
     {
+        // If the type is not sent in the mock route request, we assign type to payment by default
+        $input['type'] = $input['type'] ?? Reconciliate::PAYMENT;
+
+        $this->isReconTypeValid($input['type']);
+
+        $this->setAction($input['type']);
+
+        switch ($this->action)
+        {
+            case Reconciliate::PAYMENT:
+                $data = $this->generatePaymentReconciliation();
+                break;
+
+            case Reconciliate::REFUND:
+                $data = $this->generateRefundReconciliation();
+                break;
+
+            default:
+                throw new LogicException('Invalid recon type');
+        }
+
+        return $data;
+    }
+
+    private function generatePaymentReconciliation()
+    {
         $payments = $this->getAllPaymentsToReconcile();
 
         $inputData = [];
@@ -49,7 +85,25 @@ class Reconciliator
         {
             $data['payment'] = $payment->toArray();
 
-            $this->addAdditionalEntitiesIfNeeded($data, $payment);
+            $this->addGatewayEntityIfNeeded($data, $payment);
+
+            $inputData[] = $data;
+        }
+
+        return $this->generate($inputData);
+    }
+
+    private function generateRefundReconciliation()
+    {
+        $refunds = $this->getAllRefundsToReconcile();
+
+        $inputData = [];
+
+        foreach ($refunds as $refund)
+        {
+            $data['refund'] = $refund->toArray();
+
+            $this->addGatewayEntityIfNeeded($data, $refund);
 
             $inputData[] = $data;
         }
@@ -105,16 +159,19 @@ class Reconciliator
         return $txt;
     }
 
-    protected function addAdditionalEntitiesIfNeeded(array & $data, Payment\Entity $payment)
+    protected function getAllRefundsToReconcile()
     {
-        $this->addGatewayEntityIfNeeded($data, $payment);
+        $createdAtStart = Carbon::yesterday(Timezone::IST)->getTimestamp();
 
-        $this->addRefundEntityIfNeeded($data, $payment);
-    }
+        $createdAtEnd = Carbon::today(Timezone::IST)->getTimestamp();
 
-    protected function addRefundEntityIfNeeded(array & $data, Payment\Entity $payment)
-    {
-        return;
+        return $this->repo->refund->fetch(
+            [
+                'from'    => $createdAtStart,
+                'to'      => $createdAtEnd,
+                'gateway' => $this->gateway,
+                'status'  => Payment\Refund\Status::PROCESSED
+            ]);
     }
 
     /**
@@ -123,13 +180,9 @@ class Reconciliator
      * To eliminate the DB calls, override this method in the base class.
      *
      * @param array $data
+     * @param PublicEntity $entity
      */
-    protected function addGatewayEntityIfNeeded(array & $data, Payment\Entity $payment)
-    {
-        $gatewayPayment = $this->repo->upi->fetchByPaymentId($data['payment']['id']);
-
-        $data['gateway'] = $gatewayPayment->toArray();
-    }
+    protected function addGatewayEntityIfNeeded(array & $data, PublicEntity $entity) { }
 
     /**
      * This can be used for mock recon content function
@@ -158,5 +211,20 @@ class Reconciliator
         ];
 
         return $this->repo->payment->fetchPaymentsWithStatus($createdAtStart, $createdAtEnd, $this->gateway, $statuses);
+    }
+
+    private function isReconTypeValid(string $type)
+    {
+        if (in_array($type, Reconciliate::VALID_RECON_TYPES, true))
+        {
+            return;
+        }
+
+        throw new LogicException('Mock request was made with invalid recon type');
+    }
+
+    private function setAction(string $type)
+    {
+        $this->action = $type;
     }
 }

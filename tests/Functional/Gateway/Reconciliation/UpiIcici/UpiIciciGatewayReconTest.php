@@ -43,7 +43,7 @@ class UpiIciciGatewayReconTest extends TestCase
 
         $this->ba->appAuth();
 
-        $fileContents = $this->generateReconFile();
+        $fileContents = $this->generateReconFile(['type' => 'refund']);
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
 
@@ -86,7 +86,7 @@ class UpiIciciGatewayReconTest extends TestCase
                 }
             });
 
-        $fileContents = $this->generateReconFile();
+        $fileContents = $this->generateReconFile(['type' => 'refund']);
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
 
@@ -132,7 +132,7 @@ class UpiIciciGatewayReconTest extends TestCase
                 }
             });
 
-        $fileContents = $this->generateReconFile();
+        $fileContents = $this->generateReconFile(['type' => 'refund']);
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
 
@@ -169,15 +169,15 @@ class UpiIciciGatewayReconTest extends TestCase
     }
 
     // Below are the payment recon test cases
-    public function testRefundReconciliation()
+    public function testPaymentReconciliation()
     {
         $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
 
-        $this->makeUpiIciciPaymentsSince(3, $createdAt);
+        $this->makeUpiIciciPaymentsSince($createdAt);
 
         $this->ba->appAuth();
 
-        $fileContents = $this->generateReconFile();
+        $fileContents = $this->generateReconFile(['type' => 'payment']);
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
 
@@ -234,6 +234,21 @@ class UpiIciciGatewayReconTest extends TestCase
         return $uploadedFile;
     }
 
+    private function makeUpiIciciPaymentsSince(int $createdAt, int $count = 3)
+    {
+        for ($i = 0; $i < $count; $i++)
+        {
+            $payments[] = $this->doUpiIciciPayment();
+        }
+
+        foreach ($payments as $payment)
+        {
+            $this->fixtures->edit('payment', $payment, ['created_at' => $createdAt]);
+        }
+
+        return $payments;
+    }
+
     private function makeUpiIciciRefundsSince(int $createdAt, int $count = 3)
     {
         for ($i = 0; $i < $count; $i++)
@@ -247,7 +262,11 @@ class UpiIciciGatewayReconTest extends TestCase
         {
             $this->fixtures->edit('payment', $payment, ['created_at' => $createdAt]);
 
-            $refunds[] = $this->refundPayment($payment)['id'];
+            $refund = $this->refundPayment($payment);
+
+            $this->fixtures->edit('refund', $refund['id'], ['created_at' => $createdAt]);
+
+            $refunds[] = $refund['id'];
         }
 
         return [$refunds, $payments];
