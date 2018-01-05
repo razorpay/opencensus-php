@@ -201,6 +201,43 @@ class UpiIciciGatewayReconTest extends TestCase
         }
     }
 
+    public function testPaymentIdAbsentReconciliation()
+    {
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        // We make just one payment
+        $this->makeUpiIciciPaymentsSince($createdAt, 1);
+
+        $this->ba->appAuth();
+
+        $this->mockReconContentFunction(
+            function(& $content, $action = null)
+            {
+                if ($action === 'col_payment_icici_recon')
+                {
+                    $content[5] = "";
+                }
+            });
+
+        $fileContents = $this->generateReconFile(['type' => 'payment']);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $response = $this->reconcile($uploadedFile, 'UpiIcici');
+
+        // We assert that the 1 payment was not reconciled
+        $this->assertEquals(1, $response['total_count']);
+        $this->assertEquals(1, $response['failure_count']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $transactionId = $payment['transaction_id'];
+
+        $transaction = $this->getEntityById('transaction', $transactionId, true);
+
+        $this->assertNull($transaction['reconciled_at']);
+    }
+
     private function updatePaymentStatusToCaptured(array $payments)
     {
         foreach ($payments as $payment)
