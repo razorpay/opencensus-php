@@ -571,6 +571,20 @@ class DisputeTest extends TestCase
         $this->assertEquals($disputes[1]->payment->getId(), $content['items'][0]['payment_id']);
     }
 
+    public function testDisputesFetchForPayment()
+    {
+        $this->ba->proxyAuth();
+
+        $payment = $this->fixtures->create('payment:captured', ['disputed' => 1]);
+
+        $testData = $this->updatePaymentDisputesFetchTestData($payment->getId());
+
+        $content = $this->runRequestResponseFlow($testData);
+
+        $this->assertEquals($payment->getId(), $content['items'][0]['payment_id']);
+        $this->assertEquals($payment->getId(), $content['items'][1]['payment_id']);
+    }
+
     // ---------------------------- helper methods-------------------------------
 
     protected function updateCreateTestData(string $paymentId = null): array
@@ -621,6 +635,21 @@ class DisputeTest extends TestCase
         $name = $trace[1]['function'];
 
         $testData = &$this->testData[$name];
+
+        return $testData;
+    }
+
+    protected function updatePaymentDisputesFetchTestData(string $paymentId): array
+    {
+        $this->fixtures->times(2)->create('dispute', ['payment_id' => $paymentId]);
+
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+
+        $name = $trace[1]['function'];
+
+        $testData = &$this->testData[$name];
+
+        $testData['request']['url'] = '/payments/' . $paymentId . '/disputes';
 
         return $testData;
     }
