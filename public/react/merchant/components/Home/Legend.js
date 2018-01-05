@@ -7,8 +7,6 @@ import Legend, {
   LegendContent,
 } from 'rzp/ui/Legend';
 
-import { titleCase } from 'rzp/utils/rzp-utils';
-
 /*
  * This component automatically calculates the percentage to be shown
  * in each `LegendLabel` and shows the `LegendItem`s, data to be passed
@@ -48,7 +46,7 @@ export default ({
             <LegendLabel color={item.color}>
               {(item.value / total * 100).toFixed(2)}%
             </LegendLabel>
-            <LegendTitle>{titleCase(item.label)}</LegendTitle>
+            <LegendTitle>{item.label}</LegendTitle>
             <LegendContent>
               {typeof valueTransformer === 'function'
                 ? valueTransformer(item.value)
