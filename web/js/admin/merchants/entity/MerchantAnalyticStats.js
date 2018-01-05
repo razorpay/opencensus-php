@@ -240,7 +240,7 @@ export default class MerchantAnalyticStats extends Component {
     const { merchant_analytics } = this.state;
 
     return (
-      <div class="entity-container">
+      <div class="entity-container merchant-stats">
         <header class="heading">
           Merchant: {this.merchantId} (Team Details)
         </header>
@@ -271,7 +271,7 @@ export default class MerchantAnalyticStats extends Component {
 
         <div class="box">
           <div class="heading">Payment Details</div>
-          <EntityRow label={'Property'} value={'Value'} />
+          <EntityRow className="bold" label={'Property'} value={'Value'} />
           {!merchant_analytics ? (
             <div class="small spinner center" />
           ) : (
@@ -368,27 +368,36 @@ function _getPaymentDetailsFields() {
   return [
     item => [
       'Payments Volume',
-      item.payments_volume[0] && (
-        <Amount value={item.payments_volume[0].value} />
-      ),
+      item.payments_volume &&
+        item.payments_volume[0] && (
+          <Amount value={item.payments_volume[0].value} />
+        ),
     ],
     item => [
       'Total Payments',
-      item.total_payments[0] && <Amount value={item.total_payments[0].value} />,
+      item.total_payments &&
+        item.total_payments[0] && (
+          <Amount value={item.total_payments[0].value} />
+        ),
     ],
     item => [
       'Total Refunds',
-      item.total_refunds[0] && <Amount value={item.total_refunds[0].value} />,
+      item.total_refunds &&
+        item.total_refunds[0] && <Amount value={item.total_refunds[0].value} />,
     ],
     item => [
       'Total Settlements',
-      item.total_settlements[0] && (
-        <Amount value={item.total_settlements[0].value} />
-      ),
+      item.total_settlements &&
+        item.total_settlements[0] && (
+          <Amount value={item.total_settlements[0].value} />
+        ),
     ],
     item => [
       'Total Balance',
-      item.recent_balance[0] && <Amount value={item.recent_balance[0].value} />,
+      item.recent_balance &&
+        item.recent_balance[0] && (
+          <Amount value={item.recent_balance[0].value} />
+        ),
     ],
   ];
 }
