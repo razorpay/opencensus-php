@@ -661,7 +661,7 @@ class Gateway extends Base\Gateway
         $content = $verify->verifyResponseContent;
 
         if (($content['success'] !== 'true') and
-            ($content[Fields::RESPONSE] != '5006'))
+            ($content[Fields::RESPONSE] !== '5006'))
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
