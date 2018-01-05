@@ -2,10 +2,9 @@
 
 namespace RZP\Reconciliator\UpiIcici;
 
-use RZP\Models\Base\PublicEntity;
+use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Models\Payment\Status;
-use RZP\Trace\TraceCode;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
@@ -65,13 +64,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     private function getReconPaymentAmount(array $row)
     {
-        $paymentAmount = floatval($row[self::AMOUNT]) * 100;
-
-        // We are converting to int after casting to string as PHP randomly
-        // returns wrong int values due to differing floating point precisions
-        // So something like intval(31946.0) may give 31945 or 31946.
-        // Converting to string using number_format and then converting
-        // is a hack to avoid this issue
-        return intval(number_format($paymentAmount, 2, '.', ''));
+        return get_payment_amount($row[self::AMOUNT]);
     }
 }

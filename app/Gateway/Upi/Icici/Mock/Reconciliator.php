@@ -3,11 +3,11 @@
 namespace RZP\Gateway\Upi\Icici\Mock;
 
 use Carbon\Carbon;
-use RZP\Exception\LogicException;
 use RZP\Gateway\Base;
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Exception\LogicException;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\PublicCollection;
 use RZP\Reconciliator\Base\Reconciliate;
@@ -92,7 +92,7 @@ class Reconciliator extends Base\Mock\Reconciliator
 
     protected function getReconciliationData(array $input)
     {
-        switch ($this->action)
+        switch ($this->type)
         {
             case Reconciliate::REFUND:
                 $data = $this->getRefundReconciliationData($input);
@@ -215,7 +215,7 @@ class Reconciliator extends Base\Mock\Reconciliator
      */
     protected function createReconFile($content)
     {
-        $fileName = ($this->action === Reconciliate::REFUND) ? self::$fileToWriteName : self::$paymentFileToWriteName;
+        $fileName = ($this->type === Reconciliate::REFUND) ? self::$fileToWriteName : self::$paymentFileToWriteName;
 
         return $this->createFile(
             FileStore\Format::XLSX,

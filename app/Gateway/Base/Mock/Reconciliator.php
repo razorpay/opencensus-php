@@ -4,11 +4,11 @@ namespace RZP\Gateway\Base\Mock;
 
 use App;
 use Carbon\Carbon;
-use RZP\Models\Base\PublicEntity;
-use RZP\Exception\LogicException;
 use RZP\Models\Payment;
 use RZP\Constants\Timezone;
 use RZP\Base\RepositoryManager;
+use RZP\Models\Base\PublicEntity;
+use RZP\Exception\LogicException;
 use RZP\Models\Base\PublicCollection;
 use RZP\Reconciliator\Base\Reconciliate;
 
@@ -35,7 +35,7 @@ class Reconciliator
      * For eg. This can be payment, refund etc
      * @var string
      */
-    protected $action;
+    protected $type;
 
     /**
      * @var string
@@ -54,11 +54,9 @@ class Reconciliator
         // If the type is not sent in the mock route request, we assign type to payment by default
         $input['type'] = $input['type'] ?? Reconciliate::PAYMENT;
 
-        $this->isReconTypeValid($input['type']);
+        $this->setType($input['type']);
 
-        $this->setAction($input['type']);
-
-        switch ($this->action)
+        switch ($this->type)
         {
             case Reconciliate::PAYMENT:
                 $data = $this->generatePaymentReconciliation();
@@ -170,7 +168,6 @@ class Reconciliator
                 'from'    => $createdAtStart,
                 'to'      => $createdAtEnd,
                 'gateway' => $this->gateway,
-                'status'  => Payment\Refund\Status::PROCESSED
             ]);
     }
 
@@ -182,7 +179,7 @@ class Reconciliator
      * @param array $data
      * @param PublicEntity $entity
      */
-    protected function addGatewayEntityIfNeeded(array & $data, PublicEntity $entity) { }
+    protected function addGatewayEntityIfNeeded(array & $data, PublicEntity $entity) {}
 
     /**
      * This can be used for mock recon content function
@@ -213,18 +210,8 @@ class Reconciliator
         return $this->repo->payment->fetchPaymentsWithStatus($createdAtStart, $createdAtEnd, $this->gateway, $statuses);
     }
 
-    private function isReconTypeValid(string $type)
+    private function setType(string $type)
     {
-        if (in_array($type, Reconciliate::VALID_RECON_TYPES, true))
-        {
-            return;
-        }
-
-        throw new LogicException('Mock request was made with invalid recon type');
-    }
-
-    private function setAction(string $type)
-    {
-        $this->action = $type;
+        $this->type = $type;
     }
 }
