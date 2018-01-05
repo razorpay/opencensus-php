@@ -263,7 +263,7 @@ class Gateway extends Base\Gateway
         {
             $content[RequestFields::CAVV2] = $authResponse[Blade\Entity::CAVV];
         }
-        else if ($network === Card\Network::MC)
+        else if (($network === Card\Network::MC) or ($network === Card\Network::MAES))
         {
             $content[RequestFields::UCAF] = $authResponse[Blade\Entity::CAVV];
         }
