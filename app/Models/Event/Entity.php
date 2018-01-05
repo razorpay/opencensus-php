@@ -12,11 +12,13 @@ class Entity extends Base\PublicEntity
     const CONTAINS              = 'contains';
     const PAYLOAD               = 'payload';
     const CREATED_AT            = 'created_at';
+    const ACCOUNT_ID            = 'account_id';
 
     protected $entity           = 'event';
 
     protected $fillable = array(
         self::EVENT,
+        self::ACCOUNT_ID,
         self::MERCHANT_ID,
         self::CONTAINS,
         self::PAYLOAD,
@@ -24,12 +26,14 @@ class Entity extends Base\PublicEntity
 
     protected $visible = array(
         self::EVENT,
+        self::ACCOUNT_ID,
         self::CONTAINS,
         self::PAYLOAD,
         self::CREATED_AT);
 
     protected $public = array(
         self::ENTITY,
+        self::ACCOUNT_ID,
         self::EVENT,
         self::CONTAINS,
         self::PAYLOAD,

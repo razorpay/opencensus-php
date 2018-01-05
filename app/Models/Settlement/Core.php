@@ -6,11 +6,12 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Adjustment;
 use RZP\Models\Base;
-use RZP\Models\Card;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
 use RZP\Constants\Timezone;
+use RZP\Listeners\ApiEventSubscriber;
 
 class Core extends Base\Core
 {
@@ -96,5 +97,51 @@ class Core extends Base\Core
         $amount = 0.99 * $amount;
 
         return (int)$amount;
+    }
+  
+    /**
+     * Sends a webhook to the merchant for successfully settled payments
+     *
+     * @param Entity $settlement
+     */
+    public function triggerSettlementWebhook(Entity $settlement)
+    {
+        if ($this->shouldSendWebhook($settlement) === false)
+        {
+            return;
+        }
+
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $settlement
+        ];
+
+        $this->app['events']->fire('api.settlement.processed', $eventPayload);
+
+    }
+
+    /**
+     * Returns false,
+     *   if the settlement was not processed, or,
+     *   if the settlement was not made for a linked account.
+     *
+     * @param Entity $settlement
+     *
+     * @return bool
+     */
+    protected function shouldSendWebhook(Entity $settlement): bool
+    {
+        // Proceed only if the settlement has successfully processed
+        if ($settlement->isStatusProcessed() === false)
+        {
+            return false;
+        }
+
+        // Proceed only if the settlement was made to a linked account
+        if ($settlement->merchant->isLinkedAccount() === false)
+        {
+            return false;
+        }
+
+        return true;
     }
 }
