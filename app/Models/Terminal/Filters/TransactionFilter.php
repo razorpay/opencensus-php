@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
+use RZP\Models\Payment;
 use RZP\Models\Card\Network;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
@@ -162,7 +163,7 @@ class TransactionFilter extends Terminal\Filter
     {
         $payment = $this->input['payment'];
 
-        if ($this->runExperimentalRecurringFilter() === true)
+        if (self::runExperimentalRecurringFilter($payment) === true)
         {
             return true;
         }
@@ -263,7 +264,7 @@ class TransactionFilter extends Terminal\Filter
     {
         $payment = $this->input['payment'];
 
-        if ($this->runExperimentalRecurringFilter() === false)
+        if (self::runExperimentalRecurringFilter($payment) === false)
         {
             return true;
         }
@@ -583,31 +584,11 @@ class TransactionFilter extends Terminal\Filter
         return true;
     }
 
-    protected function runExperimentalRecurringFilter()
+    public static function runExperimentalRecurringFilter(Payment\Entity $payment)
     {
-        try
-        {
-            $merchantsForExperimentalRecurring = $this->getExperimentalRecurringFilterConfig();
-
-            $payment = $this->input['payment'];
-
-            //
-            // For some merchants, we want
-            // to run an experimental recurringFilter.
-            //
-            return (in_array($payment->getMerchantId(), $merchantsForExperimentalRecurring, true) === true);
-        }
-        catch (\Throwable $ex)
-        {
-            $this->trace->traceException($ex);
-
-            return false;
-        }
-    }
-
-    protected function getExperimentalRecurringFilterConfig()
-    {
-        $cache = $this->app['cache'];
+        $app = \App::getFacadeRoot();
+        $cache = $app['cache'];
+        $trace = $app['trace'];
 
         try
         {
@@ -615,12 +596,16 @@ class TransactionFilter extends Terminal\Filter
             {
                 $merchantsForExperimentalRecurring = $cache->get(ConfigKey::EXPERIMENTAL_RECURRING_FILTER);
             }
+
+            $merchantsForExperimentalRecurring = $merchantsForExperimentalRecurring ?? ['10000000000000'];
+
+            return (in_array($payment->getMerchantId(), $merchantsForExperimentalRecurring, true) === true);
         }
         catch (\Throwable $ex)
         {
-            $this->trace->traceException($ex);
-        }
+            $trace->traceException($ex);
 
-        return $merchantsForExperimentalRecurring ?? [];
+            return false;
+        }
     }
 }

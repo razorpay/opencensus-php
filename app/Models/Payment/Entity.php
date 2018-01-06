@@ -1528,7 +1528,14 @@ class Entity extends Base\PublicEntity
 
         $existingGatewayTokens = $app['repo']->gateway_token->findByTokenAndReference($token, $reference);
 
-        return ($existingGatewayTokens->count() === 1);
+        //
+        // We can have multiple gateway_tokens for a single token.
+        // Each gateway_token would correspond to a different gateway.
+        // This still means that this is second recurring since a
+        // gateway_token has already been created for the given token.
+        // The token can now be used without 2FA.
+        //
+        return ($existingGatewayTokens->count() > 0);
     }
 
     public function isEmandatePayment()

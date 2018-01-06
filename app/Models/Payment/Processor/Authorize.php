@@ -1153,13 +1153,21 @@ trait Authorize
 
         $gatewayTokens = $this->repo->gateway_token->findByTokenAndReference($token, $reference);
 
+        $gateway = $payment->getGateway();
+
+        $gatewayTokensForTheGateway = $gatewayTokens->filter(
+                                            function($gatewayToken) use ($gateway)
+                                            {
+                                                return ($gatewayToken->getGateway() === $gateway);
+                                            });
+
         //
         // It's possible that there are no gateway tokens for this.
         // For NB, wallets, non-recurring cards, first recurring card, etc.
         //
-        if ($gatewayTokens->count() === 1)
+        if ($gatewayTokensForTheGateway->count() === 1)
         {
-            $gatewayInput['gateway_token'] = $gatewayTokens->first();
+            $gatewayInput['gateway_token'] = $gatewayTokensForTheGateway->first();
         }
     }
 
@@ -2399,7 +2407,7 @@ trait Authorize
         //
         // This is the case that the payment is a first recurring payment
         //
-        if (empty($gatewayTokensToUpdate) === true)
+        if ($gatewayTokensToUpdate->count() === 0)
         {
             (new GatewayToken\Core)->create($payment, $token, $reference);
         }

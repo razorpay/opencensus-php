@@ -75,7 +75,7 @@ class Selector extends Base\Core
         $payment = $this->input['payment'];
 
         if ((empty($filteredTerminals) === true) and
-            ($payment->getMerchantId() === '5ubLZpACTmD8D4'))
+            (Terminal\Filters\TransactionFilter::runExperimentalRecurringFilter($this->input['payment']) === true))
         {
             $basicAuth = $this->app['basicauth'];
 
