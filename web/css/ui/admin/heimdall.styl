@@ -1,12 +1,38 @@
+.org-rzp
+  #org-logo
+    background-image: url('https://cdn.razorpay.com/logo_invert.svg') !important;
+
+.org-bob
+  color: #111 !important
+  background: #FF5D27 !important
+  #org-logo
+    height: 46px
+  .main-nav i
+    color: #fff !important
+
+.org-hdfc
+  background: #004A8F !important
+  #org-logo
+    height: 40px
+
 #org-logo
+  background: no-repeat center
+  background-size: contain
+  height: 28px
+  position: relative
   text-align: center
-  margin: -10px 0 5px
+  margin: 0 0 10px
   padding: 10px 20px
   display: block
   &:after
     display: block
-    border-top: 2px solid rgba(255,255,255,0.1)
+    border-bottom: 2px solid rgba(255,255,255,0.12)
     content: ''
+    position: absolute
+    top: 100%
+    left: 20px
+    right: 20px
+    margin-top: 6px
 
 // to be applied on #app-container
 $theme($primary, $bg)

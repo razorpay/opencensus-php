@@ -12,7 +12,7 @@ import ModalContainer, { openSlider, closeSlider } from 'common/modal';
 import MainNavLink from 'admin/components/MainNavLink';
 import ErrorBoundary from 'common/ErrorBoundary';
 
-import user from 'admin/user';
+import user, { org } from 'admin/user';
 
 import Profile from 'admin/profile';
 
@@ -152,10 +152,12 @@ export default class App extends Component {
             </div>
           </div>
         </header>
-        <aside>
-          <a id="org-logo" href="/admin">
-            <img src="https://cdn.razorpay.com/logo_invert.svg" height="28" />
-          </a>
+        <aside className={`org-${org.custom_code}`}>
+          <a
+            id="org-logo"
+            href="/admin"
+            style={{ backgroundImage: `url("${org.main_logo_url}")` }}
+          />
           {links.map((linkGroup, i) => (
             <div key={i}>
               {linkGroup.map((l, i) => (
