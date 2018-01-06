@@ -306,6 +306,11 @@ class TransactionFilter extends Terminal\Filter
             return ($terminal->is3DSRecurring() === true);
         }
 
+        if ($terminal->isNon3DSRecurring() === false)
+        {
+            return false;
+        }
+
         //
         // From here onwards, the terminal selection
         // logic is for second recurring.
@@ -320,39 +325,24 @@ class TransactionFilter extends Terminal\Filter
         if ($gatewayTokensCount > 0)
         {
             //
+            // For second recurring payment, ensure that we select a terminal
+            // of the same gateway as for the first recurring payment and also
+            // of the same merchant (shared, direct)
+            //
+            $validGatewayTokens = $gatewayTokens->filter(
+                                        function($gatewayToken) use ($terminal)
+                                        {
+                                            return (($gatewayToken->getGateway() === $terminal->getGateway()) and
+                                                    ($gatewayToken->terminal->getMerchantId() === $terminal->getMerchantId()));
+                                        });
+
+            //
             // We check if we have even one valid gateway_token for
-            // the terminal being selected If yes, we return back true.
+            // the terminal being selected. If yes, we return back true.
             // If we don't have even one valid gateway_token for the
             // terminal being selected, we return back false.
             //
-            foreach ($gatewayTokens as $gatewayToken)
-            {
-                //
-                // For second recurring payment, ensure that we select a terminal
-                // of the same gateway as for the first recurring payment and also
-                // of the same merchant (shared, direct)
-                //
-                $previousGateway = $gatewayToken->terminal->getGateway();
-                $previousMerchant = $gatewayToken->terminal->getMerchantId();
-
-                $currentGateway = $terminal->getGateway();
-                $currentMerchant = $terminal->getMerchantId();
-
-                $valid = (($terminal->isNon3DSRecurring() === true) and
-                          ($previousGateway === $currentGateway) and
-                          ($previousMerchant === $currentMerchant));
-
-                if ($valid === false)
-                {
-                    continue;
-                }
-                else
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return ($validGatewayTokens->count() > 0);
         }
         //
         // If a token is present and is supposed to be subsequent charge,

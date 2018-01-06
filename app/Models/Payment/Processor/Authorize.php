@@ -2430,6 +2430,12 @@ trait Authorize
                         'payment_id'    => $payment->getId(),
                         'token_id'      => $token->getId()
                     ]);
+
+                //
+                // This is unexpected behaviour and should never
+                // happen and hence just returning back from here.
+                //
+                return;
             }
 
             if ($payment->isNetbanking() === true)
