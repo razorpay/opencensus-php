@@ -334,8 +334,7 @@ class RecurringPaymentTest extends TestCase
 
         // - Create second recurring payment. It should not fail.
         //   It should go through axis migs terminal successfully.
-
-        // - Check that two gateway tokens are created. Only one token
+        //   Check that two gateway tokens are created. Only one token
         //   is present. Token's terminal is now axis_migs'.
 
         // - Create third recurring payment. It should go through axis
@@ -348,8 +347,22 @@ class RecurringPaymentTest extends TestCase
         //   terminal. Only two gateway tokens should be present. Token's
         //   terminal should change to first data's.
 
-        // - Disable both axis migs terminal and first data terminals.
+        // - Disable both axis migs terminal
+        //   and first data terminals.
+
+        // - Attempt to create 5th recurring payment.
         //   Payment should fail with no terminal found.
+
+        // - Enable both axis migs and first data terminals.
+
+        // - Create 5th recurring payment. Payment should go through
+        //   axis migs. There should be only two gateway tokens.
+
+        // - Create and enable migs shared terminal of type 6.
+        //   Disable first data terminal
+
+        // - Attempt to create 6th recurring payment. It should fail
+        //   with `no terminal found` error.
 
         // For some reason, we create shared Cybersource terminal with recurring 3DS
         $this->fixtures->terminal->disableTerminal('1000CybrsTrmnl');
@@ -415,7 +428,7 @@ class RecurringPaymentTest extends TestCase
         // Switch to private auth for third recurring payment
         $this->ba->privateAuth();
 
-        // Set payment for second recurring payment
+        // Set payment for third recurring payment
         unset($payment['card']);
         $payment['token'] = $paymentEntity['token_id'];
 
@@ -449,10 +462,10 @@ class RecurringPaymentTest extends TestCase
         $this->fixtures->terminal->disableTerminal('MiGSRcg3DSN3DS');
         $this->fixtures->terminal->enableTerminal($firstDataTerminal2['id']);
 
-        // Switch to private auth for third recurring payment
+        // Switch to private auth for fourth recurring payment
         $this->ba->privateAuth();
 
-        // Set payment for second recurring payment
+        // Set payment for fourth recurring payment
         unset($payment['card']);
         $payment['token'] = $paymentEntity['token_id'];
 
@@ -485,10 +498,68 @@ class RecurringPaymentTest extends TestCase
 
         $this->fixtures->terminal->disableTerminal($firstDataTerminal2['id']);
 
-        // Switch to private auth for third recurring payment
+        // Switch to private auth for fifth recurring payment
         $this->ba->privateAuth();
 
-        // Set payment for second recurring payment
+        // Set payment for fifth recurring payment
+        unset($payment['card']);
+        $payment['token'] = $paymentEntity['token_id'];
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->doS2sRecurringPayment($payment);
+        });
+
+        $this->fixtures->terminal->enableTerminal($firstDataTerminal2['id']);
+        $this->fixtures->terminal->enableTerminal('MiGSRcg3DSN3DS');
+
+        // Switch to private auth for fifth recurring payment
+        $this->ba->privateAuth();
+
+        // Set payment for fifth recurring payment
+        unset($payment['card']);
+        $payment['token'] = $paymentEntity['token_id'];
+
+        $response = $this->doS2sRecurringPayment($payment);
+
+        $paymentId = $response['razorpay_payment_id'];
+
+        $paymentEntity = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertNotNull($paymentEntity['token_id']);
+        $this->assertEquals(true, $paymentEntity['recurring']);
+
+        // The terminal gets selected based on the priority rules and stuff here.
+        $this->assertEquals('MiGSRcg3DSN3DS', $paymentEntity['terminal_id']);
+
+        $gatewayTokens = $this->getEntities('gateway_token', [], true);
+        // There should be two gateway_tokens created for the two recurring payments
+        // since the second recurring payment went through a different gateway.
+        $this->assertEquals(2, $gatewayTokens['count']);
+
+        $tokens = $this->getEntities('token', ['recurring' => 1], true);
+        // There should be only one token created even though second
+        // recurring payment went through different terminal and gateway.
+        $this->assertEquals(1, $tokens['count']);
+
+        $token = $this->getEntityById('token', $paymentEntity['token_id'], true);
+        // The terminal should have gotten updated with the latest one.
+        // We don't use this terminal anywhere. So doesn't really matter.
+        $this->assertEquals('MiGSRcg3DSN3DS', $token['terminal_id']);
+        $this->assertEquals(5, $token['used_count']);
+        $this->assertEquals(true, $token['recurring']);
+
+        $this->fixtures->terminal->disableTerminal($firstDataTerminal2['id']);
+        $this->fixtures->terminal->disableTerminal('MiGSRcg3DSN3DS');
+        $this->fixtures->create('terminal:migs_recurring_terminal_with_both_recurring_types', [
+                                                                        'id' => 'MiGSRcS3DSN3DS',
+                                                                        'merchant_id' => '100000Razorpay']);
+
+        // Switch to private auth for sixth recurring payment
+        $this->ba->privateAuth();
+
+        // Set payment for sixth recurring payment
         unset($payment['card']);
         $payment['token'] = $paymentEntity['token_id'];
 

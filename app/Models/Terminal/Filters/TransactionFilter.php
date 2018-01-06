@@ -337,12 +337,17 @@ class TransactionFilter extends Terminal\Filter
                                         });
 
             //
-            // We check if we have even one valid gateway_token for
-            // the terminal being selected. If yes, we return back true.
+            // We check if we have one valid gateway_token for the
+            // terminal being selected. If yes, we return back true.
             // If we don't have even one valid gateway_token for the
             // terminal being selected, we return back false.
             //
-            return ($validGatewayTokens->count() > 0);
+            // The check is again 1 exactly because for a given gateway,
+            // there should not be more than one terminal. We don't support
+            // more than 1 set of terminals for a merchant (direct/shared).
+            // If it's greater than 1, there's something wrong and should fail.
+            //
+            return ($validGatewayTokens->count() === 1);
         }
         //
         // If a token is present and is supposed to be subsequent charge,

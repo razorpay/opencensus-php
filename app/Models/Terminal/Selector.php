@@ -104,7 +104,6 @@ class Selector extends Base\Core
                                           ->getDirectRecurringTerminalsOfType($this->input['merchant'], 6)
                                           ->all();
             }
-
         }
 
         $sortedTerminals = $this->sortTerminals($filteredTerminals, $applicableRules, $verbose);
