@@ -263,7 +263,7 @@ class Gateway extends Base\Gateway
         {
             $content[RequestFields::CAVV2] = $authResponse[Blade\Entity::CAVV];
         }
-        else if ($network === Card\Network::MC)
+        else if (($network === Card\Network::MC) or ($network === Card\Network::MAES))
         {
             $content[RequestFields::UCAF] = $authResponse[Blade\Entity::CAVV];
         }
@@ -671,9 +671,14 @@ class Gateway extends Base\Gateway
         return $terminalId;
     }
 
+    protected function getLiveSecret()
+    {
+        return $this->config['gateway_salt'];
+    }
+
     protected function getSecret2()
     {
-        $secret2 = $this->input['terminal']['gateway_terminal_password'];
+        $secret2 = $this->config['gateway_salt2'];
 
         if ($this->mode === Mode::TEST)
         {

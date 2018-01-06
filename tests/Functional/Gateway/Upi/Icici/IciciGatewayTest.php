@@ -615,8 +615,6 @@ EOT;
      */
     public function testVerifyMissingPayment()
     {
-        $data = $this->testData[__FUNCTION__];
-
         $payment = $this->getDefaultUpiPaymentArray();
 
         // TODO: Stop using notes for status
@@ -632,15 +630,12 @@ EOT;
         $upiEntity = $this->getLastEntity('upi', true);
         $payment = $this->getEntityById('payment', $authPayment['payment_id'], true);
 
-        $this->runRequestResponseFlow($data, function () use ($payment)
-        {
-            $this->verifyPayment($payment['id']);
-        });
+        $this->payment = $this->verifyPayment($payment['id']);
 
         $payment = $this->getEntityById('payment', $payment['id'], true);
 
         // This will be updated if ran via cron
-        $this->assertSame($payment['verified'], null);
+        $this->assertSame($payment['verified'], 1);
     }
 
     public function testVerifyPaymentWithEncryptedResponse()
