@@ -61,11 +61,9 @@ class Reconciliator extends Base\Mock\Reconciliator
      * @override
      * @var string
      */
-    // TODO: Check what the name of the file should be
-    protected static $fileToWriteName = 'MerchantReport';
+    protected static $fileToWriteName = 'REFUND_REPORT';
 
-    // TODO: Check this once?
-    protected static $paymentFileToWriteName = 'PaymentMerchantReport';
+    protected static $paymentFileToWriteName = 'MIS_REPORT';
 
     /**
      * The parent class's method gets only successful payments,

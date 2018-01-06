@@ -7,8 +7,8 @@ use RZP\Reconciliator\FileProcessor;
 
 class Reconciliate extends Base\Reconciliate
 {
-    const REFUND_RECON_FILE_NAME    = 'merchantreport';
-    const PAYMENT_RECON_FILE_NAME   = 'paymentmerchantreport';
+    const REFUND_RECON_FILE_NAME    = 'refund_report';
+    const PAYMENT_RECON_FILE_NAME   = 'mis_report';
     const START_ROW                 = 2;
 
     public function getStartRow($fileDetails)
