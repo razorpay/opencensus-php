@@ -306,15 +306,15 @@ class TransactionFilter extends Terminal\Filter
             return ($terminal->is3DSRecurring() === true);
         }
 
-        if ($terminal->isNon3DSRecurring() === false)
-        {
-            return false;
-        }
-
         //
         // From here onwards, the terminal selection
         // logic is for second recurring.
         //
+
+        if ($terminal->isNon3DSRecurring() === false)
+        {
+            return false;
+        }
 
         $reference = $payment->getReferenceForGatewayToken();
 
