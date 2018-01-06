@@ -93,6 +93,12 @@ class Selector extends Base\Core
                 ($token->isRecurring() === true) and
                 ($access === true))
             {
+                //
+                // For fallback, we need to get direct terminals which
+                // support both recurring 3DS and recurring non-3DS
+                // on a single terminal. These terminals usually allow
+                // payments without 2FA first.
+                //
                 $filteredTerminals = $this->repo
                                           ->terminal
                                           ->getDirectRecurringTerminalsOfType($this->input['merchant'], 6)

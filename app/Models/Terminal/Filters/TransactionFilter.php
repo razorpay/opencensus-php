@@ -11,6 +11,7 @@ use RZP\Models\Terminal;
 use RZP\Models\Card\Network;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Terminal\Category;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\Customer\GatewayToken;
@@ -161,14 +162,8 @@ class TransactionFilter extends Terminal\Filter
     {
         $payment = $this->input['payment'];
 
-        //
-        // For one particular merchant (test), we want
-        // to run an experimental recurringFilter.
-        //
-        if ($payment->getMerchantId() === '5ubLZpACTmD8D4')
+        if ($this->runExperimentalRecurringFilter() === true)
         {
-            // Basically, no filtering here.
-            // We will do the filtering for this guy in `recurringExperimentFilter`
             return true;
         }
 
@@ -268,14 +263,8 @@ class TransactionFilter extends Terminal\Filter
     {
         $payment = $this->input['payment'];
 
-        //
-        // We are running this experiment only
-        // for one particular merchant (test).
-        //
-        if ($payment->getMerchantId() !== '5ubLZpACTmD8D4')
+        if ($this->runExperimentalRecurringFilter() === false)
         {
-            // Basically, no filtering here.
-            // Filtering would have been done in `recurringFilter`
             return true;
         }
 
@@ -592,5 +581,46 @@ class TransactionFilter extends Terminal\Filter
         }
 
         return true;
+    }
+
+    protected function runExperimentalRecurringFilter()
+    {
+        try
+        {
+            $merchantsForExperimentalRecurring = $this->getExperimentalRecurringFilterConfig();
+
+            $payment = $this->input['payment'];
+
+            //
+            // For some merchants, we want
+            // to run an experimental recurringFilter.
+            //
+            return (in_array($payment->getMerchantId(), $merchantsForExperimentalRecurring, true) === true);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex);
+
+            return false;
+        }
+    }
+
+    protected function getExperimentalRecurringFilterConfig()
+    {
+        $cache = $this->app['cache'];
+
+        try
+        {
+            if (isset($cache) === true)
+            {
+                $merchantsForExperimentalRecurring = $cache->get(ConfigKey::EXPERIMENTAL_RECURRING_FILTER);
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex);
+        }
+
+        return $merchantsForExperimentalRecurring ?? [];
     }
 }

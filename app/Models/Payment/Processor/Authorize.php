@@ -2388,17 +2388,42 @@ trait Authorize
 
         $gatewayTokens = $this->repo->gateway_token->findByTokenAndReference($token, $reference);
 
-        $gatewayTokensCount = $gatewayTokens->count();
+        $gateway = $payment->getGateway();
+
+        $gatewayTokensToUpdate = $gatewayTokens->filter(
+                                        function($gatewayToken) use ($gateway)
+                                        {
+                                            return ($gatewayToken->getGateway() === $gateway);
+                                        });
 
         //
         // This is the case that the payment is a first recurring payment
         //
-        if ($gatewayTokensCount === 0)
+        if (empty($gatewayTokensToUpdate) === true)
         {
             (new GatewayToken\Core)->create($payment, $token, $reference);
         }
-        else if ($gatewayTokensCount === 1)
+        else
         {
+            //
+            // There will be only one for sure.
+            // There can't be more than 1 because, the only time we create is
+            // when there doesn't exist a single gateway_token of the gateway.
+            // All other cases, we only update the existing one. Hence, there
+            // can never be more than one gateway_token of a gateway.
+            //
+
+            if ($gatewayTokensToUpdate->count() > 1)
+            {
+                $this->trace->critical(
+                    TraceCode::GATEWAY_TOKEN_TOO_MANY_PRESENT,
+                    [
+                        'count'         => $gatewayTokensToUpdate->count(),
+                        'payment_id'    => $payment->getId(),
+                        'token_id'      => $token->getId()
+                    ]);
+            }
+
             if ($payment->isNetbanking() === true)
             {
                 //
@@ -2415,41 +2440,11 @@ trait Authorize
                     ]);
             }
 
-            $gatewayToken = $gatewayTokens->first();
+            $gatewayTokenToUpdate = $gatewayTokensToUpdate->first();
 
-            $gatewayToken->terminal()->associate($payment->terminal);
+            $gatewayTokenToUpdate->terminal()->associate($payment->terminal);
 
-            $this->repo->saveOrFail($gatewayToken);
-        }
-        else
-        {
-            $gateway = $payment->terminal->getGateway();
-
-            $gatewayTokensToUpdate = $gatewayTokens->filter(
-                                            function($gatewayToken) use ($gateway)
-                                            {
-                                                return ($gatewayToken->getGateway() === $gateway);
-                                            });
-
-            if (empty($gatewayTokensToUpdate) === true)
-            {
-                (new GatewayToken\Core)->create($payment, $token, $reference);
-            }
-            else
-            {
-                //
-                // There will be only one for sure.
-                // There can't be more than 1 because, the only time we create is
-                // when there doesn't exist a single gateway_token of the gateway.
-                // All other cases, we only update the existing one. Hence, there
-                // can never be more than one gateway_token of a gateway.
-                //
-                $gatewayTokenToUpdate = $gatewayTokensToUpdate->first();
-
-                $gatewayTokenToUpdate->terminal()->associate($payment->terminal);
-
-                $this->repo->saveOrFail($gatewayTokenToUpdate);
-            }
+            $this->repo->saveOrFail($gatewayTokenToUpdate);
         }
     }
 
