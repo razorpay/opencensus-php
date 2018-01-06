@@ -134,7 +134,7 @@ export default class BankDetailsForm extends Component {
                   <Field
                     name="bank_beneficiary_address1"
                     component={InputField}
-                    tagName="textarea"
+                    tagName="input"
                     class="form-control"
                     placeholder="Beneficiary Address Line 1"
                     validate={[required(), validationAddressLength]}
@@ -150,7 +150,7 @@ export default class BankDetailsForm extends Component {
                   <Field
                     name="bank_beneficiary_address2"
                     component={InputField}
-                    tagName="textarea"
+                    tagName="input"
                     class="form-control"
                     placeholder="Beneficiary Address Line 2"
                   />
@@ -165,7 +165,7 @@ export default class BankDetailsForm extends Component {
                   <Field
                     name="bank_beneficiary_address3"
                     component={InputField}
-                    tagName="textarea"
+                    tagName="input"
                     class="form-control"
                     placeholder="Beneficiary Address Line 3"
                   />
