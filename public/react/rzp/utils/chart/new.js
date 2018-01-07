@@ -1,10 +1,20 @@
 import { defaults } from 'react-chartjs-2';
 import moment from 'moment';
+import { humanReadableIndian } from '../numerals';
 
 const global = defaults.global;
 global.maintainAspectRatio = false;
-global.elements.line.lineTension = 0;
 global.legend.display = false;
+
+// by default straight lines ofr line graph
+global.elements.line.tension = 0;
+global.elements.line.borderColor = 'rgba(0, 0, 0, 0.05)';
+
+// by default no gap between each pie
+global.elements.arc.borderWidth = 0;
+
+global.elements.point.radius = 0;
+global.elements.point.hoverRadius = 0;
 
 const tooltips = global.tooltips;
 tooltips.mode = 'index';
@@ -15,7 +25,12 @@ tooltips.intersect = false;
 global.hover.mode = 'index';
 global.hover.intersect = false;
 
-const colors = [
+export const colors = [
+  [75, 84, 113],
+  [95, 127, 185],
+  [117, 194, 216],
+  [172, 172, 231],
+  [235, 120, 120],
   [35, 183, 229],
   [52, 152, 219],
   [46, 204, 113],
@@ -37,28 +52,44 @@ export const timeScale = ({ xLabel, yLabel }) => {
       xAxes: [
         {
           type: 'time',
-          minUnit: 'day',
+          distribution: 'series',
           time: {
             displayFormats: {
-              day: 'DD MMM',
+              hour: 'MMM D',
+              month: 'MMM YYYY',
+              day: 'MMM D',
+              week: 'MMM YYYY',
+              second: 'MMM D',
+              millisecond: 'MMM D',
+              hour: 'MMM D',
             },
-            parser: utcMoment => utcMoment.utcOffset('+0000'),
             tooltipFormat: 'ddd DD MMM YYYY',
           },
           gridLines: {
-            color: '#f8f8f8',
+            color: '#FFFFFF',
+            drawOnChartArea: true,
+          },
+          ticks: {
+            source: 'data',
+            autoSkip: true,
+            fontColor: 'rgba(45, 48, 51, 0.5)',
           },
         },
       ],
       yAxes: [
         {
+          stacked: true,
           ticks: {
             beginAtZero: true,
             suggestedMax: 10,
             maxTicksLimit: 10,
+            callback: value => humanReadableIndian(value),
+            fontColor: 'rgba(45, 48, 51, 0.5)',
           },
+          offset: true,
           gridLines: {
-            color: '#f8f8f8',
+            color: '#FFFFFF',
+            drawOnChartArea: true,
           },
         },
       ],

@@ -8,7 +8,7 @@ import Definition from 'rzp/ui/Definition';
 import ChangeRange from 'rzp/ui/ChangeRange';
 import { BtnGroup, Btn } from 'rzp/ui/BtnGroup';
 import { titleCase } from 'rzp/utils/rzp-utils';
-import { timeScale } from 'rzp/utils/chart/index.js';
+import { timeScale } from 'rzp/utils/chart/new.js';
 import takeScreenshot from 'rzp/utils/screenshot';
 import Group, { GroupItem } from 'rzp/ui/Group';
 import {
