@@ -434,6 +434,7 @@ class Processor
 
             //
             // TODO: Remove this after we move netbanking recurring to emandate method
+            // We have to start storing method as `emandate` in token entity for this.
             //
             if ($tokenMethod === Payment\Method::NETBANKING)
             {
@@ -445,11 +446,6 @@ class Processor
             if ($tokenMethod === Payment\Method::EMANDATE)
             {
                 $input[Payment\Entity::BANK] = $token->getBank();
-                $input[Payment\Entity::BANK_ACCOUNT] = [
-                    Payment\Entity::NAME            => $token->getBeneficiaryName(),
-                    Payment\Entity::IFSC            => $token->getIfsc(),
-                    Payment\Entity::ACCOUNT_NUMBER  => $token->getAccountNumber()
-                ];
             }
             else if ($tokenMethod === Payment\Method::WALLET)
             {
