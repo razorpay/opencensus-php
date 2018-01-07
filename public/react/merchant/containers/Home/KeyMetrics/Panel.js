@@ -126,7 +126,7 @@ class Panel extends Component {
                 <span className="text-fade">
                   Compared to
                   <strong> {startDate.format(dateFormat)} </strong>
-                  to
+                  -
                   <strong> {endDate.format(dateFormat)} </strong>
                 </span>
               </Definition>

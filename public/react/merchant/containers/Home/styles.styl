@@ -17,8 +17,26 @@ $actionItemsHeight = 40px;
 
 .dashboard {
 
-  padding: 20px;
+  padding: 24px;
   background-color: $background-color;
+
+  p.section-title {
+
+    font-size: 18px;
+    padding-top: 48px;
+    padding-bottom: 16px;
+    margin-bottom: 0;
+
+    &.keymetrics-title {
+
+      padding-top: 0;
+    }
+  }
+
+  .panel.dasboard-home-panel {
+
+    margin-bottom: 0;
+  }
 
   div.traffic-activity-row {
 
@@ -32,10 +50,14 @@ $actionItemsHeight = 40px;
       display: block;
       position: relative;
 
+      &.activity-container > p.content-title {
+
+        left: 12px;
+      }
+
       p.content-title {
 
         margin-bottom: 0;
-        padding-bottom: 10px;
         position: absolute;
         top: 0;
         left: 0;
@@ -47,7 +69,7 @@ $actionItemsHeight = 40px;
         position: relative;
         width: 100%;
         height: 100%;
-        padding-top: 30px;
+        padding-top: 93px;
 
         div.panel {
 
@@ -62,12 +84,12 @@ $actionItemsHeight = 40px;
 
       &.traffic-container {
 
-        padding-right: 10px;
+        padding-right: 12px;
       }
 
       &.activity-container {
 
-        padding-left: 10px;
+        padding-left: 12px;
       }
 
       div.panel {

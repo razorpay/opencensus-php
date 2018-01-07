@@ -38,17 +38,14 @@ const TabContent = ({ name, value, isCurrency, title, isLoading }) => {
    * Component responsible for rendering content in each Tab
    */
 
-  let formattedTitle =
-      '₹ ' +
-      (isCurrency ? getFormattedAmount(value) : getFormattedNumber(value)),
+  let formattedTitle = isCurrency
+      ? '₹' + getFormattedAmount(value)
+      : getFormattedNumber(value),
     formattedValue = (value = isCurrency ? paiseToRupees(value) : value);
 
-  if (value >= 1000) {
-    // formatting number, eg. 1200 as 1.2 k , decimal part is optional
-    formattedValue = (isCurrency
-      ? humanReadableIndianCurrency
-      : humanReadableIndian)(value);
-  }
+  formattedValue = (isCurrency
+    ? humanReadableIndianCurrency
+    : humanReadableIndian)(value);
 
   /*
    * checks if the current tab is showing currency values and renders
@@ -141,7 +138,7 @@ class KeyMetricsContainer extends Component {
       breakdown: tabState.selectedBreakdown,
       startTime: startDate.unix(),
       endTime: endDate.unix(),
-      groupBy: selectedGrouping.value,
+      groupBy: selectedGrouping ? selectedGrouping.value : '',
       fetchHistogramForTab: selectedTab,
     });
 

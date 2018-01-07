@@ -98,13 +98,18 @@ export default class HomeContainer extends Component {
         <div className="dashboard">
           <div className="row">
             <div className="col-md-12">
+              <p className="section-title keymetrics-title">
+                Transactions Overview
+              </p>
+            </div>
+            <div className="col-md-12">
               <KeyMetrics startDate={startDate} endDate={endDate} />
             </div>
           </div>
 
           <div className="row">
             <div className="col-md-12">
-              <p>Payment methods drilldown</p>
+              <p className="section-title">Payment Insights</p>
             </div>
             <div className="col-md-12">
               <PaymentMethods startDate={startDate} endDate={endDate} />
@@ -114,13 +119,15 @@ export default class HomeContainer extends Component {
           <div className="row">
             <div className="col-md-12 traffic-activity-row">
               <div className="traffic-container">
-                <p className="content-title">Traffic split on platforms</p>
+                <p className="content-title section-title">
+                  Traffic split on platforms
+                </p>
                 <div className="content">
                   <Traffic startDate={startDate} endDate={endDate} />
                 </div>
               </div>
               <div className="activity-container">
-                <p className="content-title">Recent Activity</p>
+                <p className="content-title section-title">Recent Activity</p>
                 <div className="content">
                   <RecentActivity />
                 </div>

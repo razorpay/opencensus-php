@@ -8,7 +8,7 @@ export default ({ previous, current }) => {
   const change = current - previous;
   return (
     <Change value={change}>
-      {`(${round(Math.abs(change) / previous * 100)})%`}
+      {` (${round(Math.abs(change) / previous * 100)})%`}
     </Change>
   );
 };
