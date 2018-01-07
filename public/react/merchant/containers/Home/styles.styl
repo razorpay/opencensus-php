@@ -1,5 +1,6 @@
 /* TODO: restructure this file */
 $background-color = #FAFBFC;
+$actionItemsHeight = 40px;
 
 .dashboard-home {
 
@@ -72,6 +73,60 @@ $background-color = #FAFBFC;
       div.panel {
 
         margin-bottom: 0;
+      }
+    }
+  }
+}
+
+.react-normal-select {
+
+  display: table;
+  border: none;
+  background-color: transparent;
+  border-radius: none;
+
+  .PowerSelect__Trigger {
+
+    height: $actionItemsHeight;
+
+    .PowerSelect__TriggerLabel {
+
+      padding-left: 10px;
+    }
+
+    .PowerSelect__TriggerStatus {
+
+      padding-right: 10px;
+    }
+
+    .PowerSelect__Clear {
+
+      display: none;
+    }
+
+    .PowerSelect__TriggerLabel {
+
+      height: $actionItemsHeight;
+    }
+  }
+}
+
+.react-normal-select__Tether {
+
+  z-index: 2;
+
+  .react-normal-select__Menu {
+
+    .PowerSelect__Options {
+
+      .PowerSelect__Option {
+
+        padding: 0 10px;
+
+        > span {
+
+          line-height: $actionItemsHeight;
+        }
       }
     }
   }

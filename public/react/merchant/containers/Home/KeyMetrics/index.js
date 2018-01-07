@@ -92,7 +92,7 @@ class KeyMetricsContainer extends Component {
 
       if (grouping.length > 0) {
         // default grouping selected in each tab
-        tabState.selectedGrouping = grouping[0].value;
+        tabState.selectedGrouping = grouping[0];
       }
 
       tabState.selectedBreakdown = breakdownVals[0];
@@ -132,9 +132,8 @@ class KeyMetricsContainer extends Component {
 
     const { tabsState, selectedTab } = this.state,
       tabState = tabsState[selectedTab],
+      { selectedGrouping } = tabState,
       { startDate, endDate } = this.props;
-
-    console.log('Fetching new data');
 
     const query = getQuery({
       merchantId: '10000000000000',
@@ -142,7 +141,7 @@ class KeyMetricsContainer extends Component {
       breakdown: tabState.selectedBreakdown,
       startTime: startDate.unix(),
       endTime: endDate.unix(),
-      groupBy: tabState.selectedGrouping,
+      groupBy: selectedGrouping.value,
       fetchHistogramForTab: selectedTab,
     });
 
@@ -172,7 +171,7 @@ class KeyMetricsContainer extends Component {
           const { labels, datasets, aggregates, csv } = getTimelineData({
             data: histogram.result,
             groupByColumnName:
-              tabMeta.groupByColumnName || tabState.selectedGrouping,
+              tabMeta.groupByColumnName || selectedGrouping.value,
             groupTitleMap: tabMeta.groupTitleMap || { Mobile: 'mWeb' },
             valueTransformer: isCurrency && paiseToRupees,
           });
@@ -181,13 +180,21 @@ class KeyMetricsContainer extends Component {
           // into underscores by browser
           const downloadFileName = titleCase(
             shortenText(
-              `${selectedBreakdown} ${title} \u05C0 ${startDate.format(
+              `${title}, ${startDate.format(csvDateFormat)} to ${endDate.format(
                 csvDateFormat
-              )} - ${endDate.format(csvDateFormat)} ${tabState.selectedGrouping
-                ? '\u05C0 ' + tabMeta.getGroupTitle(tabState.selectedGrouping)
-                : ''}`
+              )}, ${selectedBreakdown}${selectedGrouping
+                ? ' ' + selectedGrouping.text
+                : ''}(Razorpay)`
             )
           );
+
+          // display point only when there is only one point to plot
+          if (labels.length === 1) {
+            datasets.forEach(dataset => {
+              dataset.pointRadius = 3;
+              dataset.pointHoverRadius = 4;
+            });
+          }
 
           tabState.data.downloadFileName = downloadFileName;
           tabState.data.histogram = { labels, datasets };
@@ -314,7 +321,11 @@ class KeyMetricsContainer extends Component {
               { isCurrency, title } = tabsMeta[tabName];
 
             return (
-              <Tab key={index} onClick={() => this.handleTabChange(tabName)}>
+              <Tab
+                key={index}
+                onClick={() => this.handleTabChange(tabName)}
+                style={{ width: 100 / tabsOrder.length + '%' }}
+              >
                 <TabContent
                   value={tabData.count}
                   name={tabName}

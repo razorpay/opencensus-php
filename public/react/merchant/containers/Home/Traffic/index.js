@@ -16,6 +16,7 @@ import GenericPanel, {
   PanelFooter,
 } from 'merchant/components/Home/GenericPanel';
 import { groupValues, groupMeta, getQuery, getPieData } from './data';
+import GroupingDropdown from 'merchant/components/Home/GroupingDropdown';
 import Legend from 'merchant/components/Home/Legend';
 import LastUpdated from 'merchant/components/Home/LastUpdated';
 import MoreOptionsButton from 'merchant/components/Home/MoreOptionsButton';
@@ -36,7 +37,7 @@ class Traffic extends Component {
 
     this.state = {
       loading: false,
-      selectedGrouping: groupValues[0],
+      selectedGrouping: groupMeta[groupValues[0]],
       groupsState: {},
     };
 
@@ -59,13 +60,13 @@ class Traffic extends Component {
     endDate = endDate || this.props.endDate;
 
     const { selectedGrouping, groupsState } = this.state,
-      groupState = groupsState[selectedGrouping],
-      meta = groupMeta[selectedGrouping],
+      groupState = groupsState[selectedGrouping.value],
+      meta = groupMeta[selectedGrouping.value],
       query = getQuery({
         merchantId: '10000000000000',
         startTime: startDate.unix(),
         endTime: endDate.unix(),
-        group: selectedGrouping,
+        group: selectedGrouping.value,
       });
 
     if (isInitialLoad) {
@@ -78,9 +79,9 @@ class Traffic extends Component {
 
     const downloadFileName = titleCase(
       shortenText(
-        `Platform traffic split \u05C0 ${startDate.format(
+        `Platform traffic split, ${startDate.format(
           csvDateFormat
-        )} - ${endDate.format(csvDateFormat)} \u05C0 ${meta.title}`
+        )} to ${endDate.format(csvDateFormat)}, ${meta.title}(Razorpay)`
       )
     );
 
@@ -118,10 +119,7 @@ class Traffic extends Component {
     this.getData();
   }
 
-  onGroupChange(e) {
-    const selectedGrouping = e.target.value,
-      groupState = this.state.groupsState[selectedGrouping];
-
+  onGroupChange({ option: selectedGrouping }) {
     this.setState(
       {
         selectedGrouping,
@@ -146,7 +144,7 @@ class Traffic extends Component {
 
   handleImageExportClick(e) {
     const { selectedGrouping, groupsState } = this.state,
-      groupState = groupsState[selectedGrouping],
+      groupState = groupsState[selectedGrouping.value],
       anchor = e.target;
 
     if (!groupState.pngData.url) {
@@ -164,8 +162,8 @@ class Traffic extends Component {
 
   render() {
     const { loading, selectedGrouping, groupsState } = this.state,
-      groupState = groupsState[selectedGrouping],
-      { isCurrency } = groupMeta[selectedGrouping],
+      groupState = groupsState[selectedGrouping.value],
+      { isCurrency } = groupMeta[selectedGrouping.value],
       { chartData, legendData } = groupState,
       hasNoData = !chartData || chartData.labels.length === 0;
 
@@ -178,19 +176,12 @@ class Traffic extends Component {
         <PanelTopbar className="clearfix">
           <div className="panel-actions pull-right">
             <div className="panel-action-item">
-              <select
-                value={selectedGrouping}
-                onChange={this.onGroupChange}
-                className="form-control"
-              >
-                {groupValues.map((value, index) => {
-                  return (
-                    <option value={value} key={index}>
-                      {groupMeta[value].title}
-                    </option>
-                  );
-                })}
-              </select>
+              <GroupingDropdown
+                grouping={groupValues.map(value => groupMeta[value])}
+                selectedGrouping={selectedGrouping}
+                onGroupChange={this.onGroupChange}
+                displayTextKey="title"
+              />
             </div>
             <div className="panel-action-item">
               <MoreOptionsButton

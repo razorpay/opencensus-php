@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import Chart from 'chart.js';
 import { Line } from 'react-chartjs-2';
+import { PowerSelect } from 'react-power-select';
 
 import Definition from 'rzp/ui/Definition';
 import ChangeRange from 'rzp/ui/ChangeRange';
@@ -9,12 +10,14 @@ import { BtnGroup, Btn } from 'rzp/ui/BtnGroup';
 import { titleCase } from 'rzp/utils/rzp-utils';
 import { timeScale } from 'rzp/utils/chart/index.js';
 import takeScreenshot from 'rzp/utils/screenshot';
+import Group, { GroupItem } from 'rzp/ui/Group';
 import {
   humanReadableIndian,
   humanReadableIndianCurrency,
 } from 'rzp/utils/numerals';
 
 import { tabsMeta, breakdownVals } from './data';
+import GroupingDropdown from 'merchant/components/Home/GroupingDropdown';
 import Legend from 'merchant/components/Home/Legend';
 import LastUpdated from 'merchant/components/Home/LastUpdated';
 import MoreOptionsButton from 'merchant/components/Home/MoreOptionsButton';
@@ -31,6 +34,7 @@ const chartOptions = {
   ...timeScale({}),
   layout: {
     padding: {
+      top: 21,
       left: 0,
       right: 0,
     },
@@ -61,10 +65,10 @@ class Panel extends Component {
     this.handleImageExportClick = ::this.handleImageExportClick;
   }
 
-  handleGroupingChange(e) {
+  handleGroupingChange({ option }) {
     const { tabName, onGroupingChange } = this.props;
 
-    return onGroupingChange && onGroupingChange(tabName, e.target.value);
+    return onGroupingChange && onGroupingChange(tabName, option);
   }
 
   handleBreakdownChange(value) {
@@ -129,23 +133,15 @@ class Panel extends Component {
             </div>
           )}
           <div className="panel-actions pull-right">
-            <div className="panel-action-item">
-              {grouping.length > 0 && (
-                <select
-                  className="form-control"
-                  value={selectedGrouping}
-                  onChange={this.handleGroupingChange}
-                >
-                  {grouping.map((item, index) => {
-                    return (
-                      <option value={item.value} key={index}>
-                        {item.text}
-                      </option>
-                    );
-                  })}
-                </select>
-              )}
-            </div>
+            {grouping.length > 0 && (
+              <div className="panel-action-item">
+                <GroupingDropdown
+                  onGroupChange={this.handleGroupingChange}
+                  grouping={grouping}
+                  selectedGrouping={selectedGrouping}
+                />
+              </div>
+            )}
             <BtnGroup
               className="panel-action-item"
               value={selectedBreakdown}

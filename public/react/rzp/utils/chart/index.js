@@ -13,6 +13,9 @@ global.elements.line.borderColor = 'rgba(0, 0, 0, 0.05)';
 // by default no gap between each pie
 global.elements.arc.borderWidth = 0;
 
+global.elements.point.radius = 0;
+global.elements.point.hoverRadius = 0;
+
 const tooltips = global.tooltips;
 tooltips.mode = 'index';
 tooltips.multiKeyBackground = 'rgba(0, 0, 0, 0)';

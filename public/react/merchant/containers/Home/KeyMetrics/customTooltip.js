@@ -172,6 +172,9 @@ const customToolTip = function(tooltipModel) {
     caret.style.marginLeft = -(caretWidth / 2) + diff + 'px';
     crossHair.style.marginLeft = -(crossHairWidth / 2) + diff + 'px';
   }
+
+  // if there is only one point hide crosshair
+  crossHair.style.display = this._data.labels.length === 1 ? 'none' : 'block';
 };
 
 function positioner(elements, eventPosition) {

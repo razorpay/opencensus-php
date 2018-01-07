@@ -5,6 +5,7 @@
     li {
 
       padding-bottom: 0;
+      display: inline-block;
 
       &.active > a , &:hover > a {
 
@@ -21,6 +22,13 @@
         > h1 {
 
           color: #2D3042;
+        }
+
+        .PlaceholderLoader {
+
+          /* blue gradient for active tab*/
+          background: #c5c9ed;
+          background: linear-gradient(to right, #c5c9ed 0%, #9ea5e0 10%,  20%);
         }
       }
 
@@ -67,7 +75,7 @@
 
   div.chart-container {
 
-    margin-top: 50px;
+    margin-top: 50px - 21px;
     height: 165px;
   }
 }
@@ -134,7 +142,7 @@
       left: 50%;
       top: 100%;
       margin-left: -1px;
-      background-color: rgba(255, 255, 255, 0.5);
+      background-color: rgb(255, 255, 255);
       z-index: 1;
     }
   }

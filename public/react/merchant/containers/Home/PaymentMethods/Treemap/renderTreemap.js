@@ -178,6 +178,12 @@ function main(node, o, data, d3, onTransition, groupTitleMap) {
 
   let transitionSubscriber = null;
 
+  function canBeZoomed(d) {
+    return (
+      !d._children.length === 1 || typeof d._children[0].key !== 'undefined'
+    );
+  }
+
   function display(d, isTransitioning) {
     g1 = svg
       .append('g')
@@ -195,15 +201,11 @@ function main(node, o, data, d3, onTransition, groupTitleMap) {
         return d.key && d._children;
       })
       .classed('children', true)
+      .style('cursor', function(d) {
+        return canBeZoomed(d) ? 'pointer' : 'default';
+      })
       .on('click', function(d) {
-        if (
-          d._children.length === 1 &&
-          typeof d._children[0].key === 'undefined'
-        ) {
-          return;
-        }
-
-        if (typeof onTransition === 'function') {
+        if (canBeZoomed(d) && typeof onTransition === 'function') {
           onTransition(d);
         }
       });

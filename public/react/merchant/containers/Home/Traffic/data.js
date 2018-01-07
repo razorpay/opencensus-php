@@ -15,11 +15,13 @@ const groupMeta = {
     column: 'base_amount',
     groupBy: 'platform',
     isCurrency: true,
+    value: groupValues[0],
   },
   [groupValues[1]]: {
     title: 'By No. of Transactions',
     aggType: 'count',
     groupBy: 'platform',
+    value: groupValues[0],
   },
 };
 

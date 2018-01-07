@@ -166,7 +166,7 @@ export const tabsMeta = {
   },
   [tabsOrder[3]]: {
     name: tabsOrder[3],
-    title: 'New Saved Cards',
+    title: 'Saved Cards',
     grouping: [],
     options: [],
     getGroupTitle,

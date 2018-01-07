@@ -11,10 +11,13 @@ export const humanReadableIndian = (num, noOfVisibleDigits = 3) => {
     return formatNumberWithCommas(num);
 
   const formattedNumberArr = formatNumberWithCommas(num.toFixed()).split(',');
-  const suffix = suffixes[Math.min(2, formattedNumberArr.length - 2)] || '';
-  return `${Number(`${formattedNumberArr[0]}.${formattedNumberArr[1]}`).toFixed(
-    2
-  )}${suffix}`;
+  const suffix = suffixes[Math.min(2, formattedNumberArr.length - 2)] || '',
+    hasDecimals = Number(formattedNumberArr[1]) !== 0;
+
+  // TODO: need to restructure this logic
+  return `${Number(
+    `${formattedNumberArr[0]}${hasDecimals ? '.' + formattedNumberArr[1] : ''}`
+  )[hasDecimals ? 'toFixed' : 'toString'](hasDecimals ? 2 : 10)}${suffix}`;
 };
 
 export const humanReadableIndianCurrency = (...args) =>
