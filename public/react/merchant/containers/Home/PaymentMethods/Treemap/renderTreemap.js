@@ -24,13 +24,11 @@ function makeCSVData(data, aggregate = 0, prefix = '', csvData = []) {
 
       aggregate += item.value;
 
-      csvData.push([
-        prefix + item.key.replace(',', ''),
-        item.value,
-        item.percent + '%',
-      ]);
+      var title = (prefix ? prefix + ' -> ' : '') + item.key.replace(',', '');
 
-      makeCSVData(item, aggregate, prefix + '      ', csvData);
+      csvData.push([title, item.value, item.percent + '%']);
+
+      makeCSVData(item, aggregate, title, csvData);
     });
   }
 

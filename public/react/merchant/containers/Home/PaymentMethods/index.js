@@ -138,6 +138,11 @@ class PaymentMethods extends Component {
               </Breadcrumb>
             )}
           </div>
+          <div className="panel-actions pull-right">
+            <div className="panel-action-item">
+              <MoreOptionsButton csvData={csvData} />
+            </div>
+          </div>
         </PanelTopbar>
         <PanelBody>
           <Treemap
