@@ -33,6 +33,7 @@ class Gateway extends Base\Gateway
             'payment_id'        => $input['payment']['id'],
             'callback_url'      => $input['callbackUrl'],
             'recurring'         => $input['payment']['recurring'] ?? false,
+            'auth_type'         => $input['payment']['auth_type'],
         ];
 
         if ($content['method'] === 'card')
