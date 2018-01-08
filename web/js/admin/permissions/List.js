@@ -40,6 +40,7 @@ export default class PermissionsList extends Component {
           model={this.collection}
           fields={fields}
           onClick={showEntity}
+          searchFilters={['name', 'description', 'category']}
         />
       </div>
     );
