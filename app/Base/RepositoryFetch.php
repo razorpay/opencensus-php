@@ -639,9 +639,10 @@ trait RepositoryFetch
                         ->findOrFailPublic($id);
 
         //
-        // Entities can be filtered on Merchant ID virtually and
-        // hence may not have the merchant() association defined
-        // Refer: Merchant\Account\Entity
+        // Most of the entities can be filtered on Merchant ID.
+        // They have the merchant() relation. But few entities
+        // do not have this relation defined.
+        // Eg: Merchant\Account\Entity
         //
         // Skip association if the relation is not defined.
         //

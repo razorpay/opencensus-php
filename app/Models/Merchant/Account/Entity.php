@@ -98,11 +98,11 @@ class Entity extends Merchant\Entity
 
     /**
      * This function is used in case of polymorphic relations where we associate one entity
-     * with multiple other entities using (entity_type and entity_id). This function determines
-     * the string that will be stored for entity_type when the association is with the Account
-     * entity. A mapping is maintained in ApiServiceProvider class :: registerMorphRelationMaps function.
-     * But since the array used there is an associative array and an entry for the key 'merchant' already
-     * exists, we are using getMorphClass function instead of the updating the map.
+     * with multiple other entities using (entity_type and entity_id). It determines the string that
+     * will be stored for entity_type when the association is with the Account entity. A mapping is
+     * maintained in ApiServiceProvider class :: registerMorphRelationMaps function. But, since the
+     * array used there is an associative array and an entry for the key 'merchant' already exists,
+     * we are using getMorphClass function instead of the updating the map.
      *
      * @return string
      */
@@ -256,7 +256,7 @@ class Entity extends Merchant\Entity
      *
      * This function overrides the function defined in Base\EloquentEx class.
      * The base function is used for fetching entities which have merchant_id. It is tightly
-     * coupled with RepositoryFetch class's fetch, fetchByIdAndMerchantId etc methods.
+     * coupled with RepositoryFetch class's fetch(), fetchByIdAndMerchantId() etc methods.
      *
      * The same behaviour is required for marketplace merchants but instead of adding a filter
      * for merchant_id, the filter is required for parent_id. Defining a separate function named

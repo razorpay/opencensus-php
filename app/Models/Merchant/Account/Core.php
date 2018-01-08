@@ -48,10 +48,13 @@ class Core extends Base\Core
     {
         // @todo: Get BUSINESS_TYPE from input
 
+        $businessName = $input[Entity::ACCOUNT_DETAILS][Entity::BUSINESS_NAME];
+        $businessType = $input[Entity::ACCOUNT_DETAILS][Entity::BUSINESS_TYPE];
+
         $merchantDetails = [
             Detail\Entity::SUBMIT => '1',
-            Entity::BUSINESS_NAME => $input[Entity::ACCOUNT_DETAILS][Entity::BUSINESS_NAME],
-            Entity::BUSINESS_TYPE => 1,
+            Entity::BUSINESS_NAME => $businessName,
+            Entity::BUSINESS_TYPE => Detail\BusinessType::getIndexFromKey($businessType),
         ];
 
         return $merchantDetails;

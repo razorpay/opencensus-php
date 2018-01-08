@@ -35,8 +35,6 @@ class ApiEventSubscriber extends Base\Core
 
     protected $params;
 
-    protected $merchant;
-
     /**
      * For invoice.paid, the mainEntity would consist of the invoice entity.
      * The data from mainEntity is used to get updated_at and merchant.

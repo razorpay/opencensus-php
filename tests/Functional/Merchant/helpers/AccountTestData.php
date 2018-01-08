@@ -44,6 +44,7 @@ return [
                 ],
                 'account_details' => [
                     'business_name' => 'Acme solutions',
+                    'business_type' => 'proprietorship',
                 ],
                 'bank_account' => [
                     'ifsc_code'             => 'ICIC0001206',
@@ -83,7 +84,7 @@ return [
                     'mobile'                   => null,
                     'landline'                 => null,
                     'business_name'            => 'Acme solutions',
-                    'business_type'            => 'Private Limited',
+                    'business_type'            => 'Proprietorship',
                     'paymentdetails'           => null,
                     'business_model'           => null,
                     'registered_address'       => [
