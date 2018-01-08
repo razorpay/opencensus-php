@@ -92,13 +92,6 @@ export default ({ merchant_details: merchantDetails, title }) => (
         />
 
         <Field
-          label="Branch Address"
-          name="bank_branch"
-          defaultValue={merchantDetails.bank_account_type}
-          infoMsg="Do not panic if this is empty or incorrect. We don't ask this field any more."
-        />
-
-        <Field
           label="Branch IFSC Code"
           name="bank_branch_ifsc"
           defaultValue={merchantDetails.bank_branch_ifsc}
