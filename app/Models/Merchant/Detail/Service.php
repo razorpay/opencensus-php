@@ -293,7 +293,7 @@ class Service extends Base\Service
 
         $activationStatusChangeLog = (new Merchant\Core)->getActivationStatusChangeLog($merchant);
 
-        return $activationStatusChangeLog->get()->toArrayPublic();
+        return $activationStatusChangeLog->toArrayPublic();
     }
 
     public function getRejectionReasons()

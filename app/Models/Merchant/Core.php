@@ -396,7 +396,7 @@ class Core extends Base\Core
      *
      * @return PublicCollection
      */
-    public function getActivationStatusChangeLog(Entity $merchant)
+    public function getActivationStatusChangeLog(Entity $merchant): PublicCollection
     {
         return $merchant->getActivationStatusChangeLog();
     }

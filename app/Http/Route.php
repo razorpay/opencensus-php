@@ -1452,7 +1452,7 @@ final class Route
         'merchant_activation_files'              => '*',
         'merchant_activation_archive'            => '*', // permission handled in code
         'merchant_activation_status'             => Permission::EDIT_ACTIVATE_MERCHANT,
-        'merchant_activation_status_change_log'  => '*',
+        'merchant_activation_status_change_log'  => Permission::VIEW_ACTIVATION_FORM,
         'merchant_get_rejection_reasons'         => '*',
         'dispute_reason_create'                  => Permission::CREATE_DISPUTE_REASON,
         'user_confirm_by_data'                   => '*',

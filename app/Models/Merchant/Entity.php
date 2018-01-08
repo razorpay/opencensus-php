@@ -1213,7 +1213,8 @@ class Entity extends Base\PublicEntity
     public function getActivationStatusChangeLog()
     {
         return $this->activationStates()
-                    ->orderBy(State\Entity::CREATED_AT);
+                    ->orderBy(State\Entity::CREATED_AT)
+                    ->get();
     }
 
     /**
