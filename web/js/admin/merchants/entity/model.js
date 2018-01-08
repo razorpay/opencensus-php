@@ -22,6 +22,7 @@ export default class Model extends BaseModel {
     bankDetails: {},
     creditsLogs: {},
     adminsMap: {},
+    activationChangeLogs: [],
   };
 
   constructor({ merchantId, fetchFn }) {
@@ -71,6 +72,7 @@ export default class Model extends BaseModel {
           this.fetchFeatures('live');
           this.fetchFeatures('test');
         }
+        this.fetchActivationChangeLogs();
       }
     );
   }
@@ -367,6 +369,29 @@ export default class Model extends BaseModel {
 
         if (this.merchant.hasSettlementSchedule === undefined) {
           this.merchant.hasSettlementSchedule = false;
+        }
+      }
+    });
+  }
+
+  @action
+  fetchActivationChangeLogs() {
+    const data = {
+      route_name: 'merchant_activation_status_change_log',
+      url_params: {
+        id: this.merchantId,
+      },
+    };
+
+    return this.request(
+      'fetchActivationStatusChangeLogs',
+      this.fetchFn({
+        ...data,
+      })
+    ).then(data => {
+      if (data) {
+        if (data.items.length) {
+          this.merchant.activationChangeLogs = data.items;
         }
       }
     });

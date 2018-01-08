@@ -200,6 +200,13 @@ function _getRejectedReasonsFields() {
   ];
 }
 
+function _getActivationChangeLogsFields() {
+  return [
+    ['Created At', item => formatDate(item.created_at)],
+    ['Status', item => snakeToTitleCase(item.name)],
+  ];
+}
+
 // mapping used in multiple files
 const utilMapping = {
   network: {
@@ -362,6 +369,7 @@ export function getDetailsViewMap(model) {
     bankDetails,
     creditsLogs,
     adminsMap,
+    activationChangeLogs,
   } = model.merchant;
 
   return [
@@ -593,6 +601,18 @@ export function getDetailsViewMap(model) {
               <Table
                 items={details.merchant_details.rejection_reasons.items}
                 fields={_getRejectedReasonsFields()}
+              />
+            )
+          : null,
+    },
+    {
+      label: 'Activation Status Change Logs',
+      children:
+        activationChangeLogs.length > 0
+          ? () => (
+              <Table
+                items={activationChangeLogs}
+                fields={_getActivationChangeLogsFields()}
               />
             )
           : null,
