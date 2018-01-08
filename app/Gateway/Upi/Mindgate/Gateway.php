@@ -112,6 +112,7 @@ class Gateway extends Base\Gateway
 
     private function checkResponseStatus(string $status, string $successStatus = Status::SUCCESS)
     {
+        $status = ucfirst(strtolower($status));
         if ($status !== $successStatus)
         {
             $errorCode = ResponseCodeMap::getApiErrorCode($status);
@@ -177,6 +178,8 @@ class Gateway extends Base\Gateway
         ]);
 
         $response = $this->decrypt($responseBody);
+
+        $this->trace->info(TraceCode::GATEWAY_RESPONSE, [$response]);
 
         $type = strtoupper($type);
 
