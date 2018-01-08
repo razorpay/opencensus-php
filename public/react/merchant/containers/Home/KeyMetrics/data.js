@@ -63,6 +63,7 @@ export const tabsMeta = {
     grouping: defaultGroupingVals,
     options: [],
     isCurrency: true,
+    index: 'payments',
     getGroupObj,
     getGroupQuery,
     getCountQuery: function() {
@@ -70,7 +71,7 @@ export const tabsMeta = {
         [this.name]: {
           agg_type: 'sum',
           details: {
-            index: 'payments',
+            index: this.index,
             column: 'base_amount',
           },
         },
@@ -83,7 +84,7 @@ export const tabsMeta = {
         [`${this.name}Histogram`]: {
           agg_type: 'sum',
           details: {
-            index: 'payments',
+            index: this.index,
             column: 'base_amount',
             group_by: [...grouping, `histogram_${breakdown}`],
           },
@@ -96,6 +97,7 @@ export const tabsMeta = {
     title: 'Number of Transactions',
     grouping: defaultGroupingVals,
     options: [],
+    index: 'payments',
     getGroupObj,
     getGroupQuery,
     getCountQuery: function() {
@@ -103,7 +105,7 @@ export const tabsMeta = {
         [this.name]: {
           agg_type: 'count',
           details: {
-            index: 'payments',
+            index: this.index,
           },
         },
       };
@@ -115,7 +117,7 @@ export const tabsMeta = {
         [`${this.name}Histogram`]: {
           agg_type: 'count',
           details: {
-            index: 'payments',
+            index: this.index,
             group_by: [...grouping, `histogram_${breakdown}`],
           },
         },
@@ -127,6 +129,7 @@ export const tabsMeta = {
     title: 'Refunds in total',
     grouping: defaultGroupingVals,
     options: [],
+    index: 'refunds',
     getGroupObj,
     getGroupQuery,
     getCountQuery: function() {
@@ -134,7 +137,7 @@ export const tabsMeta = {
         [this.name]: {
           agg_type: 'count',
           details: {
-            index: 'refunds',
+            index: this.index,
             mode: 'test',
           },
         },
@@ -147,7 +150,7 @@ export const tabsMeta = {
         [`${this.name}Histogram`]: {
           agg_type: 'count',
           details: {
-            index: 'refunds',
+            index: this.index,
             mode: 'test',
             group_by: [...grouping, `histogram_${breakdown}`],
           },
@@ -160,6 +163,7 @@ export const tabsMeta = {
     title: 'Saved Cards',
     grouping: [],
     options: [],
+    index: 'payments',
     groupByColumnName: 'saved_card',
     groupTitleMap: {
       '0': 'New Card',
@@ -171,7 +175,7 @@ export const tabsMeta = {
           filter_key: this.name,
           agg_type: 'count',
           details: {
-            index: 'payments',
+            index: this.index,
             mode: 'test',
           },
         },
@@ -182,7 +186,7 @@ export const tabsMeta = {
         [`${this.name}Histogram`]: {
           agg_type: 'count',
           details: {
-            index: 'payments',
+            index: this.index,
             mode: 'test',
             group_by: ['saved_card', `histogram_${breakdown}`],
           },
@@ -342,6 +346,7 @@ export const getTimelineData = ({
     const dataset = {
       label: titleCase(groupLabel),
       backgroundColor: groupColor,
+      borderColor: groupColor,
       data: [],
     };
 

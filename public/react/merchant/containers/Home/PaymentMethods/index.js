@@ -140,7 +140,16 @@ class PaymentMethods extends Component {
           </div>
           <div className="panel-actions pull-right">
             <div className="panel-action-item">
-              <MoreOptionsButton csvData={csvData} />
+              <MoreOptionsButton csvData={csvData}>
+                <div className="option">
+                  <Link
+                    target="_blank"
+                    to={`/payments?from=${startDate.unix()}&to=${endDate.unix()}`}
+                  >
+                    View all Payments
+                  </Link>
+                </div>
+              </MoreOptionsButton>
             </div>
           </div>
         </PanelTopbar>
@@ -155,13 +164,6 @@ class PaymentMethods extends Component {
         <PanelFooter className="clearfix">
           <div className="pull-left">
             <LastUpdated at={this.state.lastUpdatedAt} />
-          </div>
-          <div className="pull-right">
-            <Link
-              to={`/payments?from=${startDate.unix()}&to=${endDate.unix()}`}
-            >
-              View all Payments &gt;
-            </Link>
           </div>
         </PanelFooter>
       </GenericPanel>

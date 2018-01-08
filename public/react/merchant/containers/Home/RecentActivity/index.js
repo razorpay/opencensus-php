@@ -132,7 +132,7 @@ export default class RecentActivity extends Component {
                     name={tabName}
                     onClick={this.handleTabClick}
                   >
-                    {titleCase(tabName)}
+                    {tabName.toUpperCase()}
                   </a>
                 );
               })}

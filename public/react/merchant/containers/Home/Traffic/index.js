@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Pie } from 'react-chartjs-2';
 import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
 
 import { paiseToRupees, shortenText, titleCase } from 'rzp/utils/rzp-utils';
 import takeScreenshot from 'rzp/utils/screenshot';
@@ -165,7 +166,8 @@ class Traffic extends Component {
       groupState = groupsState[selectedGrouping.value],
       { isCurrency } = groupMeta[selectedGrouping.value],
       { chartData, legendData } = groupState,
-      hasNoData = !chartData || chartData.labels.length === 0;
+      hasNoData = !chartData || chartData.labels.length === 0,
+      { startDate, endDate } = this.props;
 
     return (
       <GenericPanel
@@ -188,7 +190,16 @@ class Traffic extends Component {
                 onImageExport={this.handleImageExportClick}
                 csvData={groupState.csvData}
                 pngData={groupState.pngData}
-              />
+              >
+                <div className="option">
+                  <Link
+                    target="_blank"
+                    to={`/payments?from=${startDate.unix()}&to=${endDate.unix()}`}
+                  >
+                    View all Payments
+                  </Link>
+                </div>
+              </MoreOptionsButton>
             </div>
           </div>
         </PanelTopbar>

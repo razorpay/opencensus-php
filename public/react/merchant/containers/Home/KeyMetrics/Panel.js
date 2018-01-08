@@ -160,7 +160,17 @@ class Panel extends Component {
                 csvData={data.csv}
                 pngData={data.png}
                 onImageExport={this.handleImageExportClick}
-              />
+              >
+                <div className="option">
+                  <Link
+                    target="_blank"
+                    to={`/${this.meta
+                      .index}?from=${startDate.unix()}&to=${endDate.unix()}`}
+                  >
+                    {`View all ${titleCase(this.meta.index)}`}
+                  </Link>
+                </div>
+              </MoreOptionsButton>
             </div>
           </div>
         </PanelTopbar>
@@ -195,13 +205,6 @@ class Panel extends Component {
         <PanelFooter>
           <div className="pull-left">
             <LastUpdated at={lastUpdatedAt} />
-          </div>
-          <div className="pull-right">
-            <Link
-              to={`/payments?from=${startDate.unix()}&to=${endDate.unix()}`}
-            >
-              View all Payments &gt;
-            </Link>
           </div>
         </PanelFooter>
       </GenericPanel>

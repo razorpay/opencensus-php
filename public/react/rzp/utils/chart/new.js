@@ -119,7 +119,7 @@ export const processLineData = data => {
     d.pointHoverBorderColor = '#fff';
     d.pointBackgroundColor = rgb(color);
     d.borderColor = rgb(color);
-    d.backgroundColor = rgb(color, 0.4);
+    d.backgroundColor = rgb(color);
   });
   return data;
 };
