@@ -46,10 +46,30 @@ class Base extends Refund\Base
         return $mailData;
     }
 
-    protected function refundMail($mailData, $recipients)
+    public function sendFile($data)
     {
-        $refundFileMail = new FailedRefundFileMail($mailData, static::GATEWAY, $recipients);
+        try
+        {
+            $recipients = $this->gatewayFile->getRecipients();
 
-        return $refundFileMail;
+            $mailData = $this->formatDataForMail($data);
+
+            $refundFileMail = new FailedRefundFileMail($mailData, static::GATEWAY, $recipients);
+
+            Mail::queue($refundFileMail);
+
+            $this->gatewayFile->setFileSentAt(time());
+
+            $this->gatewayFile->setStatus(Status::FILE_SENT);
+        }
+        catch (\Throwable $e)
+        {
+            throw new GatewayFileException(
+                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_FILE,
+                [
+                    'id'        => $this->gatewayFile->getId(),
+                ],
+                $e);
+        }
     }
 }
