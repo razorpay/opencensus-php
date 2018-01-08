@@ -10,7 +10,13 @@ class Constants
 
     const TRACK_ID              = 'TrackID';
 
-    const ERROR_MESSAGE_START   = 'IPAY';
-
     const CANCELLED             = 'CANCELLED';
+
+    // ErrorCodes starting with the below text.
+    public static $errorMessageStart = [
+        'IPAY',
+        'GW',
+        'GV',
+        'PY',
+    ];
 }

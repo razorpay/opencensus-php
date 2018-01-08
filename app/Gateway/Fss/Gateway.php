@@ -146,7 +146,7 @@ class Gateway extends Base\Gateway
 
         // Doing Additional check with the result because error messages are sent in result.
         if ($responseFields[Fields::RESULT] !== Status::CAPTURED and
-            substr($responseFields[Fields::RESULT], 0, 4) === Constants::ERROR_MESSAGE_START)
+            $this->isErrorMessageText($responseFields[Fields::RESULT]) === true)
         {
             $this->checkErrorMessage($gatewayEntity, $responseFields);
         }
@@ -795,7 +795,7 @@ class Gateway extends Base\Gateway
             trim($status) !== Status::CAPTURED)
         {
             // Error message is sent as status.
-            if (substr($status, 0, 4) === Constants::ERROR_MESSAGE_START)
+            if ($this->isErrorMessageText($status) === true)
             {
                 $attributes[Entity::ERROR_MESSAGE] = $status;
 
@@ -805,9 +805,30 @@ class Gateway extends Base\Gateway
     }
 
     /**
+     * Gateway sends ErrorMessages in result so to detect if the result is error or not.
+     * @param string $errorMessageText
+     *
+     * @return boolean
+     */
+    private function isErrorMessageText(string $errorMessageText)
+    {
+        foreach (Constants::$errorMessageStart as $errorText)
+        {
+            $result = substr($errorMessageText, 0, strlen($errorText)) === $errorText;
+
+            if ($result === true)
+            {
+                return $result;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Sanitizing status because in fss gateway, if we have any errors in
      * the response we will get the result with error + description as twice.
-     * <result>GW00-somerandomerror</result><result>GW00-somerandomerror</result>
+     * <result>GW001-somerandomerror</result><result>GW001-somerandomerror</result>
      *
      * @param $status
      */
