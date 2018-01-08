@@ -3,6 +3,7 @@ namespace RZP\Tests\Unit\Gateway;
 
 use DOMDocument;
 use DOMNode;
+use Carbon\Carbon;
 use RobRichards\XMLSecLibs\XMLSecEnc;
 use RuntimeException;
 use RobRichards\XMLSecLibs\XMLSecurityKey;
@@ -11,12 +12,27 @@ use UnexpectedValueException;
 
 use RZP\Gateway\Blade\XmlseclibsAdapter;
 use RZP\Gateway\Blade\Gateway as BladeGateway;
+use RZP\Gateway\Blade\Mock\Gateway as BladeMockGateway;
 use RZP\Tests\TestCase;
 //use Gateway\Blade\XmlseclibsAdapter;
 
 
 class BladeSignatureTest extends TestCase
 {
+    private function runVerifyOnXml(string $filename)
+    {
+        $xml = file_get_contents(__DIR__. '/' . $filename);
+
+        $dom = new \DOMDocument;
+
+        $dom->loadXML($xml);
+
+        $adapter = new XmlseclibsAdapter;
+
+        $adapter->setRootCertFingerprints(BladeMockGateway::ROOT_CERT_FINGERPRINTS);
+
+        return $adapter->verify($dom);
+    }
 
     public function testSigVerify()
     {
@@ -59,19 +75,35 @@ class BladeSignatureTest extends TestCase
         $this->assertTrue($ret === 1, "Signature should be valid");
     }
 
+    /**
+     * However, the certificate expired on 30 Mar 2017, so we set the date back
+     */
     public function testXmlSecLibAdapterVerify()
     {
-        $this->markTestSkipped();
+        $knownDate = Carbon::create(2017, 3, 25, 12);
 
-        $xml = file_get_contents(__DIR__.'/PARes.xml');
+        Carbon::setTestNow($knownDate);
 
-        $dom = new \DOMDocument;
+        $ret = $this->runVerifyOnXml('PARes.xml');
 
-        $dom->loadXML($xml);
+        $this->assertTrue($ret, "XmlseclibsAdapter should verify the PARes");
 
-        $adapter = new XmlseclibsAdapter;
+        Carbon::setTestNow();
+    }
 
-        $ret = $adapter->verify($dom);
+    public function testXmlSecLibAdapterVerifyWithCurrentDate()
+    {
+        $ret = $this->runVerifyOnXml('PARes.xml');
+
+        $this->assertFalse($ret, "XmlseclibsAdapter should fail validation because of cert date");
+    }
+
+    /**
+     * The cert chain here is out-of-order with the root cert in the middle
+     */
+    public function testParesWithRootCAInBetween()
+    {
+        $ret = $this->runVerifyOnXml('PAResWCertIssue.xml');
 
         $this->assertTrue($ret, "XmlseclibsAdapter should verify the PARes");
     }

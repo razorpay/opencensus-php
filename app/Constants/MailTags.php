@@ -15,7 +15,10 @@ class MailTags
     const KOTAK_PAYOUT_SUMMARY             = 'kotak_payout_summary';
 
     const ICICI_SETTLEMENT_FILES           = 'icici_settlement_files';
+    const ICICI_BENEFICIARY_MAIL           = 'icici_beneficiary_mail';
+
     const AXIS_SETTLEMENT_FILES            = 'axis_settlement_files';
+    const AXIS_BENEFICIARY_MAIL            = 'axis_beneficiary_mail';
 
     const SETTLEMENT_FAILURE_EMAIL         = 'settlement_failure_email';
 

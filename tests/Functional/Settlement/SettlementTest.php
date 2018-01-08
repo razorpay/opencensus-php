@@ -973,15 +973,24 @@ class SettlementTest extends TestCase
             'url'     => '/nodal/transfer',
             'method'  => 'POST',
             'content' => [
-                'gateway' => 'first_data',
+                'gateway'     => 'first_data',
+                'destination' => 'kotak'
             ]
         ];
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertNotEquals(null, $content['file']);
+        $this->assertNotEquals(null, $content);
 
-        Mail::assertSent(IciciSettlementMail::class);
+        $adj = $this->getLastEntity('adjustment', true);
+
+        $expected = [
+            'amount'        => 49500,
+            'channel'       => 'icici',
+            'merchant_id'   => '10000000000000',
+        ];
+
+        $this->assertArraySelectiveEquals($expected, $adj);
 
         Carbon::setTestNow();
     }
@@ -996,15 +1005,25 @@ class SettlementTest extends TestCase
             'url'     => '/nodal/transfer',
             'method'  => 'POST',
             'content' => [
-                'amount'  => 1076,
-                'channel' => 'axis',]
+                'amount'        => 1076,
+                'channel'       => 'axis',
+                'destination'   => 'kotak'
+            ]
         ];
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertNotEquals(null, $content['file']);
+        $this->assertNotEquals(null, $content);
 
-        Mail::assertSent(AxisSettlementMail::class);
+        $adj = $this->getLastEntity('adjustment', true);
+
+        $expected = [
+            'amount'        => 1076,
+            'channel'       => 'axis',
+            'merchant_id'   => '10000000000000',
+        ];
+
+        $this->assertArraySelectiveEquals($expected, $adj);
     }
 
     public function testSettlementWithAccountTransfer()

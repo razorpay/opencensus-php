@@ -12,6 +12,8 @@ class Channel
     const ICICI     = 'icici';
     const AXIS      = 'axis';
     const YESBANK   = 'yesbank';
+    const HDFC      = 'hdfc';
+    const RBL       = 'rbl';
 
     public static $gateways = [
         self::KOTAK => [

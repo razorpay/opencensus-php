@@ -19,6 +19,8 @@ class ApprovalCode
      */
     const MAX_APPROVAL_CODE_LENGTH = 100;
 
+    const MAX_ERROR_CODE_LENGTH    = 100;
+
     /**
      * Actual approval code from bank
      *
@@ -87,6 +89,10 @@ class ApprovalCode
 
             $this->errorMessage  = implode(':', array_slice($exploded, 2));
         }
+        else
+        {
+            $this->errorCode = $approvalCode;
+        }
     }
 
     public function isSuccess(): bool
@@ -101,7 +107,7 @@ class ApprovalCode
 
     public function getErrorCode()
     {
-        return $this->errorCode;
+        return substr($this->errorCode, 0, self::MAX_ERROR_CODE_LENGTH);
     }
 
     public function getErrorMessage()

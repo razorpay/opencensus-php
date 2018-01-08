@@ -62,6 +62,20 @@ class Entity extends Base\PublicEntity
         self::RECURRING => 'bool',
     ];
 
+
+    // -------------------- Getters --------------------
+
+    public function getGateway()
+    {
+        //
+        // TODO: Consider storing this in the
+        // entity itself to avoid DB calls
+        //
+        return $this->terminal->getGateway();
+    }
+
+    // -------------------- End Getters --------------------
+
     // -------------------- Relations --------------------
 
     public function merchant()

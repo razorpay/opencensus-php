@@ -12,6 +12,7 @@ class Entity extends Base\PublicEntity
     const SOURCE_TYPE            = 'source_type';
     const SOURCE_ID              = 'source_id';
     const MERCHANT_ID            = 'merchant_id';
+    const PURPOSE                = 'purpose';
     const BANK_ACCOUNT_ID        = 'bank_account_id';
     const BATCH_FUND_TRANSFER_ID = 'batch_fund_transfer_id';
     const CHANNEL                = 'channel';
@@ -31,6 +32,7 @@ class Entity extends Base\PublicEntity
     protected $entity = 'fund_transfer_attempt';
 
     protected $fillable = [
+        self::PURPOSE,
         self::CHANNEL,
         self::VERSION,
         self::STATUS,
@@ -45,6 +47,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::SOURCE,
         self::MERCHANT_ID,
+        self::PURPOSE,
         self::BANK_ACCOUNT_ID,
         self::BATCH_FUND_TRANSFER_ID,
         self::CHANNEL,
@@ -143,6 +146,11 @@ class Entity extends Base\PublicEntity
     public function getMode()
     {
         return $this->getAttribute(self::MODE);
+    }
+
+    public function isRefund()
+    {
+        return ($this->getAttribute(self::PURPOSE) === Purpose::REFUND);
     }
 
     // ------------------------------- setters ---------------------------------

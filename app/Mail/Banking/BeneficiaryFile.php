@@ -4,27 +4,32 @@ namespace RZP\Mail\Banking;
 
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
+use RZP\Models\BankAccount\Entity as BankAccount;
 
 class BeneficiaryFile extends Mailable
 {
-    const KOTAK_BENEFICIARY_MAIL       = 'kotak_beneficiary_file@razorpay.com';
-    const KOTAK_BENEFICARY_FROM_HEADER = 'Razorpay Kotak Beneficiary File';
-    const RECIPIENT_EMAILS             = ['kotak.beneficiary@razorpay.com'];
-
     protected $data;
 
-    public function __construct(array $data)
+    protected $channel;
+
+    protected $count;
+
+    public function __construct(array $data, string $channel, int $count)
     {
         parent::__construct();
 
         $this->data = $data;
+
+        $this->channel = $channel;
+
+        $this->count = $count;
     }
 
     protected function addSender()
     {
-        $fromEmail = self::KOTAK_BENEFICIARY_MAIL;
+        $fromEmail = Constants::FROM_EMAIL_MAP[$this->channel];
 
-        $fromHeader = self::KOTAK_BENEFICARY_FROM_HEADER;
+        $fromHeader = Constants::HEADER_MAP[$this->channel];
 
         $this->from($fromEmail, $fromHeader);
 
@@ -33,14 +38,18 @@ class BeneficiaryFile extends Mailable
 
     protected function addRecipients()
     {
-        $this->to(self::RECIPIENT_EMAILS);
+        $emails = $this->data[BankAccount::RECIPIENT_EMAILS] ?? Constants::RECIPIENT_EMAILS_MAP[$this->channel];
+
+        $this->to($emails);
 
         return $this;
     }
 
     protected function addSubject()
     {
-        $subject = 'Razorpay updated beneficiary file for Kotak';
+        $channel = $this->channel;
+
+        $subject = 'Razorpay updated beneficiary file for ' . ucfirst($channel);
 
         $this->subject($subject);
 
@@ -58,7 +67,7 @@ class BeneficiaryFile extends Mailable
     {
         $data['body'] = 'Please find attached updated beneficiary file for ' .
                         'Razorpay and kindly update it on your end.' .
-                        'Beneficiaries Count is '. $this->data['merchants_count'] .'.';
+                        'Beneficiaries Count is '. $this->count .'.';
 
         $this->with($data);
 
@@ -67,18 +76,23 @@ class BeneficiaryFile extends Mailable
 
     protected function addAttachments()
     {
-        $this->attach($this->data['signed_url'], ['as' => $this->data['file_name']]);
+        if (isset($this->data['signed_url']) === true)
+        {
+            $this->attach($this->data['signed_url'], ['as' => $this->data['file_name']]);
+        }
 
         return $this;
     }
 
     protected function addHeaders()
     {
-        $this->withSwiftMessage(function ($message)
+        $mailtag = Constants::MAILTAG_MAP[$this->channel];
+
+        $this->withSwiftMessage(function ($message) use ($mailtag)
         {
             $headers = $message->getHeaders();
 
-            $headers->addTextHeader(MailTags::HEADER, MailTags::KOTAK_BENEFICIARY_MAIL);
+            $headers->addTextHeader(MailTags::HEADER, $mailtag);
         });
 
         return $this;
