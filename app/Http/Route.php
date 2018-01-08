@@ -213,6 +213,7 @@ final class Route
         'merchant_activation_migrate'             => ['post',     'merchant/activation/migrate',                    'MerchantController@postMerchantDetailMigrate'                      ],
         'merchant_activation_archive'             => ['patch',    'merchant/activation/{id}/archive',               'MerchantController@updateActivationArchive'                        ],
         'merchant_activation_status'              => ['patch',    'merchant/activation/{id}/activation_status',     'MerchantController@updateActivationStatus'                         ],
+        'merchant_activation_status_change_log'   => ['get',      'merchant/activation/{id}/status_change_log',     'MerchantController@getActivationStatusChangeLog'                   ],
         'merchant_get_rejection_reasons'          => ['get',      'merchant/activation/rejection_reasons',          'MerchantController@getRejectionReasons'                            ],
         'merchant_batches'                        => ['post',     'merchant/{id}/batches',                          'MerchantController@createBatches'                                  ],
         'merchant_payout_mail'                    => ['post',     'merchant/payout/mail',                           'MerchantController@sendPayoutMail'                                 ],
@@ -1310,6 +1311,7 @@ final class Route
         'admin_fetch_all_entities',
         'merchant_activation_archive',
         'merchant_activation_status',
+        'merchant_activation_status_change_log',
         'onboarding_features_fetch_submissions',
         'onboarding_features_get_submissions',
         'onboarding_features_update_status',
@@ -1450,6 +1452,7 @@ final class Route
         'merchant_activation_files'              => '*',
         'merchant_activation_archive'            => '*', // permission handled in code
         'merchant_activation_status'             => Permission::EDIT_ACTIVATE_MERCHANT,
+        'merchant_activation_status_change_log'  => Permission::VIEW_ACTIVATION_FORM,
         'merchant_get_rejection_reasons'         => '*',
         'dispute_reason_create'                  => Permission::CREATE_DISPUTE_REASON,
         'user_confirm_by_data'                   => '*',
