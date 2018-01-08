@@ -2,21 +2,20 @@
 
 namespace RZP\Models\FundTransfer\Kotak\Reconciliation\Base;
 
-use Carbon\Carbon;
-use Excel;
 use Mail;
+use Carbon\Carbon;
 
-use RZP\Constants\Entity as EntityConstants;
-use RZP\Constants\MailTags;
-use RZP\Constants\Mode;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
-use RZP\Mail\Settlement as SettlementMail;
 use RZP\Models\Base;
-use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
-use RZP\Models\FundTransfer\Kotak;
-use RZP\Models\Settlement\SlackNotification;
+use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\FundTransfer\Kotak;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Mail\Settlement as SettlementMail;
+use RZP\Constants\Entity as EntityConstants;
+use RZP\Models\Settlement\SlackNotification;
+use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 
 class Processor extends Base\Core
 {
@@ -38,9 +37,9 @@ class Processor extends Base\Core
     protected $reconciledAt;
 
     /**
-     * Array of all entities fetched for all the rows in the file
+     * Array of reconciled data - one row corresponding to every row of the reconciliation file
      */
-    protected $allEntities = [];
+    protected $allReconciledRows = [];
 
     /**
      * Array of ids for which entity couldn't be found in database
@@ -120,7 +119,9 @@ class Processor extends Base\Core
             {
                 foreach ($data as $row)
                 {
-                    $entity = $this->reconcileEntity($row);
+                    $reconciledRowDetails = $this->reconcileEntity($row);
+
+                    $entity = $reconciledRowDetails['entity'];
 
                     if ($entity === null)
                     {
@@ -128,7 +129,7 @@ class Processor extends Base\Core
                     }
                     else
                     {
-                        $this->allEntities[] = $entity;
+                        $this->allReconciledRows[] = $reconciledRowDetails;
 
                         $this->updateBatchFundTransferStats($entity);
                     }
@@ -143,7 +144,7 @@ class Processor extends Base\Core
                     $batchEntity->saveOrFail();
                 }
             }
-            catch (\Exception $e)
+            catch (\Throwable $e)
             {
                 (new SlackNotification)->failure('setl_reconciliation', $e);
 
@@ -152,15 +153,42 @@ class Processor extends Base\Core
 
             $summary = $this->getSummary();
 
-            (new SlackNotification)->success('setl_reconciliation', $summary);
-
             return $summary;
         });
+
+        (new SlackNotification)->success('setl_reconciliation', $summary);
+
+        // Isolating the webhook flow in a try-catch, to keep the original settlement cycle unaffected
+        try
+        {
+            (new FundTransferAttempt\Core)->notifyMerchantViaWebhook($this->allReconciledRows);
+        }
+        catch (\Throwable $e)
+        {
+            // Log only the entity ids instead of the entire entities
+            $entityIds = array_map(function($reconciledRow)
+            {
+                return $reconciledRow['entity']->getId();
+            }, $this->allReconciledRows);
+
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::SETTLEMENT_PROCESSED_WEBHOOOK_FAILED,
+                ['entities' => $entityIds]);
+        }
 
         return $summary;
     }
 
-    protected function reconcileEntity($row)
+    /**
+     * Reconciles the entity.
+     *
+     * @param $row
+     *
+     * @return array
+     */
+    protected function reconcileEntity($row): array
     {
         $version = $this->getSettlementVersion($row);
 
@@ -168,9 +196,9 @@ class Processor extends Base\Core
                                     ucwords($version) .
                                     '\\RowProcessor';
 
-        $reconciledEntity = (new $versionRowProcessorClass($row))->process($this->reconciledAt);
+        $reconciledRowDetails = (new $versionRowProcessorClass($row))->process($this->reconciledAt);
 
-        return $reconciledEntity;
+        return $reconciledRowDetails;
     }
 
     protected function updateBatchFundTransferStats($reconciledEntity)
@@ -235,8 +263,10 @@ class Processor extends Base\Core
 
         $settlementsCount = 0;
 
-        foreach ($this->allEntities as $entity)
+        foreach ($this->allReconciledRows as $reconciledRow)
         {
+            $entity = $reconciledRow['entity'];
+
             $entityId = $entity->getId();
 
             $allEntityIds[] = $entityId;
