@@ -225,7 +225,9 @@ class Processor
         // second recurring payments. So, it's okay.
         //
 
-        if ($this->route->getCurrentRouteName() === 'payment_create_recurring')
+        $currentRouteName = $this->route->getCurrentRouteName();
+
+        if ($currentRouteName === 'payment_create_recurring')
         {
             return null;
         }
@@ -280,7 +282,7 @@ class Processor
         $coproto = [
             'type'    => 'emandate',
             'request' => [
-                'url'     => $this->route->getUrlWithPublicAuthInQueryParam('payment_create'),
+                'url'     => $this->route->getUrlWithPublicAuthInQueryParam($currentRouteName),
                 'method'  => 'POST',
                 'content' => [
                     'input' => $input,
