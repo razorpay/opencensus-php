@@ -30,6 +30,22 @@ class Gateway extends Base\Gateway
 
     const CERTIFICATE_DIRECTORY_NAME = 'cert_dir_name';
 
+    /**
+     * Fingerprint of the root signing certificate. This ensures that
+     * while any intermediate certs may change over time (provided they
+     * are signed correctly and not expired), the root cert ensures that
+     * the trust is in the same authority. So someone else cannot
+     * create a new chain and use that.
+     *
+     * Note: Only put production cert fingerprints in here
+     */
+    const ROOT_CERT_FINGERPRINTS = [
+        // MasterCard Root
+        '32dfd35574d8811bb90ebe33846dd3a0b945e0d9',
+        // VISA
+        '70179b868c00a4fa609152223f9f3e32bde00562',
+    ];
+
     protected $gateway = 'blade';
 
 
@@ -204,6 +220,8 @@ class Gateway extends Base\Gateway
         $dom = $this->loadXmlViaDom($paresXml);
 
         $adapter = new XmlseclibsAdapter;
+
+        $adapter->setRootCertFingerprints(static::ROOT_CERT_FINGERPRINTS);
 
         $ret = false;
 
@@ -483,14 +501,14 @@ class Gateway extends Base\Gateway
     {
         $networkName = $this->getNetworkName();
 
-        return $networkName . '_v1.crt';
+        return $networkName . '_v2.crt';
     }
 
     public function getClientSslKeyName()
     {
         $networkName = $this->getNetworkName();
 
-        return $networkName . '_v1.key';
+        return $networkName . '_v2.key';
     }
 
     public function getNetworkName()
@@ -498,6 +516,7 @@ class Gateway extends Base\Gateway
         switch ($this->input['card']['network_code'])
         {
             case Card\Network::MC:
+            case Card\Network::MAES:
                 $network = Card\NetworkName::MC;
                 break;
 
@@ -648,6 +667,7 @@ class Gateway extends Base\Gateway
         switch ($input['card']['network_code'])
         {
             case Card\Network::MC:
+            case Card\Network::MAES:
                 $acqBin = $this->config['live_mastercard_acq_bin'];
                 break;
 
@@ -676,6 +696,7 @@ class Gateway extends Base\Gateway
         switch ($input['card']['network_code'])
         {
             case Card\Network::MC:
+            case Card\Network::MAES:
                 $merchantId = $this->config['live_mastercard_merchant_id'];
 
                 break;
