@@ -334,13 +334,24 @@
     var data = {!! json_encode($data) !!};
     console.log('Data...', data);
 
-    if (data['request']['content']['bank_details']['auth_types'].indexOf('netbanking') === -1) {
-        document.querySelector('#section1 label + input').setAttribute('disabled', true);
+    var nbMthd = data['request']['content']['bank_details']['auth_types'].indexOf('netbanking');
+    var adrMthd = data['request']['content']['bank_details']['auth_types'].indexOf('aadhaar');
+
+    if (nbMthd === -1) {
+      document.querySelector('#section1 label + input').setAttribute('disabled', true);
+
+      if (adrMthd !== -1) {
+        document.querySelector('#section2 label + input').checked = true;
+      }
     }
 
-    if (data['request']['content']['bank_details']['auth_types'].indexOf('aadhaar') === -1) {
-        document.querySelector('#section2 label + input').setAttribute('disabled', true);
-        document.querySelector('#section2 .content input').setAttribute('disabled', true);
+    if (adrMthd === -1) {
+      document.querySelector('#section2 label + input').setAttribute('disabled', true);
+      document.querySelector('#section2 .content input').setAttribute('disabled', true);
+
+      if (nbMthd !== -1) {
+        document.querySelector('#section1 label + input').checked = true;
+      }
     }
 
 

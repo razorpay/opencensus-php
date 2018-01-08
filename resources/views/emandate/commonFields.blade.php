@@ -6,7 +6,7 @@
       value={{ $data['request']['content']['input']['bank_account']['name'] ?? "" }}>
     <input
       name='bank_account[account_number]'
-      type='number'
+      pattern="^[a-zA-Z0-9]+$"
       required
       placeholder='Bank Account No.'
       value={{ $data['request']['content']['input']['bank_account']['account_number'] ?? "" }}>
