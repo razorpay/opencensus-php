@@ -126,10 +126,6 @@ class Entity extends Base\PublicEntity
         self::OFFER_ID,
     ];
 
-    protected static $generators = [
-        'method',
-    ];
-
     protected $dates = [
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -162,13 +158,12 @@ class Entity extends Base\PublicEntity
 
     /** End Related Models */
 
-    /** Generator */
-    protected function generateMethod(&$input)
+    /** Mutators */
+    protected function setMethodAttribute($method)
     {
-        if ((isset($input['method']) === true) and
-            ($input['method'] === 'emandate'))
+        if ($method === Payment\Method::EMANDATE)
         {
-            $input['method'] = Payment\Method::NETBANKING;
+            $this->attributes[self::METHOD] = Payment\Method::NETBANKING;
         }
     }
 

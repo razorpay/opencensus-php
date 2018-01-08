@@ -255,7 +255,7 @@ class Validator extends Base\Validator
                 ($input['recurring'] !== '1'))
             {
                 throw new Exception\BadRequestValidationFailureException(
-                 'The recurring field should be 1 when payment method is eMandate.');
+                    'The recurring field should be 1 when payment method is eMandate.');
             }
         }
     }
