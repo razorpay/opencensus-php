@@ -203,7 +203,7 @@ function _getRejectedReasonsFields() {
 function _getActivationChangeLogsFields() {
   return [
     ['Created At', item => formatDate(item.created_at)],
-    ['Status', item => snakeToTitleCase(item.name)],
+    ['Status', item => statusPill(item.name)],
   ];
 }
 
