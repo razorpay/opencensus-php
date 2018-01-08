@@ -14,6 +14,7 @@
   <script type="text/javascript">
     window.rzp_user = {!! $user !!};
     window.rzp_org = {!! $org !!};
+    window.api_host = "{!! $api_host !!}"
   </script>
   <% for (var chunk in htmlWebpackPlugin.files.chunks) { %>
   <script src="{{$cdnDashboardUrl}}<%= htmlWebpackPlugin.files.chunks[chunk].entry %>"></script>

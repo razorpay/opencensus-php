@@ -1,8 +1,6 @@
 import ajax from 'merchant/utils/ajax';
 import loadScript from 'rzp/utils/loadScript';
 
-export const fetchHost = () => ajax('/apihost', { appendModeInURL: false });
-
 export const fetchKeys = currentUser => {
   let params = {
     route_name: 'merchant_fetch_keys',
@@ -47,10 +45,8 @@ export const loadCheckout = apiURL => {
 };
 
 export default (currentUser, onSuccess, onError) => {
-  Promise.all([
-    fetchHost().then(({ data }) => {
-      loadCheckout(data);
-    }),
-    fetchKeys(currentUser).then(onSuccess),
-  ]).catch(onError);
+  loadCheckout(window.api_host);
+  fetchKeys(currentUser)
+    .then(onSuccess)
+    .catch(onError);
 };
