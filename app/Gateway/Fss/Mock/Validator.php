@@ -59,7 +59,7 @@ class Validator extends Base\Validator
     {
         if ($value !== Currency::getIsoCode(Currency::INR))
         {
-            throw new Exception\BadRequestValidationFailureException("Invalid CurrencyCode");
+            throw new Exception\BadRequestValidationFailureException('Invalid CurrencyCode');
         }
     }
 
@@ -68,9 +68,9 @@ class Validator extends Base\Validator
         $bobCardTypes = array_values(CardType::getCardTypesByAcquirer(Acquirer::BOB));
         $fssCardTypes = array_values(CardType::getCardTypesByAcquirer(Acquirer::FSS));
 
-        if (in_array($value, $bobCardTypes) === false and in_array($value, $fssCardTypes) === false)
+        if ((in_array($value, $bobCardTypes) === false) and (in_array($value, $fssCardTypes) === false))
         {
-            throw new Exception\BadRequestValidationFailureException( "Invalid Card Type");
+            throw new Exception\BadRequestValidationFailureException( 'Invalid Card Type');
         }
     }
 }
