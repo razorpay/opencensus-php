@@ -120,6 +120,7 @@ class Validator extends Base\Validator
         'test_success',
         'upi_expiry_time',
         'upi_vpa',
+        'recurring',
         // Ideally, we should be using custom. But
         // due to dot notation, we cannot use it.
         'ifsc',
@@ -197,11 +198,7 @@ class Validator extends Base\Validator
 
     protected function validateMethod($attribute, $method)
     {
-        //
-        // TODO: Remove the emandate check once it is added in the methods class.
-        //
-        if ((Method::isValid($method) === false) and
-            ($method !== Method::EMANDATE))
+        if (Method::isValid($method) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid payment method given: ' . $method);
@@ -247,6 +244,19 @@ class Validator extends Base\Validator
             // Invalid VPA
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA);
+        }
+    }
+
+    protected function validateRecurring(array $input)
+    {
+        if ($input['method'] === Payment\Method::EMANDATE)
+        {
+            if ((isset($input['recurring']) === false) or
+                ($input['recurring'] !== '1'))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                 'The recurring field should be 1 when payment method is eMandate.');
+            }
         }
     }
 

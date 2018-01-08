@@ -676,6 +676,10 @@ class Gateway
         Gateway::AXIS_MIGS
     ];
 
+    public static $zeroRuppeeEMandateBanks = [
+        IFSC::UTIB
+    ];
+
     public static function getAcquirerName(string $acquirer)
     {
         $code = self::$acquirerToCodeMap[$acquirer];
@@ -705,6 +709,11 @@ class Gateway
     public static function isRecurringGateway($gateway): bool
     {
         return in_array($gateway, self::$recurringGateways, true);
+    }
+
+    public static function isZeroRuppeeFlowSupported($bank): bool
+    {
+        return in_array($bank, self::$zeroRuppeeEMandateBanks, true);
     }
 
     /**

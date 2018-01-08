@@ -66,7 +66,10 @@ class NetbankingAxisEMandateTest extends TestCase
 
         $this->doAuthPayment($payment);
 
-        $this->assertEMandateEntities();
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+
+        $this->assertEquals(0, $payment['amount']);
+        $this->assertEquals('captured', $payment['status']);
     }
 
     public function testEmandateInitialPaymentFailure()

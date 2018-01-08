@@ -34,7 +34,7 @@ class Validator extends Base\Validator
 
         // @todo: Use constants
         if ((isset($input['method']) === false) or
-            ($input['method'] !== 'emandate'))
+            ($input['method'] !== Payment\Method::EMANDATE))
         {
             if ($amount < 100)
             {
@@ -233,6 +233,7 @@ class Validator extends Base\Validator
 
     protected function validateBank($attribute, $bank)
     {
+        // @todo; Add validaton for emandate bank
         $supportedBanks = Netbanking::getSupportedBanks();
 
         if (in_array($bank, $supportedBanks, true) === false)

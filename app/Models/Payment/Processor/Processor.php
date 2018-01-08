@@ -1002,14 +1002,6 @@ class Processor
             $payment = $this->buildPaymentEntity($input);
         }
 
-        //
-        // Temporary only. To be removed later.
-        //
-        if ($payment->getMethod() === Payment\Method::EMANDATE)
-        {
-            $payment->setMethod(Payment\Method::NETBANKING);
-        }
-
         // $this->segment->trackPayment($payment, TraceCode::PAYMENT_NEW_REQUEST);
 
         if ($this->merchant->isFeeBearerCustomer())
@@ -1224,20 +1216,15 @@ class Processor
     {
         if (empty($input[Payment\Entity::ORDER_ID]) === true)
         {
-            if (($this->merchant->isTPVRequired() === true) and
-                ($payment->isNetbanking() === true))
+            if ($payment->isNetbanking() === true)
             {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED,
-                    Payment\Entity::ORDER_ID);
-            }
-
-            if (($payment->isNetbanking() === true) and
-                ($payment->isRecurring() === true))
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED,
-                    Payment\Entity::ORDER_ID);
+                if (($this->merchant->isTPVRequired() === true) or
+                    ($payment->isRecurring() === true))
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED,
+                        Payment\Entity::ORDER_ID);
+                }
             }
 
             return;

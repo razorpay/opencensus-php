@@ -854,6 +854,14 @@ class Entity extends Base\PublicEntity
 
 // ----------------------- Mutator ---------------------------------------------
 
+    protected function setMethodAttribute($method)
+    {
+        if ($method === Payment\Method::EMANDATE)
+        {
+            $this->attributes[self::METHOD] = Payment\Method::NETBANKING;
+        }
+    }
+
     protected function setAmountAttribute($amount)
     {
         $this->attributes[self::AMOUNT] = (int) $amount;
