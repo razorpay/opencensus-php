@@ -78,15 +78,16 @@ class Service extends Base\Service
                 // Please refer POST /reconciliate
                 unset($gateways[IFSC::KKBK]);
                 unset($gateways[IFSC::CORP]);
-                unset($gateways[IFSC::UTIB]);
-                unset($gateways[IFSC::FDRL]);
                 unset($gateways[IFSC::RATN]);
-                unset($gateways[IFSC::INDB]);
 
                 // These banks refund files have been moved to gateway_file, so
                 // unsetting it here
                 unset($gateways[IFSC::HDFC]);
                 unset($gateways[IFSC::ICIC]);
+                unset($gateways[IFSC::FDRL]);
+                unset($gateways[IFSC::INDB]);
+                unset($gateways[IFSC::UTIB]);
+
                 break;
 
             case Payment\Method::WALLET:
