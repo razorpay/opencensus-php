@@ -36,6 +36,10 @@ class Validator extends Base\Validator
         Entity::BUFFER_AMOUNT  => 'sometimes|integer|min:10000000'
     ];
 
+    protected static $initiatePayoutRules = [
+        Entity::PURPOSE         => 'required|filled|string|max:30|in:refund,settlement',
+    ];
+
     protected static $createValidators = [
         Entity::METHOD
     ];

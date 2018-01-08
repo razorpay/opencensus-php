@@ -6,6 +6,7 @@ use DOMDocument;
 use DOMNode;
 use DomElement;
 use DomXPath;
+use Carbon\Carbon;
 use RobRichards\XMLSecLibs\XMLSecEnc;
 use RuntimeException;
 use RobRichards\XMLSecLibs\XMLSecurityKey;
@@ -37,20 +38,6 @@ class XmlseclibsAdapter
     const XML_C14N = 'http://www.w3.org/2001/10/xml-exc-c14n#';
     /* Transform */
     const ENVELOPED = 'http://www.w3.org/2000/09/xmldsig#enveloped-signature';
-
-    /**
-     * Fingerprint of the root signing certificate. This ensures that
-     * while any intermediate certs may change over time (provided they
-     * are signed correctly and not expired), the root cert ensures that
-     * the trust is in the same authority. So someone else cannot
-     * create a new chain and use that
-     */
-    const ROOT_CERT_FINGERPRINTS = [
-        // MasterCard Root
-        '32dfd35574d8811bb90ebe33846dd3a0b945e0d9',
-        // VISA
-        '70179b868c00a4fa609152223f9f3e32bde00562'
-    ];
 
     /**
      * Private key
@@ -97,12 +84,19 @@ class XmlseclibsAdapter
      */
     protected $transforms = [];
 
+    protected $rootCertFingerprints = [];
+
     public function setPrivateKey($privateKey, $algorithmType = self::RSA_SHA1)
     {
         $this->privateKey   = $privateKey;
         $this->keyAlgorithm = $algorithmType;
 
         return $this;
+    }
+
+    public function setRootCertFingerprints(array $rootCertFingerprints)
+    {
+        $this->rootCertFingerprints = $rootCertFingerprints;
     }
 
     public function setPublicKey($publicKey)
@@ -393,6 +387,17 @@ class XmlseclibsAdapter
         return ($signatureVerifyResult === 1 and $certVerify);
     }
 
+    protected function verifyCertChain($start, $leaf, $intermediate, $root)
+    {
+        // Objects are passed by reference, and we need a copy to ensure
+        // that they don't get tainted
+        $leafCert = clone $leaf['x509'];
+        $intermediateCert = clone $intermediate['x509'];
+
+        $result = ($start and $this->verifyCertSignedBy($leafCert, $intermediate['pem']));
+        return ($result and $this->verifyCertSignedBy($intermediateCert, $root['pem']));
+    }
+
     /**
      * There are 3 parts to verifying a cert store:
      *
@@ -425,14 +430,28 @@ class XmlseclibsAdapter
             return false;
         }
 
-        $result = ($result and $this->verifyCertSignedBy($certs[0]['x509'], $certs[1]['pem']));
-        $result = ($result and $this->verifyCertSignedBy($certs[1]['x509'], $certs[2]['pem']));
+        // Dump values for all signing combinations
 
-        $rootFingerprint = XMLSecurityKey::getRawThumbprint($certs[2]['pem']);
+        $startResult = $result;
+        $rootCert = $certs[2];
+
+        // If either of these succeeds, we are good with the chain
+        // Assumption: First cert is the leaf cert
+        $verify1 = $this->verifyCertChain($startResult, $certs[0], $certs[1], $certs[2]);
+        $verify2 = $this->verifyCertChain($startResult, $certs[0], $certs[2], $certs[1]);
+
+        if ($verify2 === true)
+        {
+            $rootCert = $certs[1];
+        }
+
+        $result = ($verify1 or $verify2);
+
+        $rootFingerprint = XMLSecurityKey::getRawThumbprint($rootCert['pem']);
 
         $verifyFingerprint = false;
 
-        if (in_array($rootFingerprint, self::ROOT_CERT_FINGERPRINTS, true))
+        if (in_array($rootFingerprint, $this->rootCertFingerprints, true))
         {
             $verifyFingerprint = true;
         }
@@ -461,7 +480,7 @@ class XmlseclibsAdapter
 
     protected function verifySingleCert(X509 $cert)
     {
-        return $cert->validateDate();
+        return $cert->validateDate(Carbon::now());
     }
 
     /**

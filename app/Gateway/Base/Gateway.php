@@ -952,7 +952,7 @@ class Gateway
 
     protected function getProcessedRefunds()
     {
-        $refunds =  $this->cache->get('GATEWAY_PROCESSED_REFUNDS');
+        $refunds = $this->cache->get('GATEWAY_PROCESSED_REFUNDS');
 
         if (empty($refunds) === true)
         {
