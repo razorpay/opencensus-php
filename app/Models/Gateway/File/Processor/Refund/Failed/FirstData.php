@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Gateway\File\Processor\Failedrefund;
+namespace RZP\Models\Gateway\File\Processor\Refund\Failed;
 
 use Carbon\Carbon;
 
@@ -9,12 +9,12 @@ use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Base\PublicCollection;
 
-class Cybersource extends Base
+class FirstData extends Base
 {
-    const GATEWAY          = Payment\Gateway::CYBERSOURCE;
+    const GATEWAY          = Payment\Gateway::FIRST_DATA;
     const EXTENSION        = FileStore\Format::XLSX;
-    const FILE_NAME        = 'Cybersource_Failed_Refunds';
-    const FILE_TYPE        = FileStore\Type::CYBERSOURCE_REFUND;
+    const FILE_NAME        = 'FirstData_Failed_Refunds';
+    const FILE_TYPE        = FileStore\Type::FIRST_DATA_REFUND;
 
     const SR_NO            = 'Sr No';
     const REFUND_ID        = 'refund_id';
@@ -40,14 +40,14 @@ class Cybersource extends Base
                 $row['refund']['created_at'], Timezone::IST)->format('Y/m/d');
 
             $formattedData[] = [
-                self::SR_NO             => $i,
-                self::REFUND_ID         => $row['refund']['id'],
-                self::TRANSACTION_DATE  => $date,
-                self::REFUND_DATE       => $refundDate,
-                self::PAYMENT_ID        => $row['payment']['id'],
-                self::PAYMENT_AMOUNT    => $this->getFormattedAmount($row['payment']['amount']),
-                self::REFUND_AMOUNT     => $this->getFormattedAmount($row['refund']['amount']),
-                self::MERCHANT_CODE     => $row['terminal']['gateway_merchant_id']
+                self::SR_NO            => $i,
+                self::REFUND_ID        => $row['refund']['id'],
+                self::TRANSACTION_DATE => $date,
+                self::REFUND_DATE      => $refundDate,
+                self::PAYMENT_ID       => $row['payment']['id'],
+                self::PAYMENT_AMOUNT   => $this->getFormattedAmount($row['payment']['amount']),
+                self::REFUND_AMOUNT    => $this->getFormattedAmount($row['refund']['amount']),
+                self::MERCHANT_CODE    => $row['terminal']['gateway_merchant_id']
             ];
 
             $i++;

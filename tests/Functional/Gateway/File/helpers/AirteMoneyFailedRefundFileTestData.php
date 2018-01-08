@@ -8,7 +8,7 @@ return [
     'testAirtelMoneyFailedRefundFile' => [
         'request' => [
             'content' => [
-                'type'    => 'failedrefund',
+                'type'    => 'refund_failed',
                 'targets' => ['airtel_money'],
                 'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
                 'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp(),
@@ -28,7 +28,7 @@ return [
                         'partially_processed' => false,
                         'attempts'            => 1,
                         'sender'              => 'refunds@razorpay.com',
-                        'type'                => 'failedrefund',
+                        'type'                => 'refund_failed',
                         'target'              => 'airtel_money',
                         'entity'              => 'gateway_file',
                         'admin'               => true,

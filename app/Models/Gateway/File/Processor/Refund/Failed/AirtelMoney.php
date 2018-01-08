@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Gateway\File\Processor\Failedrefund;
+namespace RZP\Models\Gateway\File\Processor\Refund\Failed;
 
 use Carbon\Carbon;
 
