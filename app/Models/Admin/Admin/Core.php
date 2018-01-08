@@ -26,6 +26,10 @@ class Core extends Base\Core
 
         $admin->build($input);
 
+        $this->app['workflow']
+            ->setEntityAndId($admin->getEntity(), $admin->getId())
+            ->handle((new \StdClass()), $admin);
+
         $this->repo->saveOrFail($admin);
 
         $this->associateRelevantEntitiesToAdmin($admin, $input);
