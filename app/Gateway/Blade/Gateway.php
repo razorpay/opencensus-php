@@ -498,6 +498,7 @@ class Gateway extends Base\Gateway
         switch ($this->input['card']['network_code'])
         {
             case Card\Network::MC:
+            case Card\Network::MAES:
                 $network = Card\NetworkName::MC;
                 break;
 
@@ -648,6 +649,7 @@ class Gateway extends Base\Gateway
         switch ($input['card']['network_code'])
         {
             case Card\Network::MC:
+            case Card\Network::MAES:
                 $acqBin = $this->config['live_mastercard_acq_bin'];
                 break;
 
@@ -676,6 +678,7 @@ class Gateway extends Base\Gateway
         switch ($input['card']['network_code'])
         {
             case Card\Network::MC:
+            case Card\Network::MAES:
                 $merchantId = $this->config['live_mastercard_merchant_id'];
 
                 break;

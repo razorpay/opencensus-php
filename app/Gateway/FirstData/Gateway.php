@@ -1414,6 +1414,7 @@ class Gateway extends Base\Gateway
      * but is now simply stored as an extra attribute in terminal entity
      *
      * @return string hostedDataStoreId
+     * @throws Exception\LogicException
      */
     public function getHostedDataStoreId()
     {

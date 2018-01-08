@@ -53,6 +53,12 @@ class Validator extends Base\Validator
         'TR', 'UP', 'UT', 'WB'
     ];
 
+    protected static $beneficiaryRegisterRules = [
+        Entity::ON                      => 'sometimes|epoch',
+        Entity::RECIPIENT_EMAILS        => 'sometimes|array',
+        Entity::RECIPIENT_EMAILS . '*'  => 'sometimes|email',
+    ];
+
     protected function validateBeneficiaryState($input)
     {
         if (in_array($input[Entity::BENEFICIARY_STATE], self::$beneficiaryStateCodes, true) === false)

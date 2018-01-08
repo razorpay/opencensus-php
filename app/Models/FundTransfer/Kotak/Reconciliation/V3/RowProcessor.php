@@ -57,6 +57,12 @@ class RowProcessor extends Base\RowProcessor
                                         $this->reconEntityId,
                                         ['source', 'source.transaction', 'source.merchant' , 'batchFundTransfer']);
 
+        if (empty($this->reconEntity) === true)
+        {
+            // This will be traced as error in Base/RowProcessor
+            return;
+        }
+
         $this->source = $this->reconEntity->source;
     }
 
