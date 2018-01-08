@@ -4,12 +4,14 @@ namespace RZP\Models\Settlement;
 
 use Carbon\Carbon;
 use RZP\Exception;
+use RZP\Models\Adjustment;
 use RZP\Models\Base;
-use RZP\Models\Card;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
 use RZP\Constants\Timezone;
+use RZP\Listeners\ApiEventSubscriber;
 
 class Core extends Base\Core
 {
@@ -24,18 +26,18 @@ class Core extends Base\Core
 
     public function postInitiateTransfer(array $input): array
     {
+        (new Validator)->validateInput('nodal_transfer', $input);
+
         if (isset($input[Payment\Entity::GATEWAY]) === true)
         {
-            $gateway = $input[Payment\Entity::GATEWAY];
-
-            $amount = $this->getAmountFromPaymentsForLastDay($gateway);
+            $gateway = $input[Entity::GATEWAY];
 
             $channel = Channel::getChannelFromGateway($gateway);
+
+            $amount = $this->getAmountFromPaymentsForLastDay($gateway);
         }
         else
         {
-            (new Validator)->validateInput('nodal_transfer', $input);
-
             $amount = $input[Entity::AMOUNT];
 
             $channel = $input[Entity::CHANNEL];
@@ -47,11 +49,21 @@ class Core extends Base\Core
 
         if ($amount > 0)
         {
-            $amount = number_format($amount / 100, 2, '.', '');
+            $destination = $input[Entity::DESTINATION];
 
-            $nodalClass = 'RZP\Models\FundTransfer\\' . ucwords($channel) . '\NodalAccount';
+            $merchantId = Settlement\NodalAccount::ACCOUNT_MAP[$this->mode][$destination];
 
-            $response = (new $nodalClass())->initiateTransfer($amount);
+            $adjInput = [
+                Adjustment\Entity::MERCHANT_ID  => $merchantId,
+                Adjustment\Entity::AMOUNT       => $amount,
+                Adjustment\Entity::CHANNEL      => $channel,
+                Adjustment\Entity::DESCRIPTION  => 'Nodal Nodal Transfer',
+                Adjustment\Entity::CURRENCY     => 'INR'
+            ];
+
+            $adjustment = (new Adjustment\Service)->addAdjustment($adjInput);
+
+            return $adjustment;
         }
 
         return $response;
@@ -66,7 +78,7 @@ class Core extends Base\Core
         return (new $nodalClass())->addBeneficiary($input);
     }
 
-    protected function getAmountFromPaymentsForLastDay(string $gateway)
+    protected function getAmountFromPaymentsForLastDay(string $gateway) : int
     {
         $from = Carbon::yesterday(Timezone::IST)->getTimestamp();
 
@@ -84,6 +96,52 @@ class Core extends Base\Core
         // Transfer 99% of the derived amount
         $amount = 0.99 * $amount;
 
-        return $amount;
+        return (int)$amount;
+    }
+  
+    /**
+     * Sends a webhook to the merchant for successfully settled payments
+     *
+     * @param Entity $settlement
+     */
+    public function triggerSettlementWebhook(Entity $settlement)
+    {
+        if ($this->shouldSendWebhook($settlement) === false)
+        {
+            return;
+        }
+
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $settlement
+        ];
+
+        $this->app['events']->fire('api.settlement.processed', $eventPayload);
+
+    }
+
+    /**
+     * Returns false,
+     *   if the settlement was not processed, or,
+     *   if the settlement was not made for a linked account.
+     *
+     * @param Entity $settlement
+     *
+     * @return bool
+     */
+    protected function shouldSendWebhook(Entity $settlement): bool
+    {
+        // Proceed only if the settlement has successfully processed
+        if ($settlement->isStatusProcessed() === false)
+        {
+            return false;
+        }
+
+        // Proceed only if the settlement was made to a linked account
+        if ($settlement->merchant->isLinkedAccount() === false)
+        {
+            return false;
+        }
+
+        return true;
     }
 }

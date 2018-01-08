@@ -1187,13 +1187,21 @@ trait Authorize
 
         $gatewayTokens = $this->repo->gateway_token->findByTokenAndReference($token, $reference);
 
+        $gateway = $payment->getGateway();
+
+        $gatewayTokensForTheGateway = $gatewayTokens->filter(
+                                            function($gatewayToken) use ($gateway)
+                                            {
+                                                return ($gatewayToken->getGateway() === $gateway);
+                                            });
+
         //
         // It's possible that there are no gateway tokens for this.
         // For NB, wallets, non-recurring cards, first recurring card, etc.
         //
-        if ($gatewayTokens->count() === 1)
+        if ($gatewayTokensForTheGateway->count() === 1)
         {
-            $gatewayInput['gateway_token'] = $gatewayTokens->first();
+            $gatewayInput['gateway_token'] = $gatewayTokensForTheGateway->first();
         }
     }
 
@@ -2283,7 +2291,7 @@ trait Authorize
             ]);
 
         //
-        // Update token stats. Assuming same token is not getting
+        // TODO: Update token stats. Assuming same token is not getting
         // used in multiple payments. Actually we should be locking.
         //
 
@@ -2431,17 +2439,48 @@ trait Authorize
 
         $gatewayTokens = $this->repo->gateway_token->findByTokenAndReference($token, $reference);
 
-        $gatewayTokensCount = $gatewayTokens->count();
+        $gateway = $payment->getGateway();
+
+        $gatewayTokensToUpdate = $gatewayTokens->filter(
+                                        function($gatewayToken) use ($gateway)
+                                        {
+                                            return ($gatewayToken->getGateway() === $gateway);
+                                        });
 
         //
         // This is the case that the payment is a first recurring payment
         //
-        if ($gatewayTokensCount === 0)
+        if ($gatewayTokensToUpdate->count() === 0)
         {
             (new GatewayToken\Core)->create($payment, $token, $reference);
         }
-        else if ($gatewayTokensCount === 1)
+        else
         {
+            //
+            // There will be only one for sure.
+            // There can't be more than 1 because, the only time we create is
+            // when there doesn't exist a single gateway_token of the gateway.
+            // All other cases, we only update the existing one. Hence, there
+            // can never be more than one gateway_token of a gateway.
+            //
+
+            if ($gatewayTokensToUpdate->count() > 1)
+            {
+                $this->trace->critical(
+                    TraceCode::GATEWAY_TOKEN_TOO_MANY_PRESENT,
+                    [
+                        'count'         => $gatewayTokensToUpdate->count(),
+                        'payment_id'    => $payment->getId(),
+                        'token_id'      => $token->getId()
+                    ]);
+
+                //
+                // This is unexpected behaviour and should never
+                // happen and hence just returning back from here.
+                //
+                return;
+            }
+
             if ($payment->isNetbanking() === true)
             {
                 //
@@ -2458,27 +2497,11 @@ trait Authorize
                     ]);
             }
 
-            $gatewayToken = $gatewayTokens->first();
+            $gatewayTokenToUpdate = $gatewayTokensToUpdate->first();
 
-            $gatewayToken->terminal()->associate($payment->terminal);
+            $gatewayTokenToUpdate->terminal()->associate($payment->terminal);
 
-            $this->repo->saveOrFail($gatewayToken);
-        }
-        else
-        {
-            //
-            // Not throwing an exception here because it might
-            // screw up with the flow. Going to just trace as critical.
-            //
-            $this->trace->critical(
-                TraceCode::GATEWAY_TOKEN_TOO_MANY_PRESENT,
-                [
-                    'payment_id'            => $payment->getId(),
-                    'payment_terminal_id'   => $payment->terminal->getId(),
-                    'token_id'              => $token->getId(),
-                    'gateway_tokens_count'  => $gatewayTokens->count(),
-                    'gateway_tokens'        => $gatewayTokens->toArray()
-                ]);
+            $this->repo->saveOrFail($gatewayTokenToUpdate);
         }
     }
 

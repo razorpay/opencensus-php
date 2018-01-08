@@ -247,7 +247,7 @@ class Entity extends Base\PublicEntity
 
     public function isRecurring()
     {
-        return $this->getAttribute(self::RECURRING);
+        return ($this->getAttribute(self::RECURRING) === true);
     }
 
     public function getUsedAt()
