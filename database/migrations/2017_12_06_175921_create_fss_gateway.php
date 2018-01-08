@@ -5,7 +5,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Gateway\Fss\Entity as Fss;
+use RZP\Models\Payment\Refund\Entity as Refund;
 use RZP\Constants\Table;
+
 
 class CreateFssGateway extends Migration
 {
@@ -30,7 +32,7 @@ class CreateFssGateway extends Migration
             $table->tinyInteger(FSS::RECEIVED)
                   ->default(0);
 
-            $table->string(FSS::REFUND_ID, FSS::ID_LENGTH)
+            $table->string(FSS::REFUND_ID, Refund::ID_LENGTH)
                   ->nullable();
 
             $table->integer(FSS::AMOUNT);
