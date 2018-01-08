@@ -71,16 +71,6 @@ class Beneficiary extends BaseBeneficiary
     {
         $rows = [];
 
-        $headers = [
-            'Beneficiary Code',
-            'Beneficiary Name',
-            'Beneficiary Account',
-            'Bene Bank IFSC',
-            'Beneficiary Bank Name',
-        ];
-
-        $rows[] = $headers;
-
         foreach ($bankAccounts as $ba)
         {
             $rows[] = [
@@ -109,6 +99,7 @@ class Beneficiary extends BaseBeneficiary
                         ->store(FileStore\Store::S3)
                         ->type(FileStore\Type::FUND_TRANSFER_H2H)
                         ->metadata($metadata)
+                        ->headers(false)
                         ->encrypt(Type::AES_ENCRYPTION, [
                             AESEncryption::MODE   => AES::MODE_CBC,
                             AESEncryption::IV     => $this->iv,
