@@ -2795,3 +2795,7 @@ ALTER TABLE fund_transfer_attempts
 ALTER TABLE payouts
     MODIFY COLUMN customer_id VARCHAR(14);
 
+ALTER TABLE merchant_invoice
+    MODIFY COLUMN amount bigint(20)  NOT NULL,
+    MODIFY COLUMN tax int(11) NOT NULL,
+    MODIFY COLUMN amount_due bigint(20) NOT NULL DEFAULT 0;
