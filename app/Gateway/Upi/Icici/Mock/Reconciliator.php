@@ -180,7 +180,7 @@ class Reconciliator extends Base\Mock\Reconciliator
                 $row['refund']['amount'] / 100,
                 $row['gateway']['gateway_payment_id'],
                 '9560658505@upi',
-                'Razorpay Refund' . $row['refund']['id'],
+                'Razorpay Refund ' . $row['refund']['id'],
                 '205025290',
                 'ICIC0000002',
                 '00000020183413215',

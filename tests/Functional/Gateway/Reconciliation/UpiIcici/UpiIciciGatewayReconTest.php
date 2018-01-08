@@ -5,7 +5,7 @@ use Illuminate\Http\UploadedFile;
 
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
-use RZP\Constants\Entity;
+use RZP\Models\Base\PublicEntity;
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Base\UniqueIdEntity;
@@ -22,13 +22,15 @@ class UpiIciciGatewayReconTest extends TestCase
      */
     private $payment;
 
+    private $sharedTerminal;
+
     public function setUp()
     {
         parent::setUp();
 
         $this->payment = $this->getDefaultUpiPaymentArray();
 
-        $this->fixtures->create('terminal:shared_upi_icici_terminal');
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_icici_terminal');
 
         $this->gateway = Payment\Gateway::UPI_ICICI;
 
@@ -345,9 +347,16 @@ class UpiIciciGatewayReconTest extends TestCase
         {
             $this->fixtures->edit('payment', $payment, ['created_at' => $createdAt]);
 
-            $refund = $this->refundPayment($payment);
+            $refund = $this->refundPayment(Payment\Entity::getSignedId($payment));
 
             $this->fixtures->edit('refund', $refund['id'], ['created_at' => $createdAt]);
+
+            $this->fixtures->create(
+                'upi',
+                [
+                    'payment_id' => $payment,
+                    'refund_id'  => PublicEntity::stripDefaultSign($refund['id'])
+                ]);
 
             $refunds[] = $refund['id'];
         }
@@ -357,28 +366,24 @@ class UpiIciciGatewayReconTest extends TestCase
 
     private function doUpiIciciPayment()
     {
-        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+        $attributes = [
+            'terminal_id'       => $this->sharedTerminal->getId(),
+            'method'            => 'upi',
+            'amount'            => $this->payment['amount'],
+            'base_amount'       => $this->payment['amount'],
+            'amount_authorized' => $this->payment['amount'],
+            'status'            => 'captured',
+            'gateway'           => $this->gateway
+        ];
 
-        $paymentId = $response[Constants::PAYMENT_ID];
+        $payment = $this->fixtures->create('payment', $attributes);
 
-        // Coproto must be working
-        $this->assertEquals(Constants::ASYNC, $response[Constants::TYPE]);
+        $transaction = $this->fixtures->create('transaction', ['entity_id' => $payment->getId(), 'merchant_id' => '10000000000000']);
 
-        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+        $this->fixtures->edit('payment', $payment->getId(), ['transaction_id' => $transaction->getId()]);
 
-        $this->assertEquals(Payment\Status::CREATED, $payment[Payment\Entity::STATUS]);
+        $this->fixtures->create('upi', ['payment_id' => $payment->getId()]);
 
-        $upiEntity = $this->getLastEntity(Entity::UPI, true);
-
-        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
-
-        $response = $this->makeS2SCallbackAndGetContent($content);
-
-        // We should have gotten a successful response
-        $this->assertEquals([Constants::SUCCESS => true], $response);
-
-        $this->capturePayment($paymentId, $this->payment[Payment\Entity::AMOUNT]);
-
-        return $paymentId;
+        return $payment->getId();
     }
 }
