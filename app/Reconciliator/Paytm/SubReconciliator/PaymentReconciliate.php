@@ -14,7 +14,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_SERVICE_TAX            = 's_tax';
     const COLUMN_FEE                    = 'rev_commm';
 
-    protected function getPaymentId($row)
+    protected function getPaymentId(array $row)
     {
         $paymentId = $row[self::COLUMN_PAYMENT_ID];
 

@@ -30,6 +30,10 @@ class Entity extends Base\PublicEntity
     const PROCESSED_AT           = 'processed_at';
     const SETTLED_ON             = 'settled_on';
 
+    // Nodal Nodal Settlement Constants
+    const GATEWAY                = 'gateway';
+    const DESTINATION            = 'destination';
+
     protected static $sign = 'setl';
 
     protected $entity = 'settlement';

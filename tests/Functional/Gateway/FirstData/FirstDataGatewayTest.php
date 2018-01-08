@@ -735,5 +735,22 @@ class FirstDataGatewayTest extends TestCase
             "The payment has been rejected by the gateway." .
                 "\nGateway Error Code: N:03\nGateway Error Desc: Invalid merchant");
     }
+
+    public function testInvalidApprovalCode()
+    {
+        $invalidApprovalCode = '?:waiting RUPAY';
+
+        $this->getOveriddenApprovalCode($invalidApprovalCode);
+
+        $this->makeRequestAndCatchException(
+            function()
+            {
+                $this->doAuthPayment($this->payment);
+            },
+            Exception\GatewayErrorException::class,
+            // Any invalid code is mapped to General Error
+            "Payment processing failed due to error at bank or wallet gateway" .
+            "\nGateway Error Code: ?:waiting RUPAY\nGateway Error Desc: General Error");
+    }
 }
 

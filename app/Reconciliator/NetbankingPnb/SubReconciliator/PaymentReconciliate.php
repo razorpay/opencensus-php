@@ -17,7 +17,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_PAYMENT_AMOUNT      = 'amount';
     const COLUMN_DATE                = 'date';
 
-    protected function getPaymentId($row)
+    protected function getPaymentId(array $row)
     {
         if (empty($row[self::COLUMN_PAYMENT_ID]) === false)
         {

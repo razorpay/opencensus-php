@@ -18,7 +18,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_SETTLED_AT         = 'Date of Settlement';
     const SETTLEMENT_DATE_FORMAT    = 'Y-m-d H:i:s.u';
 
-    protected function getPaymentId($row)
+    protected function getPaymentId(array $row)
     {
         $paymentId = $row[self::COLUMN_PAYMENT_ID];
 

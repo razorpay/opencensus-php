@@ -18,6 +18,6 @@ return [
         'certificate_path'          => env('RBL_NODAL_CERTIFICATE_PATH'),
         'certificate_key_name'      => env('RBL_NODAL_CERTIFICATE_KEY_NAME'),
         'ben_add_url_suffix'        => env('RBL_BEN_ADD_URL_SUFFIX'),
-        'fund_transfer_url_sufffix' => env('RBL_FUND_TRANSFER_URL_SUFFIX'),
+        'fund_transfer_url_suffix'  => env('RBL_FUND_TRANSFER_URL_SUFFIX'),
     ],
 ];

@@ -62,21 +62,6 @@ class NodalAccount extends NodalBase\NodalAccount
         return [$file, $file];
     }
 
-    public function initiateTransfer($amount): array
-    {
-        $rows = $this->getNodalTransferRows($amount);
-
-        $txt = $this->getTxtFromRows($rows);
-
-        $file = $this->createFile($txt);
-
-        $fileData = $this->getFileData($file);
-
-        $this->sendIciciTransferMail($fileData, $rows);
-
-        return ['file' => $fileData['file_path']];
-    }
-
     protected function getTxtFromRows(array $rows): string
     {
         $txt = '';
@@ -130,34 +115,6 @@ class NodalAccount extends NodalBase\NodalAccount
                 Headings::BENEFICIARY_CODE          => $ba->getId(),
             ];
         }
-
-        return $rows;
-    }
-
-    protected function getNodalTransferRows($amount): array
-    {
-        $mode = $this->getTransferMode($amount);
-
-        $this->mode = self::MODE_MAPPING[$mode];
-
-        $rows = [];
-
-        $rows[] = [
-            Headings::PAYMENT_MODE              => $this->mode,
-            Headings::BENEFICIARY_NAME          => 'Razorpay Software Pvt Ltd',
-            Headings::BENEFICIARY_ACCOUNT_NO    => '7911547334',
-            Headings::BENEFICIARY_IFSC          => 'KKBK0000958',
-            Headings::AMOUNT                    => $this->formatAmount($amount),
-            Headings::PAYMENT_DATE              => $this->date,
-            Headings::DEBIT_ACCOUNT_NO          => self::DEBIT_ACCOUNT_NO,
-            Headings::CREDIT_NARRATION          => 'Nodal Nodal Transfer',
-            Headings::INSTRUMENT_REFERENCE      => $this->id,
-            Headings::DUMMY                     => '',
-            Headings::DUMMY2                    => '',
-
-            // Commenting the below out till we register this beneficiary code
-//            Headings::BENEFICIARY_CODE          => 'RZRNICICINODAL',
-        ];
 
         return $rows;
     }
@@ -216,6 +173,8 @@ class NodalAccount extends NodalBase\NodalAccount
 
     protected function sendIciciTransferMail(array $fileData, array $rows = null)
     {
+        $data['body'] = 'PFA ICICI Settlement file';
+        
         if ($rows !== null)
         {
             $data['body'] = json_encode($rows, JSON_PRETTY_PRINT);
