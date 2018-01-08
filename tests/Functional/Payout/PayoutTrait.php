@@ -6,9 +6,9 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 trait PayoutTrait
 {
-    protected function initiatePayouts($channel = 'kotak', $testTimeStamp = null)
+    protected function initiatePayouts($channel = 'kotak', $purpose = 'refund', $testTimeStamp = null)
     {
-        $content = ['all' => 1];
+        $content['purpose'] = $purpose;
 
         if ($testTimeStamp !== null)
         {
