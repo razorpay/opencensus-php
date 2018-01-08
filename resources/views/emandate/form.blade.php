@@ -92,7 +92,7 @@
         cursor: pointer;
       }
 
-      div:not(.disabled) .accordion-heading:hover {
+      div:not(.disabled) > .accordion-heading:hover {
           background: #fcfcfc;
       }
 
