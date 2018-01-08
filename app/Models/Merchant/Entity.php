@@ -546,7 +546,7 @@ class Entity extends Base\PublicEntity
     public function methods()
     {
         return $this->hasOne(
-            'RZP\Models\Merchant\Methods\Entity');
+            'RZP\Models\Merchant\Methods\Entity', self::MERCHANT_ID);
     }
 
     public function terminals()

@@ -44,7 +44,6 @@ return [
                 ],
                 'account_details' => [
                     'business_name' => 'Acme solutions',
-                    'business_type' => 'individual',
                 ],
                 'bank_account' => [
                     'ifsc_code'             => 'ICIC0001206',
