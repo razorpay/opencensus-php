@@ -606,8 +606,8 @@ class Gateway extends Base\Gateway
     private function checkGatewaySuccess(Verify $verify)
     {
         $content = $verify->verifyResponseContent;
-
-        $verify->gatewaySuccess = ($content[ResponseFields::STATUS] === Status::SUCCESS);
+        $status = ucfirst(strtolower($content[ResponseFields::STATUS]));
+        $verify->gatewaySuccess = ($status === Status::SUCCESS);
     }
 
     /**
