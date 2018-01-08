@@ -141,6 +141,26 @@ return [
             ],
         ],
     ],
+    'testEmandateRegistrationOrder' => [
+        'request' => [
+            'content' => [
+                'amount'         => 0,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'method'         => 'emandate',
+                'bank'           => 'UTIB',
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'         => 0,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+            ],
+        ],
+    ],
     'testCreateTPVOrderWithInvalidAccountNumber' => [
         'request' => [
             'content' => [

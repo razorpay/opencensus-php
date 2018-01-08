@@ -58,7 +58,7 @@ class Order extends Base
             'merchant_id'      => '10000000000000',
             'receipt'          => 'test_tpv_receipt',
             'currency'         => 'INR',
-            'method'           => 'netbanking',
+            'method'           => 'emandate',
             'amount'           => 100000,
             'payment_capture'  => true
         ];

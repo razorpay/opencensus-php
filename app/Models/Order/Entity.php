@@ -5,6 +5,7 @@ namespace RZP\Models\Order;
 use RZP\Models\Base;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Offer;
+use RZP\Models\Payment;
 
 class Entity extends Base\PublicEntity
 {
@@ -125,6 +126,10 @@ class Entity extends Base\PublicEntity
         self::OFFER_ID,
     ];
 
+    protected static $generators = [
+        'method',
+    ];
+
     protected $dates = [
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -156,6 +161,16 @@ class Entity extends Base\PublicEntity
     }
 
     /** End Related Models */
+
+    /** Generator */
+    protected function generateMethod(&$input)
+    {
+        if ((isset($input['method']) === true) and
+            ($input['method'] === 'emandate'))
+        {
+            $input['method'] = Payment\Method::NETBANKING;
+        }
+    }
 
     /** Appends */
 

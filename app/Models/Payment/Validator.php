@@ -288,28 +288,14 @@ class Validator extends Base\Validator
     {
         $amount = (int) $input['amount'];
 
-        // Zero ruppee payment validation for authentication payments
-        // TODO: Add more checks
-        if (($input['method'] === 'netbanking') and
-            (isset($input['recurring']) === true) and
-            (boolval($input['recurring']) === true))
+        if ($input['method'] !== Payment\Method::EMANDATE)
         {
-            if ($amount !== 0)
+            if ($amount < 100)
             {
-                throw new Exception\BadRequestValidationFailureException(
-                    'Amount should be 0 for mandate registration.',
-                    'amount',
-                    ['amount' => $amount]);
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT,
+                    'amount');
             }
-
-            return;
-        }
-
-        if ($amount < 100)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT,
-                'amount');
         }
 
         if (($input['method'] === Payment\Method::WALLET) and

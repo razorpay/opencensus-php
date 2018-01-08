@@ -17,7 +17,7 @@ class Validator extends Base\Validator
         Entity::PAYMENT_CAPTURE => 'filled|boolean',
         Entity::CUSTOMER_ID     => 'sometimes|filled',
         Entity::NOTES           => 'sometimes|notes',
-        Entity::METHOD          => 'sometimes|in:netbanking',
+        Entity::METHOD          => 'sometimes|in:netbanking,emandate',
         Entity::BANK            => 'sometimes|filled|custom',
         Entity::ACCOUNT_NUMBER  => 'sometimes|filled|string|max:50|min:5',
         Entity::OFFER_ID        => 'sometimes|string|size:20'
@@ -30,19 +30,22 @@ class Validator extends Base\Validator
 
     protected function validateAmount($input)
     {
-        // @todo: add emandate method check here for 0 ruppee payment
-        if ((isset($input['method']) === false) and
-            ($input['amount'] < 100))
+        $amount = $input['amount'];
+
+        // @todo: Use constants
+        if ((isset($input['method']) === false) or
+            ($input['method'] !== 'emandate'))
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'The amount must be at least 100.',
-                'amount',
-                ['amount' => $amount]);
+            if ($amount < 100)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'The amount must be at least 100.',
+                    'amount',
+                    ['amount' => $amount]);
+            }
         }
 
         $maxAmountAllowed = $this->entity->merchant->getMaxPaymentAmount();
-
-        $amount = $input['amount'];
 
         if ($amount > $maxAmountAllowed)
         {

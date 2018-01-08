@@ -77,6 +77,13 @@ class OrderTest extends TestCase
         return $order;
     }
 
+    public function testEmandateRegistrationOrder()
+    {
+        $order = $this->startTest();
+
+        return $order;
+    }
+
     public function testCreateTPVOrderWithInvalidAccountNumber()
     {
         $this->startTest();
