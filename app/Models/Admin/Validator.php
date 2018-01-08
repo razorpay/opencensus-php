@@ -37,5 +37,7 @@ class Validator extends Base\Validator
         ConfigKey::GATEWAY_PROCESSED_REFUNDS            => 'filled|array',
         ConfigKey::GATEWAY_UNPROCESSED_REFUNDS          => 'filled|array',
         ConfigKey::SKIP_SLAVE                           => 'filled|boolean',
+        ConfigKey::BLOCK_BANK_TRANSFERS_FOR_CRYPTO      => 'filled|boolean',
+        ConfigKey::EXPERIMENTAL_RECURRING_FILTER        => 'filled|array',
     ];
 }

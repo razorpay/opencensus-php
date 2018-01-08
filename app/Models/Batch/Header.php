@@ -68,6 +68,8 @@ class Header
     const VA_CUSTOMER_EMAIL      = 'customer_email';
     const VA_ID                  = 'virtual_account_id';
     const VA_DESCRIPTOR          = 'virtual_account_descriptor';
+    const VA_DESCRIPTION         = 'virtual_account_description';
+    const VA_NOTES               = 'virtual_account_notes';
     const VA_BANK_ACCOUNT_ID     = 'bank_account_id';
     const VA_BANK_ACCOUNT_NAME   = 'bank_account_name';
     const VA_BANK_ACCOUNT_NUMBER = 'bank_account_number';
@@ -231,6 +233,11 @@ class Header
                 self::BANK_BRANCH_IFSC,
                 self::BANK_ACCOUNT_NUMBER,
                 self::REFERENCE_ID,
+                //
+                // If this is passed and account with this id exists then we
+                // patch the account entity with row data.
+                //
+                self::ACCOUNT_ID,
             ],
 
             self::OUTPUT => [
@@ -240,16 +247,20 @@ class Header
                 self::BANK_BRANCH_IFSC,
                 self::BANK_ACCOUNT_NUMBER,
                 self::REFERENCE_ID,
+                self::STATUS,
                 self::ACCOUNT_ID,
             ],
         ],
 
         Type::VIRTUAL_BANK_ACCOUNT => [
             self::INPUT => [
+                self::VA_CUSTOMER_ID,
                 self::VA_CUSTOMER_NAME,
                 self::VA_CUSTOMER_CONTACT,
                 self::VA_CUSTOMER_EMAIL,
                 self::VA_DESCRIPTOR,
+                self::VA_DESCRIPTION,
+                self::VA_NOTES,
             ],
 
             self::OUTPUT => [
