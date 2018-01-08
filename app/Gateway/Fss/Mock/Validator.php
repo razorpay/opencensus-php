@@ -18,6 +18,7 @@ class Validator extends Base\Validator
         Fields::RESPONSE_URL        => 'required|string',
         Fields::TRANPORTAL_ID       => 'required|string',
         Fields::PARAM               => 'sometimes|string',
+        Fields::ACQUIRER            => 'sometimes|string',
     ];
 
     protected static $refundRules = [

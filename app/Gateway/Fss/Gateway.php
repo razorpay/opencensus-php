@@ -34,7 +34,7 @@ class Gateway extends Base\Gateway
 
         $purchaseRequestContent = $this->getPurchaseRequestContent($purchaseRequestFields, $input);
 
-        $request = $this->getStandardRequestArray($purchaseRequestContent, 'get', Action::PURCHASE);
+        $request = $this->getPurchaseRequestFieldsArray($purchaseRequestContent, 'get', Action::PURCHASE);
 
         $purchaseFields = $this->getPurchaseFields($purchaseRequestFields);
 
@@ -124,7 +124,7 @@ class Gateway extends Base\Gateway
 
         $refundRequestContent = $this->getGatewayRequestContent($refundRequestContentArray);
 
-        $request = parent::getStandardRequestArray($refundRequestContent, 'post', Action::REFUND);
+        $request = $this->getStandardRequestArray($refundRequestContent, 'post', Action::REFUND);
 
         $response = $this->postRequest($request);
 
@@ -224,9 +224,9 @@ class Gateway extends Base\Gateway
      *
      * @return array
      */
-    protected function getStandardRequestArray($content = [], $method = 'post', $type = null)
+    public function getPurchaseRequestFieldsArray($content = [], $method = 'post', $type = null)
     {
-        $request = parent::getStandardRequestArray([], $method, $type);
+        $request = $this->getStandardRequestArray([], $method, $type);
 
         $request['url'] .= http_build_query($content);
 
@@ -308,8 +308,8 @@ class Gateway extends Base\Gateway
 
                 if ($this->mode === Mode::TEST)
                 {
-                    $requestContent[Fields::ID]         = $this->config['fss_terminal_id'];
-                    $requestContent[Fields::BANK_CODE]  = $this->config['fss_bank_code'];
+                    $requestContent[Fields::ID]         = $this->config['fss']['terminal_id'];
+                    $requestContent[Fields::BANK_CODE]  = $this->config['fss']['bank_code'];
                 }
 
                 break;
@@ -319,8 +319,8 @@ class Gateway extends Base\Gateway
 
                 if ($this->mode === Mode::TEST)
                 {
-                    $requestContent[Fields::ID]       = $this->config['bob_terminal_id'];
-                    $requestContent[Fields::PASSWORD] = $this->config['bob_terminal_password'];
+                    $requestContent[Fields::ID]       = $this->config['barb']['terminal_id'];
+                    $requestContent[Fields::PASSWORD] = $this->config['barb']['terminal_password'];
                 }
 
                 break;
@@ -664,7 +664,7 @@ class Gateway extends Base\Gateway
 
         $requestContent = $this->getGatewayRequestContent($requestContentArray);
 
-        $request = parent::getStandardRequestArray($requestContent, 'post', Action::VERIFY);
+        $request = $this->getStandardRequestArray($requestContent, 'post', Action::VERIFY);
 
         $this->traceGatewayVerifyRequest($requestContentArray);
 
@@ -991,19 +991,6 @@ class Gateway extends Base\Gateway
 
         $gatewayAquirer = $this->input[E::TERMINAL]->getGatewayAcquirer();
 
-        switch ($gatewayAquirer)
-        {
-            case Acquirer::FSS:
-                return $this->config['fss_test_hash_secret'];
-                break;
-            case Acquirer::BOB:
-                return $this->config['bob_test_hash_secret'];
-                break;
-            default:
-                break;
-        }
-
-        // Default as test_hash_secret
-        return parent::getTestSecret();
+        return $this->config[strtolower($gatewayAquirer)]['test_hash_secret'];
     }
 }

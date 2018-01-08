@@ -57,6 +57,8 @@ class Fields
 
     const LANGUAGE_ID                   = 'langid';
 
+    const ACQUIRER                      = 'acquirer';
+
     // Response Fields
     const ERROR_TEXT                    = 'error_text';
 

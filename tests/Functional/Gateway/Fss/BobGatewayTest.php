@@ -4,8 +4,8 @@ namespace RZP\Tests\Functional\Gateway\Fss;
 
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
-use RZP\Gateway\Fss\Constants;
 use RZP\Gateway\Fss\Status;
+use RZP\Models\Bank\IFSC;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 
@@ -26,7 +26,7 @@ class BobGatewayTest extends TestCase
      */
     protected $payment;
 
-    protected $acquirer = 'bob';
+    protected $acquirer = IFSC::BARB;
 
     public function setUp()
     {

@@ -26,9 +26,9 @@ class Server extends Base\Mock\Server
 
         $this->validateAuthorizeInput($input);
 
-        $tranportalId = $input[Fields::TRANPORTAL_ID];
+        $acquirer = $input[Fields::ACQUIRER];
 
-        $requestData = $this->getDecryptedData($input[Fields::TRAN_DATA], $tranportalId);
+        $requestData = $this->getDecryptedData($input[Fields::TRAN_DATA], $acquirer);
 
         // Validating Transaction data which we sent to server after encrypting.
         $this->validateActionInput($requestData, 'authTransactionData');
@@ -50,7 +50,7 @@ class Server extends Base\Mock\Server
 
         $responseData = [
             Fields::GATEWAY_PAYMENT_ID      => $gatewayPaymentId,
-            Fields::TRAN_DATA               => $this->getEncryptedData($responseTranData, $tranportalId),
+            Fields::TRAN_DATA               => $this->getEncryptedData($responseTranData, $acquirer),
         ];
 
         $url = $input[Fields::RESPONSE_URL];
@@ -141,20 +141,20 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
-    protected function getEncryptedData($responseTrandata, $terminalId)
+    protected function getEncryptedData($responseTrandata, string $acquirer)
     {
         $tranData = Fss\Utility::createRequestXml($responseTrandata, false);
 
-        list($secretKey, $gatewayAcquirer) = $this->getGatewaySecretAndAcquirer($terminalId);
+        $secretKey = $this->getGatewaySecret($acquirer);
 
         $encryptedText = "";
 
-        switch ($gatewayAcquirer)
+        switch ($acquirer)
         {
             case Fss\Acquirer::BOB:
                 $crypto = new Fss\TripleDESCrypto(Fss\TripleDESCrypto::MODE_ECB, $secretKey, false);
 
-                $encryptedText = $crypto->encryptString($tranData, false);
+                $encryptedText = $crypto->encryptString($tranData);
                 break;
             case Fss\Acquirer::FSS:
                 $crypto = new Fss\AesCrypto(Fss\AesCrypto::MODE_CBC, $secretKey, $secretKey);
@@ -170,17 +170,17 @@ class Server extends Base\Mock\Server
 
     /**
      * @param string $str
-     * @param string $terminalId
+     * @param string $acquirer
      *
      * @return array
      */
-    protected function getDecryptedData(string $str, string $terminalId): array
+    protected function getDecryptedData(string $str, string $acquirer): array
     {
-        list($secretKey, $gatewayAcquirer) = $this->getGatewaySecretAndAcquirer($terminalId);
+        $secretKey = $this->getGatewaySecret($acquirer);
 
         $decryptedString = "";
 
-        switch ($gatewayAcquirer)
+        switch ($acquirer)
         {
             case Fss\Acquirer::BOB:
                 $crypto = new Fss\TripleDESCrypto(Fss\TripleDESCrypto::MODE_ECB, $secretKey, true);
@@ -211,12 +211,8 @@ class Server extends Base\Mock\Server
         return random_integer($size);
     }
 
-    private function getGatewaySecretAndAcquirer($terminalId)
+    private function getGatewaySecret($acquirer)
     {
-        $terminal = (new TerminalRepo)->getByGatewayTerminalId($terminalId);
-
-        $gatewayAcquirer = $terminal->getGatewayAcquirer();
-
-        return [Config::get('gateway.fss.' . $gatewayAcquirer . '_test_hash_secret'), $gatewayAcquirer];
+        return Config::get('gateway.fss.' . strtolower($acquirer) . '.test_hash_secret');
     }
 }
