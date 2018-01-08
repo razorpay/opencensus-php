@@ -45,7 +45,12 @@ export default class UserList extends Component {
             </div>
           </header>
         </div>
-        <PageTable model={this.collection} fields={fields} href={href} />
+        <PageTable
+          model={this.collection}
+          fields={fields}
+          href={href}
+          searchFilters={['id', 'name', 'email', 'role']}
+        />
       </div>
     );
   }

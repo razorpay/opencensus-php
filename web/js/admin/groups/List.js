@@ -36,6 +36,7 @@ export default class GroupList extends Component {
           model={this.collection}
           fields={fields}
           onClick={showEntity}
+          searchFilters={['id', 'name', 'description']}
         />
       </div>
     );

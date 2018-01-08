@@ -131,7 +131,9 @@ export class PageTable extends Component {
         for (let i = 0; i < searchFilters.length; i++) {
           if (
             item[searchFilters[i]] &&
-            item[searchFilters[i]].indexOf(this.state.searchQuery) !== -1
+            item[searchFilters[i]]
+              .toLowerCase()
+              .indexOf(this.state.searchQuery.toLowerCase()) !== -1
           ) {
             matched = true;
             break;
