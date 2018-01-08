@@ -4,7 +4,7 @@ namespace RZP\Gateway\Fss\Mock;
 
 use RZP\Base;
 use RZP\Gateway\Fss\Acquirer;
-use RZP\Gateway\Fss\Constants;
+use RZP\Gateway\Fss\CardType;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Fss\Fields;
 use RZP\Exception;
@@ -64,8 +64,8 @@ class Validator extends Base\Validator
 
     protected function validateType($attribute, $value)
     {
-        $bobCardTypes = array_values(Constants::$cardType[Acquirer::BOB]);
-        $fssCardTypes = array_values(Constants::$cardType[Acquirer::FSS]);
+        $bobCardTypes = array_values(CardType::getCardTypesByAcquirer(Acquirer::BOB));
+        $fssCardTypes = array_values(CardType::getCardTypesByAcquirer(Acquirer::FSS));
 
         if (in_array($value, $bobCardTypes) === false and in_array($value, $fssCardTypes) === false)
         {

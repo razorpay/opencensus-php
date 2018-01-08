@@ -2,13 +2,17 @@
 
 namespace RZP\Gateway\Fss;
 
+use RZP\Models\Bank\IFSC;
+
 class Acquirer
 {
     // FSS gateway has 3 acquirer's
 
-    const FSS   = 'fss';
+    const FSS   = 'FSS';
 
-    const BOB   = 'bob';
+    //BARB is the bank code of Bank of Baroda
+    const BOB   = IFSC::BARB;
 
-    const ICICI = 'icici';
+    //ICIC is the bank code of ICICI Bank
+    const ICICI = IFSC::ICIC;
 }

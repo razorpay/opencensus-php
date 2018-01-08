@@ -928,7 +928,7 @@ class Gateway extends Base\Gateway
     {
         $gatewayAcquirer = $this->input[E::TERMINAL]->getGatewayAcquirer();
 
-        return Constants::$cardType[$gatewayAcquirer][$cardType];
+        return CardType::getCardTypesByAcquirer($gatewayAcquirer)[$cardType];
     }
 
     /**
