@@ -33,7 +33,7 @@ class CardType
         if (empty(self::$cardType[$acquirer]) === true)
         {
             throw new Exception\LogicException(
-                'Unsupported card network',
+                'Unsupported acquirer for the gateway',
                 null,
                 [
                     'acquirer' => $acquirer,

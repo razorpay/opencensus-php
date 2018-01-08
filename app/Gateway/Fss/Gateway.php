@@ -267,7 +267,7 @@ class Gateway extends Base\Gateway
             Fields::TYPE          => $this->getCardType($input[E::CARD][Card\Entity::TYPE]),
             Fields::MEMBER        => $input[E::CARD][Card\Entity::NAME],
             Fields::AMOUNT        => $input[E::PAYMENT][Payment\Entity::AMOUNT] / 100, //use number_format
-            Fields::ACTION        => Constants::ACTION_PURCHASE,
+            Fields::ACTION        => Action::getActionValue(Action::PURCHASE),
             Fields::TRACK_ID      => $input[E::PAYMENT][Payment\Entity::ID],
             Fields::ERROR_URL     => $input['callbackUrl'],
             Fields::RESPONSE_URL  => $input['callbackUrl'],
@@ -742,8 +742,8 @@ class Gateway extends Base\Gateway
         {
             case Action::VERIFY:
                 // In verify also fss needs a trackId.
-                $requestContent[Fields::TRANSACTION_ID] =  $input['payment']['id'];
-                $requestContent[Fields::ACTION]         = Constants::ACTION_INQUIRY;
+                $requestContent[Fields::TRANSACTION_ID] = $input['payment']['id'];
+                $requestContent[Fields::ACTION]         = Action::getActionValue(Action::VERIFY);
                 $requestContent[Fields::TRACK_ID]       = Entity::generateUniqueId();
                 $requestContent[Fields::AMOUNT]         = $input[E::PAYMENT][Entity::AMOUNT] / 100;
 
@@ -751,7 +751,7 @@ class Gateway extends Base\Gateway
                 break;
             case Action::VERIFY_REFUND:
                 $requestContent[Fields::TRANSACTION_ID] =  $input['refund']['id'];
-                $requestContent[Fields::ACTION]         = Constants::ACTION_INQUIRY;
+                $requestContent[Fields::ACTION]         = Action::getActionValue(Action::VERIFY);
                 $requestContent[Fields::TRACK_ID]       = Entity::generateUniqueId();
                 $requestContent[Fields::AMOUNT]         = $input[E::REFUND][Entity::AMOUNT] / 100;
 
@@ -759,7 +759,7 @@ class Gateway extends Base\Gateway
                 break;
             case Action::REFUND:
                 $requestContent[Fields::TRANSACTION_ID] = $input['payment']['id'];
-                $requestContent[Fields::ACTION]         = Constants::ACTION_REFUND;
+                $requestContent[Fields::ACTION]         = Action::getActionValue(Action::REFUND);
                 $requestContent[Fields::TRACK_ID]       = $input[E::REFUND][Entity::ID];
                 $requestContent[Fields::AMOUNT]         = $input[E::REFUND][Entity::AMOUNT] / 100;
 
