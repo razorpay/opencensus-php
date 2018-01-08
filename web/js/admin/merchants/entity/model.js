@@ -72,7 +72,10 @@ export default class Model extends BaseModel {
           this.fetchFeatures('live');
           this.fetchFeatures('test');
         }
-        this.fetchActivationChangeLogs();
+
+        if (user.permissions.find(perm => perm === 'view_activation_form')) {
+          this.fetchActivationChangeLogs();
+        }
       }
     );
   }
