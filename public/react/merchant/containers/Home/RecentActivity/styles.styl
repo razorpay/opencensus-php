@@ -1,29 +1,72 @@
 .panel.recent-activity-cont {
 
+  padding: 0;
+  padding-top: 57px;
+  border: none;
+
+  .panel-topbar {
+
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+
+	tabbed-container {
+
+      position: relative;
+	  padding-top: 0;
+      padding-bottom: 0;
+      padding-left: 15px;
+      padding-right: 15px;
+      box-shadow: 0 4px 7px rgba(0,0,0,0.08);
+      z-index: 1;
+
+	  .row {
+
+	    margin-bottom: 0;
+
+	    a {
+
+	  	line-height: 54px;
+	  	cursor: pointer;
+	  	text-align: center;
+	  	border-bottom: 3px solid transparent;
+
+	  	&.active {
+
+	  	  color: #6a55d1;
+	  	  border-color: #6a55d1;
+	  	}
+	    }
+	  }
+	}
+  }
+
   .panel-body {
 
     padding-top: 0;
-  }
 
-  tabbed-container {
-
-    padding-top: 0;
-
-    .row {
+    table {
 
       margin-bottom: 0;
 
-      a {
+      td {
 
-        line-height: 50px;
-        cursor: pointer;
-        text-align: center;
-        border-bottom: 3px solid transparent;
+        padding: 17px 8px;
 
-        &.active {
+        &:first-child {
 
-          color: #6a55d1;
-          border-color: #6a55d1;
+          padding-left: 21px;
+        }
+
+        &:last-child {
+
+          padding-right: 21px;
+        }
+
+        &:nth-child(3), &:nth-child(4) {
+
+          text-align: right;
         }
       }
     }

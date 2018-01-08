@@ -8,7 +8,10 @@ import {
 } from 'rzp/modules/collection';
 import { titleCase } from 'rzp/utils/rzp-utils';
 
-import GenericPanel, { PanelBody } from 'merchant/components/Home/GenericPanel';
+import GenericPanel, {
+  PanelBody,
+  PanelTopbar,
+} from 'merchant/components/Home/GenericPanel';
 import { tabs, tabsMeta } from './data';
 import PaymentsList from 'merchant/components/Payments/PaymentsList';
 
@@ -115,7 +118,7 @@ export default class RecentActivity extends Component {
         className="recent-activity-cont"
         isLoading={selectedTabData.loading}
       >
-        <PanelBody>
+        <PanelTopbar>
           <tabbed-container>
             <div className="row">
               {tabs.map((tabName, index) => {
@@ -135,6 +138,8 @@ export default class RecentActivity extends Component {
               })}
             </div>
           </tabbed-container>
+        </PanelTopbar>
+        <PanelBody>
           <table className="table table-striped">
             <tbody>{body}</tbody>
           </table>

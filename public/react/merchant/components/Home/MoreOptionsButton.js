@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Dropdown, { DropdownTrigger, DropdownContent } from 'rzp/ui/Dropdown';
 
-export default ({ csvData, pngData, onImageExport }) => (
+export default ({ csvData, pngData, children, onImageExport }) => (
   <div className="more-options-button">
     <Dropdown className="dropdown-toggle">
       <DropdownTrigger>
@@ -11,6 +11,7 @@ export default ({ csvData, pngData, onImageExport }) => (
       </DropdownTrigger>
       <DropdownContent>
         <div className="dropdown-menu">
+          {children}
           {!!csvData && (
             <div className="option">
               <a href={csvData.url} download={csvData.name}>

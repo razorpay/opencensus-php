@@ -27,12 +27,6 @@ function getGroupObj(value) {
   return this.grouping.filter(grouping => grouping.value === value)[0];
 }
 
-function getGroupTitle(value) {
-  const groupObj = this.getGroupObj(value);
-
-  return groupObj && groupObj.text;
-}
-
 function getGroupQuery(value) {
   const groupObj = this.getGroupObj(value);
 
@@ -70,7 +64,6 @@ export const tabsMeta = {
     options: [],
     isCurrency: true,
     getGroupObj,
-    getGroupTitle,
     getGroupQuery,
     getCountQuery: function() {
       return {
@@ -104,7 +97,6 @@ export const tabsMeta = {
     grouping: defaultGroupingVals,
     options: [],
     getGroupObj,
-    getGroupTitle,
     getGroupQuery,
     getCountQuery: function() {
       return {
@@ -136,7 +128,6 @@ export const tabsMeta = {
     grouping: defaultGroupingVals,
     options: [],
     getGroupObj,
-    getGroupTitle,
     getGroupQuery,
     getCountQuery: function() {
       return {
@@ -169,7 +160,6 @@ export const tabsMeta = {
     title: 'Saved Cards',
     grouping: [],
     options: [],
-    getGroupTitle,
     groupByColumnName: 'saved_card',
     groupTitleMap: {
       '0': 'New Card',
