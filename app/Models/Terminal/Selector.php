@@ -74,8 +74,7 @@ class Selector extends Base\Core
 
         $payment = $this->input['payment'];
 
-        if ((empty($filteredTerminals) === true) and
-            (Terminal\Filters\TransactionFilter::runExperimentalRecurringFilter($this->input['payment']) === true))
+        if (empty($filteredTerminals) === true)
         {
             $basicAuth = $this->app['basicauth'];
 
@@ -86,9 +85,9 @@ class Selector extends Base\Core
 
             //
             // We are doing this only for second recurring
-            // payments made via private/privilege auth
+            // card payments made via private/privilege auth
             //
-            if (($payment->isRecurring() === true) and
+            if (($payment->isCard() === true) and ($payment->isRecurring() === true) and
                 ($token !== null) and
                 ($token->isRecurring() === true) and
                 ($access === true))
