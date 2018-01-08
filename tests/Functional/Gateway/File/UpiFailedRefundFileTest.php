@@ -7,7 +7,7 @@ use Carbon\Carbon;
 
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
-use RZP\Mail\Gateway\FailedRefund\Base as FailedRefundMail;
+use RZP\Mail\Gateway\RefundFile\Base as FailedRefundMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class UpiFailedRefundFileTest extends TestCase
