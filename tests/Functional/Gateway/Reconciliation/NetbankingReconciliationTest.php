@@ -157,7 +157,6 @@ class NetbankingReconciliationTest extends TestCase
 
         $this->assertEquals($netbankingentity['bank_payment_id'], 99999);
 
-        $this->assertTrue($netbankingentity['reference1']!== null);
     }
 
     public function testPnbFailedPaymentReconciliation()
