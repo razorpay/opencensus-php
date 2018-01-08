@@ -371,9 +371,9 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getMerchantBeneficiaryFile()
+    public function getMerchantBeneficiaryFile($channel)
     {
-        $data = $this->service()->getMerchantBeneficiaryFile();
+        $data = $this->service()->getMerchantBeneficiaryFile($channel);
 
         return ApiResponse::json($data);
     }
@@ -417,11 +417,11 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postMerchantBeneficiaryFile()
+    public function postMerchantBeneficiaryFile($channel)
     {
         $input = Request::all();
 
-        $data = $this->service()->postMerchantBeneficiaryFile($input);
+        $data = $this->service()->postMerchantBeneficiaryFile($input, $channel);
 
         return ApiResponse::json($data);
     }

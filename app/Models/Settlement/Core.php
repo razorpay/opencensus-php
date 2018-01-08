@@ -4,10 +4,10 @@ namespace RZP\Models\Settlement;
 
 use Carbon\Carbon;
 use RZP\Exception;
+use RZP\Models\Adjustment;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
-use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
 use RZP\Constants\Timezone;
@@ -26,18 +26,18 @@ class Core extends Base\Core
 
     public function postInitiateTransfer(array $input): array
     {
+        (new Validator)->validateInput('nodal_transfer', $input);
+
         if (isset($input[Payment\Entity::GATEWAY]) === true)
         {
-            $gateway = $input[Payment\Entity::GATEWAY];
-
-            $amount = $this->getAmountFromPaymentsForLastDay($gateway);
+            $gateway = $input[Entity::GATEWAY];
 
             $channel = Channel::getChannelFromGateway($gateway);
+
+            $amount = $this->getAmountFromPaymentsForLastDay($gateway);
         }
         else
         {
-            (new Validator)->validateInput('nodal_transfer', $input);
-
             $amount = $input[Entity::AMOUNT];
 
             $channel = $input[Entity::CHANNEL];
@@ -49,11 +49,21 @@ class Core extends Base\Core
 
         if ($amount > 0)
         {
-            $amount = number_format($amount / 100, 2, '.', '');
+            $destination = $input[Entity::DESTINATION];
 
-            $nodalClass = 'RZP\Models\FundTransfer\\' . ucwords($channel) . '\NodalAccount';
+            $merchantId = Settlement\NodalAccount::ACCOUNT_MAP[$this->mode][$destination];
 
-            $response = (new $nodalClass())->initiateTransfer($amount);
+            $adjInput = [
+                Adjustment\Entity::MERCHANT_ID  => $merchantId,
+                Adjustment\Entity::AMOUNT       => $amount,
+                Adjustment\Entity::CHANNEL      => $channel,
+                Adjustment\Entity::DESCRIPTION  => 'Nodal Nodal Transfer',
+                Adjustment\Entity::CURRENCY     => 'INR'
+            ];
+
+            $adjustment = (new Adjustment\Service)->addAdjustment($adjInput);
+
+            return $adjustment;
         }
 
         return $response;
@@ -68,7 +78,7 @@ class Core extends Base\Core
         return (new $nodalClass())->addBeneficiary($input);
     }
 
-    protected function getAmountFromPaymentsForLastDay(string $gateway)
+    protected function getAmountFromPaymentsForLastDay(string $gateway) : int
     {
         $from = Carbon::yesterday(Timezone::IST)->getTimestamp();
 
@@ -86,7 +96,7 @@ class Core extends Base\Core
         // Transfer 99% of the derived amount
         $amount = 0.99 * $amount;
 
-        return $amount;
+        return (int)$amount;
     }
   
     /**
@@ -107,11 +117,6 @@ class Core extends Base\Core
 
         $this->app['events']->fire('api.settlement.processed', $eventPayload);
 
-        $this->trace->info(
-            TraceCode::SETTLEMENT_PROCESSED_WEBHOOOK_SENT,
-            [
-                'settlement_id' => $settlement->getId()
-            ]);
     }
 
     /**

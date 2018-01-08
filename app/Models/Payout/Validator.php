@@ -12,6 +12,7 @@ use RZP\Constants\Entity as E;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
+        Entity::PURPOSE         => 'sometimes|filled|string|max:30|in:refund',
         Entity::METHOD          => 'required|string',
         Entity::AMOUNT          => 'required|integer|max:500000000',
         Entity::CURRENCY        => 'required|size:3',
@@ -20,10 +21,15 @@ class Validator extends Base\Validator
         Entity::DESTINATION     => 'required|public_id',
     ];
 
+    protected static $merchantPayoutRules = [
+        Entity::PURPOSE         => 'required|string|max:30|in:settlement',
+        Entity::METHOD          => 'required|string',
+        Entity::AMOUNT          => 'required|integer|max:500000000',
+        Entity::CURRENCY        => 'required|size:3',
+    ];
+
     protected static $merchantRules = [
         Entity::MERCHANT_ID    => 'required|string|size:14',
-        Entity::CUSTOMER_ID    => 'required|public_id',
-        Entity::DESTINATION_ID => 'required|public_id',
         Entity::AMOUNT         => 'sometimes|integer|max:500000000',
         Entity::MIN_AMOUNT     => 'sometimes|integer|min:100',
         Entity::MODULO         => 'sometimes|integer|min:100',

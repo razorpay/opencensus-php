@@ -318,6 +318,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::SUBMITTED) === true);
     }
 
+    public function isArchived()
+    {
+        return ($this->isAttributeNotNull(self::ARCHIVED_AT));
+    }
+
     public function setArchivedAt($archived_at)
     {
         $this->setAttribute(self::ARCHIVED_AT, $archived_at);

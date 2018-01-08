@@ -30,8 +30,9 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
         self::AMOUNT,
-        self::DESCRIPTION,
         self::CURRENCY,
+        self::CHANNEL,
+        self::DESCRIPTION,
         self::SETTLEMENT_ID,
     ];
 

@@ -16,7 +16,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         $this->netbankingRepo = $this->repo->netbanking;
     }
 
-    protected function getPaymentId($row)
+    protected function getPaymentId(array $row)
     {
         return $row[Constants::PAYMENT_ID];
     }

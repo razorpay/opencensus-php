@@ -483,14 +483,14 @@ class Gateway extends Base\Gateway
     {
         $networkName = $this->getNetworkName();
 
-        return $networkName . '_v1.crt';
+        return $networkName . '_v2.crt';
     }
 
     public function getClientSslKeyName()
     {
         $networkName = $this->getNetworkName();
 
-        return $networkName . '_v1.key';
+        return $networkName . '_v2.key';
     }
 
     public function getNetworkName()
@@ -498,6 +498,7 @@ class Gateway extends Base\Gateway
         switch ($this->input['card']['network_code'])
         {
             case Card\Network::MC:
+            case Card\Network::MAES:
                 $network = Card\NetworkName::MC;
                 break;
 
@@ -648,6 +649,7 @@ class Gateway extends Base\Gateway
         switch ($input['card']['network_code'])
         {
             case Card\Network::MC:
+            case Card\Network::MAES:
                 $acqBin = $this->config['live_mastercard_acq_bin'];
                 break;
 
@@ -676,6 +678,7 @@ class Gateway extends Base\Gateway
         switch ($input['card']['network_code'])
         {
             case Card\Network::MC:
+            case Card\Network::MAES:
                 $merchantId = $this->config['live_mastercard_merchant_id'];
 
                 break;

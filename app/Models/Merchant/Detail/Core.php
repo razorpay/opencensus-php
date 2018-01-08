@@ -17,6 +17,7 @@ use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\State\Reason;
+use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Base\PublicEntity as PublicEntity;
@@ -275,9 +276,18 @@ class Core extends Base\Core
             $archivedAt = Carbon::now(Timezone::IST)->getTimestamp();
         }
 
+        $routePermission = Permission\Name::$actionMap[$archiveAction];
+
+        $oldMerchantDetails = clone $merchantDetails;
+
         $merchantDetails->setArchivedAt($archivedAt);
 
+        $this->app['workflow']->setPermission($routePermission)->handle(
+            $oldMerchantDetails, $merchantDetails);
+
         $this->repo->saveOrFail($merchantDetails);
+
+        $this->logActionToSlack($merchantDetails->merchant, $archiveAction);
 
         return $merchantDetails;
     }
