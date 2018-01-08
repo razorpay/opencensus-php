@@ -507,7 +507,7 @@ export function getDetailsViewMap(model) {
     },
     {
       label: 'GST Number',
-      value: details.gstin || null,
+      value: details.merchant_details ? details.merchant_details.gstin : null,
     },
     {
       label: 'Website',
