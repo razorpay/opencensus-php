@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Fss;
 
-use RZP\Gateway\Base\TripleDESCrypto as BaseTripeDESCrypto;
+use RZP\Encryption\TripleDESCrypto as BaseTripeDESCrypto;
 
 class TripleDESCrypto extends BaseTripeDESCrypto
 {

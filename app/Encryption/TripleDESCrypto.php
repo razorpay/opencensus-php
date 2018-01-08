@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Gateway\Base;
+namespace RZP\Encryption;
 
 use phpseclib\Crypt\TripleDES;
 
@@ -10,8 +10,9 @@ class TripleDESCrypto
     /**
      * TripleDESCrypto constructor.
      *
-     * @param int    $mode
-     * @param string $masterKey
+     * @param int     $mode
+     * @param string  $masterKey
+     * @param boolean $padding
      *
      */
     public function __construct(int $mode, string $masterKey, bool $padding = true)
