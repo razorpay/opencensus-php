@@ -70,7 +70,7 @@ class Base extends Refund\Base
         }
     }
 
-    protected function getFormattedAmount($amount)
+    protected function getFormattedAmount($amount): string
     {
         return number_format($amount / 100, 2, '.', '');
     }

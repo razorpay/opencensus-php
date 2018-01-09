@@ -210,5 +210,4 @@ abstract class Base extends Core
 
         return null;
     }
-
 }
