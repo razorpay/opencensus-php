@@ -37,14 +37,14 @@ class Repository extends Base\Repository
     public function fetchByPaymentId($paymentId)
     {
         return $this->newQuery()
-                    ->where('payment_id' , '=', $paymentId)
+                    ->where(Entity::PAYMENT_ID , '=', $paymentId)
                     ->first();
     }
 
     public function fetchByRefundId(string $refundId)
     {
         return $this->newQuery()
-                    ->where('refund_id' , '=', $refundId)
+                    ->where(Entity::REFUND_ID , '=', $refundId)
                     ->first();
     }
 
