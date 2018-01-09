@@ -64,13 +64,11 @@ return [
                 'tnc_accepted'       => true,
                 'managed'            => true,
                 'activation_details' => [
-                    'activated'      => true,
                     'status'         => 'activated',
-                    'can_submit'     => true,
-                    'required_fields' => [ ],
+                    'fields_pending' => [ ],
                 ],
                 'secondary_emails'   => [
-                    'transaction_report_email' => null,
+                    'transaction_report_email' => [ ],
                 ],
                 'account_details'    => [
                     'mobile'                   => null,
@@ -111,9 +109,6 @@ return [
                     'custom_attribute'  => 'some_value',
                 ],
                 'fund_transfer'      => [ ],
-                'configurations'     => [
-                    'brand_color' => null
-                ]
             ]
         ],
     ],

@@ -54,14 +54,14 @@ class Helper
 
         $verificationDetails = $detailsResponse[MerchantDetail\Entity::VERIFICATION];
 
-        $requiredFields = [];
+        $fieldsPending = [];
 
-        if (isset($verificationDetails[MerchantDetail\Entity::REQUIRED_FIELDS]) === true)
+        if (isset($verificationDetails[MerchantDetail\Entity::FIELDS_PENDING]) === true)
         {
-            $requiredFields = $verificationDetails[MerchantDetail\Entity::REQUIRED_FIELDS];
+            $fieldsPending = $verificationDetails[MerchantDetail\Entity::FIELDS_PENDING];
         }
 
-        $response[$activationDetails][Entity::REQUIRED_FIELDS] = $requiredFields;
+        $response[$activationDetails][Entity::FIELDS_PENDING] = $fieldsPending;
 
         return $response;
     }

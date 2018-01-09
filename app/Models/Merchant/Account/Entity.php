@@ -39,9 +39,9 @@ class Entity extends Merchant\Entity
     const FUNDS_ON_HOLD            = 'funds_on_hold';
     const BUSINESS_MODEL           = 'business_model';
     const CONFIGURATIONS           = 'configurations';
+    const FIELDS_PENDING           = 'fields_pending';
     const PAYMENTDETAILS           = 'paymentdetails';
     const ACCOUNT_DETAILS          = 'account_details';
-    const REQUIRED_FIELDS          = 'required_fields';
     const DATE_ESTABLISHED         = 'date_established';
     const SECONDARY_EMAILS         = 'secondary_emails';
     const ACTIVATION_STATUS        = 'activation_status';
@@ -75,7 +75,6 @@ class Entity extends Merchant\Entity
         self::ACCOUNT_DETAILS,
         self::NOTES,
         self::FUND_TRANSFER,
-        self::CONFIGURATIONS,
     ];
 
     protected $publicSetters = [
@@ -209,9 +208,7 @@ class Entity extends Merchant\Entity
 
     public function setPublicSecondaryEmailsAttribute(array & $array)
     {
-        $merchantDetail = $this->merchantDetail;
-
-        $transactionReportEmail = $merchantDetail->getTransactionReportEmail();
+        $transactionReportEmail = $this->getTransactionReportEmailAttribute();
 
         $array[self::SECONDARY_EMAILS] = [
             MerchantDetail\Entity::TRANSACTION_REPORT_EMAIL => $transactionReportEmail,
@@ -331,9 +328,8 @@ class Entity extends Merchant\Entity
     protected function getActivationDetails(): array
     {
         $activation_details = [
-            self::ACTIVATED    => $this->isActivated(),
-            self::ACTIVATED_AT => $this->getActivatedAt(),
             self::STATUS       => $this->getActivationStatus(),
+            self::ACTIVATED_AT => $this->getActivatedAt(),
         ];
 
         return $activation_details;
