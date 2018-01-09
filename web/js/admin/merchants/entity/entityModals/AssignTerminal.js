@@ -52,6 +52,7 @@ const gatewayAcquirerMapping = {
   hdfc: 'HDFC',
   axis: 'Axis',
   icic: 'ICICI',
+  ratn: 'RBL',
 };
 
 export default class TerminalForm extends Component {
