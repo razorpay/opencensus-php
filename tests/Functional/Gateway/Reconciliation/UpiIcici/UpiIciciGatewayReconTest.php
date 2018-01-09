@@ -86,7 +86,11 @@ class UpiIciciGatewayReconTest extends TestCase
                     // Setting random column value
                     $content[9] = 13476475;
                 }
-            });
+            },
+            $this->gateway,
+            [
+                'type' => 'refund'
+            ]);
 
         $fileContents = $this->generateReconFile(['type' => 'refund']);
 
@@ -132,7 +136,11 @@ class UpiIciciGatewayReconTest extends TestCase
                     // Setting new unique id as column value
                     $content[4] = UniqueIdEntity::generateUniqueId();
                 }
-            });
+            },
+            $this->gateway,
+            [
+                'type' => 'refund'
+            ]);
 
         $fileContents = $this->generateReconFile(['type' => 'refund']);
 
@@ -219,7 +227,11 @@ class UpiIciciGatewayReconTest extends TestCase
                 {
                     $content[5] = "";
                 }
-            });
+            },
+            $this->gateway,
+            [
+                'type' => 'payment'
+            ]);
 
         $this->assertFailedPaymentRecon();
     }
@@ -240,7 +252,11 @@ class UpiIciciGatewayReconTest extends TestCase
                 {
                     $content[11] = "failed";
                 }
-            });
+            },
+            $this->gateway,
+            [
+                'type' => 'payment'
+            ]);
 
         $this->assertFailedPaymentRecon();
     }
@@ -261,7 +277,11 @@ class UpiIciciGatewayReconTest extends TestCase
                 {
                     $content[9] = 1840913;
                 }
-            });
+            },
+            $this->gateway,
+            [
+                'type' => 'payment'
+            ]);
 
         $this->assertFailedPaymentRecon();
     }

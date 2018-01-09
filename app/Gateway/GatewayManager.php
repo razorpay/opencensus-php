@@ -135,7 +135,7 @@ class GatewayManager extends \Illuminate\Support\Manager
         return $servers[$driver];
     }
 
-    public function recon($driver)
+    public function recon($driver, array $input = [])
     {
         $recons = & $this->recons;
 
@@ -144,7 +144,7 @@ class GatewayManager extends \Illuminate\Support\Manager
             return $recons[$driver];
         }
 
-        $recon = $this->getReconClass($driver);
+        $recon = $this->getReconClass($driver, $input);
 
         $recon = new $recon;
 
@@ -202,9 +202,16 @@ class GatewayManager extends \Illuminate\Support\Manager
         $this->servers[$driver] = new $class;
     }
 
-    public function getReconClass($driver)
+    public function getReconClass($driver, array $input = [])
     {
-        $recon = $this->getGatewayNamespace($driver, true) . '\\Reconciliator';
+        $reconClassName =  'Reconciliator';
+
+        if (empty($input['type']) === false)
+        {
+            $reconClassName = ucfirst($input['type']) . 'Reconciliator';
+        }
+
+        $recon = $this->getGatewayNamespace($driver, true) . '\\' . $reconClassName;
 
         return $recon;
     }

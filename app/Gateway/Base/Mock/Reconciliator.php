@@ -5,12 +5,10 @@ namespace RZP\Gateway\Base\Mock;
 use App;
 use Carbon\Carbon;
 use RZP\Models\Payment;
+use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Base\RepositoryManager;
-use RZP\Models\Base\PublicEntity;
-use RZP\Exception\LogicException;
 use RZP\Models\Base\PublicCollection;
-use RZP\Reconciliator\Base\Reconciliate;
 
 class Reconciliator
 {
@@ -31,16 +29,11 @@ class Reconciliator
     protected $gateway;
 
     /**
-     * The current mode of reconciliation.
-     * For eg. This can be payment, refund etc
      * @var string
      */
-    protected $type;
+    protected $fileToWriteName;
 
-    /**
-     * @var string
-     */
-    protected static $fileToWriteName;
+    protected $fileExtension = FileStore\Format::XLSX;
 
     public function __construct()
     {
@@ -51,30 +44,6 @@ class Reconciliator
 
     public function generateReconciliation(array $input)
     {
-        // If the type is not sent in the mock route request, we assign type to payment by default
-        $input['type'] = $input['type'] ?? Reconciliate::PAYMENT;
-
-        $this->setType($input['type']);
-
-        switch ($this->type)
-        {
-            case Reconciliate::PAYMENT:
-                $data = $this->generatePaymentReconciliation();
-                break;
-
-            case Reconciliate::REFUND:
-                $data = $this->generateRefundReconciliation();
-                break;
-
-            default:
-                throw new LogicException('Invalid recon type');
-        }
-
-        return $data;
-    }
-
-    private function generatePaymentReconciliation()
-    {
         $payments = $this->getAllPaymentsToReconcile();
 
         $inputData = [];
@@ -83,25 +52,7 @@ class Reconciliator
         {
             $data['payment'] = $payment->toArray();
 
-            $this->addGatewayEntityIfNeeded($data, $payment);
-
-            $inputData[] = $data;
-        }
-
-        return $this->generate($inputData);
-    }
-
-    private function generateRefundReconciliation()
-    {
-        $refunds = $this->getAllRefundsToReconcile();
-
-        $inputData = [];
-
-        foreach ($refunds as $refund)
-        {
-            $data['refund'] = $refund->toArray();
-
-            $this->addGatewayEntityIfNeeded($data, $refund);
+            $this->addGatewayEntityIfNeeded($data);
 
             $inputData[] = $data;
         }
@@ -126,13 +77,36 @@ class Reconciliator
     }
 
     /**
-     * Override this method in the child class
      * @param $content
-     * @throws \BadMethodCallException
+     * @return FileStore\Creator
      */
     protected function createReconFile($content)
     {
-        throw new \BadMethodCallException('createReconFile needs to be implemented in child gateway recon file');
+        return $this->createFile(
+            $this->fileExtension,
+            $content,
+            $this->fileToWriteName
+        );
+    }
+
+    protected function createFile(
+        string $extension,
+        array $content,
+        string $fileName,
+        string $type = FileStore\Type::MOCK_RECONCILIATION_FILE,
+        string $store = FileStore\Store::S3)
+    {
+        $creator = new FileStore\Creator;
+
+        $creator->extension($extension)
+                ->content($content)
+                ->name($fileName)
+                ->store($store)
+                ->type($type)
+                ->headers(false)
+                ->save();
+
+        return $creator;
     }
 
     protected function generateText($data, $glue = '~', $ignoreLastNewline = false)
@@ -177,9 +151,8 @@ class Reconciliator
      * To eliminate the DB calls, override this method in the base class.
      *
      * @param array $data
-     * @param PublicEntity $entity
      */
-    protected function addGatewayEntityIfNeeded(array & $data, PublicEntity $entity) {}
+    protected function addGatewayEntityIfNeeded(array & $data) {}
 
     /**
      * This can be used for mock recon content function
@@ -208,10 +181,5 @@ class Reconciliator
         ];
 
         return $this->repo->payment->fetchPaymentsWithStatus($createdAtStart, $createdAtEnd, $this->gateway, $statuses);
-    }
-
-    private function setType(string $type)
-    {
-        $this->type = $type;
     }
 }
