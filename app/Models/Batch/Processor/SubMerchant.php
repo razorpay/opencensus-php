@@ -8,7 +8,7 @@ use RZP\Models\Batch\Entity;
 use RZP\Models\Batch\Header;
 use RZP\Models\Batch\Status;
 use RZP\Models\Merchant\Detail as MerchantDetail;
-use RZP\Models\Batch\Helpers\LinkedAccount as Helper;
+use RZP\Models\Batch\Helpers\SubMerchant as Helper;
 
 class SubMerchant extends Base
 {
@@ -40,7 +40,7 @@ class SubMerchant extends Base
     {
         $this->repo->transactionOnLiveAndTest(function () use (& $entry)
         {
-            $this->createOrUpdateAccountForEntry($entry);
+            $this->createSubMerchantForEntry($entry);
         });
     }
 
@@ -49,52 +49,21 @@ class SubMerchant extends Base
      *
      * @return void
      */
-    protected function createOrUpdateAccountForEntry(array & $entry)
+    protected function createSubMerchantForEntry(array & $entry)
     {
-        $status = Status::FAILURE;
+        $status = Status::SUCCESS;
 
-        $accountId = $entry[Header::ACCOUNT_ID] ?: null;
-        //
-        // If account id exists in file row, just update the bank account
-        // details. Assume that is the expected use case, must not edit/update
-        // other things via batch flow.
-        //
-        if ($accountId !== null)
-        {
-            $account = $this->repo
-                            ->merchant
-                            ->findByAccountIdAndParent(
-                                $accountId,
-                                $this->merchant,
-                                true);
+        $input   = Helper::getSubMerchantInput($entry);
+        $account = $this->merchantCore->createSubMerchant($input, $this->merchant);
 
-            // Building input for bank core's method
-            $buildInput = $this->bankAccountCore
-                               ->buildBankAccountArrayFromMerchantDetail(
-                                    $account->merchantDetail,
-                                    true);
-            $overriddenInput = Helper::getBankAccountInput($entry);
-            $input = array_merge($buildInput, $overriddenInput);
+        $detailInput = Helper::getSubMerchantDetailInput($entry);
+        $response    = $this->merchantDetailCore->saveMerchantDetails($detailInput, $account);
 
-            $this->bankAccountCore->createOrChangeBankAccount($input, $account);
+        //$status = ($response['auto_activated'] === true) ?
+        //    Status::SUCCESS : Status::FAILURE;
 
-            $status = Status::SUCCESS;
-        }
-        else
-        {
-            $input = Helper::getSubMerchantInput($entry);
-            $account = $this->merchantCore->createSubMerchant($input, $this->merchant);
-
-            $detailInput = Helper::getSubMerchantDetailInput($entry);
-            $response = $this->merchantDetailCore->saveMerchantDetails($detailInput, $account);
-
-            $status = ($response['auto_activated'] === true) ?
-                        Status::SUCCESS : Status::FAILURE;
-        }
-
-
-        $entry[Header::STATUS]     = $status;
-        $entry[Header::ACCOUNT_ID] = Merchant\AccountEntity::getSignedId($account->getId());
+        $entry[Header::MERCHANT_ID] = Merchant\AccountEntity::getSignedId($account->getId());
+        $entry[Header::STATUS]      = $status;
     }
 
     protected function sendProcessedMail()

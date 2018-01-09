@@ -11,7 +11,7 @@ use RZP\Models\Merchant\Detail as MerchantDetail;
 class SubMerchant
 {
     /**
-     * Returns input for sub merchant (or linked account) creation
+     * Returns input for sub merchant creation
      *
      * @param  array  $entry
      *
@@ -20,13 +20,14 @@ class SubMerchant
     public static function getSubMerchantInput(array $entry): array
     {
         return [
-            Merchant\Entity::ID   => Merchant\Entity::generateUniqueId(),
-            Merchant\Entity::NAME => $entry[Header::BUSINESS_NAME],
+            Merchant\Entity::ID    => Merchant\Entity::generateUniqueId(),
+            Merchant\Entity::NAME  => $entry[Header::MERCHANT_NAME],
+            Merchant\Entity::EMAIL => $entry[Header::MERCHANT_EMAIL],
         ];
     }
 
     /**
-     * Returns input for sub merchant (or linked account) detail entity creation
+     * Returns input for sub merchant detail entity creation
      *
      * @param  array  $entry
      *
@@ -42,23 +43,6 @@ class SubMerchant
             MerchantDetail\Entity::BUSINESS_NAME       => $entry[Header::BUSINESS_NAME],
             MerchantDetail\Entity::BUSINESS_TYPE       => 1,
             MerchantDetail\Entity::SUBMIT              => '1',
-        ];
-    }
-
-    /**
-     * Returns bank account creation/update input, Used when a file row has
-     * account id, and in that case we just need to patch account details.
-     *
-     * @param  array  $entry
-     *
-     * @return array
-     */
-    public static function getBankAccountInput(array $entry): array
-    {
-        return [
-            BankAccount\Entity::BENEFICIARY_NAME => $entry[Header::BANK_ACCOUNT_NAME],
-            BankAccount\Entity::IFSC_CODE        => $entry[Header::BANK_BRANCH_IFSC],
-            BankAccount\Entity::ACCOUNT_NUMBER   => $entry[Header::BANK_ACCOUNT_NUMBER],
         ];
     }
 }
