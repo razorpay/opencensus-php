@@ -346,6 +346,15 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET       => 'required|alpha_num|max:32',
     ];
 
+    protected static $fssTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:fss',
+        Entity::GATEWAY_SECURE_SECRET       => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes|string',
+        Entity::GATEWAY_TERMINAL_ID         => 'required',
+        Entity::GATEWAY_ACCESS_CODE         => 'sometimes',
+        Entity::GATEWAY_MERCHANT_ID         => 'sometimes',
+    ];
+
     protected function validateGateway($input)
     {
         Payment\Gateway::validateGateway($input['gateway']);

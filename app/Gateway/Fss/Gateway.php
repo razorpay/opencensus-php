@@ -1004,7 +1004,8 @@ class Gateway extends Base\Gateway
     {
         $gatewayAquirer = $input[E::TERMINAL]->getGatewayAcquirer();
 
-        if (in_array($gatewayAquirer, Acquirer::$validGatewayAcquirers) === false)
+        if ((empty($gatewayAquirer) === true) or
+            (in_array($gatewayAquirer, Acquirer::$validGatewayAcquirers) === false))
         {
             throw new Exception\LogicException(
                 'Unsupported acquirer for the gateway',

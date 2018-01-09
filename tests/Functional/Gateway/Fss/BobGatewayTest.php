@@ -26,7 +26,7 @@ class BobGatewayTest extends TestCase
      */
     protected $payment;
 
-    protected $acquirer = IFSC::BARB;
+    protected $acquirer = 'barb';
 
     public function setUp()
     {
