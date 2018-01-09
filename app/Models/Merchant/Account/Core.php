@@ -26,13 +26,11 @@ class Core extends Base\Core
                         true,
                         true);
 
-        $merchantDetails = $this->getMerchantDetailsFromInput($input);
+        $merchantDetailsInput    = $this->getMerchantDetailsFromInput($input);
+        $bankAccountDetailsInput = $this->getBankAccountDetailsFromInput($input[Entity::BANK_ACCOUNT] ?? []);
 
-        $bankAccountDetails = $this->getBankAccountDetailsFromInput($input[Entity::BANK_ACCOUNT]);
-
-        (new BankAccount\Core)->createOrChangeBankAccount($bankAccountDetails, $account);
-
-        (new Merchant\Detail\Core)->saveMerchantDetails($merchantDetails, $account);
+        (new BankAccount\Core)->createOrChangeBankAccount($bankAccountDetailsInput, $account);
+        (new Merchant\Detail\Core)->saveMerchantDetails($merchantDetailsInput, $account);
 
         return $account->reload();
     }
@@ -46,8 +44,6 @@ class Core extends Base\Core
      */
     protected function getMerchantDetailsFromInput(array $input): array
     {
-        // @todo: Get BUSINESS_TYPE from input
-
         $businessName = $input[Entity::ACCOUNT_DETAILS][Entity::BUSINESS_NAME];
         $businessType = $input[Entity::ACCOUNT_DETAILS][Entity::BUSINESS_TYPE];
 
@@ -69,22 +65,22 @@ class Core extends Base\Core
      */
     protected function getBankAccountDetailsFromInput(array $input): array
     {
-        $bankAccountDetails = [
-            BankAccount\Entity::IFSC_CODE            => $input[BankAccount\Entity::IFSC_CODE],
-            BankAccount\Entity::ACCOUNT_NUMBER       => $input[BankAccount\Entity::ACCOUNT_NUMBER],
-            BankAccount\Entity::BENEFICIARY_NAME     => $input[BankAccount\Entity::BENEFICIARY_NAME],
-            BankAccount\Entity::BENEFICIARY_ADDRESS1 => $input[BankAccount\Entity::BENEFICIARY_ADDRESS1],
-            BankAccount\Entity::BENEFICIARY_ADDRESS2 => $input[BankAccount\Entity::BENEFICIARY_ADDRESS2],
-            BankAccount\Entity::BENEFICIARY_ADDRESS3 => $input[BankAccount\Entity::BENEFICIARY_ADDRESS3],
-            BankAccount\Entity::BENEFICIARY_ADDRESS4 => $input[BankAccount\Entity::BENEFICIARY_ADDRESS4],
-            BankAccount\Entity::BENEFICIARY_EMAIL    => $input[BankAccount\Entity::BENEFICIARY_EMAIL],
-            BankAccount\Entity::BENEFICIARY_MOBILE   => $input[BankAccount\Entity::BENEFICIARY_MOBILE],
-            BankAccount\Entity::BENEFICIARY_CITY     => $input[BankAccount\Entity::BENEFICIARY_CITY],
-            BankAccount\Entity::BENEFICIARY_STATE    => $input[BankAccount\Entity::BENEFICIARY_STATE],
-            BankAccount\Entity::BENEFICIARY_COUNTRY  => $input[BankAccount\Entity::BENEFICIARY_COUNTRY],
-            BankAccount\Entity::BENEFICIARY_PIN      => $input[BankAccount\Entity::BENEFICIARY_PIN],
+        $bankAccountDetailsKeys = [
+            BankAccount\Entity::IFSC_CODE,
+            BankAccount\Entity::ACCOUNT_NUMBER,
+            BankAccount\Entity::BENEFICIARY_NAME,
+            BankAccount\Entity::BENEFICIARY_ADDRESS1,
+            BankAccount\Entity::BENEFICIARY_ADDRESS2,
+            BankAccount\Entity::BENEFICIARY_ADDRESS3,
+            BankAccount\Entity::BENEFICIARY_ADDRESS4,
+            BankAccount\Entity::BENEFICIARY_EMAIL,
+            BankAccount\Entity::BENEFICIARY_MOBILE,
+            BankAccount\Entity::BENEFICIARY_CITY,
+            BankAccount\Entity::BENEFICIARY_STATE,
+            BankAccount\Entity::BENEFICIARY_COUNTRY,
+            BankAccount\Entity::BENEFICIARY_PIN,
         ];
 
-        return $bankAccountDetails;
+        return array_only($input, $bankAccountDetailsKeys);
     }
 }

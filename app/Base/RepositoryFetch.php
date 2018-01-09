@@ -639,12 +639,10 @@ trait RepositoryFetch
                         ->findOrFailPublic($id);
 
         //
-        // Most of the entities can be filtered on Merchant ID.
-        // They have the merchant() relation. But few entities
-        // do not have this relation defined.
-        // Eg: Merchant\Account\Entity
-        //
-        // Skip association if the relation is not defined.
+        // Most of the entities can be filtered on Merchant ID. They have the
+        // merchant() relation. But few entities do not have this relation defined
+        // and we have overridden scopeMerchantId() to filter on different column.
+        // Eg: Merchant\Account\Entity applies the filter on column: parent_id.
         //
         if (method_exists($entity, 'merchant') === true)
         {
