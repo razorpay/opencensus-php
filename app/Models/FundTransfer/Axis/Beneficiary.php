@@ -71,14 +71,30 @@ class Beneficiary extends BaseBeneficiary
     {
         $rows = [];
 
+        $headers = [
+            'Beneficiary Code',
+            'Beneficiary Name',
+            'Beneficiary Account',
+            'Bene Bank IFSC',
+            'Beneficiary Bank Name',
+        ];
+
+        $rows[] = $headers;
+
         foreach ($bankAccounts as $ba)
         {
+            $beneName = $ba->getBeneficiaryName();
+
+            $beneName = substr($beneName, 0, 50);
+
+            $ifsc = strtoupper($ba->getIfscCode());
+
             $rows[] = [
                 $ba->getId(),
-                $ba->getBeneficiaryName(),
+                $beneName,
                 $ba->getAccountNumber(),
-                $ba->getIfscCode(),
-                $ba->getBankName(),
+                $ifsc,
+                '', // Axis needs us to send this value as blank
             ];
         }
 

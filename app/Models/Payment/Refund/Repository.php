@@ -226,6 +226,7 @@ class Repository extends Base\Repository
     public function fetchRefundsForGatewayBetweenTimestamps($type, $gatewayCode, $from, $to, $gateway)
     {
         $attrs = $this->dbColumn('*');
+
         $query = $this->newQuery();
 
         $refunds = $query->select($attrs)->join(
@@ -264,7 +265,6 @@ class Repository extends Base\Repository
         $paymentGateway = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);
 
         $refundCreatedAt = $this->dbColumn(Refund\Entity::CREATED_AT);
-
 
         return $this->newQuery()
                     ->select($refundAttrs)
@@ -623,7 +623,7 @@ class Repository extends Base\Repository
                                   ->whereNull($receipt)
                                   ->where($status, '!=', Order\Status::PAID)
                                   ->groupBy($orderId);
-                          });
+                      });
 
         return $query->get();
     }

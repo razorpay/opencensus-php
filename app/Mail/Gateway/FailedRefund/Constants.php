@@ -3,7 +3,6 @@
 namespace RZP\Mail\Gateway\FailedRefund;
 
 use RZP\Constants\MailTags;
-use RZP\Mail\Base;
 use RZP\Models\Payment\Gateway;
 use RZP\Mail\Gateway\RefundFile;
 
