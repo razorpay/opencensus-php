@@ -61,7 +61,7 @@ class SubMerchant extends Base
         $response    = $this->merchantDetailCore->saveMerchantDetails($detailInput, $account);
 
         // Save files
-        $this->merchantDetailCore->saveDummyFiles($account);
+        $this->merchantDetailCore->saveDummyActivationFiles($account);
 
         // Submit activation form
         $submitData = ['submit' => 1];
