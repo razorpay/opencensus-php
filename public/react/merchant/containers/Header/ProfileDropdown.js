@@ -4,7 +4,6 @@ import Dropdown, { DropdownTrigger, DropdownContent } from 'rzp/ui/Dropdown';
 import CustomClipboard from 'rzp/ui/Clipboard/Custom';
 import { openModal, closeModal } from 'rzp/modules/modals';
 import { logout, showOrHideTour } from 'merchant/modules/session';
-import { fetchConfig } from 'merchant/modules/config';
 import SubmitFeedback from 'merchant/containers/Header/SubmitFeedback';
 
 @connect(
@@ -14,13 +13,9 @@ import SubmitFeedback from 'merchant/containers/Header/SubmitFeedback';
       ...state.config.config,
     };
   },
-  { logout, fetchConfig, closeModal, openModal, showOrHideTour }
+  { logout, closeModal, openModal, showOrHideTour }
 )
 export default class ProfileDropdown extends Component {
-  componentWillMount() {
-    this.props.fetchConfig();
-  }
-
   logout = () => {
     return this.props.logout().then(() => {
       window.location.reload();
@@ -44,23 +39,21 @@ export default class ProfileDropdown extends Component {
         </DropdownTrigger>
         <DropdownContent>
           <div class="dropdown-menu ProfileDropdown">
-            {user.current &&
+            {user.current && (
               <div class="media">
                 <div class="media-left">
                   <div class="media-object">
-                    {this.props.logo_url
-                      ? <img class="img-responsive" src={this.props.logo_url} />
-                      : <i class="icon icon-business" />}
+                    {this.props.logo_url ? (
+                      <img class="img-responsive" src={this.props.logo_url} />
+                    ) : (
+                      <i class="icon icon-business" />
+                    )}
                   </div>
                 </div>
                 <div class="media-body">
-                  <div class="merchantname">
-                    {merchant.name}
-                  </div>
+                  <div class="merchantname">{merchant.name}</div>
                   <div>
-                    <small>
-                      {merchant.id}
-                    </small>
+                    <small>{merchant.id}</small>
                     <CustomClipboard value={merchant.id}>
                       <button
                         class="btn btn-default btn-xs"
@@ -71,7 +64,8 @@ export default class ProfileDropdown extends Component {
                     </CustomClipboard>
                   </div>
                 </div>
-              </div>}
+              </div>
+            )}
 
             <div class="media">
               <div class="media-left">
@@ -82,9 +76,7 @@ export default class ProfileDropdown extends Component {
               <div class="media-body">
                 <div>Logged in as</div>
                 <p>
-                  <b>
-                    {user.user.email}
-                  </b>
+                  <b>{user.user.email}</b>
                 </p>
                 <button class="btn btn-primary btn-sm" onClick={this.logout}>
                   Log out
