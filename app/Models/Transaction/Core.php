@@ -465,9 +465,14 @@ class Core extends Base\Core
 
         $amount = $transaction->getAmount();
 
-        $credit = $amount - $fee;
+        $credit = 0;
 
-        $transaction->setCreditType(Transaction\CreditType::DEFAULT);
+        if ($amount !== 0)
+        {
+            $credit = $amount - $fee;
+
+            $transaction->setCreditType(Transaction\CreditType::DEFAULT);
+        }
 
         return [$credit, $fee, $tax, $feesSplit];
     }

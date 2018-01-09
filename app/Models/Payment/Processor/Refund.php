@@ -698,6 +698,7 @@ trait Refund
 
     protected function callRefundFunction($payment, $data)
     {
+        // @todo: Handle zero payment refund case
         if ($this->shouldHitGatewayForRefund($payment) === true)
         {
             return $this->callGatewayRefundFunction($payment, $data);

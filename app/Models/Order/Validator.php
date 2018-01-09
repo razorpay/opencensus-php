@@ -27,7 +27,7 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_NUMBER,
         Entity::AMOUNT,
         Entity::BANK,
-        Entity::METHOD,
+        'method_fee_bearer',
     ];
 
     protected function validateAmount($input)
@@ -73,7 +73,7 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateMethod($input)
+    protected function validateMethodFeeBearer($input)
     {
         if (isset($input[Entity::METHOD]) === false)
         {
@@ -87,13 +87,8 @@ class Validator extends Base\Validator
             if ($merchant->isFeeBearerCustomer() === true)
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    'Order creation failed. Please contact Razorpay for further assistance.',
-                    null,
-                    [
-                        'order_id' => $this->entity->getId()
-                    ]);
+                    'Order creation failed. Please contact Razorpay for further assistance.');
             }
-
         }
     }
 

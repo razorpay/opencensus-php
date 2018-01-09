@@ -72,6 +72,141 @@ class NetbankingAxisEMandateTest extends TestCase
         $this->assertEquals('captured', $payment['status']);
     }
 
+    public function testRefundEmandateInitialPaymentWithFeeCredit()
+    {
+        $this->createNetbankingRecurringPricingPlan();
+
+        $this->fixtures->create('credits', [
+                       'type'        => 'fee',
+                       'value'       => 10000,
+                   ]);
+
+        $this->fixtures->merchant->editFeeCredits('10000', '10000000000000');
+
+        $payment = $this->payment;
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 0]);
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = 0;
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+
+        $this->assertEquals(0, $payment['amount']);
+        $this->assertEquals('captured', $payment['status']);
+
+        $paymentTxn = $this->getLastEntity(Entity::TRANSACTION, true);
+
+        $this->assertEquals(0, $paymentTxn['credit']);
+        $this->assertEquals(12, $paymentTxn['fee']);
+        $this->assertEquals(2, $paymentTxn['tax']);
+        $this->assertEquals('payment', $paymentTxn['type']);
+        $this->assertEquals('prepaid', $paymentTxn['fee_model']);
+
+        $this->refundPayment($payment['id']);
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+
+        $this->assertEquals(0, $payment['amount_refunded']);
+        $this->assertEquals('refunded', $payment['status']);
+
+        $refundTxn = $this->getLastEntity(Entity::TRANSACTION, true);
+
+        $this->assertEquals(0, $refundTxn['debit']);
+        $this->assertEquals(0, $refundTxn['fee']);
+        $this->assertEquals(0, $refundTxn['tax']);
+        $this->assertEquals('refund', $refundTxn['type']);
+        $this->assertEquals('na', $refundTxn['fee_model']);
+    }
+
+    public function testRefundEmandateInitialPaymentWithAmountCredit()
+    {
+        $this->createNetbankingRecurringPricingPlan();
+
+        $this->fixtures->create('credits', [
+                       'type'        => 'amount',
+                       'value'       => 10000,
+                   ]);
+
+        $payment = $this->payment;
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 0]);
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = 0;
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+
+        $this->assertEquals(0, $payment['amount']);
+        $this->assertEquals('captured', $payment['status']);
+
+        $paymentTxn = $this->getLastEntity(Entity::TRANSACTION, true);
+
+        $this->assertEquals(0, $paymentTxn['credit']);
+        $this->assertEquals(0, $paymentTxn['fee']);
+        $this->assertEquals(0, $paymentTxn['tax']);
+        $this->assertEquals('payment', $paymentTxn['type']);
+        $this->assertEquals('prepaid', $paymentTxn['fee_model']);
+
+        $this->refundPayment($payment['id']);
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+
+        $this->assertEquals(0, $payment['amount_refunded']);
+        $this->assertEquals('refunded', $payment['status']);
+
+        $refundTxn = $this->getLastEntity(Entity::TRANSACTION, true);
+
+        $this->assertEquals(0, $refundTxn['debit']);
+        $this->assertEquals(0, $refundTxn['fee']);
+        $this->assertEquals(0, $refundTxn['tax']);
+        $this->assertEquals('refund', $refundTxn['type']);
+        $this->assertEquals('na', $refundTxn['fee_model']);
+    }
+
+    public function testRefundEmandateInitialPaymentWithNormalPricing()
+    {
+        $this->createNetbankingRecurringPricingPlan();
+
+        $payment = $this->payment;
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 0]);
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = 0;
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+
+        $this->assertEquals(0, $payment['amount']);
+        $this->assertEquals('captured', $payment['status']);
+
+        $paymentTxn = $this->getLastEntity(Entity::TRANSACTION, true);
+
+        $this->assertEquals(0, $paymentTxn['credit']);
+        $this->assertEquals(12, $paymentTxn['fee']);
+        $this->assertEquals(2, $paymentTxn['tax']);
+        $this->assertEquals('payment', $paymentTxn['type']);
+        $this->assertEquals('prepaid', $paymentTxn['fee_model']);
+
+        $this->refundPayment($payment['id']);
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+
+        $this->assertEquals(0, $payment['amount_refunded']);
+        $this->assertEquals('refunded', $payment['status']);
+
+        $refundTxn = $this->getLastEntity(Entity::TRANSACTION, true);
+
+        $this->assertEquals(0, $refundTxn['debit']);
+        $this->assertEquals(0, $refundTxn['fee']);
+        $this->assertEquals(0, $refundTxn['tax']);
+        $this->assertEquals('refund', $refundTxn['type']);
+        $this->assertEquals('na', $refundTxn['fee_model']);
+    }
+
     public function testEmandateInitialPaymentFailure()
     {
         $payment = $this->payment;
@@ -251,6 +386,24 @@ class NetbankingAxisEMandateTest extends TestCase
             return ($mail->hasFrom('emandate@razorpay.com') and
                 ($mail->hasTo(EmailConstants::RECIPIENT_EMAILS_MAP[$key])));
         });
+    }
+
+    protected function createNetbankingRecurringPricingPlan()
+    {
+        $pricingPlan = [
+            'plan_id'             => '1hDYlICobzOCYt',
+            'plan_name'           => 'testDefaultPlan',
+            'feature'             => 'recurring',
+            'payment_method'      => 'netbanking',
+            'payment_method_type' => null,
+            'payment_network'     => 'UTIB',
+            'payment_issuer'      => null,
+            'percent_rate'        => 0,
+            'fixed_rate'          => 10,
+            'international'       => 0,
+        ];
+
+        $this->fixtures->create('pricing', $pricingPlan);
     }
 
     protected function assertEmandateEntities()

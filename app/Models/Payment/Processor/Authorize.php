@@ -1041,7 +1041,13 @@ trait Authorize
         else
         {
             throw new Exception\LogicException(
-                'Shouldn\'t have reached here.');
+                'Shouldn\'t have reached here.',
+                null,
+                [
+                    'payment'        => $payment->getId(),
+                    'recurring_type' => $payment->getRecurringType(),
+                    'auth_type'      => $payment->getAuthType()
+                ]);
         }
 
         // We ensure that the e_mandate feature has been enabled for the merchant
@@ -3113,7 +3119,7 @@ trait Authorize
             else if ($payment->hasOrder() === true)
             {
                 if (($payment->order->getPaymentCapture() === true) and
-                    ($payment->isEmandate() === false))
+                    ($this->isAsyncEMandatePayment($payment) === false))
                 {
                     assertTrue($payment->hasBeenCaptured() === true);
                 }

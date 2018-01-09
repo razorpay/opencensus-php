@@ -1491,17 +1491,36 @@ class Processor
         // For normal flow, we auto capture the payment as soon as
         // it is authorized
         //
-        if (($payment->isNetbanking() === true) and
-            ($payment->isRecurring() === true) and
-            ($payment->isRecurringTypeInitial() === true))
+        if ($this->isAsyncEMandatePayment($payment) === true)
         {
-            if (Payment\Gateway::isFileBasedEMandateRegistrationGateway($payment->getGateway()) === true)
-            {
-                return false;
-            }
+            return false;
         }
 
         return $this->shouldAutoCaptureOrder($payment);
+    }
+
+    protected function isAsyncEMandatePayment(Payment\Entity $payment)
+    {
+        if (($payment->isNetbanking() === true) and
+            ($payment->isRecurring() === true))
+        {
+            if ($payment->isRecurringTypeInitial() === true)
+            {
+                if (Payment\Gateway::isFileBasedEMandateRegistrationGateway($payment->getGateway()) === true)
+                {
+                    return true;
+                }
+            }
+            else if ($payment->isRecurringTypeAuto() === true)
+            {
+                if (Payment\Gateway::isFileBasedEMandateDebitGateway($payment->getGateway()) === true)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     protected function shouldAutoCaptureAlreadyAuthenticatedSubscription(Payment\Entity $payment)
