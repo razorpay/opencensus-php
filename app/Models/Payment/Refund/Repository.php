@@ -226,6 +226,7 @@ class Repository extends Base\Repository
     public function fetchRefundsForGatewayBetweenTimestamps($type, $gatewayCode, $from, $to, $gateway)
     {
         $attrs = $this->dbColumn('*');
+
         $query = $this->newQuery();
 
         $refunds = $query->select($attrs)->join(

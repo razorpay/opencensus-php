@@ -22,7 +22,6 @@ class UpiIcici extends Base
 
         foreach ($data as $row)
         {
-
             $date = Carbon::createFromTimestamp(
                 $row['payment']['authorized_at'], Timezone::IST)->format('Y-m-d');
 
