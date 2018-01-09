@@ -471,6 +471,11 @@ class Gateway
         Gateway::NETBANKING_HDFC,
     ];
 
+    public static $recurringCardNetworks = [
+        Network::MC,
+        Network::VISA,
+    ];
+
     /**
      * List of ALL auth types and the corresponding
      * banks supported by that auth type.
@@ -491,6 +496,15 @@ class Gateway
     ];
 
     /**
+     * TODO: This needs to be removed after we migrate all the gateways to
+     *
+     * @var array
+     */
+    public static $zeroRupeeEmandateBanks = [
+        IFSC::UTIB,
+    ];
+
+    /**
      * List of gateways and the banks that they support
      * for e-mandate. This list is required because some
      * gateways might support more than one bank for
@@ -502,11 +516,6 @@ class Gateway
         Gateway::NETBANKING_ICICI   => [IFSC::ICIC],
         Gateway::NETBANKING_AXIS    => [IFSC::UTIB],
         Gateway::NETBANKING_HDFC    => [IFSC::HDFC],
-    ];
-
-    public static $recurringCardNetworks = [
-        Network::MC,
-        Network::VISA,
     ];
 
     /**
@@ -676,10 +685,6 @@ class Gateway
         Gateway::AXIS_MIGS
     ];
 
-    public static $zeroRuppeeEMandateBanks = [
-        IFSC::UTIB
-    ];
-
     public static function getAcquirerName(string $acquirer)
     {
         $code = self::$acquirerToCodeMap[$acquirer];
@@ -711,9 +716,9 @@ class Gateway
         return in_array($gateway, self::$recurringGateways, true);
     }
 
-    public static function isZeroRuppeeFlowSupported($bank): bool
+    public static function isZeroRupeeFlowSupported($bank): bool
     {
-        return in_array($bank, self::$zeroRuppeeEMandateBanks, true);
+        return in_array($bank, self::$zeroRupeeEmandateBanks, true);
     }
 
     /**
@@ -748,6 +753,11 @@ class Gateway
         }
 
         return array_values(array_unique($banks));
+    }
+
+    public static function getZeroRupeeEmandateBanks(): array
+    {
+        return self::$zeroRupeeEmandateBanks;
     }
 
     public static function getAvailableEmandateBanksForAuthType(string $authType): array

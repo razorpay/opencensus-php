@@ -77,14 +77,14 @@ class OrderTest extends TestCase
         return $order;
     }
 
-    public function testEmandateRegistrationOrderWithZeroRuppee()
+    public function testEmandateRegistrationOrderWithZeroRupee()
     {
         $order = $this->startTest();
 
         return $order;
     }
 
-    public function testEmandateRegistrationOrderWithoutZeroRuppee()
+    public function testEmandateRegistrationOrderWithoutZeroRupee()
     {
         $order = $this->startTest();
 

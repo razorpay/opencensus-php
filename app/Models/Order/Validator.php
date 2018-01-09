@@ -33,28 +33,31 @@ class Validator extends Base\Validator
     {
         $amount = $input['amount'];
 
-        // @todo: Use constants
-        if ((isset($input['method']) === false) or
-            ($input['method'] !== Payment\Method::EMANDATE))
+        if ((isset($input[Entity::METHOD]) === false) or
+            ($input[Entity::METHOD] !== Payment\Method::EMANDATE))
         {
             if ($amount < 100)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'The amount must be at least 100.',
-                    'amount',
-                    ['amount' => $amount]);
+                    Entity::AMOUNT,
+                    [Entity::AMOUNT => $amount]);
             }
         }
-        else if ($input['method'] === Payment\Method::EMANDATE)
+        else if ($input[Entity::METHOD] === Payment\Method::EMANDATE)
         {
-            if ((isset($input['bank']) === true) and
-                (Payment\Gateway::isZeroRuppeeFlowSupported($input['bank']) === false) and
+            //
+            // Note that an emandate payment order can be created for second recurring also.
+            // Hence, we cannot enforce 0rs for ALL emandate payment orders.
+            //
+            if ((isset($input[Entity::BANK]) === true) and
+                (Payment\Gateway::isZeroRupeeFlowSupported($input[Entity::BANK]) === false) and
                 ($amount < 100))
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'The amount must be at least 100.',
-                    'amount',
-                    ['amount' => $amount]);
+                    Entity::AMOUNT,
+                    [Entity::AMOUNT => $amount]);
             }
         }
 
@@ -64,8 +67,8 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Amount exceeds maximum amount allowed.',
-                'amount',
-                ['amount' => $amount]);
+                Entity::AMOUNT,
+                [Entity::AMOUNT => $amount]);
         }
     }
 
@@ -89,6 +92,8 @@ class Validator extends Base\Validator
         $this->validateMerchantSpecificData($payment);
 
         $this->validateOrderBank($payment->getBank());
+
+        $this->validateOrderMethod($payment->getMethod());
     }
 
     /**
@@ -187,12 +192,20 @@ class Validator extends Base\Validator
 
     public function validateAutoCapture(Payment\Entity $payment)
     {
-        if (($payment->isNetbanking() === true) and
-            ($payment->isRecurring() === true) and
-            ($this->entity->getPaymentCapture() === false))
+        $order = $this->entity;
+
+        if (($payment->isEmandate() === true) and
+            ($order->getPaymentCapture() === false))
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Payment capture should be true for eMandate payments.');
+                'payment_capture should be true for eMandate payments.',
+                Entity::PAYMENT_CAPTURE,
+                [
+                    'payment_id' => $payment->getId(),
+                    'method' => $payment->getMethod(),
+                    'auth_type' => $payment->getAuthType(),
+                    'order_id'  => $order->getId(),
+                ]);
         }
     }
 
@@ -251,8 +264,6 @@ class Validator extends Base\Validator
             return;
         }
 
-        $supportedBanks = [];
-
         switch ($input['method'])
         {
             case Payment\Method::EMANDATE:
@@ -260,9 +271,17 @@ class Validator extends Base\Validator
                 break;
 
             case Payment\Method::NETBANKING:
-            default:
                 $supportedBanks = Netbanking::getSupportedBanks();
                 break;
+
+            default:
+                throw new Exception\BadRequestValidationFailureException(
+                    'Invalid method passed for the order',
+                    Entity::METHOD,
+                    [
+                        'input' => $input
+                    ]);
+
         }
 
         $bank = $input[Entity::BANK];
@@ -313,5 +332,17 @@ class Validator extends Base\Validator
                     $input
                 ]);
         };
+    }
+
+    protected function validateOrderMethod(string $method = null)
+    {
+        $order = $this->entity;
+
+        if (($order->getMethod() !== null) and
+            ($order->getMethod() !== $method))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ORDER_METHOD_DOES_NOT_MATCH_PAYMENT_METHOD);
+        }
     }
 }

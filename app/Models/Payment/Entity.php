@@ -854,6 +854,9 @@ class Entity extends Base\PublicEntity
 
 // ----------------------- Mutator ---------------------------------------------
 
+    //
+    // Temporary only. To be removed later.
+    //
     protected function setMethodAttribute($method)
     {
         if ($method === Payment\Method::EMANDATE)
@@ -1180,7 +1183,12 @@ class Entity extends Base\PublicEntity
 
     public function isEmandate()
     {
-        return ($this->getAttribute(self::METHOD) === Payment\Method::EMANDATE);
+        //
+        // TODO: Remove the second condition after we start
+        // storing `emandate` as method in the payment entity.
+        //
+        return (($this->getAttribute(self::METHOD) === Payment\Method::EMANDATE) or
+                (($this->isNetbanking() === true) and ($this->isRecurring() === true)));
     }
 
     public function isWallet()

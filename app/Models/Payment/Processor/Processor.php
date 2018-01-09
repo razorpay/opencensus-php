@@ -1490,6 +1490,7 @@ class Processor
         // registration is complete.
         // For normal flow, we auto capture the payment as soon as
         // it is authorized
+        //
         if (($payment->isNetbanking() === true) and
             ($payment->isRecurring() === true) and
             ($payment->isRecurringTypeInitial() === true))

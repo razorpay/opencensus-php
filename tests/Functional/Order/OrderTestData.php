@@ -141,7 +141,7 @@ return [
             ],
         ],
     ],
-    'testEmandateRegistrationOrderWithZeroRuppee' => [
+    'testEmandateRegistrationOrderWithZeroRupee' => [
         'request' => [
             'content' => [
                 'amount'         => 0,
@@ -161,7 +161,7 @@ return [
             ],
         ],
     ],
-    'testEmandateRegistrationOrderWithoutZeroRuppee' => [
+    'testEmandateRegistrationOrderWithoutZeroRupee' => [
         'request' => [
             'content' => [
                 'amount'         => 0,

@@ -1032,57 +1032,11 @@ trait Authorize
         //
         if ($payment->isRecurringTypeInitial() === true)
         {
-            if ((Payment\Gateway::isZeroRuppeeFlowSupported($payment->getBank()) === true) and
-                ($payment->getAmount() !== 0))
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'The amount must be 0 for eMandate registration',
-                    'amount',
-                    ['amount' => $payment->getAmount()]
-                );
-            }
-
-            if (empty($input[Payment\Entity::BANK_ACCOUNT]) === true)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'The bank_account field is required when method is ' . Method::EMANDATE
-                );
-            }
-
-            if ($payment->getAuthType() === null)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'The auth_type field is required when method is ' . Method::EMANDATE
-                );
-            }
-
-            $bank = $payment->getBank();
-
-            // TODO: Handle first recurring / second recurring based on token and route
-
-            if (in_array(
-                    $bank,
-                    Payment\Gateway::getAvailableEmandateBanksForAuthType($payment->getAuthType()),
-                    true) === false)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_BANK_RECURRING_NOT_SUPPORTED,
-                    Payment\Entity::BANK,
-                    [
-                        'payment' => $payment->toArray(),
-                    ]);
-            }
+            $this->validateInitialRecurringForNetbanking($payment, $input);
         }
-        else
+        else if ($payment->isRecurringTypeAuto() === true)
         {
-            if ($payment->getAmount() < 100)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'The amount must be at least 100.',
-                    'amount',
-                    ['amount' => $payment->getAmount()]
-                );
-            }
+            $this->validateAutoRecurringForNetbanking($payment, $input);
         }
 
         // We ensure that the e_mandate feature has been enabled for the merchant
@@ -1108,6 +1062,74 @@ trait Authorize
         $this->validateTokenRecurringStatus($token, $payment);
 
         $this->validateTokenMaxAmount($token, $payment);
+    }
+
+    protected function validateInitialRecurringForNetbanking(Payment\Entity $payment, array $input)
+    {
+        if ((Payment\Gateway::isZeroRupeeFlowSupported($payment->getBank()) === true) and
+            ($payment->getAmount() !== 0))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The amount must be 0 for eMandate registration',
+                Payment\Entity::AMOUNT,
+                [
+                    'amount'            => $payment->getAmount(),
+                    'payment_id'        => $payment->getId(),
+                    'method'            => $payment->getMethod(),
+                    'auth_type'         => $payment->getAuthType(),
+                    'recurring_type'    => $payment->getRecurringType(),
+                    'bank'              => $payment->getBank(),
+                ]);
+        }
+
+        if (empty($input[Payment\Entity::BANK_ACCOUNT]) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The bank_account field is required when method is ' . Method::EMANDATE
+            );
+        }
+
+        if ($payment->getAuthType() === null)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The auth_type field is required when method is ' . Method::EMANDATE
+            );
+        }
+
+        $bank = $payment->getBank();
+
+        // TODO: Handle first recurring / second recurring based on token and route
+
+        if (in_array(
+                $bank,
+                Payment\Gateway::getAvailableEmandateBanksForAuthType($payment->getAuthType()),
+                true) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_BANK_RECURRING_NOT_SUPPORTED,
+                Payment\Entity::BANK,
+                [
+                    'payment' => $payment->toArray(),
+                ]);
+        }
+    }
+
+    protected function validateAutoRecurringForNetbanking(Payment\Entity $payment, array $input)
+    {
+        if ($payment->getAmount() < 100)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The amount must be at least 100.',
+                'amount',
+                [
+                    'amount'            => $payment->getAmount(),
+                    'payment_id'        => $payment->getId(),
+                    'method'            => $payment->getMethod(),
+                    'auth_type'         => $payment->getAuthType(),
+                    'recurring_type'    => $payment->getRecurringType(),
+                    'bank'              => $payment->getBank(),
+                ]);
+        }
     }
 
     protected function validateTokenRecurringStatus(Token\Entity $token, Payment\Entity $payment)

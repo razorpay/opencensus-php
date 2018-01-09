@@ -136,6 +136,7 @@ class Entity extends Base\PublicEntity
     protected $entity = 'order';
 
     /** Related Models */
+
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');
@@ -159,6 +160,10 @@ class Entity extends Base\PublicEntity
     /** End Related Models */
 
     /** Mutators */
+
+    //
+    // Temporary only. To be removed later.
+    //
     protected function setMethodAttribute($method)
     {
         if ($method === Payment\Method::EMANDATE)
