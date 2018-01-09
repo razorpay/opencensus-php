@@ -96,6 +96,14 @@ class Entity extends Merchant\Entity
         self::INVOICE_CODE,
     ];
 
+    public static $publicToDatabaseKeysMap = [
+        BankAccount\Entity::IFSC_CODE            => MerchantDetail\Entity::BANK_BRANCH_IFSC,
+        BankAccount\Entity::ACCOUNT_NUMBER       => MerchantDetail\Entity::BANK_ACCOUNT_NUMBER,
+        BankAccount\Entity::ACCOUNT_TYPE         => MerchantDetail\Entity::BANK_ACCOUNT_TYPE,
+        BankAccount\Entity::BENEFICIARY_NAME     => MerchantDetail\Entity::BANK_ACCOUNT_NAME,
+        BankAccount\Entity::BENEFICIARY_ADDRESS1 => MerchantDetail\Entity::BANK_BENEFICIARY_ADDRESS1,
+    ];
+
     /**
      * This function is used in case of polymorphic relations where we associate one entity
      * with multiple other entities using (entity_type and entity_id). It determines the string that

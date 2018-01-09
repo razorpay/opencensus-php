@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Merchant\Account;
 
-use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
 use RZP\Models\Merchant\Detail;
@@ -29,7 +28,8 @@ class Core extends Merchant\Core
         $merchantDetailsInput    = $this->getMerchantDetailsFromInput($input);
         $bankAccountDetailsInput = $this->getBankAccountDetailsFromInput($input[Entity::BANK_ACCOUNT] ?? []);
 
-        (new BankAccount\Core)->createOrChangeBankAccount($bankAccountDetailsInput, $account);
+        $merchantDetailsInput = array_merge($merchantDetailsInput, $bankAccountDetailsInput);
+
         (new Merchant\Detail\Core)->saveMerchantDetails($merchantDetailsInput, $account);
 
         return $account->reload();
@@ -68,19 +68,22 @@ class Core extends Merchant\Core
         $bankAccountDetailsKeys = [
             BankAccount\Entity::IFSC_CODE,
             BankAccount\Entity::ACCOUNT_NUMBER,
+            BankAccount\Entity::ACCOUNT_TYPE,
             BankAccount\Entity::BENEFICIARY_NAME,
             BankAccount\Entity::BENEFICIARY_ADDRESS1,
-            BankAccount\Entity::BENEFICIARY_ADDRESS2,
-            BankAccount\Entity::BENEFICIARY_ADDRESS3,
-            BankAccount\Entity::BENEFICIARY_ADDRESS4,
-            BankAccount\Entity::BENEFICIARY_EMAIL,
-            BankAccount\Entity::BENEFICIARY_MOBILE,
-            BankAccount\Entity::BENEFICIARY_CITY,
-            BankAccount\Entity::BENEFICIARY_STATE,
-            BankAccount\Entity::BENEFICIARY_COUNTRY,
-            BankAccount\Entity::BENEFICIARY_PIN,
         ];
 
-        return array_only($input, $bankAccountDetailsKeys);
+        $bankAccountDetails = array_only($input, $bankAccountDetailsKeys);
+
+        $map = Entity::$publicToDatabaseKeysMap;
+
+        $merchantDetails = [];
+
+        foreach($bankAccountDetails as $publicKey => $value)
+        {
+            $merchantDetails[$map[$publicKey]] = $value;
+        }
+
+        return $merchantDetails;
     }
 }

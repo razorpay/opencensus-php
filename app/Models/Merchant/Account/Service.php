@@ -3,13 +3,9 @@
 namespace RZP\Models\Merchant\Account;
 
 use RZP\Exception;
-use RZP\Models\Base;
 use RZP\Models\Merchant;
-use RZP\Error\ErrorCode;
 use RZP\Models\BankAccount;
 use RZP\Models\Merchant\Notify;
-use RZP\Models\Base\PublicCollection;
-use RZP\Models\Merchant\Detail as MerchantDetail;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 
 class Service extends Merchant\Service

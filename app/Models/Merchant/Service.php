@@ -95,7 +95,7 @@ class Service extends Base\Service
 
         unset($input['account']);
 
-        $subMerchant = (new Merchant\Core)->createSubMerchant($input, $merchant, false, $linkedAccount);
+        $subMerchant = (new Merchant\Core)->createSubMerchant($input, $merchant, $linkedAccount, false);
 
         // This goes out to the aggregator
         // (skip if marketplace merchant)
@@ -278,7 +278,7 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
-    public function fetchMultiple($input): array
+    public function fetchMultiple(array $input): array
     {
         $merchants = $this->repo->merchant->fetch($input);
 

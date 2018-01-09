@@ -18,6 +18,10 @@ class BusinessType
     const TYPE10 = 'NGO';
     const TYPE11 = 'Other';
 
+    /**
+     * These keys define the input keys for business_type.
+     * It is used to dynamically create accounts using Account APIs.
+     */
     const LLP                    = 'llp';
     const NGO                    = 'ngo';
     const OTHER                  = 'other';
@@ -79,5 +83,31 @@ class BusinessType
         }
 
         return self::$typeIndexMap[$key];
+    }
+
+    /**
+     * Given an index, it will return the key that the index corresponds to
+     *
+     * @param string|null $index
+     *
+     * @return string
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public static function getKeyFromIndex($index)
+    {
+        if ($index === null)
+        {
+            return '';
+        }
+
+        $map = array_flip(self::$typeIndexMap);
+
+        if (isset($map[$index]) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "Invalid business type index: $index", Entity::BUSINESS_TYPE);
+        }
+
+        return $map[$index];
     }
 }

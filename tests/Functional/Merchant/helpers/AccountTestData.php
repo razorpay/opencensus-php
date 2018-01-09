@@ -49,17 +49,9 @@ return [
                 'bank_account' => [
                     'ifsc_code'             => 'ICIC0001206',
                     'account_number'        => '0002020000304030434',
+                    'account_type'          => 'current',
                     'beneficiary_name'      => 'Test R4zorpay',
                     'beneficiary_address1'  => 'address 1',
-                    'beneficiary_address2'  => 'address 2',
-                    'beneficiary_address3'  => 'address 3',
-                    'beneficiary_address4'  => 'address 4',
-                    'beneficiary_email'     => 'random@email.com',
-                    'beneficiary_mobile'    => '9988776655',
-                    'beneficiary_city'      => 'Kolkata',
-                    'beneficiary_state'     => 'WB',
-                    'beneficiary_country'   => 'IN',
-                    'beneficiary_pin'       => '123456',
                 ]
             ],
         ],
@@ -84,7 +76,7 @@ return [
                     'mobile'                   => null,
                     'landline'                 => null,
                     'business_name'            => 'Acme solutions',
-                    'business_type'            => 'Proprietorship',
+                    'business_type'            => 'proprietorship',
                     'paymentdetails'           => null,
                     'business_model'           => null,
                     'registered_address'       => [

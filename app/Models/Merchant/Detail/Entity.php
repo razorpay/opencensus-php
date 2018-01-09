@@ -518,7 +518,7 @@ class Entity extends Base\PublicEntity
 
     public function getBusinessType()
     {
-        return BusinessType::getType($this->getAttribute(self::BUSINESS_TYPE));
+        return BusinessType::getKeyFromIndex($this->getAttribute(self::BUSINESS_TYPE));
     }
 
     public function getBusinessName()

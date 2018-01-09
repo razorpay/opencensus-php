@@ -73,16 +73,16 @@ class Core extends Base\Core
     /**
      * @param array     $input
      * @param Entity    $aggregatorMerchant
-     * @param bool      $accountEntity
      * @param bool      $linkedAccount
+     * @param bool      $accountEntity
      *
      * @return Entity|Account\Entity
      */
     public function createSubMerchant(
         array $input,
         Entity $aggregatorMerchant,
-        bool $accountEntity = false,
-        bool $linkedAccount = true)
+        bool $linkedAccount = true,
+        bool $accountEntity = false)
     {
         // We only check for email uniqueness if the email
         // address is provided
