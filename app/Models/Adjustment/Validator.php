@@ -3,9 +3,13 @@
 namespace RZP\Models\Adjustment;
 
 use RZP\Base;
-use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Models\Base\PublicEntity;
+use RZP\Models\Merchant;
 use RZP\Models\Dispute\Entity as DisputeEntity;
 use RZP\Models\Merchant\Invoice as MerchantInvoice;
+use RZP\Models\Settlement\Channel as SettlementChannel;
 
 class Validator extends Base\Validator
 {
@@ -13,6 +17,7 @@ class Validator extends Base\Validator
 
     protected static $createRules = [
         Entity::AMOUNT        => 'required|integer',
+        Entity::CHANNEL       => 'sometimes|string|max:32|custom',
         Entity::CURRENCY      => 'required|in:INR',
         Entity::DESCRIPTION   => 'required|min:10|max:255',
         Entity::SETTLEMENT_ID => 'sometimes|size:14',
@@ -40,7 +45,8 @@ class Validator extends Base\Validator
             isset($input[MerchantInvoice\Entity::TAX]) === true and
             isset($input['fees']) === true)
         {
-            throw new BadRequestValidationFailureException('Either amount OR tax/fees should be passed');
+            throw new Exception\BadRequestValidationFailureException(
+                'Either amount OR tax/fees should be passed');
         }
 
         // Throw exception when none of the keys are present
@@ -48,7 +54,54 @@ class Validator extends Base\Validator
             isset($input[MerchantInvoice\Entity::TAX]) === false and
             isset($input['fees']) === false)
         {
-            throw new BadRequestValidationFailureException('Atleast one out of amount OR tax/fees should be passed');
+            throw new Exception\BadRequestValidationFailureException(
+                'Atleast one out of amount OR tax/fees should be passed');
+        }
+    }
+
+    /**
+     * Validate merchant balance before an adjustment is processed
+     *
+     * @param Merchant\Entity $merchant
+     * @param PublicEntity $entity
+     * @param array $input
+     * @throws BadRequestException
+     */
+    public function validateMerchantBalance(Merchant\Entity $merchant,
+                                            PublicEntity $entity,
+                                            array $input)
+    {
+        if ((isset($input[Entity::AMOUNT]) === false) or
+            $input[Entity::AMOUNT] > 0)
+        {
+            return;
+        }
+
+        $amountToBeDeducted = abs($input[Entity::AMOUNT]);
+
+        $isSufficientBalance = (new Merchant\Balance\Core)->checkMerchantBalance($merchant, $amountToBeDeducted);
+
+        if ($isSufficientBalance === false)
+        {
+            $traceData = [
+                'message'               => 'Not enough balance',
+                'adjustment_amount'     => $amountToBeDeducted,
+                'entity_type'           => $entity->getEntityName(),
+                'entity_id'             => $entity->getId(),
+            ];
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE_FOR_ADJUSTMENT,
+                $traceData);
+        }
+    }
+
+    protected function validateChannel($attribute, $channel)
+    {
+        if (SettlementChannel::exists($channel) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid channel name: ' . $channel);
         }
     }
 }

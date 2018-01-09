@@ -6,6 +6,7 @@ class RequestFields
 {
     const TRANSACTION_TYPE    = 'pTranType';
     const MERCHANT_ID         = 'pMercID';
+    const TERMINAL_ID         = 'pTermID';
     const CARD_NUMBER         = 'pPan';
     const MERCHANT_REF_NUMBER = 'pMerchantRefNr';
     const TERM_URL            = 'TermUrl';

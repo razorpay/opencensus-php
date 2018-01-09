@@ -4,17 +4,19 @@ namespace RZP\Models\Merchant\Methods;
 
 use Config;
 
+use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Models\Emi;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
+use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Card\Network;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Payment\Processor\Netbanking;
-
 
 class Core extends Base\Core
 {
@@ -138,14 +140,80 @@ class Core extends Base\Core
             $data['emi_plans'] = (new Emi\Service)->all();
         }
 
-        if ($merchant->isFeatureEnabled(Constants::E_MANDATE) === true)
+        if ($merchant->isRecurringEnabled() === true)
         {
-            $eMandateBanks = Payment\Gateway::$eMandateBanks;
-            // TODO: Figure out the key to expose here!
-            // $data['emandate_banks'] = $this->getBankNames($eMandateBanks);
+            $data['recurring'] = [];
+
+            $this->addRecurringCardsToMethods($data['recurring']);
+
+            $this->addRecurringNetbankingToMethodsIfApplicable($merchant, $data['recurring']);
+        }
+
+        if ($merchant->isFeatureEnabled(Constants::UPI_INTENT) === true)
+        {
+            $data['upi_intent'] = true;
         }
 
         return $data;
+    }
+
+    public function addRecurringCardsToMethods(array & $recurringData)
+    {
+        //
+        // Add debit when we start supporting debit cards for recurring
+        //
+
+        $recurringData['card'] = [
+            'credit' => Network::getFullNames(Payment\Gateway::$recurringCardNetworks),
+        ];
+    }
+
+    public function addRecurringNetbankingToMethodsIfApplicable(Merchant\Entity $merchant, array & $recurringData)
+    {
+        //
+        // We don't allow netbanking for subscriptions currently.
+        //
+        if ($merchant->isFeatureEnabled(Constants::CHARGE_AT_WILL) === false)
+        {
+            return;
+        }
+
+        //
+        // We allow netbanking recurring only for certain merchants
+        //
+        if ($merchant->isFeatureEnabled(Constants::E_MANDATE) === false)
+        {
+            return;
+        }
+
+        $availableEmandateBanks = [];
+
+        if ($this->isTestMode() === true)
+        {
+            $availableEmandateBanks = Payment\Gateway::$eMandateBanks;
+        }
+        else
+        {
+            $applicableEmandateTerminals = $this->repo
+                                                ->terminal
+                                                ->getTerminalsForMerchantAndSharedMerchant($merchant, true);
+
+            $availableGateways = $applicableEmandateTerminals->pluck(Terminal\Entity::GATEWAY);
+
+            foreach ($availableGateways as $availableGateway)
+            {
+                $availableEmandateBanks = array_merge(
+                                                $availableEmandateBanks,
+                                                Payment\Gateway::$gatewaysEmandateBanksMap[$availableGateway]);
+            }
+        }
+
+        $availableEmandateBanks = array_values(array_unique($availableEmandateBanks));
+
+        if (empty($availableEmandateBanks) === false)
+        {
+            $recurringData['netbanking'] = $this->getBankNames($availableEmandateBanks);
+        }
     }
 
     public function getEnabledAndDisabledBanks($merchant)

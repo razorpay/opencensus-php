@@ -46,6 +46,50 @@ class IciciGatewayTest extends TestCase
         return $paymentId;
     }
 
+    public function testIntentPayment()
+    {
+        $this->fixtures->merchant->addFeatures(['upi_intent']);
+
+        unset($this->payment['description']);
+        unset($this->payment['vpa']);
+
+        $this->payment['_']['flow'] = 'intent';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content['refId'] = 'ICICIRefId';
+            }
+            else
+            {
+                $content['PayerVA'] = 'crims0n@icici';
+            }
+        });
+
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+        $paymentId = $response['payment_id'];
+
+        // Co Proto must be working
+        $this->assertEquals('intent', $response['type']);
+        $this->assertArrayHasKey('intent_url', $response['data']);
+
+        $this->checkPaymentStatus($paymentId, 'created');
+
+        $upiEntity = $this->getLastEntity('upi_icici', true);
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertNull($payment['vpa']);
+
+        $content = $this->getMockServer()->getAsyncCallbackContent($upiEntity, $payment);
+
+        $response = $this->makeS2SCallbackAndGetContent($content);
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertEquals($payment['vpa'], 'crims0n@icici');
+    }
+
     public function testPaymentWithExpiryPublicAuth()
     {
         $payment = $this->payment;
@@ -571,8 +615,6 @@ EOT;
      */
     public function testVerifyMissingPayment()
     {
-        $data = $this->testData[__FUNCTION__];
-
         $payment = $this->getDefaultUpiPaymentArray();
 
         // TODO: Stop using notes for status
@@ -588,15 +630,12 @@ EOT;
         $upiEntity = $this->getLastEntity('upi', true);
         $payment = $this->getEntityById('payment', $authPayment['payment_id'], true);
 
-        $this->runRequestResponseFlow($data, function () use ($payment)
-        {
-            $this->verifyPayment($payment['id']);
-        });
+        $this->payment = $this->verifyPayment($payment['id']);
 
         $payment = $this->getEntityById('payment', $payment['id'], true);
 
         // This will be updated if ran via cron
-        $this->assertSame($payment['verified'], null);
+        $this->assertSame($payment['verified'], 1);
     }
 
     public function testVerifyPaymentWithEncryptedResponse()

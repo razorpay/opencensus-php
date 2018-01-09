@@ -198,7 +198,7 @@ function disableEmptyInputs(form) {
     </tr>
     <tr>
         <td colspan='40'>Account Number:</td>
-        <td><input type="text" name="account_number" size="25" value=""></td>
+<!--        <td><input type="text" name="account_number" size="25" value=""></td>-->
     </tr>
     <tr>
     <tr>

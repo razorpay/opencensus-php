@@ -128,7 +128,13 @@ class Service extends Base\Service
         return $result;
     }
 
-    protected function setConfigKey(string $key, string $newValue): array
+    /**
+     * @param string $key
+     * @param mixed $newValue
+     *
+     * @return array
+     */
+    protected function setConfigKey(string $key, $newValue): array
     {
         $oldValue = Cache::get($key);
 

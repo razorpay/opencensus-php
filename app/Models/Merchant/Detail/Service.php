@@ -254,7 +254,9 @@ class Service extends Base\Service
 
         $merchantDetails = $merchant->merchantDetail;
 
-        $merchantDetails = (new Core)->updateActivationArchive($merchantDetails, $input);
+        $admin = $this->app['basicauth']->getAdmin();
+
+        $merchantDetails = (new Core)->updateActivationArchive($merchantDetails, $input, $admin);
 
         return $merchantDetails->toArrayPublic();
     }
@@ -279,9 +281,24 @@ class Service extends Base\Service
         return $merchantDetails->toArrayPublic();
     }
 
+    /**
+     * This function is used for getting the activation status change log of a merchant
+     * @param string $merchantId
+     *
+     * @return array
+     */
+    public function getActivationStatusChangeLog(string $merchantId): array
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $activationStatusChangeLog = (new Merchant\Core)->getActivationStatusChangeLog($merchant);
+
+        return $activationStatusChangeLog->toArrayPublic();
+    }
+
     public function getRejectionReasons()
     {
-        return RejectionReasons::$reasons;
+        return RejectionReasons::REJECTION_REASONS_MAPPING;
     }
 
     public function getMerchantDetailsForAdmin() : array
@@ -405,6 +422,8 @@ class Service extends Base\Service
 
     private function getZapierData($merchant, $input)
     {
+        $this->merchant->reload();
+
         // This is the same format we'll set in the google spreadsheet
         $timestamp = Carbon::createFromTimeStamp(time(), Timezone::IST)->format('j/m/Y');
 
@@ -424,7 +443,7 @@ class Service extends Base\Service
 
         $referrer = $merchant->referrer ?? '';
 
-        return [
+        $data = [
             Entity::ID                 => $merchant->id,
             Merchant\Entity::EMAIL     => $merchant->email,
             Constants::INDIVIDUAL      => $userName,
@@ -436,6 +455,36 @@ class Service extends Base\Service
             Entity::TRANSACTION_VOLUME => $transactionVolume,
             Entity::ROLE               => $role,
             Entity::DEPARTMENT         => $department,
+        ];
+
+        (new User\Service)->addUtmParameters($data);
+
+        return $data;
+    }
+
+    /**
+     * This function is used to get zapier data for activation
+     *
+     * @param Merchant\Entity $merchant
+     *
+     * @return array
+     */
+    public function getActivationZapierData(Merchant\Entity $merchant): array
+    {
+        $date = Carbon::createFromTimeStamp(time(), Timezone::IST)->format('j/m/Y');
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        return [
+            Constants::DATE          => $date,
+            Merchant\Entity::ID      => $merchant->id,
+            Merchant\Entity::EMAIL   => $merchant->email,
+            Merchant\Entity::NAME    => $merchant->name,
+            Entity::CONTACT_NAME     => $merchantDetails->contact_name,
+            Entity::BUSINESS_NAME    => $merchantDetails->business_name,
+            Entity::BUSINESS_DBA     => $merchantDetails->business_dba,
+            Entity::BUSINESS_WEBSITE => $merchantDetails->business_website,
+            Constants::REF           => $merchant->referrer,
         ];
     }
 }

@@ -39,6 +39,8 @@ class CreateActionStateReasons extends Migration
                    ->references(State\Entity::ID)
                    ->on(Table::STATE)
                    ->on_delete('restrict');
+
+            $table->index(StateReason::REASON_TYPE);
         });
     }
 

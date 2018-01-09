@@ -2,11 +2,13 @@
 
 namespace RZP\Jobs\Invoice;
 
+use App;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
 use RZP\Models\Batch;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Jobs\Job as BaseJob;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Invoice as InvoiceModel;
@@ -18,7 +20,8 @@ class BatchIssue extends BaseJob implements ShouldQueue
 {
     use InteractsWithQueue;
 
-    const INPUT = 'input';
+    const INPUT              = 'input';
+    const MUTEX_LOCK_TIMEOUT = 3600;    // In seconds
 
     /**
      * Batch entity id.
@@ -44,6 +47,11 @@ class BatchIssue extends BaseJob implements ShouldQueue
      */
     protected $core;
 
+    /**
+     * @var \RZP\Services\Mutex
+     */
+    protected $mutex;
+
     public function __construct(string $mode, string $batchId, array $input)
     {
         parent::__construct($mode);
@@ -56,17 +64,41 @@ class BatchIssue extends BaseJob implements ShouldQueue
     {
         parent::handle();
 
+        $this->mutex = App::getFacadeRoot()['api.mutex'];
+
+        $this->mutex->acquireAndRelease(
+            $this->batchId,
+            function ()
+            {
+                $this->handleBatchIssue();
+            },
+            static::MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_BATCH_ANOTHER_OPERATION_IN_PROGRESS);
+    }
+
+    /**
+     * Actually handles the job. This method is a callback argument to acquire
+     * and release lock(on batch id) block in above handle() method. This way
+     * we ensure that only on process(worker) is consuming the batch issue job.
+     * Also once this job is processed next one will not have any draft invoices
+     * left and so nothing will happen in subsequent duplicate jobs if any via
+     * some edge cases.
+     *
+     * @return void
+     */
+    protected function handleBatchIssue()
+    {
+        $this->trace->debug(
+            TraceCode::INVOICE_BATCH_ISSUE_JOB_RECEIVED,
+            [
+                Batch\Entity::ID => $this->batchId,
+                self::INPUT      => $this->input,
+            ]);
+
         $this->core = new InvoiceModel\Core;
 
         try
         {
-            $this->trace->debug(
-                            TraceCode::INVOICE_BATCH_ISSUE_JOB_RECEIVED,
-                            [
-                                Batch\Entity::ID => $this->batchId,
-                                self::INPUT      => $this->input,
-                            ]);
-
             $ids         = $this->input[InvoiceModel\Entity::IDS] ?? [];
             $smsNotify   = (bool) ($this->input[InvoiceModel\Entity::SMS_NOTIFY] ?? '1');
             $emailNotify = (bool) ($this->input[InvoiceModel\Entity::EMAIL_NOTIFY] ?? '1');
@@ -75,7 +107,7 @@ class BatchIssue extends BaseJob implements ShouldQueue
 
             $invoices = $this->repoManager
                              ->invoice
-                            ->findByBatchIdAndPublicIds($this->batchId, $ids);
+                             ->findDraftsByBatchIdAndPublicIds($this->batchId, $ids);
 
             foreach ($invoices as $invoice)
             {
@@ -85,21 +117,21 @@ class BatchIssue extends BaseJob implements ShouldQueue
             $timeTaken = microtime(true) - $timeStarted;
 
             $this->trace->debug(
-                            TraceCode::INVOICE_BATCH_ISSUE_JOB_HANDLED,
-                            [
-                                Batch\Entity::ID => $this->batchId,
-                                'time_taken'     => $timeTaken,
-                            ]);
+                TraceCode::INVOICE_BATCH_ISSUE_JOB_HANDLED,
+                [
+                    Batch\Entity::ID => $this->batchId,
+                    'time_taken'     => $timeTaken,
+                ]);
         }
         catch (\Throwable $e)
         {
             $this->trace->traceException(
-                            $e,
-                            null,
-                            TraceCode::INVOICE_BATCH_ISSUE_JOB_ERROR,
-                            [
-                                Batch\Entity::ID => $this->batchId,
-                            ]);
+                $e,
+                null,
+                TraceCode::INVOICE_BATCH_ISSUE_JOB_ERROR,
+                [
+                    Batch\Entity::ID => $this->batchId,
+                ]);
         }
         finally
         {
@@ -139,13 +171,13 @@ class BatchIssue extends BaseJob implements ShouldQueue
         catch (\Throwable $e)
         {
             $this->trace->traceException(
-                            $e,
-                            null,
-                            TraceCode::INVOICE_BATCH_ISSUE_JOB_ERROR,
-                            [
-                                'batch_id'   => $this->batchId,
-                                'invoice_id' => $invoice->getId(),
-                            ]);
+                $e,
+                null,
+                TraceCode::INVOICE_BATCH_ISSUE_JOB_ERROR,
+                [
+                    'batch_id'   => $this->batchId,
+                    'invoice_id' => $invoice->getId(),
+                ]);
         }
     }
 }
