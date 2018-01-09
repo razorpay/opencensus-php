@@ -84,3 +84,4 @@ class RefundReconciliate extends Base\RefundReconciliate
 
     // TODO: Add getter persister methods for this refund reconciliate class
 }
+
