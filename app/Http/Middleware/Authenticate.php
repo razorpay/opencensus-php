@@ -149,7 +149,7 @@ class Authenticate
         }
         else if (in_array($route, Route::$direct, true) === true)
         {
-            // $ret = $this->ba->proxyAuth();
+            $ret = $this->ba->directAuth();
         }
         else
         {
