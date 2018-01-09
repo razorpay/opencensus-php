@@ -41,11 +41,6 @@ class MerchantController extends Controller
         fputcsv($output, array($input['id'], $input['secret']));
     }
 
-    public function getApihost()
-    {
-        return AppResponse::jsonResponse([], config('api.url'));
-    }
-
     public function getKeys($mode)
     {
         $merchant = Auth::user()->currentMerchant();
