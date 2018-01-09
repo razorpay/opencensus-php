@@ -112,7 +112,6 @@ class Gateway extends Base\Gateway
 
     private function checkResponseStatus(string $status, string $successStatus = Status::SUCCESS)
     {
-        $status = strtoupper($status);
         if ($status !== $successStatus)
         {
             $errorCode = ResponseCodeMap::getApiErrorCode($status);
@@ -606,8 +605,8 @@ class Gateway extends Base\Gateway
     private function checkGatewaySuccess(Verify $verify)
     {
         $content = $verify->verifyResponseContent;
-        $status = strtoupper($content[ResponseFields::STATUS]);
-        $verify->gatewaySuccess = ($status === Status::SUCCESS);
+
+        $verify->gatewaySuccess = ($content[ResponseFields::STATUS] === Status::SUCCESS);
     }
 
     /**
