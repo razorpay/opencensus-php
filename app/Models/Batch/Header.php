@@ -461,15 +461,14 @@ class Header
                 self::WEBSITE_PRIVACY,
                 self::WEBSITE_REFUND,
                 self::WEBSITE_TERMS,
-                self::BANK_ACCOUNT_TYPE,
                 self::BANK_ACCOUNT_NAME,
                 self::BANK_BRANCH_IFSC,
                 self::BANK_ACCOUNT_NUMBER,
+                self::BANK_ACCOUNT_TYPE,
                 self::BANK_ACCOUNT_ADDRESS_1,
                 self::BANK_ACCOUNT_CITY,
                 self::BANK_ACCOUNT_STATE,
-                self::BANK_ACCOUNT_PINCODE,
-                self::REFERENCE_ID,
+                self::BANK_ACCOUNT_PINCODE
             ],
             self::OUTPUT => [
                 self::MERCHANT_NAME,
