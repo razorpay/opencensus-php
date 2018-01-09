@@ -265,7 +265,6 @@ class Repository extends Base\Repository
 
         $refundCreatedAt = $this->dbColumn(Refund\Entity::CREATED_AT);
 
-
         return $this->newQuery()
                     ->select($refundAttrs)
                     ->join(Table::PAYMENT, $refundPaymentIdAttr, '=', $paymentIdAttr)
@@ -623,7 +622,7 @@ class Repository extends Base\Repository
                                   ->whereNull($receipt)
                                   ->where($status, '!=', Order\Status::PAID)
                                   ->groupBy($orderId);
-                          });
+                      });
 
         return $query->get();
     }

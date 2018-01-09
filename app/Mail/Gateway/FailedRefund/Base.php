@@ -5,7 +5,6 @@ namespace RZP\Mail\Gateway\FailedRefund;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Constants\MailTags;
-use RZP\Models\Payment\Gateway;
 use RZP\Mail\Gateway\RefundFile;
 
 class Base extends RefundFile\Base
