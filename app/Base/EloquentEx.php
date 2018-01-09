@@ -2,9 +2,12 @@
 
 namespace RZP\Base;
 
-use RZP\Constants\Entity as E;
+use App;
+
 use RZP\Exception;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Entity as E;
 
 class EloquentEx extends \Razorpay\Spine\Entity
 {
@@ -34,6 +37,10 @@ class EloquentEx extends \Razorpay\Spine\Entity
 
         $builder = new QueryBuilder($conn, $grammar, $conn->getPostProcessor());
 
+        $cacheDriver = $this->getQueryCacheDriver();
+
+        $builder->cacheDriver($this->rememberCacheDriver);
+
         if (isset($this->rememberFor) === true)
         {
             $builder->remember($this->rememberFor);
@@ -49,12 +56,16 @@ class EloquentEx extends \Razorpay\Spine\Entity
             $builder->prefix($this->rememberCachePrefix);
         }
 
-        if (isset($this->rememberCacheDriver) === true)
-        {
-            $builder->cacheDriver($this->rememberCacheDriver);
-        }
-
         return $builder;
+    }
+
+    protected function getQueryCacheDriver(): string
+    {
+        $app = App::getFacadeRoot();
+
+        $mode = $app['rzp.mode'] ?? null;
+
+        return ($mode === Mode::LIVE) ? 'query_cache_live' : 'query_cache_test';
     }
 
     protected function throwException(array $e)

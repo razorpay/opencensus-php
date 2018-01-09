@@ -28,7 +28,7 @@ class GatewayPriorityTest extends TestCase
         $redis = Redis::getFacadeRoot();
 
         Redis::shouldReceive('connection')
-            ->with('query_cache')
+            ->with('query_cache_test')
             ->andReturn($redis);
 
         Redis::shouldReceive('zadd')
@@ -46,7 +46,7 @@ class GatewayPriorityTest extends TestCase
         $redis = Redis::getFacadeRoot();
 
         Redis::shouldReceive('connection')
-            ->with('query_cache')
+            ->with('query_cache_test')
             ->andReturn($redis);
 
         Redis::shouldReceive('zadd')
@@ -67,7 +67,7 @@ class GatewayPriorityTest extends TestCase
         $redis = Redis::getFacadeRoot();
 
         Redis::shouldReceive('connection')
-            ->with('query_cache')
+            ->with('query_cache_test')
             ->andReturn($redis);
 
         Redis::shouldReceive('zrevrange')
@@ -106,7 +106,7 @@ class GatewayPriorityTest extends TestCase
         $redis = Redis::getFacadeRoot();
 
         Redis::shouldReceive('connection')
-            ->with('query_cache')
+            ->with('query_cache_test')
             ->andReturn($redis);
 
         Redis::shouldReceive('zrevrange')
@@ -142,7 +142,7 @@ class GatewayPriorityTest extends TestCase
         $redis = Redis::getFacadeRoot();
 
         Redis::shouldReceive('connection')
-            ->with('query_cache')
+            ->with('query_cache_test')
             ->andReturn($redis);
 
         Redis::shouldReceive('zrem')
@@ -171,7 +171,7 @@ class GatewayPriorityTest extends TestCase
         $redis = Redis::getFacadeRoot();
 
         Redis::shouldReceive('connection')
-            ->with('query_cache')
+            ->with('query_cache_test')
             ->andReturn($redis);
 
         Redis::shouldReceive('zrem')
@@ -193,7 +193,7 @@ class GatewayPriorityTest extends TestCase
         $redis = Redis::getFacadeRoot();
 
         Redis::shouldReceive('connection')
-            ->with('query_cache')
+            ->with('query_cache_test')
             ->andReturn($redis);
 
         Redis::shouldReceive('zadd')

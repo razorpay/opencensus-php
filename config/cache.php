@@ -75,9 +75,14 @@ return [
             'connection' => 'throttle_redis'
         ],
 
-        'query_cache' => [
+        'query_cache_test' => [
             'driver'     => 'redis',
-            'connection' => 'query_cache',
+            'connection' => 'query_cache_test',
+        ],
+
+        'query_cache_live' => [
+            'driver'     => 'redis',
+            'connection' => 'query_cache_live',
         ],
     ],
 

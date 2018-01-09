@@ -897,7 +897,7 @@ class VerifyTest extends TestCase
         $redis = Redis::getFacadeRoot();
 
         Redis::shouldReceive('connection')
-            ->with('query_cache')
+            ->with('query_cache_test')
             ->andReturn($redis);
 
         Redis::shouldReceive('hGetAll')
@@ -935,7 +935,7 @@ class VerifyTest extends TestCase
         $redis = Redis::getFacadeRoot();
 
         Redis::shouldReceive('connection')
-            ->with('query_cache')
+            ->with('query_cache_test')
             ->andReturn($redis);
 
         Redis::shouldReceive('hGetAll')
@@ -976,7 +976,7 @@ class VerifyTest extends TestCase
         $redis = Redis::getFacadeRoot();
 
         Redis::shouldReceive('connection')
-            ->with('query_cache')
+            ->with('query_cache_test')
             ->andReturn($redis);
 
         Redis::shouldReceive('hGetAll')

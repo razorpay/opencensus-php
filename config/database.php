@@ -161,10 +161,17 @@ return array(
             'timeout'  => 30,
         ],
 
-        'query_cache' => [
+        'query_cache_test' => [
             'host'     => env('REDIS_HOST'),
             'port'     => env('REDIS_PORT'),
-            'database' => env('REDIS_QUERY_CACHE_DB'),
+            'database' => env('QUERY_CACHE_TEST_REDIS_DB'),
+            'timeout'  => 30,
+        ],
+
+        'query_cache_live' => [
+            'host'     => env('REDIS_HOST'),
+            'port'     => env('REDIS_PORT'),
+            'database' => env('QUERY_CACHE_LIVE_REDIS_DB'),
             'timeout'  => 30,
         ],
     ],

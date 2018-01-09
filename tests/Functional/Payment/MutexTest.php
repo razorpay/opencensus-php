@@ -45,7 +45,7 @@ class MutexTest extends TestCase
         $redis = Redis::getFacadeRoot();
 
         Redis::shouldReceive('connection')
-            ->with('query_cache')
+            ->with('query_cache_test')
             ->andReturn($redis);
 
         Redis::shouldReceive('set')
@@ -76,7 +76,7 @@ class MutexTest extends TestCase
         $redis = Redis::getFacadeRoot();
 
         Redis::shouldReceive('connection')
-            ->with('query_cache')
+            ->with('query_cache_test')
             ->andReturn($redis);
 
         Redis::shouldReceive('set')
@@ -118,7 +118,7 @@ class MutexTest extends TestCase
         $redis = Redis::getFacadeRoot();
 
         Redis::shouldReceive('connection')
-            ->with('query_cache')
+            ->with('query_cache_test')
             ->andReturn($redis);
 
         Redis::shouldReceive('set')
@@ -145,17 +145,21 @@ class MutexTest extends TestCase
         $redis = Redis::getFacadeRoot();
 
         Redis::shouldReceive('connection')
-            ->with('query_cache')
+            ->with('query_cache_test')
+            ->andReturn($redis);
+
+        Redis::shouldReceive('connection')
+            ->with('query_cache_live')
             ->andReturn($redis);
 
         Redis::shouldReceive('set')
                 ->once()
                 ->andReturnUsing(function ($resource, $requestId)
-                    {
-                        $this->requestId = $requestId;
+                {
+                    $this->requestId = $requestId;
 
-                        return \Predis\Response\Status::get('QUEUED');
-                    });
+                    return \Predis\Response\Status::get('QUEUED');
+                });
 
         Redis::shouldReceive('get')
                 ->once()
