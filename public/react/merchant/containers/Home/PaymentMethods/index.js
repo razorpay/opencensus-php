@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
 import Breadcrumb, { BreadcrumbItem } from 'rzp/ui/Breadcrumb';
+import * as ModalActions from 'rzp/modules/modals';
 
 import Treemap from 'merchant/containers/Home/PaymentMethods/Treemap';
 import LastUpdated from 'merchant/components/Home/LastUpdated';
@@ -30,7 +31,7 @@ function getLevels(hierarchy, levels = []) {
   return levels;
 }
 
-@connect(null, null)
+@connect(null, { ...ModalActions })
 class PaymentMethods extends Component {
   constructor(props) {
     super(props);
@@ -45,6 +46,7 @@ class PaymentMethods extends Component {
 
     this.onLevelChange = ::this.onLevelChange;
     this.onCSVData = ::this.onCSVData;
+    this.openReportModal = ::this.openReportModal;
   }
 
   fetchData(startDate, endDate) {
@@ -108,6 +110,15 @@ class PaymentMethods extends Component {
     }
   }
 
+  openReportModal(e) {
+    e.preventDefault();
+
+    this.props.openModal({
+      component: null,
+      size: 'large',
+    });
+  }
+
   render() {
     const { levels, csvData, isLoading, data } = this.state,
       { startDate, endDate } = this.props,
@@ -141,6 +152,11 @@ class PaymentMethods extends Component {
           <div className="panel-actions pull-right">
             <div className="panel-action-item">
               <MoreOptionsButton csvData={csvData}>
+                <div className="option">
+                  <a href="#" onClick={this.openReportModal}>
+                    View Detailed Report
+                  </a>
+                </div>
                 <div className="option">
                   <Link
                     target="_blank"

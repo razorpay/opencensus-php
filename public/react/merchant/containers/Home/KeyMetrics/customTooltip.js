@@ -1,7 +1,10 @@
+import moment from 'moment';
+
 import {
   humanReadableIndian,
   humanReadableIndianCurrency,
 } from 'rzp/utils/numerals';
+import { getMillisecondsFromBreakdown } from 'rzp/utils/chart/new';
 
 // tooltip element
 const tooltipDOM = document.createElement('div');
@@ -72,7 +75,8 @@ const customToolTip = function(tooltipModel) {
     showTooltip();
   }
 
-  const isCurrency = this._chart.options.isCurrency;
+  const { isCurrency, externalUrl, breakdown } = this._chart.options,
+    datasets = this._chart.data.datasets;
 
   /* Setting the body and title of tooltip only if model has body */
   if (tooltipModel.body) {
@@ -82,46 +86,55 @@ const customToolTip = function(tooltipModel) {
     // calculating the title: sum of all data
     const dataPoints = tooltipModel.dataPoints;
     const sumOfAllDataPoints = dataPoints.reduce(
-      (tempSum, { yLabel }) => tempSum + yLabel,
-      0
-    );
+        (tempSum, { yLabel }) => tempSum + yLabel,
+        0
+      ),
+      startDate = datasets[0].data[dataPoints[0].index].t,
+      endDate = startDate + getMillisecondsFromBreakdown(breakdown),
+      formattedDate = moment(startDate).format('ddd, Do MMM'),
+      url = `${externalUrl}?from=${startDate / 1000}&to=${endDate / 1000}`;
 
     // appending title to innerHtml
-    innerHtml += `<div class="title">${(isCurrency
-      ? humanReadableIndianCurrency
-      : humanReadableIndian)(sumOfAllDataPoints)}</div>`;
-
-    /**
-     * extracting lines inside each elements of body array has actual text to be rendered
-     */
-    var bodyLines = tooltipModel.body.map(({ lines }) => lines[0]);
+    innerHtml +=
+      `<div class="tooltip-title clearfix">` +
+      `<div class="pull-left">` +
+      `<div class="tooltip-amount">${(isCurrency
+        ? humanReadableIndianCurrency
+        : humanReadableIndian)(sumOfAllDataPoints)}</div>` +
+      `<div class="sec-text tooltip-date">${formattedDate}</div>` +
+      `</div>` +
+      `<div class="pull-right">` +
+      `<a href="${url}" class="ex-link sec-text"` +
+      ` target="_blank">` +
+      `<svg xmlns="http://www.w3.org/2000/svg">` +
+      `<path d="M16 16H2V2h7V0H2C.9 0 0 .9 0 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V9h-2v7zM11 0v2h3.6l-9.8 9.8 1.4 1.4L16 3.4V7h2V0h-7z"/>` +
+      `</svg>` +
+      `</a>` +
+      `</div>` +
+      `</div>`;
 
     // variable to hold rows
     let rows = '';
-    bodyLines.forEach((body, index) => {
-      const labelColors = tooltipModel.labelColors;
 
-      /**
-       * body is a string with format label: value
-       * splitting it into array will give us [label, value];
-       */
-      const bodyItems = body.split(':');
+    var dataPoints = tooltipModel.dataPoints.sort((item1, item2) => {
+      return item1.datasetIndex - item2.datasetIndex;
+    });
 
-      // label icon is the colored (color same as in legend) square box
-      const labelIcon = `<span class="label-icon" style="background-color: ${labelColors[
-        index
-      ].backgroundColor}"></span>`;
+    datasets.forEach((dataset, index) => {
+      const { backgroundColor, label, data } = dataset,
+        dataPoint = dataPoints[index],
+        value = dataPoint.yLabel;
 
-      // first element of bodyItems is label
-      const label = `<span class="label">${bodyItems[0]}</span>`;
+      const labelIcon = `<span class="label-icon" style="background-color: ${backgroundColor}"></span>`;
 
-      // second element of bodyItem is value corresponding to label extracted in first line
+      const labelHTML = `<span class="label sec-text">${label}</span>`;
+
       const labelValue = `<span class="label-value">${(isCurrency
         ? humanReadableIndianCurrency
-        : humanReadableIndian)(Number(bodyItems[1].trim()))}</span>`;
+        : humanReadableIndian)(value)}</span>`;
 
       // appending rows with each line
-      rows += `<div class="tooltip-row">${labelIcon}${label}${labelValue}</div>`;
+      rows += `<div class="tooltip-row clearfix">${labelIcon}${labelHTML}${labelValue}</div>`;
     });
 
     // adding rows to innerHtml
@@ -173,8 +186,9 @@ const customToolTip = function(tooltipModel) {
     crossHair.style.marginLeft = -(crossHairWidth / 2) + diff + 'px';
   }
 
-  // if there is only one point hide crosshair
-  crossHair.style.display = this._data.labels.length === 1 ? 'none' : 'block';
+  // if there is only one point hide crosshair,
+  // right now hiding all the time
+  crossHair.style.display = 'none';
 };
 
 function positioner(elements, eventPosition) {

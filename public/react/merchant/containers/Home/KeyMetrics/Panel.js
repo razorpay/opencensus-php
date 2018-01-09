@@ -103,6 +103,7 @@ class Panel extends Component {
         selectedBreakdown,
         lastUpdatedAt,
         isCurrency,
+        externalUrl,
       } = this.props,
       dateFormat = 'DD MMM YYYY',
       { grouping, options } = this.meta,
@@ -110,7 +111,10 @@ class Panel extends Component {
 
     const hasNoData = !histogram || histogram.datasets.length === 0;
 
+    // following chart options will be used by cutomTooltip.js
     chartOptions.isCurrency = isCurrency;
+    chartOptions.externalUrl = externalUrl;
+    chartOptions.breakdown = selectedBreakdown;
 
     return (
       <GenericPanel

@@ -73,6 +73,8 @@ export const timeScale = ({ xLabel, yLabel }) => {
             source: 'data',
             autoSkip: true,
             fontColor: 'rgba(45, 48, 51, 0.5)',
+            maxRotation: 0,
+            autoSkipPadding: 21,
           },
         },
       ],
@@ -136,4 +138,17 @@ export const createLineData = (rawData, column, title) => {
       },
     ],
   });
+};
+
+export const getMillisecondsFromBreakdown = breakdown => {
+  switch (breakdown) {
+    case 'daily':
+      return 24 * 60 * 60 * 1000;
+    case 'weekly':
+      return 7 * getMillisecondsFromBreakdown('daily');
+    case 'monthly':
+      return 4 * getMillisecondsFromBreakdown('weekly');
+  }
+
+  return 0;
 };

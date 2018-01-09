@@ -169,6 +169,9 @@ class KeyMetricsContainer extends Component {
             data: histogram.result,
             groupByColumnName:
               tabMeta.groupByColumnName || selectedGrouping.value,
+            startTime: startDate.unix(),
+            endTime: endDate.unix(),
+            breakdown: tabState.selectedBreakdown,
             groupTitleMap: tabMeta.groupTitleMap || { Mobile: 'mWeb' },
             valueTransformer: isCurrency && paiseToRupees,
           });
@@ -353,6 +356,7 @@ class KeyMetricsContainer extends Component {
                 lastUpdatedAt={tabsState[tabName].lastUpdatedAt}
                 isCurrency={isCurrency}
                 onScreenshot={this.onScreenshot}
+                externalUrl={`/#/app/${tabsMeta[tabName].index}`}
               />
             </TabPanel>
           );

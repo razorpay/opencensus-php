@@ -263,9 +263,23 @@ export const getQuery = options => {
   );
 };
 
+const momentDurationFuncMap = {
+    daily: 'asDays',
+    weekly: 'asWeeks',
+    monthly: 'asMonths',
+  },
+  momentDurationMap = {
+    daily: 'days',
+    weekly: 'weeks',
+    monthly: 'months',
+  };
+
 export const getTimelineData = ({
   data,
   groupByColumnName,
+  startTime,
+  endTime,
+  breakdown = 'daily',
   groupTitleMap = {},
   valueTransformer = null,
 }) => {
@@ -335,6 +349,15 @@ export const getTimelineData = ({
     aggregates = [],
     groupAggregatesMap = {};
 
+  if (groups.length === 0) {
+    return {
+      labels: [],
+      datasets: [],
+      aggregates: [],
+      csv: '',
+    };
+  }
+
   // populates default data , avoids `if` conditions in next loop
   groups.forEach((groupName, index) => {
     const groupLabel =
@@ -363,10 +386,6 @@ export const getTimelineData = ({
     groupAggregatesMap[groupName] = aggregate;
   });
 
-  /*
-   * calculates x-axis labels based on data from all the groups, fills
-   * missing data
-   */
   groups.forEach(groupName => {
     const title = groupTitleMap[groupName] || groupName,
       data = groupedData[groupName],
@@ -391,10 +410,121 @@ export const getTimelineData = ({
   /*
    * Transforms data into the input format for chart.js
    */
-  const timestamps = Object.keys(timelineGroupMap).sort((a, b) => {
+  let timestamps = Object.keys(timelineGroupMap).sort((a, b) => {
       return Number(a) - Number(b);
     }),
-    groupsCsvData = [];
+    groupsCsvData = [],
+    startMs = moment(startTime * 1000),
+    endMs = moment(endTime * 1000),
+    firstMs = Number(timestamps[0]),
+    lastMs = Number(timestamps[timestamps.length - 1]);
+
+  if (breakdown === 'daily') {
+    const firstDayStart = moment(firstMs)
+        .startOf('day')
+        .toDate(),
+      lastDayStart = moment(lastMs)
+        .startOf('day')
+        .toDate();
+
+    startMs = moment(startMs)
+      .startOf('day')
+      .toDate();
+    endMs = moment(endMs)
+      .startOf('day')
+      .toDate();
+
+    if (firstDayStart > startMs) {
+      timestamps.unshift(startMs.getTime());
+    }
+
+    if (lastDayStart < endMs) {
+      timestamps.push(endMs.getTime());
+    }
+  } else if (breakdown === 'weekly') {
+    // momentjs start of week is sunday, whereas
+    // pokedex start of week is monday, so adding 1 day
+    const firstWeekStart = moment(firstMs)
+        .startOf('week')
+        .add(1, 'days')
+        .toDate(),
+      lastWeekStart = moment(lastMs)
+        .startOf('week')
+        .add(1, 'days')
+        .toDate();
+
+    startMs = moment(startMs)
+      .startOf('week')
+      .add(1, 'days')
+      .toDate();
+    endMs = moment(endMs)
+      .startOf('week')
+      .add(1, 'days')
+      .toDate();
+
+    if (firstWeekStart > startMs) {
+      timestamps.unshift(startMs.getTime());
+    }
+
+    if (lastWeekStart < endMs) {
+      timestamps.push(endMs.getTime());
+    }
+  } else if (breakdown === 'monthly') {
+    const firstMonthStart = moment(firstMs)
+        .startOf('month')
+        .toDate()
+        .getTime(),
+      lastMonthStart = moment(lastMs)
+        .startOf('month')
+        .toDate()
+        .getTime();
+
+    startMs = moment(startMs)
+      .startOf('month')
+      .toDate();
+    endMs = moment(endMs)
+      .startOf('month')
+      .toDate();
+
+    if (firstMonthStart > startMs) {
+      timestamps.unshift(startMs.getTime());
+    }
+
+    if (lastMonthStart < endMs) {
+      timestamps.push(endMs.getTime());
+    }
+  }
+
+  timestamps = timestamps.reduce((result, timestamp) => {
+    /* fill in the missing data points*/
+
+    timestamp = Number(timestamp);
+    let prevTimestamp = result[result.length - 1];
+
+    if (!prevTimestamp) {
+      result.push(timestamp);
+      return result;
+    }
+
+    let numPointsGap = moment
+      .duration(timestamp - prevTimestamp)
+      [momentDurationFuncMap[breakdown]]();
+
+    while (numPointsGap > 1) {
+      prevTimestamp = moment(prevTimestamp)
+        .add(1, momentDurationMap[breakdown])
+        .toDate()
+        .getTime();
+
+      result.push(prevTimestamp);
+
+      numPointsGap--;
+    }
+
+    result.push(timestamp);
+
+    return result;
+  }, []);
 
   let csvData = [],
     csvHeader = ['#', 'Date'],
@@ -402,7 +532,14 @@ export const getTimelineData = ({
     grandTotal = 0;
 
   timestamps.forEach((timestamp, tsIndex) => {
-    timestamp = Number(timestamp);
+    // if missing value
+    if (!timelineGroupMap[timestamp]) {
+      const groupMap = (timelineGroupMap[timestamp] = {});
+
+      groups.forEach(groupName => {
+        groupMap[groupName] = 0;
+      });
+    }
 
     let totalAtTime = 0;
 
