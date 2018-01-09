@@ -76,7 +76,9 @@ class Validator
     const MAX_FILE_SIZE = 26214400;
 
     const FORCE_UPDATE_ALLOWED = [
-        RequestProcessor\Base::REFUND_ARN
+        RequestProcessor\Base::REFUND_ARN,
+        RequestProcessor\Base::PAYMENT_ARN,
+        RequestProcessor\Base::PAYMENT_AUTH_CODE,
     ];
 
     const MANUAL_INPUT_RULES = [
@@ -377,7 +379,7 @@ class Validator
             }
             else
             {
-                $diff = array_diff(self::FORCE_UPDATE_ALLOWED, $value);
+                $diff = array_diff($value, self::FORCE_UPDATE_ALLOWED);
                 $valid = (count($diff) === 0);
             }
         }

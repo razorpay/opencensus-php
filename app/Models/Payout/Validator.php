@@ -8,6 +8,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
 use RZP\Models\Card;
 use RZP\Constants\Entity as E;
+use RZP\Models\FundTransfer\Attempt;
 
 class Validator extends Base\Validator
 {
@@ -34,10 +35,6 @@ class Validator extends Base\Validator
         Entity::MIN_AMOUNT     => 'sometimes|integer|min:100',
         Entity::MODULO         => 'sometimes|integer|min:100',
         Entity::BUFFER_AMOUNT  => 'sometimes|integer|min:10000000'
-    ];
-
-    protected static $initiatePayoutRules = [
-        Entity::PURPOSE         => 'required|filled|string|max:30|in:refund,settlement',
     ];
 
     protected static $createValidators = [
