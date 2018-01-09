@@ -32,7 +32,7 @@ class ResponseCode
         '22' => 'Suspected Malfunction',
         '25' => 'Unable to locate record in file, or account number is missing from the inquiry',
         '28' => 'File is temporarily unavailable',
-        '30' => 'Payment Failed',
+        '30' => 'Format Error',
         '41' => 'Pickup card (lost card)',
         '43' => 'Pickup card (stolen card)',
         '51' => 'Insufficient funds',
