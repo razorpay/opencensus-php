@@ -12,7 +12,7 @@ var defaults = {
   format: ',.2f',
   title: '',
   width: 500,
-  height: 300,
+  height: 300 - 21, //leaving 21px at the bottom
 };
 
 function makeCSVData(data, aggregate = 0, prefix = '', csvData = []) {
@@ -294,11 +294,11 @@ function main(node, o, data, d3, onTransition, groupTitleMap) {
       var g2 = display(d).g,
         t1 = oldG1
           .transition()
-          .duration(500)
+          .duration(100)
           .ease('expOut'),
         t2 = g2
           .transition()
-          .duration(500)
+          .duration(100)
           .ease('expOut');
 
       // Update the domain only after entering new elements.

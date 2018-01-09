@@ -8,17 +8,17 @@ import { checkChildrenType } from 'rzp/utils/rzp-react-utils';
 
 import './styles.styl';
 
-class LegendItem extends Component {
+class LegendItemInner extends Component {
   render() {
-    const { children, className = '', ...itemProps } = this.props;
+    const { children, ...itemProps } = this.props;
 
-    itemProps.className = `rzp-legend-item ${className}`;
+    itemProps.className = `rzp-legend-item-inner`;
 
     return <div {...itemProps}>{children}</div>;
   }
 }
 
-LegendItem.propTypes = {
+LegendItemInner.propTypes = {
   children: props => {
     const { children } = props;
 
@@ -29,6 +29,20 @@ LegendItem.propTypes = {
     ]);
   },
 };
+
+class LegendItem extends Component {
+  render() {
+    const { children, className = '', ...otherProps } = this.props;
+
+    otherProps.className = `rzp-legend-item${className ? ' ' : ''}${className}`;
+
+    return (
+      <div {...otherProps}>
+        <LegendItemInner>{children}</LegendItemInner>
+      </div>
+    );
+  }
+}
 
 export { LegendLabel, LegendTitle, LegendContent };
 

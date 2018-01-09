@@ -190,16 +190,7 @@ class Traffic extends Component {
                 onImageExport={this.handleImageExportClick}
                 csvData={groupState.csvData}
                 pngData={groupState.pngData}
-              >
-                <div className="option">
-                  <Link
-                    target="_blank"
-                    to={`/payments?from=${startDate.unix()}&to=${endDate.unix()}`}
-                  >
-                    View all Payments
-                  </Link>
-                </div>
-              </MoreOptionsButton>
+              />
             </div>
           </div>
         </PanelTopbar>
@@ -226,7 +217,17 @@ class Traffic extends Component {
           </div>
         </PanelBody>
         <PanelFooter>
-          <LastUpdated at={groupState.lastUpdatedAt} />
+          <div className="pull-left">
+            <LastUpdated at={groupState.lastUpdatedAt} />
+          </div>
+          <div className="pull-right">
+            <Link
+              target="_blank"
+              to={`/payments?from=${startDate.unix()}&to=${endDate.unix()}`}
+            >
+              View all Payments &gt;
+            </Link>
+          </div>
         </PanelFooter>
       </GenericPanel>
     );

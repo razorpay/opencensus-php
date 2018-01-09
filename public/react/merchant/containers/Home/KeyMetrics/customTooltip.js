@@ -107,7 +107,7 @@ const customToolTip = function(tooltipModel) {
       `<a href="${url}" class="ex-link sec-text"` +
       ` target="_blank">` +
       `<svg xmlns="http://www.w3.org/2000/svg">` +
-      `<path d="M16 16H2V2h7V0H2C.9 0 0 .9 0 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V9h-2v7zM11 0v2h3.6l-9.8 9.8 1.4 1.4L16 3.4V7h2V0h-7z"/>` +
+      `<path d="M1.444 11.556V1.444H5.5V0H1.444C.65 0 0 .65 0 1.444v10.112C0 12.35.65 13 1.444 13h10.112C12.35 13 13 12.35 13 11.556V7.5h-1.444v4.056H1.444zM8.873 1.444h1.671L3.467 8.522l1.01 1.011 7.079-7.077v1.671H13V0H8.873v1.444z"/>` +
       `</svg>` +
       `</a>` +
       `</div>` +
@@ -201,7 +201,7 @@ function positioner(elements, eventPosition) {
     )[0],
     { left, top } = topEle._chart.canvas.getBoundingClientRect();
 
-  return { x: left + topEle._model.x, y: top + topEle._model.y };
+  return { x: left + topEle._model.x, y: top + topEle._model.y - 10 };
 }
 
 export { positioner };

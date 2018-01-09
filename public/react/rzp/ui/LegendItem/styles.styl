@@ -4,31 +4,38 @@ $borderColor = #EAEFF0;
 
   display: block;
   position: relative;
-  border: 1px solid $borderColor;
-  border-radius: 2px;
 
-  > div {
+  .rzp-legend-item-inner {
 
-    display: inline-block;
-    vertical-alignment: middle;
+    width: 100%;
+    display: block;
+    position: relative;
+    border: 1px solid $borderColor;
+    border-radius: 2px;
 
-    &.rzp-legend-label {
+    > div {
 
-      border-radius: 2px 0px 0px 2px;
-      padding: 8px;
-      margin: -1px;
-      color: white;
-    }
+      display: inline-block;
+      vertical-alignment: middle;
 
-    &.rzp-legend-title, &.rzp-legend-content {
+      &.rzp-legend-label {
 
-      padding-left: 10px;
-      padding-right: 10px;
-    }
+        border-radius: 2px 0px 0px 2px;
+        padding: 3px;
+        margin: -1px;
+        color: white;
+      }
 
-    &.rzp-legend-title {
+      &.rzp-legend-title, &.rzp-legend-content {
 
-      border-right: 1px solid $borderColor;
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+
+      &.rzp-legend-title {
+
+        border-right: 1px solid $borderColor;
+      }
     }
   }
 }
