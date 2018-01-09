@@ -2,11 +2,10 @@
 
 namespace RZP\Gateway\Netbanking\Indusind\Mock;
 
+use RZP\Exception;
 use RZP\Gateway\Base;
-use phpseclib\Crypt\AES;
 use RZP\Gateway\Netbanking\Indusind\Status;
 use RZP\Gateway\Netbanking\Indusind\Constants;
-use RZP\Gateway\Netbanking\Base as Netbanking;
 use RZP\Gateway\Netbanking\Indusind\RequestFields;
 use RZP\Gateway\Netbanking\Indusind\ResponseFields;
 
@@ -39,7 +38,7 @@ class Server extends Base\Mock\Server
 
         $this->validateActionInput($input);
 
-        $responseArray = $this->createResponseArray($input);
+        $responseArray = $this->createResponseArray();
 
         $response = $this->createXmlResponse($responseArray);
 
@@ -102,10 +101,11 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
-    protected function createResponseArray(array $input)
+    protected function createResponseArray()
     {
         return [
-            ResponseFields::VERIFICATION  => Constants::YES,
+            ResponseFields::VERIFICATION      => Constants::YES,
+            ResponseFields::BANK_REFERENCE_ID => 9999999,
         ];
     }
 }

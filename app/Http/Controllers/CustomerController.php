@@ -244,11 +244,11 @@ class CustomerController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function updateSmsStatus($id)
+    public function updateSmsStatus($gateway)
     {
         $input = Request::all();
 
-        $data = $this->service()->updateSmsStatus($id, $input);
+        $data = $this->service()->updateSmsStatus($gateway, $input);
 
         return ApiResponse::json($data);
     }

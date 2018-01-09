@@ -256,6 +256,12 @@ trait Refund
                 'input'         => $input,
             ]);
 
+        // Some bank transfer payments cannot be refunded.
+        if ($payment->isBankTransfer() === true)
+        {
+            $this->validateBankTransferPaymentForRefund($payment);
+        }
+
         $this->setPayment($payment);
 
         if ($this->payment->isAuthorized() === false)
@@ -692,7 +698,7 @@ trait Refund
 
     protected function callRefundFunction($payment, $data)
     {
-        if ($this->shouldHitGateway($payment) === true)
+        if ($this->shouldHitGatewayForRefund($payment) === true)
         {
             return $this->callGatewayRefundFunction($payment, $data);
         }
@@ -827,7 +833,17 @@ trait Refund
             $this->repo->saveOrFail($this->refund);
         });
 
-        $this->tracePaymentInfo(TraceCode::PAYMENT_REFUND_SUCCESS);
+        $this->trace->info(
+            TraceCode::PAYMENT_REFUND_SUCCESS,
+            [
+                'payment_id'            => $this->payment->getId(),
+                'payment_status'        => $this->payment->getStatus(),
+                'payment_amount'        => $this->payment->getAmount(),
+                'gateway'               => $this->payment->getGateway(),
+                'refund_id'             => $this->refund->getId(),
+                'refund_amount'         => $this->refund->getAmount(),
+                'refund_base_amount'    => $this->refund->getBaseAmount(),
+            ]);
 
         $this->app['segment']->trackPayment($this->payment, TraceCode::PAYMENT_REFUND_SUCCESS);
     }
@@ -988,8 +1004,13 @@ trait Refund
         // Some bank transfer payments cannot be refunded.
         if ($payment->isBankTransfer() === true)
         {
-            (new BankTransfer\Validator)->validatePaymentForRefund($payment);
+            $this->validateBankTransferPaymentForRefund($payment);
         }
+    }
+
+    protected function validateBankTransferPaymentForRefund(Payment\Entity $payment)
+    {
+        (new BankTransfer\Validator)->validatePaymentForRefund($payment);
     }
 
     protected function setPaymentAndRefundInfo($refund, $payment)
@@ -1102,6 +1123,8 @@ trait Refund
             (new BankTransfer\Core)->refund($data);
 
             $this->refund->setStatus(Payment\Refund\Status::CREATED);
+
+            $this->refund->setBatchFundTransferId(null);
 
             $refunded = true;
         }

@@ -4,6 +4,7 @@ namespace RZP\Models\Batch;
 
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
+use RZP\Gateway\Netbanking\Hdfc\EMandateDebitFileHeadings as HdfcEMDebitHeadings;
 use RZP\Gateway\Netbanking\Hdfc\EMandateRegisterFileHeadings as HdfcEMRegisterHeadings;
 
 class Header
@@ -67,10 +68,39 @@ class Header
     const VA_CUSTOMER_EMAIL      = 'customer_email';
     const VA_ID                  = 'virtual_account_id';
     const VA_DESCRIPTOR          = 'virtual_account_descriptor';
+    const VA_DESCRIPTION         = 'virtual_account_description';
+    const VA_NOTES               = 'virtual_account_notes';
     const VA_BANK_ACCOUNT_ID     = 'bank_account_id';
     const VA_BANK_ACCOUNT_NAME   = 'bank_account_name';
     const VA_BANK_ACCOUNT_NUMBER = 'bank_account_number';
     const VA_BANK_ACCOUNT_IFSC   = 'bank_account_ifsc';
+
+    //
+    // HDFC Emandate Debit Response File Headers
+    //
+    const HDFC_EM_DEBIT_TRANSACTION_REF_NO  = HdfcEMDebitHeadings::TRANSACTION_REF_NO;
+    const HDFC_EM_DEBIT_MANDATE_ID          = HdfcEMDebitHeadings::MANDATE_ID;
+    const HDFC_EM_DEBIT_ACCOUNT_NO          = HdfcEMDebitHeadings::ACCOUNT_NO;
+    const HDFC_EM_DEBIT_AMOUNT              = HdfcEMDebitHeadings::AMOUNT;
+    const HDFC_EM_DEBIT_SIP_DATE            = HdfcEMDebitHeadings::SIP_DATE;
+    const HDFC_EM_DEBIT_FREQUENCY           = HdfcEMDebitHeadings::FREQUENCY;
+    const HDFC_EM_DEBIT_FROM_DATE           = HdfcEMDebitHeadings::FROM_DATE;
+    const HDFC_EM_DEBIT_TO_DATE             = HdfcEMDebitHeadings::TO_DATE;
+    const HDFC_EM_DEBIT_STATUS              = HdfcEMDebitHeadings::STATUS;
+    const HDFC_EM_DEBIT_REJECTION_REMARKS   = HdfcEMDebitHeadings::REJECTION_REMARKS;
+
+    //
+    // Bank Transfer Bulk Insertion
+    //
+    const PROVIDER       = 'provider';
+    const PAYER_NAME     = 'payer_name';
+    const PAYER_ACCOUNT  = 'payer_account';
+    const PAYER_IFSC     = 'payer_ifsc';
+    const PAYEE_ACCOUNT  = 'payee_account';
+    const PAYEE_IFSC     = 'payee_ifsc';
+    const MODE           = 'mode';
+    const UTR            = 'utr';
+    const TIME           = 'time';
 
     //
     // HDFC Emandate Register Response File Headers
@@ -89,6 +119,21 @@ class Header
     const HDFC_EM_REGISTER_MANDATE_ID                       = HdfcEMRegisterHeadings::MANDATE_ID;
     const HDFC_EM_REGISTER_STATUS                           = HdfcEMRegisterHeadings::STATUS;
     const HDFC_EM_REGISTER_REMARK                           = HdfcEMRegisterHeadings::REMARK;
+
+    const PAYOUT_CUSTOMER_ID         = 'customer_id';
+    const PAYOUT_CUSTOMER_NAME       = 'customer_name';
+    const PAYOUT_CUSTOMER_CONTACT    = 'customer_contact';
+    const PAYOUT_CUSTOMER_EMAIL      = 'customer_email';
+    const PAYOUT_BANK_ACCOUNT_ID     = 'bank_account_id';
+    const PAYOUT_BANK_ACCOUNT_NUMBER = 'bank_account_number';
+    const PAYOUT_BANK_IFSC           = 'bank_ifsc';
+    const PAYOUT_ID                  = 'payout_id';
+    const PAYOUT_METHOD              = 'payout_method';
+    const PAYOUT_AMOUNT              = 'payout_amount';
+    const PAYOUT_CURRENCY            = 'payout_currency';
+    const PAYOUT_NOTES               = 'payout_notes';
+    const PAYOUT_FEE                 = 'payout_fee';
+    const PAYOUT_TAX                 = 'payout_tax';
 
     /**
      * Input and output file headers
@@ -203,6 +248,11 @@ class Header
                 self::BANK_BRANCH_IFSC,
                 self::BANK_ACCOUNT_NUMBER,
                 self::REFERENCE_ID,
+                //
+                // If this is passed and account with this id exists then we
+                // patch the account entity with row data.
+                //
+                self::ACCOUNT_ID,
             ],
 
             self::OUTPUT => [
@@ -212,16 +262,20 @@ class Header
                 self::BANK_BRANCH_IFSC,
                 self::BANK_ACCOUNT_NUMBER,
                 self::REFERENCE_ID,
+                self::STATUS,
                 self::ACCOUNT_ID,
             ],
         ],
 
         Type::VIRTUAL_BANK_ACCOUNT => [
             self::INPUT => [
+                self::VA_CUSTOMER_ID,
                 self::VA_CUSTOMER_NAME,
                 self::VA_CUSTOMER_CONTACT,
                 self::VA_CUSTOMER_EMAIL,
                 self::VA_DESCRIPTOR,
+                self::VA_DESCRIPTION,
+                self::VA_NOTES,
             ],
 
             self::OUTPUT => [
@@ -234,6 +288,51 @@ class Header
                 self::VA_BANK_ACCOUNT_NAME,
                 self::VA_BANK_ACCOUNT_NUMBER,
                 self::VA_BANK_ACCOUNT_IFSC,
+            ],
+        ],
+
+        'emandate_debit_hdfc' => [
+            self::INPUT => [
+                self::HDFC_EM_DEBIT_TRANSACTION_REF_NO,
+                self::HDFC_EM_DEBIT_MANDATE_ID,
+                self::HDFC_EM_DEBIT_ACCOUNT_NO,
+                self::HDFC_EM_DEBIT_AMOUNT,
+                self::HDFC_EM_DEBIT_SIP_DATE,
+                self::HDFC_EM_DEBIT_FREQUENCY,
+                self::HDFC_EM_DEBIT_FROM_DATE,
+                self::HDFC_EM_DEBIT_TO_DATE,
+                self::HDFC_EM_DEBIT_STATUS,
+                self::HDFC_EM_DEBIT_REJECTION_REMARKS
+            ]
+        ],
+
+        Type::BANK_TRANSFER => [
+            self::INPUT => [
+                self::PROVIDER,
+                self::PAYER_NAME,
+                self::PAYER_ACCOUNT,
+                self::PAYER_IFSC,
+                self::PAYEE_ACCOUNT,
+                self::PAYEE_IFSC,
+                self::MODE,
+                self::UTR,
+                self::TIME,
+                self::AMOUNT,
+                self::DESCRIPTION,
+            ],
+            self::OUTPUT => [
+                self::PROVIDER,
+                self::PAYER_NAME,
+                self::PAYER_ACCOUNT,
+                self::PAYER_IFSC,
+                self::PAYEE_ACCOUNT,
+                self::PAYEE_IFSC,
+                self::MODE,
+                self::UTR,
+                self::TIME,
+                self::AMOUNT,
+                self::DESCRIPTION,
+                self::STATUS,
             ],
         ],
 
@@ -253,6 +352,37 @@ class Header
                 self::HDFC_EM_REGISTER_FREQUENCY,
                 self::HDFC_EM_REGISTER_MANDATE_SERIAL_NUMBER,
                 self::HDFC_EM_REGISTER_MERCHANT_REQUEST_NO,
+            ],
+        ],
+
+        Type::PAYOUT => [
+            self::INPUT => [
+                self::PAYOUT_CUSTOMER_NAME,
+                self::PAYOUT_CUSTOMER_CONTACT,
+                self::PAYOUT_CUSTOMER_EMAIL,
+                self::PAYOUT_BANK_ACCOUNT_NUMBER,
+                self::PAYOUT_BANK_IFSC,
+                self::PAYOUT_METHOD,
+                self::PAYOUT_AMOUNT,
+                self::PAYOUT_CURRENCY,
+                self::PAYOUT_NOTES,
+            ],
+
+            self::OUTPUT => [
+                self::PAYOUT_CUSTOMER_ID,
+                self::PAYOUT_CUSTOMER_NAME,
+                self::PAYOUT_CUSTOMER_CONTACT,
+                self::PAYOUT_CUSTOMER_EMAIL,
+                self::PAYOUT_BANK_ACCOUNT_ID,
+                self::PAYOUT_BANK_ACCOUNT_NUMBER,
+                self::PAYOUT_BANK_IFSC,
+                self::PAYOUT_ID,
+                self::PAYOUT_METHOD,
+                self::PAYOUT_AMOUNT,
+                self::PAYOUT_CURRENCY,
+                self::PAYOUT_NOTES,
+                self::PAYOUT_FEE,
+                self::PAYOUT_TAX,
             ],
         ],
     ];

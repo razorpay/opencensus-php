@@ -49,7 +49,8 @@ class CreateOrders extends Migration
             $table->tinyInteger(Order::PAYMENT_CAPTURE)
                   ->default(false);
 
-            $table->string(Order::RECEIPT, 40);
+            $table->string(Order::RECEIPT, 40)
+                  ->nullable();
 
             $table->text(Order::NOTES);
 
@@ -87,6 +88,7 @@ class CreateOrders extends Migration
             $table->index(Order::AUTHORIZED);
             $table->index(Order::AMOUNT);
             $table->index(Order::AMOUNT_PAID);
+            $table->index([Order::MERCHANT_ID, Order::CREATED_AT]);
 
             // Commented parts to be added incrementally
 

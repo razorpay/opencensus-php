@@ -33,6 +33,9 @@ class Gateway extends Base\Gateway
 
     const CHECKSUM_ATTRIBUTE         = ConnectResponseFields::RESPONSE_HASH;
 
+    const MINIMUM_CARD_NAME_LENGTH   = 3;
+    const CARD_NAME_PADDING          = 'X';
+
     protected $gateway = Constants\Entity::FIRST_DATA;
 
     const TRACE_CODE_MAPPING = [
@@ -51,6 +54,13 @@ class Gateway extends Base\Gateway
         // Shared FirstData terminal, disabled now
         '3396093976',
     ];
+
+    /**
+     * A Parsed object for approval_code string
+     *
+     * @var ApprovalCode
+     */
+    protected $approvalCode;
 
     public function authorize(array $input)
     {
@@ -92,6 +102,8 @@ class Gateway extends Base\Gateway
             ]
         );
 
+        $this->setApproval($response[ApiResponseFields::APPROVAL_CODE]);
+
         $purchaseFields = $this->getPurchaseFields($response, $input['payment']);
 
         $purchaseEntity = $this->createGatewayPaymentEntity($purchaseFields, $input);
@@ -120,14 +132,16 @@ class Gateway extends Base\Gateway
 
         $this->verifySecureHash($input['gateway']);
 
-        $this->mockApprovalCodeIfNeeded($input['gateway']);
-
         $this->assertPaymentId($input['payment']['id'], $input['gateway'][ConnectResponseFields::ORDER_ID]);
 
         $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
         $actualAmount = number_format($input['gateway'][ConnectResponseFields::CHARGE_TOTAL], 2, '.', '');
 
         $this->assertAmount($expectedAmount, $actualAmount);
+
+        $this->mockApprovalCodeIfNeeded($input['gateway']);
+
+        $this->setApproval($input['gateway'][ConnectResponseFields::APPROVAL_CODE]);
 
         $attributes = $this->getCallbackFields($input['gateway']);
 
@@ -200,6 +214,8 @@ class Gateway extends Base\Gateway
             ]
         );
 
+        $this->setApproval($response[ApiResponseFields::APPROVAL_CODE]);
+
         $captureFields = $this->getCaptureFields($response, $input['payment']);
 
         $captureEntity = $this->createGatewayPaymentEntity($captureFields, $input);
@@ -229,6 +245,8 @@ class Gateway extends Base\Gateway
             ]
         );
 
+        $this->setApproval($response[ApiResponseFields::APPROVAL_CODE]);
+
         $refundFields = $this->getRefundFields($response, $input['refund']);
 
         $refundEntity = $this->createGatewayPaymentEntity($refundFields, $input);
@@ -257,6 +275,8 @@ class Gateway extends Base\Gateway
                 'refund_id' => $input['refund']['id'],
                 'response'  => $response,
             ]);
+
+        $this->setApproval($response[ApiResponseFields::APPROVAL_CODE]);
 
         $reverseFields = $this->getReverseFields($response, $input['refund']);
 
@@ -341,6 +361,8 @@ class Gateway extends Base\Gateway
 
         $refundResponse = json_decode(json_encode($xmlResponse), true);
 
+        $this->setApproval($refundResponse[ApiResponseFields::APPROVAL_CODE]);
+
         $refundFields = $this->getRefundFields($refundResponse, $input['refund']);
 
         $this->updateOrCreateRefundEntity($refundFields, $input);
@@ -407,8 +429,6 @@ class Gateway extends Base\Gateway
     {
         if (empty($gatewayCallback[ConnectResponseFields::APPROVAL_CODE]) === false)
         {
-            $this->setApproval($gatewayCallback[ConnectResponseFields::APPROVAL_CODE]);
-
             return;
         }
 
@@ -428,23 +448,21 @@ class Gateway extends Base\Gateway
             $mockedApprovalCode = implode(':', ['N', Codes::MOCK_FAIL_APPROVAL_CODE]);
         }
 
-        $this->setApproval($mockedApprovalCode);
-
         $gatewayCallback[ConnectResponseFields::APPROVAL_CODE] = $mockedApprovalCode;
     }
 
+    /**
+     * Must be called before processing Gateway response
+     * where we expect the approval code. It set approvalCode
+     * property and from that approval(boolean) property
+     *
+     * @param string $approvalCode
+     */
     protected function setApproval(string $approvalCode)
     {
-        // Request has failed if the first character
-        // of the approval code string isn't 'Y'
-        if ($approvalCode[0] === 'Y')
-        {
-            $this->approval = true;
-        }
-        else
-        {
-            $this->approval = false;
-        }
+        $this->approvalCode = new ApprovalCode($approvalCode);
+
+        $this->approval = $this->approvalCode->isSuccess();
     }
 
     protected function getSoapResponse(array $requestContent)
@@ -464,16 +482,16 @@ class Gateway extends Base\Gateway
     {
         if ($this->approval === false)
         {
-            $approvalCode = $this->getActualCodeFromApprovalCode($gatewayEntity->getApprovalCode());
+            $errorCode = $this->approvalCode->getErrorCode();
 
-            $gatewayErrorDesc = ErrorCodes::getErrorDesc($approvalCode);
+            $gatewayErrorDesc = ErrorCodes::getErrorDesc($errorCode);
 
-            $errorCode = ErrorCodes::getMappedCode($approvalCode);
+            $mappedErrorCode = ErrorCodes::getMappedCode($errorCode);
 
             // Cryptic error messages that First Data keeps sending us
-            $this->checkSpecialCases($approvalCode, $gatewayEntity, $gatewayErrorDesc);
+            $this->checkSpecialCases($errorCode, $gatewayEntity, $gatewayErrorDesc);
 
-            throw new Exception\GatewayErrorException($errorCode, $approvalCode, $gatewayErrorDesc);
+            throw new Exception\GatewayErrorException($mappedErrorCode, $errorCode, $gatewayErrorDesc);
         }
     }
 
@@ -491,20 +509,6 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function getActualCodeFromApprovalCode(string $approvalCode)
-    {
-        // Approval Code is sent as a concatenation of the code ('N:224')
-        // and the reason ('Timed out') separated by a ':'.
-        // Eg. "N:87:Bad Track Data"
-        // Break it using the ':' separator.
-        $approvalCodeArray = explode(':', $approvalCode);
-
-        // Retrieve only approval code
-        $code = implode(array_slice($approvalCodeArray, 0, 2), ':');
-
-        return $code;
-    }
-
     protected function getAuthorizeFields(array $authRequest)
     {
         $attributes = [
@@ -520,7 +524,7 @@ class Gateway extends Base\Gateway
     {
         $attributes = [
             Entity::RECEIVED                => true,
-            Entity::APPROVAL_CODE           => $callbackBody[ConnectResponseFields::APPROVAL_CODE],
+            Entity::APPROVAL_CODE           => $this->approvalCode->getFormattedCode(),
         ];
 
         $this->setFieldIfPresent($attributes, Entity::TRANSACTION_RESULT,
@@ -539,7 +543,7 @@ class Gateway extends Base\Gateway
         {
             $attributes[Entity::STATUS]    = Status::AUTHORIZED;
 
-            $attributes[Entity::AUTH_CODE] = $this->getAuthCodeFromCallback($callbackBody);
+            $attributes[Entity::AUTH_CODE] = $this->approvalCode->getAuthCode();
 
             $attributes[Entity::TDATE]     = $callbackBody[ConnectResponseFields::TDATE];
         }
@@ -596,13 +600,11 @@ class Gateway extends Base\Gateway
 
         $attributes = [
             Entity::RECEIVED      => true,
-            Entity::APPROVAL_CODE => $response[ApiResponseFields::APPROVAL_CODE],
+            Entity::APPROVAL_CODE => $this->approvalCode->getFormattedCode(),
             Entity::AMOUNT        => $input['amount'],
             Entity::CURRENCY      => $currencyCode,
             Entity::STATUS        => Status::CAPTURED,
         ];
-
-        $this->setApproval($attributes[Entity::APPROVAL_CODE]);
 
         $this->setFieldIfPresent($attributes, Entity::TDATE,
                     ApiResponseFields::TDATE, $response);
@@ -670,12 +672,12 @@ class Gateway extends Base\Gateway
     {
         if ($this->approval === false)
         {
-            $approvalCode = $this->getActualCodeFromApprovalCode($attributes[Entity::APPROVAL_CODE]);
+            $errorCode = $this->approvalCode->getErrorCode();
 
-            $attributes[Entity::ERROR_MESSAGE] = ErrorCodes::getErrorDesc($approvalCode);
+            $attributes[Entity::ERROR_MESSAGE] = ErrorCodes::getErrorDesc($errorCode);
             $attributes[Entity::STATUS]        = Status::FAILED;
 
-            if ($approvalCode === ErrorCodes::getTimeoutCode())
+            if ($errorCode === ErrorCodes::getTimeoutCode())
             {
                 $attributes[Entity::RECEIVED] = false;
             }
@@ -1094,7 +1096,7 @@ class Gateway extends Base\Gateway
             ConnectRequestFields::DYNAMIC_MERCHANT_NAME     => $this->getDynamicMerchantName($input['merchant']),
             ConnectRequestFields::LANGUAGE                  => Codes::ENGLISH_UK_LANG_CODE_CONNECT,
             ConnectRequestFields::CARD_NUMBER               => $input['card'][Card\Entity::NUMBER],
-            ConnectRequestFields::NAME                      => $input['card'][Card\Entity::NAME],
+            ConnectRequestFields::NAME                      => $this->getFormattedCardName($input['card']),
             ConnectRequestFields::EXP_MONTH                 => $input['card'][Card\Entity::EXPIRY_MONTH],
             ConnectRequestFields::EXP_YEAR                  => $input['card'][Card\Entity::EXPIRY_YEAR],
             ConnectRequestFields::CVV                       => $input['card'][Card\Entity::CVV],
@@ -1275,9 +1277,20 @@ class Gateway extends Base\Gateway
             ];
         }
 
-        $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_CHARGE_TOTAL] = $input[$amountEntity]['amount'] / 100;
+        $body[ApiRequestFields::V1_PAYMENT]
+            [ApiRequestFields::V1_CHARGE_TOTAL] = $this->getFormattedAmount($input, $amountEntity);
 
         $body[ApiRequestFields::V1_PAYMENT][ApiRequestFields::V1_CURRENCY] = $currencyCode;
+    }
+
+    protected function getFormattedAmount(array $input, string $amountEntity)
+    {
+        $amount = $input[$amountEntity]['amount'] / 100;
+
+        // The amount should be in the format like 100.00, or 1500.00
+        $amount = number_format($amount, 2, '.', '');
+
+        return $amount;
     }
 
     /**
@@ -1401,6 +1414,7 @@ class Gateway extends Base\Gateway
      * but is now simply stored as an extra attribute in terminal entity
      *
      * @return string hostedDataStoreId
+     * @throws Exception\LogicException
      */
     public function getHostedDataStoreId()
     {
@@ -1557,19 +1571,21 @@ class Gateway extends Base\Gateway
         return (in_array($gatewayMerchantId, self::OLD_STORE_IDS, true) === true);
     }
 
-    protected function getAuthCodeFromCallback($callbackBody)
+    /**
+     * FirstData has a minimum limit on card name(bname)
+     *
+     * @param array $card
+     * @return string
+     */
+    protected function getFormattedCardName(array $card): string
     {
-        $authCode = null;
+        $name = trim($card[Card\Entity::NAME]);
 
-        $approvalCodeArray = explode(':', $callbackBody[ConnectResponseFields::APPROVAL_CODE]);
-
-        // Only when call had succeed, we get authCode in approvalCode
-        if (($approvalCodeArray[0] === 'Y') and
-            (isset($approvalCodeArray[1]) === true))
+        if (strlen($name) < self::MINIMUM_CARD_NAME_LENGTH)
         {
-            $authCode = $approvalCodeArray[1];
+            $name = str_pad($name, self::MINIMUM_CARD_NAME_LENGTH, self::CARD_NAME_PADDING);
         }
 
-        return $authCode;
+        return $name;
     }
 }

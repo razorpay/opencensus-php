@@ -25,6 +25,7 @@ use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Transaction;
 use RZP\Models\User;
 use RZP\Trace\TraceCode;
+use RZP\Models\Base\PublicCollection;
 use RZP\Mail\Payout\Payout as PayoutMail;
 
 class Core extends Base\Core
@@ -70,7 +71,7 @@ class Core extends Base\Core
         return $merchant;
     }
 
-    public function createSubMerchant($input, $aggregatorMerchant): Entity
+    public function createSubMerchant($input, $aggregatorMerchant, $linkedAccount = true): Entity
     {
         // We only check for email uniqueness if the email
         // address is provided
@@ -95,11 +96,13 @@ class Core extends Base\Core
 
         $subMerchant->setPricingPlan($aggregatorMerchant->getPricingPlanId());
 
-        if ($aggregatorMerchant->isMarketplace() === true)
+        // The parent Id has to be linked only when it's a marketplace
+        // If both market place and referral are present when creating a referral account we should not link parentId.
+        if ($aggregatorMerchant->isMarketplace() === true and $linkedAccount === true)
         {
             // Use Startup Plan as the default for linked accounts
             // where transfer method pricing is 0
-            $subMerchant->setPricingPlan(Pricing\DefaultPlan::STARTUP_PLAN_ID);
+            $subMerchant->setPricingPlan(Pricing\DefaultPlan::PROMOTIONAL_PLAN_ID);
 
             $subMerchant->setMaxPaymentAmount($aggregatorMerchant->getMaxPaymentAmount());
 
@@ -387,6 +390,17 @@ class Core extends Base\Core
         return $merchant;
     }
 
+    /**
+     * This function is used for getting the activation status change log of a merchant
+     * @param Entity $merchant
+     *
+     * @return PublicCollection
+     */
+    public function getActivationStatusChangeLog(Entity $merchant): PublicCollection
+    {
+        return $merchant->getActivationStatusChangeLog();
+    }
+
     public function markGratisTransactionPostpaid(string $merchantId, int $from)
     {
         $merchant =  $this->repo->merchant->findOrFail($merchantId);
@@ -476,25 +490,25 @@ class Core extends Base\Core
         $merchant->getValidator()->validateInput($type, $input);
 
         $batches = $this->repo->transaction(function() use ($input, $type, $merchant)
-                   {
-                        $batches = [];
+            {
+                $batches = [];
 
-                        foreach ($input as $key => $file)
-                        {
-                            $batchType =  $type . '_' . $key;
+                foreach ($input as $key => $file)
+                {
+                    $batchType =  $type . '_' . $key;
 
-                            $params = [
-                                Batch\Entity::FILE        => $file,
-                                Batch\Entity::TYPE        => $batchType
-                            ];
+                    $params = [
+                        Batch\Entity::FILE        => $file,
+                        Batch\Entity::TYPE        => $batchType
+                    ];
 
-                            $batch = (new Batch\Core)->create($params, $merchant);
+                    $batch = (new Batch\Core)->create($params, $merchant);
 
-                            $batches[$batchType] = $batch->getId();
-                        }
+                    $batches[$batchType] = $batch->getId();
+                }
 
-                        return $batches;
-                    });
+                return $batches;
+        });
 
         $class = 'RZP\\Jobs\\' . studly_case($type) . 'Batch';
 
@@ -559,7 +573,7 @@ class Core extends Base\Core
 
             $body = $body . 'Date Of Credit : ' . $date . '<br />';
 
-            $mailData = ['body'  =>  $body];
+            $mailData = ['body' => $body];
 
             $payoutMail = new PayoutMail(
                 $mailData,

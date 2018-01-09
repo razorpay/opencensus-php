@@ -16,6 +16,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Card\Network;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
+use RZP\Models\Base\UniqueIdEntity;
 
 class Gateway extends Base\Gateway
 {
@@ -262,7 +263,7 @@ class Gateway extends Base\Gateway
         {
             $content[RequestFields::CAVV2] = $authResponse[Blade\Entity::CAVV];
         }
-        else if ($network === Card\Network::MC)
+        else if (($network === Card\Network::MC) or ($network === Card\Network::MAES))
         {
             $content[RequestFields::UCAF] = $authResponse[Blade\Entity::CAVV];
         }
@@ -272,32 +273,44 @@ class Gateway extends Base\Gateway
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_TYPE_INVALID);
         }
 
+        $traceContent = $content;
+
+        $content += $this->getCardDataForAuthorizeRequestArray($input);
+
+        $request = $traceRequest = $this->getStandardRequestArray($content);
+
+        $traceRequest['content'] = $traceContent;
+
         $this->trace->info(TraceCode::GATEWAY_AUTHORIZE_REQUEST,
             [
-                'request'    => $content,
+                'request'    => $traceRequest,
                 'gateway'    => 'hitachi',
                 'payment_id' => $input['payment']['id'],
             ]);
 
-        $content += $this->getCardDataForAuthorizeRequestArray($input);
-
-        return $this->getStandardRequestArray($content);
+        return $request;
     }
 
     protected function getAuthorizeRequestArrayForNotEnrolled(array $input)
     {
         $content = $this->getDefaultAuthorizeRequestArray($input);
 
+        $traceContent = $content;
+
+        $content += $this->getCardDataForAuthorizeRequestArray($input);
+
+        $request = $traceRequest = $this->getStandardRequestArray($content);
+
+        $traceRequest['content'] = $traceContent;
+
         $this->trace->info(TraceCode::GATEWAY_AUTHORIZE_REQUEST,
             [
-                'request'    => $content,
+                'request'    => $traceRequest,
                 'gateway'    => 'hitachi',
                 'payment_id' => $input['payment']['id'],
             ]);
 
-        $content += $this->getCardDataForAuthorizeRequestArray($input);
-
-        return $this->getStandardRequestArray($content);
+        return $request;
     }
 
     protected function traceGatewayPaymentResponse(
@@ -332,12 +345,8 @@ class Gateway extends Base\Gateway
             RequestFields::XID                 => '',
             RequestFields::ALGORITHM           => '',
             RequestFields::CAVV2               => '',
+            RequestFields::UCAF                => '',
         ];
-
-        if ($input['merchant']['id'] === '6ZJzxyLFWrGs74')
-        {
-            $content[RequestFields::MERCHANT_REF_NUMBER] = substr($input['payment']['id'], 0, 10);
-        }
 
         return $content;
     }
@@ -363,7 +372,7 @@ class Gateway extends Base\Gateway
 
         $content = [
             RequestFields::TRANSACTION_TYPE    => TransactionType::CAPTURE,
-            RequestFields::REQUEST_ID          => $input['payment']['id'],
+            RequestFields::REQUEST_ID          => UniqueIdEntity::generateUniqueId(),
             RequestFields::TRANSACTION_AMOUNT  => $this->getFormattedAmount($input['payment']['amount']),
             RequestFields::TRANSACTION_TIME    => $time,
             RequestFields::TRANSACTION_DATE    => $date,
@@ -372,45 +381,32 @@ class Gateway extends Base\Gateway
             RequestFields::MERCHANT_REF_NUMBER => $input['payment']['id']
         ];
 
-        if ($input['merchant']['id'] === '6ZJzxyLFWrGs74')
-        {
-            $content[RequestFields::REQUEST_ID] = rand(1111111111,9999999999);
-            $content[RequestFields::MERCHANT_REF_NUMBER] = substr($input['payment']['id'], 0, 10);
-        }
-
         return $this->getStandardRequestArray($content);
     }
 
     protected function getRefundRequestArray(array $input, Entity $gatewayPayment)
     {
-        $content = $this->getDefaultRefundReverseArray($input, $gatewayPayment);
+        $createdAt = Carbon::createFromTimestamp($input['payment']['created_at'], Timezone::IST);
 
-        $content[RequestFields::TRANSACTION_TYPE] = TransactionType::REFUND;
-        $content[RequestFields::REQUEST_ID]       = $input['refund']['id'];
+        $time = $createdAt->format(self::TIME_FORMAT);
+        $date = $createdAt->format('mdY');
 
-        if ($input['merchant']['id'] === '6ZJzxyLFWrGs74')
-        {
-            $content[RequestFields::REQUEST_ID] = substr($input['refund']['id'], 0, 10);
-        }
+        $content = [
+            RequestFields::TRANSACTION_TYPE    => TransactionType::REFUND,
+            RequestFields::TRANSACTION_AMOUNT  => $this->getFormattedAmount($input['refund']['amount']),
+            RequestFields::TRANSACTION_TIME    => $time,
+            RequestFields::TRANSACTION_DATE    => $date,
+            RequestFields::RETRIEVAL_REF_NUM   => $gatewayPayment->getRrn(),
+            RequestFields::MERCHANT_ID         => $this->getMerchantId(),
+            RequestFields::TERMINAL_ID         => $this->getTerminalId(),
+            RequestFields::MERCHANT_REF_NUMBER => $input['payment']['id'],
+            RequestFields::REQUEST_ID          => UniqueIdEntity::generateUniqueId(),
+        ];
 
         return $this->getStandardRequestArray($content);
     }
 
     protected function getReverseRequestArray(array $input, Entity $gatewayPayment)
-    {
-        $content = $this->getDefaultRefundReverseArray($input, $gatewayPayment);
-
-        $content[RequestFields::TRANSACTION_TYPE] = TransactionType::VOID;
-
-        if ($input['merchant']['id'] === '6ZJzxyLFWrGs74')
-        {
-            $content[RequestFields::MERCHANT_REF_NUMBER] = substr($input['refund']['id'], 0, 10);
-        }
-
-        return $this->getStandardRequestArray($content);
-    }
-
-    protected function getDefaultRefundReverseArray(array $input, Entity $gatewayPayment)
     {
         $createdAt = Carbon::createFromTimestamp($input['payment']['created_at'], Timezone::IST);
 
@@ -418,36 +414,28 @@ class Gateway extends Base\Gateway
         $date = $createdAt->format(self::DATE_FORMAT);
 
         $content = [
+            RequestFields::TRANSACTION_TYPE    => TransactionType::VOID,
             RequestFields::TRANSACTION_AMOUNT  => $this->getFormattedAmount($input['refund']['amount']),
             RequestFields::TRANSACTION_TIME    => $time,
             RequestFields::TRANSACTION_DATE    => $date,
             RequestFields::RETRIEVAL_REF_NUM   => $gatewayPayment->getRrn(),
             RequestFields::MERCHANT_ID         => $this->getMerchantId(),
-            RequestFields::MERCHANT_REF_NUMBER => $input['payment']['id']
+            RequestFields::MERCHANT_REF_NUMBER => $input['payment']['id'],
         ];
 
-        if ($input['merchant']['id'] === '6ZJzxyLFWrGs74')
-        {
-            $content[RequestFields::MERCHANT_REF_NUMBER] = substr($input['payment']['id'], 0, 10);
-        }
-
-        return $content;
+        return $this->getStandardRequestArray($content);
     }
 
     protected function getVerifyRequestArray(array $input)
     {
         $content = [
-            RequestFields::TRANSACTION_TYPE    => TransactionType::TXN,
-            RequestFields::REQUEST_ID          => $input['payment']['id'],
+            RequestFields::TRANSACTION_TYPE    => TransactionType::VERIFY,
+            RequestFields::REQUEST_ID          => UniqueIdEntity::generateUniqueId(),
             RequestFields::TRANSACTION_AMOUNT  => $this->getFormattedAmount($input['payment']['amount']),
             RequestFields::MERCHANT_ID         => $this->getMerchantId(),
+            RequestFields::TERMINAL_ID         => $this->getTerminalId(),
             RequestFields::MERCHANT_REF_NUMBER => $input['payment']['id']
         ];
-
-        if ($input['merchant']['id'] === '6ZJzxyLFWrGs74')
-        {
-            $content[RequestFields::MERCHANT_REF_NUMBER] = substr($input['payment']['id'], 0, 10);
-        }
 
         return $this->getStandardRequestArray($content);
     }
@@ -477,7 +465,6 @@ class Gateway extends Base\Gateway
             Entity::RECEIVED      => true,
             Entity::RRN           => $response[ResponseFields::RETRIEVAL_REF_NUM],
             Entity::RESPONSE_CODE => $response[ResponseFields::RESPONSE_CODE],
-            Entity::REQUEST_ID    => $response[ResponseFields::REQUEST_ID],
         ];
 
         return $attributes;
@@ -672,9 +659,26 @@ class Gateway extends Base\Gateway
         return $merchantId;
     }
 
+    protected function getTerminalId()
+    {
+        $terminalId = $this->terminal['gateway_terminal_id'];
+
+        if ($this->mode === Mode::TEST)
+        {
+            $terminalId = $this->config['test_terminal_id'];
+        }
+
+        return $terminalId;
+    }
+
+    protected function getLiveSecret()
+    {
+        return $this->config['gateway_salt'];
+    }
+
     protected function getSecret2()
     {
-        $secret2 = $this->input['terminal']['gateway_terminal_password'];
+        $secret2 = $this->config['gateway_salt2'];
 
         if ($this->mode === Mode::TEST)
         {

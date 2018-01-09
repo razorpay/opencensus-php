@@ -86,4 +86,20 @@ class Batch extends Job implements ShouldQueue
                 ]);
         }
     }
+
+    /**
+     * @return string
+     */
+    public function getId(): string
+    {
+        return $this->id;
+    }
+
+    /**
+     * @return array
+     */
+    public function getParams(): array
+    {
+        return $this->params;
+    }
 }

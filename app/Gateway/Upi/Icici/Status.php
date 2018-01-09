@@ -6,6 +6,8 @@ class Status
 {
     const TXN_INITIATED = 92;
 
+    const TXN_SUCCESS = 0;
+
     const INVALID_VPA   = 5007;
 
     const INVALID_PSP   = 5008;

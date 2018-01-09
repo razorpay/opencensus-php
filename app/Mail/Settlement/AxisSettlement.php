@@ -12,7 +12,7 @@ class AxisSettlement extends Base
 {
     protected function getFromHeader()
     {
-        return 'Axis Transfer File';
+        return 'Axis Settlement File';
     }
 
     protected function addRecipients()
@@ -46,7 +46,7 @@ class AxisSettlement extends Base
     {
         $today = Carbon::today(Timezone::IST)->format('d-m-Y');
 
-        $subject = "Axis Transfer File for $today";
+        $subject = "Axis Settlement File for $today";
 
         $this->subject($subject);
 

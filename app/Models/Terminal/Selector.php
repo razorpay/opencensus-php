@@ -72,14 +72,50 @@ class Selector extends Base\Core
 
         $filteredTerminals = $this->filterTerminals($allTerminals, $applicableRules, $verbose);
 
+        $payment = $this->input['payment'];
+
+        if (empty($filteredTerminals) === true)
+        {
+            $basicAuth = $this->app['basicauth'];
+
+            $access = (($basicAuth->isPrivateAuth() === true) or
+                       ($basicAuth->isPrivilegeAuth() === true));
+
+            $token = $payment->getGlobalOrLocalTokenEntity();
+
+            //
+            // We are doing this only for second recurring
+            // card payments made via private/privilege auth
+            //
+            if (($payment->isCard() === true) and ($payment->isRecurring() === true) and
+                ($token !== null) and
+                ($token->isRecurring() === true) and
+                ($access === true))
+            {
+                //
+                // For fallback, we need to get direct terminals which
+                // support both recurring 3DS and recurring non-3DS
+                // on a single terminal. These terminals usually allow
+                // payments without 2FA first.
+                //
+                $filteredTerminals = $this->repo
+                                          ->terminal
+                                          ->getDirectRecurringTerminalsOfType($this->input['merchant'], 6)
+                                          ->all();
+            }
+        }
+
         $sortedTerminals = $this->sortTerminals($filteredTerminals, $applicableRules, $verbose);
 
         if (empty($sortedTerminals) === true)
         {
-            if (($this->isTestMode() === true) or ($this->app->environment('testing') === true))
+            if (($this->isTestMode() === true) or
+                ($this->app->environment('testing') === true))
             {
-                // The current list of terminals which were retrieved earlier does
+                //
+                // The current list of terminals which were retrieved earlier do
                 // not contain the sharp terminal and hence, making a call to DB.
+                //
                 $terminal = $this->repo->terminal->find(Shared::SHARP_RAZORPAY_TERMINAL);
 
                 $sortedTerminals = array($terminal);
@@ -101,7 +137,7 @@ class Selector extends Base\Core
         $merchantTerminals = $this->repo
                                   ->terminal
                                   ->getTerminalsForMerchantAndSharedMerchant(
-                                        $this->input['merchant']->getId());
+                                        $this->input['merchant']);
 
         return $merchantTerminals->all();
     }

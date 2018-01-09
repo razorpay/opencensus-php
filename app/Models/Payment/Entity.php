@@ -905,7 +905,9 @@ class Entity extends Base\PublicEntity
         {
             case Method::CARD:
 
-                $acquirerData = [];
+                $acquirerData = [
+                    'auth_code' => $this->getAttribute(self::REFERENCE2),
+                ];
                 break;
 
             case Method::NETBANKING:
@@ -1463,7 +1465,7 @@ class Entity extends Base\PublicEntity
 
     public function isRecurring()
     {
-        return $this->getAttribute(self::RECURRING);
+        return ($this->getAttribute(self::RECURRING) === true);
     }
 
     public function getCardId()
@@ -1526,7 +1528,14 @@ class Entity extends Base\PublicEntity
 
         $existingGatewayTokens = $app['repo']->gateway_token->findByTokenAndReference($token, $reference);
 
-        return ($existingGatewayTokens->count() === 1);
+        //
+        // We can have multiple gateway_tokens for a single token.
+        // Each gateway_token would correspond to a different gateway.
+        // This still means that this is second recurring since a
+        // gateway_token has already been created for the given token.
+        // The token can now be used without 2FA.
+        //
+        return ($existingGatewayTokens->count() > 0);
     }
 
     public function isEmandatePayment()
@@ -2306,16 +2315,22 @@ class Entity extends Base\PublicEntity
 
     public function shouldRunFraudChecks()
     {
-        if ($this->isCard() === true)
+        if ($this->isCard() === false)
         {
-            if (($this->card->isInternational() === true) or
-                ($this->card->isAmex() === true))
-            {
-                return true;
-            }
+            return false;
         }
 
-        return false;
+        //
+        // Since the first auth transaction would have already been
+        // done, we don't need to do any MaxMind risk checks for this.
+        //
+        if ($this->isSecondRecurring() === true)
+        {
+            return false;
+        }
+
+        return (($this->card->isInternational() === true) or
+                ($this->card->isAmex() === true));
     }
 
     public static function getFilteredDescription(string $description = null)

@@ -492,6 +492,13 @@ return [
                 'assignable'  => true
             ],
         ],
+
+        PermissionCategory::BATCH => [
+            Permission::RETRY_BATCH => [
+                'description' => 'Retry batch processing',
+                'assignable'  => true,
+            ]
+        ]
     ],
 
     'workflows' => [

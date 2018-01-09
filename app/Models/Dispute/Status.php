@@ -16,6 +16,15 @@ class Status
         self::CLOSED,
     ];
 
+    /**
+     * $transactionalStatuses are statuses where adjustment transactions
+     * should be done when a dispute reaches one of these statuses
+     */
+    protected static $transactionalStatuses = [
+        self::WON,
+        self::LOST,
+    ];
+
     public static function exists(string $status): bool
     {
         return defined(get_class() . '::' . strtoupper($status));
@@ -24,5 +33,10 @@ class Status
     public static function getClosedStatuses(): array
     {
         return self::$closedStatuses;
+    }
+
+    public static function getTransactionalStatuses(): array
+    {
+        return self::$transactionalStatuses;
     }
 }

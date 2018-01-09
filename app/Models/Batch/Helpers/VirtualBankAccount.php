@@ -19,18 +19,27 @@ class VirtualBankAccount
 
     public static function getVirtualAccountCreateInput(array $entry, Customer\Entity $customer): array
     {
-        return [
-            VirtualAccount\Entity::DESCRIPTOR  => $entry[Header::VA_DESCRIPTOR],
-            VirtualAccount\Entity::CUSTOMER_ID => $customer->getPublicId(),
-            VirtualAccount\Entity::RECEIVERS => [
-                VirtualAccount\Entity::TYPES => [
+        $requestArray = [
+            VirtualAccount\Entity::DESCRIPTION  => $entry[Header::VA_DESCRIPTION],
+            VirtualAccount\Entity::CUSTOMER_ID  => $customer->getPublicId(),
+            VirtualAccount\Entity::RECEIVERS    => [
+                VirtualAccount\Entity::TYPES        => [
                     VirtualAccount\Receiver::BANK_ACCOUNT,
                 ],
                 VirtualAccount\Entity::BANK_ACCOUNT => [
-                    VirtualAccount\Receiver::NUMERIC    => false,
-                    VirtualAccount\Receiver::DESCRIPTOR => $entry[Header::VA_DESCRIPTOR],
+                    VirtualAccount\Receiver::NUMERIC => true,
                 ],
             ],
+            VirtualAccount\Entity::NOTES        => json_decode($entry[Header::VA_NOTES], true) ?? [],
         ];
+
+        if (empty($entry[Header::VA_DESCRIPTOR]) === false)
+        {
+            $requestArray[VirtualAccount\Entity::RECEIVERS]
+                [VirtualAccount\Entity::BANK_ACCOUNT]
+                [VirtualAccount\Receiver::DESCRIPTOR] = $entry[Header::VA_DESCRIPTOR];
+        }
+
+        return $requestArray;
     }
 }

@@ -151,4 +151,16 @@ trait PaymentFirstDataTrait
 
         $this->setMockServer($server);
     }
+
+    protected function getErrorTransactionTimedout($error_code)
+    {
+        $this->mockServerContentFunction(function (& $content) use ($error_code)
+        {
+            if (is_array($content) === true)
+            {
+                $content['approval_code'] =  $error_code . ':Transaction timed out';
+                $content['status']        = 'DECLINED';
+            }
+        });
+    }
 }

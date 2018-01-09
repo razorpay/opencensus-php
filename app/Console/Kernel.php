@@ -22,7 +22,6 @@ class Kernel extends ConsoleKernel
         Commands\VerifyUpiProviders::class,
         Commands\UidCheckDigitVerify::class,
         Commands\VerifyTopLevelDomain::class,
-        Commands\MigrateOldBatchToUfh::class,
         Commands\GenerateEmailTemplates::class,
         \Laravel\Tinker\Console\TinkerCommand::class,
     ];

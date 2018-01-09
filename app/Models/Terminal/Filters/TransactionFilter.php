@@ -3,21 +3,19 @@
 namespace RZP\Models\Terminal\Filters;
 
 use App;
+
 use RZP\Exception;
 use RZP\Models\Feature;
-use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
-use RZP\Models\Bank\IFSC;
-use RZP\Models\Card\Type;
-use RZP\Models\Card\Issuer;
+use RZP\Models\Payment;
 use RZP\Models\Card\Network;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
-use RZP\Models\Terminal\Shared;
-use RZP\Models\Currency\Currency;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Terminal\Category;
 use RZP\Models\Merchant\Preferences;
+use RZP\Models\Customer\GatewayToken;
 use RZP\Models\Payment\Processor\Netbanking;
 
 class TransactionFilter extends Terminal\Filter
@@ -33,6 +31,8 @@ class TransactionFilter extends Terminal\Filter
         'subscription',
         'tpv',
         'pharma',
+        'corporate',
+        'mcc',
     ];
 
     public function methodFilter($terminal)
@@ -110,6 +110,7 @@ class TransactionFilter extends Terminal\Filter
      * Filter to remove cybersource shared terminals for non recurring payments
      *
      * @param  Terminal\Entity $terminal
+     * @return bool
      */
     public function gatewayFilter(Terminal\Entity $terminal)
     {
@@ -161,84 +162,118 @@ class TransactionFilter extends Terminal\Filter
     {
         $payment = $this->input['payment'];
 
-        // for cybersource, check get the terminal based on recurring type
-        if ($payment->isRecurring() === true)
+        if ($payment->isRecurring() === false)
         {
-            $recurring = Gateway::isRecurringGateway($terminal->getGateway());
-
-            if ($recurring === false)
-            {
-                return false;
-            }
-
-            if ($terminal->getGateway() === Gateway::CYBERSOURCE)
-            {
-                // for cybersource recurring payment, terminal must be hdfc acquired
-                if ($terminal->getGatewayAcquirer() !== 'hdfc')
-                {
-                    return false;
-                }
-            }
-
-            $ba = app('basicauth');
-
-            $token = $payment->getGlobalOrLocalTokenEntity();
-
-            $access = (($ba->isPrivateAuth() === true) or ($ba->isPrivilegeAuth() === true));
-
-            // Check if this is the second recurring payment
-            if (($token !== null) and
-                ($token->isRecurring() === true) and
-                ($access === true))
-            {
-                $reference = $payment->getReferenceForGatewayToken();
-
-                $gatewayTokens = $this->repo->gateway_token->findByTokenAndReference($token, $reference);
-
-                $gatewayTokensCount = $gatewayTokens->count();
-
-                if ($gatewayTokensCount === 1)
-                {
-                    //
-                    // For second recurring payment, ensure that we select a terminal
-                    // of the same gateway as for the first recurring payment and also
-                    // of the same merchant (shared, direct)
-                    //
-                    $previousGateway = $gatewayTokens->first()->terminal->getGateway();
-                    $previousMerchant = $gatewayTokens->first()->terminal->getMerchantId();
-
-                    $currentGateway = $terminal->getGateway();
-                    $currentMerchant = $terminal->getMerchantId();
-
-                    return (($terminal->isNon3DSRecurring() === true) and
-                            ($previousGateway === $currentGateway) and
-                            ($previousMerchant === $currentMerchant));
-                }
-                //
-                // If a token is present and is supposed to be subsequent charge,
-                // the corresponding gateway_token must always be present.
-                // If it's not present, there's something wrong somewhere!
-                //
-                else
-                {
-                    throw new Exception\LogicException(
-                        'Should have gotten exactly 1 gateway token.',
-                        ErrorCode::SERVER_ERROR_GATEWAY_TOKENS_INVALID_COUNT,
-                        [
-                            'gateway_tokens_count'  => $gatewayTokensCount,
-                            'payment_id'            => $payment->getId(),
-                            'token_id'              => $token->getId(),
-                            'reference'             => $reference
-                        ]);
-                }
-            }
-            else
-            {
-                return ($terminal->is3DSRecurring() === true);
-            }
+            return ($terminal->isNonRecurring() === true);
         }
 
-        return ($terminal->isNonRecurring() === true);
+        $recurringGateway = Gateway::isRecurringGateway($terminal->getGateway());
+
+        if ($recurringGateway === false)
+        {
+            return false;
+        }
+
+        // for cybersource recurring payment, terminal must be hdfc acquired
+        if (($terminal->getGateway() === Gateway::CYBERSOURCE) and
+            ($terminal->getGatewayAcquirer() !== 'hdfc'))
+        {
+            return false;
+        }
+
+        $basicAuth = $this->app['basicauth'];
+
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
+        $access = (($basicAuth->isPrivateAuth() === true) or
+                   ($basicAuth->isPrivilegeAuth() === true));
+
+        //
+        // All first recurring payments or payments made via public
+        // auth need to go via 3DS Recurring terminals only.
+        //
+        if (($token === null) or
+            ($token->isRecurring() === false) or
+            ($access === false))
+        {
+            return ($terminal->is3DSRecurring() === true);
+        }
+
+        //
+        // From here onwards, the terminal selection
+        // logic is for second recurring.
+        //
+        if ($terminal->isNon3DSRecurring() === false)
+        {
+            return false;
+        }
+
+        $reference = $payment->getReferenceForGatewayToken();
+
+        $gatewayTokens = $this->repo->gateway_token->findByTokenAndReference($token, $reference);
+
+        $gatewayTokensCount = $gatewayTokens->count();
+
+        if ($gatewayTokensCount > 0)
+        {
+            //
+            // For second recurring payment, ensure that we select a terminal
+            // of the same gateway as for the first recurring payment and also
+            // of the same merchant (shared, direct)
+            //
+            $validGatewayTokens = $gatewayTokens->filter(
+                                    function($gatewayToken) use ($terminal)
+                                    {
+                                        return (($gatewayToken->getGateway() === $terminal->getGateway()) and
+                                            ($gatewayToken->terminal->getMerchantId() === $terminal->getMerchantId()));
+                                    });
+
+            //
+            // We check if we have one valid gateway_token for the
+            // terminal being selected. If yes, we return back true.
+            // If we don't have even one valid gateway_token for the
+            // terminal being selected, we return back false.
+            //
+            // The check is again 1 exactly because for a given gateway,
+            // there should not be more than one terminal. We don't support
+            // more than 1 set of terminals for a merchant (direct/shared).
+            // If it's greater than 1, there's something wrong and should fail.
+            //
+            return ($validGatewayTokens->count() === 1);
+        }
+        //
+        // If a token is present and is supposed to be subsequent charge,
+        // the corresponding gateway_token must always be present.
+        // If it's not present, there's something wrong somewhere!
+        //
+        else
+        {
+            throw new Exception\LogicException(
+                'Should have gotten at least 1 gateway token.',
+                ErrorCode::SERVER_ERROR_GATEWAY_TOKENS_INVALID_COUNT,
+                [
+                    'gateway_tokens_count'  => $gatewayTokensCount,
+                    'payment_id'            => $payment->getId(),
+                    'token_id'              => $token->getId(),
+                    'reference'             => $reference
+                ]);
+        }
+    }
+
+    protected function corporateFilter(Terminal\Entity $terminal)
+    {
+        $payment = $this->input['payment'];
+
+        if ($payment->isNetbanking() === true)
+        {
+            $bank = $payment->getBank();
+
+            // If a bank does not require a corporate terminal
+            // a corporate terminal should not allow the payment.
+            return (Netbanking::isCorporateTerminalRequired($bank) === $terminal->isCorporate());
+        }
+
+        return true;
     }
 
     protected function subscriptionFilter(Terminal\Entity $terminal)
@@ -288,7 +323,9 @@ class TransactionFilter extends Terminal\Filter
         if ((empty($bank) === false) and
             (in_array($bank, Gateway::$emiBanksUsingCardTerminals)))
         {
-            return (($terminal->isCardEnabled()) and ($terminal->isEmiEnabled() === false));
+            return (($terminal->isCardEnabled()) and
+                    ($terminal->isEmiEnabled() === false) and
+                    ($terminal->isCurrencyInr() === true));
         }
 
         // validate terminal using the gateway and emi duration
@@ -361,6 +398,74 @@ class TransactionFilter extends Terminal\Filter
             }
 
             return ($terminal->isNonTpvAllowed() === true);
+        }
+
+        return true;
+    }
+
+    /**
+     * For card / emi payments, selects terminals with null mcc or with mcc
+     * matching that of the merchant
+     *
+     * @param  Terminal\Entity $terminal
+     *
+     * @return bool
+     */
+    public function mccFilter(Terminal\Entity $terminal, array $applicableTerminals)
+    {
+        $merchant = $this->input['merchant'];
+        $merchantMcc = $merchant->getCategory();
+
+        if (($this->input['payment']->isMethodCardOrEmi() === true) and
+            ($terminal->getGateway() === Gateway::HDFC))
+        {
+            //
+            // If terminal is direct for the merchant, we always select it.
+            //
+            if ($terminal->isDirectForMerchant($merchant) === true)
+            {
+                return true;
+            }
+
+            if ($terminal->getCategory() !== null)
+            {
+                //
+                // If terminal category is not null, then we reject the terminal
+                // if it's category is not the same as merchant mcc.
+                //
+                return ($terminal->getCategory() === $merchantMcc);
+
+            }
+            else
+            {
+                //
+                // If the terminal is a shared terminal with category null, then
+                // we select it, if there are no terminals with the merchant mcc
+                // present in the set of all terminals.
+                //
+                return ($this->isTerminalWithMerchantMccAbsent(
+                            $applicableTerminals,
+                            $merchantMcc) === true);
+            }
+        }
+
+        return true;
+    }
+
+    protected function isTerminalWithMerchantMccAbsent(
+        array $applicableTerminals,
+        int $merchantMcc = null): bool
+    {
+        foreach ($applicableTerminals as $terminal)
+        {
+            //
+            // Currently this checks only for HDFC gateway terminals
+            //
+            if (($terminal->getGateway() === Gateway::HDFC) and
+                ($terminal->getCategory() === $merchantMcc))
+            {
+                return false;
+            }
         }
 
         return true;

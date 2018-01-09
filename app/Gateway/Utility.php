@@ -57,8 +57,11 @@ class Utility
     /**
      * Checks whether the SoapFault exception is a timeout exception
      * If so, this should be treated as a gateway failure
+     *
+     * @param \SoapFault $sf
+     *
+     * @return bool
      */
-
     public static function checkSoapTimeout(\SoapFault $sf)
     {
         $msg = strtolower($sf->getMessage());

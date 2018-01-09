@@ -774,7 +774,8 @@ return [
             'method'  => 'PUT',
             'url'     => '/config/keys',
             'content' => [
-                'terminal_selection_log_verbose' => '1',
+                'terminal_selection_log_verbose'        => '1',
+                'pricing_rule_selection_log_verbose'    => '1',
             ],
         ],
         'response' => [
@@ -791,7 +792,8 @@ return [
             'url'     => '/config/keys',
         ],
         'response' => [
-            'terminal_selection_log_verbose' => '1',
+            'terminal_selection_log_verbose'        => '1',
+            'pricing_rule_selection_log_verbose'    => '1',
         ],
     ],
 

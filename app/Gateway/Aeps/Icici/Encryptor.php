@@ -9,11 +9,34 @@ use RZP\Constants\Mode;
 
 class Encryptor
 {
-    const CERT_PATH  = 'certs/public.cer';
+    const CERT_PATH   = 'certs/public.cer';
     const CERT_EXPIRY = '20191230';
 
-    const CERT_PATH_UAT = 'certs/public_uat.cer';
+    const CERT_PATH_UAT   = 'certs/public_uat.cer';
     const CERT_EXPIRY_UAT = '20171105';
+
+    protected $privateKey = '';
+
+    protected $publicKey = '';
+
+    protected $publicCertificatePath = '';
+
+    protected $privateKeyPath = '';
+
+    public function __construct($mode = AES::MODE_ECB, $iv = '')
+    {
+        $this->encryptionMode = $mode;
+
+        if ($mode === AES::MODE_CBC)
+        {
+            $this->iv = '';
+        }
+    }
+
+    public function setPrivateKey(string $key)
+    {
+        $this->privateKey = $key;
+    }
 
     protected function createPidXml($fpData)
     {
@@ -26,14 +49,40 @@ class Encryptor
 
     public function encryptUsingSessionKey($data, $skey)
     {
-        $cipher = new AES(1);
+        // This is because they were stripping the first 16 characters from the data we sent
+        // and hence they could not parse that json string.
+        $data = str_repeat(" ", 16) . $data;
+
+        $cipher = new AES($this->encryptionMode);
+
+        if ($this->encryptionMode === AES::MODE_CBC)
+        {
+            $cipher->setIV($this->iv);
+        }
 
         $cipher->setKey($skey);
 
         return base64_encode($cipher->encrypt($data));
     }
 
-    public function encryptSessionKey($skey, $mode)
+    public function decryptUsingSessionKey($data, $skey)
+    {
+        $cipher = new AES($this->encryptionMode);
+
+        if ($this->encryptionMode === AES::MODE_CBC)
+        {
+            $cipher->setIV($this->iv);
+        }
+
+        $cipher->setKey($skey);
+
+        $data = $cipher->decrypt(base64_decode($data));
+
+        // First 16 characters are garbage. Need to check this with them.
+        return substr($data, 16);
+    }
+
+    public function encryptSessionKey($skey, $mode, $type = 'auth')
     {
         if ($mode === Mode::LIVE)
         {
@@ -46,11 +95,26 @@ class Encryptor
 
         $publicKey = file_get_contents(__DIR__ . '/' . $certPath);
 
+        // For refunds
+        if ($type !== 'auth')
+        {
+            $publicKey = $this->publicKey;
+        }
+
         openssl_public_encrypt($skey, $encrypted, $publicKey);
 
         $encoded = base64_encode($encrypted);
 
         return $encoded;
+    }
+
+    public function decryptSessionKey($skey)
+    {
+        $decoded = base64_decode($skey);
+
+        openssl_private_decrypt($decoded, $decrypted, $this->privateKey);
+
+        return $decrypted;
     }
 
     public function generateHmac($fpData, $skey)
@@ -84,7 +148,7 @@ class Encryptor
         }
     }
 
-    function generateSkey($length = 16)
+    public function generateSkey($length = 16)
     {
         //TODO : make it better
         $result = '';
@@ -95,5 +159,25 @@ class Encryptor
         }
 
         return $result;
+    }
+
+    public function setPublicKey(string $key)
+    {
+        $this->publicKey = $key;
+    }
+
+    protected function getPublicCertificatePath()
+    {
+        return $this->publicCertificatePath;
+    }
+
+    public function setPrivateKeyPath(string $path)
+    {
+        $this->privateKeyPath = $path;
+    }
+
+    protected function getPrivateKeyPath()
+    {
+        return $this->privateKeyPath;
     }
 }

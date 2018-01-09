@@ -125,9 +125,10 @@ class Converter
      *
      * @param $fileDetails
      * @param $sheetNames
+     * @param $startRow
      * @return array excel sheet content of mentioned file
      */
-    public function getRowsFromExcelSheetsSpout($fileDetails, $sheetNames = [])
+    public function getRowsFromExcelSheetsSpout($fileDetails, $sheetNames = [], int $startRow = 1)
     {
         $filePath = $fileDetails[FileProcessor::FILE_PATH];
 
@@ -138,10 +139,10 @@ class Converter
 
         if (empty($sheetNames) === false)
         {
-            return $this->getRowsFromExcelSheetsWithSheetNamesSpout($reader, $sheetNames);
+            return $this->getRowsFromExcelSheetsWithSheetNamesSpout($reader, $sheetNames, $startRow);
         }
 
-        return $this->getRowsFromExcelSheetsWithIndicesSpout($reader);
+        return $this->getRowsFromExcelSheetsWithIndicesSpout($reader, $startRow);
     }
 
     public function convertExcelSheetToArray($sheet)
@@ -322,7 +323,7 @@ class Converter
         return ($extension === Format::XLSX);
     }
 
-    protected function getRowsFromExcelSheetsWithIndicesSpout($reader)
+    protected function getRowsFromExcelSheetsWithIndicesSpout($reader, int $startRow = 1)
     {
         $allSheetsContent = [];
 
@@ -332,13 +333,13 @@ class Converter
 
             $sheetName = 'sheet' . $index;
 
-            $this->setSheetContentForSpout($allSheetsContent, $sheet, $sheetName);
+            $this->setSheetContentForSpout($allSheetsContent, $sheet, $sheetName, $startRow);
         }
 
         return $allSheetsContent;
     }
 
-    protected function getRowsFromExcelSheetsWithSheetNamesSpout($reader, array $sheetNames)
+    protected function getRowsFromExcelSheetsWithSheetNamesSpout($reader, array $sheetNames, int $startRow = 1)
     {
         $allSheetsContent = [];
 
@@ -351,13 +352,13 @@ class Converter
                 continue;
             }
 
-            $this->setSheetContentForSpout($allSheetsContent, $sheet, $sheetName);
+            $this->setSheetContentForSpout($allSheetsContent, $sheet, $sheetName, $startRow);
         }
 
         return $allSheetsContent;
     }
 
-    protected function setSheetContentForSpout(array & $allSheetsContent, $sheet, string $sheetName)
+    protected function setSheetContentForSpout(array & $allSheetsContent, $sheet, string $sheetName, int $startRow = 1)
     {
         $sheetHeaders = [];
 
@@ -367,13 +368,18 @@ class Converter
 
         foreach ($rowIterator as $row)
         {
+            if ($rowIterator->key() < $startRow)
+            {
+                continue;
+            }
+
             // this deals with the empty rows
             if (count(array_filter($row)) === 0)
             {
                 continue;
             }
 
-            if ($rowIterator->key() === 1)
+            if ($rowIterator->key() === $startRow)
             {
                 $sheetHeaders = $this->normalizeHeaders($row);
             }

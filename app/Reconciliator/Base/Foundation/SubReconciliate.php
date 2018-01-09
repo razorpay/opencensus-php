@@ -3,9 +3,9 @@
 namespace RZP\Reconciliator\Base\Foundation;
 
 use App;
-
 use RZP\Models\Base;
 use RZP\Models\Batch;
+use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
 use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\RequestProcessor;
@@ -42,6 +42,14 @@ class SubReconciliate extends Base\Core
      */
     protected $failures = [];
 
+    /**
+     * Decides whether to mark the row as success / failure if it is unprocessable.
+     * By default, we want to mark such a row as failed, hence setting it to true.
+     *
+     * @var boolean
+     */
+    protected $failUnprocessedRow = true;
+
     public function getTotal(): array
     {
         return $this->total;
@@ -74,6 +82,8 @@ class SubReconciliate extends Base\Core
     public function resetProcessingAttributes()
     {
         $this->extraDetails = [];
+
+        $this->setFailUnprocessedRow(true);
     }
 
     /**
@@ -185,24 +195,24 @@ class SubReconciliate extends Base\Core
         return $entity->transaction->isReconciled();
     }
 
-    protected function setSummaryCount($type, $entityId)
+    protected function setSummaryCount(string $type, string $identifier)
     {
         switch($type)
         {
             case self::TOTAL_SUMMARY:
-                $this->total[] = $entityId;
+                $this->total[] = $identifier;
                 break;
             case self::FAILURES_SUMMARY:
-                $this->failures[] = $entityId;
+                $this->failures[] = $identifier;
                 break;
             case self::SUCCESSES_SUMMARY:
-                $this->successes[] = $entityId;
+                $this->successes[] = $identifier;
                 break;
             default:
                 throw new LogicException(
                     'Should not have reached here. Unknown type given for summary.',
                     null,
-                    ['entity_id' => $entityId]
+                    ['entity_id' => $identifier]
                 );
         }
     }
@@ -273,7 +283,7 @@ class SubReconciliate extends Base\Core
     }
 
     /**
-     * Rows for which the correponding entities, have already been marked as reconciled,
+     * Rows for which the corresponding entities, have already been marked as reconciled,
      * we add it to the list of successfully processed rows.
      *
      * @param  string $entityId
@@ -281,5 +291,33 @@ class SubReconciliate extends Base\Core
     protected function handleAlreadyReconciled(string $entityId)
     {
         $this->setSummaryCount(self::SUCCESSES_SUMMARY, $entityId);
+    }
+
+    protected function setFailUnprocessedRow(bool $failUnprocessedRow)
+    {
+        $this->failUnprocessedRow = $failUnprocessedRow;
+    }
+
+    /**
+     * For certain rows, where we are not able to successfully identify the payment
+     * or refund entity to reconcile, we mark the row processing as success or failure
+     * depending on the specific gateway's reconciliator.
+     *
+     * @param  array  $row
+     */
+    protected function handleUnprocessedRow(array $row)
+    {
+        $this->trace->info(TraceCode::RECON_UNPROCESSED_ROW,
+            [
+                'gateway' => get_called_class(),
+                'row'     => $row,
+            ]);
+
+        if ($this->failUnprocessedRow === true)
+        {
+            return $this->setSummaryCount(self::FAILURES_SUMMARY, head($row));
+        }
+
+        return $this->setSummaryCount(self::SUCCESSES_SUMMARY, head($row));
     }
 }

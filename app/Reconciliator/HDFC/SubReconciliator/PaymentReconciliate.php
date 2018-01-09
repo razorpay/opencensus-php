@@ -32,7 +32,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     const COLUMN_TERMINAL_NUMBER    = ['terminal_number', 'TERMINAL NUMBER'];
 
-    protected function getPaymentId($row)
+    protected function getPaymentId(array $row)
     {
         if ($this->isCybersource($row) === true)
         {

@@ -70,6 +70,10 @@ return [
             'connection' => 'secure'
         ],
 
+        'throttle_redis' => [
+            'driver' => 'redis',
+            'connection' => 'throttle_redis'
+        ],
     ],
 
     /*
