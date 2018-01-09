@@ -6,7 +6,6 @@ use RZP\Constants\MailTags;
 use RZP\Mail\Base;
 use RZP\Models\Payment\Gateway;
 
-
 class Constants extends Base\Constants
 {
     const RECIPIENT_EMAILS_MAP = [
