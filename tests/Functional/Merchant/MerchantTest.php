@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Merchant;
 
 use DB;
 use Mail;
+use Redis;
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
@@ -136,6 +137,18 @@ class MerchantTest extends TestCase
      */
     public function testUpdateKeyExpireNow()
     {
+        $redis = Redis::getFacadeRoot();
+
+        Redis::shouldReceive('connection')
+            ->with('query_cache_test')
+            ->andReturn($redis);
+
+        Redis::shouldReceive('connection')
+            ->with('query_cache_live')
+            ->andReturn($redis);
+
+        Redis::shouldReceive('flush')->andReturn(true);
+
         $content = $this->startTest();
 
         $expired = time() + 1;
@@ -1357,7 +1370,6 @@ class MerchantTest extends TestCase
         $ba1 = $this->fixtures->create('bank_account', ['created_at' => $thirdJan2017Timestamp - 2]);
         $ba2 = $this->fixtures->create('bank_account', ['created_at' => $thirdJan2017Timestamp - 10]);
         $ba3 = $this->fixtures->create('bank_account', ['created_at' => $thirdJan2017Timestamp + 50]);
-
 
         $this->ba->appAuth();
 
