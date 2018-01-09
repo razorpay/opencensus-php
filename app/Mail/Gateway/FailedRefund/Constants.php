@@ -2,8 +2,8 @@
 
 namespace RZP\Mail\Gateway\FailedRefund;
 
-use RZP\Constants\MailTags;
 use RZP\Mail\Base;
+use RZP\Constants\MailTags;
 use RZP\Models\Payment\Gateway;
 
 class Constants extends Base\Constants

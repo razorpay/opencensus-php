@@ -5,10 +5,9 @@ namespace RZP\Tests\Functional\Gateway\File;
 use Mail;
 use Carbon\Carbon;
 
-use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
-use RZP\Mail\Gateway\RefundFile\Base as FailedRefundMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Mail\Gateway\RefundFile\Base as FailedRefundMail;
 
 class UpiFailedRefundFileTest extends TestCase
 {
@@ -60,7 +59,9 @@ class UpiFailedRefundFileTest extends TestCase
             'entity_id'   => $entity_id,
             'extension'   => 'xlsx',
         ];
+
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
+
         Mail::assertSent(FailedRefundMail::class);
     }
 

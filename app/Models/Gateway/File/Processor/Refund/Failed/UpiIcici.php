@@ -22,11 +22,6 @@ class UpiIcici extends Base
 
         foreach ($data as $row)
         {
-            if (isset($row['gateway']) === false)
-            {
-                continue;
-            }
-
             $date = Carbon::createFromTimestamp(
                 $row['payment']['authorized_at'], Timezone::IST)->format('Y-m-d');
 
@@ -34,7 +29,7 @@ class UpiIcici extends Base
                 RefundFile::BANKADJREF         => $row['refund']['id'],
                 RefundFile::FLAG               => 'C',
                 RefundFile::SHTDAT             => $date,
-                RefundFile::ADJAMT             =>  $this->getFormattedAmount($row['refund']['amount']),
+                RefundFile::ADJAMT             => $this->getFormattedAmount($row['refund']['amount']),
                 RefundFile::SHSER              => $row['gateway']['gateway_payment_id'],
                 RefundFile::SHCRD              => $row['payment']['vpa'],
                 RefundFile::FILENAME           => self::FILE_NAME,
