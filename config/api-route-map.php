@@ -136,7 +136,8 @@ return [
         'merchant_activation_archive'       => 'merchant/activation/{id}/archive',
         'merchant_activation_status'        => 'merchant/activation/{id}/activation_status',
         'merchant_get_rejection_reasons'    => 'merchant/activation/rejection_reasons',
-
+        'merchant_activation_status_change_log' => 'merchant/activation/{id}/status_change_log',
+        
         // Add new dispute reason
         'dispute_reason_create'             => 'disputes/reasons',
 
