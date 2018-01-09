@@ -27,6 +27,7 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_NUMBER,
         Entity::AMOUNT,
         Entity::BANK,
+        Entity::METHOD,
     ];
 
     protected function validateAmount($input)
@@ -69,6 +70,30 @@ class Validator extends Base\Validator
                 'Amount exceeds maximum amount allowed.',
                 Entity::AMOUNT,
                 [Entity::AMOUNT => $amount]);
+        }
+    }
+
+    protected function validateMethod($input)
+    {
+        if (isset($input[Entity::METHOD]) === false)
+        {
+            return;
+        }
+
+        if ($input[Entity::METHOD] === Payment\Method::EMANDATE)
+        {
+            $merchant = $this->entity->merchant;
+
+            if ($merchant->isFeeBearerCustomer() === true)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Order creation failed. Please contact Razorpay for further assistance.',
+                    null,
+                    [
+                        'order_id' => $this->entity->getId()
+                    ]);
+            }
+
         }
     }
 

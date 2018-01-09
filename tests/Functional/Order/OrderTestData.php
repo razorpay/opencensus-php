@@ -141,6 +141,32 @@ return [
             ],
         ],
     ],
+    'testEMandateOrderWithCustomerFeeBearer' => [
+        'request' => [
+            'content' => [
+                'amount'         => 0,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'method'         => 'emandate',
+                'bank'           => 'UTIB',
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Order creation failed. Please contact Razorpay for further assistance.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
     'testEmandateRegistrationOrderWithZeroRupee' => [
         'request' => [
             'content' => [

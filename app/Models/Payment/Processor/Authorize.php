@@ -1038,6 +1038,11 @@ trait Authorize
         {
             $this->validateAutoRecurringForNetbanking($payment, $input);
         }
+        else
+        {
+            throw new Exception\LogicException(
+                'Shouldn\'t have reached here.');
+        }
 
         // We ensure that the e_mandate feature has been enabled for the merchant
         $this->verifyFeatureForMerchant($payment->merchant, Feature\Constants::E_MANDATE);
@@ -1056,6 +1061,17 @@ trait Authorize
                 [
                     'payment' => $payment->toArray(),
                     'token'   => $token->toArray(),
+                ]);
+        }
+
+        // Customer fee bearer is not allowed on netbanking recurring
+        if ($payment->merchant->isFeeBearerCustomer() === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Payment failed. Please contact the merchant for further assistance.',
+                null,
+                [
+                    'payment_id' => $payment->getId()
                 ]);
         }
 
@@ -3097,7 +3113,7 @@ trait Authorize
             else if ($payment->hasOrder() === true)
             {
                 if (($payment->order->getPaymentCapture() === true) and
-                    ($payment->isRecurringTypeInitial() === false))
+                    ($payment->isEmandate() === false))
                 {
                     assertTrue($payment->hasBeenCaptured() === true);
                 }

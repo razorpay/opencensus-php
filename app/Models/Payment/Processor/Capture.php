@@ -65,8 +65,7 @@ trait Capture
 
         $amount = $payment->getAmount();
 
-        if (($this->merchant->isFeeBearerCustomer() === true) and
-            ($amount !== 0))
+        if ($this->merchant->isFeeBearerCustomer() === true)
         {
             $amount -= $payment->getFee();
         }
@@ -304,8 +303,7 @@ trait Capture
         // with the available fee for the payment.
         //
         // @todo: fee bearer cannot work with mandate registration
-        if (($this->merchant->isFeeBearerCustomer()) and
-            ($captureAmount !== 0))
+        if ($this->merchant->isFeeBearerCustomer() === true)
         {
             $captureAmount = $captureAmount + $payment->getFee();
 
