@@ -1419,3 +1419,7 @@ UPDATE fund_transfer_attempts
 
 UPDATE fund_transfer_attempts
     SET purpose='refund' where source_type!='settlement';
+
+UPDATE merchant_terminal
+SET terminal_id = '91elY0H2uuZ6lU'
+WHERE terminal_id in ('7Y30j1EY3JG8ob', '7bOl7tgaZ5kWvf');

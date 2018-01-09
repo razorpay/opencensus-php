@@ -25,6 +25,8 @@ class Type
 
     const EMANDATE              = 'emandate';
 
+    const PAYOUT                = 'payout';
+
     /**
      * Following batch types get processed via CRON job, CRON currently runs
      * less frequently (now every 6 hrs).
@@ -48,6 +50,7 @@ class Type
         self::BANK_TRANSFER,
         self::RECONCILIATION,
         self::EMANDATE,
+        self::PAYOUT,
     ];
 
     public static function exists(string $type)

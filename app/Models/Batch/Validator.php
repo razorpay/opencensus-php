@@ -333,6 +333,19 @@ class Validator extends Base\Validator
         }
     }
 
+    protected function validatePayoutEntries(array & $entries, array $params, Merchant\Entity $merchant)
+    {
+        if ($merchant->isFeatureEnabled(Feature::PAYOUT) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Payout are not enabled for merchant',
+                null,
+                [
+                    Entity::MERCHANT_ID => $merchant->getId(),
+                ]);
+        }
+    }
+
     protected function validateLinkedAccountEntries(array & $entries, array $params, Merchant\Entity $merchant)
     {
         //
