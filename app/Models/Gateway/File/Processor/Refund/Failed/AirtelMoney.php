@@ -41,11 +41,11 @@ class AirtelMoney extends Base
                 self::ORDER             => $row['payment']['id'],
                 self::ORDER_AMOUNT      => $this->getFormattedAmount($row['payment']['amount']),
                 self::REFUND_AMOUNT     => $this->getFormattedAmount($row['refund']['amount']),
-                self::MERCHANT_CODE     => $row['terminal']['gateway_merchant_id']
+                self::MERCHANT_CODE     => $row['gateway']['gateway_merchant_id']
             ];
-        }
 
-        $i++;
+            $i++;
+        }
 
         return $formattedData;
 
