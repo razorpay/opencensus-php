@@ -141,7 +141,7 @@ return [
             ],
         ],
     ],
-    'testEmandateRegistrationOrder' => [
+    'testEmandateRegistrationOrderWithZeroRuppee' => [
         'request' => [
             'content' => [
                 'amount'         => 0,
@@ -159,6 +159,57 @@ return [
                 'currency'       => 'INR',
                 'receipt'        => 'rcptid42',
             ],
+        ],
+    ],
+    'testEmandateRegistrationOrderWithoutZeroRuppee' => [
+        'request' => [
+            'content' => [
+                'amount'         => 0,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'method'         => 'emandate',
+                'bank'           => 'HDFC',
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The amount must be at least 100.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+    'testEmandateRegistrationOrderWithInvalidBank' => [
+        'request' => [
+            'content' => [
+                'amount'         => 1000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'method'         => 'emandate',
+                'bank'           => 'IDBI',
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ORDER_BANK_INVALID
         ],
     ],
     'testCreateTPVOrderWithInvalidAccountNumber' => [

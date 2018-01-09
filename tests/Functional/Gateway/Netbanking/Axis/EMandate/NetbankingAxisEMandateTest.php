@@ -98,9 +98,15 @@ class NetbankingAxisEMandateTest extends TestCase
 
     public function testPaymentVerify()
     {
-        $payment = $this->doAuthPayment($this->payment);
+        $payment = $this->payment;
 
-        $verify = $this->verifyPayment($payment['razorpay_payment_id']);
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 0]);
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = 0;
+
+        $response = $this->doAuthPayment($payment);
+
+        $verify = $this->verifyPayment($response['razorpay_payment_id']);
 
         assert($verify['payment']['verified'] === 1);
 
@@ -117,7 +123,13 @@ class NetbankingAxisEMandateTest extends TestCase
 
     public function testPaymentVerifyFailure()
     {
-        $payment = $this->doAuthPayment($this->payment);
+        $payment = $this->payment;
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 0]);
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = 0;
+
+        $response = $this->doAuthPayment($payment);
 
         $this->mockServerContentFunction(function (& $content, $action = null)
         {
@@ -129,15 +141,21 @@ class NetbankingAxisEMandateTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() use ($payment)
+        $this->runRequestResponseFlow($data, function() use ($response)
         {
-            $this->verifyPayment($payment['razorpay_payment_id']);
+            $this->verifyPayment($response['razorpay_payment_id']);
         });
     }
 
     public function testPaymentVerifyAmountMismatch()
     {
-        $payment = $this->doAuthPayment($this->payment);
+        $payment = $this->payment;
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 0]);
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = 0;
+
+        $response = $this->doAuthPayment($payment);
 
         $this->mockServerContentFunction(function (& $content, $action = null)
         {
@@ -150,9 +168,9 @@ class NetbankingAxisEMandateTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() use ($payment)
+        $this->runRequestResponseFlow($data, function() use ($response)
         {
-            $this->verifyPayment($payment['razorpay_payment_id']);
+            $this->verifyPayment($response['razorpay_payment_id']);
         });
     }
 
@@ -160,11 +178,19 @@ class NetbankingAxisEMandateTest extends TestCase
     {
         $payment = $this->payment;
 
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 0]);
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = 0;
+
         $this->doAuthPayment($payment);
 
         $token = $this->getLastEntity('token', true);
 
         $payment[Payment\Entity::TOKEN] = $token['id'];
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 200]);
+        $payment['amount'] = 200;
+        $payment['order_id'] = $order->getPublicId();
 
         $this->doS2SRecurringPayment($payment);
 

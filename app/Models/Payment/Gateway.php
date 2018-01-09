@@ -738,6 +738,18 @@ class Gateway
         return (in_array($gateway, self::$fileBasedEMandateDebitGateways) === true);
     }
 
+    public static function getAllEMandateBanks(): array
+    {
+        $banks = [];
+
+        foreach (self::$emandateBanks as $emandateBanks)
+        {
+            $banks = array_merge($banks, $emandateBanks);
+        }
+
+        return array_values(array_unique($banks));
+    }
+
     public static function getAvailableEmandateBanksForAuthType(string $authType): array
     {
         $banks = [];

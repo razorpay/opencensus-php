@@ -18,7 +18,7 @@ class Validator extends Base\Validator
         Entity::CUSTOMER_ID     => 'sometimes|filled',
         Entity::NOTES           => 'sometimes|notes',
         Entity::METHOD          => 'sometimes|in:netbanking,emandate',
-        Entity::BANK            => 'sometimes|filled|custom',
+        Entity::BANK            => 'sometimes_if:method,netbanking,emandate|filled',
         Entity::ACCOUNT_NUMBER  => 'sometimes|filled|string|max:50|min:5',
         Entity::OFFER_ID        => 'sometimes|string|size:20'
     );
@@ -26,6 +26,7 @@ class Validator extends Base\Validator
     protected static $createValidators = [
         Entity::ACCOUNT_NUMBER,
         Entity::AMOUNT,
+        Entity::BANK,
     ];
 
     protected function validateAmount($input)
@@ -35,6 +36,17 @@ class Validator extends Base\Validator
         // @todo: Use constants
         if ((isset($input['method']) === false) or
             ($input['method'] !== Payment\Method::EMANDATE))
+        {
+            if ($amount < 100)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'The amount must be at least 100.',
+                    'amount',
+                    ['amount' => $amount]);
+            }
+        }
+        else if (($input['method'] === Payment\Method::EMANDATE) and
+                 (Payment\Gateway::isZeroRuppeeFlowSupported($input['bank']) === false))
         {
             if ($amount < 100)
             {
@@ -231,10 +243,28 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateBank($attribute, $bank)
+    protected function validateBank($input)
     {
-        // @todo; Add validaton for emandate bank
-        $supportedBanks = Netbanking::getSupportedBanks();
+        if (isset($input[Entity::BANK]) === false)
+        {
+            return;
+        }
+
+        $supportedBanks = [];
+
+        switch ($input['method'])
+        {
+            case Payment\Method::EMANDATE:
+                $supportedBanks = Payment\Gateway::getAllEMandateBanks();
+                break;
+
+            case Payment\Method::NETBANKING:
+            default:
+                $supportedBanks = Netbanking::getSupportedBanks();
+                break;
+        }
+
+        $bank = $input[Entity::BANK];
 
         if (in_array($bank, $supportedBanks, true) === false)
         {
