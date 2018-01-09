@@ -7,7 +7,6 @@ use RZP\Models\BankAccount;
 use RZP\Models\Batch\Header;
 use RZP\Models\Merchant\Detail\Entity as MDEntity;
 
-
 class SubMerchant
 {
     /**
@@ -75,7 +74,6 @@ class SubMerchant
             MDEntity::BANK_BENEFICIARY_CITY       => $e[Header::BANK_ACCOUNT_CITY],
             MDEntity::BANK_BENEFICIARY_STATE      => $e[Header::REGISTERED_STATE],
             MDEntity::BANK_BENEFICIARY_PIN        => $e[Header::BANK_ACCOUNT_PINCODE],
-            MDEntity::SUBMIT                      => '1',
         ];
     }
 }

@@ -56,8 +56,16 @@ class SubMerchant extends Base
         $input   = Helper::getSubMerchantInput($entry);
         $account = $this->merchantCore->createSubMerchant($input, $this->merchant);
 
+        // Fill in merchant details (activation form)
         $detailInput = Helper::getSubMerchantDetailInput($entry);
         $response    = $this->merchantDetailCore->saveMerchantDetails($detailInput, $account);
+
+        // Save files
+        $this->merchantDetailCore->saveDummyFiles($account);
+
+        // Submit activation form
+        $submitData = ['submit' => 1];
+        $response    = $this->merchantDetailCore->saveMerchantDetails($submitData, $account);
 
         //$status = ($response['auto_activated'] === true) ?
         //    Status::SUCCESS : Status::FAILURE;
