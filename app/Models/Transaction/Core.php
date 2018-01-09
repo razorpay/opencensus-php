@@ -103,16 +103,7 @@ class Core extends Base\Core
 
     public function createOrUpdateFromPaymentCaptured(Payment\Entity $payment)
     {
-        $updateFees = true;
-
-        if (($payment->isNetbanking() === true) and
-            ($payment->isRecurring() === true) and
-            ($payment->isRecurringTypeInitial() == true))
-        {
-            $updateFees = false;
-        }
-
-        list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment, $updateFees);
+        list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment);
 
         $this->trace->info(
             TraceCode::PAYMENT_CAPTURE_CREATE_TRANSACTION,
