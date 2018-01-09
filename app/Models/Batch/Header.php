@@ -49,7 +49,7 @@ class Header
     const REFUND_DATE        = 'refund_date';
 
     //
-    // Marketplace Linked Account Headers
+    // Linked Account / Sub-merchant Headers
     //
     const BUSINESS_NAME       = 'business_name';
     const BANK_ACCOUNT_TYPE   = 'bank_account_type';
@@ -58,6 +58,11 @@ class Header
     const BANK_ACCOUNT_NUMBER = 'bank_account_number';
     const REFERENCE_ID        = 'reference_id';
     const ACCOUNT_ID          = 'account_id';
+
+    // Sub-merchant headers
+    const MERCHANT_NAME       = 'merchant_name';
+    const MERCHANT_EMAIL      = 'merchant_email';
+    const MERCHANT_ID         = 'merchant_id';
 
     //
     // Virtual Account Bulk Creation Headers
@@ -120,6 +125,9 @@ class Header
     const HDFC_EM_REGISTER_STATUS                           = HdfcEMRegisterHeadings::STATUS;
     const HDFC_EM_REGISTER_REMARK                           = HdfcEMRegisterHeadings::REMARK;
 
+    //
+    // Payout headers
+    //
     const PAYOUT_CUSTOMER_ID         = 'customer_id';
     const PAYOUT_CUSTOMER_NAME       = 'customer_name';
     const PAYOUT_CUSTOMER_CONTACT    = 'customer_contact';
@@ -383,6 +391,17 @@ class Header
                 self::PAYOUT_NOTES,
                 self::PAYOUT_FEE,
                 self::PAYOUT_TAX,
+            ],
+        ],
+
+        Type::MERCHANT => [
+            self::INPUT  => [
+                self::MERCHANT_NAME,
+                self::MERCHANT_EMAIL,
+            ],
+            self::OUTPUT => [
+                self::MERCHANT_NAME,
+                self::MERCHANT_ID,
             ],
         ],
     ];
