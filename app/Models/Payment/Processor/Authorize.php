@@ -1032,6 +1032,16 @@ trait Authorize
         //
         if ($payment->isRecurringTypeInitial() === true)
         {
+            if ((Payment\Gateway::isZeroRuppeeFlowSupported($payment->getBank()) === true) and
+                ($payment->getAmount() !== 0))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'The amount must be 0 for eMandate registration',
+                    'amount',
+                    ['amount' => $payment->getAmount()]
+                );
+            }
+
             if (empty($input[Payment\Entity::BANK_ACCOUNT]) === true)
             {
                 throw new Exception\BadRequestValidationFailureException(
@@ -1061,6 +1071,17 @@ trait Authorize
                     [
                         'payment' => $payment->toArray(),
                     ]);
+            }
+        }
+        else
+        {
+            if ($payment->getAmount() < 100)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'The amount must be at least 100.',
+                    'amount',
+                    ['amount' => $payment->getAmount()]
+                );
             }
         }
 

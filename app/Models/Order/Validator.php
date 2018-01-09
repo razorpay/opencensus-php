@@ -45,10 +45,11 @@ class Validator extends Base\Validator
                     ['amount' => $amount]);
             }
         }
-        else if (($input['method'] === Payment\Method::EMANDATE) and
-                 (Payment\Gateway::isZeroRuppeeFlowSupported($input['bank']) === false))
+        else if ($input['method'] === Payment\Method::EMANDATE)
         {
-            if ($amount < 100)
+            if ((isset($input['bank']) === true) and
+                (Payment\Gateway::isZeroRuppeeFlowSupported($input['bank']) === false) and
+                ($amount < 100))
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'The amount must be at least 100.',
