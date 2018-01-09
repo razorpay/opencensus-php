@@ -18,7 +18,7 @@ class Reconciliator extends Base\Mock\Reconciliator
      * @override
      * @var string
      */
-    protected static $fileToWriteName = 'MerchantReport';
+    protected $fileToWriteName = 'MerchantReport';
 
     /**
      * The parent class's method gets only successful payments,
@@ -93,36 +93,16 @@ class Reconciliator extends Base\Mock\Reconciliator
     }
 
     /**
-     * @override
-     * @param mixed $content
+     * @param $content
      * @return FileStore\Creator
      */
     protected function createReconFile($content)
     {
         return $this->createFile(
-                    FileStore\Format::XLSX,
-                    $content,
-                    self::$fileToWriteName
-                );
-    }
-
-    private function createFile(
-        string $extension,
-        array $content,
-        string $fileName,
-        string $type = FileStore\Type::MOCK_RECONCILIATION_FILE,
-        string $store = FileStore\Store::S3)
-    {
-        $creator = new FileStore\Creator;
-
-        $creator->extension($extension)
-                ->content($content)
-                ->name($fileName)
-                ->store($store)
-                ->type($type)
-                ->headers(true)
-                ->save();
-
-        return $creator;
+            $this->fileExtension,
+            $content,
+            $this->fileToWriteName,
+            true
+        );
     }
 }

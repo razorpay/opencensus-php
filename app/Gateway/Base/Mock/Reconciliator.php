@@ -93,6 +93,7 @@ class Reconciliator
         string $extension,
         array $content,
         string $fileName,
+        bool $headers = false,
         string $type = FileStore\Type::MOCK_RECONCILIATION_FILE,
         string $store = FileStore\Store::S3)
     {
@@ -103,7 +104,7 @@ class Reconciliator
                 ->name($fileName)
                 ->store($store)
                 ->type($type)
-                ->headers(false)
+                ->headers($headers)
                 ->save();
 
         return $creator;
