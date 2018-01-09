@@ -75,7 +75,7 @@ class TestCase extends ParentTestCase
 
         Redis::connection('query_cache_test')->flushdb();
 
-        // Redis::connection('query_cache_live')->flushdb();
+        Redis::connection('query_cache_live')->flushdb();
 
     }
 
@@ -88,7 +88,7 @@ class TestCase extends ParentTestCase
 
         Redis::connection('query_cache_test')->flushdb();
 
-        // Redis::connection('query_cache_live')->flushdb();
+        Redis::connection('query_cache_live')->flushdb();
 
         parent::tearDown();
     }

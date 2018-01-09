@@ -900,6 +900,10 @@ class VerifyTest extends TestCase
             ->with('query_cache_test')
             ->andReturn($redis);
 
+        Redis::shouldReceive('connection')
+            ->with('query_cache_live')
+            ->andReturn($redis);
+
         Redis::shouldReceive('hGetAll')
             ->andReturn([]);
 
@@ -936,6 +940,10 @@ class VerifyTest extends TestCase
 
         Redis::shouldReceive('connection')
             ->with('query_cache_test')
+            ->andReturn($redis);
+
+        Redis::shouldReceive('connection')
+            ->with('query_cache_live')
             ->andReturn($redis);
 
         Redis::shouldReceive('hGetAll')
@@ -977,6 +985,10 @@ class VerifyTest extends TestCase
 
         Redis::shouldReceive('connection')
             ->with('query_cache_test')
+            ->andReturn($redis);
+
+        Redis::shouldReceive('connection')
+            ->with('query_cache_live')
             ->andReturn($redis);
 
         Redis::shouldReceive('hGetAll')

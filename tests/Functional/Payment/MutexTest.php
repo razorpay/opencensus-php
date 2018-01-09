@@ -48,6 +48,10 @@ class MutexTest extends TestCase
             ->with('query_cache_test')
             ->andReturn($redis);
 
+        Redis::shouldReceive('connection')
+            ->with('query_cache_live')
+            ->andReturn($redis);
+
         Redis::shouldReceive('set')
             ->once()
             ->andReturn(null);
@@ -77,6 +81,10 @@ class MutexTest extends TestCase
 
         Redis::shouldReceive('connection')
             ->with('query_cache_test')
+            ->andReturn($redis);
+
+        Redis::shouldReceive('connection')
+            ->with('query_cache_live')
             ->andReturn($redis);
 
         Redis::shouldReceive('set')
@@ -119,6 +127,10 @@ class MutexTest extends TestCase
 
         Redis::shouldReceive('connection')
             ->with('query_cache_test')
+            ->andReturn($redis);
+
+        Redis::shouldReceive('connection')
+            ->with('query_cache_live')
             ->andReturn($redis);
 
         Redis::shouldReceive('set')

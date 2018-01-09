@@ -31,6 +31,10 @@ class GatewayPriorityTest extends TestCase
             ->with('query_cache_test')
             ->andReturn($redis);
 
+        Redis::shouldReceive('connection')
+            ->with('query_cache_live')
+            ->andReturn($redis);
+
         Redis::shouldReceive('zadd')
             ->once()
             ->andReturnUsing(function ()
@@ -47,6 +51,10 @@ class GatewayPriorityTest extends TestCase
 
         Redis::shouldReceive('connection')
             ->with('query_cache_test')
+            ->andReturn($redis);
+
+        Redis::shouldReceive('connection')
+            ->with('query_cache_live')
             ->andReturn($redis);
 
         Redis::shouldReceive('zadd')
@@ -68,6 +76,10 @@ class GatewayPriorityTest extends TestCase
 
         Redis::shouldReceive('connection')
             ->with('query_cache_test')
+            ->andReturn($redis);
+
+        Redis::shouldReceive('connection')
+            ->with('query_cache_live')
             ->andReturn($redis);
 
         Redis::shouldReceive('zrevrange')
@@ -109,6 +121,10 @@ class GatewayPriorityTest extends TestCase
             ->with('query_cache_test')
             ->andReturn($redis);
 
+        Redis::shouldReceive('connection')
+            ->with('query_cache_live')
+            ->andReturn($redis);
+
         Redis::shouldReceive('zrevrange')
             ->once()
             ->with('gateway_priority:card', 0, -1, 'WITHSCORES')
@@ -145,6 +161,10 @@ class GatewayPriorityTest extends TestCase
             ->with('query_cache_test')
             ->andReturn($redis);
 
+        Redis::shouldReceive('connection')
+            ->with('query_cache_live')
+            ->andReturn($redis);
+
         Redis::shouldReceive('zrem')
             ->once()
             ->with('gateway_priority:card', ['hdfc'])
@@ -174,6 +194,10 @@ class GatewayPriorityTest extends TestCase
             ->with('query_cache_test')
             ->andReturn($redis);
 
+        Redis::shouldReceive('connection')
+            ->with('query_cache_live')
+            ->andReturn($redis);
+
         Redis::shouldReceive('zrem')
                 ->once()
                 ->with('gateway_priority:card', ['hdfc'])
@@ -194,6 +218,10 @@ class GatewayPriorityTest extends TestCase
 
         Redis::shouldReceive('connection')
             ->with('query_cache_test')
+            ->andReturn($redis);
+
+        Redis::shouldReceive('connection')
+            ->with('query_cache_live')
             ->andReturn($redis);
 
         Redis::shouldReceive('zadd')
