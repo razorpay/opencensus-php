@@ -71,8 +71,6 @@ class Core extends Base\Core
             $mode = Mode::LIVE;
         }
 
-        \Database\DefaultConnection::set($mode);
-
-        $this->app['basicauth']->setMode($mode);
+        $this->app['basicauth']->setModeAndDbConnection($mode);
     }
 }
