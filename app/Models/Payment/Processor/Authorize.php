@@ -3053,7 +3053,8 @@ trait Authorize
             }
             else if ($payment->hasOrder() === true)
             {
-                if ($payment->order->getPaymentCapture() === true)
+                if (($payment->order->getPaymentCapture() === true) and
+                    ($payment->isRecurringTypeInitial() === false))
                 {
                     assertTrue($payment->hasBeenCaptured() === true);
                 }
