@@ -38,7 +38,7 @@ class BusinessType
      *
      * @var array
      */
-    protected static $indexTypeMap = [
+    protected static $typeIndexMap = [
         self::PRIVATE_LIMITED        => 1,
         self::PROPRIETORSHIP         => 2,
         self::PARTNERSHIP            => 3,
@@ -72,12 +72,12 @@ class BusinessType
      */
     public static function getIndexFromKey(string $key)
     {
-        if (isset(self::$indexTypeMap[$key]) === false)
+        if (isset(self::$typeIndexMap[$key]) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 "Invalid business type: $key", Entity::BUSINESS_TYPE);
         }
 
-        return self::$indexTypeMap[$key];
+        return self::$typeIndexMap[$key];
     }
 }

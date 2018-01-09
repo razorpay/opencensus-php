@@ -133,7 +133,7 @@ class Entity extends Merchant\Entity
         return $this->merchantDetail->getAttribute(self::ACTIVATION_STATUS);
     }
 
-    public function getRegisteredAddress() : array
+    public function getRegisteredAddress(): array
     {
         $merchantDetail = $this->merchantDetail;
 
@@ -147,7 +147,7 @@ class Entity extends Merchant\Entity
         return $address;
     }
 
-    public function getOperationAddress() : array
+    public function getOperationAddress(): array
     {
         $merchantDetail = $this->merchantDetail;
 
@@ -161,7 +161,7 @@ class Entity extends Merchant\Entity
         return $address;
     }
 
-    public function getKYCDetails() : array
+    public function getKycDetails(): array
     {
         $merchantDetail = $this->merchantDetail;
 
@@ -307,7 +307,7 @@ class Entity extends Merchant\Entity
             self::DATE_ESTABLISHED         => $this->merchantDetail->getBusinessDateOfEstablishment(),
             self::TRANSACTION_VOLUME       => $this->merchantDetail->getTransactionVolume(),
             self::AVERAGE_TRANSACTION_SIZE => $merchantDetail->getTransactionValue(),
-            self::KYC_DETAILS              => $this->getKYCDetails()
+            self::KYC_DETAILS              => $this->getKycDetails()
         ];
 
         return $accountDetails;
@@ -329,5 +329,20 @@ class Entity extends Merchant\Entity
         ];
 
         return $activation_details;
+    }
+
+    /**
+     * Overriding the function because some of the params are computed dynamically,
+     * using the functions of the Core class.g
+     *
+     * @return array
+     */
+    public function toArrayPublic()
+    {
+        $response = parent::toArrayPublic();
+
+        Helper::get()->computePublicArrayAttributes($this, $response);
+
+        return $response;
     }
 }

@@ -320,8 +320,6 @@ class Core extends Base\Core
 
         $this->verifyFeatureAllowed(Feature\Constants::MARKETPLACE, $merchant);
 
-        $to = null;
-
         $to = $this->repo
                    ->account
                    ->findByPublicIdAndMerchant($accountId, $merchant);

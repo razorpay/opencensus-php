@@ -12,7 +12,7 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Models\Merchant\Detail as MerchantDetail;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 
-class Service extends Base\Service
+class Service extends Merchant\Service
 {
     use Notify;
 
@@ -26,7 +26,7 @@ class Service extends Base\Service
     {
         $account = $this->repo->account->findByPublicIdAndMerchant($id, $this->merchant);
 
-        return $this->toArrayPublic($account);
+        return $account->toArrayPublic();
     }
 
     /**
@@ -39,7 +39,7 @@ class Service extends Base\Service
     {
         $accounts = $this->repo->account->fetch($input, $this->merchant->getId());
 
-        return $this->toArrayPublic($accounts);
+        return $accounts->toArrayPublic();
     }
 
     /**
@@ -51,7 +51,7 @@ class Service extends Base\Service
     {
         $account = $this->core()->createAccount($input, $this->merchant);
 
-        return $this->toArrayPublic($account);
+        return $account->toArrayPublic();
     }
 
     /**
@@ -91,87 +91,5 @@ class Service extends Base\Service
         $this->logActionToSlack($account, SlackActions::EDIT_BANK_DETAILS, $input);
 
         return $ba->toArrayPublic();
-    }
-
-    /**
-     * Few fields like can_submit, fields_required are dynamically computed in the Core class.
-     * To avoid calling Core's function from Entity's public setters, the response received from
-     * toArrayPublic method (defined in the Base/PublicCollection) is not used here directly.
-     *
-     * @param $entity
-     *
-     * @return array
-     */
-    protected function toArrayPublic($entity): array
-    {
-        if (($entity instanceof PublicCollection) === true)
-        {
-            $items = $this->itemsToArrayPublic($entity);
-
-            $array[PublicCollection::ENTITY] = 'collection';
-            $array[PublicCollection::COUNT]  = count($items);
-            $array[PublicCollection::ITEMS]  = $items;
-
-            return $array;
-        }
-
-        $response = $entity->toArrayPublic();
-
-        $response = $this->getCustomPublicAttributes($entity, $response);
-
-        return $response;
-    }
-
-    /**
-     * Applies toArrayPublic() function over a PublicCollection
-     *
-     * @param PublicCollection $entities
-     *
-     * @return array
-     */
-    protected function itemsToArrayPublic(PublicCollection $entities): array
-    {
-        $response = [];
-
-        foreach ($entities as $entity)
-        {
-            $response[] = $this->toArrayPublic($entity);
-        }
-
-        return $response;
-    }
-
-    /**
-     * Returns custom public attributes.
-     * This cannot be handled in the Entity class as some of the params are
-     * computed on the fly, using the Core class.
-     *
-     * @param Entity $entity
-     * @param        $response
-     *
-     * @return array
-     */
-    protected function getCustomPublicAttributes(Entity $entity, array & $response): array
-    {
-        $merchantDetails = $entity->merchantDetail;
-
-        $detailsResponse = (new MerchantDetail\Core)->createResponse($merchantDetails);
-
-        $activationDetails = Entity::ACTIVATION_DETAILS;
-
-        $response[$activationDetails][Entity::CAN_SUBMIT]      = $detailsResponse[MerchantDetail\Entity::CAN_SUBMIT];
-
-        $verificationDetails = $detailsResponse[MerchantDetail\Entity::VERIFICATION];
-
-        $requiredFields = [];
-
-        if (isset($verificationDetails[MerchantDetail\Entity::REQUIRED_FIELDS]) === true)
-        {
-            $requiredFields = $verificationDetails[MerchantDetail\Entity::REQUIRED_FIELDS];
-        }
-
-        $response[$activationDetails][Entity::REQUIRED_FIELDS] = $requiredFields;
-
-        return $response;
     }
 }

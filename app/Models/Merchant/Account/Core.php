@@ -7,7 +7,7 @@ use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
 use RZP\Models\Merchant\Detail;
 
-class Core extends Base\Core
+class Core extends Merchant\Core
 {
     /**
      * Creates a linked account and activates it
