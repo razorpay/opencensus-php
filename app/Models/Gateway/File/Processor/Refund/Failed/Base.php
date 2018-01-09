@@ -69,4 +69,9 @@ class Base extends Refund\Base
                 $e);
         }
     }
+
+    protected function getFormattedAmount($amount)
+    {
+        return number_format($amount / 100, 2, '.', '');
+    }
 }

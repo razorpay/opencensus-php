@@ -211,8 +211,4 @@ abstract class Base extends Core
         return null;
     }
 
-    protected function getFormattedAmount($amount)
-    {
-        return number_format($amount / 100, 2, '.', '');
-    }
 }
