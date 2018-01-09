@@ -281,6 +281,21 @@ class Service extends Base\Service
         return $merchantDetails->toArrayPublic();
     }
 
+    /**
+     * This function is used for getting the activation status change log of a merchant
+     * @param string $merchantId
+     *
+     * @return array
+     */
+    public function getActivationStatusChangeLog(string $merchantId): array
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $activationStatusChangeLog = (new Merchant\Core)->getActivationStatusChangeLog($merchant);
+
+        return $activationStatusChangeLog->toArrayPublic();
+    }
+
     public function getRejectionReasons()
     {
         return RejectionReasons::REJECTION_REASONS_MAPPING;

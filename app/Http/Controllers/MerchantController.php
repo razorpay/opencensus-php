@@ -753,6 +753,13 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getActivationStatusChangeLog(string $id)
+    {
+        $response = $this->service(E::MERCHANT_DETAIL)->getActivationStatusChangeLog($id);
+
+        return ApiResponse::json($response);
+    }
+
     public function getRejectionReasons()
     {
         $response = $this->service(E::MERCHANT_DETAIL)->getRejectionReasons();

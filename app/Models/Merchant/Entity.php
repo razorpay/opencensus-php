@@ -1210,6 +1210,13 @@ class Entity extends Base\PublicEntity
                     ->first();
     }
 
+    public function getActivationStatusChangeLog()
+    {
+        return $this->activationStates()
+                    ->orderBy(State\Entity::CREATED_AT)
+                    ->get();
+    }
+
     /**
      * Get the owners of the merchant.
      */

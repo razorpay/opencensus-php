@@ -106,7 +106,7 @@ class Repository extends Base\Repository
                       ->enabled()
                       ->where(Entity::TYPE, '=', $type)
                       // TODO: This is a temporary hard-code. Remove it later!
-                      ->where(Entity::GATEWAY, '=', Payment\Gateway::AXIS_MIGS);
+                      ->whereIn(Entity::GATEWAY, [Payment\Gateway::AXIS_MIGS, Payment\Gateway::HDFC]);
 
         $this->addMerchantWhereCondition($query, $merchantIds);
 

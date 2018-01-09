@@ -120,6 +120,21 @@ class Header
     const HDFC_EM_REGISTER_STATUS                           = HdfcEMRegisterHeadings::STATUS;
     const HDFC_EM_REGISTER_REMARK                           = HdfcEMRegisterHeadings::REMARK;
 
+    const PAYOUT_CUSTOMER_ID         = 'customer_id';
+    const PAYOUT_CUSTOMER_NAME       = 'customer_name';
+    const PAYOUT_CUSTOMER_CONTACT    = 'customer_contact';
+    const PAYOUT_CUSTOMER_EMAIL      = 'customer_email';
+    const PAYOUT_BANK_ACCOUNT_ID     = 'bank_account_id';
+    const PAYOUT_BANK_ACCOUNT_NUMBER = 'bank_account_number';
+    const PAYOUT_BANK_IFSC           = 'bank_ifsc';
+    const PAYOUT_ID                  = 'payout_id';
+    const PAYOUT_METHOD              = 'payout_method';
+    const PAYOUT_AMOUNT              = 'payout_amount';
+    const PAYOUT_CURRENCY            = 'payout_currency';
+    const PAYOUT_NOTES               = 'payout_notes';
+    const PAYOUT_FEE                 = 'payout_fee';
+    const PAYOUT_TAX                 = 'payout_tax';
+
     /**
      * Input and output file headers
      * The keys need to be like <type>_<sub-type>_<gateway>.
@@ -337,6 +352,37 @@ class Header
                 self::HDFC_EM_REGISTER_FREQUENCY,
                 self::HDFC_EM_REGISTER_MANDATE_SERIAL_NUMBER,
                 self::HDFC_EM_REGISTER_MERCHANT_REQUEST_NO,
+            ],
+        ],
+
+        Type::PAYOUT => [
+            self::INPUT => [
+                self::PAYOUT_CUSTOMER_NAME,
+                self::PAYOUT_CUSTOMER_CONTACT,
+                self::PAYOUT_CUSTOMER_EMAIL,
+                self::PAYOUT_BANK_ACCOUNT_NUMBER,
+                self::PAYOUT_BANK_IFSC,
+                self::PAYOUT_METHOD,
+                self::PAYOUT_AMOUNT,
+                self::PAYOUT_CURRENCY,
+                self::PAYOUT_NOTES,
+            ],
+
+            self::OUTPUT => [
+                self::PAYOUT_CUSTOMER_ID,
+                self::PAYOUT_CUSTOMER_NAME,
+                self::PAYOUT_CUSTOMER_CONTACT,
+                self::PAYOUT_CUSTOMER_EMAIL,
+                self::PAYOUT_BANK_ACCOUNT_ID,
+                self::PAYOUT_BANK_ACCOUNT_NUMBER,
+                self::PAYOUT_BANK_IFSC,
+                self::PAYOUT_ID,
+                self::PAYOUT_METHOD,
+                self::PAYOUT_AMOUNT,
+                self::PAYOUT_CURRENCY,
+                self::PAYOUT_NOTES,
+                self::PAYOUT_FEE,
+                self::PAYOUT_TAX,
             ],
         ],
     ];
