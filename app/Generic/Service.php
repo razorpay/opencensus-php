@@ -129,7 +129,7 @@ class Service extends Base\Service
 
                 if (\Gate::has($routeName) and \Gate::denies($routeName))
                 {
-                    throw new AuthorizationException("Unauthorized action");
+                    throw new AuthorizationException("Unauthorized action", 403);
                 }
             }
         }

@@ -84,7 +84,6 @@ class Handler extends ExceptionHandler
 
         $context = $this->getExceptionDetails($e);
 
-
         $app = \App::getFacadeRoot();
 
         $trace = $app['trace'];
