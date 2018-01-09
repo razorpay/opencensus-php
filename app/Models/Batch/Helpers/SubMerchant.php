@@ -57,6 +57,7 @@ class SubMerchant
             MDEntity::BUSINESS_DOE                => $e[Header::DOE],
             MDEntity::GSTIN                       => $e[Header::GSTIN],
             MDEntity::TRANSACTION_VOLUME          => $e[Header::EXPECTED_ANNUAL_VOLUME],
+            MDEntity::TRANSACTION_VALUE           => $e[Header::AVG_TRANSACTION_VALUE],
             MDEntity::PROMOTER_PAN                => $e[Header::PROMOTER_PAN],
             MDEntity::PROMOTER_PAN_NAME           => $e[Header::PROMOTER_PAN_NAME],
             MDEntity::BUSINESS_WEBSITE            => $e[Header::WEBSITE_URL],

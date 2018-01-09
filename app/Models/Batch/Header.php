@@ -83,6 +83,7 @@ class Header
     const DOE                      = 'doe';
     const GSTIN                    = 'gstin';
     const EXPECTED_ANNUAL_VOLUME   = 'expected_annual_volume';
+    const AVG_TRANSACTION_VALUE    = 'average_transaction_value';
     const PROMOTER_PAN             = 'promoter_pan';
     const PROMOTER_PAN_NAME        = 'promoter_pan_name';
     const WEBSITE_URL              = 'website';
@@ -452,6 +453,7 @@ class Header
                 self::DOE,
                 self::GSTIN,
                 self::EXPECTED_ANNUAL_VOLUME,
+                self::AVG_TRANSACTION_VALUE,
                 self::PROMOTER_PAN,
                 self::PROMOTER_PAN_NAME,
                 self::WEBSITE_URL,
