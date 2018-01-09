@@ -173,9 +173,9 @@ const ActionsList = ({ model, merchantId, actions }) => {
     })
       .then(response => {
         notifySuccess(
-          `Activation Form is now ${isCurrentlyLocked
-            ? 'Unlocked'
-            : 'Locked'} successfully`
+          `Activation Form is now ${
+            isCurrentlyLocked ? 'Unlocked' : 'Locked'
+          } successfully`
         );
         model.updateMerchantDetails(response);
       })
@@ -397,16 +397,13 @@ const ActionsList = ({ model, merchantId, actions }) => {
               onClick={toggleLockOnActivationForm}
               pendingClass="btn-pending"
             >
-              {merchant.details.merchant_details.locked
-                ? 'Unlock'
-                : 'Lock'}{' '}
+              {merchant.details.merchant_details.locked ? 'Unlock' : 'Lock'}{' '}
               Activation Form
               <span class="spin-btn" />
               <i
-                class={`pull-right i i-${merchant.details.merchant_details
-                  .locked
-                  ? 'unlock'
-                  : 'lock'}`}
+                class={`pull-right i i-${
+                  merchant.details.merchant_details.locked ? 'unlock' : 'lock'
+                }`}
               />
             </AsyncButton>
           </ShowWhen>
@@ -416,6 +413,11 @@ const ActionsList = ({ model, merchantId, actions }) => {
           <Link to={`/merchants/${merchantId}/activation`}>
             See Activation Form Details
           </Link>
+        </ShowWhen>
+        <ShowWhen permission="view_activation_form">
+          <div onClick={actions.ActivationStatusLogs}>
+            See Activation Status Logs
+          </div>
         </ShowWhen>
         <ShowWhen permission="edit_merchant_methods">
           <div onClick={isDetailsLoading ? null : actions.EditMethods}>
@@ -602,9 +604,7 @@ const ActionsList = ({ model, merchantId, actions }) => {
               pendingClass="btn-pending"
               confirm={toggleSuspensionCM()}
             >
-              {merchant.details.suspended_at === null
-                ? 'Suspend'
-                : 'Unsuspend'}{' '}
+              {merchant.details.suspended_at === null ? 'Suspend' : 'Unsuspend'}{' '}
               <i class="pull-right i i-power" />
               Merchant
               <span class="spin-btn" />
