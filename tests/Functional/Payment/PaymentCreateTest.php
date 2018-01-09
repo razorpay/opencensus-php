@@ -150,6 +150,9 @@ class PaymentCreateTest extends TestCase
         // TODO: Figure out why auth_type is not coming in the form response even though it's present in the input!!
         $content['auth_type'] = 'netbanking';
 
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $content['amount']]);
+        $content['order_id'] = $order->getPublicId();
+
         $payment = $this->doAuthPayment($content, ['CONTENT_TYPE' => 'application/x-www-form-urlencoded']);
 
         $this->assertArrayHasKey('razorpay_payment_id', $payment);
@@ -171,6 +174,9 @@ class PaymentCreateTest extends TestCase
 
         $payment['token'] = $paymentEntity['token_id'];
 
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $payment['order_id'] = $order->getPublicId();
+
         //
         // Second auth payment for the recurring product
         //
@@ -181,7 +187,7 @@ class PaymentCreateTest extends TestCase
 
     public function testSecondRecurringWithMissingBankAccountDetailsAndAuthType()
     {
-        $payment = $this->setupEmandateAndGetPaymentRequest('UTIB');
+        $payment = $this->setupEmandateAndGetPaymentRequest('UTIB', 0);
 
         $payment['bank_account'] = [
             'account_number' => '12812891982',
@@ -195,6 +201,10 @@ class PaymentCreateTest extends TestCase
 
         $payment['token'] = $paymentEntity['token_id'];
         unset($payment['bank_account'], $payment['auth_type']);
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 2000]);
+        $payment['amount'] = 2000;
+        $payment['order_id'] = $order->getPublicId();
 
         //
         // Second auth payment for the recurring product
@@ -399,14 +409,17 @@ class PaymentCreateTest extends TestCase
         $this->assertArrayHasKey('bank_transaction_id', $payment['acquirer_data']);
     }
 
-    protected function setupEmandateAndGetPaymentRequest($bank = 'HDFC')
+    protected function setupEmandateAndGetPaymentRequest($bank = 'HDFC', $amount = 2000)
     {
         $this->mockTokenex();
         $this->fixtures->create('terminal:shared_netbanking_icici_recurring_terminal');
         $this->fixtures->create('terminal:shared_netbanking_axis_recurring_terminal');
         $this->fixtures->merchant->addFeatures(['e_mandate', 'charge_at_will']);
 
-        $payment = $this->getEmandateNetbankingRecurringPaymentArray($bank);
+        $payment = $this->getEmandateNetbankingRecurringPaymentArray($bank, $amount);
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $payment['order_id'] = $order->getPublicId();
 
         return $payment;
     }
