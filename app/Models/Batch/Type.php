@@ -28,7 +28,7 @@ class Type
 
     const PAYOUT                = 'payout';
 
-    const MERCHANT              = 'merchant';
+    const SUB_MERCHANT          = 'sub_merchant';
 
     /**
      * Following batch types get processed via CRON job, CRON currently runs
@@ -54,7 +54,7 @@ class Type
         self::RECONCILIATION,
         self::EMANDATE,
         self::PAYOUT,
-        self::MERCHANT,
+        self::SUB_MERCHANT,
     ];
 
     public static function exists(string $type)

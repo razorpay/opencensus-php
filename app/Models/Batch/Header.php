@@ -394,7 +394,7 @@ class Header
             ],
         ],
 
-        Type::MERCHANT => [
+        Type::SUB_MERCHANT => [
             self::INPUT  => [
                 self::MERCHANT_NAME,
                 self::MERCHANT_EMAIL,
