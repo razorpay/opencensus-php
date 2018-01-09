@@ -163,8 +163,10 @@ class Entity extends Base\PublicEntity
     {
         if ($method === Payment\Method::EMANDATE)
         {
-            $this->attributes[self::METHOD] = Payment\Method::NETBANKING;
+            $method = Payment\Method::NETBANKING;
         }
+
+        $this->attributes[self::METHOD] = $method;
     }
 
     /** Appends */
