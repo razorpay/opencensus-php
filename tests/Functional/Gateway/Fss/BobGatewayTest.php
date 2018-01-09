@@ -129,8 +129,6 @@ class BobGatewayTest extends TestCase
         $time = Carbon::now(Timezone::IST)->addMinutes(35);
         Carbon::setTestNow($time);
 
-        $refundId = explode('_', $refund['id'], 2)[1];
-
         $this->clearMockFunction();
 
         $this->setVerifyRefundNotCapturedResult();
@@ -139,7 +137,7 @@ class BobGatewayTest extends TestCase
 
         Carbon::setTestNow();
 
-        $actualRefund = $this->getEntityById('refund', $refundId, true);
+        $actualRefund = $this->getEntityById('refund', $refund['id'], true);
 
         $this->assertEquals($refund['amount'], $actualRefund['amount']);
         $this->assertEquals('processed', $actualRefund['status']);

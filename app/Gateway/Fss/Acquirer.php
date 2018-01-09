@@ -15,4 +15,9 @@ class Acquirer
 
     //ICIC is the bank code of ICICI Bank
     const ICICI = IFSC::ICIC;
+
+    public static $validGatewayAcquirers = [
+        self::FSS,
+        self::BOB,
+    ];
 }

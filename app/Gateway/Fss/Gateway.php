@@ -145,7 +145,7 @@ class Gateway extends Base\Gateway
         $gatewayEntity = $this->createGatewayPaymentEntity($attributes, $input);
 
         // Doing Additional check with the result because error messages are sent in result.
-        if ($responseFields[Fields::RESULT] !== Status::CAPTURED and
+        if ((in_array($responseFields[Fields::RESULT], Status::$successStates) === false) and
             $this->isErrorMessageText($responseFields[Fields::RESULT]) === true)
         {
             $this->checkErrorMessage($gatewayEntity, $responseFields);
@@ -202,7 +202,7 @@ class Gateway extends Base\Gateway
      */
     public function getUrl($type = null)
     {
-        $gatewayAquirer = $this->input[E::TERMINAL]->getGatewayAcquirer();
+        $gatewayAquirer = $this->getGatewayAcquirer($this->input);
 
         $urlMap = Url::$urlMap;
 
@@ -298,7 +298,7 @@ class Gateway extends Base\Gateway
      */
     protected function modifyGatewayRequestContentArray(array & $requestContent, array $input)
     {
-        $gatewayAquirer = $input[E::TERMINAL]->getGatewayAcquirer();
+        $gatewayAquirer = $this->getGatewayAcquirer($input);
 
         switch ($gatewayAquirer)
         {
@@ -389,7 +389,7 @@ class Gateway extends Base\Gateway
     {
         $secretKey = $this->getSecret();
 
-        $gatewayAquirer = $input[E::TERMINAL]->getGatewayAcquirer();
+        $gatewayAquirer = $this->getGatewayAcquirer($input);
 
         switch ($gatewayAquirer)
         {
@@ -417,7 +417,7 @@ class Gateway extends Base\Gateway
     {
         $secretKey = $this->getSecret();
 
-        $gatewayAquirer = $input[E::TERMINAL]->getGatewayAcquirer();
+        $gatewayAquirer = $this->getGatewayAcquirer($input);
 
         $decryptedString = '';
 
@@ -947,7 +947,7 @@ class Gateway extends Base\Gateway
      */
     private function getCardType($cardType)
     {
-        $gatewayAcquirer = $this->input[E::TERMINAL]->getGatewayAcquirer();
+        $gatewayAcquirer = $this->getGatewayAcquirer($this->input);
 
         return CardType::getCardTypesByAcquirer($gatewayAcquirer)[$cardType];
     }
@@ -989,8 +989,31 @@ class Gateway extends Base\Gateway
     {
         assert ($this->mode === Mode::TEST);
 
-        $gatewayAquirer = $this->input[E::TERMINAL]->getGatewayAcquirer();
+        $gatewayAquirer = $this->getGatewayAcquirer($this->input);
 
         return $this->config[strtolower($gatewayAquirer)]['test_hash_secret'];
+    }
+
+    /**
+     * @param $input
+     *
+     * @return mixed
+     * @throws \RZP\Exception\LogicException
+     */
+    private function getGatewayAcquirer($input)
+    {
+        $gatewayAquirer = $input[E::TERMINAL]->getGatewayAcquirer();
+
+        if (in_array($gatewayAquirer, Acquirer::$validGatewayAcquirers) === false)
+        {
+            throw new Exception\LogicException(
+                'Unsupported acquirer for the gateway',
+                null,
+                [
+                    'acquirer' => $gatewayAquirer,
+                ]);
+        }
+
+        return $gatewayAquirer;
     }
 }

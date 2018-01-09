@@ -22,7 +22,7 @@ class Server extends Base\Mock\Server
     {
         parent::authorize($input);
 
-        $this->request($input);
+        $this->request($input, 'authorize');
 
         $this->validateAuthorizeInput($input);
 
@@ -46,7 +46,7 @@ class Server extends Base\Mock\Server
             Fields::RESULT                      => Fss\Status::CAPTURED,
         ];
 
-        $this->content($responseTranData);
+        $this->content($responseTranData, 'authorize');
 
         $responseData = [
             Fields::GATEWAY_PAYMENT_ID      => $gatewayPaymentId,
@@ -64,7 +64,7 @@ class Server extends Base\Mock\Server
     {
         parent::refund($input);
 
-        $this->request($input);
+        $this->request($input, 'refund');
 
         $input = (array) simplexml_load_string($input);
 
@@ -79,7 +79,7 @@ class Server extends Base\Mock\Server
             Fields::AUTH_RES_CODE          => $this->generateId(3),
         ];
 
-        $this->content($refundResponse);
+        $this->content($refundResponse, 'refund');
 
         $content = Fss\Utility::createRequestXml($refundResponse, false);
 
@@ -90,7 +90,7 @@ class Server extends Base\Mock\Server
     {
         parent::verify($input);
 
-        $this->request($input);
+        $this->request($input, 'verify_refund');
 
         $input = (array) simplexml_load_string($input);
 
@@ -112,7 +112,7 @@ class Server extends Base\Mock\Server
     {
         parent::verify($input);
 
-        $this->request($input);
+        $this->request($input, 'verify');
 
         $input = (array) simplexml_load_string($input);
 
@@ -123,7 +123,7 @@ class Server extends Base\Mock\Server
             Fields::TRANSACTION_ID => $input[Fields::TRANSACTION_ID],
         ];
 
-        $this->content($request);
+        $this->content($request, 'verify');
 
         $content = Fss\Utility::createRequestXml($responseData, false);
 
