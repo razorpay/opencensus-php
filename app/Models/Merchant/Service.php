@@ -131,7 +131,7 @@ class Service extends Base\Service
         (new User\Service)->updateUserMerchantMapping($ownerId, $userMerchantMappingInputData);
     }
 
-    private function addLinkedAccountReferral($aggregratorMerchant, $account)
+    public function addLinkedAccountReferral($aggregratorMerchant, $account)
     {
         $tagInputData = [
             'tags' => ['ref-'.$aggregratorMerchant->id],
@@ -139,7 +139,8 @@ class Service extends Base\Service
 
         $this->addTags($account->id, $tagInputData);
     }
-    protected function saveMerchantAndApplyCoupon(Entity $merchant, array $input)
+
+    public function saveMerchantAndApplyCoupon(Entity $merchant, array $input)
     {
         $this->repo->saveOrFail($merchant);
 
