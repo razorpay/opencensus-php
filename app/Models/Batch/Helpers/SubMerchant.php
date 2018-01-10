@@ -72,7 +72,7 @@ class SubMerchant
             MDEntity::BANK_ACCOUNT_TYPE           => $e[Header::BANK_ACCOUNT_TYPE],
             MDEntity::BANK_BENEFICIARY_ADDRESS1   => $e[Header::BANK_ACCOUNT_ADDRESS_1],
             MDEntity::BANK_BENEFICIARY_CITY       => $e[Header::BANK_ACCOUNT_CITY],
-            MDEntity::BANK_BENEFICIARY_STATE      => $e[Header::REGISTERED_STATE],
+            MDEntity::BANK_BENEFICIARY_STATE      => $e[Header::BANK_ACCOUNT_STATE],
             MDEntity::BANK_BENEFICIARY_PIN        => $e[Header::BANK_ACCOUNT_PINCODE],
         ];
     }
