@@ -12,7 +12,7 @@ class PaymentReconciliator extends Base\Mock\Reconciliator
 {
     protected $gateway = Payment\Gateway::UPI_ICICI;
 
-    private $paymentHeaders = [
+    private $headers = [
         'accountNumber',
         'merchantID',
         'merchantName',
@@ -93,9 +93,9 @@ class PaymentReconciliator extends Base\Mock\Reconciliator
             $data[] = $col;
         }
 
-        $emptyRow = array_fill(0, sizeof($this->paymentHeaders), ' ');
+        $emptyRow = array_fill(0, sizeof($this->headers), ' ');
 
-        $headers = [$emptyRow, $this->paymentHeaders];
+        $headers = [$emptyRow, $this->headers];
 
         $data = array_merge($headers, $data);
 

@@ -247,16 +247,16 @@ function gen_uuid($format = '%04x%04x%04x%04x%04x%04x%04x%04x')
  * @param $amount
  * @return int
  */
-function get_recon_amount($amount)
+function get_integer_formatted_amount(string $amount)
 {
-    $paymentAmount = floatval($amount) * 100;
+    $amountToBeFormatted = floatval($amount) * 100;
 
     // We are converting to int after casting to string as PHP randomly
     // returns wrong int values due to differing floating point precisions
     // So something like intval(31946.0) may give 31945 or 31946.
     // Converting to string using number_format and then converting
     // is a hack to avoid this issue
-    return intval(number_format($paymentAmount, 2, '.', ''));
+    return intval(number_format($amountToBeFormatted, 2, '.', ''));
 }
 
 function is_associative_array(array $input)

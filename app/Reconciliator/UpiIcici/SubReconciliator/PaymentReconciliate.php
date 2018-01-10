@@ -5,6 +5,7 @@ namespace RZP\Reconciliator\UpiIcici;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Models\Payment\Status;
+use RZP\Gateway\Upi\Icici\Status as UpiStatus;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
@@ -16,7 +17,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getPaymentId(array $row)
     {
-        return $row[self::MERCHANT_TRAN_ID] ?? null;
+        return $row[self::MERCHANT_TRAN_ID];
     }
 
     protected function getGatewayFee($row)
@@ -32,12 +33,24 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     protected function getReconPaymentStatus(array $row)
     {
         // If status is not set, assuming status to be failed
-        $status = strtolower($row[self::STATUS]) ?? 'failed';
+        $status = $row[self::STATUS];
 
-        if (strpos($status, 'suc') !== false)
+        if ($status === UpiStatus::SUCCESS)
         {
             return Status::AUTHORIZED;
         }
+        else if ($this->isPaymentStatusFailed($status) === true)
+        {
+            return Status::FAILED;
+        }
+
+        $this->messenger->raiseReconAlert(
+            [
+                'trace_code' => TraceCode::RECON_CRITICAL_ALERT,
+                'message'    => 'Recon status is neither success, rejected or failed',
+                'payment_id' => $this->payment->getId(),
+                'gateway'    => get_called_class()
+            ]);
 
         return Status::FAILED;
     }
@@ -64,6 +77,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     private function getReconPaymentAmount(array $row)
     {
-        return get_recon_amount($row[self::AMOUNT]);
+        return get_integer_formatted_amount($row[self::AMOUNT]);
+    }
+
+    private final function isPaymentStatusFailed(string $status)
+    {
+        return (($status === UpiStatus::REJECT) || ($status === UpiStatus::FAILURE));
     }
 }
