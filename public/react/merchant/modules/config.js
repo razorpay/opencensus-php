@@ -2,7 +2,7 @@ import ajax from 'merchant/utils/ajax';
 import { set, merge } from 'rzp/utils/immutable';
 
 const CONFIG_FETCH = 'CONFIG_FETCH';
-const CONFIG_AND_FEATURES_FETCH = 'CONFIG_AND_FEATURES_FETCH';
+const FEATURES_FETCH = 'FEATURES_FETCH';
 const MERCHANT_LOGO_UPLOADED = 'MERCHANT_LOGO_UPLOADED';
 const CONFIG_SAVE = 'CONFIG_SAVE';
 const FEATURES_SAVE = 'FEATURES_SAVE';
@@ -48,10 +48,10 @@ export const fetchConfig = () => {
 /*
  * Fetches merchant's config and features
  */
-export const fetchConfigAndFeatures = currentUserId => {
+export const fetchFeatures = currentUserId => {
   return {
-    type: CONFIG_AND_FEATURES_FETCH,
-    payload: Promise.all([fetchConfigAjax(), fetchFeaturesAjax(currentUserId)]),
+    type: FEATURES_FETCH,
+    payload: fetchFeaturesAjax(currentUserId),
   };
 };
 
@@ -147,18 +147,17 @@ let initialState = {
 
 export default function(state = initialState, action) {
   switch (action.type) {
-    case `${CONFIG_AND_FEATURES_FETCH}::PENDING`:
+    case `${FEATURES_FETCH}::PENDING`:
       return set(state, 'loading', true);
 
-    case `${CONFIG_AND_FEATURES_FETCH}::SUCCESS`:
+    case `${FEATURES_FETCH}::SUCCESS`:
       return merge(state, {
         loading: false,
-        config: normalizeConfig(action.payload[0].data),
-        features: action.payload[1].data.features,
+        features: action.payload.data.features,
         error: null,
       });
 
-    case `${CONFIG_AND_FEATURES_FETCH}::ERROR`:
+    case `${FEATURES_FETCH}::ERROR`:
       return merge(state, {
         loading: false,
         error: action.payload.errors,
