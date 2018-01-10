@@ -34,7 +34,8 @@ class NodalAccount extends NodalBase\NodalAccount
     const MODE_MAPPING = [
         Mode::NEFT    => 'N',
         Mode::RTGS    => 'R',
-        Mode::IMPS    => 'I',
+        Mode::IMPS    => 'M',
+        Mode::IFT     => 'I',
     ];
 
     protected $secret = null;
