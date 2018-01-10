@@ -37,20 +37,7 @@ class EloquentEx extends \Razorpay\Spine\Entity
 
         $builder = new QueryBuilder($conn, $grammar, $conn->getPostProcessor());
 
-        $cacheDriver = $this->getQueryCacheDriver();
-
-        $builder->cacheDriver($cacheDriver);
-
         return $builder;
-    }
-
-    protected function getQueryCacheDriver(): string
-    {
-        $app = App::getFacadeRoot();
-
-        $mode = $app['rzp.mode'] ?? null;
-
-        return ($mode === Mode::LIVE) ? 'query_cache_live' : 'query_cache_test';
     }
 
     protected function throwException(array $e)
