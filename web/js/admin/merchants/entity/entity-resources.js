@@ -2,6 +2,7 @@ import React from 'react';
 
 import { titleCase, snakeToTitleCase, formatDate } from 'common/util';
 import { statusPill } from 'common/data';
+import user from 'admin/user';
 
 import Amount from 'ui/Amount';
 import EntityRow from 'ui/EntityRow';
@@ -10,6 +11,7 @@ import Table from 'ui/Table';
 import ShowWhen from 'admin/components/ShowWhen';
 import CreditsDetails from './entityDetails/CreditsDetails';
 import FeaturesDetails from './entityDetails/FeaturesDetails';
+import ActivationStatusLogsDetails from './entityDetails/ActivationStatusLogsDetails';
 
 /*---------------------------------------- Functionality ------------------------------------------*/
 
@@ -597,6 +599,13 @@ export function getDetailsViewMap(model) {
             )
           : null,
     },
+    /*- conditionaly add this field based on permission */
+    ...(user.permissions.indexOf('view_activation_form') !== -1 && [
+      {
+        label: 'Activation Status Change Logs',
+        children: () => <ActivationStatusLogsDetails merchantId={details.id} />,
+      },
+    ]),
     {
       label: 'Live',
       value: _getBoolIcon(details.live),
