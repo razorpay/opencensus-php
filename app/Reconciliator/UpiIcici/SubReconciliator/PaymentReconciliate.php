@@ -64,6 +64,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     private function getReconPaymentAmount(array $row)
     {
-        return get_payment_amount($row[self::AMOUNT]);
+        return get_recon_amount($row[self::AMOUNT]);
     }
 }

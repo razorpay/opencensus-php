@@ -242,12 +242,12 @@ function gen_uuid($format = '%04x%04x%04x%04x%04x%04x%04x%04x')
 }
 
 /**
- * Used to convert recon payment amount in format to
- * check with amount stored in the payment entity.
+ * Used to convert recon amount in format to
+ * check with amount stored in the entity.
  * @param $amount
  * @return int
  */
-function get_payment_amount($amount)
+function get_recon_amount($amount)
 {
     $paymentAmount = floatval($amount) * 100;
 
