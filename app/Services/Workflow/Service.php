@@ -270,15 +270,23 @@ class Service
 
         In case of a "delete" operation pass an empty stdClass
         object as $dirtyData.
+
+        Allowed types for both: object, array
     */
     public function handle($originalData = null, $dirtyData = null)
     {
-        // 1. If the permission has no workflow then don't do anything
-        // 2. If this is an execute call, then return as well
+        // 1. If the permission has no workflow
+        $permissionHasWorkflow = $this->permissionHasWorkflow();
 
-        if (($this->permissionHasWorkflow() === false) or
-            ($this->config->get('heimdall.workflows.mock') === true) or
-            ($this->app['api.route']->isWorkflowExecuteOrApproveCall() === true))
+        // 2. Workflow is mocked
+        $workflowIsMocked = $this->config->get('heimdall.workflows.mock');
+
+        // 3. Execute or approve call
+        $executeOrApprovedCall = $this->app['api.route']->isWorkflowExecuteOrApproveCall();
+
+        if (($permissionHasWorkflow === false) or
+            ($workflowIsMocked === true) or
+            ($executeOrApprovedCall === true))
         {
             return;
         }
@@ -288,6 +296,7 @@ class Service
         // Instantiate code for diff creation
         $differCore = new Differ\Core;
 
+        // Fetch from getters if arguments are null
         if (($originalData === null) and ($dirtyData === null))
         {
             $originalData = $this->getOriginal();
@@ -297,69 +306,66 @@ class Service
 
         if ((is_array($originalData) === true) and (is_array($dirtyData) === true))
         {
-            $diff = $differCore->createDiff(
-                $originalData, $dirtyData);
+            $originalDataArray = $originalData;
+
+            $dirtyDataArray = $dirtyData;
         }
         else
         {
+            // If eloquent model
             if (method_exists($originalData, 'toArray') === true)
             {
                 $originalDataArray = $originalData->toArray();
+
+                // Set entity
+                $this->setEntity($originalData->getEntityName());
             }
+            // If stdClass()
             else
             {
                 $originalDataArray = (array) $originalData;
             }
 
+            // If eloquent model
             if (method_exists($dirtyData, 'toArray') === true)
             {
                 $dirtyDataArray = $dirtyData->toArray();
+
+                // Set entity (redundant if it already got set above from $originalData)
+                $this->setEntity($dirtyData->getEntityName());
             }
+            // If stdClass()
             else
             {
                 $dirtyDataArray = (array) $dirtyData;
             }
+        }
 
-            // Set entity
-            if (method_exists($dirtyData, 'getEntityName') === true)
+        // Calculate diff
+        $diff = $differCore->createDiff(
+            $originalDataArray, $dirtyDataArray);
+
+        // Logic to calculate diff for nested relations
+        $mainEntity = $this->getEntity();
+
+        $routeName = $this->router->currentRouteName();
+
+        $relations = EntityValidator::getRelations($routeName);
+
+        if (method_exists($originalData, 'toArray') === true)
+        {
+            foreach ($relations as $relation)
             {
-                $this->setEntity($dirtyData->getEntityName());
-            }
-
-            $diff = $differCore->createDiff(
-                $originalDataArray, $dirtyDataArray);
-
-            $entityOb = ConstantsEntity::getEntityObject($this->getEntity());
-
-            $routeName = $this->router->currentRouteName();
-
-            $relations = EntityValidator::getRelations($routeName);
-
-            if (empty($relations) === false)
-            {
-                foreach ($relations as $relation)
-                {
-                    // We want to show empty values for relation as it means we
-                    // want to reset the m2m fields.
-                    if (isset($dirtyDataArray[$relation]) === true)
-                    {
-                        $relatedEntityName = $entityOb->$relation()->getModel()->getEntityName();
-
-                        $oldRelationIds = $originalDataArray[$relation] ?? [];
-                        $newRelationIds = $dirtyDataArray[$relation] ?? [];
-
-                        $relationDiff = $differCore->createDiffForRelations(
-                            $oldRelationIds,
-                            $newRelationIds,
-                            $relatedEntityName);
-
-                        $diff['old'][$relation] = $relationDiff['old'];
-
-                        $diff['new'][$relation] = $relationDiff['new'];
-                    }
-                }
+                $originalDataArray[$relation] = $originalData->$relation()->allRelatedIds()->toArray();
             }
         }
+
+        $differCore->createAllRelationsDiff(
+            $diff,
+            $originalDataArray,
+            $dirtyDataArray,
+            $mainEntity,
+            $relations);
 
         $this->setDiff($diff);
 
