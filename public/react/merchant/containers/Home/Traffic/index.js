@@ -28,6 +28,14 @@ const chartOptions = {
     tooltips: {
       enabled: false,
     },
+    layout: {
+      padding: {
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+      },
+    },
   },
   csvDateFormat = 'DD-MM-YYYY';
 
@@ -161,6 +169,15 @@ class Traffic extends Component {
     }
   }
 
+  componentDidMount() {
+    const { width, height } = this.chartContent.getBoundingClientRect();
+
+    // fixing with and height of chart container so that
+    // the chart size would not grow
+    this.chartContent.style.width = width + 'px';
+    this.chartContent.style.height = height + 'px';
+  }
+
   render() {
     const { loading, selectedGrouping, groupsState } = this.state,
       groupState = groupsState[selectedGrouping.value],
@@ -195,12 +212,17 @@ class Traffic extends Component {
           </div>
         </PanelTopbar>
         <PanelBody>
-          <div className="row" ref={node => (this.panelBody = node)}>
-            <div className="col-md-5 col-sm-12 column">
-              {!groupState.loading &&
-                chartData && <Pie options={chartOptions} data={chartData} />}
+          <div className="chart-row" ref={node => (this.panelBody = node)}>
+            <div className="column">
+              <div
+                className="chart-content"
+                ref={node => (this.chartContent = node)}
+              >
+                {!groupState.loading &&
+                  chartData && <Pie options={chartOptions} data={chartData} />}
+              </div>
             </div>
-            <div className="col-md-7 col-sm-12 column">
+            <div className="column">
               {!groupState.loading &&
                 legendData && (
                   <Legend

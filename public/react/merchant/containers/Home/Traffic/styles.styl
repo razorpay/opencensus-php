@@ -19,7 +19,7 @@ $gutter = 21px;
 
     height: 252px; /* aligns with 6 recent items */
 
-    > div.row {
+    > div.chart-row {
 
       width: 100%;
       height: 100%;
@@ -30,27 +30,25 @@ $gutter = 21px;
         display: table-cell;
         height: 100%;
         vertical-align: middle;
+        position: relative;
+        width: 50%;
+
+        .chart-content {
+
+          display: block;
+          width: 100%;
+          height: 100%;
+        }
       }
     }
 
-    .chart-container  > .chart-content {
+    .rzp-legend {
 
-      display: table;
+      height: auto;
 
-      .chart , .rzp-legend {
+      .rzp-legend-item {
 
-        display: table-cell;
-        vertical-align: middle;
-      }
-
-      .chart {
-
-        width: 60%;
-      }
-
-      .rzp-legend {
-
-        width: 40%;
+        width: auto;
       }
     }
   }

@@ -87,7 +87,7 @@ export default class RecentActivity extends Component {
   }
 
   componentWillMount() {
-    this.fetchData({ count: 6 });
+    this.fetchData({ count: 10 });
   }
 
   render() {
