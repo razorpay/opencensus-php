@@ -429,6 +429,7 @@ class Header
         ],
 
         Type::SUB_MERCHANT => [
+
             self::INPUT  => [
                 self::MERCHANT_NAME,
                 self::MERCHANT_EMAIL,
@@ -470,11 +471,16 @@ class Header
                 self::BANK_ACCOUNT_ADDRESS_1,
                 self::BANK_ACCOUNT_CITY,
                 self::BANK_ACCOUNT_STATE,
-                self::BANK_ACCOUNT_PINCODE
+                self::BANK_ACCOUNT_PINCODE,
             ],
+
             self::OUTPUT => [
                 self::MERCHANT_NAME,
+                self::MERCHANT_EMAIL,
                 self::MERCHANT_ID,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
             ],
         ],
     ];

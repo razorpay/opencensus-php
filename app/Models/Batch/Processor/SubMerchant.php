@@ -38,7 +38,7 @@ class SubMerchant extends Base
 
     protected function processEntry(array & $entry)
     {
-        $this->repo->transactionOnLiveAndTest(function () use (& $entry)
+        $this->repo->transactionOnLiveAndTest(function() use (& $entry)
         {
             $this->createSubMerchantForEntry($entry);
         });
@@ -57,7 +57,7 @@ class SubMerchant extends Base
 
         // Create Sub-merchant account
         $merchantService = new Merchant\Service;
-        $subMerchant = $this->merchantCore->createSubMerchant($input, $this->merchant, false);
+        $subMerchant     = $this->merchantCore->createSubMerchant($input, $this->merchant, false);
 
         $merchantService->addLinkedAccountReferral($this->merchant, $subMerchant);
 
@@ -73,11 +73,11 @@ class SubMerchant extends Base
         $this->merchantDetailCore->saveDummyActivationFiles($subMerchant);
 
         // Submit activation form
-        $submitData = ['submit' => 1];
-        $response    = $this->merchantDetailCore->saveMerchantDetails($submitData, $subMerchant);
+        $submitData = [MerchantDetail\Entity::SUBMIT => '1'];
+        $response   = $this->merchantDetailCore->saveMerchantDetails($submitData, $subMerchant);
 
-        //$status = ($response['auto_activated'] === true) ?
-        //    Status::SUCCESS : Status::FAILURE;
+        $status = ($response[MerchantDetail\Entity::SUBMITTED] === true) ?
+            Status::SUCCESS : Status::FAILURE;
 
         $entry[Header::MERCHANT_ID] = Merchant\AccountEntity::getSignedId($subMerchant->getId());
         $entry[Header::STATUS]      = $status;
