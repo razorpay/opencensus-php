@@ -113,9 +113,11 @@ class Service extends Base\Service
         return $txns->toArrayPublic();
     }
 
-    public function reconcileSettlements($input)
+    public function reconcileSettlements($input, string $channel)
     {
-        return (new Kotak\Service)->reconcileSettlements($input);
+        $reconNamepsace = 'RZP\\Models\\FundTransfer\\' . ucwords($channel). '\\Reconciliation\\RowProcessor';
+
+        return (new $reconNamepsace)->reconcileSettlements($input);
     }
 
     public function reconcileH2HSettlements($input)
