@@ -1,9 +1,6 @@
 import moment from 'moment';
 
-import {
-  humanReadableIndian,
-  humanReadableIndianCurrency,
-} from 'rzp/utils/numerals';
+import { getFormattedAmount } from 'rzp/utils/rzp-utils';
 import { getMillisecondsFromBreakdown } from 'rzp/utils/chart/new';
 
 // tooltip element
@@ -98,9 +95,10 @@ const customToolTip = function(tooltipModel) {
     innerHtml +=
       `<div class="tooltip-title clearfix">` +
       `<div class="pull-left">` +
-      `<div class="tooltip-amount">${(isCurrency
-        ? humanReadableIndianCurrency
-        : humanReadableIndian)(sumOfAllDataPoints)}</div>` +
+      `<div class="tooltip-amount">${getFormattedAmount(
+        sumOfAllDataPoints,
+        isCurrency
+      )}</div>` +
       `<div class="sec-text tooltip-date">${formattedDate}</div>` +
       `</div>` +
       `<div class="pull-right">` +
@@ -129,9 +127,10 @@ const customToolTip = function(tooltipModel) {
 
       const labelHTML = `<span class="label sec-text">${label}</span>`;
 
-      const labelValue = `<span class="label-value">${(isCurrency
-        ? humanReadableIndianCurrency
-        : humanReadableIndian)(value)}</span>`;
+      const labelValue = `<span class="label-value">${getFormattedAmount(
+        value,
+        isCurrency
+      )}</span>`;
 
       // appending rows with each line
       rows += `<div class="tooltip-row clearfix">${labelIcon}${labelHTML}${labelValue}</div>`;

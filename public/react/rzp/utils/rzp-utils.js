@@ -106,9 +106,17 @@ export const getFormattedNumber = value => {
   return value.toString().replace(/(.{1,2})(?=.(..)+(\...)$)/g, '$1,');
 };
 
+export const currencySymbols = {
+  INR: '₹',
+  USD: 'US$',
+};
+
 // following regex formats in indian comma separated, i.e. 2,01,20,45,222.66
-export const getFormattedAmount = amount =>
-  getFormattedNumber((amount / 100).toFixed(2));
+export const getFormattedAmount = (amount, showCurrency, currency = 'INR') => {
+  const formattedAmount = getFormattedNumber((amount / 100).toFixed(2));
+
+  return (showCurrency ? currencySymbols[currency] : '') + formattedAmount;
+};
 
 export const without = (source, keys) => {
   keys = makeArray(keys);
