@@ -14,6 +14,7 @@ use RZP\Models\Transaction;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Models\Payment;
+use RZP\Models\Merchant\Preferences;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 
@@ -112,7 +113,11 @@ trait SettlementTrait
         $isSubMerchantOfMf = false;
 
         // Mutual Fund Marketplace Merchant ids
-        $mfMids = ['7BfRNg10LH7N6T', '8ytYezIThlseJd'];
+        $mfMids = [
+            Preferences::MID_GOALWISE_1,
+            Preferences::MID_GOALWISE_2,
+            Preferences::MID_WEALTHAPP,
+        ];
 
         if (($txn->isTypePayment() === true) and
             ($txn->merchant->isLinkedAccount() === true) and
