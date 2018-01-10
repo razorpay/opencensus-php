@@ -39,22 +39,7 @@ class EloquentEx extends \Razorpay\Spine\Entity
 
         $cacheDriver = $this->getQueryCacheDriver();
 
-        $builder->cacheDriver($this->rememberCacheDriver);
-
-        if (isset($this->rememberFor) === true)
-        {
-            $builder->remember($this->rememberFor);
-        }
-
-        if (isset($this->rememberCacheTag) === true)
-        {
-            $builder->cacheTags($this->rememberCacheTag);
-        }
-
-        if (isset($this->rememberCachePrefix) === true)
-        {
-            $builder->prefix($this->rememberCachePrefix);
-        }
+        $builder->cacheDriver($cacheDriver);
 
         return $builder;
     }
