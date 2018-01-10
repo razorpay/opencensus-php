@@ -558,7 +558,7 @@ class Core extends Base\Core
             $txnData[Transaction\Entity::RECONCILED_AT] = time();
         }
 
-        $channel = $payment->transaction->getChannel();
+        $channel = $payment->merchant->getChannel();
 
         if ($payment->hasBeenCaptured())
         {
