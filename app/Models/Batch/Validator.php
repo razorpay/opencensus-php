@@ -404,5 +404,18 @@ class Validator extends Base\Validator
             }
         }
     }
+
+    protected function validateSubMerchantEntries(array & $entries, array $params, Merchant\Entity $merchant)
+    {
+        if ($merchant->isFeatureEnabled(Feature::AGGREGATOR) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Sub-merchant creation not allowed for merchant',
+                null,
+                [
+                    Entity::MERCHANT_ID => $merchant->getId(),
+                ]);
+        }
+    }
 }
 
