@@ -79,7 +79,7 @@ class SubMerchant extends Base
         $status = ($response[MerchantDetail\Entity::SUBMITTED] === true) ?
             Status::SUCCESS : Status::FAILURE;
 
-        $entry[Header::MERCHANT_ID] = Merchant\AccountEntity::getSignedId($subMerchant->getId());
+        $entry[Header::MERCHANT_ID] = $subMerchant->getId();
         $entry[Header::STATUS]      = $status;
     }
 
