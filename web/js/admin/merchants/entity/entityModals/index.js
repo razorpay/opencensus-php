@@ -20,4 +20,3 @@ export UploadScreenshots from './UploadScreenshots';
 export AddCredits from './AddCredits';
 export GenerateReports from './GenerateReports';
 export ViewTeam from './ViewTeam';
-export ActivationStatusLogs from './ActivationStatusLogs';

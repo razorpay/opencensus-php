@@ -414,11 +414,6 @@ const ActionsList = ({ model, merchantId, actions }) => {
             See Activation Form Details
           </Link>
         </ShowWhen>
-        <ShowWhen permission="view_activation_form">
-          <div onClick={actions.ActivationStatusLogs}>
-            See Activation Status Logs
-          </div>
-        </ShowWhen>
         <ShowWhen permission="edit_merchant_methods">
           <div onClick={isDetailsLoading ? null : actions.EditMethods}>
             Edit Methods
