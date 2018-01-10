@@ -7,7 +7,6 @@ use Carbon\Carbon;
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
-use RZP\Models\Base\PublicCollection;
 
 class Hdfc extends Base
 {
