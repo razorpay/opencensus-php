@@ -265,6 +265,28 @@ return [
         ],
     ],
 
+    'testGetMerchantActivationStatusChangeLog' => [
+        'request' => [
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        'entity_type' => 'merchant_detail',
+                        'name'        => 'under_review',
+                    ],
+                    [
+                        'entity_type' => 'merchant_detail',
+                        'name'        => 'activated',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testMerchantFormArchive' => [
         'request' => [
             'content' => [

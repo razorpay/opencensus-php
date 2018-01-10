@@ -9,6 +9,7 @@ use phpseclib\Crypt\AES;
 use RZP\Models\Base;
 use RZP\Encryption\Type;
 use RZP\Models\FileStore;
+use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Encryption\AESEncryption;
@@ -94,11 +95,11 @@ class NodalAccount extends NodalBase\NodalAccount
         {
             $amount = $entity->source->getAmount() / 100;
 
-            $mode = $this->getTransferMode($amount);
+            $ba = $entity->bankAccount;
+
+            $mode = $this->getPaymentType($ba, $amount);
 
             $mode = self::MODE_MAPPING[$mode];
-
-            $ba = $entity->merchant->bankAccount;
 
             $rows[] = [
                 Headings::PAYMENT_MODE              => $mode,
@@ -117,6 +118,22 @@ class NodalAccount extends NodalBase\NodalAccount
         }
 
         return $rows;
+    }
+
+    protected function getPaymentType(BankAccount\Entity $ba, $amount)
+    {
+        $ifsc = $ba->getIfscCode();
+
+        $ifscFirstFour = substr($ifsc, 0, 4);
+
+        if ($ifscFirstFour === 'ICIC')
+        {
+            return Mode::IFT;
+        }
+
+        $mode = $this->getTransferMode($amount);
+
+        return $mode;
     }
 
     protected function createFile($txt): FileStore\Creator
@@ -173,6 +190,8 @@ class NodalAccount extends NodalBase\NodalAccount
 
     protected function sendIciciTransferMail(array $fileData, array $rows = null)
     {
+        $data['body'] = 'PFA ICICI Settlement file';
+        
         if ($rows !== null)
         {
             $data['body'] = json_encode($rows, JSON_PRETTY_PRINT);

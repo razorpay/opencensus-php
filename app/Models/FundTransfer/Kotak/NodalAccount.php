@@ -79,87 +79,17 @@ class NodalAccount extends NodalBase\NodalAccount
     {
         $textData = $excelData = [];
 
-        $row = 2; // row number
-
         foreach ($entities as $entity)
         {
-            list($version, $paymentRefNo, $source) = $this->getPaymentRefNoAndVersion($entity);
+            list($amount, $row) = $this->getSettlementRow($entity);
 
-            $merchant = $entity->merchant;
+            $textDataArray = $row;
 
-            $ba = $merchant->bankAccount;
-
-            //
-            // @note: Convert the amount to string for text file otherwise
-            //        sometimes float becomes recurring decimal in text file.
-            //        However in excel keep it as integer since it helps in
-            //        mathematical operations directly
-            //
-
-            $amount = $source->getAmount() / 100;
-
-            $type = $this->getPaymentType($ba, $amount, $entity);
-
-            // For Hike retry settlement, remove this once we can handle VA's better
-            if ((in_array($merchant->getId(), ['7I5sCUbi0P7eiL', '7C9vkxnJlNC6bY'], true) === true) and
-                ($ba->getAccountNumber() === '44449773833987'))
-            {
-                $ifsc = 'KKBK000VRTL';
-                $type = 'NEFT';
-
-                $array = [
-                    Headings::CLIENT_CODE             => 'RAZORNODAL',
-                    Headings::PRODUCT_CODE            => 'REFUND',
-                    Headings::PAYMENT_TYPE            => $type,
-                    Headings::PAYMENT_REF_NO          => $paymentRefNo,
-                    Headings::PAYMENT_DATE            => $this->date,
-                    Headings::INSTRUMENT_DATE         => $this->date,
-                    Headings::DR_AC_NO                => static::$nodalAccountNumber,
-                    Headings::AMOUNT                  => (string) $amount,
-                    Headings::BANK_CODE_INDICATOR     => 'M',
-                    Headings::BENEFICIARY_NAME        => $ba->getBeneficiaryName(),
-                    Headings::IFSC_CODE               => $ifsc,
-                    Headings::BENEFICIARY_ACC_NO      => $ba->getAccountNumber(),
-                    Headings::CREDIT_NARRATION        => 'RAZORPAY SETTLEMENT',
-                    Headings::PAYMENT_DETAILS_1       => $source->getPublicId(),
-                    Headings::PAYMENT_DETAILS_2       => $merchant->getPublicId(),
-                    Headings::PAYMENT_DETAILS_3       => $version,
-                    Headings::PAYMENT_DETAILS_4       => $entity->getBatchFundTransferId(),
-                ];
-            }
-            else
-            {
-                $array = [
-                    Headings::CLIENT_CODE             => 'RAZORNODAL',
-                    Headings::PRODUCT_CODE            => 'MERPAY',
-                    Headings::PAYMENT_TYPE            => $type,
-                    Headings::PAYMENT_REF_NO          => $paymentRefNo,
-                    Headings::PAYMENT_DATE            => $this->date,
-                    Headings::DR_AC_NO                => static::$nodalAccountNumber,
-                    Headings::AMOUNT                  => $amount,
-                    Headings::BANK_CODE_INDICATOR     => 'M',
-                    Headings::BENEFICIARY_CODE        => $ba->getBeneficiaryCode(),
-                    Headings::CREDIT_NARRATION        => 'RAZORPAY SETTLEMENT',
-                    Headings::PAYMENT_DETAILS_1       => $source->getPublicId(),
-                    Headings::PAYMENT_DETAILS_2       => $merchant->getPublicId(),
-                    Headings::PAYMENT_DETAILS_3       => $version,
-                    Headings::PAYMENT_DETAILS_4       => $entity->getBatchFundTransferId(),
-                ];
-            }
-
-            // moving below since we are updating type later
-            $this->updateSummary($type, $amount);
-
-            $array = $this->getAllFields($array);
-
-            $textDataArray = $array;
             $textDataArray['Amount'] = (string) $amount;
 
             array_push($textData, $textDataArray);
 
-            $row++;
-
-            array_push($excelData, $array);
+            array_push($excelData, $row);
         }
 
         $txt = $this->generateText($textData);
@@ -179,43 +109,18 @@ class NodalAccount extends NodalBase\NodalAccount
 
         foreach ($payoutAttempts as $attempt)
         {
-            list($version, $paymentRefNo, $source) = $this->getPaymentRefNoAndVersion($attempt);
+            if ($attempt->isRefund() === true)
+            {
+                list($amount, $row) = $this->getRefundRow($attempt);
+            }
+            else
+            {
+                list($amount, $row) = $this->getSettlementRow($attempt);
+            }
 
-            $merchant = $attempt->merchant;
-
-            $ba = $attempt->bankAccount;
-
-            $amount = $source->getAmount() / 100;
+            $textData[] = $row;
 
             $totalAmount += $amount;
-
-            $type = $this->getPaymentType($ba, $amount, $attempt);
-
-            $array = [
-                Headings::CLIENT_CODE             => 'RAZORNODAL',
-                Headings::PRODUCT_CODE            => 'REFUND',
-                Headings::PAYMENT_TYPE            => $type,
-                Headings::PAYMENT_REF_NO          => $paymentRefNo,
-                Headings::PAYMENT_DATE            => $this->date,
-                Headings::INSTRUMENT_DATE         => $this->date,
-                Headings::DR_AC_NO                => static::$nodalAccountNumber,
-                Headings::AMOUNT                  => (string) $amount,
-                Headings::BANK_CODE_INDICATOR     => 'M',
-                Headings::BENEFICIARY_NAME        => $ba->getBeneficiaryName(),
-                Headings::IFSC_CODE               => $ba->getIfscCode(),
-                Headings::BENEFICIARY_ACC_NO      => $ba->getAccountNumber(),
-                Headings::CREDIT_NARRATION        => $attempt->getNarration() ?? 'RAZORPAY SETTLEMENT',
-                Headings::PAYMENT_DETAILS_1       => $source->getPublicId(),
-                Headings::PAYMENT_DETAILS_2       => $merchant->getPublicId(),
-                Headings::PAYMENT_DETAILS_3       => $version,
-                Headings::PAYMENT_DETAILS_4       => $attempt->getBatchFundTransferId(),
-            ];
-
-            $array = $this->getAllFields($array);
-
-            $textDataArray = $array;
-
-            $textData[] = $textDataArray;
         }
 
         $amounts['total'] = $totalAmount;
@@ -232,11 +137,91 @@ class NodalAccount extends NodalBase\NodalAccount
 
         $name = $this->getFileToWriteName();
 
-        $fullpath = $this->createTxtFile($name, $txt);
+        $this->createTxtFile($name, $txt);
 
         $this->sendKotakPayoutsMail($name, $count, $amounts);
 
         return $urlText;
+    }
+
+    protected function getSettlementRow(Attempt\Entity $entity) : array
+    {
+        list($version, $paymentRefNo, $source) = $this->getPaymentRefNoAndVersion($entity);
+
+        $merchant = $entity->merchant;
+
+        $ba = $entity->bankAccount;
+
+        //
+        // @note: Convert the amount to string for text file otherwise
+        //        sometimes float becomes recurring decimal in text file.
+        //        However in excel keep it as integer since it helps in
+        //        mathematical operations directly
+        //
+
+        $amount = $source->getAmount() / 100;
+
+        $type = $this->getPaymentType($ba, $amount, $entity);
+
+        $this->updateSummary($type, $amount);
+
+        $array = [
+            Headings::CLIENT_CODE             => 'RAZORNODAL',
+            Headings::PRODUCT_CODE            => 'MERPAY',
+            Headings::PAYMENT_TYPE            => $type,
+            Headings::PAYMENT_REF_NO          => $paymentRefNo,
+            Headings::PAYMENT_DATE            => $this->date,
+            Headings::DR_AC_NO                => static::$nodalAccountNumber,
+            Headings::AMOUNT                  => $amount,
+            Headings::BANK_CODE_INDICATOR     => 'M',
+            Headings::BENEFICIARY_CODE        => $ba->getBeneficiaryCode(),
+            Headings::CREDIT_NARRATION        => 'RAZORPAY SETTLEMENT',
+            Headings::PAYMENT_DETAILS_1       => $source->getPublicId(),
+            Headings::PAYMENT_DETAILS_2       => $merchant->getPublicId(),
+            Headings::PAYMENT_DETAILS_3       => $version,
+            Headings::PAYMENT_DETAILS_4       => $entity->getBatchFundTransferId(),
+        ];
+
+        $array = $this->getAllFields($array);
+
+        return [$amount, $array];
+    }
+
+    protected function getRefundRow(Attempt\Entity $attempt): array
+    {
+        list($version, $paymentRefNo, $source) = $this->getPaymentRefNoAndVersion($attempt);
+
+        $merchant = $attempt->merchant;
+
+        $ba = $attempt->bankAccount;
+
+        $amount = $source->getAmount() / 100;
+
+        $type = $this->getPaymentType($ba, $amount, $attempt);
+
+        $array = [
+            Headings::CLIENT_CODE             => 'RAZORNODAL',
+            Headings::PRODUCT_CODE            => 'REFUND',
+            Headings::PAYMENT_TYPE            => $type,
+            Headings::PAYMENT_REF_NO          => $paymentRefNo,
+            Headings::PAYMENT_DATE            => $this->date,
+            Headings::INSTRUMENT_DATE         => $this->date,
+            Headings::DR_AC_NO                => static::$nodalAccountNumber,
+            Headings::AMOUNT                  => (string) $amount,
+            Headings::BANK_CODE_INDICATOR     => 'M',
+            Headings::BENEFICIARY_NAME        => $ba->getBeneficiaryName(),
+            Headings::IFSC_CODE               => $ba->getIfscCode(),
+            Headings::BENEFICIARY_ACC_NO      => $ba->getAccountNumber(),
+            Headings::CREDIT_NARRATION        => $attempt->getNarration() ?? 'RAZORPAY SETTLEMENT',
+            Headings::PAYMENT_DETAILS_1       => $source->getPublicId(),
+            Headings::PAYMENT_DETAILS_2       => $merchant->getPublicId(),
+            Headings::PAYMENT_DETAILS_3       => $version,
+            Headings::PAYMENT_DETAILS_4       => $attempt->getBatchFundTransferId(),
+        ];
+
+        $array = $this->getAllFields($array);
+
+        return [$amount, $array];
     }
 
     protected function getPaymentRefNoAndVersion($entity)

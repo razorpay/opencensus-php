@@ -73,7 +73,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
             if ($validate === true)
             {
-                $persistSuccess = $this->persistReconciliationData();
+                $persistSuccess = $this->persistReconciliationData($rowDetails);
 
                 if ($persistSuccess === false)
                 {
@@ -172,7 +172,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
         return true;
     }
 
-    protected function persistReconciliationData()
+    protected function persistReconciliationData(array $rowDetails)
     {
         $refundTransaction = $this->refund->transaction;
 
@@ -200,6 +200,8 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
         // Sets the reconciled_at in the transactions entity, on a successful reconciliation.
         $this->persistReconciledAt($this->refund);
+
+        $this->persistGatewaySettledAt($this->refund, $rowDetails);
 
         return true;
     }
@@ -333,8 +335,8 @@ class RefundReconciliate extends Foundation\SubReconciliate
         if (UniqueIdEntity::verifyUniqueId($refundId, false) === false)
         {
             $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
                 [
-                    'trace_code' => TraceCode::RECON_INFO_ALERT,
                     'message'    => 'Refund ID being sent in the file is not as expected.',
                     'row'        => $row,
                     'refund_id'  => $refundId,

@@ -17,7 +17,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_EDU_CESS    = 'EDUCESS';
     const COLUMN_FEE         = 'COMMISSION AMT';
 
-    protected function getPaymentId($row)
+    protected function getPaymentId(array $row)
     {
         $paymentId = $row[self::COLUMN_PAYMENT_ID];
         return $paymentId;

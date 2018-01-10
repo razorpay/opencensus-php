@@ -8,13 +8,13 @@ class Status
      * @see https://drive.google.com/a/razorpay.com/file/d/0B1MTSXtR53PfSFp3OHduYUhQV0U/view?usp=sharing
      */
 
-    const SUCCESS = 'Success';
+    const SUCCESS = 'SUCCESS';
 
-    const PENDING = 'Pending';
+    const PENDING = 'PENDING';
 
-    const FAILURE = 'Failure';
+    const FAILURE = 'FAILURE';
 
-    const TIMEOUT = 'Timeout';
+    const TIMEOUT = 'TIMEOUT';
 
     const REFUND_SUCCESS = 'S';
 
