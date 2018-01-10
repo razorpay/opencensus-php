@@ -14,7 +14,7 @@ use RZP\Gateway\Base\Action;
 use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
-use RZP\Mail\Gateway\FailedRefund\Base as FailedRefundMail;
+use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Models\Gateway\File\Processor\Base as BaseProcessor;
 
 class Base extends BaseProcessor
@@ -149,7 +149,7 @@ class Base extends BaseProcessor
 
             $mailData = $this->formatDataForMail($data);
 
-            $refundFileMail = new FailedRefundMail($mailData, static::GATEWAY, $recipients);
+            $refundFileMail = new RefundFileMail($mailData, static::GATEWAY, $recipients);
 
             Mail::queue($refundFileMail);
 
