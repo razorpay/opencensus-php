@@ -10,6 +10,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Base\EsDao;
 use RZP\Events\DifferEvent;
 use RZP\Models\Workflow\Action;
+use RZP\Constants\Entity as ConstantsEntity;
 
 class Core extends Base\Core
 {
@@ -132,21 +133,48 @@ class Core extends Base\Core
         // If the diff is already present, no need to run
         // the validators and compute it again.
         //
-        // Not we'll consider [] to be a valid diff as well
-        // and store in ES
+        // The diff will be present when workflow is triggered
+        // from within the code. Absense of diff means the workflow
+        // is being triggered right from Middleware\Workflow.
+        //
+        // Check EntityValidator to get a list of the ones being triggered
+        // from the middleware.
 
-        if ((empty($differ->getDiff()) === false))
+        if (empty($differ->getDiff()) === false)
         {
             $this->saveToEs($differ->toArray());
 
             return $differ;
         }
 
+        // Flow triggered from Middleware\Workflow
+
+        $op = null;
+
         $entity = $differ->getEntityName();
 
         $entityId = $differ->getEntityId();
 
-        $oldEntity = $this->repo->$entity->findByPublicId($entityId);
+        try
+        {
+            $oldEntity = $this->repo->$entity->findByPublicId($entityId);
+
+            $oldEntityData = $oldEntity->toArray();
+
+            $op = 'edit';
+        }
+        catch (\RZP\Exception\BadRequestException $e)
+        {
+            $errorCode = $e->getCode();
+
+            if ($errorCode === ErrorCode::BAD_REQUEST_INVALID_ID)
+            {
+                // Most likely a "create" operation
+                $op = 'create';
+
+                $oldEntityData = [];
+            }
+        }
 
         $diff = [];
 
@@ -154,13 +182,31 @@ class Core extends Base\Core
 
         if (empty($validator) === false)
         {
-            $newEntity = clone $oldEntity;
+            if ($op === 'edit')
+            {
+                $newEntity = clone $oldEntity;
 
-            // Run validator
-            $newEntity = $newEntity->edit($differ->getPayload(), $validator);
+                // Run validator
+                $newEntity = $newEntity->edit($differ->getPayload(), $validator);
 
-            $diff = $this->createDiff(
-                $oldEntity->toArray(), $newEntity->toArray());
+                $diff = $this->createDiff(
+                    $oldEntity->toArray(), $newEntity->toArray());
+            }
+
+            if ($op === 'create')
+            {
+                $oldEntity = [];
+
+                $entityClass = ConstantsEntity::getEntityClass($entity);
+                
+                $newEntity = new $entityClass;
+
+                // Run validator
+                $newEntity = $newEntity->build($differ->getPayload(), $validator);
+
+                $diff = $this->createDiff(
+                    $oldEntity, $newEntity->toArray());
+            }
         }
 
         $relations = EntityValidator::getRelations($differ->getRoute());
@@ -173,10 +219,27 @@ class Core extends Base\Core
                 // want to reset the m2m fields.
                 if (isset($differ->getPayload()[$relation]) === true)
                 {
+                    if ($op === 'create')
+                    {
+                        $model = $newEntity->$relation()->getModel();
+
+                        $relatedEntityName = $model->getEntityName();
+                    }
+
+                    if ($op === 'edit')
+                    {
+                        $model = $oldEntity->$relation()->getModel();
+
+                        $relatedEntityName = $model->getEntityName();
+                    }
+
+                    $oldRelationIds = $oldEntityData[$relation] ?? [];
+                    $newRelationIds = $differ->getPayload()[$relation];
+
                     $relationDiff = $this->createDiffForRelations(
-                        $oldEntity,
-                        $relation,
-                        $differ->getPayload()[$relation]);
+                        $oldRelationIds,
+                        $newRelationIds,
+                        $relatedEntityName);
 
                     $diff['old'][$relation] = $relationDiff['old'];
 
@@ -285,28 +348,28 @@ class Core extends Base\Core
         return $esResponse;
     }
 
-    protected function createDiffForRelations($entity, $relation, $input)
+    public function createDiffForRelations(    
+        $oldIds,
+        $newIds,
+        $relatedEntityName)
     {
-        $model = $entity->$relation()->getModel();
+        $removedEntities = array_diff($oldIds, $newIds);
 
-        $relatedEntityName = $model->getEntityName();
+        $addedEntities = array_diff($newIds, $oldIds);
 
-        $oldIds = $entity->$relation()->allRelatedIds()->toArray();
+        $relatedEntityOb = ConstantsEntity::getEntityObject($relatedEntityName);
 
-        $model::getSignedIdMultiple($oldIds);
-
-        $removedEntities = array_diff($oldIds, $input);
-
-        $addedEntities = array_diff($input, $oldIds);
-
-        $newRelatedEntities = $this->repo
-                                   ->$relatedEntityName
-                                   ->findManyByPublicIds($addedEntities)
-                                   ->toArrayDiff();
+        $relatedEntityOb::verifyIdAndSilentlyStripSignMultiple($removedEntities);
+        $relatedEntityOb::verifyIdAndSilentlyStripSignMultiple($addedEntities);
 
         $oldRelatedEntities = $this->repo
                                    ->$relatedEntityName
-                                   ->findManyByPublicIds($removedEntities)
+                                   ->findMany($removedEntities)
+                                   ->toArrayDiff();
+
+        $newRelatedEntities = $this->repo
+                                   ->$relatedEntityName
+                                   ->findMany($addedEntities)
                                    ->toArrayDiff();
 
         $diff = [

@@ -72,6 +72,8 @@ class Workflow
         {
             $permission = $this->getRoutePermission($routeName);
 
+            // Workflows for EXCLUDED_PERMISSIONS will be triggered from inside
+            // the code.
             if (in_array($permission, self::EXCLUDED_PERMISSIONS, true) === true)
             {
                 // Set the default permission in workflow service

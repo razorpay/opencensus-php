@@ -28,7 +28,7 @@ class Core extends Base\Core
 
         $this->app['workflow']
             ->setEntityAndId($admin->getEntity(), $admin->getId())
-            ->handle((new \StdClass()), $admin);
+            ->handle((new \StdClass()), $input);
 
         $this->repo->saveOrFail($admin);
 

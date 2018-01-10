@@ -9,6 +9,8 @@ use RZP\Models\Workflow\Action;
 use RZP\Models\Workflow\Action\Differ;
 use RZP\Exception\EarlyWorkflowResponse;
 use RZP\Models\Workflow\Service as WorkflowService;
+use RZP\Models\Workflow\Action\Differ\EntityValidator;
+use RZP\Constants\Entity as ConstantsEntity;
 
 class Service
 {
@@ -82,12 +84,7 @@ class Service
 
     public function trigger()
     {
-        // Since we need to calculate the diffs, we'll need
-        // the main entity being acted upon by the route
-        // that's going to be executed. This is not entirely
-        // fool-proof but will work well for a good number of
-        // our routes (MVP acceptable).
-
+        // Main entity to act upon and calculate the diff
         $entity = $this->getEntity();
 
         if (empty($entity))
@@ -98,7 +95,8 @@ class Service
 
         $entityId = $this->getEntityId();
 
-        if (empty($entityId))
+        // This block works for "edit" operations only
+        if (empty($entityId) === true)
         {
             $routeParams = $this->router->current()->parameters();
 
@@ -106,18 +104,27 @@ class Service
             // First value is not entirely robust though
             $entityId = $routeParams['id'] ?? (array_values($routeParams)[0] ?? null);
 
-            if (empty($entityId))
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_WORKFLOW_ENTITY_ID_NOT_FOUND);
-            }
+            // If the $entityId is still NULL then it could be a create operation
+            // if (empty($entityId))
+            // {
+            //     throw new Exception\BadRequestException(
+            //         ErrorCode::BAD_REQUEST_WORKFLOW_ENTITY_ID_NOT_FOUND);
+            // }
         }
 
-        // Check if any actions are in open/approved state on the same
-        // entity. If yes then prevent any further operations on this.
-        (new Action\Validator)->validateLiveActionsOnEntity($entityId, $entity, $this->getPermission());
+        // If any actions are in open/approved (not executed) state
+        // on the main $entity then prevent new workflows from being created.
+        if (empty($entityId) === false)
+        {
+            (new Action\Validator)->validateLiveActionsOnEntity(
+                $entityId,
+                $entity,
+                $this->getPermission());
+        }
 
-        // Necessary data to pass to WorkflowController
+        // Input data for Differ\Entity (stored in ES)
+        // It contains the diff entity to show on the UI + payload to trigger
+        // the request on execute operation.
         $params = $this->createDifferEntity($this->request, $entity, $entityId);
 
         // returns Workflow\Action\Entity->toArrayPublic()
@@ -131,6 +138,8 @@ class Service
         compute a diff as well as later execute the actual
         action once all the checkers have approved this
         incoming request.
+
+        This Differ Entity is stored in ES.
     */
     private function createDifferEntity($request, $entity, $entityId)
     {
@@ -274,6 +283,8 @@ class Service
             return;
         }
 
+        $input = $this->request->input();
+
         // Instantiate code for diff creation
         $differCore = new Differ\Core;
 
@@ -317,6 +328,37 @@ class Service
 
             $diff = $differCore->createDiff(
                 $originalDataArray, $dirtyDataArray);
+
+            $entityOb = ConstantsEntity::getEntityObject($this->getEntity());
+
+            $routeName = $this->router->currentRouteName();
+
+            $relations = EntityValidator::getRelations($routeName);
+
+            if (empty($relations) === false)
+            {
+                foreach ($relations as $relation)
+                {
+                    // We want to show empty values for relation as it means we
+                    // want to reset the m2m fields.
+                    if (isset($dirtyDataArray[$relation]) === true)
+                    {
+                        $relatedEntityName = $entityOb->$relation()->getModel()->getEntityName();
+
+                        $oldRelationIds = $originalDataArray[$relation] ?? [];
+                        $newRelationIds = $dirtyDataArray[$relation] ?? [];
+
+                        $relationDiff = $differCore->createDiffForRelations(
+                            $oldRelationIds,
+                            $newRelationIds,
+                            $relatedEntityName);
+
+                        $diff['old'][$relation] = $relationDiff['old'];
+
+                        $diff['new'][$relation] = $relationDiff['new'];
+                    }
+                }
+            }
         }
 
         $this->setDiff($diff);

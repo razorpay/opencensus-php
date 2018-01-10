@@ -114,4 +114,11 @@ class Entity extends Base\Entity
     {
         return $this->belongsToMany('RZP\Models\Workflow\Entity', Table::WORKFLOW_PERMISSIONS);
     }
+
+    public function getRelationsForDiffer() : array
+    {
+        return [
+            self::ORGS,
+        ];
+    }
 }
