@@ -90,7 +90,7 @@ class Server extends Base\Mock\Server
         // TODO: To remove this completely once we use emandate method
         // internally also and not only in the external request.
         //
-        if (isset($input[Payment\Entity::AUTH_TYPE]) === true)
+        if (empty($input[Payment\Entity::AUTH_TYPE]) === false)
         {
             $data['emandate'] = true;
         }

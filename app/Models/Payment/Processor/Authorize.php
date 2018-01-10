@@ -3522,7 +3522,11 @@ trait Authorize
 
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_BANK_NOT_ENABLED_FOR_MERCHANT,
-                null, $customProperties);
+                null,
+                [
+                    'custom_properties' => $customProperties,
+                    'payment_id'        => $payment->getId(),
+                ]);
         }
     }
 
