@@ -251,8 +251,7 @@ class Validator extends Base\Validator
     {
         if ($input['method'] === Payment\Method::EMANDATE)
         {
-            if ((isset($input['recurring']) === false) or
-                ($input['recurring'] !== '1'))
+            if (isset($input['recurring']) === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'The recurring field should be 1 when payment method is eMandate.');

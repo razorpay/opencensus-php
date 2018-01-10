@@ -1491,7 +1491,7 @@ class Processor
         // For normal flow, we auto capture the payment as soon as
         // it is authorized
         //
-        if ($this->isAsyncEMandatePayment($payment) === true)
+        if ($this->isAsyncEmandatePayment($payment) === true)
         {
             return false;
         }
@@ -1499,24 +1499,17 @@ class Processor
         return $this->shouldAutoCaptureOrder($payment);
     }
 
-    protected function isAsyncEMandatePayment(Payment\Entity $payment)
+    protected function isAsyncEmandatePayment(Payment\Entity $payment)
     {
-        if (($payment->isNetbanking() === true) and
-            ($payment->isRecurring() === true))
+        if ($payment->isEmandate() === true)
         {
             if ($payment->isRecurringTypeInitial() === true)
             {
-                if (Payment\Gateway::isFileBasedEMandateRegistrationGateway($payment->getGateway()) === true)
-                {
-                    return true;
-                }
+                return (Payment\Gateway::isFileBasedEMandateRegistrationGateway($payment->getGateway()) === true);
             }
             else if ($payment->isRecurringTypeAuto() === true)
             {
-                if (Payment\Gateway::isFileBasedEMandateDebitGateway($payment->getGateway()) === true)
-                {
-                    return true;
-                }
+                return (Payment\Gateway::isFileBasedEMandateDebitGateway($payment->getGateway()) === true);
             }
         }
 

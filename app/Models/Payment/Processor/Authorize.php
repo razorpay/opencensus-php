@@ -3119,7 +3119,7 @@ trait Authorize
             else if ($payment->hasOrder() === true)
             {
                 if (($payment->order->getPaymentCapture() === true) and
-                    ($this->isAsyncEMandatePayment($payment) === false))
+                    ($this->isAsyncEmandatePayment($payment) === false))
                 {
                     assertTrue($payment->hasBeenCaptured() === true);
                 }

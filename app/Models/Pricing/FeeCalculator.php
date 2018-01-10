@@ -106,7 +106,8 @@ class FeeCalculator
 
         $totalFees = $fees + $totalTaxes;
 
-        // In case the merchant is customer fee bearer, we shouldn't check $amount < $totalFees
+        // In case the merchant is customer fee bearer, we shouldn't check
+        // $amount < $totalFees because amount is already inclusive of the fees.
         if (($this->entity->merchant->isFeeBearerCustomer() === false) and
             ($amount !== 0))
         {
