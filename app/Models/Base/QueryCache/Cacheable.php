@@ -4,7 +4,7 @@ namespace RZP\Models\Base\Traits\QueryCache;
 
 use App;
 use RZP\Constants\Mode;
-use RZP\Base\CacheQueryBuilder;
+use RZP\Models\Base\QueryCache\CacheQueryBuilder;
 
 /**
  * This traits overrides the newBaseQueryBuilder method, to
@@ -46,6 +46,6 @@ trait Cacheable
 
         $mode = $app['rzp.mode'] ?? null;
 
-        return ($mode === Mode::LIVE) ? 'query_cache_live' : 'query_cache_test';
+        return ($mode === Mode::TEST) ? 'query_cache_test' : 'query_cache_live';
     }
 }

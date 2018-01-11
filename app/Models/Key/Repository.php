@@ -11,9 +11,9 @@ class Repository extends Base\Repository
 
     protected $entity = 'key';
 
-    protected $appFetchParamRules = array(
+    protected $appFetchParamRules = [
         Entity::MERCHANT_ID => 'sometimes|alpha_num',
-    );
+    ];
 
     public function find($id, $columns = ['*'])
     {

@@ -4,21 +4,16 @@ namespace RZP\Listeners;
 
 use App;
 use Cache;
-use RZP\Trace\TraceCode;
 use Illuminate\Cache\Events\CacheHit;
 use Illuminate\Cache\Events\KeyWritten;
 use Illuminate\Cache\Events\CacheMissed;
 use Illuminate\Cache\Events\KeyForgotten;
 
+use RZP\Trace\TraceCode;
+use RZP\Models\Base\QueryCache\Constants;
+
 class QueryCacheEventListener
 {
-    const QUERY_CACHE_KEY = 'rememberable';
-
-    const CACHE_HITS      = 'cache_hits';
-    const CACHE_MISSES    = 'cache_misses';
-    const CACHE_WRITES    = 'cache_writes';
-    const CACHE_FLUSHES   = 'cache_flushes';
-
     protected $event;
 
     public function handle($event)
@@ -27,10 +22,10 @@ class QueryCacheEventListener
 
         $trace = App::getFacadeRoot()['trace'];
 
-        $isQueryCacheEvent = strpos($event->key, self::QUERY_CACHE_KEY);
+        $isQueryCacheEvent = strpos($event->key, Constants::QUERY_CACHE_PREFIX);
 
         //
-        // Only trace rememberable events
+        // Only handle rememberable events
         //
         if ($isQueryCacheEvent === false)
         {
@@ -59,8 +54,6 @@ class QueryCacheEventListener
 
         $counterKey = $prefix . '_' . $suffix;
 
-        s($counterKey);
-
         Cache::increment($counterKey);
     }
 
@@ -76,13 +69,12 @@ class QueryCacheEventListener
     {
         $tags = $this->event->tags;
 
-        foreach ($tags as $tag)
+        $entityTag = array_first($this->event->tags, function ($tag)
         {
-            if (str_contains($tag, '_') === true)
-            {
-                return substr($tag, 0, strpos($tag, '_'));
-            }
-        }
+            return (str_contains($tag, '_') === true);
+        });
+
+        return substr($entityTag, 0, strpos($entityTag, '_'));
     }
 
     protected function getCounterKeySuffix(): string
@@ -90,16 +82,16 @@ class QueryCacheEventListener
         switch (true)
         {
             case $this->event instanceof CacheMissed:
-                return self::CACHE_MISSES;
+                return Constants::CACHE_MISSES;
 
             case $this->event instanceof CacheHit:
-                return self::CACHE_HITS;
+                return Constants::CACHE_HITS;
 
             case $this->event instanceof KeyWritten:
-                return self::CACHE_WRITES;
+                return Constants::CACHE_WRITES;
 
             case $this->event instanceof KeyForgotten:
-                return self::CACHE_FLUSHES;
+                return Constants::CACHE_FLUSHES;
         }
     }
 }

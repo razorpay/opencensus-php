@@ -1344,7 +1344,7 @@ class MerchantTest extends TestCase
         {
             $expectedTags = [
                 'v1',
-                'keys_TheTestAuthKey',
+                'key_TheTestAuthKey',
             ];
 
             $this->assertArraySelectiveEquals($expectedTags, $e->tags);
@@ -1359,7 +1359,7 @@ class MerchantTest extends TestCase
         {
             $expectedTags = [
                 'v1',
-                'keys_TheTestAuthKey',
+                'key_TheTestAuthKey',
             ];
 
             $this->assertArraySelectiveEquals($expectedTags, $e->tags);
@@ -1368,6 +1368,11 @@ class MerchantTest extends TestCase
 
             return true;
         });
+
+        //
+        // Asserts cache should not have been hit the first time
+        //
+        Event::assertNotDispatched(CacheHit::class);
 
         $this->doAuthPayment($payment);
 
@@ -1378,7 +1383,7 @@ class MerchantTest extends TestCase
         {
             $expectedTags = [
                 'v1',
-                'keys_TheTestAuthKey',
+                'key_TheTestAuthKey',
             ];
 
             $this->assertArraySelectiveEquals($expectedTags, $e->tags);
@@ -1418,7 +1423,7 @@ class MerchantTest extends TestCase
         {
             $expectedTags = [
                 'v1',
-                'keys_' . $newKey,
+                'key_' . $newKey,
             ];
 
             $this->assertArraySelectiveEquals($expectedTags, $e->tags);
@@ -1430,7 +1435,7 @@ class MerchantTest extends TestCase
         {
             $expectedTags = [
                 'v1',
-                'keys_' . $newKey,
+                'key_' . $newKey,
             ];
 
             $this->assertArraySelectiveEquals($expectedTags, $e->tags);
@@ -1439,6 +1444,8 @@ class MerchantTest extends TestCase
 
             return true;
         });
+
+        Event::assertNotDispatched(CacheHit::class);
     }
 
     public function testBeneficiaryRegisterKotak()

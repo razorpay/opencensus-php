@@ -1,13 +1,15 @@
 <?php
 
-namespace RZP\Base;
+namespace RZP\Models\Base\QueryCache;
 
 use App;
-use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use Illuminate\Cache\Events\KeyForgotten;
 use Illuminate\Database\Query\Builder as IlluminateQueryBuilder;
 use Watson\Rememberable\Query\Builder as RememberableQueryBuilder;
+
+use RZP\Trace\TraceCode;
+use RZP\Models\Base\QueryCache\Constants;
 
 /**
  * Overriden rememberable package's Builder class, as we need to add
@@ -62,7 +64,11 @@ class CacheQueryBuilder extends RememberableQueryBuilder
         {
             $cache->flush();
 
-            event(new KeyForgotten('rememberable', [
+            //
+            // Firing a KeyForgotten event here, to increment the cache_flushes
+            // counter. This is to detect, how many flushes happened due to entity update
+            //
+            event(new KeyForgotten(Constants::QUERY_CACHE_PREFIX, [
                 $cacheTags
             ]));
         }
