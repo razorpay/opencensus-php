@@ -37,7 +37,7 @@ class Repository extends Base\Repository
      *
      * @return PublicCollection
      */
-    public function getAllBankAccounts($merchant) : PublicCollection
+    public function getAllBankAccounts($merchant): PublicCollection
     {
         return $this->newQuery()
                     ->where(Entity::ENTITY_ID, '=', $merchant->getId())

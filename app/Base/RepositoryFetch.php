@@ -640,9 +640,10 @@ trait RepositoryFetch
 
         //
         // Most of the entities can be filtered on Merchant ID. They have the
-        // merchant() relation. But few entities do not have this relation defined
+        // merchant() relation. But a few entities do not have this relation defined
         // and we have overridden scopeMerchantId() to filter on different column.
         // Eg: Merchant\Account\Entity applies the filter on column: parent_id.
+        // Merchant\Account\Entity does not have merchant() relation defined. So skip it.
         //
         if (method_exists($entity, 'merchant') === true)
         {

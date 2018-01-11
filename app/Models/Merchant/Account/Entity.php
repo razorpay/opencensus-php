@@ -3,10 +3,8 @@
 namespace RZP\Models\Merchant\Account;
 
 use RZP\Models\Merchant;
-use RZP\Models\Schedule;
 use RZP\Models\BankAccount;
 use RZP\Models\Merchant\Detail as MerchantDetail;
-use RZP\Models\Schedule\Task as ScheduleTask;
 
 class Entity extends Merchant\Entity
 {
@@ -19,7 +17,6 @@ class Entity extends Merchant\Entity
     const STATE                    = 'state';
     const STATUS                   = 'status';
     const MOBILE                   = 'mobile';
-    const SUBMIT                   = 'submit';
     const P_GSTIN                  = 'p_gstin';
     const ADDRESS                  = 'address';
     const COUNTRY                  = 'country';
@@ -276,9 +273,9 @@ class Entity extends Merchant\Entity
      */
     public function scopeMerchantId($query, $merchantId)
     {
-        $merchantIdColumn = $this->dbColumn(Entity::PARENT_ID);
+        $parentIdColumn = $this->dbColumn(Entity::PARENT_ID);
 
-        $query->where($merchantIdColumn, '=', $merchantId);
+        $query->where($parentIdColumn, '=', $merchantId);
     }
 
     /**
@@ -345,7 +342,7 @@ class Entity extends Merchant\Entity
     {
         $response = parent::toArrayPublic();
 
-        Helper::get()->computeAndSetAdditionalPublicAttributes($this, $response);
+        Formatter::get()->computeAndSetAdditionalPublicAttributes($this, $response);
 
         return $response;
     }

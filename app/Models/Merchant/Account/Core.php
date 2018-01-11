@@ -53,13 +53,15 @@ class Core extends Merchant\Core
      */
     protected function getMerchantDetailsFromInput(array $input): array
     {
-        $businessName = $input[Entity::ACCOUNT_DETAILS][Entity::BUSINESS_NAME];
-        $businessType = $input[Entity::ACCOUNT_DETAILS][Entity::BUSINESS_TYPE];
+        $accountDetails = $input[Entity::ACCOUNT_DETAILS];
+
+        $businessName = $accountDetails[Entity::BUSINESS_NAME];
+        $businessType = $accountDetails[Entity::BUSINESS_TYPE];
 
         $merchantDetails = [
-            Detail\Entity::SUBMIT => '1',
-            Entity::BUSINESS_NAME => $businessName,
-            Entity::BUSINESS_TYPE => Detail\BusinessType::getIndexFromKey($businessType),
+            Detail\Entity::BUSINESS_NAME => $businessName,
+            Detail\Entity::BUSINESS_TYPE => Detail\BusinessType::getIndexFromKey($businessType),
+            Detail\Entity::SUBMIT        => '1',
         ];
 
         return $merchantDetails;
@@ -84,13 +86,13 @@ class Core extends Merchant\Core
 
         $bankAccountDetailsKeys = array_only($input, $whitelistedBankAccountKeys);
 
-        $map = Entity::$bankAccountToDetailAttributesMap;
+        $bankAccountToDetailAttributesMap = Entity::$bankAccountToDetailAttributesMap;
 
         $merchantDetails = [];
 
         foreach($bankAccountDetailsKeys as $bankAccountDetailKey => $value)
         {
-            $merchantDetails[$map[$bankAccountDetailKey]] = $value;
+            $merchantDetails[$bankAccountToDetailAttributesMap[$bankAccountDetailKey]] = $value;
         }
 
         return $merchantDetails;

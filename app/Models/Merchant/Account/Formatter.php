@@ -66,9 +66,9 @@ class Formatter
 
         $fieldsPending = [];
 
-        if (isset($verificationDetails[MerchantDetail\Entity::FIELDS_PENDING]) === true)
+        if (isset($verificationDetails[MerchantDetail\Entity::REQUIRED_FIELDS]) === true)
         {
-            $fieldsPending = $verificationDetails[MerchantDetail\Entity::FIELDS_PENDING];
+            $fieldsPending = $verificationDetails[MerchantDetail\Entity::REQUIRED_FIELDS];
         }
 
         $response[$activationDetails][Entity::FIELDS_PENDING] = $fieldsPending;
