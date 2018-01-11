@@ -19,7 +19,7 @@ class Constants extends RefundFile\Constants
     ];
 
     const BODY_MAP = [
-        Gateway::UPI_ICICI          => 'Please find attached failed refunds information for  ICICI UPI',
+        Gateway::UPI_ICICI          => 'Please find attached failed refunds information for UPI ICICI',
         Gateway::WALLET_AIRTELMONEY => 'Please find attached failed refunds information for  Airtel Money',
     ];
 
