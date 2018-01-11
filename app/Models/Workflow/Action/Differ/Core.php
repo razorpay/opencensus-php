@@ -201,6 +201,11 @@ class Core extends Base\Core
                 }
             }
         }
+        else
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_WORKFLOW_ENTITY_VALIDATOR_RULE_NOT_FOUND);
+        }
 
         $diff = $this->createDiff(
             $oldEntityData, $newEntityData);
