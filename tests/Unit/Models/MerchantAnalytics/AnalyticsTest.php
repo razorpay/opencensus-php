@@ -20,39 +20,64 @@ class AnalyticsTest extends TestCase
 
     public function testAdditionOfMerchantIdFilterInInput()
     {
-        $this->startTestForFilter();
+        $testData = $this->fetchTestData();
+
+        $input = $testData[0];
+
+        $expectedContent = $testData[1];
+
+        $this->startTestForFilter($input, $expectedContent);
     }
 
     public function testAnalyticsInputEmptyFilter()
     {
-        $this->startTestForFilter();
+        $testData = $this->fetchTestData();
+
+        $input = $testData[0];
+
+        $expectedContent = $testData[1];
+
+        $this->startTestForFilter($input, $expectedContent);
     }
 
     public function testAnalyticsInputOverrideMerchantId()
     {
-        $this->startTestForFilter();
+        $testData = $this->fetchTestData();
+
+        $input = $testData[0];
+
+        $expectedContent = $testData[1];
+
+        $this->startTestForFilter($input, $expectedContent);
     }
 
     public function testAnalyticsInputNoFilter()
     {
-        $this->startTestForFilter();
+        $testData = $this->fetchTestData();
+
+        $input = $testData[0];
+
+        $expectedContent = $testData[1];
+
+        $this->startTestForFilter($input, $expectedContent);
     }
 
-    protected function startTestForFilter()
-    {
-        $merchantId = '10000000000000';
+    // -------------------- Protected methods --------------------
 
+    protected function fetchTestData()
+    {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
 
         $name = $trace[1]['function'];
 
-        $testData = $this->testData[$name];
+        return $this->testData[$name];
+    }
 
-        $input = $testData[self::INPUT_INDEX];
+    protected function startTestForFilter(array $input, array $expectedContent)
+    {
+        $merchantId = '10000000000000';
 
         $actualContent = $this->core->validateInputFiltersAndAddMerchantId($merchantId, $input);
-
-        $expectedContent = $testData[self::EXPECTED_OUTPUT_INDEX];
 
         $this->assertArraySelectiveEquals($expectedContent, $actualContent);
     }

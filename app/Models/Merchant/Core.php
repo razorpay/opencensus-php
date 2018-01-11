@@ -454,17 +454,11 @@ class Core extends Base\Core
         return $input;
     }
 
-    protected function addDefaultAnalyticsFilter(string $merchantId, array $input): array
+    protected function addDefaultAnalyticsFilter(string $merchantId, array $input = []): array
     {
-        $input[Entity::FILTERS] = [
+        $defaultFilter[] = [Entity::KEY_MERCHANT_ID => $merchantId];
 
-            Entity::DEFAULT_FILTER =>
-                [
-                    [
-                        Entity::KEY_MERCHANT_ID => $merchantId,
-                    ],
-                ],
-        ];
+        $input[Entity::FILTERS] = [Entity::DEFAULT_FILTER => $defaultFilter];
 
         return $input;
     }

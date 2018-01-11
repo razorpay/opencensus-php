@@ -6,18 +6,18 @@ return [
             'filters' =>  [
                 'default' =>  [
                     [
-                        'device' =>  ['desktop']
+                        'device' =>  ['desktop'],
                     ],
                     [
-                        'device' =>  ['tablet','mobile'],
-                        'created_at' =>  ['gt' =>  10,'lte' =>  40]
-                    ]
+                        'device' =>  ['tablet', 'mobile'],
+                        'created_at' =>  ['gt' =>  10, 'lte' =>  40],
+                    ],
                 ],
                 'filter2' =>  [
                     [
-                        'device' =>  ['desktop']
-                    ]
-                ]
+                        'device' =>  ['desktop'],
+                    ],
+                ],
             ],
             'aggregations'  => [
                 'agg1' => [
@@ -28,7 +28,7 @@ return [
                         'group_by'  => [
                             'method',
                             'status',
-                        ]
+                        ],
                     ],
                 ],
             ],
@@ -42,28 +42,28 @@ return [
                         'merchant_id'   => '10000000000000',
                     ],
                     [
-                        'device' =>  ['tablet','mobile'],
-                        'created_at' =>  ['gt' =>  10,'lte' =>  40],
+                        'device'        =>  ['tablet', 'mobile'],
+                        'created_at'    =>  ['gt' =>  10, 'lte' =>  40],
                         'merchant_id'   => '10000000000000',
-                    ]
+                    ],
                 ],
                 'filter2' =>  [
                     [
-                        'device' =>  ['desktop'],
+                        'device'        =>  ['desktop'],
                         'merchant_id'   => '10000000000000',
-                    ]
-                ]
+                    ],
+                ],
             ],
             'aggregations'  => [
                 'agg1' => [
-                    'agg_type'  => 'sum',
-                    'details'   => [
-                        'index'     => 'payments',
-                        'column'    => 'base_amount',
-                        'group_by'  => [
+                    'agg_type'      => 'sum',
+                    'details'       => [
+                        'index'         => 'payments',
+                        'column'        => 'base_amount',
+                        'group_by'      => [
                             'method',
                             'status',
-                        ]
+                        ],
                     ],
                 ],
             ],
@@ -78,14 +78,14 @@ return [
             ],
             'aggregations'  => [
                 'agg1' => [
-                    'agg_type'  => 'sum',
-                    'details'   => [
-                        'index'     => 'payments',
-                        'column'    => 'base_amount',
-                        'group_by'  => [
+                    'agg_type'      => 'sum',
+                    'details'       => [
+                        'index'         => 'payments',
+                        'column'        => 'base_amount',
+                        'group_by'      => [
                             'method',
                             'status',
-                        ]
+                        ],
                     ],
                 ],
             ],
@@ -96,7 +96,7 @@ return [
                 'default' =>  [
                     [
                         'merchant_id'   => '10000000000000',
-                    ]
+                    ],
                 ],
             ],
             'aggregations'  => [
@@ -124,10 +124,10 @@ return [
                         'merchant_id'   => '10000000000011',
                     ],
                     [
-                        'device' =>  ['tablet','mobile'],
-                        'created_at' =>  ['gt' =>  10,'lte' =>  40],
+                        'device' =>  ['tablet', 'mobile'],
+                        'created_at' =>  ['gt' =>  10, 'lte' =>  40],
                         'merchant_id'   => '10000000110000',
-                    ]
+                    ],
                 ],
             ],
             'aggregations'  => [
@@ -139,7 +139,7 @@ return [
                         'group_by'  => [
                             'method',
                             'status',
-                        ]
+                        ],
                     ],
                 ],
             ],
@@ -153,10 +153,10 @@ return [
                         'merchant_id'   => '10000000000000',
                     ],
                     [
-                        'device' =>  ['tablet','mobile'],
-                        'created_at' =>  ['gt' =>  10,'lte' =>  40],
+                        'device' =>  ['tablet', 'mobile'],
+                        'created_at' =>  ['gt' =>  10, 'lte' =>  40],
                         'merchant_id'   => '10000000000000',
-                    ]
+                    ],
                 ],
             ],
             'aggregations'  => [
@@ -168,7 +168,7 @@ return [
                         'group_by'  => [
                             'method',
                             'status',
-                        ]
+                        ],
                     ],
                 ],
             ],
@@ -186,7 +186,7 @@ return [
                         'group_by'  => [
                             'method',
                             'status',
-                        ]
+                        ],
                     ],
                 ],
             ],
