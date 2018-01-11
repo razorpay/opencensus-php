@@ -21,7 +21,6 @@ class CardGatewaysFailedRefundFileTest extends TestCase
         $this->testDataFilePath = __DIR__ . '/helpers/CardGatewaysFailedRefundFileTestData.php';
 
         parent::setUp();
-
     }
 
     public function testAxisMigsFailedRefundFile()
