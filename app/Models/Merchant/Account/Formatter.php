@@ -4,30 +4,40 @@ namespace RZP\Models\Merchant\Account;
 
 use RZP\Models\Merchant\Detail as MerchantDetail;
 
-class Helper
+/**
+ * Class Formatter
+ *
+ * @todo: Remove the implementation of this class
+ * Core functions should not be called from Entity or any other helper class
+ * used through the entity. Currently, it has been implemented, as some of the
+ * attributes are computed on the fly, using the Core class.
+ *
+ * @package RZP\Models\Merchant\Account
+ */
+class Formatter
 {
     protected static $instance;
 
-    protected  $core;
+    protected $core;
 
     public  function  __construct()
     {
-        $this->core = New MerchantDetail\Core;
+        $this->core = new MerchantDetail\Core;
     }
 
     /**
      * Helps in maintaining the class as Singleton
      *
-     * @return Helper
+     * @return Formatter
      */
-    public static function get(): Helper
+    public static function get(): Formatter
     {
         if (self::$instance !== null)
         {
             return self::$instance;
         }
 
-        self::$instance = new Helper();
+        self::$instance = new Formatter();
 
         return self::$instance;
     }
@@ -42,11 +52,11 @@ class Helper
      *
      * @return array
      */
-    public function computePublicArrayAttributes(Entity $entity, array & $response)
+    public function computeAndSetAdditionalPublicAttributes(Entity $entity, array & $response)
     {
         $merchantDetails = $entity->merchantDetail;
 
-        $detailsResponse = (new MerchantDetail\Core)->createResponse($merchantDetails);
+        $detailsResponse = $this->core->createResponse($merchantDetails);
 
         $activationDetails = Entity::ACTIVATION_DETAILS;
 

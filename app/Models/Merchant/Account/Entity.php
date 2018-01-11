@@ -95,7 +95,7 @@ class Entity extends Merchant\Entity
         self::INVOICE_CODE,
     ];
 
-    public static $publicToDatabaseKeysMap = [
+    public static $bankAccountToDetailAttributesMap = [
         BankAccount\Entity::IFSC_CODE            => MerchantDetail\Entity::BANK_BRANCH_IFSC,
         BankAccount\Entity::ACCOUNT_NUMBER       => MerchantDetail\Entity::BANK_ACCOUNT_NUMBER,
         BankAccount\Entity::ACCOUNT_TYPE         => MerchantDetail\Entity::BANK_ACCOUNT_TYPE,
@@ -345,7 +345,7 @@ class Entity extends Merchant\Entity
     {
         $response = parent::toArrayPublic();
 
-        Helper::get()->computePublicArrayAttributes($this, $response);
+        Helper::get()->computeAndSetAdditionalPublicAttributes($this, $response);
 
         return $response;
     }

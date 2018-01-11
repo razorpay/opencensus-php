@@ -6,6 +6,10 @@ use RZP\Exception;
 
 class BusinessType
 {
+    /**
+     * These keys are used to fetch the type of the business from its integer representation.
+     * @todo: Revamp and remove this code and implement a cleaner approach.
+     */
     const TYPE1  = 'Private Limited';
     const TYPE2  = 'Proprietorship';
     const TYPE3  = 'Partnership';

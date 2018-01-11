@@ -18,19 +18,28 @@ class Core extends Merchant\Core
      */
     public function createAccount(array $input, Merchant\Entity $parentMerchant): Entity
     {
-
-        $account = (new Merchant\Core)->createSubMerchant(
-                        $input,
-                        $parentMerchant,
-                        true,
-                        true);
-
         $merchantDetailsInput    = $this->getMerchantDetailsFromInput($input);
+
         $bankAccountDetailsInput = $this->getBankAccountDetailsFromInput($input[Entity::BANK_ACCOUNT] ?? []);
 
         $merchantDetailsInput = array_merge($merchantDetailsInput, $bankAccountDetailsInput);
 
-        (new Merchant\Detail\Core)->saveMerchantDetails($merchantDetailsInput, $account);
+        $account = $this->repo->transactionOnLiveAndTest(function () use (
+            $input,
+            $parentMerchant,
+            $merchantDetailsInput)
+        {
+            $account = (new Merchant\Core)->createSubMerchant(
+                $input,
+                $parentMerchant,
+                true,
+                true);
+
+            (new Merchant\Detail\Core)->saveMerchantDetails($merchantDetailsInput, $account);
+
+            return $account;
+
+        });
 
         return $account->reload();
     }
@@ -65,7 +74,7 @@ class Core extends Merchant\Core
      */
     protected function getBankAccountDetailsFromInput(array $input): array
     {
-        $bankAccountDetailsKeys = [
+        $whitelistedBankAccountKeys = [
             BankAccount\Entity::IFSC_CODE,
             BankAccount\Entity::ACCOUNT_NUMBER,
             BankAccount\Entity::ACCOUNT_TYPE,
@@ -73,15 +82,15 @@ class Core extends Merchant\Core
             BankAccount\Entity::BENEFICIARY_ADDRESS1,
         ];
 
-        $bankAccountDetails = array_only($input, $bankAccountDetailsKeys);
+        $bankAccountDetailsKeys = array_only($input, $whitelistedBankAccountKeys);
 
-        $map = Entity::$publicToDatabaseKeysMap;
+        $map = Entity::$bankAccountToDetailAttributesMap;
 
         $merchantDetails = [];
 
-        foreach($bankAccountDetails as $publicKey => $value)
+        foreach($bankAccountDetailsKeys as $bankAccountDetailKey => $value)
         {
-            $merchantDetails[$map[$publicKey]] = $value;
+            $merchantDetails[$map[$bankAccountDetailKey]] = $value;
         }
 
         return $merchantDetails;
