@@ -179,7 +179,7 @@ class ActivityLogModal extends Component {
 export default class Profile extends Component {
   showActivityLog() {
     return fetch({
-      url: 'admin/activity',
+      url: '/admin/activity',
     }).then(log => {
       openModal(<ActivityLogModal log={log} />);
     });
