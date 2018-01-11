@@ -152,6 +152,7 @@ class Entity
     const NETBANKING_RBL         = 'netbanking_rbl';
     const NETBANKING_INDUSIND    = 'netbanking_indusind';
     const NETBANKING_PNB         = 'netbanking_pnb';
+    const NETBANKING_ORIENTAL    = 'netbanking_oriental';
     const WALLET_PAYZAPP         = 'wallet_payzapp';
     const WALLET_JIOMONEY        = 'wallet_jiomoney';
     const WALLET_SBIBUDDY        = 'wallet_sbibuddy';
@@ -254,6 +255,7 @@ class Entity
         self::NETBANKING_CORPORATION => \RZP\Gateway\Netbanking\Corporation::class,
         self::NETBANKING_KOTAK       => \RZP\Gateway\Netbanking\Kotak::class,
         self::NETBANKING_ICICI       => \RZP\Gateway\Netbanking\Icici::class,
+        self::NETBANKING_ORIENTAL    => \RZP\Gateway\Netbanking\Oriental::class,
         self::NETBANKING_AIRTEL      => \RZP\Gateway\Netbanking\Airtel::class,
         self::NETBANKING_FEDERAL     => \RZP\Gateway\Netbanking\Federal::class,
         self::NETBANKING_RBL         => \RZP\Gateway\Netbanking\Rbl::class,

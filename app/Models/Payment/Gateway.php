@@ -39,6 +39,7 @@ class Gateway
     const NETBANKING_KOTAK       = 'netbanking_kotak';
     const NETBANKING_RBL         = 'netbanking_rbl';
     const NETBANKING_PNB         = 'netbanking_pnb';
+    const NETBANKING_ORIENTAL    = 'netbanking_oriental';
     const PAYTM                  = 'paytm';
     const SHARP                  = 'sharp';
     const UPI_MINDGATE           = 'upi_mindgate';
@@ -624,6 +625,7 @@ class Gateway
         IFSC::UTIB => Gateway::NETBANKING_AXIS,
         IFSC::RATN => Gateway::NETBANKING_RBL,
         IFSC::PUNB => Gateway::NETBANKING_PNB,
+        IFSC::ORBC => Gateway::NETBANKING_ORIENTAL,
     ];
 
     /**

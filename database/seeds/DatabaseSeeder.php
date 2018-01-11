@@ -1108,6 +1108,7 @@ class DatabaseSeeder extends Seeder
         $this->createNetbankingKotakTerminals();
         $this->createNetbankingIciciTerminals();
         $this->createNetbankingAirtelTerminals();
+        $this->createNetbankingOrientalTerminal();
         $this->createNetbankingAxisTerminal();
         $this->createNetbankingFederalTerminal();
         $this->createNetbankingIndusindTerminal();
@@ -1456,6 +1457,24 @@ class DatabaseSeeder extends Seeder
                 'netbanking'            => '1',
                 'gateway_merchant_id'   => 'test_merchant_netbanking_airtel',
                 'gateway_secure_secret' => Crypt::encrypt('test_airtel_terminal_salt'),
+                'recurring'             => 1,
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            ]
+        );
+    }
+
+    protected function createNetbankingOrientalTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                    => Terminal\Shared::NETBANKING_ORIENTAL_TERMINAL,
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::NETBANKING_ORIENTAL,
+                'card'                  => '0',
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'test_merchant_netbanking_oriental',
+                'gateway_secure_secret' => Crypt::encrypt('test_oriental_terminal_salt'),
                 'recurring'             => 1,
                 'created_at'            => time(),
                 'updated_at'            => time(),
