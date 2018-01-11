@@ -6,9 +6,6 @@ use RZP\Tests\Functional\TestCase;
 
 class AnalyticsTest extends TestCase
 {
-    const INPUT_INDEX = 0;
-    const EXPECTED_OUTPUT_INDEX = 1;
-
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/helpers/AnalyticsTestData.php';
@@ -20,65 +17,32 @@ class AnalyticsTest extends TestCase
 
     public function testAdditionOfMerchantIdFilterInInput()
     {
-        $testData = $this->fetchTestData();
-
-        $input = $testData[0];
-
-        $expectedContent = $testData[1];
-
-        $this->startTestForFilter($input, $expectedContent);
+        $this->startTestForFilter(...$this->testData[__FUNCTION__]);
     }
 
     public function testAnalyticsInputEmptyFilter()
     {
-        $testData = $this->fetchTestData();
-
-        $input = $testData[0];
-
-        $expectedContent = $testData[1];
-
-        $this->startTestForFilter($input, $expectedContent);
+        $this->startTestForFilter(...$this->testData[__FUNCTION__]);
     }
 
     public function testAnalyticsInputOverrideMerchantId()
     {
-        $testData = $this->fetchTestData();
-
-        $input = $testData[0];
-
-        $expectedContent = $testData[1];
-
-        $this->startTestForFilter($input, $expectedContent);
+        $this->startTestForFilter(...$this->testData[__FUNCTION__]);
     }
 
     public function testAnalyticsInputNoFilter()
     {
-        $testData = $this->fetchTestData();
-
-        $input = $testData[0];
-
-        $expectedContent = $testData[1];
-
-        $this->startTestForFilter($input, $expectedContent);
+        $this->startTestForFilter(...$this->testData[__FUNCTION__]);
     }
 
     // -------------------- Protected methods --------------------
 
-    protected function fetchTestData()
-    {
-        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
-
-        $name = $trace[1]['function'];
-
-        return $this->testData[$name];
-    }
-
-    protected function startTestForFilter(array $input, array $expectedContent)
+    protected function startTestForFilter(array $input, array $expected)
     {
         $merchantId = '10000000000000';
 
-        $actualContent = $this->core->validateInputFiltersAndAddMerchantId($merchantId, $input);
+        $actual = $this->core->validateInputFiltersAndAddMerchantId($merchantId, $input);
 
-        $this->assertArraySelectiveEquals($expectedContent, $actualContent);
+        $this->assertArraySelectiveEquals($expected, $actual);
     }
 }

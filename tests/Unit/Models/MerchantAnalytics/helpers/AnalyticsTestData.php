@@ -1,5 +1,11 @@
 <?php
 
+//
+// Test data corresponding to RZP\Tests\Unit\Models\MerchantAnalytics\AnalyticsTest.
+// Every key below has 2 members corresponding to input parameters and expected
+// response respectively.
+//
+
 return [
     'testAdditionOfMerchantIdFilterInInput' => [
         [
