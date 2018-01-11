@@ -29,11 +29,9 @@ class Freecharge extends Base
 
     protected function formatDataForFile(array $data)
     {
-        $i = 1;
-
         $formattedData = [];
 
-        foreach ($data as $row)
+        foreach ($data as $index => $row)
         {
             $transactionDate = Carbon::createFromTimestamp(
                 $row['payment']['authorized_at'], Timezone::IST)->format('d/m/Y');
@@ -42,7 +40,7 @@ class Freecharge extends Base
                 $row['refund']['last_attempted_at'], Timezone::IST)->format('d/m/Y');
 
             $formattedData[] = [
-                self::SL_NO             => $i,
+                self::SL_NO             => $index + 1,
                 self::REFUND_ID         => $row['refund']['id'],
                 self::REFUND_DATE       => $refundDate,
                 self::REFUND_AMOUNT     => $this->getFormattedAmount($row['refund']['amount']),
@@ -54,8 +52,6 @@ class Freecharge extends Base
                 self::MERCHANT_ID       => $row['terminal']['gateway_merchant_id'],
             ];
         }
-
-        $i++;
 
         return $formattedData;
 

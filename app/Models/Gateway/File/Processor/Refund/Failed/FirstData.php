@@ -27,11 +27,9 @@ class FirstData extends Base
 
     protected function formatDataForFile(array $data)
     {
-        $i = 1;
-
         $formattedData = [];
 
-        foreach ($data as $row)
+        foreach ($data as $index => $row)
         {
             $date = Carbon::createFromTimestamp(
                 $row['payment']['authorized_at'], Timezone::IST)->format('Y/m/d');
@@ -40,7 +38,7 @@ class FirstData extends Base
                 $row['refund']['created_at'], Timezone::IST)->format('Y/m/d');
 
             $formattedData[] = [
-                self::SR_NO            => $i,
+                self::SR_NO            => $index + 1,
                 self::REFUND_ID        => $row['refund']['id'],
                 self::TRANSACTION_DATE => $date,
                 self::REFUND_DATE      => $refundDate,
@@ -50,7 +48,6 @@ class FirstData extends Base
                 self::MERCHANT_CODE    => $row['terminal']['gateway_merchant_id']
             ];
 
-            $i++;
         }
 
         return $formattedData;
