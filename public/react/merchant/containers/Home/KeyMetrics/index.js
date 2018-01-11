@@ -109,6 +109,16 @@ class KeyMetricsContainer extends Component {
 
         // calculated legend info is stored here
         legendData: [],
+
+        // trend data
+        trend: {
+          loading: true,
+          previousCount: 0,
+          currentCount: 0,
+          startDate: null,
+          endDate: null,
+          show: true,
+        },
       };
     });
 
@@ -156,10 +166,10 @@ class KeyMetricsContainer extends Component {
         // Main stat showin in the tab
         const mainStat = resp.data[tabName];
 
-        if (mainStat && mainStat.result[0]) {
-          const value = mainStat.result[0].value;
-
-          tabState.data.count = mainStat.result[0].value;
+        if (mainStat) {
+          tabState.data.count = mainStat.result[0]
+            ? mainStat.result[0].value
+            : 0;
         }
 
         // Timeline data
@@ -176,17 +186,11 @@ class KeyMetricsContainer extends Component {
             valueTransformer: isCurrency && paiseToRupees,
           });
 
-          // \u05C0 is pipe like character, as pipes are being converted
-          // into underscores by browser
-          const downloadFileName = titleCase(
-            shortenText(
-              `${title}, ${startDate.format(csvDateFormat)} to ${endDate.format(
-                csvDateFormat
-              )}, ${selectedBreakdown}${selectedGrouping
-                ? ' ' + selectedGrouping.text
-                : ''}(Razorpay)`
-            )
-          );
+          const downloadFileName = `${title}, ${startDate.format(
+            csvDateFormat
+          )} to ${endDate.format(csvDateFormat)}, ${titleCase(
+            selectedBreakdown
+          )}${selectedGrouping ? ' ' + selectedGrouping.text : ''}(Razorpay)`;
 
           // display point only when there is only one point to plot
           if (labels.length === 1) {
@@ -238,8 +242,100 @@ class KeyMetricsContainer extends Component {
     this.setState(this.state, cb);
   }
 
+  fetchPrevData(fetchAllReq, oldestTransactionDate) {
+    const { tabsState } = this.state;
+
+    oldestTransactionDate =
+      oldestTransactionDate || this.props.oldestTransactionDate;
+
+    const { startDate, endDate, value } = oldestTransactionDate;
+
+    if (
+      oldestTransactionDate.loading ||
+      !oldestTransactionDate.value ||
+      startDate.unix() < oldestTransactionDate.value
+    ) {
+      tabsOrder.forEach(tabName => {
+        tabsState[tabName].data.trend.show = false;
+      });
+
+      this.setState({
+        tabsState: { ...tabsState },
+      });
+
+      return Promise.resolve();
+    }
+
+    tabsOrder.forEach(tabName => {
+      const { trend } = tabsState[tabName].data;
+
+      trend.loading = true;
+      trend.startDate = startDate;
+      trend.endDate = endDate;
+      trend.show = true;
+    });
+
+    this.setState({ tabsState: { ...tabsState } });
+
+    const query = getQuery({
+      merchantId: '10000000000000',
+      tabName: 'all',
+      startTime: startDate.unix(),
+      endTime: endDate.unix(),
+      countsOnly: true,
+    });
+
+    return fetch(query)
+      .then(data => {
+        if (!data.success) {
+          return { error: ' ' };
+        }
+
+        return data.data;
+      })
+      .catch(() => {
+        return { error: ' ' };
+      })
+      .then(data => {
+        if (!data.error) {
+          fetchAllReq.then(() => {
+            tabsOrder.forEach(tabName => {
+              const tabState = tabsState[tabName],
+                { trend } = tabState.data,
+                previousCount = data[tabName].result[0]
+                  ? data[tabName].result[0].value
+                  : 0,
+                currentCount = tabState.data.count;
+
+              trend.loading = false;
+              trend.previousCount = previousCount;
+              trend.currentCount = currentCount;
+            });
+
+            this.setState({
+              tabsState: { ...tabsState },
+            });
+          });
+
+          return;
+        }
+
+        tabsOrder.forEach(tabName => {
+          tabsState[tabName].trend.loading = false;
+        });
+
+        this.setState({
+          tabsState: { ...tabsState },
+        });
+      });
+  }
+
   componentWillMount() {
-    this.fetchData(true);
+    const fetchAllReq = (this.fetchAllReq = this.fetchData(true));
+
+    if (this.props.oldestTransactionDate.value) {
+      this.fetchPrevData(fetchReq);
+    }
   }
 
   handleTabChange(tabName) {
@@ -287,11 +383,11 @@ class KeyMetricsContainer extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    const { startDate, endDate } = nextProps;
+    const { startDate, endDate, oldestTransactionDate } = nextProps;
 
     if (
-      startDate.toDate() !== this.props.startDate.toDate() ||
-      endDate.toDate() !== this.props.endDate.toDate
+      startDate.toDate() - this.props.startDate.toDate() !== 0 ||
+      endDate.toDate() - this.props.endDate.toDate() !== 0
     ) {
       const { tabsState } = this.state;
 
@@ -300,8 +396,14 @@ class KeyMetricsContainer extends Component {
       this.clearCache(tabsState);
 
       this.setState({ tabsState }, () => {
-        return this.fetchData(true);
+        const fetchAllReq = this.fetchData(true);
+
+        this.fetchPrevData(fetchAllReq, oldestTransactionDate);
       });
+    } else if (
+      oldestTransactionDate.value !== this.props.oldestTransactionDate.value
+    ) {
+      this.fetchPrevData(this.fetchAllReq, oldestTransactionDate);
     }
   }
 

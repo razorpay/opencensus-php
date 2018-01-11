@@ -15,6 +15,7 @@ import {
   humanReadableIndian,
   humanReadableIndianCurrency,
 } from 'rzp/utils/numerals';
+import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
 
 import { tabsMeta, breakdownVals } from './data';
 import GroupingDropdown from 'merchant/components/Home/GroupingDropdown';
@@ -107,7 +108,7 @@ class Panel extends Component {
       } = this.props,
       dateFormat = 'DD MMM YYYY',
       { grouping, options } = this.meta,
-      { loading, histogram } = data;
+      { loading, histogram, trend } = data;
 
     const hasNoData = !histogram || histogram.datasets.length === 0;
 
@@ -123,17 +124,33 @@ class Panel extends Component {
         hasNoData={hasNoData}
       >
         <PanelTopbar className="clearfix">
-          {!hasNoData && (
+          {data.trend.show && (
             <div className="pull-left">
-              <ChangeRange previous={20} current={17} />
-              <Definition>
-                <span className="text-fade">
-                  Compared to
-                  <strong> {startDate.format(dateFormat)} </strong>
-                  -
-                  <strong> {endDate.format(dateFormat)} </strong>
-                </span>
-              </Definition>
+              {data.trend.loading ? (
+                <div>
+                  <div>
+                    <PlaceholderLoader />
+                  </div>
+                  <div className="text-fade">
+                    <PlaceholderLoader />
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <ChangeRange
+                    previous={trend.previousCount}
+                    current={trend.currentCount}
+                  />
+                  <Definition>
+                    <span className="text-fade">
+                      Compared to
+                      <strong> {trend.startDate.format(dateFormat)} </strong>
+                      -
+                      <strong> {trend.endDate.format(dateFormat)} </strong>
+                    </span>
+                  </Definition>
+                </div>
+              )}
             </div>
           )}
           <div className="panel-actions pull-right">
@@ -182,7 +199,7 @@ class Panel extends Component {
             </div>
             {!data.loading &&
               data.legendData && (
-                <div className="p-t">
+                <div>
                   <Legend
                     data={data.legendData}
                     valueTransformer={

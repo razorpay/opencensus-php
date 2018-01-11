@@ -8,16 +8,17 @@ import moment from 'moment';
 import Amount from 'rzp/ui/Amount';
 import Definition from 'rzp/ui/Definition';
 import Sticky from 'rzp/ui/Sticky';
+import { fetch } from 'merchant/modules/pokedex';
 
 import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
 import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
 import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
 import Traffic from 'merchant/containers/Home/Traffic';
 import RecentActivity from 'merchant/containers/Home/RecentActivity';
-
 import DateRangePicker from 'merchant/components/Home/DateRangePicker';
-
 import { getData } from 'merchant/models/HomeKeyMetricsMock';
+
+import { oldestTransactionQuery } from './data';
 
 import './styles.styl';
 
@@ -29,6 +30,19 @@ const dateRangePresets = [
     ['All Time', -10, 'years'],
   ],
   defaultPreset = 2; // index of default preset
+
+const oldestTransactionError = {
+  message: 'Unable to get your first transaction date',
+};
+
+const getPreviousDates = ({ startDate, endDate }) => {
+  const diff = endDate.diff(startDate);
+
+  return {
+    startDate: startDate.clone().subtract(diff, 'ms'),
+    endDate: endDate.clone().subtract(diff, 'ms'),
+  };
+};
 
 @connect(
   state => {
@@ -53,23 +67,78 @@ export default class HomeContainer extends Component {
     this.state = {
       startDate,
       endDate,
+      oldestTransactionDate: {
+        value: null,
+        loading: true,
+        ...getPreviousDates({ startDate, endDate }),
+      },
     };
 
     this.onDatesChange = this.onDatesChange.bind(this);
   }
 
+  fetchOldestTransactionDate() {
+    const { oldestTransactionDate } = this.state;
+
+    return fetch(oldestTransactionQuery)
+      .then(data => {
+        if (!data.success) {
+          return oldestTransactionError;
+        }
+
+        const records = data.data.records.result[0],
+          value = records && records.created_at,
+          { oldestTransactionDate } = this.state;
+
+        return { value };
+      })
+      .catch(() => {
+        return oldestTransactionError;
+      })
+      .then(data => {
+        const { oldestTransactionDate } = this.state;
+
+        this.setState({
+          oldestTransactionDate: {
+            ...oldestTransactionDate,
+            loading: false,
+            value: data.value,
+          },
+        });
+
+        if (data && data.error) {
+          // TODO: Handle Error
+        }
+      });
+  }
+
   onDatesChange(startDate, endDate) {
-    this.setState({ startDate, endDate });
+    const { oldestTransactionDate } = this.state;
+
+    this.setState(
+      {
+        startDate,
+        endDate,
+        oldestTransactionDate: {
+          ...oldestTransactionDate,
+          ...getPreviousDates({ startDate, endDate }),
+        },
+      },
+      () => {
+        this.fetchOldestTransactionDate();
+      }
+    );
   }
 
   componentWillMount() {
     this.props.fetchCurrentBalance();
+    this.fetchOldestTransactionDate();
   }
 
   render() {
     let mode = this.props.mode;
 
-    const { startDate, endDate } = this.state;
+    const { startDate, endDate, oldestTransactionDate } = this.state;
 
     return (
       <div class="react-root dashboard-home">
@@ -103,7 +172,11 @@ export default class HomeContainer extends Component {
               </p>
             </div>
             <div className="col-md-12">
-              <KeyMetrics startDate={startDate} endDate={endDate} />
+              <KeyMetrics
+                startDate={startDate}
+                endDate={endDate}
+                oldestTransactionDate={oldestTransactionDate}
+              />
             </div>
           </div>
 
