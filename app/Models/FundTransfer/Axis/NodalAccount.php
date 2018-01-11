@@ -12,7 +12,7 @@ use RZP\Models\Base;
 use RZP\Encryption\Type;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
-
+use RZP\Models\BankAccount;
 use RZP\Models\FundTransfer\Base as NodalBase;
 use RZP\Encryption\AESEncryption;
 use RZP\Mail\Settlement\AxisSettlement;
@@ -34,7 +34,8 @@ class NodalAccount extends NodalBase\NodalAccount
     const MODE_MAPPING = [
         Mode::NEFT    => 'N',
         Mode::RTGS    => 'R',
-        Mode::IMPS    => 'I',
+        Mode::IMPS    => 'M',
+        Mode::IFT     => 'I',
     ];
 
     protected $secret = null;
@@ -73,19 +74,6 @@ class NodalAccount extends NodalBase\NodalAccount
         $this->sendAxisTransferMail($fileData);
 
         return [$rzpFile, $excelFile];
-    }
-
-    public function initiateTransfer(string $amount): array
-    {
-        $rows = $this->getRows($amount);
-
-        list($excelFile, $rzpFile) = $this->createFile($rows);
-
-        $fileData = $this->getFileData($rzpFile);
-
-        $this->sendAxisTransferMail($fileData);
-
-        return ['file' => $fileData['file_path']];
     }
 
     protected function createFile(array $values): array
@@ -165,19 +153,6 @@ class NodalAccount extends NodalBase\NodalAccount
         ];
     }
 
-    protected function getRows(string $amount): array
-    {
-        $formattedAmount = (float) sprintf('%0.2f', $amount);
-
-        $headerValues = $this->getHeaderRow($formattedAmount);
-
-        $transactionValues = $this->getTrasactionRow($amount, 'RZRNAXISCARD');
-
-        $values = [self::HEADINGS, $headerValues, $transactionValues];
-
-        return $values;
-    }
-
     protected function getSettlementRows($entities): array
     {
         $totalAmount = 0;
@@ -190,9 +165,18 @@ class NodalAccount extends NodalBase\NodalAccount
 
             $totalAmount += $amount;
 
+            $ba = $entity->bankAccount;
+
             $beneCode = $entity->bankAccount->getId();
 
-            $rows[] = $this->getTrasactionRow($amount, $beneCode);
+            // currently kotak is registered with below benecode, so we override
+            // the benecode until the new one gets registered.
+            if ($beneCode === '9KnioczXfED3wz')
+            {
+                $beneCode = 'RZRNAXISCARD';
+            }
+
+            $rows[] = $this->getTrasactionRow($amount, $beneCode, $ba);
         }
 
         $formattedAmount = (float) sprintf('%0.2f', $totalAmount);
@@ -206,9 +190,9 @@ class NodalAccount extends NodalBase\NodalAccount
         return $values;
     }
 
-    protected function getTrasactionRow($amount, $accountId): array
+    protected function getTrasactionRow($amount, $accountId, BankAccount\Entity $ba): array
     {
-        $mode = $this->getTransferMode($amount);
+        $mode = $this->getPaymentType($amount, $ba);
 
         $mode = self::MODE_MAPPING[$mode];
 
@@ -227,6 +211,22 @@ class NodalAccount extends NodalBase\NodalAccount
         ];
 
         return $transactionValues;
+    }
+
+    protected function getPaymentType($amount, BankAccount\Entity $ba)
+    {
+        $ifsc = $ba->getIfscCode();
+
+        $ifscFirstFour = substr($ifsc, 0, 4);
+
+        if ($ifscFirstFour === 'UTIB')
+        {
+            return Mode::IFT;
+        }
+
+        $mode = $this->getTransferMode($amount);
+
+        return $mode;
     }
 
     protected function getHeaderRow($formattedAmount): array

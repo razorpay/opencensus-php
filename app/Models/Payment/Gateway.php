@@ -62,6 +62,7 @@ class Gateway
     const ACQUIRER_AXIS      = 'axis';
     const ACQUIRER_AMEX      = 'amex';
     const ACQUIRER_FSS       = 'fss';
+    const ACQUIRER_RATN      = 'ratn';
 
     const NOT_SUPPORTED      = 'not_supported';
     const SUPPORTED          = 'supported';
@@ -74,6 +75,7 @@ class Gateway
         self::AMEX        => [self::ACQUIRER_AMEX],
         self::AEPS_ICICI  => [self::ACQUIRER_ICIC],
         self::FSS         => [self::ACQUIRER_FSS],
+        self::HITACHI     => [self::ACQUIRER_RATN],
     ];
 
     const POWER_WALLETS = [
@@ -375,6 +377,7 @@ class Gateway
         self::HITACHI => [
             Network::MC,
             Network::VISA,
+            Network::MAES,
         ],
         self::FIRST_DATA => [
             Network::MC,

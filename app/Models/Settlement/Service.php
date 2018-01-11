@@ -3,17 +3,14 @@
 namespace RZP\Models\Settlement;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
+
+use RZP\Exception;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base;
-use RZP\Models\FundTransfer\Axis;
-use RZP\Models\FundTransfer\Icici;
 use RZP\Models\FundTransfer\Kotak;
-use RZP\Models\Payment;
 use RZP\Models\Report\Types\BasicEntityReport;
 use RZP\Models\Settlement;
-use RZP\Models\Transaction;
-use RZP\Exception;
 
 class Service extends Base\Service
 {
@@ -104,7 +101,7 @@ class Service extends Base\Service
         return $settlements->toArrayPublic();
     }
 
-    public function getSettlementTransactions($id)
+    public function fetchSettlementTransactions($id)
     {
         $setl = $this->repo->settlement->findByPublicIdAndMerchant($id, $this->merchant);
 
@@ -152,57 +149,12 @@ class Service extends Base\Service
 
     public function updateChannelForMultipleSettlements($input)
     {
-        (new Validator)->validateInput('updateChannel', $input);
-
         $this->trace->info(
             TraceCode::SETTLEMENTS_CHANNEL_BULK_UPDATE_REQUEST,
             $input
         );
 
-        $settlementIds = $input['settlement_ids'];
-
-        $channel = $input['channel'];
-
-        $successCount = $failedCount = 0;
-
-        $txns = $failedIds = [];
-
-        foreach ($settlementIds as $settlementId)
-        {
-            try
-            {
-                $this->repo
-                     ->settlement
-                     ->updateChannel($settlementId, $channel);
-
-                $txns[$settlementId] = $this->repo
-                                            ->transaction
-                                            ->updateChannel($settlementId, $channel);
-
-                $successCount++;
-            }
-            catch (\Exception $ex)
-            {
-                $this->trace->traceException($ex);
-
-                $failedCount++;
-
-                $failedIds[] = $settlementId;
-            }
-        }
-
-        $response = [
-            'total'        => count($settlementIds),
-            'success'      => $successCount,
-            'failed'       => $failedCount,
-            'failedIds'    => $failedIds,
-            'transactions' => $txns,
-        ];
-
-        $this->trace->info(
-            TraceCode::SETTLEMENTS_CHANNEL_BULK_UPDATE_RESPONSE,
-            $response
-        );
+        $response = (new Core)->updateChannel($input);
 
         return $response;
     }

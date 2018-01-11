@@ -3,8 +3,9 @@
 namespace RZP\Tests\Functional\Gateway\FirstData;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
+use RZP\Exception;
 use RZP\Models\Payment;
+use RZP\Constants\Timezone;
 use RZP\Tests\Functional\Fixtures\Entity\Terminal;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -711,6 +712,45 @@ class FirstDataGatewayTest extends TestCase
             });
 
         $this->doAuthPayment($this->payment);
+    }
+
+    public function testLongApprovalCode()
+    {
+        $longApprovalCodeArray = [
+            'N',
+            '03',
+            'Timeout expired. The timeout period elapsed prior to obtaining a connection from the pool.'.
+                'This may have occurred because all pooled connections were in use and max pool size was reached.'
+        ];
+
+        $this->getOveriddenApprovalCode(implode(':', $longApprovalCodeArray));
+
+        $this->makeRequestAndCatchException(
+            function()
+            {
+                $this->doAuthPayment($this->payment);
+            },
+            Exception\GatewayErrorException::class,
+            // Error code for N:03 is mapped to Invalid Merchant
+            "The payment has been rejected by the gateway." .
+                "\nGateway Error Code: N:03\nGateway Error Desc: Invalid merchant");
+    }
+
+    public function testInvalidApprovalCode()
+    {
+        $invalidApprovalCode = '?:waiting RUPAY';
+
+        $this->getOveriddenApprovalCode($invalidApprovalCode);
+
+        $this->makeRequestAndCatchException(
+            function()
+            {
+                $this->doAuthPayment($this->payment);
+            },
+            Exception\GatewayErrorException::class,
+            // Any invalid code is mapped to General Error
+            "Payment processing failed due to error at bank or wallet gateway" .
+            "\nGateway Error Code: ?:waiting RUPAY\nGateway Error Desc: General Error");
     }
 }
 

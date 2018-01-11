@@ -246,7 +246,7 @@ class Entity extends Base\PublicEntity
         self::AUTO_REFUND_DELAY      => null,
         self::AUTO_CAPTURE_LATE_AUTH => false,
         self::FEE_MODEL              => FeeModel::PREPAID,
-        self::CHANNEL                => Settlement\Channel::KOTAK,
+        self::CHANNEL                => Settlement\Channel::ICICI,
         self::CONVERT_CURRENCY       => null,
         self::ARCHIVED_AT            => null,
         self::SUSPENDED_AT           => null,
@@ -1208,6 +1208,13 @@ class Entity extends Base\PublicEntity
         return $this->activationStates()
                     ->orderBy(State\Entity::CREATED_AT, 'desc')
                     ->first();
+    }
+
+    public function getActivationStatusChangeLog()
+    {
+        return $this->activationStates()
+                    ->orderBy(State\Entity::CREATED_AT)
+                    ->get();
     }
 
     /**

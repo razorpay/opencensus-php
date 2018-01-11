@@ -178,7 +178,7 @@ class SubReconciliate extends Base\Core
 
         $transaction->setGatewaySettledAt($gatewaySettledAt);
 
-        $transaction->saveOrFail();
+        $this->repo->saveOrFail($transaction);
     }
 
     protected function checkIfAlreadyReconciled($entity)

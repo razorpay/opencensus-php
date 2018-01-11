@@ -54,7 +54,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         $this->axisMigsRepo = $this->repo->axis_migs;
     }
 
-    protected function getPaymentId($row)
+    protected function getPaymentId(array $row)
     {
         if ($this->isCybersource($row) === true)
         {

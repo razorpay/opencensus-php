@@ -26,7 +26,7 @@ class ResponseFields
      * These are the expected field orders
      * for the response we get from the API
      *
-     * @see https://drive.google.com/drive/u/1/folders/0B1MTSXtR53PfN2dIWmE0REI3eWs
+     * @see https://drive.google.com/drive/u/0/folders/0B1MTSXtR53PfYldqNUIyLXlnSjA
      */
     const COLLECT       = [
         self::PAYMENT_ID,
@@ -85,6 +85,6 @@ class ResponseFields
         self::PAYER_VA,
         self::PAYER_NAME,
         self::VPA_STATUS,
-        self::VPA_STATUS
+        self::STATUS_DESCRIPTION
     ];
 }

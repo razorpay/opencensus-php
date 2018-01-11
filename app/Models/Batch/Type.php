@@ -18,12 +18,17 @@ class Type
 
     // Virtual Account Bulk Creation
     const VIRTUAL_BANK_ACCOUNT  = 'virtual_bank_account';
+
     // Bank Transfer Bulk Insert
     const BANK_TRANSFER         = 'bank_transfer';
 
     const RECONCILIATION        = 'reconciliation';
 
     const EMANDATE              = 'emandate';
+
+    const PAYOUT                = 'payout';
+
+    const SUB_MERCHANT          = 'sub_merchant';
 
     /**
      * Following batch types get processed via CRON job, CRON currently runs
@@ -48,6 +53,8 @@ class Type
         self::BANK_TRANSFER,
         self::RECONCILIATION,
         self::EMANDATE,
+        self::PAYOUT,
+        self::SUB_MERCHANT,
     ];
 
     public static function exists(string $type)
