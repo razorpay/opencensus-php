@@ -7,7 +7,6 @@ use Razorpay\Trace\Logger as Trace;
 use Illuminate\Database\Query\Builder as IlluminateQueryBuilder;
 use Watson\Rememberable\Query\Builder as RememberableQueryBuilder;
 
-use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 
 /**
@@ -26,10 +25,6 @@ class QueryBuilder extends RememberableQueryBuilder
     {
         $trace = App::getFacadeRoot()['trace'];
 
-        $connection = $this->getQueryCacheConnection();
-
-        $this->cacheDriver($connection);
-
         try
         {
             return parent::getCached($columns);
@@ -39,7 +34,7 @@ class QueryBuilder extends RememberableQueryBuilder
             $trace->traceException(
                 $e,
                 Trace::CRITICAL,
-                TraceCode::QUERY_CACHE_ERROR,
+                TraceCode::QUERY_CACHE_STORE_ERROR,
                 $columns);
 
             return IlluminateQueryBuilder::get($columns);
@@ -49,46 +44,36 @@ class QueryBuilder extends RememberableQueryBuilder
     /**
      * Flush the cache for the current model or a given tag name
      * This is overridden, here as the parent implementation does
-     * not support setting specific connection to the store.
+     * not have exception handling and also does not support using
+     * specific connection for flushing.
      *
      * @param  mixed  $cacheTags
      * @return boolean
      */
     public function flushCache($cacheTags = null)
     {
-        $store = app('cache')->getStore();
+        $trace = App::getFacadeRoot()['trace'];
 
-        $connection = $this->getQueryCacheConnection();
+        $this->cacheTags($cacheTags);
 
-        $store->setConnection($connection);
+        $cache = $this->getCache();
 
-        s($connection, $cacheTags);
-
-        if (method_exists($store, 'tags') === false)
+        try
         {
-            return false;
+            $cache->flush();
+        }
+        catch (\Throwable $e)
+        {
+            $trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::QUERY_CACHE_FLUSH_ERROR,
+                [
+                    'tags' => $cacheTags
+                ]);
         }
 
-        $cacheTags = $cacheTags ?: $this->cacheTags;
-
-        $store->tags($cacheTags)->flush();
-
         return true;
-    }
-
-    /**
-     * Gets the query cache connection to use depending on the mode set.
-     * If mode is null, the test mode connection is used.
-     *
-     * @return string
-     */
-    protected function getQueryCacheConnection(): string
-    {
-        $app = App::getFacadeRoot();
-
-        $mode = $app['rzp.mode'] ?? null;
-
-        return ($mode === Mode::LIVE) ? 'query_cache_live' : 'query_cache_test';
     }
 }
 
