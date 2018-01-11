@@ -86,10 +86,6 @@ class TestCase extends ParentTestCase
             $this->db->tearDown();
         }
 
-        Redis::connection('query_cache_test')->flushdb();
-
-        Redis::connection('query_cache_live')->flushdb();
-
         parent::tearDown();
     }
 
