@@ -99,4 +99,14 @@ class Repository extends Base\Repository
                     ->where(Entity::STATUS, '=', $status)
                     ->get();
     }
+
+    public function findByIdCaseInsensitive(string $id)
+    {
+        return $this->newQuery()
+                    ->where( function ($q) use ($id)
+                    {
+                        $q->whereRaw("UPPER('id') = " . strtoupper($id));
+                    })
+                    ->get();
+    }
 }

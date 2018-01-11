@@ -12,10 +12,14 @@ class Headings
     const PAYMENT_DATE              = 'Payment Date';
     const DEBIT_ACCOUNT_NO          = 'Debit Account No';
     const CREDIT_NARRATION          = 'Credit Narration';
-    const INSTRUMENT_REFERENCE      = 'Instrument Reference';
+    const CMS_REF_NO                = 'CMS Ref No';
     const DUMMY                     = 'Dummy';
     const DUMMY2                    = 'Dummy2';
     const BENEFICIARY_CODE          = 'Beneficiary Code';
+
+    const PAYMENT_REF_NO            = 'Payment Ref No';
+    const STATUS                    = 'Status';
+    const DATE                      = 'Date';
 
     public static function getResponseFileHeadings(): array
     {
@@ -27,11 +31,11 @@ class Headings
             self::BENEFICIARY_IFSC,
             self::AMOUNT,
             self::PAYMENT_DATE,
-            self::CREDIT_NARRATION,
-            self::INSTRUMENT_REFERENCE,
-            'Payment Ref No',
-            'Status',
-            'Date',
+            self::REMARKS,
+            self::CMS_REF_NO,
+            self::PAYMENT_REF_NO,
+            self::STATUS,
+            self::DATE,
         ];
     }
 }
