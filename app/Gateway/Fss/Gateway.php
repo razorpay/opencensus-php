@@ -69,17 +69,7 @@ class Gateway extends Base\Gateway
             $input['payment']['id'],
             Action::AUTHORIZE);
 
-        if (empty($gatewayResponse[Fields::GATEWAY_PAYMENT_ID]) === false)
-        {
-            $gatewayPayment->setGatewayPaymentId($gatewayResponse[Fields::GATEWAY_PAYMENT_ID]);
-
-            if (empty($gatewayResponse[Fields::GATEWAY_ERROR_TEXT]) === false)
-            {
-                $gatewayPayment->setErrorMessage($gatewayResponse[Fields::GATEWAY_ERROR_TEXT]);
-            }
-
-            $this->repo->saveOrFail($gatewayPayment);
-        }
+        $this->handleGatewayError($gatewayResponse, $gatewayPayment);
 
         if ($this->isEmptyTranData($gatewayResponse) === false)
         {
@@ -1001,5 +991,26 @@ class Gateway extends Base\Gateway
     protected function isEmptyTranData(array $gatewayResponse)
     {
         return (empty($gatewayResponse[Fields::TRANDATA]) === true);
+    }
+
+    /**
+     * Checks and handles the first layer of the gateway response for any errors.
+     *
+     * @param $gatewayResponse
+     * @param $gatewayPayment
+     */
+    protected function handleGatewayError($gatewayResponse, $gatewayPayment)
+    {
+        if (empty($gatewayResponse[Fields::GATEWAY_PAYMENT_ID]) === false)
+        {
+            $gatewayPayment->setGatewayPaymentId($gatewayResponse[Fields::GATEWAY_PAYMENT_ID]);
+
+            if (empty($gatewayResponse[Fields::GATEWAY_ERROR_TEXT]) === false)
+            {
+                $gatewayPayment->setErrorMessage($gatewayResponse[Fields::GATEWAY_ERROR_TEXT]);
+            }
+
+            $this->repo->saveOrFail($gatewayPayment);
+        }
     }
 }
