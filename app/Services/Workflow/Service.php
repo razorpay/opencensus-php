@@ -103,13 +103,6 @@ class Service
             // Pick the `id` first, if not then the first value
             // First value is not entirely robust though
             $entityId = $routeParams['id'] ?? (array_values($routeParams)[0] ?? null);
-
-            // If the $entityId is still NULL then it could be a create operation
-            // if (empty($entityId))
-            // {
-            //     throw new Exception\BadRequestException(
-            //         ErrorCode::BAD_REQUEST_WORKFLOW_ENTITY_ID_NOT_FOUND);
-            // }
         }
 
         // If any actions are in open/approved (not executed) state
@@ -290,8 +283,6 @@ class Service
         {
             return;
         }
-
-        $input = $this->request->input();
 
         // Instantiate code for diff creation
         $differCore = new Differ\Core;
