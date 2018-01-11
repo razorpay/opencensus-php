@@ -13,7 +13,7 @@ class AxisMigs extends Base
     const GATEWAY            = Payment\Gateway::AXIS_MIGS;
     const EXTENSION          = FileStore\Format::XLSX;
     const FILE_NAME          = 'Axis_Migs_Failed_Refunds';
-    const FILE_TYPE          = FileStore\Type::AXIS_MIGS_REFUND;
+    const FILE_TYPE          = FileStore\Type::AXIS_MIGS_FAILED_REFUND;
 
     const SR_NO                = 'Sr No';
     const REFUND_ID            = 'refund_id';

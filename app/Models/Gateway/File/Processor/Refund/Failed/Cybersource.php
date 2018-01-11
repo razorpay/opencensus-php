@@ -13,7 +13,7 @@ class Cybersource extends Base
     const GATEWAY          = Payment\Gateway::CYBERSOURCE;
     const EXTENSION        = FileStore\Format::XLSX;
     const FILE_NAME        = 'Cybersource_Failed_Refunds';
-    const FILE_TYPE        = FileStore\Type::CYBERSOURCE_REFUND;
+    const FILE_TYPE        = FileStore\Type::CYBERSOURCE_FAILED_REFUND;
 
     const SR_NO            = 'Sr No';
     const REFUND_ID        = 'refund_id';

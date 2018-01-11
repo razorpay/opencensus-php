@@ -46,13 +46,17 @@ class Type
 
     const SBI_UPI_REFUND                    = 'sbi_upi_refund';
 
-    const AXIS_MIGS_REFUND                  = 'axis_migs_refund';
+    const UPI_ICICI_FAILED_REFUND           = 'upi_icici_failed_refund';
 
-    const FIRST_DATA_REFUND                 = 'first_data_refund';
+    const AIRTELMONEY_WALLET_FAILED_REFUND  = 'airtelmoney_wallet_failed_refund';
 
-    const CYBERSOURCE_REFUND                = 'cybersource_refund';
+    const AXIS_MIGS_FAILED_REFUND           = 'axis_migs_failed_refund';
 
-    const HDFC_REFUND                       = 'hdfc_refund';
+    const FIRSTDATA_FAILED_REFUND           = 'firstdata_failed_refund';
+
+    const CYBERSOURCE_FAILED_REFUND         = 'cybersource_failed_refund';
+
+    const HDFC_FAILED_REFUND                = 'hdfc_failed_refund';
 
     const PNB_NETBANKING_REFUND             = 'pnb_netbanking_refund';
 
@@ -143,10 +147,12 @@ class Type
             self::ICICI_EMI_FILE_SFTP,
             self::PNB_NETBANKING_REFUND,
             self::PNB_NETBANKING_CLAIMS,
-            self::AXIS_MIGS_REFUND,
-            self::FIRST_DATA_REFUND,
-            self::CYBERSOURCE_REFUND,
-            self::HDFC_REFUND,
+            self::UPI_ICICI_FAILED_REFUND,
+            self::AIRTELMONEY_WALLET_FAILED_REFUND,
+            self::AXIS_MIGS_FAILED_REFUND,
+            self::FIRSTDATA_FAILED_REFUND,
+            self::CYBERSOURCE_FAILED_REFUND,
+            self::HDFC_FAILED_REFUND,
             self::MOCK_RECONCILIATION_FILE,
         ],
 
@@ -220,10 +226,12 @@ class Type
         self::FUND_TRANSFER_H2H,
         self::PNB_NETBANKING_REFUND,
         self::PNB_NETBANKING_CLAIMS,
-        self::AXIS_MIGS_REFUND,
-        self::FIRST_DATA_REFUND,
-        self::CYBERSOURCE_REFUND,
-        self::HDFC_REFUND,
+        self::UPI_ICICI_FAILED_REFUND,
+        self::AIRTELMONEY_WALLET_FAILED_REFUND,
+        self::AXIS_MIGS_FAILED_REFUND,
+        self::FIRSTDATA_FAILED_REFUND,
+        self::CYBERSOURCE_FAILED_REFUND,
+        self::HDFC_FAILED_REFUND,
         self::MOCK_RECONCILIATION_FILE
     ];
 
@@ -257,9 +265,11 @@ class Type
             self::BATCH_OUTPUT,
             self::PNB_NETBANKING_REFUND,
             self::PNB_NETBANKING_CLAIMS,
-            self::FIRST_DATA_REFUND,
-            self::CYBERSOURCE_REFUND,
-            self::AXIS_MIGS_REFUND,
+            self::UPI_ICICI_FAILED_REFUND,
+            self::AIRTELMONEY_WALLET_FAILED_REFUND,
+            self::FIRSTDATA_FAILED_REFUND,
+            self::CYBERSOURCE_FAILED_REFUND,
+            self::AXIS_MIGS_FAILED_REFUND,
         ],
 
         self::INVOICE_BUCKET_CONFIG => [

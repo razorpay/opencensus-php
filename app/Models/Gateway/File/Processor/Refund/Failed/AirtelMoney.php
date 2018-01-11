@@ -13,7 +13,7 @@ class AirtelMoney extends Base
     const GATEWAY            = Payment\Gateway::WALLET_AIRTELMONEY;
     const EXTENSION          = FileStore\Format::XLSX;
     const FILE_NAME          = 'Airtelmoney_Wallet_Failed_Refunds';
-    const FILE_TYPE          = FileStore\Type::AIRTELMONEY_WALLET_REFUND;
+    const FILE_TYPE          = FileStore\Type::AIRTELMONEY_WALLET_FAILED_REFUND;
 
     const SR_NO              = 'Sr No';
     const TRANSACTION_DATE   = 'Transaction date';
