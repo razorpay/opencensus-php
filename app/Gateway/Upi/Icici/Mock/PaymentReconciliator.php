@@ -8,7 +8,7 @@ use RZP\Models\Payment;
 use RZP\Constants\Timezone;
 use RZP\Models\Base\PublicCollection;
 
-class PaymentReconciliator extends Base\Mock\Reconciliator
+class PaymentReconciliator extends Base\Mock\PaymentReconciliator
 {
     protected $gateway = Payment\Gateway::UPI_ICICI;
 
@@ -98,8 +98,6 @@ class PaymentReconciliator extends Base\Mock\Reconciliator
         $headers = [$emptyRow, $this->headers];
 
         $data = array_merge($headers, $data);
-
-        $this->content($data, 'icici_payment_recon');
 
         return $data;
     }

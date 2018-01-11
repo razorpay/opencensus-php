@@ -3,11 +3,11 @@
 namespace RZP\Gateway\Upi\Icici\Mock;
 
 use Carbon\Carbon;
+use RZP\Gateway\Base;
 use RZP\Models\Payment;
 use RZP\Constants\Timezone;
-use RZP\Gateway\Base\Mock\Reconciliator;
 
-class RefundReconciliator extends Reconciliator
+class RefundReconciliator extends Base\Mock\RefundReconciliator
 {
     protected $gateway = Payment\Gateway::UPI_ICICI;
 
@@ -39,24 +39,6 @@ class RefundReconciliator extends Reconciliator
      * @var string
      */
     protected $fileToWriteName = 'REFUND_REPORT';
-
-    public function generateReconciliation(array $input)
-    {
-        $refunds = $this->getAllRefundsToReconcile();
-
-        $inputData = [];
-
-        foreach ($refunds as $refund)
-        {
-            $data['refund'] = $refund->toArray();
-
-            $this->addGatewayEntityIfNeeded($data, $refund);
-
-            $inputData[] = $data;
-        }
-
-        return $this->generate($inputData);
-    }
 
     protected function getReconciliationData(array $input)
     {
