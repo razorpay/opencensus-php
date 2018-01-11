@@ -242,11 +242,20 @@ function main(node, o, data, d3, onTransition, groupTitleMap) {
 
     t
       .append('tspan')
-      .attr('class', 'amount')
+      .attr('class', 'amount method-text')
       .style('font-size', '24px')
       .style('line-height', '29px')
       .text(function(d) {
         return humanReadableIndianCurrency(paiseToRupees(d.value));
+      })
+      .append('tspan')
+      .attr('class', 'amount-percent')
+      .attr('dx', 6)
+      .style('font-size', '14px')
+      .style('fill', '#ffffff')
+      .style('fill-opacity', 0.6)
+      .text(function(d) {
+        return `(${d.percent}%)`;
       });
 
     t
@@ -254,19 +263,9 @@ function main(node, o, data, d3, onTransition, groupTitleMap) {
       .style('font-size', '14px')
       .style('line-height', '17px')
       .attr('dy', '1.5em')
-      .attr('class', 'group-name')
+      .attr('class', 'group-name method-text')
       .text(function(d) {
         return d.displayText;
-      });
-
-    t
-      .append('tspan')
-      .style('font-size', '14px')
-      .style('line-height', '17px')
-      .attr('dy', '1.5em')
-      .attr('class', 'percentage')
-      .text(d => {
-        return d.percent + '%';
       });
 
     t.append('title').text(function(d) {
@@ -347,7 +346,7 @@ function main(node, o, data, d3, onTransition, groupTitleMap) {
   }
 
   function text(text) {
-    text.selectAll('tspan').attr('x', function(d) {
+    text.selectAll('tspan.method-text').attr('x', function(d) {
       return x(d.x) + 23.5;
     });
     text
