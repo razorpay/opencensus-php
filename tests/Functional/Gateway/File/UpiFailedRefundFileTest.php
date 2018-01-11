@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Gateway\File;
 use Mail;
 use Carbon\Carbon;
 
+use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Mail\Gateway\FailedRefund\Base as FailedRefundMail;
@@ -62,7 +63,26 @@ class UpiFailedRefundFileTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
 
-        Mail::assertSent(FailedRefundMail::class);
+        Mail::assertSent(FailedRefundMail::class, function ($mail)
+        {
+            $this->assertNotEmpty($mail->attachments);
+
+            $date = Carbon::today(Timezone::IST)->format('d-m-Y');
+
+            $body = 'Please find attached failed refunds information for UPI ICICI';
+
+            $fileName = 'Icici_Upi_Failed_Refunds_test_'. $date  . '.xlsx';
+
+            $subject = 'UPI Icici Failed refunds file for ' . $date;
+
+            $this->assertEquals($subject, $mail->subject);
+
+            $this->assertEquals($body, $mail->viewData['body']);
+
+            $this->assertEquals($fileName, $mail->viewData['file_name']);
+
+            return true;
+        });
     }
 
     public function testNoFailedRefunds()
