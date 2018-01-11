@@ -4,25 +4,29 @@ namespace RZP\Tests\Functional\Merchant;
 
 use DB;
 use Mail;
-use Redis;
+use Event;
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
+use Illuminate\Cache\Events\CacheHit;
+use Illuminate\Cache\Events\KeyWritten;
+use Illuminate\Cache\Events\CacheMissed;
 
+use RZP\Models\Key;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
-use RZP\Models\Settlement\Channel;
 use RZP\Models\Transaction;
+use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Models\BankAccount\Entity as BankAccount;
 use RZP\Mail\Merchant\Activation as ActivationMail;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Helpers\Schedule\ScheduleTrait;
 use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
-use RZP\Models\BankAccount\Entity as BankAccount;
 use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
+use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
 class MerchantTest extends TestCase
 {
@@ -137,18 +141,6 @@ class MerchantTest extends TestCase
      */
     public function testUpdateKeyExpireNow()
     {
-        $redis = Redis::getFacadeRoot();
-
-        Redis::shouldReceive('connection')
-            ->with('query_cache_test')
-            ->andReturn($redis);
-
-        Redis::shouldReceive('connection')
-            ->with('query_cache_live')
-            ->andReturn($redis);
-
-        Redis::shouldReceive('flush')->andReturn(true);
-
         $content = $this->startTest();
 
         $expired = time() + 1;
@@ -1335,6 +1327,118 @@ class MerchantTest extends TestCase
         $this->ba->appAuth();
 
         $this->startTest();
+    }
+
+    public function testQueryCacheHitForKey()
+    {
+        Event::fake();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->doAuthPayment($payment);
+
+        //
+        // Asserts that key is not present initially in cache
+        //
+        Event::assertDispatched(CacheMissed::class, function ($e)
+        {
+            $expectedTags = [
+                'v1',
+                'keys_TheTestAuthKey',
+            ];
+
+            $this->assertArraySelectiveEquals($expectedTags, $e->tags);
+
+            return true;
+        });
+
+        //
+        // Asserts that key is inserted into cache
+        //
+        Event::assertDispatched(KeyWritten::class, function ($e)
+        {
+            $expectedTags = [
+                'v1',
+                'keys_TheTestAuthKey',
+            ];
+
+            $this->assertArraySelectiveEquals($expectedTags, $e->tags);
+
+            $this->assertEquals('TheTestAuthKey', $e->value[0]->id);
+
+            return true;
+        });
+
+        $this->doAuthPayment($payment);
+
+        //
+        // Asserts that key is found in cache on subsequent attempts
+        //
+        Event::assertDispatched(CacheHit::class, function ($e)
+        {
+            $expectedTags = [
+                'v1',
+                'keys_TheTestAuthKey',
+            ];
+
+            $this->assertArraySelectiveEquals($expectedTags, $e->tags);
+
+            $this->assertEquals('TheTestAuthKey', $e->value[0]->id);
+
+            return true;
+        });
+    }
+
+    public function testQueryCacheFlushForKey()
+    {
+        Event::fake();
+
+        $this->ba->appAuth();
+
+        $testData = $this->testData['testUpdateKeyExpireNow'];
+
+        $payment = $this->getDefaultPaymentArray();
+
+        //
+        // Expires default key
+        //
+        $content = $this->runRequestResponseFlow($testData);
+
+        $newKey = $content['new']['id'];
+
+        $this->doAuthPayment($payment, null, $newKey);
+
+        Key\Entity::stripSign($newKey);
+
+        //
+        // Repeats the sequence of assertions, to test that new key is properly
+        // read from cache
+        //
+        Event::assertDispatched(CacheMissed::class, function ($e) use ($newKey)
+        {
+            $expectedTags = [
+                'v1',
+                'keys_' . $newKey,
+            ];
+
+            $this->assertArraySelectiveEquals($expectedTags, $e->tags);
+
+            return true;
+        });
+
+        Event::assertDispatched(KeyWritten::class, function ($e) use ($newKey)
+        {
+            $expectedTags = [
+                'v1',
+                'keys_' . $newKey,
+            ];
+
+            $this->assertArraySelectiveEquals($expectedTags, $e->tags);
+
+            $this->assertEquals($newKey, $e->value[0]->id);
+
+            return true;
+        });
     }
 
     public function testBeneficiaryRegisterKotak()
