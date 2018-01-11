@@ -284,7 +284,7 @@ class CardGatewaysFailedRefundFileTest extends TestCase
 
             $body = 'Please find attached failed refunds information for HDFC';
 
-            $fileName = 'Cybersource_Failed_Refunds_test_'. $date  . '.xlsx';
+            $fileName = 'HDFC_Failed_Refunds_test_'. $date  . '.xlsx';
 
             $this->assertEquals($subject, $mail->subject);
 
