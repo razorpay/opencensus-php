@@ -82,7 +82,6 @@ class UpiFailedRefundFileTest extends TestCase
             $this->assertEquals($fileName, $mail->viewData['file_name']);
 
             return true;
-
         });
     }
 
