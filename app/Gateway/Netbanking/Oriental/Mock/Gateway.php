@@ -4,7 +4,7 @@ namespace RZP\Gateway\Netbanking\Oriental\Mock;
 
 use RZP\Gateway\Netbanking\Oriental;
 
-class Gateway extends Oriental\Gateway
+final class Gateway extends Oriental\Gateway
 {
     public function authorize(array $input)
     {
