@@ -13,7 +13,7 @@ use RZP\Trace\TraceCode;
  * Overriden rememberable package's Builder class, as we need to add
  * exception handling, in case redis throws an error
  */
-class QueryBuilder extends RememberableQueryBuilder
+class CacheQueryBuilder extends RememberableQueryBuilder
 {
      /**
      * Execute the query as a cached "select" statement.
