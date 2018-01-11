@@ -223,7 +223,7 @@ class Panel extends Component {
               to={`/${this.meta
                 .index}?from=${startDate.unix()}&to=${endDate.unix()}`}
             >
-              {`View all ${titleCase(this.meta.index)}`} &gt;
+              {`View all ${titleCase(this.meta.index)}`}
             </Link>
           </div>
         </PanelFooter>

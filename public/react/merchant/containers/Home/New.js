@@ -6,10 +6,10 @@ import * as HomeActions from 'merchant/modules/home';
 import moment from 'moment';
 
 import Amount from 'rzp/ui/Amount';
-import Definition from 'rzp/ui/Definition';
 import Sticky from 'rzp/ui/Sticky';
-import { fetch } from 'merchant/modules/pokedex';
+import Group, { GroupItem } from 'rzp/ui/Group';
 
+import { fetch } from 'merchant/modules/pokedex';
 import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
 import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
 import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
@@ -152,14 +152,18 @@ export default class HomeContainer extends Component {
               />
             </div>
             <div className="pull-right">
-              <Definition>
-                <span>
-                  Current Balance: <Amount value={38760} />
-                </span>
-                <Link className="pull-right" to="/settlements">
-                  View Settlements &gt;
-                </Link>
-              </Definition>
+              <Group>
+                <GroupItem>
+                  <span>
+                    Current Balance: <Amount value={38760} />
+                  </span>
+                </GroupItem>
+                <GroupItem>
+                  <Link className="pull-right" to="/settlements">
+                    View Settlements
+                  </Link>
+                </GroupItem>
+              </Group>
             </div>
           </Header>
         </Sticky>

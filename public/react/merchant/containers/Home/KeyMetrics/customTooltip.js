@@ -102,7 +102,7 @@ const customToolTip = function(tooltipModel) {
       `<div class="sec-text tooltip-date">${formattedDate}</div>` +
       `</div>` +
       `<div class="pull-right">` +
-      `<a href="${url}" class="ex-link sec-text"` +
+      `<a href="${url}" class="ex-link"` +
       ` target="_blank">` +
       `<svg xmlns="http://www.w3.org/2000/svg">` +
       `<path d="M1.444 11.556V1.444H5.5V0H1.444C.65 0 0 .65 0 1.444v10.112C0 12.35.65 13 1.444 13h10.112C12.35 13 13 12.35 13 11.556V7.5h-1.444v4.056H1.444zM8.873 1.444h1.671L3.467 8.522l1.01 1.011 7.079-7.077v1.671H13V0H8.873v1.444z"/>` +

@@ -247,7 +247,7 @@ class Traffic extends Component {
               target="_blank"
               to={`/payments?from=${startDate.unix()}&to=${endDate.unix()}`}
             >
-              View all Payments &gt;
+              View all Payments
             </Link>
           </div>
         </PanelFooter>

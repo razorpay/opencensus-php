@@ -62,20 +62,22 @@ $panel-body-height = 300px;
 
       &.btn-group {
 
+
         .btn-default {
 
           border-radius: 1px;
           background-color: #FFF;
           border-color: #CFDADD;
+          z-index: 0;
         }
 
-        .active {
+        .btn-default.active {
 
-          background-color: #FAFBFC;
-          z-index: auto;
-          color: #4C58C7;
+          background-color: #FFFFFF;
+          color: inherit;
           box-shadow: none;
-
+          border-color: #4C58C7;
+          z-index: 1;
         }
       }
 
@@ -100,8 +102,7 @@ $panel-body-height = 300px;
 
           &:focus {
 
-            background-color: #fafbfc;
-            color: #4c58c7;
+            border-color: #4c58c7;
           }
 
           svg {
