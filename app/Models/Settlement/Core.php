@@ -3,6 +3,8 @@
 namespace RZP\Models\Settlement;
 
 use Carbon\Carbon;
+use Razorpay\Trace\Logger as Trace;
+
 use RZP\Exception;
 use RZP\Models\Adjustment;
 use RZP\Models\Base;
@@ -11,6 +13,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
 use RZP\Constants\Timezone;
+use RZP\Trace\TraceCode;
 use RZP\Listeners\ApiEventSubscriber;
 
 class Core extends Base\Core
@@ -76,6 +79,74 @@ class Core extends Base\Core
         $nodalClass = 'RZP\Models\FundTransfer\\' . ucwords($channel) . '\NodalAccount';
 
         return (new $nodalClass())->addBeneficiary($input);
+    }
+
+    public function updateChannel(array $input): array
+    {
+        (new Validator)->validateInput('update_channel', $input);
+
+        $settlementIds = $input['settlement_ids'];
+
+        Entity::verifyIdAndStripSignMultiple($settlementIds);
+
+        $channel = $input['channel'];
+
+        $failedIds = [];
+
+        $successIds = [];
+
+        foreach ($settlementIds as $settlementId)
+        {
+            try
+            {
+                $transactionIds = $this->repo
+                                       ->transaction
+                                       ->fetch([Transaction\Entity::SETTLEMENT_ID => $settlementId])
+                                       ->pluck(Transaction\Entity::ID)
+                                       ->toArray();
+
+                $this->repo->transaction(function () use ($settlementId, $transactionIds, $channel)
+                {
+                    $this->repo
+                         ->settlement
+                         ->updateChannel($settlementId, $channel);
+
+                    $this->repo
+                         ->transaction
+                         ->updateChannelForSettlement($settlementId, $transactionIds, $channel);
+                });
+
+                $successIds[] = $settlementId;
+            }
+            catch (\Throwable $ex)
+            {
+                $failedIds[] = $settlementId;
+
+                $this->trace->traceException(
+                    $ex,
+                    Trace::ERROR,
+                    TraceCode::SETTLEMENTS_CHANNEL_UPDATE_FAILED,
+                    [
+                        'settlement_id' => $settlementId,
+                        'channel'       => $channel,
+                    ]);
+            }
+        }
+
+        $response = [
+            'channel'       => $channel,
+            'total'         => count($settlementIds),
+            'success'       => count($successIds),
+            'failed'        => count($failedIds),
+            'failed_ids'    => $failedIds,
+        ];
+
+        $this->trace->info(
+            TraceCode::SETTLEMENTS_CHANNEL_BULK_UPDATE_RESPONSE,
+            $response
+        );
+
+        return $response;
     }
 
     protected function getAmountFromPaymentsForLastDay(string $gateway) : int

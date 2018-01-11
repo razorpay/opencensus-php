@@ -110,6 +110,11 @@ class Validator extends Base\Validator
         'merchant_ids' => 'required|array'
     ];
 
+    protected static $updateChannelRules = [
+        'channel'       => 'required|string|max:32|custom',
+        'merchant_ids'  => 'required|array'
+    ];
+
     protected static $updateBankAccountRules = [
         'bank_account'   => 'required|array',
         'merchant_ids'   => 'required|array'
