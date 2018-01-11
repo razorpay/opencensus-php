@@ -69,11 +69,11 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postH2HSettlementReconcile()
+    public function postH2HSettlementReconcile(string $channel)
     {
         $input = Request::all();
 
-        $data = $this->service()->reconcileH2HSettlements($input);
+        $data = $this->service()->reconcileH2HSettlements($input, $channel);
 
         return ApiResponse::json($data);
     }

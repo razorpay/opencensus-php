@@ -167,7 +167,7 @@ trait SettlementTrait
         $uploadedFile = $this->createUploadedFile($setlReconciliationFile);
 
         $request = [
-            'url' => '/settlements/h2hreconcile',
+            'url' => '/settlements/h2hreconcile/kotak',
             'files' => [
                 'file' => $uploadedFile
             ],

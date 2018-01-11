@@ -1,9 +1,8 @@
 <?php
 
-namespace RZP\Models\FundTransfer\Kotak\Reconciliation\Base;
+namespace RZP\Models\FundTransfer\Kotak\Reconciliation;
 
 use Mail;
-use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Models\Settlement\Channel;
@@ -14,7 +13,7 @@ use RZP\Models\FundTransfer\Base\Reconciliation\Processor as BaseProcessor;
 
 class Processor extends BaseProcessor
 {
-    use Kotak\FileHandlerTrait;
+//    use Kotak\FileHandlerTrait;
 
     protected static $fileToReadName = 'Kotak_Settlement_Reconciliation';
 
@@ -26,7 +25,7 @@ class Processor extends BaseProcessor
 
     protected function parseFile($file)
     {
-        $this->parseTextFile($file);
+        return $this->parseTextFile($file);
     }
 
     /**
@@ -87,5 +86,10 @@ class Processor extends BaseProcessor
         $values = array_combine($headings, $values);
 
         return $values;
+    }
+
+    protected function storeFile($reconFile)
+    {
+        $this->storeReconciledFile($reconFile);
     }
 }

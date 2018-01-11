@@ -19,7 +19,7 @@ use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 
 abstract class Processor extends Base\Core
 {
-//    use Kotak\FileHandlerTrait;
+    use Kotak\FileHandlerTrait;
 
     const MUTEX_RESOURCE = 'SETTLEMENT_RECONCILIATION_%s';
 
@@ -50,7 +50,7 @@ abstract class Processor extends Base\Core
 
     abstract protected function parseFile($file);
 
-    abstract protected function storeReconciledFile($reconcileFile);
+    abstract protected function storeFile($reconcileFile);
 
     abstract protected function getRowProcessorNamespace($row);
 
@@ -98,6 +98,7 @@ abstract class Processor extends Base\Core
 
         $data = $this->parseFile($reconcileFile);
 
+        $this->storeReconciledFile($reconcileFile);
         $response = null;
 
         if (empty($data) === true)
@@ -113,8 +114,6 @@ abstract class Processor extends Base\Core
             $this->date = $date->format('d-m-Y');
 
             $response = $this->startReconciliation($data);
-
-            $this->storeReconciledFile($reconcileFile);
 
             $this->sendReconciliationSummaryMail($response);
         }
