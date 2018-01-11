@@ -3,6 +3,7 @@ import { methods } from 'common/data';
 import { prevent } from 'common/util';
 import { Input as DayPickerInput } from 'react-day-picker';
 import moment from 'moment';
+import { TypeAhead } from 'react-power-select';
 
 function focusInput(e) {
   e.target.nextElementSibling.focus();
@@ -215,3 +216,60 @@ export function SelectMethod(props) {
     </SelectField>
   );
 }
+
+class SearchableSelect extends Component {
+  static defaultProps = {
+    searchIndices: [],
+    trackBy: 'value',
+    options: [],
+  };
+
+  constructor({ options, trackBy, defaultValue }) {
+    super();
+    this.state = {
+      selectedOption:
+        options.find(option => option[trackBy] === defaultValue) || {},
+    };
+  }
+
+  handleChange = ({ option }) => {
+    this.setState({ selectedOption: option });
+  };
+
+  render() {
+    const {
+      options,
+      required,
+      searchIndices,
+      label,
+      name,
+      trackBy,
+      ...props
+    } = this.props;
+
+    return (
+      <div>
+        <input
+          type="hidden"
+          class="hide"
+          name={name}
+          value={this.state.selectedOption[trackBy]}
+          readOnly
+        />
+        <TypeAhead
+          options={options}
+          name={name}
+          optionLabelPath="name"
+          selected={this.state.selectedOption}
+          onChange={this.handleChange}
+          className="searchable-select-field"
+          {...props}
+        />
+      </div>
+    );
+  }
+}
+
+export const SearchableSelectField = props => (
+  <Field {...props} tag={SearchableSelect} />
+);
