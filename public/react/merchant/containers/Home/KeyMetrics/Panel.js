@@ -5,9 +5,13 @@ import { Line } from 'react-chartjs-2';
 import { PowerSelect } from 'react-power-select';
 
 import Definition from 'rzp/ui/Definition';
-import ChangeRange from 'rzp/ui/ChangeRange';
+import Change from 'rzp/ui/Change';
 import { BtnGroup, Btn } from 'rzp/ui/BtnGroup';
-import { titleCase } from 'rzp/utils/rzp-utils';
+import {
+  titleCase,
+  getFormattedAmount,
+  getFormattedNumber,
+} from 'rzp/utils/rzp-utils';
 import { timeScale } from 'rzp/utils/chart/new.js';
 import takeScreenshot from 'rzp/utils/screenshot';
 import Group, { GroupItem } from 'rzp/ui/Group';
@@ -112,6 +116,28 @@ class Panel extends Component {
 
     const hasNoData = !histogram || histogram.datasets.length === 0;
 
+    let trendValue = 0,
+      trendText = '',
+      trendAbsValue = 0;
+
+    if (trend.show && !trend.loading) {
+      const currentCount = trend.currentCount;
+
+      trendValue = currentCount - trend.previousCount;
+      trendAbsValue = Math.abs(trendValue);
+
+      trendText = (isCurrency
+        ? humanReadableIndianCurrency
+        : humanReadableIndian)(trendAbsValue);
+
+      trendText +=
+        ' (' +
+        (trend.currentCount === 0
+          ? trend.previousCount !== 0 ? 100 : 0
+          : (trendAbsValue / currentCount * 100).toFixed(2)) +
+        '%)';
+    }
+
     // following chart options will be used by cutomTooltip.js
     chartOptions.isCurrency = isCurrency;
     chartOptions.externalUrl = externalUrl;
@@ -126,31 +152,35 @@ class Panel extends Component {
         <PanelTopbar className="clearfix">
           {data.trend.show && (
             <div className="pull-left">
-              {data.trend.loading ? (
-                <div>
-                  <div>
+              <div>
+                <Change value={trendValue}>
+                  {trend.loading ? (
                     <PlaceholderLoader />
-                  </div>
-                  <div className="text-fade">
-                    <PlaceholderLoader />
-                  </div>
-                </div>
-              ) : (
-                <div>
-                  <ChangeRange
-                    previous={trend.previousCount}
-                    current={trend.currentCount}
-                  />
-                  <Definition>
-                    <span className="text-fade">
-                      Compared to
-                      <strong> {trend.startDate.format(dateFormat)} </strong>
-                      -
-                      <strong> {trend.endDate.format(dateFormat)} </strong>
+                  ) : (
+                    <span
+                      title={`${isCurrency
+                        ? getFormattedAmount(trendAbsValue, true)
+                        : getFormattedNumber(trendAbsValue)}`}
+                    >
+                      {trendText}
                     </span>
-                  </Definition>
-                </div>
-              )}
+                  )}
+                </Change>
+                <Definition>
+                  <span className="text-fade">
+                    {trend.loading ? (
+                      <PlaceholderLoader />
+                    ) : (
+                      <span>
+                        Compared to
+                        <strong> {trend.startDate.format(dateFormat)} </strong>
+                        -
+                        <strong> {trend.endDate.format(dateFormat)} </strong>
+                      </span>
+                    )}
+                  </span>
+                </Definition>
+              </div>
             </div>
           )}
           <div className="panel-actions pull-right">

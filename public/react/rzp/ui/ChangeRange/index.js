@@ -1,6 +1,6 @@
 import React from 'react';
 
-import Change from './Change';
+import Change from 'rzp/ui/Change';
 
 const round = value => Math.round(value * 100) / 100;
 

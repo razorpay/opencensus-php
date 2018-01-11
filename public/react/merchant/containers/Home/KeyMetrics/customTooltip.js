@@ -1,6 +1,6 @@
 import moment from 'moment';
 
-import { getFormattedAmount } from 'rzp/utils/rzp-utils';
+import { getFormattedAmount, getFormattedNumber } from 'rzp/utils/rzp-utils';
 import { getMillisecondsFromBreakdown } from 'rzp/utils/chart/new';
 
 // tooltip element
@@ -95,10 +95,9 @@ const customToolTip = function(tooltipModel) {
     innerHtml +=
       `<div class="tooltip-title clearfix">` +
       `<div class="pull-left">` +
-      `<div class="tooltip-amount">${getFormattedAmount(
-        sumOfAllDataPoints,
-        isCurrency
-      )}</div>` +
+      `<div class="tooltip-amount">${isCurrency
+        ? getFormattedAmount(sumOfAllDataPoints, true)
+        : getFormattedNumber(sumOfAllDataPoints)}</div>` +
       `<div class="sec-text tooltip-date">${formattedDate}</div>` +
       `</div>` +
       `<div class="pull-right">` +
@@ -127,10 +126,9 @@ const customToolTip = function(tooltipModel) {
 
       const labelHTML = `<span class="label sec-text">${label}</span>`;
 
-      const labelValue = `<span class="label-value">${getFormattedAmount(
-        value,
-        isCurrency
-      )}</span>`;
+      const labelValue = `<span class="label-value">${isCurrency
+        ? getFormattedAmount(value, true)
+        : getFormattedNumber(value)}</span>`;
 
       // appending rows with each line
       rows += `<div class="tooltip-row clearfix">${labelIcon}${labelHTML}${labelValue}</div>`;

@@ -14,8 +14,7 @@ export default ({ value, children }) => {
   return (
     <span className={classNames.join(' ')}>
       <span className="text">
-        {value && getFormattedNumber(Math.abs(value))}
-        {children}
+        {children ? children : value && getFormattedNumber(Math.abs(value))}
       </span>
     </span>
   );
