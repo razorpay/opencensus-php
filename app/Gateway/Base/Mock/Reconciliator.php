@@ -48,6 +48,24 @@ class Reconciliator
         $this->repo = $this->app['repo'];
     }
 
+    public function generateReconciliation(array $input)
+    {
+        $entites = $this->getEntitiesToReconcile();
+
+        $inputData = [];
+
+        foreach ($entites as $entity)
+        {
+            $data[$entity->getEntity()] = $entity->toArray();
+
+            $this->addGatewayEntityIfNeeded($data);
+
+            $inputData[] = $data;
+        }
+
+        return $this->generate($inputData);
+    }
+
     protected function generate(array $input)
     {
         $data = $this->getReconciliationData($input);
@@ -60,6 +78,11 @@ class Reconciliator
     }
 
     protected function getReconciliationData(array $input)
+    {
+        return [];
+    }
+
+    protected function getEntitiesToReconcile()
     {
         return [];
     }

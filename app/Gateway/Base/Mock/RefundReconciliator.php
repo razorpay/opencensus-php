@@ -7,25 +7,7 @@ use RZP\Constants\Timezone;
 
 class RefundReconciliator extends Reconciliator
 {
-    public function generateReconciliation(array $input)
-    {
-        $refunds = $this->getAllRefundsToReconcile();
-
-        $inputData = [];
-
-        foreach ($refunds as $refund)
-        {
-            $data['refund'] = $refund->toArray();
-
-            $this->addGatewayEntityIfNeeded($data, $refund);
-
-            $inputData[] = $data;
-        }
-
-        return $this->generate($inputData);
-    }
-
-    protected function getAllRefundsToReconcile()
+    protected function getEntitiesToReconcile()
     {
         $createdAtStart = Carbon::yesterday(Timezone::IST)->getTimestamp();
 

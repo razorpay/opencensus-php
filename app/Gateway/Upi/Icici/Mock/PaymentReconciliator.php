@@ -44,7 +44,7 @@ class PaymentReconciliator extends Base\Mock\PaymentReconciliator
      * @override
      * @return PublicCollection
      */
-    protected function getAllPaymentsToReconcile()
+    protected function getEntitiesToReconcile()
     {
         $createdAtStart = Carbon::yesterday(Timezone::IST)->getTimestamp();
 
