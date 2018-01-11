@@ -370,14 +370,14 @@ class Core extends Base\Core
         $newIds,
         $relatedEntityName)
     {
+        $relatedEntityOb = ConstantsEntity::getEntityObject($relatedEntityName);
+
+        $relatedEntityOb::verifyIdAndSilentlyStripSignMultiple($oldIds);
+        $relatedEntityOb::verifyIdAndSilentlyStripSignMultiple($newIds);
+
         $removedEntities = array_diff($oldIds, $newIds);
 
         $addedEntities = array_diff($newIds, $oldIds);
-
-        $relatedEntityOb = ConstantsEntity::getEntityObject($relatedEntityName);
-
-        $relatedEntityOb::verifyIdAndSilentlyStripSignMultiple($removedEntities);
-        $relatedEntityOb::verifyIdAndSilentlyStripSignMultiple($addedEntities);
 
         $oldRelatedEntities = $this->repo
                                    ->$relatedEntityName
