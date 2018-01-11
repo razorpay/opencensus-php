@@ -367,9 +367,29 @@ class UpiIciciGatewayReconTest extends TestCase
         {
             $this->fixtures->edit('payment', $payment, ['created_at' => $createdAt]);
 
-            $refund = $this->refundPayment(Payment\Entity::getSignedId($payment));
+            $refund = $this->fixtures->create(
+                        'refund',
+                        [
+                            'payment_id'  => $payment,
+                            'merchant_id' => Merchant\Account::TEST_ACCOUNT,
+                            'amount'      => $this->payment['amount'],
+                            'base_amount' => $this->payment['amount'],
+                        ]);
 
-            $this->fixtures->edit('refund', $refund['id'], ['created_at' => $createdAt]);
+            $transaction = $this->fixtures->create(
+                                'transaction',
+                                [
+                                    'entity_id' => $refund->getId(),
+                                    'merchant_id' => '10000000000000'
+                                ]);
+
+            $this->fixtures->edit(
+                'refund',
+                $refund->getId(),
+                [
+                    'created_at' => $createdAt,
+                    'transaction_id' => $transaction->getId()
+                ]);
 
             $this->fixtures->create(
                 'upi',
