@@ -5,9 +5,10 @@ namespace RZP\Tests\Functional\Gateway\File;
 use Mail;
 use Carbon\Carbon;
 
+use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
+use RZP\Mail\Gateway\FailedRefund\Base as FailedRefund;
 
 class AirtelMoneyFailedRefundFileTest extends TestCase
 {
@@ -67,6 +68,26 @@ class AirtelMoneyFailedRefundFileTest extends TestCase
         ];
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
 
-        Mail::assertSent(RefundFileMail::class);
+        Mail::assertSent(FailedRefund::class, function ($mail)
+        {
+            $this->assertNotEmpty($mail->attachments);
+
+            $date = Carbon::today(Timezone::IST)->format('d-m-Y');
+
+            $body = 'Please find attached failed refunds information for  Airtel Money';
+
+            $fileName = 'Airtelmoney_Wallet_Failed_Refunds_test_'. $date  . '.xlsx';
+
+            $subject = 'Airtel Money Failed refunds file for ' . $date;
+
+            $this->assertEquals($subject, $mail->subject);
+
+            $this->assertEquals($body, $mail->viewData['body']);
+
+            $this->assertEquals($fileName, $mail->viewData['file_name']);
+
+            return true;
+
+        });
     }
 }
