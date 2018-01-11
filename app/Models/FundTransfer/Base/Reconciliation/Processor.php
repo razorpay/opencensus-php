@@ -3,13 +3,12 @@
 namespace RZP\Models\FundTransfer\Base\Reconciliation;
 
 use Mail;
-use Carbon\Carbon;
 
-use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\FileStore;
 use RZP\Models\FundTransfer\Kotak;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\Settlement as SettlementMail;
@@ -44,15 +43,18 @@ abstract class Processor extends Base\Core
      */
     protected $unprocessedIds = [];
 
+    /**
+     * Child class needs to assign value to this.
+     */
     protected $date;
 
     protected $batchFundTransferStats = [];
 
-    abstract protected function parseFile($file);
-
     abstract protected function storeFile($reconcileFile);
 
     abstract protected function getRowProcessorNamespace($row);
+
+    abstract protected function setDate($data);
 
     public function __construct()
     {
@@ -83,6 +85,27 @@ abstract class Processor extends Base\Core
         return $data;
     }
 
+    final protected function parseFile($filePath)
+    {
+        $ext = pathinfo($filePath, PATHINFO_EXTENSION);
+
+        switch ($ext)
+        {
+            case FileStore\Format::XLSX:
+            case FileStore\Format::XLS:
+                return $this->parseExcelSheets($filePath);
+
+            case FileStore\Format::TXT:
+                return $this->parseTextFile($filePath, static::$delimiter);
+
+            case FileStore\Format::CSV:
+                return $this->parseTextFile($filePath, ',');
+
+            default:
+                throw new LogicException("Extension not handled: {$ext}");
+        }
+    }
+
     final protected function processReconciliation($input)
     {
         $reconcileFile = $this->getReconcilationFile($input);
@@ -99,6 +122,7 @@ abstract class Processor extends Base\Core
         $data = $this->parseFile($reconcileFile);
 
         $this->storeReconciledFile($reconcileFile);
+
         $response = null;
 
         if (empty($data) === true)
@@ -107,11 +131,7 @@ abstract class Processor extends Base\Core
         }
         else
         {
-            #TODO:: Find a way to fix this date thing!!
-            $date = Carbon::createFromFormat('d-M-y', $data[0][Kotak\Headings::PAYMENT_DATE]);
-
-            // update the format so that recon mail is appended to settlement mail
-            $this->date = $date->format('d-m-Y');
+            $this->setDate($data);
 
             $response = $this->startReconciliation($data);
 

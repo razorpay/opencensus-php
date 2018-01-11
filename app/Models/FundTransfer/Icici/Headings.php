@@ -16,4 +16,22 @@ class Headings
     const DUMMY                     = 'Dummy';
     const DUMMY2                    = 'Dummy2';
     const BENEFICIARY_CODE          = 'Beneficiary Code';
+
+    public static function getResponseFileHeadings(): array
+    {
+        return [
+            'File Ref No',
+            self::PAYMENT_MODE,
+            self::BENEFICIARY_NAME,
+            self::BENEFICIARY_ACCOUNT_NO,
+            self::BENEFICIARY_IFSC,
+            self::AMOUNT,
+            self::PAYMENT_DATE,
+            self::CREDIT_NARRATION,
+            self::INSTRUMENT_REFERENCE,
+            'Payment Ref No',
+            'Status',
+            'Date',
+        ];
+    }
 }

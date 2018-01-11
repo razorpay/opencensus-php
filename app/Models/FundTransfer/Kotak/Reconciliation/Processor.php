@@ -3,6 +3,7 @@
 namespace RZP\Models\FundTransfer\Kotak\Reconciliation;
 
 use Mail;
+use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Models\Settlement\Channel;
@@ -13,29 +14,19 @@ use RZP\Models\FundTransfer\Base\Reconciliation\Processor as BaseProcessor;
 
 class Processor extends BaseProcessor
 {
-//    use Kotak\FileHandlerTrait;
-
     protected static $fileToReadName = 'Kotak_Settlement_Reconciliation';
-
-    protected static $fileToWriteName = 'Kotak_Settlement_Reconciliation';
 
     protected static $channel = Channel::KOTAK;
 
-    protected $date;
+    protected static $delimiter = '~';
 
-    protected function parseFile($file)
+    protected function setDate($data)
     {
-        return $this->parseTextFile($file);
-    }
+        $date = Carbon::createFromFormat('d-M-y', $data[0][Kotak\Headings::PAYMENT_DATE]);
 
-    /**
-     * Reads row from reconciliation file, and returns array of parsed data from that
-     *
-     * @param           Entity
-     * @param   Array   Row to be parsed
-     *
-     * @return  Array   Parsed data
-     */
+        //update the format so that recon mail is appended to settlement mail
+        $this->date = $date->format('d-m-Y');
+    }
 
     protected function getRowProcessorNamespace($row)
     {
