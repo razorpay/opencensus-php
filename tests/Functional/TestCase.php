@@ -72,11 +72,6 @@ class TestCase extends ParentTestCase
         $this->db->setUp();
 
         $this->db->runFixtures($this->fixtures);
-
-        Redis::connection('query_cache_test')->flushdb();
-
-        Redis::connection('query_cache_live')->flushdb();
-
     }
 
     public function tearDown()
@@ -85,6 +80,10 @@ class TestCase extends ParentTestCase
         {
             $this->db->tearDown();
         }
+
+        Redis::connection('query_cache_test')->flushdb();
+
+        Redis::connection('query_cache_live')->flushdb();
 
         parent::tearDown();
     }
