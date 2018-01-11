@@ -81,7 +81,7 @@ class Gateway extends Base\Gateway
             $this->repo->saveOrFail($gatewayPayment);
         }
 
-        if (empty($gatewayResponse[Fields::TRANDATA]) === false)
+        if ($this->isEmptyTranData($gatewayResponse) === false)
         {
             $gatewayContent = $this->getDecryptedRequestContent($gatewayResponse[Fields::TRANDATA], $input);
 
@@ -146,22 +146,12 @@ class Gateway extends Base\Gateway
 
         // Doing Additional check with the result because error messages are sent in result.
         if ((in_array($responseFields[Fields::RESULT], Status::$successStates) === false) and
-            $this->isErrorMessageText($responseFields[Fields::RESULT]) === true)
+            ($this->isErrorMessageText($responseFields[Fields::RESULT]) === true))
         {
             $this->checkErrorMessage($gatewayEntity, $responseFields);
         }
 
         $this->checkCapturedStatus($gatewayEntity, ErrorCode::BAD_REQUEST_REFUND_FAILED);
-    }
-
-    /**
-     * Capture is empty here becuase this gateway is purchase model.
-     *
-     * @param array $input
-     */
-    public function capture(array $input)
-    {
-        parent::capture($input);
     }
 
     /**
@@ -266,7 +256,7 @@ class Gateway extends Base\Gateway
             Fields::EXPIRY_MONTH  => $this->getFormattedExpMonth($input[E::CARD][Card\Entity::EXPIRY_MONTH]),
             Fields::TYPE          => $this->getCardType($input[E::CARD][Card\Entity::TYPE]),
             Fields::MEMBER        => $input[E::CARD][Card\Entity::NAME],
-            Fields::AMOUNT        => $input[E::PAYMENT][Payment\Entity::AMOUNT] / 100, //use number_format
+            Fields::AMOUNT        => $input[E::PAYMENT][Payment\Entity::AMOUNT] / 100,
             Fields::ACTION        => Action::getActionValue(Action::PURCHASE),
             Fields::TRACK_ID      => $input[E::PAYMENT][Payment\Entity::ID],
             Fields::ERROR_URL     => $input['callbackUrl'],
@@ -278,14 +268,7 @@ class Gateway extends Base\Gateway
         $this->modifyGatewayRequestContentArray($requestContent, $input);
 
         // Trace the payment request after removing the sensitive fields.
-        $traceData = $this->removeSensitiveRequestFields($requestContent);
-
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_REQUEST,
-            [
-                'request_data' => $traceData,
-            ]
-        );
+        $this->traceGatewayData($requestContent, TraceCode::GATEWAY_PAYMENT_REQUEST);
 
         return $requestContent;
     }
@@ -338,7 +321,7 @@ class Gateway extends Base\Gateway
     protected function getPurchaseRequestContent(array $requestContent, array $input): array
     {
         // Entire request content is wrapped in xml.
-        $requestBuffer = Utility::createRequestXml($requestContent);
+        $requestBuffer = $this->getGatewayRequestContent($requestContent);
         // Encrypted request content
         $tranData = $this->getEncryptedRequestContent($requestBuffer, $input);
 
@@ -666,7 +649,7 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($requestContent, 'post', Action::VERIFY);
 
-        $this->traceGatewayVerifyRequest($requestContentArray);
+        $this->traceGatewayData($requestContentArray, TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST);
 
         $response = $this->postRequest($request);
 
@@ -694,23 +677,6 @@ class Gateway extends Base\Gateway
         );
 
         return $response;
-    }
-
-    /**
-     * Traces verify request for the gateway becuase we don't persist the trackId.
-     *
-     * @param $requestContent
-     */
-    protected function traceGatewayVerifyRequest($requestContent)
-    {
-        $requestContent = $this->removeSensitiveRequestFields($requestContent);
-
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
-            [
-                'verify_content' => $requestContent
-            ]
-        );
     }
 
     protected function removeSensitiveRequestFields(array $requestContent)
@@ -769,14 +735,7 @@ class Gateway extends Base\Gateway
 
         $this->modifyGatewayRequestContentArray($requestContent, $input);
 
-        $traceData = $this->removeSensitiveRequestFields($requestContent);
-
-        $this->trace->info(
-            $traceCode,
-            [
-                'request_data' => $traceData,
-            ]
-        );
+        $this->traceGatewayData($requestContent, $traceCode);
 
         return $requestContent;
     }
@@ -1016,5 +975,31 @@ class Gateway extends Base\Gateway
         }
 
         return $gatewayAquirer;
+    }
+
+    /**
+     * @param array  $content
+     * @param string $traceCode
+     */
+    protected function traceGatewayData(array $content, string $traceCode)
+    {
+        $this->removeSensitiveRequestFields($content);
+
+        $this->trace->info(
+            $traceCode,
+            [
+                'gateway_content' => $content,
+            ]);
+    }
+
+    /**
+     * Trandata is the encrypted text returned in the callback from the gateway.
+     * @param array $gatewayResponse
+     *
+     * @return bool
+     */
+    protected function isEmptyTranData(array $gatewayResponse)
+    {
+        return (empty($gatewayResponse[Fields::TRANDATA]) === true);
     }
 }
