@@ -57,15 +57,14 @@ $actionItemsHeight = 40px;
 
   div.traffic-activity-row {
 
-    display: flex;
-    flex-flow: row wrap;
-    align-items: stretch;
+    display: block;
 
     &> div {
 
       width: 50%;
       display: block;
       position: relative;
+      float: left;
 
       &.activity-container > p.content-title {
 
@@ -90,7 +89,7 @@ $actionItemsHeight = 40px;
 
         div.panel {
 
-          height: 100%;
+          height: 340px; // aligns with 5 items in recent activity
 
           div.panel-body {
 
@@ -107,6 +106,11 @@ $actionItemsHeight = 40px;
       &.activity-container {
 
         padding-left: 12px;
+
+        div.panel {
+
+          overflow: hidden;
+        }
       }
 
       div.panel {

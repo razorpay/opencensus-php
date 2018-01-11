@@ -194,7 +194,7 @@ export default class HomeContainer extends Component {
           </div>
 
           <div className="row">
-            <div className="col-md-12 traffic-activity-row">
+            <div className="col-md-12 traffic-activity-row clearfix">
               <div className="traffic-container">
                 <p className="content-title section-title">
                   Traffic split on platforms
