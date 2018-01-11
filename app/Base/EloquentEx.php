@@ -2,8 +2,6 @@
 
 namespace RZP\Base;
 
-use App;
-
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Entity as E;

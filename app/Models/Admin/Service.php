@@ -179,10 +179,10 @@ class Service extends Base\Service
             'cache_hits',
             'cache_misses',
             'cache_writes',
-            'cache_flushes',
+            'cache_flushes'
         ];
 
-        foreach ($cachedEntities as $entity)
+        foreach ($cachedEntites as $entity)
         {
             $result[$entity] = [];
 

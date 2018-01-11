@@ -25,16 +25,20 @@ class EventServiceProvider extends ServiceProvider
         ],
 
         'Illuminate\Cache\Events\CacheHit' => [
-            'RZP\Listeners\CacheEventLogger',
+            'RZP\Listeners\QueryCacheEventListener',
         ],
 
         'Illuminate\Cache\Events\CacheMissed' => [
-            'RZP\Listeners\CacheEventLogger',
+            'RZP\Listeners\QueryCacheEventListener',
         ],
 
         'Illuminate\Cache\Events\KeyWritten' => [
-            'RZP\Listeners\CacheEventLogger',
+            'RZP\Listeners\QueryCacheEventListener',
         ],
+
+        'Illuminate\Cache\Events\KeyForgotten' => [
+            'RZP\Listeners\QueryCacheEventListener',
+        ]
     ];
 
     public function boot()

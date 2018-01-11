@@ -53,7 +53,7 @@ class Entity extends Base\PublicEntity
 
         static::updated(function ($key)
         {
-            static::flushCache('keys_' . $key->getId());
+            static::flushCache('key_' . $key->getId());
         });
     }
 

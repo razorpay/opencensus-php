@@ -3,11 +3,11 @@
 namespace RZP\Base;
 
 use App;
+use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
+use Illuminate\Cache\Events\KeyForgotten;
 use Illuminate\Database\Query\Builder as IlluminateQueryBuilder;
 use Watson\Rememberable\Query\Builder as RememberableQueryBuilder;
-
-use RZP\Trace\TraceCode;
 
 /**
  * Overriden rememberable package's Builder class, as we need to add
@@ -61,6 +61,10 @@ class CacheQueryBuilder extends RememberableQueryBuilder
         try
         {
             $cache->flush();
+
+            event(new KeyForgotten('rememberable', [
+                $cacheTags
+            ]));
         }
         catch (\Throwable $e)
         {
