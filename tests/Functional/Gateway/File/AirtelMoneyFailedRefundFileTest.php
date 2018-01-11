@@ -74,7 +74,7 @@ class AirtelMoneyFailedRefundFileTest extends TestCase
 
             $date = Carbon::today(Timezone::IST)->format('d-m-Y');
 
-            $body = 'Please find attached failed refunds information for  Airtel Money';
+            $body = 'Please find attached failed refunds information for Airtel Money';
 
             $fileName = 'Airtelmoney_Wallet_Failed_Refunds_test_'. $date  . '.xlsx';
 
