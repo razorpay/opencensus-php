@@ -33,6 +33,12 @@ class Reconciliator
      */
     protected $fileToWriteName;
 
+    /**
+     * Tells us if headers need to be added to the recon file
+     * @var bool
+     */
+    protected $shouldAddHeaders = false;
+
     protected $fileExtension = FileStore\Format::XLSX;
 
     public function __construct()
@@ -46,7 +52,7 @@ class Reconciliator
     {
         $data = $this->getReconciliationData($input);
 
-        $creator = $this->createReconFile($data);
+        $creator = $this->createFile($data);
 
         $file = $creator->get();
 
@@ -58,35 +64,19 @@ class Reconciliator
         return [];
     }
 
-    /**
-     * @param $content
-     * @return FileStore\Creator
-     */
-    protected function createReconFile($content)
-    {
-        return $this->createFile(
-            $this->fileExtension,
-            $content,
-            $this->fileToWriteName
-        );
-    }
-
     protected function createFile(
-        string $extension,
         array $content,
-        string $fileName,
-        bool $headers = false,
         string $type = FileStore\Type::MOCK_RECONCILIATION_FILE,
         string $store = FileStore\Store::S3)
     {
         $creator = new FileStore\Creator;
 
-        $creator->extension($extension)
+        $creator->extension($this->fileExtension)
                 ->content($content)
-                ->name($fileName)
+                ->name($this->fileToWriteName)
                 ->store($store)
                 ->type($type)
-                ->headers($headers)
+                ->headers($this->shouldAddHeaders)
                 ->save();
 
         return $creator;

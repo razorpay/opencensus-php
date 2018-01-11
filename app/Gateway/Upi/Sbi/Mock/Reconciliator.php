@@ -5,7 +5,6 @@ namespace RZP\Gateway\Upi\Sbi\Mock;
 use Carbon\Carbon;
 use RZP\Gateway\Base;
 use RZP\Models\Payment;
-use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Base\PublicCollection;
 
@@ -18,6 +17,8 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
      * @var string
      */
     protected $fileToWriteName = 'MerchantReport';
+
+    protected $shouldAddHeaders = true;
 
     /**
      * The parent class's method gets only successful payments,
@@ -89,19 +90,5 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
         $this->content($data, 'sbi_recon');
 
         return $data;
-    }
-
-    /**
-     * @param $content
-     * @return FileStore\Creator
-     */
-    protected function createReconFile($content)
-    {
-        return $this->createFile(
-            $this->fileExtension,
-            $content,
-            $this->fileToWriteName,
-            true
-        );
     }
 }
