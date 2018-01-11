@@ -73,7 +73,7 @@ class UpiFailedRefundFileTest extends TestCase
 
             $fileName = 'Icici_Upi_Failed_Refunds_test_'. $date  . '.xlsx';
 
-            $subject = 'UPI Icici Failed refunds file for ' . $date;
+            $subject = 'UPI Icici failed refunds file for ' . $date;
 
             $this->assertEquals($subject, $mail->subject);
 

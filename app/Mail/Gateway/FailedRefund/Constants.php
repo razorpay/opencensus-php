@@ -18,12 +18,12 @@ class Constants extends Base\Constants
     ];
 
     const SUBJECT_MAP = [
-        Gateway::UPI_ICICI          => 'UPI Icici Failed refunds file for ',
-        Gateway::WALLET_AIRTELMONEY => 'Airtel Money Failed refunds file for ',
-        Gateway::AXIS_MIGS          => 'Axis Migs Failed refunds for ',
-        Gateway::FIRST_DATA         => 'FirstData Failed refunds for ',
-        Gateway::CYBERSOURCE        => 'Cybersource Failed refunds for ',
-        Gateway::HDFC               => 'HDFC Failed refunds for ',
+        Gateway::UPI_ICICI          => 'UPI Icici failed refunds file for ',
+        Gateway::WALLET_AIRTELMONEY => 'Airtel Money failed refunds file for ',
+        Gateway::AXIS_MIGS          => 'Axis Migs failed refunds for ',
+        Gateway::FIRST_DATA         => 'FirstData failed refunds for ',
+        Gateway::CYBERSOURCE        => 'Cybersource failed refunds for ',
+        Gateway::HDFC               => 'HDFC failed refunds for ',
     ];
 
     const BODY_MAP = [

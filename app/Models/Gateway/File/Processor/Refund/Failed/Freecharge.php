@@ -26,7 +26,6 @@ class Freecharge extends Base
     const GATEWAY_REFERENCE  = 'Gateway reference';
     const MERCHANT_ID        = 'Merchant ID';
 
-
     protected function formatDataForFile(array $data)
     {
         $formattedData = [];

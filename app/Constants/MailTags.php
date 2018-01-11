@@ -38,7 +38,6 @@ class MailTags
     const CYBERSOURCE_FAILED_REFUNDS_MAIL       = 'cybersource failed refunds mail';
     const HDFC_FAILED_REFUNDS_MAIL              = 'HDFC failed refunds mail';
 
-
     const PAYU_MONEY_REFUNDS_MAIL          = 'payu_money_refunds_mail';
     const ICICI_UPI_REFUNDS_MAIL           = 'icici_upi_refunds_mail';
     const ICICI_UPI_FAILED_REFUNDS_MAIL    = 'icici_upi_failed_refunds_mail';

@@ -78,7 +78,7 @@ class AirtelMoneyFailedRefundFileTest extends TestCase
 
             $fileName = 'Airtelmoney_Wallet_Failed_Refunds_test_'. $date  . '.xlsx';
 
-            $subject = 'Airtel Money Failed refunds file for ' . $date;
+            $subject = 'Airtel Money failed refunds file for ' . $date;
 
             $this->assertEquals($subject, $mail->subject);
 

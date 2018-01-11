@@ -267,9 +267,10 @@ class Type
             self::PNB_NETBANKING_CLAIMS,
             self::UPI_ICICI_FAILED_REFUND,
             self::AIRTELMONEY_WALLET_FAILED_REFUND,
+            self::AXIS_MIGS_FAILED_REFUND,
             self::FIRSTDATA_FAILED_REFUND,
             self::CYBERSOURCE_FAILED_REFUND,
-            self::AXIS_MIGS_FAILED_REFUND,
+            self::HDFC_FAILED_REFUND,
         ],
 
         self::INVOICE_BUCKET_CONFIG => [

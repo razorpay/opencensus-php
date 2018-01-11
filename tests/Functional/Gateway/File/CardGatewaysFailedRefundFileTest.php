@@ -76,7 +76,7 @@ class CardGatewaysFailedRefundFileTest extends TestCase
 
             $date = Carbon::today(Timezone::IST)->format('d-m-Y');
 
-            $subject = 'Axis Migs Failed refunds for ' . $date;
+            $subject = 'Axis Migs failed refunds for ' . $date;
 
             $body = 'Please find attached failed refunds information for Axis Migs';
 
@@ -143,7 +143,7 @@ class CardGatewaysFailedRefundFileTest extends TestCase
 
             $date = Carbon::today(Timezone::IST)->format('d-m-Y');
 
-            $subject = 'FirstData Failed refunds for ' . $date;
+            $subject = 'FirstData failed refunds for ' . $date;
 
             $body = 'Please find attached failed refunds information for FirstData';
 
@@ -214,7 +214,7 @@ class CardGatewaysFailedRefundFileTest extends TestCase
 
             $date = Carbon::today(Timezone::IST)->format('d-m-Y');
 
-            $subject = 'Cybersource Failed refunds for ' . $date;
+            $subject = 'Cybersource failed refunds for ' . $date;
 
             $body = 'Please find attached failed refunds information for Cybersource';
 
@@ -279,7 +279,7 @@ class CardGatewaysFailedRefundFileTest extends TestCase
 
             $date = Carbon::today(Timezone::IST)->format('d-m-Y');
 
-            $subject = 'HDFC Failed refunds for ' . $date;
+            $subject = 'HDFC failed refunds for ' . $date;
 
             $body = 'Please find attached failed refunds information for HDFC';
 
