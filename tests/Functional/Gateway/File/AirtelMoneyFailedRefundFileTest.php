@@ -2,8 +2,8 @@
 
 namespace RZP\Tests\Functional\Gateway\File;
 
-use Carbon\Carbon;
 use Mail;
+use Carbon\Carbon;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -28,10 +28,9 @@ class AirtelMoneyFailedRefundFileTest extends TestCase
         $this->fixtures->merchant->enableWallet('10000000000000', 'airtelmoney');
     }
 
-
     public function testAirtelMoneyFailedRefundFile()
     {
-         Mail::fake();
+        Mail::fake();
 
         $payment = $this->getDefaultWalletPaymentArray('airtelmoney');
 
@@ -60,7 +59,7 @@ class AirtelMoneyFailedRefundFileTest extends TestCase
 
         $file = $this->getLastEntity('file_store', true);
 
-         $expectedFileContent = [
+        $expectedFileContent = [
             'type'        => 'airtelmoney_wallet_refund',
             'entity_type' => 'gateway_file',
             'entity_id'   => $entity_id,
@@ -70,5 +69,4 @@ class AirtelMoneyFailedRefundFileTest extends TestCase
 
         Mail::assertSent(RefundFileMail::class);
     }
-
 }
