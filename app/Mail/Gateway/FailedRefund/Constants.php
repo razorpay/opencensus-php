@@ -20,10 +20,10 @@ class Constants extends Base\Constants
     const SUBJECT_MAP = [
         Gateway::UPI_ICICI          => 'UPI Icici Failed refunds file for ',
         Gateway::WALLET_AIRTELMONEY => 'Airtel Money Failed refunds file for ',
-        Gateway::AXIS_MIGS          => 'Axis Migs Failed refunds for',
-        Gateway::FIRST_DATA         => 'FirstData Failed Refunds for',
-        Gateway::CYBERSOURCE        => 'Cybersource Failed Refunds for',
-        Gateway::HDFC               => 'HDFC Failed Refunds for',
+        Gateway::AXIS_MIGS          => 'Axis Migs Failed refunds for ',
+        Gateway::FIRST_DATA         => 'FirstData Failed refunds for ',
+        Gateway::CYBERSOURCE        => 'Cybersource Failed refunds for ',
+        Gateway::HDFC               => 'HDFC Failed Refunds for ',
     ];
 
     const BODY_MAP = [

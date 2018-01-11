@@ -2,9 +2,10 @@
 
 namespace RZP\Tests\Functional\Gateway\File;
 
-use Carbon\Carbon;
 use Mail;
+use Carbon\Carbon;
 
+use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Mail\Gateway\FailedRefund\Base as FailedRefundMail;
@@ -22,7 +23,6 @@ class CardGatewaysFailedRefundFileTest extends TestCase
         parent::setUp();
 
     }
-
 
     public function testAxisMigsFailedRefundFile()
     {
@@ -71,7 +71,26 @@ class CardGatewaysFailedRefundFileTest extends TestCase
         ];
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
 
-        Mail::assertSent(FailedRefundMail::class);
+        Mail::assertSent(FailedRefundMail::class, function ($mail)
+        {
+            $this->assertNotEmpty($mail->attachments);
+
+            $date = Carbon::today(Timezone::IST)->format('d-m-Y');
+
+            $subject = 'Axis Migs Failed refunds for ' . $date;
+
+            $body = 'Please find attached failed refunds information for Axis Migs';
+
+            $fileName = 'Axis_Migs_Failed_Refunds_test_'. $date  . '.xlsx';
+
+            $this->assertEquals($subject, $mail->subject);
+
+            $this->assertEquals($body, $mail->viewData['body']);
+
+            $this->assertEquals($fileName, $mail->viewData['file_name']);
+
+            return true;
+        });
     }
 
     public function testFirstDatadRefundFile()
@@ -119,7 +138,26 @@ class CardGatewaysFailedRefundFileTest extends TestCase
         ];
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
 
-        Mail::assertSent(FailedRefundMail::class);
+        Mail::assertSent(FailedRefundMail::class, function ($mail)
+        {
+            $this->assertNotEmpty($mail->attachments);
+
+            $date = Carbon::today(Timezone::IST)->format('d-m-Y');
+
+            $subject = 'FirstData Failed refunds for ' . $date;
+
+            $body = 'Please find attached failed refunds information for FirstData';
+
+            $fileName = 'FirstData_Failed_Refunds_test_'. $date  . '.xlsx';
+
+            $this->assertEquals($subject, $mail->subject);
+
+            $this->assertEquals($body, $mail->viewData['body']);
+
+            $this->assertEquals($fileName, $mail->viewData['file_name']);
+
+            return true;
+        });
     }
 
     public function testCybersourcedRefundFile()
@@ -171,7 +209,26 @@ class CardGatewaysFailedRefundFileTest extends TestCase
         ];
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
 
-        Mail::assertSent(FailedRefundMail::class);
+        Mail::assertSent(FailedRefundMail::class, function ($mail)
+        {
+            $this->assertNotEmpty($mail->attachments);
+
+            $date = Carbon::today(Timezone::IST)->format('d-m-Y');
+
+            $subject = 'Cybersource Failed refunds for ' . $date;
+
+            $body = 'Please find attached failed refunds information for Cybersource';
+
+            $fileName = 'Cybersource_Failed_Refunds_test_'. $date  . '.xlsx';
+
+            $this->assertEquals($subject, $mail->subject);
+
+            $this->assertEquals($body, $mail->viewData['body']);
+
+            $this->assertEquals($fileName, $mail->viewData['file_name']);
+
+            return true;
+        });
     }
 
     public function testHdfcFaileddRefundFile()
@@ -217,7 +274,26 @@ class CardGatewaysFailedRefundFileTest extends TestCase
         ];
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
 
-        Mail::assertSent(FailedRefundMail::class);
+        Mail::assertSent(FailedRefundMail::class, function ($mail)
+        {
+            $this->assertNotEmpty($mail->attachments);
+
+            $date = Carbon::today(Timezone::IST)->format('d-m-Y');
+
+            $subject = 'HDFC Failed refunds for ' . $date;
+
+            $body = 'Please find attached failed refunds information for HDFC';
+
+            $fileName = 'Cybersource_Failed_Refunds_test_'. $date  . '.xlsx';
+
+            $this->assertEquals($subject, $mail->subject);
+
+            $this->assertEquals($body, $mail->viewData['body']);
+
+            $this->assertEquals($fileName, $mail->viewData['file_name']);
+
+            return true;
+        });
     }
 
 
