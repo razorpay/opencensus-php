@@ -66,19 +66,6 @@ class RowProcessor extends Base\RowProcessor
         $this->source = $this->reconEntity->source;
     }
 
-    protected function updateEntities()
-    {
-        $this->updateReconEntity();
-
-        $this->updateMerchantEntity();
-
-        $this->updateSourceEntity();
-
-        $this->updateTransactionEntity();
-
-        return $this->source;
-    }
-
     protected function updateReconEntity()
     {
         // Get values
@@ -118,16 +105,6 @@ class RowProcessor extends Base\RowProcessor
         $this->reconEntity->saveOrFail();
     }
 
-    protected function updateMerchantEntity()
-    {
-        if ($this->holdFunds === true)
-        {
-            $this->reconEntity->merchant->setHoldFunds(true);
-
-            $this->repo->saveOrFail($this->reconEntity->merchant);
-        }
-    }
-
     protected function updateSourceEntity()
     {
         if ($this->source->getBatchFundTransferId() !== $this->reconEntity->getBatchFundTransferId())
@@ -156,13 +133,6 @@ class RowProcessor extends Base\RowProcessor
         }
 
         $this->source->saveOrFail();
-    }
-
-    protected function updateTransactionEntity()
-    {
-        $this->source->transaction->setReconciledAt($this->reconciledAt);
-
-        $this->source->transaction->saveOrFail();
     }
 
     protected function getSourceStatusFromReconEntityStatus(): string

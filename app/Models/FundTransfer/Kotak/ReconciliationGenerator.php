@@ -78,7 +78,9 @@ class ReconciliationGenerator
 
             $file = new UploadedFile($reconFile, basename($reconFile));
 
-            $data = (new Settlement\Service)->reconcileH2HSettlements(['file' => $file]);
+            $data = (new Settlement\Service)->reconcileH2HSettlements(
+                        ['file' => $file],
+                        Settlement\Channel::KOTAK);
 
             $response[] = $data;
         }
