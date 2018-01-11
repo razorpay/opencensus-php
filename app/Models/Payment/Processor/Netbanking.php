@@ -53,7 +53,7 @@ class Netbanking
         IFSC::RATN,
         IFSC::INDB,
         IFSC::PUNB,
-
+        IFSC::ORBC,
         // self::BARB_R,
     ];
 
