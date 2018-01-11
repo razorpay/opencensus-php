@@ -154,8 +154,8 @@ final class Route
         'merchant_edit_free_credits'              => ['post',     'merchants/{id}/credits',                         'MerchantController@postAmountCredits',                             ],
         'merchant_fetch_users'                    => ['get',      'merchants/{id}/users',                           'MerchantController@getUsers',                                      ],
         'merchant_patch_beneficiary_code'         => ['patch',    'merchants/beneficiary/code',                     'MerchantController@patchMerchantBeneficiaryCode'                   ],
-        'merchant_beneficiary_file'               => ['get',      'merchants/beneficiary/file',                     'MerchantController@getMerchantBeneficiaryFile'                     ],
-        'merchant_post_beneficiary_file'          => ['post',     'merchants/beneficiary/file/bank',                'MerchantController@postMerchantBeneficiaryFile'                    ],
+        'merchant_beneficiary_file'               => ['get',      'merchants/beneficiary/file/{channel}',           'MerchantController@getMerchantBeneficiaryFile'                     ],
+        'merchant_post_beneficiary_file'          => ['post',     'merchants/beneficiary/file/bank/{channel}',      'MerchantController@postMerchantBeneficiaryFile'                    ],
         'merchant_notify_holiday'                 => ['post',     'merchants/notify/holiday',                       'MerchantController@postMerchantsNotifyHoliday'                     ],
         'merchant_invoice_update_gstin'           => ['put',      'merchants/{id}/invoice/gstin',                   'MerchantInvoiceController@updateGstin'                             ],
         'merchant_create_invoice_entities'        => ['post',     'merchants/invoice/create',                       'MerchantInvoiceController@postCreateInvoiceEntities'               ],
@@ -170,6 +170,7 @@ final class Route
         'merchant_get_features'                   => ['get',      'merchants/{id}/features',                        'MerchantController@getMerchantFeatures'                            ],
         'merchant_update_features'                => ['post',     'merchants/{id}/features',                        'MerchantController@updateMerchantFeatures'                         ],
         'merchants_update_hold_funds'             => ['put',      'merchants/hold_funds/bulk',                      'MerchantController@updateHoldFundsForMultipleMerchants'            ],
+        'merchants_update_channel'                => ['put',      'merchants/channel/bulk',                         'MerchantController@updateChannelForMultipleMerchants'              ],
         'merchants_update_bank_account'           => ['put',      'merchants/bank_account/bulk',                    'MerchantController@updateBankAccountForMultipleMerchants'          ],
         'credits_fetch_multiple'                  => ['get',      'credits',                                        'MerchantController@getCreditsLogs'                                 ],
         'methods_update_merchants'                => ['put',      'methods/bulkupdate',                             'MerchantController@updateMethodsForMultipleMerchants'              ],
@@ -213,6 +214,7 @@ final class Route
         'merchant_activation_migrate'             => ['post',     'merchant/activation/migrate',                    'MerchantController@postMerchantDetailMigrate'                      ],
         'merchant_activation_archive'             => ['patch',    'merchant/activation/{id}/archive',               'MerchantController@updateActivationArchive'                        ],
         'merchant_activation_status'              => ['patch',    'merchant/activation/{id}/activation_status',     'MerchantController@updateActivationStatus'                         ],
+        'merchant_activation_status_change_log'   => ['get',      'merchant/activation/{id}/status_change_log',     'MerchantController@getActivationStatusChangeLog'                   ],
         'merchant_get_rejection_reasons'          => ['get',      'merchant/activation/rejection_reasons',          'MerchantController@getRejectionReasons'                            ],
         'merchant_batches'                        => ['post',     'merchant/{id}/batches',                          'MerchantController@createBatches'                                  ],
         'merchant_payout_mail'                    => ['post',     'merchant/payout/mail',                           'MerchantController@sendPayoutMail'                                 ],
@@ -1130,8 +1132,9 @@ final class Route
         'user_reset_password_create',
         'user_reset_password_token',
         'merchant_payout_mail',
-        'gateway_payment_callback_bharatqr',
-        'geoip_update'
+        'geoip_update',
+        'transaction_bulk_update',
+        'setl_update_channel_bulk',
     ];
 
     public static $proxy = [
@@ -1295,6 +1298,7 @@ final class Route
         'workflow_action_close',
         'workflow_action_get_multiple',
         'merchants_update_hold_funds',
+        'merchants_update_channel',
         'adj_add',
         'payment_authorize_refund',
         'admin_change_password',
@@ -1305,20 +1309,19 @@ final class Route
         'merchant_get_terminals',
         'merchant_invoice_add_bulk',
         'setl_retry',
-        'setl_update_channel_bulk',
         'merchant_activation_files',
         'merchant_get_rejection_reasons',
         'merchant_batches',
         'admin_fetch_all_entities',
         'merchant_activation_archive',
         'merchant_activation_status',
+        'merchant_activation_status_change_log',
         'onboarding_features_fetch_submissions',
         'onboarding_features_get_submissions',
         'onboarding_features_update_status',
         'onboarding_features_fetch_status',
         'onboarding_features_bulk_update_status',
         'onboarding_features_update',
-        'transaction_bulk_update',
     ];
 
     public static $routePermission = [
@@ -1405,6 +1408,7 @@ final class Route
         'merchant_activate'                      => Permission::EDIT_ACTIVATE_MERCHANT,
         'admin_fetch_terminal_by_id'             => '*',
         'merchants_update_hold_funds'            => Permission::EDIT_BULK_MERCHANT_HOLD_FUNDS,
+        'merchants_update_channel'               => Permission::EDIT_BULK_MERCHANT_CHANNEL,
         'schedule_fetch_multiple'                => Permission::SCHEDULE_FETCH_MULTIPLE,
         'setl_fetch_schedule'                    => Permission::SCHEDULE_FETCH_MULTIPLE,
         'admin_fetch_all_entities'               => '*',
@@ -1452,6 +1456,7 @@ final class Route
         'merchant_activation_files'              => '*',
         'merchant_activation_archive'            => '*', // permission handled in code
         'merchant_activation_status'             => Permission::EDIT_ACTIVATE_MERCHANT,
+        'merchant_activation_status_change_log'  => Permission::VIEW_ACTIVATION_FORM,
         'merchant_get_rejection_reasons'         => '*',
         'dispute_reason_create'                  => Permission::CREATE_DISPUTE_REASON,
         'user_confirm_by_data'                   => '*',
@@ -1500,6 +1505,7 @@ final class Route
         'upi_npci_request',
         'upi_zero_call',
         'mock_billdesk_payment',
+        'gateway_payment_callback_bharatqr',
     ];
 
     public static $internalApps = [

@@ -20,6 +20,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_INTERNATIONAL_RECURRING_NOT_ALLOWED_FOR_MERCHANT,
         ],
     ],
+
     'testRecurringPaymentCreateFeatureDisabled' => [
         'response' => [
             'content' => [
@@ -114,5 +115,22 @@ return [
             'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_RECURRING_NOT_SUPPORTED,
         ],
-    ]
+    ],
+
+    'testRecurringPaymentsWithMultipleGatewayTokensForOneToken' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => ErrorCode::SERVER_ERROR,
+                    'description' => PublicErrorDescription::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'               => \RZP\Exception\RuntimeException::class,
+            'message'             => 'Terminal should not be null',
+            'internal_error_code' => ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
+        ],
+    ],
 ];

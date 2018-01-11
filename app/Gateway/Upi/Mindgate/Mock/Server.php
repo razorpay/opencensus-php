@@ -8,6 +8,7 @@ use Gateway\Upi\Mindgate;
 use RZP\Gateway\Upi\Mindgate\Action;
 use phpseclib\Crypt\AES;
 use RZP\Gateway\Base;
+use RZP\Gateway\Upi\Mindgate\Status;
 use RZP\Gateway\Utility;
 use RZP\Gateway\Upi\Base\Entity as UPIEntity;
 use Models\Payment;
@@ -20,9 +21,10 @@ class Server extends Base\Mock\Server
      * actual incoming request
      */
     const REQUEST_FIELD_COUNT = [
-        Action::COLLECT     => 7,
-        Action::VERIFY      => 4,
-        Action::REFUND      => 10,
+        Action::COLLECT      => 7,
+        Action::VERIFY       => 4,
+        Action::REFUND       => 10,
+        Action::VALIDATE_VPA => 4,
     ];
 
     /**
@@ -54,7 +56,7 @@ class Server extends Base\Mock\Server
             random_int(100000, 999999),
             // Amount
             $input[3],
-            'SUCCESS',
+            Status::SUCCESS,
             // Description
             'Transaction Collect request initiated successfully',
             // Payer VA
@@ -70,6 +72,38 @@ class Server extends Base\Mock\Server
         }
 
         $this->content($content);
+
+        return $this->makeResponse($content);
+    }
+
+    public function validateVpa(string $input)
+    {
+        $this->action = Action::VALIDATE_VPA;
+
+        $input = $this->parseInput($input, Action::VALIDATE_VPA);
+
+        $this->validateActionInput($input, Action::VALIDATE_VPA);
+
+        $content = [
+            // Razorpay Payment Id
+            $input[1],
+            // Customer VPA
+            $input[2],
+            // Customer name
+            'Mayank Amencherla',
+            // Status
+            Status::VPA_AVAILABLE,
+            // Description
+            'Customer vpa is valid',
+        ];
+
+        if ($input[2] === 'invalidvpa@hdfcbank')
+        {
+            $content[3] = Status::VPA_NOT_AVAILABLE;
+            $content[4] = 'Customer vpa not valid';
+        }
+
+        $this->content($content, 'validate_vpa');
 
         return $this->makeResponse($content);
     }
@@ -144,12 +178,12 @@ class Server extends Base\Mock\Server
 
     protected function callbackResponseContent(array $upiEntity, array $payment)
     {
-        $status = 'SUCCESS';
+        $status = Status::SUCCESS;
 
         switch ($payment['vpa'])
         {
             case 'failed@hdfcbank':
-                $status = 'FAILED';
+                $status = Status::FAILED;
                 break;
         }
 
@@ -216,7 +250,7 @@ class Server extends Base\Mock\Server
     protected function getDefaultVerifyResponse(array $input, $payment): array
     {
         return [
-            'status'        => 'SUCCESS',
+            'status'        => Status::SUCCESS,
             'message'       => 'Transaction success',
             'resp_code'     => '00',
             'npci_txn_id'   => random_int(100000000000, 999999999999),
@@ -249,7 +283,7 @@ class Server extends Base\Mock\Server
 
         if ($payment['vpa'] === 'failedrefund@hdfcbank')
         {
-            $response[4] = 'FAILED';
+            $response[4] = Status::FAILED;
         }
 
         return $this->makeResponse($response, Action::REFUND);
@@ -266,7 +300,7 @@ class Server extends Base\Mock\Server
             $input[6],
             date('Y:m:d h:i:s', time()),
             // REFUND_SUCCESS is just S
-            'S',
+            Status::SUCCESS,
             'Transaction success',
             // response code
             '00',

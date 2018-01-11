@@ -172,6 +172,11 @@ class Processor extends Base\Core
             list($setl, $bankTransferAtpt) = $this->repo->transaction(
                 function() use ($merchantSettler, $setl, $setlTxns, $setlTxnsCount)
             {
+                if ($setl->hasTransaction() === false)
+                {
+                    $merchantSettler->createTransaction($setl);
+                }
+
                 list($setl, $bankTransferAtpt) = $merchantSettler->retryFailedSettlement($setl);
 
                 return $this->createAndupdateBatchEntities($setl, $setlTxnsCount, $bankTransferAtpt);
@@ -344,13 +349,13 @@ class Processor extends Base\Core
      */
     protected function isInvalidSettlementTime(): bool
     {
-        // Cron runs at 5.01pm.
-        $fivePm = Carbon::today(Timezone::IST)->hour(17)->minute(10)->getTimestamp();
+        // Cron runs at 6.10pm.
+        $sixPm = Carbon::today(Timezone::IST)->hour(18)->minute(10)->getTimestamp();
 
         // No settlements after five PM but allow settlements file upload anytime
         // before that, we want to do it before 8 am as well as that allows us
         // some time for fixing things before settlement window opens.
-        if (($this->setlTime >= $fivePm) and ($this->env !== 'testing'))
+        if (($this->setlTime >= $sixPm) and ($this->env !== 'testing'))
         {
             return true;
         }

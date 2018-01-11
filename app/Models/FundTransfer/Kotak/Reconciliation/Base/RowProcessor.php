@@ -54,6 +54,12 @@ class RowProcessor extends BaseCore
      */
     protected $firstFailure = false;
 
+    /**
+     * @var bool
+     * Denotes if the webhook should be fired.
+     */
+    protected $fireWebhook;
+
     protected $dashboardUrl;
 
     protected $holdFunds = false;
@@ -64,27 +70,39 @@ class RowProcessor extends BaseCore
 
         $this->row = $row;
 
+        $this->fireWebhook = false;
+
         $this->dashboardUrl = $this->app['config']->get('applications.dashboard.url');
     }
 
-    public function process($reconciledAt)
+    /**
+     * Returns an array with the following 2 keys
+     * - entity
+     * - fire_webhook
+     *
+     * @param $reconciledAt
+     *
+     * @return array
+     */
+    public function process($reconciledAt): array
     {
         $this->reconciledAt = $reconciledAt;
-
-        if (($this->row['Payment_Ref_No.'] === '9J73yH9DaC7s2x') or
-            ($this->row['Credit_Narration'] === 'RAZORPAY AXIS'))
-        {
-            $this->trace->info(TraceCode::PAYOUT_RECON_SKIPPED,
-                [
-                    'row' => $this->row,
-                ]);
-
-            return null;
-        }
 
         $this->parseRow();
 
         $this->fetchEntities();
+
+        if ((empty($this->reconEntity) === true) or
+            (empty($this->source) === true))
+        {
+            $this->trace->error(TraceCode::SETTLEMENT_RECONCILIATION_SKIPPED,
+                [
+                    'row'           => $this->row,
+                    'parsed_data'   => $this->parsedData,
+                ]);
+
+            return null;
+        }
 
         $this->getReconciliationStatus();
 
@@ -95,7 +113,10 @@ class RowProcessor extends BaseCore
             $this->sendReconciliationFailureEmail();
         }
 
-        return $this->entity;
+        return [
+            'entity'        => $this->entity,
+            'fire_webhook'  => $this->fireWebhook
+        ];
     }
 
     protected function parseRow()
@@ -172,6 +193,13 @@ class RowProcessor extends BaseCore
                     'Old status: ' . $oldStatus . ' New status: ' . $status .
                     'Entity Id: ' . $this->reconEntity->getPublicId());
             }
+
+            //
+            // Set the fire webhook flag as true only for the settlements that
+            // have to be updated in the current settlement cycle. For the settlements
+            // that have been settled in the previous cycles, this flag stays false.
+            //
+            $this->fireWebhook = true;
         }
 
         $this->parsedData['failure_reason'] = $failureReason;
