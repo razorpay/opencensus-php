@@ -51,10 +51,8 @@ class AxisMigs extends Base
                 self::REFUND_AMOUNT         => $this->getFormattedAmount($row['refund']['amount']),
                 self::MERCHANT_CODE         => $row['terminal']['gateway_merchant_id']
             ];
-
         }
 
         return $formattedData;
-
     }
 }

@@ -44,6 +44,5 @@ class AirtelMoney extends Base
         }
 
         return $formattedData;
-
     }
 }

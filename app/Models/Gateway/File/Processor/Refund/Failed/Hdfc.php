@@ -49,6 +49,5 @@ class Hdfc extends Base
         }
 
         return $formattedData;
-
     }
 }

@@ -39,6 +39,7 @@ class UpiIcici extends Base
                 RefundFile::MERCHANT_IFSC_CODE => '',
             ];
         }
+
         return $formattedData;
     }
 }

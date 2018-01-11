@@ -54,6 +54,5 @@ class Freecharge extends Base
         }
 
         return $formattedData;
-
     }
 }
