@@ -336,6 +336,11 @@ return [
         'pooling_account_number' => env('KOTAK_NODAL_ACCOUNT_NUMBER'),
     ],
 
+    'netbanking_oriental' => [
+        'test_merchant_id'       => env('NETBANKING_ORIENTAL_GATEWAY_TEST_MERCHANT_ID'),
+        'test_hash_secret'       => env('NETBANKING_ORIENTAL_GATEWAY_TEST_HASH_SECRET'),
+    ],
+
     'netbanking_kotak' => [
         'live_hash_secret'     => env('NETBANKING_KOTAK_GATEWAY_LIVE_HASH_SECRET'),
         'test_hash_secret'     => env('NETBANKING_KOTAK_GATEWAY_TEST_HASH_SECRET'),
