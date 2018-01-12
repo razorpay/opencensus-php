@@ -88,9 +88,9 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_ID,
     ];
 
-    protected static $modifiers = [
+    /*protected static $modifiers = [
         self::AMOUNT,
-    ];
+    ];*/
 
     protected $generateIdOnCreate = true;
 
@@ -174,6 +174,11 @@ class Entity extends Base\PublicEntity
     public function getCardNumber()
     {
         return $this->getAttribute(self::CARD_NUMBER);
+    }
+
+    public function getVpa()
+    {
+        return $this->getAttribute(self::VPA);
     }
 
     public function isExpected()

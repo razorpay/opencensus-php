@@ -13,6 +13,7 @@ use RZP\Trace\TraceCode;
 use phpseclib\Crypt\RSA;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Models\BharatQr;
 use RZP\Gateway\Upi\Base;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Verify;
@@ -837,6 +838,30 @@ class Gateway extends Base\Gateway
                 Payment\Entity::VPA => $gatewayPayment->getVpa()
             ]
         ];
+    }
+
+    public function qrCallback(array $input)
+    {
+        parent::qrCallback($input);
+
+        $payment = $this->createGatewayPaymentEntity($input);
+
+        $payment->setAmount($this->getIntegerFormattedAmount($input[Fields::PAYER_AMOUNT]));
+
+        $payment->setQrCodeId($input[Fields::MERCHANT_TRAN_ID]);
+
+        $this->repo->saveOrFail($payment);
+
+        $qrData = [
+            BharatQr\Entity::AMOUNT                => $payment->getAmount(),
+            BharatQr\Entity::VPA                   => $payment->getVpa(),
+            BharatQr\Entity::METHOD                => Payment\Method::UPI,
+            BharatQr\Entity::RRN                   => $payment->getGatewayPaymentId(),
+            BharatQr\Entity::MERCHANT_REFERENCE    => $payment->getQrCodeId(),
+            BharatQr\Entity::PROVIDER_REFERENCE_ID => $payment->getGatewayPaymentId(),
+        ];
+
+        return $qrData;
     }
 
     public function refund(array $input)

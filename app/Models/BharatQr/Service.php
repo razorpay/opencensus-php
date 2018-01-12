@@ -3,6 +3,8 @@
 namespace RZP\Models\BharatQr;
 
 use RZP\Models\Base;
+use RZP\Models\Payment\Action;
+use RZP\Models\Payment\Gateway;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
 
@@ -25,6 +27,11 @@ class Service extends Base\Service
         NotificationParams::SENDER_NAME => Entity::CUSTOMER_NAME,
     ];
 
+    protected $gatewayMapping = [
+        'icici'   => Gateway::UPI_ICICI,
+        'hitachi' => Gateway::HITACHI,
+    ];
+
     protected $core;
 
     public function __construct()
@@ -34,20 +41,30 @@ class Service extends Base\Service
         $this->core = new Core;
     }
 
-    public function processPayment(array $input)
+    public function processPayment(array $input, string $gateway)
     {
         $this->trace->info(
             TraceCode::BHARAT_QR_PAYMENT_PROCESS_REQUEST,
-            $input
+            [
+                'input'   => $input,
+                'gateway' => $gateway,
+            ]
         );
 
-        $bharatQrInputParams = $this->getBharatQrInputParams($input);
+        $bharatQrInputParams = $this->callGatewayFunction($gateway, $input);
 
         $valid = $this->core->processPayment($bharatQrInputParams);
 
         $response = $this->getResponse($valid);
 
         return $response;
+    }
+
+    protected function callGatewayFunction(string $gateway, array $gatewayInput)
+    {
+        $action = Action::QR_CALLBACK;
+
+        return $this->app['gateway']->call($this->gatewayMapping[$gateway], $action, $gatewayInput, null);
     }
 
     protected function getResponse(bool $valid)

@@ -4,7 +4,7 @@ namespace RZP\Models\BharatQr;
 
 class NotificationParams
 {
-    //Bharat Qr Notification Params
+    //Hitachi Notification Params
     const F002        = 'F002';
     const F003        = 'F003';
     const F004        = 'F004';
@@ -20,4 +20,6 @@ class NotificationParams
     const F102        = 'F102';
     const PURCHASE_ID = 'PurchaseID';
     const SENDER_NAME = 'SenderName';
+
+    //
 }

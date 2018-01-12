@@ -23,7 +23,8 @@ class CreateUpi extends Migration
 
             $table->increments(Upi::ID);
 
-            $table->char(Upi::PAYMENT_ID, Payment::ID_LENGTH);
+            $table->char(Upi::PAYMENT_ID, Payment::ID_LENGTH)
+                  ->nullable();
 
             $table->char(Upi::REFUND_ID, Payment::ID_LENGTH)
                   ->nullable();
@@ -33,7 +34,8 @@ class CreateUpi extends Migration
             $table->string(Upi::TYPE)
                   ->nullable();
 
-            $table->string(Upi::AMOUNT);
+            $table->string(Upi::AMOUNT)
+                  ->nullable();
 
             $table->string(Upi::ACQUIRER, 20);
 

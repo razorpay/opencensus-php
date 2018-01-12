@@ -22,6 +22,8 @@ class BharatQrPaymentTest extends TestCase
 
         $this->fixtures->merchant->activate();
 
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
         $this->qrCode = $this->createVirtualAccount();
 
         $this->ba->directAuth();
@@ -51,6 +53,41 @@ class BharatQrPaymentTest extends TestCase
         $this->assertEquals(200, $payment['amount']);
 
         $this->assertEquals($bharatQr['payment_id'], $payment['id']);
+        $this->assertEquals($bharatQr['expected'], true);
+    }
+
+    public function testUpiQrPaymentProcess()
+    {
+        $request = $this->testData[__FUNCTION__];
+
+        $qrCode = $this->getLastEntity('qr_code', true);
+
+        $request['content']['merchantTranId'] = $qrCode['id'];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $xmlResponse = $response['original'];
+
+        $response = $this->parseResponseXml($xmlResponse);
+
+        $this->assertEquals('OK', $response[0]);
+
+        //Created Qr Entity As Expected
+        $bharatQr = $this->getLastEntity('bharat_qr', true);
+
+        // Payment is automatically captured
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(10000, $payment['amount']);
+
+        $this->assertEquals($bharatQr['payment_id'], $payment['id']);
+
+        $upi = $this->getLastEntity('upi', true);
+
+        $this->assertEquals($qrCode['id'], $upi['qr_code_id']);
+
+        $this->assertEquals($payment['id'], $upi['payment_id']);
         $this->assertEquals($bharatQr['expected'], true);
     }
 

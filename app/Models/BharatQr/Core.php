@@ -34,7 +34,7 @@ class Core extends Base\Core
         {
             $bharatQr = (new Entity)->build($input);
 
-            $this->determineAndSetMode($bharatQr);
+           // $this->determineAndSetMode($bharatQr);
 
             $this->mutex->acquireAndRelease(
                 $input[Entity::MERCHANT_REFERENCE],
@@ -49,6 +49,7 @@ class Core extends Base\Core
         }
         catch (\Throwable $ex)
         {
+            s($ex->getMessage());
             $this->trace->traceException(
                 $ex, Trace::ERROR, TraceCode::BHARAT_QR_PAYMENT_PROCESSING_FAILED, $input);
 

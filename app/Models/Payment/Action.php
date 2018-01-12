@@ -35,6 +35,7 @@ class Action
     const CHECK_BALANCE                 = 'check_balance';
     const GENERATE_REFUNDS              = 'generate_refunds';
     const GENERATE_CLAIMS               = 'generate_claims';
+    const QR_CALLBACK                   = 'qr_callback';
     const RECONCILE_DEBIT_EMANDATE      = 'reconcile_debit_emandate';
 
     protected $merchant;

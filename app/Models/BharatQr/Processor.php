@@ -209,7 +209,14 @@ class Processor extends VirtualAccount\Processor
         ];
 
         // TODO: find a better method to do this. This is done in order to bypass validation
-        $paymentArray['card'] = $this->getDummyCardDetails($bharatQr);
+        if ($bharatQr->getMethod() === Method::CARD)
+        {
+            $paymentArray['card'] = $this->getDummyCardDetails($bharatQr);
+        }
+        else
+        {
+            $paymentArray['vpa'] = $bharatQr->getVpa();
+        }
 
         if ($this->virtualAccount->hasCustomer() === true)
         {
