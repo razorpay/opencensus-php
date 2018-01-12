@@ -53,6 +53,11 @@ class OAuthScopes
         //
         // Adds the default scopes for the current route to existing $scopes
         //
-        $scopes[] = ($routeParams[0] === 'get') ? self::READ_ONLY : self::READ_WRITE;
+        $scopes[] = self::READ_WRITE;
+
+        if ($routeParams[0] === 'get')
+        {
+            $scopes[] = self::READ_ONLY;
+        }
     }
 }

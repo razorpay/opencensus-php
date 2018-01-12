@@ -15,57 +15,62 @@ class EntityValidator
      *
      * - Automatic creation of Diff data.
      * - Automatic validation of incoming payload over the entity.
-     *
-     * The map can be index based or key based:
-     *
-     * 0 or entity_name for Entity Name.
-     * 1 or validator for Validator.
      */
     const WORKFLOW_MAP = [
-        'merchant_edit_email'   => [ Entity::MERCHANT, 'editEmail' ],
+        // Middleware
 
-        'admin_edit'            => [ Entity::ADMIN, 'edit' ],
+        'merchant_edit_email'   => [
+            self::ENTITY_NAME_KEY   => Entity::MERCHANT,
+            self::VALIDATOR_KEY     => 'editEmail'
+        ],
+
+        'admin_edit'            => [
+            self::ENTITY_NAME_KEY   => Entity::ADMIN,
+            self::VALIDATOR_KEY     => 'edit'
+        ],
 
         'role_edit'             => [
             self::ENTITY_NAME_KEY   => Entity::ROLE,
             self::VALIDATOR_KEY     => 'edit'
         ],
+
         'dispute_edit'          => [
             self::ENTITY_NAME_KEY   => Entity::DISPUTE,
             self::VALIDATOR_KEY     => 'edit',
-        ]
+        ],
+
+        'permission_create'          => [
+            self::ENTITY_NAME_KEY   => Entity::PERMISSION,
+            self::VALIDATOR_KEY     => 'create'
+        ],
+
+        // Non-middleware
+
+        'admin_create'          => [
+            self::ENTITY_NAME_KEY   => Entity::ADMIN,
+            self::VALIDATOR_KEY     => 'create'
+        ],
     ];
 
     const RELATIONS_WHITELIST = [
+        // Middleware
         'admin_edit',
         'role_edit',
+        'permission_create',
+
+        // Non-middleware
+        'admin_create',
     ];
-
-    private static function indexBasedMap($map)
-    {
-        if (isset($map[0]))
-        {
-            return true;
-        }
-
-        return false;
-    }
 
     public static function getEntityName($route)
     {
         $entityName = null;
 
-        if (array_key_exists($route, self::WORKFLOW_MAP))
+        if (empty(self::WORKFLOW_MAP[$route]) === false)
         {
             $map = self::WORKFLOW_MAP[$route];
 
-            // Get 0th index or the ENTITY_NAME_KEY value
-
-            if ((static::indexBasedMap($map)) and (empty($map[0]) === false))
-            {
-                $entityName = $map[0];
-            }
-            else if (empty($map[self::ENTITY_NAME_KEY]) === false)
+            if (empty($map[self::ENTITY_NAME_KEY]) === false)
             {
                 $entityName = $map[self::ENTITY_NAME_KEY];
             }
@@ -78,17 +83,13 @@ class EntityValidator
     {
         $validator = null;
 
-        if (array_key_exists($route, self::WORKFLOW_MAP))
+        if (empty(self::WORKFLOW_MAP[$route]) === false)
         {
             $map = self::WORKFLOW_MAP[$route];
 
             // Get 1th index or the VALIDATOR_KEY value
 
-            if ((static::indexBasedMap($map)) and (empty($map[0]) === false))
-            {
-                $validator = $map[1];
-            }
-            else if (empty($map[self::VALIDATOR_KEY]) === false)
+            if (empty($map[self::VALIDATOR_KEY]) === false)
             {
                 $validator = $map[self::VALIDATOR_KEY];
             }
