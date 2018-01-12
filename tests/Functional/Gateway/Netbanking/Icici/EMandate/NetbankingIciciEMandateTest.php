@@ -26,6 +26,10 @@ class NetbankingIciciEMandateTest extends TestCase
 
     protected $payment;
 
+    const ACCOUNT_NUMBER    = '914010009305862';
+    const IFSC              = 'UTIB0002766';
+    const NAME              = 'Test account';
+
     // TODO: Test global customer / token flow
 
     public function setUp()
@@ -42,8 +46,13 @@ class NetbankingIciciEMandateTest extends TestCase
 
         $this->fixtures->merchant->addFeatures([Constants::CHARGE_AT_WILL, Constants::E_MANDATE]);
 
-        $this->payment = $this->getNetbankingRecurringPaymentArray(IFSC::ICIC);
-        unset($this->payment[Entity::CARD]);
+        $this->payment = $this->getEmandateNetbankingRecurringPaymentArray(IFSC::ICIC);
+
+        $this->payment['bank_account'] = [
+            'account_number'    => self::ACCOUNT_NUMBER,
+            'ifsc'              => self::IFSC,
+            'name'              => self::NAME,
+        ];
 
         $this->mockTokenex();
     }
@@ -105,6 +114,8 @@ class NetbankingIciciEMandateTest extends TestCase
         $payment[Payment::TOKEN] = $paymentEntity[Payment::TOKEN_ID];
 
         unset($payment[Payment::METHOD]);
+        unset($payment[Payment::AUTH_TYPE]);
+        unset($payment['bank_account']);
 
         //
         // Second auth payment for the recurring product

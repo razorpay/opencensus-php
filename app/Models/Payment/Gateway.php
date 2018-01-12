@@ -470,10 +470,23 @@ class Gateway
         Gateway::NETBANKING_HDFC,
     ];
 
-    public static $eMandateBanks = [
-        IFSC::ICIC,
-        IFSC::UTIB,
-        IFSC::HDFC,
+    /**
+     * List of ALL auth types and the corresponding
+     * banks supported by that auth type.
+     *
+     * @var array
+     */
+    public static $emandateBanks = [
+        AuthType::NETBANKING => [
+            IFSC::ICIC,
+            IFSC::UTIB,
+            IFSC::HDFC,
+        ],
+        AuthType::AADHAAR => [
+            // IFSC::ICIC,
+            // IFSC::UTIB,
+            // IFSC::HDFC,
+        ]
     ];
 
     /**
@@ -715,16 +728,16 @@ class Gateway
         return (in_array($gateway, self::$fileBasedEMandateDebitGateways) === true);
     }
 
-    /**
-     * @param string $bank
-     *
-     * @return bool
-     */
-    public static function isRecurringSupportedOnBank(string $bank) : bool
+    public static function getAvailableEmandateBanksForAuthType(string $authType): array
     {
-        $gateway = self::$netbankingToGatewayMap[$bank];
+        $banks = [];
 
-        return self::isRecurringGateway($gateway);
+        if (isset(self::$emandateBanks[$authType]) === true)
+        {
+            $banks = self::$emandateBanks[$authType];
+        }
+
+        return $banks;
     }
 
     public static function getChannel($gateway)
