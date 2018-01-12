@@ -33,7 +33,7 @@ class TripleDESCrypto
      *
      * @return string
      */
-    public function encryptString($plaintext)
+    public function encrypt($plaintext)
     {
         return $this->des->encrypt($plaintext);
     }
@@ -44,7 +44,7 @@ class TripleDESCrypto
      *
      * @return string
      */
-    public function decryptString($ciphertext)
+    public function decrypt($ciphertext)
     {
         return $this->des->decrypt($ciphertext);
     }

@@ -15,7 +15,7 @@ class TripleDESCrypto extends BaseTripeDESCrypto
      */
     public function encryptString($plaintext)
     {
-        $encryptedData = parent::encryptString($plaintext);
+        $encryptedData = parent::encrypt($plaintext);
 
         return bin2hex($encryptedData);
     }
@@ -32,7 +32,7 @@ class TripleDESCrypto extends BaseTripeDESCrypto
     {
         $data = hex2bin($ciphertext);
 
-        $decryptedData = parent::decryptString($data);
+        $decryptedData = parent::decrypt($data);
 
         if (empty(strpos($decryptedData, '^')) === false)
         {

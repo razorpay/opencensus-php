@@ -2,17 +2,17 @@
 
 namespace RZP\Gateway\Fss;
 
-use RZP\Constants\Entity as E;
-use RZP\Constants\Mode;
-use RZP\Error\ErrorCode;
-use RZP\Models\Card;
 use RZP\Exception;
-use RZP\Models\Currency\Currency;
-use RZP\Models\Payment;
-use RZP\Models\Terminal;
+use RZP\Models\Card;
 use RZP\Gateway\Base;
-use RZP\Gateway\Base\VerifyResult;
+use RZP\Constants\Mode;
+use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
+use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Entity as E;
+use RZP\Models\Currency\Currency;
+use RZP\Gateway\Base\VerifyResult;
 
 class Gateway extends Base\Gateway
 {

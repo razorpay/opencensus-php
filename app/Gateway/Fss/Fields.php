@@ -4,8 +4,10 @@ namespace RZP\Gateway\Fss;
 
 class Fields
 {
+    // Card number
     const CARD                          = 'card';
 
+    // Card verification number
     const CVV                           = 'cvv2';
 
     const CURRENCY_CODE                 = 'currencycode';
@@ -25,12 +27,14 @@ class Fields
     // Purchase, Credit, etc,
     const ACTION                        = 'action';
 
+    // Merchant TrackId which is our paymentid/refundid
     const TRACK_ID                      = 'trackid';
 
     const ERROR_URL                     = 'errorURL';
 
     const RESPONSE_URL                  = 'responseURL';
 
+    // Terminal Id
     const ID                            = 'id';
 
     const PASSWORD                      = 'password';
@@ -49,6 +53,7 @@ class Fields
 
     const RESULT                        = 'result';
 
+    // Gateway PaymentId
     const PAY_ID                        = 'payid';
 
     const AUTH_RES_CODE                 = 'authrescode';
@@ -76,6 +81,7 @@ class Fields
 
     const POST_DATE                     = 'postdate';
 
+    // Encrypted data from gateway.
     const TRANDATA                      = 'trandata';
 
     const PARAM                         = 'param';

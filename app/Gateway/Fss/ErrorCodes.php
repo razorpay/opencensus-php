@@ -511,7 +511,14 @@ class ErrorCodes
         'PY20002' => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_AMOUNT,
     ];
 
-    public static function getMappedCode($code = null)
+    /**
+     * Gets RZP mapped errorcode.
+     *
+     * @param string $code
+     *
+     * @return mixed|string
+     */
+    public static function getMappedCode($code = null): string
     {
         if (isset(self::$errorCodeMap[$code]))
         {
@@ -521,6 +528,13 @@ class ErrorCodes
         return ErrorCode::GATEWAY_ERROR_REQUEST_ERROR;
     }
 
+    /**
+     * Gets RZP Errorcode description
+     *
+     * @param string $code
+     *
+     * @return mixed|string
+     */
     public static function getErrorDesc($code = null)
     {
         if (isset(self::$reasonCodes[$code]))

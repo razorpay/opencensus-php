@@ -11,11 +11,25 @@ class Gateway extends Fss\Gateway
 {
     use Base\Mock\GatewayTrait;
 
+    /**
+     * Authorize function calling mock
+     *
+     * @param array $input
+     *
+     * @return mixed
+     */
     public function authorize(array $input)
     {
         return $this->authorizeMock($input);
     }
 
+    /**
+     * @param array  $content
+     * @param string $method
+     * @param null   $type
+     *
+     * @return array
+     */
     public function getPurchaseRequestFieldsArray($content = [], $method = 'post', $type = null)
     {
         $purchaseUrl = parent::getPurchaseRequestFieldsArray($content, $method, $type);
