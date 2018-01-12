@@ -64,4 +64,15 @@ return [
         'status'           => AttemptStatus::FAILED,
         'failure_reason'   => 'Reconciliation',
     ],
+
+    'fetchAndMatchBatchDataSettlement' => [
+        'channel'           => Channel::ICICI,
+        'amount'            => 1752800,
+        'fees'              => 47200,
+        'tax'               => 7200,
+        'api_fee'           => 0,
+        'gateway_fee'       => 0,
+        'total_count'       => 1,
+        'transaction_count' => 4,
+    ],
 ];

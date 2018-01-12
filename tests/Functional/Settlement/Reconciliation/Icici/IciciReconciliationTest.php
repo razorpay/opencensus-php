@@ -137,8 +137,6 @@ class IciciReconciliationTest extends TestCase
 
     public function testReconEntiyFailure()
     {
-        Mail::fake();
-
         $this->testReconFailureFileProcess();
 
         $this->ba->appAuth();
@@ -164,9 +162,6 @@ class IciciReconciliationTest extends TestCase
 
         $this->assertNotNull($settlement[Settlement\Entity::UTR]);
 
-        $merchant = $this->getEntityById('merchant','10000000000000', true);
-        $this->assertEquals(true, $merchant['hold_funds']);
-
         // Validate settlement attempt entity
         $settlementAttempt = $this->getLastEntity('fund_transfer_attempt', true);
         $this->assertTestResponse($settlementAttempt, 'matchSettlementAttemptForReconEntityFailure');
@@ -181,8 +176,6 @@ class IciciReconciliationTest extends TestCase
         $txn = $this->getLastEntity('transaction', true);
         $this->assertEquals('settlement', $txn['type']);
         $this->assertNotNull($txn['reconciled_at']);
-
-        Mail::assertSent(SettlementFailureMail::class);
 
         return $settlement;
     }
