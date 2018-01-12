@@ -40,6 +40,8 @@ class RefundReconciliator extends Base\Mock\RefundReconciliator
      */
     protected $fileToWriteName = 'REFUND_REPORT';
 
+    protected $shouldAddHeaders = false;
+
     protected function getReconciliationData(array $input)
     {
         $data = [];

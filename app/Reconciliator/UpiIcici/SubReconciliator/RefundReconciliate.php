@@ -77,11 +77,6 @@ class RefundReconciliate extends Base\RefundReconciliate
 
     protected function getReconRefundAmount(array $row)
     {
-        $refundAmount = parent::getReconRefundAmount($row);
-
-        return intval(number_format($refundAmount, 2, '.', ''));
+        return get_integer_formatted_amount($row[self::COLUMN_REFUND_AMOUNT]);
     }
-
-    // TODO: Add getter persister methods for this refund reconciliate class
 }
-

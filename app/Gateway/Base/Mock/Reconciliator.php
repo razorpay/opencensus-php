@@ -33,7 +33,7 @@ class Reconciliator
      * Tells us if headers need to be added to the recon file
      * @var bool
      */
-    protected $shouldAddHeaders = false;
+    protected $shouldAddHeaders = true;
 
     protected $fileExtension = FileStore\Format::XLSX;
 

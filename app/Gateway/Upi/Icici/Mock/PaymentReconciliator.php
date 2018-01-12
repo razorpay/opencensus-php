@@ -36,6 +36,8 @@ class PaymentReconciliator extends Base\Mock\PaymentReconciliator
      */
     protected $fileToWriteName = 'MIS_REPORT';
 
+    protected $shouldAddHeaders = false;
+
     /**
      * The parent class's method gets only successful payments,
      * but for sbi recon, we need all payments - both successful
