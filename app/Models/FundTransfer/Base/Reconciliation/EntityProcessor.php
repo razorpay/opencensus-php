@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Mail\Merchant\SettlementFailure as SettlementFailureMail;
 
 class EntityProcessor extends Base\Core
 {
@@ -90,9 +91,9 @@ class EntityProcessor extends Base\Core
     {
         if ($this->holdFunds === true)
         {
-            $this->reconEntity->merchant->setHoldFunds(true);
+            $this->fta->merchant->setHoldFunds(true);
 
-            $this->repo->saveOrFail($this->reconEntity->merchant);
+            $this->repo->saveOrFail($this->fta->merchant);
         }
     }
 
@@ -103,20 +104,20 @@ class EntityProcessor extends Base\Core
             return;
         }
 
-        $merchantId = $this->entity->getMerchantId();
+        $merchantId = $this->source->getMerchantId();
 
         $data['merchant_id'] = $merchantId;
 
-        $data['remarks'] = $this->entity->getRemarks();
+        $data['remarks'] = $this->source->getRemarks();
 
         $data['profile_link'] = $this->dashboardUrl . '#/app/profile';
 
         // bankAccount for Settlelemt entity, and destination for Payout entity
-        $ba = $this->entity->destination ?? $this->entity->bankAccount;
+        $ba = $this->source->destination ?? $this->source->bankAccount;
 
         $data['last4'] = $ba->getRedactedAccountNumber();
 
-        $data['merchant_email'] = $this->entity->merchant->getEmail();
+        $data['merchant_email'] = $this->source->merchant->getEmail();
 
         $data['subject'] = 'Razorpay | Notification for failed settlement on your account ' . $merchantId;
 
@@ -127,7 +128,7 @@ class EntityProcessor extends Base\Core
 
     protected function isMailEnabled(): bool
     {
-        if ($this->entity->merchant->isLinkedAccount() === true)
+        if ($this->source->merchant->isLinkedAccount() === true)
         {
             return false;
         }
@@ -142,7 +143,7 @@ class EntityProcessor extends Base\Core
             return false;
         }
 
-        if (Attempt\Type::isNotifyType($this->entity->getEntity()) === false)
+        if (Attempt\Type::isNotifyType($this->source->getEntity()) === false)
         {
             return false;
         }

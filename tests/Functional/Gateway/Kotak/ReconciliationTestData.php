@@ -65,14 +65,13 @@ return [
 
     'matchSummaryForReconFailure' => [
         'total_count'                   => 1,
-        'unprocessed_ids'               => '',
         'failures_count'                => 1,
         'settlement_failure_amount'     => 4382000,
         'settlement_failure_count'      => 1,
         'settlement_failure_remarks'    => 'All settlements failed.',
     ],
 
-    'matchSummaryForReconSuccess' => [
+    'matchSummaryForReconFile' => [
         'channel'                       => \RZP\Models\Settlement\Channel::KOTAK,
         'total_count'                   => 1,
         'unprocessed_count'             => 0,
