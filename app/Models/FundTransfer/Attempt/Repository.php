@@ -96,7 +96,7 @@ class Repository extends Base\Repository
         $from, $to, string $status, array $relations = [])
     {
         $query = $this->newQuery()
-                      ->select([Entity::ID])
+                      ->select([Entity::ID, Entity::BATCH_FUND_TRANSFER_ID])
                       ->whereBetween(Entity::CREATED_AT, [$from, $to])
                       ->where(Entity::STATUS, $status);
 

@@ -9,6 +9,7 @@ use RZP\Models\Payout\Status as PayoutStatus;
 use RZP\Models\FundTransfer\Attempt\Status as AttemptStatus;
 use RZP\Models\FundTransfer\Kotak;
 use RZP\Models\FileStore\Creator;
+use RZP\Models\Settlement\Channel;
 
 trait ReconciliationTrait
 {
@@ -138,7 +139,7 @@ trait ReconciliationTrait
 
     protected function createSettlementsAndSettlementFile(
         $settlementCount = 2,
-        $setlAttemptTimestamp = null): array
+        $setlAttemptTimestamp = null): Creator
     {
         $timestamp = $setlAttemptTimestamp ?: Carbon::today(Timezone::IST)->timestamp;
 
@@ -146,29 +147,29 @@ trait ReconciliationTrait
         $merchant = $this->fixtures->create('merchant');
         $merchantId = $merchant->getId();
 
-        $bankAccount = $this->fixtures->create('bank_account', ['entity_id' => $merchantId]);
+        $this->fixtures->create('bank_account', ['entity_id' => $merchantId]);
 
         // Create settlements
         $settlements = $this->fixtures->times($settlementCount)->create(
             'settlement',
             [
-                'merchant_id' => $merchantId,
-                'bank_account_id' => $merchant->bankAccount->getId(),
-                'utr' => null,
-                'created_at' => $timestamp,
+                'merchant_id'       => $merchantId,
+                'bank_account_id'   => $merchant->bankAccount->getId(),
+                'utr'               => null,
+                'created_at'        => $timestamp,
             ]);
 
         // Create batch of settlement
         $batchTransferEntity = $this->fixtures->create(
             'batch_fund_transfer',
             [
-                'total_count' => 1,
+                'total_count'       => 1,
                 'transaction_count' => $settlementCount,
-                'created_at' => $timestamp
+                'created_at'        => $timestamp
             ]);
 
         // Create fund transfer attempts
-        $textData = $allAttempts = [];
+        $allAttempts = [];
 
         foreach ($settlements as $settlement)
         {
@@ -186,6 +187,7 @@ trait ReconciliationTrait
             $fta = $this->fixtures->create(
                 'fund_transfer_attempt',
                 [
+                    'channel'                   => Channel::KOTAK,
                     'source_id'                 => $settlement->getId(),
                     'created_at'                => $timestamp,
                     'bank_account_id'           => $settlement->bankAccount->getId(),
@@ -202,16 +204,13 @@ trait ReconciliationTrait
         list($textFile, $excelFile) = (new Kotak\NodalAccount)->generateSettlementFile(
                                                                         $allAttempts, false);
 
-        // Update batch with generated settlement file id
-        $batchTransferEntity->setTxtFileId(($textFile->get())['id']);
-
         $this->fixtures->edit(
             'batch_fund_transfer',
             $batchTransferEntity->getId(),
             ['txt_file_id' => ($textFile->get())['id']]
         );
 
-        return ['txt_file' => $textFile, 'ftas' => $allAttempts];
+        return $textFile;
     }
 
     protected function checkAdjustmentCreated()

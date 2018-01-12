@@ -195,9 +195,7 @@ class ReconciliationTest extends TestCase
 
     public function testRetryReconForHoldedFunds()
     {
-        $settlement = $this->testReconciliationFailure();
-
-        $this->fixtures->merchant->holdFunds();
+        $settlement = $this->testReconEntiyFailureForKotak();
 
         $content = $this->retryIntiateSettlements([$settlement['id']]);
 
@@ -216,7 +214,7 @@ class ReconciliationTest extends TestCase
 
     public function testRetryRecon()
     {
-        $settlement = $this->testReconciliationFailure();
+        $settlement = $this->testReconEntiyFailureForKotak();
 
         $firstAttempt = $this->getLastEntity('fund_transfer_attempt', true);
 
@@ -248,7 +246,7 @@ class ReconciliationTest extends TestCase
         $setlReconciliationFile = $this->generateSetlReconciliationFile($setlFile, false, $firstAttempt['id']);
 
         // Reconcile settlements
-        $data = $this->reconcileSettlements($setlReconciliationFile);
+        $this->reconcileSettlements($setlReconciliationFile);
 
         // Validate batch settlement entity
         $this->fetchAndMatchBatchData('settlement');
@@ -270,7 +268,7 @@ class ReconciliationTest extends TestCase
 
     public function testRetryReconWithoutSettlementIds()
     {
-        $this->testReconciliationFailure();
+        $this->testReconEntiyFailureForKotak();
 
         $data = $this->testData[__FUNCTION__];
 
@@ -284,7 +282,7 @@ class ReconciliationTest extends TestCase
 
         $this->runRequestResponseFlow($data, function() use ($request)
         {
-            $content = $this->makeRequestAndGetContent($request);
+            $this->makeRequestAndGetContent($request);
         });
     }
 
@@ -338,25 +336,25 @@ class ReconciliationTest extends TestCase
 
     public function testReconciliationInTestMode()
     {
-        $txtFile1 = $this->createSettlementsAndSettlementFile(3);
+        $this->createSettlementsAndSettlementFile(3);
 
         // Added so that a new file name is created for next settlement
         $currentTime = Carbon::now(Timezone::IST);
         $currentTime->addSecond();
         Carbon::setTestNow($currentTime);
 
-        $txtFile2 = $this->createSettlementsAndSettlementFile(
+        $this->createSettlementsAndSettlementFile(
             2, Carbon::today(Timezone::IST)->subDays(5)->timestamp);
 
         $request = [
-            'url' => '/settlements/reconcile/test',
+            'url' => '/settlements/reconcile/test/kotak',
             'method' => 'POST',
             'content' => []
         ];
 
         $this->ba->appAuth();
 
-        $content = $this->makeRequestAndGetContent($request);
+        $this->makeRequestAndGetContent($request);
 
         $ftas = $this->getEntities('fund_transfer_attempt', [], true);
 
