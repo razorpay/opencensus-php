@@ -124,7 +124,7 @@ class Entity extends Merchant\Entity
 
     public function getSettlementDestination()
     {
-        return $this->bankAccount()->getResults();
+        return $this->bankAccount;
     }
 
     public function getActivatedAt()
