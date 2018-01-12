@@ -10,9 +10,9 @@ use RZP\Models\Settlement\Channel;
 use RZP\Trace\TraceCode;
 use RZP\Models\FundTransfer\Kotak;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
-use RZP\Models\FundTransfer\Base\Reconciliation\Processor as BaseProcessor;
+use RZP\Models\FundTransfer\Base\Reconciliation\FileProcessor as BaseProcessor;
 
-class Processor extends BaseProcessor
+class FileProcessor extends BaseProcessor
 {
     protected static $fileToReadName = 'Kotak_Settlement_Reconciliation';
 

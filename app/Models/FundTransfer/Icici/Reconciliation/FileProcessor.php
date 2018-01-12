@@ -5,9 +5,9 @@ namespace RZP\Models\FundTransfer\Icici\Reconciliation;
 use RZP\Exception;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Icici\Headings;
-use RZP\Models\FundTransfer\Base\Reconciliation\Processor as BaseProcessor;
+use RZP\Models\FundTransfer\Base\Reconciliation\FileProcessor as BaseProcessor;
 
-class Processor extends BaseProcessor
+class FileProcessor extends BaseProcessor
 {
     protected static $channel = Channel::ICICI;
 

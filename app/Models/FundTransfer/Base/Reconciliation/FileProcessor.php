@@ -10,7 +10,7 @@ use RZP\Models\FundTransfer\Kotak;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 
-abstract class Processor extends Base\Core
+abstract class FileProcessor extends Base\Core
 {
     use Kotak\FileHandlerTrait;
 
