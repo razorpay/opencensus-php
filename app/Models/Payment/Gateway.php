@@ -113,6 +113,11 @@ class Gateway
         self::WALLET_FREECHARGE
     ];
 
+    const MCC_FILTER_GATEWAYS = [
+        self::HDFC,
+        self::HITACHI,
+    ];
+
     /**
     * Gateways for which we may need to force authorize payments
     * since their verify API's stop working after a certain time
