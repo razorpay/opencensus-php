@@ -11,6 +11,7 @@ class Headings
     const AMOUNT                    = 'Instrument Amount';
     const PAYMENT_DATE              = 'Payment Date';
     const DEBIT_ACCOUNT_NO          = 'Debit Account No';
+    const INSTRUMENT_REFERENCE      = 'Instrument Reference';
     const CREDIT_NARRATION          = 'Credit Narration';
     const CMS_REF_NO                = 'CMS Ref No';
     const DUMMY                     = 'Dummy';
