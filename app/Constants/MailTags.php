@@ -35,7 +35,7 @@ class MailTags
     const INDUSIND_NETBANKING_REFUNDS_MAIL      = 'indusind_netbanking_refunds_mail';
     const AXIS_MIGS_FAILED_REFUNDS_MAIL         = 'Migs failed refunds mail';
     const FIRST_DATA_FAILED_REFUNDS_MAIL        = 'FirstData failed refunds mail';
-    const CYBERSOURCE_FAILED_REFUNDS_MAIL       = 'Cybersource failed refunds mail';
+    const CYBERSOURCE_FAILED_REFUNDS_MAIL       = 'CyberSource failed refunds mail';
     const HDFC_FAILED_REFUNDS_MAIL              = 'FSS failed refunds mail';
 
     const PAYU_MONEY_REFUNDS_MAIL          = 'payu_money_refunds_mail';
