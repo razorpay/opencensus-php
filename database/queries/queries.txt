@@ -2799,3 +2799,6 @@ ALTER TABLE merchant_invoice
     MODIFY COLUMN amount bigint(20)  NOT NULL,
     MODIFY COLUMN tax int(11) NOT NULL,
     MODIFY COLUMN amount_due bigint(20) NOT NULL DEFAULT 0;
+
+ALTER TABLE fund_transfer_attempts
+    MODIFY COLUMN bank_status_code varchar(30) DEFAULT NULL;

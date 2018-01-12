@@ -5,6 +5,7 @@ namespace RZP\Models\FundTransfer\Icici\Reconciliation;
 use Carbon\Carbon;
 
 use RZP\Exception;
+use RZP\Trace\TraceCode;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Icici\Headings;
 use RZP\Models\FundTransfer\Base\Reconciliation\FileProcessor as BaseProcessor;
