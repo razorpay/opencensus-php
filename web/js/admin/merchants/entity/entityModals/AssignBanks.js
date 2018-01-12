@@ -1,0 +1,121 @@
+import React, { Component, Fragment } from 'react';
+import BaseModal from 'ui/BaseModal';
+
+import { closeModal, confirm, notifyError, notifySuccess } from 'common/modal';
+
+import Form from 'ui/Form';
+import { SwitchField } from 'ui/Field';
+import { adminFetch, adminPost } from 'common/fetch';
+import AsyncButton from 'ui/AsyncButton';
+import { isWorkflow } from 'common/util';
+
+export default class PricingPlanModal extends Component {
+  state = { merchantBanksMapping: {} };
+
+  componentWillMount() {
+    adminFetch({
+      route_name: 'merchant_get_banks',
+      url_params: { id: this.props.merchantId },
+    }).then(data => {
+      let merchantBanksMapping = {};
+      let banksList = {};
+
+      for (let key in data.disabled) {
+        merchantBanksMapping[key] = data.disabled[key];
+        banksList[key] = '0';
+      }
+
+      for (let key in data.enabled) {
+        merchantBanksMapping[key] = data.enabled[key];
+        banksList[key] = '1';
+      }
+      const banksListInOrder = Object.keys(banksList).sort();
+      this.setState({ merchantBanksMapping, banksList, banksListInOrder });
+    });
+  }
+
+  /* UI fields for methods */
+  getFormFields() {
+    let fields;
+
+    fields = this.state.banksListInOrder.map(bank => {
+      return (
+        <Fragment key={bank}>
+          <SwitchField
+            name={bank}
+            disabledLabel={this.state.merchantBanksMapping[bank]}
+            defaultValue={this.state.banksList[bank]}
+            nocaption
+          />
+          <br />
+        </Fragment>
+      );
+    });
+
+    return fields;
+  }
+
+  handleConfirm = body => {
+    return confirm(
+      'Any previously assigned banks for the merchant will be replace with selected.',
+      'Submit'
+    ).then(_ => {
+      const banksData = {
+        banks: Object.keys(body).filter(bank => body[bank] == '1'),
+      };
+      return adminPost({
+        route_name: 'merchant_set_banks',
+        url_params: {
+          id: this.props.merchantId,
+        },
+        body: banksData,
+      })
+        .then(response => {
+          if (response) {
+            closeModal();
+
+            if (isWorkflow(response)) {
+              notifySuccess('Workflow is created successfully.');
+              return;
+            }
+            notifySuccess('Banks Assigned successfully');
+          }
+        })
+        .catch(err => {
+          notifyError(JSON.stringify(err.response));
+        });
+    });
+  };
+
+  render() {
+    return (
+      <BaseModal header="Assign Banks">
+        <Form>
+          {!this.state.banksList ? (
+            <div class="spinner center" />
+          ) : (
+            <div>
+              {this.getFormFields()}
+
+              <br />
+              <br />
+              <div class="separate" />
+              <AsyncButton
+                text="Ok"
+                class="btn pull-right"
+                pendingClass="small spinner pull-right"
+                onSubmit={this.handleConfirm}
+              />
+              <AsyncButton
+                text="Cancel"
+                class="btn btn-default pull-right"
+                pendingClass="small spinner pull-right"
+                onSubmit={closeModal}
+              />
+            </div>
+          )}
+        </Form>
+      </BaseModal>
+    );
+  }
+}

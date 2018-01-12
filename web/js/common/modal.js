@@ -1,0 +1,194 @@
+import React, { Component } from 'react';
+import ErrorBoundary from 'common/ErrorBoundary';
+import TransitionGroup from 'react-transition-group/TransitionGroup';
+import CSSTransition from 'react-transition-group/CSSTransition';
+
+import { observe, observable } from 'mobx';
+import { observer } from 'mobx-react';
+import { animObj } from 'common/util';
+
+class ModalStore {
+  @observable.shallow modals = [];
+  @observable.shallow toasts = [];
+  @observable.shallow sliders = [];
+
+  constructor() {
+    window.addEventListener('focus', () => {
+      this.tabActive = true;
+      while (this.waitingToasts.length) {
+        this.notify(this.waitingToasts.shift());
+      }
+    });
+    window.addEventListener('blur', () => {
+      this.tabActive = false;
+    });
+  }
+
+  tabActive = true;
+  waitingToasts = [];
+  openModal = modal => this.modals.push(modal);
+  closeModal = _ => this.modals.pop();
+
+  confirm = (message, confirmLabel = 'Yes', rejectLabel = 'Cancel') => {
+    return new Promise((resolve, reject) => {
+      var isResolved = false;
+      let modals = this.modals;
+
+      let Confirm = (
+        <div class="confirm-modal">
+          <header>Confirm</header>
+          <div class="message">{message}</div>
+          <div class="action-buttons">
+            <button
+              onClick={_ => {
+                isResolved = 1;
+                this.closeModal();
+              }}
+              class="btn-confirm"
+            >
+              {confirmLabel}
+            </button>
+            <button onClick={_ => this.closeModal()} class="btn-reject">
+              {rejectLabel}
+            </button>
+          </div>
+        </div>
+      );
+
+      this.openModal(Confirm);
+      let disposer = observe(modals, _ => {
+        if (modals.indexOf(Confirm) === -1) {
+          isResolved && resolve();
+          disposer();
+        }
+      });
+    });
+  };
+
+  replaceSlider = slider => this.sliders.replace([slider]);
+  openSlider = slider => this.sliders.push(slider);
+  closeSlider = _ => this.sliders.pop();
+
+  notify = toast => {
+    if (this.tabActive) {
+      var len = this.toasts.push(toast);
+      toast = this.toasts[len - 1];
+      setTimeout(_ => {
+        this.toasts.remove(toast);
+      }, toast.duration || 5000);
+    } else {
+      this.waitingToasts.push(toast);
+    }
+  };
+
+  notifyDone = _ =>
+    this.notify({ message: 'Done!', duration: 3000, className: 'success' });
+  notifySuccess = message => this.notify({ message, className: 'success' });
+  notifyError = message => this.notify({ message, className: 'error' });
+}
+
+const store = new ModalStore();
+
+observe(store.modals, e => {
+  document.body.className = store.modals.length ? 'noscroll' : '';
+});
+
+@observer
+export default class ModalContainer extends Component {
+  componentDidMount() {
+    document.addEventListener('keydown', this.escapePress, false);
+  }
+
+  componentWillUnMount() {
+    document.removeEventListener('keydown', this.escapePress, false);
+  }
+
+  // Remove last modal on click of escape
+  escapePress = evt => {
+    evt = evt || window.event;
+    if (evt.keyCode == 27) {
+      store.closeModal();
+    }
+  };
+
+  render() {
+    let numToasts = store.toasts.length;
+    return (
+      <div id="fixed-container">
+        <TransitionGroup>
+          {store.sliders.length && (
+            <CSSTransition classNames="slider" timeout={animObj}>
+              <div id="slider-container">
+                {store.sliders.map((slider, index) => (
+                  <div class="slider" key={index}>
+                    <div
+                      class="slider-close"
+                      onClick={_ => {
+                        store.sliders.remove(slider);
+                      }}
+                    >
+                      &times;
+                    </div>
+                    {slider}
+                  </div>
+                ))}
+              </div>
+            </CSSTransition>
+          )}
+        </TransitionGroup>
+
+        <TransitionGroup>
+          {store.modals.length && (
+            <CSSTransition classNames="modal" timeout={animObj}>
+              <div id="modal-container">
+                {store.modals.map((s, index) => (
+                  <Modal key={index} modal={s} />
+                ))}
+              </div>
+            </CSSTransition>
+          )}
+        </TransitionGroup>
+
+        <TransitionGroup id="toast-container">
+          {store.toasts.map(({ className, message }, index) => (
+            <CSSTransition
+              key={index}
+              class={'toast ' + className}
+              classNames="toast"
+              timeout={animObj}
+            >
+              <div>{'' + message}</div>
+            </CSSTransition>
+          ))}
+        </TransitionGroup>
+      </div>
+    );
+  }
+}
+
+const Modal = ({ modal }) => (
+  <div class="modal">
+    <div
+      class="modal-close"
+      onClick={_ => {
+        store.modals.remove(modal);
+      }}
+    >
+      &times;
+    </div>
+    <ErrorBoundary children={modal} />
+  </div>
+);
+
+export const {
+  openModal,
+  confirm,
+  closeModal,
+  openSlider,
+  replaceSlider,
+  closeSlider,
+  notify,
+  notifyError,
+  notifySuccess,
+  notifyDone,
+} = store;

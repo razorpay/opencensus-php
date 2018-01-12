@@ -1,0 +1,67 @@
+const gulp = require('gulp');
+const stylus = require('gulp-stylus');
+const iconFontGenerator = require('icon-font-generator/lib');
+const glob = require('glob').sync;
+const path = require('path');
+const { execSync } = require('child_process');
+const isProd = require('process').env.NODE_ENV === 'production';
+
+function createBaseDir() {
+  execSync(`
+    mkdir -p ../public/dist/css;
+    cp entry/* ../public/dist/
+  `);
+}
+
+function handleError(err) {
+  console.log(err.toString());
+  this.emit('end');
+}
+
+function compileCss(o) {
+  if (o && o.path) {
+    console.log(path.basename(o.path));
+  }
+  return gulp
+    .src('css/*.styl')
+    .pipe(
+      stylus({
+        include: [
+          __dirname + '/../public/dist/css',
+          __dirname + '/node_modules',
+        ],
+        'include css': true,
+        compress: isProd,
+      })
+    )
+    .on('error', handleError)
+    .pipe(gulp.dest('../public/dist/css'));
+}
+
+function iconFont(cb) {
+  iconFontGenerator.generate(
+    {
+      cssTemplate: 'templates/icons.hbs',
+      classPrefix: 'i',
+      silent: false,
+      types: ['woff', 'woff2'],
+      json: false,
+      paths: glob('icons/*.svg'),
+      outputDir: '../public/dist/css',
+    },
+    cb
+  );
+}
+
+gulp.task('watch', () => {
+  createBaseDir();
+  iconFont(compileCss);
+  gulp.watch('css/**/*.styl', compileCss);
+  gulp.watch('icons/*.svg', _ => iconFont(compileCss));
+});
+
+gulp.task('default', () => {
+  execSync('rm -rf dist');
+  createBaseDir();
+  iconFont(compileCss);
+});

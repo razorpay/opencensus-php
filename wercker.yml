@@ -35,13 +35,8 @@ build:
       - npm-install
 
       - script:
-          name: gulp
-          code: gulp
-          fail-on-warnings: true
-
-      - script:
-          name: Gzip
-          code: node scripts/gzip.js
+          name: build
+          code: npm run build
 
       - script:
           name: Run artisan migrate
@@ -86,7 +81,7 @@ deploy:
           code: if [ ! -f .rsyncignore ] ; then exit 1 ; fi;
       - script:
           name: S3 Sync
-          code: node scripts/s3sync.js
+          code: ./s3sync.js
       - script:
           name: remove heavy directories
           code: rm --recursive --force .git node_modules

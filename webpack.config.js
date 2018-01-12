@@ -129,7 +129,6 @@ module.exports = env => {
   }
 
   return [
-    require('./webpack.merchant.js')(commonConfig, isProd),
-    require('./webpack.admin.js')(commonConfig, isProd),
+    require('./webpack.merchant.js')(commonConfig, isProd)
   ];
 };
