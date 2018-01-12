@@ -9,7 +9,6 @@ use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
 use RZP\Models\Payment\Gateway;
 
-
 class Base extends Mailable
 {
     protected $type;
