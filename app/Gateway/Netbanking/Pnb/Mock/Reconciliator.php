@@ -23,7 +23,7 @@ class Reconciliator extends Base\RefundFile
 
         $fileName = $this->getFileToWriteNameWithoutExt();
 
-        $txt = $this->generateText($data, '^');
+        $txt = $this->generateText($data, '|');
 
         $creator = $this->createFile(
             FileStore\Format::TXT,
@@ -55,16 +55,17 @@ class Reconciliator extends Base\RefundFile
             $date = Carbon::createFromTimestamp(
                         $row[self::PAYMENT_ENTITY][Payment\Entity::CREATED_AT],
                         Timezone::IST)
-                        ->format('d/m/y');
-
+                        ->format('Y-m-d');
             $data[] = [
+                //
+                // We dont know prn So just setting a random data
+                //
+                'prn'            => $row['payment']['reference1'],
+                'payment_id'     => $row['payment']['id'],
                 'bank_reference' => $row['gateway']['bank_payment_id'],
-                'amount'         => str_pad($this->getFormattedAmount($row['payment']['amount']), 6, ' ', STR_PAD_LEFT),
+                'amount'         => $this->getFormattedAmount($row['payment']['amount']),
                 'date'           => $date,
-                'payment_id'     => str_pad($row['payment']['id'], 8, ' ', STR_PAD_RIGHT),
-                'account_number' => $date,
             ];
-
             $totalAmount += $row[self::PAYMENT_ENTITY][Payment\Entity::AMOUNT] / 100;
         }
 

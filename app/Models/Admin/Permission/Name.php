@@ -80,6 +80,7 @@ class Name
     const EDIT_MERCHANT_ENABLE_RECEIPT        = 'edit_merchant_enable_receipt';
     const EDIT_MERCHANT_DISABLE_RECEIPT       = 'edit_merchant_disable_receipt';
     const EDIT_BULK_MERCHANT_HOLD_FUNDS       = 'edit_bulk_merchant_hold_funds';
+    const EDIT_BULK_MERCHANT_CHANNEL          = 'edit_bulk_merchant_channel';
     const ASSIGN_MERCHANT_TERMINAL            = 'assign_merchant_terminal';
     const ASSIGN_MERCHANT_BANKS               = 'assign_merchant_banks';
     const ADD_MERCHANT_ADJUSTMENT             = 'add_merchant_adjustment';

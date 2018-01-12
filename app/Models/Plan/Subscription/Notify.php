@@ -232,7 +232,7 @@ class Notify extends Processor\Notify
      */
     protected function getSubscriptionLinkForSlack(string $id)
     {
-        return "<https://dashboard.razorpay.com/admin#/app/entity/live/subscription/$id|sub_$id>";
+        return "<https://dashboard.razorpay.com/admin#/app/entity/live/subscription/$id>";
     }
 
     /**

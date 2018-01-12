@@ -30,6 +30,7 @@ use RZP\Models\Schedule;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\User;
 use RZP\Trace\TraceCode;
+use RZP\Models\Transaction;
 
 class Service extends Base\Service
 {
@@ -131,7 +132,7 @@ class Service extends Base\Service
         (new User\Service)->updateUserMerchantMapping($ownerId, $userMerchantMappingInputData);
     }
 
-    private function addLinkedAccountReferral($aggregratorMerchant, $account)
+    public function addLinkedAccountReferral($aggregratorMerchant, $account)
     {
         $tagInputData = [
             'tags' => ['ref-'.$aggregratorMerchant->id],
@@ -139,7 +140,8 @@ class Service extends Base\Service
 
         $this->addTags($account->id, $tagInputData);
     }
-    protected function saveMerchantAndApplyCoupon(Entity $merchant, array $input)
+
+    public function saveMerchantAndApplyCoupon(Entity $merchant, array $input)
     {
         $this->repo->saveOrFail($merchant);
 
@@ -987,6 +989,59 @@ class Service extends Base\Service
 
         $this->trace->info(
             TraceCode::MERCHANT_HOLD_FUNDS_BULK_UPDATE_RESPONSE,
+            $response
+        );
+
+        return $response;
+    }
+
+    public function updateChannelForMultipleMerchants(array $input)
+    {
+        (new Validator)->validateInput('update_channel', $input);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_CHANNEL_BULK_UPDATE_REQUEST,
+            $input
+        );
+
+        $merchantIds = $input['merchant_ids'];
+
+        $channel = $input['channel'];
+
+        $successCount = $failedCount = 0;
+
+        $failedIds = [];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            try
+            {
+                // update channel in merchant entity
+                $this->edit($merchantId, ['channel' => $channel]);
+
+                $data = (new Transaction\BulkUpdate)->updateMultipleTransactions($merchantId, $channel);
+
+                $successCount++;
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException($ex);
+
+                $failedCount++;
+
+                $failedIds[] = $merchantId;
+            }
+        }
+
+        $response = [
+            'total'     => count($merchantIds),
+            'success'   => $successCount,
+            'failed'    => $failedCount,
+            'failedIds' => $failedIds,
+        ];
+
+        $this->trace->info(
+            TraceCode::MERCHANT_CHANNEL_BULK_UPDATE_RESPONSE,
             $response
         );
 

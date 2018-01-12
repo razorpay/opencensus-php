@@ -33,7 +33,7 @@ class Validator extends Base\Validator
         'aadhaar.hmac'               => 'sometimes_if:method,aeps|size:64|string',
         'aadhaar.cert_expiry'        => 'sometimes_if:method,aeps|size:8|string',
         'card'                       => 'sometimes',
-        'bank'                       => 'required_if:method,netbanking,aeps,emandate|string|between:3,6',
+        'bank'                       => 'required_if:method,netbanking,aeps,emandate|string|between:4,6',
         'wallet'                     => 'required_if:method,wallet|custom',
         'emi_duration'               => 'required_if:method,emi|integer|in:3,6,9,12,18,24',
         'description'                => 'sometimes|string|max:255|utf8',

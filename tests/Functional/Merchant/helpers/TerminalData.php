@@ -64,6 +64,54 @@ return [
         ]
     ],
 
+    'testAssignHitachiTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'hitachi',
+                'gateway_acquirer'          => 'ratn',
+                'gateway_merchant_id'       => '12345',
+                'gateway_terminal_id'       => '12345678',
+                'category'                  => '4567',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway_acquirer'    => 'ratn',
+                'gateway_merchant_id' => '12345',
+                'gateway_terminal_id' => '12345678',
+                'category'            => 4567,
+                'enabled'             => true
+            ]
+        ]
+    ],
+
+    'testAssignHitachiTerminalWithInvalidGatewayAcquirer' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'hitachi',
+                'gateway_acquirer'          => 'icic',
+                'gateway_merchant_id'       => '12345',
+                'gateway_terminal_id'       => '12345678',
+                'category'                  => '4567',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'icic is not a valid acquirer for hitachi',
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
     'testAddEmiTerminal' => [
         'request' => [
             'content' => [
