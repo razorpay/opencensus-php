@@ -61,7 +61,7 @@ gulp.task('watch', () => {
 });
 
 gulp.task('default', () => {
-  execSync('rm -rf dist');
+  execSync('rm -rf ../public/dist');
   createBaseDir();
   iconFont(compileCss);
 });

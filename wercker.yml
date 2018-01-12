@@ -32,7 +32,9 @@ build:
           name: node version
           code: node -v
 
-      - npm-install
+      - script:
+          name: npm install
+          code: npm i --unsafe-perm
 
       - script:
           name: build
@@ -84,7 +86,7 @@ deploy:
           code: ./s3sync.js
       - script:
           name: remove heavy directories
-          code: rm --recursive --force .git node_modules
+          code: rm --recursive --force .git node_modules web/node_modules
       - nhuray/aws-code-deploy:
           key: $AWS_KEY
           secret: $AWS_SECRET
