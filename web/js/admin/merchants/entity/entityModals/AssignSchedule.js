@@ -24,24 +24,33 @@ const type_list = { Settlement: 'settlement' };
 export default class ScheduleModal extends Component {
   state = { settlementPlans: {}, pending: true };
 
+  getCurrentSchedule(currentMethod) {
+    let defaultScheduleId = '30000000000000';
+    const scheduleTasks = this.props.props.merchant.scheduleTasks;
+    const currentScheduleTask = scheduleTasks.find(
+      task => task.method === currentMethod
+    );
+    return currentScheduleTask
+      ? currentScheduleTask.schedule_id
+      : defaultScheduleId;
+  }
+
   componentWillMount() {
     adminFetch({
       route_name: 'setl_fetch_schedule',
     }).then(data => {
       const settlementPlans = {};
 
-      let defaultSchedule = '30000000000000';
       for (let key in data.items) {
         let value = data.items[key];
         settlementPlans[value.id] = value.name;
-        if (
-          value.delay === this.props.props.merchant.details.settlement_schedule
-        ) {
-          defaultSchedule = value.id;
-        }
       }
 
-      this.setState({ settlementPlans, pending: false, defaultSchedule });
+      this.setState({
+        settlementPlans,
+        pending: false,
+        defaultSchedule: this.getCurrentSchedule(null),
+      });
     });
   }
 
@@ -75,6 +84,18 @@ export default class ScheduleModal extends Component {
       });
   };
 
+  handleMethodChange = event => {
+    this.setState({
+      defaultSchedule: this.getCurrentSchedule(
+        event.currentTarget.value || null
+      ),
+    });
+  };
+
+  handleScheduleChange = event => {
+    this.setState({ defaultSchedule: event.currentTarget.value });
+  };
+
   render() {
     return (
       <BaseModal header="Assign Schedule Plan">
@@ -87,13 +108,27 @@ export default class ScheduleModal extends Component {
             ))}
           </SelectField>
 
+          <SelectField
+            name="method"
+            label="Method"
+            defaultValue={''}
+            onChange={this.handleMethodChange}
+          >
+            {Object.keys(methodMapping).map(key => (
+              <option key={key} value={key}>
+                {methodMapping[key]}
+              </option>
+            ))}
+          </SelectField>
+
           {this.state.pending ? (
             <Field label="Schedules" defaultValue="Loading..." disabled />
           ) : (
             <SelectField
               name="schedule_id"
               label="Schedules"
-              defaultValue={this.state.defaultSchedule}
+              value={this.state.defaultSchedule}
+              onChange={this.handleScheduleChange}
             >
               {Object.keys(this.state.settlementPlans).map(key => (
                 <option key={key} value={key}>
@@ -102,14 +137,6 @@ export default class ScheduleModal extends Component {
               ))}
             </SelectField>
           )}
-
-          <SelectField name="method" label="Method" defaultValue={''}>
-            {Object.keys(methodMapping).map(key => (
-              <option key={key} value={key}>
-                {methodMapping[key]}
-              </option>
-            ))}
-          </SelectField>
 
           <AsyncButton
             text="Save"

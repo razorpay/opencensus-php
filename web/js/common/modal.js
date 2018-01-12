@@ -12,6 +12,20 @@ class ModalStore {
   @observable.shallow toasts = [];
   @observable.shallow sliders = [];
 
+  constructor() {
+    window.addEventListener('focus', () => {
+      this.tabActive = true;
+      while (this.waitingToasts.length) {
+        this.notify(this.waitingToasts.shift());
+      }
+    });
+    window.addEventListener('blur', () => {
+      this.tabActive = false;
+    });
+  }
+
+  tabActive = true;
+  waitingToasts = [];
   openModal = modal => this.modals.push(modal);
   closeModal = _ => this.modals.pop();
 
@@ -56,11 +70,15 @@ class ModalStore {
   closeSlider = _ => this.sliders.pop();
 
   notify = toast => {
-    var len = this.toasts.push(toast);
-    toast = this.toasts[len - 1];
-    setTimeout(_ => {
-      this.toasts.remove(toast);
-    }, toast.duration || 5000);
+    if (this.tabActive) {
+      var len = this.toasts.push(toast);
+      toast = this.toasts[len - 1];
+      setTimeout(_ => {
+        this.toasts.remove(toast);
+      }, toast.duration || 5000);
+    } else {
+      this.waitingToasts.push(toast);
+    }
   };
 
   notifyDone = _ =>

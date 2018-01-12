@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { observable, extendObservable, action } from 'mobx';
 import { observer } from 'mobx-react';
 import { adminFetch, adminPost, adminPut, adminDelete } from 'common/fetch';
-import { notifyDone } from 'common/modal';
+import { notifyDone, notifySuccess } from 'common/modal';
 import UserForm from './UserForm';
 import { isWorkflow } from 'common/util';
 import { prevent } from 'common/util';

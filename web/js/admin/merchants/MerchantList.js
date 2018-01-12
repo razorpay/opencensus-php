@@ -7,11 +7,11 @@ import { openMerchantEntity } from './entity/entity-resources';
 
 import Form from 'ui/Form';
 import { PageTable } from 'ui/Table';
-import Field, { SelectField, SwitchField } from 'ui/Field';
+import Field, { SelectField, CheckField } from 'ui/Field';
 import Collection from 'model/collection';
 
 const defaultFilters = {
-  account_status: 'pending',
+  account_status: '',
 };
 
 export default class MerchantList extends Component {
@@ -74,7 +74,12 @@ export default class MerchantList extends Component {
               </SelectField>
             )}
             <Field name="sub_accounts" label="Linked-accounts for ID" />
-            <SwitchField label="Linked Accounts Only" name="sub_accounts" />
+            <CheckField
+              label="Linked Accounts Only"
+              name="sub_accounts"
+              defaultChecked={''}
+            />
+
             <button class="pull-right">Apply</button>
           </Form>
         </div>

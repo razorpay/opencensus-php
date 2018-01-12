@@ -58,6 +58,7 @@ export default class RoleList extends Component {
           model={this.collection}
           fields={fields}
           onClick={showEntity}
+          searchFilters={['id', 'name', 'description']}
         />
       </div>
     );

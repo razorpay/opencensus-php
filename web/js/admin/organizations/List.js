@@ -61,7 +61,17 @@ class OrganizationsList extends Component {
             </button>
           </header>
         </div>
-        <PageTable model={this.collection} fields={fields} />
+        <PageTable
+          model={this.collection}
+          fields={fields}
+          searchFilters={[
+            'id',
+            'display_name',
+            'business_name',
+            'email',
+            'email_domain',
+          ]}
+        />
       </div>
     );
   }

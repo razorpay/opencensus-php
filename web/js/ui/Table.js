@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 import { Link } from 'react-router-dom';
 
+import ClotSearch from 'ui/ClotSearch';
 import TransitionGroup from 'react-transition-group/TransitionGroup';
 import CSSTransition from 'react-transition-group/CSSTransition';
 
@@ -104,12 +105,46 @@ export const DataTable = observer(Table);
 
 @observer
 export class PageTable extends Component {
+  state = { searchQuery: '' };
+  ClotSearch = new ClotSearch(250);
+
+  handleSearchQuery = e => {
+    let searchQuery = e.target.value;
+
+    this.ClotSearch.startClotCycle(() => {
+      this.setState({ searchQuery });
+    });
+  };
+
   render() {
-    let { model, info = true, title, ...props } = this.props;
+    let { model, info = true, title, searchFilters, ...props } = this.props;
     let { pending, items, filters, animateItems } = model;
 
     pending = pending.fetch;
 
+    let displayItems = items;
+
+    if (searchFilters && this.state.searchQuery) {
+      displayItems = items.filter(item => {
+        let matched = false;
+
+        for (let i = 0; i < searchFilters.length; i++) {
+          if (
+            item[searchFilters[i]] &&
+            item[searchFilters[i]]
+              .toLowerCase()
+              .indexOf(this.state.searchQuery.toLowerCase()) !== -1
+          ) {
+            matched = true;
+            break;
+          }
+        }
+
+        return matched;
+      });
+    }
+
+    // animateRow = false because animation is causing rendering issues when search filter is there
     if (!pending && items && items.length) {
       return (
         <div class="box">
@@ -117,11 +152,23 @@ export class PageTable extends Component {
           {title && <header>{title}</header>}
 
           {info && (
-            <div class="table-info">
-              Results {filters.skip + 1} &ndash; {filters.skip + items.length}
+            <div class="table-header">
+              <span class="table-info">
+                Results {filters.skip + 1} &ndash; {filters.skip + items.length}
+              </span>
+              {searchFilters && (
+                <div class="pull-right">
+                  Filter:{' '}
+                  <input class="m-l" onChange={this.handleSearchQuery} />
+                </div>
+              )}
             </div>
           )}
-          <Table animateRow={animateItems} items={items} {...props} />
+          <Table
+            animateRow={searchFilters ? false : animateItems}
+            items={displayItems}
+            {...props}
+          />
         </div>
       );
     }
