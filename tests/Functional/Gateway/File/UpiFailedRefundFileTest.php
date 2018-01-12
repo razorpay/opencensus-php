@@ -71,7 +71,7 @@ class UpiFailedRefundFileTest extends TestCase
 
             $body = 'Please find attached failed refunds information for UPI ICICI';
 
-            $fileName = 'Icici_Upi_Failed_Refunds_test_'. $date  . '.xlsx';
+            $fileName = 'Icici_Upi_Failed_Refunds_test_'. $date  . '.csv';
 
             $subject = 'UPI Icici Failed refunds file for ' . $date;
 
