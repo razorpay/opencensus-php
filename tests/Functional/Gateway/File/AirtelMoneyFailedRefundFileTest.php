@@ -64,7 +64,7 @@ class AirtelMoneyFailedRefundFileTest extends TestCase
             'type'        => 'airtelmoney_wallet_refund',
             'entity_type' => 'gateway_file',
             'entity_id'   => $entity_id,
-            'extension'   => 'xlsx',
+            'extension'   => 'csv',
         ];
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
 
@@ -76,7 +76,7 @@ class AirtelMoneyFailedRefundFileTest extends TestCase
 
             $body = 'Please find attached failed refunds information for Airtel Money';
 
-            $fileName = 'Airtelmoney_Wallet_Failed_Refunds_test_'. $date  . '.xlsx';
+            $fileName = 'Airtelmoney_Wallet_Failed_Refunds_test_'. $date  . '.csv';
 
             $subject = 'Airtel Money Failed refunds file for ' . $date;
 
