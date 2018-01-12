@@ -13,6 +13,7 @@ class IrctcRefund extends Base
     const FILE_PREFIX = [
         '8ST00QgEPT14cE' => 'refundvalidation_RZP_BRDS_',
         '8YPFnW5UOM91H7' => 'refundvalidation_RZRPAY_BRDS_',
+        '8byazTDARv4Io0' => 'refundvalidation_',
     ];
 
     protected static $mailTag     = MailTags::BATCH_IRCTC_REFUNDS_FILE;

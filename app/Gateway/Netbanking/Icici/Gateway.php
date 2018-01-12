@@ -18,6 +18,7 @@ use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Gateway\Netbanking\Base\BankingType;
 use RZP\Models\Payment\Verify as PaymentVerify;
 
 class Gateway extends Base\Gateway
@@ -28,7 +29,7 @@ class Gateway extends Base\Gateway
 
     protected $bank = 'icici';
 
-    protected $bankingType = self::RETAIL;
+    protected $bankingType = BankingType::RETAIL;
 
     protected $map = [
         RequestFields::AMOUNT  => 'amount'
@@ -36,8 +37,6 @@ class Gateway extends Base\Gateway
 
     // Payment type recurring
     const RECURRING         = 'R';
-
-    const RECURRING_BANKING = 'recurring';
 
     public function setGatewayParams($input, $mode, $terminal)
     {
@@ -247,12 +246,12 @@ class Gateway extends Base\Gateway
         if ((isset($terminal) === true) and
             ($terminal->isCorporate() === true))
         {
-            $this->setBankingType(self::CORPORATE);
+            $this->setBankingType(BankingType::CORPORATE);
         }
         else if ((isset($terminal) === true) and
                  ($terminal->isRecurring() === true))
         {
-            $this->setBankingType(self::RECURRING_BANKING);
+            $this->setBankingType(BankingType::RECURRING);
         }
 
         $this->setDomainType();
@@ -817,7 +816,7 @@ class Gateway extends Base\Gateway
 
     protected function isRecurringBanking()
     {
-        return ($this->bankingType === self::RECURRING_BANKING);
+        return ($this->bankingType === BankingType::RECURRING);
     }
 
     protected function getTestSecretCorporate()
@@ -831,15 +830,16 @@ class Gateway extends Base\Gateway
     protected function getLiveSecret()
     {
         //
-        // For SI terminals, there's no concept of
-        // master merchant ID or master key.
-        // Every terminal will have a different secret and
-        // hence we take it from the terminal and not from
-        // the config like we do for retail and corp.
+        // For SI terminals, the live_merchant_id2 is different
+        // for every terminal. This is different from retail terminals
+        // where live_merchant_id2 is the same.
+        // A secret is configured at live_merchant_id2 level. But,
+        // we asked them to configure the retail terminal's
+        // live_merchant_id2's secret to all our SI terminals too.
         //
         if ($this->isRecurringBanking() === true)
         {
-            return $this->terminal[Terminal\Entity::GATEWAY_SECURE_SECRET];
+            return $this->config['live_hash_secret'];
         }
 
         switch ($this->getLiveMerchantId2())

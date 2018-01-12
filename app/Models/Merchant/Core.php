@@ -25,6 +25,7 @@ use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Transaction;
 use RZP\Models\User;
 use RZP\Trace\TraceCode;
+use RZP\Models\Base\PublicCollection;
 use RZP\Mail\Payout\Payout as PayoutMail;
 
 class Core extends Base\Core
@@ -70,7 +71,7 @@ class Core extends Base\Core
         return $merchant;
     }
 
-    public function createSubMerchant($input, $aggregatorMerchant): Entity
+    public function createSubMerchant($input, $aggregatorMerchant, $linkedAccount = true): Entity
     {
         // We only check for email uniqueness if the email
         // address is provided
@@ -95,7 +96,9 @@ class Core extends Base\Core
 
         $subMerchant->setPricingPlan($aggregatorMerchant->getPricingPlanId());
 
-        if ($aggregatorMerchant->isMarketplace() === true)
+        // The parent Id has to be linked only when it's a marketplace
+        // If both market place and referral are present when creating a referral account we should not link parentId.
+        if ($aggregatorMerchant->isMarketplace() === true and $linkedAccount === true)
         {
             // Use Startup Plan as the default for linked accounts
             // where transfer method pricing is 0
@@ -385,6 +388,17 @@ class Core extends Base\Core
         $this->logActionToSlack($merchant, $action);
 
         return $merchant;
+    }
+
+    /**
+     * This function is used for getting the activation status change log of a merchant
+     * @param Entity $merchant
+     *
+     * @return PublicCollection
+     */
+    public function getActivationStatusChangeLog(Entity $merchant): PublicCollection
+    {
+        return $merchant->getActivationStatusChangeLog();
     }
 
     public function markGratisTransactionPostpaid(string $merchantId, int $from)

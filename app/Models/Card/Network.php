@@ -158,6 +158,16 @@ class Network
         return self::$fullName[self::UNKNOWN];
     }
 
+    public static function getFullNames(array $networks): array
+    {
+        return array_map(
+            function($network)
+            {
+                return self::getFullName($network);
+            },
+            $networks);
+    }
+
     public static function getCode($fullName)
     {
         if (isset(NetworkName::$codes[$fullName]))

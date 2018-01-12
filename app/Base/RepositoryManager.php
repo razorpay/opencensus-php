@@ -11,6 +11,7 @@ use RZP\Models;
 
 /**
  * @property Models\Plan\Subscription\Repository    $subscription
+ * @property Models\Terminal\Repository             $terminal
  * @property Models\Invoice\Repository              $invoice
  * @property Models\Payment\Repository              $payment
  * @property Models\Batch\Repository                $batch

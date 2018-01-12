@@ -23,10 +23,10 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     /**
      * Gets payment_id from row data
      *
-     * @param $row array
-     * @return $paymentId string
+     * @param array $row
+     * @return string|null
      */
-    protected function getPaymentId($row)
+    protected function getPaymentId(array $row)
     {
         foreach (self::COLUMN_PAYMENT_ID as $cpi)
         {

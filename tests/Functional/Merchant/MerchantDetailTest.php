@@ -152,6 +152,40 @@ class MerchantDetailTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetMerchantActivationStatusChangeLog()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $this->fixtures->create('state', [
+            'entity_id'   => $merchantId,
+            'entity_type' => 'merchant_detail',
+            'name'        => 'under_review',
+        ]);
+
+        $this->fixtures->create('state', [
+            'entity_id'   => $merchantId,
+            'entity_type' => 'merchant_detail',
+            'name'        => 'activated',
+        ]);
+
+        $this->ba->adminAuth('test', null, Org::RZP_ORG_SIGNED);
+
+        // fetch status change log for the merchant
+        $testData['request']['url'] = "/merchant/activation/$merchantId/status_change_log";
+
+        $testData['request']['method'] = 'GET';
+
+        $testData['request']['content'] = [];
+
+        $this->startTest();
+    }
+
     public function testMerchantFormArchive()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');

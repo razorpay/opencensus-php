@@ -13,8 +13,8 @@ class Validator extends Base\Validator
 
     protected static $addBankAccountRules = [
         Entity::IFSC_CODE              => 'required|alpha_num|size:11',
-        Entity::ACCOUNT_NUMBER         => 'required|alpha_num|between:5,20',
-        Entity::BENEFICIARY_NAME       => 'required|between:4,40|alpha_space_num',
+        Entity::ACCOUNT_NUMBER         => 'required|alpha_num|between:5,22',
+        Entity::BENEFICIARY_NAME       => 'required|between:4,120|alpha_space_num',
         Entity::BENEFICIARY_ADDRESS1   => 'required|max:30',
         Entity::BENEFICIARY_ADDRESS2   => 'sometimes|max:30',
         Entity::BENEFICIARY_ADDRESS3   => 'sometimes|max:30',
@@ -41,6 +41,12 @@ class Validator extends Base\Validator
         Entity::BENEFICIARY_NAME      => 'sometimes|max:40|alpha_space_num',
     ];
 
+    protected static $addPayoutDestinationRules = [
+        Entity::IFSC_CODE             => 'required|alpha_num|size:11',
+        Entity::ACCOUNT_NUMBER        => 'required|alpha_num|between:5,20',
+        Entity::BENEFICIARY_NAME      => 'required|max:40|alpha_space_num',
+    ];
+
     protected static $addBankAccountValidators = [
         Entity::BENEFICIARY_STATE
     ];
@@ -51,6 +57,12 @@ class Validator extends Base\Validator
         'KE', 'LD', 'MP', 'MH', 'MA', 'ME', 'MI', 'NA',
         'DL', 'OR', 'PO', 'PB', 'RJ', 'SK', 'TG', 'TN',
         'TR', 'UP', 'UT', 'WB'
+    ];
+
+    protected static $beneficiaryRegisterRules = [
+        Entity::ON                      => 'sometimes|epoch',
+        Entity::RECIPIENT_EMAILS        => 'sometimes|array',
+        Entity::RECIPIENT_EMAILS . '*'  => 'sometimes|email',
     ];
 
     protected function validateBeneficiaryState($input)

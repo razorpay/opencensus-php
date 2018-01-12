@@ -12,7 +12,7 @@ use RZP\Models\Base;
 use RZP\Encryption\Type;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
-
+use RZP\Models\BankAccount;
 use RZP\Models\FundTransfer\Base as NodalBase;
 use RZP\Encryption\AESEncryption;
 use RZP\Mail\Settlement\AxisSettlement;
@@ -34,7 +34,8 @@ class NodalAccount extends NodalBase\NodalAccount
     const MODE_MAPPING = [
         Mode::NEFT    => 'N',
         Mode::RTGS    => 'R',
-        Mode::IMPS    => 'I',
+        Mode::IMPS    => 'M',
+        Mode::IFT     => 'I',
     ];
 
     protected $secret = null;
@@ -62,15 +63,17 @@ class NodalAccount extends NodalBase\NodalAccount
         $this->iv = base64_decode(Config::get('nodal.axis.iv'));
     }
 
-    public function initiateTransfer(string $amount): array
+    public function generateSettlementFile($entities, $h2h = true): array
     {
-        $rows = $this->getRows($amount);
+        $rows = $this->getSettlementRows($entities);
 
-        $fileData = $this->createFile($rows);
+        list($excelFile, $rzpFile) = $this->createFile($rows);
+
+        $fileData = $this->getFileData($rzpFile);
 
         $this->sendAxisTransferMail($fileData);
 
-        return ['file' => $fileData['file_path']];
+        return [$rzpFile, $excelFile];
     }
 
     protected function createFile(array $values): array
@@ -81,6 +84,31 @@ class NodalAccount extends NodalBase\NodalAccount
 
         $creator = new FileStore\Creator;
 
+        $rowCount = count($values);
+
+        //
+        // We need to set column format of columns C, E and F
+        // from 3rd row onwards – these rows represent
+        // transaction details
+        //
+        $colFormat = [
+            'C3:C' . $rowCount => 'dd/mm/yy',
+            'E3:E' . $rowCount => 'dd/mm/yy',
+            'F3:F' . $rowCount => 'dd/mm/yy',
+        ];
+
+        $rzpFile = $creator->extension(FileStore\Format::XLSX)
+                           ->content($values)
+                           ->name($fileName)
+                           ->store(FileStore\Store::S3)
+                           ->type(FileStore\Type::FUND_TRANSFER_DEFAULT)
+                           ->metadata($metadata)
+                           ->headers(false)
+                           ->columnFormat($colFormat)
+                           ->save();
+
+        $creator = new FileStore\Creator;
+
         $file = $creator->extension(FileStore\Format::XLSX)
                         ->content($values)
                         ->name($fileName)
@@ -88,7 +116,7 @@ class NodalAccount extends NodalBase\NodalAccount
                         ->type(FileStore\Type::FUND_TRANSFER_H2H)
                         ->metadata($metadata)
                         ->headers(false)
-                        ->columnFormat(['C3' => 'dd/mm/yy', 'E3' => 'dd/mm/yy', 'F3' => 'dd/mm/yy'])
+                        ->columnFormat($colFormat)
                         ->encrypt(Type::AES_ENCRYPTION, [
                             AESEncryption::MODE   => AES::MODE_CBC,
                             AESEncryption::IV     => $this->iv,
@@ -96,6 +124,11 @@ class NodalAccount extends NodalBase\NodalAccount
                         ->encode()
                         ->save();
 
+        return [$file, $rzpFile];
+    }
+
+    protected function getFileData($file)
+    {
         $fileInstance = $file->get();
 
         $signedFileUrl = $file->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
@@ -120,14 +153,84 @@ class NodalAccount extends NodalBase\NodalAccount
         ];
     }
 
-    protected function getRows(string $amount): array
+    protected function getSettlementRows($entities): array
     {
-        $mode = $this->getTransferMode($amount);
+        $totalAmount = 0;
 
-        $this->mode = self::MODE_MAPPING[$mode];
+        foreach ($entities as $entity)
+        {
+            $source = $entity->source;
+
+            $amount = ($source->getAmount() / 100);
+
+            $totalAmount += $amount;
+
+            $ba = $entity->bankAccount;
+
+            $beneCode = $entity->bankAccount->getId();
+
+            // currently kotak is registered with below benecode, so we override
+            // the benecode until the new one gets registered.
+            if ($beneCode === '9KnioczXfED3wz')
+            {
+                $beneCode = 'RZRNAXISCARD';
+            }
+
+            $rows[] = $this->getTrasactionRow($amount, $beneCode, $ba);
+        }
+
+        $formattedAmount = (float) sprintf('%0.2f', $totalAmount);
+
+        $headerValues = $this->getHeaderRow($formattedAmount);
+
+        $values = [self::HEADINGS, $headerValues];
+
+        $values = array_merge($values, $rows);
+
+        return $values;
+    }
+
+    protected function getTrasactionRow($amount, $accountId, BankAccount\Entity $ba): array
+    {
+        $mode = $this->getPaymentType($amount, $ba);
+
+        $mode = self::MODE_MAPPING[$mode];
 
         $formattedAmount = (float) sprintf('%0.2f', $amount);
 
+        // Mode is set as I for Axis bank always in non-header rows
+        $excelDate = PHPExcel_Shared_Date::PHPToExcel(strtotime($this->date));
+
+        $transactionValues = [
+            $mode,
+            $accountId,
+            $excelDate,
+            $formattedAmount,
+            $excelDate,
+            $excelDate,
+        ];
+
+        return $transactionValues;
+    }
+
+    protected function getPaymentType($amount, BankAccount\Entity $ba)
+    {
+        $ifsc = $ba->getIfscCode();
+
+        $ifscFirstFour = substr($ifsc, 0, 4);
+
+        if ($ifscFirstFour === 'UTIB')
+        {
+            return Mode::IFT;
+        }
+
+        $mode = $this->getTransferMode($amount);
+
+        return $mode;
+    }
+
+    protected function getHeaderRow($formattedAmount): array
+    {
         // Record Identifier is set as 'D' for Axis bank always in first row
         $headerValues = [
             'D',
@@ -138,21 +241,7 @@ class NodalAccount extends NodalBase\NodalAccount
             '',
         ];
 
-        // Mode is set as I for Axis bank always in non-header rows
-        $excelDate = PHPExcel_Shared_Date::PHPToExcel(strtotime($this->date));
-
-        $transactionValues = [
-            $this->mode,
-            'RZRNAXISCARD',
-            $excelDate,
-            $formattedAmount,
-            $excelDate,
-            $excelDate,
-        ];
-
-        $values = [self::HEADINGS, $headerValues, $transactionValues];
-
-        return $values;
+        return $headerValues;
     }
 
     protected function sendAxisTransferMail(array $fileData)

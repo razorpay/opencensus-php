@@ -4,6 +4,8 @@ namespace RZP\Models\BharatQr;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\QrCode;
+use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -32,6 +34,8 @@ class Core extends Base\Core
         {
             $bharatQr = (new Entity)->build($input);
 
+            $this->determineAndSetMode($bharatQr);
+
             $this->mutex->acquireAndRelease(
                 $input[Entity::MERCHANT_REFERENCE],
                 function() use ($bharatQr)
@@ -52,5 +56,21 @@ class Core extends Base\Core
         }
 
         return $valid;
+    }
+
+    protected function determineAndSetMode(Entity $bharatQr)
+    {
+        $merchantReference = $bharatQr->getMerchantReference();
+
+        (new QrCode\Entity)->stripSignWithoutValidation($merchantReference);
+
+        $mode = $this->app['repo']->determineLiveOrTestModeForEntity($merchantReference, 'qr_code');
+
+        if ($mode === null)
+        {
+            $mode = Mode::LIVE;
+        }
+
+        $this->app['basicauth']->setModeAndDbConnection($mode);
     }
 }

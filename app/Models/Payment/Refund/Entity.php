@@ -78,6 +78,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::RECEIPT,
         self::TRANSACTION_ID,
+        self::BATCH_FUND_TRANSFER_ID,
         self::BATCH_ID,
         self::ARN,
         self::ACQUIRER_DATA,
@@ -264,7 +265,7 @@ class Entity extends Base\PublicEntity
 
     public function getChannel()
     {
-        return Transaction\Channel::KOTAK;
+        return $this->merchant->getChannel();
     }
 
     public function getFees()
@@ -409,6 +410,11 @@ class Entity extends Base\PublicEntity
     public function setRemarks(string $value)
     {
         $this->setAttribute(self::REFERENCE2, $value);
+    }
+
+    public function setBatchFundTransferId($value)
+    {
+        $this->setAttribute(self::BATCH_FUND_TRANSFER_ID, $value);
     }
 
     public function isStatusFailed()

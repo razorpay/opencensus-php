@@ -17,7 +17,10 @@ use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\State\Reason;
+use RZP\Models\Admin\Permission;
+use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
+use RZP\Models\Base\PublicEntity as PublicEntity;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
@@ -51,6 +54,12 @@ class Core extends Base\Core
             if ($this->canSubmit($input, $response) === true)
             {
                 $this->markSubmitted($merchantDetails);
+
+                $activationStatusData = [
+                    Entity::ACTIVATION_STATUS => Status::UNDER_REVIEW,
+                ];
+
+                $this->updateActivationStatus($merchantDetails, $activationStatusData, $merchant);
 
                 $this->app['eventManager']->trackEvents($merchant, Merchant\Action::SUBMITTED, $eventAttributes);
             }
@@ -95,6 +104,28 @@ class Core extends Base\Core
         }
 
         return $merchantDetails;
+    }
+
+    /**
+     * Fills up dummy file IDs, required fields for merchant activation
+     * Use with caution
+     *
+     * @param Merchant\Entity $merchant
+     */
+    public function saveDummyActivationFiles(Merchant\Entity $merchant)
+    {
+        $merchantDetails = $merchant->merchantDetail;
+
+        $params = [
+            Entity::ADDRESS_PROOF_URL    => '100000000Dummy',
+            Entity::BUSINESS_PAN_URL     => '100000000Dummy',
+            Entity::BUSINESS_PROOF_URL   => '100000000Dummy',
+            Entity::PROMOTER_ADDRESS_URL => '100000000Dummy',
+        ];
+
+        $merchantDetails->fill($params);
+
+        $this->repo->saveOrFail($merchantDetails);
     }
 
     public function createMerchantDetails(Merchant\Entity $merchant, array $input = [])
@@ -247,12 +278,18 @@ class Core extends Base\Core
      * This function is used for archiving merchant activation form
      * @param Entity $merchantDetails
      * @param array $input
+     * @param AdminEntity $admin
      *
      * @return Entity
      */
-    public function updateActivationArchive(Entity $merchantDetails, array $input): Entity
+    public function updateActivationArchive(Entity $merchantDetails, array $input, AdminEntity $admin): Entity
     {
         $merchantDetails->getValidator()->validateInput('archiveForm', $input);
+
+        $archiveAction = (empty($input[Entity::ARCHIVE]) === false) ? Action::ARCHIVE : Action::UNARCHIVE;
+
+        // Check for admin permission
+        $admin->hasMerchantActionPermissionOrFail($archiveAction);
 
         $archivedAt = null;
 
@@ -261,9 +298,18 @@ class Core extends Base\Core
             $archivedAt = Carbon::now(Timezone::IST)->getTimestamp();
         }
 
+        $routePermission = Permission\Name::$actionMap[$archiveAction];
+
+        $oldMerchantDetails = clone $merchantDetails;
+
         $merchantDetails->setArchivedAt($archivedAt);
 
+        $this->app['workflow']->setPermission($routePermission)->handle(
+            $oldMerchantDetails, $merchantDetails);
+
         $this->repo->saveOrFail($merchantDetails);
+
+        $this->logActionToSlack($merchantDetails->merchant, $archiveAction);
 
         return $merchantDetails;
     }
@@ -272,11 +318,11 @@ class Core extends Base\Core
      * This function is used for updating merchant activation status
      * @param Entity $merchantDetails
      * @param array $input
-     * @param AdminEntity $admin
+     * @param PublicEntity $maker [can be one of Admin\Admin\Entity or Merchant\Entity]
      *
      * @return Entity
      */
-    public function updateActivationStatus(Entity $merchantDetails, array $input, AdminEntity $admin): Entity
+    public function updateActivationStatus(Entity $merchantDetails, array $input, PublicEntity $maker): Entity
     {
         $merchantDetails->getValidator()->validateInput('activationStatus', $input);
 
@@ -312,9 +358,10 @@ class Core extends Base\Core
                                                             $newMerchantDetails,
                                                             $input,
                                                             $rejectionReasons,
-                                                            $admin)
+                                                            $maker)
         {
-            if ($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED)
+            if (($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED) and
+                ($merchantDetails->merchant->isLinkedAccount() === false))
             {
                 /*
                  * Setup workflow for activation_status change in merchantDetail entity,
@@ -334,7 +381,7 @@ class Core extends Base\Core
                 State\Entity::NAME => $input[Entity::ACTIVATION_STATUS],
             ];
 
-            $state = (new State\Core)->createForActivation($stateData, $merchantDetails, $admin);
+            $state = (new State\Core)->createForActivation($stateData, $merchantDetails, $maker);
 
             if (empty($rejectionReasons) === false)
             {
@@ -380,6 +427,12 @@ class Core extends Base\Core
             $bankCore->createOrChangeBankAccount($bankData, $merchant);
 
             (new Merchant\Activate)->autoActivate($merchant);
+
+            $activationStatusData = [
+                Entity::ACTIVATION_STATUS => Status::ACTIVATED,
+            ];
+
+            $this->updateActivationStatus($merchantDetails, $activationStatusData, $merchant);
 
             $merchantDetails->setLocked(true);
 

@@ -21,7 +21,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         $this->netbankingRepo = $this->repo->netbanking;
     }
 
-    protected function getPaymentId($row)
+    protected function getPaymentId(array $row)
     {
         if (empty($row[self::COLUMN_PAYMENT_REF_NO]) === false)
         {
