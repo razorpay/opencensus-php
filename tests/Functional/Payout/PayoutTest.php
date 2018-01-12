@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
 use RZP\Models\Payout;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Payout\PayoutTrait;
@@ -275,7 +276,7 @@ class PayoutTest extends TestCase
         $payoutFiles = ($this->testInitiatePayoutSuccess())['kotak']['payout_text_file'];
 
         // Generate reconciliation file, settlement and payout have common implementation
-        $payoutReconciliationFile = $this->generateSetlReconciliationFile($payoutFiles);
+        $payoutReconciliationFile = $this->generateSetlReconciliationFile($payoutFiles, Channel::KOTAK);
 
         // Reconcile settlements, same route is being used as both are h2h
         $content = $this->reconcileSettlements($payoutReconciliationFile);

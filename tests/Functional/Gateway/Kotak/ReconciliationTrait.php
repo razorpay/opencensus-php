@@ -13,11 +13,11 @@ use RZP\Models\Settlement\Channel;
 
 trait ReconciliationTrait
 {
-    protected function createPaymentAndRefundEntities()
+    protected function createPaymentAndRefundEntities(int $count = 5)
     {
         $prEntities = [];
 
-        $r = range(1,5);
+        $r = range(1, $count);
 
         $createdAt = Carbon::today(Timezone::IST)->subDays(20)->timestamp + 5;
         $capturedAt = Carbon::today(Timezone::IST)->subDays(20)->timestamp + 10;
@@ -108,15 +108,15 @@ trait ReconciliationTrait
         return $content;
     }
 
-    protected function initiateSettlementsAndAssertSuccess()
+    protected function initiateSettlementsAndAssertSuccess(string $channel = 'kotak')
     {
-        $content = $this->initiateSettlements();
+        $content = $this->initiateSettlements($channel);
 
-        $this->assertArrayHasKey('kotak', $content);
-        $this->assertArrayHasKey('settlement_text_file', $content['kotak']);
-        $this->assertArrayHasKey('settlement_excel_file', $content['kotak']);
+        $this->assertArrayHasKey($channel, $content);
+        $this->assertArrayHasKey('settlement_text_file', $content[$channel]);
+        $this->assertArrayHasKey('settlement_excel_file', $content[$channel]);
 
-        return $content['kotak']['settlement_text_file']['local_file_path'];
+        return $content[$channel]['settlement_text_file']['local_file_path'];
     }
 
     // Fetches and matches batch data for given entity

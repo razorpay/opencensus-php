@@ -2,6 +2,8 @@
 
 namespace RZP\Models\FundTransfer\Icici\Reconciliation;
 
+use Carbon\Carbon;
+
 use RZP\Exception;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Icici\Headings;
@@ -9,6 +11,8 @@ use RZP\Models\FundTransfer\Base\Reconciliation\FileProcessor as BaseProcessor;
 
 class FileProcessor extends BaseProcessor
 {
+    protected static $fileToReadName = 'Icici_Settlement';
+
     protected static $channel = Channel::ICICI;
 
     protected static $delimiter = ',';
@@ -20,12 +24,12 @@ class FileProcessor extends BaseProcessor
 
     protected function getRowProcessorNamespace($row)
     {
-        return __NAMESPACE__;
+        return __NAMESPACE__ . '\\RowProcessor';
     }
 
     protected function setDate($data)
     {
-        $date = Carbon::createFromFormat('d/M/y', $data[0][Kotak\Headings::PAYMENT_DATE]);
+        $date = Carbon::createFromFormat('m/d/Y', $data[0][Headings::PAYMENT_DATE]);
 
         //update the format so that recon mail is appended to settlement mail
         $this->date = $date->format('d-m-Y');

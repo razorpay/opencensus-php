@@ -622,7 +622,7 @@ class WebhookTest extends TestCase
         $setlFile = $this->initiateSettlementsAndAssertSuccess();
 
         // Generate settlement reconciliation file
-        $setlReconciliationFile = $this->generateSetlReconciliationFile($setlFile);
+        $setlReconciliationFile = $this->generateSetlReconciliationFile($setlFile, Settlement\Channel::KOTAK);
 
         // After settlements are initiated, the settlementFile is deleted. Read it to a local variable.
         $settlementReconFileData = file_get_contents($setlReconciliationFile);
@@ -660,6 +660,7 @@ class WebhookTest extends TestCase
         $generateFailedReconciliations = true;
         $setlReconciliationFile = $this->generateSetlReconciliationFile(
             $setlFile,
+            Settlement\Channel::KOTAK,
             $generateFailedReconciliations);
 
         // Reconcile settlements

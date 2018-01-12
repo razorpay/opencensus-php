@@ -125,9 +125,13 @@ class Service extends Base\Service
         return (new Kotak\ReconciliationGenerator)->reconcileSettlementsInTestMode($input);
     }
 
-    public function generateSettlementReconciliation($input)
+    public function generateSettlementReconciliation($input, string $channel)
     {
-        return (new Kotak\Service)->generateSettlementReconciliation($input);
+        $reconGeneratorNamespace = '\\RZP\\Models\FundTransfer\\' . ucfirst($channel) . '\\ReconciliationGenerator';
+
+        $filename = (new $reconGeneratorNamespace)->generateReconcileFile($input);
+
+        return ['setlReconciliationFile' => $filename];
     }
 
     public function generateSettlementReturn($input)

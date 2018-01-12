@@ -48,7 +48,7 @@ class ReconciliationTest extends TestCase
         $setlFile = $this->initiateSettlementsAndAssertSuccess();
 
         // Generate settlement reconciliation file
-        $setlReconciliationFile = $this->generateSetlReconciliationFile($setlFile);
+        $setlReconciliationFile = $this->generateSetlReconciliationFile($setlFile, Settlement\Channel::KOTAK);
 
         // Reconcile settlements
         $data = $this->reconcileSettlements($setlReconciliationFile);
@@ -126,6 +126,7 @@ class ReconciliationTest extends TestCase
         $generateFailedReconciliations = true;
         $setlReconciliationFile = $this->generateSetlReconciliationFile(
             $setlFile,
+            Settlement\Channel::KOTAK,
             $generateFailedReconciliations);
 
         // Reconcile settlements
@@ -240,7 +241,8 @@ class ReconciliationTest extends TestCase
         $content = $this->getEntities('file_store', [], true);
         $this->assertSame($content['count'], 4);
 
-        $setlReconciliationFile = $this->generateSetlReconciliationFile($setlFile, false, $firstAttempt['id']);
+        $setlReconciliationFile = $this->generateSetlReconciliationFile(
+            $setlFile, Settlement\Channel::KOTAK, false, $firstAttempt['id']);
 
         // Reconcile settlements
         $this->reconcileSettlements($setlReconciliationFile);

@@ -6,13 +6,6 @@ use RZP\Models\Base;
 
 class Service extends Base\Service
 {
-    public function generateSettlementReconciliation($input)
-    {
-        $filename = (new ReconciliationGenerator)->generateReconcileFile($input);
-
-        return ['setlReconciliationFile' => $filename];
-    }
-
     public function generateSettlementFile($setlAttempts)
     {
         // Hard-coding for now

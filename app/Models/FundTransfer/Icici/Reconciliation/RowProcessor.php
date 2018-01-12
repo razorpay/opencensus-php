@@ -14,40 +14,27 @@ class RowProcessor extends BaseRowProcessor
     const PAYMENT_DATE      = 'payment_date';
     const CMS_REF_NO        = 'cms_ref_no';
 
-    // Modes
-    const RTGS = AUTORTGS;
-    const NEFT = AUTONEFT;
-    #TODO:: Find about IFT, IMPS
-
     protected function parseRow()
     {
-        $bankStatus = $this->parsedData[self::BANK_STATUS_CODE];
+        $bankStatus = $this->row[Headings::STATUS];
 
-        $mode = trim($this->parsedData[Headings::PAYMENT_MODE]) ?? null;
+        $mode = trim($this->row[Headings::PAYMENT_MODE]) ?? null;
 
-        $remarks = null;
+        $remarks = trim($this->row[Headings::REMARKS] ?? null);
+
+        $cmsRefNo = trim($this->row[Headings::CMS_REF_NO] ?? null);
+
         $utr = null;
 
         switch ($mode)
         {
-            case self::RTGS:
-                if ($bankStatus === Status::PAID)
-                {
-                    $utr = trim($this->row[Headings::REMARKS] ?? null);
-                    $remarks = null;
-                }
-                else if ($bankStatus === Status::CANCELLED)
-                {
-                    $remarks = trim($this->row[Headings::REMARKS] ?? null);
-                }
-
+            case Mode::RTGS:
+                $utr = (($bankStatus === Status::PAID) ? $remarks : $cmsRefNo);
                 break;
 
-            case self::NEFT:
-                $remarks = trim($this->row[Headings::REMARKS] ?? null);
-
-                $utr = trim($this->row[Headings::CMS_REF_NO]) ?: null;
-
+            case Mode::NEFT:
+            case Mode::IFT:
+                $utr = $cmsRefNo;
                 break;
         }
 
@@ -57,7 +44,7 @@ class RowProcessor extends BaseRowProcessor
             self::BANK_STATUS_CODE  => $bankStatus,
             self::REMARKS           => $remarks,
             self::PAYMENT_DATE      => trim($this->row[Headings::PAYMENT_DATE] ?? null),
-            self::CMS_REF_NO        => trim($this->row[Headings::CMS_REF_NO] ?? null),
+            self::CMS_REF_NO        => $cmsRefNo,
         ];
 
         $this->reconEntityId = $this->parsedData['payment_ref_no'];

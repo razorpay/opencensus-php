@@ -110,11 +110,10 @@ class Repository extends Base\Repository
 
     public function findByIdCaseInsensitive(string $id)
     {
+        $upperCaseId = strtoupper($id);
+
         return $this->newQuery()
-                    ->where( function ($q) use ($id)
-                    {
-                        $q->whereRaw("UPPER('id') = " . strtoupper($id));
-                    })
-                    ->find();
+                    ->whereRaw('UPPER(id) = ?', $upperCaseId)
+                    ->first();
     }
 }
