@@ -185,6 +185,11 @@ class Constants
             'display_name'  => 'Report V2',
             'documentation' => ''
         ],
+        self::E_MANDATE => [
+            'feature'   => self::E_MANDATE,
+            'display_name'  => 'E-Mandate',
+            'documentation' => '',
+        ]
     ];
 
     /*
