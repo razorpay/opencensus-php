@@ -17,12 +17,15 @@ class Base extends Refund\Base
     public function fetchEntities(): PublicCollection
     {
         $begin = $this->gatewayFile->getBegin();
+
         $end = $this->gatewayFile->getEnd();
+
         $refunds = $this->repo->refund->fetchFailedRefundsForGatewayBetweenTimestamps(
                     $begin,
                     $end,
                     static::GATEWAY
                 );
+
         return $refunds;
     }
 
