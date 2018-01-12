@@ -266,7 +266,7 @@ class CardGatewaysFailedRefundFileTest extends TestCase
         $file = $this->getLastEntity('file_store', true);
 
         $expectedFileContent = [
-            'type'        => 'hdfc_failed_refund',
+            'type'        => 'fss_failed_refund',
             'entity_type' => 'gateway_file',
             'entity_id'   => $entity_id,
             'extension'   => 'xlsx',
@@ -279,11 +279,11 @@ class CardGatewaysFailedRefundFileTest extends TestCase
 
             $date = Carbon::today(Timezone::IST)->format('d-m-Y');
 
-            $subject = 'HDFC failed refunds for ' . $date;
+            $subject = 'FSS failed refunds for ' . $date;
 
-            $body = 'Please find attached failed refunds information for HDFC';
+            $body = 'Please find attached failed refunds information for FSS';
 
-            $fileName = 'HDFC_Failed_Refunds_test_'. $date  . '.xlsx';
+            $fileName = 'FSS_Failed_Refunds_test_'. $date  . '.xlsx';
 
             $this->assertEquals($subject, $mail->subject);
 

@@ -14,7 +14,7 @@ class Constants extends Base\Constants
         Gateway::AXIS_MIGS          => 'Axis Migs Failed Refunds',
         Gateway::FIRST_DATA         => 'FirstData Failed Refunds',
         Gateway::CYBERSOURCE        => 'Cybersource Failed Refunds',
-        Gateway::HDFC               => 'HDFC Failed Refunds',
+        Gateway::HDFC               => 'FSS Failed Refunds',
     ];
 
     const SUBJECT_MAP = [
@@ -23,7 +23,7 @@ class Constants extends Base\Constants
         Gateway::AXIS_MIGS          => 'Axis Migs failed refunds for ',
         Gateway::FIRST_DATA         => 'FirstData failed refunds for ',
         Gateway::CYBERSOURCE        => 'Cybersource failed refunds for ',
-        Gateway::HDFC               => 'HDFC failed refunds for ',
+        Gateway::HDFC               => 'FSS failed refunds for ',
     ];
 
     const BODY_MAP = [
@@ -32,7 +32,7 @@ class Constants extends Base\Constants
         Gateway::AXIS_MIGS          => 'Please find attached failed refunds information for Axis Migs',
         Gateway::FIRST_DATA         => 'Please find attached failed refunds information for FirstData',
         Gateway::CYBERSOURCE        => 'Please find attached failed refunds information for Cybersource',
-        Gateway::HDFC               => 'Please find attached failed refunds information for HDFC',
+        Gateway::HDFC               => 'Please find attached failed refunds information for FSS',
     ];
 
     const MAIL_TEMPLATE_MAP = [

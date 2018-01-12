@@ -56,7 +56,7 @@ class Type
 
     const CYBERSOURCE_FAILED_REFUND         = 'cybersource_failed_refund';
 
-    const HDFC_FAILED_REFUND                = 'hdfc_failed_refund';
+    const FSS_FAILED_REFUND                 = 'fss_failed_refund';
 
     const PNB_NETBANKING_REFUND             = 'pnb_netbanking_refund';
 
@@ -152,7 +152,7 @@ class Type
             self::AXIS_MIGS_FAILED_REFUND,
             self::FIRSTDATA_FAILED_REFUND,
             self::CYBERSOURCE_FAILED_REFUND,
-            self::HDFC_FAILED_REFUND,
+            self::FSS_FAILED_REFUND,
             self::MOCK_RECONCILIATION_FILE,
         ],
 
@@ -231,7 +231,7 @@ class Type
         self::AXIS_MIGS_FAILED_REFUND,
         self::FIRSTDATA_FAILED_REFUND,
         self::CYBERSOURCE_FAILED_REFUND,
-        self::HDFC_FAILED_REFUND,
+        self::FSS_FAILED_REFUND,
         self::MOCK_RECONCILIATION_FILE
     ];
 
@@ -270,7 +270,7 @@ class Type
             self::AXIS_MIGS_FAILED_REFUND,
             self::FIRSTDATA_FAILED_REFUND,
             self::CYBERSOURCE_FAILED_REFUND,
-            self::HDFC_FAILED_REFUND,
+            self::FSS_FAILED_REFUND,
         ],
 
         self::INVOICE_BUCKET_CONFIG => [
