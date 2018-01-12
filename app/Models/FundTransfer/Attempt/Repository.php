@@ -90,14 +90,23 @@ class Repository extends Base\Repository
       }
 
     /**
-     * Fetches all attempts pending reconciliation between given timstamps (both including)
+     * Fetches all attempts pending reconciliation between given timestamps (both including)
      */
-    public function getAttemptsBetweenTimestampsWithStatus(int $from, int $to, string $status)
+    public function getAttemptsBetweenTimestampsWithStatus(
+        $from, $to, string $status, array $relations = [])
     {
-        return $this->newQuery()
-                    ->whereBetween(Entity::CREATED_AT, [$from, $to])
-                    ->where(Entity::STATUS, '=', $status)
-                    ->get();
+        $query = $this->newQuery()
+                      ->select([Entity::ID])
+                      ->whereBetween(Entity::CREATED_AT, [$from, $to])
+                      ->where(Entity::STATUS, $status)
+                      ->get();
+
+        if (empty($relations) === false)
+        {
+            $query->with($relations);
+        }
+
+        return $query->get();
     }
 
     public function findByIdCaseInsensitive(string $id)
@@ -107,6 +116,6 @@ class Repository extends Base\Repository
                     {
                         $q->whereRaw("UPPER('id') = " . strtoupper($id));
                     })
-                    ->get();
+                    ->find();
     }
 }

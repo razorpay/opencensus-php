@@ -2,10 +2,10 @@
 
 namespace RZP\Models\FundTransfer\Icici\Reconciliation;
 
-use RZP\Models\FundTransfer\Base\Reconciliation\RowProcessor as BaseRowProcessor;
 use RZP\Models\FundTransfer\Icici\Headings;
+use RZP\Models\FundTransfer\Base\Reconciliation\RowProcessor as BaseRowProcessor;
 
-class RowProcessor extends RowProcessor
+class RowProcessor extends BaseRowProcessor
 {
     const PAYMENT_REF_NO    = 'payment_ref_no';
     const UTR               = 'utr';

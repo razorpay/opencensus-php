@@ -1,0 +1,268 @@
+<?php
+
+namespace RZP\Models\FundTransfer\Attempt;
+
+use Carbon\Carbon;
+
+use RZP\Models\Base;
+use RZP\Constants\Mode;
+use RZP\Constants\Entity as EntityConstants;
+use RZP\Constants\Timezone;
+use RZP\Models\Settlement\SlackNotification;
+use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
+use RZP\Mail\Settlement\Reconciliation as ReconciliationEmail;
+
+class BulkRecon extends Base\Core
+{
+    const MUTEX_RESOURCE = 'SETTLEMENT_RECONCILIATION_%s';
+
+    const MUTEX_LOCK_TIMEOUT = 300;
+
+    protected $channel;
+
+    protected $input;
+
+    protected $allReconciledRows = [];
+
+    public function __construct(array $input, string $channel)
+    {
+        parent::__construct();
+
+        $this->mutex = $this->app['api.mutex'];
+
+        $this->channel = $channel;
+
+        $this->input = $input;
+    }
+
+    public function process()
+    {
+        $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->channel);
+
+        $data = $this->mutex->acquireAndRelease(
+            $mutexResource,
+            function ()
+            {
+                return $this->processEntities();
+            },
+            self::MUTEX_LOCK_TIMEOUT,
+
+            ErrorCode::BAD_REQUEST_SETTLEMENT_RECONCILIATION_IN_PROGRESS);
+
+        return $data;
+    }
+
+    public function processEntities()
+    {
+        list($from, $to) = $this->getTimestamps();
+
+        $relations = ['source', 'source.transaction', 'source.merchant' , 'batchFundTransfer'];
+
+        $ftaIds = $this->repo->getAttemptsBetweenTimestampsWithStatus($from, $to, Status::INITIATED, $relations)
+                             ->pluck(FundTransferAttempt\Entity::ID)
+                             ->toArray();
+
+        $summary = $this->repo->transactionOnLiveAndTest(function() use ($ftaIds)
+        {
+            try
+            {
+                foreach ($ftaIds as $id)
+                {
+                    $fta = $this->repo->findOrFail($id);
+
+                    $entityProcessor = '\\RZP\\Models\FundTransfer\\' . ucfirst($this->channel) . '\\Reconciliation\\EntityProcessor';
+
+                    $this->allReconciledRows[] = (new $entityProcessor)->process($fta);
+                }
+            }
+            catch (\Throwable $e)
+            {
+                (new SlackNotification)->failure('setl_reconciliation', $e);
+
+                throw $e;
+            }
+
+            $summary = $this->getSummary();
+
+            return $summary;
+        });
+
+        (new SlackNotification)->success('setl_reconciliation', $summary);
+
+        // Isolating the webhook flow in a try-catch, to keep the original settlement cycle unaffected
+        try
+        {
+            (new FundTransferAttempt\Core)->notifyMerchantViaWebhook($reconDetails);
+        }
+        catch (\Throwable $e)
+        {
+            // Log only the entity ids instead of the entire entities
+            $entityIds = array_map(function($reconciledRow)
+            {
+                return $reconciledRow['entity']->getId();
+            }, $reconDetails);
+
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::SETTLEMENT_PROCESSED_WEBHOOOK_FAILED,
+                ['entities' => $entityIds]);
+        }
+    }
+
+    protected function setTimestamps(): array
+    {
+        if ((isset($this->input['from']) === true) and (isset($this->input['to']) === true))
+        {
+            $from = $this->input['from'];
+            $to = $this->input['to'];
+        }
+        else
+        {
+            $from = (Carbon::today(Timezone::IST))->timestamp;
+            $to = (Carbon::tomorrow(Timezone::IST))->timestamp;
+        }
+
+        return [$from, $to];
+    }
+
+    final protected function getSummary(): array
+    {
+        $failureEntityIds = $successEntityIds = $allEntityIds = [];
+        $failureEntities = new Base\PublicCollection;
+
+        $settlementsCount = 0;
+
+        foreach ($this->allReconciledRows as $reconciledRow)
+        {
+            $entity = $reconciledRow['entity'];
+
+            $entityId = $entity->getId();
+
+            $allEntityIds[] = $entityId;
+
+            if ($entity->isStatusFailed() === true)
+            {
+                $failureEntities[] = $entity;
+            }
+            else
+            {
+                $successEntityIds[] = $entityId;
+            }
+
+            if ($entity->getEntityName() === EntityConstants::SETTLEMENT)
+            {
+                $settlementsCount += 1;
+            }
+        }
+
+        // Get distinct entity ids in all array.
+        // There will be duplicates in case of same day retry
+        // Ideally there shouldn't be duplicates in success, but we do a defensive unique
+        $allEntityIds = array_unique($allEntityIds);
+        $successEntityIds = array_unique($successEntityIds);
+
+        $failureEntities = $failureEntities->uniqueStrict(function ($entity)
+        {
+            return $entity->getId();
+        });
+
+        foreach ($failureEntities as $entity)
+        {
+            $failureEntityIds[] = $entity->getId();
+        }
+
+        // If multiple, let's say 2, attempts were made, on the same day for a settlement,
+        // the recon file would have both failure and success rows corresponding to each
+        // attempt. In this case the settlement corresponding to them would be part of
+        // both successEntities, and failureEntities. To avoid a false alarm for this
+        // settlement, we do this
+        $failureEntityIds = array_diff($failureEntityIds, $successEntityIds);
+
+        $failureCount = count($failureEntityIds);
+
+        $summary = [
+            'total_count'                   => count($allEntityIds),
+            'failures_count'                => $failureCount,
+            'settlement_failure_amount'     => 0,
+        ];
+
+        $settlementsFailureIds = [];
+
+        foreach ($failureEntities as $entity)
+        {
+            $entityName = $entity->getEntityName();
+
+            if ($entityName === EntityConstants::SETTLEMENT)
+            {
+                $settlementsFailureIds[] = $entity->getId();
+
+                $summary['settlement_failure_amount'] += $entity->getAmount();
+            }
+
+            $key = $entityName. '_failure_count';
+
+            // Adds keys settlement_failure_count, payout_failure_count, refund_failure_count to summary
+            $summary[$key] = ($summary[$key] ?? 0) + 1;
+        }
+
+        // if no settlement entities were marked failed
+        if (isset($summary['settlement_failure_count']) === false)
+        {
+            return $summary;
+        }
+
+        //
+        // Get slack summary for settlement failures
+        //
+        $settlementsFailureCount = $summary['settlement_failure_count'];
+
+        if ($settlementsCount === $settlementsFailureCount)
+        {
+            $failureRemark = 'All settlements failed.';
+        }
+        else
+        {
+            $failureRemark = $settlementsFailureCount . ' settlement(s) failed.';
+        }
+
+        if ($settlementsFailureCount > 5)
+        {
+            $settlementsFailureIds = array_slice($settlementsFailureIds, 0, 5, true);
+
+            $failureIdMsg = ' A few failed settlement IDs: ';
+        }
+        else
+        {
+            $failureIdMsg = ' Settlement IDs: ';
+        }
+
+        $summary['settlement_failure_remarks'] = $failureRemark;
+
+        $summary['settlement_failure_ids'] = $failureIdMsg . implode(', ', $settlementsFailureIds);
+
+        return $summary;
+    }
+
+    final protected function sendReconciliationSummaryMail($response)
+    {
+        if (($this->mode === Mode::TEST) and
+            ($this->app->environment('dev', 'testing') === false))
+        {
+            return;
+        }
+
+        $msg = 'UTR File reconciled.' . PHP_EOL;
+
+        $failureCount = $response['failures_count'];
+
+        $msg .= 'Failure Count: ' . $failureCount . PHP_EOL;
+
+        $data['date'] = $this->date;
+        $data['body'] = $msg;
+
+        $email = new ReconciliationEmail($data);
+
+        Mail::queue($email);
+    }
+}

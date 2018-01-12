@@ -2,15 +2,9 @@
 
 namespace RZP\Models\FundTransfer\Kotak\Reconciliation\V3;
 
-use Carbon\Carbon;
-use RZP\Constants\Timezone;
-
-use RZP\Constants\Entity;
-use RZP\Exception;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Kotak\Headings;
 use RZP\Models\FundTransfer\Kotak\Reconciliation\Base;
-use RZP\Models\FundTransfer\Kotak\Reconciliation\Status;
 
 class RowProcessor extends Base\RowProcessor
 {
@@ -53,17 +47,13 @@ class RowProcessor extends Base\RowProcessor
     {
         $this->reconEntity = $this->repo
                                   ->fund_transfer_attempt
-                                  ->findWithRelations(
-                                        $this->reconEntityId,
-                                        ['source', 'source.transaction', 'source.merchant' , 'batchFundTransfer']);
+                                  ->findById($this->reconEntityId);
 
         if (empty($this->reconEntity) === true)
         {
             // This will be traced as error in Base/RowProcessor
             return;
         }
-
-        $this->source = $this->reconEntity->source;
     }
 
     protected function updateReconEntity()
@@ -82,95 +72,6 @@ class RowProcessor extends Base\RowProcessor
         $this->reconEntity->setDateTime($this->parsedData['date_time']);
         $this->reconEntity->setCmsRefNo($this->parsedData['cms_ref_no']);
 
-        $dirtyAttributes = $this->reconEntity->getDirty();
-
-        // The below conditions check that it's not an upload-level failure
-        if (($status === Attempt\Status::FAILED) and
-            (empty($utr) === false) and
-            ($bankStatusCode === Status::PROCESSED))
-        {
-            if (in_array(Attempt\Entity::STATUS, array_keys($dirtyAttributes)) === true)
-            {
-                $this->firstFailure = true;
-            }
-
-            // Merchant is put on hold if a settlement failed
-            // This is to avoid further failures on same merchant
-            if ($this->source->getEntity() === Entity::SETTLEMENT)
-            {
-                $this->holdFunds = true;
-            }
-        }
-
         $this->reconEntity->saveOrFail();
-    }
-
-    protected function updateSourceEntity()
-    {
-        if ($this->source->getBatchFundTransferId() !== $this->reconEntity->getBatchFundTransferId())
-        {
-            return;
-        }
-
-        $sourceStatus = $this->getSourceStatusFromReconEntityStatus();
-
-        $this->source->setStatus($sourceStatus);
-        $this->source->setUtr($this->parsedData['utr']);
-        $this->source->setRemarks($this->parsedData['remarks']);
-
-        if ($this->source->getEntity() !== Attempt\Type::REFUND)
-        {
-            $this->source->setFailureReason($this->parsedData['failure_reason']);
-
-            if (($this->parsedData['status'] === Attempt\Status::PROCESSED) and
-                (empty($this->parsedData['instrument_date']) === false))
-            {
-                $settledOn = Carbon::createFromFormat(
-                                'd-M-y', $this->parsedData['instrument_date'], Timezone::IST)->getTimestamp();
-
-                $this->source->setSettledOn($settledOn);
-            }
-        }
-
-        $this->source->saveOrFail();
-    }
-
-    protected function getSourceStatusFromReconEntityStatus(): string
-    {
-        $sourceEntityName = $this->source->getEntity();
-
-        switch ($sourceEntityName)
-        {
-            case Entity::SETTLEMENT:
-            case Entity::PAYOUT:
-            case Entity::REFUND:
-                return $this->getStatusForEntity($sourceEntityName);
-
-            default:
-                throw new Exception\LogicException('Unrecognized source entity: ' . $sourceEntityName);
-        }
-    }
-
-    protected function getStatusForEntity(string $sourceEntityName): string
-    {
-        $entityStatusClass = $this->getEntityStatusNamespace($sourceEntityName);
-
-        $attemptStatus = $this->parsedData['status'];
-
-        switch ($attemptStatus)
-        {
-            case Attempt\Status::CREATED:
-            case Attempt\Status::INITIATED:
-                return $this->source->getStatus();
-
-            case Attempt\Status::FAILED:
-                return $entityStatusClass::FAILED;
-
-            case Attempt\Status::PROCESSED:
-                return $entityStatusClass::PROCESSED;
-
-            default:
-                throw new Exception\LogicException('Unrecognized attempt status: ' . $attemptStatus);
-        }
     }
 }
