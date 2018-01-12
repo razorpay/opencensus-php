@@ -12,6 +12,9 @@ class Preferences
     const MID_ZOMATO       = '6H7N6hlcv29OMG';
     const MID_IPAY         = '6VS1z0fmis8fn6';
     const MID_DSPBLACKROCK = '7thBRSDflu7NHL';
+    const MID_GOALWISE_1   = '7BfRNg10LH7N6T';
+    const MID_GOALWISE_2   = '8ytYezIThlseJd';
+    const MID_WEALTHAPP    = '9LYKZiz2kpFFtY';
 
     /**
      * This needs to go in DB, for hotfix we are keeping it here

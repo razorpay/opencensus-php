@@ -60,6 +60,7 @@ class Gateway
     const ACQUIRER_ICIC      = 'icic';
     const ACQUIRER_AXIS      = 'axis';
     const ACQUIRER_AMEX      = 'amex';
+    const ACQUIRER_RATN      = 'ratn';
 
     const NOT_SUPPORTED      = 'not_supported';
     const SUPPORTED          = 'supported';
@@ -71,6 +72,7 @@ class Gateway
         self::FIRST_DATA  => [self::ACQUIRER_ICIC],
         self::AMEX        => [self::ACQUIRER_AMEX],
         self::AEPS_ICICI  => [self::ACQUIRER_ICIC],
+        self::HITACHI     => [self::ACQUIRER_RATN],
     ];
 
     const POWER_WALLETS = [
