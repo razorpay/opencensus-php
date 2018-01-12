@@ -8,8 +8,6 @@ use Auth;
 
 use GuzzleHttp\Client as Guzzle;
 use GuzzleHttp\Post\PostFile;
-
-use Razorpay\Api\Request as ApiRequest;
 use Razorpay\Api\Errors as RZPErrors;
 use Trace;
 use App\Trace\TraceCode;
@@ -71,13 +69,20 @@ class ApiRequestAny
 
         $currentMerchant = $merchantUser->currentMerchant();
 
+
         if (empty($currentMerchant) === false)
         {
             $merchantId = $currentMerchant->id;
 
+            $options = [
+                'headers' => [
+                    'X-Merchant-Role' => $currentMerchant->role
+                ]
+            ];
+
             $user = $mode.'_'.$merchantId;
 
-            return $this->request($user, $path);
+            return $this->request($user, $path, $options);
         }
     }
 
@@ -173,9 +178,13 @@ class ApiRequestAny
         {
             $options['json'] = $input;
         }
-        else
+        else if ($contentType === self::CONTENT_TYPE_FORM)
         {
             $options['form_params'] = $input;
+        }
+        else
+        {
+            $options['body'] = $input;
         }
 
         $defaultHeaders = [
