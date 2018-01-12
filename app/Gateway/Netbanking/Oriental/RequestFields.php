@@ -9,6 +9,12 @@ class RequestFields
      */
     const RETURN_URL      = 'RU';
     const CATEGORY_ID     = 'CATEGORY_ID';
+
+    /**
+     * This parameter is expected to be in encrypted format if
+     * CATEGORY_ID is set in the request parameters.
+     * @see https://drive.google.com/drive/u/0/folders/1A5ULegmYTyv3yVgAD33wwi6wQZk50Nmt
+     */
     const QUERY_STRING    = 'QS';
 
     /**

@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Netbanking\Oriental;
 
+use phpseclib\Crypt\AES;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
@@ -10,6 +11,13 @@ use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
 use RZP\Exception\GatewayErrorException;
 
+/**
+ * This gateway has been developed as per the API contract from oriental bank of commerce
+ * @see https://drive.google.com/drive/u/0/folders/1A5ULegmYTyv3yVgAD33wwi6wQZk50Nmt
+ *
+ * Class Gateway
+ * @package RZP\Gateway\Netbanking\Oriental
+ */
 class Gateway extends Base\Gateway
 {
     protected $bank = 'oriental';
@@ -21,6 +29,11 @@ class Gateway extends Base\Gateway
      * @var array
      */
     private $gatewayAttribues = [];
+
+    /**
+     * @var Crypto
+     */
+    private $aesCrypto;
 
     protected $map = [
         // Auth request mapping
@@ -78,7 +91,7 @@ class Gateway extends Base\Gateway
     private function getAuthorizeRequest(array $input)
     {
         $content = [
-            RequestFields::RETURN_URL   => $input['callbackUrl'],
+            RequestFields::RETURN_URL   => $this->encrypt($input['callbackUrl']),
             RequestFields::CATEGORY_ID  => Constants::CATEGORY_ID,
             RequestFields::QUERY_STRING => $this->getQueryString($input)
         ];
@@ -106,7 +119,7 @@ class Gateway extends Base\Gateway
         // We will be using this to map to our gateway entity
         $this->gatewayAttribues = $queryArray;
 
-        return implode(
+        $queryStringToEncrypt = implode(
             "|",
             array_map(
                 function($key, $value)
@@ -116,6 +129,41 @@ class Gateway extends Base\Gateway
                 array_keys($queryArray),
                 array_values($queryArray)
             ));
+
+        return $this->encrypt($queryStringToEncrypt);
+    }
+
+    /**
+     * This method encrypts and then encodes the input string
+     * @param string $stringToEncrypt
+     * @return string
+     */
+    public function encrypt(string $stringToEncrypt)
+    {
+        $this->getCreateOrGetCrypto();
+
+        return $this->aesCrypto->encryptString($stringToEncrypt);
+    }
+
+    /**
+     * This method decodes the string and then decrypts it
+     * @param string $stringToDecrypt
+     * @return string
+     */
+    public function decrypt(string $stringToDecrypt)
+    {
+        $this->getCreateOrGetCrypto();
+
+        return $this->aesCrypto->decryptString($stringToDecrypt);
+    }
+
+    private function getCreateOrGetCrypto()
+    {
+        if ($this->aesCrypto === null)
+        {
+            // TODO: Ensure mode correctly set for AES
+            $this->aesCrypto = new Crypto(AES::MODE_ECB, $this->getSecret());
+        }
     }
 
     private function parseGatewayResponse(array $response)
