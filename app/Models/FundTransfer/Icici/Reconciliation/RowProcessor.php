@@ -19,11 +19,6 @@ class RowProcessor extends BaseRowProcessor
     const NEFT = AUTONEFT;
     #TODO:: Find about IFT, IMPS
 
-    // Bank Status Codes
-    const PAID      = 'Paid';
-    const CANCELLED = 'Cancelled';
-    const AWAITING  = 'Awaiting Liquidation';
-
     protected function parseRow()
     {
         $bankStatus = $this->parsedData[self::BANK_STATUS_CODE];
@@ -36,12 +31,12 @@ class RowProcessor extends BaseRowProcessor
         switch ($mode)
         {
             case self::RTGS:
-                if ($bankStatus === self::PAID)
+                if ($bankStatus === Status::PAID)
                 {
                     $utr = trim($this->row[Headings::REMARKS] ?? null);
                     $remarks = null;
                 }
-                else if ($bankStatus === self::CANCELLED)
+                else if ($bankStatus === Status::CANCELLED)
                 {
                     $remarks = trim($this->row[Headings::REMARKS] ?? null);
                 }

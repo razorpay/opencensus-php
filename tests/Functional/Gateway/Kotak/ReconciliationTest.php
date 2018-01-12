@@ -3,21 +3,18 @@
 namespace RZP\Tests\Functional\Gateway\Kotak;
 
 use App;
-use Carbon\Carbon;
-use RZP\Constants\Timezone;
-use Config;
 use Mail;
-use RZP\Constants\Mode;
+use Config;
+use Carbon\Carbon;
+
+use RZP\Constants\Timezone;
 use RZP\Mail\Settlement\Reconciliation as ReconciliationMail;
 use RZP\Mail\Merchant\SettlementFailure as SettlementFailureMail;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\Account;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
-use RZP\Models\FundTransfer\Kotak;
-use RZP\Models\Payout\Status as PayoutStatus;
 use RZP\Models\Settlement;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 
@@ -264,26 +261,6 @@ class ReconciliationTest extends TestCase
         $txn = $this->getLastEntity('transaction', true);
         $this->assertEquals('settlement', $txn['type']);
         $this->assertNotNull($txn['reconciled_at']);
-    }
-
-    public function testRetryReconWithoutSettlementIds()
-    {
-        $this->testReconEntiyFailureForKotak();
-
-        $data = $this->testData[__FUNCTION__];
-
-        $request = [
-            'url' => '/settlements/retry',
-            'method' => 'POST',
-            'content' => []
-        ];
-
-        $this->ba->adminAuth();
-
-        $this->runRequestResponseFlow($data, function() use ($request)
-        {
-            $this->makeRequestAndGetContent($request);
-        });
     }
 
     public function testAdjustmentCreationAgainstSettlement()
