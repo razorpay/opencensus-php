@@ -11,10 +11,8 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
-use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Mail\Settlement\Reconciliation as ReconciliationMail;
 use RZP\Tests\Functional\Gateway\Kotak\ReconciliationTrait;
-use RZP\Mail\Merchant\SettlementFailure as SettlementFailureMail;
 
 class IciciReconciliationTest extends TestCase
 {
@@ -22,7 +20,6 @@ class IciciReconciliationTest extends TestCase
     use SettlementTrait;
     use ReconciliationTrait;
     use FileHandlerTrait;
-    use HeimdallTrait;
 
     protected $channel;
 
@@ -83,8 +80,12 @@ class IciciReconciliationTest extends TestCase
 
         $this->makeRequestAndGetContent($request);
 
-        $setl = $this->getLastEntity('settlement', true);
+        $settlementAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+        s($settlementAttempt);
+        $this->assertTestResponse($settlementAttempt, 'matchSettlementAttemptForReconEntitySuccess');
 
+        $setl = $this->getLastEntity('settlement', true);
+        s($setl);
         $this->assertTestResponse($setl, 'fetchAndMatchSettlementsForReconSuccess');
 
         $this->assertNotNull(Settlement\Entity::UTR);
@@ -135,7 +136,7 @@ class IciciReconciliationTest extends TestCase
         $this->assertTestResponse($settlementAttempt, 'matchSettlementAttemptForReconFileFailure');
     }
 
-    public function testReconEntiyFailure()
+    public function testReconEntityFailure()
     {
         $this->testReconFailureFileProcess();
 

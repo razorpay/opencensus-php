@@ -75,4 +75,13 @@ return [
         'total_count'       => 1,
         'transaction_count' => 4,
     ],
+
+    'matchSettlementAttemptForReconEntitySuccess' => [
+        'channel'          => Channel::ICICI,
+        'version'          => 'V3',
+        'bank_status_code' => Status::PAID,
+        'status'           => AttemptStatus::PROCESSED,
+        'failure_reason'   => null,
+    ],
+
 ];

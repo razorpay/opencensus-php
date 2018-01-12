@@ -44,12 +44,7 @@ class EntityProcessor extends BaseEntityProcessor
         $this->source->setUtr($this->fta->getUtr());
         $this->source->setRemarks($this->fta->getRemarks());
 
-        if ($this->source->getEntity() !== Attempt\Type::REFUND)
-        {
-            $this->source->setFailureReason($this->fta->getFailureReason());
-        }
-
-        $this->source->saveOrFail();
+        $this->repo->saveOrFail($this->source);
     }
 
     protected function isMerchantLevelError(): bool
