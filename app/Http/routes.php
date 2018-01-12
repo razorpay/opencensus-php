@@ -57,6 +57,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::group(['middleware'  =>  ['auth:user', 'verified']], function()
     {
         Route::any('/user/generic', 'GenericController@handle');
+        Route::any('/user/generic/{mode}/{path}', 'GenericController@handleMerchant')->where(['path' => '.*']);
         // Account Routes
         Route::get('/{mode}/accounts', 'MerchantController@getAccounts')->name('get_accounts');
 
@@ -100,6 +101,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::group(['middleware'  =>  ['admin', 'admin_access']], function()
     {
         Route::any('/admin/generic', 'GenericController@handle');
+        Route::any('/admin/generic/{auth}/{path}', 'GenericController@handleAdmin')->where(['path' => '.*']);
         Route::get('/admin/user', 'AdminController@getAdmin');
         Route::get('/admin/user/logout', 'AdminController@getLogout');
         Route::get('/admin/user/keepalive', 'AdminController@getKeepAlive');
