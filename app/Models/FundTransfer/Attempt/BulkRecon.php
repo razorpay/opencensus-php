@@ -24,6 +24,8 @@ class BulkRecon extends Base\Core
 
     protected $allReconciledRows = [];
 
+    protected $batchFundTransferStats = [];
+
     public function __construct(array $input, string $channel)
     {
         parent::__construct();
@@ -72,7 +74,22 @@ class BulkRecon extends Base\Core
 
                     $entityProcessor = '\\RZP\\Models\FundTransfer\\' . ucfirst($this->channel) . '\\Reconciliation\\EntityProcessor';
 
-                    $this->allReconciledRows[] = (new $entityProcessor)->process($fta);
+                    $reconDetails = (new $entityProcessor)->process($fta);
+
+                    $this->allReconciledRows[] = $reconDetails;
+
+                    $entity = $reconDetails['entity'];
+
+                    $this->updateBatchFundTransferStats($entity);
+                }
+
+                // Update batch stats post reconciliations
+                foreach ($this->batchFundTransferStats as $batchId => $attrs)
+                {
+                    $batchEntity = $this->repo->batch_fund_transfer->findByPublicId($batchId);
+                    $batchEntity->setProcessedCount($attrs['processed_count']);
+                    $batchEntity->setProcessedAmount($attrs['processed_amount']);
+                    $batchEntity->saveOrFail();
                 }
             }
             catch (\Throwable $e)
@@ -126,7 +143,38 @@ class BulkRecon extends Base\Core
         return [$from, $to];
     }
 
-    final protected function getSummary(): array
+    protected function updateBatchFundTransferStats($reconciledEntity)
+    {
+        $entityStatusClass = EntityConstants::getEntityNamespace($reconciledEntity->getEntityName()) . '\\Status';
+
+        if ($reconciledEntity->getStatus() !== $entityStatusClass::PROCESSED)
+        {
+            return;
+        }
+
+        if ($reconciledEntity->batchFundTransfer === null)
+        {
+            return;
+        }
+
+        $batchId = $reconciledEntity->batchFundTransfer->getId();
+
+        $amount = $reconciledEntity->getAmount();
+
+        if (isset($this->batchFundTransferStats[$batchId]) === false)
+        {
+            $this->batchFundTransferStats[$batchId] =
+                ['processed_count' => 1, 'processed_amount' => $amount];
+        }
+        else
+        {
+            $this->batchFundTransferStats[$batchId]['processed_count']++;
+
+            $this->batchFundTransferStats[$batchId]['processed_amount'] += $amount;
+        }
+    }
+
+    protected function getSummary(): array
     {
         $failureEntityIds = $successEntityIds = $allEntityIds = [];
         $failureEntities = new Base\PublicCollection;
@@ -244,7 +292,7 @@ class BulkRecon extends Base\Core
         return $summary;
     }
 
-    final protected function sendReconciliationSummaryMail($response)
+    protected function sendReconciliationSummaryMail($response)
     {
         if (($this->mode === Mode::TEST) and
             ($this->app->environment('dev', 'testing') === false))

@@ -73,10 +73,9 @@ return [
     ],
 
     'matchSummaryForReconSuccess' => [
+        'channel'                       => \RZP\Models\Settlement\Channel::KOTAK,
         'total_count'                   => 1,
-        'unprocessed_ids'               => '',
-        'failures_count'                => 0,
-        'settlement_failure_amount'     => 0,
+        'unprocessed_count'             => 0,
     ],
 
     // status is not matched as we keep it created till 10pm

@@ -45,9 +45,11 @@ class RowProcessor extends Base\RowProcessor
 
     protected function fetchEntities()
     {
+        $ftaId = $this->parsedData['payment_ref_no'];
+
         $this->reconEntity = $this->repo
                                   ->fund_transfer_attempt
-                                  ->findById($this->reconEntityId);
+                                  ->find($ftaId);
 
         if (empty($this->reconEntity) === true)
         {
@@ -58,17 +60,9 @@ class RowProcessor extends Base\RowProcessor
 
     protected function updateReconEntity()
     {
-        // Get values
-        $utr = $this->parsedData['utr'];
-        $status = $this->parsedData['status'];
-        $bankStatusCode = $this->parsedData['bank_status_code'];
-
-        // Update values
-        $this->reconEntity->setUtr($utr);
-        $this->reconEntity->setStatus($status);
-        $this->reconEntity->setFailureReason($this->parsedData['failure_reason']);
+        $this->reconEntity->setUtr($this->parsedData['utr']);
         $this->reconEntity->setRemarks($this->parsedData['remarks']);
-        $this->reconEntity->setBankStatusCode($bankStatusCode);
+        $this->reconEntity->setBankStatusCode($this->parsedData['bank_status_code']);
         $this->reconEntity->setDateTime($this->parsedData['date_time']);
         $this->reconEntity->setCmsRefNo($this->parsedData['cms_ref_no']);
 

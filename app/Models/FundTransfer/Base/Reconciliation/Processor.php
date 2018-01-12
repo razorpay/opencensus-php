@@ -7,7 +7,6 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Models\FundTransfer\Kotak;
-use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 
@@ -35,8 +34,6 @@ abstract class Processor extends Base\Core
      * Child class needs to assign value to this.
      */
     protected $date;
-
-    protected $batchFundTransferStats = [];
 
     abstract protected function storeFile($reconcileFile);
 
@@ -120,8 +117,6 @@ abstract class Processor extends Base\Core
             $this->setDate($data);
 
             $response = $this->startReconciliation($data);
-
-            $this->sendReconciliationSummaryMail($response);
         }
 
         return $response;
@@ -145,18 +140,7 @@ abstract class Processor extends Base\Core
                     else
                     {
                         $this->allReconciledRows[] = $entity;
-
-                        $this->updateBatchFundTransferStats($entity);
                     }
-                }
-
-                // Update batch stats post reconciliations
-                foreach ($this->batchFundTransferStats as $batchId => $attrs)
-                {
-                    $batchEntity = $this->repo->batch_fund_transfer->findByPublicId($batchId);
-                    $batchEntity->setProcessedCount($attrs['processed_count']);
-                    $batchEntity->setProcessedAmount($attrs['processed_amount']);
-                    $batchEntity->saveOrFail();
                 }
             }
             catch (\Throwable $e)
@@ -180,13 +164,14 @@ abstract class Processor extends Base\Core
     {
         $processedCount = count($this->allReconciledRows);
 
-        $unprocessedCount = count($this->unprocessedIds);
+        $unprocessedCount = count($this->unprocessedRows);
 
         $totalCount = $processedCount + $unprocessedCount;
 
         $summary = [
-          'total_count'         => $totalCount,
-          'unprocessed_count'   => $unprocessedCount,
+            'channel'               => static::$channel,
+            'total_count'           => $totalCount,
+            'unprocessed_count'     => $unprocessedCount,
         ];
 
         return $summary;
@@ -220,34 +205,8 @@ abstract class Processor extends Base\Core
     {
         $rowProcessorNamespace = $this->getRowProcessorNamespace($row);
 
-        $fta = (new $rowProcessorNamespace($row))->process($this->reconciledAt);
+        $fta = (new $rowProcessorNamespace($row))->process();
 
         return $fta;
-    }
-
-    final protected function updateBatchFundTransferStats($reconciledEntity)
-    {
-        $entityStatusClass = EntityConstants::getEntityNamespace($reconciledEntity->getEntityName()) . '\\Status';
-
-        if ($reconciledEntity->getStatus() !== $entityStatusClass::PROCESSED) {
-            return;
-        }
-
-        if ($reconciledEntity->batchFundTransfer === null) {
-            return;
-        }
-
-        $batchId = $reconciledEntity->batchFundTransfer->getId();
-
-        $amount = $reconciledEntity->getAmount();
-
-        if (isset($this->batchFundTransferStats[$batchId]) === false) {
-            $this->batchFundTransferStats[$batchId] =
-                ['processed_count' => 1, 'processed_amount' => $amount];
-        } else {
-            $this->batchFundTransferStats[$batchId]['processed_count']++;
-
-            $this->batchFundTransferStats[$batchId]['processed_amount'] += $amount;
-        }
     }
 }

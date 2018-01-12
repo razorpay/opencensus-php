@@ -3,7 +3,6 @@
 namespace RZP\Models\FundTransfer\Base\Reconciliation;
 
 use RZP\Models\Base;
-use RZP\Models\FundTransfer\Attempt\Entity;
 use RZP\Trace\TraceCode;
 
 abstract class RowProcessor extends Base\Core
@@ -30,14 +29,13 @@ abstract class RowProcessor extends Base\Core
         $this->row = $row;
     }
 
-    public function process(): Entity
+    public function process()
     {
         $this->parseRow();
 
         $this->fetchEntities();
 
-        if ((empty($this->reconEntity) === true) or
-            (empty($this->source) === true))
+        if (empty($this->reconEntity) === true)
         {
             $this->trace->error(TraceCode::SETTLEMENT_RECONCILIATION_SKIPPED,
                 [
