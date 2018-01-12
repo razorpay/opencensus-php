@@ -88,7 +88,7 @@ class EntityProcessor extends BaseEntityProcessor
 
     protected function updateSourceEntity()
     {
-        if ($this->source->getBatchFundTransferId() !== $this->reconEntity->getBatchFundTransferId())
+        if ($this->source->getBatchFundTransferId() !== $this->fta->getBatchFundTransferId())
         {
             return;
         }

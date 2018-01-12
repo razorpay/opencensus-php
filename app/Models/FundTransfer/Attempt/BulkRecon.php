@@ -2,12 +2,16 @@
 
 namespace RZP\Models\FundTransfer\Attempt;
 
+use Mail;
 use Carbon\Carbon;
+use Razorpay\Trace\Logger as Trace;
 
 use RZP\Models\Base;
 use RZP\Constants\Mode;
-use RZP\Constants\Entity as EntityConstants;
+use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 use RZP\Mail\Settlement\Reconciliation as ReconciliationEmail;
@@ -51,6 +55,8 @@ class BulkRecon extends Base\Core
 
             ErrorCode::BAD_REQUEST_SETTLEMENT_RECONCILIATION_IN_PROGRESS);
 
+        $this->sendReconciliationSummaryMail($data);
+
         return $data;
     }
 
@@ -60,7 +66,9 @@ class BulkRecon extends Base\Core
 
         $relations = ['source', 'source.transaction', 'source.merchant' , 'batchFundTransfer'];
 
-        $ftaIds = $this->repo->getAttemptsBetweenTimestampsWithStatus($from, $to, Status::INITIATED, $relations)
+        $ftaIds = $this->repo
+                       ->fund_transfer_attempt
+                       ->getAttemptsBetweenTimestampsWithStatus($from, $to, Status::INITIATED, $relations)
                              ->pluck(FundTransferAttempt\Entity::ID)
                              ->toArray();
 
@@ -70,11 +78,11 @@ class BulkRecon extends Base\Core
             {
                 foreach ($ftaIds as $id)
                 {
-                    $fta = $this->repo->findOrFail($id);
+                    $fta = $this->repo->fund_transfer_attempt->findOrFail($id);
 
                     $entityProcessor = '\\RZP\\Models\FundTransfer\\' . ucfirst($this->channel) . '\\Reconciliation\\EntityProcessor';
 
-                    $reconDetails = (new $entityProcessor)->process($fta);
+                    $reconDetails = (new $entityProcessor($fta))->process();
 
                     $this->allReconciledRows[] = $reconDetails;
 
@@ -109,7 +117,7 @@ class BulkRecon extends Base\Core
         // Isolating the webhook flow in a try-catch, to keep the original settlement cycle unaffected
         try
         {
-            (new FundTransferAttempt\Core)->notifyMerchantViaWebhook($reconDetails);
+            (new FundTransferAttempt\Core)->notifyMerchantViaWebhook($this->allReconciledRows);
         }
         catch (\Throwable $e)
         {
@@ -117,7 +125,7 @@ class BulkRecon extends Base\Core
             $entityIds = array_map(function($reconciledRow)
             {
                 return $reconciledRow['entity']->getId();
-            }, $reconDetails);
+            }, $this->allReconciledRows);
 
             $this->trace->traceException(
                 $e,
@@ -125,9 +133,11 @@ class BulkRecon extends Base\Core
                 TraceCode::SETTLEMENT_PROCESSED_WEBHOOOK_FAILED,
                 ['entities' => $entityIds]);
         }
+
+        return $summary;
     }
 
-    protected function setTimestamps(): array
+    protected function getTimestamps(): array
     {
         if ((isset($this->input['from']) === true) and (isset($this->input['to']) === true))
         {
@@ -306,10 +316,13 @@ class BulkRecon extends Base\Core
 
         $msg .= 'Failure Count: ' . $failureCount . PHP_EOL;
 
+        #TODO:: What date to put here?
+        $this->date = Carbon::today(Timezone::IST)->format('d-m-Y');
+
         $data['date'] = $this->date;
         $data['body'] = $msg;
 
-        $email = new ReconciliationEmail($data);
+        $email = new ReconciliationEmail($data, $this->channel);
 
         Mail::queue($email);
     }

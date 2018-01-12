@@ -191,6 +191,7 @@ final class Route
         'bank_transfer_strip_payer_accounts'      => ['put',      'bank_transfers/payer_bank_account/strip',        'BankTransferController@stripPayerBankAccounts'                     ],
         'bank_transfer_insert'                    => ['post',     'bank_transfers/{provider}',                      'BankTransferController@insertBankTransfer'                         ],
         'fund_transfer_attempt_bulk_update'       => ['patch',    'fund_transfer_attempts',                         'FundTransferAttemptController@bulkUpdate'                          ],
+        'fund_transfer_attempt_reconcile'         => ['post',     'fund_transfer_attempts/{channel}',              'FundTransferAttemptController@bulkReconcile',                      ],
         'gateway_payment_callback_bharatqr'       => ['post',     'payment/callback/bharatqr',                      'BharatQrController@processBharatQrPayment'                         ],
         'virtual_account_create'                  => ['post',     'virtual_accounts',                               'VirtualAccountController@create'                                   ],
         'virtual_account_edit'                    => ['patch',    'virtual_accounts/{id}',                          'VirtualAccountController@update'                                   ],
@@ -1127,7 +1128,8 @@ final class Route
         'user_reset_password_create',
         'user_reset_password_token',
         'merchant_payout_mail',
-        'geoip_update'
+        'geoip_update',
+        'fund_transfer_attempt_reconcile',
     ];
 
     public static $proxy = [
@@ -1562,6 +1564,7 @@ final class Route
             'reports_refund_irctc',
             'merchant_payout_mail',
             'geoip_update',
+            'fund_transfer_attempt_reconcile',
         ],
 
         'kotak' => [

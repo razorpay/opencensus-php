@@ -6,6 +6,7 @@ use Mail;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
+use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer\Attempt;
 
 class EntityProcessor extends Base\Core
@@ -56,7 +57,7 @@ class EntityProcessor extends Base\Core
     {
         $this->updateEntities();
 
-        if ($this->sendFailureEmailToMerchant() === true)
+        if ($this->sendFailureEmailToMerchant === true)
         {
             $this->sendReconciliationFailureEmail();
         }

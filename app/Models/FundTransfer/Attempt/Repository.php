@@ -98,8 +98,7 @@ class Repository extends Base\Repository
         $query = $this->newQuery()
                       ->select([Entity::ID])
                       ->whereBetween(Entity::CREATED_AT, [$from, $to])
-                      ->where(Entity::STATUS, $status)
-                      ->get();
+                      ->where(Entity::STATUS, $status);
 
         if (empty($relations) === false)
         {

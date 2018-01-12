@@ -11,6 +11,17 @@ use RZP\Models\VirtualAccount\Provider;
 
 class Service extends Base\Service
 {
+    public function bulkReconcile(array $input, string $channel): array
+    {
+        (new Validator)->validateInput('bulk_reconcile', $input);
+
+        $this->trace->info(TraceCode::FTA_BULK_RECONCILE_REQUEST, $input);
+
+        $summary = (new BulkRecon($input, $channel))->process();
+
+        return $summary;
+    }
+
     public function bulkUpdate(array $input)
     {
         (new Validator)->validateInput('bulk_update', $input);

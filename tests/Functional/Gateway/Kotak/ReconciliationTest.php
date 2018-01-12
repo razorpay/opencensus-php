@@ -8,7 +8,7 @@ use RZP\Constants\Timezone;
 use Config;
 use Mail;
 use RZP\Constants\Mode;
-use RZP\Mail\Settlement\KotakReconciliation as KotakReconciliationMail;
+use RZP\Mail\Settlement\Reconciliation as ReconciliationMail;
 use RZP\Mail\Merchant\SettlementFailure as SettlementFailureMail;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -36,10 +36,8 @@ class ReconciliationTest extends TestCase
         parent::setUp();
     }
 
-    public function testSettlementReconciliation()
+    public function testReconFileProcessForKotak()
     {
-        Mail::fake();
-
         // Create payments and refunds with timestamps two days back
         $prEntities = $this->createPaymentAndRefundEntities();
 
@@ -47,7 +45,7 @@ class ReconciliationTest extends TestCase
         $this->deleteSetlFiles();
 
         // reconciliation
-        $txns = $this->matchTransactions($prEntities);
+        $this->matchTransactions($prEntities);
 
         // Generate settlements for above transactions
         $setlFile = $this->initiateSettlementsAndAssertSuccess();
@@ -66,32 +64,52 @@ class ReconciliationTest extends TestCase
 
         $this->assertTestResponse($settlementAttempt, 'matchSettlementAttemptForReconSuccess');
         $this->assertNotNull($settlementAttempt['utr']);
+    }
 
-//        // Validate settlement entity
-//        $setl = $this->getLastEntity('settlement', true);
-//        $this->assertTestResponse($setl, 'fetchAndMatchSettlementsForReconSuccess');
+    public function testReconEntiyForKotak()
+    {
+//        $response = $this->createSettlementsAndSettlementFile();
 //
-//        $notNullKeys = [Settlement\Entity::UTR, Settlement\Entity::SETTLED_ON, Settlement\Entity::STATUS];
-//
-//        foreach ($notNullKeys as $key)
-//        {
-//            $this->assertNotNull($setl[$key]);
-//        }
-//
-//        $merchant = $this->getEntityById('merchant','10000000000000', true);
-//        $this->assertEquals(false, $merchant['hold_funds']);
+//        $ftas = $response['ftas'];
 
-//        $batch = $this->getLastEntity('batch_fund_transfer', true);
-//
-//        $this->assertEquals(1, $batch['processed_count']);
-//        $this->assertEquals(4382000, $batch['processed_amount']);
+        Mail::fake();
 
-//        // Validate settlement-transaction entity
-//        $txn = $this->getLastEntity('transaction', true);
-//        $this->assertEquals('settlement', $txn['type']);
-//        $this->assertNotNull($txn['reconciled_at']);
-//
-//        Mail::assertSent(KotakReconciliationMail::class);
+        $this->testReconFileProcessForKotak();
+
+        $this->ba->appAuth();
+
+        $request = [
+            'url'       => '/fund_transfer_attempts/kotak',
+            'method'    => 'POST',
+            'content'   => [],
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $setl = $this->getLastEntity('settlement', true);
+        $this->assertTestResponse($setl, 'fetchAndMatchSettlementsForReconSuccess');
+
+        $notNullKeys = [Settlement\Entity::UTR, Settlement\Entity::STATUS];
+
+        foreach ($notNullKeys as $key)
+        {
+            $this->assertNotNull($setl[$key]);
+        }
+
+        $merchant = $this->getEntityById('merchant','10000000000000', true);
+        $this->assertEquals(false, $merchant['hold_funds']);
+
+        $batch = $this->getLastEntity('batch_fund_transfer', true);
+
+        $this->assertEquals(1, $batch['processed_count']);
+        $this->assertEquals(4382000, $batch['processed_amount']);
+
+        // Validate settlement-transaction entity
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertEquals('settlement', $txn['type']);
+        $this->assertNotNull($txn['reconciled_at']);
+
+        Mail::assertSent(ReconciliationMail::class);
     }
 
     public function testReconciliationFailure()

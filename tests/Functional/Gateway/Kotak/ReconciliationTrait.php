@@ -138,7 +138,7 @@ trait ReconciliationTrait
 
     protected function createSettlementsAndSettlementFile(
         $settlementCount = 2,
-        $setlAttemptTimestamp = null): Creator
+        $setlAttemptTimestamp = null): array
     {
         $timestamp = $setlAttemptTimestamp ?: Carbon::today(Timezone::IST)->timestamp;
 
@@ -211,7 +211,7 @@ trait ReconciliationTrait
             ['txt_file_id' => ($textFile->get())['id']]
         );
 
-        return $textFile;
+        return ['txt_file' => $textFile, 'ftas' => $allAttempts];
     }
 
     protected function checkAdjustmentCreated()

@@ -19,4 +19,15 @@ class FundTransferAttemptController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function bulkReconcile(string $channel)
+    {
+        $input = Request::all();
+
+        $service = $this->service(Entity::FUND_TRANSFER_ATTEMPT);
+
+        $response = $service->bulkReconcile($input, $channel);
+
+        return ApiResponse::json($response);
+    }
 }
