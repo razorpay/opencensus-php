@@ -3,10 +3,10 @@
 namespace RZP\Gateway\Netbanking\Oriental\Mock;
 
 use RZP\Gateway\Base\Mock;
+use RZP\Models\Currency\Currency;
 use RZP\Gateway\Netbanking\Oriental\Status;
 use RZP\Gateway\Netbanking\Oriental\RequestFields;
 use RZP\Gateway\Netbanking\Oriental\ResponseFields;
-use RZP\Models\Currency\Currency;
 
 /**
  * This class cannot be marked as final as it will be mocked for test cases
@@ -15,9 +15,18 @@ use RZP\Models\Currency\Currency;
  */
 class Server extends Mock\Server
 {
+    /**
+     * @var Gateway
+     */
+    private $gatewayInstance = null;
+
     public function authorize($input)
     {
         parent::authorize($input);
+
+        $this->decryptAuthRequest($input);
+
+        $this->validateAuthorizeInput($input);
 
         $content = $this->getAuthResponse($input);
 
@@ -66,5 +75,36 @@ class Server extends Mock\Server
         }
 
         return $array;
+    }
+
+    private function decryptAuthRequest(array & $input)
+    {
+        $input[RequestFields::RETURN_URL] = $this->decrypt($input[RequestFields::RETURN_URL]);
+        $input[RequestFields::QUERY_STRING] = $this->decrypt($input[RequestFields::QUERY_STRING]);
+    }
+
+    /**
+     * This method encrypts and then encodes the input string
+     * @param string $stringToEncrypt
+     * @return string
+     */
+    private function encrypt(string $stringToEncrypt)
+    {
+        return $this->getGatewayInstance()->encrypt($stringToEncrypt);
+    }
+
+    private function decrypt(string $stringToDecrypt)
+    {
+        return $this->getGatewayInstance()->decrypt($stringToDecrypt);
+    }
+
+    protected function getGatewayInstance($bankingType = null)
+    {
+        if ($this->gatewayInstance === null)
+        {
+            $this->gatewayInstance = parent::getGatewayInstance($bankingType);
+        }
+
+        return $this->gatewayInstance;
     }
 }
