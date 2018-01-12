@@ -103,7 +103,19 @@ export const normalizeBoolean = bool => {
 export const getFixedINRAmount = amount => (Number(amount) / 100).toFixed(2);
 
 export const getFormattedNumber = value => {
-  return value.toString().replace(/(.{1,2})(?=.(..)+(\...)$)/g, '$1,');
+  if (typeof value === 'number') {
+    value = value.toFixed(2);
+  }
+
+  value = value.replace(/(.{1,2})(?=.(..)+(\...)$)/g, '$1,');
+
+  const valueArr = value.split('.');
+
+  if (valueArr[1] == '00') {
+    value = valueArr[0];
+  }
+
+  return value;
 };
 
 export const currencySymbols = {

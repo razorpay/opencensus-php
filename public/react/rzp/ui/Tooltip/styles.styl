@@ -1,0 +1,25 @@
+.rzp-tooltip {
+
+  display: table;
+  position: fixed;
+  opacity: 0;
+  margin-top: -9999px;
+  z-index: -1;
+  font-size: 14px;
+  font-weight: normal;
+  color: #58666e;
+
+  &.show {
+
+    opacity: 1;
+    z-index: 2;
+    margin-top: 0;
+  }
+
+  .rzp-tooltip-inner {
+
+    padding: 5px 10px;
+    background-color: #FFFFFF;
+    box-shadow: 0 0 50px #ccc;
+  }
+}

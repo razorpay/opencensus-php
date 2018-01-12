@@ -33,11 +33,10 @@ function getGroupQuery(value) {
   return (groupObj && groupObj.query) || [];
 }
 
-const getDefaultFilterQuery = (merchantId, startTime, endTime) => {
+const getDefaultFilterQuery = (startTime, endTime) => {
   return {
     default: [
       {
-        merchant_id: [merchantId],
         created_at: {
           gte: startTime,
           lte: endTime,
@@ -59,7 +58,7 @@ export const tabsOrder = [
 export const tabsMeta = {
   [tabsOrder[0]]: {
     name: tabsOrder[0],
-    title: 'Transaction Volume',
+    title: 'Payment Volume',
     grouping: defaultGroupingVals,
     options: [],
     isCurrency: true,
@@ -94,7 +93,7 @@ export const tabsMeta = {
   },
   [tabsOrder[1]]: {
     name: tabsOrder[1],
-    title: 'Number of Transactions',
+    title: 'Number of Payments',
     grouping: defaultGroupingVals,
     options: [],
     index: 'payments',
@@ -138,7 +137,6 @@ export const tabsMeta = {
           agg_type: 'count',
           details: {
             index: this.index,
-            mode: 'test',
           },
         },
       };
@@ -151,7 +149,6 @@ export const tabsMeta = {
           agg_type: 'count',
           details: {
             index: this.index,
-            mode: 'test',
             group_by: [...grouping, `histogram_${breakdown}`],
           },
         },
@@ -176,7 +173,6 @@ export const tabsMeta = {
           agg_type: 'count',
           details: {
             index: this.index,
-            mode: 'test',
           },
         },
       };
@@ -187,17 +183,15 @@ export const tabsMeta = {
           agg_type: 'count',
           details: {
             index: this.index,
-            mode: 'test',
             group_by: ['saved_card', `histogram_${breakdown}`],
           },
         },
       };
     },
-    getFilterQuery: function(merchantId, startTime, endTime) {
+    getFilterQuery: function(startTime, endTime) {
       return {
         [this.name]: [
           {
-            merchant_id: [merchantId],
             created_at: {
               gte: startTime,
               lte: endTime,
@@ -207,7 +201,6 @@ export const tabsMeta = {
         ],
         default: [
           {
-            merchant_id: [merchantId],
             created_at: {
               gte: startTime,
               lte: endTime,
@@ -221,7 +214,6 @@ export const tabsMeta = {
 
 export const getQuery = options => {
   const {
-      merchantId,
       startTime,
       endTime,
       tabName,
@@ -237,8 +229,8 @@ export const getQuery = options => {
 
     return {
       filters: tabMeta.getFilterQuery
-        ? tabMeta.getFilterQuery(merchantId, startTime, endTime)
-        : getDefaultFilterQuery(merchantId, startTime, endTime),
+        ? tabMeta.getFilterQuery(startTime, endTime)
+        : getDefaultFilterQuery(startTime, endTime),
       aggregations: {
         ...tabMeta.getCountQuery(),
         ...(!countsOnly && tabMeta.getHistogramQuery(groupBy, breakdown)),

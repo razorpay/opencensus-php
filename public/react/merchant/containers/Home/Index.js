@@ -57,7 +57,7 @@ defaults.global.layout = {
     fetchSettlements,
   }
 )
-class HomeContainer extends Component {
+export default class HomeContainer extends Component {
   componentWillMount() {
     this.props.fetchEntityTotals();
     this.props.fetchPaymentBreakup();
@@ -164,5 +164,3 @@ class HomeContainer extends Component {
     );
   }
 }
-
-export default () => <NewHome />;

@@ -5,12 +5,9 @@ import { Link } from 'react-router-dom';
 
 import { paiseToRupees, shortenText, titleCase } from 'rzp/utils/rzp-utils';
 import takeScreenshot from 'rzp/utils/screenshot';
+import { showNotification } from 'rzp/modules/notifications';
 
 import { fetch } from 'merchant/modules/pokedex';
-import {
-  humanReadableIndian,
-  humanReadableIndianCurrency,
-} from 'rzp/utils/numerals';
 import GenericPanel, {
   PanelTopbar,
   PanelBody,
@@ -21,6 +18,7 @@ import GroupingDropdown from 'merchant/components/Home/GroupingDropdown';
 import Legend from 'merchant/components/Home/Legend';
 import LastUpdated from 'merchant/components/Home/LastUpdated';
 import MoreOptionsButton from 'merchant/components/Home/MoreOptionsButton';
+import { API_ERROR, API_INVALID_RESP } from 'merchant/components/Home/data';
 
 import './styles.styl';
 
@@ -39,7 +37,7 @@ const chartOptions = {
   },
   csvDateFormat = 'DD-MM-YYYY';
 
-@connect(null, null)
+@connect(null, { showNotification })
 class Traffic extends Component {
   constructor(props) {
     super(props);
@@ -55,6 +53,7 @@ class Traffic extends Component {
         loading: false,
         chartData: null,
         legendData: null,
+        error: '',
       };
     });
 
@@ -72,7 +71,6 @@ class Traffic extends Component {
       groupState = groupsState[selectedGrouping.value],
       meta = groupMeta[selectedGrouping.value],
       query = getQuery({
-        merchantId: '10000000000000',
         startTime: startDate.unix(),
         endTime: endDate.unix(),
         group: selectedGrouping.value,
@@ -83,45 +81,70 @@ class Traffic extends Component {
     }
 
     groupState.loading = true;
+    groupState.error = '';
 
     this.setState(this.state);
 
-    const downloadFileName = titleCase(
-      shortenText(
-        `Platform traffic split, ${startDate.format(
-          csvDateFormat
-        )} to ${endDate.format(csvDateFormat)}, ${meta.title}(Razorpay)`
-      )
-    );
+    const downloadFileName = `Platform traffic split, ${startDate.format(
+      csvDateFormat
+    )} to ${endDate.format(csvDateFormat)}, ${meta.title}(Razorpay)`;
 
-    fetch(query).then(({ data: { distribution } }) => {
-      const { labels, datasets, legendData, csv } = getPieData({
-        data: distribution.result,
-        groupByColumnName: meta.groupBy,
-        valueTransformer: meta.isCurrency && paiseToRupees,
-        groupTitleMap: { Mobile: 'mWeb' },
+    fetch(query)
+      .then(resp => {
+        if (!resp.success) {
+          return API_ERROR;
+        }
+
+        if (!resp.data || !resp.data.distribution) {
+          return API_INVALID_RESP;
+        }
+
+        const distribution = resp.data.distribution;
+
+        const { labels, datasets, legendData, csv } = getPieData({
+          data: distribution.result,
+          groupByColumnName: meta.groupBy,
+          valueTransformer: meta.isCurrency && paiseToRupees,
+          groupTitleMap: { Mobile: 'mWeb' },
+        });
+
+        groupState.chartData = { labels, datasets };
+        groupState.legendData = legendData;
+        groupState.lastUpdatedAt = distribution.last_updated_at;
+        groupState.csvData = {
+          name: `${downloadFileName}.csv`,
+          url: csv,
+        };
+        groupState.pngData = {
+          name: `${downloadFileName}.png`,
+          url: '',
+        };
+
+        return resp;
+      })
+      .catch(err => {
+        console.error(err);
+
+        return API_ERROR;
+      })
+      .then(data => {
+        if (isInitialLoad) {
+          this.state.loading = false;
+        }
+
+        groupState.loading = false;
+
+        if (data.error) {
+          this.props.showNotification({
+            type: 'error',
+            message: data.error,
+          });
+
+          groupState.error = data.error;
+        }
+
+        this.setState(this.state);
       });
-
-      groupState.chartData = { labels, datasets };
-      groupState.legendData = legendData;
-      groupState.lastUpdatedAt = distribution.last_updated_at;
-      groupState.csvData = {
-        name: `${downloadFileName}.csv`,
-        url: csv,
-      };
-      groupState.pngData = {
-        name: `${downloadFileName}.png`,
-        url: '',
-      };
-
-      if (isInitialLoad) {
-        this.state.loading = false;
-      }
-
-      groupState.loading = false;
-
-      this.setState(this.state);
-    });
   }
 
   componentWillMount() {
@@ -191,6 +214,7 @@ class Traffic extends Component {
         className="rzp-traffic p-all"
         isLoading={loading || groupState.loading}
         hasNoData={hasNoData}
+        error={groupState.error}
       >
         <PanelTopbar className="clearfix">
           <div className="panel-actions pull-right">
@@ -228,11 +252,8 @@ class Traffic extends Component {
                   <Legend
                     data={groupState.legendData}
                     alignment="vertical"
-                    valueTransformer={
-                      isCurrency
-                        ? humanReadableIndianCurrency
-                        : humanReadableIndian
-                    }
+                    isCurrency={isCurrency}
+                    tooltipAlign="right"
                   />
                 )}
             </div>

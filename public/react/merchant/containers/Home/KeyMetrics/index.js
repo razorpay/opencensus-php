@@ -17,6 +17,7 @@ import {
   humanReadableIndianCurrency,
 } from 'rzp/utils/numerals';
 import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
+import { showNotification } from 'rzp/modules/notifications';
 
 import { fetch } from 'merchant/modules/pokedex';
 import {
@@ -26,26 +27,23 @@ import {
   breakdownVals,
   getTimelineData,
 } from './data';
+import { API_ERROR, API_INVALID_RESP } from 'merchant/components/Home/data';
+import Tooltip from 'merchant/components/Home/Tooltip';
 import Panel from './Panel';
 
 import './styles.styl';
 
 const csvDateFormat = 'DD-MM-YYYY';
 
-const TabContent = ({ name, value, isCurrency, title, isLoading }) => {
+const TabContent = ({ name, value, isCurrency, title, isLoading, error }) => {
   /*
    * Description:
    * Component responsible for rendering content in each Tab
    */
 
-  let formattedTitle = isCurrency
-      ? '₹' + getFormattedAmount(value)
-      : getFormattedNumber(value),
-    formattedValue = (value = isCurrency ? paiseToRupees(value) : value);
-
-  formattedValue = (isCurrency
-    ? humanReadableIndianCurrency
-    : humanReadableIndian)(value);
+  let formattedValue = isCurrency
+    ? humanReadableIndianCurrency(paiseToRupees(value))
+    : humanReadableIndian(value);
 
   /*
    * checks if the current tab is showing currency values and renders
@@ -53,20 +51,40 @@ const TabContent = ({ name, value, isCurrency, title, isLoading }) => {
    *
    */
   return (
-    <a title={formattedTitle}>
+    <a>
       <div>
-        <h1>{!isLoading ? formattedValue : <PlaceholderLoader />}</h1>
+        <h1>
+          {!isLoading ? (
+            <span>
+              {error ? (
+                '--'
+              ) : (
+                <span>
+                  {formattedValue}
+                  <Tooltip value={value} isCurrency={isCurrency} />
+                </span>
+              )}
+            </span>
+          ) : (
+            <PlaceholderLoader />
+          )}
+        </h1>
         <span>{!isLoading ? title : <PlaceholderLoader />}</span>
       </div>
     </a>
   );
 };
 
-@connect(state => {
-  return {
-    ...state.session,
-  };
-})
+@connect(
+  state => {
+    return {
+      ...state.session,
+    };
+  },
+  {
+    showNotification,
+  }
+)
 class KeyMetricsContainer extends Component {
   constructor(props) {
     super(props);
@@ -118,7 +136,10 @@ class KeyMetricsContainer extends Component {
           startDate: null,
           endDate: null,
           show: true,
+          error: '',
         },
+
+        error: '',
       };
     });
 
@@ -143,7 +164,6 @@ class KeyMetricsContainer extends Component {
       { startDate, endDate } = this.props;
 
     const query = getQuery({
-      merchantId: '10000000000000',
       tabName: fetchAllCounts ? 'all' : selectedTab,
       breakdown: tabState.selectedBreakdown,
       startTime: startDate.unix(),
@@ -153,82 +173,116 @@ class KeyMetricsContainer extends Component {
     });
 
     tabState.data.loading = true;
+    tabState.data.error = '';
 
     this.setState({ tabsState });
 
-    return fetch(query).then(resp => {
-      tabsOrder.forEach(tabName => {
-        const tabState = tabsState[tabName],
-          { selectedBreakdown } = tabState,
-          tabMeta = tabsMeta[tabName],
-          { isCurrency, title } = tabMeta;
-
-        // Main stat showin in the tab
-        const mainStat = resp.data[tabName];
-
-        if (mainStat) {
-          tabState.data.count = mainStat.result[0]
-            ? mainStat.result[0].value
-            : 0;
+    return fetch(query)
+      .then(resp => {
+        if (!resp.data) {
+          return API_INVALID_RESP;
         }
 
-        // Timeline data
-        const histogram = resp.data[`${tabName}Histogram`];
-        if (histogram) {
-          const { labels, datasets, aggregates, csv } = getTimelineData({
-            data: histogram.result,
-            groupByColumnName:
-              tabMeta.groupByColumnName || selectedGrouping.value,
-            startTime: startDate.unix(),
-            endTime: endDate.unix(),
-            breakdown: tabState.selectedBreakdown,
-            groupTitleMap: tabMeta.groupTitleMap || { Mobile: 'mWeb' },
-            valueTransformer: isCurrency && paiseToRupees,
-          });
+        tabsOrder.forEach(tabName => {
+          const tabState = tabsState[tabName],
+            { selectedBreakdown } = tabState,
+            tabMeta = tabsMeta[tabName],
+            { isCurrency, title } = tabMeta;
 
-          const downloadFileName = `${title}, ${startDate.format(
-            csvDateFormat
-          )} to ${endDate.format(csvDateFormat)}, ${titleCase(
-            selectedBreakdown
-          )}${selectedGrouping ? ' ' + selectedGrouping.text : ''}(Razorpay)`;
+          // Main stat showin in the taib
+          const mainStat = resp.data[tabName];
 
-          // display point only when there is only one point to plot
-          if (labels.length === 1) {
-            datasets.forEach(dataset => {
-              dataset.pointRadius = 3;
-              dataset.pointHoverRadius = 4;
-            });
+          if (mainStat) {
+            tabState.data.count = mainStat.result[0]
+              ? mainStat.result[0].value
+              : 0;
           }
 
-          tabState.data.downloadFileName = downloadFileName;
-          tabState.data.histogram = { labels, datasets };
-          tabState.lastUpdatedAt = histogram.last_updated_at;
-          tabState.data.legendData = aggregates;
-          tabState.data.csv = {
-            name: `${downloadFileName}.csv`,
-            url: csv,
-          };
-          tabState.data.png = {
-            name: `${downloadFileName}.png`,
-            url: '',
-          };
+          // Timeline data
+          const histogram = resp.data[`${tabName}Histogram`];
+          if (histogram) {
+            const { labels, datasets, aggregates, csv } = getTimelineData({
+              data: histogram.result,
+              groupByColumnName:
+                tabMeta.groupByColumnName || selectedGrouping.value,
+              startTime: startDate.unix(),
+              endTime: endDate.unix(),
+              breakdown: tabState.selectedBreakdown,
+              groupTitleMap: tabMeta.groupTitleMap || { Mobile: 'mWeb' },
+              valueTransformer: isCurrency && paiseToRupees,
+            });
+
+            const downloadFileName = `${title}, ${startDate.format(
+              csvDateFormat
+            )} to ${endDate.format(csvDateFormat)}, ${titleCase(
+              selectedBreakdown
+            )}${selectedGrouping ? ' ' + selectedGrouping.text : ''}(Razorpay)`;
+
+            // display point only when there is only one point to plot
+            if (labels.length === 1) {
+              datasets.forEach(dataset => {
+                dataset.pointRadius = 3;
+                dataset.pointHoverRadius = 4;
+              });
+            }
+
+            tabState.data.downloadFileName = downloadFileName;
+            tabState.data.histogram = { labels, datasets };
+            tabState.lastUpdatedAt = histogram.last_updated_at;
+            tabState.data.legendData = aggregates;
+            tabState.data.csv = {
+              name: `${downloadFileName}.csv`,
+              url: csv,
+            };
+            tabState.data.png = {
+              name: `${downloadFileName}.png`,
+              url: '',
+            };
+          }
+        });
+
+        if (isInitialLoad) {
+          this.state.loading = false;
         }
-      });
 
-      if (isInitialLoad) {
-        this.state.loading = false;
-      }
+        tabState.data.loading = false;
+        tabState.data.fetchData = false;
 
-      tabState.data.loading = false;
-      tabState.data.fetchData = false;
+        this.setState(this.state, () => {
+          const { tabsState, selectedTab } = this.state,
+            tabState = tabsState[selectedTab];
 
-      this.setState(this.state, () => {
-        const { tabsState, selectedTab } = this.state,
-          tabState = tabsState[selectedTab];
+          this.setState(this.state);
+        });
+
+        return resp;
+      })
+      .catch(e => {
+        console.error(e);
+
+        return API_ERROR;
+      })
+      .then(data => {
+        if (data.error) {
+          this.props.showNotification({
+            type: 'error',
+            message: data.error,
+          });
+        }
+
+        if (isInitialLoad) {
+          this.state.loading = false;
+        }
+
+        tabsOrder.forEach(tabName => {
+          const tabState = tabsState[tabName];
+
+          tabState.data.loading = false;
+          tabState.data.error = data.error;
+        });
 
         this.setState(this.state);
       });
-    });
   }
 
   onScreenshot(tabName, url, cb) {
@@ -273,12 +327,12 @@ class KeyMetricsContainer extends Component {
       trend.startDate = startDate;
       trend.endDate = endDate;
       trend.show = true;
+      trend.error = '';
     });
 
     this.setState({ tabsState: { ...tabsState } });
 
     const query = getQuery({
-      merchantId: '10000000000000',
       tabName: 'all',
       startTime: startDate.unix(),
       endTime: endDate.unix(),
@@ -288,13 +342,19 @@ class KeyMetricsContainer extends Component {
     return fetch(query)
       .then(data => {
         if (!data.success) {
-          return { error: ' ' };
+          return API_ERROR;
+        }
+
+        if (!data.data) {
+          return API_INVALID_RESP;
         }
 
         return data.data;
       })
-      .catch(() => {
-        return { error: ' ' };
+      .catch(err => {
+        console.error(err);
+
+        return API_ERROR;
       })
       .then(data => {
         if (!data.error) {
@@ -318,10 +378,21 @@ class KeyMetricsContainer extends Component {
           });
 
           return;
+        } else {
+          this.props.showNotification({
+            type: 'error',
+            message: data.error,
+          });
+
+          tabsOrder.forEach(tabName => {
+            const tabState = tabsState[tabName];
+
+            tabState.data.trend.error = data.error;
+          });
         }
 
         tabsOrder.forEach(tabName => {
-          tabsState[tabName].trend.loading = false;
+          tabsState[tabName].data.trend.loading = false;
         });
 
         this.setState({
@@ -434,6 +505,7 @@ class KeyMetricsContainer extends Component {
                   isCurrency={isCurrency}
                   title={title}
                   isLoading={loading}
+                  error={tabData.error}
                 />
               </Tab>
             );

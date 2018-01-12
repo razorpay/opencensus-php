@@ -27,6 +27,7 @@ class PanelTopbar extends Component {
       className,
       isLoading,
       hasNoData,
+      error,
       ...otherProps
     } = this.props;
 
@@ -51,16 +52,25 @@ class PanelBody extends Component {
       className,
       isLoading,
       hasNoData,
+      error,
       ...otherProps
     } = this.props;
 
     otherProps.className = `panel-body${className ? ' ' + className : ''}`;
 
+    let noDataMsg = '';
+
+    if (error) {
+      noDataMsg = 'There is an error while loading data';
+    } else if (hasNoData) {
+      noDataMsg = 'No Data Found';
+    }
+
     return (
       <div {...otherProps}>
-        {(isLoading || hasNoData) && (
+        {(isLoading || noDataMsg) && (
           <Overlay>
-            {isLoading ? <Spinner /> : <span>No Data Found</span>}
+            {isLoading ? <Spinner /> : <span>{noDataMsg}</span>}
           </Overlay>
         )}
         {children}
@@ -84,6 +94,7 @@ class PanelFooter extends Component {
       className,
       isLoading,
       hasNoData,
+      error,
       ...otherProps
     } = this.props;
 
@@ -107,6 +118,7 @@ class Panel extends Component {
       children,
       isLoading,
       hasNoData,
+      error,
       ...otherProps
     } = this.props;
 
@@ -114,7 +126,7 @@ class Panel extends Component {
       ? ' ' + className
       : ''}`;
 
-    const commonProps = { isLoading, hasNoData };
+    const commonProps = { isLoading, hasNoData, error };
 
     let panelTopbar = null,
       panelBody = null,

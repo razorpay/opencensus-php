@@ -6,6 +6,13 @@ import Legend, {
   LegendTitle,
   LegendContent,
 } from 'rzp/ui/Legend';
+import { rupeesToPaise } from 'rzp/utils/rzp-utils';
+import {
+  humanReadableIndian,
+  humanReadableIndianCurrency,
+} from 'rzp/utils/numerals';
+
+import Tooltip from 'merchant/components/Home/Tooltip';
 
 /*
  * This component automatically calculates the percentage to be shown
@@ -25,6 +32,8 @@ export default ({
   // if passed a function, it will be called with value
   // related to the legend item
   valueTransformer = null,
+  isCurrency = false,
+  tooltipAlign = 'bottom',
 }) => {
   if (!Array.isArray(data) || data.length === 0) {
     return null;
@@ -48,9 +57,16 @@ export default ({
             </LegendLabel>
             <LegendTitle>{item.label}</LegendTitle>
             <LegendContent>
-              {typeof valueTransformer === 'function'
-                ? valueTransformer(item.value)
-                : item.value}
+              <span>
+                {isCurrency
+                  ? humanReadableIndianCurrency(item.value)
+                  : humanReadableIndian(item.value)}
+              </span>
+              <Tooltip
+                value={isCurrency ? rupeesToPaise(item.value) : item.value}
+                isCurrency={isCurrency}
+                align={tooltipAlign}
+              />
             </LegendContent>
           </LegendItem>
         );

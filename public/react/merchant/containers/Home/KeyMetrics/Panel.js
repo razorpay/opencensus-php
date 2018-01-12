@@ -7,11 +7,7 @@ import { PowerSelect } from 'react-power-select';
 import Definition from 'rzp/ui/Definition';
 import Change from 'rzp/ui/Change';
 import { BtnGroup, Btn } from 'rzp/ui/BtnGroup';
-import {
-  titleCase,
-  getFormattedAmount,
-  getFormattedNumber,
-} from 'rzp/utils/rzp-utils';
+import { titleCase } from 'rzp/utils/rzp-utils';
 import { timeScale } from 'rzp/utils/chart/new.js';
 import takeScreenshot from 'rzp/utils/screenshot';
 import Group, { GroupItem } from 'rzp/ui/Group';
@@ -32,6 +28,7 @@ import GenericPanel, {
   PanelFooter,
 } from 'merchant/components/Home/GenericPanel';
 import customToolTip, { positioner } from './customTooltip';
+import Tooltip from 'merchant/components/Home/Tooltip';
 
 Chart.Tooltip.positioners.custom = positioner;
 
@@ -148,41 +145,50 @@ class Panel extends Component {
         className="key-metrics-container"
         isLoading={data.loading}
         hasNoData={hasNoData}
+        error={data.error}
       >
         <PanelTopbar className="clearfix">
-          {data.trend.show && (
-            <div className="pull-left">
-              <div>
-                <Change value={trendValue}>
-                  {trend.loading ? (
-                    <PlaceholderLoader />
-                  ) : (
-                    <span
-                      title={`${isCurrency
-                        ? getFormattedAmount(trendAbsValue, true)
-                        : getFormattedNumber(trendAbsValue)}`}
-                    >
-                      {trendText}
-                    </span>
-                  )}
-                </Change>
-                <Definition>
-                  <span className="text-fade">
+          {data.trend.show &&
+            !data.trend.error && (
+              <div
+                className={`pull-left ${data.trend.loading
+                  ? ' trend-loading'
+                  : ''}`}
+              >
+                <div>
+                  <Change value={trendValue}>
                     {trend.loading ? (
                       <PlaceholderLoader />
                     ) : (
                       <span>
-                        Compared to
-                        <strong> {trend.startDate.format(dateFormat)} </strong>
-                        -
-                        <strong> {trend.endDate.format(dateFormat)} </strong>
+                        {trendText}
+                        <Tooltip
+                          value={trendAbsValue}
+                          isCurrency={isCurrency}
+                        />
                       </span>
                     )}
-                  </span>
-                </Definition>
+                  </Change>
+                  <Definition>
+                    <span className="text-fade">
+                      {trend.loading ? (
+                        <PlaceholderLoader />
+                      ) : (
+                        <span>
+                          Compared to
+                          <strong>
+                            {' '}
+                            {trend.startDate.format(dateFormat)}{' '}
+                          </strong>
+                          -
+                          <strong> {trend.endDate.format(dateFormat)} </strong>
+                        </span>
+                      )}
+                    </span>
+                  </Definition>
+                </div>
               </div>
-            </div>
-          )}
+            )}
           <div className="panel-actions pull-right">
             {grouping.length > 0 && (
               <div className="panel-action-item">
@@ -230,14 +236,7 @@ class Panel extends Component {
             {!data.loading &&
               data.legendData && (
                 <div>
-                  <Legend
-                    data={data.legendData}
-                    valueTransformer={
-                      isCurrency
-                        ? humanReadableIndianCurrency
-                        : humanReadableIndian
-                    }
-                  />
+                  <Legend data={data.legendData} isCurrency={isCurrency} />
                 </div>
               )}
           </div>

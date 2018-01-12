@@ -102,7 +102,6 @@ function main(node, o, data, d3, onTransition, groupTitleMap) {
   initialize(root);
   accumulate(root);
   layout(root);
-  console.log(root);
   var globalTransition = display(root).transition;
 
   if (typeof onTransition === 'function') {
@@ -202,6 +201,7 @@ function main(node, o, data, d3, onTransition, groupTitleMap) {
       .style('cursor', function(d) {
         return canBeZoomed(d) ? 'pointer' : 'default';
       })
+      .style('font-size', '24px')
       .on('click', function(d) {
         if (canBeZoomed(d) && typeof onTransition === 'function') {
           onTransition(d);
@@ -238,20 +238,19 @@ function main(node, o, data, d3, onTransition, groupTitleMap) {
     var t = g
       .append('text')
       .attr('class', 'ptext')
-      .attr('dy', '.75em');
+      .style('font-size', '1em');
 
     t
       .append('tspan')
       .attr('class', 'amount method-text')
-      .style('font-size', '24px')
-      .style('line-height', '29px')
+      .style('font-size', '1em')
       .text(function(d) {
         return humanReadableIndianCurrency(paiseToRupees(d.value));
       })
       .append('tspan')
       .attr('class', 'amount-percent')
       .attr('dx', 6)
-      .style('font-size', '14px')
+      .style('font-size', '0.6em')
       .style('fill', '#ffffff')
       .style('fill-opacity', 0.6)
       .text(function(d) {
@@ -260,8 +259,7 @@ function main(node, o, data, d3, onTransition, groupTitleMap) {
 
     t
       .append('tspan')
-      .style('font-size', '14px')
-      .style('line-height', '17px')
+      .style('font-size', '0.6em')
       .attr('dy', '1.5em')
       .attr('class', 'group-name method-text')
       .text(function(d) {
@@ -339,8 +337,6 @@ function main(node, o, data, d3, onTransition, groupTitleMap) {
         transitionSubscriber = null;
       });
     }
-
-    globalTransition = transition;
 
     return { g: g, transition: transition };
   }

@@ -21,18 +21,17 @@ const groupMeta = {
     title: 'By No. of Transactions',
     aggType: 'count',
     groupBy: 'platform',
-    value: groupValues[0],
+    value: groupValues[1],
   },
 };
 
-const getQuery = ({ merchantId, startTime, endTime, group }) => {
+const getQuery = ({ startTime, endTime, group }) => {
   const meta = groupMeta[group];
 
   return {
     filters: {
       default: [
         {
-          merchant_id: [merchantId],
           created_at: {
             gte: startTime,
             lte: endTime,

@@ -16,9 +16,7 @@ import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
 import Traffic from 'merchant/containers/Home/Traffic';
 import RecentActivity from 'merchant/containers/Home/RecentActivity';
 import DateRangePicker from 'merchant/components/Home/DateRangePicker';
-import { getData } from 'merchant/models/HomeKeyMetricsMock';
-
-import { oldestTransactionQuery } from './data';
+import { oldestTransactionQuery } from 'merchant/components/Home/data';
 
 import './styles.styl';
 

@@ -6,6 +6,7 @@ import { matchDetail } from 'merchant/routes';
 import Slider from 'rzp/ui/Slider';
 import ShowWhen from 'merchant/components/ShowWhen';
 import Home from 'merchant/containers/Home/Index';
+import HomeNew from 'merchant/containers/Home/New';
 import Transactions from 'merchant/containers/Transactions';
 import Settlements from 'merchant/containers/Settlements/List';
 import PaymentLinks from 'merchant/containers/PaymentLinks/Index';
@@ -72,8 +73,7 @@ const RefundsTabbedContainer = () => {
             to="/refunds/batchuploads"
             isActive={(match, { pathname }) =>
               pathname === '/refunds/batchupload' ||
-              pathname === '/refunds/batchuploads'
-            }
+              pathname === '/refunds/batchuploads'}
           >
             Batch Refunds
           </NavLink>
@@ -132,6 +132,7 @@ export default class Content extends Component {
           <Route path="/dashboard" component={Home} />
           <Redirect from="/" exact to="/dashboard" />
 
+          <Route path="/dashboard_v2" component={HomeNew} />
           <Route path="/payments" component={Transactions} />
           <Route path="/refunds" component={Transactions} />
           <Route path="/orders" component={Transactions} />

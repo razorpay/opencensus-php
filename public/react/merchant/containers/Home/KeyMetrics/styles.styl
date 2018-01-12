@@ -1,6 +1,14 @@
+placeholder () {
+
+  background: #bbc1d3;
+  background: linear-gradient(to right, #bbc1d3 0%, #252939 10%,  20%);
+}
+
 .keymetrics.react-tabs {
 
   > .nav.nav-tabs {
+
+    box-shadow: 0 4px 4px 0 rgba(0,0,0,0.1);
 
     li {
 
@@ -16,19 +24,13 @@
       &.active > a > div {
 
         background-color: #ffffff;
-        border: 1px solid #ffffff;
-        color: #4C58C7;
+        border: 1px solid transparent;
+        box-shadow: 0px 1px 5px rgba(0,0,0,0.1);
+        color: #6F758A;
 
-        > h1 {
+        .PlaceholderLoader {
 
-          color: #2D3042;
-        }
-
-        > span .PlaceholderLoader {
-
-          /* blue gradient for active tab*/
-          background: #c5c9ed;
-          background: linear-gradient(to right, #c5c9ed 0%, #9ea5e0 10%,  20%);
+          placeholder;
         }
       }
 
@@ -37,7 +39,7 @@
         border: none;
         padding: 0;
         text-align: left;
-        color: #686D87;
+
         &:hover {
 
           padding-left: 0;
@@ -46,12 +48,12 @@
         > div {
 
           padding: 21px 24px;
-          box-shadow: 0 0 3px rgba(0, 0, 0, 0.1);
+          border: 1px solid rgba(0, 0, 0, 0.04);
+          color: #9398a9;
 
           > h1 {
 
             font-weight: 300;
-            color: #2D3042;
             margin-top: 0;
             margin-bottom: 8px;
             line-height: 1;
@@ -81,10 +83,23 @@
 
       display: table-cell;
       vertical-align: bottom;
+
+      .PlaceholderLoader {
+
+        placeholder;
+      }
     }
   }
 
   div.panel-topbar {
+
+    .trend-loading {
+
+      span.rzp-change:before {
+
+        display: none;
+      }
+    }
 
     span.rzp-change {
 

@@ -69,7 +69,6 @@ export default class Treemap extends Component {
     this.node.style.width = this.node.parentNode.clientWidth + 'px';
 
     timer = window.setTimeout(() => {
-      console.log('render treemap');
       this.renderTreemap(this.props.data);
     }, 250);
   }

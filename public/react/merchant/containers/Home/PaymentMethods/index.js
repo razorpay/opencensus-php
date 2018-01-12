@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 
 import Breadcrumb, { BreadcrumbItem } from 'rzp/ui/Breadcrumb';
 import * as ModalActions from 'rzp/modules/modals';
+import { showNotification } from 'rzp/modules/notifications';
 
 import Treemap from 'merchant/containers/Home/PaymentMethods/Treemap';
 import LastUpdated from 'merchant/components/Home/LastUpdated';
@@ -14,6 +15,7 @@ import GenericPanel, {
   PanelBody,
   PanelFooter,
 } from 'merchant/components/Home/GenericPanel';
+import { API_ERROR, API_INVALID_RESP } from 'merchant/components/Home/data';
 
 import { getQuery } from './data';
 import './styles.styl';
@@ -31,7 +33,7 @@ function getLevels(hierarchy, levels = []) {
   return levels;
 }
 
-@connect(null, { ...ModalActions })
+@connect(null, { ...ModalActions, showNotification })
 class PaymentMethods extends Component {
   constructor(props) {
     super(props);
@@ -42,6 +44,7 @@ class PaymentMethods extends Component {
       currentLevel: null,
       csvData: null,
       isLoading: false,
+      error: '',
     };
 
     this.onLevelChange = ::this.onLevelChange;
@@ -52,28 +55,50 @@ class PaymentMethods extends Component {
   fetchData(startDate, endDate) {
     this.setState({
       isLoading: true,
+      error: '',
     });
 
     fetch(
       getQuery({
-        merchantId: '10000000000000',
         startTime: startDate.unix(),
         endTime: endDate.unix(),
       })
     )
-      .then(({ data: { agg } }) => {
+      .then(resp => {
+        if (!resp.success) {
+          return API_ERROR;
+        }
+
+        if (!resp.data || !resp.data.agg) {
+          return API_INVALID_RESP;
+        }
+
+        const agg = resp.data.agg;
+
         this.setState({
           data: agg.result,
           lastUpdatedAt: agg.last_updated_at,
         });
+
+        return resp;
       })
       .catch(err => {
-        // TODO: Handle Error
+        console.error(err);
+
+        return API_ERROR;
       })
-      .then(() => {
-        this.setState({
-          isLoading: false,
-        });
+      .then(data => {
+        this.state.isLoading = false;
+
+        if (data.error) {
+          this.state.error = data.error;
+          this.props.showNotification({
+            type: 'error',
+            message: data.error,
+          });
+        }
+
+        this.setState({ ...this.state });
       });
   }
 
@@ -120,7 +145,7 @@ class PaymentMethods extends Component {
   }
 
   render() {
-    const { levels, csvData, isLoading, data } = this.state,
+    const { levels, csvData, isLoading, data, error } = this.state,
       { startDate, endDate } = this.props,
       levelsLength = levels.length,
       hasNoData = !data || data.length === 0;
@@ -130,6 +155,7 @@ class PaymentMethods extends Component {
         className="payment-methods-container"
         isLoading={isLoading}
         hasNoData={hasNoData}
+        error={error}
       >
         <PanelTopbar className="clearfix">
           <div className="pull-left">
