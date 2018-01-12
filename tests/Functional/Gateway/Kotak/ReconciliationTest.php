@@ -82,12 +82,7 @@ class ReconciliationTest extends TestCase
         $setl = $this->getLastEntity('settlement', true);
         $this->assertTestResponse($setl, 'fetchAndMatchSettlementsForReconSuccess');
 
-        $notNullKeys = [Settlement\Entity::UTR, Settlement\Entity::STATUS];
-
-        foreach ($notNullKeys as $key)
-        {
-            $this->assertNotNull($setl[$key]);
-        }
+        $this->assertNotNull(Settlement\Entity::UTR);
 
         $merchant = $this->getEntityById('merchant','10000000000000', true);
         $this->assertEquals(false, $merchant['hold_funds']);

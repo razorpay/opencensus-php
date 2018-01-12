@@ -39,6 +39,7 @@ return [
         'tax'               => 18000,
         'failure_reason'    => null,
         'attempts'          => 1,
+        'status'            => SettlementStatus::PROCESSED,
     ],
 
     'fetchAndMatchSettlementsForRetryReconSuccess' => [

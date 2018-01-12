@@ -82,7 +82,6 @@ class SettlementTest extends TestCase
         $this->deleteSetlFiles();
 
         $urls = [
-            '/settlements/reconcile/generate',
             '/settlements/h2hreconcile/kotak',
         ];
 
