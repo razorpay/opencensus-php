@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Gateway\Oriental;
 use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 use RZP\Tests\Functional\TestCase;
+use RZP\Gateway\Netbanking\Oriental;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -24,6 +25,8 @@ class NetbankingOrientalGatewayTest extends TestCase
 
         $this->payment = $this->getDefaultNetbankingPaymentArray($this->bank);
 
+        $this->gateway = Payment\Gateway::NETBANKING_ORIENTAL;
+
         $this->fixtures->create('terminal:shared_netbanking_oriental_terminal');
     }
 
@@ -36,5 +39,34 @@ class NetbankingOrientalGatewayTest extends TestCase
         $netbanking = $this->getLastEntity(ConstantsEntity::NETBANKING, true);
 
         $this->assertTestResponse($netbanking);
+    }
+
+    public function testPaymentFailed()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->payment;
+
+        $this->mockPaymentFailed();
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthAndCapturePayment($payment);
+            });
+
+        $netbanking = $this->getLastEntity(ConstantsEntity::NETBANKING, true);
+
+        $this->assertTestResponse($netbanking, 'netbankingPaymentFailed');
+    }
+
+    private function mockPaymentFailed()
+    {
+        $this->mockServerContentFunction(
+            function(& $content, $action = null)
+            {
+                $content[Oriental\ResponseFields::PAID] = Oriental\Status::FAILED;
+            });
     }
 }

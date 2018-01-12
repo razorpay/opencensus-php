@@ -8,7 +8,12 @@ use RZP\Gateway\Netbanking\Oriental\RequestFields;
 use RZP\Gateway\Netbanking\Oriental\ResponseFields;
 use RZP\Models\Currency\Currency;
 
-final class Server extends Mock\Server
+/**
+ * This class cannot be marked as final as it will be mocked for test cases
+ * Class Server
+ * @package RZP\Gateway\Netbanking\Oriental\Mock
+ */
+class Server extends Mock\Server
 {
     public function authorize($input)
     {
