@@ -57,7 +57,7 @@ class UpiFailedRefundFileTest extends TestCase
             'type'        => 'icici_upi_refund',
             'entity_type' => 'gateway_file',
             'entity_id'   => $entity_id,
-            'extension'   => 'xlsx',
+            'extension'   => 'csv',
         ];
 
         $this->assertArraySelectiveEquals($expectedFileContent, $file);

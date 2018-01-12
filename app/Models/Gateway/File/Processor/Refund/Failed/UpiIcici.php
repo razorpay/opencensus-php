@@ -12,7 +12,7 @@ use RZP\Gateway\Upi\Icici\RefundFile;
 class UpiIcici extends Base
 {
     const GATEWAY                = Payment\Gateway::UPI_ICICI;
-    const EXTENSION              = FileStore\Format::XLSX;
+    const EXTENSION              = FileStore\Format::CSV;
     const FILE_NAME              = 'Icici_Upi_Failed_Refunds';
     const FILE_TYPE              = FileStore\Type::ICICI_UPI_REFUND;
 
