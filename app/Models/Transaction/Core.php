@@ -520,7 +520,7 @@ class Core extends Base\Core
         $txnData[Transaction\Entity::GATEWAY_FEE] = $fee;
         $txnData[Transaction\Entity::API_FEE] = 0;
 
-        $channel = Transaction\Channel::ATOM;
+        $channel = Settlement\Channel::ATOM;
 
         if ($payment->terminal->isShared() === true)
         {
@@ -558,7 +558,7 @@ class Core extends Base\Core
             $txnData[Transaction\Entity::RECONCILED_AT] = time();
         }
 
-        $channel = $payment->transaction->getChannel();
+        $channel = $payment->merchant->getChannel();
 
         if ($payment->hasBeenCaptured())
         {
