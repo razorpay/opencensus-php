@@ -580,6 +580,8 @@ class WebhookTest extends TestCase
      */
     public function testTransferSettlementWebhook()
     {
+        $this->markTestSkipped();
+
         $this->ba->privateAuth();
 
         $this->fixtures->merchant->addFeatures(['marketplace']);
