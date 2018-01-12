@@ -16,7 +16,6 @@ use RZP\Mail\Gateway\FailedRefund\Base as FailedRefundFileMail;
 
 class Base extends Refund\Base
 {
-    const SIX_MONTHS_IN_SECONDS = 15780000;
 
     public function fetchEntities(): PublicCollection
     {
@@ -24,20 +23,24 @@ class Base extends Refund\Base
 
         $end = $this->gatewayFile->getEnd();
 
-        // For Card gateways only refunds that are failed before
-        //  6 months are processed via file
+        // For Card gateways only refunds that that was processed after
+        //  6 months from payment creation needs to be manually processed
         if (Gateway::isMethodSupported(Method::CARD,  static::GATEWAY))
         {
-            $begin = $this->gatewayFile->getBegin() - self::SIX_MONTHS_IN_SECONDS;
-
-            $end = $this->gatewayFile->getEnd() - self::SIX_MONTHS_IN_SECONDS;
-        }
-
-        $refunds = $this->repo->refund->fetchFailedRefundsForGatewayBetweenTimestamps(
-                    $begin,
-                    $end,
-                    static::GATEWAY
+            $refunds = $this->repo->refund->fetchFailedCardRefundsToProcessedManually(
+                $begin,
+                $end,
+                static::GATEWAY
                 );
+        }
+        else
+        {
+            $refunds = $this->repo->refund->fetchFailedRefundsForGatewayBetweenTimestamps(
+                $begin,
+                $end,
+                static::GATEWAY
+                );
+        }
 
         return $refunds;
     }

@@ -276,9 +276,49 @@ class Repository extends Base\Repository
                     ->where($refundCreatedAt, '<=', $to)
                     ->with(['payment'])
                     ->get();
-
-        return $refunds;
     }
+
+     /**
+     * Fetches all refunds for card gateways where refund is processed after
+     * six months from payment created at . It could not be processed via API
+     * @return array
+     */
+    public function fetchFailedCardRefundsToProcessedManually($from, $to, $gateway)
+    {
+        $refundAttrs = $this->dbColumn('*');
+
+        $refundPaymentIdAttr = $this->dbColumn(Entity::PAYMENT_ID);
+
+        $refundStatus = $this->dbColumn(Refund\Entity::STATUS);
+
+        $refundCreatedAt = $this->dbColumn(Refund\Entity::CREATED_AT);
+
+        $paymentIdAttr = $this->repo->payment->dbColumn(Payment\Entity::ID);
+
+        $paymentCreatedAt =  $this->repo->payment->dbColumn(Payment\Entity::CREATED_AT);
+
+        $paymentGateway = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);
+
+        $paymentMethod  = $this->repo->payment->dbColumn(Payment\Entity::METHOD);
+
+        $paymentRefundStatus = $this->repo->payment->dbColumn(Payment\Entity::REFUND_STATUS);
+
+        $six_month_ago_timestamp = 15552000;
+
+        return $this->newQuery()
+                    ->select($refundAttrs)
+                    ->join(Table::PAYMENT, $refundPaymentIdAttr, '=', $paymentIdAttr)
+                    ->where($refundStatus, '=',Refund\STATUS::FAILED)
+                    ->whereNotNull($paymentRefundStatus)
+                    ->where($refundCreatedAt, '>=', $from)
+                    ->where($refundCreatedAt, '<=', $to)
+                    ->where($paymentGateway, '=', $gateway)
+                    ->where($paymentMethod, '=', 'card')
+                    ->whereRaw("$paymentCreatedAt - $refundCreatedAt <= 15552000")
+                    ->with(['payment'])
+                    ->get();
+    }
+
 
     public function fetchRefundsForTpvBetweenTimestamps(
         string $type,

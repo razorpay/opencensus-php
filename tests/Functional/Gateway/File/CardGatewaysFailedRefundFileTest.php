@@ -47,11 +47,14 @@ class CardGatewaysFailedRefundFileTest extends TestCase
 
         $refunds = $this->getEntities('refund', [], true);
 
-        $time = Carbon::now()->getTimestamp() - 15780000;
-
         foreach ($refunds['items'] as $refund)
         {
-            $this->fixtures->edit('refund', $refund['id'], ['status' => 'failed', 'created_at' => $time]);
+            $this->fixtures->edit('refund', $refund['id'], ['status' => 'failed']);
+
+            // Only those refunds that cannot be processed via API needs to appear
+            $six_months_ago = $refund['created_at'] - 15552000;
+
+            $this->fixtures->edit('payment', $payment['id'], ['created_at' => $six_months_ago]);
         }
 
         $this->ba->appAuth();
@@ -118,7 +121,12 @@ class CardGatewaysFailedRefundFileTest extends TestCase
 
         foreach ($refunds['items'] as $refund)
         {
-            $this->fixtures->edit('refund', $refund['id'], ['status' => 'failed', 'created_at' => $time]);
+            $this->fixtures->edit('refund', $refund['id'], ['status' => 'failed']);
+
+            // Only those refunds that cannot be processed via API needs to appear
+            $six_months_ago = $refund['created_at'] - 15552000;
+
+            $this->fixtures->edit('payment', $payment['id'], ['created_at' => $six_months_ago]);
         }
 
         $this->ba->appAuth();
@@ -189,7 +197,7 @@ class CardGatewaysFailedRefundFileTest extends TestCase
 
         foreach ($refunds['items'] as $refund)
         {
-            $this->fixtures->edit('refund', $refund['id'], ['status' => 'failed', 'created_at' => $time]);
+            $this->fixtures->edit('refund', $refund['id'], ['status' => 'failed']);
         }
 
         $this->ba->appAuth();
@@ -254,7 +262,12 @@ class CardGatewaysFailedRefundFileTest extends TestCase
 
         foreach ($refunds['items'] as $refund)
         {
-            $this->fixtures->edit('refund', $refund['id'], ['status' => 'failed', 'created_at' => $time]);
+            $this->fixtures->edit('refund', $refund['id'], ['status' => 'failed']);
+
+            // Only those refunds that cannot be processed via API needs to appear
+            $six_months_ago = $refund['created_at'] - 15552000;
+
+            $this->fixtures->edit('payment', $payment['id'], ['created_at' => $six_months_ago]);
         }
 
         $this->ba->appAuth();
@@ -294,6 +307,4 @@ class CardGatewaysFailedRefundFileTest extends TestCase
             return true;
         });
     }
-
-
 }
