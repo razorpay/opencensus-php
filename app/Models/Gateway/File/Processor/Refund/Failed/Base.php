@@ -38,6 +38,7 @@ class Base extends Refund\Base
                     $end,
                     static::GATEWAY
                 );
+
         return $refunds;
     }
 

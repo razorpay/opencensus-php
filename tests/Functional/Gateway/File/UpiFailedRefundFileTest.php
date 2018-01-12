@@ -58,7 +58,7 @@ class UpiFailedRefundFileTest extends TestCase
             'type'        => 'icici_upi_refund',
             'entity_type' => 'gateway_file',
             'entity_id'   => $entity_id,
-            'extension'   => 'xlsx',
+            'extension'   => 'csv',
         ];
 
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
@@ -71,7 +71,7 @@ class UpiFailedRefundFileTest extends TestCase
 
             $body = 'Please find attached failed refunds information for UPI ICICI';
 
-            $fileName = 'Icici_Upi_Failed_Refunds_test_'. $date  . '.xlsx';
+            $fileName = 'Icici_Upi_Failed_Refunds_test_'. $date  . '.csv';
 
             $subject = 'UPI Icici failed refunds file for ' . $date;
 
