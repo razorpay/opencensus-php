@@ -57,7 +57,6 @@ glob(AWS_DIR + '/**', { nodir: true }, (error, files) => {
         level: zlib.Z_BEST_COMPRESSION,
       });
     }
-    return;
 
     s3.putObject(fileParams, err => console.log(err || fileParams.Key));
   });

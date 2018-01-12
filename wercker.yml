@@ -99,3 +99,9 @@ deploy:
           channel: tech_bots
           username: wercker
           icon_url: https://cdn.rawgit.com/wantedly/step-pretty-slack-notify/master/icons/$WERCKER_RESULT.jpg
+
+s3sync:
+    steps:
+      - s3sync:
+        name: S3 Sync
+        code: ./s3sync.js
