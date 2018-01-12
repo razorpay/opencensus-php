@@ -77,6 +77,6 @@ class RefundReconciliate extends Base\RefundReconciliate
 
     protected function getReconRefundAmount(array $row)
     {
-        return get_integer_formatted_amount($row[self::COLUMN_REFUND_AMOUNT]);
+        return Base\Helper::getIntegerFormattedAmount($row[self::COLUMN_REFUND_AMOUNT]);
     }
 }

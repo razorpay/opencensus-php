@@ -130,7 +130,10 @@ class Reconciliator
      *
      * @param array $data
      */
-    protected function addGatewayEntityIfNeeded(array & $data) {}
+    protected function addGatewayEntityIfNeeded(array & $data)
+    {
+        return ;
+    }
 
     /**
      * This can be used for mock recon content function
@@ -138,5 +141,8 @@ class Reconciliator
      * @param null $action
      * @return void
      */
-    public function content(& $content, $action = null) {}
+    public function content(& $content, $action = null)
+    {
+        return ;
+    }
 }

@@ -241,24 +241,6 @@ function gen_uuid($format = '%04x%04x%04x%04x%04x%04x%04x%04x')
     return $uuid;
 }
 
-/**
- * Used to convert recon amount in format to
- * check with amount stored in the entity.
- * @param $amount
- * @return int
- */
-function get_integer_formatted_amount(string $amount)
-{
-    $amountToBeFormatted = floatval($amount) * 100;
-
-    // We are converting to int after casting to string as PHP randomly
-    // returns wrong int values due to differing floating point precisions
-    // So something like intval(31946.0) may give 31945 or 31946.
-    // Converting to string using number_format and then converting
-    // is a hack to avoid this issue
-    return intval(number_format($amountToBeFormatted, 2, '.', ''));
-}
-
 function is_associative_array(array $input)
 {
     return array_keys($input) !== range(0, count($input) - 1);

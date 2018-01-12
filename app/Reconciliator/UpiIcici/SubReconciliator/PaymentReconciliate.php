@@ -77,7 +77,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     private function getReconPaymentAmount(array $row)
     {
-        return get_integer_formatted_amount($row[self::AMOUNT]);
+        return Base\Helper::getIntegerFormattedAmount($row[self::AMOUNT]);
     }
 
     private final function isPaymentStatusFailed(string $status)
