@@ -4,8 +4,11 @@ namespace RZP\Gateway\Netbanking\Oriental;
 
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
+use RZP\Gateway\Base\Action;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
+use RZP\Exception\GatewayErrorException;
 
 class Gateway extends Base\Gateway
 {
@@ -20,8 +23,14 @@ class Gateway extends Base\Gateway
     private $gatewayAttribues = [];
 
     protected $map = [
-        RequestFields::TXN_AMOUNT => Base\Entity::AMOUNT,
-        RequestFields::ITEM_CODE  => Base\Entity::REFERENCE1
+        // Auth request mapping
+        RequestFields::TXN_AMOUNT       => Base\Entity::AMOUNT,
+        RequestFields::ITEM_CODE        => Base\Entity::REFERENCE1,
+
+        // Auth response mapping
+        ResponseFields::PAID            => Base\Entity::STATUS,
+        ResponseFields::BANK_PAYMENT_ID => Base\Entity::BANK_PAYMENT_ID,
+        ResponseFields::DEBIT_ACC_NUM   => Base\Entity::ACCOUNT_NUMBER
     ];
 
     public function authorize(array $input)
@@ -35,6 +44,35 @@ class Gateway extends Base\Gateway
         $this->traceGatewayPaymentRequest($request, $input);
 
         return $request;
+    }
+
+    public function callback(array $input)
+    {
+        parent::callback($input);
+
+        $content = $this->parseGatewayResponse($input['gateway']);
+
+        $this->assertPaymentId($input['payment']['id'],
+                               $content[RequestFields::PAY_REF_NUM]);
+
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
+
+        $this->updateGatewayPaymentEntity($gatewayPayment, $content, true);
+
+        $this->checkActionStatus($content);
+
+        $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
+
+        return $this->getCallbackResponseData($input, $acquirerData);
+    }
+
+    private function checkActionStatus(array $content, $status = Status::SUCCESS)
+    {
+        if ((empty($content[ResponseFields::PAID]) === false) and
+            ($content[ResponseFields::PAID] !== $status))
+        {
+            throw new GatewayErrorException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+        }
     }
 
     private function getAuthorizeRequest(array $input)
@@ -78,6 +116,12 @@ class Gateway extends Base\Gateway
                 array_keys($queryArray),
                 array_values($queryArray)
             ));
+    }
+
+    private function parseGatewayResponse(array $response)
+    {
+        // TODO: Handle decryption here
+        return $response;
     }
 
     private function getMerchantId()
