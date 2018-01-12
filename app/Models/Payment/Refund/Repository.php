@@ -240,6 +240,7 @@ class Repository extends Base\Repository
                 $pId = $pRepo->dbColumn(Payment\Entity::ID);
                 $pType = $pRepo->dbColumn($type);
                 $pGateway = $pRepo->dbColumn(Payment\Entity::GATEWAY);
+
                 $join->on($rPaymentId, '=', $pId)
                      ->where($rCreatedAt, '>=', $from)
                      ->where($rCreatedAt, '<=', $to)
