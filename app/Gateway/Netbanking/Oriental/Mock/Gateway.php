@@ -10,6 +10,10 @@ final class Gateway extends Oriental\Gateway
     {
         $request = parent::authorize($input);
 
-        sd('Reaching the request part of the code');
+        $request['url'] = $this->route->getUrlWithPublicAuth(
+                            'mock_netbanking_payment',
+                            ['bank' => $this->bank]);
+
+        return $request;
     }
 }
