@@ -26,6 +26,8 @@ class PaymentReconciliator extends Reconciliator
             Payment\Status::REFUNDED
         ];
 
-        return $this->repo->payment->fetchPaymentsWithStatus($createdAtStart, $createdAtEnd, $this->gateway, $statuses);
+        return $this->repo
+                    ->payment
+                    ->fetchPaymentsWithStatus($createdAtStart, $createdAtEnd, $this->gateway, $statuses);
     }
 }
