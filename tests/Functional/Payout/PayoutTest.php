@@ -294,11 +294,29 @@ class PayoutTest extends TestCase
         }
 
         // Verify payouts
-        $this->assertNotNull(Payout\Entity::UTR);
+        $payout = $this->getLastEntity('payout', true);
+        $this->assertNull($payout[Payout\Entity::UTR]);
+        $this->assertEquals(Payout\Status::INITIATED, $payout[Payout\Entity::STATUS]);
 
         // Verfiy batch fund transfer
-        #TODO:: Add test to verify below, and Payout Status
-//        $bft = $this->getLastEntity('batch_fund_transfer', true);
-//        $this->assertEquals(2, $bft['processed_count']);
+        $bft = $this->getLastEntity('batch_fund_transfer', true);
+        $this->assertEquals(0, $bft['processed_count']);
+
+        // Verify status after entities are processed
+        $request = [
+            'url'       => '/fund_transfer_attempts/' . Channel::KOTAK,
+            'method'    => 'POST',
+            'content'   => [],
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $bft = $this->getLastEntity('batch_fund_transfer', true);
+        $this->assertEquals(2, $bft['processed_count']);
+
+        // Verify payouts
+        $payout = $this->getLastEntity('payout', true);
+        $this->assertNotNull($payout[Payout\Entity::UTR]);
+        $this->assertEquals(Payout\Status::PROCESSED, $payout[Payout\Entity::STATUS]);
     }
 }
