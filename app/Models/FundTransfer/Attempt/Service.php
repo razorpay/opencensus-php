@@ -2,17 +2,14 @@
 
 namespace RZP\Models\FundTransfer\Attempt;
 
-use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Constants\Mode;
-use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Models\VirtualAccount\Provider;
 
 class Service extends Base\Service
 {
     public function bulkReconcile(array $input, string $channel): array
     {
+        s($input, $channel);
         (new Validator)->validateInput('bulk_reconcile', $input);
 
         $this->trace->info(TraceCode::FTA_BULK_RECONCILE_REQUEST, $input);

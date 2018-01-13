@@ -52,7 +52,8 @@ class ReconciliationGenerator
                                       ->getAttemptsBetweenTimestampsWithStatus(
                                             $startTimestamp,
                                             $endTimestamp,
-                                            FundTransfer\Attempt\Status::PENDING_RECONCILIATION);
+                                            FundTransfer\Attempt\Status::PENDING_RECONCILIATION,
+                                            Settlement\Channel::KOTAK);
 
         // get batch id of all above attempts
         $batchIds = $nonReconciledAttempts->pluck(FundTransfer\Attempt\Entity::BATCH_FUND_TRANSFER_ID)

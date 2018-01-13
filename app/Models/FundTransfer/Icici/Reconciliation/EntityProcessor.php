@@ -49,6 +49,7 @@ class EntityProcessor extends BaseEntityProcessor
         $this->source->setStatus($sourceStatus);
         $this->source->setUtr($this->fta->getUtr());
         $this->source->setRemarks($this->fta->getRemarks());
+        $this->source->setFailureReason($this->fta->getFailureReason());
 
         $this->repo->saveOrFail($this->source);
     }

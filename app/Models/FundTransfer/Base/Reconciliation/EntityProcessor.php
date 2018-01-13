@@ -49,6 +49,8 @@ abstract class EntityProcessor extends Base\Core
 
         $this->source = $fta->source;
 
+        s($fta->getId(), $this->source->getId());
+
         $this->reconciledAt = Carbon::now(Timezone::IST)->timestamp;
 
         $this->dashboardUrl = $this->app['config']->get('applications.dashboard.url');
@@ -62,6 +64,7 @@ abstract class EntityProcessor extends Base\Core
      */
     public function process(): array
     {
+        s('call updateEntities');
         $this->updateEntities();
 
         if ($this->sendFailureEmailToMerchant === true)
@@ -92,7 +95,7 @@ abstract class EntityProcessor extends Base\Core
         $status = $this->getAttemptStatus();
         s($status);
         $failureReason = ($status === Attempt\Status::FAILED) ? 'Reconciliation' : null;
-
+        s($failureReason);
         // Verify status
         $oldStatus = $this->fta->getStatus();
 
