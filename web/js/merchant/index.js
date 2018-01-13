@@ -1,5 +1,4 @@
 import 'react-dates/initialize';
-import $ from 'jquery';
 import { Provider } from 'react-redux';
 import { render } from 'react-dom';
 import { HashRouter as Router } from 'react-router-dom';
@@ -11,8 +10,6 @@ import store from './store';
 import ConfirmModalProvider from 'rzp/ui/ConfirmModal/ConfirmModalProvider';
 
 import App from './containers/App';
-
-window.$ = $;
 
 render(
   <Provider store={store}>

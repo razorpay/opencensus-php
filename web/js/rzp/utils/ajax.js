@@ -1,11 +1,4 @@
 import { getCookie } from './cookies';
-import $ from 'jquery';
-
-/*
- * jQuery deferred promises doesn't align with the Promises/A+ spec.
- * You can check the difference at http://codepen.io/selvagsz/pen/oYNjJb?editors=0010
- * So transforming the $.ajax into true promises.
- */
 
 export default (params = {}) => {
   return new Promise((resolve, reject) => {
@@ -14,17 +7,25 @@ export default (params = {}) => {
     headers['Accept'] = 'application/json, text/plain, */*';
     params.headers = headers;
 
-    $.ajax(params).then(
-      response => {
-        if (response.success) {
-          resolve(response);
+    if (
+      (!params.method || String(params.method).toLowerCase() === 'get') &&
+      params.data
+    ) {
+      params.params = params.data;
+      delete params.data;
+    }
+
+    axios(params).then(
+      ({ data }) => {
+        if (data.success) {
+          resolve(data);
         } else {
           reject(
             Object.assign(
               {
                 code: 'UNKNOWN_ERROR_CODE',
               },
-              response
+              data
             )
           );
         }

@@ -163,8 +163,8 @@ export default class WizardItem extends Component {
 
   updateActivationProgress() {
     return this.props.fetchUser().then(response => {
-      // TODO: Remove this manual updation of activation progress once the nav is migrated to react
-      $('#activationNav b').text(`${response.data.activation_progress}%`);
+      document.querySelector('#activationNav b').innerHTML =
+        response.data.activation_progress;
     });
   }
 

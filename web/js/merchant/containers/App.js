@@ -154,7 +154,6 @@ export default class App extends Component {
           if (window.skIntro) {
             window.skIntro.html('');
           }
-          $('#sk-footer input').off('focus', window.skFocusListener);
           window.smoochUserLoaded = true;
           Smooch.updateUser({
             givenName: data.name,

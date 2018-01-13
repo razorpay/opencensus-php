@@ -1,6 +1,5 @@
 import { Component, isValidElement } from 'react';
 import PropTypes from 'prop-types';
-import cx from 'classnames';
 import { makeArray } from 'rzp/utils/rzp-utils';
 
 class Alert extends Component {
@@ -40,10 +39,9 @@ class Alert extends Component {
 
     return (
       <div
-        class={cx(
-          'alert alert-dismissable',
-          `alert-${props.type === 'error' ? 'danger' : props.type}`
-        )}
+        class={`alert alert-dismissable alert-${
+          props.type === 'error' ? 'danger' : props.type
+        }`}
         style={{ borderRadius: 0 }}
       >
         {props.showDismiss && (
