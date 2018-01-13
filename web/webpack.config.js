@@ -56,13 +56,12 @@ module.exports = {
     ],
   },
 
-  devtool: 'source-map',
+  devtool: isProd ? 'hidden-source-map' : false,
 
   plugins,
 };
 
 if (isProd) {
-  module.exports.devtool = 'hidden-source-map';
   plugins.push(
     new UglifyJSPlugin({
       sourceMap: true,
