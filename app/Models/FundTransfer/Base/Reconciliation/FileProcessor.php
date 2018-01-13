@@ -2,13 +2,19 @@
 
 namespace RZP\Models\FundTransfer\Base\Reconciliation;
 
+use Mail;
+use Carbon\Carbon;
+
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
+use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer\Kotak;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
+use RZP\Mail\Settlement\Reconciliation as ReconciliationEmail;
 
 abstract class FileProcessor extends Base\Core
 {
@@ -119,6 +125,8 @@ abstract class FileProcessor extends Base\Core
             $response = $this->startReconciliation($data);
         }
 
+        $this->sendEmail();
+
         return $response;
     }
 
@@ -208,5 +216,26 @@ abstract class FileProcessor extends Base\Core
         $fta = (new $rowProcessorNamespace($row))->process();
 
         return $fta;
+    }
+
+    final protected function sendEmail()
+    {
+        if (($this->mode === Mode::TEST) and
+            ($this->app->environment('dev', 'testing') === false))
+        {
+            return;
+        }
+
+        $msg = 'UTR File reconciled.' . PHP_EOL;
+
+        #TODO:: What date to put here?
+        $this->date = Carbon::today(Timezone::IST)->format('d-m-Y');
+
+        $data['date'] = $this->date;
+        $data['body'] = $msg;
+
+        $email = new ReconciliationEmail($data, static::$channel);
+
+        Mail::queue($email);
     }
 }
