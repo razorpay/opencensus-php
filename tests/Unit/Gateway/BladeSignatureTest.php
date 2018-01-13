@@ -98,6 +98,20 @@ class BladeSignatureTest extends TestCase
         $this->assertFalse($ret, "XmlseclibsAdapter should fail validation because of cert date");
     }
 
+    public function testXMLSignatureAirtelPaymentsBank()
+    {
+        $ret = $this->runVerifyOnXml('PARes.AIRP.xml');
+
+        $this->assertTrue($ret, "XmlseclibsAdapter should verify the PARes");
+    }
+
+    public function testXMLSignatureCorporationBank()
+    {
+        $ret = $this->runVerifyOnXml('PARes.CORP.xml');
+
+        $this->assertTrue($ret, "XmlseclibsAdapter should verify the PARes");
+    }
+
     /**
      * The cert chain here is out-of-order with the root cert in the middle
      */
@@ -106,5 +120,66 @@ class BladeSignatureTest extends TestCase
         $ret = $this->runVerifyOnXml('PAResWCertIssue.xml');
 
         $this->assertTrue($ret, "XmlseclibsAdapter should verify the PARes");
+    }
+
+    public function testParesWithKeyInfoNs()
+    {
+        $knownDate = Carbon::create(2017, 3, 25, 12);
+
+        Carbon::setTestNow($knownDate);
+
+        $pares = file_get_contents(__DIR__. '/MockData/CorpPares.txt');
+
+        $blade = new BladeGateway;
+
+        $e = null;
+
+        try
+        {
+            $this->invokeMethod($blade, 'validateSignatureAndInflatePares', [base64_decode($pares)]);
+        }
+        catch (Exception $e)
+        {
+
+        }
+
+        $this->assertEquals(null, $e);
+
+        Carbon::setTestNow();
+    }
+
+    public function testParesWithoutKeyInfoNs()
+    {
+        $knownDate = Carbon::create(2017, 3, 25, 12);
+
+        Carbon::setTestNow($knownDate);
+
+        $pares = file_get_contents(__DIR__. '/MockData/IciciPares.txt');
+
+        $blade = new BladeGateway;
+
+        $e = null;
+
+        try
+        {
+            $this->invokeMethod($blade, 'validateSignatureAndInflatePares', [base64_decode($pares)]);
+        }
+        catch (Exception $e)
+        {
+
+        }
+
+        $this->assertEquals(null, $e);
+
+        Carbon::setTestNow();
+    }
+
+    public function invokeMethod(&$object, $methodName, array $parameters = array())
+    {
+        $reflection = new \ReflectionClass(get_class($object));
+        $method = $reflection->getMethod($methodName);
+        $method->setAccessible(true);
+
+        return $method->invokeArgs($object, $parameters);
     }
 }
