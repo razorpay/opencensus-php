@@ -1,7 +1,6 @@
 import { Component } from 'react';
 import { DateRangePicker } from 'react-dates';
 import moment from 'moment';
-import './DateRangePickerField.styl';
 
 export default class DateRangePickerField extends Component {
   state = {

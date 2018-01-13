@@ -4,7 +4,6 @@ import { withRouter } from 'react-router-dom';
 import Modal from 'react-modal';
 import * as SliderActions from 'rzp/modules/slider';
 import { isNone } from 'rzp/utils/rzp-utils';
-import './ModalSlider.styl';
 
 @withRouter
 @connect(state => state.slider, SliderActions)

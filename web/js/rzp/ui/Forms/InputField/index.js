@@ -1,5 +1,3 @@
-import './InputField.styl';
-
 export default props => {
   let {
     input,

@@ -1,4 +1,3 @@
-import { PropTypes } from 'react';
 import HighlightedOption from './HighlightedOption';
 import QuickAddComponent from './QuickAdd';
 import { findBy } from 'rzp/utils/rzp-utils';

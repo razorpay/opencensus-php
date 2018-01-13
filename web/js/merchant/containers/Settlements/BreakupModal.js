@@ -1,4 +1,4 @@
-import { Component, PropTypes } from 'react';
+import { Component } from 'react';
 import { connect } from 'react-redux';
 import Alert from 'rzp/ui/Forms/Alert';
 import ModalHeader from 'rzp/ui/ModalHeader';

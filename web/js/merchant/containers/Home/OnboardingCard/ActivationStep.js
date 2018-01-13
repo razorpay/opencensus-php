@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
 import ProgressBar from 'rzp/ui/ProgressBar';
-import ActivateAccountSVG from 'styles/assets/activate-account.svg';
-import ActivationSubmittedSVG from 'styles/assets/activation-submitted.svg';
-import AccountActivatedSVG from 'styles/assets/account-activated.svg';
+// import ActivateAccountSVG from 'styles/assets/activate-account.svg';
+// import ActivationSubmittedSVG from 'styles/assets/activation-submitted.svg';
+// import AccountActivatedSVG from 'styles/assets/account-activated.svg';
 
 export default ({ user }) => {
   let svgSrc = ActivateAccountSVG;

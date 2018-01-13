@@ -1,4 +1,5 @@
-import { PropTypes, Component, isValidElement } from 'react';
+import { Component, isValidElement } from 'react';
+import PropTypes from 'prop-types';
 import cx from 'classnames';
 import { makeArray } from 'rzp/utils/rzp-utils';
 

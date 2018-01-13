@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import FirstPaymentSVG from 'styles/assets/first-payment.svg';
+// import FirstPaymentSVG from 'styles/assets/first-payment.svg';
 
 export default ({ user }) => {
   return (

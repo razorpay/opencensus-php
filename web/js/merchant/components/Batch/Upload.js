@@ -1,4 +1,5 @@
-import { Component, PropTypes } from 'react';
+import { Component } from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
 import FileUploadInputButton from 'rzp/ui/FileUpload/InputButton';

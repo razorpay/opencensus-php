@@ -1,4 +1,4 @@
-import { Component, PropTypes } from 'react';
+import { Component } from 'react';
 import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
 import ModalHeader from 'rzp/ui/ModalHeader';

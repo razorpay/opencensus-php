@@ -1,5 +1,3 @@
-import './Spinner.styl';
-
 export default () => (
   <div class="spinner">
     <div class="double-bounce1" />

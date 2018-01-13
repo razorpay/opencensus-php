@@ -1,4 +1,5 @@
-import { Component, PropTypes, Children } from 'react';
+import { Component, Children } from 'react';
+import PropTypes from 'prop-types';
 import ConfirmModal from './ConfirmModal';
 
 export default class ConfirmModalProvider extends Component {

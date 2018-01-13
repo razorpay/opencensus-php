@@ -3,8 +3,6 @@ import React from 'react';
 import Amount from 'rzp/ui/Amount';
 import Blockquote from 'rzp/ui/Blockquote';
 
-import './styles.styl';
-
 /*
  * Design
  * https://projects.invisionapp.com/d/main#/console/11823589/249792186/preview

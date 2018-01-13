@@ -2,7 +2,6 @@ import { Component } from 'react';
 import Modal from 'react-modal';
 import { connect } from 'react-redux';
 import * as ModalActions from 'rzp/modules/modals';
-import './ModalDialog.styl';
 
 Object.assign(Modal.defaultStyles.overlay, {
   backgroundColor: 'rgba(58, 63, 81, 0.8)',

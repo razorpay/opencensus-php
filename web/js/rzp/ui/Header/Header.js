@@ -1,6 +1,6 @@
-import { Component, PropTypes } from 'react';
+import { Component } from 'react';
+import PropTypes from 'prop-types';
 import { titleCase } from 'rzp/utils/rzp-utils';
-import './Header.styl';
 import { connect } from 'react-redux';
 
 @connect(state => state.session || {}, null)

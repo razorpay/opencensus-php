@@ -5,7 +5,7 @@ import LocalStorageService from 'rzp/utils/localStorage';
 import ActivationStep from './ActivationStep';
 import KeyGenerationStep from './KeyGenerationStep';
 import PaymentsReceivedStep from './PaymentsReceivedStep';
-import OnboardingIllustrationPNG from 'styles/assets/onboarding-illustration.svg';
+// import OnboardingIllustrationPNG from 'styles/assets/onboarding-illustration.svg';
 
 import newProducts from 'merchant/containers/Banners/newProducts';
 import MediaCard from 'merchant/containers/Home/OnboardingCard/MediaCard';

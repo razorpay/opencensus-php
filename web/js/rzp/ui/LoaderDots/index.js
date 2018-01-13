@@ -1,5 +1,3 @@
-import './LoaderDots.styl';
-
 export default () => {
   return (
     <span class="LoaderDots">

@@ -3,8 +3,8 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { fetchKeys } from 'merchant/modules/keys';
 import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
-import GenerateKeySVG from 'styles/assets/integrate-generatekey.svg';
-import IntegrateSVG from 'styles/assets/integrate.svg';
+// import GenerateKeySVG from 'styles/assets/integrate-generatekey.svg';
+// import IntegrateSVG from 'styles/assets/integrate.svg';
 
 @connect(null, { fetchKeys })
 export default class KeyGenerationStep extends Component {

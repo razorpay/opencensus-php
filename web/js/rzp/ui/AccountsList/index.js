@@ -1,8 +1,6 @@
 import React from 'react';
 import { TypeAhead } from 'react-power-select';
 
-import './styles.styl';
-
 const CustomTag = ({ tag, tagIcon }) => {
   if (!tag) {
     return null;

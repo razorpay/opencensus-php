@@ -2,7 +2,6 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import Notification from './Notification';
 import * as NotificationsActions from 'rzp/modules/notifications';
-import './Notifications.styl';
 
 @connect(state => state.notifications, NotificationsActions)
 export default class Notifications extends Component {

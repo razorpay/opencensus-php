@@ -1,7 +1,6 @@
 import { Component } from 'react';
 import { findDOMNode } from 'react-dom';
 import { Field } from 'redux-form';
-import './Clipboard.styl';
 
 export default class Clipboard extends Component {
   constructor() {

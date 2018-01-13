@@ -18,8 +18,6 @@ import {
 
 import FORM_TYPE from './Forms';
 
-import './OnBoarding.styl';
-
 @connect(state => state.session, {
   saveOnboarding,
   getOnboardingResponse,
@@ -115,15 +113,15 @@ export default class OnBoarding extends Component {
   requireImage(formType, currentForm) {
     switch (formType) {
       case 'marketplace':
-        currentForm.formImage = require('styles/assets/landing/route.svg');
+        // currentForm.formImage = require('styles/assets/landing/route.svg');
         break;
 
       case 'virtual_accounts':
-        currentForm.formImage = require('styles/assets/landing/smartcollect.svg');
+        // currentForm.formImage = require('styles/assets/landing/smartcollect.svg');
         break;
 
       case 'subscriptions':
-        currentForm.formImage = require('styles/assets/landing/subscriptions.svg');
+        // currentForm.formImage = require('styles/assets/landing/subscriptions.svg');
         break;
     }
   }

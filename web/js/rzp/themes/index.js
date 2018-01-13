@@ -1,4 +1,4 @@
-import Theme from './theme';
+// import Theme from './theme';
 
 const base = {
   transparent: 'rgba(0,0,0,0.2)',
@@ -26,6 +26,7 @@ const THEMES = {
 };
 
 export const applyTheme = org => {
+  return;
   var style = document.createElement('style');
   style.type = 'text/css';
   var rules = Theme.render(Object.assign(base, THEMES[org]));

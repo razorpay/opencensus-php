@@ -1,4 +1,4 @@
-import { PropTypes } from 'react';
+import PropTypes from 'prop-types';
 
 const QuickAdd = ({ select, label, appendSearchTerm, onClick }) => {
   return (

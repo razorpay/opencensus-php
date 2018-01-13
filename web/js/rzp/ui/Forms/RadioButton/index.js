@@ -1,5 +1,3 @@
-import './RadioButton.styl';
-
 export default props => {
   let { label, input, meta, htmlValue, ...otherProps } = props;
   var inputValue = input.value;

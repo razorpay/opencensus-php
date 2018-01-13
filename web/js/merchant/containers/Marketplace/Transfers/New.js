@@ -1,5 +1,6 @@
 import AsyncButton from 'react-async-button';
-import { Component, PropTypes } from 'react';
+import { Component } from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Field, FieldArray, reduxForm, formValueSelector } from 'redux-form';
 import moment from 'moment';

@@ -1,7 +1,6 @@
 import { Component, Children, cloneElement } from 'react';
 import TetherComponent from 'react-tether';
 import TourStep from './TourStep';
-import './Tour.styl';
 
 // Only Left Popovers are supported as of now
 class Tour extends Component {

@@ -89,7 +89,7 @@ export default class MarketplaceContainer extends Component {
             productName="Razorpay Route"
             productDocs="https://razorpay.com/docs/route"
             feature="marketplace"
-            symbol={require('styles/assets/symbols/route.svg')}
+            symbol={'styles/assets/symbols/route.svg'}
             onActivate={this.openActivationModal}
           />
         )}

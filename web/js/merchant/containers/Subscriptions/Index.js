@@ -89,7 +89,7 @@ export default class SubscriptionsController extends Component {
             productName="Razorpay Subscriptions"
             productDocs="https://razorpay.com/docs/subscriptions"
             feature="subscriptions"
-            symbol={require('styles/assets/symbols/subscriptions.svg')}
+            symbol="subscriptions"
             onActivate={this.openActivationModal}
           />
         )}

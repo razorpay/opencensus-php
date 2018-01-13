@@ -1,4 +1,4 @@
-import { PropTypes } from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import HeaderAction from 'rzp/ui/HeaderAction';
 import Alert from 'rzp/ui/Forms/Alert';

@@ -184,7 +184,7 @@ export default class VirtualAccountsListContainer extends ListContainer {
             productName="Razorpay Smart Collect"
             productDocs="https://razorpay.com/docs/smart-collect"
             feature="virtual_accounts"
-            symbol={require('styles/assets/symbols/smartcollect.svg')}
+            symbol={'styles/assets/symbols/smartcollect.svg'}
             onActivate={this.openActivationModal}
           />
         )}
