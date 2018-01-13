@@ -98,20 +98,6 @@ class BladeSignatureTest extends TestCase
         $this->assertFalse($ret, "XmlseclibsAdapter should fail validation because of cert date");
     }
 
-    public function testXMLSignatureAirtelPaymentsBank()
-    {
-        $ret = $this->runVerifyOnXml('PARes.AIRP.xml');
-
-        $this->assertTrue($ret, "XmlseclibsAdapter should verify the PARes");
-    }
-
-    public function testXMLSignatureCorporationBank()
-    {
-        $ret = $this->runVerifyOnXml('PARes.CORP.xml');
-
-        $this->assertTrue($ret, "XmlseclibsAdapter should verify the PARes");
-    }
-
     /**
      * The cert chain here is out-of-order with the root cert in the middle
      */
@@ -124,37 +110,21 @@ class BladeSignatureTest extends TestCase
 
     public function testParesWithKeyInfoNs()
     {
-        $knownDate = Carbon::create(2017, 3, 25, 12);
-
-        Carbon::setTestNow($knownDate);
-
-        $pares = file_get_contents(__DIR__. '/MockData/CorpPares.txt');
-
-        $blade = new BladeGateway;
-
-        $e = null;
-
-        try
-        {
-            $this->invokeMethod($blade, 'validateSignatureAndInflatePares', [base64_decode($pares)]);
-        }
-        catch (Exception $e)
-        {
-
-        }
-
-        $this->assertEquals(null, $e);
-
-        Carbon::setTestNow();
+        $this->validateSignatue('CorpPares.txt');
     }
 
     public function testParesWithoutKeyInfoNs()
+    {
+        $this->validateSignatue('IciciPares.txt');
+    }
+
+    protected function validateSignatue($file)
     {
         $knownDate = Carbon::create(2017, 3, 25, 12);
 
         Carbon::setTestNow($knownDate);
 
-        $pares = file_get_contents(__DIR__. '/MockData/IciciPares.txt');
+        $pares = file_get_contents(__DIR__. '/MockData/' . $file);
 
         $blade = new BladeGateway;
 
