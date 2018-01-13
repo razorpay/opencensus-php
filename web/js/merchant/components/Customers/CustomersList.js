@@ -15,7 +15,7 @@ const CustomersListItem = ({ customer, onEdit }) => {
       <td class="row-action">
         <div class="btn-group">
           <button class="btn btn-xs btn-default" onClick={onEdit}>
-            <i class="icon icon-edit" />
+            <i class="i i-edit" />
             <span>edit</span>
           </button>
         </div>

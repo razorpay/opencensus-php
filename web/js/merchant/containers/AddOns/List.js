@@ -132,7 +132,7 @@ export default class AddOnsListContainer extends ListContainer {
                 class="pull-right btn btn-primary"
                 onClick={() => this.showAddOnModal()}
               >
-                <i class="icon icon-plus" />
+                <i class="i i-plus" />
                 <span>New Add On</span>
               </button>
             </div>

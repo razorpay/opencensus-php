@@ -69,7 +69,7 @@ export default class ReferralsListContainer extends ListContainer {
                 class="pull-right btn btn-primary"
                 onClick={() => this.showCreateMerchantModal()}
               >
-                <i class="icon icon-plus" />
+                <i class="i i-plus" />
                 <span>New Merchant</span>
               </button>
             </div>

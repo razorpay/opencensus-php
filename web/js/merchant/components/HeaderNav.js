@@ -42,7 +42,7 @@ const SwitchMerchant = ({ user, onSwitchMerchant }) => {
         return (
           <a class="SwitchMerchantDropdown__option">
             {option.id === user.current ? (
-              <i class="icon icon-done text-success pull-right" />
+              <i class="i i-done text-success pull-right" />
             ) : null}
             <span>{option.name}</span>
           </a>

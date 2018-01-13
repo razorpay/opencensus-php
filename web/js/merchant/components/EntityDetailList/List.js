@@ -142,7 +142,7 @@ export default class EntityDetailList extends Component {
             })
           }
         >
-          Show All <i class="icon icon-chevron-down" />
+          Show All <i class="i i-chevron-down" />
         </button>
       );
     }

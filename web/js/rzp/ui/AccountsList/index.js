@@ -26,7 +26,7 @@ const AccountsList = ({ accounts, selectedAccount, onChange }) => {
 
   return (
     <div className="custom-select rzp-accounts-list">
-      <i className="icon icon-search custom-icon" />
+      <i className="i i-search custom-icon" />
       <div
         className="typeAheadSkin"
         ref={el => {

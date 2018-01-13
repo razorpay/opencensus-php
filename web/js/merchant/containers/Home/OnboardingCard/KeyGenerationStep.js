@@ -48,7 +48,7 @@ export default class KeyGenerationStep extends Component {
         >
           start integration
         </a>{' '}
-        <i class="icon icon-external-link" />
+        <i class="i i-external-link" />
       </div>
     );
 
@@ -85,7 +85,7 @@ export default class KeyGenerationStep extends Component {
           >
             Integration docs
           </a>{' '}
-          <i class="icon icon-external-link" />
+          <i class="i i-external-link" />
         </div>
       );
     }

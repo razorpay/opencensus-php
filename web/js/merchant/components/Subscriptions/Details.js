@@ -90,7 +90,7 @@ export default ({
       ) : (
         <div class="panel panel-default SliderPanel">
           <div class="panel-heading">
-            <i class="icon icon-refresh text-main icon--formal" />{' '}
+            <i class="i i-refresh text-main icon--formal" />{' '}
             <strong>{subscription.id}</strong>
           </div>
 

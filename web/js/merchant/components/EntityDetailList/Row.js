@@ -152,7 +152,7 @@ export default props => {
           {item.id &&
             (chargeAttemptsFailedText || retryingInfo) && [
               <span key="retrying-attempts" class="text-danger">
-                <i class="icon icon-info-circle" /> {chargeAttemptsFailedText}
+                <i class="i i-info-circle" /> {chargeAttemptsFailedText}
               </span>,
               <span key="retrying-info"> {retryingInfo}</span>,
             ]}

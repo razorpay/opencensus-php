@@ -29,7 +29,7 @@ export default props => {
       ) : (
         <div class="panel panel-default SliderPanel">
           <div class="panel-heading">
-            <i class="icon icon-account-balance text-success icon--formal" />{' '}
+            <i class="i i-account-balance text-success icon--formal" />{' '}
             <strong>{virtualaccount.id}</strong>
           </div>
 

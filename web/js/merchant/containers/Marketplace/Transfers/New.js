@@ -217,11 +217,11 @@ export default class TransferNew extends Component {
                 class="close close-secondary"
                 onClick={this.props.onClose}
               >
-                <i class="icon icon-arrow-back" />
-                <i class="icon icon-close" />
+                <i class="i i-arrow-back" />
+                <i class="i i-close" />
               </button>
             )}
-            <i class="icon icon-plan text-main icon--formal" />{' '}
+            <i class="i i-plan text-main icon--formal" />{' '}
             <strong>Create New Transfer</strong>
           </div>
 
@@ -295,7 +295,7 @@ export default class TransferNew extends Component {
                       type="text"
                     />
                     <span class="help-block label--secondary">
-                      <i class="icon icon-info-outline" />
+                      <i class="i i-info-outline" />
                       <b>Transfer amount</b> can not exceed payment amount.
                     </span>
                   </div>

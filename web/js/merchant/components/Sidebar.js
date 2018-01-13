@@ -75,7 +75,7 @@ export default class Sidebar extends Component {
                 <div class="nav">
                   <MainNavLink
                     label="Home"
-                    icon="icon icon-chart text-info"
+                    icon="i i-chart text-info"
                     to="/dashboard"
                     exact
                     notMyRole="sellerapp support"
@@ -83,13 +83,13 @@ export default class Sidebar extends Component {
                   <MainNavLink
                     label="Transactions"
                     id="transactions-nav"
-                    icon="icon icon-repeat text-primary"
+                    icon="i i-repeat text-primary"
                     to={routes.transactions}
                     notMyRole="sellerapp"
                   />
                   <MainNavLink
                     label="Settlements"
-                    icon="icon icon-done-all text-success"
+                    icon="i i-done-all text-success"
                     to="/settlements"
                     notMyRole="sellerapp support"
                   />
@@ -98,7 +98,7 @@ export default class Sidebar extends Component {
 
                   <MainNavLink
                     label="Invoices"
-                    icon="icon icon-notes text-warning"
+                    icon="i i-notes text-warning"
                     to={routes.invoices}
                     featureEnabled="Invoice"
                     apiFeatureEnabled="subscriptions"
@@ -106,26 +106,26 @@ export default class Sidebar extends Component {
                   />
                   <MainNavLink
                     label="Payment Links"
-                    icon="icon icon-link text-primary"
+                    icon="i i-link text-primary"
                     to={routes.paymentlinks}
                   />
                   <MainNavLink
                     label="Route"
-                    icon="icon icon-store text-success"
+                    icon="i i-store text-success"
                     to={routes.marketplace}
                     notMyRole="sellerapp support"
                     isNew={true}
                   />
                   <MainNavLink
                     label="Subscriptions"
-                    icon="icon icon-refresh text-info"
+                    icon="i i-refresh text-info"
                     notMyRole="sellerapp support"
                     to={routes.subscriptions}
                     isNew={true}
                   />
                   <MainNavLink
                     label="Smart Collect"
-                    icon="icon icon-account-balance text-danger"
+                    icon="i i-account-balance text-danger"
                     to="/virtualaccounts"
                     notMyRole="sellerapp support"
                     isNew={true}
@@ -133,7 +133,7 @@ export default class Sidebar extends Component {
 
                   <MainNavLink
                     label="Customers"
-                    icon="icon icon-people text-warning"
+                    icon="i i-people text-warning"
                     to="/customers"
                     featureEnabled="Invoice"
                     apiFeatureEnabled={['subscriptions', 'virtual_accounts']}
@@ -144,20 +144,20 @@ export default class Sidebar extends Component {
 
                   <MainNavLink
                     label="Reports"
-                    icon="icon icon-books text-danger"
+                    icon="i i-books text-danger"
                     to="/reports"
                     notMyRole="sellerapp support"
                   />
                   <MainNavLink
                     label="My Account"
                     id="myaccount-nav"
-                    icon="icon icon-account text-primary"
+                    icon="i i-account text-primary"
                     to={routes.account}
                   />
                   <MainNavLink
                     label="Settings"
                     id="settings-nav"
-                    icon="icon icon-settings text-warning"
+                    icon="i i-settings text-warning"
                     to={routes.settings}
                     myRole="owner manager admin"
                   />

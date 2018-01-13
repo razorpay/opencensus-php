@@ -71,7 +71,7 @@ export default class DateRangePickerField extends Component {
           this.state.focused ? 'datepicker--focused' : ''
         }`}
       >
-        <i class="icon icon-date-range" />
+        <i class="i i-date-range" />
         <DateRangePicker
           startDate={this.state.from}
           endDate={this.state.to}

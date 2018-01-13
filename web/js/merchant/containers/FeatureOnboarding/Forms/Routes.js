@@ -55,7 +55,7 @@ export default ({ handleChange }) => {
           onChange={handleChange}
         />
         <small class="help-block">
-          <i class="icon icon-info-outline" style={{ marginRight: '4px' }} />
+          <i class="i i-info-outline" style={{ marginRight: '4px' }} />
           <span>
             As a sample, upload a signed agreement executed with your
             3rd-parties or vendors

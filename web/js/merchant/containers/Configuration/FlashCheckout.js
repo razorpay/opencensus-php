@@ -97,10 +97,7 @@ export default class FlashCheckout extends Component {
                   href="https://razorpay.com/flashcheckout/"
                 >
                   Know more about Flash Checkout
-                  <i
-                    class="icon icon-external-link"
-                    style={{ marginLeft: '5px' }}
-                  />
+                  <i class="i i-external-link" style={{ marginLeft: '5px' }} />
                 </a>
               </div>
               <div class="col-sm-2">

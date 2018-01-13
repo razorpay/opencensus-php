@@ -86,7 +86,7 @@ export default class InvoicesListContainer extends ListContainer {
             <div class="btn-toolbar pull-right">
               <ShowWhen notMyRole="sellerapp support" featureEnabled="Invoice">
                 <NavLink to="/invoices/new" class="btn btn-primary">
-                  <i class="icon icon-plus" />
+                  <i class="i i-plus" />
                   <span>Create Invoice</span>
                 </NavLink>
               </ShowWhen>

@@ -127,7 +127,7 @@ export default class AddGST extends Component {
                 class="close"
                 onClick={this.props.closeModal}
               >
-                <i class="icon icon-close" />
+                <i class="i i-close" />
               </button>
 
               <label>Razorpay's GST number</label>

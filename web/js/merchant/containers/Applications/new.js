@@ -161,7 +161,7 @@ class NewApplicationForm extends Component {
       <div class="content-box new-application-form">
         <div class="content-header">
           <Link to="/applications" class="breadcrumb__backNav--link ">
-            <i class="icon icon-arrow-back" />
+            <i class="i i-arrow-back" />
             <span> Back</span>
           </Link>
           <strong> / {this.state.edit ? 'Edit' : 'Create'} Application</strong>
@@ -228,7 +228,7 @@ class NewApplicationForm extends Component {
                 </div>
               </div>
               <small class="col-md-8 help-block">
-                <i class="icon icon-info-circle" />
+                <i class="i i-info-circle" />
                 <span>{INFO.icon}</span>
               </small>
             </div>
@@ -284,7 +284,7 @@ class NewApplicationForm extends Component {
                   </div>
                   <div class="clearfix" />
                   <small class="col-md-offset-2 col-md-10 help-block">
-                    <i class="icon icon-info-circle" />
+                    <i class="i i-info-circle" />
                     <span>{INFO.dev}</span>
                   </small>
                 </div>
@@ -338,7 +338,7 @@ class NewApplicationForm extends Component {
                   </div>
                   <div class="clearfix" />
                   <small class="col-md-offset-2 col-md-10 help-block">
-                    <i class="icon icon-info-circle" />
+                    <i class="i i-info-circle" />
                     <span>{INFO.prod}</span>
                   </small>
                 </div>

@@ -199,8 +199,8 @@ export default class TransferDetails extends Component {
                   class="close close-secondary"
                   onClick={onClose}
                 >
-                  <i class="icon icon-arrow-back" />
-                  <i class="icon icon-close" />
+                  <i class="i i-arrow-back" />
+                  <i class="i i-close" />
                 </button>
               )}
               Transfer ID: <strong>{transfer.id}</strong>

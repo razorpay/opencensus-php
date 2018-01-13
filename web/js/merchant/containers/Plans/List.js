@@ -54,7 +54,7 @@ export default class PlansListContainer extends ListContainer {
             <div class="btn-toolbar">
               <NavLink to="/plans/new">
                 <button class="pull-right btn btn-primary">
-                  <i class="icon icon-plus" />
+                  <i class="i i-plus" />
                   <span>New Plan</span>
                 </button>
               </NavLink>

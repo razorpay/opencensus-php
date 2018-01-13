@@ -25,10 +25,7 @@ export default ({ fields, onAdd, nonEditableUptilIndex = -1 }) => {
           <li class="note" key={index}>
             <div class="key">
               {index > nonEditableUptilIndex && (
-                <i
-                  class="icon icon-close"
-                  onClick={() => fields.remove(index)}
-                />
+                <i class="i i-close" onClick={() => fields.remove(index)} />
               )}
 
               <Field

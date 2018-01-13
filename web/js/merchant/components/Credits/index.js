@@ -22,7 +22,7 @@ export default props => {
             target="_blank"
           >
             Documentation &nbsp;
-            <i class="icon icon-external-link" />
+            <i class="i i-external-link" />
           </a>
         </div>
       </HeaderAction>

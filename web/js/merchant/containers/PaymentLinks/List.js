@@ -103,7 +103,7 @@ export default class PaymentLinksContainer extends ListContainer {
                 class="btn btn-primary"
                 onClick={() => this.showPaymentLinkModal()}
               >
-                <i class="icon icon-plus" />
+                <i class="i i-plus" />
                 <span>Create Payment Link</span>
               </button>
             </div>

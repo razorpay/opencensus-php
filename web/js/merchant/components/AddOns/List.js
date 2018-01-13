@@ -26,7 +26,7 @@ const AddOnsListItem = props => {
           class="btn btn-xs btn-transparent"
           onClick={() => props.onDelete()}
         >
-          <i class="icon icon-close text-danger" />
+          <i class="i i-close text-danger" />
         </button>
       </td>
     </EntityItemRow>

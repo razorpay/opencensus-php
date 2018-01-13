@@ -105,7 +105,7 @@ export default class BatchList extends Component {
             {docUrl && (
               <a class="btn btn-link" href={docUrl} target="_blank">
                 Documentation &nbsp;
-                <i class="icon icon-external-link" />
+                <i class="i i-external-link" />
               </a>
             )}
 

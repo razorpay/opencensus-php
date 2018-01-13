@@ -71,7 +71,7 @@ class Notification extends Component {
         ) : (
           message
         )}
-        {showClose && <i class="icon icon-close" onClick={this.close} />}
+        {showClose && <i class="i i-close" onClick={this.close} />}
       </div>
     );
   }

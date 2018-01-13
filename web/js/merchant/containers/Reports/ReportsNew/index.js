@@ -374,7 +374,7 @@ export default class ReportsContainer extends Component {
                   onChange={this.onAccountChange}
                 />
                 <small class="help-block">
-                  <i class="icon icon-info-circle" />
+                  <i class="i i-info-circle" />
                   <span>
                     You can also select a linked account from the list
                   </span>

@@ -48,7 +48,7 @@ export default props => {
                 class="close close-secondary"
                 onClick={props.onClose}
               >
-                <i class="icon icon-close" />
+                <i class="i i-close" />
               </button>
             )}
             Payment Id: <b>{payment.id}</b>

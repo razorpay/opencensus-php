@@ -84,7 +84,7 @@ export default class CustomersListContainer extends ListContainer {
                 class="pull-right btn btn-primary"
                 onClick={() => this.showCustomerModal()}
               >
-                <i class="icon icon-plus" />
+                <i class="i i-plus" />
                 <span>New Customer</span>
               </button>
             </div>

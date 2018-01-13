@@ -71,7 +71,7 @@ export default class BatchUpload extends Component {
             <small class="pull-right">
               <a href={this.props.docUrl} target="_blank">
                 DOCUMENTATION &nbsp;
-                <i class="icon icon-new-tab-link" />
+                <i class="i i-new-tab-link" />
               </a>
             </small>
           </div>

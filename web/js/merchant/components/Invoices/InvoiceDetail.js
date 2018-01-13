@@ -69,7 +69,7 @@ export default props => {
       ) : (
         <div class="panel panel-default SliderPanel">
           <div class="panel-heading">
-            <i class="icon icon-link text-primary icon--formal" />{' '}
+            <i class="i i-link text-primary icon--formal" />{' '}
             <strong>{invoice.id}</strong>
             <ShowWhen notMyRole="support finance">
               <div class="btn-toolbar pull-right">

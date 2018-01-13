@@ -785,7 +785,7 @@ export default class InvoicesNewContainer extends Component {
                                 });
                               })}
                             >
-                              <i class="icon icon-done" />
+                              <i class="i i-done" />
                               <span>Finalize and Issue</span>
                             </AsyncButton>
                           )}
@@ -797,7 +797,7 @@ export default class InvoicesNewContainer extends Component {
                               disabled={this.state.isSaving}
                               onClick={handleSubmit(this.resendInvoice)}
                             >
-                              <i class="icon icon-send" />
+                              <i class="i i-send" />
                               <span>Resend Invoice</span>
                             </AsyncButton>
                           )}
@@ -816,7 +816,7 @@ export default class InvoicesNewContainer extends Component {
                                 });
                               })}
                             >
-                              <i class="icon icon-save" />
+                              <i class="i i-save" />
                               <span>Save Invoice</span>
                             </AsyncButton>
                           )}
@@ -827,7 +827,7 @@ export default class InvoicesNewContainer extends Component {
                               onClick={this.deleteInvoice}
                               disabled={this.state.isSaving}
                             >
-                              <i class="icon icon-close" />
+                              <i class="i i-close" />
                               <span>Delete Invoice</span>
                             </button>
                           )}
@@ -838,7 +838,7 @@ export default class InvoicesNewContainer extends Component {
                               onClick={this.cancelInvoice}
                               disabled={this.state.isSaving}
                             >
-                              <i class="icon icon-close" />
+                              <i class="i i-close" />
                               <span>Cancel Invoice</span>
                             </button>
                           )}

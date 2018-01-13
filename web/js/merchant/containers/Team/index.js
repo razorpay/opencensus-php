@@ -44,7 +44,7 @@ export default class TeamContainer extends Component {
               target="_blank"
             >
               Documentation &nbsp;
-              <i class="icon icon-external-link" />
+              <i class="i i-external-link" />
             </a>
           </div>
         </HeaderAction>

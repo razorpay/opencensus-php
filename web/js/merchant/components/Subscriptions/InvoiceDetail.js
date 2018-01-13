@@ -33,7 +33,7 @@ export default class InvoiceDetail extends Component {
           {invoiceStatus === 'next_due' && (
             <div class="edit-layer">
               <span
-                class="icon icon-close text-danger"
+                class="i i-close text-danger"
                 onClick={() => this.props.onAddOnDelete(addon.id)}
               />
             </div>
@@ -110,8 +110,8 @@ export default class InvoiceDetail extends Component {
                 class="close close-secondary"
                 onClick={this.props.onClose}
               >
-                <i class="icon icon-arrow-back" />
-                <i class="icon icon-close" />
+                <i class="i i-arrow-back" />
+                <i class="i i-close" />
               </button>
             )}
           </div>
@@ -131,11 +131,11 @@ export default class InvoiceDetail extends Component {
                 class="close close-secondary"
                 onClick={this.props.onClose}
               >
-                <i class="icon icon-arrow-back" />
-                <i class="icon icon-close" />
+                <i class="i i-arrow-back" />
+                <i class="i i-close" />
               </button>
             )}
-            <i class="icon icon-link text-primary icon--formal" />{' '}
+            <i class="i i-link text-primary icon--formal" />{' '}
             <span class="txn-details-title">
               <div class="txn-details-title--primary">
                 <Time value={invoice.billing_start} format="MMM DD, YYYY" />
@@ -162,7 +162,7 @@ export default class InvoiceDetail extends Component {
                             target="_blank"
                           >
                             {invoice.id}
-                            <i class="icon icon-external-link" />
+                            <i class="i i-external-link" />
                           </NavLink>
                         )
                   }

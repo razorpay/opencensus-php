@@ -33,7 +33,7 @@ export default ({ entity, data, loading }) => {
               class="pull-right"
               to={`/${entity}s`}
             >
-              <i class="icon icon-arrow-forward" />
+              <i class="i i-arrow-forward" />
             </Link>
 
             <h4>Recent {titleCase(entity)}s</h4>

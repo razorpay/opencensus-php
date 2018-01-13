@@ -365,7 +365,7 @@ export class ReportsContainer extends Component {
                   this.props.entity
                 ) > -1 ? (
                   <div class="custom-select" style={{ position: 'relative' }}>
-                    <i class="icon icon-search custom-icon" />
+                    <i class="i i-search custom-icon" />
                     <div
                       class="typeAheadSkin"
                       ref={typeAheadSkin => {
@@ -442,7 +442,7 @@ export class ReportsContainer extends Component {
                   this.linkedAccountOptions.indexOf(this.props.entity) !==
                     -1 && (
                     <small class="help-block">
-                      <i class="icon icon-info-circle" />
+                      <i class="i i-info-circle" />
                       <span>
                         You can also select a linked account from the list
                       </span>

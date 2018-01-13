@@ -32,7 +32,7 @@ export default () => {
           validate={[required()]}
         />
         <small class="help-block">
-          <i class="icon icon-info-outline" style={{ marginRight: '4px' }} />
+          <i class="i i-info-outline" style={{ marginRight: '4px' }} />
           <span>
             Approximate monthly revenue you expect to receive via virtual
             accounts on Razorpay Smart Collect

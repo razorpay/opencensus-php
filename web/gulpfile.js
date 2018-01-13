@@ -40,18 +40,26 @@ function compileCss(o) {
 }
 
 function iconFont(cb) {
-  iconFontGenerator.generate(
-    {
-      cssTemplate: 'templates/icons.hbs',
-      classPrefix: 'i',
-      silent: false,
-      types: ['woff', 'woff2'],
-      json: false,
-      paths: glob('icons/*.svg'),
-      outputDir: '../public/dist/css',
-    },
-    cb
-  );
+  Promise.all(
+    glob('icons/*').map(
+      folderName =>
+        new Promise((resolve, reject) =>
+          iconFontGenerator.generate(
+            {
+              cssTemplate: 'templates/icons.hbs',
+              classPrefix: 'i',
+              silent: false,
+              types: ['woff', 'woff2'],
+              json: false,
+              paths: glob(`${folderName}/*.svg`),
+              outputDir: '../public/dist/css',
+              fontName: `${path.basename(folderName)}-icons`,
+            },
+            resolve
+          )
+        )
+    )
+  ).then(cb);
 }
 
 gulp.task('watch', () => {

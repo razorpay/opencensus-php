@@ -110,15 +110,15 @@ export default class AccountsListContainer extends ListContainer {
               target="_blank"
             >
               Route APIs Documentation &nbsp;
-              <i class="icon icon-external-link" />
+              <i class="i i-external-link" />
             </a>
 
             <button class="btn btn-default" onClick={this.exportAccountsCSV}>
-              <i class="icon icon-download" />
+              <i class="i i-download" />
               <span>Export All (CSV)</span>
             </button>
             <button class="btn btn-primary" onClick={this.showAddAccountModal}>
-              <i class="icon icon-plus" />
+              <i class="i i-plus" />
               <span>Add Account</span>
             </button>
           </div>

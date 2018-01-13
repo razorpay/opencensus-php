@@ -9,7 +9,7 @@ const QuickAdd = ({ select, label, appendSearchTerm, onClick }) => {
         select.close && select.close();
       }}
     >
-      <i class="icon icon-plus" />
+      <i class="i i-plus" />
       <span>
         {label}
         {appendSearchTerm && select.searchTerm && ` ${select.searchTerm}...`}

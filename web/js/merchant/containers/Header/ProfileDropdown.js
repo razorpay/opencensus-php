@@ -51,7 +51,7 @@ export default class ProfileDropdown extends Component {
                     {this.props.logo_url ? (
                       <img class="img-responsive" src={this.props.logo_url} />
                     ) : (
-                      <i class="icon icon-business" />
+                      <i class="i i-business" />
                     )}
                   </div>
                 </div>
@@ -75,7 +75,7 @@ export default class ProfileDropdown extends Component {
             <div class="media">
               <div class="media-left">
                 <div class="media-object">
-                  <i class="icon icon-account" />
+                  <i class="i i-account" />
                 </div>
               </div>
               <div class="media-body">
@@ -95,7 +95,7 @@ export default class ProfileDropdown extends Component {
             >
               <div class="media-left">
                 <div class="media-object">
-                  <i class="icon icon-tour" />
+                  <i class="i i-tour" />
                 </div>
               </div>
               <div class="media-body">Show Recent UI Changes</div>
@@ -104,7 +104,7 @@ export default class ProfileDropdown extends Component {
             <div class="media media-action" onClick={this.submitFeedback}>
               <div class="media-left">
                 <div class="media-object">
-                  <i class="icon icon-help" />
+                  <i class="i i-help" />
                 </div>
               </div>
               <div class="media-body">Give feedback or suggestions</div>

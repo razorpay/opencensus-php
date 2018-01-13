@@ -135,7 +135,7 @@ export default class BusinessDetailsForm extends Component {
                     validate={[required()]}
                   />
                   <small class="help-block">
-                    <i class="icon icon-info-circle" />
+                    <i class="i i-info-circle" />
                     <span>
                       This is the brand name that the customers are familiar
                       with.
@@ -158,7 +158,7 @@ export default class BusinessDetailsForm extends Component {
                     <i />
                   </label>
                   <small class="help-block">
-                    <i class="icon icon-info-circle" />
+                    <i class="i i-info-circle" />
                     <span>
                       Please note that applications for international
                       transactions take longer time to process.
@@ -203,7 +203,7 @@ export default class BusinessDetailsForm extends Component {
                     validate={[required()]}
                   />
                   <small class="help-block">
-                    <i class="icon icon-info-circle" />
+                    <i class="i i-info-circle" />
                     <span>
                       Please give a brief explanation of your business model and
                       future plans (Essential for startups)
@@ -293,7 +293,7 @@ export default class BusinessDetailsForm extends Component {
                       <i />
                     </label>
                     <small class="help-block">
-                      <i class="icon icon-info-circle" />
+                      <i class="i i-info-circle" />
                       <span>
                         Physical Verification might be performed at your
                         operational address.
@@ -417,7 +417,7 @@ export default class BusinessDetailsForm extends Component {
                     validate={validateCIN}
                   />
                   <small class="help-block">
-                    <i class="icon icon-info-circle" />
+                    <i class="i i-info-circle" />
                     <span>Mandatory for Companies</span>
                   </small>
                 </div>
@@ -438,7 +438,7 @@ export default class BusinessDetailsForm extends Component {
                 />
                 {accountId ? null : (
                   <small class="help-block">
-                    <i class="icon icon-info-circle" />
+                    <i class="i i-info-circle" />
                     <span>Mandatory for Companies</span>
                   </small>
                 )}
@@ -458,7 +458,7 @@ export default class BusinessDetailsForm extends Component {
                     placeholder="Name on PAN (provided above)"
                   />
                   <small class="help-block">
-                    <i class="icon icon-info-circle" />
+                    <i class="i i-info-circle" />
                     <span>Mandatory for Companies</span>
                   </small>
                 </div>

@@ -54,7 +54,7 @@ export default class ContactDetailsForm extends Component {
                 validate={[required(), email('Invalid Email')]}
               />
               <small class="help-block">
-                <i class="icon icon-info-circle" />
+                <i class="i i-info-circle" />
                 <span>
                   All payment related reports will be sent to this email address
                 </span>

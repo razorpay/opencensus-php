@@ -41,7 +41,7 @@ class InlineField extends Component {
             }`}
           >
             {currentValue || placeholder}
-            {!this.props.disabled ? <i class="icon icon-edit" /> : ''}
+            {!this.props.disabled ? <i class="i i-edit" /> : ''}
           </span>
         </span>
       </div>

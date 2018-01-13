@@ -5,7 +5,7 @@ export default props => {
 
   return (
     <div class="custom-date">
-      <i class="icon icon-date-range custom-icon" />
+      <i class="i i-date-range custom-icon" />
       <Datetime
         defaultValue={input.value}
         value={input.value}

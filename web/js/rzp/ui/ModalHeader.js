@@ -4,7 +4,7 @@ const ModalHeader = props => (
   <div class="modal-header">
     {props.onCloseClick && (
       <button type="button" class="close" onClick={props.onCloseClick}>
-        <i class="icon icon-close" />
+        <i class="i i-close" />
       </button>
     )}
 

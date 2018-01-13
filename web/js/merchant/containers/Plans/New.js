@@ -112,7 +112,7 @@ export default class AddPlan extends Component {
       <div class="content-wrapper content-sm txn-details">
         <div class="panel panel-default SliderPanel">
           <div class="panel-heading">
-            <i class="icon icon-plan text-main icon--formal" />{' '}
+            <i class="i i-plan text-main icon--formal" />{' '}
             <strong>{plan && plan.id ? 'Edit Plan' : 'New Plan'}</strong>
           </div>
           <div class="SliderPanel__Body">
@@ -141,7 +141,7 @@ export default class AddPlan extends Component {
                       placeholder="Optional"
                     />
                     <span class="help-block label--secondary">
-                      <i class="icon icon-info-outline" />
+                      <i class="i i-info-outline" />
                       The <b>Plan Name</b> and <b>Plan Description</b> will
                       appear on the invoice as entered above
                     </span>
@@ -182,7 +182,7 @@ export default class AddPlan extends Component {
                     </Field>
 
                     <span class="help-block label--secondary">
-                      <i class="icon icon-info-outline" />You can set{' '}
+                      <i class="i i-info-outline" />You can set{' '}
                       <b>billing cycle</b> (start date and end date) and{' '}
                       <b>trial period</b> later while, creating a subscription.
                     </span>
@@ -204,7 +204,7 @@ export default class AddPlan extends Component {
                       placeholder="000.00"
                     />
                     <span class="help-block label--secondary">
-                      <i class="icon icon-info-outline" />
+                      <i class="i i-info-outline" />
                       <b>Billing amount</b> and <b>billing frequency</b> can not
                       be changed later.
                     </span>

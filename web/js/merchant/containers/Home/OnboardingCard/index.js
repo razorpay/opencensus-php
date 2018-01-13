@@ -16,7 +16,7 @@ const NewProducts = ({ close }) => {
   return (
     <div className="media-body">
       <button class="close" onClick={close}>
-        <i class="icon icon-close" />
+        <i class="i i-close" />
       </button>
 
       <div className="media-heading">Explore Our Product Stack</div>
@@ -112,7 +112,7 @@ export default class OnboardingCard extends Component {
 
             <button class="btn btn-lg btn-primary" onClick={this.gotoNextStep}>
               <span>Got it! So, what's next?</span>
-              <i class="icon icon-chevron-right" />
+              <i class="i i-chevron-right" />
             </button>
           </div>
         );
@@ -121,7 +121,7 @@ export default class OnboardingCard extends Component {
           <div class="media-body">
             {user.isActivated ? (
               <button class="close" onClick={this.closeOnboarding}>
-                <i class="icon icon-close" />
+                <i class="i i-close" />
               </button>
             ) : null}
             <div class="media-heading">Your Next Steps...</div>
