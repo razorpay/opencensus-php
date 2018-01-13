@@ -3,8 +3,6 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { fetchKeys } from 'merchant/modules/keys';
 import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
-// import GenerateKeySVG from 'styles/assets/integrate-generatekey.svg';
-// import IntegrateSVG from 'styles/assets/integrate.svg';
 
 @connect(null, { fetchKeys })
 export default class KeyGenerationStep extends Component {
@@ -37,7 +35,7 @@ export default class KeyGenerationStep extends Component {
     let isLoading = this.state.isLoading;
 
     let header = `Integrate Razorpay in ${modeFormatted} Mode`;
-    let svgSrc = GenerateKeySVG;
+    let svgSrc = 'genkeys';
     let headerDesc = (
       <div>
         <Link to="/keys">Generate Keys</Link> and{' '}
@@ -74,7 +72,7 @@ export default class KeyGenerationStep extends Component {
     }
 
     if (this.state.keysGenerated) {
-      svgSrc = IntegrateSVG;
+      svgSrc = 'integrate';
       headerDesc = (
         <div>
           Key Generated. Show{' '}
@@ -94,7 +92,7 @@ export default class KeyGenerationStep extends Component {
       <Link class="Onboarding__Step" to="/keys">
         <div class="media">
           <div class="media-left">
-            <img class="media-object" src={svgSrc} />
+            <div class={`media-object ${svgSrc}`} />
           </div>
           {isLoading ? (
             <div class="media-body">

@@ -5,7 +5,6 @@ import LocalStorageService from 'rzp/utils/localStorage';
 import ActivationStep from './ActivationStep';
 import KeyGenerationStep from './KeyGenerationStep';
 import PaymentsReceivedStep from './PaymentsReceivedStep';
-// import OnboardingIllustrationPNG from 'styles/assets/onboarding-illustration.svg';
 
 import newProducts from 'merchant/containers/Banners/newProducts';
 import MediaCard from 'merchant/containers/Home/OnboardingCard/MediaCard';
@@ -167,7 +166,7 @@ export default class OnboardingCard extends Component {
             class={`media onboarding-card ${isFirstStep ? 'first-step' : ''}`}
           >
             <div class="media-left">
-              <img class="media-object" src={OnboardingIllustrationPNG} />
+              <div class="media-object onboarding" />
             </div>
             {FirstStep}
           </div>

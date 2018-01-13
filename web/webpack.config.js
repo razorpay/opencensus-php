@@ -17,7 +17,7 @@ module.exports = {
   ),
 
   entry: {
-    // admin: './admin.js',
+    admin: './admin.js',
     merchant: './js/merchant/index.js',
   },
 

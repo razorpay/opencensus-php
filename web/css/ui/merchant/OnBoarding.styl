@@ -175,26 +175,32 @@
 
   transition: 1.2s all ease;
   opacity: 0;
+  height: 100%;
+  background: no-repeat center;
+  background-position: contain;
 
-  &.fadein {
+  &.in {
     opacity: 1;
   }
 
 
 // Based on formType
   &.marketplace {
+    background-image: url('assets/landing/route.svg');
     width: 74%;
     left: 21px;
     top: -20px;
   }
 
   &.subscriptions {
+    background-image: url('assets/landing/sub.svg');
     width: 74%;
     left: 54px;
     top: 17px;
   }
 
   &.virtual_accounts {
+    background-image: url('assets/landing/sc.svg');
     width: 50%;
     left: 129px;
     top: -14px;

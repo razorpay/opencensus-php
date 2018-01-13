@@ -54,16 +54,10 @@ export default class OnBoarding extends Component {
   }
 
   componentDidMount() {
-    const img = document.querySelector('.feature-image');
-
-    if (img.complete) {
-      img.classList.remove('fadein');
-      setTimeout(() => img.classList.add('fadein'));
-    } else {
-      img.addEventListener('load', () => {
-        img.classList.add('fadein');
-      });
-    }
+    setTimeout(
+      _ => document.querySelector('.feature-image').classList.add('in'),
+      200
+    );
   }
 
   // For file uploader
@@ -109,23 +103,6 @@ export default class OnBoarding extends Component {
     return prom;
   };
 
-  // For optimization: to download only the required image
-  requireImage(formType, currentForm) {
-    switch (formType) {
-      case 'marketplace':
-        // currentForm.formImage = require('styles/assets/landing/route.svg');
-        break;
-
-      case 'virtual_accounts':
-        // currentForm.formImage = require('styles/assets/landing/smartcollect.svg');
-        break;
-
-      case 'subscriptions':
-        // currentForm.formImage = require('styles/assets/landing/subscriptions.svg');
-        break;
-    }
-  }
-
   switchToTestMode = () => {
     LocalStorageService.setItem('rzp_mode', 'test');
     window.location.reload();
@@ -144,7 +121,6 @@ export default class OnBoarding extends Component {
 
     const currentForm = FORM_TYPE[formType];
     const WizardForm = currentForm.formComponent;
-    this.requireImage(formType, currentForm);
 
     return (
       <div class="onboarding-page-container">
@@ -195,10 +171,7 @@ export default class OnBoarding extends Component {
                 !isTestMode && !this.state.submitted ? 'halfForm' : ''
               }`}
             >
-              <img
-                class={`feature-image ${formType}`}
-                src={currentForm.formImage}
-              />
+              <div class={`feature-image ${formType}`} />
             </div>
           </main>
 

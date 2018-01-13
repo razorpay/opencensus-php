@@ -2,8 +2,6 @@ import React, { Component } from 'react';
 import { withRouter, Link } from 'react-router-dom';
 import MainNavLink from 'merchant/components/MainNavLink';
 import ShowWhen from 'merchant/components/ShowWhen';
-// import RZPLogoFullPNG from 'styles/assets/logo_full.png';
-// import RZPLogoPNG from 'styles/assets/logo.png';
 
 const TRANSACTIONS_ROUTES_REGEX = /^\/(payments|refunds|orders|batch-refunds)/;
 const ACCOUNTS_ROUTES_REGEX = /^\/(profile|activation|credits|addfunds|referrals)/;
@@ -12,6 +10,9 @@ const INVOICES_ROUTES_REGEX = /^\/(invoices|items)/;
 const MARKETPLACE_ROUTES_REGEX = /^\/route\/(payments|transfers|reversals|accounts)/;
 const PAYMENTLINKS_ROUTES_REGEX = /^\/paymentlinks(\/batchuploads.*)?/;
 const SUBSCRIPTIONS_ROUTES_REGEX = /^\/(subscriptions|plans|addons)/;
+
+const RZPLogoFullPNG = 'https://cdn.razorpay.com/logo_invert.svg';
+const RZPLogoPNG = '/img/logo.png';
 
 @withRouter
 export default class Sidebar extends Component {
@@ -62,109 +63,107 @@ export default class Sidebar extends Component {
       <div class="sidebar">
         <section class="brand-logo">
           <Link to="/dashboard">
-            <img src={logoURL || window.RZPLogoFullPNG} class="hidden-xs" />
-            <img src={logoURL || window.RZPLogoPNG} class="visible-xs-block" />
+            <img src={logoURL || RZPLogoFullPNG} class="hidden-xs" />
+            <img src={logoURL || RZPLogoPNG} class="visible-xs-block" />
           </Link>
         </section>
         <nav>
-          {
-            do {
-              if (!isMerchant) {
-                null;
-              } else {
-                <div class="nav">
-                  <MainNavLink
-                    label="Home"
-                    icon="i i-chart text-info"
-                    to="/dashboard"
-                    exact
-                    notMyRole="sellerapp support"
-                  />
-                  <MainNavLink
-                    label="Transactions"
-                    id="transactions-nav"
-                    icon="i i-repeat text-primary"
-                    to={routes.transactions}
-                    notMyRole="sellerapp"
-                  />
-                  <MainNavLink
-                    label="Settlements"
-                    icon="i i-done-all text-success"
-                    to="/settlements"
-                    notMyRole="sellerapp support"
-                  />
+          {do {
+            if (!isMerchant) {
+              null;
+            } else {
+              <div class="nav">
+                <MainNavLink
+                  label="Home"
+                  icon="i i-chart text-info"
+                  to="/dashboard"
+                  exact
+                  notMyRole="sellerapp support"
+                />
+                <MainNavLink
+                  label="Transactions"
+                  id="transactions-nav"
+                  icon="i i-repeat text-primary"
+                  to={routes.transactions}
+                  notMyRole="sellerapp"
+                />
+                <MainNavLink
+                  label="Settlements"
+                  icon="i i-done-all text-success"
+                  to="/settlements"
+                  notMyRole="sellerapp support"
+                />
 
-                  <div class="divider" />
+                <div class="divider" />
 
-                  <MainNavLink
-                    label="Invoices"
-                    icon="i i-notes text-warning"
-                    to={routes.invoices}
-                    featureEnabled="Invoice"
-                    apiFeatureEnabled="subscriptions"
-                    notMyRole="sellerapp"
-                  />
-                  <MainNavLink
-                    label="Payment Links"
-                    icon="i i-link text-primary"
-                    to={routes.paymentlinks}
-                  />
-                  <MainNavLink
-                    label="Route"
-                    icon="i i-store text-success"
-                    to={routes.marketplace}
-                    notMyRole="sellerapp support"
-                    isNew={true}
-                  />
-                  <MainNavLink
-                    label="Subscriptions"
-                    icon="i i-refresh text-info"
-                    notMyRole="sellerapp support"
-                    to={routes.subscriptions}
-                    isNew={true}
-                  />
-                  <MainNavLink
-                    label="Smart Collect"
-                    icon="i i-account-balance text-danger"
-                    to="/virtualaccounts"
-                    notMyRole="sellerapp support"
-                    isNew={true}
-                  />
+                <MainNavLink
+                  label="Invoices"
+                  icon="i i-notes text-warning"
+                  to={routes.invoices}
+                  featureEnabled="Invoice"
+                  apiFeatureEnabled="subscriptions"
+                  notMyRole="sellerapp"
+                />
+                <MainNavLink
+                  label="Payment Links"
+                  icon="i i-link text-primary"
+                  to={routes.paymentlinks}
+                />
+                <MainNavLink
+                  label="Route"
+                  icon="i i-store text-success"
+                  to={routes.marketplace}
+                  notMyRole="sellerapp support"
+                  isNew={true}
+                />
+                <MainNavLink
+                  label="Subscriptions"
+                  icon="i i-refresh text-info"
+                  notMyRole="sellerapp support"
+                  to={routes.subscriptions}
+                  isNew={true}
+                />
+                <MainNavLink
+                  label="Smart Collect"
+                  icon="i i-account-balance text-danger"
+                  to="/virtualaccounts"
+                  notMyRole="sellerapp support"
+                  isNew={true}
+                />
 
-                  <MainNavLink
-                    label="Customers"
-                    icon="i i-people text-warning"
-                    to="/customers"
-                    featureEnabled="Invoice"
-                    apiFeatureEnabled={['subscriptions', 'virtual_accounts']}
-                    notMyRole="sellerapp"
-                  />
+                <MainNavLink
+                  label="Customers"
+                  icon="i i-people text-warning"
+                  to="/customers"
+                  featureEnabled="Invoice"
+                  apiFeatureEnabled={['subscriptions', 'virtual_accounts']}
+                  notMyRole="sellerapp"
+                />
 
-                  <div class="divider" />
+                <div class="divider" />
 
-                  <MainNavLink
-                    label="Reports"
-                    icon="i i-books text-danger"
-                    to="/reports"
-                    notMyRole="sellerapp support"
-                  />
-                  <MainNavLink
-                    label="My Account"
-                    id="myaccount-nav"
-                    icon="i i-account text-primary"
-                    to={routes.account}
-                  />
-                  <MainNavLink
-                    label="Settings"
-                    id="settings-nav"
-                    icon="i i-settings text-warning"
-                    to={routes.settings}
-                    myRole="owner manager admin"
-                  />
-                </div>;
-              }
+                <MainNavLink
+                  label="Reports"
+                  icon="i i-books text-danger"
+                  to="/reports"
+                  notMyRole="sellerapp support"
+                />
+                <MainNavLink
+                  label="My Account"
+                  id="myaccount-nav"
+                  icon="i i-account text-primary"
+                  to={routes.account}
+                />
+                <MainNavLink
+                  label="Settings"
+                  id="settings-nav"
+                  icon="i i-settings text-warning"
+                  to={routes.settings}
+                  myRole="owner manager admin"
+                />
+              </div>;
             }
-          }
+          }}
         </nav>
       </div>
     );

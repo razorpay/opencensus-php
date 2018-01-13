@@ -27,7 +27,6 @@
     "multi-glob": "^1.0.1",
     "prettier": "^1.2.2",
     "react-addons-shallow-compare": "^15.4.2",
-    "react-datetime": "2.8.10",
     "react-modal": "^2.2.2",
     "react-redux": "^5.0.2",
     "react-simple-dropdown": "^3.0.0",

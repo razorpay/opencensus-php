@@ -1,12 +1,11 @@
 import { Link } from 'react-router-dom';
-// import FirstPaymentSVG from 'styles/assets/first-payment.svg';
 
 export default ({ user }) => {
   return (
     <Link class="Onboarding__Step" to="/payments">
       <div class="media">
         <div class="media-left">
-          <img class="media-object" src={FirstPaymentSVG} />
+          <div class="media-object first-pay" />
         </div>
         <div class="media-body">
           <div class="media-heading">You received first payment!</div>

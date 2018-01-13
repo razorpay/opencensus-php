@@ -31,6 +31,7 @@
     "react-async-button": "^0.2.0",
     "react-chartjs-2": "^2.7.0",
     "react-dates": "^16.0.2",
+    "react-datetime": "^2.11.1",
     "react-day-picker": "^7.0.7",
     "react-dom": "^16.2.0",
     "react-power-select": "^1.0.0-beta.10",
