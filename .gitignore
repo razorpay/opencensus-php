@@ -23,16 +23,12 @@ environment/.env.testing_docker
 !environment/.env.alpha
 !environment/*.j2
 
-storage/
-generated/
+/storage
 notes.txt
 public/docs
-tmp*.blade.php
 tmp/
-public/js/themes/*.js
-!public/js/themes/init.js
-public/react/dist/
-public/dist/
+/public/dist
+/public/js/generated
 
 # php & node modules
 /node_modules

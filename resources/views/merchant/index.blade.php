@@ -3,7 +3,7 @@
 @if ($isConfirmed and $isPreSignupComplete)
 
 @else
-  <link rel='stylesheet' href="{{$cdnDashboardUrl}}/css/generated{{asset('style.css')}}" type='text/css' />
+  <link rel='stylesheet' href="{{$cdnDashboardUrl}}/css/generated/signup.css" type='text/css' />
 @endif
 
 @include('partials/common')
@@ -30,10 +30,7 @@
     </script>
   @endif
 @else
-  <!-- jQuery & angular -->
-  <script src='{{$cdnDashboardUrl}}{{asset('js/generated/pre.js')}}'></script>
-  <!-- Merchant Js-->
-  <script src='{{$cdnDashboardUrl}}{{asset('js/generated/merchant.js')}}'></script>
+  <script src='{{$cdnDashboardUrl}}/js/generated/signup.js'></script>
   <script async="true" src="https://static.helpninja.com/helpninja.js" id="oc_script" convid="-Kvx6dgy972KCFPlQR0s"></script>
 @endif
 
