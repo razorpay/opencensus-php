@@ -72,23 +72,28 @@ class BulkRecon extends Base\Core
                              ->pluck(FundTransferAttempt\Entity::ID)
                              ->toArray();
 
-        $summary = $this->repo->transactionOnLiveAndTest(function() use ($ftaIds, $relations)
+        $chunks = array_chunk($ftaIds, 1000);
+
+        $this->repo->transactionOnLiveAndTest(function() use ($ftaIds, $relations, $chunks)
         {
             try
             {
-                foreach ($ftaIds as $id)
+                foreach ($chunks as $ftaIds)
                 {
-                    $fta = $this->repo->fund_transfer_attempt->findWithRelations($id, $relations);
+                    $ftas = $this->repo->fund_transfer_attempt->findManyWithRelations($ftaIds, $relations);
 
-                    $entityProcessor = '\\RZP\\Models\FundTransfer\\' . ucfirst($this->channel) . '\\Reconciliation\\EntityProcessor';
+                    foreach ($ftas as $fta)
+                    {
+                        $entityProcessor = '\\RZP\\Models\FundTransfer\\' . ucfirst($this->channel) . '\\Reconciliation\\EntityProcessor';
 
-                    $reconDetails = (new $entityProcessor($fta))->process();
+                        $reconDetails = (new $entityProcessor($fta))->process();
 
-                    $this->allReconciledRows[] = $reconDetails;
+                        $this->allReconciledRows[] = $reconDetails;
 
-                    $entity = $reconDetails['entity'];
+                        $entity = $reconDetails['entity'];
 
-                    $this->updateBatchFundTransferStats($entity);
+                        $this->updateBatchFundTransferStats($entity);
+                    }
                 }
 
                 // Update batch stats post reconciliations
@@ -106,11 +111,9 @@ class BulkRecon extends Base\Core
 
                 throw $e;
             }
-
-            $summary = $this->getSummary();
-
-            return $summary;
         });
+
+        $summary = $this->getSummary();
 
         (new SlackNotification)->success('setl_reconciliation', $summary);
 
@@ -310,7 +313,7 @@ class BulkRecon extends Base\Core
             return;
         }
 
-        $msg = 'UTR File reconciled.' . PHP_EOL;
+        $msg = 'Bulk Reconcilaition done.' . PHP_EOL;
 
         $failureCount = $response['failures_count'];
 
