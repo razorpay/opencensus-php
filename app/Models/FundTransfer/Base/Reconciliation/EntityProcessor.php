@@ -88,8 +88,9 @@ abstract class EntityProcessor extends Base\Core
 
     final protected function updateAttemptEntity()
     {
+        s('updateAttemptEntity');
         $status = $this->getAttemptStatus();
-
+        s($status);
         $failureReason = ($status === Attempt\Status::FAILED) ? 'Reconciliation' : null;
 
         // Verify status
@@ -158,7 +159,7 @@ abstract class EntityProcessor extends Base\Core
     final protected function getSourceStatusFromReconEntityStatus(): string
     {
         $sourceEntityName = $this->source->getEntity();
-
+        s($sourceEntityName);
         switch ($sourceEntityName)
         {
             case Entity::SETTLEMENT:
@@ -174,19 +175,22 @@ abstract class EntityProcessor extends Base\Core
     final protected function getStatusForEntity(string $sourceEntityName): string
     {
         $entityStatusClass = $this->getEntityStatusNamespace($sourceEntityName);
-
+        s($entityStatusClass);
         $attemptStatus = $this->fta->getStatus();
-
+        s($attemptStatus);
         switch ($attemptStatus)
         {
             case Attempt\Status::CREATED:
             case Attempt\Status::INITIATED:
+                s('11');
                 return $this->source->getStatus();
 
             case Attempt\Status::FAILED:
+                s('22');
                 return $entityStatusClass::FAILED;
 
             case Attempt\Status::PROCESSED:
+                s('33');
                 return $entityStatusClass::PROCESSED;
 
             default:

@@ -46,14 +46,14 @@ class BulkRecon extends Base\Core
         $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->channel);
 
         $data = $this->mutex->acquireAndRelease(
-            $mutexResource,
-            function ()
-            {
-                return $this->processEntities();
-            },
-            self::MUTEX_LOCK_TIMEOUT,
+                    $mutexResource,
+                    function ()
+                    {
+                        return $this->processEntities();
+                    },
+                    self::MUTEX_LOCK_TIMEOUT,
 
-            ErrorCode::BAD_REQUEST_SETTLEMENT_RECONCILIATION_IN_PROGRESS);
+                    ErrorCode::BAD_REQUEST_SETTLEMENT_RECONCILIATION_IN_PROGRESS);
 
         $this->sendReconciliationSummaryMail($data);
 

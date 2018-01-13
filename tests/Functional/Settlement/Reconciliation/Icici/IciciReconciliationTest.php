@@ -81,14 +81,15 @@ class IciciReconciliationTest extends TestCase
         $this->makeRequestAndGetContent($request);
 
         $settlementAttempt = $this->getLastEntity('fund_transfer_attempt', true);
-        s($settlementAttempt);
-        $this->assertTestResponse($settlementAttempt, 'matchSettlementAttemptForReconEntitySuccess');
 
         $setl = $this->getLastEntity('settlement', true);
         s($setl);
         $this->assertTestResponse($setl, 'fetchAndMatchSettlementsForReconSuccess');
 
         $this->assertNotNull(Settlement\Entity::UTR);
+
+        s($settlementAttempt);
+        $this->assertTestResponse($settlementAttempt, 'matchSettlementAttemptForReconEntitySuccess');
 
         $merchant = $this->getEntityById('merchant','10000000000000', true);
         $this->assertEquals(false, $merchant['hold_funds']);
