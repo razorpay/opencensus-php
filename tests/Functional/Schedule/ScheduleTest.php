@@ -455,6 +455,7 @@ class ScheduleTest extends TestCase
 
         $this->assertEquals($credits['value'], -1000);
 
+        Carbon::setTestNow();
     }
 
 
