@@ -40,7 +40,7 @@ class Reconciliation extends Base
 
     protected function getSubject()
     {
-        return 'Re: '. ucfirst($this->channel) . 'Settlement files for ' . $this->data['date'];
+        return 'Re: '. ucfirst($this->channel) . ' Settlement files for ' . $this->data['date'];
     }
 
     protected function getMailTag()
