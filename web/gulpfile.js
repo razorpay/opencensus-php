@@ -29,6 +29,7 @@ function compileCss(o) {
         include: [
           __dirname + '/../public/dist/css',
           __dirname + '/node_modules',
+          __dirname + '/node_modules/bootstrap-styl',
         ],
         'include css': true,
         compress: isProd,
@@ -55,6 +56,8 @@ function iconFont(cb) {
 
 gulp.task('watch', () => {
   createBaseDir();
+  execSync('rm -rf ../public/dist/css/assets');
+  execSync('ln -s ../../../web/css/assets ../public/dist/css/assets');
   iconFont(compileCss);
   gulp.watch('css/**/*.styl', compileCss);
   gulp.watch('icons/*.svg', _ => iconFont(compileCss));
@@ -63,5 +66,6 @@ gulp.task('watch', () => {
 gulp.task('default', () => {
   execSync('rm -rf ../public/dist');
   createBaseDir();
+  execSync('cp -r css/assets ../public/dist/css');
   iconFont(compileCss);
 });

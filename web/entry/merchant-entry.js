@@ -16,6 +16,9 @@ function appendLink(src) {
 }
 
 document.write('<script src="' + prefixCdn('vendor.js') + '"></script>');
-document.write('<script src="' + prefixCdn('admin.js') + '"></script>');
+document.write('<script src="' + prefixCdn('merchant.js') + '"></script>');
 
-appendLink(prefixCdn('css/admin.css'));
+appendLink(prefixCdn('css/merchant.css'));
+appendLink(
+  'https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css'
+);

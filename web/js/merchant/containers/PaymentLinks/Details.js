@@ -1,4 +1,5 @@
-import React, { PropTypes, Component } from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import * as InvoiceActions from 'merchant/modules/invoices/details';
 import * as ModalActions from 'rzp/modules/modals';

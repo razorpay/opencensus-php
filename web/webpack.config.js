@@ -17,11 +17,12 @@ module.exports = {
   ),
 
   entry: {
-    admin: './admin.js',
+    // admin: './admin.js',
+    merchant: './js/merchant/index.js',
   },
 
   output: {
-    path: __dirname + '/../public/dist/admin',
+    path: __dirname + '/../public/dist',
     filename: '[name].js',
   },
 

@@ -1,9 +1,7 @@
 @include('partials/header')
 
 @if ($isConfirmed and $isPreSignupComplete)
-  <% for (var css in htmlWebpackPlugin.files.css) { %>
-    <link href="{{$cdnDashboardUrl}}<%= htmlWebpackPlugin.files.css[css] %>" rel="stylesheet">
-  <% } %>
+
 @else
   <link rel='stylesheet' href="{{$cdnDashboardUrl}}/css/generated{{asset('style.css')}}" type='text/css' />
 @endif
@@ -16,9 +14,8 @@
     window.rzp_org = {!! $org !!};
     window.api_host = "{!! $api_host !!}"
   </script>
-  <% for (var chunk in htmlWebpackPlugin.files.chunks) { %>
-  <script src="{{$cdnDashboardUrl}}<%= htmlWebpackPlugin.files.chunks[chunk].entry %>"></script>
-  <% } %>
+
+  <script src="{{$cdnDashboardUrl}}/dist/merchant-entry.js"></script>
   <!-- smooch code -->
   @if(env('APP_ENV') === 'production')
     <script src='https://cdn.smooch.io/smooch.min.js'></script>

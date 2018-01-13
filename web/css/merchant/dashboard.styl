@@ -332,8 +332,7 @@
         background-color: #FAFBFF;
       }
 
-      img.media-object {
-
+      .media-object {
         width: 31px;
         height: 31px;
       }
@@ -727,7 +726,7 @@ div.feature-activation-banner {
     div.media-left {
       padding-right: 15px;
 
-      img.media-object {
+      .media-object {
         height: 100px;
         width: auto;
       }
@@ -752,4 +751,18 @@ div.feature-activation-banner {
 
 .rollkey .RadioButton {
   margin: 8px 0;
+}
+
+.media-object {
+  background: no-repeat center;
+  background-size: contain;
+  &.route {
+    background-image: url('assets/symbols/route.svg');
+  }
+  &.sub {
+    background-image: url('assets/symbols/sub.svg');
+  }
+  &.sc {
+    background-image: url('assets/symbols/sc.svg');
+  }
 }
