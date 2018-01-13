@@ -6,12 +6,13 @@ use Mail;
 use Closure;
 use Mockery;
 use Carbon\Carbon;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
 
 use RZP\Models\Settlement;
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
-use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\ResponseInterface;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\Merchant\Webhook\Inferno;
 use Http\Discovery\MessageFactoryDiscovery;
 use RZP\Mail\Merchant\Webhook as WebhookMail;
@@ -580,8 +581,6 @@ class WebhookTest extends TestCase
      */
     public function testTransferSettlementWebhook()
     {
-        $this->markTestSkipped();
-
         $this->ba->privateAuth();
 
         $this->fixtures->merchant->addFeatures(['marketplace']);
@@ -624,22 +623,22 @@ class WebhookTest extends TestCase
         // Generate settlement reconciliation file
         $setlReconciliationFile = $this->generateSetlReconciliationFile($setlFile, Settlement\Channel::KOTAK);
 
-        // After settlements are initiated, the settlementFile is deleted. Read it to a local variable.
-        $settlementReconFileData = file_get_contents($setlReconciliationFile);
-
         // Reconcile settlements
         $this->reconcileSettlements($setlReconciliationFile);
 
-        // Validate settlement entity
-        $setl = $this->getLastEntity('settlement', true);
+        // Process entities
+        $request = [
+            'url'       => '/fund_transfer_attempts/' . Channel::KOTAK,
+            'method'    => 'POST',
+            'content'   => [],
+        ];
 
-        $this->assertNotNull($setl[Settlement\Entity::UTR]);
+        $this->ba->appAuth();
 
-        // After settlements are reconciled, the settlementReconFile is deleted. Restore it.
-        file_put_contents($setlReconciliationFile, $settlementReconFileData);
+        $this->makeRequestAndGetContent($request);
 
-        // Reconciling the same settlement file should not trigger the webhook again.
-        $this->reconcileSettlements($setlReconciliationFile);
+        // Ensure the webhook is not fired the next time the same request is hit.
+        $this->makeRequestAndGetContent($request);
     }
 
     public function testWebhookOnSettlementFailure()
