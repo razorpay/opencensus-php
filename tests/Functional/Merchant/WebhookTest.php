@@ -618,7 +618,7 @@ class WebhookTest extends TestCase
         }, 2);
 
         // Generate settlements for above transactions
-        $setlFile = $this->initiateSettlementsAndAssertSuccess();
+        $setlFile = $this->initiateSettlementsAndAssertSuccess(Settlement\Channel::KOTAK);
 
         // Generate settlement reconciliation file
         $setlReconciliationFile = $this->generateSetlReconciliationFile($setlFile, Settlement\Channel::KOTAK);
@@ -653,13 +653,13 @@ class WebhookTest extends TestCase
         $txns = $this->matchTransactions($prEntities);
 
         // Generate settlements for above transactions
-        $setlFile = $this->initiateSettlementsAndAssertSuccess();
+        $setlFile = $this->initiateSettlementsAndAssertSuccess(Channel::KOTAK);
 
         // Generate settlement reconciliation file
         $generateFailedReconciliations = true;
         $setlReconciliationFile = $this->generateSetlReconciliationFile(
             $setlFile,
-            Settlement\Channel::KOTAK,
+            Channel::KOTAK,
             $generateFailedReconciliations);
 
         // Reconcile settlements
@@ -667,6 +667,17 @@ class WebhookTest extends TestCase
 
         // No webhook should be sent if the settlements have failed
         $this->mockInfernoFire(function () { }, 0);
+
+        // Process entities
+        $request = [
+            'url'       => '/fund_transfer_attempts/' . Channel::KOTAK,
+            'method'    => 'POST',
+            'content'   => [],
+        ];
+
+        $this->ba->appAuth();
+
+        $this->makeRequestAndGetContent($request);
     }
 
     protected function createPaymentEntities(int $count)

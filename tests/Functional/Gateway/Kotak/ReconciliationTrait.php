@@ -108,7 +108,7 @@ trait ReconciliationTrait
         return $content;
     }
 
-    protected function initiateSettlementsAndAssertSuccess(string $channel = 'kotak')
+    protected function initiateSettlementsAndAssertSuccess(string $channel)
     {
         $content = $this->initiateSettlements($channel);
 
