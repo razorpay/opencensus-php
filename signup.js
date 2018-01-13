@@ -6,7 +6,6 @@ execSync('rm -rf public/js/generated; mkdir -p public/js/generated');
 
 let content = [].concat.apply([], [
   'public/js/jquery/jquery-2.1.4.min.js',
-  'public/js/libs/angular-file-upload-shim.min.js',
   'public/js/angular/angular.min.js',
   'public/js/angular/angular-cookies.min.js',
   'public/js/angular/angular-animate.min.js',
@@ -18,8 +17,6 @@ let content = [].concat.apply([], [
   'public/js/angular/ui-validate.js',
   'public/js/angular/ui-bootstrap-tpls.min.js',
   'public/js/angular/angular-busy.js',
-  'public/js/libs/angular-file-upload.min.js',
-  'public/js/libs/filesaver.min.js',
   'public/js/themes/init.js',
   'public/js/themes/theme.js',
   'public/js/libs/select2.min.js',
