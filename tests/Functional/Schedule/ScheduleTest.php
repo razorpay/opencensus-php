@@ -455,8 +455,8 @@ class ScheduleTest extends TestCase
 
         $this->assertEquals($credits['value'], -1000);
 
+        Carbon::setTestNow();
     }
-
 
     protected function applyCouponOnMerchant(string $code, string $merchantId = '10000000000000')
     {
