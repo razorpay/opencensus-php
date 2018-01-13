@@ -81,15 +81,11 @@ class IciciReconciliationTest extends TestCase
         $this->makeRequestAndGetContent($request);
 
         $settlementAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertTestResponse($settlementAttempt, 'matchSettlementAttemptForReconEntitySuccess');
 
         $setl = $this->getLastEntity('settlement', true);
-        s($setl);
-//        $this->assertTestResponse($setl, 'fetchAndMatchSettlementsForReconSuccess');
-
-//        $this->assertNotNull(Settlement\Entity::UTR);
-
-        s($settlementAttempt);
-//        $this->assertTestResponse($settlementAttempt, 'matchSettlementAttemptForReconEntitySuccess');
+        $this->assertTestResponse($setl, 'fetchAndMatchSettlementsForReconSuccess');
+        $this->assertNotNull(Settlement\Entity::UTR);
 
         $merchant = $this->getEntityById('merchant','10000000000000', true);
         $this->assertEquals(false, $merchant['hold_funds']);
@@ -170,7 +166,7 @@ class IciciReconciliationTest extends TestCase
 
         // Validate batch fund transfer entity
         $batch = $this->getLastEntity('batch_fund_transfer', true);
-        s($batch);
+
         $this->assertEquals(0, $batch['processed_count']);
         $this->assertEquals(0, $batch['processed_amount']);
 

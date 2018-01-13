@@ -35,8 +35,7 @@ class ReconciliationTest extends TestCase
 
     public function testReconFileProcessForKotak()
     {
-        $this->markTestSkipped();
-// Create payments and refunds with timestamps two days back
+        // Create payments and refunds with timestamps two days back
         $prEntities = $this->createPaymentAndRefundEntities();
 
         // delete Existing files
@@ -66,7 +65,6 @@ class ReconciliationTest extends TestCase
 
     public function testReconEntiyForKotak()
     {
-        $this->markTestSkipped();
         Mail::fake();
 
         $this->testReconFileProcessForKotak();
@@ -104,8 +102,7 @@ class ReconciliationTest extends TestCase
 
     public function testReconFileProcessFailureForKotak()
     {
-        $this->markTestSkipped();
-// Mocking time to 22:30 for settlements to get processed
+        // Mocking time to 22:30 for settlements to get processed
         Carbon::setTestNow(Carbon::create(2016, 11, 15, 23, 0, 0, Timezone::IST));
 
         // Create payments and refunds with timestamps two days back
@@ -139,7 +136,6 @@ class ReconciliationTest extends TestCase
 
     public function testReconEntiyFailureForKotak()
     {
-        $this->markTestSkipped();
         Mail::fake();
 
         $this->testReconFileProcessFailureForKotak();
@@ -192,7 +188,6 @@ class ReconciliationTest extends TestCase
 
     public function testRetryReconForHoldedFunds()
     {
-        $this->markTestSkipped();
         $settlement = $this->testReconEntiyFailureForKotak();
 
         $content = $this->retryIntiateSettlements([$settlement['id']]);
@@ -212,7 +207,6 @@ class ReconciliationTest extends TestCase
 
     public function testRetryRecon()
     {
-        $this->markTestSkipped();
         $settlement = $this->testReconEntiyFailureForKotak();
 
         $firstAttempt = $this->getLastEntity('fund_transfer_attempt', true);
@@ -268,8 +262,7 @@ class ReconciliationTest extends TestCase
 
     public function testAdjustmentCreationAgainstSettlement()
     {
-        $this->markTestSkipped();
-// Create payments and refunds with timestamps two days back
+        // Create payments and refunds with timestamps two days back
         $prEntities = $this->createPaymentAndRefundEntities();
 
         // delete Existing files
@@ -317,7 +310,6 @@ class ReconciliationTest extends TestCase
 
     public function testReconciliationInTestMode()
     {
-        $this->markTestSkipped();
         $this->createSettlementsAndSettlementFile(3);
 
         // Added so that a new file name is created for next settlement

@@ -49,8 +49,6 @@ abstract class EntityProcessor extends Base\Core
 
         $this->source = $fta->source;
 
-        s($fta->getId(), $this->source->getId());
-
         $this->reconciledAt = Carbon::now(Timezone::IST)->timestamp;
 
         $this->dashboardUrl = $this->app['config']->get('applications.dashboard.url');
@@ -64,7 +62,6 @@ abstract class EntityProcessor extends Base\Core
      */
     public function process(): array
     {
-        s('call updateEntities');
         $this->updateEntities();
 
         if ($this->sendFailureEmailToMerchant === true)
@@ -91,11 +88,10 @@ abstract class EntityProcessor extends Base\Core
 
     final protected function updateAttemptEntity()
     {
-        s('updateAttemptEntity');
         $status = $this->getAttemptStatus();
-        s($status);
+
         $failureReason = ($status === Attempt\Status::FAILED) ? 'Reconciliation' : null;
-        s($failureReason);
+
         // Verify status
         $oldStatus = $this->fta->getStatus();
 
@@ -162,7 +158,7 @@ abstract class EntityProcessor extends Base\Core
     final protected function getSourceStatusFromReconEntityStatus(): string
     {
         $sourceEntityName = $this->source->getEntity();
-        s($sourceEntityName);
+
         switch ($sourceEntityName)
         {
             case Entity::SETTLEMENT:
@@ -178,22 +174,19 @@ abstract class EntityProcessor extends Base\Core
     final protected function getStatusForEntity(string $sourceEntityName): string
     {
         $entityStatusClass = $this->getEntityStatusNamespace($sourceEntityName);
-        s($entityStatusClass);
+
         $attemptStatus = $this->fta->getStatus();
-        s($attemptStatus);
+
         switch ($attemptStatus)
         {
             case Attempt\Status::CREATED:
             case Attempt\Status::INITIATED:
-                s('11');
                 return $this->source->getStatus();
 
             case Attempt\Status::FAILED:
-                s('22');
                 return $entityStatusClass::FAILED;
 
             case Attempt\Status::PROCESSED:
-                s('33');
                 return $entityStatusClass::PROCESSED;
 
             default:

@@ -32,7 +32,6 @@ class BulkRecon extends Base\Core
 
     public function __construct(array $input, string $channel)
     {
-        s($input, $channel);
         parent::__construct();
 
         $this->mutex = $this->app['api.mutex'];
@@ -64,7 +63,7 @@ class BulkRecon extends Base\Core
     public function processEntities()
     {
         list($from, $to) = $this->getTimestamps();
-        s($from, $to);
+
         $relations = ['source', 'source.transaction', 'source.merchant' , 'batchFundTransfer'];
 
         $ftaIds = $this->repo
@@ -73,19 +72,16 @@ class BulkRecon extends Base\Core
                              ->pluck(FundTransferAttempt\Entity::ID)
                              ->toArray();
 
-        s($ftaIds);
-
         $summary = $this->repo->transactionOnLiveAndTest(function() use ($ftaIds, $relations)
         {
             try
             {
                 foreach ($ftaIds as $id)
                 {
-                    s($id);
                     $fta = $this->repo->fund_transfer_attempt->findWithRelations($id, $relations);
 
                     $entityProcessor = '\\RZP\\Models\FundTransfer\\' . ucfirst($this->channel) . '\\Reconciliation\\EntityProcessor';
-                    s($entityProcessor);
+
                     $reconDetails = (new $entityProcessor($fta))->process();
 
                     $this->allReconciledRows[] = $reconDetails;
@@ -152,8 +148,6 @@ class BulkRecon extends Base\Core
         {
             $from = (Carbon::today(Timezone::IST))->timestamp;
             $to = (Carbon::tomorrow(Timezone::IST))->timestamp;
-
-            s($from, $to);
         }
 
         return [$from, $to];

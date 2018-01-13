@@ -9,10 +9,9 @@ class Service extends Base\Service
 {
     public function bulkReconcile(array $input, string $channel): array
     {
-        s($input, $channel);
-        (new Validator)->validateInput('bulk_reconcile', $input);
-
         $this->trace->info(TraceCode::FTA_BULK_RECONCILE_REQUEST, $input);
+
+        (new Validator)->validateInput('bulk_reconcile', $input);
 
         $summary = (new BulkRecon($input, $channel))->process();
 
@@ -21,11 +20,11 @@ class Service extends Base\Service
 
     public function bulkUpdate(array $input)
     {
-        (new Validator)->validateInput('bulk_update', $input);
-
         $this->trace->info(
             TraceCode::FUND_TRANSFER_ATTEMPT_BULK_UPDATE_REQUEST,
             $input);
+
+        (new Validator)->validateInput('bulk_update', $input);
 
         $fundTransferAttempts = $this->repo
                                      ->fund_transfer_attempt
