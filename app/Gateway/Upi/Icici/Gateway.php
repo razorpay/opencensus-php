@@ -398,7 +398,7 @@ class Gateway extends Base\Gateway
             Fields::NOTE             => $this->getPaymentRemark($input),
             // sub-merchant name field only supports alphanumeric
             // hence replacing all the spaces to empty string here.
-            Fields::SUBMERCHANT_NAME => preg_replace('/\s+/', '', $input['merchant']->getFilteredDba()),
+            Fields::SUBMERCHANT_NAME => $this->getSubMerchantName($input),
             Fields::PAYER_VA_REQ     => $input['payment']['vpa'],
             Fields::SUBMERCHANT_ID   => $this->getSubMerchantId($input),
             Fields::TERMINAL_ID      => $this->getTerminalId($input),
@@ -477,6 +477,13 @@ class Gateway extends Base\Gateway
         $description = $input['merchant']->getFilteredDba() . ' ' . $filteredPaymentDescription;
 
         return ($description ? substr($description, 0, 50) : 'Pay via Razorpay');
+    }
+
+    protected function getSubMerchantName(array $input): string
+    {
+        $dba = preg_replace('/\s+/', '', $input['merchant']->getFilteredDba());
+
+        return ($dba ? substr($dba, 0, 30) : 'Razorpay');
     }
 
     /**
