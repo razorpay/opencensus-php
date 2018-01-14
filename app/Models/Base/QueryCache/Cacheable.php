@@ -3,6 +3,7 @@
 namespace RZP\Models\Base\Traits\QueryCache;
 
 use App;
+
 use RZP\Constants\Mode;
 use RZP\Models\Base\QueryCache\CacheQueryBuilder;
 
@@ -17,7 +18,7 @@ trait Cacheable
     /**
      * Get a new query builder instance for the connection.
      *
-     * @return \RZP\Base\CacheQueryBuilder;
+     * @return CacheQueryBuilder;
      */
     protected function newBaseQueryBuilder()
     {
