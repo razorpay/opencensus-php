@@ -43,7 +43,7 @@ class Repository extends Base\Repository
         Entity::NOTES              => 'sometimes|string|max:500',
         Entity::INVOICE_ID         => 'sometimes|string|min:14|max:18',
         Entity::SUBSCRIPTION_ID    => 'sometimes|string|min:14|max:18',
-        self::EXPAND . '.*'        => 'string|in:card,emi_plan',
+        self::EXPAND . '.*'        => 'string|in:card,emi_plan,disputes',
     ];
 
     // These are admin allowed params to search on.

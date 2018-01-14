@@ -802,28 +802,54 @@ return [
     'testDisputesFetchForPayment' => [
         'request'   => [
             'method'        => 'get',
+            'url'           => '/payments',
+            'content' => [
+                'email'     => 'abc@email.com',
+                'expand'    => [
+                    'disputes',
+                ],
+            ],
         ],
         'response'  => [
             'content'       => [
-                'count'         => 2,
+                'entity'        => 'collection',
+                'count'         => 1,
                 'items'         => [
                     [
-                        'merchant_id'       => '10000000000000',
+                        'entity'            => 'payment',
                         'amount'            => 1000000,
                         'currency'          => 'INR',
-                        'reason_code'       => 'SOMETHING_BAD',
-                        'status'            => 'open',
-                        'phase'             => 'chargeback',
+                        'status'            => 'captured',
+                        'method'            => 'card',
+                        'amount_refunded'   => 0,
+                        'amount_transferred'=> 0,
+                        'captured'          => true,
+                        'email'             => 'abc@email.com',
+                        'fee'               => null,
+                        'disputes'          => [
+                            'entity'                => 'collection',
+                            'count'                 => 2,
+                            'items'                 => [
+                                [
+                                    'merchant_id'       => '10000000000000',
+                                    'amount'            => 1000000,
+                                    'currency'          => 'INR',
+                                    'reason_code'       => 'SOMETHING_BAD',
+                                    'status'            => 'open',
+                                    'phase'             => 'chargeback',
+                                ],
+                                [
+                                    'merchant_id'       => '10000000000000',
+                                    'amount'            => 1000000,
+                                    'currency'          => 'INR',
+                                    'reason_code'       => 'SOMETHING_BAD',
+                                    'status'            => 'open',
+                                    'phase'             => 'chargeback',
+                                ],
+                            ],
+                        ],
                     ],
-                    [
-                        'merchant_id'       => '10000000000000',
-                        'amount'            => 1000000,
-                        'currency'          => 'INR',
-                        'reason_code'       => 'SOMETHING_BAD',
-                        'status'            => 'open',
-                        'phase'             => 'chargeback',
-                    ],
-                ]
+                ],
             ],
         ],
     ],

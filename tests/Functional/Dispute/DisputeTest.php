@@ -575,14 +575,12 @@ class DisputeTest extends TestCase
     {
         $this->ba->proxyAuth();
 
-        $payment = $this->fixtures->create('payment:captured', ['disputed' => 1]);
+        $payment = $this->fixtures->create('payment:captured', ['disputed'  => 1,
+                                                                'email'     => 'abc@email.com']);
 
         $testData = $this->updatePaymentDisputesFetchTestData($payment->getId());
 
-        $content = $this->runRequestResponseFlow($testData);
-
-        $this->assertEquals($payment->getId(), $content['items'][0]['payment_id']);
-        $this->assertEquals($payment->getId(), $content['items'][1]['payment_id']);
+        $this->startTest($testData);
     }
 
     // ---------------------------- helper methods-------------------------------
@@ -648,8 +646,6 @@ class DisputeTest extends TestCase
         $name = $trace[1]['function'];
 
         $testData = &$this->testData[$name];
-
-        $testData['request']['url'] = '/payments/' . $paymentId . '/disputes';
 
         return $testData;
     }

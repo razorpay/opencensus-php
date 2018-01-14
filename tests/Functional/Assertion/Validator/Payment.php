@@ -44,5 +44,6 @@ class Payment extends Validator
         Entity::DISPUTED            => 'sometimes|boolean',
         Entity::RECURRING_TYPE      => 'sometimes|nullable|string',
         Entity::EMI_PLAN            => 'sometimes|',
+        Entity::DISPUTES            => 'sometimes|',
     );
 }

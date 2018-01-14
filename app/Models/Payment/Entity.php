@@ -87,6 +87,7 @@ class Entity extends Base\PublicEntity
     const CAPTURED_AT           = 'captured_at';
     const GATEWAY               = 'gateway';
     const TERMINAL_ID           = 'terminal_id';
+    const DISPUTES              = 'disputes';
     const APPROVAL_CODE         = 'approval_code';
     const REFERENCE1            = 'reference1';
     const REFERENCE2            = 'reference2';
@@ -235,6 +236,7 @@ class Entity extends Base\PublicEntity
         self::LATE_AUTHORIZED,
         self::SUBSCRIPTION_ID,
         self::CONVERT_CURRENCY,
+        self::DISPUTES,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DISPUTED,
@@ -273,6 +275,7 @@ class Entity extends Base\PublicEntity
         self::ACQUIRER_DATA,
         // self::SUBSCRIPTION_ID,
         self::EMI_PLAN,
+        self::DISPUTES,
         self::CREATED_AT,
     ];
 
