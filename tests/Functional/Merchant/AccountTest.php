@@ -27,6 +27,14 @@ class AccountTest extends TestCase
 
     public function testCreateLinkedAccount()
     {
+        $this->fixtures->merchant->activate('10000000000000');
+
+        //
+        // Test account creation in - Test database (Live mode under the testing environment)
+        // For more details, refer to Merchant/Account/Core::createAccount() function.
+        //
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
         $account = $this->startTest();
 
         $lastAccount = $this->getLastEntity('merchant', true);

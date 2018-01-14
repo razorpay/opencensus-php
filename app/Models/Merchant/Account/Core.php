@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\Account;
 
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Models\Merchant\Detail;
 
@@ -18,6 +19,29 @@ class Core extends Merchant\Core
      */
     public function createAccount(array $input, Merchant\Entity $parentMerchant): Entity
     {
+        //
+        // When a linked account is created, mainly, 2 functions are executed -
+        // 1. createSubMerchant
+        // 2. saveMerchantDetails
+        //
+        // The first function creates a merchant entity and other supporting
+        // entities like MerchantDetail, ScheduleTask, Method, etc. It also creates
+        // a BankAccount entity in the Test database with dummy values so that the
+        // merchant can start the integration using the test mode immediately.
+        //
+        // The second function accepts the actual bank account details of the merchant
+        // and runs the createOrChangeBankAccount function call. This function creates
+        // or updates the bankAccount entity in the database corresponding to the mode
+        // that is extracted from the basic auth key used. Hence, if the key used
+        // corresponds to live mode, a BankAccount entity will be created in the live
+        // mode, but if it is used in the test mode, the entity that is already created
+        // with the dummy data will be updated with the actual data and no entity will
+        // be created in the Live mode,
+        //
+        // Hence, forcing the input mode to be live mode here.
+        //
+        $this->setLiveMode();
+
         $merchantDetailsInput    = $this->getMerchantDetailsFromInput($input);
 
         $bankAccountDetailsInput = $this->getBankAccountDetailsFromInput($input[Entity::BANK_ACCOUNT] ?? []);
@@ -40,6 +64,13 @@ class Core extends Merchant\Core
             return $account;
 
         });
+
+        $this->trace->info(
+            TraceCode::ACCOUNT_CREATED,
+            [
+                'parent_id' => $parentMerchant->getId(),
+                'input'     => $input,
+            ]);
 
         return $account->reload();
     }
