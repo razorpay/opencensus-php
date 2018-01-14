@@ -57,6 +57,8 @@ class Traffic extends Component {
       };
     });
 
+    this.requestId = 0;
+
     this.onGroupChange = ::this.onGroupChange;
     this.handleImageExportClick = ::this.handleImageExportClick;
 
@@ -89,8 +91,14 @@ class Traffic extends Component {
       csvDateFormat
     )} to ${endDate.format(csvDateFormat)}, ${meta.title}(Razorpay)`;
 
+    const requestId = ++this.requestId;
+
     fetch(query)
       .then(resp => {
+        if (requestId !== this.requestId) {
+          return null;
+        }
+
         if (!resp.success) {
           return API_ERROR;
         }
@@ -123,11 +131,19 @@ class Traffic extends Component {
         return resp;
       })
       .catch(err => {
+        if (requestId !== this.requestId) {
+          return null;
+        }
+
         console.error(err);
 
         return API_ERROR;
       })
       .then(data => {
+        if (!data) {
+          return null;
+        }
+
         if (isInitialLoad) {
           this.state.loading = false;
         }

@@ -193,6 +193,13 @@ function main(node, o, data, d3, onTransition, groupTitleMap) {
       .enter()
       .append('g');
 
+    var maxArea = 0,
+      maxFontSize = 24;
+
+    if (d._children.length > 0) {
+      maxArea = d._children[d._children.length - 1].dy;
+    }
+
     g
       .filter(function(d) {
         return d.key && d._children;
@@ -201,7 +208,9 @@ function main(node, o, data, d3, onTransition, groupTitleMap) {
       .style('cursor', function(d) {
         return canBeZoomed(d) ? 'pointer' : 'default';
       })
-      .style('font-size', '24px')
+      .style('font-size', d => {
+        return Math.min((y(d.y + d.dy) - y(d.y)) * 0.3, maxFontSize) + 'px';
+      })
       .on('click', function(d) {
         if (canBeZoomed(d) && typeof onTransition === 'function') {
           onTransition(d);
@@ -319,9 +328,15 @@ function main(node, o, data, d3, onTransition, groupTitleMap) {
         .call(text)
         .style('fill-opacity', 0);
       t2
+        .each('end', function(d) {
+          d3.select(this).style('font-size', d => {
+            return Math.min((y(d.y + d.dy) - y(d.y)) * 0.3, 24) + 'px';
+          });
+        })
         .selectAll('.ptext')
         .call(text)
         .style('fill-opacity', 1);
+
       t1.selectAll('rect').call(rect);
       t2.selectAll('rect').call(rect);
 

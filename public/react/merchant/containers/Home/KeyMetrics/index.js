@@ -98,6 +98,8 @@ class KeyMetricsContainer extends Component {
       loading: true,
     };
 
+    this.requestId = this.trendRequestID = 0;
+
     // Populating default value
     tabsOrder.forEach(tabName => {
       const grouping = tabsMeta[tabName].grouping,
@@ -177,8 +179,14 @@ class KeyMetricsContainer extends Component {
 
     this.setState({ tabsState });
 
+    const requestId = ++this.requestId;
+
     return fetch(query)
       .then(resp => {
+        if (requestId !== this.requestId) {
+          return null;
+        }
+
         if (!resp.data) {
           return API_INVALID_RESP;
         }
@@ -260,9 +268,17 @@ class KeyMetricsContainer extends Component {
       .catch(e => {
         console.error(e);
 
+        if (requestId !== this.requestId) {
+          return null;
+        }
+
         return API_ERROR;
       })
       .then(data => {
+        if (!data) {
+          return;
+        }
+
         if (data.error) {
           this.props.showNotification({
             type: 'error',
@@ -332,6 +348,8 @@ class KeyMetricsContainer extends Component {
 
     this.setState({ tabsState: { ...tabsState } });
 
+    const trendRequestID = ++this.trendRequestID;
+
     const query = getQuery({
       tabName: 'all',
       startTime: startDate.unix(),
@@ -341,6 +359,10 @@ class KeyMetricsContainer extends Component {
 
     return fetch(query)
       .then(data => {
+        if (trendRequestID !== this.trendRequestID) {
+          return null;
+        }
+
         if (!data.success) {
           return API_ERROR;
         }
@@ -354,9 +376,17 @@ class KeyMetricsContainer extends Component {
       .catch(err => {
         console.error(err);
 
+        if (trendRequestID !== this.trendRequestID) {
+          return null;
+        }
+
         return API_ERROR;
       })
       .then(data => {
+        if (!data) {
+          return;
+        }
+
         if (!data.error) {
           fetchAllReq.then(() => {
             tabsOrder.forEach(tabName => {

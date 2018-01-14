@@ -11,10 +11,8 @@ export default class Treemap extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {
-      scriptsLoaded: false,
-    };
-
+    this.scriptsLoaded = false;
+    this.onSriptsLoad = null;
     this.treemapApi = null;
     this.componentMounted = false;
 
@@ -28,7 +26,11 @@ export default class Treemap extends Component {
     this.d3 = modules.d3;
     this.bankNames = modules.bankNames;
 
-    this.setState({ scriptsLoaded: true });
+    this.scriptsLoaded = true;
+
+    if (typeof this.onSriptsLoad === 'function') {
+      this.onSriptsLoad();
+    }
 
     // this will be executed when script download is done,
     // if data is ready, and component is already mounted
@@ -89,6 +91,12 @@ export default class Treemap extends Component {
     const { data, currentLevel } = this.props;
 
     if (data !== nextProps.data) {
+      if (!this.scriptsLoaded) {
+        return (this.onSriptsLoad = () => {
+          return this.renderTreemap(nextProps.data);
+        });
+      }
+
       return this.renderTreemap(nextProps.data);
     } else if (
       !this.isNewData &&

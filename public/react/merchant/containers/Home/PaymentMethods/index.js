@@ -17,7 +17,7 @@ import GenericPanel, {
 } from 'merchant/components/Home/GenericPanel';
 import { API_ERROR, API_INVALID_RESP } from 'merchant/components/Home/data';
 
-import { getQuery } from './data';
+import { getQuery, sampleData } from './data';
 import './styles.styl';
 
 function getLevels(hierarchy, levels = []) {
@@ -47,6 +47,7 @@ class PaymentMethods extends Component {
       error: '',
     };
 
+    this.requestId = 0;
     this.onLevelChange = ::this.onLevelChange;
     this.onCSVData = ::this.onCSVData;
     this.openReportModal = ::this.openReportModal;
@@ -58,6 +59,8 @@ class PaymentMethods extends Component {
       error: '',
     });
 
+    const requestId = ++this.requestId;
+
     fetch(
       getQuery({
         startTime: startDate.unix(),
@@ -65,6 +68,11 @@ class PaymentMethods extends Component {
       })
     )
       .then(resp => {
+        // dealyed response
+        if (requestId !== this.requestId) {
+          return null;
+        }
+
         if (!resp.success) {
           return API_ERROR;
         }
@@ -85,9 +93,17 @@ class PaymentMethods extends Component {
       .catch(err => {
         console.error(err);
 
+        if (requestId !== this.requestId) {
+          return null;
+        }
+
         return API_ERROR;
       })
       .then(data => {
+        if (!data) {
+          return;
+        }
+
         this.state.isLoading = false;
 
         if (data.error) {
