@@ -153,12 +153,16 @@ class Core
     {
         $liveMode = $this->app['basicauth']->getLiveConnection();
 
+        //
         // This function updates the mode and app['rzp.mode'] properties
         // of the BasicAuth class that has been initialized.
+        //
         $this->app['basicauth']->setModeAndDbConnection($liveMode);
 
+        //
         // This function updates the mode and app['rzp.mode'] properties
         // of the Base/Core class that has been initialized.
+        //
         if (isset($this->app['rzp.mode']))
         {
             $this->mode = $liveMode;
