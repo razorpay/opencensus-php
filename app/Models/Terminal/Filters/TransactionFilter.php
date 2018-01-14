@@ -417,7 +417,7 @@ class TransactionFilter extends Terminal\Filter
         $merchantMcc = $merchant->getCategory();
 
         if (($this->input['payment']->isMethodCardOrEmi() === true) and
-            ($terminal->getGateway() === Gateway::HDFC))
+            (in_array($terminal->getGateway(), Gateway::MCC_FILTER_GATEWAYS, true) === true))
         {
             //
             // If terminal is direct for the merchant, we always select it.
@@ -459,9 +459,9 @@ class TransactionFilter extends Terminal\Filter
         foreach ($applicableTerminals as $terminal)
         {
             //
-            // Currently this checks only for HDFC gateway terminals
+            // Currently this checks only for HDFC and hitachi gateway terminals
             //
-            if (($terminal->getGateway() === Gateway::HDFC) and
+            if ((in_array($terminal->getGateway(), Gateway::MCC_FILTER_GATEWAYS, true) === true) and
                 ($terminal->getCategory() === $merchantMcc))
             {
                 return false;

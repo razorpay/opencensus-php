@@ -107,4 +107,49 @@ class BladeSignatureTest extends TestCase
 
         $this->assertTrue($ret, "XmlseclibsAdapter should verify the PARes");
     }
+
+    public function testParesWithKeyInfoNs()
+    {
+        $this->validateSignatue('CorpPares.txt');
+    }
+
+    public function testParesWithoutKeyInfoNs()
+    {
+        $this->validateSignatue('IciciPares.txt');
+    }
+
+    protected function validateSignatue($file)
+    {
+        $knownDate = Carbon::create(2017, 3, 25, 12);
+
+        Carbon::setTestNow($knownDate);
+
+        $pares = file_get_contents(__DIR__. '/MockData/' . $file);
+
+        $blade = new BladeGateway;
+
+        $e = null;
+
+        try
+        {
+            $this->invokeMethod($blade, 'validateSignatureAndInflatePares', [base64_decode($pares)]);
+        }
+        catch (Exception $e)
+        {
+
+        }
+
+        $this->assertEquals(null, $e);
+
+        Carbon::setTestNow();
+    }
+
+    public function invokeMethod(&$object, $methodName, array $parameters = array())
+    {
+        $reflection = new \ReflectionClass(get_class($object));
+        $method = $reflection->getMethod($methodName);
+        $method->setAccessible(true);
+
+        return $method->invokeArgs($object, $parameters);
+    }
 }

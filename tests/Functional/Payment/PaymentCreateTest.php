@@ -119,7 +119,7 @@ class PaymentCreateTest extends TestCase
 
         unset($payment['email'], $payment['contact'], $payment['notes']);
 
-        $response = $this->getWalletFormViaCreateRoute($payment);
+        $response = $this->getFormViaCreateRoute($payment);
         $content = $response['content'];
         $content['contact'] = '+919999999998';
         $content['email'] = 'test@razorpay.com';
@@ -127,6 +127,112 @@ class PaymentCreateTest extends TestCase
         $payment = $this->doAuthPayment($content, ['CONTENT_TYPE' => 'application/x-www-form-urlencoded']);
 
         $this->assertArrayHasKey('razorpay_payment_id', $payment);
+    }
+
+    public function testCoprotoForMissingBankAccountDetailsForFirstRecurring()
+    {
+        $payment = $this->setupEmandateAndGetPaymentRequest('ICIC');
+
+        unset($payment['notes']);
+
+        $response = $this->getFormViaCreateRoute($payment, 'emandate.form');
+
+        $content = $response['content'];
+        unset($content['bank_account[name]'],
+            $content['bank_account[account_number]'],
+            $content['bank_account[ifsc]'],
+            $content['aadhaar[number]']);
+        $content['bank_account'] = [
+            'account_number' => '12812891982',
+            'name'           => 'test name',
+            'ifsc'           => 'UTIB0002766'
+        ];
+        // TODO: Figure out why auth_type is not coming in the form response even though it's present in the input!!
+        $content['auth_type'] = 'netbanking';
+
+        $payment = $this->doAuthPayment($content, ['CONTENT_TYPE' => 'application/x-www-form-urlencoded']);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $payment);
+    }
+
+    public function testCoprotoForMissingBankAccountDetailsForSecondRecurring()
+    {
+        $payment = $this->setupEmandateAndGetPaymentRequest('ICIC');
+
+        $payment['bank_account'] = [
+            'account_number' => '12812891982',
+            'name'           => 'test name',
+            'ifsc'           => 'UTIB0002766'
+        ];
+
+        $this->doAuthPayment($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $payment['token'] = $paymentEntity['token_id'];
+
+        //
+        // Second auth payment for the recurring product
+        //
+        $response = $this->doS2SRecurringPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+    }
+
+    public function testSecondRecurringWithMissingBankAccountDetailsAndAuthType()
+    {
+        $payment = $this->setupEmandateAndGetPaymentRequest('UTIB');
+
+        $payment['bank_account'] = [
+            'account_number' => '12812891982',
+            'name'           => 'test name',
+            'ifsc'           => 'UTIB0002766'
+        ];
+
+        $this->doAuthPayment($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $payment['token'] = $paymentEntity['token_id'];
+        unset($payment['bank_account'], $payment['auth_type']);
+
+        //
+        // Second auth payment for the recurring product
+        //
+        $response = $this->doS2SRecurringPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+
+        $this->ba->appAuth();
+
+        $data = $this->testData[__FUNCTION__];
+        $this->startTest($data);
+
+        $token = $this->getLastEntity('token', true);
+
+        $this->assertNotNull($token['account_number']);
+        $this->assertNotNull($token['beneficiary_name']);
+        $this->assertNotNull($token['ifsc']);
+    }
+
+    public function testEmandatePaymentCreateFailIfBankMissing()
+    {
+        $payment = $this->setupEmandateAndGetPaymentRequest('ICIC');
+
+        $payment['bank_account'] = [
+            'account_number' => '12812891982',
+            'name'           => 'test name',
+            'ifsc'           => 'UTIB0002766'
+        ];
+
+        unset($payment['bank']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
     }
 
     public function testInternationalPayment()
@@ -291,5 +397,17 @@ class PaymentCreateTest extends TestCase
         $this->assertArrayHasKey('acquirer_data', $payment);
 
         $this->assertArrayHasKey('bank_transaction_id', $payment['acquirer_data']);
+    }
+
+    protected function setupEmandateAndGetPaymentRequest($bank = 'HDFC')
+    {
+        $this->mockTokenex();
+        $this->fixtures->create('terminal:shared_netbanking_icici_recurring_terminal');
+        $this->fixtures->create('terminal:shared_netbanking_axis_recurring_terminal');
+        $this->fixtures->merchant->addFeatures(['e_mandate', 'charge_at_will']);
+
+        $payment = $this->getEmandateNetbankingRecurringPaymentArray($bank);
+
+        return $payment;
     }
 }
