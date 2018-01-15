@@ -130,16 +130,6 @@ class Entity extends Base\Entity
         return $this->morphMany(Comment\Entity::class, 'entity');
     }
 
-    // public function state()
-    // {
-    //     return $this->hasMany('RZP\Models\Workflow\Action\State\Entity', self::ACTION_ID);
-    // }
-
-    // public function org()
-    // {
-    //     return $this->belongsTo('RZP\Models\Admin\Org\Entity');
-    // }
-
     public function admin()
     {
         return $this->belongsTo('RZP\Models\Admin\Admin\Entity');

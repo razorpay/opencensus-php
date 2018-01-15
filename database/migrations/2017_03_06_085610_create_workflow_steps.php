@@ -55,6 +55,7 @@ class CreateWorkflowSteps extends Migration
                   ->unsigned()
                   ->nullable();
 
+            $table->index([Step::CREATED_AT, Step::DELETED_AT]);
             $table->index(Step::LEVEL);
         });
     }

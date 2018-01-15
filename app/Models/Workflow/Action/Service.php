@@ -107,18 +107,6 @@ class Service extends Base\Service
         {
             $data = $action->toArrayPublic();
 
-            // Client expects workflow steps in $data['workflow_steps']
-            // and not $data['workflow']['steps']
-            $data['workflow_steps'] = [];
-
-            foreach ($data['workflow']['steps'] as $step)
-            {
-                $data['workflow_steps'][] = $step;
-            }
-
-            // Reduce payload
-            unset($data['workflow']['steps']);
-
             // Checkers
             $checkers = $this->repo
                              ->action_checker

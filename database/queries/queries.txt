@@ -2811,3 +2811,10 @@ ALTER TABLE merchant_invoice
     MODIFY COLUMN amount bigint(20)  NOT NULL,
     MODIFY COLUMN tax int(11) NOT NULL,
     MODIFY COLUMN amount_due bigint(20) NOT NULL DEFAULT 0;
+
+ALTER TABLE workflow_steps
+    ADD COLUMN deleted_at INT UNSIGNED DEFAULT NULL
+    AFTER updated_at;
+
+ALTER TABLE workflow_steps
+    ADD INDEX `workflow_steps_created_at_deleted_at_index` (`created_at`,`deleted_at`);

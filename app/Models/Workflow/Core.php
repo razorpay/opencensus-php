@@ -20,7 +20,7 @@ class Core extends Base\Core
         $workflow->getValidator()->validatePermissionsForOrg(
             $input[Entity::ORG_ID], $input[Entity::PERMISSIONS]);
 
-        // Check if there are workflows for any permission given
+        // Check if passed permissions already have a workflow assigned to them
         $workflow->getValidator()->validatePermissionHasOneWorkflow(
             $input[Entity::ORG_ID], $input[Entity::PERMISSIONS]);
 
@@ -79,15 +79,14 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_WORKFLOW_UPDATE_OR_DELETE_NOT_ALLOWED);
         }
 
-        // if (empty($input[Entity::LEVELS]) === false)
-        // {
-        //     $validator->validateCheckersExistForWorkflow();
-        // }
-
-        // Check if selected permissions have workflows enabled for them
-        // in the current org
+        // Check if selected permissions have workflows enabled
+        // for them in the current org
         $validator->validatePermissionsForOrg(
             $workflow->getOrgId(), $input[Entity::PERMISSIONS]);
+
+        // Check if passed permissions already have a workflow assigned to them
+        $workflow->getValidator()->validatePermissionHasOneWorkflow(
+            $workflow->getOrgId(), $input[Entity::PERMISSIONS], $workflow->getId());
 
         $workflow->edit($input);
 
@@ -102,12 +101,10 @@ class Core extends Base\Core
             // existing entitites
             if (empty($input[Entity::LEVELS]) === false)
             {
-                // $currentWorkflowSteps = $workflow->steps();
                 $currentWorkflowSteps = $workflow->load(['steps', 'steps.checkers'])->steps;
 
-                // Check if the existing steps have ever been taken
-                // i.e., any action was acted upon (action_checker entry)
-                // on the existing steps.
+                // Check if an action (action_checker entry) has ever been performed
+                // on any of the steps.
                 //
                 // If yes, then soft delete all steps
                 // If no, then force delete all steps
