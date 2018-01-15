@@ -1,0 +1,270 @@
+/* Put those styles which are generalised */
+
+//----------
+/* General styles */
+
+header
+  padding: 12px 20px
+  line-height: 38px
+  font-size: 20px
+  .field
+    margin: 0 6px
+  .btn
+    margin: 2px 16px
+    &.pull-right
+      margin-right: 4px
+
+.delete
+  color: $danger
+  font-size: 18px
+  cursor: pointer
+  float: right
+  opacity: .8
+  transition: $tra
+  &:hover
+    opacity: 1
+
+.info-block // Mostly used for helper text under the Field
+  min-height: 18px; // In case you want info-block element to present with empty msg
+  line-height: 18px;
+  margin-top: 4px;
+  word-break: break-word;
+  font-size: 12px
+  color: $color-semi-muted
+
+  .i-info-circle
+    margin-right: 4px
+
+.clickable
+  cursor: pointer
+  &:hover
+    background: $bg-highlight
+
+.highlight
+  background: $bg-highlight
+
+.rotate
+  transform: rotate(-180deg)
+
+.hide
+  display: none !important
+
+.code
+  overflow: auto
+  white-space: pre
+  font-family: monospace
+  background: #f6f6f6
+  border: 1px solid #eee
+  font-size: 13px
+  margin: 20px
+  border-radius: 3px
+  padding: 20px
+
+header + banner
+  margin-top: -2px
+
+.pull-right
+  float: right;
+
+.caption
+  text-transform: uppercase
+  font-size: 12px
+  letter-spacing: .25px
+  font-weight: bold
+  padding: 0 4px
+
+.separate
+  border-top: 1px solid $faded-color
+
+.no-padding
+  padding: 0 !important
+
+@keyframes fadein
+  from { opacity: 0.15 }
+  to { opacity: 1 }
+
+//--------
+/* Buttons */
+
+.link
+  position: relative
+  display: inline-block
+  color: $prime
+  border-bottom: 1px dashed #3498db
+  cursor: pointer
+  line-height: 16px
+  margin: 0 5px 5px 0
+  &.danger
+    border-color: #f39c12
+    color: #d35400
+
+    &-faded
+       border-color: transparent
+       color: #d354001c
+
+.btn-default
+  background-color: #fff
+  border: 1px solid #dee5e7
+  color: #000
+
+  &:hover
+    background-color: #f6f6f6
+
+  &:active
+    background-color: #f0f0f0
+
+//-------------
+/* Labels */
+
+.square-pills
+  padding: 2px 12px
+  font-size: 11px
+  border-radius 4px
+  color: #fff
+  text-align: center
+  white-space: nowrap
+  margin: 1px
+
+.pill
+  @extend .square-pills
+  display: inline-block;
+  border-radius 16px
+
+.pill-wrap
+  white-space: normal
+  text-align: left
+
+
+.status-label
+  @extend .pill
+  font-size: 75%
+  font-weight: 700
+
+
+.label-muted
+  background-color: #999
+
+.label-semi-muted
+  color: $color-semi-muted
+  background-color: #d8e1e3
+
+
+.label-danger
+  background-color: $danger
+
+.label-pending
+  background-color: $color-pending
+
+.label-success
+  background-color: $success
+
+.label-info
+  background-color: $color-info
+
+.label-yellow
+  background-color: #fad733
+
+.label-primary
+  background-color: $prime
+
+
+//-------------
+//  Text style
+
+.text-danger
+  color: $danger !important
+
+.text-pending
+  color: $color-pending !important
+
+.text-success
+  color: $success !important
+
+.text-faded
+  color: #dfe0e0 !important
+
+.text-white
+  color: #fff
+
+.text-primary
+  color: $prime
+
+
+//------------
+/* Banner */
+
+banner
+  font-size: 14px
+  display: block
+  padding: 10px 20px
+  border: 1px solid
+
+  &.warning
+    background-color: #fcf8e3
+    border-color: #eee
+    color: #8a6d3b
+
+  &.info
+    background-color: #d9edf7
+    border-color: #bce8f1
+    color: #31708f
+
+
+//----------
+/* Custom select TypeAhead component */
+
+.custom-select
+  position: relative
+
+  input
+    width: 100%
+
+  .custom-icon, .typeAheadSkin
+    position: absolute
+    pointer-events: none
+
+  .custom-icon
+    top: 11px
+    left: 8px
+    font-size: 20px
+    z-index: 1
+    color: #e0e0e0
+
+  .typeAheadSkin
+    z-index: 2
+    background-color: #fff
+    top: 10px
+    width: 87%
+    margin-left: 30px
+    font-size: 12px
+
+  .PowerSelect__TriggerInput
+    padding-left: 32px
+
+.PowerSelect__Option
+  padding: 0 5px
+  font-size: 14px
+  border: 1px solid #eaeff0
+  background-color: #fff
+  line-height: 28px
+  cursor: pointer
+
+  &--highlighted
+    background-color: #f1f1f1
+
+
+.multi-select .PowerSelect__TriggerInput
+  min-width: 135px
+
+
+//----------
+/* margins */
+
+.m-t
+  margin-top: 10px !important
+.m-b
+  margin-bottom: 10px !important
+.m-r
+  margin-right: 10px !important
+.m-l
+  margin-left: 10px !important

@@ -1,0 +1,68 @@
+import React, { Component } from 'react';
+import Form from 'ui/Form';
+import Field from 'ui/Field';
+import { openModal, closeModal, notifySuccess } from 'common/modal';
+import { adminFetch, adminPost } from 'common/fetch';
+
+import InviteForm from './InviteForm';
+import DetailsModal from './DetailsModal';
+
+class AddInvites extends Component {
+  state = {
+    pending: true,
+  };
+
+  componentWillMount() {
+    adminFetch({
+      route_name: 'org_fieldmap_get_by_entity',
+      url_params: {
+        entity: 'admin_lead',
+      },
+    }).then(response => {
+      if (response) {
+        this.fields = response.fields;
+      }
+
+      this.setState({ pending: false });
+    });
+  }
+
+  handleInvite = body => {
+    return adminPost({
+      route_name: 'admin_lead_create',
+      body,
+    }).then(response => {
+      if (response) {
+        this.props.collection.items.push(response);
+        closeModal();
+        notifySuccess(
+          `Success! Invitation has been sent to ${body.contact_email}`
+        );
+      }
+    });
+  };
+
+  render() {
+    if (this.state.pending) {
+      return <div class="spinner center" />;
+    }
+
+    return (
+      //Default values as props
+      <InviteForm
+        fields={this.fields}
+        onInvite={this.handleInvite}
+        merchant_type="stp"
+        promo_code="RP_StartUP"
+      />
+    );
+  }
+}
+
+export function showEntity(collection) {
+  openModal(<AddInvites collection={collection} model={this} />);
+}
+
+export function showDetails() {
+  openModal(<DetailsModal model={this} />);
+}

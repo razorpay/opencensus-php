@@ -1,0 +1,133 @@
+#fixed-container
+  position: fixed
+  top: 0
+  right: 0
+  width: 0
+  height: 0
+
+#slider-container
+  position: fixed
+  top: 48px
+  right: 0
+  bottom: 0
+  transition: .2s
+  &.slider-enter, &.slider-exit
+    opacity: 0
+    .slider
+      transform: translateX(100%)
+  &.slider-enter-active
+    opacity: 1
+    .slider
+      transform: none
+
+.slider
+  background: #fff
+  height: 100%
+  padding: 20px
+  transition: .2s
+  box-shadow: -1px 6px 10px rgba(0,0,0,.1)
+  overflow: auto
+  .box
+    margin: 0
+
+#modal-container
+  background: rgba(0,0,0,.5)
+  position: fixed
+  top: 0
+  left: 0
+  width: 100%
+  height: 100%
+  display: flex
+  transition: .2s
+  &.modal-enter, &.modal-exit
+    opacity: 0
+    .modal
+      transform: scale(.92) translateY(12px) translateX(-50%)
+  &.modal-enter-active
+    opacity: 1
+    .modal
+      transform: translateX(-50%);
+
+.modal
+  max-width: 96%
+  position: absolute
+  top: 5%
+  left: 50%
+  transform: translateX(-50%)
+  max-height: 90%
+  overflow: auto
+  background: #fff
+  border-radius: 3px
+  box-shadow: 0 2px 8px 2px rgba(0,0,0,.1)
+  transition: .3s
+  opacity: 0.4;
+  pointer-events: none;
+  transform-origin: 0 0
+  header
+    border-bottom: 2px solid #eee
+    padding-right: 44px
+
+  &:last-child
+    opacity: 1
+    pointer-events: all
+
+    &:not(:first-child)
+      box-shadow: 0 2px 14px 4px rgba(0,0,0,.16);
+
+.confirm-modal
+  .message
+    padding: 10px;
+
+.modal-close, .slider-close
+  position: absolute
+  right: 0
+  top: 0
+  font-size: 36px
+  padding: 10px
+  cursor: pointer
+  transition: .2s
+  color: #777
+  user-select: none
+  &:hover
+    color: #333
+
+.btn-reject
+  background: #fff;
+  color: rgba(0,0,0,0.87);
+  border: 1px solid rgba(0,0,0,0.12);
+
+.slider-close
+  right: 100%
+
+#toast-container
+  position: absolute
+  right: 20px
+  top: 20px
+  display: flex
+  flex-direction: column
+
+.toast
+  white-space: pre
+  margin-left: auto
+  display: inline-block
+  max-width: 500px
+  text-overflow: ellipsis
+  overflow: hidden
+  margin-top: 15px
+  padding: 12px 20px
+  background: white
+  transition: .2s
+  box-shadow: 0 2px 8px 2px rgba(0,0,0,.1)
+  border-radius: 3px
+  &.toast-enter, &.toast-exit
+    opacity: 0
+    transform: translateY(-4px) scale(.99)
+  &.success
+    background: $bg-success
+    color: $color-success
+  &.error
+    background: $bg-danger
+    color: $color-danger
+    &:before
+      content: 'Error: '
+      font-weight: bold
