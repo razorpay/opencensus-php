@@ -27,7 +27,7 @@
     width: 110px;
   }
 
-  .DateRangePickerInput__arrow {
+  .DateRangePickerInput_arrow {
     position: absolute;
     top: 6px;
     left: 52%;
@@ -46,11 +46,40 @@
     }
   }
 
-  .DateRangePickerInput >.DateInput:first-child .DateInput__display-text {
+  .DateRangePickerInput >.DateInput:first-child input {
     padding-left: 32px;
   }
 
+  .DateRangePickerInput >.DateInput input {
+    font-size: 14px;
+    font-weight: 600;
+    padding: 4px 8px;
+  }
+
   .DateRangePickerInput, .DateInput {
-    backgground-color: #fafafa;
+    background-color: #fafafa;
+  }
+
+  .CalendarDay__selected_span {
+    background-color: #e9e6f8;
+    border-color: #cbcce0;
+    color: #706e77;
+
+    &:hover,
+    &:active {
+      background-color: #6a5ace;
+      border-color: #6a5ace;
+      color: #fff;
+    }
+  }
+
+  .CalendarDay__selected {
+    &,
+    &:active,
+    &:hover {
+      background-color: #6a5ace;
+      border-color: #6a5ace;
+      color: #fff;
+    }
   }
 }
