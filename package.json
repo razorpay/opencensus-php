@@ -22,8 +22,8 @@
     "precommit": "lint-staged",
     "prettier": "prettier",
     "postinstall": "cd web && npm i",
-    "start": "cd web && npm start",
-    "build": "node signup.js && cd web && npm run build"
+    "start": "node signup; cd web && npm start",
+    "build": "node signup; cd web && npm run build"
   },
   "lint-staged": {
     "*.js": [
