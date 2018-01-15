@@ -61,12 +61,15 @@ class PaymentMethods extends Component {
 
     const requestId = ++this.requestId;
 
+    /*
     fetch(
       getQuery({
         startTime: startDate.unix(),
         endTime: endDate.unix(),
       })
     )
+    */
+    Promise.resolve(sampleData)
       .then(resp => {
         // dealyed response
         if (requestId !== this.requestId) {

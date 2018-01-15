@@ -35,7 +35,16 @@ function makeCSVData(data, aggregate = 0, prefix = '', csvData = []) {
   return { aggregate, csvData };
 }
 
-function main(node, o, data, d3, onTransition, groupTitleMap) {
+function main(
+  node,
+  o,
+  data,
+  d3,
+  onTransition,
+  onShowTooltip,
+  onHideTooltip,
+  groupTitleMap
+) {
   var root,
     opts = { ...defaults, ...o },
     formatNumber = getFormattedAmount,
@@ -211,6 +220,16 @@ function main(node, o, data, d3, onTransition, groupTitleMap) {
       .style('font-size', d => {
         return Math.min((y(d.y + d.dy) - y(d.y)) * 0.3, maxFontSize) + 'px';
       })
+      .on('mouseenter', function(d) {
+        onShowTooltip({
+          amount: d.value,
+          percent: d.percent,
+          label: d.displayText,
+        });
+      })
+      .on('mouseleave', function(d) {
+        //onHideTooltip();
+      })
       .on('click', function(d) {
         if (canBeZoomed(d) && typeof onTransition === 'function') {
           onTransition(d);
@@ -228,16 +247,7 @@ function main(node, o, data, d3, onTransition, groupTitleMap) {
     children
       .append('rect')
       .attr('class', 'child')
-      .call(rect)
-      .append('title')
-      .text(function(d) {
-        return (
-          (d.displayText || d.parent.displayText) +
-          ' ( ₹' +
-          formatNumber(d.value) +
-          ' )'
-        );
-      });
+      .call(rect);
 
     g
       .append('rect')
@@ -428,6 +438,8 @@ export default function renderTreemap(
   res,
   d3,
   onTransition,
+  onShowTooltip,
+  onHideTooltip,
   groupTitleMap,
   bankNames
 ) {
@@ -464,6 +476,8 @@ export default function renderTreemap(
     { key: 'All Methods', values: res },
     d3,
     onTransition,
+    onShowTooltip,
+    onHideTooltip,
     groupTitleMap || {}
   );
 }

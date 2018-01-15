@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import renderTreemap from './renderTreemap';
 import { connect } from 'react-redux';
+import Tooltip from 'rzp/ui/Tooltip';
 
 import './styles.styl';
 
@@ -11,6 +12,17 @@ export default class Treemap extends Component {
   constructor(props) {
     super(props);
 
+    this.state = {
+      tooltip: {
+        show: false,
+        data: {
+          amount: 0,
+          percent: 0,
+          label: '',
+        },
+      },
+    };
+
     this.scriptsLoaded = false;
     this.onSriptsLoad = null;
     this.treemapApi = null;
@@ -18,6 +30,8 @@ export default class Treemap extends Component {
 
     this.onTransition = ::this.onTransition;
     this.handleResize = ::this.handleResize;
+    this.onShowTooltip = ::this.onShowTooltip;
+    this.onHideTooltip = ::this.onHideTooltip;
   }
 
   async componentWillMount() {
@@ -42,6 +56,39 @@ export default class Treemap extends Component {
     );
   }
 
+  showTooltip({ amount, percentage, label }) {
+    this.setState({
+      tooltip: {
+        show: true,
+        data: {
+          amount,
+          percentage,
+          label,
+        },
+      },
+    });
+  }
+
+  hideTooltip() {
+    this.setState({
+      tooltip: {
+        show: false,
+      },
+    });
+  }
+
+  onShowTooltip({ amount, percentage, label }) {
+    this.showTooltip({
+      amount,
+      percentage,
+      label,
+    });
+  }
+
+  onHideTooltip() {
+    this.hideTooltip();
+  }
+
   onTransition(d, isNewData) {
     const { onLevelChange } = this.props;
 
@@ -55,6 +102,8 @@ export default class Treemap extends Component {
       data,
       this.d3,
       this.onTransition,
+      this.onShowTooltip,
+      this.onHideTooltip,
       {},
       this.bankNames
     );
@@ -112,6 +161,20 @@ export default class Treemap extends Component {
   }
 
   render() {
-    return <div ref={node => (this.node = node)} />;
+    const { tooltip } = this.state;
+
+    return (
+      <div>
+        <div ref={node => (this.node = node)} />
+        <Tooltip followPointer={true}>
+          <div>
+            <p>
+              {tooltip.data.amount} <small>{tooltip.data.percentage}</small>
+            </p>
+            <small>{tooltip.data.label}</small>
+          </div>
+        </Tooltip>
+      </div>
+    );
   }
 }
