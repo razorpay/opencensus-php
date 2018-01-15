@@ -12,6 +12,7 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Constants\AdminFetch;
 use RZP\Models\GeoIP\Service as GeoIP;
+use RZP\Models\Base\QueryCache\Constants as QueryCacheConstants;
 
 class Service extends Base\Service
 {
@@ -176,10 +177,10 @@ class Service extends Base\Service
         ];
 
         $cacheEvents = [
-            'cache_hits',
-            'cache_misses',
-            'cache_writes',
-            'cache_flushes',
+            QueryCacheConstants::CACHE_HITS,
+            QueryCacheConstants::CACHE_MISSES,
+            QueryCacheConstants::CACHE_WRITES,
+            QueryCacheConstants::CACHE_FLUSHES,
         ];
 
         foreach ($cachedEntities as $entity)

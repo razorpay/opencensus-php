@@ -82,8 +82,7 @@ class SettlementTest extends TestCase
         $this->deleteSetlFiles();
 
         $urls = [
-            '/settlements/reconcile/generate',
-            '/settlements/reconcile',
+            '/settlements/h2hreconcile/kotak',
         ];
 
         $this->ba->appAuth();

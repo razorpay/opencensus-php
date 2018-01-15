@@ -458,7 +458,6 @@ class ScheduleTest extends TestCase
         Carbon::setTestNow();
     }
 
-
     protected function applyCouponOnMerchant(string $code, string $merchantId = '10000000000000')
     {
         $request = $this->testData[__FUNCTION__];
