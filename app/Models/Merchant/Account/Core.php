@@ -94,6 +94,8 @@ class Core extends Merchant\Core
         $merchantDetails = [
             Detail\Entity::BUSINESS_NAME => $businessName,
             Detail\Entity::BUSINESS_TYPE => Detail\BusinessType::getIndexFromKey($businessType),
+
+            // TODO: take `submit` from input for the next version
             Detail\Entity::SUBMIT        => '1',
         ];
 

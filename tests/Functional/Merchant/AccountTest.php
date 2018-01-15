@@ -55,6 +55,13 @@ class AccountTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateLinkedAccountInvalidBusinessType()
+    {
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $this->startTest();
+    }
+
     public function testRetrieveAccount()
     {
         $merchant = $this->fixtures->create('merchant:marketplace_account');

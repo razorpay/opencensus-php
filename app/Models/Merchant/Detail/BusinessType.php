@@ -83,7 +83,7 @@ class BusinessType
         if (isset(self::$typeIndexMap[$key]) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                "Invalid business type: $key", Entity::BUSINESS_TYPE);
+                "Invalid business type: $key", Entity::BUSINESS_TYPE, ['type' => $key]);
         }
 
         return self::$typeIndexMap[$key];
