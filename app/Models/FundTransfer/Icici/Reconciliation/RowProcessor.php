@@ -29,7 +29,7 @@ class RowProcessor extends BaseRowProcessor
         switch ($mode)
         {
             case Mode::RTGS:
-                $utr = (($bankStatus === Status::PAID) ? $remarks : $cmsRefNo);
+                $utr = (($bankStatus === Status::PAID) ? $remarks :null);
                 break;
 
             case Mode::NEFT:
