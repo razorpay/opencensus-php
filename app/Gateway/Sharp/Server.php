@@ -86,13 +86,13 @@ class Server extends Base\Mock\Server
                 'Input fields not set properly');
         }
 
-        if ($input['method'] === 'netbanking')
+        //
+        // TODO: To remove this completely once we use emandate method
+        // internally also and not only in the external request.
+        //
+        if (empty($input[Payment\Entity::AUTH_TYPE]) === false)
         {
-            if ((isset($input['recurring']) === true) and
-                (boolval($input['recurring']) === true))
-            {
-                $data['emandate'] = true;
-            }
+            $data['emandate'] = true;
         }
 
         $data['action'] = 'authorize';
