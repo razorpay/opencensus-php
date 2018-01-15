@@ -3,7 +3,6 @@
 namespace RZP\Tests\Functional\Gateway\Reconciliation\Payumoney;
 
 use Carbon\Carbon;
-use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
@@ -110,7 +109,7 @@ class PayuReconTest extends TestCase
 
         $response = $this->reconcile($uploadedFile, 'PayuMoney');
 
-        // We assert that all 3 payments were reconciled
+        // Assert that the payment was not reconciled
         $this->assertEquals(1, $response['total_count']);
         $this->assertEquals(0, $response['success_count']);
         $this->assertEquals(1, $response['failure_count']);
@@ -133,6 +132,61 @@ class PayuReconTest extends TestCase
 
         // We persist gateway settled at even though the payment is not reconciled
         // Reference: PaymentReconciliate, line number 80
+        $this->assertNotNull($transaction['gateway_settled_at']);
+
+        //
+        // Service tax and gateway fee are not recorded in the
+        // transaction entity as per hardcoded values in mock recon file
+        // Ideally these are null, but we use accessors to cast these attributes to 0
+        //
+        $this->assertEquals(0, $transaction['gateway_service_tax']);
+        $this->assertEquals(0, $transaction['gateway_fee']);
+    }
+
+    public function testReconPaymentAlreadyReconciled()
+    {
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $this->makeReconPaymentsSince($createdAt, 1)[0];
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $transaction = $this->getEntityById('transaction', $payment['transaction_id'], true);
+
+        $this->fixtures->edit('transaction', $transaction['id'], ['reconciled_at' => $createdAt]);
+
+        $this->ba->appAuth();
+
+        $fileContents = $this->generateReconFile();
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $response = $this->reconcile($uploadedFile, 'PayuMoney');
+
+        // Total count = 1
+        $this->assertEquals(1, $response['total_count']);
+        $this->assertEquals(0, $response['success_count']);
+
+        // The payment is already reconciled, so failure count = 0
+        $this->assertEquals(0, $response['failure_count']);
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $payment = $this->getEntityById('payment', $payment['id'], true);
+
+        $this->assertNull($payment['gateway_captured']);
+
+        // Date is not persisted as the payment amount validation failed
+        $this->assertNull($wallet['date']);
+
+        $transactionId = $payment['transaction_id'];
+
+        $transaction = $this->getEntityById('transaction', $transactionId, true);
+
+        // Transaction is already reconciled
+        $this->assertNotNull($transaction['reconciled_at']);
+
+        // We persist gateway settled at even though gateway data won't be persisted
         $this->assertNotNull($transaction['gateway_settled_at']);
 
         //
