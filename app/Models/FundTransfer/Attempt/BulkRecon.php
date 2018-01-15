@@ -43,6 +43,8 @@ class BulkRecon extends Base\Core
 
     public function process()
     {
+        (new Validator)->validateInput('bulk_reconcile', $this->input);
+
         $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->channel);
 
         $data = $this->mutex->acquireAndRelease(
@@ -74,7 +76,9 @@ class BulkRecon extends Base\Core
 
         $chunks = array_chunk($ftaIds, 1000);
 
-        $this->repo->transactionOnLiveAndTest(function() use ($ftaIds, $relations, $chunks)
+        $entityProcessor = '\\RZP\\Models\FundTransfer\\' . ucfirst($this->channel) . '\\Reconciliation\\EntityProcessor';
+
+        $this->repo->transactionOnLiveAndTest(function() use ($ftaIds, $relations, $chunks, $entityProcessor)
         {
             try
             {
@@ -84,8 +88,6 @@ class BulkRecon extends Base\Core
 
                     foreach ($ftas as $fta)
                     {
-                        $entityProcessor = '\\RZP\\Models\FundTransfer\\' . ucfirst($this->channel) . '\\Reconciliation\\EntityProcessor';
-
                         $reconDetails = (new $entityProcessor($fta))->process();
 
                         $this->allReconciledRows[] = $reconDetails;

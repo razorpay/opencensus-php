@@ -11,8 +11,6 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::FTA_BULK_RECONCILE_REQUEST, $input);
 
-        (new Validator)->validateInput('bulk_reconcile', $input);
-
         $summary = (new BulkRecon($input, $channel))->process();
 
         return $summary;
