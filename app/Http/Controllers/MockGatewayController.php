@@ -168,7 +168,7 @@ class MockGatewayController extends Controller
     {
         $input = Request::all();
 
-        $server = $this->gateway->server('fss');
+        $server = $this->gateway->server('card_fss');
 
         $url = $server->authorize($input);
 

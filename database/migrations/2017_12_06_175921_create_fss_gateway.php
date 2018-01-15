@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-use RZP\Gateway\Fss\Entity as Fss;
+use RZP\Gateway\Card\Fss\Entity as Fss;
 use RZP\Models\Payment\Refund\Entity as Refund;
 use RZP\Constants\Table;
 
@@ -18,7 +18,7 @@ class CreateFssGateway extends Migration
      */
     public function up()
     {
-        Schema::create(Table::FSS, function (Blueprint $table)
+        Schema::create(Table::CARD_FSS, function (Blueprint $table)
         {
             $table->engine = 'InnoDB';
 
@@ -98,11 +98,11 @@ class CreateFssGateway extends Migration
      */
     public function down()
     {
-        Schema::table(Table::FSS, function($table)
+        Schema::table(Table::CARD_FSS, function($table)
         {
-            $table->dropForeign(Table::FSS . '_' . FSS::PAYMENT_ID . '_foreign');
+            $table->dropForeign(Table::CARD_FSS . '_' . FSS::PAYMENT_ID . '_foreign');
         });
 
-        Schema::drop(Table::FSS);
+        Schema::drop(Table::CARD_FSS);
     }
 }

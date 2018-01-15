@@ -27,7 +27,6 @@ class Gateway
     const EBS                    = 'ebs';
     const FIRST_DATA             = 'first_data';
     const HDFC                   = 'hdfc';
-    const FSS                    = 'fss';
     const MOBIKWIK               = 'mobikwik';
     const NETBANKING_AIRTEL      = 'netbanking_airtel';
     const NETBANKING_AXIS        = 'netbanking_axis';
@@ -46,6 +45,8 @@ class Gateway
     const UPI_SBI                = 'upi_sbi';
     const UPI_ICICI              = 'upi_icici';
     const AEPS_ICICI             = 'aeps_icici';
+
+    const CARD_FSS               = 'card_fss';
 
     const WALLET_AIRTELMONEY = 'wallet_airtelmoney';
     const WALLET_FREECHARGE  = 'wallet_freecharge';
@@ -74,7 +75,7 @@ class Gateway
         self::FIRST_DATA  => [self::ACQUIRER_ICIC],
         self::AMEX        => [self::ACQUIRER_AMEX],
         self::AEPS_ICICI  => [self::ACQUIRER_ICIC],
-        self::FSS         => [self::ACQUIRER_FSS],
+        self::CARD_FSS    => [self::ACQUIRER_FSS],
         self::HITACHI     => [self::ACQUIRER_RATN],
     ];
 
@@ -152,7 +153,7 @@ class Gateway
         Payment\Gateway::UPI_ICICI,
         Payment\Gateway::WALLET_PAYZAPP,
         Payment\Gateway::WALLET_MPESA,
-        Payment\Gateway::FSS,
+        Payment\Gateway::CARD_FSS,
     ];
 
     public static $channels = [
@@ -210,7 +211,7 @@ class Gateway
             self::FIRST_DATA,
             self::BLADE,
             self::HITACHI,
-            self::FSS,
+            self::CARD_FSS,
         ],
 
         Method::NETBANKING => [
@@ -385,7 +386,7 @@ class Gateway
             Network::MAES,
             Network::RUPAY,
         ],
-        self::FSS => [
+        self::CARD_FSS => [
             Network::MC,
             Network::VISA,
         ],

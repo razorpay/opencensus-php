@@ -234,13 +234,13 @@ class Terminal extends Base
         $defaultValues = [
             'id'                        => $termId,
             'merchant_id'               => '100000Razorpay',
-            'gateway'                   => 'fss',
+            'gateway'                   => 'card_fss',
             'card'                      => 1,
             'gateway_merchant_id'       => 'random',
             'gateway_terminal_id'       => 'FssBobDebit123',
             'gateway_terminal_password' => 'password',
             'gateway_secure_secret'     => '12345678',
-            'gateway_acquirer'          => 'bob',
+            'gateway_acquirer'          => 'barb',
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

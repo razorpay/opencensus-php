@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Tests\Functional\Gateway\Fss;
+namespace RZP\Tests\Functional\Gateway\Card\Fss;
 
 class FssGatewayTest extends BobGatewayTest
 {

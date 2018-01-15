@@ -1,12 +1,12 @@
 <?php
 
-namespace RZP\Gateway\Fss\Mock;
+namespace RZP\Gateway\Card\Fss\Mock;
 
 use RZP\Base;
-use RZP\Gateway\Fss\Acquirer;
-use RZP\Gateway\Fss\CardType;
+use RZP\Gateway\Card\Fss\Acquirer;
+use RZP\Gateway\Card\Fss\CardType;
 use RZP\Models\Currency\Currency;
-use RZP\Gateway\Fss\Fields;
+use RZP\Gateway\Card\Fss\Fields;
 use RZP\Exception;
 
 class Validator extends Base\Validator

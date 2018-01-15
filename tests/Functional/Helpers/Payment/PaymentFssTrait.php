@@ -2,12 +2,12 @@
 
 namespace RZP\Tests\Functional\Helpers\Payment;
 
-use RZP\Gateway\Fss\Fields;
-use RZP\Gateway\Fss\Status;
+use RZP\Gateway\Card\Fss\Fields;
+use RZP\Gateway\Card\Fss\Status;
 
 trait PaymentFssTrait
 {
-    protected function runPaymentCallbackFlowFss($response, &$callback = null)
+    protected function runPaymentCallbackFlowCardFss($response, &$callback = null)
     {
         $mock = $this->isGatewayMocked();
 

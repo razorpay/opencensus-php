@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Gateway\Fss;
+namespace RZP\Gateway\Card\Fss;
 
 use RZP\Exception;
 use RZP\Models\Card;
@@ -16,7 +16,7 @@ use RZP\Gateway\Base\VerifyResult;
 
 class Gateway extends Base\Gateway
 {
-    protected $gateway = Payment\Gateway::FSS;
+    protected $gateway = Payment\Gateway::CARD_FSS;
 
     /**
      * Fss Gateway has purchase model so framing the request here
@@ -73,6 +73,13 @@ class Gateway extends Base\Gateway
             $attributes = $this->getCallbackFields($gatewayContent);
 
             $gatewayPayment->fill($attributes);
+
+            $this->trace->info(
+                TraceCode::GATEWAY_REFUND_RESPONSE,
+                [
+                    'refund_id' => $gatewayContent,
+                ]
+            );
 
             if (isset($gatewayContent[Fields::AMOUNT]) === false)
             {

@@ -1,11 +1,10 @@
 <?php
 
-namespace RZP\Tests\Functional\Gateway\Fss;
+namespace RZP\Tests\Functional\Gateway\Card\Fss;
 
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
-use RZP\Gateway\Fss\Status;
-use RZP\Models\Bank\IFSC;
+use RZP\Gateway\Card\Fss\Status;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 
@@ -38,7 +37,7 @@ class BobGatewayTest extends TestCase
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
-        $this->gateway = 'fss';
+        $this->gateway = 'card_fss';
 
         $this->payment = $this->getDefaultPaymentArray();
 
@@ -95,7 +94,7 @@ class BobGatewayTest extends TestCase
 
         $this->assertEquals('refunded', $payment['status']);
 
-        $gatewayPayment = $this->getLastEntity('fss', true);
+        $gatewayPayment = $this->getLastEntity('card_fss', true);
 
         $refund = $this->getLastEntity('refund', true);
 
@@ -120,7 +119,7 @@ class BobGatewayTest extends TestCase
         $this->assertEquals('failed', $refund['status']);
         $this->assertEquals(1, $refund['attempts']);
 
-        $fss = $this->getLastEntity('fss', true);
+        $fss = $this->getLastEntity('card_fss', true);
 
         $this->assertEquals($refund['id'], 'rfnd_'.$fss['refund_id']);
 
@@ -144,7 +143,7 @@ class BobGatewayTest extends TestCase
         $this->assertEquals(2, $actualRefund['attempts']);
         $this->assertEquals(true, $actualRefund['gateway_refunded']);
 
-        $fss = $this->getLastEntity('fss', true);
+        $fss = $this->getLastEntity('card_fss', true);
 
         $this->assertEquals($actualRefund['id'], 'rfnd_'.$fss['refund_id']);
         $this->assertEquals('CAPTURED', $fss['status']);

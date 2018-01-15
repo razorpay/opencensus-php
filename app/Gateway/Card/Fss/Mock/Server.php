@@ -1,13 +1,12 @@
 <?php
 
-namespace RZP\Gateway\Fss\Mock;
+namespace RZP\Gateway\Card\Fss\Mock;
 
 use Config;
-use RZP\Gateway\Fss;
-use RZP\Gateway\Fss\Fields;
-use RZP\Gateway\Fss\Entity;
+use RZP\Gateway\Card\Fss;
+use RZP\Gateway\Card\Fss\Fields;
+use RZP\Gateway\Card\Fss\Entity;
 use RZP\Gateway\Base;
-use RZP\Models\Terminal\Repository as TerminalRepo;
 
 class Server extends Base\Mock\Server
 {
@@ -213,6 +212,6 @@ class Server extends Base\Mock\Server
 
     private function getGatewaySecret($acquirer)
     {
-        return Config::get('gateway.fss.' . strtolower($acquirer) . '.test_hash_secret');
+        return Config::get('gateway.card_fss.' . strtolower($acquirer) . '.test_hash_secret');
     }
 }

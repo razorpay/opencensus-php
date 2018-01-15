@@ -1,11 +1,9 @@
 <?php
 
-namespace RZP\Gateway\Fss\Mock;
+namespace RZP\Gateway\Card\Fss\Mock;
 
-use RZP\Exception;
-use RZP\Gateway\Fss\Constants;
 use RZP\Gateway\Base;
-use RZP\Gateway\Fss;
+use RZP\Gateway\Card\Fss;
 
 class Gateway extends Fss\Gateway
 {

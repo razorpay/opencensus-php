@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Gateway\Fss;
+namespace RZP\Gateway\Card\Fss;
 
 use RZP\Error\Error;
 use RZP\Error\ErrorCode;

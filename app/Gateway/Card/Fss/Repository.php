@@ -1,10 +1,10 @@
 <?php
 
-namespace RZP\Gateway\Fss;
+namespace RZP\Gateway\Card\Fss;
 
 use RZP\Gateway\Base;
 
 class Repository extends Base\Repository
 {
-    protected $entity = 'fss';
+    protected $entity = 'card_fss';
 }

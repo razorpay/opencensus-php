@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Gateway\Fss;
+namespace RZP\Gateway\Card\Fss;
 
 use RZP\Gateway\Base;
 use RZP\Constants;
@@ -56,7 +56,7 @@ class Entity extends Base\Entity
         self::AMOUNT => 'int',
     ];
 
-    protected $entity = Constants\Entity::FSS;
+    protected $entity = Constants\Entity::CARD_FSS;
 
     public $incrementing = true;
 
