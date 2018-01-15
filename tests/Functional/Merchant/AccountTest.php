@@ -46,19 +46,21 @@ class AccountTest extends TestCase
         $this->assertEquals('10000000000000', $lastAccount['parent_id']);
 
         $this->assertNotNull($account['fund_transfer']['destination']);
+
+        $bankAccount = $this->getLastEntity('bank_account', true, 'test');
+        $this->assertEquals('RZPB0000000', $bankAccount['ifsc_code']);
+
+        $bankAccount = $this->getLastEntity('bank_account', true, 'live');
+        $this->assertEquals('0002020000304030434', $bankAccount['account_number']);
     }
 
     public function testCreateLinkedAccountValidationFailure()
     {
-        $this->fixtures->merchant->activate('10000000000000');
-
         $this->startTest();
     }
 
     public function testCreateLinkedAccountInvalidBusinessType()
     {
-        $this->fixtures->merchant->activate('10000000000000');
-
         $this->startTest();
     }
 

@@ -97,7 +97,6 @@ class Entity extends Merchant\Entity
         BankAccount\Entity::ACCOUNT_NUMBER       => MerchantDetail\Entity::BANK_ACCOUNT_NUMBER,
         BankAccount\Entity::ACCOUNT_TYPE         => MerchantDetail\Entity::BANK_ACCOUNT_TYPE,
         BankAccount\Entity::BENEFICIARY_NAME     => MerchantDetail\Entity::BANK_ACCOUNT_NAME,
-        BankAccount\Entity::BENEFICIARY_ADDRESS1 => MerchantDetail\Entity::BANK_BENEFICIARY_ADDRESS1,
     ];
 
     /**

@@ -38,7 +38,7 @@ class Core extends Merchant\Core
         // with the dummy data will be updated with the actual data and no entity will
         // be created in the Live mode,
         //
-        // Hence, forcing the input mode to be live mode here.
+        // Hence, forcing the input mode to be live mode here, if not already.
         //
         $this->setLiveMode();
 
@@ -116,7 +116,6 @@ class Core extends Merchant\Core
             BankAccount\Entity::ACCOUNT_NUMBER,
             BankAccount\Entity::ACCOUNT_TYPE,
             BankAccount\Entity::BENEFICIARY_NAME,
-            BankAccount\Entity::BENEFICIARY_ADDRESS1,
         ];
 
         $bankAccountDetailsKeys = array_only($input, $whitelistedBankAccountKeys);
