@@ -198,6 +198,63 @@ class PayuReconTest extends TestCase
         $this->assertEquals(0, $transaction['gateway_fee']);
     }
 
+    public function testReconPaymentIdEmpty()
+    {
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $payment = $this->makeReconPaymentsSince($createdAt, 1)[0];
+
+        $this->ba->appAuth();
+
+        $this->mockReconContentFunction(
+            function(& $content, $action = null)
+            {
+                if ($action === 'col_payment_payu_recon')
+                {
+                    // Setting amount to 1 will cause payment amount validation to fail
+                    $content['Merchant Transaction ID'] = 0;
+                }
+            });
+
+        $fileContents = $this->generateReconFile();
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $response = $this->reconcile($uploadedFile, 'PayuMoney');
+
+        // Assert that the payment was not reconciled
+        $this->assertEquals(1, $response['total_count']);
+        $this->assertEquals(0, $response['success_count']);
+        $this->assertEquals(1, $response['failure_count']);
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $payment = $this->getEntityById('payment', $payment, true);
+
+        $this->assertNull($payment['gateway_captured']);
+
+        // Date is not persisted as the payment amount validation failed
+        $this->assertNull($wallet['date']);
+
+        $transactionId = $payment['transaction_id'];
+
+        $transaction = $this->getEntityById('transaction', $transactionId, true);
+
+        // Transaction is not reconciled
+        $this->assertNull($transaction['reconciled_at']);
+
+        // When the payment id is empty, we do not persist gateway settled at
+        $this->assertNull($transaction['gateway_settled_at']);
+
+        //
+        // Service tax and gateway fee are not recorded in the
+        // transaction entity as per hardcoded values in mock recon file
+        // Ideally these are null, but we use accessors to cast these attributes to 0
+        //
+        $this->assertEquals(0, $transaction['gateway_service_tax']);
+        $this->assertEquals(0, $transaction['gateway_fee']);
+    }
+
     private function createUploadedFile($file)
     {
         $this->assertFileExists($file);
