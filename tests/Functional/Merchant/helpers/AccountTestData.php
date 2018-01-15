@@ -1,5 +1,8 @@
 <?php
 
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+
 return [
     'testRetrieveAccount' => [
         'request'  => [
@@ -35,23 +38,23 @@ return [
             'url'     => '/beta/accounts',
             'method'  => 'post',
             'content' => [
-                'name'  => 'Linked Account 1',
-                'email' => 'linked1@account.com',
-                'tnc_accepted' => true,
-                'notes' => [
+                'name'            => 'Linked Account 1',
+                'email'           => 'linked1@account.com',
+                'tnc_accepted'    => true,
+                'notes'           => [
                     'custom_account_id' => 'Qwerty123',
-                    'custom_attribute' => 'some_value',
+                    'custom_attribute'  => 'some_value',
                 ],
                 'account_details' => [
                     'business_name' => 'Acme solutions',
                     'business_type' => 'proprietorship',
                 ],
-                'bank_account' => [
-                    'ifsc_code'             => 'ICIC0001206',
-                    'account_number'        => '0002020000304030434',
-                    'account_type'          => 'current',
-                    'beneficiary_name'      => 'Test R4zorpay',
-                    'beneficiary_address1'  => 'address 1',
+                'bank_account'    => [
+                    'ifsc_code'            => 'ICIC0001206',
+                    'account_number'       => '0002020000304030434',
+                    'account_type'         => 'current',
+                    'beneficiary_name'     => 'Test R4zorpay',
+                    'beneficiary_address1' => 'address 1',
                 ]
             ],
         ],
@@ -65,10 +68,10 @@ return [
                 'managed'            => true,
                 'activation_details' => [
                     'status'         => 'activated',
-                    'fields_pending' => [ ],
+                    'fields_pending' => [],
                 ],
                 'secondary_emails'   => [
-                    'transaction_report_email' => [ ],
+                    'transaction_report_email' => [],
                 ],
                 'account_details'    => [
                     'mobile'                   => null,
@@ -108,30 +111,55 @@ return [
                     'custom_account_id' => 'Qwerty123',
                     'custom_attribute'  => 'some_value',
                 ],
-                'fund_transfer'      => [ ],
+                'fund_transfer'      => [],
             ]
         ],
     ],
 
-    'addSettlementDestination' => [
-        'request' => [
+    'testCreateLinkedAccountValidationFailure' => [
+        'request'   => [
+            'url'     => '/beta/accounts',
+            'method'  => 'post',
             'content' => [
-                'ifsc_code'             => 'ICIC0001206',
-                'account_number'        => '0002020000304030434',
-                'beneficiary_name'      => 'Test R4zorpay',
-                'beneficiary_address1'  => 'address 1',
-                'beneficiary_address2'  => 'address 2',
-                'beneficiary_address3'  => 'address 3',
-                'beneficiary_address4'  => 'address 4',
-                'beneficiary_email'     => 'random@email.com',
-                'beneficiary_mobile'    => '9988776655',
-                'beneficiary_city'      => 'Kolkata',
-                'beneficiary_state'     => 'WB',
-                'beneficiary_country'   => 'IN',
-                'beneficiary_pin'       => '123456',
+                'name'         => 'Linked Account 1',
+                'email'        => 'linked1@account.com',
+                'tnc_accepted' => true
             ],
-            'url' => '/accounts/acc_10000000000000/bank_accounts',
-            'method' => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The account details field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'addSettlementDestination' => [
+        'request'  => [
+            'content' => [
+                'ifsc_code'            => 'ICIC0001206',
+                'account_number'       => '0002020000304030434',
+                'beneficiary_name'     => 'Test R4zorpay',
+                'beneficiary_address1' => 'address 1',
+                'beneficiary_address2' => 'address 2',
+                'beneficiary_address3' => 'address 3',
+                'beneficiary_address4' => 'address 4',
+                'beneficiary_email'    => 'random@email.com',
+                'beneficiary_mobile'   => '9988776655',
+                'beneficiary_city'     => 'Kolkata',
+                'beneficiary_state'    => 'WB',
+                'beneficiary_country'  => 'IN',
+                'beneficiary_pin'      => '123456',
+            ],
+            'url'     => '/accounts/acc_10000000000000/bank_accounts',
+            'method'  => 'POST'
         ],
         'response' => [
             'content' => [
@@ -144,15 +172,15 @@ return [
     ],
 
     'fetchSettlementDestinations' => [
-        'request' => [
-            'content' => [ ],
-            'url' => '/accounts/acc_10000000000000/settlement_destinations',
-            'method' => 'GET'
+        'request'  => [
+            'content' => [],
+            'url'     => '/accounts/acc_10000000000000/settlement_destinations',
+            'method'  => 'GET'
         ],
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'items' => [
+                'items'  => [
                     [
                         'entity'         => 'bank_account',
                         'ifsc'           => 'ICIC0001206',

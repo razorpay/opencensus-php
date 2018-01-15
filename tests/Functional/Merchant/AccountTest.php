@@ -48,6 +48,13 @@ class AccountTest extends TestCase
         $this->assertNotNull($account['fund_transfer']['destination']);
     }
 
+    public function testCreateLinkedAccountValidationFailure()
+    {
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $this->startTest();
+    }
+
     public function testRetrieveAccount()
     {
         $merchant = $this->fixtures->create('merchant:marketplace_account');
