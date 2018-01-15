@@ -128,6 +128,7 @@ class ErrorCode
     const BAD_REQUEST_VALIDATION_FAILURE                                            = 'BAD_REQUEST_VALIDATION_FAILURE';
     const BAD_REQUEST_PERMISSION_ERROR                                              = 'BAD_REQUEST_PERMISSION_ERROR';
     const BAD_REQUEST_APP_TOKEN_NOT_GLOBAL                                          = 'BAD_REQUEST_APP_TOKEN_NOT_GLOBAL';
+    const BAD_REQUEST_INVALID_BANK_FOR_EMANDATE                                     = 'BAD_REQUEST_INVALID_BANK_FOR_EMANDATE';
 
     const BAD_REQUEST_CUSTOMER_ID_MISSING                                           = 'BAD_REQUEST_CUSTOMER_ID_MISSING';
     const BAD_REQUEST_BANK_ACCOUNT_ID_MISSING                                       = 'BAD_REQUEST_BANK_ACCOUNT_ID_MISSING';
@@ -662,6 +663,7 @@ class ErrorCode
     const BAD_REQUEST_PERMISSION_DISABLED_FOR_WORKFLOW                              = 'BAD_REQUEST_PERMISSION_DISABLED_FOR_WORKFLOW';
     const BAD_REQUEST_WORKFLOW_STEP_OP_MISMATCH                                     = 'BAD_REQUEST_WORKFLOW_STEP_OP_MISMATCH';
     const BAD_REQUEST_WORKFLOW_DUTY_TYPE_INVALID                                    = 'BAD_REQUEST_WORKFLOW_DUTY_TYPE_INVALID';
+    const BAD_REQUEST_WORKFLOW_ENTITY_VALIDATOR_RULE_NOT_FOUND                      = 'BAD_REQUEST_WORKFLOW_ENTITY_VALIDATOR_RULE_NOT_FOUND';
 
     const BAD_REQUEST_SUPERADMIN_ACCESS_REQUIRED                                    = 'BAD_REQUEST_SUPERADMIN_ACCESS_REQUIRED';
 

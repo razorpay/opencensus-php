@@ -54,6 +54,12 @@ class CreateTokens extends Migration {
             $table->string(Token::ACCOUNT_NUMBER, 40)
                   ->nullable();
 
+            $table->string(Token::BENEFICIARY_NAME, 120)
+                  ->nullable();
+
+            $table->string(Token::IFSC, 16)
+                  ->nullable();
+
             $table->text(Token::GATEWAY_TOKEN)
                   ->nullable();
 

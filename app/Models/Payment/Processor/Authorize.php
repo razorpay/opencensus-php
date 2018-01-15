@@ -864,6 +864,9 @@ trait Authorize
 
         $token = $payment->getGlobalOrLocalTokenEntity();
 
+        // TODO: Throw a bad request exception if token is null.
+        // For recurring payments, there should always be a token.
+
         if ($token !== null)
         {
             $this->assertTokenIsRecurring($payment, $token);
@@ -1009,25 +1012,56 @@ trait Authorize
     }
 
     protected function validateRecurringForNetbanking(
-        Payment\Entity $payment, Token\Entity $token = null, array $input)
+        Payment\Entity $payment, Token\Entity $token, array $input)
     {
-        if ($token === null)
+        //
+        // The below two validations are being done here and not as part of
+        // Validator Rules because after the payment build, we give the
+        // control to frontend to take missing attributes from the customer.
+        // So, as part of validation, we use `sometimes` for these fields.
+        // Ideally, this should never happen since we anyway ensure that
+        // we collect the missing attributes from the customer before
+        // proceeding further.
+        //
+        // We need bank_account details and auth_type only for first recurring payments.
+        // For the second recurring payments, we don't require auth type and bank_account
+        // details would be present in the token itself.
+        //
+        // ISSUE: Since we are doing the validation here (after the token is created),
+        // it's possible that the tokens are created without the required bank account details.
+        //
+        if ($payment->isRecurringTypeInitial() === true)
         {
-            return;
-        }
+            if (empty($input[Payment\Entity::BANK_ACCOUNT]) === true)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'The bank_account field is required when method is ' . Method::EMANDATE
+                );
+            }
 
-        $bank = $payment->getBank();
+            if ($payment->getAuthType() === null)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'The auth_type field is required when method is ' . Method::EMANDATE
+                );
+            }
 
-        // TODO: Handle first recurring / second recurring based on token and route
+            $bank = $payment->getBank();
 
-        if (Payment\Gateway::isRecurringSupportedOnBank($bank) === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_BANK_RECURRING_NOT_SUPPORTED,
-                Payment\Entity::BANK,
-                [
-                    'payment' => $payment->toArray(),
-                ]);
+            // TODO: Handle first recurring / second recurring based on token and route
+
+            if (in_array(
+                    $bank,
+                    Payment\Gateway::getAvailableEmandateBanksForAuthType($payment->getAuthType()),
+                    true) === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_BANK_RECURRING_NOT_SUPPORTED,
+                    Payment\Entity::BANK,
+                    [
+                        'payment' => $payment->toArray(),
+                    ]);
+            }
         }
 
         // We ensure that the e_mandate feature has been enabled for the merchant
@@ -1969,7 +2003,9 @@ trait Authorize
                 'customer_id'       => $customer->getId(),
                 'local'             => $customer->isLocal(),
                 'card_id'           => $savedCardId,
-                'account_number'    => $input[Token\Entity::ACCOUNT_NUMBER] ?? null,
+                'account_number'    => $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::ACCOUNT_NUMBER] ?? null,
+                'beneficiary_name'  => $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::NAME] ?? null,
+                'ifsc'              => $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::IFSC] ?? null,
             ]);
 
         $saveMethodInput = [
@@ -1989,7 +2025,14 @@ trait Authorize
             // TODO: We need to get this from user input - hard coding for now
             $saveMethodInput[Token\Entity::MAX_AMOUNT] = Token\Entity::DEFAULT_MAX_AMOUNT;
 
-            $saveMethodInput[Token\Entity::ACCOUNT_NUMBER] = $input[Token\Entity::ACCOUNT_NUMBER] ?? null;
+            $saveMethodInput[Token\Entity::ACCOUNT_NUMBER] =
+                    $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::ACCOUNT_NUMBER] ?? null;
+
+            $saveMethodInput[Token\Entity::BENEFICIARY_NAME] =
+                    $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::NAME] ?? null;
+
+            $saveMethodInput[Token\Entity::IFSC] =
+                    $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::IFSC] ?? null;
         }
         else if ($payment->isMethod(Payment\Method::WALLET))
         {
@@ -3478,7 +3521,12 @@ trait Authorize
             ];
 
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_BANK_NOT_ENABLED_FOR_MERCHANT);
+                ErrorCode::BAD_REQUEST_PAYMENT_BANK_NOT_ENABLED_FOR_MERCHANT,
+                null,
+                [
+                    'custom_properties' => $customProperties,
+                    'payment_id'        => $payment->getId(),
+                ]);
         }
     }
 
