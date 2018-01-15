@@ -350,11 +350,4 @@ class PaymentController extends Controller
 
         return ApiResponse::json($data);
     }
-
-    public function getDisputesForPayment(string $paymentId)
-    {
-        $data = $this->service(E::DISPUTE)->fetchDisputesForPayment($paymentId);
-
-        return ApiResponse::json($data);
-    }
 }

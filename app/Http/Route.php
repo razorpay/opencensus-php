@@ -88,7 +88,6 @@ final class Route
         'payment_refund_authorized'               => ['post',     'payments/refund/authorized',                     'PaymentController@postRefundOldAuthorizedPayments'                 ],
         'payment_capture_verify'                  => ['post',     'payments/{id}/verify/capture',                   'PaymentController@postCaptureVerify'                               ],
         'payment_capture_gateway_manual'          => ['post',     'payments/{id}/gateway/capture',                  'PaymentController@postManualGatewayCapture'                        ],
-        'payment_fetch_disputes'                  => ['get',      'payments/{id}/disputes',                         'PaymentController@getDisputesForPayment'                           ],
         'payment_authorize_time_out'              => ['post',     'payments/authorize/timeout/{ids}',               'PaymentController@postAuthorizeLockTimeOut'                        ],
         'refund_create'                           => ['post',     'refunds',                                        'RefundController@postRefundCreate'                                 ],
         'refund_fetch_by_id'                      => ['get',      'refunds/{id}',                                   'RefundController@getRefund'                                        ],
@@ -1222,7 +1221,6 @@ final class Route
         'reporting_log_list',
         'reporting_log_create',
         'ufh_get_file_signed_url',
-        'payment_fetch_disputes',
     ];
 
     // These will run on internal auth with the assurance

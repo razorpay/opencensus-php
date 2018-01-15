@@ -39,15 +39,6 @@ class Service extends Base\Service
         return $disputes->toArrayPublic();
     }
 
-    public function fetchDisputesForPayment(string $paymentId)
-    {
-        $input = [
-            Entity::PAYMENT_ID  => PaymentEntity::getSignedId($paymentId),
-        ];
-
-        return $this->fetchMultiple($input);
-    }
-
     public function migrateOldAdjustments($file): array
     {
         return $this->core()->migrateOldAdjustments($file);
