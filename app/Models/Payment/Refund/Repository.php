@@ -314,7 +314,7 @@ class Repository extends Base\Repository
                     ->where($refundCreatedAt, '<=', $to)
                     ->where($paymentGateway, '=', $gateway)
                     ->where($paymentMethod, '=', 'card')
-                    ->whereRaw("$paymentCreatedAt - $refundCreatedAt <= 15552000")
+                    ->whereRaw("$refundCreatedAt - $paymentCreatedAt >= $six_month_ago_timestamp")
                     ->with(['payment'])
                     ->get();
     }
