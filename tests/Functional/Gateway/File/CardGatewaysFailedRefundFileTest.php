@@ -117,8 +117,6 @@ class CardGatewaysFailedRefundFileTest extends TestCase
 
         $refunds = $this->getEntities('refund', [], true);
 
-        $time = Carbon::now()->getTimestamp() - 15780000;
-
         foreach ($refunds['items'] as $refund)
         {
             $this->fixtures->edit('refund', $refund['id'], ['status' => 'failed']);
@@ -193,8 +191,6 @@ class CardGatewaysFailedRefundFileTest extends TestCase
 
         $refunds = $this->getEntities('refund', [], true);
 
-        $time = Carbon::now()->getTimestamp() - 15780000;
-
         foreach ($refunds['items'] as $refund)
         {
             $this->fixtures->edit('refund', $refund['id'], ['status' => 'failed']);
@@ -261,8 +257,6 @@ class CardGatewaysFailedRefundFileTest extends TestCase
         $this->refundPayment($payment['id'], 100);
 
         $refunds = $this->getEntities('refund', [], true);
-
-        $time = Carbon::now()->getTimestamp() - 15780000;
 
         foreach ($refunds['items'] as $refund)
         {
