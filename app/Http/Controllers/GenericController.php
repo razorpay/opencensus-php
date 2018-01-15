@@ -50,4 +50,13 @@ class GenericController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
+    public function handleUser($path)
+    {
+        $request = new App\Admin\ApiRequestAny();
+
+        list($error, $data) = $request->sendWithUserId($path);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
 }

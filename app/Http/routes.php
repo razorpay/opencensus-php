@@ -36,6 +36,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::options('/session', 'UserController@getSessionData')->middleware(['cors', 'auth:user']);
         Route::get('/session', 'UserController@getSessionData')->middleware(['cors', 'auth:user']);
     });
+        Route::any('/user/api/{path}', 'GenericController@handleUser')->where(['path' => '.*']);
 
     Route::group(['middleware' => 'auth:user', 'prefix' => 'user'], function()
     {

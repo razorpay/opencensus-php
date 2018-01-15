@@ -48,6 +48,9 @@ class ApiRequestAny
         $this->client = new Guzzle($options);
     }
 
+    /**
+     * makes raw api calls with X-Admin-Token added to header
+     */
     public function sendWithAdminToken($auth, $path)
     {
         $adminUser = Auth::guard('api')->user();
@@ -59,8 +62,7 @@ class ApiRequestAny
             ]
         ];
 
-        return $this->send($path, $auth, $options);
-
+        return $this->send($path, $options, $auth);
     }
 
     public function sendWithMerchantProxy($mode, $path)
@@ -82,15 +84,31 @@ class ApiRequestAny
 
             $user = $mode.'_'.$merchantId;
 
-            return $this->send($path, $user, $options);
+            return $this->send($path, $options, $user);
         }
+    }
+
+    /**
+     * makes raw api calls with X-Dashboard-User-Id added to header
+     */
+    public function sendWithUserId($path)
+    {
+        $user = Auth::guard('user')->user();
+
+        $options = [
+            'headers' => [
+                'X-Dashboard-User-Id' => $user->id
+            ]
+        ];
+
+        return $this->send($path, $options);
     }
 
     /**
      * Fires the request to the API
      * @return array standard response
      */
-    public function send($path, $user = null, $options = [])
+    public function send($path, $options = [], $auth = null)
     {
         $exception = null;
         $errors = [];
@@ -98,7 +116,7 @@ class ApiRequestAny
 
         $method = Request::method();
 
-        $options = $this->processOptions($user, $options);
+        $options = $this->processOptions($auth, $options);
 
         try
         {
@@ -154,12 +172,12 @@ class ApiRequestAny
 
     // set Content-Type header
     // and process body according to content-type
-    public function processOptions($user, $options)
+    public function processOptions($auth, $options)
     {
 
-        if ($user) {
+        if ($auth) {
             $options['auth'] = [
-                'rzp_'.$user,
+                'rzp_'.$auth,
                 Config::get('api.auth_pass')
             ];
         }
@@ -171,8 +189,8 @@ class ApiRequestAny
         $contentType = Request::header('content-type', self::CONTENT_TYPE_JSON);
 
         // if contentType begins with
-        // user check just for precaution, so that guests do not upload files
-        if ($user && strpos($contentType, self::CONTENT_TYPE_MULTIPART_PREFIX) === 0)
+        // auth check just for precaution, so that guests do not upload files
+        if ($auth && strpos($contentType, self::CONTENT_TYPE_MULTIPART_PREFIX) === 0)
         {
             // $options['multipart'] = $input;
             $this->processUploads($options);
