@@ -12,7 +12,7 @@ class Constants
 
     const CANCELLED             = 'CANCELLED';
 
-    // ErrorCodes starting with the below text.
+    // ErrorCodes start with the below text.
     public static $errorMessageStart = [
         'IPAY',
         'GW',

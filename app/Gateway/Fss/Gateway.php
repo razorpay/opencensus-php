@@ -136,7 +136,7 @@ class Gateway extends Base\Gateway
 
         // Doing Additional check with the result because error messages are sent in result.
         if ((in_array($responseFields[Fields::RESULT], Status::$successStates) === false) and
-            ($this->isErrorMessageText($responseFields[Fields::RESULT]) === true))
+            ($this->isErrorMessage($responseFields[Fields::RESULT]) === true))
         {
             $this->checkErrorMessage($gatewayEntity, $responseFields);
         }
@@ -297,8 +297,6 @@ class Gateway extends Base\Gateway
                 }
 
                 break;
-            default:
-                break;
         }
     }
 
@@ -312,6 +310,7 @@ class Gateway extends Base\Gateway
     {
         // Entire request content is wrapped in xml.
         $requestBuffer = $this->getGatewayRequestContent($requestContent);
+
         // Encrypted request content
         $tranData = $this->getEncryptedRequestContent($requestBuffer, $input);
 
@@ -421,7 +420,7 @@ class Gateway extends Base\Gateway
      *
      * @return array
      */
-    protected function getCallbackFields(array $gatewayContent): array
+    protected function getFormattedGatewayFields(array $gatewayContent): array
     {
         $attributes = [
             Entity::RECEIVED => true,
@@ -482,6 +481,11 @@ class Gateway extends Base\Gateway
         return $attributes;
     }
 
+    protected function getCallbackFields(array $gatewayContent): array
+    {
+        return $this->getFormattedGatewayFields($gatewayContent);
+    }
+
     /**
      * @param $response
      *
@@ -504,7 +508,7 @@ class Gateway extends Base\Gateway
      */
     protected function getRefundFields($refundResponse, $input)
     {
-        $refundFields = $this->getCallbackFields($refundResponse);
+        $refundFields = $this->getFormattedGatewayFields($refundResponse);
 
         $refundFields[Entity::AMOUNT] = $input[E::REFUND][Entity::AMOUNT];
 
@@ -685,7 +689,7 @@ class Gateway extends Base\Gateway
 
     protected function getGatewayRequestContentArray($input)
     {
-        $traceCode = '';
+        $traceCode = null;
 
         $requestContent = [
             Fields::CURRENCY_CODE  => Currency::getIsoCode(Currency::INR),
@@ -744,7 +748,7 @@ class Gateway extends Base\Gateway
             trim($status) !== Status::CAPTURED)
         {
             // Error message is sent as status.
-            if ($this->isErrorMessageText($status) === true)
+            if ($this->isErrorMessage($status) === true)
             {
                 $attributes[Entity::ERROR_MESSAGE] = $status;
 
@@ -759,7 +763,7 @@ class Gateway extends Base\Gateway
      *
      * @return boolean
      */
-    private function isErrorMessageText(string $errorMessageText)
+    private function isErrorMessage(string $errorMessageText)
     {
         foreach (Constants::$errorMessageStart as $errorText)
         {
