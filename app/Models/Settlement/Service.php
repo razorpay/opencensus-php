@@ -113,6 +113,13 @@ class Service extends Base\Service
         return $txns->toArrayPublic();
     }
 
+    public function reconcileSettlements($input, string $channel)
+    {
+        $reconNamepsace = 'RZP\\Models\\FundTransfer\\' . ucwords($channel). '\\Reconciliation\\FileProcessor';
+
+        return (new $reconNamepsace)->process($input);
+    }
+
     public function reconcileH2HSettlements($input, string $channel)
     {
         $reconNamepsace = 'RZP\\Models\\FundTransfer\\' . ucwords($channel). '\\Reconciliation\\FileProcessor';
