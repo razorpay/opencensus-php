@@ -6,12 +6,13 @@ use Mail;
 use Closure;
 use Mockery;
 use Carbon\Carbon;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
 
 use RZP\Models\Settlement;
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
-use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\ResponseInterface;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\Merchant\Webhook\Inferno;
 use Http\Discovery\MessageFactoryDiscovery;
 use RZP\Mail\Merchant\Webhook as WebhookMail;
@@ -617,27 +618,27 @@ class WebhookTest extends TestCase
         }, 2);
 
         // Generate settlements for above transactions
-        $setlFile = $this->initiateSettlementsAndAssertSuccess();
+        $setlFile = $this->initiateSettlementsAndAssertSuccess(Settlement\Channel::KOTAK);
 
         // Generate settlement reconciliation file
-        $setlReconciliationFile = $this->generateSetlReconciliationFile($setlFile);
-
-        // After settlements are initiated, the settlementFile is deleted. Read it to a local variable.
-        $settlementReconFileData = file_get_contents($setlReconciliationFile);
+        $setlReconciliationFile = $this->generateSetlReconciliationFile($setlFile, Settlement\Channel::KOTAK);
 
         // Reconcile settlements
         $this->reconcileSettlements($setlReconciliationFile);
 
-        // Validate settlement entity
-        $setl = $this->getLastEntity('settlement', true);
+        // Process entities
+        $request = [
+            'url'       => '/fund_transfer_attempts/' . Channel::KOTAK,
+            'method'    => 'POST',
+            'content'   => [],
+        ];
 
-        $this->assertNotNull($setl[Settlement\Entity::UTR]);
+        $this->ba->appAuth();
 
-        // After settlements are reconciled, the settlementReconFile is deleted. Restore it.
-        file_put_contents($setlReconciliationFile, $settlementReconFileData);
+        $this->makeRequestAndGetContent($request);
 
-        // Reconciling the same settlement file should not trigger the webhook again.
-        $this->reconcileSettlements($setlReconciliationFile);
+        // Ensure the webhook is not fired the next time the same request is hit.
+        $this->makeRequestAndGetContent($request);
     }
 
     public function testWebhookOnSettlementFailure()
@@ -652,12 +653,13 @@ class WebhookTest extends TestCase
         $txns = $this->matchTransactions($prEntities);
 
         // Generate settlements for above transactions
-        $setlFile = $this->initiateSettlementsAndAssertSuccess();
+        $setlFile = $this->initiateSettlementsAndAssertSuccess(Channel::KOTAK);
 
         // Generate settlement reconciliation file
         $generateFailedReconciliations = true;
         $setlReconciliationFile = $this->generateSetlReconciliationFile(
             $setlFile,
+            Channel::KOTAK,
             $generateFailedReconciliations);
 
         // Reconcile settlements
@@ -665,6 +667,17 @@ class WebhookTest extends TestCase
 
         // No webhook should be sent if the settlements have failed
         $this->mockInfernoFire(function () { }, 0);
+
+        // Process entities
+        $request = [
+            'url'       => '/fund_transfer_attempts/' . Channel::KOTAK,
+            'method'    => 'POST',
+            'content'   => [],
+        ];
+
+        $this->ba->appAuth();
+
+        $this->makeRequestAndGetContent($request);
     }
 
     protected function createPaymentEntities(int $count)
