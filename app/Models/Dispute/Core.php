@@ -109,11 +109,11 @@ class Core extends Base\Core
             array_merge($input, [Entity::ID => $dispute->getId()])
         );
 
-        $payment = $dispute->payment;
+        $paymentId = $dispute->getPaymentId();
 
         return $this->mutex->acquireAndRelease(
-            $payment->getId(),
-            function() use ($dispute, $payment, $input) {
+            $paymentId,
+            function() use ($dispute, $input) {
 
                 $parent = $this->checkAndGetParent($input, $dispute);
 
@@ -126,9 +126,9 @@ class Core extends Base\Core
                     $dispute->parent()->associate($parent);
                 }
 
-                return $this->repo->transaction(function() use ($dispute, $payment, $input)
+                return $this->repo->transaction(function() use ($dispute, $input)
                 {
-                    $this->handleDisputeClosure($dispute, $payment, $input);
+                    $this->handleDisputeClosure($dispute, $input);
 
                     $this->repo->saveOrFail($dispute);
 
@@ -254,13 +254,14 @@ class Core extends Base\Core
     }
 
     protected function handleDisputeClosure(Entity $dispute,
-                                            Payment\Entity $payment,
                                             array $input)
     {
         if ($dispute->isClosed() === false)
         {
             return;
         }
+
+        $payment = $dispute->payment;
 
         $dispute->setResolvedAt(Carbon::now()->getTimestamp());
 
