@@ -1,0 +1,48 @@
+.tabs-container
+  .tabs-nav
+    list-style: none
+
+    li
+      display: inline-block
+      padding: 10px 14px
+      cursor: pointer
+      border-right: 1px solid #e6e6e6
+
+      i
+        margin-right: 6px;
+
+
+  .tabs-content
+    padding: 12px
+    //min-height: 200px // To avoid screenshot movement when content is loading, where only loader is being shown
+
+  .tabs-control
+    padding: 10px
+    overflow: auto
+    border-top: 1px solid $faded-color;
+
+    .pill
+      cursor: pointer
+
+    .prev
+      float: left
+
+    .next
+      float: right
+
+
+  &.activation-form
+    .tabs-nav
+      background-color: #f3f3f3
+
+      li
+        border-top: 2px solid #f3f3f3
+        background-color: #f3f3f3
+
+        &:hover
+          background-color: #eee
+          border-top: 2px solid #eee
+
+        &.selected
+          border-top: 2px solid $prime
+          background-color: #fff

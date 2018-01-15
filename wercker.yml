@@ -32,16 +32,13 @@ build:
           name: node version
           code: node -v
 
-      - npm-install
+      - script:
+          name: npm install
+          code: npm i --unsafe-perm
 
       - script:
-          name: gulp
-          code: gulp
-          fail-on-warnings: true
-
-      - script:
-          name: Gzip
-          code: node scripts/gzip.js
+          name: build
+          code: npm run build
 
       - script:
           name: Run artisan migrate
@@ -86,10 +83,10 @@ deploy:
           code: if [ ! -f .rsyncignore ] ; then exit 1 ; fi;
       - script:
           name: S3 Sync
-          code: node scripts/s3sync.js
+          code: ./s3sync.js
       - script:
           name: remove heavy directories
-          code: rm --recursive --force .git node_modules
+          code: rm --recursive --force .git node_modules web/node_modules
       - nhuray/aws-code-deploy:
           key: $AWS_KEY
           secret: $AWS_SECRET
@@ -104,3 +101,9 @@ deploy:
           channel: tech_bots
           username: wercker
           icon_url: https://cdn.rawgit.com/wantedly/step-pretty-slack-notify/master/icons/$WERCKER_RESULT.jpg
+
+s3sync:
+    steps:
+      - s3sync:
+        name: S3 Sync
+        code: ./s3sync.js

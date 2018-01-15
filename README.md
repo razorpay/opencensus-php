@@ -20,11 +20,8 @@
 * Run `php artisan migrate --seed` to migrate and seed the db. If you face problem regarding null fields, turn off strict SQL mode.
 * Make sure you have redis installed (used for session management and caching).
 * Make sure you are running the latest node (only 6 and above are supported)
-* Install Yarn if it's not pre-installed (https://yarnpkg.com/en/docs/install)
-* `yarn install`
-* `yarn global add gulp`
-* `gulp`
-* `gulp watch`
+* `npm i`
+* `npm start`
 * Setup the following integrations in your editor:
     - [editorconfig](http://editorconfig.org/#download)
     - [prettier](https://github.com/prettier/prettier#editor-integration). The config is documented in `package.json`. We use `--single-quote` and enable semicolons.
