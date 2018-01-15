@@ -4,6 +4,7 @@ namespace RZP\Models\Settlement;
 
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
+use Razorpay\Trace\Logger as Trace;
 
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
@@ -48,7 +49,7 @@ class Processor extends Base\Core
 
         $this->preSettlementProcessing($input);
 
-        list($shouldProcess, $data) = $this->shouldProcessSettlements();
+        list($shouldProcess, $data) = $this->shouldProcessSettlements($input);
 
         if ($shouldProcess === true)
         {
@@ -71,7 +72,7 @@ class Processor extends Base\Core
     {
         $this->preSettlementProcessing($input);
 
-        list($shouldProcess, $data) = $this->shouldProcessSettlements();
+        list($shouldProcess, $data) = $this->shouldProcessSettlements($input);
 
         if ($shouldProcess === true)
         {
@@ -109,6 +110,13 @@ class Processor extends Base\Core
         }
         catch (\Exception $e)
         {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::SETTLEMENT_INITIATE_FAILED,
+                ['channel' => $channel]
+            );
+
             $this->settlementFailure($channel, $e, TraceCode::SETTLEMENT_INITIATE_FAILED);
         }
 
@@ -164,6 +172,11 @@ class Processor extends Base\Core
             list($setl, $bankTransferAtpt) = $this->repo->transaction(
                 function() use ($merchantSettler, $setl, $setlTxns, $setlTxnsCount)
             {
+                if ($setl->hasTransaction() === false)
+                {
+                    $merchantSettler->createTransaction($setl);
+                }
+
                 list($setl, $bankTransferAtpt) = $merchantSettler->retryFailedSettlement($setl);
 
                 return $this->createAndupdateBatchEntities($setl, $setlTxnsCount, $bankTransferAtpt);
@@ -198,6 +211,7 @@ class Processor extends Base\Core
         $h2h = true)
     {
         $returnData = [
+            'channel'           => $channel,
             'count'             => $settlements->count(),
             'transaction_count' => $txnCount,
         ];
@@ -214,20 +228,21 @@ class Processor extends Base\Core
             $excelUrl = $excelFileEntity->getUrl();
 
             $urls = [
-                'kotak_settlement_txt'   => $txtUrl,
-                'kotak_settlement_excel' => $excelUrl,
+                'txt_file'   => $txtUrl,
+                'excel_file' => $excelUrl,
             ];
 
             $this->updateFileDetailsInBatchFundTransferEntity(
                 [
-                    'urls' => $urls,
-                    'txt_file_id' => $txtFileDetails['id'],
+                    'urls'          => $urls,
+                    'txt_file_id'   => $txtFileDetails['id'],
                     'excel_file_id' => $excelFileDetails['id'],
                 ]);
 
             $slackData = $returnData;
 
             $this->successNotification($slackData, $settlements, TraceCode::SETTLEMENT_INITIATED);
+
             $returnData['settlement_text_file'] = $txtFileDetails;
             $returnData['settlement_excel_file'] = $excelFileDetails;
         }
@@ -263,9 +278,11 @@ class Processor extends Base\Core
     {
         $data = [null, null];
 
-        if ($channel === Channel::KOTAK)
+        $class = '\RZP\Models\FundTransfer\\' . ucfirst($channel) . '\NodalAccount';
+
+        if (class_exists($class) === true)
         {
-            $data = (new Kotak\NodalAccount)->generateSettlementFile($setlAttempts, $h2h);
+            $data = (new $class)->generateSettlementFile($setlAttempts, $h2h);
         }
 
         return $data;
@@ -291,7 +308,7 @@ class Processor extends Base\Core
         $this->input = $input;
     }
 
-    protected function shouldProcessSettlements()
+    protected function shouldProcessSettlements($input)
     {
         if (($this->mode === Mode::TEST) and
             ($this->env === 'testing'))
@@ -304,6 +321,16 @@ class Processor extends Base\Core
         if (Holidays::isWorkingDay($today) === false)
         {
             return [false, Holidays::HOLIDAY_MESSAGE];
+        }
+
+        //
+        // If the force flag is set,
+        // let the settlements go
+        //
+        if ((isset($input['ignore_time_limit']) === true) and
+            ($input['ignore_time_limit'] === '1'))
+        {
+            return [true, null];
         }
 
         if ($this->isInvalidSettlementTime() === true)
@@ -322,13 +349,13 @@ class Processor extends Base\Core
      */
     protected function isInvalidSettlementTime(): bool
     {
-        // Cron runs at 5.01pm.
-        $fivePm = Carbon::today(Timezone::IST)->hour(17)->minute(10)->getTimestamp();
+        // Cron runs at 6.10pm.
+        $sixPm = Carbon::today(Timezone::IST)->hour(18)->minute(10)->getTimestamp();
 
         // No settlements after five PM but allow settlements file upload anytime
         // before that, we want to do it before 8 am as well as that allows us
         // some time for fixing things before settlement window opens.
-        if (($this->setlTime >= $fivePm) and ($this->env !== 'testing'))
+        if (($this->setlTime >= $sixPm) and ($this->env !== 'testing'))
         {
             return true;
         }

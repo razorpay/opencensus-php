@@ -66,6 +66,9 @@ class CreateAxisGateway extends Migration
             $table->integer('created_at');
             $table->integer('updated_at');
 
+            $table->index('vpc_TransactionNo');
+            $table->index('vpc_ShopTransactionNo');
+            $table->index('vpc_TxnResponseCode');
             $table->index('genius');
             $table->index('received');
             $table->index('amex');

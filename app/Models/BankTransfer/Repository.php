@@ -56,11 +56,11 @@ class Repository extends Base\Repository
         $query->select($this->getTableName().'.*');
     }
 
-    public function findByUtrAndPayeeIfsc(string $utr, string $payeeIfsc)
+    public function findByUtrAndPayerIfsc(string $utr, string $payerIfsc)
     {
         return $this->newQuery()
                     ->where(Entity::UTR, '=', $utr)
-                    ->where(Entity::PAYEE_IFSC, '=', $payeeIfsc)
+                    ->where(Entity::PAYER_IFSC, '=', $payerIfsc)
                     ->first();
     }
 

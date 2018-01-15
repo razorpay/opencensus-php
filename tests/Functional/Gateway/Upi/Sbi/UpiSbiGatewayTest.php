@@ -16,7 +16,6 @@ use RZP\Models\Merchant\Account;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Upi\Sbi\RefundFile;
-use RZP\Models\Base\PublicCollection;
 use RZP\Gateway\Upi\Sbi\ResponseFields;
 use RZP\Gateway\Upi\Base\Entity as Upi;
 use RZP\Gateway\Upi\Sbi\Status as SbiStatus;
@@ -386,6 +385,8 @@ class UpiSbiGatewayTest extends TestCase
         $this->assertEquals(FileStore\Type::SBI_UPI_REFUND, $file[FileStore\Entity::TYPE]);
         $this->assertEquals(FileStore\Store::S3, $file[FileStore\Entity::STORE]);
         $this->assertEquals(FileStore\Format::CSV, $file[FileStore\Entity::EXTENSION]);
+
+        unlink($data[Payment\Gateway::UPI_SBI][Constants::FILE]);
     }
 
     public function testUpiResponseAssertionFailure()

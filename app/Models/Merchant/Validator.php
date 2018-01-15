@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Models\Feature;
 use RZP\Constants\Mode;
 use RZP\Models\Terminal;
+use RZP\Models\Settlement;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 
@@ -43,7 +44,7 @@ class Validator extends Base\Validator
         Entity::TRANSACTION_REPORT_EMAIL    => 'sometimes|array',
         Entity::RECEIPT_EMAIL_ENABLED       => 'sometimes|boolean',
         Entity::LINKED_ACCOUNT_KYC          => 'sometimes|boolean',
-        Entity::SETTLEMENT_SCHEDULE         => 'sometimes|integer|min:1|max:30',
+        Entity::CHANNEL                     => 'sometimes|string|max:32|custom',
         Entity::RISK_RATING                 => 'sometimes|min:0|max:5',
         Entity::RISK_THRESHOLD              => 'sometimes|integer|min:0|max:20',
         Entity::FEE_BEARER                  => 'sometimes|in:customer,platform',
@@ -107,6 +108,11 @@ class Validator extends Base\Validator
     protected static $updateHoldFundsRules = [
         'hold_funds'   => 'required|boolean',
         'merchant_ids' => 'required|array'
+    ];
+
+    protected static $updateChannelRules = [
+        'channel'       => 'required|string|max:32|custom',
+        'merchant_ids'  => 'required|array'
     ];
 
     protected static $updateBankAccountRules = [
@@ -217,6 +223,15 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE,
                 Feature\Entity::NAMES,
                 ['features' => $uneditableFeatures, 'should_sync' => $shouldSync]);
+        }
+    }
+
+    protected function validateChannel($attribute, $channel)
+    {
+        if (Settlement\Channel::exists($channel) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid channel name: ' . $channel);
         }
     }
 
@@ -336,13 +351,19 @@ class Validator extends Base\Validator
     {
         $merchant = $this->entity;
 
+        if ($merchant->merchantDetail->isSubmitted() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_ACTIVATION_FORM_NOT_SUBMITTED);
+        }
+
         if ($merchant->isActivated() === true)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED);
         }
 
-        if ($merchant->isArchived() === true)
+        if ($merchant->merchantDetail->isArchived() === true)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_UNARCHIVE_BEFORE_ACTIVATION);

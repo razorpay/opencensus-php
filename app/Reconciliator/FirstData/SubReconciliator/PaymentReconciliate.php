@@ -35,7 +35,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      * @param array   $row
      * @return string $paymentId
      */
-    protected function getPaymentId($row)
+    protected function getPaymentId(array $row)
     {
         $capsPaymentId = $row[self::COLUMN_CAPS_PAYMENT_ID];
 

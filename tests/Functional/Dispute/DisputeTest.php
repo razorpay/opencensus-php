@@ -543,11 +543,39 @@ class DisputeTest extends TestCase
         $this->startTest($testdata);
     }
 
+    public function testDisputeFetchForMerchant()
+    {
+        $this->ba->proxyAuth();
+
+        $disputes = $this->fixtures->times(2)->create('dispute');
+
+        $testData = $this->updateFetchTestData();
+
+        $content = $this->runRequestResponseFlow($testData);
+
+        $this->checkDisputeFetchForMerchant($disputes, $content);
+
+        $this->ba->privateAuth();
+
+        $content = $this->runRequestResponseFlow($testData);
+
+        $this->checkDisputeFetchForMerchant($disputes, $content);
+    }
+
+    protected function checkDisputeFetchForMerchant(array $disputes, array $content)
+    {
+        $this->assertEquals(2, $content['count']);
+        $this->assertEquals($disputes[0]->getId(), Entity::stripDefaultSign($content['items'][1]['id']));
+        $this->assertEquals($disputes[1]->getId(), Entity::stripDefaultSign($content['items'][0]['id']));
+        $this->assertEquals($disputes[0]->payment->getId(), $content['items'][1]['payment_id']);
+        $this->assertEquals($disputes[1]->payment->getId(), $content['items'][0]['payment_id']);
+    }
+
     public function testFetchMerchantDetails()
     {
         $this->ba->privateAuth();
 
-        $testData = $this->updateFetchTestData();
+        $testData = $this->updateDetailsFetchTestData();
 
         $this->startTest($testData);
     }
@@ -595,7 +623,18 @@ class DisputeTest extends TestCase
         return $testData;
     }
 
-    protected function updateFetchTestData(array $attributes = []): array
+    protected function updateFetchTestData(): array
+    {
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+
+        $name = $trace[1]['function'];
+
+        $testData = &$this->testData[$name];
+
+        return $testData;
+    }
+
+    protected function updateDetailsFetchTestData(array $attributes = []): array
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
 

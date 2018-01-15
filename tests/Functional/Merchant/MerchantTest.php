@@ -10,6 +10,7 @@ use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\Transaction;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
@@ -19,6 +20,7 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Helpers\Schedule\ScheduleTrait;
 use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
+use RZP\Models\BankAccount\Entity as BankAccount;
 use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
 
 class MerchantTest extends TestCase
@@ -375,6 +377,12 @@ class MerchantTest extends TestCase
     {
         $this->ba->appAuthLive();
 
+        $this->fixtures->on('live')->create('merchant_detail', [
+            'merchant_id' => '1cXSLlUU8V9sXl',
+            'submitted'   => true,
+            'locked'      => false
+        ]);
+
         $this->startTest();
     }
 
@@ -397,9 +405,9 @@ class MerchantTest extends TestCase
             'hostname'  => 'dashboard.razorpay.com'
         ]);
 
-        $this->fixtures->create('merchant_detail', [
+        $this->fixtures->on('live')->create('merchant_detail', [
             'merchant_id' => '1cXSLlUU8V9sXl',
-            'submitted'   => false,
+            'submitted'   => true,
             'locked'      => false
         ]);
 
@@ -1316,21 +1324,100 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
-    public function testGetMercantBeneficiaryFile()
+    public function testBeneficiaryRegisterKotak()
     {
         Mail::fake();
 
         $this->ba->appAuth();
 
-        $request = array(
-            'url' => '/merchants/beneficiary/file',
-            'method' => 'get',
-            'content' => [],
-        );
+        $request = [
+            'url'       => '/merchants/beneficiary/file/kotak',
+            'method'    => 'get',
+        ];
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertArrayHasKey('url', $content);
+        $this->assertArrayHasKey('signed_url', $content);
+        $this->assertEquals(Channel::KOTAK, $content['channel']);
+
+        Mail::assertSent(BeneficiaryFileMail::class);
+    }
+
+    public function testBeneficiaryRegisterBetweenTimestampKotak()
+    {
+        Mail::fake();
+
+        // Choosing a non-holiday, and previous day is also not holiday
+        $thirdJan2017 = Carbon::createFromDate(2017, 1, 3, Timezone::IST);
+
+        $thirdJan2017Timestamp = $thirdJan2017->timestamp;
+
+        Carbon::setTestNow($thirdJan2017);
+
+        $ba1 = $this->fixtures->create('bank_account', ['created_at' => $thirdJan2017Timestamp - 2]);
+        $ba2 = $this->fixtures->create('bank_account', ['created_at' => $thirdJan2017Timestamp - 10]);
+        $ba3 = $this->fixtures->create('bank_account', ['created_at' => $thirdJan2017Timestamp + 50]);
+
+
+        $this->ba->appAuth();
+
+        $request = [
+            'url'       => '/merchants/beneficiary/file/bank/kotak',
+            'method'    => 'post',
+            'content'   => [
+                BankAccount::ON => $thirdJan2017Timestamp,
+                BankAccount::RECIPIENT_EMAILS => ['abc@d.com', 'efg@h.com'],
+            ]
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        Carbon::setTestNow();
+
+        $this->assertArrayHasKey('signed_url', $content);
+        $this->assertEquals(2, $content['merchants_count']);
+        $this->assertEquals(Channel::KOTAK, $content['channel']);
+
+        Mail::assertSent(BeneficiaryFileMail::class, function ($mail)
+        {
+            return $mail->hasTo(['abc@d.com', 'efg@h.com']);
+        });
+    }
+
+    public function testBeneficiaryRegisterAxis()
+    {
+        Mail::fake();
+
+        $this->ba->appAuth();
+
+        $request = [
+            'url'       => '/merchants/beneficiary/file/axis',
+            'method'    => 'get',
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey('signed_url', $content);
+        $this->assertEquals(Channel::AXIS, $content['channel']);
+
+        Mail::assertSent(BeneficiaryFileMail::class);
+    }
+
+    public function testBeneficiaryRegisterIcici()
+    {
+        Mail::fake();
+
+        $this->ba->appAuth();
+
+        $request = [
+            'url'       => '/merchants/beneficiary/file/icici',
+            'method'    => 'get',
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey('signed_url', $content);
+        $this->assertEquals(Channel::ICICI, $content['channel']);
 
         Mail::assertSent(BeneficiaryFileMail::class);
     }
@@ -1615,7 +1702,7 @@ class MerchantTest extends TestCase
 
         $expectedTokenCount = $response['customer']['tokens']['count'];
 
-        $payment = $this->getNetbankingRecurringPaymentArray('ICIC');
+        $payment = $this->getEmandateNetbankingRecurringPaymentArray('ICIC');
         unset($payment['card']);
 
         // We create a new nb recurring token via payment

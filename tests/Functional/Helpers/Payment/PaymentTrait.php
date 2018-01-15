@@ -420,7 +420,7 @@ trait PaymentTrait
         return $this->doAuthPayment($payment);
     }
 
-    protected function doAuthPaymentViaAjaxRoute($payment)
+    protected function doAuthPaymentViaAjaxRoute($payment = null)
     {
         if ($payment === null)
         {
@@ -456,7 +456,7 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function getWalletFormViaCreateRoute($payment)
+    protected function getFormViaCreateRoute($payment, $view = 'gateway.gatewayWalletForm')
     {
         $request = [
             'method'  => 'POST',
@@ -468,7 +468,7 @@ trait PaymentTrait
 
         $response = $this->makeRequestParent($request);
 
-        $response->assertViewIs('gateway.gatewayWalletForm');
+        $response->assertViewIs($view);
         $response->assertHeader('content-type', 'text/html; charset=UTF-8');
 
         return $this->getFormRequestFromResponse($response->getContent(), 'http://localhost');
@@ -1001,7 +1001,7 @@ trait PaymentTrait
             'number'            => '4012001038443335',
             'name'              => 'Harshil',
             'expiry_month'      => '12',
-            'expiry_year'       => '2017',
+            'expiry_year'       => '2024',
             'cvv'               => '566',
         );
 
@@ -1032,6 +1032,20 @@ trait PaymentTrait
         return $payment;
     }
 
+    protected function getEmandateNetbankingRecurringPaymentArray($bank = 'HDFC')
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray($bank);
+
+        $payment['amount'] = 2000;
+
+        $payment['method'] = Payment\Method::EMANDATE;
+        $payment['auth_type'] = Payment\AuthType::NETBANKING;
+
+        $payment['customer_id'] = 'cust_100000customer';
+
+        return $payment;
+    }
+
     protected function getDefaultEmiPaymentArray($saved)
     {
         $card = null;
@@ -1048,7 +1062,7 @@ trait PaymentTrait
                 'number'       => '41476700000006',
                 'name'         => 'Harshil',
                 'expiry_month' => '12',
-                'expiry_year'  => '2017',
+                'expiry_year'  => '2024',
                 'cvv'          => '566'
             ];
         }
@@ -1074,6 +1088,20 @@ trait PaymentTrait
 
         $payment['method'] = 'upi';
         $payment['vpa'] = 'vishnu@icici';
+
+        return $payment;
+    }
+
+    protected function getDefaultAepsPaymentArray()
+    {
+        $payment = $this->getDefaultPaymentArrayNeutral();
+
+        $payment['method']                 = 'aeps';
+        $payment['aadhaar']['fingerprint'] = 'sample fingerprint data';
+        $payment['aadhaar']['session_key'] = str_repeat('abcdefgh', 43);
+        $payment['aadhaar']['hmac']        = str_repeat('smplhmac', 8);
+        $payment['aadhaar']['number']      = '123456789012';
+        $payment['aadhaar']['cert_expiry'] = '20191230';
 
         return $payment;
     }

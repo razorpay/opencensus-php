@@ -3,12 +3,13 @@
 namespace RZP\Gateway\Sharp;
 
 use Crypt;
-use RZP\Constants\Mode;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Models\Payment;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\Models\Customer\Token;
 
 class Gateway extends Base\Gateway
 {
@@ -25,13 +26,22 @@ class Gateway extends Base\Gateway
             return;
         }
 
-        $content = array(
-            'action'        => 'authorize',
-            'amount'        => $input['payment']['amount'],
-            'method'        => $input['payment']['method'],
-            'payment_id'    => $input['payment']['id'],
-            'callback_url'  => $input['callbackUrl'],
-        );
+        $content = [
+            'action'            => 'authorize',
+            'amount'            => $input['payment']['amount'],
+            'method'            => $input['payment']['method'],
+            'payment_id'        => $input['payment']['id'],
+            'callback_url'      => $input['callbackUrl'],
+            'auth_type'         => $input['payment']['auth_type'],
+            // This need to be 0 because if it's `false`, frontend converts
+            // to "false" and Sharp server treats "false" as `true`.
+            'recurring'         => 0,
+        ];
+
+        if (isset($input['payment']['recurring']) === true)
+        {
+            $content['recurring'] = boolval($input['payment']['recurring']) ? 1 : 0;
+        }
 
         if ($content['method'] === 'card')
         {
@@ -108,6 +118,8 @@ class Gateway extends Base\Gateway
         $this->verifyPaymentCreateResponse($input);
 
         $acquirerData = $this->getAcquirerData($input, null);
+
+        $this->addRecurringDataIfApplicable($input, $acquirerData);
 
         return $this->getCallbackResponseData($input, $acquirerData);
     }
@@ -227,11 +239,11 @@ class Gateway extends Base\Gateway
             $content = [];
         }
 
-        $request = array(
+        $request = [
             'url' => $url,
             'method' => $method,
             'content' => $content,
-        );
+        ];
 
         return $request;
     }
@@ -248,6 +260,12 @@ class Gateway extends Base\Gateway
 
     protected function isSecondRecurringPaymentRequest($input)
     {
+        if (($this->app['basicauth']->isPrivateAuth() === false) and
+            ($this->app['basicauth']->isPrivilegeAuth() === false))
+        {
+            return false;
+        }
+
         if (($input['payment']['recurring'] === true) and
             ($input['token'] !== null) and
             ($input['token']->isRecurring() === true))
@@ -256,5 +274,36 @@ class Gateway extends Base\Gateway
         }
 
         return false;
+    }
+
+    protected function addRecurringDataIfApplicable(array $input, array & $acquirerData)
+    {
+        if (($input['payment']['recurring'] === true) and
+            ($input['payment']['method'] === 'netbanking'))
+        {
+            $recurringData = $this->getRecurringData($input['gateway']);
+
+            $acquirerData = array_merge($acquirerData, $recurringData);
+        }
+    }
+
+    protected function getRecurringData($gatewayInput)
+    {
+        $recurringStatus = Token\RecurringStatus::CONFIRMED;
+
+        if ((isset($gatewayInput['token_recurring_status']) === false) or
+            ($gatewayInput['token_recurring_status'] !== Token\RecurringStatus::CONFIRMED))
+        {
+            $recurringStatus = Token\RecurringStatus::REJECTED;
+        }
+
+        $recurringData[Token\Entity::RECURRING_STATUS] = $recurringStatus;
+
+        if ($recurringStatus === Token\RecurringStatus::REJECTED)
+        {
+            $recurringData[Token\Entity::RECURRING_FAILURE_REASON] = 'Rejected by bank';
+        }
+
+        return $recurringData;
     }
 }

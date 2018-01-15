@@ -155,9 +155,9 @@ class Core extends Base\Core
 
         $bankTransfer = $this->repo
                              ->bank_transfer
-                             ->findByUtrAndPayeeIfsc(
+                             ->findByUtrAndPayerIfsc(
                                 $input[Entity::REQ_UTR],
-                                $input[Entity::PAYEE_IFSC]);
+                                $input[Entity::PAYER_IFSC]);
 
         if ($bankTransfer !== null)
         {

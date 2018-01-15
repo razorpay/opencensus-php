@@ -6,6 +6,7 @@ use Crypt;
 
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Models\Customer\Token;
 use RZP\Gateway\Base;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Upi\Base\Vpa;
@@ -85,6 +86,15 @@ class Server extends Base\Mock\Server
                 'Input fields not set properly');
         }
 
+        //
+        // TODO: To remove this completely once we use emandate method
+        // internally also and not only in the external request.
+        //
+        if (empty($input[Payment\Entity::AUTH_TYPE]) === false)
+        {
+            $data['emandate'] = true;
+        }
+
         $data['action'] = 'authorize';
         $data['url'] = $this->route->getUrlWithPublicAuth('mock_sharp_payment_submit');
         $data['content'] = array(
@@ -109,6 +119,14 @@ class Server extends Base\Mock\Server
         if ($input['success'] === 'S')
         {
             $content['status'] = 'authorized';
+        }
+
+        $content['token_recurring_status'] = Token\RecurringStatus::REJECTED;
+
+        if ((isset($input['emandate_success']) === true) and
+            ($input['emandate_success'] === 'S'))
+        {
+            $content['token_recurring_status'] = Token\RecurringStatus::CONFIRMED;
         }
 
         unset($content['card_number']);

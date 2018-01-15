@@ -65,18 +65,45 @@ class Repository extends Base\Repository
     {
         $merchantId = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
 
-        $transactionMerchantId = $this->dbColumn(Transaction\Entity::MERCHANT_ID);
-        $transactionId = $this->dbColumn(Transaction\Entity::ID);
-        $transactionData = $this->dbColumn('*');
+        $transactionMerchantId = $this->dbColumn(Entity::MERCHANT_ID);
+        $transactionId = $this->dbColumn(Entity::ID);
+
+        $transactionChannel = $this->dbColumn(Entity::CHANNEL);
+
+        $transactionBalance     = $this->dbColumn(Entity::BALANCE);
+        $transactionType        = $this->dbColumn(Entity::TYPE);
+        $transactionSourceId    = $this->dbColumn(Entity::ENTITY_ID);
+        $transactionSettledAt   = $this->dbColumn(Entity::SETTLED_AT);
+        $transactionSettled     = $this->dbColumn(Entity::SETTLED);
+        $transactionAmount      = $this->dbColumn(Entity::AMOUNT);
+        $transactionCredit      = $this->dbColumn(Entity::CREDIT);
+        $transactionDebit       = $this->dbColumn(Entity::DEBIT);
+        $transactionTax         = $this->dbColumn(Entity::TAX);
+        $transactionFee         = $this->dbColumn(Entity::FEE);
+        $transactionFeeCredits  = $this->dbColumn(Entity::FEE_CREDITS);
 
         $txns = $this->newQuery()
-                    ->select($transactionData)
+                    ->select(
+                        $transactionId,
+                        $transactionMerchantId,
+                        $transactionBalance,
+                        $transactionType,
+                        $transactionSourceId,
+                        $transactionSettledAt,
+                        $transactionSettled,
+                        $transactionAmount,
+                        $transactionCredit,
+                        $transactionDebit,
+                        $transactionTax,
+                        $transactionFee,
+                        $transactionFeeCredits
+                    )
                     ->join(Table::MERCHANT, $merchantId, '=', $transactionMerchantId)
-                    ->where(Transaction\Entity::SETTLED_AT, '<', $timestamp)
-                    ->where(Transaction\Entity::ON_HOLD, 0)
-                    ->where(Transaction\Entity::SETTLED, '=', 0)
-                    ->where(Entity::CHANNEL, '=', $channel)
-                    ->where(Transaction\Entity::TYPE, '!=', Type::SETTLEMENT)
+                    ->where(Entity::SETTLED_AT, '<', $timestamp)
+                    ->where(Entity::ON_HOLD, 0)
+                    ->where(Entity::SETTLED, '=', 0)
+                    ->where($transactionChannel, '=', $channel)
+                    ->where(Entity::TYPE, '!=', Type::SETTLEMENT)
                     ->where(Merchant\Entity::HOLD_FUNDS, '=', 0)
                     ->with('merchant', 'merchant.bankAccount', 'merchant.balance')
                     ->orderBy($transactionMerchantId)
@@ -96,6 +123,17 @@ class Repository extends Base\Repository
                     ->merchantId($merchant->getId())
                     ->orderBy(Transaction\Entity::ID)
                     ->get();
+    }
+
+    public function fetchUnsettledTransactionsForMerchantUpdate($merchantId)
+    {
+        $query = $this->newQuery()
+                      ->select(['id'])
+                      ->where(Transaction\Entity::SETTLED, '=', 0)
+                      ->where(Transaction\Entity::TYPE, '!=', Type::SETTLEMENT)
+                      ->merchantId($merchantId);
+
+        return $query->get();
     }
 
     public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip, $entityToRelationFetchMap = [])
@@ -302,31 +340,38 @@ class Repository extends Base\Repository
      */
     public function settled($txns, array $values)
     {
-        if ($txns->count() === 0)
+        $txnCount = $txns->count();
+
+        if ($txnCount === 0)
         {
             return;
         }
 
         $ids = $txns->getIds();
 
-        $count = $this->newQuery()
-                      ->whereIn(Transaction\Entity::ID, $ids)
-                      ->update($values);
+        $batchedIds = array_chunk($ids, 20000);
 
-        $expected = count($ids);
-
-        if ($count !== $expected)
+        foreach ($batchedIds as $batch)
         {
-            throw new Exception\LogicException(
-                'Failed to update expected number of rows.',
-                null,
-                [
-                    'expected' => $expected,
-                    'updated'  => $count,
-                ]);
+            $count = $this->newQuery()
+                          ->whereIn(Transaction\Entity::ID, $batch)
+                          ->update($values);
+
+            $expected = count($batch);
+
+            if ($count !== $expected)
+            {
+                throw new Exception\LogicException(
+                    'Failed to update expected number of rows.',
+                    null,
+                    [
+                        'expected' => $expected,
+                        'updated'  => $count,
+                    ]);
+            }
         }
 
-        return $count;
+        return $txnCount;
     }
 
     public function updateSettlementId($txns, $settlementId)
@@ -357,6 +402,59 @@ class Repository extends Base\Repository
                     'settlement_id' => $settlementId
                 ]);
         }
+
+        return $count;
+    }
+
+    /**
+     * Update channel for unsettled transactions
+     *
+     * @param string $merchantId
+     * @param array $transactionIds
+     * @param string $channel
+     * @return mixed
+     */
+    public function bulkChannelUpdateForMerchantTransactions(
+        string $merchantId, array $transactionIds, string $channel)
+    {
+        $attributes = [Entity::CHANNEL => $channel];
+
+        $batchedIds = array_chunk($transactionIds, 5000);
+
+        $count = 0;
+
+        foreach ($batchedIds as $batch)
+        {
+            $query = $this->newQuery()
+                            ->where(Entity::MERCHANT_ID, $merchantId)
+                            ->whereIn(Entity::ID, $batch);
+
+            $updated = $query->update($attributes);
+
+            $count += $updated;
+        }
+
+        return $count;
+    }
+
+    /**
+     * Use this method with caution.
+     * It updates channel for all transactions that belong to given settlement_id.
+     * It should be run only for a settlement that is in Failed status.
+     *
+     * @param $settlementId
+     * @param $transactionIds
+     * @param $channel
+     * @return mixed
+     */
+    public function updateChannelForSettlement($settlementId, $transactionIds, $channel)
+    {
+        $values = [Transaction\Entity::CHANNEL => $channel];
+
+        $count = $this->newQuery()
+                      ->where(Transaction\Entity::SETTLEMENT_ID, $settlementId)
+                      ->whereIn(Transaction\Entity::ID, $transactionIds)
+                      ->update($values);
 
         return $count;
     }

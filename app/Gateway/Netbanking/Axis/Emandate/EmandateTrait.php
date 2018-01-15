@@ -293,7 +293,7 @@ trait EmandateTrait
 
         $verify->match = ($status === VerifyResult::STATUS_MATCH);
 
-        $this->setRecurrringVerifyAmountMismatch($verify);
+        $this->setRecurringVerifyAmountMismatch($verify);
     }
 
     protected function checkVerifyGatewaySuccess(Verify $verify)
@@ -310,7 +310,7 @@ trait EmandateTrait
         }
     }
 
-    protected function setRecurrringVerifyAmountMismatch(Verify $verify)
+    protected function setRecurringVerifyAmountMismatch(Verify $verify)
     {
         $paymentAmount = $this->formatAmount($verify->input['payment'][Payment\Entity::AMOUNT]);
 

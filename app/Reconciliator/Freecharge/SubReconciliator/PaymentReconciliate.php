@@ -23,7 +23,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     const SETTLEMENT_DATE_FORMAT = 'jS F Y';
 
-    protected function getPaymentId($row)
+    protected function getPaymentId(array $row)
     {
         $paymentId = $row[self::COLUMN_PAYMENT_ID];
 

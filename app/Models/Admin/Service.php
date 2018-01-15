@@ -3,6 +3,7 @@
 namespace RZP\Models\Admin;
 
 use Cache;
+
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Base\Common;
@@ -128,7 +129,13 @@ class Service extends Base\Service
         return $result;
     }
 
-    protected function setConfigKey(string $key, string $newValue): array
+    /**
+     * @param string $key
+     * @param mixed $newValue
+     *
+     * @return array
+     */
+    protected function setConfigKey(string $key, $newValue): array
     {
         $oldValue = Cache::get($key);
 
@@ -155,6 +162,36 @@ class Service extends Base\Service
         foreach (ConfigKey::PUBLIC_KEYS as $key)
         {
             $result[$key] = Cache::get($key);
+        }
+
+        return $result;
+    }
+
+    public function getQueryCacheCounts(): array
+    {
+        $result = [];
+
+        $cachedEntities = [
+            Entity::KEY,
+        ];
+
+        $cacheEvents = [
+            'cache_hits',
+            'cache_misses',
+            'cache_writes',
+            'cache_flushes',
+        ];
+
+        foreach ($cachedEntities as $entity)
+        {
+            $result[$entity] = [];
+
+            foreach ($cacheEvents as $event)
+            {
+                $cacheKey = $entity . '_' . $event;
+
+                $result[$entity][$event] = (intval(Cache::get($cacheKey)) ?? 0);
+            }
         }
 
         return $result;

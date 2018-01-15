@@ -36,6 +36,8 @@ class Response
         $this->request = $app['request'];
 
         $this->ba = $app['basicauth'];
+
+        $this->route = $app['api.route'];
     }
 
     /**
@@ -372,6 +374,6 @@ class Response
 
     protected function getCurrentRouteName()
     {
-        return $this->app['api.route']->getCurrentRouteName();
+        return $this->route->getCurrentRouteName();
     }
 }
