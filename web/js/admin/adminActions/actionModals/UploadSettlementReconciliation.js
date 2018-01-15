@@ -1,5 +1,5 @@
 import React from 'react';
-import { SelectMode, FileField } from 'ui/Field';
+import { SelectMode, FileField, SelectField } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 import Form from 'ui/Form';
 import { notifySuccess, notifyError, closeModal } from 'common/modal';
@@ -12,6 +12,15 @@ export default function UploadSettlementReconciliation() {
   return (
     <Form class="full-span full-elements" style={{ width: '400px' }}>
       <SelectMode />
+      <SelectField name="channel" label="Channel">
+        <option value="">Select</option>
+        <option value="kotak">kotak</option>
+        <option value="icici">icici</option>
+        <option value="axis">axis</option>
+        <option value="yesbank">yesbank</option>
+        <option value="hdfc">hdfc</option>
+        <option value="rbl">rbl</option>
+      </SelectField>
       <FileField label="Attach File" name="file" />
       <AsyncButton
         text="Upload"
