@@ -28,5 +28,4 @@ class Type
     const SUBSCRIPTION_CANCELLED    = 'subscription.cancelled';
     const SUBSCRIPTION_COMPLETED    = 'subscription.completed';
     // const SUBSCRIPTION_EXPIRED      = 'subscription.expired';
-    const ACCOUNT_ACTIVATED         = 'account.activated';
 }

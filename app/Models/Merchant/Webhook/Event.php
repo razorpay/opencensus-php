@@ -35,7 +35,6 @@ class Event
     const TOKEN_CONFIRMED           = 'token.confirmed';
     const TOKEN_REJECTED            = 'token.rejected';
     const SETTLEMENT_PROCESSED      = 'settlement.processed';
-    const ACCOUNT_ACTIVATED         = 'account.activated';
 
     protected static $events = [
         self::PAYMENT_AUTHORIZED,
@@ -58,8 +57,7 @@ class Event
         // self::SUBSCRIPTION_EXPIRED,
         self::TOKEN_CONFIRMED,
         self::TOKEN_REJECTED,
-        self::SETTLEMENT_PROCESSED,
-        self::ACCOUNT_ACTIVATED,
+        self::SETTLEMENT_PROCESSED
     ];
 
     /**
@@ -88,8 +86,7 @@ class Event
         // self::SUBSCRIPTION_EXPIRED,
         self::TOKEN_CONFIRMED,
         self::TOKEN_REJECTED,
-        self::SETTLEMENT_PROCESSED,
-        self::ACCOUNT_ACTIVATED,
+        self::SETTLEMENT_PROCESSED
     ];
 
     protected static $bitPosition = [
@@ -114,7 +111,6 @@ class Event
         self::TOKEN_CONFIRMED           => 19,
         self::TOKEN_REJECTED            => 20,
         self::SETTLEMENT_PROCESSED      => 21,
-        self::ACCOUNT_ACTIVATED         => 22,
     ];
 
     /**
@@ -144,12 +140,6 @@ class Event
         self::TOKEN_CONFIRMED,
         self::TOKEN_REJECTED,
         self::SETTLEMENT_PROCESSED,
-
-        //
-        // The account_activated webhook has not been enabled yet,
-        // It will be enabled and released in subsequent phases of Account APIs.
-        //
-        // self::ACCOUNT_ACTIVATED,
     ];
 
     /**
@@ -176,7 +166,6 @@ class Event
         self::TOKEN_CONFIRMED           => Entity::TOKEN,
         self::TOKEN_REJECTED            => Entity::TOKEN,
         self::SETTLEMENT_PROCESSED      => Entity::SETTLEMENT,
-        self::ACCOUNT_ACTIVATED         => Entity::ACCOUNT
     ];
 
     public static $eventsToFeatureMap = [
@@ -190,13 +179,6 @@ class Event
         self::INVOICE_PARTIALLY_PAID    => Feature\Constants::INVOICE_PARTIAL_PAYMENTS,
         self::TOKEN_CONFIRMED           => Feature\Constants::E_MANDATE,
         self::TOKEN_REJECTED            => Feature\Constants::E_MANDATE,
-
-        //
-        // The webhook for account activated is triggered when a marketplace merchant
-        // uses the Create Account API to create a linked account. Hence, this should
-        // only be available to the marketplace parent merchants.
-        //
-        self::ACCOUNT_ACTIVATED         => Feature\Constants::MARKETPLACE,
     ];
 
     /**

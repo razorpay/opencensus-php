@@ -295,13 +295,6 @@ class ApiEventSubscriber extends Base\Core
         $this->prepareAndDispatchWebhook($payload);
     }
 
-    protected function onAccountActivated($account)
-    {
-        $payload = $this->getAccountPayload($account);
-
-        $this->prepareAndDispatchWebhook($payload);
-    }
-
     protected function onTokenConfirmed($token)
     {
         $payload = $this->getTokenPayload($token);
@@ -439,17 +432,6 @@ class ApiEventSubscriber extends Base\Core
             Constants\Entity::PAYMENT => [
                 'entity' => $payment->toArrayPublic(),
             ],
-        ];
-
-        return $payload;
-    }
-
-    protected function getAccountPayload($account)
-    {
-        $payload = [
-            Constants\Entity::ACCOUNT => [
-                'entity' => $account->toArrayPublic()
-            ]
         ];
 
         return $payload;
