@@ -4,7 +4,6 @@ namespace RZP\Models\Dispute;
 
 use RZP\Models\Base;
 use RZP\Models\Base\PublicCollection;
-use RZP\Models\Payment\Entity as PaymentEntity;
 
 class Service extends Base\Service
 {
