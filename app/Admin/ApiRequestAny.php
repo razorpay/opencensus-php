@@ -101,7 +101,7 @@ class ApiRequestAny
             ]
         ];
 
-        return $this->send($path, $options);
+        return $this->send($path, $options, 'live');
     }
 
     /**
