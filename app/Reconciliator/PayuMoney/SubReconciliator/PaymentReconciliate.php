@@ -2,25 +2,29 @@
 
 namespace RZP\Reconciliator\PayuMoney;
 
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Wallet\Base\Action;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
-    const PAYMENT_ID        = 'merchant_transaction_id';
+    const PAYMENT_ID        = 'Merchant Transaction ID';
 
-    const BANK_PAYMENT_ID   = 'payment_id';
+    const BANK_PAYMENT_ID   = 'Payment Id';
 
-    const DATE              = 'succeededon_date';
+    const DATE              = 'SucceededOn Date';
 
-    const CUSTOMER_NAME     = 'customer_name';
+    const CUSTOMER_NAME     = 'Customer Name';
 
-    const AMOUNT            = 'amount';
+    const AMOUNT            = 'Amount';
 
-    const SETTLEMENT_AMOUNT = 'settlement_amount';
+    const SETTLEMENT_AMOUNT = 'Settlement Amount';
 
-    const SERVICE_TAX       = 'service_tax';
+    const SERVICE_TAX       = 'Service Tax';
+
+    const SETTLEMENT_DATE   = 'Settlement Date';
 
     protected function getPaymentId(array $row)
     {
@@ -34,12 +38,28 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getGatewayServiceTax($row)
     {
-        return (int) ($row[self::SERVICE_TAX] * 100) ?? null;
+        return Base\Helper::getIntegerFormattedAmount($row[self::SERVICE_TAX]) ?? null;
+    }
+
+    protected function getGatewaySettledAt(array $row)
+    {
+        $settledAt = $row[self::SETTLEMENT_DATE];
+
+        if (empty($settledAt) === true)
+        {
+            return null;
+        }
+
+        return Carbon::createFromFormat('d-M-y H:i:s', $settledAt, Timezone::IST)->getTimestamp();
     }
 
     protected function getGatewayFee($row)
     {
-        return (int) (($row[self::AMOUNT] - $row[self::SETTLEMENT_AMOUNT]) * 100) ?? null;
+        $amount = Base\Helper::getIntegerFormattedAmount($row[self::AMOUNT]);
+
+        $settlementAmount = Base\Helper::getIntegerFormattedAmount($row[self::SETTLEMENT_AMOUNT]);
+
+        return ($amount - $settlementAmount) ?? null;
     }
 
     protected function validatePaymentAmountEqualsReconAmount(array $row)

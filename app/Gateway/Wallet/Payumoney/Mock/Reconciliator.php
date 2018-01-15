@@ -5,6 +5,7 @@ namespace RZP\Gateway\Wallet\Payumoney\Mock;
 use Carbon\Carbon;
 use RZP\Gateway\Base;
 use RZP\Models\Payment;
+use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Base\PublicCollection;
 
@@ -18,6 +19,8 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
 
     protected $fileToWriteName = 'Payu Money Recon';
 
+    protected $fileExtension = FileStore\Format::CSV;
+
     protected function getReconciliationData(array $input)
     {
         $data = [];
@@ -27,6 +30,11 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
             $date = Carbon::createFromTimestamp(
                 $row['payment']['created_at'],
                 Timezone::IST)
+                ->format('d-M-y H:i:s');
+
+            $settledAt = Carbon::createFromTimestamp(
+                $row['payment']['created_at'],
+                Timezone::IST)->addMinutes(30)
                 ->format('d-M-y H:i:s');
 
             $data[] = [
@@ -40,9 +48,9 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
                 'Customer Phone'          => '9899510818',
                 'Payment Status'          => 'Settlement in Process',
                 'Settlement Amount'       => $row['payment']['amount'] / 100 - 30,
-                'Settlement Date'         => '',
+                'Settlement Date'         => $settledAt,
                 'PayUMoney TDR Charges'   => '',
-                'Service Tax'             => '',
+                'Service Tax'             => '23.45',
                 'Convenience Fee Charges' => 0,
                 'Payment Mode'            => 'WALLET',
                 'Product Info'            => '',

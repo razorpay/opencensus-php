@@ -71,7 +71,13 @@ class PayuReconTest extends TestCase
 
             $transaction = $this->getEntityById('transaction', $transactionId, true);
 
+            // Transaction is reconciled
             $this->assertNotNull($transaction['reconciled_at']);
+
+            // Service tax and gateway fee are recorded in the
+            // transaction entity as per hardcoded values in mock recon file
+            $this->assertEquals(2345, $transaction['gateway_service_tax']);
+            $this->assertEquals(3000, $transaction['gateway_fee']);
         }
     }
 
@@ -79,7 +85,7 @@ class PayuReconTest extends TestCase
     {
         $this->assertFileExists($file);
 
-        $mimeType = "application/octet-stream";
+        $mimeType = "text/csv";
 
         $uploadedFile = new UploadedFile(
             $file,
