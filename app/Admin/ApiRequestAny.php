@@ -59,7 +59,7 @@ class ApiRequestAny
             ]
         ];
 
-        return $this->request($auth, $path, $options);
+        return $this->send($path, $auth, $options);
 
     }
 
@@ -82,7 +82,7 @@ class ApiRequestAny
 
             $user = $mode.'_'.$merchantId;
 
-            return $this->request($user, $path, $options);
+            return $this->send($path, $user, $options);
         }
     }
 
@@ -90,7 +90,7 @@ class ApiRequestAny
      * Fires the request to the API
      * @return array standard response
      */
-    public function request($user, $path, $options = [])
+    public function send($path, $user = null, $options = [])
     {
         $exception = null;
         $errors = [];
@@ -157,10 +157,12 @@ class ApiRequestAny
     public function processOptions($user, $options)
     {
 
-        $options['auth'] = [
-            'rzp_'.$user,
-            Config::get('api.auth_pass')
-        ];
+        if ($user) {
+            $options['auth'] = [
+                'rzp_'.$user,
+                Config::get('api.auth_pass')
+            ];
+        }
 
         $input = Request::all();
 
@@ -169,7 +171,8 @@ class ApiRequestAny
         $contentType = Request::header('content-type', self::CONTENT_TYPE_JSON);
 
         // if contentType begins with
-        if (strpos($contentType, self::CONTENT_TYPE_MULTIPART_PREFIX) === 0)
+        // user check just for precaution, so that guests do not upload files
+        if ($user && strpos($contentType, self::CONTENT_TYPE_MULTIPART_PREFIX) === 0)
         {
             // $options['multipart'] = $input;
             $this->processUploads($options);

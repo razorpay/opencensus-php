@@ -48,16 +48,11 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/details', 'UserController@getUserDetailsV2');
     });
 
-    // Generic guest route with no authentication
-    Route::group(['middleware' => ['guest.generic']], function()
-    {
-        Route::any('/guest/generic', 'GenericController@handle');
-    });
+    Route::any('/api/{path?}', 'GenericController@handle')->where(['path' => '.*']);
 
     Route::group(['middleware'  =>  ['auth:user', 'verified']], function()
     {
-        Route::any('/user/generic', 'GenericController@handle');
-        Route::any('/user/generic/{mode}/{path}', 'GenericController@handleMerchant')->where(['path' => '.*']);
+        Route::any('/merchant/api/{mode}/{path}', 'GenericController@handleMerchant')->where(['path' => '.*']);
         // Account Routes
         Route::get('/{mode}/accounts', 'MerchantController@getAccounts')->name('get_accounts');
 
@@ -100,8 +95,7 @@ Route::group(['middleware' => ['web']], function () {
 
     Route::group(['middleware'  =>  ['admin', 'admin_access']], function()
     {
-        Route::any('/admin/generic', 'GenericController@handle');
-        Route::any('/admin/generic/{auth}/{path}', 'GenericController@handleAdmin')->where(['path' => '.*']);
+        Route::any('/admin/api/{auth}/{path}', 'GenericController@handleAdmin')->where(['path' => '.*']);
         Route::get('/admin/user', 'AdminController@getAdmin');
         Route::get('/admin/user/logout', 'AdminController@getLogout');
         Route::get('/admin/user/keepalive', 'AdminController@getKeepAlive');
@@ -130,13 +124,6 @@ Route::group(['middleware' => ['web']], function () {
         // Reconcile settlements
         Route::post('/settlements/reconcile', 'AdminController@postReconcileSettlement');
         Route::post('/admin/{mode}/reconciliate', 'AdminController@postReconciliate');
-
-        Route::group(['middleware'  =>  ['superadmin']], function()
-        {
-            // This is the RAW API route which processes api calls
-            Route::post('/api/{path?}', 'AdminController@passThrough')
-                ->where('path', '.*$');
-        });
 
         Route::put('/admin/merchant/{id}/email', 'AdminController@putEditMerchantEmail');
         Route::get('/admin/{mode}/fetchentity/{entity}/{format}', 'AdminController@getMultipleEntities')
