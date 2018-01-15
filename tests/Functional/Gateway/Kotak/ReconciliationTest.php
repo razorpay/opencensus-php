@@ -64,6 +64,9 @@ class ReconciliationTest extends TestCase
         $this->assertTestResponse($settlementAttempt, 'matchSettlementAttemptForReconSuccess');
         $this->assertNotNull($settlementAttempt['utr']);
 
+        $setl = $this->getLastEntity('settlement', true);
+        $this->assertNotNull($setl['utr']);
+
         Mail::assertSent(ReconciliationMail::class);
     }
 

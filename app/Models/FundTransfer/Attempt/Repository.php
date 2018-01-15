@@ -102,13 +102,4 @@ class Repository extends Base\Repository
                     ->where(Entity::CHANNEL, $channel)
                     ->get();
     }
-
-    public function findByIdCaseInsensitive(string $id)
-    {
-        $upperCaseId = strtoupper($id);
-
-        return $this->newQuery()
-                    ->whereRaw('UPPER(id) = ?', $upperCaseId)
-                    ->first();
-    }
 }

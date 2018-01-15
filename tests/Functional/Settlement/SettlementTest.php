@@ -663,7 +663,7 @@ class SettlementTest extends TestCase
         Mail::assertSent(IciciSettlementMail::class);
     }
 
-    public function testMerchantSettlementV2()
+    public function testMerchantSettlementV2Kotak()
     {
         Mail::fake();
 

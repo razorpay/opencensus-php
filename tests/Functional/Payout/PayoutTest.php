@@ -295,7 +295,6 @@ class PayoutTest extends TestCase
 
         // Verify payouts
         $payout = $this->getLastEntity('payout', true);
-        $this->assertNull($payout[Payout\Entity::UTR]);
         $this->assertEquals(Payout\Status::INITIATED, $payout[Payout\Entity::STATUS]);
 
         // Verfiy batch fund transfer

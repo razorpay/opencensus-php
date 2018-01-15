@@ -46,8 +46,31 @@ abstract class RowProcessor extends Base\Core
             return null;
         }
 
-        $this->updateReconEntity();
+        $this->updateEntities();
 
         return $this->reconEntity;
+    }
+
+    final protected function fetchEntities()
+    {
+        $this->reconEntity = $this->repo
+                                  ->fund_transfer_attempt
+                                  ->findWithRelations($this->reconEntityId, ['source']);
+    }
+
+    final protected function updateEntities()
+    {
+        $this->updateReconEntity();
+
+        $this->updateSourceEntity();
+    }
+
+    final protected function updateSourceEntity()
+    {
+        $utr = $this->reconEntity->getUtr();
+
+        $this->reconEntity->source->setUtr($utr);
+
+        $this->repo->saveOrFail($this->reconEntity->source);
     }
 }
