@@ -31,10 +31,12 @@ class Cybersource extends Base
         foreach ($data as $index => $row)
         {
             $date = Carbon::createFromTimestamp(
-                $row['payment']['authorized_at'], Timezone::IST)->format('Y/m/d');
+                $row['payment']['created_at'], Timezone::IST)->format('Y/m/d');
 
             $refundDate = Carbon::createFromTimestamp(
                 $row['refund']['created_at'], Timezone::IST)->format('Y/m/d');
+
+            s($date);
 
             $formattedData[] = [
                 self::SR_NO             => $index + 1,
