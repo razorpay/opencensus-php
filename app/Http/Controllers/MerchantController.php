@@ -108,16 +108,16 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postCreateKeys($merchantId)
+    public function postCreateKeys()
     {
-        $data = $this->service()->createKey($merchantId);
+        $data = $this->service()->createKey();
 
         return ApiResponse::json($data);
     }
 
-    public function getKeys($merchantId)
+    public function getKeys()
     {
-        $data = $this->service()->fetchKeys($merchantId);
+        $data = $this->service()->fetchKeys();
 
         return ApiResponse::json($data);
     }
@@ -129,11 +129,11 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function putKeys($merchantId, $keyId)
+    public function putKeys($keyId)
     {
         $input = Request::all();
 
-        $keys = $this->service()->updateKey($merchantId, $keyId, $input);
+        $keys = $this->service()->updateKey($keyId, $input);
 
         return ApiResponse::json($keys);
     }

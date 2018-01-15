@@ -339,9 +339,9 @@ class Service extends Base\Service
         return $balance->toArray();
     }
 
-    public function createKey($merchantId)
+    public function createKey()
     {
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+        $merchant = $this->merchant;
 
         $keyData = (new Key\Core)->createFirstKey($merchant, $this->mode);
 
@@ -362,16 +362,16 @@ class Service extends Base\Service
         return $keyData;
     }
 
-    public function updateKey($merchantId, $keyId, array $input)
+    public function updateKey($keyId, array $input)
     {
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+        $merchantId = $this->merchant->id;
 
         return (new Key\Core)->rollKey($merchantId, $keyId, $input, $this->mode);
     }
 
-    public function fetchKeys($merchantId)
+    public function fetchKeys()
     {
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+        $merchantId = $this->merchant->id;
 
         $keys = $this->repo->key->getKeysForMerchant($merchantId);
 
