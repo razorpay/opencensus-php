@@ -12,7 +12,9 @@ use RZP\Models\FundTransfer\Base\Reconciliation\FileProcessor as BaseProcessor;
 
 class FileProcessor extends BaseProcessor
 {
-    protected static $fileToReadName = 'Icici_Settlement';
+    protected static $fileToReadName = 'Icici_Settlement_Reconciliation';
+
+    protected static $fileToWriteName = 'Icici_Settlement_Reconciliation';
 
     protected static $channel = Channel::ICICI;
 
@@ -45,7 +47,7 @@ class FileProcessor extends BaseProcessor
         if (($count < 11) or ($count > 12))
         {
             throw new Exception\LogicException(
-                'Invalid count: ' . $count . ' Should be either 11 or 12.');
+                'Invalid count: ' . $count . ' Should be either 11 or 12. Row: ' . $ix);
         }
 
         $headings = array_slice($headings, 0, $count);
