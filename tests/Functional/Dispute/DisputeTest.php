@@ -575,9 +575,12 @@ class DisputeTest extends TestCase
     {
         $this->ba->proxyAuth();
 
-        $payment = $this->fixtures->create('payment:captured', ['disputed'  => 1,
-                                                                'fee'       => 0,
-                                                                'email'     => 'abc@email.com']);
+        $payment = $this->fixtures->create('payment:captured',
+                                            [
+                                                'disputed'  => 1,
+                                                'fee'       => 0,
+                                                'email'     => 'abc@email.com'
+                                            ]);
 
         $testData = $this->updatePaymentDisputesFetchTestData($payment->getId());
 
