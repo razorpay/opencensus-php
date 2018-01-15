@@ -71,10 +71,10 @@ class Entity extends Base\Entity
         return $this->belongsTo('RZP\Models\Admin\Admin\Entity');
     }
 
-    // public function step()
-    // {
-    //     return $this->belongsTo('RZP\Models\Workflow\Step\Entity');
-    // }
+    public function step()
+    {
+        return $this->belongsTo('RZP\Models\Workflow\Step\Entity');
+    }
 
     // public function action()
     // {

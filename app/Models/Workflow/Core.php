@@ -73,17 +73,19 @@ class Core extends Base\Core
     {
         $validator = $workflow->getValidator();
 
-        if ($this->isWorkflowEditable($workflow) === false)
+        if ($this->workflowHasOpenActions($workflow) === false)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_WORKFLOW_DELETE_NOT_ALLOWED);
+                ErrorCode::BAD_REQUEST_WORKFLOW_UPDATE_OR_DELETE_NOT_ALLOWED);
         }
 
-        if (empty($input[Entity::LEVELS]) === false)
-        {
-            $validator->validateCheckersExistForWorkflow();
-        }
+        // if (empty($input[Entity::LEVELS]) === false)
+        // {
+        //     $validator->validateCheckersExistForWorkflow();
+        // }
 
+        // Check if selected permissions have workflows enabled for them
+        // in the current org
         $validator->validatePermissionsForOrg(
             $workflow->getOrgId(), $input[Entity::PERMISSIONS]);
 
@@ -100,9 +102,43 @@ class Core extends Base\Core
             // existing entitites
             if (empty($input[Entity::LEVELS]) === false)
             {
-                $workflow->steps()->delete();
+                // $currentWorkflowSteps = $workflow->steps();
+                $currentWorkflowSteps = $workflow->load(['steps', 'steps.checkers'])->steps;
 
-                // 3. Create its steps
+                // Check if the existing steps have ever been taken
+                // i.e., any action was acted upon (action_checker entry)
+                // on the existing steps.
+                //
+                // If yes, then soft delete all steps
+                // If no, then force delete all steps
+                
+                $checkerCount = 0;
+
+                foreach ($currentWorkflowSteps as $step)
+                {
+                    $checkerCount = $step->checkers->count();
+
+                    if ($checkerCount > 0)
+                    {
+                        break;
+                    }
+                }
+                
+                if ($checkerCount > 0)
+                {
+                    // Soft delete
+                    $workflow->steps()->delete();
+                }
+                else
+                {
+                    // Force delete
+                    foreach ($currentWorkflowSteps as $step)
+                    {
+                        $step->forceDelete();
+                    }
+                }
+
+                // Create its steps
                 foreach ($input[Entity::LEVELS] as $level)
                 {
                     $step = $this->createStepsForWorkflow($level, $workflow);
@@ -123,10 +159,10 @@ class Core extends Base\Core
 
     public function delete(Entity $workflow)
     {
-        if ($this->isWorkflowEditable($workflow) === false)
+        if ($this->workflowHasOpenActions($workflow) === false)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_WORKFLOW_DELETE_NOT_ALLOWED);
+                ErrorCode::BAD_REQUEST_WORKFLOW_UPDATE_OR_DELETE_NOT_ALLOWED);
         }
 
         $this->repo->workflow->deleteOrFail($workflow);
@@ -141,7 +177,7 @@ class Core extends Base\Core
         return array_unique(array_merge($permissionIds, $permissions));
     }
 
-    public function isWorkflowEditable(Entity $workflow)
+    public function workflowHasOpenActions(Entity $workflow)
     {
         $actions = $this->repo
                         ->workflow_action

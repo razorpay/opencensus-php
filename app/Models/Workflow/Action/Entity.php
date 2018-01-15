@@ -182,30 +182,6 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::ADMIN_ID);
     }
 
-    public function toArrayPublicWithAdminAndSteps()
-    {
-        $data = $this->toArrayPublic();
-
-        $data['admin'] = $this->admin()->withTrashed()->first()->toArrayPublic();
-
-        $data['workflow_steps'] = [];
-
-        $workflow = $this->workflow()->withTrashed()->first();
-
-        foreach ($workflow->steps as $step)
-        {
-            $thisStep = $step->toArrayPublic();
-
-            $thisStep['role'] = $step->role->toArrayPublic();
-
-            $data['workflow_steps'][] = $thisStep;
-        }
-
-        unset($data['workflow']['steps']);
-
-        return $data;
-    }
-
     public function isOpen()
     {
         $state = $this->getState();

@@ -95,25 +95,35 @@ class Service extends Base\Service
 
         Entity::verifyIdAndStripSign($actionId);
 
-        $relations = ['workflow.steps', 'admin', 'permission'];
-
         // findByIdAndOrgId returns a collection so extracting the first element.
         // Cannot use firstorfailPublic here because findByIdAndOrgId returns collection.
         $action = $this->repo
                        ->workflow_action
-                       ->findByIdAndOrgId($actionId, $orgId, $relations)
+                       ->getActionDetails($actionId, $orgId)
                        ->first();
-
+        
         // $action can be null because we don't validate the result after fetching from the collection.
         if (empty($action) === false)
         {
-            $data = $action->toArrayPublicWithAdminAndSteps();
+            $data = $action->toArrayPublic();
+
+            // Client expects workflow steps in $data['workflow_steps']
+            // and not $data['workflow']['steps']
+            $data['workflow_steps'] = [];
+
+            foreach ($data['workflow']['steps'] as $step)
+            {
+                $data['workflow_steps'][] = $step;
+            }
+
+            // Reduce payload
+            unset($data['workflow']['steps']);
 
             // Checkers
             $checkers = $this->repo
-                ->action_checker
-                ->fetchByActionIdWithRelations(
-                    $actionId, [Entity::ADMIN]);
+                             ->action_checker
+                             ->fetchByActionIdWithRelations(
+                                $actionId, [Entity::ADMIN]);
 
             $data['checkers'] = $checkers->map(function ($checker) {
                 return $checker->toArrayPublic();

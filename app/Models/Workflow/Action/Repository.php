@@ -165,4 +165,56 @@ class Repository extends Base\Repository
               ->where($cAdminId, '=', $adminId);
     }
 
+    public function getActionDetails(string $id, string $orgId)
+    {
+        Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+        $action = $this->newQuery()
+                       ->orgId($orgId)
+                       ->where(Entity::ID, '=', $id);
+
+        $actionEntity = $action->first();
+
+        $relations = [
+            'workflow.steps' => function ($query) use ($actionEntity)
+            {
+                $query->withTrashed()
+                      ->where('created_at', '<=', $actionEntity->getCreatedAt())
+                      ->where('deleted_at', '>=', $actionEntity->getCreatedAt());
+            },
+            'workflow.steps.role',
+            'admin' => function ($query)
+            {
+                $query->withTrashed();
+            },
+            'permission'
+        ];
+
+        $actionWithRelations = $action->with($relations);
+
+        $stepsCount = $actionWithRelations->first()->workflow->steps->count();
+
+        if ($stepsCount === 0)
+        {
+            $relations = [
+                'workflow.steps' => function ($query) use ($actionEntity)
+                {
+                    $query->withTrashed()
+                          ->where('created_at', '<=', $actionEntity->getCreatedAt())
+                          ->whereNull('deleted_at');
+                },
+                'workflow.steps.role',
+                'admin' => function ($query)
+                {
+                    $query->withTrashed();
+                },
+                'permission'
+            ];
+
+            $actionWithRelations = $action->with($relations);
+        }
+
+        return $actionWithRelations->get();
+    }
+
 }
