@@ -65,6 +65,7 @@ class PayuReconTest extends TestCase
 
             $this->assertEquals(true, $payment['gateway_captured']);
 
+            // we persist date as per recon date
             $this->assertNotNull($wallet['date']);
 
             $transactionId = $payment['transaction_id'];
@@ -73,6 +74,9 @@ class PayuReconTest extends TestCase
 
             // Transaction is reconciled
             $this->assertNotNull($transaction['reconciled_at']);
+
+            // We persist gateway settled at
+            $this->assertNotNull($transaction['gateway_settled_at']);
 
             // Service tax and gateway fee are recorded in the
             // transaction entity as per hardcoded values in mock recon file
