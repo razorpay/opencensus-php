@@ -37,7 +37,7 @@ class FirstData extends Base
                 $row['payment']['created_at'], Timezone::IST)->format('Y/m/d');
 
             $refundDate = Carbon::createFromTimestamp(
-                $row['refund']['created_at'], Timezone::IST)->format('Y/m/d');
+                $row['refund']['last_attempted_at'], Timezone::IST)->format('Y/m/d');
 
             $formattedData[] = [
                 self::SR_NO                  => $index + 1,

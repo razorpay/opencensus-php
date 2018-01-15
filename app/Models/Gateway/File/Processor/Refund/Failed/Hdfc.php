@@ -30,16 +30,16 @@ class Hdfc extends Base
 
         foreach ($data as $index => $row)
         {
-            $date = Carbon::createFromTimestamp(
+            $transactionDate = Carbon::createFromTimestamp(
                 $row['payment']['created_at'], Timezone::IST)->format('Y/m/d');
 
             $refundDate = Carbon::createFromTimestamp(
-                $row['refund']['created_at'], Timezone::IST)->format('Y/m/d');
+                $row['refund']['last_attempted_at'], Timezone::IST)->format('Y/m/d');
 
             $formattedData[] = [
                 self::SR_NO            => $index + 1,
                 self::REFUND_ID        => $row['refund']['id'],
-                self::TRANSACTION_DATE => $date,
+                self::TRANSACTION_DATE => $transactionDate,
                 self::REFUND_DATE      => $refundDate,
                 self::PAYMENT_ID       => $row['payment']['id'],
                 self::PAYMENT_AMOUNT   => $this->getFormattedAmount($row['payment']['amount']),
