@@ -206,10 +206,8 @@ abstract class FileProcessor extends Base\Core
 
     /**
      * @param $row
-     *
-     * @return FundTransferAttempt\Entity $fta
      */
-    final protected function reconcileEntity($row): FundTransferAttempt\Entity
+    final protected function reconcileEntity($row)
     {
         $rowProcessorNamespace = $this->getRowProcessorNamespace($row);
 

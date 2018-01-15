@@ -16,6 +16,8 @@ class FileProcessor extends BaseProcessor
 {
     protected static $fileToReadName = 'Kotak_Settlement_Reconciliation';
 
+    protected static $fileToWriteName = 'Kotak_Settlement_Reconciliation';
+
     protected static $channel = Channel::KOTAK;
 
     protected static $delimiter = '~';
@@ -69,7 +71,7 @@ class FileProcessor extends BaseProcessor
         if (($count < 54) or ($count > 55))
         {
             throw new Exception\LogicException(
-                'Invalid count: ' . $count . ' Should be either 54 or 55.');
+                'Invalid count: ' . $count . ' Should be either 54 or 55. Row: ', $ix);
         }
 
         $headings = array_slice($headings, 0, $count);
