@@ -74,18 +74,19 @@ class Gateway extends Base\Gateway
 
             $gatewayPayment->fill($attributes);
 
-            $this->repo->saveOrFail($gatewayPayment);
+            if (isset($gatewayContent[Fields::AMOUNT]) === false)
+            {
+                $expectedAmount = $this->getFormattedAmount($input['payment']['amount'] / 100);
 
-            $this->checkErrorMessage($gatewayPayment, $gatewayContent);
+                $actualAmount = $this->getFormattedAmount($gatewayContent[Fields::AMOUNT]);
 
-            $expectedAmount = $this->getFormattedAmount($input['payment']['amount'] / 100);
-
-            $actualAmount = $this->getFormattedAmount($gatewayContent[Fields::AMOUNT]);
-
-            $this->assertAmount($expectedAmount, $actualAmount);
+                $this->assertAmount($expectedAmount, $actualAmount);
+            }
 
             $this->assertPaymentId($input['payment']['id'], $gatewayContent[Fields::TRACK_ID]);
         }
+
+        $this->repo->saveOrFail($gatewayPayment);
 
         $this->checkErrorMessage($gatewayPayment, $gatewayResponse);
 
@@ -1036,8 +1037,6 @@ class Gateway extends Base\Gateway
             {
                 $gatewayPayment->setErrorMessage($gatewayResponse[Fields::GATEWAY_ERROR_TEXT]);
             }
-
-            $this->repo->saveOrFail($gatewayPayment);
         }
     }
 }
