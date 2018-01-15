@@ -192,6 +192,7 @@ final class Route
         'bank_transfer_strip_payer_accounts'      => ['put',      'bank_transfers/payer_bank_account/strip',        'BankTransferController@stripPayerBankAccounts'                     ],
         'bank_transfer_insert'                    => ['post',     'bank_transfers/{provider}',                      'BankTransferController@insertBankTransfer'                         ],
         'fund_transfer_attempt_bulk_update'       => ['patch',    'fund_transfer_attempts',                         'FundTransferAttemptController@bulkUpdate'                          ],
+        'fund_transfer_attempt_reconcile'         => ['post',     'fund_transfer_attempts/{channel}',               'FundTransferAttemptController@bulkReconcile',                      ],
         'gateway_payment_callback_bharatqr'       => ['post',     'payment/callback/bharatqr',                      'BharatQrController@processBharatQrPayment'                         ],
         'virtual_account_create'                  => ['post',     'virtual_accounts',                               'VirtualAccountController@create'                                   ],
         'virtual_account_edit'                    => ['patch',    'virtual_accounts/{id}',                          'VirtualAccountController@update'                                   ],
@@ -252,10 +253,10 @@ final class Route
         'setl_initiate'                           => ['post',     'settlements/initiate/{channel?}',                'SettlementController@postSettlementInitiate'                       ],
         'setl_retry'                              => ['post',     'settlements/retry',                              'SettlementController@postSettlementRetry'                          ],
         'setl_file_generate'                      => ['post',     'settlements/file/generate',                      'SettlementController@postSettlementFileGenerate'                   ],
-        'setl_reconcile_generate'                 => ['post',     'settlements/reconcile/generate',                 'SettlementController@postSettlementReconcileGenerate'              ],
-        'setl_reconcile_test'                     => ['post',     'settlements/reconcile/test',                     'SettlementController@postReconcileInTestMode'                      ],
-        'setl_reconcile'                          => ['post',     'settlements/reconcile',                          'SettlementController@postSettlementReconcile'                      ],
-        'setl_reconcile_h2h'                      => ['post',     'settlements/h2hreconcile',                       'SettlementController@postH2HSettlementReconcile'                   ],
+        'setl_reconcile_generate'                 => ['post',     'settlements/reconcile/generate/{channel}',       'SettlementController@postSettlementReconcileGenerate'              ],
+        'setl_reconcile_test'                     => ['post',     'settlements/reconcile/test/{channel}',           'SettlementController@postReconcileInTestMode'                      ],
+        'setl_reconcile'                          => ['post',     'settlements/reconcile/{channel}',                'SettlementController@postSettlementReconcile'                      ],
+        'setl_reconcile_h2h'                      => ['post',     'settlements/h2hreconcile/{channel}',             'SettlementController@postH2HSettlementReconcile'                   ],
         'setl_calc_previous_fees'                 => ['post',     'settlements/fees/previous',                      'SettlementController@postSettlementCalculateFees',                 ],
         'setl_get_details'                        => ['get',      'settlements/{id}/details',                       'SettlementController@getSettlementDetails',                        ],
         'setl_post_details_old'                   => ['post',     'settlements/details',                            'SettlementController@postSettlementDetailsForOldTxns'              ],
@@ -1133,6 +1134,7 @@ final class Route
         'user_reset_password_token',
         'merchant_payout_mail',
         'geoip_update',
+        'fund_transfer_attempt_reconcile',
         'transaction_bulk_update',
         'setl_update_channel_bulk',
     ];
@@ -1569,6 +1571,7 @@ final class Route
             'reports_refund_irctc',
             'merchant_payout_mail',
             'geoip_update',
+            'fund_transfer_attempt_reconcile',
         ],
 
         'kotak' => [

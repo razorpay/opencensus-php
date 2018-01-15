@@ -373,5 +373,6 @@ return [
         'channel' => 'kotak',
         'version' => 'V3',
         'bank_status_code'  => 'P',
+        'status'  => FundTransferAttemptStatus::INITIATED,
     ],
 ];

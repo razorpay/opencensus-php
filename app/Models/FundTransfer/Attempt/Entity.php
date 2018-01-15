@@ -108,6 +108,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REMARKS);
     }
 
+    public function getFailureReason()
+    {
+        return $this->getAttribute(self::FAILURE_REASON);
+    }
+
     public function getNarration()
     {
         return $this->getAttribute(self::NARRATION);
@@ -121,6 +126,11 @@ class Entity extends Base\PublicEntity
     public function getVersion()
     {
         return $this->getAttribute(self::VERSION);
+    }
+
+    public function getBankStatusCode()
+    {
+        return $this->getAttribute(self::BANK_STATUS_CODE);
     }
 
     public function getEntityId()
