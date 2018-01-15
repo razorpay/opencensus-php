@@ -37,7 +37,7 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
                 Timezone::IST)->addMinutes(30)
                 ->format('d-M-y H:i:s');
 
-            $data[] = [
+            $col = [
                 'Payment Id'              => $row['payment']['id'],
                 'Amount'                  => $row['payment']['amount'] / 100,
                 'AddedOn Date'            => $date,
@@ -67,6 +67,8 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
             ];
 
             $this->content($col, 'col_payment_payu_recon');
+
+            $data[] = $col;
         }
 
         $this->content($data, 'payu_recon');

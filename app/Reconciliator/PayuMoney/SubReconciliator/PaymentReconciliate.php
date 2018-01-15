@@ -31,16 +31,50 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return $row[self::PAYMENT_ID];
     }
 
+    /**
+     * This will be saved in the wallet entity's date column
+     * @param $row
+     * @return null
+     */
     protected function getGatewayPaymentDate($row)
     {
         return $row[self::DATE] ?? null;
     }
 
+    /**
+     * This will be saved as gateway_service_tax in the payment's transaction entity
+     * @param $row
+     * @return int|null
+     */
     protected function getGatewayServiceTax($row)
     {
         return Base\Helper::getIntegerFormattedAmount($row[self::SERVICE_TAX]) ?? null;
     }
 
+    /**
+     * This will be saved as gateway_fee in the payment's transaction entity
+     * @param $row
+     * @return int|null
+     */
+    protected function getGatewayFee($row)
+    {
+        //
+        // The total gateway fee can be calculated as the difference between
+        // the payment amount and the amount that will be settled to our nodal account.
+        //
+
+        $amount = Base\Helper::getIntegerFormattedAmount($row[self::AMOUNT]);
+
+        $settlementAmount = Base\Helper::getIntegerFormattedAmount($row[self::SETTLEMENT_AMOUNT]);
+
+        return ($amount - $settlementAmount) ?? null;
+    }
+
+    /**
+     * Will be persisted into the transaction entity's gateway_settled_at column
+     * @param array $row
+     * @return int|null
+     */
     protected function getGatewaySettledAt(array $row)
     {
         $settledAt = $row[self::SETTLEMENT_DATE];
@@ -51,15 +85,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         }
 
         return Carbon::createFromFormat('d-M-y H:i:s', $settledAt, Timezone::IST)->getTimestamp();
-    }
-
-    protected function getGatewayFee($row)
-    {
-        $amount = Base\Helper::getIntegerFormattedAmount($row[self::AMOUNT]);
-
-        $settlementAmount = Base\Helper::getIntegerFormattedAmount($row[self::SETTLEMENT_AMOUNT]);
-
-        return ($amount - $settlementAmount) ?? null;
     }
 
     protected function validatePaymentAmountEqualsReconAmount(array $row)
@@ -87,6 +112,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return Base\Helper::getIntegerFormattedAmount($row[self::AMOUNT]);
     }
 
+    /**
+     * We fetch the gateway payment entity to be persisted into
+     * @param $paymentId
+     * @return mixed
+     */
     protected function getGatewayPayment($paymentId)
     {
         return $this->repo->wallet->findByPaymentIdAndActionOrFail($paymentId, Action::AUTHORIZE);
