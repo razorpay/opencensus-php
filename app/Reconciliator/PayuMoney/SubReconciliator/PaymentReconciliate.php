@@ -2,62 +2,73 @@
 
 namespace RZP\Reconciliator\PayuMoney;
 
+use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
+use RZP\Gateway\Wallet\Base\Action;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
-    const PAYMENT_ID = 'Merchant Transaction ID';
+    const PAYMENT_ID        = 'merchant_transaction_id';
 
-    const BANK_PAYMENT_ID = 'Payment Id';
+    const BANK_PAYMENT_ID   = 'payment_id';
 
-    const DATE = 'SucceededOn Date';
+    const DATE              = 'succeededon_date';
 
-    const CUSTOMER_NAME = 'Customer Name';
+    const CUSTOMER_NAME     = 'customer_name';
 
-    const AMOUNT = 'Amount';
+    const AMOUNT            = 'amount';
 
-    const SETTLEMENT_AMOUNT = 'Settlement Amount';
+    const SETTLEMENT_AMOUNT = 'settlement_amount';
 
-    const SERVICE_TAX = 'Service Tax';
+    const SERVICE_TAX       = 'service_tax';
 
     protected function getPaymentId(array $row)
     {
         return $row[self::PAYMENT_ID];
     }
 
-    protected function getReferenceNumber($row)
-    {
-        return $row[self::BANK_PAYMENT_ID];
-    }
-
     protected function getGatewayPaymentDate($row)
     {
-        return $row[self::DATE];
-    }
-
-    protected function getCustomerDetails($row)
-    {
-        return [
-            Base\Reconciliate::CUSTOMER_NAME => $row[self::CUSTOMER_NAME]
-        ];
-    }
-
-    protected function getGatewayFee($row)
-    {
-        return (int) (($row[self::AMOUNT] - $row[self::SETTLEMENT_AMOUNT]) * 100);
+        return $row[self::DATE] ?? null;
     }
 
     protected function getGatewayServiceTax($row)
     {
-        return (int) ($row[self::SERVICE_TAX] * 100);
+        return (int) ($row[self::SERVICE_TAX] * 100) ?? null;
+    }
+
+    protected function getGatewayFee($row)
+    {
+        return (int) (($row[self::AMOUNT] - $row[self::SETTLEMENT_AMOUNT]) * 100) ?? null;
     }
 
     protected function validatePaymentAmountEqualsReconAmount(array $row)
     {
-        $paymentAmount = $this->payment->getAmount();
+        if ($this->payment->getBaseAmount() !== $this->getReconPaymentAmount($row))
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'      => TraceCode::RECON_INFO_ALERT,
+                    'message'         => 'Payment amount mismatch',
+                    'expected_amount' => $this->payment->getBaseAmount(),
+                    'currency'        => $this->payment->getCurrency(),
+                    'row'             => $row,
+                    'gateway'         => get_called_class()
+                ]);
 
-        $reconAmount = (int) ($row[self::AMOUNT] * 100);
+            return false;
+        }
 
-        return ($paymentAmount === $reconAmount);
+        return true;
+    }
+
+    private function getReconPaymentAmount(array $row)
+    {
+        return Base\Helper::getIntegerFormattedAmount($row[self::AMOUNT]);
+    }
+
+    protected function getGatewayPayment($paymentId)
+    {
+        $this->repo->wallet->findByPaymentIdAndActionOrFail($paymentId, Action::AUTHORIZE);
     }
 }

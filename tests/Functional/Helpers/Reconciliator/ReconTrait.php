@@ -3,7 +3,9 @@
 namespace RZP\Tests\Functional\Helpers\Reconciliator;
 
 use Mockery;
+use RZP\Models\Merchant;
 use Illuminate\Http\UploadedFile;
+use RZP\Models\Base\PublicEntity;
 
 trait ReconTrait
 {
@@ -64,5 +66,78 @@ trait ReconTrait
         $class = $this->app['gateway']->getReconClass($gateway, $input);
 
         return Mockery::mock($class, [])->makePartial();
+    }
+
+    protected function makeReconRefundsSince(int $createdAt, int $count = 3)
+    {
+        for ($i = 0; $i < $count; $i++)
+        {
+            $payments[] = $this->doPayment($i + 1);
+        }
+
+        $refunds = [];
+
+        foreach ($payments as $payment)
+        {
+            $this->fixtures->edit('payment', $payment, ['created_at' => $createdAt]);
+
+            $refund = $this->fixtures->create(
+                'refund',
+                [
+                    'payment_id'  => $payment,
+                    'merchant_id' => Merchant\Account::TEST_ACCOUNT,
+                    'amount'      => $this->payment['amount'],
+                    'base_amount' => $this->payment['amount'],
+                ]);
+
+            $transaction = $this->fixtures->create(
+                'transaction',
+                [
+                    'entity_id' => $refund->getId(),
+                    'merchant_id' => '10000000000000'
+                ]);
+
+            $this->fixtures->edit(
+                'refund',
+                $refund->getId(),
+                [
+                    'created_at' => $createdAt,
+                    'transaction_id' => $transaction->getId()
+                ]);
+
+            $this->fixtures->create(
+                'upi',
+                [
+                    'payment_id' => $payment,
+                    'refund_id'  => PublicEntity::stripDefaultSign($refund['id'])
+                ]);
+
+            $refunds[] = $refund['id'];
+        }
+
+        return [$refunds, $payments];
+    }
+
+    private function doPayment($id)
+    {
+        $attributes = [
+            'terminal_id'       => $this->sharedTerminal->getId(),
+            'method'            => $this->method,
+            'amount'            => $this->payment['amount'],
+            'base_amount'       => $this->payment['amount'],
+            'amount_authorized' => $this->payment['amount'],
+            'status'            => 'captured',
+            'gateway'           => $this->gateway
+        ];
+
+        $payment = $this->fixtures->create('payment', $attributes);
+
+        $transaction = $this->fixtures->create('transaction', ['entity_id' => $payment->getId(), 'merchant_id' => '10000000000000']);
+
+        $this->fixtures->edit('payment', $payment->getId(), ['transaction_id' => $transaction->getId()]);
+
+        $this->fixtures->create($this->method, ['payment_id' => $payment->getId()]);
+
+        return $payment->getId();
     }
 }
