@@ -825,7 +825,7 @@ return [
                         'amount_transferred'=> 0,
                         'captured'          => true,
                         'email'             => 'abc@email.com',
-                        'fee'               => null,
+                        'fee'               => 0,
                         'disputes'          => [
                             'entity'                => 'collection',
                             'count'                 => 2,
