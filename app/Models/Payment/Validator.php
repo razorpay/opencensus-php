@@ -10,13 +10,12 @@ use Lib\PhoneBook;
 
 use RZP\Base;
 use RZP\Exception;
-use RZP\Constants\Mode;
-use RZP\Error\ErrorCode;
-use RZP\Models\Upi;
-use RZP\Models\Card;
-use RZP\Models\Currency\Currency;
 use RZP\Models\Payment;
+use Razorpay\IFSC\IFSC;
+use RZP\Constants\Mode;
 use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
+use RZP\Models\Currency\Currency;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\Payment\Processor\Wallet;
 
@@ -34,7 +33,7 @@ class Validator extends Base\Validator
         'aadhaar.hmac'               => 'sometimes_if:method,aeps|size:64|string',
         'aadhaar.cert_expiry'        => 'sometimes_if:method,aeps|size:8|string',
         'card'                       => 'sometimes',
-        'bank'                       => 'required_if:method,netbanking,aeps',
+        'bank'                       => 'required_if:method,netbanking,aeps,emandate|string|between:4,6',
         'wallet'                     => 'required_if:method,wallet|custom',
         'emi_duration'               => 'required_if:method,emi|integer|in:3,6,9,12,18,24',
         'description'                => 'sometimes|string|max:255|utf8',
@@ -50,7 +49,7 @@ class Validator extends Base\Validator
         'app_token'                  => 'sometimes',
         'token'                      => 'sometimes',
         'save'                       => 'sometimes|in:0,1',
-        'recurring'                  => 'sometimes_if:method,card,netbanking|in:0,1',
+        'recurring'                  => 'sometimes_if:method,card,emandate|in:1',
         'fee'                        => 'sometimes|filled|integer|max:50000000',
         Entity::TAX                  => 'sometimes|filled|integer|max:50000000',
         'on_hold'                    => 'sometimes_if:method,transfer|boolean',
@@ -61,9 +60,13 @@ class Validator extends Base\Validator
         '_'                          => 'sometimes|array',
         'test_success'               => 'sometimes|boolean',
         'subscription_card_change'   => 'sometimes|boolean',
-        'account_number'             => 'filled|alpha_num|between:5,20',
         'upi'                        => 'sometimes_if:method,upi|array',
         'upi.expiry_time'            => 'sometimes_if:method,upi|integer|between:5,30|filled',
+        'auth_type'                  => 'sometimes_if:method,emandate|string|max:10|filled|in:netbanking,aadhaar',
+        'bank_account'               => 'sometimes_if:method,emandate|associative_array|filled',
+        'bank_account.account_number' => 'required_with:bank_account|filled|alpha_num|between:5,20',
+        'bank_account.ifsc'          => 'required_with:bank_account|filled|alpha_num|size:11',
+        'bank_account.name'          => 'required_with:bank_account|filled|alpha_space_num|between:4,120',
     ];
 
     protected static $editRules = [
@@ -115,30 +118,26 @@ class Validator extends Base\Validator
         'hold_parameters',
         'customer_id',
         'test_success',
-        'account_number',
         'upi_expiry_time',
         'upi_vpa',
+        // Ideally, we should be using custom. But
+        // due to dot notation, we cannot use it.
+        'ifsc',
     ];
 
-    protected function validateAccountNumber(array $input)
+    protected function validateIfsc(array $input)
     {
-        if (isset($input['account_number']) === false)
+        if (isset($input[Entity::BANK_ACCOUNT][Entity::IFSC]) === false)
         {
             return;
         }
 
-        if ($input[Entity::METHOD] !== Method::NETBANKING)
+        $ifsc = $input[Entity::BANK_ACCOUNT][Entity::IFSC];
+
+        if (IFSC::validate($ifsc) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Account Number passed for invalid method: ' . $input[Entity::METHOD]);
-        }
-
-        $recurring = $input[Entity::RECURRING] ?? null;
-
-        if ($recurring !== '1')
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Account Number passed for non-recurring payment');
+                'Invalid IFSC Code in Bank Account');
         }
     }
 
@@ -198,7 +197,11 @@ class Validator extends Base\Validator
 
     protected function validateMethod($attribute, $method)
     {
-        if (Method::isValid($method) === false)
+        //
+        // TODO: Remove the emandate check once it is added in the methods class.
+        //
+        if ((Method::isValid($method) === false) and
+            ($method !== Method::EMANDATE))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid payment method given: ' . $method);
@@ -379,7 +382,8 @@ class Validator extends Base\Validator
 
     protected function validateBank($input)
     {
-        if ($input['method'] !== Payment\Method::NETBANKING)
+        if (($input['method'] !== Payment\Method::NETBANKING) and
+            ($input['method'] !== Payment\Method::EMANDATE))
         {
             return;
         }

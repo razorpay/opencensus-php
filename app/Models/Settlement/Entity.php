@@ -86,6 +86,7 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = [
         self::ATTEMPTS          => 1,
+        self::SETTLED_ON        => null,
     ];
 
     protected $casts = [

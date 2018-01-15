@@ -52,15 +52,5 @@ class KeyTest extends TestCase
         $this->ba->appAuth();
         $content = $this->startTest();
     }
-
-    protected function startTest($testDataToReplace = [])
-    {
-        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
-        $name = $trace[1]['function'];
-
-        $testData = $this->testData[$name];
-
-        return $this->runRequestResponseFlow($testData);
-    }
 }
 

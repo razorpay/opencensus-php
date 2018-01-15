@@ -201,7 +201,6 @@ final class FactoryData
             // 'source_id' => 'factory:\RZP\Models\Settlement\Entity',
             'source_type' => 'settlement',
             'status' => 'initiated',
-            'channel' => 'kotak',
             'version' => 'V3',
         ]);
 
