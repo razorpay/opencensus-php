@@ -198,6 +198,10 @@ class CardGatewaysFailedRefundFileTest extends TestCase
         foreach ($refunds['items'] as $refund)
         {
             $this->fixtures->edit('refund', $refund['id'], ['status' => 'failed']);
+
+            $six_months_ago = $refund['created_at'] - 15552000;
+
+            $this->fixtures->edit('payment', $payment['id'], ['created_at' => $six_months_ago]);
         }
 
         $this->ba->appAuth();

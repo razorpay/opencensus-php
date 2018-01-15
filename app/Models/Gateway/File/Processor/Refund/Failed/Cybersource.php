@@ -36,8 +36,6 @@ class Cybersource extends Base
             $refundDate = Carbon::createFromTimestamp(
                 $row['refund']['created_at'], Timezone::IST)->format('Y/m/d');
 
-            s($date);
-
             $formattedData[] = [
                 self::SR_NO             => $index + 1,
                 self::REFUND_ID         => $row['refund']['id'],
