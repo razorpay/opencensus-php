@@ -31,8 +31,8 @@ const commonConfig = {
 // Bundle Output
 // ------------------------------------
 commonConfig.output = {
-  publicPath: '/dist/',
-  path: path.resolve(__dirname, 'public/dist'),
+  publicPath: '/js/generated/',
+  path: path.resolve(__dirname, 'public/js/generated'),
 };
 
 // ------------------------------------
@@ -128,8 +128,5 @@ module.exports = env => {
     );
   }
 
-  return [
-    require('./webpack.merchant.js')(commonConfig, isProd),
-    require('./webpack.admin.js')(commonConfig, isProd),
-  ];
+  return [require('./webpack.merchant.js')(commonConfig, isProd)];
 };

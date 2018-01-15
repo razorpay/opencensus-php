@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-ng-app="app">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="google" value="notranslate" />
