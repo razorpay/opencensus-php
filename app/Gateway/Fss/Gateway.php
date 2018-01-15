@@ -56,12 +56,7 @@ class Gateway extends Base\Gateway
         parent::callback($input);
 
         // Trace payment callback
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_CALLBACK,
-            [
-                'gateway' => $input['gateway']
-            ]
-        );
+        $this->traceGatewayData($input['gateway'], TraceCode::GATEWAY_PAYMENT_CALLBACK);
 
         $gatewayResponse = $input['gateway'];
 
@@ -431,6 +426,11 @@ class Gateway extends Base\Gateway
             Entity::STATUS,
         ];
 
+        $errorResponseFields = [
+            Fields::ERROR_TEXT,
+            Fields::ERROR,
+        ];
+
         // Razorpay vs FSS Field mapping
         $callbackFieldMapping = [
             Entity::GATEWAY_PAYMENT_ID     => Fields::PAY_ID,
@@ -440,8 +440,7 @@ class Gateway extends Base\Gateway
             Entity::POST_DATE              => Fields::POST_DATE,
             Entity::STATUS                 => Fields::RESULT,
             Entity::AUTH_RES_CODE          => Fields::AUTH_RES_CODE,
-            Entity::ERROR_MESSAGE          => Fields::ERROR_TEXT,
-            Entity::ERROR_MESSAGE          => Fields::ERROR,
+            Entity::ERROR_MESSAGE          => $errorResponseFields,
         ];
 
         $missingCallbackFields = [];
@@ -450,14 +449,21 @@ class Gateway extends Base\Gateway
         {
             // Checking with empty "null" because we use simple_xml to deserialize the data
             // so null is converted to string.
-            if (empty($gatewayContent[$value]) === false and
-                ($gatewayContent[$value] !== "null"))
+            if (is_array($value) === true)
             {
-                $attributes[$key] = $gatewayContent[$value];
+                // To handle case where error_text is sent by bob and error is sent by fss.
+                foreach ($value as $gatewayReponseField)
+                {
+                    $this->validateGatewayResponseField($key,
+                                                        $gatewayReponseField,
+                                                        $attributes,
+                                                        $missingCallbackFields,
+                                                        $gatewayContent);
+                }
             }
             else
             {
-                $missingCallbackFields[] = $key;
+                $this->validateGatewayResponseField($key, $value, $attributes, $missingCallbackFields, $gatewayContent);
             }
         }
 
@@ -479,6 +485,23 @@ class Gateway extends Base\Gateway
         }
 
         return $attributes;
+    }
+
+    private function validateGatewayResponseField($gatewayField,
+                                                  $gatewayResponseField,
+                                                  & $attributes,
+                                                  & $missingCallbackFields,
+                                                  $gatewayContent)
+    {
+        if ((empty($gatewayContent[$gatewayResponseField]) === false) and
+            ($gatewayContent[$gatewayResponseField] !== "null"))
+        {
+            $attributes[$gatewayField] = $gatewayContent[$gatewayResponseField];
+        }
+        else
+        {
+            $missingCallbackFields[] = $gatewayField;
+        }
     }
 
     protected function getCallbackFields(array $gatewayContent): array
