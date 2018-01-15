@@ -11,19 +11,12 @@ use RZP\Gateway\Wallet\Base\Action;
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
     const PAYMENT_ID        = 'Merchant Transaction ID';
-
     const BANK_PAYMENT_ID   = 'Payment Id';
-
     const DATE              = 'SucceededOn Date';
-
     const CUSTOMER_NAME     = 'Customer Name';
-
     const AMOUNT            = 'Amount';
-
     const SETTLEMENT_AMOUNT = 'Settlement Amount';
-
     const SERVICE_TAX       = 'Service Tax';
-
     const SETTLEMENT_DATE   = 'Settlement Date';
 
     protected function getPaymentId(array $row)
@@ -109,7 +102,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     private function getReconPaymentAmount(array $row)
     {
-        return Base\Helper::getIntegerFormattedAmount($row[self::AMOUNT]);
+        return Base\Helper::getIntegerFormattedAmount($row[self::AMOUNT]) ?? null;
     }
 
     /**
@@ -119,6 +112,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      */
     protected function getGatewayPayment($paymentId)
     {
-        return $this->repo->wallet->findByPaymentIdAndActionOrFail($paymentId, Action::AUTHORIZE);
+        return $this->repo->wallet->findByPaymentIdAndAction($paymentId, Action::AUTHORIZE) ?? null;
     }
 }
