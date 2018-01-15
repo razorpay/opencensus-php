@@ -74,14 +74,7 @@ class Gateway extends Base\Gateway
 
             $gatewayPayment->fill($attributes);
 
-            $this->trace->info(
-                TraceCode::GATEWAY_REFUND_RESPONSE,
-                [
-                    'refund_id' => $gatewayContent,
-                ]
-            );
-
-            if (isset($gatewayContent[Fields::AMOUNT]) === false)
+            if (isset($gatewayContent[Fields::AMOUNT]) === true)
             {
                 $expectedAmount = $this->getFormattedAmount($input['payment']['amount'] / 100);
 
