@@ -68,54 +68,19 @@ trait ReconTrait
         return Mockery::mock($class, [])->makePartial();
     }
 
-    protected function makeReconRefundsSince(int $createdAt, int $count = 3)
+    protected function makeReconPaymentsSince(int $createdAt, int $count = 3)
     {
         for ($i = 0; $i < $count; $i++)
         {
             $payments[] = $this->doPayment($i + 1);
         }
 
-        $refunds = [];
-
         foreach ($payments as $payment)
         {
             $this->fixtures->edit('payment', $payment, ['created_at' => $createdAt]);
-
-            $refund = $this->fixtures->create(
-                'refund',
-                [
-                    'payment_id'  => $payment,
-                    'merchant_id' => Merchant\Account::TEST_ACCOUNT,
-                    'amount'      => $this->payment['amount'],
-                    'base_amount' => $this->payment['amount'],
-                ]);
-
-            $transaction = $this->fixtures->create(
-                'transaction',
-                [
-                    'entity_id' => $refund->getId(),
-                    'merchant_id' => '10000000000000'
-                ]);
-
-            $this->fixtures->edit(
-                'refund',
-                $refund->getId(),
-                [
-                    'created_at' => $createdAt,
-                    'transaction_id' => $transaction->getId()
-                ]);
-
-            $this->fixtures->create(
-                'upi',
-                [
-                    'payment_id' => $payment,
-                    'refund_id'  => PublicEntity::stripDefaultSign($refund['id'])
-                ]);
-
-            $refunds[] = $refund['id'];
         }
 
-        return [$refunds, $payments];
+        return $payments;
     }
 
     private function doPayment($id)

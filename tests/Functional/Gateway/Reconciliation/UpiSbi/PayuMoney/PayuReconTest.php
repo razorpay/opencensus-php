@@ -43,7 +43,7 @@ class PayuReconTest extends TestCase
     {
         $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
 
-        $this->makeReconRefundsSince($createdAt);
+        $payments = $this->makeReconPaymentsSince($createdAt);
 
         $this->ba->appAuth();
 
@@ -57,11 +57,15 @@ class PayuReconTest extends TestCase
         $this->assertEquals(3, $response['total_count']);
         $this->assertEquals(3, $response['success_count']);
 
-        $payments = $this->getEntities('payment', [], true);
+        $wallets = $this->getEntities('wallet', [], true);
 
-        foreach ($payments['items'] as $payment)
+        foreach ($wallets['items'] as $id => $wallet)
         {
+            $payment = $this->getEntityById('payment', $payments[$id], true);
+
             $this->assertEquals(true, $payment['gateway_captured']);
+
+            $this->assertNotNull($wallet['date']);
 
             $transactionId = $payment['transaction_id'];
 
