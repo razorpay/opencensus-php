@@ -235,6 +235,7 @@ class Merchant extends Base
 
     public function createScheduleTask(array $attributes = array())
     {
+        // TODO: To check for better ways of solving this issue
         $mode = Config::get('database.default');
 
         $scheduleAttributes = [];

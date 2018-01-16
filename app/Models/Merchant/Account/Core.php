@@ -45,10 +45,8 @@ class Core extends Merchant\Core
         (new Validator)->validateInput('create', $input);
 
         $merchantDetailsInput    = $this->getMerchantDetailsFromInput($input);
-
         $bankAccountDetailsInput = $this->getBankAccountDetailsFromInput($input[Entity::BANK_ACCOUNT] ?? []);
-
-        $merchantDetailsInput = array_merge($merchantDetailsInput, $bankAccountDetailsInput);
+        $merchantDetailsInput    = array_merge($merchantDetailsInput, $bankAccountDetailsInput);
 
         $account = $this->repo->transactionOnLiveAndTest(function () use (
             $input,
@@ -118,15 +116,15 @@ class Core extends Merchant\Core
             Entity::BENEFICIARY_NAME,
         ];
 
-        $bankAccountDetailsKeys = array_only($input, $whitelistedBankAccountKeys);
+        $bankAccountDetails = array_only($input, $whitelistedBankAccountKeys);
 
         $bankAccountToDetailAttributesMap = Entity::$bankAccountToDetailAttributesMap;
 
         $merchantDetails = [];
 
-        foreach($bankAccountDetailsKeys as $bankAccountDetailKey => $value)
+        foreach($bankAccountDetails as $key => $value)
         {
-            $merchantDetails[$bankAccountToDetailAttributesMap[$bankAccountDetailKey]] = $value;
+            $merchantDetails[$bankAccountToDetailAttributesMap[$key]] = $value;
         }
 
         return $merchantDetails;

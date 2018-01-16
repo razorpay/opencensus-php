@@ -1925,7 +1925,6 @@ final class Route
         'beta_account_fetch_multiple'          => [Feature::MARKETPLACE],
         'beta_account_post_bank_account'       => [Feature::MARKETPLACE],
         'beta_account_fetch_setl_destinations' => [Feature::MARKETPLACE],
-
     ];
 
     /*

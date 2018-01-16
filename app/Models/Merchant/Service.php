@@ -95,7 +95,7 @@ class Service extends Base\Service
 
         unset($input['account']);
 
-        $subMerchant = (new Merchant\Core)->createSubMerchant($input, $merchant, $linkedAccount, false);
+        $subMerchant = (new Merchant\Core)->createSubMerchant($input, $merchant, $linkedAccount);
 
         // This goes out to the aggregator
         // (skip if marketplace merchant)

@@ -25,25 +25,16 @@ class AccountTest extends TestCase
         $this->ba->privateAuth();
     }
 
-    /**
-     * Tests linked account creation in the test mode when the parent merchant is not activated.
-     */
     public function testCreateLinkedAccountForInactiveMerchantInTestMode()
     {
         $this->createLinkedAccount(Mode::TEST, false);
     }
 
-    /**
-     * Tests linked account creation in the test mode when the parent merchant has been activated.
-     */
     public function testCreateLinkedAccountForActiveMerchantInTestMode()
     {
         $this->createLinkedAccount(Mode::TEST, true);
     }
 
-    /**
-     * Tests linked account creation in the live mode.
-     */
     public function testCreateLinkedAccountForActiveMerchantInLiveMode()
     {
         $this->createLinkedAccount(Mode::LIVE, true);
@@ -120,8 +111,9 @@ class AccountTest extends TestCase
     protected function createLinkedAccount(string $mode, bool $activate)
     {
         //
-        // The fixture for ScheduleTask entity in Test mode is already seeded. When a
-        // merchant is created through the API, ScheduleTask entity is created in both the modes.
+        // The fixture for ScheduleTask entity in Test mode is already seeded.
+        // When a merchant is created through the API, ScheduleTask entity is
+        // created in both the modes.
         //
         $this->fixtures->on('live')->create('merchant:schedule_task',
             [
