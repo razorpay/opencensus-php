@@ -12,7 +12,7 @@ use RZP\Models\Base\PublicEntity;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::ENTITY_ID       => 'sometimes|string|max:14',
+        Entity::ENTITY_ID       => 'sometimes|nullable|string|max:14',
         Entity::ENTITY_NAME     => 'sometimes|string|max:255',
         Entity::ADMIN_ID        => 'required|string|max:14',
         Entity::WORKFLOW_ID     => 'required|string|max:14',

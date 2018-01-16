@@ -40,7 +40,7 @@ class Axis extends Base
                 Headings::PAYMENT_ID                  => $paymentId,
                 Headings::DEBIT_DATE                  => $debitDate,
                 Headings::GATEWAY_MERCHANT_ID         => $payment->terminal->getGatewayMerchantId(),
-                Headings::TOKEN_ID                    => $token->getId(),
+                Headings::CUSTOMER_UID                => $token->getGatewayToken(),
                 Headings::CUSTOMER_NAME               => $token->customer->getName(),
                 Headings::DEBIT_ACCOUNT               => $token->getAccountNumber(),
                 Headings::AMOUNT                      => $this->getFormattedAmount($payment->getAmount()),

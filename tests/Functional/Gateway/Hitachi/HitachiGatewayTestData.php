@@ -30,7 +30,7 @@ return [
         'refund_id' => null,
         'acquirer' => 'rbl',
         'action' => 'authorize',
-        'received' =>  true,
+        'received' => true,
         'amount' => 50000,
         'currency' => 'INR',
         'pRespCode' => '00',
@@ -54,7 +54,7 @@ return [
         'refund_id' => null,
         'acquirer' => 'rbl',
         'action' => 'capture',
-        'received' =>  true,
+        'received' => true,
         'amount' => 50000,
         'currency' => 'INR',
         'pRespCode' => '00',
@@ -320,15 +320,15 @@ return [
         'response'  => [
             'content'     => [
                 'error' => [
-                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_INVALID_FORMAT,
+                    'code'          => PublicErrorCode::GATEWAY_ERROR,
+                    'description'   => PublicErrorDescription::GATEWAY_ERROR,
                 ],
             ],
-            'status_code' => 400,
+            'status_code' => 502,
         ],
         'exception' => [
             'class'                 => 'RZP\Exception\GatewayErrorException',
-            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_FORMAT,
+            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_INVALID_FORMAT,
             'gateway_error_code'    => '30',
         ],
     ],

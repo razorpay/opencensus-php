@@ -8,6 +8,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
 use RZP\Models\Card;
 use RZP\Constants\Entity as E;
+use RZP\Models\FundTransfer\Attempt;
 
 class Validator extends Base\Validator
 {

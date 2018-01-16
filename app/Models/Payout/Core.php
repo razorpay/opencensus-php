@@ -177,11 +177,22 @@ class Core extends Base\Core
     {
         return $this->repo->transaction(function() use ($input, $channel)
         {
+            (new FundTransferAttempt\Validator)->validateInput('initiate_fund_transfer', $input);
+
             $timestamp = Carbon::now()->getTimestamp();
+
+            $purpose = $input[FundTransferAttempt\Entity::PURPOSE];
+
+            $sourceType = $input[FundTransferAttempt\Entity::SOURCE_TYPE] ?? null;
 
             $attempts = $this->repo
                              ->fund_transfer_attempt
-                             ->getCreatedAttemptsBeforeTimestamp($timestamp, $channel, ['source']);
+                             ->getCreatedAttemptsBeforeTimestamp(
+                                $timestamp,
+                                $purpose,
+                                $sourceType,
+                                $channel,
+                                ['source']);
 
             $method = 'processBankPayoutsFor' . ucfirst($channel);
 
