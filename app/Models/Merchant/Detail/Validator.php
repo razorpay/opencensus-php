@@ -170,6 +170,14 @@ class Validator extends Base\Validator
         'clarification_mode',
     ];
 
+    /**
+     * Validate the transaction report email
+     *
+     * @param $attribute
+     * @param $value
+     *
+     * @throws Exception\BadRequestValidationFailureException
+     */
     public function validateTransactionReportEmail($attribute, $value)
     {
         $emails = explode(',', $value);
