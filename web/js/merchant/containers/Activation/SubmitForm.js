@@ -28,7 +28,7 @@ export default class SubmitForm extends Component {
                     }
                   }}
                 />
-                <label for="agree_terms">
+              <label for="agree_terms" class="icon i-check">
                   <div class="submit-label">
                     I have read and understood the{' '}
                     <a

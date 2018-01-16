@@ -284,7 +284,7 @@ export default class CreateVirtualAccount extends Component {
                     type="checkbox"
                     normalize={value => Number(value)}
                   />
-                  <label for="numeric">Numeric</label>
+                <label for="numeric" class="icon i-check">Numeric</label>
                 </div>
               )}
 

@@ -238,7 +238,7 @@ a.breadcrumb__backNav--link {
 .rzpCheckbox {
   margin-bottom: 8px;
 
-  [type='checkbox']:not(:checked), [type='checkbox']:checked {
+  [type='checkbox'] {
     position: absolute;
     left: -9999px;
 
@@ -260,7 +260,7 @@ a.breadcrumb__backNav--link {
       }
 
       &::after {
-        content: "\E009";
+        opacity: 1;
         color: #7266ba;
         position: absolute;
         line-height: 1.3;
@@ -268,14 +268,13 @@ a.breadcrumb__backNav--link {
         left: 3px;
         transition: opacity 0.2s ease-out;
         font-weight: 600;
-        font-family: "icons";
       }
     }
   }
 
   // Customer css for submit-form as label can have text as well
   &.submit-form {
-    [type='checkbox']:not(:checked), [type='checkbox']:checked {
+    [type='checkbox'] {
       + label {
         padding-left: 30px;
         user-select: none;
