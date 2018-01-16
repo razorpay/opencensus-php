@@ -39,6 +39,7 @@ const targetToSubTypeMap = {
 
 export default class CreateGatewayFile extends Component {
   static title = 'Create Gateway File';
+  static permission = 'create_netbanking_refund';
 
   state = { type: '', target: '', dateIsRange: false };
 
