@@ -68,8 +68,9 @@ class Core extends Merchant\Core
         $this->trace->info(
             TraceCode::ACCOUNT_CREATED,
             [
-                'parent_id' => $parentMerchant->getId(),
-                'input'     => $input,
+                'account_id' => $account->getId(),
+                'parent_id'  => $parentMerchant->getId(),
+                'input'      => $input,
             ]);
 
         return $account->reload();

@@ -82,9 +82,8 @@ class Service extends Merchant\Service
     {
         $account = $this->repo->account->findByPublicIdAndMerchant($id, $this->merchant);
 
+        // @todo: log to slack once the bank account update API is ready. Refer Merchant\Service::addBankAccount().
         $ba = (new BankAccount\Core)->createOrChangeBankAccount($input, $account);
-
-        $this->logActionToSlack($account, SlackActions::EDIT_BANK_DETAILS, $input);
 
         return $ba->toArrayPublic();
     }
