@@ -78,7 +78,7 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
 
     /**
      * The parent class's method gets only successful payments,
-     * but for sbi recon, we need all payments - both successful
+     * but for payu recon, we need all payments - both successful
      * and failed. This method accomplishes that.
      *
      * @override

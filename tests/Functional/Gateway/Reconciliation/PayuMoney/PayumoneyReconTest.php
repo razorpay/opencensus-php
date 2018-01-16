@@ -9,10 +9,11 @@ use RZP\Constants\Timezone;
 use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment\Processor\Wallet;
+use RZP\Reconciliator\RequestProcessor\Base as Recon;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
 
-class PayuReconTest extends TestCase
+class PayumoneyReconTest extends TestCase
 {
     use ReconTrait;
     use PaymentTrait;
@@ -50,7 +51,7 @@ class PayuReconTest extends TestCase
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
 
-        $response = $this->reconcile($uploadedFile, 'PayuMoney');
+        $response = $this->reconcile($uploadedFile, Recon::PAYUMONEY);
 
         // We assert that all 3 payments were reconciled
         $this->assertEquals(3, $response['total_count']);
@@ -107,7 +108,7 @@ class PayuReconTest extends TestCase
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
 
-        $response = $this->reconcile($uploadedFile, 'PayuMoney');
+        $response = $this->reconcile($uploadedFile, Recon::PAYUMONEY);
 
         // Assert that the payment was not reconciled
         $this->assertEquals(1, $response['total_count']);
@@ -161,7 +162,7 @@ class PayuReconTest extends TestCase
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
 
-        $response = $this->reconcile($uploadedFile, 'PayuMoney');
+        $response = $this->reconcile($uploadedFile, Recon::PAYUMONEY);
 
         // Total count = 1
         $this->assertEquals(1, $response['total_count']);
@@ -220,7 +221,7 @@ class PayuReconTest extends TestCase
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
 
-        $response = $this->reconcile($uploadedFile, 'PayuMoney');
+        $response = $this->reconcile($uploadedFile, Recon::PAYUMONEY);
 
         // Assert that the payment was not reconciled
         $this->assertEquals(1, $response['total_count']);
@@ -273,7 +274,7 @@ class PayuReconTest extends TestCase
         return $uploadedFile;
     }
 
-    protected function doPayment($id)
+    protected function createPayment($id)
     {
         $attributes = [
             'terminal_id'       => $this->sharedTerminal->getId(),

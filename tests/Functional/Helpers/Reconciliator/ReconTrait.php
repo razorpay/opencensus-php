@@ -72,7 +72,7 @@ trait ReconTrait
     {
         for ($i = 0; $i < $count; $i++)
         {
-            $payments[] = $this->doPayment($i + 1);
+            $payments[] = $this->createPayment($i + 1);
         }
 
         foreach ($payments as $payment)
@@ -83,7 +83,7 @@ trait ReconTrait
         return $payments;
     }
 
-    private function doPayment($id)
+    private function createPayment($id)
     {
         $attributes = [
             'terminal_id'       => $this->sharedTerminal->getId(),
