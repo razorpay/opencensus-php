@@ -774,7 +774,8 @@ return [
             'method'  => 'PUT',
             'url'     => '/config/keys',
             'content' => [
-                'terminal_selection_log_verbose' => '1',
+                'terminal_selection_log_verbose'        => '1',
+                'pricing_rule_selection_log_verbose'    => '1',
             ],
         ],
         'response' => [
@@ -791,7 +792,8 @@ return [
             'url'     => '/config/keys',
         ],
         'response' => [
-            'terminal_selection_log_verbose' => '1',
+            'terminal_selection_log_verbose'        => '1',
+            'pricing_rule_selection_log_verbose'    => '1',
         ],
     ],
 
@@ -805,5 +807,53 @@ return [
                 'entities' => []
             ]
         ]
+    ],
+
+    //
+    // Additional request content and assertions are done in test method
+    // for different cases.
+    //
+    'testFetchSoftDeletedEntityForAdmin' => [
+        'request' => [
+            'url'      => '/admin/org',
+            'method'   => 'get',
+            'content'  => [
+                'auth_type' => 'google_auth',
+            ],
+        ],
+        'response' => [
+            'content'  => [],
+        ],
+    ],
+
+    //
+    // Additional request content and assertions are done in test method
+    // for different cases.
+    //
+    'testFindSoftDeletedEntityForAdmin' => [
+        'request' => [
+            'url'     => '/admin/org/org_10000000000001',
+            'method'  => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content'  => [],
+        ],
+    ],
+
+    'testUpdateGeoIps' => [
+        'request' => [
+            'method'  => 'post',
+            'url'     => '/geoip/update',
+            'content' => [
+                'eureka_key_index' => 1
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'total'   => 3,
+                'success' => 1
+            ]
+        ],
     ]
 ];

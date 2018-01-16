@@ -112,7 +112,16 @@ class DailyFile extends Mailable
     {
         $today = Carbon::now(Timezone::IST)->format('d-m-Y');
 
-        $subject = $this->data['bankName'] . ' Netbanking claims and refund files for ' . $today;
+        $subject = '';
+
+        $corporate = $this->data['corporate'] ?? false;
+
+        if ($corporate === true)
+        {
+            $subject .= 'Corporate ';
+        }
+
+        $subject .= $this->data['bankName'] . ' Netbanking claims and refund files for ' . $today;
 
         return $subject;
     }

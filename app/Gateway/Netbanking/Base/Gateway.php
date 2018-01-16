@@ -10,9 +10,17 @@ use RZP\Gateway\Base\Action;
 
 class Gateway extends \RZP\Gateway\Base\Gateway
 {
-    const RETAIL = 'retail';
+    /**
+     * Tells us whether the gateway is being used in tpv mode or not
+     * @var bool
+     */
+    protected $tpv;
 
-    const CORPORATE = 'corporate';
+    /**
+     * Tells us whether the Gateway is being used in Retail, Corporate or EMandate modes
+     * @var string
+     */
+    protected $bankingType;
 
     protected function createGatewayPaymentEntity($attributes)
     {
@@ -116,22 +124,31 @@ class Gateway extends \RZP\Gateway\Base\Gateway
 
     public function reconcileDebitEmandate(array $input)
     {
-        $this->input = $input;
+        $namespace = $this->getGatewayNamespace();
+
+        $class = $namespace . '\\' . 'EMandateDebitReconFile';
+
+        return (new $class)->process($input);
     }
 
-    public function setBankingType($bankingType)
+    public function setBankingType(string $bankingType)
     {
         $this->bankingType = $bankingType;
     }
 
     protected function setCorporateBanking()
     {
-        $this->bankingType = 'corporate';
+        $this->setBankingType(BankingType::CORPORATE);
     }
 
     protected function isCorporateBanking()
     {
-        return ($this->bankingType === 'corporate');
+        return ($this->getBankingType() === BankingType::CORPORATE);
+    }
+
+    protected function isRetailBanking()
+    {
+        return ($this->getBankingType() === BankingType::RETAIL);
     }
 
     protected function getBankingType()

@@ -3,10 +3,12 @@
 namespace RZP\Models\Gateway\File\Processor\Refund;
 
 use Carbon\Carbon;
+
 use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 
 class Kotak extends Base
@@ -22,6 +24,25 @@ class Kotak extends Base
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
 
     protected $type = Payment\Entity::BANK;
+
+    public function fetchEntities(): PublicCollection
+    {
+        $begin = $this->gatewayFile->getBegin();
+        $end = $this->gatewayFile->getEnd();
+
+        $tpv = $this->gatewayFile->getTpv();
+
+        $refunds = $this->repo->refund->fetchRefundsForTpvBetweenTimestamps(
+            static::PAYMENT_TYPE_ATTRIBUTE,
+            static::GATEWAY_CODE,
+            $begin,
+            $end,
+            static::GATEWAY,
+            $tpv
+        );
+
+        return $refunds;
+    }
 
     protected function formatDataForFile(array $data)
     {

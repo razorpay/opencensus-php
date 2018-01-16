@@ -4,9 +4,6 @@ namespace RZP\Models\Offer;
 
 use Carbon\Carbon;
 use RZP\Models\Base;
-use RZP\Models\Order;
-use RZP\Models\Payment;
-use RZP\Constants\Table;
 
 class Entity extends Base\PublicEntity
 {
@@ -70,6 +67,17 @@ class Entity extends Base\PublicEntity
     const DISPLAY_TEXT_LENGTH       = 255;
 
     const DEFAULT_ERROR_MESSAGE = 'Payment method used is not eligible for offer. Please try with a different payment method.';
+
+    /**
+     * Attributes on the basis of which we determine an offer satisfies the same
+     * payment criteria as another offer
+     */
+    const COMPARISON_ATTRIBUTES = [
+        self::PAYMENT_METHOD,
+        self::PAYMENT_METHOD_TYPE,
+        self::ISSUER,
+        self::PAYMENT_NETWORK
+    ];
 
     protected $entity      = 'offer';
 
@@ -362,5 +370,27 @@ class Entity extends Base\PublicEntity
         ];
 
         return array_filter($data);
+    }
+
+    /**
+     * Determines if two offers are for the same payment criteria,
+     * as defined by the COMPARISON_ATTRIBUTES
+     *
+     * @param  Entity $offer
+     *
+     * @return bool
+     */
+    public function matches(Entity $offer): bool
+    {
+        foreach (self::COMPARISON_ATTRIBUTES as $attr)
+        {
+            if (($this->isAttributeNotNull($attr) === true) and
+                ($this->getAttribute($attr) !== $offer->getAttribute($attr)))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

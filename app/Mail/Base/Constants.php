@@ -22,6 +22,7 @@ class Constants
     const IRCTC         = 'irctc';
     const EMANDATE      = 'emandate';
     const DISPUTES      = 'disputes';
+    const NOREPLY       = 'noreply';
 
     const MAIL_ADDRESSES = [
         self::SUPPORT       => 'support@razorpay.com',
@@ -42,6 +43,7 @@ class Constants
         self::IRCTC         => 'support@razorpay.com',
         self::EMANDATE      => 'emandate@razorpay.com',
         self::DISPUTES      => 'disputes@razorpay.com',
+        self::NOREPLY       => 'no-reply@razorpay.com',
     ];
 
     const HEADERS = [
@@ -52,9 +54,10 @@ class Constants
         self::INVOICES    => 'Razorpay Invoices',
         self::REPORTS     => 'Team Razorpay',
         self::CARE        => 'Team Razorpay',
+        self::NOREPLY     => 'Team Razorpay',
         self::ALERTS      => 'Razorpay Webhook Support',
         self::ACTIVATION  => 'Razorpay Activations Team',
-        self::IRCTC       => 'Razorpay IRCTC Refunds',
+        self::IRCTC       => 'Razorpay IRCTC Files',
         self::EMANDATE    => 'Razorpay EMandate',
         self::DISPUTES    => 'Razorpay Risk Team',
     ];

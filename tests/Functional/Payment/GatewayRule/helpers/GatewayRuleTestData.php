@@ -2,8 +2,6 @@
 
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
-use RZP\Error\PublicErrorDescription;
-use RZP\Models\Merchant;
 
 return [
     'testCreateGatewayRule' => [
@@ -19,8 +17,8 @@ return [
                     'issuer'           => 'HDFC',
                     'currency'         => 'INR',
                     'international'    => 0,
-                    'gateway_acquirer' => 'axis',
-                    'load'             => 50
+                    'load'             => 50,
+                    'comments'         => 'some comments',
                 ],
                 'url' => '/gateway/rules',
                 'method' => 'POST',
@@ -35,9 +33,9 @@ return [
                     'issuer'           => 'HDFC',
                     'currency'         => 'INR',
                     'international'    => false,
-                    'gateway_acquirer' => 'axis',
                     'min_amount'       => 0,
                     'load'             => 50,
+                    'comments'         => 'some comments',
                     'admin'            => true
                 ],
             ],
@@ -55,7 +53,6 @@ return [
                     'min_amount'       => 100,
                     'max_amount'       => 500,
                     'international'    => 0,
-                    'gateway_acquirer' => 'axis',
                     'load'             => 50
                 ],
                 'url' => '/gateway/rules',
@@ -70,7 +67,6 @@ return [
                     'network'          => 'VISA',
                     'issuer'           => 'HDFC',
                     'international'    => false,
-                    'gateway_acquirer' => 'axis',
                     'min_amount'       => 1,
                     'max_amount'       => 5,
                     'load'             => 50,
@@ -89,7 +85,6 @@ return [
                     'network'          => 'VISA',
                     'issuer'           => 'HDFC',
                     'international'    => 0,
-                    'gateway_acquirer' => 'axis',
                     'load'             => 50
                 ],
                 'url' => '/gateway/rules',
@@ -120,7 +115,6 @@ return [
                     'network'          => 'VISA',
                     'issuer'           => 'HDFC',
                     'international'    => 0,
-                    'gateway_acquirer' => 'axis',
                     'load'             => 50
                 ],
                 'url' => '/gateway/rules',
@@ -151,7 +145,6 @@ return [
                     'network'          => 'VISA',
                     'issuer'           => 'HDFC',
                     'international'    => 0,
-                    'gateway_acquirer' => 'axis',
                     'load'             => 50
                 ],
                 'url' => '/gateway/rules',
@@ -182,7 +175,6 @@ return [
                     'network'          => 'xyz',
                     'issuer'           => 'HDFC',
                     'international'    => 0,
-                    'gateway_acquirer' => 'axis',
                     'load'             => 50
                 ],
                 'url' => '/gateway/rules',
@@ -213,7 +205,6 @@ return [
                     'network'          => 'DICL',
                     'issuer'           => 'HDFC',
                     'international'    => 0,
-                    'gateway_acquirer' => 'axis',
                     'load'             => 50
                 ],
                 'url' => '/gateway/rules',
@@ -244,7 +235,6 @@ return [
                     'network'          => 'VISA',
                     'issuer'           => 'XYZ',
                     'international'    => 0,
-                    'gateway_acquirer' => 'axis',
                     'load'             => 50
                 ],
                 'url' => '/gateway/rules',
@@ -276,7 +266,6 @@ return [
                     'network'          => 'VISA',
                     'issuer'           => 'ICIC',
                     'international'    => 0,
-                    'gateway_acquirer' => 'axis',
                     'load'             => 50
                 ],
                 'url' => '/gateway/rules',
@@ -301,14 +290,14 @@ return [
             'request' => [
                 'content' => [
                     'merchant_id'      => '10000000000000',
-                    'type'             => 'sorter',
+                    'type'             => 'filter',
+                    'filter_type'      => 'select',
                     'gateway'          => 'hdfc',
                     'method'           => 'card',
                     'network'          => 'VISA',
                     'issuer'           => 'ICIC',
                     'international'    => 0,
                     'gateway_acquirer' => 'axis',
-                    'load'             => 50
                 ],
                 'url' => '/gateway/rules',
                 'method' => 'POST',
@@ -561,7 +550,7 @@ return [
                     'type'        => 'sorter',
                     'merchant_id' => '10000000000000',
                     'gateway'     => 'hdfc',
-                    'network'     => null,
+                    'network'     => 'VISA',
                     'min_amount'  => 0,
                     'load'        => 60
                 ],
@@ -590,6 +579,77 @@ return [
             'exception' => [
                 'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
                 'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ],
+        ],
+        // Create more specific rule while more generic rule exists
+        [
+            'fixtures' => [
+                [
+                    'method'      => 'card',
+                    'type'        => 'sorter',
+                    'merchant_id' => '100000Razorpay',
+                    'gateway'     => 'hdfc',
+                    'network'     => null,
+                    'min_amount'  => 0,
+                    'load'        => 90
+                ]
+            ],
+            'request' => [
+                'content' => [
+                    'merchant_id' => '10000000000000',
+                    'type'        => 'sorter',
+                    'gateway'     => 'axis_migs',
+                    'method'      => 'card',
+                    'iins'        => ['411111'],
+                    'load'        => 90
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'merchant_id' => '10000000000000',
+                    'type'        => 'sorter',
+                    'gateway'     => 'axis_migs',
+                    'method'      => 'card',
+                    'iins'        => ['411111'],
+                    'load'        => 90,
+                    'admin'       => true
+                ],
+            ],
+        ],
+        // Create generic rule while more specific rule exists
+        [
+            'fixtures' => [
+                [
+                    'merchant_id' => '10000000000000',
+                    'type'        => 'sorter',
+                    'gateway'     => 'axis_migs',
+                    'method'      => 'card',
+                    'iins'        => ['411111'],
+                    'load'        => 90,
+                ]
+            ],
+            'request' => [
+                'content' => [
+                    'method'      => 'card',
+                    'type'        => 'sorter',
+                    'merchant_id' => '100000Razorpay',
+                    'gateway'     => 'hdfc',
+                    'load'        => 90,
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'merchant_id' => '100000Razorpay',
+                    'type'        => 'sorter',
+                    'gateway'     => 'hdfc',
+                    'method'      => 'card',
+                    'load'        => 90,
+                    'admin'       => true
+                ],
             ],
         ],
         // Create select type filter rule
@@ -854,7 +914,7 @@ return [
                 'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
             ],
         ],
-        // Test adding select and rekject filter for same criteria in same group
+        // Test adding select and reject filter for same criteria in same group
         [
             'fixtures' => [
                 [
@@ -894,6 +954,47 @@ return [
             'exception' => [
                 'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
                 'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ],
+        ],
+        // Test adding select and reject filter for same criteria in same group for different merchants
+        [
+            'fixtures' => [
+                [
+                    'method'      => 'card',
+                    'type'        => 'filter',
+                    'filter_type' => 'select',
+                    'group'       => 'groupA',
+                    'merchant_id' => '1ApiFeeAccount',
+                    'gateway'     => 'hdfc',
+                    'min_amount'  => 100,
+                    'max_amount'  => 700,
+                ]
+            ],
+            'request' => [
+                'content' => [
+                    'merchant_id' => '10000000000000',
+                    'type'        => 'filter',
+                    'filter_type' => 'reject',
+                    'group'       => 'groupA',
+                    'gateway'     => 'hdfc',
+                    'method'      => 'card',
+                    'min_amount'  => 200,
+                    'max_amount'  => 500,
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'merchant_id' => '10000000000000',
+                    'type'        => 'filter',
+                    'filter_type' => 'reject',
+                    'group'       => 'groupA',
+                    'gateway'     => 'hdfc',
+                    'method'      => 'card',
+                    'min_amount'  => 2,
+                    'max_amount'  => 5,
+                ],
             ],
         ],
         // test adding select / reject rules for same criteria but in different groups
@@ -995,8 +1096,9 @@ return [
             ],
             'request' => [
                 'content' => [
-                    'load'  => 70,
-                    'group' => 'groupA',
+                    'load'     => 70,
+                    'group'    => 'groupA',
+                    'comments' => 'some comments',
                 ],
                 'method' => 'PATCH',
             ],
@@ -1010,6 +1112,7 @@ return [
                     'network'     => 'VISA',
                     'min_amount'  => 0,
                     'load'        => 70,
+                    'comments'    => 'some comments',
                 ]
             ]
         ],
@@ -1045,6 +1148,84 @@ return [
                 'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
             ],
         ],
+        // test update load for specific rule while generic rule exists
+        [
+            'to_update' => [
+                'method'      => 'card',
+                'type'        => 'sorter',
+                'merchant_id' => '10000000000000',
+                'gateway'     => 'hdfc',
+                'network'     => 'VISA',
+                'min_amount'  => 0,
+                'load'        => 50
+            ],
+            'fixtures' => [
+                [
+                    'method'      => 'card',
+                    'type'        => 'sorter',
+                    'merchant_id' => '10000000000000',
+                    'gateway'     => 'axis_migs',
+                    'min_amount'  => 0,
+                    'load'        => 50
+                ]
+            ],
+            'request' => [
+                'content' => [
+                    'load'  => 70,
+                ],
+                'method' => 'PATCH',
+            ],
+            'response' => [
+                'content' => [
+                    'method'      => 'card',
+                    'type'        => 'sorter',
+                    'merchant_id' => '10000000000000',
+                    'gateway'     => 'hdfc',
+                    'network'     => 'VISA',
+                    'min_amount'  => 0,
+                    'load'        => 70,
+                ],
+            ],
+        ],
+        // test update generic rule while more generic rule exists
+        [
+            'to_update' => [
+                'method'      => 'card',
+                'type'        => 'sorter',
+                'merchant_id' => '100000Razorpay',
+                'gateway'     => 'hdfc',
+                'network'     => 'VISA',
+                'min_amount'  => 0,
+                'load'        => 50
+            ],
+            'fixtures' => [
+                [
+                    'method'      => 'card',
+                    'type'        => 'sorter',
+                    'merchant_id' => '10000000000000',
+                    'gateway'     => 'axis_migs',
+                    'min_amount'  => 0,
+                    'load'        => 50
+                ]
+            ],
+            'request' => [
+                'content' => [
+                    'load'  => 70,
+                ],
+                'method' => 'PATCH',
+            ],
+            'response' => [
+                'content' => [
+                    'method'      => 'card',
+                    'type'        => 'sorter',
+                    'merchant_id' => '100000Razorpay',
+                    'gateway'     => 'hdfc',
+                    'network'     => 'VISA',
+                    'min_amount'  => 0,
+                    'load'        => 70,
+                ],
+            ],
+        ],
         // test update sorter rule load, but total load will exceed 100 on update
         [
             'to_update' => [
@@ -1062,6 +1243,7 @@ return [
                     'type'        => 'sorter',
                     'merchant_id' => '10000000000000',
                     'gateway'     => 'axis_migs',
+                    'network'     => 'VISA',
                     'min_amount'  => 0,
                     'load'        => 50
                 ]

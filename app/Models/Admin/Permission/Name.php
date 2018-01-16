@@ -80,6 +80,7 @@ class Name
     const EDIT_MERCHANT_ENABLE_RECEIPT        = 'edit_merchant_enable_receipt';
     const EDIT_MERCHANT_DISABLE_RECEIPT       = 'edit_merchant_disable_receipt';
     const EDIT_BULK_MERCHANT_HOLD_FUNDS       = 'edit_bulk_merchant_hold_funds';
+    const EDIT_BULK_MERCHANT_CHANNEL          = 'edit_bulk_merchant_channel';
     const ASSIGN_MERCHANT_TERMINAL            = 'assign_merchant_terminal';
     const ASSIGN_MERCHANT_BANKS               = 'assign_merchant_banks';
     const ADD_MERCHANT_ADJUSTMENT             = 'add_merchant_adjustment';
@@ -159,6 +160,8 @@ class Name
     const MERCHANT_BATCH_UPLOAD               = 'merchant_batch_upload';
     const CREATE_DISPUTE_REASON               = 'create_dispute_reason';
     const MANAGE_ONBOARDING_SUBMISSIONS       = 'manage_onboarding_submissions';
+    const EDIT_MERCHANT_RISK_THRESHOLD        = 'edit_merchant_risk_threshold';
+    const RETRY_BATCH                         = 'retry_batch';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                => self::EDIT_MERCHANT_ARCHIVE,

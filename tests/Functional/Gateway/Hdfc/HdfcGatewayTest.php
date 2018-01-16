@@ -267,6 +267,25 @@ class HdfcGatewayTest extends TestCase
         $this->verifyPayment($payment['razorpay_payment_id']);
     }
 
+    public function testPaymentAuthorizedTimeoutPayment()
+    {
+        $payment = $this->doAuthPayment();
+
+        $this->fixtures->payment->edit($payment['razorpay_payment_id'],
+            [
+                'status' => 'failed',
+                'error_code' => 'BAD_REQUEST_ERROR',
+                'internal_error_code' => 'BAD_REQUEST_PAYMENT_TIMED_OUT',
+                'error_description' => 'Payment was not completed on time.',
+                'verify_bucket' => 0,
+                'verified' => null
+            ]);
+
+        $data = $this->authorizedFailedPayment($payment['razorpay_payment_id']);
+
+        $this->assertEquals($data['status'], 'authorized');
+    }
+
     public function testPaymentVerifyAndTransactionNotFoundInResponse()
     {
         $testData = $this->testData[__FUNCTION__];

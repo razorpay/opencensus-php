@@ -4,18 +4,21 @@ namespace RZP\Models\Merchant;
 
 use Config;
 
-use RZP\Models\User;
-use RZP\Models\Base;
 use RZP\Models\Emi;
+use RZP\Models\Base;
+use RZP\Models\User;
+use RZP\Models\State;
 use RZP\Models\Feature;
 use RZP\Models\Terminal;
 use RZP\Constants\Table;
-use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
+use RZP\Models\Settlement;
 use RZP\Models\Invitation;
-use RZP\Models\Merchant\Detail;
 use Conner\Tagging\Taggable;
+use RZP\Models\Merchant\Detail;
 use RZP\Exception\LogicException;
+use RZP\Models\Base\Traits\NotesTrait;
 
 /**
  * @property Detail\Entity $merchantDetail
@@ -23,6 +26,7 @@ use RZP\Exception\LogicException;
 class Entity extends Base\PublicEntity
 {
     use Taggable;
+    use NotesTrait;
 
     const ID                        = 'id';
     const ORG_ID                    = 'org_id';
@@ -38,7 +42,7 @@ class Entity extends Base\PublicEntity
     const BILLING_LABEL             = 'billing_label';
     const TRANSACTION_REPORT_EMAIL  = 'transaction_report_email';
     const RECEIPT_EMAIL_ENABLED     = 'receipt_email_enabled';
-    const SETTLEMENT_SCHEDULE       = 'settlement_schedule';
+    const CHANNEL                   = 'channel';
     const WEBSITE                   = 'website';
     const CATEGORY                  = 'category';
     const CATEGORY2                 = 'category2';
@@ -59,6 +63,7 @@ class Entity extends Base\PublicEntity
     const CONVERT_CURRENCY          = 'convert_currency';
     const ARCHIVED_AT               = 'archived_at';
     const SUSPENDED_AT              = 'suspended_at';
+    const NOTES                     = 'notes';
 
     // Coupon Related Data for display only
     const COUPON_CODE               = 'coupon_code';
@@ -151,6 +156,7 @@ class Entity extends Base\PublicEntity
         self::SCOPE,
         self::ORG_ID,
         self::WEBSITE,
+        self::CHANNEL,
         self::CATEGORY,
         self::CATEGORY2,
         self::FEE_MODEL,
@@ -167,10 +173,10 @@ class Entity extends Base\PublicEntity
         self::AUTO_REFUND_DELAY,
         self::MAX_PAYMENT_AMOUNT,
         self::LINKED_ACCOUNT_KYC,
-        self::SETTLEMENT_SCHEDULE,
         self::RECEIPT_EMAIL_ENABLED,
         self::AUTO_CAPTURE_LATE_AUTH,
         self::TRANSACTION_REPORT_EMAIL,
+        self::NOTES,
     ];
 
     // Requires PHP 5.6
@@ -204,7 +210,7 @@ class Entity extends Base\PublicEntity
         self::BILLING_LABEL,
         self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
-        self::SETTLEMENT_SCHEDULE,
+        self::CHANNEL,
         self::METHODS,
         self::CONVERT_CURRENCY,
         self::MAX_PAYMENT_AMOUNT,
@@ -222,6 +228,7 @@ class Entity extends Base\PublicEntity
         self::ORG_ID,
         self::GROUPS,
         self::ADMINS,
+        self::NOTES,
      ];
 
     protected $defaults = [
@@ -232,7 +239,6 @@ class Entity extends Base\PublicEntity
         self::ACTIVATED_AT           => null,
         self::RECEIPT_EMAIL_ENABLED  => true,
         self::HOLD_FUNDS             => false,
-        self::SETTLEMENT_SCHEDULE    => self::SETTLEMENT_SCHEDULE_DEFAULT_DELAY,
         self::FEE_BEARER             => FeeBearer::PLATFORM,
         self::BRAND_COLOR            => null,
         self::HANDLE                 => null,
@@ -245,9 +251,11 @@ class Entity extends Base\PublicEntity
         self::AUTO_REFUND_DELAY      => null,
         self::AUTO_CAPTURE_LATE_AUTH => false,
         self::FEE_MODEL              => FeeModel::PREPAID,
+        self::CHANNEL                => Settlement\Channel::ICICI,
         self::CONVERT_CURRENCY       => null,
         self::ARCHIVED_AT            => null,
         self::SUSPENDED_AT           => null,
+        self::NOTES                  => [],
     ];
 
     protected $publicSetters = [
@@ -264,7 +272,6 @@ class Entity extends Base\PublicEntity
         self::HOLD_FUNDS                => 'bool',
         self::LINKED_ACCOUNT_KYC        => 'bool',
         self::CATEGORY                  => 'int',
-        self::SETTLEMENT_SCHEDULE       => 'int',
         self::RISK_THRESHOLD            => 'int',
         self::CONVERT_CURRENCY          => 'bool',
         self::AUTO_CAPTURE_LATE_AUTH    => 'bool',
@@ -396,6 +403,22 @@ class Entity extends Base\PublicEntity
         return (in_array($featureName, $assignedFeatures, true) === true);
     }
 
+    public function isAtLeastOneFeatureEnabled(array $features): bool
+    {
+        $assignedFeatures = $this->getEnabledFeatures();
+
+        //
+        // NOTE that it should be weak check because
+        // array_intersect returns back an array.
+        //
+        return (array_intersect($features, $assignedFeatures) == true);
+    }
+
+    public function isRecurringEnabled(): bool
+    {
+        return ($this->isAtLeastOneFeatureEnabled(Feature\Constants::$recurringFeatures) === true);
+    }
+
     /**
      * Return an array of features enabled for the merchant entity
      *
@@ -523,7 +546,7 @@ class Entity extends Base\PublicEntity
     public function methods()
     {
         return $this->hasOne(
-            'RZP\Models\Merchant\Methods\Entity');
+            'RZP\Models\Merchant\Methods\Entity', self::MERCHANT_ID);
     }
 
     public function terminals()
@@ -570,11 +593,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::PRICING_PLAN_ID, $planId);
     }
 
-    public function setSettlementSchedule($settlementSchedule)
-    {
-        $this->setAttribute(self::SETTLEMENT_SCHEDULE, $settlementSchedule);
-    }
-
     public function setMaxPaymentAmount(int $maxAmount)
     {
         $this->setAttribute(self::MAX_PAYMENT_AMOUNT, $maxAmount);
@@ -608,6 +626,11 @@ class Entity extends Base\PublicEntity
     public function getCategory2()
     {
         return $this->getAttribute(self::CATEGORY2);
+    }
+
+    public function isCategory2Cryptocurrency()
+    {
+        return ($this->getCategory2() === Terminal\Category::CRYPTOCURRENCY);
     }
 
     public function getBillingLabelNotName()
@@ -687,11 +710,6 @@ class Entity extends Base\PublicEntity
         }
 
         return $label;
-    }
-
-    protected function getSettlementScheduleAttribute()
-    {
-        return (int) $this->attributes[self::SETTLEMENT_SCHEDULE];
     }
 
     public function getWebsite()
@@ -778,6 +796,11 @@ class Entity extends Base\PublicEntity
     public function getHandle()
     {
         return $this->getAttribute(self::HANDLE);
+    }
+
+    public function getChannel()
+    {
+        return $this->getAttribute(self::CHANNEL);
     }
 
     public function getBrandColorElseDefault()
@@ -971,11 +994,6 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function getSettlementSchedule()
-    {
-        return $this->getAttribute(self::SETTLEMENT_SCHEDULE);
-    }
-
     public function getHoldFunds()
     {
         return $this->getAttribute(self::HOLD_FUNDS);
@@ -1048,18 +1066,18 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function getBusinessStateCode()
+    public function getGstStateCode()
     {
-        $businessStateCode = null;
+        $gstStateCode = null;
 
         $merchantDetail = $this->merchantDetail;
 
         if ($merchantDetail !== null)
         {
-            $businessStateCode = $merchantDetail->getBusinessStateCode();
+            $gstStateCode = $merchantDetail->getGstStateCode();
         }
 
-        return $businessStateCode;
+        return $gstStateCode;
     }
 
     public function getGstin()
@@ -1070,6 +1088,16 @@ class Entity extends Base\PublicEntity
         }
 
         return $this->merchantDetail->getGstin() ?? $this->merchantDetail->getPGstin();
+    }
+
+    public function getBusinessRegisteredState()
+    {
+        if ($this->merchantDetail === null)
+        {
+            return null;
+        }
+
+        return $this->merchantDetail->getBusinessRegisteredState();
     }
 
     public function enableReceiptEmails()
@@ -1160,7 +1188,7 @@ class Entity extends Base\PublicEntity
 
         $data = array_only($data, $reportFields);
 
-        $data[self::ID] = AccountEntity::getSignedId($this->getAttribute(self::ID));
+        $data[self::ID] = Account\Entity::getSignedId($this->getAttribute(self::ID));
 
         return $data;
     }
@@ -1173,6 +1201,26 @@ class Entity extends Base\PublicEntity
     public function admins()
     {
         return $this->morphedByMany('\RZP\Models\Admin\Admin\Entity', 'entity', Table::MERCHANT_MAP);
+    }
+
+    public function activationStates()
+    {
+        return $this->hasMany('\RZP\Models\State\Entity', State\Entity::ENTITY_ID)
+                    ->where(State\Entity::ENTITY_TYPE, 'merchant_detail');
+    }
+
+    public function currentActivationState()
+    {
+        return $this->activationStates()
+                    ->orderBy(State\Entity::CREATED_AT, 'desc')
+                    ->first();
+    }
+
+    public function getActivationStatusChangeLog()
+    {
+        return $this->activationStates()
+                    ->orderBy(State\Entity::CREATED_AT)
+                    ->get();
     }
 
     /**
@@ -1193,7 +1241,12 @@ class Entity extends Base\PublicEntity
 
     public function users()
     {
-        return $this->belongsToMany(User\Entity::class, Table::MERCHANT_USERS)
+        //
+        // The foreign key should be specified explicitly as it otherwise fetches from the
+        // entity name by appending '_id' to it. When this code is called from Account\Entity,
+        // it tries to look for account_id and crashes.
+        //
+        return $this->belongsToMany(User\Entity::class, Table::MERCHANT_USERS, self::MERCHANT_ID)
                     ->withPivot(User\Entity::ROLE)
                     ->orderBy(self::NAME);
     }

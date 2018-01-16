@@ -30,6 +30,18 @@ class Repository extends Base\Repository
         return Type::validateType($value);
     }
 
+    protected function addQueryParamSourceId($query, $params)
+    {
+        $id = $params[Entity::SOURCE_ID];
+
+        if (strpos($id, '_') !== false)
+        {
+            list($sign, $id) = explode('_', $id);
+        }
+
+        $query->where(Entity::SOURCE_ID, '=', $id);
+    }
+
     public function getFundTransferAttemptsByBatchIdWithRelations(
         string $batchFundTransferId,
         array $relations = [])
@@ -55,13 +67,19 @@ class Repository extends Base\Repository
      * @param  int    $timestamp Upper limit on created_at, usually set to now
      * @param  array  $relations Relations required in the process
      */
-    public function getCreatedAttemptsBeforeTimestamp(int $timestamp, array $relations = [])
+    public function getCreatedAttemptsBeforeTimestamp(int $timestamp, string $purpose, $type, string $channel, array $relations = [])
     {
         $query = $this->newQuery()
                       ->where(Entity::STATUS, '=', Status::CREATED)
-                      ->where(Entity::SOURCE_TYPE, '!=', Constants\Entity::SETTLEMENT)
+                      ->where(Entity::PURPOSE, '=', $purpose)
                       ->where(Entity::CREATED_AT, '<=', $timestamp)
+                      ->where(Entity::CHANNEL, '=', $channel)
                       ->orderBy(Entity::ID);
+
+        if ($type !== null)
+        {
+          $query->where(Entity::SOURCE_TYPE, '=', $type);
+        }
 
         if (count($relations) > 0)
         {
@@ -72,13 +90,17 @@ class Repository extends Base\Repository
       }
 
     /**
-     * Fetches all attempts pending reconciliation between given timstamps (both including)
+     * Fetches all attempts pending reconciliation between given timestamps (both including)
      */
-    public function getAttemptsBetweenTimestampsWithStatus(int $from, int $to, string $status)
+    public function getAttemptsBetweenTimestampsWithStatus(
+        $from, $to, string $status, string $channel)
     {
         return $this->newQuery()
+                    ->select([Entity::ID, Entity::BATCH_FUND_TRANSFER_ID])
                     ->whereBetween(Entity::CREATED_AT, [$from, $to])
-                    ->where(Entity::STATUS, '=', $status)
+                    ->where(Entity::STATUS, $status)
+                    ->where(Entity::CHANNEL, $channel)
+                    ->whereNotNull(Entity::BANK_STATUS_CODE)
                     ->get();
     }
 }

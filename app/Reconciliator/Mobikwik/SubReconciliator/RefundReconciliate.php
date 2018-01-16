@@ -40,13 +40,15 @@ class RefundReconciliate extends Base\RefundReconciliate
     }
 
     /**
-     * In mobikwik, we do not get a refund id.
+     * * In mobikwik, we do not get a refund id.
      * The orderId column provided is a paymentId
      *
      * We use that to get the corresponding refund id
      *
+     * @param array $row
+     * @return mixed
      */
-    protected function getPaymentId($row)
+    protected function getPaymentId(array $row)
     {
         $paymentId = $row[self::COLUMN_PAYMENT_ID];
 
@@ -57,9 +59,10 @@ class RefundReconciliate extends Base\RefundReconciliate
      * Gets amount refunded.
      *
      * @param $row array
-     * @return $refundAmount integer
+     *
+     * @return float|int|null $refundAmount
      */
-    protected function getRefundAmount(array $row)
+    protected function getReconRefundAmount(array $row)
     {
         $refundAmount = floatval($row[self::COLUMN_REFUND_AMOUNT]) * 100;
 

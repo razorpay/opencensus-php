@@ -30,7 +30,7 @@ class Reconciliate extends Base\Reconciliate
         ];
     }
 
-    public function getFileType(string $mimeType)
+    public function getFileType(string $mimeType): string
     {
         return FileProcessor::CSV;
     }

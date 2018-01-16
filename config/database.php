@@ -136,24 +136,45 @@ return array(
     |
     */
 
-    'redis' => array(
+    'redis' => [
 
         'cluster' => false,
 
-        'default' => array(
-            'host'                  => env('REDIS_HOST'),
-            'port'                  => env('REDIS_PORT'),
-            'database'              => env('REDIS_DB'),
-            'timeout'               => 30,
-        ),
+        'default' => [
+            'host'     => env('REDIS_HOST'),
+            'port'     => env('REDIS_PORT'),
+            'database' => env('REDIS_DB'),
+            'timeout'  => 30,
+        ],
 
-        'secure' => array(
-            'host'                  => env('SECURE_REDIS_HOST'),
-            'port'                  => env('SECURE_REDIS_PORT'),
-            'database'              => env('SECURE_REDIS_DB'),
-            'timeout'               => 30,
-        )
-    ),
+        'secure' => [
+            'host'     => env('SECURE_REDIS_HOST'),
+            'port'     => env('SECURE_REDIS_PORT'),
+            'database' => env('SECURE_REDIS_DB'),
+            'timeout'  => 30,
+        ],
+
+        'throttle_redis' => [
+            'host'     => env('REDIS_HOST'),
+            'port'     => env('REDIS_PORT'),
+            'database' => env('THROTTLE_REDIS_DB'),
+            'timeout'  => 30,
+        ],
+
+        'query_cache_test' => [
+            'host'     => env('REDIS_HOST'),
+            'port'     => env('REDIS_PORT'),
+            'database' => env('QUERY_CACHE_TEST_REDIS_DB'),
+            'timeout'  => 30,
+        ],
+
+        'query_cache_live' => [
+            'host'     => env('REDIS_HOST'),
+            'port'     => env('REDIS_PORT'),
+            'database' => env('QUERY_CACHE_LIVE_REDIS_DB'),
+            'timeout'  => 30,
+        ],
+    ],
 
     /*
     |--------------------------------------------------------------------------
@@ -182,4 +203,5 @@ return array(
     'es_workflow_action_mock' => env('ES_WORKFLOW_ACTION_MOCK', false),
 
     'es_entity_index_prefix'  => env('ES_ENTITY_INDEX_PREFIX'),
+    'es_entity_type_prefix'   => env('ES_ENTITY_TYPE_PREFIX'),
 );

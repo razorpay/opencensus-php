@@ -5,7 +5,6 @@ namespace RZP\Gateway;
 use Config;
 use RZP\Exception;
 use RZP\Constants\Mode;
-use RZP\Models\Payment;
 use RZP\Constants\Entity;
 use RZP\Gateway\Base\Mock;
 
@@ -136,7 +135,7 @@ class GatewayManager extends \Illuminate\Support\Manager
         return $servers[$driver];
     }
 
-    public function recon($driver)
+    public function recon($driver, array $input = [])
     {
         $recons = & $this->recons;
 
@@ -145,7 +144,7 @@ class GatewayManager extends \Illuminate\Support\Manager
             return $recons[$driver];
         }
 
-        $recon = $this->getReconClass($driver);
+        $recon = $this->getReconClass($driver, $input);
 
         $recon = new $recon;
 
@@ -178,9 +177,9 @@ class GatewayManager extends \Illuminate\Support\Manager
      * server function results, then use this function to set the mock
      * object as the corresponding server instead of the default one.
      *
-     * @param   $driver
-     * @param   $server Mocked server object
-     * @return  $server Mocked server object
+     * @param $driver
+     * @param Mock\Server|null $server
+     * @return Mock\Server
      */
     public function setServer($driver, Mock\Server $server = null)
     {
@@ -193,7 +192,7 @@ class GatewayManager extends \Illuminate\Support\Manager
 
     /**
      * Resets the mocked server for this driver to the default
-     * mock server availbale.
+     * mock server available.
      * @param  string $driver [description]
      */
     public function resetServer($driver)
@@ -203,11 +202,15 @@ class GatewayManager extends \Illuminate\Support\Manager
         $this->servers[$driver] = new $class;
     }
 
-    public function getReconClass($driver)
+    public function getReconClass($driver, array $input = [])
     {
-        $recon = $this->getGatewayNamespace($driver, true) . '\\Reconciliator';
+        $reconClassName = (empty($input['type']) === false)
+                          ? (ucfirst($input['type']) . 'Reconciliator')
+                          : 'Reconciliator';
 
-        return $recon;
+        $reconFQCN = $this->getGatewayNamespace($driver, true) . '\\' . $reconClassName;
+
+        return $reconFQCN;
     }
 
     public function resetDriver($driver)

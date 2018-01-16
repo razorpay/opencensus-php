@@ -6,10 +6,12 @@ use Carbon\Carbon;
 use RZP\Constants\Entity;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Customer\Token\Entity as Token;
 use RZP\Models\Customer\Token\RecurringStatus;
+use RZP\Models\Payment\Status as PaymentStatus;
 use RZP\Gateway\Netbanking\Base\Entity as Netbanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Customer\GatewayToken\Entity as GatewayToken;
@@ -23,6 +25,10 @@ class NetbankingIciciEMandateTest extends TestCase
     protected $fixtures;
 
     protected $payment;
+
+    const ACCOUNT_NUMBER    = '914010009305862';
+    const IFSC              = 'UTIB0002766';
+    const NAME              = 'Test account';
 
     // TODO: Test global customer / token flow
 
@@ -38,10 +44,15 @@ class NetbankingIciciEMandateTest extends TestCase
 
         $this->fixtures->create(Entity::CUSTOMER);
 
-        $this->fixtures->merchant->addFeatures(['charge_at_will', 'e_mandate']);
+        $this->fixtures->merchant->addFeatures([Constants::CHARGE_AT_WILL, Constants::E_MANDATE]);
 
-        $this->payment = $this->getNetbankingRecurringPaymentArray(IFSC::ICIC);
-        unset($this->payment[Entity::CARD]);
+        $this->payment = $this->getEmandateNetbankingRecurringPaymentArray(IFSC::ICIC);
+
+        $this->payment['bank_account'] = [
+            'account_number'    => self::ACCOUNT_NUMBER,
+            'ifsc'              => self::IFSC,
+            'name'              => self::NAME,
+        ];
 
         $this->mockTokenex();
     }
@@ -83,6 +94,28 @@ class NetbankingIciciEMandateTest extends TestCase
         $paymentEntity = $this->getLastEntity(Entity::PAYMENT, true);
 
         $payment[Payment::TOKEN] = $paymentEntity[Payment::TOKEN_ID];
+
+        //
+        // Second auth payment for the recurring product
+        //
+        $this->doS2SRecurringPayment($payment);
+
+        $this->assertEMandateEntities(false);
+    }
+
+    public function testEMandateScheduledPaymentWithoutMethod()
+    {
+        $payment = $this->payment;
+
+        $this->doAuthPayment($payment);
+
+        $paymentEntity = $this->getLastEntity(Entity::PAYMENT, true);
+
+        $payment[Payment::TOKEN] = $paymentEntity[Payment::TOKEN_ID];
+
+        unset($payment[Payment::METHOD]);
+        unset($payment[Payment::AUTH_TYPE]);
+        unset($payment['bank_account']);
 
         //
         // Second auth payment for the recurring product
@@ -474,6 +507,30 @@ class NetbankingIciciEMandateTest extends TestCase
             });
     }
 
+    public function testAuthorizeFailedRegistrationPayment()
+    {
+        $this->mockFailedPayment();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->payment;
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            });
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+
+        $this->authorizeFailedPayment($payment[Payment::ID]);
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+
+        $this->assertEquals(PaymentStatus::AUTHORIZED, $payment[Payment::STATUS]);
+    }
+
     protected function assertSiNullGatewayToken()
     {
         $token = $this->getLastEntity(Entity::TOKEN, true);
@@ -754,6 +811,15 @@ class NetbankingIciciEMandateTest extends TestCase
             {
                 $content['SCHSTATUS'] = 'N';
                 $content['SCHMSG'] = '';
+            });
+    }
+
+    protected function mockFailedPayment()
+    {
+        $this->mockServerContentFunction(
+            function(&$content, $action = null)
+            {
+                $content['PAID'] = 'N';
             });
     }
 

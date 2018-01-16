@@ -5,6 +5,7 @@ namespace RZP\Models\FundTransfer\Attempt;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base;
 use RZP\Models\BankAccount;
+use RZP\Models\Settlement\Channel;
 
 class Entity extends Base\PublicEntity
 {
@@ -12,11 +13,13 @@ class Entity extends Base\PublicEntity
     const SOURCE_TYPE            = 'source_type';
     const SOURCE_ID              = 'source_id';
     const MERCHANT_ID            = 'merchant_id';
+    const PURPOSE                = 'purpose';
     const BANK_ACCOUNT_ID        = 'bank_account_id';
     const BATCH_FUND_TRANSFER_ID = 'batch_fund_transfer_id';
     const CHANNEL                = 'channel';
     const VERSION                = 'version';
     const BANK_STATUS_CODE       = 'bank_status_code';
+    const MODE                   = 'mode';
     const STATUS                 = 'status';
     const UTR                    = 'utr';
     const NARRATION              = 'narration';
@@ -30,21 +33,28 @@ class Entity extends Base\PublicEntity
     protected $entity = 'fund_transfer_attempt';
 
     protected $fillable = [
+        self::PURPOSE,
         self::CHANNEL,
         self::VERSION,
         self::STATUS,
         self::NARRATION,
+        self::BANK_STATUS_CODE,
+        self::STATUS,
+        self::REMARKS,
+        self::FAILURE_REASON,
     ];
 
     protected $visible = [
         self::ID,
         self::SOURCE,
         self::MERCHANT_ID,
+        self::PURPOSE,
         self::BANK_ACCOUNT_ID,
         self::BATCH_FUND_TRANSFER_ID,
         self::CHANNEL,
         self::VERSION,
         self::BANK_STATUS_CODE,
+        self::MODE,
         self::STATUS,
         self::UTR,
         self::NARRATION,
@@ -71,6 +81,32 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::SOURCE,
     ];
+
+    /**
+     * Generate ID with all characters in upper-case
+     * for ICICI, because their Recon file has the ID
+     * in upper-case. If we do not create it this way,
+     * when we query on this ID during reconciliation,
+     * we'd need to do a case-insensitive search
+     * which will do a full-table scan.
+     * To avoid a case-insensitive search on the table,
+     * we save the ID in upper-case.
+     */
+    public function generateId()
+    {
+        $id = static::generateUniqueId();
+
+        $channel = $this->getAttribute(self::CHANNEL);
+
+        if ($channel === Channel::ICICI)
+        {
+            $id = strtoupper($id);
+        }
+
+        $this->setAttribute(self::ID, $id);
+
+        return $this;
+    }
 
     public function source()
     {
@@ -99,6 +135,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REMARKS);
     }
 
+    public function getFailureReason()
+    {
+        return $this->getAttribute(self::FAILURE_REASON);
+    }
+
     public function getNarration()
     {
         return $this->getAttribute(self::NARRATION);
@@ -112,6 +153,11 @@ class Entity extends Base\PublicEntity
     public function getVersion()
     {
         return $this->getAttribute(self::VERSION);
+    }
+
+    public function getBankStatusCode()
+    {
+        return $this->getAttribute(self::BANK_STATUS_CODE);
     }
 
     public function getEntityId()
@@ -132,6 +178,16 @@ class Entity extends Base\PublicEntity
     public function getBatchFundTransferId()
     {
         return $this->getAttribute(self::BATCH_FUND_TRANSFER_ID);
+    }
+
+    public function getMode()
+    {
+        return $this->getAttribute(self::MODE);
+    }
+
+    public function isRefund()
+    {
+        return ($this->getAttribute(self::PURPOSE) === Purpose::REFUND);
     }
 
     // ------------------------------- setters ---------------------------------
@@ -215,6 +271,23 @@ class Entity extends Base\PublicEntity
         return ($this->getStatus() === Status::FAILED);
     }
 
+    /**
+     * One attempt has one source
+     * One source has many attempts, created incrementally
+     * @return boolean
+     */
+    public function isLatest()
+    {
+        $attempts = $this->source->fundTransferAttempts;
+
+        if ($attempts->last()->getId() === $this->getId())
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     // ---------------------------- public setters -----------------------------
     public function setPublicSourceAttribute(array & $attributes)
     {
@@ -225,5 +298,10 @@ class Entity extends Base\PublicEntity
         $entity = E::getEntityClass($sourceType);
 
         $attributes[self::SOURCE] = $entity::getSignedId($sourceId);
+    }
+
+    public function setMode($mode)
+    {
+        return $this->setAttribute(self::MODE, $mode);
     }
 }

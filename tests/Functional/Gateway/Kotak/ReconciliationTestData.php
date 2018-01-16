@@ -39,6 +39,7 @@ return [
         'tax'               => 18000,
         'failure_reason'    => null,
         'attempts'          => 1,
+        'status'            => SettlementStatus::PROCESSED,
     ],
 
     'fetchAndMatchSettlementsForRetryReconSuccess' => [
@@ -63,12 +64,25 @@ return [
         'remarks'           => 'This is a string which test characters count limit. This is a string which test characters count limit. This is a string which test characters count limit. This is a string which test characters count limit. This is a string which test characters count li',
     ],
 
-    // status is not matched as we keep it created till 10pm
+    'matchSummaryForReconFailure' => [
+        'total_count'                   => 1,
+        'failures_count'                => 1,
+        'settlement_failure_amount'     => 4382000,
+        'settlement_failure_count'      => 1,
+        'settlement_failure_remarks'    => 'All settlements failed.',
+    ],
+
+    'matchSummaryForReconFile' => [
+        'channel'                       => \RZP\Models\Settlement\Channel::KOTAK,
+        'total_count'                   => 1,
+        'unprocessed_count'             => 0,
+    ],
+
     'matchSettlementAttemptForReconSuccess' => [
         'channel'           => 'kotak',
         'version'           => 'V3',
         'bank_status_code'  => 'P',
-        //'status'            => 'created',
+        'status'            => AttemptStatus::INITIATED,
         'remarks'           => '',
         'failure_reason'    => null,
     ],

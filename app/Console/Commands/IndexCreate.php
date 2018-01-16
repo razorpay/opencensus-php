@@ -14,13 +14,19 @@ class IndexCreate extends Command
 {
     protected $signature = 'rzp:index_create
 
-                            {entity    : Entity name (e.g. item|merchant) }
-                            {index     : ES index name (e.g. beta_api_invoice_test) }
+                            {mode         : Application mode (test|live) }
+                            {entity       : Entity name (e.g. item|merchant) }
+                            {index_prefix : ES index prefix (e.g. 20171201_beta_api_) }
+                            {type_prefix  : ES type prefix (e.g. beta_api_) }
 
-                            {--pretend : Whether to run the command in pretend mode?}
-                            {--reindex : Whether to delete existing index?}';
+                            {--pretend    : Whether to run the command in pretend mode?}
+                            {--reindex    : Whether to delete existing index?}';
 
     protected $description = 'Creates index with set mappings for the entity';
+
+    protected $entity;
+    protected $index;
+    protected $type;
 
     /**
      * Just outputs the settings with which the index will get created.
@@ -36,9 +42,6 @@ class IndexCreate extends Command
      * @var boolean
      */
     protected $reindex;
-
-    protected $entity;
-    protected $index;
 
     public function fire()
     {
@@ -75,10 +78,18 @@ class IndexCreate extends Command
 
     protected function setOptions()
     {
+        $this->entity  = $this->argument('entity');
         $this->pretend = $this->option('pretend');
         $this->reindex = $this->option('reindex');
-        $this->index   = $this->argument('index');
-        $this->entity  = $this->argument('entity');
+
+        // Sets index and type names
+        $mode        = $this->argument('mode');
+        $indexPrefix = $this->argument('index_prefix');
+        $typePrefix  = $this->argument('type_prefix');
+
+        $suffix      = "{$this->entity}_{$mode}";
+        $this->index = $indexPrefix . $suffix;
+        $this->type  = $typePrefix . $suffix;
     }
 
     protected function getEsClient()
@@ -96,10 +107,11 @@ class IndexCreate extends Command
 
         $settings = $config['settings'];
 
+        //
         // Get mappings:
         // Use default notes entities mappings as base for entities having notes,
         // Overrides with the entity mappings.
-
+        //
         $hasNotes = in_array($this->entity, $config['has_notes'], true);
 
         $mappings = [];
@@ -122,7 +134,7 @@ class IndexCreate extends Command
             'index' => $this->index,
             'body'  => [
                 'settings' => $settings,
-                'mappings' => [$this->index => $mappings],
+                'mappings' => [$this->type => $mappings],
             ],
         ];
     }

@@ -6,6 +6,7 @@ use App;
 use Illuminate\Foundation\Application;
 use RZP\Base\RepositoryManager;
 use RZP\Constants\Mode;
+use Razorpay\Trace\Logger as Trace;
 
 class Core
 {
@@ -143,5 +144,23 @@ class Core
     protected function isLiveMode(): bool
     {
         return ($this->mode === Mode::LIVE);
+    }
+
+    /**
+     * Changes the mode to live mode
+     */
+    protected function setLiveMode()
+    {
+        $liveMode = Mode::LIVE;
+
+        //
+        // This function updates the mode and app['rzp.mode'] properties
+        // of the BasicAuth class that has been initialized.
+        //
+        $this->app['basicauth']->setModeAndDbConnection($liveMode);
+
+        $this->mode = $liveMode;
+
+        return;
     }
 }

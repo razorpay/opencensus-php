@@ -2,10 +2,8 @@
 
 namespace RZP\Models\Gateway\File;
 
-use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\FileStore;
-use RZP\Constants\Timezone;
 
 class Entity extends Base\PublicEntity
 {
@@ -218,6 +216,38 @@ class Entity extends Base\PublicEntity
     public function getErrorDescription()
     {
         return $this->getAttribute(self::ERROR_DESCRIPTION);
+    }
+
+    public function getTpv()
+    {
+        $subType = $this->getSubType();
+
+        if ($subType === Type::TPV)
+        {
+            return true;
+        }
+        else if ($subType === Type::NON_TPV)
+        {
+            return false;
+        }
+
+        return null;
+    }
+
+    public function getCorporate()
+    {
+        $subType = $this->getSubType();
+
+        if ($subType === Type::CORPORATE)
+        {
+            return true;
+        }
+        else if ($subType === Type::NON_CORPORATE)
+        {
+            return false;
+        }
+
+        return null;
     }
 
     // -----------------------------GETTERS END---------------------------------

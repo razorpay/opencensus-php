@@ -9,6 +9,8 @@ class Status
     const SUCCESS        = 'S';
     const FAILURE        = 'F';
 
+    const PENDING        = 'P';
+
     public static function getAuthSuccessStatus()
     {
         return self::YES;

@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Workflow\Action\Differ;
 
-use RZP\Error;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -11,7 +10,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Base\EsDao;
 use RZP\Events\DifferEvent;
 use RZP\Models\Workflow\Action;
-use RZP\Models\Workflow\Action\State;
+use RZP\Constants\Entity as ConstantsEntity;
 
 class Core extends Base\Core
 {
@@ -134,58 +133,101 @@ class Core extends Base\Core
         // If the diff is already present, no need to run
         // the validators and compute it again.
         //
-        // Not we'll consider [] to be a valid diff as well
-        // and store in ES
+        // The diff will be present when workflow is triggered
+        // from within the code. Absense of diff means the workflow
+        // is being triggered right from Middleware\Workflow.
+        //
+        // Check EntityValidator to get a list of the ones being triggered
+        // from the middleware.
 
-        if ((empty($differ->getDiff()) === false))
+        if (empty($differ->getDiff()) === false)
         {
             $this->saveToEs($differ->toArray());
 
             return $differ;
         }
 
+        // Flow triggered from Middleware\Workflow
+
+        $op = null;
+
         $entity = $differ->getEntityName();
 
         $entityId = $differ->getEntityId();
-
-        $oldEntity = $this->repo->$entity->findByPublicId($entityId);
 
         $diff = [];
 
         $validator = EntityValidator::getValidator($differ->getRoute());
 
+        $oldEntityData = $newEntityData = [];
+
         if (empty($validator) === false)
         {
-            $newEntity = clone $oldEntity;
-
-            // Run validator
-            $newEntity = $newEntity->edit($differ->getPayload(), $validator);
-
-            $diff = $this->createDiff(
-                $oldEntity->toArray(), $newEntity->toArray());
-        }
-
-        $relations = EntityValidator::getRelations($differ->getRoute());
-
-        if (empty($relations) === false)
-        {
-            foreach ($relations as $relation)
+            try
             {
-                // We want to show empty values for relation as it means we
-                // want to reset the m2m fields.
-                if (isset($differ->getPayload()[$relation]) === true)
+                // EDIT or DELETE op
+
+                $oldEntity = $this->repo->$entity->findByPublicId($entityId);
+
+                $newEntity = clone $oldEntity;
+
+                // Run validator
+                $newEntity = $newEntity->edit($differ->getPayload(), $validator);
+
+                $oldEntityData = $oldEntity->toArray();
+
+                $newEntityData = $newEntity->toArray();
+            }
+            catch (\RZP\Exception\BadRequestException $e)
+            {
+                $errorCode = $e->getCode();
+
+                if ($errorCode === ErrorCode::BAD_REQUEST_INVALID_ID)
                 {
-                    $relationDiff = $this->createDiffForRelations(
-                        $oldEntity,
-                        $relation,
-                        $differ->getPayload()[$relation]);
+                    // CREATE op
 
-                    $diff['old'][$relation] = $relationDiff['old'];
+                    $oldEntity = new \stdClass();
 
-                    $diff['new'][$relation] = $relationDiff['new'];
+                    $oldEntityData = [];
+
+                    $entityClass = ConstantsEntity::getEntityClass($entity);
+                    
+                    $newEntity = new $entityClass;
+
+                    // Run validator
+                    $newEntity = $newEntity->build($differ->getPayload(), $validator);
+
+                    $newEntityData = $newEntity->toArray();
                 }
             }
         }
+        else
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_WORKFLOW_ENTITY_VALIDATOR_RULE_NOT_FOUND);
+        }
+
+        $diff = $this->createDiff(
+            $oldEntityData, $newEntityData);
+
+        $relations = EntityValidator::getRelations($differ->getRoute());
+
+        if (method_exists($oldEntity, 'toArray') === true)
+        {
+            foreach ($relations as $relation)
+            {
+                $oldEntityData[$relation] = $oldEntity->$relation()->allRelatedIds()->toArray();
+            }
+        }
+
+        // Have to use $differ->getPayload() as new entity data
+        // because build() or edit() wouldn't set the associations
+        $this->createAllRelationsDiff(
+            $diff,
+            $oldEntityData,
+            $differ->getPayload(),
+            $entity,
+            $relations);
 
         $differ->setDiff($diff);
 
@@ -287,28 +329,69 @@ class Core extends Base\Core
         return $esResponse;
     }
 
-    protected function createDiffForRelations($entity, $relation, $input)
+    public function createAllRelationsDiff(
+        &$diff,
+        $originalDataArray,
+        $dirtyDataArray,
+        $mainEntity,
+        $relations)
     {
-        $model = $entity->$relation()->getModel();
+        $entityOb = ConstantsEntity::getEntityObject($mainEntity);
 
-        $relatedEntityName = $model->getEntityName();
+        if (empty($relations) === false)
+        {
+            foreach ($relations as $relation)
+            {
+                // We want to show empty values for relation as it means we
+                // want to reset the m2m fields.
+                if (isset($dirtyDataArray[$relation]) === true)
+                {
+                    $relatedEntityName = $entityOb->$relation()->getModel()->getEntityName();
 
-        $oldIds = $entity->$relation()->allRelatedIds()->toArray();
+                    $oldRelationIds = $originalDataArray[$relation] ?? [];
+                    $newRelationIds = $dirtyDataArray[$relation] ?? [];
 
-        $model::getSignedIdMultiple($oldIds);
+                    if ((empty($oldRelationIds) === true) and
+                        (empty($newRelationIds) === true))
+                    {
+                        continue;
+                    }
 
-        $removedEntities = array_diff($oldIds, $input);
+                    $relationDiff = $this->createRelationDiff(
+                        $oldRelationIds,
+                        $newRelationIds,
+                        $relatedEntityName);
 
-        $addedEntities = array_diff($input, $oldIds);
+                    $diff['old'][$relation] = $relationDiff['old'];
 
-        $newRelatedEntities = $this->repo
-                                   ->$relatedEntityName
-                                   ->findManyByPublicIds($addedEntities)
-                                   ->toArrayDiff();
+                    $diff['new'][$relation] = $relationDiff['new'];
+                }
+            }
+        }
+    }
+
+    protected function createRelationDiff(    
+        $oldIds,
+        $newIds,
+        $relatedEntityName)
+    {
+        $relatedEntityOb = ConstantsEntity::getEntityObject($relatedEntityName);
+
+        $relatedEntityOb::verifyIdAndSilentlyStripSignMultiple($oldIds);
+        $relatedEntityOb::verifyIdAndSilentlyStripSignMultiple($newIds);
+
+        $removedEntities = array_diff($oldIds, $newIds);
+
+        $addedEntities = array_diff($newIds, $oldIds);
 
         $oldRelatedEntities = $this->repo
                                    ->$relatedEntityName
-                                   ->findManyByPublicIds($removedEntities)
+                                   ->findMany($removedEntities)
+                                   ->toArrayDiff();
+
+        $newRelatedEntities = $this->repo
+                                   ->$relatedEntityName
+                                   ->findMany($addedEntities)
                                    ->toArrayDiff();
 
         $diff = [

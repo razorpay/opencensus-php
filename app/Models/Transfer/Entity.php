@@ -239,6 +239,12 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FEES);
     }
 
+    // FeeCalculator calls `$entity->getFee()` for all the pricing entity
+    public function getFee()
+    {
+        return $this->getFees();
+    }
+
     public function getTax()
     {
         return $this->getAttribute(self::TAX);
@@ -426,7 +432,7 @@ class Entity extends Base\PublicEntity
 
         if ($toType === 'merchant')
         {
-            $entity = 'RZP\Models\Merchant\AccountEntity';
+            $entity = 'RZP\Models\Merchant\Account\Entity';
         }
 
         $attributes[self::RECIPIENT] = $entity::getSignedId($toId);
@@ -442,7 +448,7 @@ class Entity extends Base\PublicEntity
 
         if ($sourceType === 'merchant')
         {
-            $entity = 'RZP\Models\Merchant\AccountEntity';
+            $entity = 'RZP\Models\Merchant\Account\Entity';
         }
 
         $attributes[self::SOURCE] = $entity::getSignedId($sourceId);

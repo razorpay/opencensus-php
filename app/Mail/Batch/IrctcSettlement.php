@@ -13,7 +13,7 @@ class IrctcSettlement extends Base
 
     protected static $sender      = Constants::IRCTC;
 
-    protected static $subjectLine = 'Razorpay | IRCTC Settlement Validation File';
+    protected static $subjectLine = 'Razorpay | IRCTC Settlement Validation File for %s';
 
     protected static $body        = 'IRCTC Settlement Validation File';
 }

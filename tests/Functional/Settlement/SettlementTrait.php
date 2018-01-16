@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Settlement;
 
 use RZP\Models\FileStore\Storage\AwsS3\Handler;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\Settlement\Holidays;
 
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -136,12 +137,12 @@ trait SettlementTrait
     }
 
     protected function generateSetlReconciliationFile(
-        $setlFile, $generateFailedReconciliations = false, $prevAttemptId = null)
+        $setlFile, string $channel, $generateFailedReconciliations = false, $prevAttemptId = null)
     {
         $uploadedFile = $this->createUploadedFile($setlFile);
 
         $request = [
-            'url' => '/settlements/reconcile/generate',
+            'url' => '/settlements/reconcile/generate/' . $channel,
             'files' => [
                 'file' => $uploadedFile,
             ],
@@ -162,12 +163,12 @@ trait SettlementTrait
         return $content['setlReconciliationFile'];
     }
 
-    protected function reconcileSettlements($setlReconciliationFile)
+    protected function reconcileSettlements($setlReconciliationFile, string $channel = Channel::KOTAK)
     {
         $uploadedFile = $this->createUploadedFile($setlReconciliationFile);
 
         $request = [
-            'url' => '/settlements/h2hreconcile',
+            'url' => '/settlements/h2hreconcile/' . $channel,
             'files' => [
                 'file' => $uploadedFile
             ],

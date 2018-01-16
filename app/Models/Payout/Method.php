@@ -45,7 +45,7 @@ class Method
         return $class;
     }
 
-    public static function getEntityName($method)
+    public static function getEntityName(string $method): string
     {
         return self::$methodToEntityMap[$method];
     }

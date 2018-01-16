@@ -2,19 +2,21 @@
 
 namespace RZP\Gateway\Upi\Base;
 
-use RZP\Exception;
 use RZP\Gateway\Base;
-use RZP\Gateway\Upi\Base\Entity;
-use RZP\Constants\Table;
 use RZP\Models\Payment;
+use RZP\Constants\Table;
+use RZP\Gateway\Base\Action;
 
 class Repository extends Base\Repository
 {
     protected $entity = 'upi';
 
     protected $appFetchParamRules = array(
-        Entity::PAYMENT_ID    => 'sometimes|string|min:14|max:18',
-        Entity::BANK          => 'sometimes|in:icici'
+        Entity::BANK                    => 'sometimes|min:4|max:4',
+        Entity::GATEWAY_PAYMENT_ID      => 'sometimes|string|max:50',
+        Entity::NPCI_REFERENCE_ID       => 'sometimes|string|max:20',
+        Entity::PAYMENT_ID              => 'sometimes|string|min:14|max:18',
+        Entity::REFUND_ID               => 'sometimes|string|min:14|max:18',
     );
 
     public function fetchGatewayPaymentIdByPaymentId($paymentId)
@@ -24,10 +26,25 @@ class Repository extends Base\Repository
                     ->pluck('gateway_payment_id');
     }
 
+    public function fetchByGatewayPaymentIdAndAction(string $gatewayPaymentId, string $action = Action::AUTHORIZE)
+    {
+        return $this->newQuery()
+                    ->where('gateway_payment_id', '=', $gatewayPaymentId)
+                    ->where('action', '=', $action)
+                    ->firstOrFail();
+    }
+
     public function fetchByPaymentId($paymentId)
     {
         return $this->newQuery()
-                    ->where('payment_id' , '=', $paymentId)
+                    ->where(Entity::PAYMENT_ID , '=', $paymentId)
+                    ->first();
+    }
+
+    public function fetchByRefundId(string $refundId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::REFUND_ID , '=', $refundId)
                     ->first();
     }
 

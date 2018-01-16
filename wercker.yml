@@ -88,7 +88,8 @@ build:
           icon_url: https://cdn.rawgit.com/wantedly/step-pretty-slack-notify/master/icons/$WERCKER_RESULT.jpg
       - script:
           name: Save trace
-          code: cp storage/logs/* $WERCKER_REPORT_ARTIFACTS_DIR/
+          code: >
+            tar -zcvf $WERCKER_REPORT_ARTIFACTS_DIR/archive.tar.gz storage/logs
 dockerhub-push:
     box:
       id: razorpay/containers:base-php7
@@ -140,7 +141,7 @@ deploy:
             if [ "$APP_ENV" == "prod" ]; then
               if [ "$WERCKER_GIT_BRANCH" != "master" ]; then
                 echo "[ERROR] Cannot deploy a non-master branch to prod"
-                exit $?
+                exit 1
               fi
             fi
       - script:
@@ -205,11 +206,11 @@ deploy-canary:
             if [ "$APP_ENV" == "prod" ] && [ "$CANARY" == "true" ]; then
               if [ "$WERCKER_GIT_BRANCH" != "canary" ]; then
                 echo "[ERROR] Cannot deploy a non-canary branch to prod-canary instance"
-                exit $?
+                exit 1
               fi
               if [ ! -n $(git rev-list HEAD | grep $MASTER) ]; then
                 echo "[ERROR] Cannot deploy outdated branch to prod-canary"
-                exit $?
+                exit 1
               fi
             fi
       - script:

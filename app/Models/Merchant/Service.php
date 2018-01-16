@@ -28,9 +28,9 @@ use RZP\Models\Merchant\Webhook;
 use RZP\Models\Offer;
 use RZP\Models\Schedule;
 use RZP\Models\Schedule\Task as ScheduleTask;
-use RZP\Models\Settlement\Holidays;
 use RZP\Models\User;
 use RZP\Trace\TraceCode;
+use RZP\Models\Transaction;
 
 class Service extends Base\Service
 {
@@ -96,7 +96,7 @@ class Service extends Base\Service
 
         unset($input['account']);
 
-        $subMerchant = (new Merchant\Core)->createSubMerchant($input, $merchant);
+        $subMerchant = (new Merchant\Core)->createSubMerchant($input, $merchant, $linkedAccount);
 
         // This goes out to the aggregator
         // (skip if marketplace merchant)
@@ -132,7 +132,7 @@ class Service extends Base\Service
         (new User\Service)->updateUserMerchantMapping($ownerId, $userMerchantMappingInputData);
     }
 
-    private function addLinkedAccountReferral($aggregratorMerchant, $account)
+    public function addLinkedAccountReferral($aggregratorMerchant, $account)
     {
         $tagInputData = [
             'tags' => ['ref-'.$aggregratorMerchant->id],
@@ -140,7 +140,8 @@ class Service extends Base\Service
 
         $this->addTags($account->id, $tagInputData);
     }
-    protected function saveMerchantAndApplyCoupon(Entity $merchant, array $input)
+
+    public function saveMerchantAndApplyCoupon(Entity $merchant, array $input)
     {
         $this->repo->saveOrFail($merchant);
 
@@ -177,7 +178,7 @@ class Service extends Base\Service
         return $result;
     }
 
-    public function edit($id, array $input)
+    public function edit(string $id, array $input): array
     {
         $this->trace->info(
             TraceCode::MERCHANT_EDIT,
@@ -223,7 +224,7 @@ class Service extends Base\Service
         Mail::queue($createSubMerchantMail);
     }
 
-    public function editEmail($id, array $input) :array
+    public function editEmail($id, array $input): array
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
@@ -238,7 +239,7 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
-    public function editConfig(array $input)
+    public function editConfig(array $input): array
     {
         // Adds uploaded logo's url to the input.
         $this->uploadLogoIfFound($input);
@@ -248,7 +249,7 @@ class Service extends Base\Service
         return $this->merchant->toArrayConfig();
     }
 
-    public function deleteMerchantLogo()
+    public function deleteMerchantLogo(): array
     {
         $this->merchant->setLogoUrl(null);
 
@@ -271,7 +272,7 @@ class Service extends Base\Service
     }
 
     // This is on internal auth
-    public function fetch($id)
+    public function fetch(string $id): array
     {
         $merchant = $this->repo->merchant->findOrFailPublicWithRelations(
             $id, ['methods', Entity::GROUPS, Entity::ADMINS]);
@@ -279,7 +280,7 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
-    public function fetchMultiple($input)
+    public function fetchMultiple(array $input): array
     {
         $merchants = $this->repo->merchant->fetch($input);
 
@@ -287,7 +288,7 @@ class Service extends Base\Service
     }
 
     // This is on proxy auth
-    public function fetchConfig()
+    public function fetchConfig(): array
     {
         $merchantId = $this->merchant->getId();
 
@@ -529,6 +530,7 @@ class Service extends Base\Service
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         $act = new Activate($this->app);
+
         $act->activate($merchant);
 
         return $merchant->toArrayPublic();
@@ -826,11 +828,18 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function getMerchantBeneficiaryFile()
+    /**
+     * Send beneficiary registration request for ALL activated merchants
+     *
+     * @param string $channel
+     *
+     * @return array
+     */
+    public function getMerchantBeneficiaryFile(string $channel): array
     {
-        $file = (new BankAccount\BeneficiaryFile)->generate();
+        $response = (new BankAccount\BeneficiaryFile)->generate($channel);
 
-        return $file;
+        return $response;
     }
 
     public function getCheckoutPreferences($input)
@@ -861,51 +870,21 @@ class Service extends Base\Service
     }
 
     /**
-    *   Generate and Send the beneficary file to nodal account's bank
-    *   if a new merchant has been activated since
-    *   if (monday)  - 3 days
-    *   else         - 1 day
-    */
-    public function postMerchantBeneficiaryFile($input)
+     *   Generate and Send the beneficary file to nodal account's bank
+     *   if a new merchant has been activated since
+     *   if (monday)  - 3 days
+     *   else         - 1 day
+     *
+     * @param array $input
+     * @param string $channel
+     *
+     * @return array
+     */
+    public function postMerchantBeneficiaryFile(array $input, string $channel): array
     {
-        if (isset($input['on']))
-        {
-            $today = Carbon::createFromTimestamp($input['on'], Timezone::IST);
-        }
-        else
-        {
-            $today = Carbon::today(Timezone::IST);
-        }
+        $response = (new BankAccount\BeneficiaryFile)->generateBetweenTimestamps($input, $channel);
 
-        if (Holidays::isWorkingDay($today) === false)
-        {
-            return ['message' => 'Today is a holiday! Happy holidays :)'];
-        }
-
-        $from = Holidays::getPreviousWorkingDay($today);
-
-        $newBeneficiaryCount = $this->repo->bank_account->getCountOfBankAccountsCreatedBetween(
-                                                        $from->getTimestamp(),
-                                                        $today->getTimestamp());
-
-        if ($newBeneficiaryCount > 0)
-        {
-            (new BankAccount\BeneficiaryFile)->generateBetweenTimestamps(
-                                                        $from->getTimestamp(),
-                                                        $today->getTimestamp());
-        }
-
-        $message = "Merchant Beneficiary file generated. Beneficiary added since".
-                " last report is ". $newBeneficiaryCount;
-
-        $this->slack->queue($message,[],['channel' => Config::get('slack.channels.settlements')]);
-
-        //Log response in trace
-        $this->trace->info(
-            TraceCode::MERCHANT_BENEFICIARY_FILE_GENERATE,
-            array('new_beneficiaries_added' => $newBeneficiaryCount));
-
-        return $newBeneficiaryCount;
+        return $response;
     }
 
     /**
@@ -1011,6 +990,59 @@ class Service extends Base\Service
 
         $this->trace->info(
             TraceCode::MERCHANT_HOLD_FUNDS_BULK_UPDATE_RESPONSE,
+            $response
+        );
+
+        return $response;
+    }
+
+    public function updateChannelForMultipleMerchants(array $input)
+    {
+        (new Validator)->validateInput('update_channel', $input);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_CHANNEL_BULK_UPDATE_REQUEST,
+            $input
+        );
+
+        $merchantIds = $input['merchant_ids'];
+
+        $channel = $input['channel'];
+
+        $successCount = $failedCount = 0;
+
+        $failedIds = [];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            try
+            {
+                // update channel in merchant entity
+                $this->edit($merchantId, ['channel' => $channel]);
+
+                $data = (new Transaction\BulkUpdate)->updateMultipleTransactions($merchantId, $channel);
+
+                $successCount++;
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException($ex);
+
+                $failedCount++;
+
+                $failedIds[] = $merchantId;
+            }
+        }
+
+        $response = [
+            'total'     => count($merchantIds),
+            'success'   => $successCount,
+            'failed'    => $failedCount,
+            'failedIds' => $failedIds,
+        ];
+
+        $this->trace->info(
+            TraceCode::MERCHANT_CHANNEL_BULK_UPDATE_RESPONSE,
             $response
         );
 
@@ -1245,6 +1277,66 @@ class Service extends Base\Service
         return $batches;
     }
 
+    public function sendPayoutMailForMultipleMerchants(array $input)
+    {
+        $this->trace->info(
+            TraceCode::MERCHANT_PAYOUT_NOTIFICATION_REQUEST,
+            $input
+        );
+
+        (new Validator)->validateInput('payout_mail', $input);
+
+        $merchantsData = $input['content'];
+
+        $successCount = $failedCount = 0;
+
+        $failedIds = [];
+
+        foreach ($merchantsData as $merchantData)
+        {
+            try
+            {
+                $merchantId = $merchantData['merchant_id'];
+
+                $email = $merchantData['email'] ?? null;
+
+                $processed = $this->sendPayoutMail($merchantId, $email);
+
+                if ($processed === true)
+                {
+                    $successCount++;
+                }
+                else
+                {
+                    $failedCount++;
+
+                    $failedIds[] = $merchantId;
+                }
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException($ex);
+
+                $failedCount++;
+
+                $failedIds[] = $merchantId;
+            }
+        }
+
+        $response['total'] = count($merchantsData);
+        $response['success'] = $successCount;
+        $response['failed'] = $failedCount;
+        $response['failedIds'] = $failedIds;
+
+        $this->trace->info(
+            TraceCode::MERCHANT_PAYOUT_NOTIFICATION_RESPONSE,
+            $response
+        );
+
+        return $response;
+
+    }
+
     /**
      * Return all submerchants of the master merchant (for aggregator model only)
      *
@@ -1262,6 +1354,26 @@ class Service extends Base\Service
         $merchants = $this->fetchReferredMerchants();
 
         return array_merge([$merchantId], $merchants->pluck('id')->toArray());
+    }
+
+
+    protected function sendPayoutMail(string $merchantId, string $email = null)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        list($from, $to) = $this->getTimestamps();
+
+        $processed = $this->core()->sendPayoutMail($merchant, $from, $to, $email);
+
+        return $processed;
+    }
+
+    private function getTimestamps()
+    {
+        $from = Carbon::today(Timezone::IST)->getTimestamp();
+        $to = Carbon::tomorrow(Timezone::IST)->getTimestamp() - 1;
+
+        return [$from, $to];
     }
 
     /**

@@ -57,7 +57,7 @@ class Messenger
 
     protected function getSlackSettings()
     {
-        $settings['channel'] = $this->app['config']->get('slack.channels.reconciliation');
+        $settings['channel'] = $this->app['config']->get('slack.channels.reconciliation2');
         $settings['color'] = 'danger';
 
         return $settings;

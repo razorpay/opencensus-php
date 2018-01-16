@@ -4,25 +4,29 @@ namespace RZP\Tests\Functional\Merchant;
 
 use DB;
 use Mail;
+use Event;
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
+use Illuminate\Cache\Events\CacheHit;
+use Illuminate\Cache\Events\KeyWritten;
+use Illuminate\Cache\Events\CacheMissed;
 
-use RZP\Constants\Mode;
+use RZP\Models\Key;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
-use RZP\Tests\Functional\Helpers\EntityActionTrait;
+use RZP\Models\BankAccount\Entity as BankAccount;
 use RZP\Mail\Merchant\Activation as ActivationMail;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Helpers\Schedule\ScheduleTrait;
-use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
 use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
+use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
+use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
 class MerchantTest extends TestCase
 {
@@ -378,6 +382,12 @@ class MerchantTest extends TestCase
     {
         $this->ba->appAuthLive();
 
+        $this->fixtures->on('live')->create('merchant_detail', [
+            'merchant_id' => '1cXSLlUU8V9sXl',
+            'submitted'   => true,
+            'locked'      => false
+        ]);
+
         $this->startTest();
     }
 
@@ -400,9 +410,9 @@ class MerchantTest extends TestCase
             'hostname'  => 'dashboard.razorpay.com'
         ]);
 
-        $this->fixtures->create('merchant_detail', [
+        $this->fixtures->on('live')->create('merchant_detail', [
             'merchant_id' => '1cXSLlUU8V9sXl',
-            'submitted'   => false,
+            'submitted'   => true,
             'locked'      => false
         ]);
 
@@ -1080,11 +1090,87 @@ class MerchantTest extends TestCase
         $startsAt = Carbon::yesterday(Timezone::IST)->timestamp;
 
         $offer = $this->fixtures->create('offer:wallet', [
-                'checkout_display' => true,
-                'display_text'     => 'Some display text',
-                'terms'            => 'Some terms',
-                'starts_at'        => $startsAt,
-            ]);
+            'checkout_display' => true,
+            'display_text'     => 'Some display text',
+            'terms'            => 'Some terms',
+            'starts_at'        => $startsAt,
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesWithSharedMerchantOffer()
+    {
+        $this->ba->publicAuth();
+
+        $startsAt = Carbon::yesterday(Timezone::IST)->timestamp;
+
+        $offer = $this->fixtures->create('offer:wallet', [
+            'merchant_id'      => '100000Razorpay',
+            'checkout_display' => true,
+            'display_text'     => 'Merchant specific offer',
+            'terms'            => 'Some terms',
+            'starts_at'        => $startsAt,
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesWithFreechargeOfferOnMerchantWithDirectFreechargeTerminal()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->create('terminal:direct_freecharge_terminal');
+
+        $startsAt = Carbon::yesterday(Timezone::IST)->timestamp;
+
+        $offer = $this->fixtures->create('offer:wallet', [
+            'merchant_id'      => '100000Razorpay',
+            'checkout_display' => true,
+            'display_text'     => 'Shared olamoney offer',
+            'terms'            => 'Some terms',
+            'starts_at'        => $startsAt,
+        ]);
+
+        //
+        // Tests that the freecharge offer is not shown as the merchant has a
+        // direct freecharge terminal.
+        //
+        $this->fixtures->create('offer:wallet', [
+            'merchant_id'      => '100000Razorpay',
+            'issuer'           => 'freecharge',
+            'checkout_display' => true,
+            'display_text'     => 'Shared freecharge offer',
+            'terms'            => 'Some terms',
+            'starts_at'        => $startsAt,
+        ]);
+
+        $content = $this->startTest();
+
+        $this->assertCount(1, $content['offers']);
+    }
+
+    public function testGetCheckoutPreferencesWithMerchantSpecificAndSharedOffers()
+    {
+        $this->ba->publicAuth();
+
+        $startsAt = Carbon::yesterday(Timezone::IST)->timestamp;
+
+        $offer1 = $this->fixtures->create('offer:wallet', [
+            'merchant_id'      => '100000Razorpay',
+            'checkout_display' => true,
+            'display_text'     => 'Some display text',
+            'terms'            => 'Some terms',
+            'starts_at'        => $startsAt,
+        ]);
+
+        $offer2 = $this->fixtures->create('offer:wallet', [
+            'merchant_id'      => '10000000000000',
+            'checkout_display' => true,
+            'display_text'     => 'Merchant specific offer',
+            'terms'            => 'Some terms',
+            'starts_at'        => $startsAt,
+        ]);
 
         $this->startTest();
     }
@@ -1243,21 +1329,218 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
-    public function testGetMercantBeneficiaryFile()
+    public function testQueryCacheHitForKey()
+    {
+        Event::fake();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->doAuthPayment($payment);
+
+        //
+        // Asserts that key is not present initially in cache
+        //
+        Event::assertDispatched(CacheMissed::class, function ($e)
+        {
+            $expectedTags = [
+                'v1',
+                'key_TheTestAuthKey',
+            ];
+
+            $this->assertArraySelectiveEquals($expectedTags, $e->tags);
+
+            return true;
+        });
+
+        //
+        // Asserts that key is inserted into cache
+        //
+        Event::assertDispatched(KeyWritten::class, function ($e)
+        {
+            $expectedTags = [
+                'v1',
+                'key_TheTestAuthKey',
+            ];
+
+            $this->assertArraySelectiveEquals($expectedTags, $e->tags);
+
+            $this->assertEquals('TheTestAuthKey', $e->value[0]->id);
+
+            return true;
+        });
+
+        //
+        // Asserts cache should not have been hit the first time
+        //
+        Event::assertNotDispatched(CacheHit::class);
+
+        $this->doAuthPayment($payment);
+
+        //
+        // Asserts that key is found in cache on subsequent attempts
+        //
+        Event::assertDispatched(CacheHit::class, function ($e)
+        {
+            $expectedTags = [
+                'v1',
+                'key_TheTestAuthKey',
+            ];
+
+            $this->assertArraySelectiveEquals($expectedTags, $e->tags);
+
+            $this->assertEquals('TheTestAuthKey', $e->value[0]->id);
+
+            return true;
+        });
+    }
+
+    public function testQueryCacheFlushForKey()
+    {
+        Event::fake();
+
+        $this->ba->appAuth();
+
+        $testData = $this->testData['testUpdateKeyExpireNow'];
+
+        $payment = $this->getDefaultPaymentArray();
+
+        //
+        // Expires default key
+        //
+        $content = $this->runRequestResponseFlow($testData);
+
+        $newKey = $content['new']['id'];
+
+        $this->doAuthPayment($payment, null, $newKey);
+
+        Key\Entity::stripSign($newKey);
+
+        //
+        // Repeats the sequence of assertions, to test that new key is properly
+        // read from cache
+        //
+        Event::assertDispatched(CacheMissed::class, function ($e) use ($newKey)
+        {
+            $expectedTags = [
+                'v1',
+                'key_' . $newKey,
+            ];
+
+            $this->assertArraySelectiveEquals($expectedTags, $e->tags);
+
+            return true;
+        });
+
+        Event::assertDispatched(KeyWritten::class, function ($e) use ($newKey)
+        {
+            $expectedTags = [
+                'v1',
+                'key_' . $newKey,
+            ];
+
+            $this->assertArraySelectiveEquals($expectedTags, $e->tags);
+
+            $this->assertEquals($newKey, $e->value[0]->id);
+
+            return true;
+        });
+
+        Event::assertNotDispatched(CacheHit::class);
+    }
+
+    public function testBeneficiaryRegisterKotak()
     {
         Mail::fake();
 
         $this->ba->appAuth();
 
-        $request = array(
-            'url' => '/merchants/beneficiary/file',
-            'method' => 'get',
-            'content' => [],
-        );
+        $request = [
+            'url'       => '/merchants/beneficiary/file/kotak',
+            'method'    => 'get',
+        ];
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertArrayHasKey('url', $content);
+        $this->assertArrayHasKey('signed_url', $content);
+        $this->assertEquals(Channel::KOTAK, $content['channel']);
+
+        Mail::assertSent(BeneficiaryFileMail::class);
+    }
+
+    public function testBeneficiaryRegisterBetweenTimestampKotak()
+    {
+        Mail::fake();
+
+        // Choosing a non-holiday, and previous day is also not holiday
+        $thirdJan2017 = Carbon::createFromDate(2017, 1, 3, Timezone::IST);
+
+        $thirdJan2017Timestamp = $thirdJan2017->timestamp;
+
+        Carbon::setTestNow($thirdJan2017);
+
+        $ba1 = $this->fixtures->create('bank_account', ['created_at' => $thirdJan2017Timestamp - 2]);
+        $ba2 = $this->fixtures->create('bank_account', ['created_at' => $thirdJan2017Timestamp - 10]);
+        $ba3 = $this->fixtures->create('bank_account', ['created_at' => $thirdJan2017Timestamp + 50]);
+
+        $this->ba->appAuth();
+
+        $request = [
+            'url'       => '/merchants/beneficiary/file/bank/kotak',
+            'method'    => 'post',
+            'content'   => [
+                BankAccount::ON => $thirdJan2017Timestamp,
+                BankAccount::RECIPIENT_EMAILS => ['abc@d.com', 'efg@h.com'],
+            ]
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        Carbon::setTestNow();
+
+        $this->assertArrayHasKey('signed_url', $content);
+        $this->assertEquals(2, $content['merchants_count']);
+        $this->assertEquals(Channel::KOTAK, $content['channel']);
+
+        Mail::assertSent(BeneficiaryFileMail::class, function ($mail)
+        {
+            return $mail->hasTo(['abc@d.com', 'efg@h.com']);
+        });
+    }
+
+    public function testBeneficiaryRegisterAxis()
+    {
+        Mail::fake();
+
+        $this->ba->appAuth();
+
+        $request = [
+            'url'       => '/merchants/beneficiary/file/axis',
+            'method'    => 'get',
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey('signed_url', $content);
+        $this->assertEquals(Channel::AXIS, $content['channel']);
+
+        Mail::assertSent(BeneficiaryFileMail::class);
+    }
+
+    public function testBeneficiaryRegisterIcici()
+    {
+        Mail::fake();
+
+        $this->ba->appAuth();
+
+        $request = [
+            'url'       => '/merchants/beneficiary/file/icici',
+            'method'    => 'get',
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey('signed_url', $content);
+        $this->assertEquals(Channel::ICICI, $content['channel']);
 
         Mail::assertSent(BeneficiaryFileMail::class);
     }
@@ -1542,7 +1825,7 @@ class MerchantTest extends TestCase
 
         $expectedTokenCount = $response['customer']['tokens']['count'];
 
-        $payment = $this->getNetbankingRecurringPaymentArray('ICIC');
+        $payment = $this->getEmandateNetbankingRecurringPaymentArray('ICIC');
         unset($payment['card']);
 
         // We create a new nb recurring token via payment

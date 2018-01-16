@@ -3,10 +3,7 @@
 namespace RZP\Models\Customer;
 
 use App;
-use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Customer;
-use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 
 class Raven extends Base\Core
@@ -61,9 +58,15 @@ class Raven extends Base\Core
         return $response;
     }
 
-    public function updateSmsStatus($id, $input)
+    public function updateSmsStatus($gateway, $input)
     {
-        $result = $this->raven->smsCallback($id, $input);
+        $this->trace->info(TraceCode::RAVEN_CALLBACK_REQUEST,
+            [
+                'gateway' => $gateway,
+                'input'   => $input,
+            ]);
+
+        $result = $this->raven->smsCallback($gateway, $input);
 
         return $result;
     }

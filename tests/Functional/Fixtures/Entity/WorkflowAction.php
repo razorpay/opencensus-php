@@ -27,7 +27,7 @@ class WorkflowAction extends Base
             'permission_id' => $this->defaultWorkflowPermission->getId(),
         ]);
 
-        $this->fixtures->create('action_state', [
+        $this->fixtures->create('state', [
             'action_id'     => $action->getId(),
             'admin_id'      => Org::SUPER_ADMIN,
         ]);
@@ -39,13 +39,13 @@ class WorkflowAction extends Base
             'id'            => self::DEFAULT_WORKFLOW_CLOSED_ACTION_ID,
             'admin_id'      => Org::SUPER_ADMIN,
             'permission_id' => $this->defaultWorkflowPermission->getId(),
-            'state'         => \RZP\Models\Workflow\Action\State\Entity::CLOSED,
+            'state'         => \RZP\Models\State\Name::CLOSED,
         ]);
 
-        $this->fixtures->create('action_state', [
+        $this->fixtures->create('state', [
             'action_id'     => $action->getId(),
             'admin_id'      => Org::SUPER_ADMIN,
-            'name'          => \RZP\Models\Workflow\Action\State\Entity::CLOSED,
+            'name'          => \RZP\Models\State\Name::CLOSED,
         ]);
     }
 }

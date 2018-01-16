@@ -28,6 +28,16 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchPayoutsWithUtrNotNull($from, $to, $merchantId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::CREATED_AT, '>', $from)
+                    ->where(Entity::CREATED_AT, '<', $to)
+                    ->whereNotNull(Entity::UTR)
+                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->get();
+    }
+
     public function updateStatus(Base\PublicCollection $payouts, string $status)
     {
         if ($payouts->count() === 0)

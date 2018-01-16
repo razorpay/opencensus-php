@@ -30,6 +30,22 @@ class Gateway extends Base\Gateway
 
     const CERTIFICATE_DIRECTORY_NAME = 'cert_dir_name';
 
+    /**
+     * Fingerprint of the root signing certificate. This ensures that
+     * while any intermediate certs may change over time (provided they
+     * are signed correctly and not expired), the root cert ensures that
+     * the trust is in the same authority. So someone else cannot
+     * create a new chain and use that.
+     *
+     * Note: Only put production cert fingerprints in here
+     */
+    const ROOT_CERT_FINGERPRINTS = [
+        // MasterCard Root
+        '32dfd35574d8811bb90ebe33846dd3a0b945e0d9',
+        // VISA
+        '70179b868c00a4fa609152223f9f3e32bde00562',
+    ];
+
     protected $gateway = 'blade';
 
 
@@ -84,7 +100,10 @@ class Gateway extends Base\Gateway
                 throw new Exception\GatewayErrorException(
                     ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
                     $enrolled,
-                    'Invalid enroll response');
+                    'Invalid enroll response',
+                    [
+                        'enrollment_status' => $enrolled
+                    ]);
         }
     }
 
@@ -113,7 +132,12 @@ class Gateway extends Base\Gateway
         {
             // Throw GatewayErrorException with authentication failed error code
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED);
+                ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
+                null,
+                null,
+                [
+                    'auth_status' => $authenticateStatus
+                ]);
         }
 
         // Blade callback response field is being used by Hitachi
@@ -128,7 +152,10 @@ class Gateway extends Base\Gateway
         if (isset($response[VERes::MESSAGE]['Error']) === true)
         {
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED);
+                ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
+                null,
+                null,
+                $response[VERes::MESSAGE]['Error']);
         }
 
         $ch = $response[VERes::MESSAGE][VERes::VERES][VERes::CH];
@@ -150,17 +177,11 @@ class Gateway extends Base\Gateway
 
     protected function updateGatewayPaymentFromCallbackResponse(
         Entity $gatewayPayment,
-        array $resp)
+        array $response)
     {
-        $gatewayPayment->setXid($resp[PARes::PURCHASE][PARes::XID]);
+        $attributes = $this->getCallbackResponseAttributes($response);
 
-        $gatewayPayment->setCavv($resp[PARes::TX][PARes::CAVV]);
-
-        $gatewayPayment->setCavvAlgorithm($resp[PARes::TX][PARes::CAVVALGORITHM]);
-
-        $gatewayPayment->setStatus($resp[PARes::TX][PARes::STATUS]);
-
-        $gatewayPayment->setEci($resp[PARes::TX][PARes::ECI]);
+        $gatewayPayment->fill($attributes);
 
         $this->repo->saveOrFail($gatewayPayment);
     }
@@ -180,14 +201,27 @@ class Gateway extends Base\Gateway
 
     protected function validateEci(string $eci = null, string $networkCode)
     {
-        if ((($networkCode === Card\Network::VISA) and ($eci !== '05')) or
-            (($networkCode === Card\Network::MC) and ($eci !== '02')))
+        if ((($networkCode === Card\Network::VISA) and ($eci === '07')) or
+            (($networkCode === Card\Network::MC) and ($eci === '00')))
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
                 $eci,
                 'Invalid Eci value for network ' . $networkCode);
         }
+    }
+
+    protected function getCallbackResponseAttributes($response)
+    {
+        $attributes = [
+            Entity::XID            => $response[PARes::PURCHASE][PARes::XID] ?? null,
+            Entity::CAVV           => $response[PARes::TX][PARes::CAVV] ?? null,
+            Entity::CAVV_ALGORITHM => $response[PARes::TX][PARes::CAVVALGORITHM] ?? null,
+            Entity::STATUS         => $response[PARes::TX][PARes::STATUS],
+            Entity::ECI            => $response[PARes::TX][PARes::ECI] ?? null,
+        ];
+
+        return $attributes;
     }
 
     protected function validateSignatureAndInflatePares($pares)
@@ -197,6 +231,8 @@ class Gateway extends Base\Gateway
         $dom = $this->loadXmlViaDom($paresXml);
 
         $adapter = new XmlseclibsAdapter;
+
+        $adapter->setRootCertFingerprints(static::ROOT_CERT_FINGERPRINTS);
 
         $ret = false;
 
@@ -235,7 +271,7 @@ class Gateway extends Base\Gateway
         $paresArray = $this->xmlToArray($paresXml);
 
         // Validate Payer Authentication Response
-        $this->validatePaRes($input, $paresArray);
+        $this->validatePARes($input, $paresArray);
 
         $paresMessage = $paresArray[PARes::MESSAGE][PARes::PARES];
 
@@ -362,6 +398,7 @@ class Gateway extends Base\Gateway
             [
                 'gateway' => 'blade',
                 'response' => $response->body,
+                'payment_id' => $input['payment']['id']
             ]);
 
         $body = $response->body;
@@ -391,9 +428,7 @@ class Gateway extends Base\Gateway
     {
         $content = $this->getVEReqContent($input);
 
-        //$options = $this->getRequestOptions();
-
-        $options = [];
+        $options = $this->getRequestOptions();
 
         $type = $input['card']['network'];
 
@@ -406,17 +441,29 @@ class Gateway extends Base\Gateway
     {
         $gatewayCertPath = $this->getGatewayCertDirPath();
 
+        if (file_exists($gatewayCertPath) === false)
+        {
+            mkdir($gatewayCertPath);
+        }
+
         $clientCertPath = $gatewayCertPath . '/' .
                           $this->getClientCertificateName();
 
         if (file_exists($clientCertPath) === false)
         {
+            $networkName = $this->getNetworkName();
 
-            // $this->trace->info(
-                // TraceCode::CLIENT_CERTIFICATE_FILE_GENERATED,
-                // [
-                    // 'clientCertPath' => $clientCertPath
-                // ]);
+            $cert = $this->config['live_' . $networkName . '_certificate'];
+
+            $cert = str_replace('\n', "\n", $cert);
+
+            file_put_contents($clientCertPath, $cert);
+
+            $this->trace->info(
+                TraceCode::CLIENT_CERTIFICATE_FILE_GENERATED,
+                [
+                    'clientCertPath' => $clientCertPath
+                ]);
         }
 
         return $clientCertPath;
@@ -426,51 +473,70 @@ class Gateway extends Base\Gateway
     {
         $gatewayCertPath = $this->getGatewayCertDirPath();
 
+        if (file_exists($gatewayCertPath) === false)
+        {
+            mkdir($gatewayCertPath);
+        }
+
         $clientCertPath = $gatewayCertPath . '/' .
                           $this->getClientSslKeyName();
 
         if (file_exists($clientCertPath) === false)
         {
-            // $this->trace->info(
-                // TraceCode::CLIENT_CERTIFICATE_FILE_GENERATED,
-                // [
-                    // 'clientCertPath' => $clientCertPath
-                // ]);
+            $networkName = $this->getNetworkName();
+
+            $cert = $this->config['live_' . $networkName . '_key'];
+
+            $cert = str_replace('\n', "\n", $cert);
+
+            file_put_contents($clientCertPath, $cert);
+
+            $this->trace->info(
+                TraceCode::CLIENT_CERTIFICATE_FILE_GENERATED,
+                [
+                    'clientCertPath' => $clientCertPath
+                ]);
         }
+
+        return $clientCertPath;
+    }
+
+    protected function getCaInfo()
+    {
+        $clientCertPath = dirname(__FILE__) . '/cainfo/cainfo.pem';
 
         return $clientCertPath;
     }
 
     public function getClientCertificateName()
     {
-        switch ($this->input['card']['network_code'])
-        {
-            case Card\Network::MC:
-                $certName = $this->config['live_mastercard_certificate'];
-                break;
+        $networkName = $this->getNetworkName();
 
-            case Card\Network::VISA:
-                $certName = $this->config['live_visa_certificate'];
-                break;
-        }
-
-        return $certName;
+        return $networkName . '_v2.crt';
     }
 
     public function getClientSslKeyName()
     {
+        $networkName = $this->getNetworkName();
+
+        return $networkName . '_v2.key';
+    }
+
+    public function getNetworkName()
+    {
         switch ($this->input['card']['network_code'])
         {
             case Card\Network::MC:
-                $certName = $this->config['live_mastercard_pem'];
+            case Card\Network::MAES:
+                $network = Card\NetworkName::MC;
                 break;
 
             case Card\Network::VISA:
-                $certName = $this->config['live_visa_pem'];
+                $network = Card\NetworkName::VISA;
                 break;
         }
 
-        return $certName;
+        return strtolower($network);
     }
 
     protected function getPayerAuthenticationContent(array $input, array $response)
@@ -544,8 +610,6 @@ class Gateway extends Base\Gateway
 
     protected function getVEReqContent(array $input)
     {
-        $creds = $this->getCreds();
-
         $accept = substr($this->app['request']->header('Accept'), 0, 2048);
         $userAgent = substr($this->app['request']->header('User-Agent'), 0, 256);
 
@@ -560,7 +624,6 @@ class Gateway extends Base\Gateway
                     VEReq::MERCHANT   => [
                         VEReq::ACQBIN       => $this->getAcquirerBin($input),
                         VEReq::MERCHANT_ID  => $this->getMerchantId($input),
-                        //'password' => '',
                     ],
                     VEReq::BROWSER    => [
                         VEReq::DEVICE_CATEGORY => DeviceCategory::getDeviceCategory(DeviceCategory::DESKTOP),
@@ -570,6 +633,16 @@ class Gateway extends Base\Gateway
                 ]
             ]
         ];
+
+        $traceContent = $content;
+        unset($traceContent['Message']['VEReq']['pan']);
+        unset($traceContent['Message']['VEReq']['Merchant']['password']);
+
+        $this->trace->info(TraceCode::GATEWAY_ENROLL_REQUEST, [
+            'gateway' => 'blade',
+            'payment_id' => $input['payment']['id'],
+            'content' => $traceContent
+        ]);
 
         return Xml::create('ThreeDSecure', $content);
     }
@@ -600,16 +673,17 @@ class Gateway extends Base\Gateway
 
     protected function getAcquirerBin(array $input)
     {
-        $acquirerBin = '';
+        $acqBin = '';
 
         switch ($input['card']['network_code'])
         {
             case Card\Network::MC:
-                $acquirerBin = $this->config['live_mastercard_acq_bin'];
+            case Card\Network::MAES:
+                $acqBin = $this->config['live_mastercard_acq_bin'];
                 break;
 
             case Card\Network::VISA:
-                $acquirerBin = $this->config['live_visa_acq_bin'];
+                $acqBin = $this->config['live_visa_acq_bin'];
                 break;
 
             default:
@@ -623,7 +697,7 @@ class Gateway extends Base\Gateway
             return $this->config['test_acq_bin'];
         }
 
-        return $acquirerBin;
+        return $acqBin;
     }
 
     protected function getMerchantId(array $input)
@@ -633,6 +707,7 @@ class Gateway extends Base\Gateway
         switch ($input['card']['network_code'])
         {
             case Card\Network::MC:
+            case Card\Network::MAES:
                 $merchantId = $this->config['live_mastercard_merchant_id'];
 
                 break;
@@ -746,6 +821,7 @@ class Gateway extends Base\Gateway
 
         $request['options']['timeout'] = 10;
         $request['options']['connect_timeout'] = 10;
+        $request['options']['verify'] = $this->getCaInfo();
 
         return $request;
     }
@@ -784,11 +860,8 @@ class Gateway extends Base\Gateway
         curl_setopt($curl, CURLOPT_SSLCERT, $this->getClientCertificate());
 
         curl_setopt($curl, CURLOPT_SSLKEY, $this->getClientSslKey());
-
-        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);
-
-        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, true);
     }
+
     protected function getGatewayCertDirName()
     {
         return $this->config[self::CERTIFICATE_DIRECTORY_NAME];

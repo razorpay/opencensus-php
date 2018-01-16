@@ -7,15 +7,6 @@ use RZP\Models\FileStore;
 
 class Entity extends Base\PublicEntity
 {
-    /**
-     * @deprecated
-     *
-     * Previously we didn't use UFH and stored the file key names in
-     * following two attributes.
-     */
-    const UPLOAD_FILE_URL           = 'upload_file_url';
-    const DOWNLOAD_FILE_URL         = 'download_file_url';
-
     const STATUS                    = 'status';
     const PROCESSING                = 'processing';
     const TOTAL_COUNT               = 'total_count';
@@ -46,16 +37,17 @@ class Entity extends Base\PublicEntity
     /**
      * Constants used in migration file.
      */
-    const FILE_URL_LENGTH           = 100;
     const STATUS_LENGTH             = 20;
 
     /**
      * Additional constants
      */
     const FILE                      = 'file';
+    const FILES                     = 'files';
     const URL                       = 'url';
     const INPUT_FILE_PREFIX         = 'batch/upload/';
     const OUTPUT_FILE_PREFIX        = 'batch/download/';
+    const INPUT_DETAILS             = 'input_details';
 
     protected static $sign = 'batch';
 
@@ -77,6 +69,7 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::TYPE,
         self::GATEWAY,
+        self::SUB_TYPE,
     ];
 
     protected $public = [
@@ -98,7 +91,6 @@ class Entity extends Base\PublicEntity
         self::ATTEMPTS            => 0,
         self::STATUS              => Status::CREATED,
         self::PROCESSING          => 0,
-        self::DOWNLOAD_FILE_URL   => null,
         self::TOTAL_COUNT         => 0,
         self::SUCCESS_COUNT       => 0,
         self::FAILURE_COUNT       => 0,
@@ -190,7 +182,7 @@ class Entity extends Base\PublicEntity
         // (hence S3 locations) for reasons.
         //
         $ufhType = ($this->isReconciliationType() === true) ?
-                        FileStore\Type::BATCH_RECON_INPUT :
+                        FileStore\Type::RECONCILIATION_BATCH_INPUT :
                         FileStore\Type::BATCH_INPUT;
 
         return $this->files()
@@ -213,6 +205,16 @@ class Entity extends Base\PublicEntity
                     ->first();
     }
 
+    /**
+     * Returns the latest file associated with this batch, be output/input type.
+     *
+     * @return FileStore\Entity
+     */
+    public function latestFile()
+    {
+        return $this->files()->latest()->first();
+    }
+
     // ----------------------- Getters -------------------------------
 
     public function getAmount()
@@ -228,6 +230,11 @@ class Entity extends Base\PublicEntity
     public function getType()
     {
         return $this->getAttribute(self::TYPE);
+    }
+
+    public function getSubType()
+    {
+        return $this->getAttribute(self::SUB_TYPE);
     }
 
     public function getGateway()
@@ -286,28 +293,6 @@ class Entity extends Base\PublicEntity
     }
 
     /**
-     * Returns prefix for the file. Prefix are mostly used to get a folder like
-     * structure on S3. We have different prefix for created and output batch
-     * files, for convenience.
-     *
-     * @param string|null $status
-     *
-     * @return string
-     */
-    public function getFilePrefix(string $status = null): string
-    {
-        $status = $status ?: $this->getStatus();
-        if ($status === Status::CREATED)
-        {
-            return self::INPUT_FILE_PREFIX;
-        }
-        else
-        {
-            return self::OUTPUT_FILE_PREFIX;
-        }
-    }
-
-    /**
      * Returns headers based on status of batch.
      *
      * @return array
@@ -325,6 +310,7 @@ class Entity extends Base\PublicEntity
             return Header::getOutputHeadersForType($type);
         }
     }
+
     /**
      * Returns key for file. Id is being used for key.
      *
@@ -365,16 +351,6 @@ class Entity extends Base\PublicEntity
 
     // ----------------------- Setters -------------------------------
 
-    public function setUploadFileUrl(string $url)
-    {
-        $this->setAttribute(self::UPLOAD_FILE_URL, $url);
-    }
-
-    public function setDownloadFileUrl(string $url)
-    {
-        $this->setAttribute(self::DOWNLOAD_FILE_URL, $url);
-    }
-
     public function setSuccessCount($count)
     {
         $this->setAttribute(self::SUCCESS_COUNT, $count);
@@ -397,6 +373,8 @@ class Entity extends Base\PublicEntity
 
     public function setStatus($status)
     {
+        Status::validateStatus($status);
+
         $this->setAttribute(self::STATUS, $status);
     }
 

@@ -4,13 +4,9 @@ namespace RZP\Gateway\Cybersource\Mock;
 
 use Str;
 use RZP\App;
-use RZP\Http;
-use DOMDocument;
 use Carbon\Carbon;
-use RZP\Exception;
 use RZP\Models\Card;
 use RZP\Gateway\Base;
-use RZP\Models\Payment;
 use RZP\Gateway\Cybersource;
 use RZP\Gateway\Cybersource\Fields as F;
 
@@ -18,6 +14,10 @@ class Server extends Base\Mock\Server
 {
     protected $repo;
 
+    /**
+     * @override
+     * @return string
+     */
     protected function getWsdlFile()
     {
         return dirname(__DIR__) . '/Wsdl/cybstest.wsdl.xml';

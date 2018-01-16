@@ -97,6 +97,40 @@ class HarvesterClient extends AbstractEventClient
         $this->events[$channel][] = $event;
     }
 
+    /**
+     * Function breaks events into smaller chunks
+     * as sqs has a limit of 256 kb data size
+     *
+     * @return array $eventChunkData
+     */
+    protected function getEventChunks()
+    {
+        $counter = 0;
+
+        $eventChunksData = [];
+
+        foreach ($this->events as $channel => $events)
+        {
+            foreach ($events as $event)
+            {
+                $eventChunksData[$counter][$channel][] = $event;
+
+                $totalEventsLength = strlen(json_encode($eventChunksData[$counter][$channel]));
+
+                if ($totalEventsLength > self::MAX_EVENT_DATA_SIZE)
+                {
+                    array_pop($eventChunksData[$counter][$channel]);
+
+                    $counter++;
+
+                    $eventChunksData[$counter][$channel][] = $event;
+                }
+            }
+        }
+
+        return $eventChunksData;
+    }
+
     public function query($data = '')
     {
         return $this->sendRequest(self::QUERY_API_PATH, $data, self::RETRY, self::RETRY_TIMES);

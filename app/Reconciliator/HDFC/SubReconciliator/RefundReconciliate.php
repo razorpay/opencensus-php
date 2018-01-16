@@ -101,7 +101,7 @@ class RefundReconciliate extends Base\RefundReconciliate
         return $arn;
     }
 
-    protected function getRefundAmount(array $row)
+    protected function getReconRefundAmount(array $row)
     {
         $refundAmount = null;
 

@@ -1,7 +1,6 @@
 <?php
 
 use RZP\Error\ErrorCode;
-use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
@@ -20,4 +19,38 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_SUB_MERCHANT_ALREADY_ASSIGNED_TO_TERMINAL,
         ],
     ],
+
+    'testGatewayFilterRejectsCyberSource' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => ErrorCode::SERVER_ERROR,
+                    'description' => PublicErrorDescription::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'               => \RZP\Exception\RuntimeException::class,
+            'message'             => 'Terminal should not be null',
+            'internal_error_code' => ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
+        ],
+    ],
+
+    'testGatewayFilterRejectsMigsForZomato' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => ErrorCode::SERVER_ERROR,
+                    'description' => PublicErrorDescription::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'               => \RZP\Exception\RuntimeException::class,
+            'message'             => 'Terminal should not be null',
+            'internal_error_code' => ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
+        ],
+    ]
 ];

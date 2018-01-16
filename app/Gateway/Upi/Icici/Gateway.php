@@ -2,25 +2,24 @@
 
 namespace RZP\Gateway\Upi\Icici;
 
-use Carbon\Carbon;
-use RZP\Constants\Timezone;
-use ErrorException;
-use phpseclib\Crypt\RSA;
 use Request;
-use RZP\Constants\Mode;
-use RZP\Models\Merchant;
-use RZP\Error\ErrorCode;
+use Carbon\Carbon;
 use RZP\Exception;
-use RZP\Gateway\Base\AuthorizeFailed;
-use RZP\Gateway\Base\Verify;
-use RZP\Gateway\Base\VerifyResult;
-use RZP\Gateway\Upi\Base;
-use RZP\Gateway\Upi\Base\Entity;
-use RZP\Gateway\Upi\Base\ProviderCode;
+use ErrorException;
+use RZP\Constants\Mode;
+use RZP\Models\Payment;
 use RZP\Gateway\Utility;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Trace\TraceCode;
-use RZP\Gateway\Upi\Icici\ResponseCodeMap;
+use phpseclib\Crypt\RSA;
+use RZP\Error\ErrorCode;
+use RZP\Gateway\Upi\Base;
+use RZP\Constants\Timezone;
+use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Upi\Base\Entity;
+use RZP\Gateway\Base\VerifyResult;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Models\Payment\Verify\Action as VerifyAction;
 
 class Gateway extends Base\Gateway
 {
@@ -44,8 +43,10 @@ class Gateway extends Base\Gateway
 
     protected $map = [
         Entity::VPA                       => Entity::VPA,
+        Entity::EXPIRY_TIME               => Entity::EXPIRY_TIME,
         Entity::PROVIDER                  => Entity::PROVIDER,
         Entity::BANK                      => Entity::BANK,
+        Entity::TYPE                      => Entity::TYPE,
         Entity::RECEIVED                  => Entity::RECEIVED,
         Fields::PAYER_VA                  => Entity::VPA,
         Fields::PAYER_NAME                => Entity::NAME,
@@ -65,7 +66,15 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
+        if ((isset($input['upi']['flow']) === true) and
+            ($input['upi']['flow'] === 'intent'))
+        {
+            return $this->authorizeIntent($input);
+        }
+
         $attributes = $this->getGatewayEntityAttributes($input);
+
+        $attributes[Entity::EXPIRY_TIME] = $input['upi']['expiry_time'];
 
         $payment = $this->createGatewayPaymentEntity($attributes);
 
@@ -124,6 +133,56 @@ class Gateway extends Base\Gateway
         ];
     }
 
+    protected function authorizeIntent(array $input)
+    {
+        $attributes = [
+            Entity::TYPE => Base\Type::PAY,
+        ];
+
+        $payment = $this->createGatewayPaymentEntity($attributes);
+
+        $request =  $this->getPayAuthorizeRequestArray($input);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $response = $this->parseGatewayResponse($response->body);
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $response);
+
+        $this->updateGatewayPaymentResponse($payment, $response);
+
+        $status = (int) $response['response'];
+
+        if ($status !== Status::TXN_SUCCESS)
+        {
+            $errorCode = ResponseCodeMap::getApiErrorCode($status);
+
+            throw new Exception\GatewayErrorException(
+                $errorCode,
+                $status,
+                ResponseCode::getResponseMessage($status));
+        }
+
+        return $this->getIntentRequest($input, $response);
+    }
+
+    protected function getIntentRequest($input, $response)
+    {
+        $content = [
+            IntentParams::PAYEE_ADDRESS => $input['terminal']->getGatewayMerchantId2() ?? self::DEFAULT_PAYEE_VPA,
+            IntentParams::PAYEE_NAME    => preg_replace('/\s+/', '', $input['merchant']->getFilteredDba()),
+            IntentParams::TXN_REF_ID    => $response['refId'],
+            IntentParams::TXN_NOTE      => $this->getPaymentRemark($input),
+            IntentParams::TXN_AMOUNT    => $input['payment']['amount'] / 100,
+            IntentParams::TXN_CURRENCY  => 'INR',
+            IntentParams::MCC           => '5411',
+        ];
+
+        $query = str_replace(' ', '', urldecode(http_build_query($content)));
+
+        return ['data' => ['intent_url' => 'upi://pay?' . $query]];
+    }
+
     /**
      * We only store the VPA, bank and provider because the rest of the fields
      * are filled by the callback
@@ -134,6 +193,7 @@ class Gateway extends Base\Gateway
     {
         return [
             Entity::VPA => $input['payment']['vpa'],
+            Entity::TYPE => Base\Type::COLLECT,
         ];
     }
 
@@ -263,7 +323,7 @@ class Gateway extends Base\Gateway
      */
     protected function getUrl($type = null): string
     {
-        $url = parent::getUrl();
+        $url = parent::getUrl($type);
 
         return sprintf($url, $this->getMerchantId());
     }
@@ -321,7 +381,9 @@ class Gateway extends Base\Gateway
     {
         $payment = $input['payment'];
 
-        $collectByTimestamp = Carbon::now(Timezone::IST)->addMinutes(5)->format('d/m/Y h:i A');
+        $expiryTime = $input['upi']['expiry_time'];
+
+        $collectByTimestamp = Carbon::now(Timezone::IST)->addMinutes($expiryTime)->format('d/m/Y h:i A');
 
         $data = [
             Fields::AMOUNT           => $this->formatAmount($payment['amount']),
@@ -330,11 +392,10 @@ class Gateway extends Base\Gateway
             Fields::MERCHANT_ID      => $this->getMerchantId(),
             Fields::MERCHANT_TRAN_ID => $payment['id'],
             Fields::MERCHANT_NAME    => 'Razorpay',
-            // Do not change this.
-            // Note and Submerchant name fields only support alphanumeric hence replacing all
-            // the spaces to empty string here.
-            Fields::NOTE             => preg_replace('/\s+/', '', $this->getPaymentRemark($input)),
-            Fields::SUBMERCHANT_NAME => preg_replace('/\s+/', '', $input['merchant']->getFilteredDba()),
+            Fields::NOTE             => $this->getPaymentRemark($input),
+            // sub-merchant name field only supports alphanumeric
+            // hence replacing all the spaces to empty string here.
+            Fields::SUBMERCHANT_NAME => $this->getSubMerchantName($input),
             Fields::PAYER_VA_REQ     => $input['payment']['vpa'],
             Fields::SUBMERCHANT_ID   => $this->getSubMerchantId($input),
             Fields::TERMINAL_ID      => $this->getTerminalId($input),
@@ -356,11 +417,39 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
+    protected function getPayAuthorizeRequestArray(array $input): array
+    {
+        $payment = $input['payment'];
+
+        $data = [
+            Fields::AMOUNT           => $this->formatAmount($payment['amount']),
+            Fields::BILL_NUMBER      => '1234',
+            Fields::MERCHANT_ID      => $this->getMerchantId(),
+            Fields::MERCHANT_TRAN_ID => $payment['id'],
+            Fields::TERMINAL_ID      => $this->getTerminalId($input),
+        ];
+
+        $content = $this->transformRequestArrayToContent($data);
+
+        $request = $this->getStandardRequestArray($content, 'post', 'pay');
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            [
+                'request'           => $request,
+                'decrypted_content' => $data,
+                'gateway'           => $this->gateway,
+                'payment_id'        => $input['payment']['id'],
+            ]);
+
+        return $request;
+    }
+
     protected function getTerminalId(array $input): string
     {
         $mcc = (string) $input['merchant']->getCategory();
 
-        //Dafault merchant category code is 5411
+        //Default merchant category code is 5411
         if ($mcc === '1234')
         {
             $mcc = '5411';
@@ -372,13 +461,26 @@ class Gateway extends Base\Gateway
     /**
      * This is same as the payment description, capped
      * to 50 characters
+     *
+     * @param array $input
+     *
      * @return string
      */
     protected function getPaymentRemark(array $input): string
     {
-        $description = $input['merchant']->getFilteredDba();
+        $paymentDescription = $input['payment']['description'] ?? '';
+        $filteredPaymentDescription = Payment\Entity::getFilteredDescription($paymentDescription);
+
+        $description = $input['merchant']->getFilteredDba() . ' ' . $filteredPaymentDescription;
 
         return ($description ? substr($description, 0, 50) : 'Pay via Razorpay');
+    }
+
+    protected function getSubMerchantName(array $input): string
+    {
+        $dba = preg_replace('/\s+/', '', $input['merchant']->getFilteredDba());
+
+        return ($dba ? substr($dba, 0, 30) : 'Razorpay');
     }
 
     /**
@@ -407,6 +509,8 @@ class Gateway extends Base\Gateway
         $attr[Entity::RECEIVED] = 1;
 
         $payment->fill($attr);
+
+        $payment->generatePspData($attr);
 
         $payment->saveOrFail();
     }
@@ -535,13 +639,33 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function verifyPayment(Verify $verify): string
+    protected function checkResponseAndThrowExceptionIfRequired(Verify $verify)
     {
         $content = $verify->verifyResponseContent;
 
         // 5006 = The payment was not created at the gateway end
+        // 5000 = Invalid Request
+        // 15   = Original record not found
         //        And we can safely mark this payment as failed
-        if (($content['success'] !== 'true') and ($content[Fields::RESPONSE] !== '5006'))
+        if (in_array($content[Fields::RESPONSE], ['5006', '5000', '15'], true) === true)
+        {
+            throw new Exception\PaymentVerificationException(
+                $verify->getDataToTrace(),
+                $verify,
+                VerifyAction::FINISH);
+        }
+    }
+
+    protected function verifyPayment(Verify $verify): string
+    {
+        // Removing this for now because verify becomes successful after
+        // some delay on 5000 response
+        //$this->checkResponseAndThrowExceptionIfRequired($verify);
+
+        $content = $verify->verifyResponseContent;
+
+        if (($content['success'] !== 'true') and
+            ($content[Fields::RESPONSE] !== '5006'))
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
@@ -582,9 +706,28 @@ class Gateway extends Base\Gateway
         return $status;
     }
 
+    /**
+     * We need to implement alreadyRefunded
+     * @see https://github.com/razorpay/api/issues/6984
+     */
+
     public function verifyRefund(array $input)
     {
         parent::verify($input);
+
+        $unprocessedRefunds = $this->getUnprocessedRefunds();
+
+        $processedRefunds = $this->getProcessedRefunds();
+
+        if (in_array($input['refund']['id'], $unprocessedRefunds) === true)
+        {
+            return false;
+        }
+
+        if (in_array($input['refund']['id'], $processedRefunds) === true)
+        {
+            return true;
+        }
 
         $content = $this->sendRefundVerifyRequest($input);
 
@@ -598,7 +741,9 @@ class Gateway extends Base\Gateway
             return false;
         }
 
-        if (strtolower($content['message']) === Status::NO_RECORDS)
+        $msg = strtolower($content['message']);
+
+        if (in_array($msg, [Status::NO_RECORDS, Status::NO_RECORDS2], true) === true)
         {
             return false;
         }
@@ -682,7 +827,6 @@ class Gateway extends Base\Gateway
 
         assertTrue($content[Fields::MERCHANT_ID] === $gatewayPayment->getMerchantId());
         assertTrue($content[Fields::MERCHANT_TRAN_ID] === $gatewayPayment->getPaymentId());
-        assertTrue($content[Fields::BANK_RRN] === $gatewayPayment->getGatewayPaymentId());
 
         if ($status !== Status::SUCCESS)
         {
@@ -697,7 +841,11 @@ class Gateway extends Base\Gateway
         // Authorization was successful
         $this->updateGatewayPaymentResponse($gatewayPayment, $content);
 
-        return [];
+        return [
+            'acquirer' => [
+                Payment\Entity::VPA => $gatewayPayment->getVpa()
+            ]
+        ];
     }
 
     public function refund(array $input)
@@ -822,5 +970,4 @@ class Gateway extends Base\Gateway
 
         return (new $class)->generate($input);
     }
-
 }

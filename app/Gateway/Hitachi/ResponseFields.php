@@ -11,6 +11,7 @@ class ResponseFields
     const BANK_URL            = 'pURL';
     const ACCOUNT_ID          = 'pAccountId';
     const PAREQ               = 'pPAREQ';
+    const CARD_NUMBER         = 'pPAN';
     const PMD                 = 'pMD';
     const PARES               = 'PaRes';
     const MD                  = 'MD';

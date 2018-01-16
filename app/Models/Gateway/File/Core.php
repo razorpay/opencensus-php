@@ -75,9 +75,11 @@ class Core extends Base\Core
      * status to acknowledged and also fills in additional details like acknowledgement
      * timestamp and whether it is partially processed
      *
-     * @param  Entity $gatewayFile   gateway_file entity to acknowledge
-     * @param  array  $data          Additional data for ack request
-     * @return Entuty                Acknowledged gateway file entuty
+     * @param  Entity $gatewayFile gateway_file entity to acknowledge
+     * @param  array  $data        Additional data for ack request
+     *
+     * @return Entity Acknowledged gateway file entity
+     * @throws Exception\BadRequestValidationFailureException
      */
     public function acknowledge(Entity $gatewayFile, array $data): Entity
     {

@@ -11,19 +11,30 @@ use RZP\Models\Payment\Status as PaymentStatus;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
+    const COLUMN_PRN                 = 'prn';
     const COLUMN_PAYMENT_ID          = 'payment_id';
     const COLUMN_GATEWAY_PAYMENT_ID  = 'bank_reference';
-    const COLUMN_BANK_ACCOUNT_NUMBER = 'account_number';
     const COLUMN_PAYMENT_AMOUNT      = 'amount';
     const COLUMN_DATE                = 'date';
 
-    protected function getPaymentId($row)
+    protected function getPaymentId(array $row)
     {
         if (empty($row[self::COLUMN_PAYMENT_ID]) === false)
         {
             return trim($row[self::COLUMN_PAYMENT_ID]);
         }
 
+        return null;
+    }
+
+    protected function getReferenceNumber($row)
+    {
+        if (isset($row[self::COLUMN_GATEWAY_PAYMENT_ID]) === true)
+        {
+            $referenceNumber = $row[self::COLUMN_GATEWAY_PAYMENT_ID];
+
+            return $referenceNumber;
+        }
         return null;
     }
 
@@ -37,33 +48,16 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                                                            $status);
     }
 
-    protected function getGatewayPaymentAmount($row)
+    protected function getReconPaymentAmount($row)
     {
         $paymentAmount = floatval(trim($row[self::COLUMN_PAYMENT_AMOUNT])) * 100;
 
         // We are converting to int after casting to string as PHP randomly
         // returns wrong int values due to differing floating point precisions
         // So something like intval(31946.0) may give 31945 or 31946.
-        // Convering to string using number_format and then converting
+        // Converting to string using number_format and then converting
         // is a hack to avoid this issue
         return intval(number_format($paymentAmount, 2, '.', ''));
-    }
-
-    protected function getNbAccountDetails($row)
-    {
-        return [
-            Base\Reconciliate::ACCOUNT_NUMBER => $this->getDebitAccountNumber($row)
-        ];
-    }
-
-    protected function getDebitAccountNumber($row)
-    {
-        if (empty($row[self::COLUMN_BANK_ACCOUNT_NUMBER]) === false)
-        {
-            return trim($row[self::COLUMN_BANK_ACCOUNT_NUMBER]);
-        }
-
-        return null;
     }
 
     protected function shouldAttemptForceAuthorizeFailed()
@@ -76,5 +70,25 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return [
             'gateway_payment_id' => (string) $row[self::COLUMN_GATEWAY_PAYMENT_ID]
         ];
+    }
+
+    protected function validatePaymentAmountEqualsReconAmount(array $row)
+    {
+        if ($this->payment->getBaseAmount() !== $this->getReconPaymentAmount($row))
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'      => TraceCode::RECON_INFO_ALERT,
+                    'message'         => 'Payment amount mismatch',
+                    'expected_amount' => $this->payment->getBaseAmount(),
+                    'currency'        => $this->payment->getCurrency(),
+                    'row'             => $row,
+                    'gateway'         => get_called_class()
+                ]);
+
+            return false;
+        }
+
+        return true;
     }
 }

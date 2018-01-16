@@ -24,7 +24,6 @@ class PaymentCreateController extends Controller
             $this->trace->info(
                 TraceCode::PAYMENT_CREATE_ON_PUBLIC,
                 ['merchant_id' => $this->app['basicauth']->getMerchantId()]);
-
         }
 
         $ret = $this->createPayment();
@@ -78,16 +77,7 @@ class PaymentCreateController extends Controller
     {
         $input = Request::all();
 
-        //
-        // For payment creation via api and s2s call, if it's on private
-        // auth then we should return json response instead of redirecting
-        // to callback url.
-        //
-        if ((empty($input['callback_url']) === false) and
-            ($this->app['basicauth']->isPublicAuth()))
-        {
-            $this->app['rzp.merchant_callback_url'] = $input['callback_url'];
-        }
+        $this->setMerchantCallbackUrlIfApplicable($input);
 
         if ($this->app['basicauth']->isPrivateAuth())
         {
@@ -194,6 +184,8 @@ class PaymentCreateController extends Controller
 
             $retJson = true;
         }
+
+        $this->setMerchantCallbackUrlIfApplicable($input);
 
         $data = $this->service(E::PAYMENT)->processAndReturnFees($input);
 
@@ -338,7 +330,8 @@ class PaymentCreateController extends Controller
             {
                 return $this->returnMerchantFullRedirectView($data);
             }
-            else if ($data['type'] === 'async')
+            else if (($data['type'] === 'async') or
+                     ($data['type'] === 'intent'))
             {
                 return View::make('gateway.gatewayAsyncForm')
                            ->with('data', $data);
@@ -346,6 +339,11 @@ class PaymentCreateController extends Controller
             else if ($data['type'] === 'wallet')
             {
                 return View::make('gateway.gatewayWalletForm')
+                           ->with('data', $data);
+            }
+            else if ($data['type'] === 'emandate')
+            {
+                return View::make('emandate.form')
                            ->with('data', $data);
             }
             else
@@ -393,5 +391,19 @@ class PaymentCreateController extends Controller
                    ->with('data', $data)
                    ->with('input', $input)
                    ->with('url', $url);
+    }
+
+    protected function setMerchantCallbackUrlIfApplicable(array $input)
+    {
+        //
+        // For payment creation via api and s2s call, if it's on private
+        // auth then we should return json response instead of redirecting
+        // to callback url.
+        //
+        if ((empty($input['callback_url']) === false) and
+            ($this->app['basicauth']->isPublicAuth()))
+        {
+            $this->app['rzp.merchant_callback_url'] = $input['callback_url'];
+        }
     }
 }

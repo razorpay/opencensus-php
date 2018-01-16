@@ -17,10 +17,10 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     /**
      * Gets payment_id from row data
      *
-     * @param $row array
-     * @return $paymentId string
+     * @param array $row
+     * @return string|null
      */
-    protected function getPaymentId($row)
+    protected function getPaymentId(array $row)
     {
         $paymentId = $row[self::COLUMN_PAYMENT_ID];
 
@@ -37,9 +37,10 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      * is a hack to avoid this issue
      *
      * @param $row array
-     * @return $paymentAmount integer
+     *
+     * @return int $paymentAmount
      */
-    protected function getGatewayPaymentAmount($row)
+    protected function getReconPaymentAmount($row)
     {
         $paymentAmount = floatval($row[self::COLUMN_PAYMENT_AMOUNT]) * 100;
 

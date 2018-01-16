@@ -55,6 +55,8 @@ class CreateWallet extends Migration {
             $table->index('gateway_payment_id');
             $table->index('gateway_payment_id_2');
             $table->index('refund_id');
+            $table->index('gateway_refund_id');
+            $table->index('wallet');
         });
     }
 

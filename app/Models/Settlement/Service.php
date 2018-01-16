@@ -3,17 +3,14 @@
 namespace RZP\Models\Settlement;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
+
+use RZP\Exception;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base;
-use RZP\Models\FundTransfer\Axis;
-use RZP\Models\FundTransfer\Icici;
 use RZP\Models\FundTransfer\Kotak;
-use RZP\Models\Payment;
 use RZP\Models\Report\Types\BasicEntityReport;
 use RZP\Models\Settlement;
-use RZP\Models\Transaction;
-use RZP\Exception;
 
 class Service extends Base\Service
 {
@@ -104,7 +101,7 @@ class Service extends Base\Service
         return $settlements->toArrayPublic();
     }
 
-    public function getSettlementTransactions($id)
+    public function fetchSettlementTransactions($id)
     {
         $setl = $this->repo->settlement->findByPublicIdAndMerchant($id, $this->merchant);
 
@@ -113,14 +110,18 @@ class Service extends Base\Service
         return $txns->toArrayPublic();
     }
 
-    public function reconcileSettlements($input)
+    public function reconcileSettlements($input, string $channel)
     {
-        return (new Kotak\Service)->reconcileSettlements($input);
+        $reconNamepsace = 'RZP\\Models\\FundTransfer\\' . ucwords($channel). '\\Reconciliation\\FileProcessor';
+
+        return (new $reconNamepsace)->process($input);
     }
 
-    public function reconcileH2HSettlements($input)
+    public function reconcileH2HSettlements($input, string $channel)
     {
-        return (new Kotak\Service)->reconcileH2HSettlements($input);
+        $reconNamepsace = 'RZP\\Models\\FundTransfer\\' . ucwords($channel). '\\Reconciliation\\FileProcessor';
+
+        return (new $reconNamepsace)->process($input);
     }
 
     public function reconcileSettlementsInTestMode($input)
@@ -128,9 +129,13 @@ class Service extends Base\Service
         return (new Kotak\ReconciliationGenerator)->reconcileSettlementsInTestMode($input);
     }
 
-    public function generateSettlementReconciliation($input)
+    public function generateSettlementReconciliation($input, string $channel)
     {
-        return (new Kotak\Service)->generateSettlementReconciliation($input);
+        $reconGeneratorNamespace = '\\RZP\\Models\FundTransfer\\' . ucfirst($channel) . '\\ReconciliationGenerator';
+
+        $filename = (new $reconGeneratorNamespace)->generateReconcileFile($input);
+
+        return ['setlReconciliationFile' => $filename];
     }
 
     public function generateSettlementReturn($input)
@@ -150,12 +155,34 @@ class Service extends Base\Service
         return $report->getReport($input);
     }
 
+    public function updateChannelForMultipleSettlements($input)
+    {
+        $this->trace->info(
+            TraceCode::SETTLEMENTS_CHANNEL_BULK_UPDATE_REQUEST,
+            $input
+        );
+
+        $response = (new Core)->updateChannel($input);
+
+        return $response;
+    }
+
     /**
      * Initiates transfer from one Nodal account to another
      */
-    public function postInitiateTransfer($input): array
+    public function postInitiateTransfer(array $input): array
     {
         $response = (new Core)->postInitiateTransfer($input);
+
+        return $response;
+    }
+
+    /**
+     * Add beneficiary from one Nodal account to another
+     */
+    public function addBeneficiary(string $channel, array $input): array
+    {
+        $response = (new Core)->addBeneficiary($channel, $input);
 
         return $response;
     }

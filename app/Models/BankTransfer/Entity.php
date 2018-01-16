@@ -2,9 +2,10 @@
 
 namespace RZP\Models\BankTransfer;
 
+use Razorpay\IFSC\IFSC;
+
 use RZP\Constants;
 use RZP\Models\Base;
-use Razorpay\IFSC\IFSC;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
@@ -131,8 +132,8 @@ class Entity extends Base\PublicEntity
     ];
 
     protected static $modifiers = [
-        self::AMOUNT,
         self::DESCRIPTION,
+        self::PAYEE_ACCOUNT,
     ];
 
     protected $defaults = [
@@ -213,9 +214,9 @@ class Entity extends Base\PublicEntity
         $array[self::MODE] = strtoupper($array[self::MODE]);
     }
 
-    // -------------------------- Modifiers ------------------------------------
+    // -------------------------- Mutators -------------------------------------
 
-    public function modifyAmount(array & $input)
+    public function setAmountAttribute(float $amount)
     {
         //
         // If you're wondering why this is here, run "(int) (579.3 * 100)" in tinker
@@ -226,12 +227,12 @@ class Entity extends Base\PublicEntity
         // testBankTransferFloatingPointImprecision exists to check against this.
         //
 
-        if (isset($input[self::AMOUNT]) === true)
-        {
-            $input[self::AMOUNT] = (int) number_format(($input[self::AMOUNT] * 100), 0, '.', '');
-        }
+        $amount = (int) number_format(($amount * 100), 0, '.', '');
 
+        $this->attributes[self::AMOUNT] = $amount;
     }
+
+    // -------------------------- Modifiers ------------------------------------
 
     public function modifyDescription(array & $input)
     {
@@ -242,6 +243,20 @@ class Entity extends Base\PublicEntity
         if (isset($input[self::DESCRIPTION]) === true)
         {
             $input[self::DESCRIPTION] = substr($input[self::DESCRIPTION], 0, self::MAX_DESCRIPTION_LENGTH);
+        }
+    }
+
+    public function modifyPayeeAccount(array & $input)
+    {
+        //
+        // Removing spaces, since Kotak credits us even when
+        // customer enters R A Z O R P A Y 1 2 3. Can change to
+        // remove all whitespaces later, if required to do so.
+        //
+
+        if (isset($input[self::PAYEE_ACCOUNT]) === true)
+        {
+            $input[self::PAYEE_ACCOUNT] = str_replace(' ', '', $input[self::PAYEE_ACCOUNT]);
         }
     }
 
@@ -312,6 +327,11 @@ class Entity extends Base\PublicEntity
     public function getPaymentId()
     {
         return $this->getAttribute(self::PAYMENT_ID);
+    }
+
+    public function getPayerBankAccountId()
+    {
+        return $this->getAttribute(self::PAYER_BANK_ACCOUNT_ID);
     }
 
     public function isNotified()

@@ -111,4 +111,25 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_BATCH_PAYMENT_LINK_FILE_ERRORS,
         ],
     ],
+
+    'testProcessPaymentLinkBatchById' => [
+        'request' => [
+            'url'     => '/batches/batch_00000000000001/process',
+            'method'  => 'post',
+            'content' => [
+                'sms_notify'   => 1,
+                'email_notify' => 0,
+                'draft'        => 0,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'     => 'batch_00000000000001',
+                'entity' => 'batch',
+                'type'   => 'payment_link',
+                'status' => 'created',
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];

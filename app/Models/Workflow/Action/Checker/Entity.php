@@ -2,9 +2,6 @@
 
 namespace RZP\Models\Workflow\Action\Checker;
 
-use RZP\Constants\Table;
-use RZP\Models\Workflow\Action;
-use RZP\Models\Workflow\Action\State;
 use RZP\Models\Workflow\Base;
 
 class Entity extends Base\Entity
@@ -73,16 +70,6 @@ class Entity extends Base\Entity
     {
         return $this->belongsTo('RZP\Models\Admin\Admin\Entity');
     }
-
-    // public function step()
-    // {
-    //     return $this->belongsTo('RZP\Models\Workflow\Step\Entity');
-    // }
-
-    // public function action()
-    // {
-    //     return $this->belongsTo('RZP\Models\Workflow\Action\Entity');
-    // }
 
     /*
      * Getters

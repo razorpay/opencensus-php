@@ -296,4 +296,16 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_UNDER_DISPUTE_CANNOT_BE_REFUNDED
         ],
     ],
+
+    'testRefundIciciDebitCard' => [
+        'request' => [
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'refund',
+                'amount' => 50000,
+                'currency' => 'INR',
+            ],
+        ],
+    ],
 ];

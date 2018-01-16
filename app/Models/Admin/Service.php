@@ -3,6 +3,7 @@
 namespace RZP\Models\Admin;
 
 use Cache;
+
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Base\Common;
@@ -10,6 +11,8 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Constants\AdminFetch;
+use RZP\Models\GeoIP\Service as GeoIP;
+use RZP\Models\Base\QueryCache\Constants as QueryCacheConstants;
 
 class Service extends Base\Service
 {
@@ -30,9 +33,9 @@ class Service extends Base\Service
         ];
     }
 
-    public function fetchEntityById($entity, $id)
+    public function fetchEntityById(string $entity, string $id, array $input = []): array
     {
-        $entity = $this->fetchEntityByNameAndId($entity, $id);
+        $entity = $this->fetchEntityByNameAndId($entity, $id, $input);
 
         return $entity->toArrayAdmin();
     }
@@ -44,7 +47,10 @@ class Service extends Base\Service
         return $entity->toArrayAdmin($subMerchantFlag);
     }
 
-    protected function fetchEntityByNameAndId($entity, $id)
+    protected function fetchEntityByNameAndId(
+        string $entity,
+        string $id,
+        array $input = []): Base\PublicEntity
     {
         Entity::validateEntityOrFailPublic($entity);
 
@@ -57,7 +63,7 @@ class Service extends Base\Service
             $id = $entityClass::verifyIdAndSilentlyStripSign($id);
         }
 
-        $entity = $this->repo->$entity->findOrFailPublic($id);
+        $entity = $this->repo->$entity->findOrFailByPublicIdWithParams($id, $input);
 
         return $entity;
     }
@@ -124,7 +130,13 @@ class Service extends Base\Service
         return $result;
     }
 
-    protected function setConfigKey(string $key, string $newValue): array
+    /**
+     * @param string $key
+     * @param mixed $newValue
+     *
+     * @return array
+     */
+    protected function setConfigKey(string $key, $newValue): array
     {
         $oldValue = Cache::get($key);
 
@@ -151,6 +163,36 @@ class Service extends Base\Service
         foreach (ConfigKey::PUBLIC_KEYS as $key)
         {
             $result[$key] = Cache::get($key);
+        }
+
+        return $result;
+    }
+
+    public function getQueryCacheCounts(): array
+    {
+        $result = [];
+
+        $cachedEntities = [
+            Entity::KEY,
+        ];
+
+        $cacheEvents = [
+            QueryCacheConstants::CACHE_HITS,
+            QueryCacheConstants::CACHE_MISSES,
+            QueryCacheConstants::CACHE_WRITES,
+            QueryCacheConstants::CACHE_FLUSHES,
+        ];
+
+        foreach ($cachedEntities as $entity)
+        {
+            $result[$entity] = [];
+
+            foreach ($cacheEvents as $event)
+            {
+                $cacheKey = $entity . '_' . $event;
+
+                $result[$entity][$event] = (intval(Cache::get($cacheKey)) ?? 0);
+            }
         }
 
         return $result;
@@ -184,5 +226,10 @@ class Service extends Base\Service
         $count = $this->repo->$entity->updateTax($limit);
 
         return ['count' => $count];
+    }
+
+    public function updateGeoIps(array $input)
+    {
+        return (new GeoIP)->updateGeoIps($input);
     }
 }

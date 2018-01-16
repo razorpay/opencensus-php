@@ -320,11 +320,11 @@ class Core extends Base\Core
 
         $this->verifyFeatureAllowed(Feature\Constants::MARKETPLACE, $merchant);
 
-        $originPayment = null;
-
         $to = $this->repo
-                   ->merchant
-                   ->fetchByAccountIdAndMerchant($accountId, $merchant);
+                   ->account
+                   ->findByPublicIdAndMerchant($accountId, $merchant);
+
+        $originPayment = null;
 
         if (($source instanceof Payment\Entity) === true)
         {

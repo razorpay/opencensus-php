@@ -123,7 +123,12 @@ class Validator extends Base\Validator
     {
         if (in_array($gateway, self::$verifyInternalRefundGateways, true) === false)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_GATEWAY);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_GATEWAY,
+                'gateway',
+                [
+                    'gateway' => $gateway
+                ]);
         }
     }
 

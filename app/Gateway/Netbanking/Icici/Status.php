@@ -42,12 +42,12 @@ class Status
     /**
      * Indicates that the SI registration was a failure
      */
-    const SI_FAILED             = 'Failed';
+    const SI_FAILED             = 'failed';
 
     /**
      * This happens when verify indicates that no such payment was scheduled
      */
-    const PAYMENT_NOT_SCHEDULED = 'NoSuchPaymentScheduled';
+    const PAYMENT_NOT_SCHEDULED = 'nosuchpaymentscheduled';
 
     const SI_FAILED_STATUSES    = [self::SI_FAILED, self::PAYMENT_NOT_SCHEDULED];
 
@@ -69,6 +69,8 @@ class Status
 
     public static function isSiStatusFailure(string $status): bool
     {
+        $status = strtolower($status);
+
         return (in_array($status, self::SI_FAILED_STATUSES, true) === true);
     }
 }

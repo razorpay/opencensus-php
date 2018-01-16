@@ -22,6 +22,22 @@ class EventServiceProvider extends ServiceProvider
     protected $listen = [
         'RZP\Events\AuditLogEntry' => [
             'RZP\Listeners\AuditLogListener',
+        ],
+
+        'Illuminate\Cache\Events\CacheHit' => [
+            'RZP\Listeners\QueryCacheEventListener',
+        ],
+
+        'Illuminate\Cache\Events\CacheMissed' => [
+            'RZP\Listeners\QueryCacheEventListener',
+        ],
+
+        'Illuminate\Cache\Events\KeyWritten' => [
+            'RZP\Listeners\QueryCacheEventListener',
+        ],
+
+        'Illuminate\Cache\Events\KeyForgotten' => [
+            'RZP\Listeners\QueryCacheEventListener',
         ]
     ];
 

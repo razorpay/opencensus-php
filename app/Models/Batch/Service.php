@@ -65,11 +65,11 @@ class Service extends Base\Service
         return $batches->toArrayPublic();
     }
 
-    public function processBatch(string $id): array
+    public function processBatch(string $id, array $input = []): array
     {
         $batch = $this->repo->batch->findByPublicId($id);
 
-        $batch = (new Core)->processBatchAsync($batch);
+        $batch = (new Core)->processBatchAsync($batch, $input);
 
         return $batch->toArrayPublic();
     }

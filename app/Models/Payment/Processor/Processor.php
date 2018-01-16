@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment\Processor;
 
 use App;
+use Route;
 use Carbon\Carbon;
 use RZP\Base\RepositoryManager;
 use RZP\Constants\Mode;
@@ -20,6 +21,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Plan\Subscription;
+use RZP\Models\Merchant\Methods;
 use RZP\Models\Plan\Subscription\Addon;
 use RZP\Models\Payment\Processor\Notify;
 use RZP\Models\Payment\Status;
@@ -47,7 +49,7 @@ class Processor
 
     /**
      * Callback urls can be hit multiple times by customers.
-     * WIthin certain duration x minutes, we will return payment
+     * Within certain duration x minutes, we will return payment
      * success or failed when the url is hit again.
      * After that duration, we will simply throw
      * BAD_REQUEST_PAYMENT_ALREADY_PROCESSED payment_processed error.
@@ -79,6 +81,11 @@ class Processor
      * failed payment
      */
     const ASYNC_PAYMENT_TIMEOUT = 300;
+
+    /**
+     * Default UPI collect request expiry time in minutes.
+     */
+    const UPI_COLLECT_EXPIRY = 5;
 
     /**
      * @var Merchant\Entity
@@ -165,16 +172,7 @@ class Processor
 
     public function process(array $input): array
     {
-        if (isset($input['method']) === false)
-        {
-            $input['method'] = Payment\Method::CARD;
-        }
-        else if (empty($input['method']) === true)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Please provide appropriate payment method',
-                Payment\Entity::METHOD);
-        }
+        $this->setMethodForInput($input);
 
         $payment = $this->buildPaymentEntity($input);
 
@@ -198,10 +196,119 @@ class Processor
         return $this->authorize($payment, $input);
     }
 
-    protected function preProcessPaymentInputs(array $input, $payment)
+    protected function preProcessPaymentInputs(array $input, Payment\Entity $payment)
+    {
+        $coproto = $this->preProcessPaymentInputsForEmandate($input, $payment);
+
+        if ($coproto === null)
+        {
+            $coproto = $this->preProcessPaymentInputsForWallet($input, $payment);
+        }
+
+        return $coproto;
+    }
+
+    protected function preProcessPaymentInputsForEmandate(array $input, Payment\Entity $payment)
+    {
+        //
+        // We don't want to do this coproto
+        // stuff for second recurring payments.
+        //
+        // We don't want to ask the merchant to send bank_account
+        // details and auth_type for second recurring payments.
+        // bank_account details are filled into the payment create
+        // input automatically using the token.
+        // Ideally, even the bank_account details are not really needed
+        // to be filled in the input. But, we are filling it anyway.
+        // auth_type cannot be filled using the token or any other details
+        // in the payment create input. But, we don't need auth_type for
+        // second recurring payments. So, it's okay.
+        //
+
+        $currentRouteName = $this->route->getCurrentRouteName();
+
+        if ($currentRouteName === 'payment_create_recurring')
+        {
+            return null;
+        }
+
+        if ($payment->isEmandate() === false)
+        {
+            return null;
+        }
+
+        //
+        // We need this flow only if either bank_account or auth_type is missing.
+        // TODO: Handle for aadhaar also
+        //
+        if ((empty($input[Payment\Entity::BANK_ACCOUNT]) === false) and
+            (empty($payment->getAuthType()) === false))
+        {
+            return null;
+        }
+
+        $methods = [];
+
+        (new Methods\Core)->addRecurringEmandateToMethodsIfApplicable($this->merchant, $methods);
+
+        //
+        // This can happen when the required features are not enabled
+        // or when there's not a single bank for any auth type.
+        //
+        if (empty($methods) === true)
+        {
+            return null;
+        }
+
+        $bank = $input[Payment\Entity::BANK];
+
+        //
+        // This case should ideally never come up because the bank
+        // passed by the client would be based on the methods API only.
+        // Even here, we are using the methods API. If the bank did
+        // not come up in the methods API now, then most likely someone
+        // is tampering with the request on the frontend.
+        //
+        if (isset($methods['emandate'][$bank]) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_BANK_FOR_EMANDATE,
+                Payment\Entity::BANK,
+                [
+                    'bank' => $bank
+                ]);
+        }
+
+        $coproto = [
+            'type'    => 'emandate',
+            'request' => [
+                'url'     => $this->route->getUrlWithPublicAuthInQueryParam($currentRouteName),
+                'method'  => 'POST',
+                'content' => [
+                    'input' => $input,
+                    'bank_details' => $methods['emandate'][$input[Payment\Entity::BANK]],
+                ]
+            ],
+            'version' => '1',
+        ];
+
+        return $coproto;
+
+    }
+
+    protected function preProcessPaymentInputsForWallet(array $input, Payment\Entity $payment)
     {
         $coproto = null;
 
+        //
+        // TODO: This needs to be fixed since we use dummy phone and email
+        // in subscriptions subsequent charges too. We could be using
+        // these values at other places also.
+        // Also, need to add this in S2S wallet docs.
+        // We currently return back JSON response.
+        // Actually, this won't even work for S2S since we remove
+        // `content` and `missing` attributes completely before returning
+        //
         if (($payment->isWallet() === true) and
             ((($payment->merchant->isPhoneOptional() === true) and
               ($payment->getContact() === Payment\Entity::DUMMY_PHONE)) or
@@ -279,6 +386,78 @@ class Processor
         $input['fee'] = $fee;
 
         return $data;
+    }
+
+    protected function setMethodForInput(& $input)
+    {
+        //
+        // We use isset and not `empty` because if we receive
+        // the key `method` in the input, but with empty string,
+        // we want to let the validator throw the exception.
+        // If the key itself is not present, we will set the method
+        // to `card` or token's method.
+        //
+        if (isset($input[Payment\Entity::METHOD]) === true)
+        {
+            return;
+        }
+
+        if ((isset($input[Payment\Entity::TOKEN]) === true) and
+            (isset($input[Payment\Entity::CUSTOMER_ID]) === true))
+        {
+            $customerId = $input[Payment\Entity::CUSTOMER_ID];
+            $tokenId = $input[Payment\Entity::TOKEN];
+
+            Customer\Entity::verifyIdAndStripSign($customerId);
+
+            //
+            // TokenID can either be the token ID or the
+            // `token` attribute of the token entity.
+            //
+            Customer\Token\Entity::verifyIdAndSilentlyStripSign($tokenId);
+
+            $token = (new Customer\Token\Core)->getByTokenIdAndCustomerId($tokenId, $customerId);
+
+            //
+            // It cannot be global token because customer_id is also being sent.
+            // If customer_id is being sent, it has to be local customer.
+            // If it's local customer, the token being sent should also be local
+            // token. If it's local token, the token's merchant should match the
+            // payment request's merchant.
+            //
+            if ($token->getMerchantId() !== $this->merchant->getId())
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_ID,
+                    'token');
+            }
+
+            $tokenMethod = $token->getMethod();
+
+            //
+            // TODO: Remove this after we move netbanking recurring to emandate method
+            // We have to start storing method as `emandate` in token entity for this.
+            //
+            if ($tokenMethod === Payment\Method::NETBANKING)
+            {
+                $tokenMethod = Payment\Method::EMANDATE;
+            }
+
+            $input[Payment\Entity::METHOD] = $tokenMethod;
+
+            if ($tokenMethod === Payment\Method::EMANDATE)
+            {
+                $input[Payment\Entity::BANK] = $token->getBank();
+            }
+            else if ($tokenMethod === Payment\Method::WALLET)
+            {
+                $input[Payment\Entity::WALLET] = $token->getWallet();
+            }
+        }
+        else
+        {
+            $input[Payment\Entity::METHOD] = Payment\Method::CARD;
+        }
     }
 
     protected function checkSignature($input, $payment)
@@ -673,7 +852,7 @@ class Processor
         {
             $notifier = new Notify($this->payment);
 
-            $notifier = $notifier->trigger(Payment\Event::FAILED);
+            $notifier->trigger(Payment\Event::FAILED);
         }
     }
 
@@ -812,7 +991,6 @@ class Processor
 
             throw $ex;
         }
-
     }
 
     protected function createPaymentEntity(array $input, Payment\Entity $payment = null): Payment\Entity
@@ -822,6 +1000,14 @@ class Processor
         if ($payment == null)
         {
             $payment = $this->buildPaymentEntity($input);
+        }
+
+        //
+        // Temporary only. To be removed later.
+        //
+        if ($payment->getMethod() === Payment\Method::EMANDATE)
+        {
+            $payment->setMethod(Payment\Method::NETBANKING);
         }
 
         // $this->segment->trackPayment($payment, TraceCode::PAYMENT_NEW_REQUEST);
@@ -990,8 +1176,8 @@ class Processor
      */
     protected function verifyProvidedFee(Payment\Entity $payment, array $input)
     {
-        // This is not needed because FeeCalculater:calculateFee()
-        // calculates the actual amount (amount - fee) in case of feebearer merchant
+        // This is not needed because FeeCalculator:calculateFee()
+        // calculates the actual amount (amount - fee) in case of fee bearer merchant
         // $input['amount'] = $payment->getAmount() - $payment->getFee();
 
         // Re-calculates fees on the amount, using a dummy payment creation flow.
@@ -1092,8 +1278,25 @@ class Processor
 
     protected function validateBankTransferDetailsIfApplicable(Payment\Entity $payment)
     {
-        if (($payment->isBankTransfer() === true) and
-            ($this->app['basicauth']->isAppAuth() === false))
+        if ($payment->isBankTransfer() === false)
+        {
+            return;
+        }
+
+        //
+        // Bank transfers are normally created by VA providers,
+        // i.e. Kotak and Yesbank, which act as apps and use appAuth.
+        //
+        // They can also be inserted via Dashboard (also an app)
+        // or in bulk via the bank transfer batch job (run via cli)
+        //
+        if ($this->app->runningInQueue() === true)
+        {
+            return;
+        }
+
+        // TODO: Following is not testable in cases. Ref: BankTransferBatchTest
+        if ($this->app['basicauth']->isAppAuth() === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid payment method given: ' . $payment->getMethod());
@@ -1607,7 +1810,17 @@ class Processor
         return $merchant->methods;
     }
 
-    protected function shouldHitGateway(Payment\Entity $payment)
+    protected function shouldHitGatewayForRefund(Payment\Entity $payment): bool
+    {
+        if ($payment->isBankTransfer() === true)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function shouldHitGatewayForPayment(Payment\Entity $payment): bool
     {
         if ($payment->isFileBasedEmandateDebitPayment() === true)
         {
@@ -1619,6 +1832,25 @@ class Processor
         }
 
         if ($payment->isBankTransfer() === true)
+        {
+            return false;
+        }
+
+        if ($payment->getGateway() === Payment\Gateway::BHARAT_QR)
+        {
+            return false;
+        }
+
+        //
+        // TODO: route check to be changed after refactor
+        //
+        // If this is hit while creating a payment, gateway would not have been set yet.
+        // Hence, gateway check in the previous block would not work.
+        // This function is hit in the refund flow also, in which the gateway
+        // would have been set already.
+        // The gateway would be set AFTER the payment is created and processed.
+        //
+        if (Route::currentRouteName() === 'gateway_payment_callback_bharatqr')
         {
             return false;
         }

@@ -15,12 +15,19 @@ class ProviderCode
      *
      * These are all the providers we know of
      * This appears after @ in the VPA
+     *
+     * You can run php artisan upi:verify_providers
+     * on the command line to check against
+     * the spreadsheet
      */
     const AIRTEL            = 'airtel';
     const ALLBANK           = 'allbank';
     const ANDB              = 'andb';
+    // Ola
+    const AXISGO            = 'axisgo';
     const AXISBANK          = 'axisbank';
     const BARODAMPAY        = 'barodampay';
+    const BOI               = 'boi';
     const CENTRALBANK       = 'centralbank';
     const CNRB              = 'cnrb';
     const CSBPAY            = 'csbpay';
@@ -38,6 +45,7 @@ class ProviderCode
     const INDIANBANK        = 'indianbank';
     const INDUS             = 'indus';
     const IOB               = 'iob';
+    const JSB               = 'jsb';
     const JKB               = 'jkb';
     const KAYPAY            = 'kaypay';
     const KBL               = 'kbl';
@@ -50,6 +58,7 @@ class ProviderCode
     const OKICICI           = 'okicici';
     const OKHDFCBANK        = 'okhdfcbank';
     const OKAXIS            = 'okaxis';
+    const PAYTM             = 'paytm';
     const PINGPAY           = 'pingpay';
     const PNB               = 'pnb';
     const PSB               = 'psb';
@@ -81,7 +90,9 @@ class ProviderCode
         self::ALLBANK           => IFSC::ALLA,
         self::ANDB              => IFSC::ANDB,
         self::AXISBANK          => IFSC::UTIB,
+        self::AXISGO            => IFSC::UTIB,
         self::BARODAMPAY        => IFSC::BARB,
+        self::BOI               => IFSC::BKID,
         self::CENTRALBANK       => IFSC::CBIN,
         self::CNRB              => IFSC::CNRB,
         self::CSBPAY            => IFSC::CSBK,
@@ -99,6 +110,7 @@ class ProviderCode
         self::INDUS             => IFSC::INDB,
         self::INDIANBANK        => IFSC::IDIB,
         self::IOB               => IFSC::IOBA,
+        self::JSB               => IFSC::JSBP,
         self::JKB               => IFSC::JAKA,
         self::KAYPAY            => IFSC::KKBK,
         self::KBL               => IFSC::KARB,
@@ -111,6 +123,7 @@ class ProviderCode
         self::OKICICI           => IFSC::ICIC,
         self::OKHDFCBANK        => IFSC::HDFC,
         self::OKAXIS            => IFSC::UTIB,
+        self::PAYTM             => IFSC::PYTM,
         self::PINGPAY           => IFSC::UTIB,
         self::PNB               => IFSC::PUNB,
         self::PSB               => IFSC::PSIB,

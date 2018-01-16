@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Dispute;
 
 use Mail;
+use RZP\Models\Dispute\Phase;
 use RZP\Models\Dispute\Entity;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -192,6 +193,13 @@ class DisputeTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testDisputeCreateNonTransactionalPhaseDeductAtOnset()
+    {
+        $this->updateCreateTestData();
+
+        $this->startTest();
+    }
+
     public function testDisputeCreateWithInvalidMerchantEmail()
     {
         $this->updateCreateTestData();
@@ -322,7 +330,6 @@ class DisputeTest extends TestCase
 
     public function testDisputeReversalWinLogic()
     {
-        // Input params while creating
         $input = [
             'amount'                => 10100,
             'deduct_at_onset'       => 1,
@@ -352,7 +359,6 @@ class DisputeTest extends TestCase
 
     public function testDisputeReversalLostLogic()
     {
-        // Input params while creating
         $input = [
             'amount'                => 10100,
             'deduct_at_onset'       => 1,
@@ -438,7 +444,6 @@ class DisputeTest extends TestCase
 
     public function testDisputeLostPartiallyAccepted()
     {
-        // Input params while creating
         $input = [
             'amount'                => 10000,
             'deduct_at_onset'       => 1,
@@ -471,7 +476,6 @@ class DisputeTest extends TestCase
 
     public function testDisputeLostPartiallyAcceptedForNoOnsetDeduct()
     {
-        // Input params while creating
         $input = [
             'amount'                => 10000,
             'deduct_at_onset'       => 0,
@@ -503,7 +507,6 @@ class DisputeTest extends TestCase
 
     public function testDisputeLostPartiallyAcceptedWithInvalidAcceptedAmount()
     {
-        // Input params while creating
         $input = [
             'amount'                => 10000,
             'deduct_at_onset'       => 0,
@@ -517,7 +520,6 @@ class DisputeTest extends TestCase
 
     public function testDisputeLostPartiallyAcceptedWithZeroAcceptedAmount()
     {
-        // Input params while creating
         $input = [
             'amount'                => 10000,
             'deduct_at_onset'       => 0,
@@ -527,6 +529,46 @@ class DisputeTest extends TestCase
         $testdata['request']['content'][Entity::ACCEPTED_AMOUNT] = 0;
 
         $this->startTest($testdata);
+    }
+
+    public function testNonTransactionalDisputeInvalidClose()
+    {
+        $input = [
+            'amount'                => 10000,
+            'deduct_at_onset'       => 0,
+            'phase'                 => Phase::FRAUD,
+        ];
+        $testdata = $this->updateEditTestData($input);
+
+        $this->startTest($testdata);
+    }
+
+    public function testDisputeFetchForMerchant()
+    {
+        $this->ba->proxyAuth();
+
+        $disputes = $this->fixtures->times(2)->create('dispute');
+
+        $testData = $this->updateFetchTestData();
+
+        $content = $this->runRequestResponseFlow($testData);
+
+        $this->checkDisputeFetchForMerchant($disputes, $content);
+
+        $this->ba->privateAuth();
+
+        $content = $this->runRequestResponseFlow($testData);
+
+        $this->checkDisputeFetchForMerchant($disputes, $content);
+    }
+
+    protected function checkDisputeFetchForMerchant(array $disputes, array $content)
+    {
+        $this->assertEquals(2, $content['count']);
+        $this->assertEquals($disputes[0]->getId(), Entity::stripDefaultSign($content['items'][1]['id']));
+        $this->assertEquals($disputes[1]->getId(), Entity::stripDefaultSign($content['items'][0]['id']));
+        $this->assertEquals($disputes[0]->payment->getId(), $content['items'][1]['payment_id']);
+        $this->assertEquals($disputes[1]->payment->getId(), $content['items'][0]['payment_id']);
     }
 
     // ---------------------------- helper methods-------------------------------
@@ -568,6 +610,17 @@ class DisputeTest extends TestCase
         $testData = &$this->testData[$name];
 
         $testData['request']['url'] = '/disputes/' . $dispute->getPublicId();
+
+        return $testData;
+    }
+
+    protected function updateFetchTestData(): array
+    {
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+
+        $name = $trace[1]['function'];
+
+        $testData = &$this->testData[$name];
 
         return $testData;
     }

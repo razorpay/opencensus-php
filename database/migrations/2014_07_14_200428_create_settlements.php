@@ -11,7 +11,6 @@ use RZP\Models\Merchant;
 
 class CreateSettlements extends Migration
 {
-
     /**
      * Run the migrations.
      *
@@ -83,6 +82,7 @@ class CreateSettlements extends Migration
             $table->index(Settlement::CREATED_AT);
 
             $table->index(Settlement::UPDATED_AT);
+            $table->index([Settlement::MERCHANT_ID, Settlement::CREATED_AT]);
 
             $table->foreign(Settlement::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)

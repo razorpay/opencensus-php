@@ -127,8 +127,9 @@ class Base extends BaseProcessor
             throw new GatewayFileException(
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_FILE,
                 [
-                    'id' => $this->gatewayFile->getId()
-                ]);
+                    'id'        => $this->gatewayFile->getId(),
+                ],
+                $e);
         }
     }
 

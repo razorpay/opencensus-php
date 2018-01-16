@@ -163,7 +163,7 @@ class DatabaseSeeder extends Seeder
                     'created_at'    => $currentTime,
                     'updated_at'    => $currentTime,
                     'transaction_report_email' => 'nodal@razorpay.com',
-                    'settlement_schedule' => 3,
+                    'channel'       => 'kotak',
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
                     'org_id'        => self::RAZORPAY_ORG_ID,
@@ -231,7 +231,7 @@ class DatabaseSeeder extends Seeder
                     'created_at'    => $currentTime,
                     'updated_at'    => $currentTime,
                     'transaction_report_email' => 'nodal@razorpay.com',
-                    'settlement_schedule' => 3,
+                    'channel'       => 'kotak',
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
                     'org_id'        => self::RAZORPAY_ORG_ID,
@@ -265,7 +265,7 @@ class DatabaseSeeder extends Seeder
                     'created_at'    => $currentTime,
                     'updated_at'    => $currentTime,
                     'transaction_report_email' => 'fees@razorpay.com',
-                    'settlement_schedule' => 3,
+                    'channel'       => 'kotak',
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
                     'org_id'        => self::RAZORPAY_ORG_ID,
@@ -301,7 +301,7 @@ class DatabaseSeeder extends Seeder
                     'created_at'    => $currentTime,
                     'updated_at'    => $currentTime,
                     'transaction_report_email' => 'test@razorpay.com',
-                    'settlement_schedule' => 3,
+                    'channel'       => 'kotak',
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
                     'billing_label' => 'Test Account',
@@ -379,7 +379,7 @@ class DatabaseSeeder extends Seeder
                     'created_at'    => $currentTime,
                     'updated_at'    => $currentTime,
                     'transaction_report_email' => 'shared@razorpay.com',
-                    'settlement_schedule' => 3,
+                    'channel'       => 'kotak',
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
                     'org_id'        => self::RAZORPAY_ORG_ID,
@@ -415,7 +415,7 @@ class DatabaseSeeder extends Seeder
                     'created_at'    => $currentTime,
                     'updated_at'    => $currentTime,
                     'transaction_report_email' => 'demo@razorpay.com',
-                    'settlement_schedule' => 3,
+                    'channel'       => 'kotak',
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
                     'org_id'        => self::RAZORPAY_ORG_ID,
@@ -487,6 +487,7 @@ class DatabaseSeeder extends Seeder
                     'banks'         => '[]',
                     'disabled_banks'=> '[]',
                     'paytm'         => '1',
+                    'aeps'          => '1',
                     'olamoney'      => '1',
                     'freecharge'    => '1',
                     'mobikwik'      => '1',
@@ -509,6 +510,7 @@ class DatabaseSeeder extends Seeder
                     'banks'         => '[]',
                     'disabled_banks'=> '[]',
                     'paytm'         => '1',
+                    'aeps'          => '1',
                     'mobikwik'      => '1',
                     'olamoney'      => '1',
                     'freecharge'    => '1',
@@ -1096,6 +1098,7 @@ class DatabaseSeeder extends Seeder
         $this->createCybersourceTerminals();
         $this->createHitachiGatewayTerminals();
         $this->createBilldeskGatewayTerminals();
+        $this->createNetbankingBobTerminals();
         $this->createNetbankingHdfcTerminals();
         $this->createNetbankingCorporationTerminals();
         $this->createMobikwikTerminals();
@@ -1119,6 +1122,7 @@ class DatabaseSeeder extends Seeder
         $this->createVodafoneMpesaTerminal();
         $this->createNetbankingRblTerminal();
         $this->createEbsTerminal();
+        $this->createAepsTerminal();
     }
 
     protected function createNetbankingCorporationTerminals()
@@ -1185,6 +1189,22 @@ class DatabaseSeeder extends Seeder
                 'updated_at'            => time(),
                 )
             );
+    }
+
+    protected function createNetbankingBobTerminals()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                    => '22BOfBaroda2m8',
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::NETBANKING_BOB,
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'test_merchant_netbanking_bob',
+                'gateway_secure_secret' => Crypt::encrypt('test_account_netbanking_bob_hash_secret'),
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            )
+        );
     }
 
     protected function createCybersourceTerminals()
@@ -1459,6 +1479,21 @@ class DatabaseSeeder extends Seeder
                 'updated_at'            => time(),
             ]
         );
+
+        DB::table(Table::TERMINAL)->insert(
+            [
+                    'id'                        => Terminal\Shared::NETBANKING_AXIS_REC_TERMINAL,
+                    'merchant_id'               => Account::TEST_ACCOUNT,
+                    'gateway'                   => Gateway::NETBANKING_AXIS,
+                    'card'                      => '0',
+                    'netbanking'                => '1',
+                    'gateway_merchant_id'       => 'test_merchant_netbanking_axis_recurring',
+                    'recurring'                 => 1,
+                    'created_at'                => time(),
+                    'updated_at'                => time(),
+                    'type'                      => 6,
+            ]
+        );
     }
 
     protected function createNetbankingFederalTerminal()
@@ -1614,6 +1649,18 @@ class DatabaseSeeder extends Seeder
             'gateway_terminal_id'       => '1234',
             'gateway_merchant_id2'      => 'razorpay@hdfcbank',
             'gateway_terminal_password' => Crypt::encrypt('demo_account_upi_mindgate_terminal_pass'),
+            'created_at'                => time(),
+            'updated_at'                => time(),
+        ]);
+
+        DB::table(Table::TERMINAL)->insert([
+            'id'                        => Terminal\Shared::UPI_MINDGATE_SBI_RAZORPAY_TERMINAL,
+            'merchant_id'               => Account::SHARED_ACCOUNT,
+            'gateway'                   => Gateway::UPI_SBI,
+            'card'                      => '0',
+            'netbanking'                => '0',
+            'upi'                       => '1',
+            'gateway_merchant_id2'      => 'razorpay@sbibank',
             'created_at'                => time(),
             'updated_at'                => time(),
         ]);
@@ -1896,6 +1943,26 @@ class DatabaseSeeder extends Seeder
                 'card'                  => '0',
                 'netbanking'            => '1',
                 'recurring'             => '0',
+                'gateway_merchant_id'   => 'abcd',
+                'gateway_secure_secret' => 'secret',
+                'created_at'            => time(),
+                'updated_at'            => time()
+            ]
+        );
+    }
+
+    protected function createAepsTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                    => Terminal\Shared::AEPS_ICICI_RAZORPAY_TERMINAL,
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::AEPS_ICICI,
+                'gateway_acquirer'      => 'icic',
+                'card'                  => '0',
+                'netbanking'            => '0',
+                'recurring'             => '0',
+                'aeps'                  => '1',
                 'gateway_merchant_id'   => 'abcd',
                 'gateway_secure_secret' => 'secret',
                 'created_at'            => time(),

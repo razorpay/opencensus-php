@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Batch;
 
+use RZP\Exception;
+
 class Status
 {
     //
@@ -27,4 +29,19 @@ class Status
     //
     const SUCCESS             = 'success';
     const FAILURE             = 'failure';
+
+    const BATCH_STATUSES = [
+        self::CREATED,
+        self::PARTIALLY_PROCESSED,
+        self::FAILED,
+        self::PROCESSED,
+    ];
+
+    public static function validateStatus(string $type)
+    {
+        if (in_array($type, self::BATCH_STATUSES, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException('Not a valid type: ' . $type);
+        }
+    }
 }

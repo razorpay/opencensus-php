@@ -25,14 +25,14 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     const GATEWAY_PAYMENT_DATE_FORMAT = 'm/d/Y H:i:s';
 
-    protected function getPaymentId($row)
+    protected function getPaymentId(array $row)
     {
         $paymentId = $row[self::COLUMN_PAYMENT_ID];
 
         return $paymentId;
     }
 
-    protected function getGatewayPaymentAmount($row)
+    protected function getReconPaymentAmount($row)
     {
         $paymentAmount = floatval($row[self::COLUMN_PAYMENT_AMOUNT]) * 100;
 
@@ -75,13 +75,14 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function validatePaymentAmountEqualsReconAmount(array $row)
     {
-        if ($this->payment->getAmount() !== $this->getGatewayPaymentAmount($row))
+        if ($this->payment->getBaseAmount() !== $this->getReconPaymentAmount($row))
         {
             $this->messenger->raiseReconAlert(
                 [
                     'trace_code'      => TraceCode::RECON_INFO_ALERT,
                     'message'         => 'Payment amount mismatch',
-                    'expected_amount' => $this->payment->getAmount(),
+                    'expected_amount' => $this->payment->getBaseAmount(),
+                    'currency'        => $this->payment->getCurrency(),
                     'row'             => $row,
                     'gateway'         => get_called_class()
                 ]);
@@ -99,7 +100,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     ->findSuccessfulPaymentsByPaymentIdAndAction($paymentId, Action::AUTHORIZE);
     }
 
-    protected function forceAuthorizeFailed($row)
+    protected function forceAuthorizeFailed(array $row)
     {
         $paymentId = $this->payment->getPublicId();
 

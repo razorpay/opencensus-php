@@ -121,6 +121,29 @@ class Luhn
     }
 
     /**
+     * This is done in case we want to append the
+     * luhn digit at any random place to make it
+     * valid luhn
+     *
+     * @param string $part1
+     * @param string $part2
+     * @param string $base
+     *
+     * @return string
+     */
+    public static function computeCheckDigitWithPart(string $part1, string $part2, int $base = 10)
+    {
+        $checkDigit = self::checksum($part1 . '0' . $part2, $base);
+
+        // For 0, it should be zero. For others, it should be base - digit.
+        $checkDigit = ($base - $checkDigit) % $base;
+
+        $checkDigit = self::BASE[$checkDigit];
+
+        return $checkDigit;
+    }
+
+    /**
      * @param $partialNumber
      * @return string
      */

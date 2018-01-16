@@ -38,7 +38,7 @@ class NetbankingHdfcEMandateTest extends TestCase
         $this->mockTokenex();
     }
 
-     /**
+    /**
       * The following is a test case for the E Mandate Registration payment for HDFC.
       * The HDFC E Mandate Registration payment is just a normal authorization payment.
       */
@@ -58,7 +58,7 @@ class NetbankingHdfcEMandateTest extends TestCase
 
         $this->assertEquals($payment[Payment\Entity::TOKEN_ID], $token[Token\Entity::ID]);
 
-        $this->assertEquals($this->payment['account_number'], $token[Token\Entity::ACCOUNT_NUMBER]);
+        $this->assertEquals($this->payment['bank_account']['account_number'], $token[Token\Entity::ACCOUNT_NUMBER]);
 
         $this->assertTestResponse($token, 'matchInitiatedToken');
     }
@@ -179,26 +179,7 @@ class NetbankingHdfcEMandateTest extends TestCase
 
     public function testEMandateDebit()
     {
-        $payment = $this->payment;
-
-        $this->doAuthPayment($payment);
-
-        $paymentEntity = $this->getLastEntity('payment', true);
-
-        $tokenId = $paymentEntity[Payment\Entity::TOKEN_ID];
-
-        $this->fixtures->edit(
-            'token',
-            $tokenId,
-            [
-                Token\Entity::RECURRING => 1,
-                Token\Entity::RECURRING_STATUS => Token\RecurringStatus::CONFIRMED
-            ]);
-
-        $payment[Payment\Entity::TOKEN] = $tokenId;
-
-        // Second recurring payment request
-        $this->doS2SRecurringPayment($payment);
+        $this->doDebitPayment();
 
         $debitPayment = $this->getLastEntity('payment', true);
 
@@ -268,26 +249,7 @@ class NetbankingHdfcEMandateTest extends TestCase
      */
     public function testEMandateDebitOnRetry()
     {
-        $payment = $this->payment;
-
-        $this->doAuthPayment($payment);
-
-        $paymentEntity = $this->getLastEntity('payment', true);
-
-        $tokenId = $paymentEntity[Payment\Entity::TOKEN_ID];
-
-        $this->fixtures->edit(
-            'token',
-            $tokenId,
-            [
-                Token\Entity::RECURRING => 1,
-                Token\Entity::RECURRING_STATUS => Token\RecurringStatus::CONFIRMED
-            ]);
-
-        $payment[Payment\Entity::TOKEN] = $tokenId;
-
-        // Second recurring payment request
-        $paymentId = $this->doS2SRecurringPayment($payment);
+        $this->doDebitPayment();
 
         $debitPayment = $this->getLastEntity('payment', true);
 
@@ -356,11 +318,64 @@ class NetbankingHdfcEMandateTest extends TestCase
         });
     }
 
+    public function testRefundDebitPayment()
+    {
+        $this->doDebitPayment();
+
+        $debitPayment = $this->getLastEntity('payment', true);
+
+        $this->authorizeEmandateFileBasedDebitPayment($debitPayment);
+
+        $this->capturePayment($debitPayment['id'], $debitPayment['amount']);
+
+        $this->refundPayment($debitPayment['id']);
+
+        $debitPayment = $this->getLastEntity('payment', true);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals($debitPayment['id'], $refund['payment_id']);
+        $this->assertEquals($debitPayment['amount_refunded'], $refund['amount']);
+        $this->assertEquals($debitPayment['amount'], $refund['amount']);
+
+        $this->assertEquals(Payment\Status::REFUNDED, $debitPayment['status']);
+    }
+
+    protected function doDebitPayment(): array
+    {
+        $payment = $this->payment;
+
+        $this->doAuthPayment($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $tokenId = $paymentEntity[Payment\Entity::TOKEN_ID];
+
+        $this->fixtures->edit(
+            'token',
+            $tokenId,
+            [
+                Token\Entity::RECURRING => 1,
+                Token\Entity::RECURRING_STATUS => Token\RecurringStatus::CONFIRMED
+            ]);
+
+        $payment[Payment\Entity::TOKEN] = $tokenId;
+
+        // Second recurring payment request
+        $content = $this->doS2SRecurringPayment($payment);
+
+        return $content;
+    }
+
     protected function getNetbankingHdfcEmandateArray(): array
     {
-        $payment = $this->getNetbankingRecurringPaymentArray('HDFC');
+        $payment = $this->getEmandateNetbankingRecurringPaymentArray('HDFC');
 
-        $payment['account_number'] = '0123456789';
+        $payment['bank_account'] = [
+                                        'account_number'    => '0123456789',
+                                        'ifsc'              => 'HDFC0000186',
+                                        'name'              => 'Test Account'
+                                   ];
 
         return $payment;
     }

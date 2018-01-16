@@ -3,11 +3,11 @@
 namespace RZP\Models\Gateway\File\Processor\Claim;
 
 use Carbon\Carbon;
-use RZP\Constants\Mode;
+
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
-use RZP\Gateway\Netbanking\Axis\Constants;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 
 class Kotak extends Base
@@ -19,6 +19,23 @@ class Kotak extends Base
     const EXTENSION         = FileStore\Format::TXT;
     const FILE_TYPE         = FileStore\Type::KOTAK_NETBANKING_CLAIM;
     const GATEWAY           = Payment\Gateway::NETBANKING_KOTAK;
+
+    protected function fetchReconciledPaymentsToClaim(int $begin, int $end, array $statuses): PublicCollection
+    {
+        $begin = Carbon::createFromTimestamp($begin)->addDay()->timestamp;
+        $end = Carbon::createFromTimestamp($end)->addDay()->timestamp;
+        $tpv = $this->gatewayFile->getTpv();
+
+        $claims = $this->repo->payment->fetchReconciledPaymentsForTpv(
+            $begin,
+            $end,
+            static::GATEWAY,
+            $statuses,
+            $tpv
+        );
+
+        return $claims;
+    }
 
     protected function formatDataForFile(array $data)
     {

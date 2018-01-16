@@ -9,6 +9,7 @@ use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Terminal\TpvType;
 use RZP\Models\Emi\Subvention as EmiSubvention;
 
@@ -184,6 +185,7 @@ class Entity extends Base\PublicEntity
         self::TPV                       => 'int',
         self::TYPE                      => 'int',
         self::MODE                      => 'int',
+        self::CATEGORY                  => 'int',
         self::CORPORATE                 => 'boolean',
         self::USED                      => 'boolean',
     ];
@@ -284,6 +286,11 @@ class Entity extends Base\PublicEntity
     public function getCurrency()
     {
         return $this->getAttribute(self::CURRENCY);
+    }
+
+    public function isCurrencyInr()
+    {
+        return ($this->getCurrency() === Currency::INR);
     }
 
     public function getNetworkCategory()
@@ -759,6 +766,8 @@ class Entity extends Base\PublicEntity
      * an individual terminal entity, we want to do it
      *
      * @param  boolean $subMerchantFlag Flag ti indicate if sub_merchants should be included
+     *
+     * @return array
      */
     public function toArrayPublic($subMerchantFlag = false)
     {

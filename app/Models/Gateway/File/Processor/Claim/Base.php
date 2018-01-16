@@ -3,14 +3,12 @@
 namespace RZP\Models\Gateway\File\Processor\Claim;
 
 use Carbon\Carbon;
-use RZP\Exception;
+
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Gateway\File\Status;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Gateway\File\Constants;
 use RZP\Exception\GatewayFileException;
@@ -41,47 +39,38 @@ class Base extends BaseProcessor
 
         if ($this->shouldFetchReconciledPayments() === true)
         {
-            $claims = $this->fetchReconciledPayments($begin, $end, $statuses);
+            $claims = $this->fetchReconciledPaymentsToClaim($begin, $end, $statuses);
         }
         else
         {
-            $claims = $this->repo->payment->fetchPaymentsWithStatus($begin, $end, static::GATEWAY, $statuses);
+            $claims = $this->fetchPaymentsToClaim($begin, $end, $statuses);
         }
-
-        $this->trace->info(TraceCode::GATEWAY_FILE_CLAIM_ENTITIES, [
-            'gateway_file_id' => $this->gatewayFile->getId(),
-            'entity_ids'      => $claims->pluck('id'),
-            'begin'           => $begin,
-            'end'             => $end,
-        ]);
 
         return $claims;
     }
 
-    protected function fetchReconciledPayments(int $begin, int $end, array $statuses)
+    protected function fetchPaymentsToClaim(int $begin, int $end, array $statuses): PublicCollection
+    {
+        $claims = $this->repo->payment->fetchPaymentsWithStatus(
+            $begin,
+            $end,
+            static::GATEWAY,
+            $statuses
+        );
+
+        return $claims;
+    }
+
+    protected function fetchReconciledPaymentsToClaim(int $begin, int $end, array $statuses): PublicCollection
     {
         $begin = Carbon::createFromTimestamp($begin)->addDay()->timestamp;
         $end = Carbon::createFromTimestamp($end)->addDay()->timestamp;
-        $tpv = $this->getTpv();
 
-        if ($tpv === null)
-        {
-            $claims = $this->repo->payment
-                                 ->fetchReconciledPaymentsForGateway($begin,
-                                                                    $end,
-                                                                    static::GATEWAY,
-                                                                    $statuses);
-        }
-        else
-        {
-            $claims = $this->repo->payment->fetchReconciledPaymentsForTpv(
-                            $begin,
-                            $end,
-                            static::GATEWAY,
-                            $statuses,
-                            $tpv);
-        }
-
+        $claims = $this->repo->payment
+                             ->fetchReconciledPaymentsForGateway($begin,
+                                                                $end,
+                                                                static::GATEWAY,
+                                                                $statuses);
         return $claims;
     }
 
@@ -108,6 +97,8 @@ class Base extends BaseProcessor
 
     public function generateData(PublicCollection $claims)
     {
+        $data = [];
+
         foreach ($claims as $claim)
         {
             $col['payment'] = $claim;
@@ -174,8 +165,9 @@ class Base extends BaseProcessor
             throw new GatewayFileException(
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
                 [
-                    'id' => $this->gatewayFile->getId()
-                ]);
+                    'id'        => $this->gatewayFile->getId(),
+                ],
+                $e);
         }
     }
 

@@ -3,11 +3,11 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
+use RZP\Models\Invoice;
 use RZP\Constants\Table;
-use RZP\Models\Batch\Entity as Batch;
 use RZP\Models\Merchant;
 use RZP\Models\Payment\Refund;
-use RZP\Models\Invoice;
+use RZP\Models\Batch\Entity as Batch;
 
 
 class CreateBatchTable extends Migration
@@ -27,11 +27,6 @@ class CreateBatchTable extends Migration
                   ->primary();
 
             $table->char(Batch::MERCHANT_ID, Batch::ID_LENGTH);
-
-            $table->char(Batch::UPLOAD_FILE_URL, Batch::FILE_URL_LENGTH);
-
-            $table->char(Batch::DOWNLOAD_FILE_URL, Batch::FILE_URL_LENGTH)
-                  ->nullable();
 
             $table->char(Batch::TYPE, 25);
 

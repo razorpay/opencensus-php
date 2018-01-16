@@ -35,19 +35,17 @@ class CreateLineItems extends Migration
             $table->string(Entity::DESCRIPTION, 2048)
                   ->nullable();
 
-            $table->integer(Entity::AMOUNT);
+            $table->integer(Entity::AMOUNT)
+                  ->unsigned();
 
             $table->integer(Entity::GROSS_AMOUNT)
-                  ->unsigned()
-                  ->nullable();
+                  ->unsigned();
 
             $table->integer(Entity::TAX_AMOUNT)
-                  ->unsigned()
-                  ->nullable();
+                  ->unsigned();
 
             $table->integer(Entity::NET_AMOUNT)
-                  ->unsigned()
-                  ->nullable();
+                  ->unsigned();
 
             $table->char(Entity::CURRENCY, 3);
 

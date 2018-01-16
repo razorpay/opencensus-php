@@ -587,12 +587,14 @@ return [
         ]
     ],
 
-    'verifyMarketplaceOnboardingResponseStatus' => [
+    'verifyProductOnboardingSubmissionStatus' => [
         'request'  => [
             'content' => [
-                'status' => 'approved'
+                'status' => 'approved',
+                'count'  => 3,
+                'skip'   => 0
             ],
-            'url'     => '/onboarding/features/submissions',
+            'url'     => '/onboarding/features/submissions/fetch',
             'method'  => 'GET',
             'server'  => [
                 'HTTP_X-Dashboard'            => 'true',
@@ -602,8 +604,9 @@ return [
         'response' => [
             'content' => [
                 [
-                    "merchant_id"                        => "10000000001017",
-                    "marketplace_activation_status"      => "approved"
+                    'merchant_id' => '10000000001017',
+                    'product'     => 'marketplace',
+                    'status'      => 'approved'
                 ]
             ]
         ]
@@ -687,6 +690,21 @@ return [
                     'mobikwik_offers',
                 ]
             ]
+        ]
+    ],
+
+    'bulkUpdateFeatureActivationStatus' => [
+        'request'  => [
+            'content' => [ ],
+            'url'     => '/onboarding/features/status/bulk',
+            'method'  => 'PUT',
+            'server'  => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [ ]
         ]
     ],
 ];

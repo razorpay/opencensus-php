@@ -90,7 +90,9 @@ class CreateDisputesTable extends Migration
             $table->index(Dispute::REASON_CODE);
             $table->index(Dispute::GATEWAY_DISPUTE_ID);
             $table->index(Dispute::CREATED_AT);
+            $table->index(Dispute::UPDATED_AT);
             $table->index(Dispute::RESOLVED_AT);
+            $table->index(Dispute::AMOUNT);
 
             $table->foreign(Dispute::MERCHANT_ID)
                   ->references(Merchant::ID)
