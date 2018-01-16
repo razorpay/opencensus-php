@@ -692,7 +692,7 @@ class Core extends Base\Core
         $settledAt = time();
 
         //
-        // We're checking for available balance here ano not earlier because
+        // We're checking for available balance here and not earlier because
         // fees needs to be calculated first. Unlike payments, in the case of
         // transfers, amount+fee is what will be debited from the merchant balance
         //
