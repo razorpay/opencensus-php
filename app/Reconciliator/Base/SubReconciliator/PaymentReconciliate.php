@@ -84,7 +84,11 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             // Increment the total count for the summary
             $this->setSummaryCount(self::TOTAL_SUMMARY, $paymentId);
 
-            if ($reconciled === false)
+            if ($reconciled === true)
+            {
+                $this->handleAlreadyReconciled($paymentId);
+            }
+            else
             {
                 $validate = $this->validatePaymentDetails($row);
 

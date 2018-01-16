@@ -166,7 +166,7 @@ class PayumoneyReconTest extends TestCase
 
         // Total count = 1
         $this->assertEquals(1, $response['total_count']);
-        $this->assertEquals(0, $response['success_count']);
+        $this->assertEquals(1, $response['success_count']);
 
         // The payment is already reconciled, so failure count = 0
         $this->assertEquals(0, $response['failure_count']);
@@ -274,7 +274,7 @@ class PayumoneyReconTest extends TestCase
         return $uploadedFile;
     }
 
-    protected function createPayment($id)
+    protected function createPayment()
     {
         $attributes = [
             'terminal_id'       => $this->sharedTerminal->getId(),
@@ -292,7 +292,7 @@ class PayumoneyReconTest extends TestCase
 
         $this->fixtures->edit('payment', $payment->getId(), ['transaction_id' => $transaction->getId()]);
 
-        $this->fixtures->create($this->method, ['id' => $id, 'payment_id' => $payment->getId(), 'action' => 'authorize', 'wallet' => $this->gateway]);
+        $this->fixtures->create($this->method, ['payment_id' => $payment->getId(), 'action' => 'authorize', 'wallet' => $this->gateway]);
 
         return $payment->getId();
     }
