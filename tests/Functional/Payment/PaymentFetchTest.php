@@ -80,7 +80,7 @@ class PaymentFetchTest extends TestCase
 
         $testData['request']['content']['email'] = $payment->getEmail();
 
-        $content = $this->startTest();
+        $this->startTest();
     }
 
     public function testFindWithExpandsForPrivateAuth()
@@ -105,5 +105,20 @@ class PaymentFetchTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] .= $payment->getPublicId();
 
         $this->startTest();
+    }
+
+    public function testDisputesFetchForPayment()
+    {
+        $this->ba->proxyAuth();
+
+        $payment = $this->fixtures->create('payment:captured', ['disputed'  => 1,
+            'fee'       => 0,
+            'email'     => 'abc@email.com']);
+
+        $this->fixtures->times(2)->create('dispute', ['payment_id' => $payment->getId()]);
+
+        $testData = $testData = &$this->testData[__FUNCTION__];
+
+        $this->startTest($testData);
     }
 }
