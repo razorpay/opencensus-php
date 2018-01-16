@@ -214,6 +214,20 @@ class TransferTest extends TestCase
         });
     }
 
+    public function testTransferWithFeeInsufficientBalance()
+    {
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->editPricingPlanId(self::STANDARD_PRICING_PLAN_ID);
+
+        $this->fixtures->merchant->editBalance(1000);
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__], function()
+        {
+            $this->createTransfer('account', []);
+        });
+    }
+
     public function testTransferInvalidType()
     {
         $body = $this->getTransferRequestBody('account')['content'];
