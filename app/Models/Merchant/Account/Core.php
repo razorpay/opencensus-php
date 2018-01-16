@@ -112,10 +112,10 @@ class Core extends Merchant\Core
     protected function getBankAccountDetailsFromInput(array $input): array
     {
         $whitelistedBankAccountKeys = [
-            BankAccount\Entity::IFSC_CODE,
-            BankAccount\Entity::ACCOUNT_NUMBER,
-            BankAccount\Entity::ACCOUNT_TYPE,
-            BankAccount\Entity::BENEFICIARY_NAME,
+            Entity::IFSC_CODE,
+            Entity::ACCOUNT_NUMBER,
+            Entity::ACCOUNT_TYPE,
+            Entity::BENEFICIARY_NAME,
         ];
 
         $bankAccountDetailsKeys = array_only($input, $whitelistedBankAccountKeys);

@@ -21,7 +21,6 @@ class Entity extends Base\PublicEntity
     const IFSC_CODE                 = 'ifsc_code';
     const BANK_NAME                 = 'bank_name';
     const ACCOUNT_NUMBER            = 'account_number';
-    const ACCOUNT_TYPE              = 'account_type';
     const BENEFICIARY_NAME          = 'beneficiary_name';
     const BENEFICIARY_ADDRESS1      = 'beneficiary_address1';
     const BENEFICIARY_ADDRESS2      = 'beneficiary_address2';

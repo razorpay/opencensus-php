@@ -49,12 +49,11 @@ return [
                     'business_name' => 'Acme solutions',
                     'business_type' => 'proprietorship',
                 ],
-                'bank_account'    => [
-                    'ifsc_code'            => 'ICIC0001206',
-                    'account_number'       => '0002020000304030434',
-                    'account_type'         => 'current',
-                    'beneficiary_name'     => 'Test R4zorpay',
-                    'beneficiary_address1' => 'address 1',
+                'bank_account' => [
+                    'ifsc_code'             => 'ICIC0001206',
+                    'account_number'        => '0002020000304030434',
+                    'account_type'          => 'current',
+                    'beneficiary_name'      => 'Test R4zorpay'
                 ]
             ],
         ],

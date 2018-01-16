@@ -24,9 +24,11 @@ class Entity extends Merchant\Entity
     const PAN_NAME                 = 'pan_name';
     const LANDLINE                 = 'landline';
     const SCHEDULE                 = 'schedule';
+    const IFSC_CODE                = 'ifsc_code';
     const CAN_SUBMIT               = 'can_submit';
     const DESTINATION              = 'destination';
     const KYC_DETAILS              = 'kyc_details';
+    const ACCOUNT_TYPE             = 'account_type';
     const BANK_ACCOUNT             = 'bank_account';
     const PROMOTER_PAN             = 'promoter_pan';
     const TNC_ACCEPTED             = 'tnc_accepted';
@@ -34,11 +36,13 @@ class Entity extends Merchant\Entity
     const BUSINESS_TYPE            = 'business_type';
     const FUND_TRANSFER            = 'fund_transfer';
     const FUNDS_ON_HOLD            = 'funds_on_hold';
+    const ACCOUNT_NUMBER           = 'account_number';
     const BUSINESS_MODEL           = 'business_model';
     const CONFIGURATIONS           = 'configurations';
     const FIELDS_PENDING           = 'fields_pending';
     const PAYMENTDETAILS           = 'paymentdetails';
     const ACCOUNT_DETAILS          = 'account_details';
+    const BENEFICIARY_NAME         = 'beneficiary_name';
     const DATE_ESTABLISHED         = 'date_established';
     const SECONDARY_EMAILS         = 'secondary_emails';
     const ACTIVATION_STATUS        = 'activation_status';
@@ -93,10 +97,10 @@ class Entity extends Merchant\Entity
     ];
 
     public static $bankAccountToDetailAttributesMap = [
-        BankAccount\Entity::IFSC_CODE            => MerchantDetail\Entity::BANK_BRANCH_IFSC,
-        BankAccount\Entity::ACCOUNT_NUMBER       => MerchantDetail\Entity::BANK_ACCOUNT_NUMBER,
-        BankAccount\Entity::ACCOUNT_TYPE         => MerchantDetail\Entity::BANK_ACCOUNT_TYPE,
-        BankAccount\Entity::BENEFICIARY_NAME     => MerchantDetail\Entity::BANK_ACCOUNT_NAME,
+        Entity::IFSC_CODE            => MerchantDetail\Entity::BANK_BRANCH_IFSC,
+        Entity::ACCOUNT_NUMBER       => MerchantDetail\Entity::BANK_ACCOUNT_NUMBER,
+        Entity::ACCOUNT_TYPE         => MerchantDetail\Entity::BANK_ACCOUNT_TYPE,
+        Entity::BENEFICIARY_NAME     => MerchantDetail\Entity::BANK_ACCOUNT_NAME,
     ];
 
     /**
