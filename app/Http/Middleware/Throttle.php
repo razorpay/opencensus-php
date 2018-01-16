@@ -126,6 +126,10 @@ class Throttle
         {
             $this->process(Type::ADMIN_AUTH);
         }
+        else if (in_array($route, Http\Route::$user, true) === true)
+        {
+            $this->process(Type::USER_AUTH);
+        }
         else if (in_array($route, Http\Route::$private, true) === true)
         {
             if ($this->isDashboard() === true)

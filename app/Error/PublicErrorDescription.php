@@ -198,6 +198,7 @@ class PublicErrorDescription
     const BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY                              = 'The api key provided is invalid';
     const BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET                           = 'The api secret provided is invalid';
     const BAD_REQUEST_UNAUTHORIZED_INVALID_ACCOUNT_ID                           = 'The Account ID provided is invalid';
+    const BAD_REQUEST_USER_ROLE_NOT_PROVIDED                                    = 'User role is not provided';
     const BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED                          = 'Please provide api secret';
     const BAD_REQUEST_UNAUTHORIZED_SECRET_SENT_ON_PUBLIC_ROUTE                  = 'Please do not provide your secret on public sided requests';
     const BAD_REQUEST_UNAUTHORIZED_API_KEY_NOT_PROVIDED                         = 'Please provide your Razorpay Api Key Id';

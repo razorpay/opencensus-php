@@ -231,11 +231,14 @@ class BasicAuth
         8, 14, 23, 33
     ];
 
-    protected $adminOrgId = null;
+    protected $adminOrgId  = null;
 
-    protected $orgId      = null;
+    protected $orgId       = null;
 
     protected $orgHostName = null;
+
+    // User is set from the id received in X-Dashboard-User-Id header.
+    protected $user        = null;
 
     public function __construct($app)
     {
@@ -1512,5 +1515,33 @@ class BasicAuth
     public function getOrgHostName()
     {
         return $this->orgHostName;
+    }
+
+    public function setUser($user)
+    {
+        $this->user = $user;
+
+        return $this;
+    }
+
+    public function getUser()
+    {
+        return $this->user;
+    }
+    /**
+     * Verifies and sets user from the headers.
+     */
+    public function verifyAndSetUser()
+    {
+        $dashboardHeaders = $this->getDashboardHeaders();
+
+        $userId = $dashboardHeaders['user_id'] ?? null;
+
+        if (empty($userId) === false)
+        {
+            $user = $this->repo->user->findOrFailPublic($userId);
+
+            $this->setUser($user);
+        }
     }
 }
