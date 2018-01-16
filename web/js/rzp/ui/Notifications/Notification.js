@@ -15,7 +15,7 @@ class Notification extends Component {
 
   componentDidMount() {
     setTimeout(() => {
-      $(this.notificationEle).addClass('Notification__show');
+      this.notificationEle.classList.add('Notification__show');
     }, 0);
 
     this.timerId = setTimeout(() => {
@@ -38,8 +38,7 @@ class Notification extends Component {
     if (this.isClosed) {
       return;
     }
-
-    $(this.notificationEle).removeClass('Notification__show');
+    this.notificationEle.classList.remove('Notification__show');
     this.isClosed = true;
     clearTimeout(this.timerId);
 
