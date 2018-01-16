@@ -33,17 +33,20 @@ class StatusCode
         return ($statusCode === self::SUCCESS);
     }
 
-
     /**
      * If the registration fails, the value in mandate number would be 0,
      * else, it would be the mandate number.
      *
      * We're creating custom statuses for emandate success and failure by checking
      * the above mandate number
+     *
+     * @param string $mandateNumber
+     *
+     * @return string
      */
     public static function getEmandateStatus(string $mandateNumber)
     {
-        if (self::isEmandateRegistrationSuccess($mandateNumber))
+        if (self::isEmandateRegistrationSuccess($mandateNumber) === true)
         {
             return self::EMANDATE_REGISTRATION_SUCCESS;
         }
