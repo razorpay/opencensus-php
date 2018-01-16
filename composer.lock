@@ -191,52 +191,6 @@
             "time": "2016-01-18T06:57:07+00:00"
         },
         {
-            "name": "bacon/bacon-qr-code",
-            "version": "1.0.3",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/Bacon/BaconQrCode.git",
-                "reference": "5a91b62b9d37cee635bbf8d553f4546057250bee"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/Bacon/BaconQrCode/zipball/5a91b62b9d37cee635bbf8d553f4546057250bee",
-                "reference": "5a91b62b9d37cee635bbf8d553f4546057250bee",
-                "shasum": ""
-            },
-            "require": {
-                "ext-iconv": "*",
-                "php": "^5.4|^7.0"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "^4.8"
-            },
-            "suggest": {
-                "ext-gd": "to generate QR code images"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-0": {
-                    "BaconQrCode": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "BSD-2-Clause"
-            ],
-            "authors": [
-                {
-                    "name": "Ben Scholzen 'DASPRiD'",
-                    "email": "mail@dasprids.de",
-                    "homepage": "http://www.dasprids.de",
-                    "role": "Developer"
-                }
-            ],
-            "description": "BaconQrCode is a QR code generator for PHP.",
-            "homepage": "https://github.com/Bacon/BaconQrCode",
-            "time": "2017-10-17T09:59:25+00:00"
-        },
-        {
             "name": "bjeavons/zxcvbn-php",
             "version": "0.3.0",
             "source": {
@@ -442,7 +396,7 @@
             ],
             "authors": [
                 {
-                    "name": "Christian L??ck",
+                    "name": "Christian Lück",
                     "email": "christian@lueck.tv"
                 }
             ],
@@ -2548,7 +2502,7 @@
             ],
             "authors": [
                 {
-                    "name": "Lu??s Ot??vio Cobucci Oblonczyk",
+                    "name": "Luís Otávio Cobucci Oblonczyk",
                     "email": "lcobucci@gmail.com",
                     "role": "Developer"
                 }
@@ -3064,7 +3018,7 @@
             ],
             "authors": [
                 {
-                    "name": "Michael H??rtl",
+                    "name": "Michael Härtl",
                     "email": "haertl.mike@gmail.com"
                 }
             ],
@@ -3100,7 +3054,7 @@
             ],
             "authors": [
                 {
-                    "name": "Michael H??rtl",
+                    "name": "Michael Härtl",
                     "email": "haertl.mike@gmail.com"
                 }
             ],
@@ -3706,7 +3660,7 @@
             ],
             "authors": [
                 {
-                    "name": "M??rk S??gi-Kaz??r",
+                    "name": "Márk Sági-Kazár",
                     "email": "mark.sagikazar@gmail.com"
                 }
             ],
@@ -3767,7 +3721,7 @@
             ],
             "authors": [
                 {
-                    "name": "M??rk S??gi-Kaz??r",
+                    "name": "Márk Sági-Kazár",
                     "email": "mark.sagikazar@gmail.com"
                 }
             ],
@@ -3826,7 +3780,7 @@
             ],
             "authors": [
                 {
-                    "name": "M??rk S??gi-Kaz??r",
+                    "name": "Márk Sági-Kazár",
                     "email": "mark.sagikazar@gmail.com"
                 }
             ],
@@ -3887,7 +3841,7 @@
             ],
             "authors": [
                 {
-                    "name": "M??rk S??gi-Kaz??r",
+                    "name": "Márk Sági-Kazár",
                     "email": "mark.sagikazar@gmail.com"
                 },
                 {
@@ -3947,7 +3901,7 @@
                     "email": "geloen.eric@gmail.com"
                 },
                 {
-                    "name": "M??rk S??gi-Kaz??r",
+                    "name": "Márk Sági-Kazár",
                     "email": "mark.sagikazar@gmail.com"
                 }
             ],
@@ -4004,7 +3958,7 @@
             ],
             "authors": [
                 {
-                    "name": "Mathieu Santo Stefano--F??ron",
+                    "name": "Mathieu Santo Stefano--Féron",
                     "email": "mathieu.santostefano@gmail.com"
                 }
             ],
@@ -4064,7 +4018,7 @@
             ],
             "authors": [
                 {
-                    "name": "M??rk S??gi-Kaz??r",
+                    "name": "Márk Sági-Kazár",
                     "email": "mark.sagikazar@gmail.com"
                 }
             ],
@@ -4137,7 +4091,7 @@
             ],
             "authors": [
                 {
-                    "name": "M??rk S??gi-Kaz??r",
+                    "name": "Márk Sági-Kazár",
                     "email": "mark.sagikazar@gmail.com"
                 }
             ],
@@ -4185,7 +4139,7 @@
             ],
             "authors": [
                 {
-                    "name": "M??rk S??gi-Kaz??r",
+                    "name": "Márk Sági-Kazár",
                     "email": "mark.sagikazar@gmail.com"
                 }
             ],
@@ -4292,7 +4246,7 @@
             ],
             "authors": [
                 {
-                    "name": "M??rk S??gi-Kaz??r",
+                    "name": "Márk Sági-Kazár",
                     "email": "mark.sagikazar@gmail.com"
                 },
                 {
@@ -4521,7 +4475,7 @@
                     "role": "Developer"
                 },
                 {
-                    "name": "Hans-J??rgen Petrich",
+                    "name": "Hans-Jürgen Petrich",
                     "email": "petrich@tronic-media.com",
                     "role": "Developer"
                 },
@@ -5940,7 +5894,7 @@
             ],
             "authors": [
                 {
-                    "name": "Jean-Fran??ois Simon",
+                    "name": "Jean-François Simon",
                     "email": "jeanfrancois.simon@sensiolabs.com"
                 },
                 {
@@ -7178,7 +7132,7 @@
             ],
             "authors": [
                 {
-                    "name": "Fran??ois Zaninotto"
+                    "name": "François Zaninotto"
                 }
             ],
             "description": "Faker is a PHP library that generates fake data for you.",
@@ -7229,7 +7183,7 @@
             ],
             "authors": [
                 {
-                    "name": "Alexandre Salom??",
+                    "name": "Alexandre Salomé",
                     "email": "alexandre.salome@gmail.com",
                     "homepage": "http://alexandre-salome.fr"
                 },
@@ -7322,7 +7276,7 @@
             ],
             "authors": [
                 {
-                    "name": "Rokas ??leinius",
+                    "name": "Rokas Šleinius",
                     "homepage": "https://github.com/kint-php"
                 },
                 {
@@ -7430,7 +7384,7 @@
             ],
             "authors": [
                 {
-                    "name": "P??draic Brady",
+                    "name": "Pádraic Brady",
                     "email": "padraic.brady@gmail.com",
                     "homepage": "http://blog.astrumfutura.com"
                 },

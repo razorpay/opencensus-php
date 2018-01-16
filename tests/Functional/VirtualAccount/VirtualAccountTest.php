@@ -116,7 +116,7 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals($tlvArray['54'], '100.00');
     }
 
-    public function testDownloadQrcode()
+    public function testDownloadQrCode()
     {
         $response = $this->createVirtualAccount([
             'receiver_types'  => 'qr_code',

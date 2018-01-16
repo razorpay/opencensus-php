@@ -45,7 +45,6 @@
         "razorpay/oauth": "dev-master",
         "drewm/mailchimp-api": "^2.1",
         "razorpay/ufh-sdk-php": "dev-master",
-        "bacon/bacon-qr-code": "1.0.3",
         "watson/rememberable": "^2.0"
     },
     "repositories": [
