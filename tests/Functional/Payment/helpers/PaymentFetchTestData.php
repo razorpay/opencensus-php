@@ -166,22 +166,22 @@ return [
         ],
     ],
 
-    'testDisputesFetchForPayment' => [
+    'testFetchWithDisputes' => [
         'request'   => [
-            'method'        => 'get',
-            'url'           => '/payments',
+            'method'  => 'get',
+            'url'     => '/payments',
             'content' => [
-                'email'     => 'abc@email.com',
-                'expand'    => [
+                'email'  => 'abc@email.com',
+                'expand' => [
                     'disputes',
                 ],
             ],
         ],
         'response'  => [
             'content'       => [
-                'entity'        => 'collection',
-                'count'         => 1,
-                'items'         => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
                     [
                         'entity'            => 'payment',
                         'amount'            => 1000000,
@@ -194,22 +194,22 @@ return [
                         'email'             => 'abc@email.com',
                         'fee'               => 0,
                         'disputes'          => [
-                            'entity'                => 'collection',
-                            'count'                 => 2,
-                            'items'                 => [
+                            'entity' => 'collection',
+                            'count'  => 2,
+                            'items'  => [
                                 [
-                                    'amount'            => 1000000,
-                                    'currency'          => 'INR',
-                                    'reason_code'       => 'SOMETHING_BAD',
-                                    'status'            => 'open',
-                                    'phase'             => 'chargeback',
+                                    'amount'      => 1000000,
+                                    'currency'    => 'INR',
+                                    'reason_code' => 'SOMETHING_BAD',
+                                    'status'      => 'open',
+                                    'phase'       => 'chargeback',
                                 ],
                                 [
-                                    'amount'            => 1000000,
-                                    'currency'          => 'INR',
-                                    'reason_code'       => 'SOMETHING_BAD',
-                                    'status'            => 'open',
-                                    'phase'             => 'chargeback',
+                                    'amount'      => 1000000,
+                                    'currency'    => 'INR',
+                                    'reason_code' => 'SOMETHING_BAD',
+                                    'status'      => 'open',
+                                    'phase'       => 'chargeback',
                                 ],
                             ],
                         ],

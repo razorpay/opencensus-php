@@ -107,18 +107,21 @@ class PaymentFetchTest extends TestCase
         $this->startTest();
     }
 
-    public function testDisputesFetchForPayment()
+    public function testFetchWithDisputes()
     {
         $this->ba->proxyAuth();
 
-        $payment = $this->fixtures->create('payment:captured', ['disputed'  => 1,
-            'fee'       => 0,
-            'email'     => 'abc@email.com']);
+        $payment = $this->fixtures
+                        ->create(
+                            'payment:captured',
+                            [
+                                'disputed'  => 1,
+                                'fee'       => 0,
+                                'email'     => 'abc@email.com',
+                            ]);
 
         $this->fixtures->times(2)->create('dispute', ['payment_id' => $payment->getId()]);
 
-        $testData = $testData = &$this->testData[__FUNCTION__];
-
-        $this->startTest($testData);
+        $this->startTest();
     }
 }
