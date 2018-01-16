@@ -1,50 +1,62 @@
-.title {
-    font-weight: bold;
-    font-size: 24px;
-    text-align: center;
-    margin-top: 6px;
-    margin-bottom: 6px;
-}
-text {
-  pointer-events: none;
-}
+.payment-methods-container {
 
-.grandparent text {
-  font-weight: bold;
-}
-
-rect {
-  fill: none;
-  stroke: #fff;
-}
-
-rect.parent,
-.grandparent rect {
-  stroke-width: 2px;
-}
-
-rect.parent {
+  .title {
+      font-weight: bold;
+      font-size: 24px;
+      text-align: center;
+      margin-top: 6px;
+      margin-bottom: 6px;
+  }
+  text {
     pointer-events: none;
-}
+  }
 
-.grandparent rect {
-  fill: orange;
-}
+  .grandparent text {
+    font-weight: bold;
+  }
 
-.grandparent:hover rect {
-  fill: #ee9700;
-}
+  rect {
+    fill: none;
+    stroke: #fff;
+  }
 
-.children rect.parent,
-.grandparent rect {
-  cursor: pointer;
-}
+  rect.parent,
+  .grandparent rect {
+    stroke-width: 2px;
+  }
 
-.children rect.parent {
-  fill: #bbb;
-  fill-opacity: .5;
-}
+  rect.parent {
+      pointer-events: none;
+  }
 
-.children:hover rect.child {
-  fill: #bbb;
+  .grandparent rect {
+    fill: orange;
+  }
+
+  .grandparent:hover rect {
+    fill: #ee9700;
+  }
+
+  .children rect.parent,
+  .grandparent rect {
+    cursor: pointer;
+  }
+
+  .children rect.parent {
+    fill: #bbb;
+    fill-opacity: .5;
+  }
+
+  .children:hover rect.child {
+    fill: #bbb;
+  }
+
+  .rzp-tooltip {
+
+    small {
+
+      font-size: 12px;
+      color: #6F758A;
+    }
+  }
 }

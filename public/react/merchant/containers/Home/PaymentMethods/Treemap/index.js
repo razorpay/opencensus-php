@@ -1,7 +1,10 @@
 import React, { Component } from 'react';
-import renderTreemap from './renderTreemap';
 import { connect } from 'react-redux';
+
 import Tooltip from 'rzp/ui/Tooltip';
+import { getFormattedAmount } from 'rzp/utils/rzp-utils';
+
+import renderTreemap from './renderTreemap';
 
 import './styles.styl';
 
@@ -56,13 +59,13 @@ export default class Treemap extends Component {
     );
   }
 
-  showTooltip({ amount, percentage, label }) {
+  showTooltip({ amount, percent, label }) {
     this.setState({
       tooltip: {
         show: true,
         data: {
           amount,
-          percentage,
+          percent,
           label,
         },
       },
@@ -77,10 +80,10 @@ export default class Treemap extends Component {
     });
   }
 
-  onShowTooltip({ amount, percentage, label }) {
+  onShowTooltip({ amount, percent, label }) {
     this.showTooltip({
       amount,
-      percentage,
+      percent,
       label,
     });
   }
@@ -161,7 +164,8 @@ export default class Treemap extends Component {
   }
 
   render() {
-    const { tooltip } = this.state;
+    const { tooltip } = this.state,
+      amount = getFormattedAmount(tooltip.data.amount, true);
 
     return (
       <div>
@@ -169,7 +173,7 @@ export default class Treemap extends Component {
         <Tooltip followPointer={true}>
           <div>
             <p>
-              {tooltip.data.amount} <small>{tooltip.data.percentage}</small>
+              {amount} <small>{'(' + tooltip.data.percent + '%)'}</small>
             </p>
             <small>{tooltip.data.label}</small>
           </div>

@@ -24,8 +24,6 @@ class Tooltip extends Component {
   showTooltip(data = {}) {
     let { screenX, screenY } = data;
 
-    console.log(data);
-
     const node = this.node,
       parent = node.parentElement,
       { align } = this.props;
@@ -116,15 +114,13 @@ class Tooltip extends Component {
   }
 
   handleMouseMove(e) {
-    console.log(e);
-
     this.onHideTooltip();
     this.hideTooltip();
 
     this.showTooltipTimer = window.setTimeout(() => {
       this.showTooltip({
-        screenX: e.x,
-        screenY: e.y,
+        screenX: e.clientX,
+        screenY: e.clientY,
       });
     }, 500);
   }
