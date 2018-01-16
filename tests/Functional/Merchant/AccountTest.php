@@ -4,9 +4,9 @@ namespace RZP\Tests\Functional\Merchant;
 
 use Mail;
 
-use RZP\Tests\Functional\TestCase;
-use RZP\Models\Merchant;
+use RZP\Constants\Mode;
 use RZP\Models\Merchant\Account;
+use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
 
@@ -25,33 +25,28 @@ class AccountTest extends TestCase
         $this->ba->privateAuth();
     }
 
-    public function testCreateLinkedAccount()
+    /**
+     * Tests linked account creation in the test mode when the parent merchant is not activated.
+     */
+    public function testCreateLinkedAccountForInactiveMerchantInTestMode()
     {
-        $this->fixtures->merchant->activate('10000000000000');
+        $this->createLinkedAccount(Mode::TEST, false);
+    }
 
-        //
-        // Test account creation in - Test database (Live mode under the testing environment)
-        // For more details, refer to Merchant/Account/Core::createAccount() function.
-        //
-        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+    /**
+     * Tests linked account creation in the test mode when the parent merchant has been activated.
+     */
+    public function testCreateLinkedAccountForActiveMerchantInTestMode()
+    {
+        $this->createLinkedAccount(Mode::TEST, true);
+    }
 
-        $account = $this->startTest();
-
-        $lastAccount = $this->getLastEntity('merchant', true);
-
-        $accountId = Account\Entity::getSignedId($lastAccount['id']);
-
-        $this->assertEquals($account['id'], $accountId);
-
-        $this->assertEquals('10000000000000', $lastAccount['parent_id']);
-
-        $this->assertNotNull($account['fund_transfer']['destination']);
-
-        $bankAccount = $this->getLastEntity('bank_account', true, 'test');
-        $this->assertEquals('RZPB0000000', $bankAccount['ifsc_code']);
-
-        $bankAccount = $this->getLastEntity('bank_account', true, 'live');
-        $this->assertEquals('0002020000304030434', $bankAccount['account_number']);
+    /**
+     * Tests linked account creation in the live mode.
+     */
+    public function testCreateLinkedAccountForActiveMerchantInLiveMode()
+    {
+        $this->createLinkedAccount(Mode::LIVE, true);
     }
 
     public function testCreateLinkedAccountValidationFailure()
@@ -120,5 +115,57 @@ class AccountTest extends TestCase
         $testData['request']['url'] = '/beta/accounts/' . $accountId . '/settlement_destinations';
 
         $this->startTest($testData);
+    }
+
+    protected function createLinkedAccount(string $mode, bool $activate)
+    {
+        //
+        // The fixture for ScheduleTask entity in Test mode is already seeded. When a
+        // merchant is created through the API, ScheduleTask entity is created in both the modes.
+        //
+        $this->fixtures->on('live')->create('merchant:schedule_task',
+            [
+                'merchant_id' => '10000000000000',
+                'schedule'    => [
+                    'interval' => 1,
+                    'delay'    => 2,
+                    'hour'     => 0,
+                ],
+            ]);
+
+        if ($mode === Mode::LIVE)
+        {
+            // The merchant account must be activated to make requests in the Live mode
+            $this->fixtures->merchant->activate('10000000000000');
+
+            $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+        }
+        else
+        {
+            if ($activate === true)
+            {
+                $this->fixtures->merchant->activate('10000000000000');
+            }
+
+            $this->ba->privateAuth();
+        }
+
+        $account = $this->startTest();
+
+        $lastAccount = $this->getLastEntity('merchant', true);
+
+        $accountId = Account\Entity::getSignedId($lastAccount['id']);
+
+        $this->assertEquals($account['id'], $accountId);
+
+        $this->assertEquals('10000000000000', $lastAccount['parent_id']);
+
+        $this->assertNotNull($account['fund_transfer']['destination']);
+
+        $bankAccount = $this->getLastEntity('bank_account', true, 'test');
+        $this->assertEquals('RZPB0000000', $bankAccount['ifsc_code']);
+
+        $bankAccount = $this->getLastEntity('bank_account', true, 'live');
+        $this->assertEquals('0002020000304030434', $bankAccount['account_number']);
     }
 }

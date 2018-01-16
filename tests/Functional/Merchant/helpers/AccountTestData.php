@@ -33,7 +33,7 @@ return [
         ],
     ],
 
-    'testCreateLinkedAccount' => [
+    'createLinkedAccount' => [
         'request'  => [
             'url'     => '/beta/accounts',
             'method'  => 'post',

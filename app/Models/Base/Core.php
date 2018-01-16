@@ -151,7 +151,7 @@ class Core
      */
     protected function setLiveMode()
     {
-        $liveMode = $this->app['basicauth']->getLiveConnection();
+        $liveMode = Mode::LIVE;
 
         //
         // This function updates the mode and app['rzp.mode'] properties
@@ -159,16 +159,7 @@ class Core
         //
         $this->app['basicauth']->setModeAndDbConnection($liveMode);
 
-        //
-        // This function updates the mode and app['rzp.mode'] properties
-        // of the Base/Core class that has been initialized.
-        //
-        if (isset($this->app['rzp.mode']))
-        {
-            $this->mode = $liveMode;
-
-            $this->app['rzp.mode'] = $liveMode;
-        }
+        $this->mode = $liveMode;
 
         return;
     }

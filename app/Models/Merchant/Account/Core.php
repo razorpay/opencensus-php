@@ -42,6 +42,8 @@ class Core extends Merchant\Core
         //
         $this->setLiveMode();
 
+        (new Validator)->validateInput('create', $input);
+
         $merchantDetailsInput    = $this->getMerchantDetailsFromInput($input);
 
         $bankAccountDetailsInput = $this->getBankAccountDetailsFromInput($input[Entity::BANK_ACCOUNT] ?? []);
@@ -84,8 +86,6 @@ class Core extends Merchant\Core
      */
     protected function getMerchantDetailsFromInput(array $input): array
     {
-        (new Validator)->validateInput('create', $input);
-
         $accountDetails = $input[Entity::ACCOUNT_DETAILS];
 
         $businessName = $accountDetails[Entity::BUSINESS_NAME];
