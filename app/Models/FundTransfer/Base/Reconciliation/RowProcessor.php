@@ -51,7 +51,7 @@ abstract class RowProcessor extends Base\Core
         return $this->reconEntity;
     }
 
-    final protected function fetchEntities()
+    protected function fetchEntities()
     {
         $this->reconEntity = $this->repo
                                   ->fund_transfer_attempt

@@ -195,6 +195,7 @@ trait ReconciliationTrait
                     'merchant_id'               => $merchantId,
                     'purpose'                   => 'settlement',
                     'status'                    => AttemptStatus::INITIATED,
+                    'bank_status_code'          => 'P',
                 ]
             );
 
