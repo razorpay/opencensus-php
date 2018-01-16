@@ -106,6 +106,11 @@ function main(
   initialize(root);
   accumulate(root);
 
+  /* 
+   * Populating chart colors based on the values
+   * Bigger the values get first colors in the
+   * color palette
+   */
   ([...root.values]).sort((item1, item2) => {
   
     return item2.value - item1.value;
@@ -120,6 +125,9 @@ function main(
   });
 
   layout(root);
+
+  var transitionSubscriber = null,
+      maxFontSize = 24;
 
   var globalTransition = display(root).transition;
 
@@ -192,8 +200,6 @@ function main(
     }
   }
 
-  let transitionSubscriber = null;
-
   function canBeZoomed(d) {
     return (
       !d._children.length === 1 || typeof d._children[0].key !== 'undefined'
@@ -212,13 +218,6 @@ function main(
       .enter()
       .append('g');
 
-    var maxArea = 0,
-      maxFontSize = 24;
-
-    if (d._children.length > 0) {
-      maxArea = d._children[d._children.length - 1].dy;
-    }
-
     g
       .filter(function(d) {
         return d.key && d._children;
@@ -228,7 +227,7 @@ function main(
         return canBeZoomed(d) ? 'pointer' : 'default';
       })
       .style('font-size', d => {
-        return Math.min((y(d.y + d.dy) - y(d.y)) * 0.3, maxFontSize) + 'px';
+        return Math.min((y(d.y + d.dy) - y(d.y)) * 0.2, maxFontSize) + 'px';
       })
       .on('mouseenter', function(d) {
         onShowTooltip({
@@ -280,6 +279,8 @@ function main(
 
     var t = g
       .append('text')
+      .attr('dx', '1em')
+      .attr('dy', '0.75em')
       .attr('class', 'ptext')
       .style('font-size', '1em');
 
@@ -287,6 +288,7 @@ function main(
       .append('tspan')
       .attr('class', 'amount method-text')
       .style('font-size', '1em')
+      .attr('dx', '1em')
       .text(function(d) {
         return humanReadableIndianCurrency(paiseToRupees(d.value));
       })
@@ -303,15 +305,12 @@ function main(
     t
       .append('tspan')
       .style('font-size', '0.6em')
+      .attr('dx', '1.67em') // inverse of 0.6
       .attr('dy', '1.5em')
       .attr('class', 'group-name method-text')
       .text(function(d) {
         return d.displayText;
       });
-
-    t.append('title').text(function(d) {
-      return '₹' + formatNumber(d.value);
-    });
 
     t.call(text);
 
@@ -361,20 +360,16 @@ function main(
         .selectAll('.ptext')
         .call(text)
         .style('fill-opacity', 0);
+
       t2
         .each('end', function(d) {
           d3.select(this).style('font-size', d => {
-            return Math.min((y(d.y + d.dy) - y(d.y)) * 0.3, 24) + 'px';
-          }).select("text").style('opacity', function (d) {
-            return this.getComputedTextLength() > x(d.x + d.dx) - x(d.x) ||
-              this.getBoundingClientRect().height > y(d.y + d.dy) - y(d.y)
-                ? 0
-                : 1;
-          });
-        })
-        .selectAll('.ptext')
-        .call(text)
-        .style('fill-opacity', 1);
+            return Math.min((y(d.y + d.dy) - y(d.y)) * 0.2, 24) + 'px';
+          })
+          .selectAll('.ptext')
+          .call(text)
+          .style('fill-opacity', 1);
+        });
 
       t1.selectAll('rect').call(rect);
       t2.selectAll('rect').call(rect);
@@ -396,23 +391,29 @@ function main(
   }
 
   function text(text) {
-    text.selectAll('tspan.method-text').attr('x', function(d) {
-      return x(d.x) + 23.5;
-    });
     text
       .attr('x', function(d) {
         return x(d.x);
       })
       .attr('y', function(d) {
-        return y(d.y) + 15 + 19.5;
+        return y(d.y) + this.getBoundingClientRect().height/2 + "px";
       })
-      .style('opacity', function(d) {
-        return this.getComputedTextLength() > x(d.x + d.dx) - x(d.x) ||
-          this.getBoundingClientRect().height > y(d.y + d.dy) - y(d.y)
-          ? 0
-          : 1;
-      })
-      .style('fill', '#ffffff');
+      .style('fill', '#ffffff')
+      .selectAll("tspan.method-text")
+      .attr('x', function (d) {
+        return x(d.x);
+      });
+
+    text.style('opacity', function(d) {
+
+      var fontSize = Number(this.parentNode.style.fontSize.replace("px", ""));
+
+      return fontSize < 8 ||
+        this.getComputedTextLength() > x(d.x + d.dx) - x(d.x) ||
+        this.getBoundingClientRect().height > y(d.y + d.dy) - y(d.y)
+        ? 0
+        : 1;
+    });
   }
 
   function rect(rect) {
