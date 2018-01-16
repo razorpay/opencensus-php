@@ -9,6 +9,7 @@ use Illuminate\Foundation\Application;
 use RZP\Http\Route;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Http\UserRolesScope;
 use RZP\Trace\TraceCode;
 
 class UserAccess
@@ -41,6 +42,8 @@ class UserAccess
         $this->router = $app['router'];
 
         $this->trace = $this->app['trace'];
+
+        $this->userRoleScope = new UserRolesScope();
     }
 
     /**
@@ -66,6 +69,11 @@ class UserAccess
 
         $routeUserRolePolicy = $this->validateRouteUserRolesPolicy($route);
 
+        if (empty($routeUserRolePolicy) === false)
+        {
+            return $routeUserRolePolicy;
+        }
+
         return $next($request);
     }
 
@@ -79,25 +87,32 @@ class UserAccess
             return ApiResponse::unauthorized(
                 ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED);
         }
-
-        return;
     }
 
     private function validateRouteUserRolesPolicy($route)
     {
-        if (in_array($route, Route::$user, true) === true)
+        $routeRoles = $this->userRoleScope->getRouteRoles($route);
+
+        if (empty($routeRoles) === false)
         {
-            $userRole = $this->getCurrentUserRole();
+            $userRole = $this->getUserRole();
 
             if (empty($userRole) === true)
             {
                 return ApiResponse::unauthorized(
                     ErrorCode::BAD_REQUEST_USER_ROLE_NOT_PROVIDED);
             }
+
+            if (((is_array($routeRoles) === true) and (in_array($userRole, $routeRoles, true) === false)) or
+                ($routeRoles !== $userRole))
+            {
+                return ApiResponse::unauthorized(
+                    ErrorCode::BAD_REQUEST_UNAUTHORIZED);
+            }
         }
     }
 
-    private function getCurrentUserRole()
+    private function getUserRole()
     {
         $dashboardHeaders = $this->ba->getDashboardHeaders();
 
