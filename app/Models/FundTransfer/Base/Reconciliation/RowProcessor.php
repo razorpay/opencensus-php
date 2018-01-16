@@ -58,14 +58,14 @@ abstract class RowProcessor extends Base\Core
                                   ->findWithRelations($this->reconEntityId, ['source']);
     }
 
-    final protected function updateEntities()
+    protected function updateEntities()
     {
         $this->updateReconEntity();
 
         $this->updateSourceEntity();
     }
 
-    final protected function updateSourceEntity()
+    protected function updateSourceEntity()
     {
         $utr = $this->reconEntity->getUtr();
 
