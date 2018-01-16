@@ -32,7 +32,7 @@ export default class RequestEntity extends Component {
       action(response => {
         if (response) {
           //init levels map {level_num : [role1, role2, ...]}
-          response.workflow_steps.forEach(step => {
+          response.workflow.steps.forEach(step => {
             this.levels[step.level] = this.levels[step.level] || [];
             this.levels[step.level].push(step.role.name);
           });
