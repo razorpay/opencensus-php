@@ -120,6 +120,40 @@ class Selector extends Base\Core
 
                 $sortedTerminals = array($terminal);
             }
+            else if (($payment->isCard() === true) and ($payment->card->isRuPay() === true))
+            {
+                //
+                // Only for Rupay card transactions if no terminal is found, we
+                // want to distribute payments via the following logic.
+                //
+
+                //
+                // We want to give 40 % load to FSS terminal 94RNvZoogX4kOB, and
+                // equal 10% load to other Firstdata terminals, hence the below
+                // array  structure
+                // courtsey : Sunny sir _/\_
+                //
+                $rupayTerminalSet = [
+                    '94RNvZoogX4kOB',
+                    '94RNvZoogX4kOB',
+                    '94RNvZoogX4kOB',
+                    '94RNvZoogX4kOB',
+                    '76wS0y0kLvd2Z9',
+                    '81x0D4UfzB1T7V',
+                    '8f65Iykp4YRF31',
+                    '7mugQsqdruXGSd',
+                    '8AcyFtPYDi2rdx',
+                    '76lEBqibDvhOzY',
+                ];
+
+                $selectedTerminalId = $rupayTerminalSet[array_rand($rupayTerminalSet)];
+
+                $terminal = $this->repo->terminal->find($selectedTerminalId);
+
+                $sortedTerminals = [$terminal];
+
+                $sortedTerminals;
+            }
             else
             {
                 throw new Exception\RuntimeException(

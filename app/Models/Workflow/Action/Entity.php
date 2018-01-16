@@ -130,16 +130,6 @@ class Entity extends Base\Entity
         return $this->morphMany(Comment\Entity::class, 'entity');
     }
 
-    // public function state()
-    // {
-    //     return $this->hasMany('RZP\Models\Workflow\Action\State\Entity', self::ACTION_ID);
-    // }
-
-    // public function org()
-    // {
-    //     return $this->belongsTo('RZP\Models\Admin\Org\Entity');
-    // }
-
     public function admin()
     {
         return $this->belongsTo('RZP\Models\Admin\Admin\Entity');
@@ -180,30 +170,6 @@ class Entity extends Base\Entity
     public function getAdminId()
     {
         return $this->getAttribute(self::ADMIN_ID);
-    }
-
-    public function toArrayPublicWithAdminAndSteps()
-    {
-        $data = $this->toArrayPublic();
-
-        $data['admin'] = $this->admin()->withTrashed()->first()->toArrayPublic();
-
-        $data['workflow_steps'] = [];
-
-        $workflow = $this->workflow()->withTrashed()->first();
-
-        foreach ($workflow->steps as $step)
-        {
-            $thisStep = $step->toArrayPublic();
-
-            $thisStep['role'] = $step->role->toArrayPublic();
-
-            $data['workflow_steps'][] = $thisStep;
-        }
-
-        unset($data['workflow']['steps']);
-
-        return $data;
     }
 
     public function isOpen()

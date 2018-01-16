@@ -24,7 +24,6 @@ class PaymentCreateController extends Controller
             $this->trace->info(
                 TraceCode::PAYMENT_CREATE_ON_PUBLIC,
                 ['merchant_id' => $this->app['basicauth']->getMerchantId()]);
-
         }
 
         $ret = $this->createPayment();
@@ -340,6 +339,11 @@ class PaymentCreateController extends Controller
             else if ($data['type'] === 'wallet')
             {
                 return View::make('gateway.gatewayWalletForm')
+                           ->with('data', $data);
+            }
+            else if ($data['type'] === 'emandate')
+            {
+                return View::make('emandate.form')
                            ->with('data', $data);
             }
             else

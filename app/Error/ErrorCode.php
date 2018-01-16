@@ -128,6 +128,7 @@ class ErrorCode
     const BAD_REQUEST_VALIDATION_FAILURE                                            = 'BAD_REQUEST_VALIDATION_FAILURE';
     const BAD_REQUEST_PERMISSION_ERROR                                              = 'BAD_REQUEST_PERMISSION_ERROR';
     const BAD_REQUEST_APP_TOKEN_NOT_GLOBAL                                          = 'BAD_REQUEST_APP_TOKEN_NOT_GLOBAL';
+    const BAD_REQUEST_INVALID_BANK_FOR_EMANDATE                                     = 'BAD_REQUEST_INVALID_BANK_FOR_EMANDATE';
 
     const BAD_REQUEST_CUSTOMER_ID_MISSING                                           = 'BAD_REQUEST_CUSTOMER_ID_MISSING';
     const BAD_REQUEST_BANK_ACCOUNT_ID_MISSING                                       = 'BAD_REQUEST_BANK_ACCOUNT_ID_MISSING';
@@ -685,7 +686,7 @@ class ErrorCode
     const BAD_REQUEST_ACTION_INVALID_METHOD                                         = 'BAD_REQUEST_ACTION_INVALID_METHOD';
     const BAD_REQUEST_ACTION_NOT_APPROVED                                           = 'BAD_REQUEST_ACTION_NOT_APPROVED';
     const BAD_REQUEST_ACTION_ALREADY_EXECUTED                                       = 'BAD_REQUEST_ACTION_ALREADY_EXECUTED';
-    const BAD_REQUEST_WORKFLOW_DELETE_NOT_ALLOWED                                   = 'BAD_REQUEST_WORKFLOW_DELETE_NOT_ALLOWED';
+    const BAD_REQUEST_WORKFLOW_UPDATE_OR_DELETE_NOT_ALLOWED                         = 'BAD_REQUEST_WORKFLOW_UPDATE_OR_DELETE_NOT_ALLOWED';
     const BAD_REQUEST_WORKFLOW_STEP_LEVEL_SEQUENCE                                  = 'BAD_REQUEST_WORKFLOW_STEP_LEVEL_SEQUENCE';
     const BAD_REQUEST_WORKFLOW_STEP_ROLE_LEVEL_UNIQUE                               = 'BAD_REQUEST_WORKFLOW_STEP_ROLE_LEVEL_UNIQUE';
     const BAD_REQUEST_WORKFLOW_ENTITY_NOT_FOUND                                     = 'BAD_REQUEST_WORKFLOW_ENTITY_NOT_FOUND';
@@ -695,7 +696,6 @@ class ErrorCode
     const BAD_REQUEST_ACTION_NOT_IN_OPEN_STATES                                     = 'BAD_REQUEST_ACTION_NOT_IN_OPEN_STATES';
     const BAD_REQUEST_WORKFLOW_ACTION_CLOSE_UNAUTHORIZED                            = 'BAD_REQUEST_WORKFLOW_ACTION_CLOSE_UNAUTHORIZED';
     const BAD_REQUEST_WORKFLOW_ACTION_CLOSED                                        = 'BAD_REQUEST_WORKFLOW_ACTION_CLOSED';
-    const BAD_REQUEST_WORKFLOW_STEPS_CANNOT_BE_EDITED                               = 'BAD_REQUEST_WORKFLOW_STEPS_CANNOT_BE_EDITED';
     const BAD_REQUEST_INVALID_STATE                                                 = 'BAD_REQUEST_INVALID_STATE';
 
     // Gateway Priority API error codes
