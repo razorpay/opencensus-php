@@ -136,7 +136,7 @@ class Gateway extends Base\Gateway
                 null,
                 null,
                 [
-                    'auth_status' => $AuthenticationStatus
+                    'auth_status' => $authenticateStatus
                 ]);
         }
 
