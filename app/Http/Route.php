@@ -1124,7 +1124,6 @@ final class Route
         'settings_upsert',
         'settings_delete',
         'user_merchant_upgrade',
-        'user_resend_verification',
         'user_fetch_email',
         'emandate_debit_reconcile',
         'user_reset_password_create',
@@ -1320,6 +1319,11 @@ final class Route
         'onboarding_features_fetch_status',
         'onboarding_features_bulk_update_status',
         'onboarding_features_update',
+    ];
+
+    public static $user = [
+        'user_resend_verification',
+        'user_fetch',
     ];
 
     public static $routePermission = [

@@ -946,7 +946,7 @@ class BasicAuth
     {
         $headers = $this->request->headers;
 
-        $this->dashboardHeaders =[
+        $this->dashboardHeaders = [
             // String 'true' or null
             'dashboard' => $headers->get('X-Dashboard'),
         ];

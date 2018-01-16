@@ -73,7 +73,7 @@ class RouteServiceProvider extends ServiceProvider
         $routeGroupGlobalParams = array(
             'prefix'        => 'v1',
             'namespace'     => $this->namespace,
-            'middleware'    => ['throttle', 'auth', 'admin_access', 'workflow']);
+            'middleware'    => ['throttle', 'auth', 'admin_access', 'user_access', 'workflow']);
 
         $router->group(
             $routeGroupGlobalParams,
@@ -111,7 +111,7 @@ class RouteServiceProvider extends ServiceProvider
             ['middleware' => 'api'],
             function ($router)
             {
-                $this->route->addRouteGroups(['admin', 'internal', 'private', 'proxy', 'device']);
+                $this->route->addRouteGroups(['admin', 'internal', 'private', 'proxy', 'device', 'user']);
             }
         );
     }

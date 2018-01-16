@@ -46,6 +46,7 @@ class Kernel extends HttpKernel
         'throttle'     => \RZP\Http\Middleware\Throttle::class,
         'auth'         => \RZP\Http\Middleware\Authenticate::class,
         'admin_access' => \RZP\Http\Middleware\AdminAccess::class,
+        'user_access'  => \RZP\Http\Middleware\UserAccess::class,
         'workflow'     => \RZP\Http\Middleware\Workflow::class,
     ];
 }
