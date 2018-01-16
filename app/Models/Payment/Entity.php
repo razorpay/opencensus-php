@@ -87,7 +87,6 @@ class Entity extends Base\PublicEntity
     const CAPTURED_AT           = 'captured_at';
     const GATEWAY               = 'gateway';
     const TERMINAL_ID           = 'terminal_id';
-    const DISPUTES              = 'disputes';
     const APPROVAL_CODE         = 'approval_code';
     const REFERENCE1            = 'reference1';
     const REFERENCE2            = 'reference2';
@@ -118,6 +117,7 @@ class Entity extends Base\PublicEntity
     // Relations
     const CARD                  = 'card';
     const EMI_PLAN              = 'emi_plan';
+    const DISPUTES              = 'disputes';
 
     // Tells us whether this payment is a initial or auto recurring type
     const RECURRING_TYPE        = 'recurring_type';
@@ -236,7 +236,6 @@ class Entity extends Base\PublicEntity
         self::LATE_AUTHORIZED,
         self::SUBSCRIPTION_ID,
         self::CONVERT_CURRENCY,
-        self::DISPUTES,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DISPUTED,
