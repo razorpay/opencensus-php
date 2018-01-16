@@ -565,6 +565,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function updateChannelForMultipleMerchants()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->updateChannelForMultipleMerchants($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function updateBankAccountForMultipleMerchants()
     {
         $input = Request::all();
@@ -749,6 +758,13 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $response = $this->service(E::MERCHANT_DETAIL)->updateActivationStatus($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getActivationStatusChangeLog(string $id)
+    {
+        $response = $this->service(E::MERCHANT_DETAIL)->getActivationStatusChangeLog($id);
 
         return ApiResponse::json($response);
     }

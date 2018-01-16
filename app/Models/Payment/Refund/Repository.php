@@ -253,6 +253,33 @@ class Repository extends Base\Repository
         return $refunds;
     }
 
+    public function fetchFailedRefundsForGatewayBetweenTimestamps($from, $to, $gateway)
+    {
+        $refundAttrs = $this->dbColumn('*');
+
+        $refundPaymentIdAttr = $this->dbColumn(Entity::PAYMENT_ID);
+
+        $refundStatus = $this->dbColumn(Refund\Entity::STATUS);
+
+        $paymentIdAttr = $this->repo->payment->dbColumn(Payment\Entity::ID);
+
+        $paymentGateway = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);
+
+        $refundCreatedAt = $this->dbColumn(Refund\Entity::CREATED_AT);
+
+        return $this->newQuery()
+                    ->select($refundAttrs)
+                    ->join(Table::PAYMENT, $refundPaymentIdAttr, '=', $paymentIdAttr)
+                    ->where($refundStatus, '=',Refund\STATUS::FAILED)
+                    ->where($paymentGateway, '=', $gateway)
+                    ->where($refundCreatedAt, '>=', $from)
+                    ->where($refundCreatedAt, '<=', $to)
+                    ->with(['payment'])
+                    ->get();
+
+        return $refunds;
+    }
+
     public function fetchRefundsForTpvBetweenTimestamps(
         string $type,
         string $gatewayCode,
@@ -597,7 +624,7 @@ class Repository extends Base\Repository
                                   ->whereNull($receipt)
                                   ->where($status, '!=', Order\Status::PAID)
                                   ->groupBy($orderId);
-                          });
+                      });
 
         return $query->get();
     }

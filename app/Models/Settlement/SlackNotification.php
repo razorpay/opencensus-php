@@ -17,6 +17,7 @@ class SlackNotification extends Base\Core
     protected $messages = array(
         'setl_initiate'         => 'Settlements initiated.',
         'setl_reconciliation'   => 'Settlements reconciled. ',
+        'reconcile_file'        => 'Reconciliation file processed.',
         'setl_return'           => 'Settlements returns occurred. ');
 
     public function success($operation, $data)

@@ -25,6 +25,16 @@ class GatewayPriorityTest extends TestCase
 
     public function testSaveGatewayPriority()
     {
+        $redis = Redis::getFacadeRoot();
+
+        Redis::shouldReceive('connection')
+            ->with('query_cache_test')
+            ->andReturn($redis);
+
+        Redis::shouldReceive('connection')
+            ->with('query_cache_live')
+            ->andReturn($redis);
+
         Redis::shouldReceive('zadd')
             ->once()
             ->andReturnUsing(function ()
@@ -37,6 +47,16 @@ class GatewayPriorityTest extends TestCase
 
     public function testSaveGatewayPriorityWithException()
     {
+        $redis = Redis::getFacadeRoot();
+
+        Redis::shouldReceive('connection')
+            ->with('query_cache_test')
+            ->andReturn($redis);
+
+        Redis::shouldReceive('connection')
+            ->with('query_cache_live')
+            ->andReturn($redis);
+
         Redis::shouldReceive('zadd')
                 ->once()
                 ->andReturnUsing(function()
@@ -51,6 +71,16 @@ class GatewayPriorityTest extends TestCase
     {
         // Setting the config to false here so that real service is used for fetch
         config(['app.data_store.mock' => false]);
+
+        $redis = Redis::getFacadeRoot();
+
+        Redis::shouldReceive('connection')
+            ->with('query_cache_test')
+            ->andReturn($redis);
+
+        Redis::shouldReceive('connection')
+            ->with('query_cache_live')
+            ->andReturn($redis);
 
         Redis::shouldReceive('zrevrange')
             ->once()
@@ -85,6 +115,16 @@ class GatewayPriorityTest extends TestCase
         // Setting the config to false here so that real service is used for fetch
         config(['app.data_store.mock' => false]);
 
+        $redis = Redis::getFacadeRoot();
+
+        Redis::shouldReceive('connection')
+            ->with('query_cache_test')
+            ->andReturn($redis);
+
+        Redis::shouldReceive('connection')
+            ->with('query_cache_live')
+            ->andReturn($redis);
+
         Redis::shouldReceive('zrevrange')
             ->once()
             ->with('gateway_priority:card', 0, -1, 'WITHSCORES')
@@ -115,6 +155,16 @@ class GatewayPriorityTest extends TestCase
         // Setting the config to false here so that real service is used for fetch
         config(['app.data_store.mock' => false]);
 
+        $redis = Redis::getFacadeRoot();
+
+        Redis::shouldReceive('connection')
+            ->with('query_cache_test')
+            ->andReturn($redis);
+
+        Redis::shouldReceive('connection')
+            ->with('query_cache_live')
+            ->andReturn($redis);
+
         Redis::shouldReceive('zrem')
             ->once()
             ->with('gateway_priority:card', ['hdfc'])
@@ -138,6 +188,16 @@ class GatewayPriorityTest extends TestCase
 
     public function testRemoveGatewayPriorityWithException()
     {
+        $redis = Redis::getFacadeRoot();
+
+        Redis::shouldReceive('connection')
+            ->with('query_cache_test')
+            ->andReturn($redis);
+
+        Redis::shouldReceive('connection')
+            ->with('query_cache_live')
+            ->andReturn($redis);
+
         Redis::shouldReceive('zrem')
                 ->once()
                 ->with('gateway_priority:card', ['hdfc'])
@@ -153,6 +213,16 @@ class GatewayPriorityTest extends TestCase
     {
         // Setting the config to false here so that real service is used for fetch
         config(['app.data_store.mock' => false]);
+
+        $redis = Redis::getFacadeRoot();
+
+        Redis::shouldReceive('connection')
+            ->with('query_cache_test')
+            ->andReturn($redis);
+
+        Redis::shouldReceive('connection')
+            ->with('query_cache_live')
+            ->andReturn($redis);
 
         Redis::shouldReceive('zadd')
             ->once()

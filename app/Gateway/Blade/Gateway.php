@@ -30,6 +30,22 @@ class Gateway extends Base\Gateway
 
     const CERTIFICATE_DIRECTORY_NAME = 'cert_dir_name';
 
+    /**
+     * Fingerprint of the root signing certificate. This ensures that
+     * while any intermediate certs may change over time (provided they
+     * are signed correctly and not expired), the root cert ensures that
+     * the trust is in the same authority. So someone else cannot
+     * create a new chain and use that.
+     *
+     * Note: Only put production cert fingerprints in here
+     */
+    const ROOT_CERT_FINGERPRINTS = [
+        // MasterCard Root
+        '32dfd35574d8811bb90ebe33846dd3a0b945e0d9',
+        // VISA
+        '70179b868c00a4fa609152223f9f3e32bde00562',
+    ];
+
     protected $gateway = 'blade';
 
 
@@ -84,7 +100,10 @@ class Gateway extends Base\Gateway
                 throw new Exception\GatewayErrorException(
                     ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
                     $enrolled,
-                    'Invalid enroll response');
+                    'Invalid enroll response',
+                    [
+                        'enrollment_status' => $enrolled
+                    ]);
         }
     }
 
@@ -113,7 +132,12 @@ class Gateway extends Base\Gateway
         {
             // Throw GatewayErrorException with authentication failed error code
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED);
+                ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
+                null,
+                null,
+                [
+                    'auth_status' => $authenticateStatus
+                ]);
         }
 
         // Blade callback response field is being used by Hitachi
@@ -128,7 +152,10 @@ class Gateway extends Base\Gateway
         if (isset($response[VERes::MESSAGE]['Error']) === true)
         {
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED);
+                ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
+                null,
+                null,
+                $response[VERes::MESSAGE]['Error']);
         }
 
         $ch = $response[VERes::MESSAGE][VERes::VERES][VERes::CH];
@@ -205,6 +232,8 @@ class Gateway extends Base\Gateway
 
         $adapter = new XmlseclibsAdapter;
 
+        $adapter->setRootCertFingerprints(static::ROOT_CERT_FINGERPRINTS);
+
         $ret = false;
 
         try
@@ -242,7 +271,7 @@ class Gateway extends Base\Gateway
         $paresArray = $this->xmlToArray($paresXml);
 
         // Validate Payer Authentication Response
-        $this->validatePaRes($input, $paresArray);
+        $this->validatePARes($input, $paresArray);
 
         $paresMessage = $paresArray[PARes::MESSAGE][PARes::PARES];
 

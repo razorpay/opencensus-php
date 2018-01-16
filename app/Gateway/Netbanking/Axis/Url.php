@@ -12,8 +12,8 @@ class Url
 
         const AUTHORIZE_CORPORATE        = 'wps/portal/cBanking/AxisSMCorporateLogin/axissmcorppage?AuthenticationFG.MENU_ID=CIMSHP&AuthenticationFG.CALL_MODE=2&CATEGORY_ID=IRCSM';
 
+        // const EMANDATE_TEST_DOMAIN       = 'https://uat-etendering.axisbank.co.in/easypay2.0/frontend/api';
         const EMANDATE_TEST_DOMAIN       = 'https://uat-etendering.axisbank.co.in/index.php/api';
-
         const EMANDATE_LIVE_DOMAIN       = 'https://easypay.axisbank.co.in/index.php/api';
 
         const AUTHORIZE_RETAIL           = 'wps/portal/rBanking/AxisSMRetailLogin/axissmretailpage?AuthenticationFG.MENU_ID=CIMSHP&AuthenticationFG.CALL_MODE=2&CATEGORY_ID=IRCSM';

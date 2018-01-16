@@ -1,135 +1,98 @@
 <?php
 
-namespace RZP\Models\FundTransfer\Kotak\Reconciliation\Base;
+namespace RZP\Models\FundTransfer\Attempt;
 
 use Mail;
 use Carbon\Carbon;
+use Razorpay\Trace\Logger as Trace;
 
-use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
-use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Models\FundTransfer\Kotak;
-use Razorpay\Trace\Logger as Trace;
-use RZP\Mail\Settlement as SettlementMail;
+use RZP\Error\ErrorCode;
+use RZP\Constants\Timezone;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
+use RZP\Mail\Settlement\Reconciliation as ReconciliationEmail;
 
-class Processor extends Base\Core
+class BulkRecon extends Base\Core
 {
-    use Kotak\FileHandlerTrait;
-
-    protected static $fileToReadName = 'Kotak_Settlement_Reconciliation';
-
-    protected static $fileToWriteName = 'Kotak_Settlement_Reconciliation';
-
-    const MUTEX_RESOURCE = 'SETTLEMENT_RECONCILIATION_PROCESSING';
+    const MUTEX_RESOURCE = 'SETTLEMENT_RECONCILIATION_%s';
 
     const MUTEX_LOCK_TIMEOUT = 300;
 
-    /**
-     * All payments in the current mpr
-     * will have the same reconciledAt timestamp
-     * @var int
-     */
-    protected $reconciledAt;
+    protected $channel;
 
-    /**
-     * Array of reconciled data - one row corresponding to every row of the reconciliation file
-     */
+    protected $input;
+
     protected $allReconciledRows = [];
-
-    /**
-     * Array of ids for which entity couldn't be found in database
-     */
-    protected $unprocessedIds = [];
-
-    protected $date;
 
     protected $batchFundTransferStats = [];
 
-    public function __construct()
+    public function __construct(array $input, string $channel)
     {
         parent::__construct();
 
-        $this->reconciledAt = time();
-
         $this->mutex = $this->app['api.mutex'];
+
+        $this->channel = $channel;
+
+        $this->input = $input;
     }
 
-    public function process($input)
+    public function process()
     {
+        (new Validator)->validateInput('bulk_reconcile', $this->input);
+
+        $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->channel);
+
         $data = $this->mutex->acquireAndRelease(
-            self::MUTEX_RESOURCE,
-            function () use ($input)
-            {
-                return $this->processReconciliation($input);
-            },
-            self::MUTEX_LOCK_TIMEOUT,
-            ErrorCode::BAD_REQUEST_SETTLEMENT_RECONCILIATION_IN_PROGRESS);
+                    $mutexResource,
+                    function ()
+                    {
+                        return $this->processEntities();
+                    },
+                    self::MUTEX_LOCK_TIMEOUT,
+
+                    ErrorCode::BAD_REQUEST_SETTLEMENT_RECONCILIATION_IN_PROGRESS);
+
+        $this->sendReconciliationSummaryMail($data);
 
         return $data;
     }
 
-    public function processReconciliation($input)
+    public function processEntities()
     {
-        $reconcileFile = $this->getReconcilationFile($input);
+        list($from, $to) = $this->getTimestamps();
 
-        if ($reconcileFile === null)
-        {
-            $this->trace->info(
-                TraceCode::MISC_TRACE_CODE,
-                ['message' => 'No file present']);
+        $relations = ['source', 'source.transaction', 'source.merchant' , 'batchFundTransfer'];
 
-            return [];
-        }
+        $ftaIds = $this->repo
+                       ->fund_transfer_attempt
+                       ->getAttemptsBetweenTimestampsWithStatus($from, $to, Status::INITIATED, $this->channel)
+                             ->pluck(FundTransferAttempt\Entity::ID)
+                             ->toArray();
 
-        $data = $this->parseTextFile($reconcileFile);
+        $chunks = array_chunk($ftaIds, 1000);
 
-        $response = null;
+        $entityProcessor = '\\RZP\\Models\FundTransfer\\' . ucfirst($this->channel) . '\\Reconciliation\\EntityProcessor';
 
-        if (empty($data) === true)
-        {
-            $response = ['message' => 'no records to reconcile'];
-        }
-        else
-        {
-            $date = Carbon::createFromFormat('d-M-y', $data[0][Kotak\Headings::PAYMENT_DATE]);
-
-            // update the format so that recon mail is appended to settlement mail
-            $this->date = $date->format('d-m-Y');
-
-            $response = $this->startReconciliation($data);
-
-            $this->storeReconciledFile($reconcileFile);
-
-            $this->sendReconciliationSummaryMail($response);
-        }
-
-        return $response;
-    }
-
-    protected function startReconciliation($data): array
-    {
-        $summary = $this->repo->transactionOnLiveAndTest(function() use ($data)
+        $this->repo->transactionOnLiveAndTest(function() use ($ftaIds, $relations, $chunks, $entityProcessor)
         {
             try
             {
-                foreach ($data as $row)
+                foreach ($chunks as $ftaIds)
                 {
-                    $reconciledRowDetails = $this->reconcileEntity($row);
+                    $ftas = $this->repo->fund_transfer_attempt->findManyWithRelations($ftaIds, $relations);
 
-                    $entity = $reconciledRowDetails['entity'];
+                    foreach ($ftas as $fta)
+                    {
+                        $reconDetails = (new $entityProcessor($fta))->process();
 
-                    if ($entity === null)
-                    {
-                        $this->unprocessedIds[] = $row[Kotak\Headings::PAYMENT_REF_NO] ?? 'null';
-                    }
-                    else
-                    {
-                        $this->allReconciledRows[] = $reconciledRowDetails;
+                        $this->allReconciledRows[] = $reconDetails;
+
+                        $entity = $reconDetails['entity'];
 
                         $this->updateBatchFundTransferStats($entity);
                     }
@@ -150,11 +113,9 @@ class Processor extends Base\Core
 
                 throw $e;
             }
-
-            $summary = $this->getSummary();
-
-            return $summary;
         });
+
+        $summary = $this->getSummary();
 
         (new SlackNotification)->success('setl_reconciliation', $summary);
 
@@ -181,24 +142,20 @@ class Processor extends Base\Core
         return $summary;
     }
 
-    /**
-     * Reconciles the entity.
-     *
-     * @param $row
-     *
-     * @return array
-     */
-    protected function reconcileEntity($row): array
+    protected function getTimestamps(): array
     {
-        $version = $this->getSettlementVersion($row);
+        if ((isset($this->input['from']) === true) and (isset($this->input['to']) === true))
+        {
+            $from = $this->input['from'];
+            $to = $this->input['to'];
+        }
+        else
+        {
+            $from = (Carbon::today(Timezone::IST))->timestamp;
+            $to = (Carbon::tomorrow(Timezone::IST))->timestamp;
+        }
 
-        $versionRowProcessorClass = 'RZP\\Models\\FundTransfer\\Kotak\\Reconciliation\\' .
-                                    ucwords($version) .
-                                    '\\RowProcessor';
-
-        $reconciledRowDetails = (new $versionRowProcessorClass($row))->process($this->reconciledAt);
-
-        return $reconciledRowDetails;
+        return [$from, $to];
     }
 
     protected function updateBatchFundTransferStats($reconciledEntity)
@@ -230,30 +187,6 @@ class Processor extends Base\Core
 
             $this->batchFundTransferStats[$batchId]['processed_amount'] += $amount;
         }
-    }
-
-    /**
-     * Reads row from reconciliation file, and returns array of parsed data from that
-     *
-     * @param           Entity
-     * @param   Array   Row to be parsed
-     *
-     * @return  Array   Parsed data
-     */
-    protected function getSettlementVersion(array $row): string
-    {
-        $version = FundTransferAttempt\Version::V1;
-
-        if (Kotak\Reconciliation\V2\RowProcessor::isV2($row) === true)
-        {
-            $version = FundTransferAttempt\Version::V2;
-        }
-        else if (Kotak\Reconciliation\V3\RowProcessor::isV3($row) === true)
-        {
-            $version = FundTransferAttempt\Version::V3;
-        }
-
-        return $version;
     }
 
     protected function getSummary(): array
@@ -292,7 +225,8 @@ class Processor extends Base\Core
         $allEntityIds = array_unique($allEntityIds);
         $successEntityIds = array_unique($successEntityIds);
 
-        $failureEntities = $failureEntities->uniqueStrict(function ($entity) {
+        $failureEntities = $failureEntities->uniqueStrict(function ($entity)
+        {
             return $entity->getId();
         });
 
@@ -312,7 +246,6 @@ class Processor extends Base\Core
 
         $summary = [
             'total_count'                   => count($allEntityIds),
-            'unprocessed_ids'               => implode(', ', $this->unprocessedIds),
             'failures_count'                => $failureCount,
             'settlement_failure_amount'     => 0,
         ];
@@ -334,13 +267,6 @@ class Processor extends Base\Core
 
             // Adds keys settlement_failure_count, payout_failure_count, refund_failure_count to summary
             $summary[$key] = ($summary[$key] ?? 0) + 1;
-        }
-
-        // If any of the entities were marked failed
-        if ($failureCount > 0)
-        {
-            $this->trace->error(
-                TraceCode::SETTLEMENT_RECONCILIATION_FAILED, $summary);
         }
 
         // if no settlement entities were marked failed
@@ -389,60 +315,20 @@ class Processor extends Base\Core
             return;
         }
 
-        $msg = 'UTR File reconciled.' . PHP_EOL;
+        $msg = 'Bulk Reconcilaition done.' . PHP_EOL;
 
         $failureCount = $response['failures_count'];
 
         $msg .= 'Failure Count: ' . $failureCount . PHP_EOL;
 
+        #TODO:: What date to put here?
+        $this->date = Carbon::today(Timezone::IST)->format('d-m-Y');
+
         $data['date'] = $this->date;
         $data['body'] = $msg;
 
-        $kotakReconciliationMail = new SettlementMail\KotakReconciliation($data);
+        $email = new ReconciliationEmail($data, $this->channel);
 
-        Mail::queue($kotakReconciliationMail);
-    }
-
-    public static function getHeadings()
-    {
-        return Kotak\Headings::getResponseFileHeadings();
-    }
-
-    protected function getReconcilationFile($input)
-    {
-        $reconcileFile = null;
-
-        if ((isset($input['source']) === true) and
-            ($input['source'] === 'lambda'))
-        {
-            $key = $input['key'];
-
-            $reconcileFile = $this->getH2HFileFromAws($key);
-        }
-        else
-        {
-            $reconcileFile = $this->getFile($input);
-        }
-
-        return $reconcileFile;
-    }
-
-    protected function parseTextRowWithHeadingMismatch($headings, $values, $ix): array
-    {
-        $count = count($values);
-
-        $this->trace->info(TraceCode::MISC_TRACE_CODE, ['count' => $count]);
-
-        if (($count < 54) or ($count > 55))
-        {
-            throw new Exception\LogicException(
-                'Invalid count: ' . $count . ' Should be either 54 or 55.');
-        }
-
-        $headings = array_slice($headings, 0, $count);
-
-        $values = array_combine($headings, $values);
-
-        return $values;
+        Mail::queue($email);
     }
 }

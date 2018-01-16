@@ -60,6 +60,7 @@ class Gateway
     const ACQUIRER_ICIC      = 'icic';
     const ACQUIRER_AXIS      = 'axis';
     const ACQUIRER_AMEX      = 'amex';
+    const ACQUIRER_RATN      = 'ratn';
 
     const NOT_SUPPORTED      = 'not_supported';
     const SUPPORTED          = 'supported';
@@ -71,6 +72,7 @@ class Gateway
         self::FIRST_DATA  => [self::ACQUIRER_ICIC],
         self::AMEX        => [self::ACQUIRER_AMEX],
         self::AEPS_ICICI  => [self::ACQUIRER_ICIC],
+        self::HITACHI     => [self::ACQUIRER_RATN],
     ];
 
     const POWER_WALLETS = [
@@ -109,6 +111,11 @@ class Gateway
     */
     const UNKNOWN_REFUNDS_VALIDATION_GATEWAYS = [
         self::WALLET_FREECHARGE
+    ];
+
+    const MCC_FILTER_GATEWAYS = [
+        self::HDFC,
+        self::HITACHI,
     ];
 
     /**
@@ -370,6 +377,7 @@ class Gateway
         self::HITACHI => [
             Network::MC,
             Network::VISA,
+            Network::MAES,
         ],
         self::FIRST_DATA => [
             Network::MC,
@@ -404,6 +412,7 @@ class Gateway
         self::ACQUIRER_ICIC => IFSC::ICIC,
         self::ACQUIRER_AXIS => IFSC::UTIB,
         self::ACQUIRER_AMEX => Network::AMEX,
+        self::ACQUIRER_RATN => IFSC::RATN,
     ];
 
     /**
@@ -462,10 +471,23 @@ class Gateway
         Gateway::NETBANKING_HDFC,
     ];
 
-    public static $eMandateBanks = [
-        IFSC::ICIC,
-        IFSC::UTIB,
-        IFSC::HDFC,
+    /**
+     * List of ALL auth types and the corresponding
+     * banks supported by that auth type.
+     *
+     * @var array
+     */
+    public static $emandateBanks = [
+        AuthType::NETBANKING => [
+            IFSC::ICIC,
+            IFSC::UTIB,
+            IFSC::HDFC,
+        ],
+        AuthType::AADHAAR => [
+            // IFSC::ICIC,
+            // IFSC::UTIB,
+            // IFSC::HDFC,
+        ]
     ];
 
     /**
@@ -707,16 +729,16 @@ class Gateway
         return (in_array($gateway, self::$fileBasedEMandateDebitGateways) === true);
     }
 
-    /**
-     * @param string $bank
-     *
-     * @return bool
-     */
-    public static function isRecurringSupportedOnBank(string $bank) : bool
+    public static function getAvailableEmandateBanksForAuthType(string $authType): array
     {
-        $gateway = self::$netbankingToGatewayMap[$bank];
+        $banks = [];
 
-        return self::isRecurringGateway($gateway);
+        if (isset(self::$emandateBanks[$authType]) === true)
+        {
+            $banks = self::$emandateBanks[$authType];
+        }
+
+        return $banks;
     }
 
     public static function getChannel($gateway)

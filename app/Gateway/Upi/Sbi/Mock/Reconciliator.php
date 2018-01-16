@@ -5,12 +5,10 @@ namespace RZP\Gateway\Upi\Sbi\Mock;
 use Carbon\Carbon;
 use RZP\Gateway\Base;
 use RZP\Models\Payment;
-use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
-use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Base\PublicCollection;
 
-class Reconciliator extends Base\Mock\Reconciliator
+class Reconciliator extends Base\Mock\PaymentReconciliator
 {
     protected $gateway = Payment\Gateway::UPI_SBI;
 
@@ -18,7 +16,7 @@ class Reconciliator extends Base\Mock\Reconciliator
      * @override
      * @var string
      */
-    protected static $fileToWriteName = 'MerchantReport';
+    protected $fileToWriteName = 'MerchantReport';
 
     /**
      * The parent class's method gets only successful payments,
@@ -28,7 +26,7 @@ class Reconciliator extends Base\Mock\Reconciliator
      * @override
      * @return PublicCollection
      */
-    protected function getAllPaymentsToReconcile()
+    protected function getEntitiesToReconcile()
     {
         $createdAtStart = Carbon::yesterday(Timezone::IST)->getTimestamp();
 
@@ -90,44 +88,5 @@ class Reconciliator extends Base\Mock\Reconciliator
         $this->content($data, 'sbi_recon');
 
         return $data;
-    }
-
-    /**
-     * @override
-     * @param mixed $content
-     * @return FileStore\Creator
-     */
-    protected function createReconFile($content)
-    {
-        return $this->createFile(
-                    FileStore\Format::XLSX,
-                    $content,
-                    self::$fileToWriteName
-                );
-    }
-
-    private function createFile(
-        string $extension,
-        array $content,
-        string $fileName,
-        string $type = FileStore\Type::MOCK_RECONCILIATION_FILE,
-        string $store = FileStore\Store::S3)
-    {
-        $creator = new FileStore\Creator;
-
-        $creator->extension($extension)
-                ->content($content)
-                ->name($fileName)
-                ->store($store)
-                ->type($type)
-                ->headers(true)
-                ->save();
-
-        return $creator;
-    }
-
-    protected function addGatewayEntityIfNeeded(array & $data)
-    {
-        return;
     }
 }

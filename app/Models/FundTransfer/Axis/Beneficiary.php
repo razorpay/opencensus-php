@@ -83,12 +83,18 @@ class Beneficiary extends BaseBeneficiary
 
         foreach ($bankAccounts as $ba)
         {
+            $beneName = $ba->getBeneficiaryName();
+
+            $beneName = substr($beneName, 0, 50);
+
+            $ifsc = strtoupper($ba->getIfscCode());
+
             $rows[] = [
                 $ba->getId(),
-                $ba->getBeneficiaryName(),
+                $beneName,
                 $ba->getAccountNumber(),
-                $ba->getIfscCode(),
-                $ba->getBankName(),
+                $ifsc,
+                '', // Axis needs us to send this value as blank
             ];
         }
 
@@ -109,6 +115,7 @@ class Beneficiary extends BaseBeneficiary
                         ->store(FileStore\Store::S3)
                         ->type(FileStore\Type::FUND_TRANSFER_H2H)
                         ->metadata($metadata)
+                        ->headers(false)
                         ->encrypt(Type::AES_ENCRYPTION, [
                             AESEncryption::MODE   => AES::MODE_CBC,
                             AESEncryption::IV     => $this->iv,

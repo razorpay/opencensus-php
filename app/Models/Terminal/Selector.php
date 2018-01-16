@@ -74,8 +74,7 @@ class Selector extends Base\Core
 
         $payment = $this->input['payment'];
 
-        if ((empty($filteredTerminals) === true) and
-            (Terminal\Filters\TransactionFilter::runExperimentalRecurringFilter($this->input['payment']) === true))
+        if (empty($filteredTerminals) === true)
         {
             $basicAuth = $this->app['basicauth'];
 
@@ -86,9 +85,9 @@ class Selector extends Base\Core
 
             //
             // We are doing this only for second recurring
-            // payments made via private/privilege auth
+            // card payments made via private/privilege auth
             //
-            if (($payment->isRecurring() === true) and
+            if (($payment->isCard() === true) and ($payment->isRecurring() === true) and
                 ($token !== null) and
                 ($token->isRecurring() === true) and
                 ($access === true))
@@ -120,6 +119,40 @@ class Selector extends Base\Core
                 $terminal = $this->repo->terminal->find(Shared::SHARP_RAZORPAY_TERMINAL);
 
                 $sortedTerminals = array($terminal);
+            }
+            else if (($payment->isCard() === true) and ($payment->card->isRuPay() === true))
+            {
+                //
+                // Only for Rupay card transactions if no terminal is found, we
+                // want to distribute payments via the following logic.
+                //
+
+                //
+                // We want to give 40 % load to FSS terminal 94RNvZoogX4kOB, and
+                // equal 10% load to other Firstdata terminals, hence the below
+                // array  structure
+                // courtsey : Sunny sir _/\_
+                //
+                $rupayTerminalSet = [
+                    '94RNvZoogX4kOB',
+                    '94RNvZoogX4kOB',
+                    '94RNvZoogX4kOB',
+                    '94RNvZoogX4kOB',
+                    '76wS0y0kLvd2Z9',
+                    '81x0D4UfzB1T7V',
+                    '8f65Iykp4YRF31',
+                    '7mugQsqdruXGSd',
+                    '8AcyFtPYDi2rdx',
+                    '76lEBqibDvhOzY',
+                ];
+
+                $selectedTerminalId = $rupayTerminalSet[array_rand($rupayTerminalSet)];
+
+                $terminal = $this->repo->terminal->find($selectedTerminalId);
+
+                $sortedTerminals = [$terminal];
+
+                $sortedTerminals;
             }
             else
             {

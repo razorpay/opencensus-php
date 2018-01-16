@@ -27,7 +27,6 @@ class TransactionFilter extends Terminal\Filter
         'network',
         'bank',
         'recurring',
-        'recurring_experiment',
         'gateway',
         'subscription',
         'tpv',
@@ -163,11 +162,6 @@ class TransactionFilter extends Terminal\Filter
     {
         $payment = $this->input['payment'];
 
-        if (self::runExperimentalRecurringFilter($payment) === true)
-        {
-            return true;
-        }
-
         if ($payment->isRecurring() === false)
         {
             return ($terminal->isNonRecurring() === true);
@@ -188,12 +182,12 @@ class TransactionFilter extends Terminal\Filter
         }
 
         $basicAuth = $this->app['basicauth'];
+
+        $token = $payment->getGlobalOrLocalTokenEntity();
 
         $access = (($basicAuth->isPrivateAuth() === true) or
                    ($basicAuth->isPrivilegeAuth() === true));
 
-        $token = $payment->getGlobalOrLocalTokenEntity();
-
         //
         // All first recurring payments or payments made via public
         // auth need to go via 3DS Recurring terminals only.
@@ -209,108 +203,6 @@ class TransactionFilter extends Terminal\Filter
         // From here onwards, the terminal selection
         // logic is for second recurring.
         //
-
-        $reference = $payment->getReferenceForGatewayToken();
-
-        $gatewayTokens = $this->repo->gateway_token->findByTokenAndReference($token, $reference);
-
-        $gatewayTokensCount = $gatewayTokens->count();
-
-        if ($gatewayTokensCount === 1)
-        {
-            //
-            // For second recurring payment, ensure that we select a terminal
-            // of the same gateway as for the first recurring payment and also
-            // of the same merchant (shared, direct)
-            //
-            $previousGateway = $gatewayTokens->first()->terminal->getGateway();
-            $previousMerchant = $gatewayTokens->first()->terminal->getMerchantId();
-
-            $currentGateway = $terminal->getGateway();
-            $currentMerchant = $terminal->getMerchantId();
-
-            return (($terminal->isNon3DSRecurring() === true) and
-                    ($previousGateway === $currentGateway) and
-                    ($previousMerchant === $currentMerchant));
-        }
-        //
-        // If a token is present and is supposed to be subsequent charge,
-        // the corresponding gateway_token must always be present.
-        // If it's not present, there's something wrong somewhere!
-        //
-        else
-        {
-            throw new Exception\LogicException(
-                'Should have gotten exactly 1 gateway token.',
-                ErrorCode::SERVER_ERROR_GATEWAY_TOKENS_INVALID_COUNT,
-                [
-                    'gateway_tokens_count'  => $gatewayTokensCount,
-                    'payment_id'            => $payment->getId(),
-                    'token_id'              => $token->getId(),
-                    'reference'             => $reference
-                ]);
-        }
-    }
-
-    /**
-     * NOTE: REMEMBER TO REMOVE RECURRING_EXPERIMENT PROPERTY ALSO WHEN REMOVING THIS FUNCTION
-     *
-     * @param $terminal
-     *
-     * @return bool
-     * @throws Exception\LogicException
-     */
-    public function recurringExperimentFilter($terminal)
-    {
-        $payment = $this->input['payment'];
-
-        if (self::runExperimentalRecurringFilter($payment) === false)
-        {
-            return true;
-        }
-
-        if ($payment->isRecurring() === false)
-        {
-            return ($terminal->isNonRecurring() === true);
-        }
-
-        $recurringGateway = Gateway::isRecurringGateway($terminal->getGateway());
-
-        if ($recurringGateway === false)
-        {
-            return false;
-        }
-
-        // for cybersource recurring payment, terminal must be hdfc acquired
-        if (($terminal->getGateway() === Gateway::CYBERSOURCE) and
-            ($terminal->getGatewayAcquirer() !== 'hdfc'))
-        {
-            return false;
-        }
-
-        $basicAuth = $this->app['basicauth'];
-
-        $token = $payment->getGlobalOrLocalTokenEntity();
-
-        $access = (($basicAuth->isPrivateAuth() === true) or
-            ($basicAuth->isPrivilegeAuth() === true));
-
-        //
-        // All first recurring payments or payments made via public
-        // auth need to go via 3DS Recurring terminals only.
-        //
-        if (($token === null) or
-            ($token->isRecurring() === false) or
-            ($access === false))
-        {
-            return ($terminal->is3DSRecurring() === true);
-        }
-
-        //
-        // From here onwards, the terminal selection
-        // logic is for second recurring.
-        //
-
         if ($terminal->isNon3DSRecurring() === false)
         {
             return false;
@@ -330,11 +222,11 @@ class TransactionFilter extends Terminal\Filter
             // of the same merchant (shared, direct)
             //
             $validGatewayTokens = $gatewayTokens->filter(
-                                        function($gatewayToken) use ($terminal)
-                                        {
-                                            return (($gatewayToken->getGateway() === $terminal->getGateway()) and
-                                                    ($gatewayToken->terminal->getMerchantId() === $terminal->getMerchantId()));
-                                        });
+                                    function($gatewayToken) use ($terminal)
+                                    {
+                                        return (($gatewayToken->getGateway() === $terminal->getGateway()) and
+                                            ($gatewayToken->terminal->getMerchantId() === $terminal->getMerchantId()));
+                                    });
 
             //
             // We check if we have one valid gateway_token for the
@@ -525,7 +417,7 @@ class TransactionFilter extends Terminal\Filter
         $merchantMcc = $merchant->getCategory();
 
         if (($this->input['payment']->isMethodCardOrEmi() === true) and
-            ($terminal->getGateway() === Gateway::HDFC))
+            (in_array($terminal->getGateway(), Gateway::MCC_FILTER_GATEWAYS, true) === true))
         {
             //
             // If terminal is direct for the merchant, we always select it.
@@ -567,9 +459,9 @@ class TransactionFilter extends Terminal\Filter
         foreach ($applicableTerminals as $terminal)
         {
             //
-            // Currently this checks only for HDFC gateway terminals
+            // Currently this checks only for HDFC and hitachi gateway terminals
             //
-            if (($terminal->getGateway() === Gateway::HDFC) and
+            if ((in_array($terminal->getGateway(), Gateway::MCC_FILTER_GATEWAYS, true) === true) and
                 ($terminal->getCategory() === $merchantMcc))
             {
                 return false;
@@ -577,30 +469,5 @@ class TransactionFilter extends Terminal\Filter
         }
 
         return true;
-    }
-
-    public static function runExperimentalRecurringFilter(Payment\Entity $payment)
-    {
-        $app = \App::getFacadeRoot();
-        $cache = $app['cache'];
-        $trace = $app['trace'];
-
-        try
-        {
-            if (isset($cache) === true)
-            {
-                $merchantsForExperimentalRecurring = $cache->get(ConfigKey::EXPERIMENTAL_RECURRING_FILTER);
-            }
-
-            $merchantsForExperimentalRecurring = $merchantsForExperimentalRecurring ?? ['10000000000000'];
-
-            return (in_array($payment->getMerchantId(), $merchantsForExperimentalRecurring, true) === true);
-        }
-        catch (\Throwable $ex)
-        {
-            $trace->traceException($ex);
-
-            return false;
-        }
     }
 }

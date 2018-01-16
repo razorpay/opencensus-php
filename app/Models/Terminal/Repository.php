@@ -81,17 +81,34 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
-    public function getTerminalsForMerchantAndSharedMerchant(Merchant\Entity $merchant, bool $emandate = false)
+    public function getTerminalsForMerchantAndSharedMerchant(Merchant\Entity $merchant)
     {
         $merchantIds = [$merchant->getId(), Merchant\Account::SHARED_ACCOUNT];
 
         $query = $this->newQuery()
                       ->enabled();
 
-        if ($emandate === true)
-        {
-            $this->addEmandateQueryFilters($query);
-        }
+        $this->addMerchantWhereCondition($query, $merchantIds);
+
+        return $query->get();
+    }
+
+    public function getEmandateNetbankingTerminalsForMerchantAndSharedMerchant(
+        Merchant\Entity $merchant): PublicCollection
+    {
+        $merchantIds = [$merchant->getId(), Merchant\Account::SHARED_ACCOUNT];
+
+        //
+        // Emandate terminals have type 6 (recurring 3ds + recurring non 3ds)
+        // This is because we don't have different terminals for the first
+        // auth transaction and then subsequent recurring transactions.
+        //
+
+        $query = $this->newQuery()
+                      ->enabled()
+                      ->where(Entity::NETBANKING, true)
+                      ->where(Entity::TYPE, 6)
+                      ->whereIn(Entity::GATEWAY, Payment\Gateway::$recurringGateways);
 
         $this->addMerchantWhereCondition($query, $merchantIds);
 
@@ -106,24 +123,11 @@ class Repository extends Base\Repository
                       ->enabled()
                       ->where(Entity::TYPE, '=', $type)
                       // TODO: This is a temporary hard-code. Remove it later!
-                      ->where(Entity::GATEWAY, '=', Payment\Gateway::AXIS_MIGS);
+                      ->whereIn(Entity::GATEWAY, [Payment\Gateway::AXIS_MIGS, Payment\Gateway::HDFC]);
 
         $this->addMerchantWhereCondition($query, $merchantIds);
 
         return $query->get();
-    }
-
-    protected function addEmandateQueryFilters($query)
-    {
-        //
-        // Emandate terminals have type 6 (recurring 3ds + recurring non 3ds)
-        // This is because we don't have different terminals for the first
-        // auth transaction and then subsequent recurring transactions.
-        //
-
-        $query->where(Entity::NETBANKING, true)
-              ->where(Entity::TYPE, 6)
-              ->whereIn(Entity::GATEWAY, Payment\Gateway::$recurringGateways);
     }
 
     protected function addMerchantWhereCondition($query, array $merchantIds)

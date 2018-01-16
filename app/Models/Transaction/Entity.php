@@ -4,13 +4,13 @@ namespace RZP\Models\Transaction;
 
 use RZP\Constants;
 use RZP\Models\Base;
-use RZP\Models\Adjustment;
 use RZP\Models\Payment;
-use RZP\Models\Payment\Refund;
-use RZP\Models\Settlement;
-use RZP\Models\Transaction;
-use RZP\Models\Merchant;
 use RZP\Models\Dispute;
+use RZP\Models\Merchant;
+use RZP\Models\Adjustment;
+use RZP\Models\Settlement;
+use RZP\Models\Payment\Refund;
+use RZP\Models\Transaction;
 
 class Entity extends Base\PublicEntity
 {
@@ -676,6 +676,15 @@ class Entity extends Base\PublicEntity
             $reportTxn[Dispute\Entity::PAYMENT_ID] = $payment->getPublicId();
 
             $this->fillPaymentDetails($payment, $reportTxn);
+        }
+        else if ($this->isTypeTransfer() === true)
+        {
+            $transfer = $this->source;
+
+            if ($transfer->getSourceType() === Constants\Entity::PAYMENT)
+            {
+                $reportTxn[Refund\Entity::PAYMENT_ID] = Payment\Entity::getSignedId($transfer->getSourceId());
+            }
         }
 
         return $reportTxn;
