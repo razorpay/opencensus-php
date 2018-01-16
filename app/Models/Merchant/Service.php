@@ -364,14 +364,14 @@ class Service extends Base\Service
 
     public function updateKey($keyId, array $input)
     {
-        $merchantId = $this->merchant->id;
+        $merchantId = $this->merchant->getId();
 
         return (new Key\Core)->rollKey($merchantId, $keyId, $input, $this->mode);
     }
 
     public function fetchKeys()
     {
-        $merchantId = $this->merchant->id;
+        $merchantId = $this->merchant->getId();
 
         $keys = $this->repo->key->getKeysForMerchant($merchantId);
 
