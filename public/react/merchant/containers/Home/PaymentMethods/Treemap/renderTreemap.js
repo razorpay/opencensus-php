@@ -100,7 +100,8 @@ function main(
 
   var g1;
 
-  var colors = {};
+  var colors = {},
+      aliases = {"emi": "card"};
 
   initialize(root);
   accumulate(root);
@@ -109,8 +110,13 @@ function main(
   
     return item2.value - item1.value;
   }).forEach((item, index) => {
-  
+ 
     colors[item.key] = chartColors[index];
+  });
+
+  Object.keys(aliases).forEach((key) => {
+  
+    colors[key] = colors[aliases[key]];
   });
 
   layout(root);
@@ -359,6 +365,11 @@ function main(
         .each('end', function(d) {
           d3.select(this).style('font-size', d => {
             return Math.min((y(d.y + d.dy) - y(d.y)) * 0.3, 24) + 'px';
+          }).select("text").style('opacity', function (d) {
+            return this.getComputedTextLength() > x(d.x + d.dx) - x(d.x) ||
+              this.getBoundingClientRect().height > y(d.y + d.dy) - y(d.y)
+                ? 0
+                : 1;
           });
         })
         .selectAll('.ptext')
