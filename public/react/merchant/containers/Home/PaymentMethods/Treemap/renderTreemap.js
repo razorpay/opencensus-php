@@ -5,6 +5,7 @@ import {
   arrayToCsvDataUrl,
 } from 'rzp/utils/rzp-utils';
 import { humanReadableIndianCurrency } from 'rzp/utils/numerals';
+import {default as chartColors} from "rzp/utils/chart/colors";
 
 var defaults = {
   margin: { top: 0, right: 0, bottom: 0, left: 0 },
@@ -12,7 +13,7 @@ var defaults = {
   format: ',.2f',
   title: '',
   width: 500,
-  height: 300 - 21, //leaving 21px at the bottom
+  height: 300 - 24, //leaving 24px at the bottom
 };
 
 function makeCSVData(data, aggregate = 0, prefix = '', csvData = []) {
@@ -99,18 +100,21 @@ function main(
 
   var g1;
 
-  var colors = {
-    card: 'rgb(75, 84, 113)',
-    netbanking: 'rgb(95, 127, 185)',
-    bank_transfer: 'rgb(117, 194, 216)',
-    upi: 'rgb(172, 172, 231)',
-    wallet: 'rgb(235, 120, 120)',
-    emi: 'rgb(75, 84, 113)',
-  };
+  var colors = {};
 
   initialize(root);
   accumulate(root);
+
+  ([...root.values]).sort((item1, item2) => {
+  
+    return item2.value - item1.value;
+  }).forEach((item, index) => {
+  
+    colors[item.key] = chartColors[index];
+  });
+
   layout(root);
+
   var globalTransition = display(root).transition;
 
   if (typeof onTransition === 'function') {
@@ -226,12 +230,26 @@ function main(
           percent: d.percent,
           label: d.displayText,
         });
+
+        if (canBeZoomed(d)) {
+
+          d3.select(this)
+            .selectAll('rect.parent')
+            .style('fill-opacity', 0.10);
+        }
       })
       .on('mouseleave', function(d) {
-        //onHideTooltip();
+     
+        if (canBeZoomed(d)) {
+
+          d3.select(this)
+            .selectAll('rect.parent')
+            .style('fill-opacity', 0);
+        }
       })
       .on('click', function(d) {
         if (canBeZoomed(d) && typeof onTransition === 'function') {
+
           onTransition(d);
         }
       });
@@ -291,7 +309,7 @@ function main(
 
     t.call(text);
 
-    g.selectAll('rect').style('fill', function(d) {
+    g.selectAll('rect.child').style('fill', function(d) {
       return d.color;
     });
 

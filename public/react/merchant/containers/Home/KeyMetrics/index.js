@@ -321,7 +321,7 @@ class KeyMetricsContainer extends Component {
     const { startDate, endDate, value } = oldestTransactionDate;
 
     if (
-      oldestTransactionDate.loading ||
+      oldestTransactionDate.error ||
       !oldestTransactionDate.value ||
       startDate.unix() < oldestTransactionDate.value
     ) {

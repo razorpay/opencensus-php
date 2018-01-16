@@ -6,7 +6,7 @@ import { PowerSelect } from 'react-power-select';
 
 import Definition from 'rzp/ui/Definition';
 import Change from 'rzp/ui/Change';
-import { BtnGroup, Btn } from 'rzp/ui/BtnGroup';
+import { BtnGroup, Btn } from 'rzp/ui/BtnGroup/index.js';
 import { titleCase } from 'rzp/utils/rzp-utils';
 import { timeScale } from 'rzp/utils/chart/new.js';
 import takeScreenshot from 'rzp/utils/screenshot';
@@ -175,13 +175,13 @@ class Panel extends Component {
                         <PlaceholderLoader />
                       ) : (
                         <span>
-                          Compared to
-                          <strong>
-                            {' '}
+                          Compared to:
+                          <span>
+                            {<span>&nbsp;&nbsp;</span>}
                             {trend.startDate.format(dateFormat)}{' '}
-                          </strong>
+                          </span>
                           -
-                          <strong> {trend.endDate.format(dateFormat)} </strong>
+                          <span> {trend.endDate.format(dateFormat)} </span>
                         </span>
                       )}
                     </span>
@@ -190,15 +190,6 @@ class Panel extends Component {
               </div>
             )}
           <div className="panel-actions pull-right">
-            {grouping.length > 0 && (
-              <div className="panel-action-item">
-                <GroupingDropdown
-                  onGroupChange={this.handleGroupingChange}
-                  grouping={grouping}
-                  selectedGrouping={selectedGrouping}
-                />
-              </div>
-            )}
             <BtnGroup
               className="panel-action-item"
               value={selectedBreakdown}
@@ -212,6 +203,15 @@ class Panel extends Component {
                 );
               })}
             </BtnGroup>
+            {grouping.length > 0 && (
+              <div className="panel-action-item">
+                <GroupingDropdown
+                  onGroupChange={this.handleGroupingChange}
+                  grouping={grouping}
+                  selectedGrouping={selectedGrouping}
+                />
+              </div>
+            )}
             <div className="panel-action-item">
               <MoreOptionsButton
                 csvData={data.csv}

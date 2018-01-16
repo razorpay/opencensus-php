@@ -24,7 +24,7 @@ class LastUpdated extends Component {
       <small>
         <i className="icon icon-info-circle" />&nbsp;
         <span>
-          The graph data last updated <strong>{this.state.timeAgo}</strong>
+          The graph data last updated {this.state.timeAgo}
         </span>
       </small>
     );

@@ -1,4 +1,4 @@
-$gutter = 21px;
+$gutter = 24px;
 $panel-topbar-height = 76px;
 $panel-footer-height = 45px;
 $panel-body-height = 300px;
@@ -7,7 +7,7 @@ $panel-body-height = 300px;
 
   position: relative;
   padding: $gutter;
-  box-shadow: 0 4px 4px 0 rgba(0,0,0,0.1);
+  box-shadow: 0 1px 4px 0 rgba(0,0,0,0.1);
  
   .panel-footer {
 
@@ -32,6 +32,7 @@ $panel-body-height = 300px;
     .panel-footer {
 
       display: block;
+      color: #8991ae;
     }
   }
 
@@ -45,14 +46,44 @@ $panel-body-height = 300px;
 
       background-color: rgba(255, 255, 255, 1);
     }
+
+    div.no-data-msg {
+
+      text-align: center;
+      color: #8991AE;
+ 
+      svg {
+
+        display: inline-block;
+        width: 21px;
+        height: 18px;
+
+        > path {
+
+          fill: #FFA665;
+        }
+      }
+
+      .no-data-titile {
+
+        font-size: 18px;
+        margin-bottom: 6px;
+      }
+
+      .no-data-subtitle {
+
+        color: #6F758A;
+      }
+    }
   }
+
 
   div.panel-actions {
 
     .panel-action-item {
 
       display: inline-block;
-      margin-left: 21px;
+      margin-left: $gutter;
       vertical-align: middle;
 
       &:first {
@@ -62,13 +93,12 @@ $panel-body-height = 300px;
 
       &.btn-group {
 
-
         .btn-default {
 
-          border-radius: 1px;
           background-color: #FFF;
           border-color: #CFDADD;
           z-index: 0;
+          width: 78px;
         }
 
         .btn-default.active {

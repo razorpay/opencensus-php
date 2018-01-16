@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { checkChildrenType } from 'rzp/utils/rzp-react-utils';
 
+import "./styles.styl";
+
 export class Btn extends Component {
   constructor(props) {
     super(props);
@@ -72,7 +74,7 @@ export class BtnGroup extends Component {
       ...otherProps
     } = this.props;
 
-    otherProps.className = `${className} btn-group`;
+    otherProps.className = `${className} rzp-btn-group btn-group`;
 
     var boundChildren = React.Children.map(children, child => {
       return React.cloneElement(child, {

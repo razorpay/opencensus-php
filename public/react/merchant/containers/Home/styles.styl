@@ -41,7 +41,7 @@ $actionItemsHeight = 40px;
   p.section-title {
 
     font-size: 18px;
-    padding-top: 48px;
+    padding-top: 40px;
     padding-bottom: 16px;
     margin-bottom: 0;
 
@@ -86,7 +86,7 @@ $actionItemsHeight = 40px;
         position: relative;
         width: 100%;
         height: 100%;
-        padding-top: 93px;
+        padding-top: 80px;
 
         div.panel {
 
@@ -157,21 +157,35 @@ $actionItemsHeight = 40px;
   }
 }
 
-.react-normal-select__Tether {
+body.analytics-v2-active {
 
-  z-index: 2;
+  .tether-element {
 
-  .react-normal-select__Menu {
+    z-index: 2;
 
-    .PowerSelect__Options {
+    .react-normal-select__Menu {
 
-      .PowerSelect__Option {
+      .PowerSelect__Options {
 
-        padding: 0 10px;
+        .PowerSelect__Option {
 
-        > span {
+          padding: 0 10px;
 
-          line-height: $actionItemsHeight;
+          &:hover {
+
+            background-color:#FAFBFC;
+          }
+
+          > span {
+
+            line-height: $actionItemsHeight;
+          }
+
+          &.PowerSelect__Option--highlighted {
+
+            background-color: #8991AE;
+            color: #FFFFFF;
+          }
         }
       }
     }
