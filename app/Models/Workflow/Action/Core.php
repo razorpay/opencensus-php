@@ -152,6 +152,8 @@ class Core extends Base\Core
             $params = $this->buildParams($input);
         }
 
+        // $params has data for Action\Entity (Mysql) + Differ\Entity (ES)
+
         $this->repo->transactionOnLiveAndTest(function() use ($action, $params, $retry, $admin)
         {
             $differInput = $params[Entity::DIFFER] ?? null;

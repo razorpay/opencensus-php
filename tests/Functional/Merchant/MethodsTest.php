@@ -133,7 +133,7 @@ class MethodsTest extends TestCase
 
         $content = $this->startTest($testData);
 
-        $this->assertCount(3, $content['recurring']['netbanking']);
+        $this->assertCount(3, $content['recurring']['emandate']);
     }
 
     public function testRecurringNetbankingOnChargeAtWillInLive()
@@ -172,7 +172,9 @@ class MethodsTest extends TestCase
 
         $content = $this->startTest($testData);
 
-        $this->assertArraySelectiveEquals(['ICIC' => 'ICICI Bank'], $content['recurring']['netbanking']);
+        $this->assertArraySelectiveEquals(
+            ['ICIC' => ['name' => 'ICICI Bank', 'auth_types' => ['netbanking']]],
+            $content['recurring']['emandate']);
     }
 
     public function testRecurringNetbankingOnSubscriptions()

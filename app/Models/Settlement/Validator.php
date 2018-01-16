@@ -43,7 +43,7 @@ class Validator extends Base\Validator
 
     protected static $updateChannelRules = [
         'settlement_ids'   => 'required|array',
-        'settlement_ids.*' => 'required|alpha_dash|max:20',
+        'settlement_ids.*' => 'required|alpha_dash|max:19',
         Entity::CHANNEL    => 'required|string|custom',
     ];
 

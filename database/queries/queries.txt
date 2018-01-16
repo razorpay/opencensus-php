@@ -2784,6 +2784,18 @@ ALTER TABLE virtual_accounts
 ALTER TABLE `merchants`
     ADD COLUMN `channel` VARCHAR(32) DEFAULT 'kotak' AFTER `billing_label`;
 
+ALTER TABLE payments
+    CHANGE COLUMN `global_token` `auth_type` VARCHAR(14) DEFAULT NULL;
+
+ALTER TABLE payments
+    ADD INDEX `payments_auth_type_index` (`auth_type`);
+
+ALTER TABLE tokens
+    ADD COLUMN beneficiary_name VARCHAR(120) DEFAULT NULL AFTER account_number;
+
+ALTER TABLE tokens
+    ADD COLUMN ifsc VARCHAR(16) DEFAULT NULL AFTER beneficiary_name;
+
 ALTER TABLE settings
     MODIFY COLUMN created_at INT(11) NOT NULL,
     MODIFY COLUMN updated_at INT(11) NOT NULL;
@@ -2799,3 +2811,15 @@ ALTER TABLE merchant_invoice
     MODIFY COLUMN amount bigint(20)  NOT NULL,
     MODIFY COLUMN tax int(11) NOT NULL,
     MODIFY COLUMN amount_due bigint(20) NOT NULL DEFAULT 0;
+
+
+ALTER TABLE workflow_steps
+    ADD COLUMN deleted_at INT UNSIGNED DEFAULT NULL
+    AFTER updated_at;
+
+ALTER TABLE workflow_steps
+    ADD INDEX `workflow_steps_created_at_deleted_at_index` (`created_at`,`deleted_at`);
+
+ALTER TABLE fund_transfer_attempts
+    MODIFY COLUMN bank_status_code varchar(30) DEFAULT NULL;
+

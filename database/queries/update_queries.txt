@@ -1423,3 +1423,6 @@ UPDATE fund_transfer_attempts
 UPDATE merchant_terminal
 SET terminal_id = '91elY0H2uuZ6lU'
 WHERE terminal_id in ('7Y30j1EY3JG8ob', '7bOl7tgaZ5kWvf');
+
+UPDATE fund_transfer_attempts
+SET id = UPPER(id) WHERE channel = 'icici';
