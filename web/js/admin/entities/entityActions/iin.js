@@ -51,7 +51,7 @@ export default ({ entity, updateEntity }) => {
   }
 
   return (
-    <ShowWhen permission="edit_merchant_offer">
+    <ShowWhen permission="edi_iin_rule">
       <button class="label-info" onClick={openEditIIN}>
         Edit IIN
       </button>
@@ -61,7 +61,6 @@ export default ({ entity, updateEntity }) => {
 
 // Edit iin Form
 const EditIINForm = ({ entity, handleSubmit }) => {
-  console.log('ENTTIY..', entity);
   return (
     <BaseModal header="Edit iin">
       <Form class="full-span">
