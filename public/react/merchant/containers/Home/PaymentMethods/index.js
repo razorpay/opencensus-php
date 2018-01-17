@@ -58,6 +58,7 @@ class PaymentMethods extends Component {
   }
 
   fetchData(startDate, endDate) {
+
     this.setState({
       isLoading: true,
       error: '',
@@ -69,7 +70,8 @@ class PaymentMethods extends Component {
       getQuery({
         startTime: startDate.unix(),
         endTime: endDate.unix(),
-      })
+      }),
+      this.props.mode
     )
       .then(resp => {
         // dealyed response

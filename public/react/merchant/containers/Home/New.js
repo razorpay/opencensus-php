@@ -251,6 +251,7 @@ export default class HomeContainer extends Component {
                 startDate={startDate}
                 endDate={endDate}
                 oldestTransactionDate={oldestTransactionDate}
+                mode={mode}
               />
             </div>
           </div>
@@ -260,7 +261,10 @@ export default class HomeContainer extends Component {
               <p className="section-title">Payment Insights</p>
             </div>
             <div className="col-md-12">
-              <PaymentMethods startDate={startDate} endDate={endDate} />
+              <PaymentMethods
+                 startDate={startDate}
+                 endDate={endDate}
+                 mode={mode}/>
             </div>
           </div>
 
@@ -271,7 +275,10 @@ export default class HomeContainer extends Component {
                   Traffic split on platforms
                 </p>
                 <div className="content">
-                  <Traffic startDate={startDate} endDate={endDate} />
+                  <Traffic
+                     startDate={startDate}
+                     endDate={endDate}
+                     mode={mode}/>
                 </div>
               </div>
               <div className="activity-container">

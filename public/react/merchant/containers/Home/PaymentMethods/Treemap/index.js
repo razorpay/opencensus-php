@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 
 import Tooltip from 'rzp/ui/Tooltip';
 import { getFormattedAmount } from 'rzp/utils/rzp-utils';
+import { globalGroupTitleMap as groupTitleMap } from "rzp/utils/pokedex";
 
 import renderTreemap from './renderTreemap';
 
@@ -107,7 +108,7 @@ export default class Treemap extends Component {
       this.onTransition,
       this.onShowTooltip,
       this.onHideTooltip,
-      {},
+      groupTitleMap,
       this.bankNames
     );
 

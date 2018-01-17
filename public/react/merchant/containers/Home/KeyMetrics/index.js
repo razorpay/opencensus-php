@@ -163,7 +163,7 @@ class KeyMetricsContainer extends Component {
     const { tabsState, selectedTab } = this.state,
       tabState = tabsState[selectedTab],
       { selectedGrouping } = tabState,
-      { startDate, endDate } = this.props;
+      { startDate, endDate, mode } = this.props;
 
     const query = getQuery({
       tabName: fetchAllCounts ? 'all' : selectedTab,
@@ -181,7 +181,7 @@ class KeyMetricsContainer extends Component {
 
     const requestId = ++this.requestId;
 
-    return fetch(query)
+    return fetch(query, mode)
       .then(resp => {
         if (requestId !== this.requestId) {
           return null;

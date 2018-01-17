@@ -93,7 +93,7 @@ class Traffic extends Component {
 
     const requestId = ++this.requestId;
 
-    fetch(query)
+    fetch(query, this.props.mode)
       .then(resp => {
         if (requestId !== this.requestId) {
           return null;
