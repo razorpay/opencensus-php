@@ -87,12 +87,6 @@ deploy:
       - script:
           name: remove heavy directories
           code: rm --recursive --force .git node_modules web/node_modules
-      - script:
-          name: Conditionally skip code deploy if cdn only deploy
-          code: |
-            if [ $WERCKER_DEPLOYTARGET_NAME == *cdn ] ; then
-              export SKIP_CODE_DEPLOY=true
-            fi
       - razorpay/aws-code-deploy@0.0.32:
           key: $AWS_KEY
           secret: $AWS_SECRET
@@ -100,7 +94,6 @@ deploy:
           application-name: dashboard
           deployment-group-name: $WERCKER_DEPLOYTARGET_NAME
           s3-bucket: rzp-code-deploy
-          skip: $SKIP_CODE_DEPLOY
 
     after-steps:
       - slack-notifier:
@@ -108,3 +101,12 @@ deploy:
           channel: tech_bots
           username: wercker
           icon_url: https://cdn.rawgit.com/wantedly/step-pretty-slack-notify/master/icons/$WERCKER_RESULT.jpg
+
+s3sync:
+    steps:
+      - script:
+          name: S3 Sync
+          code: ./s3sync.js
+      - script:
+          name: remove heavy directories
+          code: rm --recursive --force .git node_modules web/node_modules
