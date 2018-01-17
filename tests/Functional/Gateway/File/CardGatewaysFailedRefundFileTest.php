@@ -18,7 +18,7 @@ class CardGatewaysFailedRefundFileTest extends TestCase
     {
         Carbon::setTestNow();
 
-        $this->testDataFilePath = __DIR__ . '/Helpers/CardGatewaysFailedRefundFileTestData.php';
+        $this->testDataFilePath = __DIR__ . '/helpers/CardGatewaysFailedRefundFileTestData.php';
 
         parent::setUp();
     }

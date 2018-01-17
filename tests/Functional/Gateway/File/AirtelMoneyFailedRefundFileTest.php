@@ -18,7 +18,7 @@ class AirtelMoneyFailedRefundFileTest extends TestCase
     {
         Carbon::setTestNow();
 
-        $this->testDataFilePath = __DIR__ . '/Helpers/AirteMoneyFailedRefundFileTestData.php';
+        $this->testDataFilePath = __DIR__ . '/helpers/AirteMoneyFailedRefundFileTestData.php';
 
         parent::setUp();
 
