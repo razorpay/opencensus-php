@@ -133,6 +133,13 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/settlements/reconcile', 'AdminController@postReconcileSettlement');
         Route::post('/admin/{mode}/reconciliate', 'AdminController@postReconciliate');
 
+        Route::group(['middleware'  =>  ['superadmin']], function()
+        {
+            // This is the RAW API route which processes api calls
+            Route::post('/api/superadmin/{path?}', 'AdminController@passThrough')
+                ->where('path', '.*$');
+        });
+
         Route::put('/admin/merchant/{id}/email', 'AdminController@putEditMerchantEmail');
         Route::get('/admin/{mode}/fetchentity/{entity}/{format}', 'AdminController@getMultipleEntities')
                 ->where('format', 'csv')

@@ -110,7 +110,7 @@ export default class MakeAPICall extends Component {
                 body.file = body.file[0];
               }
 
-              return adminFormUpload(body, '/api/' + url).then(response => {
+              return adminFormUpload(body, '/api/superadmin/' + url).then(response => {
                 if (response.data.success) {
                   notifySuccess('API Request successful');
                   // closeModal();
