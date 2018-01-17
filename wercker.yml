@@ -87,13 +87,13 @@ deploy:
       - script:
           name: remove heavy directories
           code: rm --recursive --force .git node_modules web/node_modules
-      - nhuray/aws-code-deploy:
+      - razorpay/aws-code-deploy@0.0.32:
           key: $AWS_KEY
           secret: $AWS_SECRET
           region: $AWS_REGION
           application-name: dashboard
           deployment-group-name: $WERCKER_DEPLOYTARGET_NAME
-          s3-bucket: "rzp-code-deploy"
+          s3-bucket: rzp-code-deploy
 
     after-steps:
       - slack-notifier:
@@ -104,6 +104,9 @@ deploy:
 
 s3sync:
     steps:
-      - s3sync:
-        name: S3 Sync
-        code: ./s3sync.js
+      - script:
+          name: S3 Sync
+          code: ./s3sync.js
+      - script:
+          name: remove heavy directories
+          code: rm --recursive --force .git node_modules web/node_modules
