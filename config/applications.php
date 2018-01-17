@@ -174,4 +174,10 @@ return [
             'password' => env('UFH_PASSWORD'),
         ],
     ],
+
+    'pincodesearcher' => [
+        'mock'    => env('PINCODE_MOCK', false),
+        'url'     => env('PINCODE_BASE_URL'),
+        'api_key' => env('PINCODE_API_KEY')
+    ],
 ];
