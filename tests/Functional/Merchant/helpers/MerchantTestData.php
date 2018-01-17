@@ -8,7 +8,7 @@ return [
     'testCreateKey' => [
         'request' => [
             'method' => 'POST',
-            'url' => '/merchant/keys',
+            'url' => '/keys',
             'content' => [
             ]
         ],
@@ -23,7 +23,7 @@ return [
     'testCreateKeyForNonActivatedMerchant' => [
         'request' => [
             'method' => 'POST',
-            'url' => '/merchant/keys',
+            'url' => '/keys',
             'content' => [
             ]
         ],
@@ -113,7 +113,7 @@ return [
         'request' => [
             'content' => [
             ],
-            'url' => '/merchant/keys',
+            'url' => '/keys',
             'method' => 'get'
         ],
         'response' => [
@@ -133,7 +133,7 @@ return [
         'request' => [
             'content' => [
             ],
-            'url' => '/merchant/keys/rzp_test_TheTestAuthKey',
+            'url' => '/keys/rzp_test_TheTestAuthKey',
             'method' => 'PUT',
         ],
         'response' => [
@@ -151,7 +151,7 @@ return [
             'content' => [
                 'delay_roll' => '1'
             ],
-            'url' => '/merchant/keys/rzp_test_TheTestAuthKey',
+            'url' => '/keys/rzp_test_TheTestAuthKey',
             'method' => 'PUT',
         ],
         'response' => [
@@ -168,7 +168,7 @@ return [
         'request' => [
             'content' => [
             ],
-            'url' => '/merchant/keys/rzp_test_TheTestAuthKey',
+            'url' => '/keys/rzp_test_TheTestAuthKey',
             'method' => 'PUT',
         ],
         'response' => [
@@ -190,7 +190,7 @@ return [
         'request' => [
             'content' => [
             ],
-            'url' => '/merchant/keys/rzp_test_1DP5mmOlF5G5ag',
+            'url' => '/keys/rzp_test_1DP5mmOlF5G5ag',
             'method' => 'PUT',
         ],
         'response' => [

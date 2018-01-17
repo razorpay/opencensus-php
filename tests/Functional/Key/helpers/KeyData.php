@@ -8,7 +8,7 @@ use Gateway\Hdfc;
 return [
     'testNewKeyIdRandom' => [
         'request' => [
-            'url' => '/merchant/keys/rzp_test_TheTestAuthKey',
+            'url' => '/keys/rzp_test_TheTestAuthKey',
             'method' => 'PUT',
         ],
         'response' => [

@@ -49,7 +49,7 @@ class KeyTest extends TestCase
         $id = $merchant['id'];
 
         $testData = & $this->testData[__FUNCTION__];
-        $testData['request']['url'] = '/merchant/keys/rzp_test_TheTestAuthKey';
+        $testData['request']['url'] = '/keys/rzp_test_TheTestAuthKey';
 
         $this->ba->proxyAuth('rzp_test_' . $id);
         $content = $this->startTest();
