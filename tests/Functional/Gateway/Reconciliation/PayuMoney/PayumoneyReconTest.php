@@ -43,7 +43,7 @@ class PayumoneyReconTest extends TestCase
     {
         $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
 
-        $payments = $this->makeReconPaymentsSince($createdAt);
+        $payments = $this->makePaymentsSince($createdAt);
 
         $this->ba->appAuth();
 
@@ -90,7 +90,7 @@ class PayumoneyReconTest extends TestCase
     {
         $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
 
-        $payment = $this->makeReconPaymentsSince($createdAt, 1)[0];
+        $payment = $this->makePaymentsSince($createdAt, 1)[0];
 
         $this->ba->appAuth();
 
@@ -148,7 +148,7 @@ class PayumoneyReconTest extends TestCase
     {
         $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
 
-        $this->makeReconPaymentsSince($createdAt, 1)[0];
+        $this->makePaymentsSince($createdAt, 1)[0];
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -203,7 +203,7 @@ class PayumoneyReconTest extends TestCase
     {
         $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
 
-        $payment = $this->makeReconPaymentsSince($createdAt, 1)[0];
+        $payment = $this->makePaymentsSince($createdAt, 1)[0];
 
         $this->ba->appAuth();
 

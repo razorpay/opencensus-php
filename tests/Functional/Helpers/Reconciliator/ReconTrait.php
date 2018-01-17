@@ -68,7 +68,7 @@ trait ReconTrait
         return Mockery::mock($class, [])->makePartial();
     }
 
-    protected function makeReconPaymentsSince(int $createdAt, int $count = 3)
+    protected function makePaymentsSince(int $createdAt, int $count = 3)
     {
         for ($i = 0; $i < $count; $i++)
         {
