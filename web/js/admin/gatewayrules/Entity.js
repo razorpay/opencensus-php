@@ -265,6 +265,15 @@ class GatewayRuleForm extends Component {
           ))}
         </SelectField>
 
+        {['card', 'emi'].indexOf(model.method) > -1 && (
+          <Field
+            label="IIN (6 digit)"
+            name="iins"
+            defaultValue={model.iins.join(',')}
+            placeholder="Enter comma(,) separated values"
+          />
+        )}
+
         <SelectField
           name="shared_terminal"
           label="Shared Terminal"
@@ -275,6 +284,7 @@ class GatewayRuleForm extends Component {
           <option value="0">No</option>
           <option value="1">Yes</option>
         </SelectField>
+        <br />
         <TextAreaField
           label="Add Comment:"
           name="comment"
