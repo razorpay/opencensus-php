@@ -93,6 +93,14 @@ class Entity extends Base\PublicEntity
     const ARCHIVED                         = 'archived';
     const REJECTION_REASONS                = 'rejection_reasons';
     const ALLOWED_NEXT_ACTIVATION_STATUSES = 'allowed_next_activation_statuses';
+    const VERIFICATION                     = 'verification';
+    const CAN_SUBMIT                       = 'can_submit';
+
+    // fields_pending field is used in new Account APIs.
+    const FIELDS_PENDING                   = 'fields_pending';
+
+    // required_fields is used in older APIs
+    const REQUIRED_FIELDS                  = 'required_fields';
 
     // Enum values used for product activation status
     const PENDING  = 'pending';
@@ -351,6 +359,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACTIVATION_STATUS);
     }
 
+    public function getCompanyCin()
+    {
+        return $this->getAttribute(self::COMPANY_CIN);
+    }
+
     public function getGstin()
     {
         return $this->getAttribute(self::GSTIN);
@@ -361,9 +374,34 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::P_GSTIN);
     }
 
-    public function getBusinessRegisteredState()
+    public function getPan()
     {
-        return $this->getAttribute(self::BUSINESS_REGISTERED_STATE);
+        return $this->getAttribute(self::COMPANY_PAN);
+    }
+
+    public function getPanName()
+    {
+        return $this->getAttribute(self::COMPANY_PAN_NAME);
+    }
+
+    public function getPromoterPan()
+    {
+        return $this->getAttribute(self::PROMOTER_PAN);
+    }
+
+    public function getPromoterPanName()
+    {
+        return $this->getAttribute(self::PROMOTER_PAN_NAME);
+    }
+
+    public function getBusinessProofFile()
+    {
+        return $this->getAttribute(self::BUSINESS_PROOF_URL);
+    }
+
+    public function getAddressProofFile()
+    {
+        return $this->getAttribute(self::ADDRESS_PROOF_URL);
     }
 
     public function getBusinessRegisteredAddress()
@@ -371,7 +409,42 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BUSINESS_REGISTERED_ADDRESS);
     }
 
-    public function getGstStateCode()
+    public function getBusinessRegisteredCity()
+    {
+        return $this->getAttribute(self::BUSINESS_REGISTERED_CITY);
+    }
+
+    public function getBusinessRegisteredState()
+    {
+        return $this->getAttribute(self::BUSINESS_REGISTERED_STATE);
+    }
+
+    public function getBusinessRegisteredPin()
+    {
+        return $this->getAttribute(self::BUSINESS_REGISTERED_PIN);
+    }
+
+    public function getBusinessOperationAddress()
+    {
+        return $this->getAttribute(self::BUSINESS_OPERATION_ADDRESS);
+    }
+
+    public function getBusinessOperationCity()
+    {
+        return $this->getAttribute(self::BUSINESS_OPERATION_CITY);
+    }
+
+    public function getBusinessOperationState()
+    {
+        return $this->getAttribute(self::BUSINESS_OPERATION_STATE);
+    }
+
+    public function getBusinessOperationPin()
+    {
+        return $this->getAttribute(self::BUSINESS_OPERATION_PIN);
+    }
+
+    public function getBusinessStateCode()
     {
         $gstin = $this->getGstin() ?? $this->getPGstin();
 
@@ -413,6 +486,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SUBSCRIPTIONS_ACTIVATION_STATUS, $status);
     }
 
+    public function setTransactionReportEmail($email)
+    {
+        $this->setAttribute(self::TRANSACTION_REPORT_EMAIL, $email);
+    }
+
     public function getMarketplaceActivationStatus()
     {
         return $this->getAttribute(self::MARKETPLACE_ACTIVATION_STATUS);
@@ -436,6 +514,51 @@ class Entity extends Base\PublicEntity
     public function getContactMobile()
     {
         return $this->getAttribute(self::CONTACT_MOBILE);
+    }
+
+    public function getContactLandline()
+    {
+        return $this->getAttribute(self::CONTACT_LANDLINE);
+    }
+
+    public function getBusinessType()
+    {
+        return BusinessType::getKeyFromIndex($this->getAttribute(self::BUSINESS_TYPE));
+    }
+
+    public function getBusinessName()
+    {
+        return $this->getAttribute(self::BUSINESS_NAME);
+    }
+
+    public function getTransactionReportEmail()
+    {
+        return $this->getAttribute(self::TRANSACTION_REPORT_EMAIL);
+    }
+
+    public function getBusinessPaymentDetails()
+    {
+        return $this->getAttribute(self::BUSINESS_PAYMENTDETAILS);
+    }
+
+    public function getBusinessDateOfEstablishment()
+    {
+        return $this->getAttribute(self::BUSINESS_DOE);
+    }
+
+    public function getTransactionVolume()
+    {
+        return $this->getAttribute(self::TRANSACTION_VOLUME);
+    }
+
+    public function getTransactionValue()
+    {
+        return $this->getAttribute(self::TRANSACTION_VALUE);
+    }
+
+    public function getBusinessModel()
+    {
+        return $this->getAttribute(self::BUSINESS_MODEL);
     }
 
     public function toArrayGST()

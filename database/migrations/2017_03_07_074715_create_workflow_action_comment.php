@@ -61,7 +61,7 @@ class CreateWorkflowActionComment extends Migration
             $table->index(Comment::ENTITY_ID);
             $table->index(Comment::ENTITY_TYPE);
             $table->index(Comment::CREATED_AT);
-
+            $table->index([Comment::ENTITY_ID, Comment::ENTITY_TYPE]);
         });
     }
 

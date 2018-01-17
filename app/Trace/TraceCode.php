@@ -973,6 +973,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const QUERY_CACHE_FLUSH_ERROR                       = 'QUERY_CACHE_FLUSH_ERROR';
     const QUERY_CACHE_EVENT_ERROR                       = 'QUERY_CACHE_EVENT_ERROR';
 
+    // Account codes
+    const ACCOUNT_CREATED                               = 'ACCOUNT_CREATED';
+
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',

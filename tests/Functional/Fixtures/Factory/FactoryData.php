@@ -391,6 +391,14 @@ final class FactoryData
             'amount' => 1000,
         ]);
 
+        $factory(\RZP\Gateway\Upi\Base\Entity::class, [
+            'id'                 => '0',
+            'action'             => 'authorize',
+            'amount'             => 50000,
+            'acquirer'           => 'SBIN',
+            'gateway_payment_id' => 99999999999
+        ]);
+
         $factory(\RZP\Models\Customer\Entity::class, [
             'id'          => $faker->uniqueid,
             'merchant_id' => '10000000000000',

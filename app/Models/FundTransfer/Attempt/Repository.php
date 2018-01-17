@@ -100,15 +100,7 @@ class Repository extends Base\Repository
                     ->whereBetween(Entity::CREATED_AT, [$from, $to])
                     ->where(Entity::STATUS, $status)
                     ->where(Entity::CHANNEL, $channel)
+                    ->whereNotNull(Entity::BANK_STATUS_CODE)
                     ->get();
-    }
-
-    public function findByIdCaseInsensitive(string $id)
-    {
-        $upperCaseId = strtoupper($id);
-
-        return $this->newQuery()
-                    ->whereRaw('UPPER(id) = ?', $upperCaseId)
-                    ->first();
     }
 }

@@ -74,7 +74,7 @@ abstract class FileProcessor extends Base\Core
         return $data;
     }
 
-    final protected function parseFile($filePath)
+    protected function parseFile($filePath)
     {
         $ext = pathinfo($filePath, PATHINFO_EXTENSION);
 
@@ -95,7 +95,7 @@ abstract class FileProcessor extends Base\Core
         }
     }
 
-    final protected function processReconciliation($input)
+    protected function processReconciliation($input)
     {
         $reconcileFile = $this->getReconcilationFile($input);
 
@@ -130,7 +130,7 @@ abstract class FileProcessor extends Base\Core
         return $response;
     }
 
-    final protected function startReconciliation($data): array
+    protected function startReconciliation($data): array
     {
         $summary = $this->repo->transaction(function() use ($data)
         {
@@ -168,7 +168,7 @@ abstract class FileProcessor extends Base\Core
         return $summary;
     }
 
-    final protected function getSummary(): array
+    protected function getSummary(): array
     {
         $processedCount = count($this->allReconciledRows);
 
@@ -185,7 +185,7 @@ abstract class FileProcessor extends Base\Core
         return $summary;
     }
 
-    final protected function getReconcilationFile($input)
+    protected function getReconcilationFile($input)
     {
         $reconcileFile = null;
 
@@ -204,10 +204,7 @@ abstract class FileProcessor extends Base\Core
         return $reconcileFile;
     }
 
-    /**
-     * @param $row
-     */
-    final protected function reconcileEntity($row)
+    protected function reconcileEntity($row)
     {
         $rowProcessorNamespace = $this->getRowProcessorNamespace($row);
 
@@ -216,7 +213,7 @@ abstract class FileProcessor extends Base\Core
         return $fta;
     }
 
-    final protected function sendEmail()
+    protected function sendEmail()
     {
         if (($this->mode === Mode::TEST) and
             ($this->app->environment('dev', 'testing') === false))

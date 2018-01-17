@@ -54,6 +54,7 @@ class Constants
         self::INVOICES    => 'Razorpay Invoices',
         self::REPORTS     => 'Team Razorpay',
         self::CARE        => 'Team Razorpay',
+        self::NOREPLY     => 'Team Razorpay',
         self::ALERTS      => 'Razorpay Webhook Support',
         self::ACTIVATION  => 'Razorpay Activations Team',
         self::IRCTC       => 'Razorpay IRCTC Files',
