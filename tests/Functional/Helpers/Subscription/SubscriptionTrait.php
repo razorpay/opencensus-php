@@ -15,6 +15,9 @@ trait SubscriptionTrait
     {
         $paymentRequest = $this->getDefaultRecurringPaymentArray();
 
+        // This is not required since we add it implicitly.
+        unset($paymentRequest['recurring']);
+
         // For subscription, we get the customer ID from the subscription entity itself.
         unset($paymentRequest['customer_id']);
 

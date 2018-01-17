@@ -2,9 +2,9 @@
 
 namespace RZP\Base;
 
-use RZP\Constants\Entity as E;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Entity as E;
 
 class EloquentEx extends \Razorpay\Spine\Entity
 {

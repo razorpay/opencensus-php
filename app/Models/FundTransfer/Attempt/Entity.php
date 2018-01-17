@@ -5,6 +5,7 @@ namespace RZP\Models\FundTransfer\Attempt;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base;
 use RZP\Models\BankAccount;
+use RZP\Models\Settlement\Channel;
 
 class Entity extends Base\PublicEntity
 {
@@ -81,6 +82,32 @@ class Entity extends Base\PublicEntity
         self::SOURCE,
     ];
 
+    /**
+     * Generate ID with all characters in upper-case
+     * for ICICI, because their Recon file has the ID
+     * in upper-case. If we do not create it this way,
+     * when we query on this ID during reconciliation,
+     * we'd need to do a case-insensitive search
+     * which will do a full-table scan.
+     * To avoid a case-insensitive search on the table,
+     * we save the ID in upper-case.
+     */
+    public function generateId()
+    {
+        $id = static::generateUniqueId();
+
+        $channel = $this->getAttribute(self::CHANNEL);
+
+        if ($channel === Channel::ICICI)
+        {
+            $id = strtoupper($id);
+        }
+
+        $this->setAttribute(self::ID, $id);
+
+        return $this;
+    }
+
     public function source()
     {
         return $this->morphTo('source', self::SOURCE_TYPE, self::SOURCE_ID);
@@ -108,6 +135,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REMARKS);
     }
 
+    public function getFailureReason()
+    {
+        return $this->getAttribute(self::FAILURE_REASON);
+    }
+
     public function getNarration()
     {
         return $this->getAttribute(self::NARRATION);
@@ -121,6 +153,11 @@ class Entity extends Base\PublicEntity
     public function getVersion()
     {
         return $this->getAttribute(self::VERSION);
+    }
+
+    public function getBankStatusCode()
+    {
+        return $this->getAttribute(self::BANK_STATUS_CODE);
     }
 
     public function getEntityId()

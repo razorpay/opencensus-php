@@ -7,11 +7,11 @@ use Illuminate\Http\UploadedFile;
 
 trait ReconTrait
 {
-    protected function generateReconFile()
+    protected function generateReconFile($content = [])
     {
         $request = [
             'url'     => '/gateway/mock/reconciliation/' . $this->gateway,
-            'content' => [],
+            'content' => $content,
             'method'  => 'POST'
         ];
 
@@ -45,9 +45,9 @@ trait ReconTrait
         $this->app['gateway']->setRecon($gateway, $recon);
     }
 
-    protected function mockReconContentFunction($closure, $gateway = null)
+    protected function mockReconContentFunction($closure, $gateway = null, array $input = [])
     {
-        $recon = $this->mockRecon()
+        $recon = $this->mockRecon($gateway, $input)
                       ->shouldReceive('content')
                       ->andReturnUsing($closure)
                       ->mock();
@@ -57,11 +57,11 @@ trait ReconTrait
         return $recon;
     }
 
-    protected function mockRecon($gateway = null)
+    protected function mockRecon($gateway = null, array $input = [])
     {
         $gateway = $gateway ?: $this->gateway;
 
-        $class = $this->app['gateway']->getReconClass($gateway);
+        $class = $this->app['gateway']->getReconClass($gateway, $input);
 
         return Mockery::mock($class, [])->makePartial();
     }

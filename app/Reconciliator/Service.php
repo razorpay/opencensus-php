@@ -136,7 +136,7 @@ class Service extends Base\Service
         $orchestrator = new Orchestrator($gateway, $gatewayReconciliator);
 
         //
-        // This is a temporary logic. Plan is to move all gateay reconciliation
+        // This is a temporary logic. Plan is to move all gateway reconciliation
         // to batch once it is stable
         //
         if (in_array($gateway, self::BATCH_RECON_GATEWAYS, true) === true)

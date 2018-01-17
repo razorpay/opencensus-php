@@ -125,6 +125,17 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchUnsettledTransactionsForMerchantUpdate($merchantId)
+    {
+        $query = $this->newQuery()
+                      ->select(['id'])
+                      ->where(Transaction\Entity::SETTLED, '=', 0)
+                      ->where(Transaction\Entity::TYPE, '!=', Type::SETTLEMENT)
+                      ->merchantId($merchantId);
+
+        return $query->get();
+    }
+
     public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip, $entityToRelationFetchMap = [])
     {
         $setls = (new Settlement\Repository)->fetchBetweenTimestamp($merchantId, $from, $to);
@@ -395,31 +406,54 @@ class Repository extends Base\Repository
         return $count;
     }
 
-    public function updateAttributes($merchantId, $transactionIds, $oldSettledAt, $attributes)
+    /**
+     * Update channel for unsettled transactions
+     *
+     * @param string $merchantId
+     * @param array $transactionIds
+     * @param string $channel
+     * @return mixed
+     */
+    public function bulkChannelUpdateForMerchantTransactions(
+        string $merchantId, array $transactionIds, string $channel)
     {
-        $query = $this->newQuery()
-                    ->where(Transaction\Entity::MERCHANT_ID, $merchantId)
-                    ->whereIn(Transaction\Entity::ID, $transactionIds)
-                    ->whereNull(Transaction\Entity::SETTLEMENT_ID);
+        $attributes = [Entity::CHANNEL => $channel];
 
-        if ($oldSettledAt !== null)
+        $batchedIds = array_chunk($transactionIds, 5000);
+
+        $count = 0;
+
+        foreach ($batchedIds as $batch)
         {
-            $between = [$oldSettledAt['start'], $oldSettledAt['end']];
+            $query = $this->newQuery()
+                            ->where(Entity::MERCHANT_ID, $merchantId)
+                            ->whereIn(Entity::ID, $batch);
 
-            $query->whereBetween(Transaction\Entity::SETTLED_AT, $between);
+            $updated = $query->update($attributes);
+
+            $count += $updated;
         }
 
-        return $query->update($attributes);
+        return $count;
     }
 
-    public function updateChannel($settlementId, $channel)
+    /**
+     * Use this method with caution.
+     * It updates channel for all transactions that belong to given settlement_id.
+     * It should be run only for a settlement that is in Failed status.
+     *
+     * @param $settlementId
+     * @param $transactionIds
+     * @param $channel
+     * @return mixed
+     */
+    public function updateChannelForSettlement($settlementId, $transactionIds, $channel)
     {
         $values = [Transaction\Entity::CHANNEL => $channel];
 
         $count = $this->newQuery()
                       ->where(Transaction\Entity::SETTLEMENT_ID, $settlementId)
-                      ->where(Transaction\Entity::SETTLED, false)
-                      ->whereNull(Transaction\Entity::RECONCILED_AT)
+                      ->whereIn(Transaction\Entity::ID, $transactionIds)
                       ->update($values);
 
         return $count;

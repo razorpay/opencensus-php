@@ -21,6 +21,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Plan\Subscription;
+use RZP\Models\Merchant\Methods;
 use RZP\Models\Plan\Subscription\Addon;
 use RZP\Models\Payment\Processor\Notify;
 use RZP\Models\Payment\Status;
@@ -48,7 +49,7 @@ class Processor
 
     /**
      * Callback urls can be hit multiple times by customers.
-     * WIthin certain duration x minutes, we will return payment
+     * Within certain duration x minutes, we will return payment
      * success or failed when the url is hit again.
      * After that duration, we will simply throw
      * BAD_REQUEST_PAYMENT_ALREADY_PROCESSED payment_processed error.
@@ -195,10 +196,119 @@ class Processor
         return $this->authorize($payment, $input);
     }
 
-    protected function preProcessPaymentInputs(array $input, $payment)
+    protected function preProcessPaymentInputs(array $input, Payment\Entity $payment)
+    {
+        $coproto = $this->preProcessPaymentInputsForEmandate($input, $payment);
+
+        if ($coproto === null)
+        {
+            $coproto = $this->preProcessPaymentInputsForWallet($input, $payment);
+        }
+
+        return $coproto;
+    }
+
+    protected function preProcessPaymentInputsForEmandate(array $input, Payment\Entity $payment)
+    {
+        //
+        // We don't want to do this coproto
+        // stuff for second recurring payments.
+        //
+        // We don't want to ask the merchant to send bank_account
+        // details and auth_type for second recurring payments.
+        // bank_account details are filled into the payment create
+        // input automatically using the token.
+        // Ideally, even the bank_account details are not really needed
+        // to be filled in the input. But, we are filling it anyway.
+        // auth_type cannot be filled using the token or any other details
+        // in the payment create input. But, we don't need auth_type for
+        // second recurring payments. So, it's okay.
+        //
+
+        $currentRouteName = $this->route->getCurrentRouteName();
+
+        if ($currentRouteName === 'payment_create_recurring')
+        {
+            return null;
+        }
+
+        if ($payment->isEmandate() === false)
+        {
+            return null;
+        }
+
+        //
+        // We need this flow only if either bank_account or auth_type is missing.
+        // TODO: Handle for aadhaar also
+        //
+        if ((empty($input[Payment\Entity::BANK_ACCOUNT]) === false) and
+            (empty($payment->getAuthType()) === false))
+        {
+            return null;
+        }
+
+        $methods = [];
+
+        (new Methods\Core)->addRecurringEmandateToMethodsIfApplicable($this->merchant, $methods);
+
+        //
+        // This can happen when the required features are not enabled
+        // or when there's not a single bank for any auth type.
+        //
+        if (empty($methods) === true)
+        {
+            return null;
+        }
+
+        $bank = $input[Payment\Entity::BANK];
+
+        //
+        // This case should ideally never come up because the bank
+        // passed by the client would be based on the methods API only.
+        // Even here, we are using the methods API. If the bank did
+        // not come up in the methods API now, then most likely someone
+        // is tampering with the request on the frontend.
+        //
+        if (isset($methods['emandate'][$bank]) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_BANK_FOR_EMANDATE,
+                Payment\Entity::BANK,
+                [
+                    'bank' => $bank
+                ]);
+        }
+
+        $coproto = [
+            'type'    => 'emandate',
+            'request' => [
+                'url'     => $this->route->getUrlWithPublicAuthInQueryParam($currentRouteName),
+                'method'  => 'POST',
+                'content' => [
+                    'input' => $input,
+                    'bank_details' => $methods['emandate'][$input[Payment\Entity::BANK]],
+                ]
+            ],
+            'version' => '1',
+        ];
+
+        return $coproto;
+
+    }
+
+    protected function preProcessPaymentInputsForWallet(array $input, Payment\Entity $payment)
     {
         $coproto = null;
 
+        //
+        // TODO: This needs to be fixed since we use dummy phone and email
+        // in subscriptions subsequent charges too. We could be using
+        // these values at other places also.
+        // Also, need to add this in S2S wallet docs.
+        // We currently return back JSON response.
+        // Actually, this won't even work for S2S since we remove
+        // `content` and `missing` attributes completely before returning
+        //
         if (($payment->isWallet() === true) and
             ((($payment->merchant->isPhoneOptional() === true) and
               ($payment->getContact() === Payment\Entity::DUMMY_PHONE)) or
@@ -324,9 +434,18 @@ class Processor
 
             $tokenMethod = $token->getMethod();
 
+            //
+            // TODO: Remove this after we move netbanking recurring to emandate method
+            // We have to start storing method as `emandate` in token entity for this.
+            //
+            if ($tokenMethod === Payment\Method::NETBANKING)
+            {
+                $tokenMethod = Payment\Method::EMANDATE;
+            }
+
             $input[Payment\Entity::METHOD] = $tokenMethod;
 
-            if ($tokenMethod === Payment\Method::NETBANKING)
+            if ($tokenMethod === Payment\Method::EMANDATE)
             {
                 $input[Payment\Entity::BANK] = $token->getBank();
             }
@@ -883,6 +1002,14 @@ class Processor
             $payment = $this->buildPaymentEntity($input);
         }
 
+        //
+        // Temporary only. To be removed later.
+        //
+        if ($payment->getMethod() === Payment\Method::EMANDATE)
+        {
+            $payment->setMethod(Payment\Method::NETBANKING);
+        }
+
         // $this->segment->trackPayment($payment, TraceCode::PAYMENT_NEW_REQUEST);
 
         if ($this->merchant->isFeeBearerCustomer())
@@ -1049,8 +1176,8 @@ class Processor
      */
     protected function verifyProvidedFee(Payment\Entity $payment, array $input)
     {
-        // This is not needed because FeeCalculater:calculateFee()
-        // calculates the actual amount (amount - fee) in case of feebearer merchant
+        // This is not needed because FeeCalculator:calculateFee()
+        // calculates the actual amount (amount - fee) in case of fee bearer merchant
         // $input['amount'] = $payment->getAmount() - $payment->getFee();
 
         // Re-calculates fees on the amount, using a dummy payment creation flow.

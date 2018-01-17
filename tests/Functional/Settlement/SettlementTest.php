@@ -82,8 +82,7 @@ class SettlementTest extends TestCase
         $this->deleteSetlFiles();
 
         $urls = [
-            '/settlements/reconcile/generate',
-            '/settlements/reconcile',
+            '/settlements/h2hreconcile/kotak',
         ];
 
         $this->ba->appAuth();
@@ -664,7 +663,7 @@ class SettlementTest extends TestCase
         Mail::assertSent(IciciSettlementMail::class);
     }
 
-    public function testMerchantSettlementV2()
+    public function testMerchantSettlementV2Kotak()
     {
         Mail::fake();
 
