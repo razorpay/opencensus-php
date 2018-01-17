@@ -70,17 +70,54 @@ app
         },
         details: {
           business_type: {
-            1: 'Private Limited',
-            2: 'Proprietorship',
-            3: 'Partnership',
-            4: 'Individual',
-            5: 'Not yet registered',
-            6: 'Public Limited',
-            7: 'LLP',
-            8: 'Educational Institutes',
-            9: 'Trust / Society',
-            10: 'NGO',
-            11: 'Other',
+            1: {
+              name: 'Private Limited',
+              value: 4,
+            },
+            2: {
+              name: 'Proprietorship',
+              value: 1,
+            },
+            3: {
+              name: 'Partnership',
+              value: 3,
+            },
+            4: {
+              name: 'Individual',
+              value: 2,
+            },
+            5: {
+              name: 'Not yet registered',
+              value: 11,
+            },
+            6: {
+              name: 'Public Limited',
+              value: 5,
+            },
+            7: {
+              name: 'LLP',
+              value: 6,
+            },
+            8: {
+              name: 'Educational Institutes',
+              value: 8,
+            },
+            9: {
+              name: 'Trust',
+              value: 9,
+            },
+            10: {
+              name: 'Society',
+              value: 10,
+            },
+            11: {
+              name: 'NGO',
+              value: 7,
+            },
+            12: {
+              name: 'Other',
+              value: 12,
+            },
           },
 
           transaction_volume: {

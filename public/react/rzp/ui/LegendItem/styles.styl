@@ -1,0 +1,45 @@
+$borderColor = #EAEFF0;
+
+.rzp-legend-item {
+
+  display: block;
+  position: relative;
+
+  .rzp-legend-item-inner {
+
+    width: 100%;
+    display: block;
+    position: relative;
+    border: 1px solid $borderColor;
+
+    > div {
+
+      display: inline-block;
+      vertical-align: middle;
+
+      &.rzp-legend-label {
+
+        padding: 3px 5px;
+        margin: -1px;
+        color: white;
+        border-radius: 2px 0 0 2px;
+      }
+
+      &.rzp-legend-title, &.rzp-legend-content {
+
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+
+      &.rzp-legend-content {
+
+        border-radius: 0 2px 2px 0;
+      }
+
+      &.rzp-legend-title {
+
+        border-right: 1px solid $borderColor;
+      }
+    }
+  }
+}

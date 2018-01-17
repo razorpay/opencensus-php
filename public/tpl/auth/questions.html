@@ -53,9 +53,9 @@
         </div>
         <div class="select-one">
           <div class="select-one-option" ng-repeat="key in toArray(signup.details.business_type)" ng-show='$index < 5 || signup.showMore === true'>
-            <input override-tab ng-click="quickSendDetails('business_type', key)" type="radio" name="business_type" value="{{key}}" id="{{'business_type_'+key}}" ng-model="signup.merchantData.business_type"/>
-            <label for="{{'business_type_'+key}}">
-              {{signup.details.business_type[key]}}
+            <input override-tab ng-click="quickSendDetails('business_type', signup.details.business_type[key].value)" type="radio" name="business_type" value="{{signup.details.business_type[key].value}}" id="{{'business_type_'+signup.details.business_type[key].value}}" ng-model="signup.merchantData.business_type"/>
+            <label for="{{'business_type_'+signup.details.business_type[key].value}}">
+              {{signup.details.business_type[key].name}}
               <i class="pull-right fa fa-check"></i>
             </label>
           </div>
