@@ -20,3 +20,5 @@ export TriggerDummyError from './TriggerDummyError';
 export MakeAPICall from './MakeAPICall';
 
 export RetryRefund from './RetryRefund';
+
+export CreateGatewayFile from './CreateGatewayFile';
