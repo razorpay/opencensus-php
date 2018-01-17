@@ -37,14 +37,9 @@ export default class Key extends GenericEntity {
     let data = {
       route_name: this.getRouteName(),
     };
-    if (this.isNew) {
+    if (!this.isNew) {
       data.url_params = JSON.stringify({
-        '{id}': this.merchantId,
-      });
-    } else {
-      data.url_params = JSON.stringify({
-        '{keyId}': params.id,
-        '{merchantId}': this.merchantId,
+        '{id}': params.id,
       });
       data.body = params;
     }
