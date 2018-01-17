@@ -188,20 +188,21 @@ class ApiRequestAny
 
         $contentType = Request::header('content-type', self::CONTENT_TYPE_JSON);
 
-        // if contentType begins with
         // auth check just for precaution, so that guests do not upload files
         if ($auth && strpos($contentType, self::CONTENT_TYPE_MULTIPART_PREFIX) === 0)
         {
-            // $options['multipart'] = $input;
-            $this->processUploads($options);
+            foreach ($input as $key => $val)
+            {
+                if ($val instanceof \SplFileInfo)
+                {
+                    $input[$key] = fopen($val, 'r');
+                }
+            }
         }
-        else if ($contentType === self::CONTENT_TYPE_JSON)
+
+        if ($contentType === self::CONTENT_TYPE_JSON)
         {
             $options['json'] = $input;
-        }
-        else if ($contentType === self::CONTENT_TYPE_FORM)
-        {
-            $options['form_params'] = $input;
         }
         else
         {
