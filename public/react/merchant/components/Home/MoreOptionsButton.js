@@ -28,7 +28,7 @@ export default ({ csvData, pngData, children, onImageExport }) => (
                 download={pngData.name}
                 href={pngData.url}
               >
-                Screenshot
+                Download as Image
               </a>
             </div>
           )}

@@ -1,3 +1,4 @@
+import moment from "moment";
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
@@ -33,6 +34,8 @@ function getLevels(hierarchy, levels = []) {
   return levels;
 }
 
+const csvDateFormat = 'DD-MM-YYYY';
+
 @connect(null, { ...ModalActions, showNotification })
 class PaymentMethods extends Component {
   constructor(props) {
@@ -45,6 +48,7 @@ class PaymentMethods extends Component {
       csvData: null,
       isLoading: false,
       error: '',
+      hierarchy: {values: []}
     };
 
     this.requestId = 0;
@@ -119,9 +123,15 @@ class PaymentMethods extends Component {
   }
 
   onCSVData(csvUrl) {
+
+    const {startDate, endDate} = this.props;
+
     this.setState({
       csvData: {
-        name: 'Payment Methods Data.csv',
+        name: `Payment Insights, ${
+              moment(startDate).format(csvDateFormat)} to ${
+              moment(endDate).format(csvDateFormat)
+              }(Razorpay).csv`,
         url: csvUrl,
       },
     });
@@ -131,6 +141,7 @@ class PaymentMethods extends Component {
     this.setState({
       levels: getLevels(hierarchy),
       currentLevel: hierarchy,
+      hierarchy
     });
   }
 
@@ -193,21 +204,7 @@ class PaymentMethods extends Component {
           </div>
           <div className="panel-actions pull-right">
             <div className="panel-action-item">
-              <MoreOptionsButton csvData={csvData}>
-                <div className="option">
-                  <a href="#" onClick={this.openReportModal}>
-                    View Detailed Report
-                  </a>
-                </div>
-                <div className="option">
-                  <Link
-                    target="_blank"
-                    to={`/payments?from=${startDate.unix()}&to=${endDate.unix()}`}
-                  >
-                    View all Payments
-                  </Link>
-                </div>
-              </MoreOptionsButton>
+              <MoreOptionsButton csvData={csvData} />
             </div>
           </div>
         </PanelTopbar>
@@ -222,6 +219,14 @@ class PaymentMethods extends Component {
         <PanelFooter className="clearfix">
           <div className="pull-left">
             <LastUpdated at={this.state.lastUpdatedAt} />
+          </div>
+          <div className="pull-right">
+            <Link
+              target="_blank"
+              to={`/payments?from=${startDate.unix()}&to=${endDate.unix()}`}
+            >
+              View all Payments
+            </Link>
           </div>
         </PanelFooter>
       </GenericPanel>

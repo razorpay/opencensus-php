@@ -20,7 +20,6 @@ const getStartDateFromDiff = (diff, endDate) => {
   return moment(endDate.toDate() - diff * 1000);
 };
 
-// TODO: to be moved to rzp/ui
 class DateRangePicker extends Component {
   constructor(props) {
     super(props);
@@ -37,7 +36,7 @@ class DateRangePicker extends Component {
     };
 
     this.state = {
-      startDate:endDate.clone(),
+      startDate:null,
       endDate,
       selectedPreset:null,
       presets: []
@@ -91,8 +90,9 @@ class DateRangePicker extends Component {
     defaultPreset=this.props.defaultPreset
   ) {
   
-    const now = moment(),
-          { endDate } = this.state;
+    const now = moment();
+      
+    let { startDate, endDate } = this.state;
 
     let { selectedPreset } = this.state;
 
@@ -101,15 +101,25 @@ class DateRangePicker extends Component {
         rest = preset.slice(1),
         timeStampDiff = now.unix() - now.clone().add(...rest).unix();
 
-      return { name: text, value: timeStampDiff };
+      const result = { name: text, value: timeStampDiff };
+
+      // powerSelect compares by reference
+      if (selectedPreset && selectedPreset.name === text) {
+      
+        selectedPreset = result;
+      }
+
+      return result;
     });
 
-    presets.push({ ...this.customPreset });
+    presets.push(this.customPreset);
 
-    selectedPreset = selectedPreset ||
-                     presets[defaultPreset || 0];
+    selectedPreset = selectedPreset || presets[defaultPreset || 0];
 
-    const startDate = getStartDateFromDiff(selectedPreset.value, endDate);
+    if (!startDate) {
+
+      startDate = getStartDateFromDiff(selectedPreset.value, endDate);
+    }
 
     this.setState({
       startDate,

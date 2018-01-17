@@ -7,6 +7,10 @@ import {
 import { humanReadableIndianCurrency } from 'rzp/utils/numerals';
 import {default as chartColors} from "rzp/utils/chart/colors";
 
+import {
+  paymentMethodsColumns
+} from 'merchant/containers/Home/PaymentMethods/data';
+
 var defaults = {
   margin: { top: 0, right: 0, bottom: 0, left: 0 },
   rootname: 'TOP',
@@ -15,26 +19,6 @@ var defaults = {
   width: 500,
   height: 300 - 24, //leaving 24px at the bottom
 };
-
-function makeCSVData(data, aggregate = 0, prefix = '', csvData = []) {
-  if (data._children) {
-    data._children.forEach(item => {
-      if (!item.key) {
-        return;
-      }
-
-      aggregate += item.value;
-
-      var title = (prefix ? prefix + ' -> ' : '') + item.key.replace(',', '');
-
-      csvData.push([title, item.value, item.percent + '%']);
-
-      makeCSVData(item, aggregate, title, csvData);
-    });
-  }
-
-  return { aggregate, csvData };
-}
 
 function main(
   node,
@@ -408,7 +392,7 @@ function main(
 
       var fontSize = Number(this.parentNode.style.fontSize.replace("px", ""));
 
-      return fontSize < 8 ||
+      return fontSize < 10 ||
         this.getComputedTextLength() > x(d.x + d.dx) - x(d.x) ||
         this.getBoundingClientRect().height > y(d.y + d.dy) - y(d.y)
         ? 0
@@ -432,19 +416,10 @@ function main(
       });
   }
 
-  const csvData = makeCSVData(root),
-    csvBody = csvData.csvData,
-    csvHeader = ['', 'Amount', '%Share'],
-    csvFooter = ['Total', csvData.aggregate];
-
-  csvBody.unshift(csvHeader);
-  csvBody.push(csvFooter);
-
   return {
     transition: globalTransition,
     display,
-    reset: () => display(root),
-    csv: arrayToCsvDataUrl(csvBody),
+    reset: () => display(root)
   };
 }
 const getGroupingFactor = (groupKey, bankNames) => {
@@ -463,6 +438,59 @@ const getGroupingFactor = (groupKey, bankNames) => {
   return d => d[groupKey];
 };
 
+const makeCSVData = (data, bankNames, groupTitleMap) => {
+
+  const csvHeader = ["#"].concat(paymentMethodsColumns.map(titleCase))
+                         .concat(["Total(Paise)", "%Share"]),
+        csvBody = [],
+        csvFooter = paymentMethodsColumns.map(i => "").concat(["Total"]);
+
+  let total = 0;
+
+  let rows = data.map((record, index) => {
+  
+    let body = paymentMethodsColumns.map(columnName => {
+
+                 let value = record[columnName];
+
+                 if (columnName === "bank" || columnName === "issuer") {
+
+                   value = bankNames[value];
+                 } else if (columnName === "method") {
+                 
+                   value = groupTitleMap[value] || titleCase(value);
+                 } else {
+                 
+                   value = titleCase(value);
+                 }
+                  
+                 return value;
+               });
+
+    total += record.value;
+
+    body.push(record.value);
+
+    return body;
+  });
+
+  csvFooter.push(total);
+
+  rows.sort((item1, item2) => item1[0] <= item2[0] ? -1 : 1);
+
+  rows.forEach((row, index) => {
+  
+    row.unshift(index + 1);
+    row.push((row[row.length - 1] / total * 100).toFixed(2) + "%");
+  });
+
+
+  rows.unshift(csvHeader);
+  rows.push(csvFooter);
+
+  return arrayToCsvDataUrl(rows);
+}
+
 export default function renderTreemap(
   node,
   res,
@@ -474,6 +502,8 @@ export default function renderTreemap(
   bankNames
 ) {
   node.innerHTML = '';
+
+  const csvUrl = makeCSVData(res, bankNames, groupTitleMap);
 
   res = d3
     .nest()
@@ -500,7 +530,7 @@ export default function renderTreemap(
     return grouper && (item.values = grouper.entries(item.values));
   });
 
-  return main(
+  const treemapApi =  main(
     node,
     { width: node.clientWidth },
     { key: 'All Methods', values: res },
@@ -510,4 +540,8 @@ export default function renderTreemap(
     onHideTooltip,
     groupTitleMap || {}
   );
+
+  treemapApi.csv = csvUrl;
+
+  return treemapApi;
 }

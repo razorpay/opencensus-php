@@ -1,3 +1,7 @@
+const paymentMethodsColumns = [
+  'method', 'bank', 'issuer', 'network', 'wallet', 'type'
+];
+
 const getQuery = ({ merchantId, startTime, endTime }) => ({
   filters: {
     default: [
@@ -15,10 +19,10 @@ const getQuery = ({ merchantId, startTime, endTime }) => ({
       details: {
         index: 'payments',
         column: 'base_amount',
-        group_by: ['method', 'bank', 'issuer', 'network', 'wallet', 'type'],
+        group_by: paymentMethodsColumns,
       },
     },
   },
 });
 
-export { getQuery };
+export { getQuery, paymentMethodsColumns };
