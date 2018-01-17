@@ -50,17 +50,17 @@ class BusinessType
      * @var array
      */
     protected static $typeIndexMap = [
-        self::PRIVATE_LIMITED        => 1,
-        self::PROPRIETORSHIP         => 2,
+        self::PROPRIETORSHIP         => 1,
+        self::INDIVIDUAL             => 2,
         self::PARTNERSHIP            => 3,
-        self::INDIVIDUAL             => 4,
-        self::NOT_YET_REGISTERED     => 5,
-        self::PUBLIC_LIMITED         => 6,
-        self::LLP                    => 7,
+        self::PRIVATE_LIMITED        => 4,
+        self::PUBLIC_LIMITED         => 5,
+        self::LLP                    => 6,
+        self::NGO                    => 7,
         self::EDUCATIONAL_INSTITUTES => 8,
         self::TRUST                  => 9,
         self::SOCIETY                => 10,
-        self::NGO                    => 11,
+        self::NOT_YET_REGISTERED     => 11,
         self::OTHER                  => 12,
     ];
 
