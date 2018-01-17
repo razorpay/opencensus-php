@@ -51,7 +51,7 @@ export default ({ entity, updateEntity }) => {
   }
 
   return (
-    <ShowWhen permission="edi_iin_rule">
+    <ShowWhen permission="edit_iin_rule">
       <button class="label-info" onClick={openEditIIN}>
         Edit IIN
       </button>
