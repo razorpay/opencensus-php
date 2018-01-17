@@ -25,37 +25,22 @@ class DateRangePicker extends Component {
   constructor(props) {
     super(props);
 
-    const now = moment();
-
     let { presets, startDate, endDate = moment() } = props;
 
     if (!Array.isArray(presets)) {
       presets = defaultPresets;
     }
 
-    presets = presets.map(preset => {
-      const text = preset[0],
-        rest = preset.slice(1),
-        timeStampDiff = now.unix() - now.add(...rest).unix();
-
-      return { name: text, value: timeStampDiff };
-    });
-
     this.customPreset = {
       name: customRangeText,
       value: customRangeVal,
     };
 
-    presets.push(this.customPreset);
-
-    let selectedPreset = presets[props.defaultPreset || 0];
-    startDate = getStartDateFromDiff(selectedPreset.value, endDate);
-
     this.state = {
-      startDate,
+      startDate:endDate.clone(),
       endDate,
-      selectedPreset,
-      presets,
+      selectedPreset:null,
+      presets: []
     };
 
     this.onPresetChange = this.onPresetChange.bind(this);
@@ -101,18 +86,55 @@ class DateRangePicker extends Component {
     this.setState({ selectedPreset: this.customPreset });
   }
 
+  updatePresets (
+    presets=this.props.presets,
+    defaultPreset=this.props.defaultPreset
+  ) {
+  
+    const now = moment(),
+          { endDate } = this.state;
+
+    let { selectedPreset } = this.state;
+
+    presets = presets.map(preset => {
+      const text = preset[0],
+        rest = preset.slice(1),
+        timeStampDiff = now.unix() - now.clone().add(...rest).unix();
+
+      return { name: text, value: timeStampDiff };
+    });
+
+    presets.push({ ...this.customPreset });
+
+    selectedPreset = selectedPreset ||
+                     presets[defaultPreset || 0];
+
+    const startDate = getStartDateFromDiff(selectedPreset.value, endDate);
+
+    this.setState({
+      startDate,
+      presets,
+      selectedPreset
+    });
+  }
+
+  componentWillMount () {
+  
+    this.updatePresets();
+  }
+
   componentWillReceiveProps(nextProps) {
+
     if (nextProps.presets !== this.props.presets) {
-      this.setState({
-        presets: nextProps.presets.concat([this.selectedPreset]),
-      });
+
+      this.updatePresets(nextProps.presets);
     }
   }
 
   render() {
     const { icon, onDatesChange } = this.props;
 
-    let { presets, selectedPreset } = this.state;
+    let { presets, selectedPreset, startDate, endDate } = this.state;
 
     return (
       <div className="rzp-daterange-picker clearfix">
@@ -120,19 +142,21 @@ class DateRangePicker extends Component {
           {!!icon ? icon : <i class="icon icon-date-range" />}
         </div>
         <div className="presets-container pull-left">
-          <PowerSelect
-            className="react-normal-select"
-            onChange={this.onPresetChange}
-            searchEnabled={false}
-            optionLabelPath="name"
-            selected={selectedPreset}
-            options={presets}
-          />
+          {presets.length > 0 && (
+            <PowerSelect
+              className="react-normal-select"
+              onChange={this.onPresetChange}
+              searchEnabled={false}
+              optionLabelPath="name"
+              selected={selectedPreset}
+              options={presets}
+            />
+          )}
         </div>
         <div className="daterange-container pull-left">
           <Drp
-            startDate={this.state.startDate}
-            endDate={this.state.endDate}
+            startDate={startDate}
+            endDate={endDate}
             onDatesChange={this.onDatesChange}
           />
         </div>

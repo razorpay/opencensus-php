@@ -32,7 +32,7 @@ const dateRangePresets = [
     ['Past 90 Days', -90, 'days'],
     ['All Time', -10, 'years'],
   ],
-  defaultPreset = 2; // index of default preset
+  defaultPreset = 2;
 
 const getPreviousDates = ({ startDate, endDate }) => {
   const diff = endDate.diff(startDate);
@@ -75,6 +75,7 @@ export default class HomeContainer extends Component {
         error: "",
         ...getPreviousDates({ startDate, endDate }),
       },
+      dateRangePresets
     };
 
     this.oldestTxnReqId = 0;
@@ -82,7 +83,7 @@ export default class HomeContainer extends Component {
   }
 
   fetchOldestTransactionDate() {
-    let { oldestTransactionDate } = this.state;
+    let { oldestTransactionDate, dateRangePresets } = this.state;
 
     var oldestTxnReqId = ++this.oldestTxnReqId;
 
@@ -144,11 +145,24 @@ export default class HomeContainer extends Component {
           });
         }
 
+        const presetsLastIndex = dateRangePresets.length - 1,
+              presetsLastItem = dateRangePresets[presetsLastIndex];
+
+        // updates All Time present in daterange picker
+        dateRangePresets = [...dateRangePresets];
+          
+        dateRangePresets.splice(
+          presetsLastIndex,
+          1,
+          [presetsLastItem[0], -(moment().unix() - data.value), "seconds"]
+        );
+
         this.setState({
           oldestTransactionDate: {
             ...oldestTransactionDate,
             value: data.value
           },
+          dateRangePresets
         });
       });
   }
@@ -190,7 +204,12 @@ export default class HomeContainer extends Component {
   render() {
     let mode = this.props.mode;
 
-    const { startDate, endDate, oldestTransactionDate } = this.state;
+    const {
+      startDate,
+      endDate,
+      oldestTransactionDate,
+      dateRangePresets
+    } = this.state;
 
     return (
       <div class="react-root dashboard-home">
