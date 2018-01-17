@@ -1,4 +1,5 @@
 import moment from 'moment';
+import { acronyms, shortenText } from './acronyms';
 
 moment.updateLocale('en', {
   relativeTime: {
@@ -99,11 +100,42 @@ export const normalizeBoolean = bool => {
   return bool ? 1 : 0;
 };
 
+const numberFormatRegex = /(.{1,2})(?=.(..)+(\...)$)/g;
+
 export const getFixedINRAmount = amount => (Number(amount) / 100).toFixed(2);
 
+export const getFormattedNumber = value => {
+  if (typeof value === 'number') {
+    value = value.toFixed(2);
+  }
+
+  value = value.replace(numberFormatRegex, '$1,');
+
+  const valueArr = value.split('.');
+
+  if (valueArr[1] == '00') {
+    value = valueArr[0].replace(".", "");
+  }
+
+  return value;
+};
+
+export const currencySymbols = {
+  INR: '₹',
+  USD: 'US$',
+};
+
+export const getFormattedAmountNew = (amount, showCurrency, currency = 'INR') => {
+
+  const formattedAmount = getFormattedNumber((amount / 100).toFixed(2));
+
+  return (showCurrency ? currencySymbols[currency] : '') + formattedAmount;
+}
+
 // following regex formats in indian comma separated, i.e. 2,01,20,45,222.66
-export const getFormattedAmount = amount =>
-  (amount / 100).toFixed(2).replace(/(.{1,2})(?=.(..)+(\...)$)/g, '$1,');
+export const getFormattedAmount = (amount) => {
+  return (amount / 100).toFixed(2).replace(numberFormatRegex, '$1,');
+};
 
 export const without = (source, keys) => {
   keys = makeArray(keys);
@@ -234,9 +266,10 @@ export const getIntervalCycle = (interval, period) => {
 export const getCustomerDisplayName = ({ name, contact, email }) => {
   let displayParts = [name, contact, email].filter(item => !isBlank(item));
 
-  return `${displayParts.join(' / ').replace('/ ', '(')}${
-    displayParts.length > 1 ? ')' : ''
-  }`;
+  return `${displayParts.join(' / ').replace('/ ', '(')}${displayParts.length >
+  1
+    ? ')'
+    : ''}`;
 };
 
 /**
@@ -308,3 +341,25 @@ export const getEMI = (principle, length, rate) => {
 
   return parseInt(principle * rate * multiplier / (multiplier - 1), 10);
 };
+
+export const arrayToCsv = array => {
+  /*
+   * Converts array of arrays to csv
+   */
+
+  return array
+    .reduce((result, item) => {
+      return result.concat(Array.isArray(item) ? item.join(',') : String(item));
+    }, [])
+    .join('\n');
+};
+
+export const arrayToCsvDataUrl = array => {
+  /*
+   * converts array of arrays to csv data url
+   */
+
+  return 'data:text/csv;utf-8,' + encodeURIComponent(arrayToCsv(array));
+};
+
+export { acronyms, shortenText };

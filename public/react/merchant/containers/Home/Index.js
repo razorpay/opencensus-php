@@ -19,6 +19,7 @@ import { defaults } from 'react-chartjs-2';
 import ShowWhen from 'merchant/components/ShowWhen';
 import LocalStorageService from 'rzp/utils/localStorage';
 import TadaPNG from 'styles/assets/tada.png';
+import NewHome from './New';
 
 defaults.global.defaultFontColor = '#666';
 defaults.global.defaultFontFamily =

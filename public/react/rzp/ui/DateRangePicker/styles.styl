@@ -1,0 +1,78 @@
+$borderColor = rgba(0, 0, 0, 0.1);
+$height = 40px;
+
+.rzp-daterange-picker {
+
+  display: block;
+  border: 1px solid $borderColor;
+
+  div.DateRangePicker > .caret {
+
+    display: none;
+  }
+
+  > div {
+
+    display: inline-block;
+    height: $height;
+    border-left: 1px solid $borderColor;
+    vertical-align: middle;
+    background-color: #FFFFFF;
+
+    &.icon-container {
+
+      line-height: 1;
+      padding: 9px;
+      font-size: 20px;
+      border-left: none;
+    }
+
+    &.daterange-container i.icon-date-range {
+
+      display: none;
+    }
+
+    .caret {
+
+      display: none;
+    }
+
+    .DateRangePickerInput {
+
+      border: none;
+
+      .DateInput__display-text {
+
+        font-weight: normal;
+      }
+
+      .DateInput {
+
+        width: 97px;
+      }
+
+      .DateRangePickerInput__arrow {
+
+        top: 0;
+        line-height: $height;
+        left: 50%;
+      }
+
+      > div {
+
+        line-height: 32px;
+        vertical-align: top;
+      }
+
+      .DateInput:first-child {
+
+        width: 118px;
+
+        .DateInput__display-text {
+
+          padding-left: 10px;
+        }
+      }
+    }
+  }
+}

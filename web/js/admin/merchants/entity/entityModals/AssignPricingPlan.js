@@ -4,7 +4,7 @@ import BaseModal from 'ui/BaseModal';
 import { closeModal, confirm, notifyError, notifySuccess } from 'common/modal';
 
 import Form from 'ui/Form';
-import Field, { SelectField } from 'ui/Field';
+import Field, { SearchableSelectField } from 'ui/Field';
 import { adminFetch, adminPost } from 'common/fetch';
 import AsyncButton from 'ui/AsyncButton';
 import { isWorkflow } from 'common/util';
@@ -76,17 +76,16 @@ export default class PricingPlanModal extends Component {
           {this.state.pending ? (
             <Field label="Plans to be Assigned" value="Loading..." disabled />
           ) : (
-            <SelectField
+            <SearchableSelectField
+              trackBy="value"
               name="pricing_plan_id"
-              label="Plans to be Assigned"
               defaultValue={pricingPlanId || '1In3Yh5Mluj605'}
-            >
-              {Object.keys(this.state.pricingPlans).map(key => (
-                <option key={key} value={key}>
-                  {this.state.pricingPlans[key]}
-                </option>
-              ))}
-            </SelectField>
+              label="Plans to be Assigned"
+              options={Object.keys(this.state.pricingPlans).map(key => ({
+                name: this.state.pricingPlans[key],
+                value: key,
+              }))}
+            />
           )}
 
           <AsyncButton
