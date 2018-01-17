@@ -240,27 +240,34 @@ class Provider
 
         $masterCardIdentifier =  $this->generateBharatQrMerchantIdentifier(NetworkName::MC);
 
+        $rupayIdentifier = $this->generateBharatQrMerchantIdentifier(NetworkName::RUPAY);
+
         $visaTlv = Tags::VISA . $this->getLengthAndValue($visaIdentifier);
 
         $masterCardTlv = Tags::MASTERCARD . $this->getLengthAndValue($masterCardIdentifier);
 
+        $rupayCardTlv = Tags::RUPAY . $this->getLengthAndValue($rupayIdentifier);
+
         $tagArray = [
             Tags::VERSION . $this->getLengthAndValue(Constants::VERSION),
+            Tags::POINT_OF_INITIATION . $this->getLengthAndValue(Constants::POINT_OF_INITIATION),
             $visaTlv,
             $masterCardTlv,
+            $rupayCardTlv,
             Tags::MERCHANT_CATEGORY .$this->getLengthAndValue(Constants::MERCHANT_CATEGORY),
             Tags::CURRENCY_CODE . $this->getLengthAndValue(Constants::CURRENCY_CODE),
             $this->getBharatQrAmountTlv($qrCode),
             Tags::COUNTRY_CODE . $this->getLengthAndValue(Constants::COUNTRY_CODE),
             Tags::MERCHANT_NAME . $this->getLengthAndValue(Constants::MERCHANT_NAME),
             Tags::MERCHANT_CITY . $this->getLengthAndValue(Constants::MERCHANT_CITY),
+            Tags::MERCHANT_PIN_CODE . $this->getLengthAndValue(Constants::MERCHANT_PINCODE),
             $this->getBharatQrAdditionalDetailTlv($qrCode),
         ];
 
         $qrString =  implode('', $tagArray);
 
-        // This is the CRC TL. Length of CRC is always 2
-        $qrString .= Tags::CRC . '02';
+        // This is the CRC TL. Length of CRC is always 4
+        $qrString .= Tags::CRC . '04';
 
         $crc = (new CRC16)->calculateCrc($qrString);
 
@@ -271,7 +278,7 @@ class Provider
 
     protected function getBharatQrAdditionalDetailTlv(QrCode\Entity $qrCode)
     {
-        $idTlv = Tags::ID . $this->getLengthAndValue($qrCode->getId());
+        $idTlv = Tags::ADDITIONAL_DETAIL_ID . $this->getLengthAndValue($qrCode->getId());
 
         $additionalDetailsString = $idTlv;
 
@@ -308,7 +315,7 @@ class Provider
 
         $identifierPadding = Config::get('gateway.bharat_qr.identifier_padding');
 
-        $identifier  = $acquirerCode . '0' . str_pad(strlen($identifierPadding), 8, '0', STR_PAD_LEFT);
+        $identifier = $acquirerCode . '0' . str_pad(strlen($identifierPadding), 8, '0', STR_PAD_LEFT);
 
         return $identifier . Luhn::computeCheckDigit($identifier);
     }

@@ -97,10 +97,9 @@ class CRC16
      */
     private function calculateCrcMsb(array $data, int $poly, int $initialCrcValue)
     {
-        /**
-         * Starting point is at maximum value of
-         * 16 bit number
-         */
+        //
+        // Starting point is at maximum value of 16 bit number
+        //
         $crc = $initialCrcValue;
 
         $crcTable = $this->genCrc16TableMsb($poly);
