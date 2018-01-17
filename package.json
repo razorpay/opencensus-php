@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "autoprefixer-stylus": "^0.14.0",
-    "aws-sdk": "2.4.1",
+    "aws-sdk": "2.156.0",
     "babel-core": "^6.23.1",
     "babel-loader": "^6.3.2",
     "babel-plugin-react-html-attrs": "^2.0.0",
