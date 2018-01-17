@@ -1,6 +1,6 @@
 import ajax from 'merchant/utils/ajax';
 import { set, merge } from 'rzp/utils/immutable';
-import { createLineData } from 'rzp/utils/chart';
+import { createLineData } from 'rzp/utils/chart/index.js';
 
 // graph data
 // fetched everytime date is changed
@@ -63,7 +63,8 @@ export const fetchAnalytics = params => {
         to: params.to,
       },
     }).then(response => {
-      let transaction_count = null, transaction_amount = null;
+      let transaction_count = null,
+        transaction_amount = null;
       if (response.data) {
         transaction_count = getTransactionCountData(response.data, params.mode);
         transaction_amount = getTransactionAmountData(
