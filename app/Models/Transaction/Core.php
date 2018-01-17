@@ -1247,7 +1247,7 @@ class Core extends Base\Core
         //
         // TODO: Need to fix this - pick the next_run_at starting tomorrow
         //
-        $nextSettlementTime = $defaultScheduleTask->getNextRunAt();
+        $nextSettlementTime = Carbon::tomorrow(Timezone::IST)->getTimestamp();
 
         //
         // `source` will always be `Transfer/Entity` since this flow
