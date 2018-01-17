@@ -329,6 +329,7 @@ class Repository extends Base\Repository
                     ->where($pType, '=', $gatewayCode)
                     ->where($pGateway, '=', $gateway)
                     ->where($tTpv, '=', $tpvEnabled)
+                    ->where($rBaseAmount, '!=', 0)
                     ->with('payment')
                     ->get();
     }
