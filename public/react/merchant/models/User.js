@@ -93,6 +93,10 @@ export default class User {
     return this.isFeatureEnabled('report_v2');
   }
 
+  get isAnalyticsEnabled() {
+    return this.isFeatureEnabled('analytics');
+  }
+
   get enabledFeatures() {
     let pluckKey = 'feature';
 

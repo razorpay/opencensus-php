@@ -1,0 +1,33 @@
+ol.rzp-breadcrumb {
+
+  display: inline-block;
+  background-color: transparent;
+
+  li{
+
+    vertical-align: middle;
+    color: #6A55D1;
+    cursor: pointer;
+
+    &+li:before {
+      content: '\E00C';
+      padding: 0 5px;
+      color: #58666e;
+      font-family: "icons";
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      font-style: normal;
+      font-variant: normal;
+      font-weight: normal;
+      text-decoration: none;
+      text-transform: none;
+      vertical-align: middle;
+    }
+
+    &.active {
+
+      color: #58666e;
+      cursor: default;
+    }    
+  }
+}

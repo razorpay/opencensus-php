@@ -1,0 +1,41 @@
+$upColor = #00BB55;
+$downColor = #D24141;
+$width = 0.4em;
+$height = $width * 2;
+$margin = 0.2em;
+
+.rzp-change {
+
+  display: inline-block;
+  color: $upColor;
+
+  &:before {
+    content: "";
+    line-height: 100%;
+    display: inline-block;
+    border-color: transparent;
+    border-bottom-color: $upColor;
+    border-style: solid;
+    border-width: $width;
+    border-top-width: 0;
+    border-bottom-width: $height;
+    margin-right: $margin; 
+  }
+
+  &:before, > .text {
+
+    vertical-align: middle;
+  }
+
+  &.down {
+
+    color: $downColor;
+
+    &:before {
+
+      border-bottom-width: 0;
+      border-top-width: $height;
+      border-top-color: $downColor;
+    }
+  }
+}

@@ -1,0 +1,64 @@
+$gutter = 24px;
+
+.panel.rzp-traffic {
+
+  display: table;
+  padding-top: $gutter + 40px;
+  width: 100%;
+  height: 100%;
+
+  div.panel-topbar {
+
+    position: absolute;
+    top: $gutter;
+    left: 0;
+    padding-right: $gutter;
+    width: 100%;
+
+    div.grouping-dropdown {
+
+      width: 233px;
+    }
+  }
+
+  div.panel-body {
+
+    height: 100%;
+
+    > div.chart-row {
+
+      width: 100%;
+      height: 100%;
+      display: table;
+      margin: 0;
+
+      .column {
+        display: table-cell;
+        height: 100%;
+        vertical-align: middle;
+        position: relative;
+        width: 50%;
+
+        .chart-content {
+
+          display: block;
+          width: 100%;
+          height: 100%;
+        }
+      }
+    }
+
+    .rzp-legend {
+
+      height: auto;
+      margin-left: 0;
+
+      .rzp-legend-item {
+
+        padding-left: 0;
+        width: auto;
+        float: left;
+      }
+    }
+  }
+}
