@@ -41,6 +41,16 @@ class Authorized extends Base
         return true;
     }
 
+    protected function getSenderEmail(): string
+    {
+        return Constants::MAIL_ADDRESSES[Constants::NOREPLY];
+    }
+
+    protected function getSenderHeader(): string
+    {
+        return Constants::HEADERS[Constants::NOREPLY];
+    }
+
     protected function getCustomCustomerReplyToEmail(): string
     {
         $merchantId = $this->data['merchant']['id'];

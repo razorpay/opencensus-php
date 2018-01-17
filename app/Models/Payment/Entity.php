@@ -104,6 +104,7 @@ class Entity extends Base\PublicEntity
     const SAVE                  = 'save';
     const LATE_AUTHORIZED       = 'late_authorized';
     const CONVERT_CURRENCY      = 'convert_currency';
+    const AUTH_TYPE             = 'auth_type';
 
     const SUBSCRIPTION_ID       = 'subscription_id';
 
@@ -121,6 +122,13 @@ class Entity extends Base\PublicEntity
 
     // Tells us whether this payment is a initial or auto recurring type
     const RECURRING_TYPE        = 'recurring_type';
+
+    const METADATA              = 'metadata';
+
+    const BANK_ACCOUNT          = 'bank_account';
+    const NAME                  = 'name';
+    const IFSC                  = 'ifsc';
+    const ACCOUNT_NUMBER        = 'account_number';
 
     // constants and defaults
     const CURRENCY_LENGTH                   = 3;
@@ -169,6 +177,7 @@ class Entity extends Base\PublicEntity
         self::REFERENCE1,
         self::REFERENCE2,
         self::DISPUTED,
+        self::AUTH_TYPE,
     ];
 
     protected $visible = [
@@ -236,6 +245,7 @@ class Entity extends Base\PublicEntity
         self::LATE_AUTHORIZED,
         self::SUBSCRIPTION_ID,
         self::CONVERT_CURRENCY,
+        self::AUTH_TYPE,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DISPUTED,
@@ -311,12 +321,14 @@ class Entity extends Base\PublicEntity
         self::EMAIL,
         self::CONTACT,
         self::BANK,
+        self::RECURRING,
+        self::IFSC,
         'method_based_input',
         'convert_empty_strings_to_null'
     ];
 
     protected static $generators = [
-        'metadata',
+        self::METADATA,
     ];
 
     protected $dates = [
@@ -359,6 +371,7 @@ class Entity extends Base\PublicEntity
         self::TRANSFER_ID          => null,
         self::DISPUTED             => false,
         self::RECURRING_TYPE       => null,
+        self::AUTH_TYPE            => null,
     ];
 
     protected $amounts = [
@@ -397,7 +410,7 @@ class Entity extends Base\PublicEntity
     ];
 
     // window in secs, used to fetch payments with same checkout id
-    const PAYMENT_WINDOW                = 1800;
+    const PAYMENT_WINDOW = 1800;
 
     const DUMMY_EMAIL = 'void@razorpay.com';
 
@@ -452,6 +465,24 @@ class Entity extends Base\PublicEntity
         return $contact;
     }
 
+    protected function modifyRecurring(& $input)
+    {
+        if (((isset($input[Entity::METHOD]) === true) and
+             ($input[Entity::METHOD] === Method::EMANDATE)) or
+            (empty($input[Entity::SUBSCRIPTION_ID]) === false))
+        {
+            $input['recurring'] = '1';
+        }
+    }
+
+    protected function modifyIfsc(& $input)
+    {
+        if (isset($input[self::BANK_ACCOUNT][self::IFSC]) === true)
+        {
+            $input[self::BANK_ACCOUNT][self::IFSC] = strtoupper($input[self::BANK_ACCOUNT][self::IFSC]);
+        }
+    }
+
     protected function modifyMethodBasedInput(& $input)
     {
         if (isset($input['method']) === false)
@@ -459,7 +490,7 @@ class Entity extends Base\PublicEntity
             return;
         }
 
-        if (in_array($input['method'], [Method::NETBANKING, Method::AEPS]) === false)
+        if (in_array($input['method'], [Method::NETBANKING, Method::AEPS, Method::EMANDATE], true) === false)
         {
             unset($input['bank']);
         }
@@ -500,7 +531,7 @@ class Entity extends Base\PublicEntity
     protected function modifyBank(& $input)
     {
         if ((isset($input['method'])) and
-            (in_array($input['method'], [Method::NETBANKING, Method::AEPS]) === false))
+            (in_array($input['method'], [Method::NETBANKING, Method::AEPS, Method::EMANDATE], true) === false))
         {
             unset($input['bank']);
         }
@@ -809,6 +840,11 @@ class Entity extends Base\PublicEntity
     public function setReference2(string $reference2)
     {
         $this->setAttribute(self::REFERENCE2, $reference2);
+    }
+
+    public function setMethod(string $method)
+    {
+        $this->setAttribute(self::METHOD, $method);
     }
 
     public function decrementAmountTransferred(int $amount)
@@ -1134,6 +1170,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::METHOD) === Payment\Method::NETBANKING);
     }
 
+    public function isEmandate()
+    {
+        return ($this->getAttribute(self::METHOD) === Payment\Method::EMANDATE);
+    }
+
     public function isWallet()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::WALLET);
@@ -1325,6 +1366,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::METHOD);
     }
 
+    public function getAuthType()
+    {
+        return $this->getAttribute(self::AUTH_TYPE);
+    }
+
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);
@@ -1467,7 +1513,7 @@ class Entity extends Base\PublicEntity
 
     public function isRecurring()
     {
-        return $this->getAttribute(self::RECURRING);
+        return ($this->getAttribute(self::RECURRING) === true);
     }
 
     public function getCardId()
@@ -1530,7 +1576,14 @@ class Entity extends Base\PublicEntity
 
         $existingGatewayTokens = $app['repo']->gateway_token->findByTokenAndReference($token, $reference);
 
-        return ($existingGatewayTokens->count() === 1);
+        //
+        // We can have multiple gateway_tokens for a single token.
+        // Each gateway_token would correspond to a different gateway.
+        // This still means that this is second recurring since a
+        // gateway_token has already been created for the given token.
+        // The token can now be used without 2FA.
+        //
+        return ($existingGatewayTokens->count() > 0);
     }
 
     public function isEmandatePayment()

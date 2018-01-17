@@ -145,7 +145,7 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::ENTITY_NAME);
     }
 
-    public function getEntityId() : string
+    public function getEntityId()
     {
         return $this->getAttribute(self::ENTITY_ID);
     }

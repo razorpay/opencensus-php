@@ -25,6 +25,7 @@ use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Transaction;
 use RZP\Models\User;
 use RZP\Trace\TraceCode;
+use RZP\Models\Base\PublicCollection;
 use RZP\Mail\Payout\Payout as PayoutMail;
 
 class Core extends Base\Core
@@ -70,7 +71,19 @@ class Core extends Base\Core
         return $merchant;
     }
 
-    public function createSubMerchant($input, $aggregatorMerchant, $linkedAccount = true): Entity
+    /**
+     * @param array     $input
+     * @param Entity    $aggregatorMerchant
+     * @param bool      $linkedAccount
+     * @param bool      $accountEntity
+     *
+     * @return Entity|Account\Entity
+     */
+    public function createSubMerchant(
+        array $input,
+        Entity $aggregatorMerchant,
+        bool $linkedAccount = true,
+        bool $accountEntity = false)
     {
         // We only check for email uniqueness if the email
         // address is provided
@@ -89,7 +102,16 @@ class Core extends Base\Core
 
         (new Validator)->validateInput('edit_name', $merchantData);
 
-        $subMerchant = (new Merchant\Entity)->build($input);
+        if ($accountEntity === true)
+        {
+            $entity = new Account\Entity;
+        }
+        else
+        {
+            $entity = new Entity;
+        }
+
+        $subMerchant = $entity->build($input);
 
         $subMerchant->setAuditAction(Action::CREATE_SUBMERCHANT);
 
@@ -304,9 +326,15 @@ class Core extends Base\Core
      */
     protected function saveAndNotify($merchant)
     {
-        $data = $this->getEditedMerchantDifference($merchant);
-
         $this->repo->saveOrFail($merchant);
+
+        // Dont notify for linked account changes
+        if ($merchant->isLinkedAccount() === true)
+        {
+            return;
+        }
+
+        $data = $this->getEditedMerchantDifference($merchant);
 
         if (empty($data) === false)
         {
@@ -387,6 +415,17 @@ class Core extends Base\Core
         $this->logActionToSlack($merchant, $action);
 
         return $merchant;
+    }
+
+    /**
+     * This function is used for getting the activation status change log of a merchant
+     * @param Entity $merchant
+     *
+     * @return PublicCollection
+     */
+    public function getActivationStatusChangeLog(Entity $merchant): PublicCollection
+    {
+        return $merchant->getActivationStatusChangeLog();
     }
 
     public function markGratisTransactionPostpaid(string $merchantId, int $from)

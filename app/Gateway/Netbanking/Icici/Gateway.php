@@ -18,6 +18,7 @@ use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Gateway\Netbanking\Base\BankingType;
 use RZP\Models\Payment\Verify as PaymentVerify;
 
 class Gateway extends Base\Gateway
@@ -28,7 +29,7 @@ class Gateway extends Base\Gateway
 
     protected $bank = 'icici';
 
-    protected $bankingType = self::RETAIL;
+    protected $bankingType = BankingType::RETAIL;
 
     protected $map = [
         RequestFields::AMOUNT  => 'amount'
@@ -36,8 +37,6 @@ class Gateway extends Base\Gateway
 
     // Payment type recurring
     const RECURRING         = 'R';
-
-    const RECURRING_BANKING = 'recurring';
 
     public function setGatewayParams($input, $mode, $terminal)
     {
@@ -247,12 +246,12 @@ class Gateway extends Base\Gateway
         if ((isset($terminal) === true) and
             ($terminal->isCorporate() === true))
         {
-            $this->setBankingType(self::CORPORATE);
+            $this->setBankingType(BankingType::CORPORATE);
         }
         else if ((isset($terminal) === true) and
                  ($terminal->isRecurring() === true))
         {
-            $this->setBankingType(self::RECURRING_BANKING);
+            $this->setBankingType(BankingType::RECURRING);
         }
 
         $this->setDomainType();
@@ -817,7 +816,7 @@ class Gateway extends Base\Gateway
 
     protected function isRecurringBanking()
     {
-        return ($this->bankingType === self::RECURRING_BANKING);
+        return ($this->bankingType === BankingType::RECURRING);
     }
 
     protected function getTestSecretCorporate()

@@ -4,20 +4,21 @@ namespace RZP\Models\Merchant;
 
 use Config;
 
-use RZP\Models\User;
-use RZP\Models\Base;
 use RZP\Models\Emi;
+use RZP\Models\Base;
+use RZP\Models\User;
+use RZP\Models\State;
 use RZP\Models\Feature;
 use RZP\Models\Terminal;
 use RZP\Constants\Table;
-use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
-use RZP\Models\Invitation;
-use RZP\Models\Merchant\Detail;
-use RZP\Models\State;
+use RZP\Error\ErrorCode;
 use RZP\Models\Settlement;
+use RZP\Models\Invitation;
 use Conner\Tagging\Taggable;
+use RZP\Models\Merchant\Detail;
 use RZP\Exception\LogicException;
+use RZP\Models\Base\Traits\NotesTrait;
 
 /**
  * @property Detail\Entity $merchantDetail
@@ -25,6 +26,7 @@ use RZP\Exception\LogicException;
 class Entity extends Base\PublicEntity
 {
     use Taggable;
+    use NotesTrait;
 
     const ID                        = 'id';
     const ORG_ID                    = 'org_id';
@@ -61,6 +63,7 @@ class Entity extends Base\PublicEntity
     const CONVERT_CURRENCY          = 'convert_currency';
     const ARCHIVED_AT               = 'archived_at';
     const SUSPENDED_AT              = 'suspended_at';
+    const NOTES                     = 'notes';
 
     // Coupon Related Data for display only
     const COUPON_CODE               = 'coupon_code';
@@ -173,6 +176,7 @@ class Entity extends Base\PublicEntity
         self::RECEIPT_EMAIL_ENABLED,
         self::AUTO_CAPTURE_LATE_AUTH,
         self::TRANSACTION_REPORT_EMAIL,
+        self::NOTES,
     ];
 
     // Requires PHP 5.6
@@ -224,6 +228,7 @@ class Entity extends Base\PublicEntity
         self::ORG_ID,
         self::GROUPS,
         self::ADMINS,
+        self::NOTES,
      ];
 
     protected $defaults = [
@@ -246,10 +251,11 @@ class Entity extends Base\PublicEntity
         self::AUTO_REFUND_DELAY      => null,
         self::AUTO_CAPTURE_LATE_AUTH => false,
         self::FEE_MODEL              => FeeModel::PREPAID,
-        self::CHANNEL                => Settlement\Channel::KOTAK,
+        self::CHANNEL                => Settlement\Channel::ICICI,
         self::CONVERT_CURRENCY       => null,
         self::ARCHIVED_AT            => null,
         self::SUSPENDED_AT           => null,
+        self::NOTES                  => [],
     ];
 
     protected $publicSetters = [
@@ -540,7 +546,7 @@ class Entity extends Base\PublicEntity
     public function methods()
     {
         return $this->hasOne(
-            'RZP\Models\Merchant\Methods\Entity');
+            'RZP\Models\Merchant\Methods\Entity', self::MERCHANT_ID);
     }
 
     public function terminals()
@@ -1182,7 +1188,7 @@ class Entity extends Base\PublicEntity
 
         $data = array_only($data, $reportFields);
 
-        $data[self::ID] = AccountEntity::getSignedId($this->getAttribute(self::ID));
+        $data[self::ID] = Account\Entity::getSignedId($this->getAttribute(self::ID));
 
         return $data;
     }
@@ -1210,6 +1216,13 @@ class Entity extends Base\PublicEntity
                     ->first();
     }
 
+    public function getActivationStatusChangeLog()
+    {
+        return $this->activationStates()
+                    ->orderBy(State\Entity::CREATED_AT)
+                    ->get();
+    }
+
     /**
      * Get the owners of the merchant.
      */
@@ -1228,7 +1241,12 @@ class Entity extends Base\PublicEntity
 
     public function users()
     {
-        return $this->belongsToMany(User\Entity::class, Table::MERCHANT_USERS)
+        //
+        // The foreign key should be specified explicitly as it otherwise fetches from the
+        // entity name by appending '_id' to it. When this code is called from Account\Entity,
+        // it tries to look for account_id and crashes.
+        //
+        return $this->belongsToMany(User\Entity::class, Table::MERCHANT_USERS, self::MERCHANT_ID)
                     ->withPivot(User\Entity::ROLE)
                     ->orderBy(self::NAME);
     }
