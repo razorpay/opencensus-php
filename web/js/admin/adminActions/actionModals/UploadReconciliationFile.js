@@ -20,6 +20,7 @@ const gateWayOptions = [
   'Freecharge',
   'Jiomoney',
   'SBI Buddy',
+  'UpiSbi',
   'Netbanking AXIS',
   'Netbanking ICICI',
   'Netbanking Corporation',
