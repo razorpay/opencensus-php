@@ -459,7 +459,7 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Gateway\Wallet\Base\Entity::class, [
-            'id'            => '12345',
+            'id'            => $faker->randomNumber(4),
             'amount'        => '0',
             'contact'       => '9918899029',
             'email'         => 'a@b.com',
