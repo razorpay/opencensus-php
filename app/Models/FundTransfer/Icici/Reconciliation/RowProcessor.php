@@ -50,17 +50,6 @@ class RowProcessor extends BaseRowProcessor
         $this->reconEntityId = $this->parsedData['payment_ref_no'];
     }
 
-    protected function fetchEntities()
-    {
-        $this->reconEntity = $this->repo->fund_transfer_attempt->findByIdCaseInsensitive($this->reconEntityId);
-
-        if (empty($this->reconEntity) === true)
-        {
-            // This will be traced as error in Base/RowProcessor
-            return;
-        }
-    }
-
     protected function updateReconEntity()
     {
         $this->reconEntity->setUtr($this->parsedData[self::UTR]);

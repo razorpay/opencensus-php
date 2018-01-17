@@ -34,7 +34,7 @@ class IciciReconciliationTest extends TestCase
         $this->ba->adminAuth();
 
         $this->fixtures->merchant->edit('10000000000000', ['channel' => $this->channel]);
-}
+    }
 
     public function testReconFileProcess()
     {
@@ -62,6 +62,9 @@ class IciciReconciliationTest extends TestCase
 
         $this->assertTestResponse($settlementAttempt, 'matchSettlementAttemptForReconSuccess');
         $this->assertNotNull($settlementAttempt['utr']);
+
+        $setl = $this->getLastEntity('settlement', true);
+        $this->assertNotNull($setl['utr']);
     }
 
     public function testReconEntityProcess()

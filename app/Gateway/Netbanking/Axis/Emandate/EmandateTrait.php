@@ -39,6 +39,7 @@ trait EmandateTrait
 
         return $request;
     }
+
     /**
      * This method creates the recurring payment request data
      * We pass the token ID as customer reference number
@@ -168,7 +169,7 @@ trait EmandateTrait
             Netbanking\Entity::REFERENCE1      => $mandateNumber,
 
             // SI registration specific callback attributes
-            Netbanking\Entity::SI_TOKEN        => $content[ResponseFields::CUSTOMER_REF_NO],
+            Netbanking\Entity::SI_TOKEN        => $mandateNumber,
             Netbanking\Entity::SI_STATUS       => $statusCode,
             Netbanking\Entity::SI_MSG          => $content[ResponseFields::REMARKS],
         ];
@@ -438,7 +439,6 @@ trait EmandateTrait
         return [
             RequestFields::AMOUNT          => $this->formatAmount($input['payment']['amount']),
             RequestFields::REQUEST_ID      => $input['payment'][Payment\Entity::ID],
-            RequestFields::CUSTOMER_REF_NO => $input['token']->getId()
         ];
     }
 

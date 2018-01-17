@@ -15,6 +15,8 @@ use RZP\Models;
  * @property Models\Invoice\Repository              $invoice
  * @property Models\Payment\Repository              $payment
  * @property Models\Batch\Repository                $batch
+ * @property Models\BankAccount\Repository          $bank_account
+ * @property Models\Merchant\Account\Repository     $account
  */
 class RepositoryManager extends Illuminate\Support\Manager
 {

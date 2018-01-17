@@ -146,7 +146,7 @@ class Selector extends Base\Core
                     '76lEBqibDvhOzY',
                 ];
 
-                $selectedTerminalId = array_rand($rupayTerminalSet);
+                $selectedTerminalId = $rupayTerminalSet[array_rand($rupayTerminalSet)];
 
                 $terminal = $this->repo->terminal->find($selectedTerminalId);
 

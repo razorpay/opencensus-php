@@ -43,21 +43,6 @@ class RowProcessor extends Base\RowProcessor
         return false;
     }
 
-    protected function fetchEntities()
-    {
-        $ftaId = $this->parsedData['payment_ref_no'];
-
-        $this->reconEntity = $this->repo
-                                  ->fund_transfer_attempt
-                                  ->find($ftaId);
-
-        if (empty($this->reconEntity) === true)
-        {
-            // This will be traced as error in Base/RowProcessor
-            return;
-        }
-    }
-
     protected function updateReconEntity()
     {
         $this->reconEntity->setUtr($this->parsedData['utr']);

@@ -34,6 +34,8 @@ class UpiSbiGatewayReconTest extends TestCase
 
         $this->fixtures->create('terminal:shared_upi_mindgate_sbi_terminal');
 
+        $this->gateway = Payment\Gateway::UPI_SBI;
+
         $this->fixtures->merchant->enableMethod(Merchant\Account::TEST_ACCOUNT, Payment\Method::UPI);
     }
 

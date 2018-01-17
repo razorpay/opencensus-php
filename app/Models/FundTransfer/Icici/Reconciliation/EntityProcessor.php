@@ -9,7 +9,7 @@ class EntityProcessor extends BaseEntityProcessor
 {
     protected function getAttemptStatus(): string
     {
-        $status = Attempt\Status::FAILED;
+        $status = $this->fta->getStatus();
 
         $bankStatusCode = $this->fta->getBankStatusCode();
 
@@ -21,10 +21,6 @@ class EntityProcessor extends BaseEntityProcessor
 
             case Status::CANCELLED:
                 $status = Attempt\Status::FAILED;
-                break;
-
-            case Status::AWAITING:
-                $status = $this->fta->getStatus();
                 break;
         }
 

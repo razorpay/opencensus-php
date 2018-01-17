@@ -86,7 +86,7 @@ abstract class EntityProcessor extends Base\Core
         $this->updateTransactionEntity();
     }
 
-    final protected function updateAttemptEntity()
+    protected function updateAttemptEntity()
     {
         $status = $this->getAttemptStatus();
 
@@ -138,14 +138,14 @@ abstract class EntityProcessor extends Base\Core
         $this->repo->saveOrFail($this->fta);
     }
 
-    final protected function updateTransactionEntity()
+    protected function updateTransactionEntity()
     {
         $this->source->transaction->setReconciledAt($this->reconciledAt);
 
         $this->source->transaction->saveOrFail();
     }
 
-    final protected function updateMerchantEntity()
+    protected function updateMerchantEntity()
     {
         if ($this->holdFunds === true)
         {
@@ -155,7 +155,7 @@ abstract class EntityProcessor extends Base\Core
         }
     }
 
-    final protected function getSourceStatusFromReconEntityStatus(): string
+    protected function getSourceStatusFromReconEntityStatus(): string
     {
         $sourceEntityName = $this->source->getEntity();
 
@@ -171,7 +171,7 @@ abstract class EntityProcessor extends Base\Core
         }
     }
 
-    final protected function getStatusForEntity(string $sourceEntityName): string
+    protected function getStatusForEntity(string $sourceEntityName): string
     {
         $entityStatusClass = $this->getEntityStatusNamespace($sourceEntityName);
 
@@ -194,7 +194,7 @@ abstract class EntityProcessor extends Base\Core
         }
     }
 
-    final protected function getEntityStatusNamespace(string $entityName): string
+    protected function getEntityStatusNamespace(string $entityName): string
     {
         return Entity::getEntityNamespace($entityName) . '\\Status';
     }

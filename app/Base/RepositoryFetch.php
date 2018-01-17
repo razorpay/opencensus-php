@@ -638,7 +638,17 @@ trait RepositoryFetch
         $entity = $query->merchantId($merchant->getId())
                         ->findOrFailPublic($id);
 
-        $entity->merchant()->associate($merchant);
+        //
+        // Most of the entities can be filtered on Merchant ID. They have the
+        // merchant() relation. But a few entities do not have this relation defined
+        // and we have overridden scopeMerchantId() to filter on different column.
+        // Eg: Merchant\Account\Entity applies the filter on column: parent_id.
+        // Merchant\Account\Entity does not have merchant() relation defined. So skip it.
+        //
+        if (method_exists($entity, 'merchant') === true)
+        {
+            $entity->merchant()->associate($merchant);
+        }
 
         return $entity;
     }
@@ -738,8 +748,7 @@ trait RepositoryFetch
 
         if ($merchantId !== null)
         {
-            $attr = static::dbColumn(Common::MERCHANT_ID);
-            $query = $query->where($attr, '=', $merchantId);
+            $query = $query->merchantId($merchantId);
         }
 
         //
