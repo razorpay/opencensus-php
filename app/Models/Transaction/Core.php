@@ -318,8 +318,20 @@ class Core extends Base\Core
             list($credit, $fee, $tax, $feesSplit) = $this->calculatePostpaidFee($txn);
         }
 
-        $txn->setCredit($credit);
+        $txn->setCredit(0);
         $txn->setDebit(0);
+
+        if ($credit >= 0)
+        {
+            $txn->setCredit($credit);
+        }
+        else
+        {
+            $debit = -1 * $credit;
+
+            $txn->setDebit($debit);
+        }
+
         $txn->setFee($fee);
         $txn->setTax($tax);
 
@@ -344,12 +356,15 @@ class Core extends Base\Core
 
         list($fee, $tax, $feesSplit) = $this->calculateMerchantFees($transaction);
 
+        $entity = $transaction->source;
+
         switch (true)
         {
             case ($transaction->isFeeBearerCustomer()):
                 return $this->calculateFeeForPrepaidDefault($transaction);
 
-            case ($amountCredits > 0):
+            // @todo: Need to rethink this.
+            case (($amountCredits > 0) and ($entity->getAmount() !== 0)):
                 return $this->calculateFeeForAmountCredit($transaction);
 
             case ($feeCredits >= $fee):
@@ -377,9 +392,11 @@ class Core extends Base\Core
 
         list($fee, $tax, $feesSplit) = $this->calculateMerchantFees($transaction);
 
+        $entity = $transaction->source;
+
         switch (true)
         {
-            case ($amountCredits > 0):
+            case (($amountCredits > 0) and ($entity->getAmount() !== 0)):
                 return $this->calculateFeeForAmountCredit($transaction);
 
             case ($feeCredits >= $fee):
@@ -467,12 +484,9 @@ class Core extends Base\Core
 
         $credit = 0;
 
-        if ($amount !== 0)
-        {
-            $credit = $amount - $fee;
+        $credit = $amount - $fee;
 
-            $transaction->setCreditType(Transaction\CreditType::DEFAULT);
-        }
+        $transaction->setCreditType(Transaction\CreditType::DEFAULT);
 
         return [$credit, $fee, $tax, $feesSplit];
     }

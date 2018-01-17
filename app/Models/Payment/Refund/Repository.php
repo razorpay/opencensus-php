@@ -359,6 +359,7 @@ class Repository extends Base\Repository
         $tRepo = $this->repo->terminal;
         $tTableName = $tRepo->getTableName();
 
+        $rBaseAmount = $this->dbColumn(Refund\Entity::BASE_AMOUNT);
         $rPaymentId = $this->dbColumn(Refund\Entity::PAYMENT_ID);
         $rCreatedAt = $this->dbColumn(Refund\Entity::CREATED_AT);
 

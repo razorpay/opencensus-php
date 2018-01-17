@@ -103,6 +103,11 @@ class NetbankingAxisEMandateTest extends TestCase
         $this->assertEquals(2, $paymentTxn['tax']);
         $this->assertEquals('payment', $paymentTxn['type']);
         $this->assertEquals('prepaid', $paymentTxn['fee_model']);
+        $this->assertEquals('fee', $paymentTxn['credit_type']);
+
+        $merchantBalance = $this->getEntityById(Entity::BALANCE, '10000000000000', true);
+
+        $this->assertEquals(9988, $merchantBalance['fee_credits']);
 
         $this->refundPayment($payment['id']);
 
@@ -120,14 +125,18 @@ class NetbankingAxisEMandateTest extends TestCase
         $this->assertEquals('na', $refundTxn['fee_model']);
     }
 
+    //
+    // This test is to ensure that amount credit flow is not executed for
+    // zero ruppee payments
+    //
     public function testRefundEmandateInitialPaymentWithAmountCredit()
     {
         $this->createNetbankingRecurringPricingPlan();
 
-        $this->fixtures->create('credits', [
-                       'type'        => 'amount',
-                       'value'       => 10000,
-                   ]);
+        $credit = $this->fixtures->create('credits', [
+               'type'        => 'amount',
+               'value'       => 10000,
+           ]);
 
         $payment = $this->payment;
 
@@ -145,10 +154,15 @@ class NetbankingAxisEMandateTest extends TestCase
         $paymentTxn = $this->getLastEntity(Entity::TRANSACTION, true);
 
         $this->assertEquals(0, $paymentTxn['credit']);
-        $this->assertEquals(0, $paymentTxn['fee']);
-        $this->assertEquals(0, $paymentTxn['tax']);
+        $this->assertEquals(12, $paymentTxn['fee']);
+        $this->assertEquals(2, $paymentTxn['tax']);
         $this->assertEquals('payment', $paymentTxn['type']);
         $this->assertEquals('prepaid', $paymentTxn['fee_model']);
+        $this->assertEquals('default', $paymentTxn['credit_type']);
+
+        $merchantBalance = $this->getEntityById(Entity::BALANCE, '10000000000000', true);
+
+        $this->assertEquals(999988, $merchantBalance['balance']);
 
         $this->refundPayment($payment['id']);
 
@@ -190,6 +204,11 @@ class NetbankingAxisEMandateTest extends TestCase
         $this->assertEquals(2, $paymentTxn['tax']);
         $this->assertEquals('payment', $paymentTxn['type']);
         $this->assertEquals('prepaid', $paymentTxn['fee_model']);
+        $this->assertEquals('default', $paymentTxn['credit_type']);
+
+        $merchantBalance = $this->getEntityById(Entity::BALANCE, '10000000000000', true);
+
+        $this->assertEquals(999988, $merchantBalance['balance']);
 
         $this->refundPayment($payment['id']);
 
