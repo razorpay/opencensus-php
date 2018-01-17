@@ -158,6 +158,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerHttplugMockClient();
 
         $this->registerGeolocation();
+
+        $this->registerPincodeSearcherClient();
     }
 
     /**
@@ -189,6 +191,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'workflow',
             'authservice',
             'sns',
+            'pincodesearcher.client',
         ];
     }
 
@@ -400,5 +403,13 @@ class ApiServiceProvider extends BaseServiceProvider
         $apiProcessor = new RZP\Trace\ApiTraceProcessor($this->app);
 
         $this->app['trace']->pushProcessor($apiProcessor);
+    }
+
+    protected function registerPincodeSearcherClient()
+    {
+        $this->app->singleton('pincodesearcher.client', function($app)
+        {
+            return new PincodeSearcherClient($app);
+        });
     }
 }
