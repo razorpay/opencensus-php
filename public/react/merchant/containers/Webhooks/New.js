@@ -152,6 +152,13 @@ export default class AddWebhook extends Component {
                     <WebhookEventCheckbox eventName="settlement.processed" />
                   </div>
                 </ShowWhen>
+
+                <ShowWhen apiFeatureEnabled="e_mandate">
+                  <div>
+                    <WebhookEventCheckbox eventName="token.confirmed" />
+                    <WebhookEventCheckbox eventName="token.rejected" />
+                  </div>
+                </ShowWhen>
               </div>
             </div>
           </div>

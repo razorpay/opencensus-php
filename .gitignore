@@ -6,8 +6,8 @@ selenium-server.jar
 *.swn
 *.swm
 .DS_Store
+Thumbs.db
 /bootstrap/compiled.php
-/vendor
 apigen
 docs/
 environment/.env
@@ -22,19 +22,23 @@ environment/.env.testing_docker
 !environment/.env.beta
 !environment/.env.alpha
 !environment/*.j2
+
 storage/
 generated/
-grunt.json
-node_modules/
 notes.txt
 public/docs
-storage/
-Thumbs.db
 tmp*.blade.php
 tmp/
 public/js/themes/*.js
 !public/js/themes/init.js
 public/react/dist/
 public/dist/
-yarn-error.log
+
+# php & node modules
+/node_modules
+/vendor
+/web/node_modules
+
+# IDE config
+/jsconfig.json
 .idea

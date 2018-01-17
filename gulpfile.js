@@ -57,7 +57,7 @@ function handleError(err) {
 }
 
 gulp.task('clean', () => {
-  execSync('rm -rf public/dist public/js/generated public/css/generated');
+  execSync('rm -rf public/js/generated public/css/generated');
 });
 
 gulp.task('css', () => {
