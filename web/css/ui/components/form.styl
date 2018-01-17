@@ -128,7 +128,7 @@ form
 
     label:after
       content: ':'
-      margin-left: 2px;
+      margin-left: 2px
 
     input, select // add textarea, etc. if needed
       margin-left: 10px
@@ -179,7 +179,7 @@ form
 
     // full-elements class on <Form> makes the <Field> elements to take 100% on right side otherwise default width
     &.full-elements .field
-      >select, >input, >textarea, .DayPickerInput
+      >select, >input:not([type=checkbox]), >textarea, .DayPickerInput
         width: 55%
 
 
@@ -206,10 +206,38 @@ form
     font-size: 13px
 
   .field
-    min-width: 172px;
+    min-width: 172px
 
   label
     width: 172px
 
   input, textarea, select
     width: 172px
+
+
+.ui-checkbox
+  position: relative
+  display: inline-block
+  width: 18px
+  height: 18px
+  margin: 3px 10px
+  border: 1px solid #ccc
+  border-radius: 4px
+  cursor: pointer
+
+  &:before
+    content: ''
+    position: absolute
+    font-size: 14px
+    top: -3px
+    left: 2px
+    color: #ccc
+    transition: all 0.2s
+
+input:checked + .ui-checkbox
+  background: $prime;
+  border-color: $prime;
+
+  &:before
+    content: '✓'
+    color: #fff;
