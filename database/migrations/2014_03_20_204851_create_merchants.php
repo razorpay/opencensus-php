@@ -138,6 +138,8 @@ class CreateMerchants extends Migration
             $table->index(Merchant::RISK_RATING);
             $table->index(Merchant::EMAIL);
             $table->index(Merchant::AUTO_REFUND_DELAY);
+            $table->index(Merchant::CREATED_AT);
+            $table->index(Merchant::UPDATED_AT);
         });
 
         Schema::table(Table::MERCHANT, function(Blueprint $table)
