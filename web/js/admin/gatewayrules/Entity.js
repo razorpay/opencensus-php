@@ -269,7 +269,7 @@ class GatewayRuleForm extends Component {
           <Field
             label="IIN (6 digit)"
             name="iins"
-            defaultValue={model.iins.join(',')}
+            defaultValue={model.iins ? model.iins.join(',') : ''}
             placeholder="Enter comma(,) separated values"
           />
         )}
