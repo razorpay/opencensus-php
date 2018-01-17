@@ -91,17 +91,18 @@ export default class BusinessDetailsForm extends Component {
                 validate={[required()]}
               >
                 <option />
-                <option value="1">Private Limited</option>
-                <option value="2">Proprietorship</option>
+                <option value="1">Proprietorship</option>
+                <option value="2">Individual</option>
                 <option value="3">Partnership</option>
-                <option value="4">Individual</option>
-                <option value="5">Not yet regsitered</option>
-                <option value="6">Public Limited</option>
-                <option value="7">LLP</option>
+                <option value="4">Private Limited</option>
+                <option value="5">Public Limited</option>
+                <option value="6">LLP</option>
+                <option value="7">NGO</option>
                 <option value="8">Educational Institutes</option>
-                <option value="9">Trust / Society</option>
-                <option value="10">NGO</option>
-                <option value="11">Other</option>
+                <option value="9">Trust</option>
+                <option value="10">Society</option>
+                <option value="11">Not yet registered</option>
+                <option value="12">Other</option>
               </Field>
             </div>
           </div>
