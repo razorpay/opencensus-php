@@ -8,20 +8,20 @@ trait PaymentWalletAirtelMoneyTrait
 {
     protected function runPaymentCallbackFlowWalletAirtelmoney($response, &$callback = null)
     {
-            $mock = $this->isGatewayMocked();
+        $mock = $this->isGatewayMocked();
 
-            list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
+        list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
 
-            if ($mock)
-            {
-                $requestUrl = $this->makeFirstGatewayPaymentMockRequest($url, $method, $content);
+        if ($mock)
+        {
+            $requestUrl = $this->makeFirstGatewayPaymentMockRequest($url, $method, $content);
 
-                // It's a redirect url. Airtelmoney use callback flow for payment authorization.
-                $request = [
-                    'url' => $requestUrl,
-                ];
+            // It's a redirect url. Airtelmoney use callback flow for payment authorization.
+            $request = [
+                'url' => $requestUrl,
+            ];
 
-                return $this->submitPaymentCallbackRequest($request);
-            }
+            return $this->submitPaymentCallbackRequest($request);
+        }
     }
 }
