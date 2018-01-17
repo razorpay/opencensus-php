@@ -509,15 +509,20 @@ class Repository extends Base\Repository
         $terminalRepo = $this->repo->terminal;
 
         $pTableName = $this->getTableName();
+
         $tTablename = $terminalRepo->getTableName();
 
-        $pGateway = $this->dbColumn(Entity::GATEWAY);
-        $pStatus = $this->dbColumn(Entity::STATUS);
+        $pGateway = $terminalRepo->dbColumn(Entity::GATEWAY);
+
         $pTerminalId = $this->dbColumn(Entity::TERMINAL_ID);
+
         $tId = $terminalRepo->dbColumn(Terminal\Entity::ID);
+
         $pCreatedAt = $this->dbColumn(Entity::CREATED_AT);
-        $pStatus = $this->dbColumn(Entity::STATUS);
+
         $tCorp = $terminalRepo->dbColumn(Terminal\Entity::CORPORATE);
+
+        $authorizedAt = $this->dbColumn(Entity::AUTHORIZED_AT);
 
         return $this->newQuery()
                     ->select($paymentAttrs)
@@ -525,7 +530,7 @@ class Repository extends Base\Repository
                     ->where($pCreatedAt, '>=', $from)
                     ->where($pCreatedAt, '<=', $to)
                     ->where($pGateway, $gateway)
-                    ->whereIn($pStatus, $statuses)
+                    ->whereNotNull($authorizedAt)
                     ->where($tCorp, $corporate)
                     ->get();
     }
