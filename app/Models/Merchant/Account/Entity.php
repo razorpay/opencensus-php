@@ -104,6 +104,16 @@ class Entity extends Merchant\Entity
     ];
 
     /**
+     * Get the default foreign key name for the model.
+     *
+     * @return string
+     */
+    public function getForeignKey()
+    {
+        return self::MERCHANT_ID;
+    }
+
+    /**
      * This function is used in case of polymorphic relations where we associate one entity
      * with multiple other entities using (entity_type and entity_id). It determines the string that
      * will be stored for entity_type when the association is with the Account entity. A mapping is
