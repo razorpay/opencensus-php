@@ -516,9 +516,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_DOWNTIME_SORTING_FAILED           = 'GATEWAY_DOWNTIME_SORTING_FAILED';
     const GATEWAY_DOWNTIME_WEBHOOK                  = 'GATEWAY_DOWNTIME_WEBHOOK';
 
+    const FTA_BULK_RECONCILE_REQUEST                = 'FTA_BULK_RECONCILE_REQUEST';
+
     const SETTLEMENT_INITIATING                     = 'SETTLEMENT_INITIATING';
     const SETTLEMENT_INITIATED                      = 'SETTLEMENT_INITIATED';
-    const SETTLEMENT_RECONCILED                     = 'SETTLEMENT_RECONCILED';
     const SETTLEMENT_RECONCILIATION_SKIPPED         = 'SETTLEMENT_RECONCILIATION_SKIPPED';
     const SETTLEMENT_RETURNED                       = 'SETTLEMENT_RETURNED';
     const SETTLEMENT_INITIATE_FAILED                = 'SETTLEMENT_INITIATE_FAILED';
@@ -967,6 +968,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Geo Location trace codes
     const GEOLOCATION_UPDATE_RESPONSE                   = 'GEOLOCATION_UPDATE_RESPONSE';
     const GEOLOCATION_FAILURE                           = 'GEOLOCATION_FAILURE';
+
+    const QUERY_CACHE_STORE_ERROR                       = 'QUERY_CACHE_STORE_ERROR';
+    const QUERY_CACHE_FLUSH_ERROR                       = 'QUERY_CACHE_FLUSH_ERROR';
+    const QUERY_CACHE_EVENT_ERROR                       = 'QUERY_CACHE_EVENT_ERROR';
+
+    // Account codes
+    const ACCOUNT_CREATED                               = 'ACCOUNT_CREATED';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

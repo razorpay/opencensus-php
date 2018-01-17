@@ -79,7 +79,8 @@ other namespaces, for example:
 <!ELEMENT KeyInfo	(#PCDATA|KeyName|KeyValue|RetrievalMethod|
            X509Data|PGPData|SPKIData|MgmtData %KeyInfo.ANY;)* >
 <!ATTLIST KeyInfo
-	Id	ID	 #IMPLIED >
+	Id	ID	 #IMPLIED
+    xmlns   CDATA   #FIXED 'http://www.w3.org/2000/09/xmldsig#'>
 <!-- Key Information -->
 <!ELEMENT KeyName (#PCDATA) >
 <!ELEMENT KeyValue (#PCDATA|DSAKeyValue|RSAKeyValue %KeyValue.ANY;)* >

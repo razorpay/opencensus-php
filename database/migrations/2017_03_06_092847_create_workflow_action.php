@@ -79,6 +79,8 @@ class CreateWorkflowAction extends Migration
             $table->integer(Action::CREATED_AT);
 
             $table->integer(Action::UPDATED_AT);
+
+            $table->index([Action::ENTITY_ID, Action::ENTITY_NAME]);
         });
     }
 

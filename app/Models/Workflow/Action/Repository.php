@@ -165,4 +165,65 @@ class Repository extends Base\Repository
               ->where($cAdminId, '=', $adminId);
     }
 
+    /**
+     * Get action entity with its relations like workflow,
+     * workflow.steps, workflow.steps.role, admin, permission, etc.
+     *
+     * Important to note about workflow.steps relation is that
+     * we may have previously executed workflow actions for which the
+     * steps may have been soft deleted due to workflow steps change/edit.
+     *
+     * In such cases we select steps with action.created_at lying between
+     * step.created_at and step.deleted_at.
+     * 
+     * For actions that are open or executed but the workflow steps haven't
+     * been modified (and hence soft deleted) since the action was created
+     * we just select the rows with step.deleted_at IS NULL and obviously
+     * step.created_at >= action.created_at.
+     */
+    public function getActionDetails(string $id, string $orgId)
+    {
+        Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+        $action = $this->newQuery()
+                       ->orgId($orgId)
+                       ->where(Entity::ID, '=', $id);
+
+        $actionEntity = $action->first();
+
+        // If no entity is returned then return
+        // the query builder object which will be handled
+        // aptly in the service
+        if (empty($actionEntity) === true)
+        {
+            return $action;
+        }
+
+        $relations = [
+            'workflow.steps' => function ($query) use ($actionEntity)
+            {
+                // Get all steps where action.created_at is between
+                // step.created_at AND step.deleted_at (deleted/old steps) or it is more
+                // than step.created_at but step.deleted_at is NULL (active steps)
+                
+                $query->withTrashed()
+                      ->where(Entity::CREATED_AT, '<=', $actionEntity->getCreatedAt())
+                      ->where(function ($query) use ($actionEntity)
+                        {
+                            $query->where(Entity::DELETED_AT, '>=', $actionEntity->getCreatedAt())
+                                  ->orWhereNull(Entity::DELETED_AT);
+                        });
+            },
+            'workflow.steps.role',
+            'admin' => function ($query)
+            {
+                $query->withTrashed();
+            },
+            'permission'
+        ];
+
+        return $action->with($relations)
+                      ->get();
+    }
+
 }

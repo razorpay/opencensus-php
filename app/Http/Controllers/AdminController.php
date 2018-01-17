@@ -107,6 +107,13 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getQueryCacheCounts()
+    {
+        $data = $this->service()->getQueryCacheCounts();
+
+        return ApiResponse::json($data);
+    }
+
     public function getScorecard()
     {
         $input = Request::all();
