@@ -13,6 +13,7 @@ const gateWayOptions = [
   'Ebs',
   'PayZapp',
   'Mobikwik',
+  'Payumoney',
   'Olamoney',
   'Kotak',
   'Paytm',
