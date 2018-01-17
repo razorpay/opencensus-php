@@ -179,9 +179,11 @@ class NodalAccount extends NodalBase\NodalAccount
             $rows[] = $this->getTrasactionRow($amount, $beneCode, $ba);
         }
 
+        $count = count($entities);
+
         $formattedAmount = (float) sprintf('%0.2f', $totalAmount);
 
-        $headerValues = $this->getHeaderRow($formattedAmount);
+        $headerValues = $this->getHeaderRow($formattedAmount, $count);
 
         $values = [self::HEADINGS, $headerValues];
 
@@ -229,7 +231,7 @@ class NodalAccount extends NodalBase\NodalAccount
         return $mode;
     }
 
-    protected function getHeaderRow($formattedAmount): array
+    protected function getHeaderRow($formattedAmount, $count): array
     {
         // Record Identifier is set as 'D' for Axis bank always in first row
         $headerValues = [
@@ -237,7 +239,7 @@ class NodalAccount extends NodalBase\NodalAccount
             $this->id,
             917020041206002,
             $formattedAmount,
-            1,
+            $count,
             '',
         ];
 
