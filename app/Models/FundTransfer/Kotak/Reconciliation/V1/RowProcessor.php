@@ -54,4 +54,14 @@ class RowProcessor extends Base\RowProcessor
 
         return $this->reconEntity;
     }
+
+    protected function updateReconEntity()
+    {
+        return;
+    }
+
+    protected function updateSourceEntity()
+    {
+        return;
+    }
 }

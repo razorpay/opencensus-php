@@ -35,6 +35,7 @@ class Workflow
         Permission::CREATE_DISPUTE,
         Permission::EDIT_MERCHANT_BANK_DETAIL,
         Permission::EDIT_MERCHANT_INVOICE_GSTIN,
+        Permission::CREATE_ADMIN,
     ];
 
     protected $app;
@@ -71,6 +72,8 @@ class Workflow
         {
             $permission = $this->getRoutePermission($routeName);
 
+            // Workflows for EXCLUDED_PERMISSIONS will be triggered from inside
+            // the code.
             if (in_array($permission, self::EXCLUDED_PERMISSIONS, true) === true)
             {
                 // Set the default permission in workflow service

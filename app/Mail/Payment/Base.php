@@ -144,22 +144,29 @@ class Base extends Mailable
         $merchantId = $this->data['merchant']['id'];
 
         // Default text
-        $supportTextPlain = 'You can contact us at contact@razorpay.com in case of any discrepancy.';
-        $supportTextHtml  = "Please <a title=\"Click to send us a mail\" href=\"mailto:contact@razorpay.com\" "
-                            . "style=\"font-family: \'Century Gothic\', \'Lucida Sans\', \'Tahoma\', \'Arial\' !important; color: #2ba6cb; text-decoration: none;\">contact us</a> in case of any discrepancy.";
+        $supportTextPlain = "We are a payment gateway and only facilitate merchants with on-line payments. We request you to contact the merchant for any service related queries. "
+                            . "If you want to dispute a payment, please visit out website https://razorpay.com and follow the instructions on the chat window.";
+        $supportTextHtml = "We are a payment gateway and only facilitate merchants with on-line payments."
+                            . "<br style=\"font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important;\">"
+                            . "We request you to contact the merchant for any service related queries."
+                            . "<br style=\"font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important;\">"
+                            . "If you want to dispute a payment, please visit our <a title=\"Razorpay\" href=\"https://razorpay.com\" style=\"font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; color: #2ba6cb; text-decoration: none;\">website</a> "
+                            . "and follow the instructions on the chat window.";
 
         // Zebpay
         if ($merchantId === '8iMbVsEnv1HCo0')
         {
             $supportTextPlain = $supportTextHtml =
-                'Please contact the Zebpay team for any service related queries. '
+                'If this is correct, you don\'t need to take any further action. '
+                . 'Please contact the Zebpay team for any service related queries. '
                 . 'File a ticket here - ticket.zebpay.com';
         }
         // Koinex
         else if ($merchantId === '8Gx5vN29m83OUY')
         {
             $supportTextPlain = $supportTextHtml =
-                'Please contact the Koinex team for any service related queries. Email: team@koinex.in '
+                'If this is correct, you don\'t need to take any further action. '
+                . 'Please contact the Koinex team for any service related queries. Email: team@koinex.in '
                 . 'Contact link: https://koinex.in/contact_us';
         }
 

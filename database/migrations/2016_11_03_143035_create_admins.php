@@ -104,6 +104,10 @@ class CreateAdmins extends Migration
             $table->foreign(Admin::ORG_ID)
                   ->references(Org::ID)
                   ->on(Table::ORG);
+
+            $table->index(Admin::EMAIL);
+            $table->index(Admin::CREATED_AT);
+            $table->index(Admin::LAST_LOGIN_AT);
         });
     }
 

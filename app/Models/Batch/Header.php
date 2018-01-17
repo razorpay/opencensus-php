@@ -49,7 +49,7 @@ class Header
     const REFUND_DATE        = 'refund_date';
 
     //
-    // Marketplace Linked Account Headers
+    // Linked Account / Sub-merchant Headers
     //
     const BUSINESS_NAME       = 'business_name';
     const BANK_ACCOUNT_TYPE   = 'bank_account_type';
@@ -58,6 +58,45 @@ class Header
     const BANK_ACCOUNT_NUMBER = 'bank_account_number';
     const REFERENCE_ID        = 'reference_id';
     const ACCOUNT_ID          = 'account_id';
+
+    // Sub-merchant headers
+    const MERCHANT_NAME            = 'merchant_name';
+    const MERCHANT_EMAIL           = 'merchant_email';
+    const MERCHANT_ID              = 'merchant_id';
+    const CONTACT_NAME             = 'contact_name';
+    const CONTACT_EMAIL            = 'contact_email';
+    const TRANSACTION_REPORT_EMAIL = 'transaction_report_email';
+    const CONTACT_MOBILE           = 'contact_mobile';
+    const ORGANIZATION_TYPE        = 'organization_type';
+    const BILLING_LABEL            = 'billing_label';
+    const INTERNATIONAL            = 'international';
+    const PAYMENTS_FOR             = 'payments_for';
+    const BUSINESS_MODEL           = 'business_model';
+    const REGISTERED_ADDRESS       = 'registered_address';
+    const REGISTERED_CITY          = 'registered_city';
+    const REGISTERED_STATE         = 'registered_state';
+    const REGISTERED_PINCODE       = 'registered_pincode';
+    const OPERATIONAL_ADDRESS      = 'operational_address';
+    const OPERATIONAL_CITY         = 'operational_city';
+    const OPERATIONAL_STATE        = 'operational_state';
+    const OPERATIONAL_PINCODE      = 'operational_pincode';
+    const DOE                      = 'doe';
+    const GSTIN                    = 'gstin';
+    const EXPECTED_ANNUAL_VOLUME   = 'expected_annual_volume';
+    const AVG_TRANSACTION_VALUE    = 'average_transaction_value';
+    const PROMOTER_PAN             = 'promoter_pan';
+    const PROMOTER_PAN_NAME        = 'promoter_pan_name';
+    const WEBSITE_URL              = 'website';
+    const WEBSITE_ABOUT            = 'website_about';
+    const WEBSITE_CONTACT          = 'website_contact';
+    const WEBSITE_PRICING          = 'website_pricing';
+    const WEBSITE_PRIVACY          = 'website_privacy';
+    const WEBSITE_REFUND           = 'website_refund';
+    const WEBSITE_TERMS            = 'wesbite_terms';
+    const BANK_ACCOUNT_ADDRESS_1   = 'bank_address_1';
+    const BANK_ACCOUNT_CITY        = 'bank_account_city';
+    const BANK_ACCOUNT_STATE       = 'bank_account_state';
+    const BANK_ACCOUNT_PINCODE     = 'bank_account_pincode';
 
     //
     // Virtual Account Bulk Creation Headers
@@ -120,6 +159,9 @@ class Header
     const HDFC_EM_REGISTER_STATUS                           = HdfcEMRegisterHeadings::STATUS;
     const HDFC_EM_REGISTER_REMARK                           = HdfcEMRegisterHeadings::REMARK;
 
+    //
+    // Payout headers
+    //
     const PAYOUT_CUSTOMER_ID         = 'customer_id';
     const PAYOUT_CUSTOMER_NAME       = 'customer_name';
     const PAYOUT_CUSTOMER_CONTACT    = 'customer_contact';
@@ -383,6 +425,62 @@ class Header
                 self::PAYOUT_NOTES,
                 self::PAYOUT_FEE,
                 self::PAYOUT_TAX,
+            ],
+        ],
+
+        Type::SUB_MERCHANT => [
+
+            self::INPUT  => [
+                self::MERCHANT_NAME,
+                self::MERCHANT_EMAIL,
+                self::CONTACT_NAME,
+                self::CONTACT_EMAIL,
+                self::TRANSACTION_REPORT_EMAIL,
+                self::CONTACT_MOBILE,
+                self::ORGANIZATION_TYPE,
+                self::BUSINESS_NAME,
+                self::BILLING_LABEL,
+                self::INTERNATIONAL,
+                self::PAYMENTS_FOR,
+                self::BUSINESS_MODEL,
+                self::REGISTERED_ADDRESS,
+                self::REGISTERED_CITY,
+                self::REGISTERED_STATE,
+                self::REGISTERED_PINCODE,
+                self::OPERATIONAL_ADDRESS,
+                self::OPERATIONAL_CITY,
+                self::OPERATIONAL_STATE,
+                self::OPERATIONAL_PINCODE,
+                self::DOE,
+                self::GSTIN,
+                self::EXPECTED_ANNUAL_VOLUME,
+                self::AVG_TRANSACTION_VALUE,
+                self::PROMOTER_PAN,
+                self::PROMOTER_PAN_NAME,
+                self::WEBSITE_URL,
+                self::WEBSITE_ABOUT,
+                self::WEBSITE_CONTACT,
+                self::WEBSITE_PRICING,
+                self::WEBSITE_PRIVACY,
+                self::WEBSITE_REFUND,
+                self::WEBSITE_TERMS,
+                self::BANK_ACCOUNT_NAME,
+                self::BANK_BRANCH_IFSC,
+                self::BANK_ACCOUNT_NUMBER,
+                self::BANK_ACCOUNT_TYPE,
+                self::BANK_ACCOUNT_ADDRESS_1,
+                self::BANK_ACCOUNT_CITY,
+                self::BANK_ACCOUNT_STATE,
+                self::BANK_ACCOUNT_PINCODE,
+            ],
+
+            self::OUTPUT => [
+                self::MERCHANT_NAME,
+                self::MERCHANT_EMAIL,
+                self::MERCHANT_ID,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
             ],
         ],
     ];

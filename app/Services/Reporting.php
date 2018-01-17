@@ -197,26 +197,41 @@ class Reporting
      */
     protected function filterConfigsByFeatureAndTags(array $configs): array
     {
-
+        //
         // $item is a collection for easy operations. Also $configs is empty
         // in case reporting is mocked.
+        //
         $items = collect($configs['items'] ?? []);
 
         $merchant = $this->ba->getMerchant();
 
+        //
         // Reversals, transfers are shared reports, which should be applicable
-        // only to marketplace merchants and so we remove them fron configs list
+        // only to marketplace merchants and so we remove them from configs list
         // otherwise.
+        //
         if ($merchant->isFeatureEnabled(Feature::MARKETPLACE) === false)
         {
-            $items = $items->reject(function ($value, $key)
+            $items = $items->reject(function ($value, $key) use ($merchant)
             {
+                //
+                // If the 'openwallet' feature is enabled, don't remove the Transfer
+                // report from the list of config items
+                //
+                if (($merchant->isFeatureEnabled(Feature::OPENWALLET) === true) and
+                    ($value['type'] === Table::TRANSFER))
+                {
+                    return false;
+                }
+
                 return in_array($value['type'], [Table::TRANSFER, Table::REVERSAL], true);
             });
         }
 
+        //
         // Payment links report is shared as well but should only be visible to
         // merchants with specific tags.
+        //
         $merchantTags = $merchant->tagNames();
 
         if (in_array('Payment_Link_Report', $merchantTags, true) === false)

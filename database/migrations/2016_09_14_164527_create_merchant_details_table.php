@@ -248,6 +248,8 @@ class CreateMerchantDetailsTable extends Migration
             $table->index(MerchantDetail::ACTIVATION_STATUS);
 
             $table->index(MerchantDetail::ARCHIVED_AT);
+            $table->index(MerchantDetail::CREATED_AT);
+            $table->index(MerchantDetail::UPDATED_AT);
         });
     }
 

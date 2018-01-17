@@ -159,6 +159,13 @@ class Raven
 
         $this->trace->info(TraceCode::RAVEN_RESPONSE, $decodedResponse ?? []);
 
+        //check if $response is a valid json
+        if (json_last_error() !== JSON_ERROR_NONE)
+        {
+            throw new Exception\RuntimeException(
+                'External Operation Failed');
+        }
+
         $this->checkErrors($decodedResponse);
 
         return $decodedResponse;
