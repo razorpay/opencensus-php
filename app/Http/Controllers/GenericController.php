@@ -22,7 +22,20 @@ class GenericController extends Controller
     |
     */
 
-    public function handle($path = '/')
+    public function handle()
+    {
+        $method = Request::method();
+
+        $input = Input::all();
+
+        $genericService = new Generic\Service;
+
+        list($error, $data) = $genericService->call($method, $input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function handleGuest($path = '/')
     {
         $request = new App\Admin\ApiRequestAny();
 
