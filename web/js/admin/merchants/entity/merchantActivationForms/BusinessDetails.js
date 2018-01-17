@@ -64,7 +64,7 @@ export default class BusinessDetails extends Component {
               defaultValue={merchantDetails.business_type}
               required
             >
-              <option value="1">Proprietership</option>
+              <option value="1">Proprietorship</option>
               <option value="2">Individual</option>
               <option value="3">Partnership</option>
               <option value="4">Private Limited</option>
@@ -74,6 +74,8 @@ export default class BusinessDetails extends Component {
               <option value="8">Educational Institutes</option>
               <option value="9">Trust</option>
               <option value="10">Society</option>
+              <option value="11">Not yet registered</option>
+              <option value="12">Other</option>
             </SelectField>
 
             <Field
@@ -259,9 +261,7 @@ export default class BusinessDetails extends Component {
                 <a
                   class="link"
                   target="_blank"
-                  href={`https://incometaxindiaefiling.gov.in/e-Filing/Services/KnowYourJurisdictionLink.html?panOfDeductee=${
-                    merchantDetails.company_pan
-                  }`}
+                  href={`https://incometaxindiaefiling.gov.in/e-Filing/Services/KnowYourJurisdictionLink.html?panOfDeductee=${merchantDetails.company_pan}`}
                 >
                   Verify
                 </a>
@@ -322,11 +322,9 @@ export default class BusinessDetails extends Component {
             <div class="field">
               <label>Signatory PAN Verified</label>
               <i
-                class={`i ${
-                  this.state.panVerified
-                    ? 'i-yes text-success'
-                    : 'i-no text-danger'
-                }`}
+                class={`i ${this.state.panVerified
+                  ? 'i-yes text-success'
+                  : 'i-no text-danger'}`}
               />
               <div class="info-block">
                 <i class="i i-info-circle" />
@@ -355,9 +353,9 @@ function _getCompanyInfoFields() {
       item => (
         <i
           style={{ fontSize: '16px' }}
-          class={`i ${
-            item.Defaulter ? 'i-warning text-danger' : 'i-smile text-success'
-          }`}
+          class={`i ${item.Defaulter
+            ? 'i-warning text-danger'
+            : 'i-smile text-success'}`}
         />
       ),
     ],
