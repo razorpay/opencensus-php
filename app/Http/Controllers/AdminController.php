@@ -337,13 +337,6 @@ class AdminController extends Controller
         $file->download('xlsx');
     }
 
-    public function passThrough($path = '')
-    {
-        list($error, $response) = (new Admin\Service)->makeRawApiCall($path);
-
-        return AppResponse::jsonResponse($error, $response);
-    }
-
     public function postReconcileSettlement()
     {
         $path = 'settlements/reconcile';
