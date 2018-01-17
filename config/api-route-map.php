@@ -588,15 +588,15 @@ return [
 
         // Keys
         'merchant_fetch_keys'               => [
-            'url'       => 'merchant/keys',
+            'url'       => 'keys',
             'routeName' => 'get_keys'
         ],
         'merchant_create_key'               => [
-            'url'       => 'merchant/keys',
+            'url'       => 'keys',
             'routeName' => 'keys_setup'
         ],
         'merchant_replace_key'              => [
-            'url'       => 'merchant/keys/{keyId}',
+            'url'       => 'keys/{id}',
             'routeName' => 'post_keys'
         ],
 
