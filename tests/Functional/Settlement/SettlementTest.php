@@ -1236,10 +1236,10 @@ class SettlementTest extends TestCase
 
         //
         // transfer 1 -> credit 1000 + transfer 2 -> credit 1000
-        // reverse transfer 1 -> debit 1000
-        // total => 1000
+        // reverse transfer 1 -> debit 90
+        // total => 1910
         //
-        $this->assertEquals(1000, $lastSetl['amount']);
+        $this->assertEquals(1910, $lastSetl['amount']);
 
         //
         // (1 payment txn +

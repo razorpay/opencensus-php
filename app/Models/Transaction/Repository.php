@@ -84,8 +84,6 @@ class Repository extends Base\Repository
         $transactionFee         = $this->dbColumn(Entity::FEE);
         $transactionFeeCredits  = $this->dbColumn(Entity::FEE_CREDITS);
 
-        s(Carbon::createFromTimestamp($timestamp, Timezone::IST));
-
         $txns = $this->newQuery()
                     ->select(
                         $transactionId,
