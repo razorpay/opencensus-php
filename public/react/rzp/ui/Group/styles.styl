@@ -1,0 +1,24 @@
+.rzp-group {
+
+  display: table;
+
+  > .rzp-group-item {
+
+    display: table-cell;
+    padding: 8px;
+    border: 1px solid #cfdadd;
+    border-left-width: 0;
+    vertical-align: middle;
+
+    &:first-child {
+
+      border-left-width: 1px;
+      border-radius: 2px 0 0 2px;
+    }
+
+    &:last-child {
+
+      border-radius: 0 2px 2px 0;
+    }
+  }
+}

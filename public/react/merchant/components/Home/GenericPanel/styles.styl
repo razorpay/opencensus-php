@@ -1,0 +1,159 @@
+$gutter = 24px;
+$panel-topbar-height = 76px;
+$panel-footer-height = 45px;
+$panel-body-height = 300px;
+
+.panel.dasboard-home-panel {
+
+  position: relative;
+  padding: $gutter;
+  box-shadow: 0 1px 4px 0 rgba(0,0,0,0.1);
+ 
+  .panel-footer {
+
+    display: none;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    margin-top: - $panel-footer-height;
+    width: 100%;
+    background-color: #FBFCFD;
+    padding-top: 0;
+    padding-bottom: 0;
+    color: #686D87;
+    line-height: $panel-footer-height - 1px;
+    border-top: 1px solid #F0F1F6;
+  }
+
+  &.has-footer {
+
+    padding-bottom: $panel-footer-height + $gutter;
+
+    .panel-footer {
+
+      display: block;
+      color: #8991ae;
+    }
+  }
+
+  .panel-body {
+
+    position: relative;
+    height: 300px;
+    padding: $gutter 0 0 0;
+
+    .rzp-overlay {
+
+      background-color: rgba(255, 255, 255, 1);
+    }
+
+    div.no-data-msg {
+
+      text-align: center;
+      color: #8991AE;
+ 
+      svg {
+
+        display: inline-block;
+        width: 21px;
+        height: 18px;
+
+        > path {
+
+          fill: #FFA665;
+        }
+      }
+
+      .no-data-titile {
+
+        font-size: 18px;
+        margin-bottom: 6px;
+      }
+
+      .no-data-subtitle {
+
+        color: #6F758A;
+      }
+    }
+  }
+
+
+  div.panel-actions {
+
+    .panel-action-item {
+
+      display: inline-block;
+      margin-left: $gutter;
+      vertical-align: middle;
+
+      &:first {
+
+        margin-left: 0;
+      }
+
+      &.btn-group {
+
+        .btn-default {
+
+          background-color: #FFF;
+          border-color: #CFDADD;
+          z-index: 0;
+          width: 78px;
+        }
+
+        .btn-default.active {
+
+          background-color: #FFFFFF;
+          color: inherit;
+          box-shadow: none;
+          border-color: #4C58C7;
+          z-index: 1;
+        }
+      }
+
+      .more-options-button {
+
+        div.option {
+
+          padding: 0;
+
+          > a {
+
+            padding: 10px 15px;
+            display: block;
+            color: inherit;
+          }
+        }
+
+        button.btn.btn-default {
+
+          width: 40px;
+          background-color: #FFFFFF;
+
+          &:focus {
+
+            border-color: #4c58c7;
+          }
+
+          svg {
+
+            width: 16px;
+            height: 4px;
+            display: inline-block;
+            vertical-align: middle;
+
+            path {
+
+              fill: currentColor;
+            }
+          }
+        }
+      }
+
+      .btn-default {
+
+        padding: 9px 10px;
+      }
+    }
+  }
+}
