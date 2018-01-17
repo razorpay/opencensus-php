@@ -7,19 +7,26 @@ use Request;
 
 class KeyController extends Controller
 {
-    public function getKey($id)
+    public function postCreateKeys()
     {
-        $data = $this->service()->fetch($id);
+        $data = $this->service()->createKey();
 
         return ApiResponse::json($data);
     }
 
     public function getKeys()
     {
-        $input = Request::all();
-
-        $data = $this->service()->fetchMultiple($input);
+        $data = $this->service()->fetchKeys();
 
         return ApiResponse::json($data);
+    }
+
+    public function putKeys($keyId)
+    {
+        $input = Request::all();
+
+        $keys = $this->service()->updateKey($keyId, $input);
+
+        return ApiResponse::json($keys);
     }
 }
