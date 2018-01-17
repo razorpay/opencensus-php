@@ -772,7 +772,7 @@ trait Authorize
         {
             $card = $payment->card;
 
-            if ($card->getNetworkCode() === Card\Network::DICL)
+            if ($card->isDiners() === true)
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
@@ -3335,11 +3335,7 @@ trait Authorize
             }
         }
 
-        if (Payment\Gateway::isAuthAndPowerWallet($wallet) === true)
-        {
-            // TODO: Figure out a way this can be called here
-            // return $this->isOtpOrAuthFlow($input);
-        }
+        // TODO: Figure out a way to do this for other power wallets
 
         return true;
     }
