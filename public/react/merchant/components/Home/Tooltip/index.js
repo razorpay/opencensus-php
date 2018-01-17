@@ -1,7 +1,7 @@
 import React from 'react';
 import Tp from 'rzp/ui/Tooltip';
 import {
-  getFormattedAmount,
+  getFormattedAmountNew,
   getFormattedNumber,
   paiseToRupees,
 } from 'rzp/utils/rzp-utils';
@@ -14,7 +14,7 @@ const Tooltip = ({ value, align, isCurrency = false, currency = 'INR' }) => {
   return (
     <Tp align={align}>
       {isCurrency
-        ? getFormattedAmount(value, true, currency)
+        ? getFormattedAmountNew(value, true, currency)
         : getFormattedNumber(value)}
     </Tp>
   );

@@ -7,10 +7,7 @@ import moment from 'moment';
 import Amount from 'rzp/ui/Amount';
 import {
   paiseToRupees,
-  titleCase,
-  shortenText,
-  getFormattedAmount,
-  getFormattedNumber,
+  titleCase
 } from 'rzp/utils/rzp-utils';
 import {
   humanReadableIndian,

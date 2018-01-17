@@ -100,6 +100,8 @@ export const normalizeBoolean = bool => {
   return bool ? 1 : 0;
 };
 
+const numberFormatRegex = /(.{1,2})(?=.(..)+(\...)$)/g;
+
 export const getFixedINRAmount = amount => (Number(amount) / 100).toFixed(2);
 
 export const getFormattedNumber = value => {
@@ -107,12 +109,12 @@ export const getFormattedNumber = value => {
     value = value.toFixed(2);
   }
 
-  value = value.replace(/(.{1,2})(?=.(..)+(\...)$)/g, '$1,');
+  value = value.replace(numberFormatRegex, '$1,');
 
   const valueArr = value.split('.');
 
   if (valueArr[1] == '00') {
-    value = valueArr[0];
+    value = valueArr[0].replace(".", "");
   }
 
   return value;
@@ -123,11 +125,16 @@ export const currencySymbols = {
   USD: 'US$',
 };
 
-// following regex formats in indian comma separated, i.e. 2,01,20,45,222.66
-export const getFormattedAmount = (amount, showCurrency, currency = 'INR') => {
+export const getFormattedAmountNew = (amount, showCurrency, currency = 'INR') => {
+
   const formattedAmount = getFormattedNumber((amount / 100).toFixed(2));
 
   return (showCurrency ? currencySymbols[currency] : '') + formattedAmount;
+}
+
+// following regex formats in indian comma separated, i.e. 2,01,20,45,222.66
+export const getFormattedAmount = (amount) => {
+  return (amount / 100).toFixed(2).replace(numberFormatRegex, '$1,');
 };
 
 export const without = (source, keys) => {

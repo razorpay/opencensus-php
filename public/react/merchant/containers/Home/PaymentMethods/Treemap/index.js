@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
 import Tooltip from 'rzp/ui/Tooltip';
-import { getFormattedAmount } from 'rzp/utils/rzp-utils';
+import { getFormattedAmountNew } from 'rzp/utils/rzp-utils';
 import { globalGroupTitleMap as groupTitleMap } from "rzp/utils/pokedex";
 
 import renderTreemap from './renderTreemap';
@@ -156,7 +156,7 @@ export default class Treemap extends Component {
 
   render() {
     const { tooltip } = this.state,
-      amount = getFormattedAmount(tooltip.data.amount, true);
+      amount = getFormattedAmountNew(tooltip.data.amount, true);
 
     return (
       <div>

@@ -1,6 +1,6 @@
 import {
   titleCase,
-  getFormattedAmount,
+  getFormattedAmountNew,
   paiseToRupees,
   arrayToCsvDataUrl,
 } from 'rzp/utils/rzp-utils';
@@ -32,7 +32,7 @@ function main(
 ) {
   var root,
     opts = { ...defaults, ...o },
-    formatNumber = getFormattedAmount,
+    formatNumber = getFormattedAmountNew,
     rname = opts.rootname,
     margin = opts.margin;
 
