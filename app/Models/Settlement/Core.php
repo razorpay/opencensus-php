@@ -3,14 +3,18 @@
 namespace RZP\Models\Settlement;
 
 use Carbon\Carbon;
+use Razorpay\Trace\Logger as Trace;
+
 use RZP\Exception;
 use RZP\Models\Adjustment;
 use RZP\Models\Base;
-use RZP\Models\Card;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
 use RZP\Constants\Timezone;
+use RZP\Trace\TraceCode;
+use RZP\Listeners\ApiEventSubscriber;
 
 class Core extends Base\Core
 {
@@ -77,6 +81,74 @@ class Core extends Base\Core
         return (new $nodalClass())->addBeneficiary($input);
     }
 
+    public function updateChannel(array $input): array
+    {
+        (new Validator)->validateInput('update_channel', $input);
+
+        $settlementIds = $input['settlement_ids'];
+
+        Entity::verifyIdAndStripSignMultiple($settlementIds);
+
+        $channel = $input['channel'];
+
+        $failedIds = [];
+
+        $successIds = [];
+
+        foreach ($settlementIds as $settlementId)
+        {
+            try
+            {
+                $transactionIds = $this->repo
+                                       ->transaction
+                                       ->fetch([Transaction\Entity::SETTLEMENT_ID => $settlementId])
+                                       ->pluck(Transaction\Entity::ID)
+                                       ->toArray();
+
+                $this->repo->transaction(function () use ($settlementId, $transactionIds, $channel)
+                {
+                    $this->repo
+                         ->settlement
+                         ->updateChannel($settlementId, $channel);
+
+                    $this->repo
+                         ->transaction
+                         ->updateChannelForSettlement($settlementId, $transactionIds, $channel);
+                });
+
+                $successIds[] = $settlementId;
+            }
+            catch (\Throwable $ex)
+            {
+                $failedIds[] = $settlementId;
+
+                $this->trace->traceException(
+                    $ex,
+                    Trace::ERROR,
+                    TraceCode::SETTLEMENTS_CHANNEL_UPDATE_FAILED,
+                    [
+                        'settlement_id' => $settlementId,
+                        'channel'       => $channel,
+                    ]);
+            }
+        }
+
+        $response = [
+            'channel'       => $channel,
+            'total'         => count($settlementIds),
+            'success'       => count($successIds),
+            'failed'        => count($failedIds),
+            'failed_ids'    => $failedIds,
+        ];
+
+        $this->trace->info(
+            TraceCode::SETTLEMENTS_CHANNEL_BULK_UPDATE_RESPONSE,
+            $response
+        );
+
+        return $response;
+    }
+
     protected function getAmountFromPaymentsForLastDay(string $gateway) : int
     {
         $from = Carbon::yesterday(Timezone::IST)->getTimestamp();
@@ -96,5 +168,51 @@ class Core extends Base\Core
         $amount = 0.99 * $amount;
 
         return (int)$amount;
+    }
+  
+    /**
+     * Sends a webhook to the merchant for successfully settled payments
+     *
+     * @param Entity $settlement
+     */
+    public function triggerSettlementWebhook(Entity $settlement)
+    {
+        if ($this->shouldSendWebhook($settlement) === false)
+        {
+            return;
+        }
+
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $settlement
+        ];
+
+        $this->app['events']->fire('api.settlement.processed', $eventPayload);
+
+    }
+
+    /**
+     * Returns false,
+     *   if the settlement was not processed, or,
+     *   if the settlement was not made for a linked account.
+     *
+     * @param Entity $settlement
+     *
+     * @return bool
+     */
+    protected function shouldSendWebhook(Entity $settlement): bool
+    {
+        // Proceed only if the settlement has successfully processed
+        if ($settlement->isStatusProcessed() === false)
+        {
+            return false;
+        }
+
+        // Proceed only if the settlement was made to a linked account
+        if ($settlement->merchant->isLinkedAccount() === false)
+        {
+            return false;
+        }
+
+        return true;
     }
 }

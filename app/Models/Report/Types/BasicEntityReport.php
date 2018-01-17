@@ -32,7 +32,7 @@ class BasicEntityReport extends BaseReport
     protected $entityToRelationFetchMap = [
         E::TRANSACTION  => [
             // Maps transaction source to entities that need to be fetched
-            E::PAYMENT  => [E::ORDER],
+            E::PAYMENT  => [E::ORDER, E::CARD],
             E::REFUND   => [
                 E::PAYMENT,
                 E::PAYMENT . '.' . E::CARD,

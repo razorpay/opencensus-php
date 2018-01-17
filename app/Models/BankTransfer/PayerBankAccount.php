@@ -50,10 +50,17 @@ class PayerBankAccount extends Base\Core
         // Label could be empty AFTER the preg_replace step
         if (empty(trim($label)) === true)
         {
-            $label = $bankTransfer->merchant->getBillingLabel();
+            if ($bankTransfer->isExpected() === true)
+            {
+                $label = $bankTransfer->merchant->getBillingLabel();
 
-            // Still necessary to sanitize merchant name
-            $label = preg_replace('/[^a-zA-Z0-9 ]+/', '', $label);
+                // Still necessary to sanitize merchant name
+                $label = preg_replace('/[^a-zA-Z0-9 ]+/', '', $label);
+            }
+            else
+            {
+                $label = 'Beneficiary';
+            }
         }
 
         return substr($label, 0, 39);

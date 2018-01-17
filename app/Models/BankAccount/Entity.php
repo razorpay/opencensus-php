@@ -46,6 +46,12 @@ class Entity extends Base\PublicEntity
 
     const SPECIAL_IFSC_CODE     = 'RZPB0000000';
 
+    //
+    // Beneficiary registration constants
+    //
+    const ON                = 'on';
+    const RECIPIENT_EMAILS  = 'recipient_emails';
+
     protected static $sign      = 'ba';
 
     protected $primaryKey = self::ID;

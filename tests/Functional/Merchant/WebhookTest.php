@@ -2,23 +2,25 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use Mail;
 use Closure;
 use Mockery;
-use Mail;
-
-use RZP\Mail\Merchant\Webhook as WebhookMail;
-use Http\Mock\Client;
-use RZP\Jobs\WebHook;
-use RZP\Tests\Functional\TestCase;
-use Http\Discovery\MessageFactoryDiscovery;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Tests\Functional\Helpers\MocksDnsTrait;
-use RZP\Models\Merchant\Webhook\Inferno;
-use Psr\Http\Message\ResponseInterface;
+use Carbon\Carbon;
 use Psr\Http\Message\RequestInterface;
-use Http\Discovery\HttpClientDiscovery;
-use Http\Discovery\Strategy\MockClientStrategy;
+use Psr\Http\Message\ResponseInterface;
+
+use RZP\Models\Settlement;
+use RZP\Constants\Timezone;
+use RZP\Tests\Functional\TestCase;
+use RZP\Models\Settlement\Channel;
+use RZP\Models\Merchant\Webhook\Inferno;
+use Http\Discovery\MessageFactoryDiscovery;
+use RZP\Mail\Merchant\Webhook as WebhookMail;
+use RZP\Tests\Functional\Helpers\MocksDnsTrait;
+use RZP\Tests\Functional\Settlement\SettlementTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use Http\Client\Common\Exception\ClientErrorException;
+use RZP\Tests\Functional\Gateway\Kotak\ReconciliationTrait;
 
 /**
  * @group dns-sensitive
@@ -27,6 +29,8 @@ class WebhookTest extends TestCase
 {
     use PaymentTrait;
     use MocksDnsTrait;
+    use SettlementTrait;
+    use ReconciliationTrait;
 
     public function setUp()
     {
@@ -570,6 +574,146 @@ class WebhookTest extends TestCase
             return;
         }
         self::fail();
+    }
+
+    /**
+     * Tests if a webhook is triggered to the merchant when a settlement is processed.
+     */
+    public function testTransferSettlementWebhook()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $payment = $this->createPaymentEntities(1);
+
+        $account2 = $this->fixtures->create('merchant:marketplace_account', ['id' => '10000000000002']);
+
+        $this->createTransferEntity($payment, $account2);
+
+        $account3 = $this->fixtures->create('merchant:marketplace_account', ['id' => '10000000000003']);
+
+        $this->createTransferEntity($payment, $account3);
+
+        $this->createWebhook(
+            [
+                'events' => [
+                    'settlement.processed' => '1',
+                ]
+            ]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->mockInfernoFire(function ($data) use ($testData)
+        {
+            $data['event'] = json_decode($data['event'], true);
+
+            $this->assertArrayHasKey('account_id', $data['event']);
+
+            $this->assertEquals('settlement.processed', $data['event']['event']);
+
+            $this->assertArraySelectiveEquals($testData, $data);
+
+            return true;
+        }, 2);
+
+        // Generate settlements for above transactions
+        $setlFile = $this->initiateSettlementsAndAssertSuccess(Settlement\Channel::KOTAK);
+
+        // Generate settlement reconciliation file
+        $setlReconciliationFile = $this->generateSetlReconciliationFile($setlFile, Settlement\Channel::KOTAK);
+
+        // Reconcile settlements
+        $this->reconcileSettlements($setlReconciliationFile);
+
+        // Process entities
+        $request = [
+            'url'       => '/fund_transfer_attempts/' . Channel::KOTAK,
+            'method'    => 'POST',
+            'content'   => [],
+        ];
+
+        $this->ba->appAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        // Ensure the webhook is not fired the next time the same request is hit.
+        $this->makeRequestAndGetContent($request);
+    }
+
+    public function testWebhookOnSettlementFailure()
+    {
+        // Create payments and refunds with timestamps two days back
+        $prEntities = $this->createPaymentAndRefundEntities();
+
+        // delete Existing files
+        $this->deleteSetlFiles();
+
+        // reconciliation
+        $txns = $this->matchTransactions($prEntities);
+
+        // Generate settlements for above transactions
+        $setlFile = $this->initiateSettlementsAndAssertSuccess(Channel::KOTAK);
+
+        // Generate settlement reconciliation file
+        $generateFailedReconciliations = true;
+        $setlReconciliationFile = $this->generateSetlReconciliationFile(
+            $setlFile,
+            Channel::KOTAK,
+            $generateFailedReconciliations);
+
+        // Reconcile settlements
+        $this->reconcileSettlements($setlReconciliationFile);
+
+        // No webhook should be sent if the settlements have failed
+        $this->mockInfernoFire(function () { }, 0);
+
+        // Process entities
+        $request = [
+            'url'       => '/fund_transfer_attempts/' . Channel::KOTAK,
+            'method'    => 'POST',
+            'content'   => [],
+        ];
+
+        $this->ba->appAuth();
+
+        $this->makeRequestAndGetContent($request);
+    }
+
+    protected function createPaymentEntities(int $count)
+    {
+        $createdAt = Carbon::today(Timezone::IST)->subDays(50)->timestamp + 5;
+        $capturedAt = Carbon::today(Timezone::IST)->subDays(50)->timestamp + 10;
+
+        $payment = $this->fixtures->times($count)->create(
+            'payment:captured',
+            [
+                'captured_at' => $capturedAt,
+                'method'      => 'card',
+                'created_at'  => $createdAt,
+                'updated_at'  => $createdAt + 10
+            ]
+        );
+
+        return $payment;
+    }
+
+    protected function createTransferEntity($payment, $account)
+    {
+        $createdAt = Carbon::today(Timezone::IST)->subDays(20)->timestamp + 5;
+
+        $this->fixtures->create('transfer:to_account',
+            [
+                'account'       => $account,
+                'source_id'     => $payment->getId(),
+                'source_type'   => 'payment',
+                'amount'        => 2500,
+                'currency'      => 'INR',
+                'on_hold'       => '0',
+                'on_hold_until' => Carbon::today(Timezone::IST)->timestamp - 600,
+                'created_at'    => $createdAt,
+                'updated_at'    => $createdAt + 10
+            ]);
     }
 
     protected function mockInfernoWithResponseStatusCode($statusCode, $method = 'makeRequest')

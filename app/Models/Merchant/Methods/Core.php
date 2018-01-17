@@ -146,7 +146,7 @@ class Core extends Base\Core
 
             $this->addRecurringCardsToMethods($data['recurring']);
 
-            $this->addRecurringNetbankingToMethodsIfApplicable($merchant, $data['recurring']);
+            $this->addRecurringEmandateToMethodsIfApplicable($merchant, $data['recurring']);
         }
 
         if ($merchant->isFeatureEnabled(Constants::UPI_INTENT) === true)
@@ -168,7 +168,7 @@ class Core extends Base\Core
         ];
     }
 
-    public function addRecurringNetbankingToMethodsIfApplicable(Merchant\Entity $merchant, array & $recurringData)
+    public function addRecurringEmandateToMethodsIfApplicable(Merchant\Entity $merchant, array & $recurringData)
     {
         //
         // We don't allow netbanking for subscriptions currently.
@@ -186,33 +186,42 @@ class Core extends Base\Core
             return;
         }
 
-        $availableEmandateBanks = [];
-
-        if ($this->isTestMode() === true)
+        foreach (Payment\AuthType::$types as $type)
         {
-            $availableEmandateBanks = Payment\Gateway::$eMandateBanks;
-        }
-        else
-        {
-            $applicableEmandateTerminals = $this->repo
-                                                ->terminal
-                                                ->getTerminalsForMerchantAndSharedMerchant($merchant, true);
-
-            $availableGateways = $applicableEmandateTerminals->pluck(Terminal\Entity::GATEWAY);
-
-            foreach ($availableGateways as $availableGateway)
+            if ($this->isTestMode() === true)
             {
-                $availableEmandateBanks = array_merge(
-                                                $availableEmandateBanks,
-                                                Payment\Gateway::$gatewaysEmandateBanksMap[$availableGateway]);
+                $banks = Payment\Gateway::getAvailableEmandateBanksForAuthType($type);
             }
-        }
+            else
+            {
+                $func = 'getEmandateBanksEnabledFor' . studly_case($type);
 
-        $availableEmandateBanks = array_values(array_unique($availableEmandateBanks));
+                if (method_exists($this, $func) === false)
+                {
+                    $this->trace->error(
+                        TraceCode::EMANDATE_FUNCTION_NOT_IMPLEMENTED,
+                        [
+                            'function_name' => $func
+                        ]);
 
-        if (empty($availableEmandateBanks) === false)
-        {
-            $recurringData['netbanking'] = $this->getBankNames($availableEmandateBanks);
+                    $banks = [];
+                }
+                else
+                {
+                    $banks = $this->$func($merchant);
+                }
+            }
+
+            if (empty($banks) === false)
+            {
+                $banks = $this->getBankNames($banks);
+
+                foreach ($banks as $ifsc => $name)
+                {
+                    $recurringData['emandate'][$ifsc]['auth_types'][] = $type;
+                    $recurringData['emandate'][$ifsc]['name'] = $name;
+                }
+            }
         }
     }
 
@@ -402,6 +411,34 @@ class Core extends Base\Core
 
             return $data;
         }
+    }
+
+    protected function getEmandateBanksEnabledForNetbanking(Merchant\Entity $merchant): array
+    {
+        $availableEmandateBanks = [];
+
+        $applicableEmandateTerminals = $this->repo
+                                            ->terminal
+                                            ->getEmandateNetbankingTerminalsForMerchantAndSharedMerchant($merchant);
+
+        $availableGatewaysForMerchant = $applicableEmandateTerminals->pluck(Terminal\Entity::GATEWAY);
+
+        foreach ($availableGatewaysForMerchant as $availableGateway)
+        {
+            if (isset(Payment\Gateway::$gatewaysEmandateBanksMap[$availableGateway]) === true)
+            {
+                $availableEmandateBanks = array_merge(
+                                                $availableEmandateBanks,
+                                                Payment\Gateway::$gatewaysEmandateBanksMap[$availableGateway]);
+            }
+        }
+
+        return array_values(array_unique($availableEmandateBanks));
+    }
+
+    protected function getEmandateBanksEnabledForAadhaar(Merchant\Entity $merchant): array
+    {
+        return [];
     }
 
     protected function getBankNames($banks)

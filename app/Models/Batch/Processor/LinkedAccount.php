@@ -92,9 +92,9 @@ class LinkedAccount extends Base
                         Status::SUCCESS : Status::FAILURE;
         }
 
-
+        // Append account ID to output fields
         $entry[Header::STATUS]     = $status;
-        $entry[Header::ACCOUNT_ID] = Merchant\AccountEntity::getSignedId($account->getId());
+        $entry[Header::ACCOUNT_ID] = Merchant\Account\Entity::getSignedId($account->getId());
     }
 
     protected function sendProcessedMail()

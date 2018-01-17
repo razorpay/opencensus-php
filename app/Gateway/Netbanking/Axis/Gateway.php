@@ -14,6 +14,7 @@ use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Netbanking\Axis\Emandate;
+use RZP\Gateway\Netbanking\Base\BankingType;
 use RZP\Models\Payment\Verify\Action as VerifyAction;
 use RZP\Gateway\Netbanking\Axis\Emandate\EmandateTrait;
 
@@ -27,7 +28,7 @@ class Gateway extends Base\Gateway
 
     protected $bank = 'axis';
 
-    protected $bankingType = self::RETAIL;
+    protected $bankingType = BankingType::RETAIL;
 
     protected $sortRequestContent = false;
 
@@ -35,9 +36,6 @@ class Gateway extends Base\Gateway
         RequestFields::AMOUNT                   => Base\Entity::AMOUNT,
         RequestFields::MERCHANT_REFERENCE       => Base\Entity::PAYMENT_ID,
         RequestFields::ITEM_CODE                => Base\Entity::REFERENCE1,
-
-        // E Mandate specific fields
-        Emandate\RequestFields::CUSTOMER_REF_NO => Base\Entity::SI_TOKEN
     ];
 
     public function setGatewayParams($input, $mode, $terminal)
@@ -548,14 +546,14 @@ class Gateway extends Base\Gateway
             ($input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL)
         )
         {
-            $this->setBankingType(self::EMANDATE);
+            $this->setBankingType(BankingType::EMANDATE);
         }
 
         // Default banking type is retail
         if ((isset($terminal) === true) and
             ($terminal->isCorporate() === true))
         {
-            $this->setBankingType(self::CORPORATE);
+            $this->setBankingType(BankingType::CORPORATE);
         }
 
          $this->setDomainType();
@@ -576,7 +574,7 @@ class Gateway extends Base\Gateway
 
         $domainType = $this->domainType ?? $this->mode;
 
-        if ($domainType !== self::EMANDATE)
+        if ($domainType !== BankingType::EMANDATE)
         {
             $domainType .= '_' . $this->action;
         }

@@ -44,7 +44,8 @@
         "anlutro/l4-settings": "0.5.3",
         "razorpay/oauth": "dev-master",
         "drewm/mailchimp-api": "^2.1",
-        "razorpay/ufh-sdk-php": "dev-master"
+        "razorpay/ufh-sdk-php": "dev-master",
+        "watson/rememberable": "^2.0"
     },
     "repositories": [
         {

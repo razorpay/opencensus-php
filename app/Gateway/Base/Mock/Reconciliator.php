@@ -3,11 +3,8 @@
 namespace RZP\Gateway\Base\Mock;
 
 use App;
-use Carbon\Carbon;
-use RZP\Models\Payment;
-use RZP\Constants\Timezone;
+use RZP\Models\FileStore;
 use RZP\Base\RepositoryManager;
-use RZP\Models\Base\PublicCollection;
 
 class Reconciliator
 {
@@ -30,7 +27,15 @@ class Reconciliator
     /**
      * @var string
      */
-    protected static $fileToWriteName;
+    protected $fileToWriteName;
+
+    /**
+     * Tells us if headers need to be added to the recon file
+     * @var bool
+     */
+    protected $shouldAddHeaders = true;
+
+    protected $fileExtension = FileStore\Format::XLSX;
 
     public function __construct()
     {
@@ -41,13 +46,13 @@ class Reconciliator
 
     public function generateReconciliation(array $input)
     {
-        $payments = $this->getAllPaymentsToReconcile();
+        $entites = $this->getEntitiesToReconcile();
 
         $inputData = [];
 
-        foreach ($payments as $payment)
+        foreach ($entites as $entity)
         {
-            $data['payment'] = $payment->toArray();
+            $data[$entity->getEntity()] = $entity->toArray();
 
             $this->addGatewayEntityIfNeeded($data);
 
@@ -61,7 +66,7 @@ class Reconciliator
     {
         $data = $this->getReconciliationData($input);
 
-        $creator = $this->createReconFile($data);
+        $creator = $this->createFile($data);
 
         $file = $creator->get();
 
@@ -73,14 +78,27 @@ class Reconciliator
         return [];
     }
 
-    /**
-     * Override this method in the child class
-     * @param $content
-     * @throws \BadMethodCallException
-     */
-    protected function createReconFile($content)
+    protected function getEntitiesToReconcile()
     {
-        throw new \BadMethodCallException('createReconFile needs to be implemented in child gateway recon file');
+        return [];
+    }
+
+    protected function createFile(
+        array $content,
+        string $type = FileStore\Type::MOCK_RECONCILIATION_FILE,
+        string $store = FileStore\Store::S3)
+    {
+        $creator = new FileStore\Creator;
+
+        $creator->extension($this->fileExtension)
+                ->content($content)
+                ->name($this->fileToWriteName)
+                ->store($store)
+                ->type($type)
+                ->headers($this->shouldAddHeaders)
+                ->save();
+
+        return $creator;
     }
 
     protected function generateText($data, $glue = '~', $ignoreLastNewline = false)
@@ -114,9 +132,7 @@ class Reconciliator
      */
     protected function addGatewayEntityIfNeeded(array & $data)
     {
-        $gatewayPayment = $this->repo->upi->fetchByPaymentId($data['payment']['id']);
-
-        $data['gateway'] = $gatewayPayment->toArray();
+        return ;
     }
 
     /**
@@ -125,26 +141,8 @@ class Reconciliator
      * @param null $action
      * @return void
      */
-    public function content(& $content, $action = null) {}
-
-    /**
-     * Different gateways have different criteria for sending payments in the recon file.
-     * To send payments do not match the criteria below, override this method in child class.
-     *
-     * @return PublicCollection
-     */
-    protected function getAllPaymentsToReconcile()
+    public function content(& $content, $action = null)
     {
-        $createdAtStart = Carbon::yesterday(Timezone::IST)->getTimestamp();
-
-        $createdAtEnd = Carbon::today(Timezone::IST)->getTimestamp();
-
-        $statuses = [
-            Payment\Status::AUTHORIZED,
-            Payment\Status::CAPTURED,
-            Payment\Status::REFUNDED
-        ];
-
-        return $this->repo->payment->fetchPaymentsWithStatus($createdAtStart, $createdAtEnd, $this->gateway, $statuses);
+        return ;
     }
 }

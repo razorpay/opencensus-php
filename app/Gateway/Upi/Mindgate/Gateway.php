@@ -178,6 +178,8 @@ class Gateway extends Base\Gateway
 
         $response = $this->decrypt($responseBody);
 
+        $this->trace->info(TraceCode::GATEWAY_RESPONSE, [$response]);
+
         $type = strtoupper($type);
 
         $fields = constant(__NAMESPACE__ . "\ResponseFields::$type");

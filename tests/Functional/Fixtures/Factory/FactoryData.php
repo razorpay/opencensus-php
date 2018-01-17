@@ -201,7 +201,6 @@ final class FactoryData
             // 'source_id' => 'factory:\RZP\Models\Settlement\Entity',
             'source_type' => 'settlement',
             'status' => 'initiated',
-            'channel' => 'kotak',
             'version' => 'V3',
         ]);
 
@@ -390,6 +389,14 @@ final class FactoryData
             'id'     => '0',
             'action' => 'authorize',
             'amount' => 1000,
+        ]);
+
+        $factory(\RZP\Gateway\Upi\Base\Entity::class, [
+            'id'                 => '0',
+            'action'             => 'authorize',
+            'amount'             => 50000,
+            'acquirer'           => 'SBIN',
+            'gateway_payment_id' => 99999999999
         ]);
 
         $factory(\RZP\Models\Customer\Entity::class, [

@@ -89,6 +89,17 @@ class OAuthBearerAuthTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testBearerAuthWriteAccessReadRoute()
+    {
+        $accessToken = $this->generateOAuthAccessToken(['scopes' => ['read_write']]);
+
+        $this->ba->oauthBearerAuth($accessToken);
+
+        $this->fixtures->create('payment', ['id' => '10000000000000']);
+
+        $this->startTest();
+    }
+
     public function testBearerAuthOutsideOfScope()
     {
         $accessToken = $this->generateOAuthAccessToken();

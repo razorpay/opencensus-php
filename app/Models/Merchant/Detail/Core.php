@@ -106,6 +106,28 @@ class Core extends Base\Core
         return $merchantDetails;
     }
 
+    /**
+     * Fills up dummy file IDs, required fields for merchant activation
+     * Use with caution
+     *
+     * @param Merchant\Entity $merchant
+     */
+    public function saveDummyActivationFiles(Merchant\Entity $merchant)
+    {
+        $merchantDetails = $merchant->merchantDetail;
+
+        $params = [
+            Entity::ADDRESS_PROOF_URL    => '100000000Dummy',
+            Entity::BUSINESS_PAN_URL     => '100000000Dummy',
+            Entity::BUSINESS_PROOF_URL   => '100000000Dummy',
+            Entity::PROMOTER_ADDRESS_URL => '100000000Dummy',
+        ];
+
+        $merchantDetails->fill($params);
+
+        $this->repo->saveOrFail($merchantDetails);
+    }
+
     public function createMerchantDetails(Merchant\Entity $merchant, array $input = [])
     {
         $merchantDetail = (new Entity)->build($input);
@@ -120,7 +142,7 @@ class Core extends Base\Core
 
             $this->trace->info(
                 TraceCode::CREATE_MERCHANT_DETAIL,
-                [ 'merchant_id'   => $merchant->getId()]);
+                ['merchant_id' => $merchant->getId()]);
         }
         catch (\Throwable $e)
         {
