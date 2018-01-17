@@ -84,6 +84,7 @@ class Core extends Base\Core
 
         $count = 100;
 
+        $i = 0;
         while ($batch === $count)
         {
             $merchants = $this->repo
@@ -99,6 +100,10 @@ class Core extends Base\Core
                 $createJob = new MerchantInvoiceJob(
                     $merchant->getId(), $invoiceDate->month, $invoiceDate->year, $this->mode);
 
+                // Assign a delay between 0 and 900 so that tasks are distributed over 15 minute period
+                $createJob->delay($i % 901);
+
+                $i++;
                 (new DispatchRouter)->dispatchOn($createJob, DispatchRouter::MERCHANT_INVOICE);
             }
         }
