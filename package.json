@@ -12,6 +12,7 @@
     "ifsc": "^1.0.11",
     "lint-staged": "^6.0.0",
     "multi-glob": "^1.0.1",
+    "numeral": "^2.0.6",
     "prettier": "^1.10.2",
     "react-modal": "^3.1.10",
     "react-redux": "^5.0.6",
@@ -19,10 +20,9 @@
     "react-tabs": "^2.2.1",
     "react-tether": "^0.6.0",
     "react-time": "^4.3.0",
+    "react-timeago": "^3.4.3",
     "redux": "^3.7.2",
-    "redux-form": "^7.2.0",
-    "numeral": "^2.0.6",
-    "react-timeago": "^3.4.3"
+    "redux-form": "^7.2.0"
   },
   "scripts": {
     "precommit": "lint-staged",

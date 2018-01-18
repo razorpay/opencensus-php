@@ -49,7 +49,17 @@ module.exports = {
           loader: 'babel-loader',
           options: {
             presets: ['env', 'react', 'stage-0'],
-            plugins: ['transform-decorators-legacy', 'react-html-attrs'],
+            plugins: [
+              [
+                'transform-runtime',
+                {
+                  polyfill: true,
+                  regenerator: true,
+                },
+              ],
+              'transform-decorators-legacy',
+              'react-html-attrs',
+            ],
           },
         },
       },

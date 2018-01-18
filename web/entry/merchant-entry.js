@@ -8,6 +8,7 @@ function prefixCdn(url) {
   return prefix + '/dist/' + url;
 }
 
+// TODO: Make common utilty folder for admin and merchant(refer same fn. in admin-entry.js)
 function appendLink(src) {
   var link = document.createElement('link');
   link.rel = 'stylesheet';
