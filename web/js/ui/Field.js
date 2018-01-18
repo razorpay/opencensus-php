@@ -118,8 +118,7 @@ export function CheckField({ label, children, ...props }) {
   return (
     <div class="field">
       <label class={props.required ? 'required' : ''}>{label}</label>
-      <input id={label} class="hide" {...props} type="checkbox" />
-      <label for={label} class="ui-checkbox" />
+      <input class="ui-checkbox" {...props} type="checkbox" />
       {children}
     </div>
   );
