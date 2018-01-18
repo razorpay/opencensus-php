@@ -82,14 +82,15 @@ export default class InvoicesListContainer extends ListContainer {
     return (
       <div class="content-wrapper">
         <HeaderAction>
-          <ShowWhen notMyRole="support">
+          <ShowWhen
+            myRole="admin operations manager owner"
+            featureEnabled="Invoice"
+          >
             <div class="btn-toolbar pull-right">
-              <ShowWhen notMyRole="sellerapp support" featureEnabled="Invoice">
-                <NavLink to="/invoices/new" class="btn btn-primary">
-                  <i class="icon icon-plus" />
-                  <span>Create Invoice</span>
-                </NavLink>
-              </ShowWhen>
+              <NavLink to="/invoices/new" class="btn btn-primary">
+                <i class="icon icon-plus" />
+                <span>Create Invoice</span>
+              </NavLink>
             </div>
           </ShowWhen>
         </HeaderAction>

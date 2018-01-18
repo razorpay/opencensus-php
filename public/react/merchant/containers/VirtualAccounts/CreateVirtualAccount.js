@@ -9,7 +9,6 @@ import { showNotification } from 'rzp/modules/notifications';
 import { closeModal } from 'rzp/modules/modals';
 import { luminateRow } from 'merchant/modules/app';
 import { saveVirtualAccount } from 'merchant/modules/virtualaccounts';
-import { fetchConfig } from 'merchant/modules/config';
 import { fetchCustomersForAutocomplete } from 'merchant/modules/customers';
 import CustomClipboard from 'rzp/ui/Clipboard/Custom';
 import CustomerCreation from 'merchant/containers/Customers/New';
@@ -83,7 +82,6 @@ const selector = formValueSelector('createVirtualAccount');
     closeModal,
     showNotification,
     saveVirtualAccount,
-    fetchConfig,
     fetchCustomersForAutocomplete,
     ...ModalActions,
   }
@@ -95,7 +93,6 @@ export default class CreateVirtualAccount extends Component {
   state = {};
 
   componentWillMount() {
-    this.props.fetchConfig();
     this.props.fetchCustomersForAutocomplete();
   }
 

@@ -22,7 +22,6 @@ import InvoiceBreadcrumbNav from 'merchant/components/Invoices/InvoiceBreadcrumb
 import InvoiceInfo from 'merchant/components/Invoices/InvoiceInfo';
 import InvoiceNotes from 'merchant/components/Invoices/InvoiceNotes';
 import InvoiceLogo from 'merchant/components/Invoices/InvoiceLogo';
-import { fetchConfig } from 'merchant/modules/config';
 import { fetchCustomersForAutocomplete } from 'merchant/modules/customers';
 import { fetchItemsForAutocomplete } from 'merchant/modules/items';
 import { saveInvoice, deleteInvoice } from 'merchant/modules/invoices/list';
@@ -72,6 +71,7 @@ const selector = formValueSelector('newInvoice');
       customer: findBy(customers, 'id', selector(state, 'customer_id')),
       invoice: state.invoice.invoice,
       invoice_line_items: selector(state, 'line_items'),
+      config: state.config.config,
     };
   },
   {
@@ -79,7 +79,6 @@ const selector = formValueSelector('newInvoice');
     fetchItemsForAutocomplete,
     saveInvoice,
     deleteInvoice,
-    fetchConfig,
     ...InvoiceActions,
     ...ModalActions,
     ...NotificationsActions,
@@ -202,16 +201,13 @@ export default class InvoicesNewContainer extends Component {
   }
 
   getMerchantInfo() {
-    return this.props.fetchConfig().then(response => {
-      let config = response.data;
-      let user = this.props.session.user;
-      let merchant = user.merchants[user.current];
-      let logoUrl = config.logo_url;
+    let user = this.props.session.user;
+    let merchant = user.merchants[user.current];
+    let logoUrl = this.props.config.logo_url;
 
-      this.setState({
-        merchantLogoUrl: logoUrl,
-        merchantAltBillingLabel: merchant.billing_label || merchant.name,
-      });
+    this.setState({
+      merchantLogoUrl: logoUrl,
+      merchantAltBillingLabel: merchant.billing_label || merchant.name,
     });
   }
 
@@ -328,9 +324,8 @@ export default class InvoicesNewContainer extends Component {
           window.rzpAnalytics({
             eventCategory: 'Dashboard - Invoice',
             eventAction: 'Resend - Invoice',
-            eventLabel: `invoice_id=${
-              this.props.invoice.id
-            }|${stringifyQueryParamsWithPipe(props)}`,
+            eventLabel: `invoice_id=${this.props.invoice
+              .id}|${stringifyQueryParamsWithPipe(props)}`,
           });
           this.props.showNotification({
             type: 'success',

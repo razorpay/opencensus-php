@@ -21,6 +21,7 @@ import User, { setFeatures } from 'merchant/models/User';
 import { fetchFeaturesAjax } from 'merchant/modules/config';
 import AddGST from 'merchant/containers/Profile/AddGST';
 import { fetchGST } from 'merchant/modules/profile';
+import { fetchConfig } from 'merchant/modules/config';
 
 @withRouter
 @connect(state => state.session, {
@@ -40,6 +41,7 @@ export default class App extends Component {
     let currentMode = LocalStorageService.getItem('rzp_mode');
 
     this.props.fetchGST();
+    this.props.fetchConfig();
     Promise.all([
       this.fetchUser().then(({ data }) => {
         let user = data;

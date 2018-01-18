@@ -5,10 +5,10 @@ import HeaderAction from 'rzp/ui/HeaderAction';
 import DataTable from 'rzp/ui/Table/DataTable';
 import ListContainer from 'merchant/containers/ListContainer';
 import VirtualAccountsListFilter from 'merchant/components/VirtualAccounts/ListFilter';
+import ShowWhen from 'merchant/components/ShowWhen';
 import CreateVirtualAccount from './CreateVirtualAccount';
 import { updateFeatures } from 'merchant/modules/config';
 import { showNotification } from 'rzp/modules/notifications';
-import { fetchConfig } from 'merchant/modules/config';
 import { openModal, closeModal } from 'rzp/modules/modals';
 import { fetchVirtualAccounts as fetchAll } from 'merchant/modules/virtualaccounts';
 import {
@@ -40,7 +40,6 @@ const heading =
   },
   {
     fetchAll,
-    fetchConfig,
     openModal,
     closeModal,
     updateFeatures,
@@ -51,7 +50,6 @@ export default class VirtualAccountsListContainer extends ListContainer {
   componentWillMount() {
     // TODO: Don't call below when feature is disbaled
     super.componentWillMount();
-    this.props.fetchConfig();
   }
 
   componentDidMount() {
@@ -193,15 +191,17 @@ export default class VirtualAccountsListContainer extends ListContainer {
             <NavLink to="/virtualaccounts">Virtual Accounts</NavLink>
 
             <HeaderAction>
-              <div class="btn-toolbar">
-                <button
-                  class="btn btn-primary"
-                  onClick={this.showCreateVAModal}
-                >
-                  <i class="icon icon-plus" />
-                  <span>Create Virtual Account</span>
-                </button>
-              </div>
+              <ShowWhen myRole="admin owner manager operations">
+                <div class="btn-toolbar">
+                  <button
+                    class="btn btn-primary"
+                    onClick={this.showCreateVAModal}
+                  >
+                    <i class="icon icon-plus" />
+                    <span>Create Virtual Account</span>
+                  </button>
+                </div>
+              </ShowWhen>
             </HeaderAction>
           </header>
           <TestModeBanner />

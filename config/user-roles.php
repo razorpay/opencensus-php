@@ -21,7 +21,7 @@ return [
     'batch_retry'               => $writers,
     'payment_get_single'        => $allButSellerApp,
     'get_activation_details'    => ['owner', 'manager', 'admin'],
-    'get_config'                => ['owner', 'manager', 'admin'],
+    'get_config'                => $allButSellerApp,
     'get_webhooks'              => ['owner', 'manager', 'admin'],
     'get_payments'              => $allButSellerApp,
     'get_orders'                => $allButSellerApp,
@@ -76,8 +76,8 @@ return [
 
     'oauth_read'                => ['owner'],
 
-    'virtual_accounts_read'     => ['owner', 'manager', 'admin'],
-    'virtual_accounts_write'    => ['owner', 'manager', 'admin'],
+    'virtual_accounts_read'     => array_merge($readers, ['support']),
+    'virtual_accounts_write'    => $writers,
 
     'subscriptions_read'        => ['owner', 'manager', 'admin'],
     'subscriptions_write'       => ['owner', 'manager', 'admin'],
