@@ -15,7 +15,7 @@ import {
   notifyError,
 } from 'common/modal';
 
-import fetch from 'common/fetch';
+import { adminFormUpload } from 'common/fetch';
 
 export default class MakeAPICall extends Component {
   constructor() {
@@ -40,7 +40,7 @@ export default class MakeAPICall extends Component {
         <Form class="full-span" style={{ width: '650px' }}>
           <div class="field url">
             <label>URL</label>
-            <span class="base-url">https://api.razorpay.com/v1/</span>
+            <span class="base-url">api/v1/</span>
             <input name="url" placeholder="relative/url" />
           </div>
           <SelectMode />
@@ -72,7 +72,18 @@ export default class MakeAPICall extends Component {
           ) : null}
 
           {['PUT', 'POST', 'PATCH'].indexOf(this.state.method) > -1 && [
-            <TextAreaField label="URL Encoded Body" name="body" key="body" />,
+            <SelectField
+              label="Content-Type"
+              name="content_type"
+              key="content_type"
+            >
+              <option value="application/x-www-form-urlencoded">
+                URL Encoded
+              </option>
+              <option value="application/json">JSON</option>
+              <option value="multipart/form-data">Multipart</option>
+            </SelectField>,
+            <TextAreaField label="Request Body" name="body" key="body" />,
             <FileField
               label="Attach File"
               name="file"
@@ -89,49 +100,33 @@ export default class MakeAPICall extends Component {
             text="OK"
             class="btn"
             pendingClass="small spinner"
-            onSubmit={data => {
-              let auth = data.mode;
-              if (data.merchant_id) {
-                auth += '_' + data.merchant_id;
+            onSubmit={body => {
+              let url = body.url;
+              delete body.url;
+
+              if (!body.file) {
+                body.file = null;
+              } else {
+                body.file = body.file[0];
               }
 
-              let body = new FormData();
-              if (data.body) {
-                data.body
-                  .trim()
-                  .split('&')
-                  .reduce((body, pair) => {
-                    pair = pair.split('=');
-                    body.append(
-                      [decodeURIComponent(pair[0])],
-                      decodeURIComponent(pair[1])
+              return adminFormUpload(body, '/makeapicall/' + url).then(
+                response => {
+                  if (response.data.success) {
+                    notifySuccess('API Request successful');
+                    // closeModal();
+                    openModal(
+                      <BaseModal header="Api Response:" noPadding>
+                        <div class="code" style={{ width: '650px' }}>
+                          {JSON.stringify(response.data.data, null, 4)}}
+                        </div>
+                      </BaseModal>
                     );
-                    return body;
-                  }, body);
-              }
-
-              if (data.file && data.file[0]) {
-                if (!data.file_name) {
-                  return notifyError('Please provide file name');
+                  } else {
+                    notifyError(response.data.errors.join(', '));
+                  }
                 }
-                body.append(data.file_name, data.file[0]);
-              }
-
-              return fetch({
-                url: `/admin/api/${auth}/${data.url}`,
-                method: data.method,
-                data: body,
-              }).then(response => {
-                if (response) {
-                  openModal(
-                    <BaseModal header="Api Response" noPadding>
-                      <div class="code" style={{ width: '650px' }}>
-                        {JSON.stringify(response, null, 4)}}
-                      </div>
-                    </BaseModal>
-                  );
-                }
-              });
+              );
             }}
           />
         </Form>
@@ -140,4 +135,5 @@ export default class MakeAPICall extends Component {
   }
 }
 
+MakeAPICall.permission = 'make_api_call';
 MakeAPICall.title = 'Make Raw API Call';

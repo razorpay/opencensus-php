@@ -70,7 +70,6 @@ export default function GenerateRefundsExcel() {
             body.on = data.on;
           }
 
-          console.log('BODY..', data);
           if (data.email_self) {
             data.email_self == 1 && (body.email = user.email);
             delete data.email_self;
