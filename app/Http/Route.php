@@ -705,6 +705,9 @@ final class Route
         'beta_account_fetch_multiple'             => ['get',      'beta/accounts',                                  'AccountController@list'                                            ],
         'beta_account_post_bank_account'          => ['post',     'beta/accounts/{id}/bank_accounts',               'AccountController@createOrChangeBankAccount'                       ],
         'beta_account_fetch_setl_destinations'    => ['get',      'beta/accounts/{id}/settlement_destinations',     'AccountController@fetchSettlementDestinations'                     ],
+
+        // Pincode Service
+        'pincode_get'                             => ['get',      'pincodes/{id}',                                  'PincodeSearchController@get'                                       ],
     ];
 
     public static $public = [
@@ -1237,6 +1240,7 @@ final class Route
         'reporting_log_list',
         'reporting_log_create',
         'ufh_get_file_signed_url',
+        'pincode_get',
     ];
 
     // These will run on internal auth with the assurance
