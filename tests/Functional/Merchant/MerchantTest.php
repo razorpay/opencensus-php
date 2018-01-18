@@ -49,6 +49,8 @@ class MerchantTest extends TestCase
     {
         $this->createMerchant();
 
+        $this->ba->proxyAuth('rzp_test_1X4hRFHFx4UiXt');
+
         $this->startTest();
     }
 
@@ -56,7 +58,8 @@ class MerchantTest extends TestCase
     {
         $this->createMerchant();
 
-        $this->ba->appAuthLive();
+        $this->ba->proxyAuth('rzp_live_1X4hRFHFx4UiXt');
+
         $this->startTest();
     }
 
@@ -125,6 +128,8 @@ class MerchantTest extends TestCase
 
     public function testMerchantFetchKeys()
     {
+        $this->ba->proxyAuthTest();
+
         $this->startTest();
     }
 
@@ -141,6 +146,8 @@ class MerchantTest extends TestCase
      */
     public function testUpdateKeyExpireNow()
     {
+        $this->ba->proxyAuthTest();
+
         $content = $this->startTest();
 
         $expired = time() + 1;
@@ -150,6 +157,8 @@ class MerchantTest extends TestCase
 
     public function testUpdateKeyExpireInFuture()
     {
+        $this->ba->proxyAuthTest();
+
         $content = $this->startTest();
 
         $expired = time() + 10;
@@ -159,6 +168,8 @@ class MerchantTest extends TestCase
 
     public function testUpdateKeyTwice()
     {
+        $this->ba->proxyAuthTest();
+
         $data = $this->testData[__FUNCTION__];
 
         //
@@ -184,6 +195,8 @@ class MerchantTest extends TestCase
             'key',
             ['merchant_id' => '1cXSLlUU8V9sXl',
              'id' => '1DP5mmOlF5G5ag']);
+
+        $this->ba->proxyAuthTest();
 
         $this->startTest();
     }
@@ -1398,7 +1411,7 @@ class MerchantTest extends TestCase
     {
         Event::fake();
 
-        $this->ba->appAuth();
+        $this->ba->proxyAuthTest();
 
         $testData = $this->testData['testUpdateKeyExpireNow'];
 

@@ -91,7 +91,8 @@ class ReconciliationGenerator
             Headings::CMS_REF_NO                => 'CMS' . random_integer(9),
             Headings::PAYMENT_REF_NO            => $row[Headings::INSTRUMENT_REFERENCE],
             Headings::STATUS                    => Status::PAID,
-            Headings::CREATE_DATE               => $row[Headings::PAYMENT_DATE]
+            Headings::CREATE_DATE               => $row[Headings::PAYMENT_DATE],
+            Headings::DUMMY3                    => 'dummy',
         ];
 
         if ($generateFailedReconciliations === true)
