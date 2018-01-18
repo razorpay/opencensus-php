@@ -104,13 +104,13 @@ class Index extends Command
 
         //
         // 3. If index prefix is passed in option, will use that. Useful in
-        //    cases of reindexing with mapping changes. We create the new index,
+        //    cases of re-indexing with mapping changes. We create the new index,
         //    do indexing and then switch and then again do delta indexing.
         //
 
         if ($this->indexPrefix !== null)
         {
-            $this->esRepo->setIndexNameByPrefix($this->indexPrefix);
+            $this->esRepo->setIndexName($this->indexPrefix);
         }
     }
 
