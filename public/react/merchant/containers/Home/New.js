@@ -43,7 +43,7 @@ const getPreviousDates = ({ startDate, endDate }) => {
   };
 };
 
-const bodyClass = " analytics-v2-active";
+const bodyClass = ' analytics-v2-active';
 
 @connect(
   state => {
@@ -54,7 +54,7 @@ const bodyClass = " analytics-v2-active";
   },
   {
     ...HomeActions,
-    showNotification
+    showNotification,
   }
 )
 export default class HomeContainer extends Component {
@@ -72,10 +72,10 @@ export default class HomeContainer extends Component {
       oldestTransactionDate: {
         value: null,
         loading: false,
-        error: "",
+        error: '',
         ...getPreviousDates({ startDate, endDate }),
       },
-      dateRangePresets
+      dateRangePresets,
     };
 
     this.oldestTxnReqId = 0;
@@ -87,31 +87,26 @@ export default class HomeContainer extends Component {
 
     var oldestTxnReqId = ++this.oldestTxnReqId;
 
-    oldestTransactionDate = {...oldestTransactionDate};
+    oldestTransactionDate = { ...oldestTransactionDate };
 
-    oldestTransactionDate.error = "";
+    oldestTransactionDate.error = '';
     oldestTransactionDate.loading = true;
 
     this.setState({
-      oldestTransactionDate: {...oldestTransactionDate}
+      oldestTransactionDate: { ...oldestTransactionDate },
     });
 
-    return fetch(oldestTransactionQuery)
+    return fetch(oldestTransactionQuery, this.props.mode)
       .then(data => {
-
         if (oldestTxnReqId !== this.oldestTxnReqId) {
-        
           return null;
         }
 
         if (!data.success) {
-
           return OLDEST_TXN_ERROR;
         }
 
-        if (!data.data ||
-            !data.data.records) {
-        
+        if (!data.data || !data.data.records) {
           return API_INVALID_RESP;
         }
 
@@ -120,49 +115,45 @@ export default class HomeContainer extends Component {
 
         return { value };
       })
-      .catch((err) => {
-
+      .catch(err => {
         console.error(err);
 
         return OLDEST_TXN_ERROR;
       })
       .then(data => {
-
         if (!data) {
-
           return;
         }
 
         oldestTransactionDate.loading = false;
 
         if (data.error) {
-      
           oldestTransactionDate.error = data.error;
 
           this.props.showNotification({
-            type: "error",
-            message: data.error
+            type: 'error',
+            message: data.error,
           });
         }
 
         const presetsLastIndex = dateRangePresets.length - 1,
-              presetsLastItem = dateRangePresets[presetsLastIndex];
+          presetsLastItem = dateRangePresets[presetsLastIndex];
 
         // updates All Time present in daterange picker
         dateRangePresets = [...dateRangePresets];
-          
-        dateRangePresets.splice(
-          presetsLastIndex,
-          1,
-          [presetsLastItem[0], -(moment().unix() - data.value), "seconds"]
-        );
+
+        dateRangePresets.splice(presetsLastIndex, 1, [
+          presetsLastItem[0],
+          -(moment().unix() - data.value),
+          'seconds',
+        ]);
 
         this.setState({
           oldestTransactionDate: {
             ...oldestTransactionDate,
-            value: data.value
+            value: data.value,
           },
-          dateRangePresets
+          dateRangePresets,
         });
       });
   }
@@ -186,7 +177,6 @@ export default class HomeContainer extends Component {
   }
 
   componentWillMount() {
-
     // to style react-power-selct specific to this tab
     document.body.className += bodyClass;
 
@@ -194,11 +184,8 @@ export default class HomeContainer extends Component {
     this.fetchOldestTransactionDate();
   }
 
-  componentWillUnmount () {
- 
-    document.body.className = document.body
-                                      .className
-                                      .replace(bodyClass, "");
+  componentWillUnmount() {
+    document.body.className = document.body.className.replace(bodyClass, '');
   }
 
   render() {
@@ -208,7 +195,7 @@ export default class HomeContainer extends Component {
       startDate,
       endDate,
       oldestTransactionDate,
-      dateRangePresets
+      dateRangePresets,
     } = this.state;
 
     return (
@@ -262,9 +249,10 @@ export default class HomeContainer extends Component {
             </div>
             <div className="col-md-12">
               <PaymentMethods
-                 startDate={startDate}
-                 endDate={endDate}
-                 mode={mode}/>
+                startDate={startDate}
+                endDate={endDate}
+                mode={mode}
+              />
             </div>
           </div>
 
@@ -276,9 +264,10 @@ export default class HomeContainer extends Component {
                 </p>
                 <div className="content">
                   <Traffic
-                     startDate={startDate}
-                     endDate={endDate}
-                     mode={mode}/>
+                    startDate={startDate}
+                    endDate={endDate}
+                    mode={mode}
+                  />
                 </div>
               </div>
               <div className="activity-container">
