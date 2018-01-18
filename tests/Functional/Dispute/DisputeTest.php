@@ -536,7 +536,7 @@ class DisputeTest extends TestCase
         $input = [
             'amount'                => 10000,
             'deduct_at_onset'       => 0,
-            'phase'                 => Phase::FRAUD,
+            'phase'                 => Phase::RETRIEVAL,
         ];
         $testdata = $this->updateEditTestData($input);
 
