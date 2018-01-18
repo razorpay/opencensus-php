@@ -2,6 +2,7 @@
 
 namespace RZP\Reconciliator\VirtualAccKotak;
 
+use Config;
 use Carbon\Carbon;
 
 use RZP\Trace\TraceCode;
