@@ -329,6 +329,12 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::EMI);
     }
 
+    // @todo: Fix this once we add emandate method in methods entity
+    public function isEMandateEnabled()
+    {
+        return false;
+    }
+
     public function isTransferEnabled()
     {
         return $this->merchant->isLinkedAccount();
