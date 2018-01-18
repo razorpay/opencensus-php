@@ -2,11 +2,8 @@
 
 namespace RZP\Models\Gateway\File\Processor\Refund\Failed;
 
-use Carbon\Carbon;
-
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
-use RZP\Constants\Timezone;
 
 class AxisMigs extends Base
 {
@@ -32,18 +29,12 @@ class AxisMigs extends Base
 
         foreach ($data as $index => $row)
         {
-            $transactionDate = Carbon::createFromTimestamp(
-                $row['payment']['created_at'], Timezone::IST)->format('Y/m/d');
-
-            $refundDate = Carbon::createFromTimestamp(
-                 $row['refund']['last_attempted_at'], Timezone::IST)->format('Y/m/d');
-
             $formattedData[] = [
                 self::SR_NO                   => $index + 1,
                 self::VPC_TRANSACTION_NO      => $row['gateway']['vpc_TransactionNo'],
                 self::REFUND_ID               => $row['refund']['id'],
-                self::REFUND_DATE             => $refundDate,
-                self::TRANSACTION_DATE        => $transactionDate,
+                self::REFUND_DATE             => $this->getFormattedDate($row['refund']['last_attempted_at'], 'Y/m/d'),
+                self::TRANSACTION_DATE        => $this->getFormattedDate($row['payment']['created_at'], 'Y/m/d'),
                 self::REFUND_AMOUNT           => $this->getFormattedAmount($row['refund']['amount']),
                 self::PAYMENT_AMOUNT          => $this->getFormattedAmount($row['payment']['amount']),
                 self::REFUND_TYPE             => $row['payment']['refund_status'],

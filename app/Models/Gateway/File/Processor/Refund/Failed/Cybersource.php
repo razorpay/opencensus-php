@@ -29,15 +29,12 @@ class Cybersource extends Base
 
         foreach ($data as $index => $row)
         {
-           $transactionDate = Carbon::createFromTimestamp(
-                $row['payment']['created_at'], Timezone::IST)->format('d/m/y H:m');
-
             $formattedData[] = [
                 self::SR_NO                   => $index + 1,
                 self::RAZORPAY_REFUND_ID      => $row['refund']['id'],
                 self::RAZORPAY_TRANSACTION_ID => $row['payment']['id'],
                 self::MID                     => 'razorpaycybs',
-                self::TRANSACTION_DATE        =>  $transactionDate,
+                self::TRANSACTION_DATE        => $this->getFormattedDate($row['payment']['created_at'], 'd/m/y H:m'),
                 self::PAYMENT_AMOUNT          => $this->getFormattedAmount($row['payment']['amount']),
                 self::REFUND_AMOUNT           => $this->getFormattedAmount($row['refund']['amount']),
             ];

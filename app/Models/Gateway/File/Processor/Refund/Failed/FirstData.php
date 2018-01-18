@@ -2,11 +2,8 @@
 
 namespace RZP\Models\Gateway\File\Processor\Refund\Failed;
 
-use Carbon\Carbon;
-
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
-use RZP\Constants\Timezone;
 use RZP\Models\Base\PublicCollection;
 
 class FirstData extends Base
@@ -32,18 +29,12 @@ class FirstData extends Base
 
         foreach ($data as $index => $row)
         {
-            $transactionDate = Carbon::createFromTimestamp(
-                $row['payment']['created_at'], Timezone::IST)->format('Y/m/d');
-
-            $refundDate = Carbon::createFromTimestamp(
-                $row['refund']['last_attempted_at'], Timezone::IST)->format('Y/m/d');
-
             $formattedData[] = [
                 self::SR_NO                   => $index + 1,
                 self::MERCHANT_TRANSACTION_ID => $row['refund']['id'],
                 self::REFUND_TYPE             => $row['payment']['refund_status'],
-                self::TRANSACTION_DATE        => $transactionDate,
-                self::REFUND_DATE             => $refundDate,
+                self::REFUND_DATE             => $this->getFormattedDate($row['refund']['last_attempted_at'], 'Y/m/d'),
+                self::TRANSACTION_DATE        => $this->getFormattedDate($row['payment']['created_at'], 'Y/m/d'),
                 self::ORDER_ID                => $row['payment']['id'],
                 self::PAYMENT_AMOUNT          => $this->getFormattedAmount($row['payment']['amount']),
                 self::REFUND_AMOUNT           => $this->getFormattedAmount($row['refund']['amount']),

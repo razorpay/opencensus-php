@@ -3,9 +3,11 @@
 namespace RZP\Models\Gateway\File\Processor\Refund\Failed;
 
 use Mail;
+use Carbon\Carbon;
 
 use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
+use RZP\Constants\Timezone;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Gateway\File\Status;
@@ -95,5 +97,10 @@ class Base extends Refund\Base
     protected function getFormattedAmount($amount): string
     {
         return number_format($amount / 100, 2, '.', '');
+    }
+
+    protected function getFormattedDate($date, $format = 'Y/m/d', $timezone = Timezone::IST): string
+    {
+        return Carbon::createFromTimestamp($date, $timezone)->format($format);
     }
 }

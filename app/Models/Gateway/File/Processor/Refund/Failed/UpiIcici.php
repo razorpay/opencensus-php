@@ -2,11 +2,8 @@
 
 namespace RZP\Models\Gateway\File\Processor\Refund\Failed;
 
-use Carbon\Carbon;
-
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
-use RZP\Constants\Timezone;
 use RZP\Gateway\Upi\Icici\RefundFile;
 
 class UpiIcici extends Base
@@ -22,13 +19,10 @@ class UpiIcici extends Base
 
         foreach ($data as $row)
         {
-            $date = Carbon::createFromTimestamp(
-                $row['payment']['authorized_at'], Timezone::IST)->format('Y-m-d');
-
             $formattedData[] = [
                 RefundFile::BANKADJREF         => $row['refund']['id'],
                 RefundFile::FLAG               => 'C',
-                RefundFile::SHTDAT             => $date,
+                RefundFile::SHTDAT             => $this->getformattedDate($row['payment']['authorized_at'], 'Y-m-d'),
                 RefundFile::ADJAMT             => $this->getFormattedAmount($row['refund']['amount']),
                 RefundFile::SHSER              => $row['gateway']['gateway_payment_id'],
                 RefundFile::SHCRD              => $row['payment']['vpa'],
