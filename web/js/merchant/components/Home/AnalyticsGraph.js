@@ -1,4 +1,4 @@
-import { createLineData, timeScale } from 'rzp/utils/chart';
+import { createLineData, timeScale } from 'rzp/utils/chart/index.js';
 import { Line } from 'react-chartjs-2';
 import LoaderDots from 'rzp/ui/LoaderDots';
 

@@ -3,13 +3,19 @@ import { DateRangePicker } from 'react-dates';
 import moment from 'moment';
 
 export default class DateRangePickerField extends Component {
-  state = {
-    focused: null,
-    from: moment()
-      .endOf('day')
-      .subtract(30, 'days'),
-    to: moment().endOf('day'),
-  };
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      focused: null,
+      from:
+        props.startDate ||
+        moment()
+          .endOf('day')
+          .subtract(30, 'days'),
+      to: props.endDate || moment().endOf('day'),
+    };
+  }
 
   componentWillMount() {
     this.props.onDatesChange({
@@ -53,6 +59,27 @@ export default class DateRangePickerField extends Component {
     );
   };
 
+  componentWillReceiveProps(nextProps) {
+    let startDate = this.state.from,
+      endDate = this.state.to;
+
+    if (
+      nextProps.startDate &&
+      startDate.toDate() !== nextProps.startDate.toDate()
+    ) {
+      startDate = nextProps.startDate;
+    }
+
+    if (nextProps.endDate && endDate.toDate() !== nextProps.endDate.toDate()) {
+      endDate = nextProps.endDate;
+    }
+
+    this.setState({
+      from: startDate,
+      to: endDate,
+    });
+  }
+
   render() {
     let {
       style,
@@ -67,9 +94,9 @@ export default class DateRangePickerField extends Component {
 
     return (
       <div
-        class={`daterangepicker-container ${
-          this.state.focused ? 'datepicker--focused' : ''
-        }`}
+        class={`daterangepicker-container ${this.state.focused
+          ? 'datepicker--focused'
+          : ''}`}
       >
         <i class="i i-date-range" />
         <DateRangePicker

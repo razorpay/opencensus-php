@@ -265,6 +265,9 @@
 
   > .media-left {
     vertical-align: middle;
+    @media(max-width: 480px) {
+      display: none;
+    }
 
     .media-object {
       width: 320px;
@@ -786,5 +789,23 @@ div.feature-activation-banner {
   }
   &.onboarding {
     background-image: url('assets/onboarding.svg');
+  }
+}
+
+.more-options-button {
+
+  .dropdown-menu {
+    right: 0;
+    left: unset !important;
+    padding: 0;
+  }
+
+  .option {
+    padding: 10px 15px 15px 5px;
+    cursor: pointer;
+
+    &:hover {
+    	background-color: #F0F1F6;
+    }
   }
 }

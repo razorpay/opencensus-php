@@ -137,7 +137,7 @@ return [
         'merchant_activation_status'        => 'merchant/activation/{id}/activation_status',
         'merchant_get_rejection_reasons'    => 'merchant/activation/rejection_reasons',
         'merchant_activation_status_change_log' => 'merchant/activation/{id}/status_change_log',
-        
+
         // Add new dispute reason
         'dispute_reason_create'             => 'disputes/reasons',
 
@@ -586,6 +586,20 @@ return [
             'routeName' => 'subuser_register'
         ],
 
+        // Keys
+        'merchant_fetch_keys'               => [
+            'url'       => 'keys',
+            'routeName' => 'get_keys'
+        ],
+        'merchant_create_key'               => [
+            'url'       => 'keys',
+            'routeName' => 'keys_setup'
+        ],
+        'merchant_replace_key'              => [
+            'url'       => 'keys/{id}',
+            'routeName' => 'post_keys'
+        ],
+
         'merchant_pre_signup_details'       => 'pre_signup',
         'merchant_edit_pre_signup_details'  => 'pre_signup',
     ],
@@ -629,20 +643,6 @@ return [
 
     // auth
     'internal' => [
-        // Keys
-        'merchant_fetch_keys'               => [
-            'url'       => 'merchants/{id}/keys',
-            'routeName' => 'get_keys'
-        ],
-        'merchant_create_key'               => [
-            'url'       => 'merchants/{id}/keys',
-            'routeName' => 'keys_setup'
-        ],
-        'merchant_replace_key'              => [
-            'url'       => 'merchants/{merchantId}/keys/{keyId}',
-            'routeName' => 'post_keys'
-        ],
-
         // User Signup
         'user_register'                     => 'users/register',
         // User Login
@@ -716,6 +716,9 @@ return [
         'admin_get_app_auth'                => 'current_admin',
 
         'user_merchant_upgrade'             => 'users/upgrade-merchant',
+
+        // gateway files
+        'gateway_file_create'               => 'gateway/files',
 
         // edit the bank account of the payers for bank transfer
         'bank_transfers_edit_payer_account' => 'bank_transfers/{id}/payer_bank_account',

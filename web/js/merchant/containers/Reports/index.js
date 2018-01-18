@@ -169,18 +169,23 @@ export class ReportsContainer extends Component {
       });
     }
 
-    if (user.isMarketplaceEnabled) {
+    if (user.isMarketplaceEnabled ||
+        user.tags.indexOf('Openwallet') !== -1) {
+
       this.entityOptions.push({
         value: 'transfer',
         id: 'transfer',
         label: 'Transfers',
       });
 
-      this.entityOptions.push({
-        value: 'reversal',
-        id: 'reversal',
-        label: 'Reversals',
-      });
+      if (user.isMarketplaceEnabled) {
+
+        this.entityOptions.push({
+          value: 'reversal',
+          id: 'reversal',
+          label: 'Reversals',
+        });
+      }
     }
   }
 
