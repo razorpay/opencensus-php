@@ -244,10 +244,12 @@ class Entity extends Merchant\Entity
     {
         $settlementDestinationId = null;
 
-        $settlementDestination = $this->getSettlementDestination()->toArrayPublic();
+        $settlementDestination = $this->getSettlementDestination();
 
         if ($settlementDestination !== null)
         {
+            $settlementDestination = $settlementDestination->toArrayPublic();
+
             $settlementDestinationId = $settlementDestination[BankAccount\Entity::ID];
         }
 
