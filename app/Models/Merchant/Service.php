@@ -339,45 +339,6 @@ class Service extends Base\Service
         return $balance->toArray();
     }
 
-    public function createKey($merchantId)
-    {
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
-
-        $keyData = (new Key\Core)->createFirstKey($merchant, $this->mode);
-
-        if ($this->mode === MODE::LIVE)
-        {
-            $action = Merchant\Action::LIVE_KEYS_CREATED;
-        }
-        elseif ($this->mode === MODE::TEST)
-        {
-            $action = Merchant\Action::TEST_KEYS_CREATED;
-        }
-
-        if ($action !== null)
-        {
-            $this->app['eventManager']->trackEvents($merchant, $action, $merchant->toArrayEvent());
-        }
-
-        return $keyData;
-    }
-
-    public function updateKey($merchantId, $keyId, array $input)
-    {
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
-
-        return (new Key\Core)->rollKey($merchantId, $keyId, $input, $this->mode);
-    }
-
-    public function fetchKeys($merchantId)
-    {
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
-
-        $keys = $this->repo->key->getKeysForMerchant($merchantId);
-
-        return $keys->toArrayPublic();
-    }
-
     public function assignPricingPlan($id, $input)
     {
         $this->trace->info(

@@ -16,6 +16,7 @@ class Headings
     const CMS_REF_NO                = 'CMS Ref No';
     const DUMMY                     = 'Dummy';
     const DUMMY2                    = 'Dummy2';
+    const DUMMY3                    = 'Dummy3';
     const BENEFICIARY_CODE          = 'Beneficiary Code';
 
     const REMARKS                   = 'Remarks';
@@ -57,6 +58,7 @@ class Headings
             self::PAYMENT_REF_NO,
             self::STATUS,
             self::CREATE_DATE,
+            self::DUMMY3,
         ];
     }
 }
