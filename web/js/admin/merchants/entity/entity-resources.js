@@ -59,6 +59,7 @@ function _getAdminsFields(adminsMap) {
 
 function _getPricingPlansFields() {
   return [
+    ['Feature', item => item.feature || 'Payment'],
     ['Payment Method', item => item.payment_method || 'Any'],
     ['Payment Method Type', item => item.payment_method_type || 'Any'],
     ['Payment Network', item => item.payment_network || 'Any'],
