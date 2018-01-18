@@ -138,6 +138,9 @@ class Entity extends Base\PublicEntity
             case Type::FEE:
                 return $balance->getFeeCredits();
 
+           case Type::REFUND:
+                return $balance->getRefundCredits();
+
             default:
                 return $balance->getAmountCredits();
         }

@@ -80,6 +80,16 @@ class Repository extends Base\Repository
         });
     }
 
+    public function editMerchantRefundCredits($merchant, $credits)
+    {
+        $channel = $merchant->getChannel();
+
+        return $this->transaction(function () use ($merchant, $credits, $channel)
+        {
+            return $this->editMerchantRefundCreditsInTransaction($merchant, $credits, $channel);
+        });
+    }
+
     private function editMerchantFeeCreditsInTransaction($merchant, $feeCredits, $channel)
     {
         assert ($this->isTransactionActive());
@@ -87,6 +97,19 @@ class Repository extends Base\Repository
         $balance = $this->findOrFail($merchant->getId());
 
         $balance->setFeeCredits($feeCredits);
+
+        $balance->saveOrFail();
+
+        return $balance;
+    }
+
+    private function editMerchantRefundCreditsInTransaction($merchant, $credits, $channel)
+    {
+        assert ($this->isTransactionActive());
+
+        $balance = $this->findOrFail($merchant->getId());
+
+        $balance->setRefundCredits($credits);
 
         $balance->saveOrFail();
 

@@ -220,4 +220,50 @@ class CreditsTest extends TestCase
         // $this->assertEquals(1050000, $nodalBalance['balance']);
         // $this->assertEquals(10000 - $txn['fee_credits'], $nodalBalance['fee_credits']);
     }
+
+    public function testRefundCredits()
+    {
+        $this->fixtures->create('credits',
+          [
+            'type'        => 'refund',
+            'value'       => 10000
+          ]);
+
+        $this->fixtures->merchant->editFeeCredits('10000', '10000000000000');
+
+        $this->doAuthAndCapturePayment();
+
+        // do refund and validate transactions values
+    }
+
+    public function testRefundWithPartialCredits()
+    {
+        $this->fixtures->create('credits',
+          [
+            'type'        => 'refund',
+            'value'       => 10000
+          ]);
+
+        $this->fixtures->merchant->editFeeCredits('10000', '10000000000000');
+
+        $this->doAuthAndCapturePayment();
+
+        // do refund, it should fail
+    }
+
+
+    public function testRefundWithCreditsDisabled()
+    {
+        $this->fixtures->create('credits',
+          [
+            'type'        => 'refund',
+            'value'       => 10000
+          ]);
+
+        $this->fixtures->merchant->editFeeCredits('10000', '10000000000000');
+
+        $this->doAuthAndCapturePayment();
+
+        // do refund, it should not use credits
+    }
 }

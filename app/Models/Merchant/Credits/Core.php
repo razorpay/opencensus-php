@@ -65,6 +65,14 @@ class Core extends Base\Core
 
             $this->repo->balance->editMerchantFeeCredits($merchant, $newCredits);
         }
+        else if ($type === Credits\Type::REFUND)
+        {
+            $merchantRefundCredits = $merchant->balance->getRefundCredits();
+
+            $newCredits = $merchantRefundCredits + $credits;
+
+            $this->repo->balance->editMerchantRefundCredits($merchant, $newCredits);
+        }
     }
 
     /*
