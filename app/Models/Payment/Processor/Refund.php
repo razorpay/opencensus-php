@@ -788,6 +788,8 @@ trait Refund
                 {
                     return $this->callRefundFunction($payment, $data);
                 });
+
+            $refund->incrementAttempts();
         }
         else
         {
@@ -795,8 +797,6 @@ trait Refund
         }
 
         $refund->setGatewayRefunded($refundedOnGateway);
-
-        $refund->incrementAttempts();
 
         $this->repo->saveOrFail($refund);
 
