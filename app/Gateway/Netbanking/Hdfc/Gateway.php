@@ -320,7 +320,7 @@ class Gateway extends Base\Gateway
 
     protected function verifyPayment($verify)
     {
-        $payment = $verify->payment;
+        $gatewayPayment = $verify->payment;
         $content = $verify->verifyResponseContent;
         $input = $verify->input;
 
@@ -362,11 +362,11 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
 
-        if ($payment['received'] === false)
+        if ($gatewayPayment['received'] === false)
         {
             $attrs = $this->getMappedAttributes($content);
-            $payment->fill($attrs);
-            $payment->saveOrFail();
+            $gatewayPayment->fill($attrs);
+            $gatewayPayment->saveOrFail();
         }
 
         return $status;
