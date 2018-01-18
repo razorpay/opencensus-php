@@ -162,6 +162,7 @@ class Entity extends Base\PublicEntity
         self::CATEGORY,
         self::CATEGORY2,
         self::FEE_MODEL,
+        self::REFUND_SOURCE,
         self::LOGO_URL,
         self::FEE_BEARER,
         self::HOLD_FUNDS,
