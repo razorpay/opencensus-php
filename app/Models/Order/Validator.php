@@ -7,6 +7,7 @@ use RZP\Models\Payment;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Currency\Currency;
 
 class Validator extends Base\Validator
 {
@@ -28,6 +29,7 @@ class Validator extends Base\Validator
         Entity::AMOUNT,
         Entity::BANK,
         'method_fee_bearer',
+        Entity::CURRENCY,
     ];
 
     protected function validateAmount($input)
@@ -70,6 +72,26 @@ class Validator extends Base\Validator
                 'Amount exceeds maximum amount allowed.',
                 Entity::AMOUNT,
                 [Entity::AMOUNT => $amount]);
+        }
+    }
+
+    protected function validateCurrency($input)
+    {
+        if (isset($input[Entity::METHOD]) === false)
+        {
+            return;
+        }
+
+        $currency = $input[Entity::CURRENCY];
+        $method = $input[Entity::METHOD];
+
+        if (in_array($method, [Payment\Method::NETBANKING, Payment\Method::EMANDATE], true))
+        {
+            if ($currency !== Currency::INR)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'The currency should be INR when method is ' . $method);
+            }
         }
     }
 
