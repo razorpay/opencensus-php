@@ -2,11 +2,8 @@
 
 namespace RZP\Models\Gateway\File\Processor\Refund\Failed;
 
-use Carbon\Carbon;
-
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
-use RZP\Constants\Timezone;
 
 class Payzapp extends Base
 {
@@ -29,12 +26,9 @@ class Payzapp extends Base
 
         foreach ($data as $index => $row)
         {
-            $date = Carbon::createFromTimestamp(
-                $row['payment']['authorized_at'], Timezone::IST)->format('d/m/Y');
-
             $formattedData[] = [
                 self::SR_NO             => $index + 1,
-                self::TRANSACTION_DATE  => $date,
+                self::TRANSACTION_DATE  => $this->getFormattedDate($row['payment']['created_at'], 'D/M/Y'),
                 self::GATEWAY_REFERENCE => $row['gateway']['gateway_payment_id'],
                 self::PAYMENT_ID        => $row['payment']['id'],
                 self::PAYMENT_AMOUNT    => $this->getFormattedAmount($row['payment']['amount']),
