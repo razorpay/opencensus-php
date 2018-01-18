@@ -24,7 +24,7 @@ class PincodeSearcherClient
 
     const CACHE_TTL = 86400;
 
-    const CACHE_KEY = 'pincode_%s_';
+    const CACHE_KEY = 'pincodesearcher_%s';
 
     // This is the list of all unique
     // state names in the pincodes CSV
