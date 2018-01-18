@@ -2,17 +2,20 @@
 
 namespace RZP\Services;
 
+use Cache;
 use Requests;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
-use Cache;
+use RZP\Constants\IndianStates;
+
 
 class PincodeSearcherClient
 {
 
     const REQUEST_TIMEOUT = 5;
 
+    // @see: https://data.gov.in/resources/all-india-pincode-directory/api
     const ROUTE = '/resource/6176ee09-3d56-4a3b-8115-21841576b2f6';
 
     const LIMIT = 1;
@@ -24,48 +27,7 @@ class PincodeSearcherClient
 
     const CACHE_TTL = 86400;
 
-    const CACHE_KEY = 'pincodesearcher_%s';
-
-    // This is the list of all unique
-    // state names in the pincodes CSV
-    const STATE_MAP = [
-        'ANDAMAN & NICOBAR ISLANDS'     => 'AN',
-        'ANDHRA PRADESH'                => 'AP',
-        'ARUNACHAL PRADESH'             => 'AR',
-        'ASSAM'                         => 'AS',
-        'BIHAR'                         => 'BI',
-        'CHANDIGARH'                    => 'CH',
-        'CHATTISGARH'                   => 'CT',
-        'DADRA & NAGAR HAVELI'          => 'DN',
-        'DAMAN & DIU'                   => 'DD',
-        'DELHI'                         => 'DL',
-        'GOA'                           => 'GO',
-        'GUJARAT'                       => 'GJ',
-        'HARYANA'                       => 'HA',
-        'HIMACHAL PRADESH'              => 'HP',
-        'JAMMU & KASHMIR'               => 'JK',
-        'JHARKHAND'                     => 'JH',
-        'KARNATAKA'                     => 'KA',
-        'KERALA'                        => 'KE',
-        'LAKSHADWEEP'                   => 'LA',
-        'MADHYA PRADESH'                => 'MP',
-        'MAHARASHTRA'                   => 'MH',
-        'MANIPUR'                       => 'MA',
-        'MEGHALAYA'                     => 'ME',
-        'MIZORAM'                       => 'MI',
-        'NAGALAND'                      => 'NA',
-        'ODISHA'                        => 'OR',
-        'PONDICHERRY'                   => 'PO',
-        'PUNJAB'                        => 'PB',
-        'RAJASTHAN'                     => 'RJ',
-        'SIKKIM'                        => 'SI',
-        'TAMIL NADU'                    => 'TN',
-        'TRIPURA'                       => 'TR',
-        'TELANGANA'                     => 'TS',
-        'UTTAR PRADESH'                 => 'UP',
-        'UTTARAKHAND'                   => 'UT',
-        'WEST BENGAL'                   => 'WB',
-    ];
+    const CACHE_KEY_FORMAT = 'pincodesearcher_%s';
 
     protected $config;
 
@@ -87,14 +49,14 @@ class PincodeSearcherClient
 
     }
 
-    protected function getCacheKey($pincode)
+    protected function getCacheKey(int $pincode)
     {
-        $key = sprintf(static::CACHE_KEY, $pincode);
+        $key = sprintf(static::CACHE_KEY_FORMAT, $pincode);
 
         return $key;
     }
 
-    public function sendRequest($url, $method, $data = null)
+    public function sendRequest(string $url, string $method, string $data = null)
     {
         $url = $this->baseUrl . $url;
 
@@ -139,9 +101,9 @@ class PincodeSearcherClient
         return $decodedResponse;
     }
 
-    protected function sendRawRequest($request)
+    protected function sendRawRequest(array $request)
     {
-        $this->traceRequest($request);
+        $this->trace->info(TraceCode::PINCODESEARCHER_REQUEST, $request);
 
         $method = $request['method'];
 
@@ -154,12 +116,7 @@ class PincodeSearcherClient
         return $response;
     }
 
-    protected function traceRequest($request)
-    {
-        $this->trace->info(TraceCode::PINCODESEARCHER_REQUEST, $request);
-    }
-
-    protected function checkErrors($response)
+    protected function checkErrors(array $response)
     {
         if (isset($response['status']) === true)
         {
@@ -222,7 +179,7 @@ class PincodeSearcherClient
         $response = [
             "city"          => $response['districtname'] ?? null,
             "state"         => $response['circlename'] ?? null,
-            "state_code"    => self::STATE_MAP[$response['statename'] ?? null] ?? null,
+            "state_code"    => IndianStates::getStateCode($response['statename']),
         ];
 
         $this->cache->put($key, $response, static::CACHE_TTL);
@@ -237,7 +194,7 @@ class PincodeSearcherClient
      * @see https://en.wikipedia.org/wiki/Postal_Index_Number
      * @return boolean
      */
-    protected function validate($pincode)
+    protected function validate(int $pincode)
     {
         if ((strlen($pincode) !== 6) or
             (ctype_digit($pincode) === false) or
@@ -249,7 +206,7 @@ class PincodeSearcherClient
         return true;
     }
 
-    protected function getParams($pincode)
+    protected function getParams(int $pincode)
     {
         return [
             'limit'             => self::LIMIT,
