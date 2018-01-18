@@ -10,6 +10,7 @@ import {
 import Form from 'ui/Form';
 import AsyncButton from 'ui/AsyncButton';
 import { notifySuccess, closeModal } from 'common/modal';
+import user from 'admin/user';
 
 import { adminPost } from 'common/fetch';
 
@@ -75,6 +76,9 @@ export default function GenerateRefundsExcel() {
             body.from = fromInIST;
           } else {
             body.on = data.on;
+          }
+          if (data.email_self) {
+            body.email = user.email;
           }
           return adminPost({
             route_name: 'emi_generate_excel',
