@@ -321,58 +321,83 @@ class Gateway extends Base\Gateway
 
     protected function verifyPayment($verify)
     {
-        $gatewayPayment = $verify->payment;
-
-        $content = $verify->verifyResponseContent;
-
-        $input = $verify->input;
-
-        $days = (time() - $input['payment']['created_at']) / (24 * 60 * 60);
-
-        $status = VerifyResult::STATUS_MATCH;
 
         //
         // In HDFC netbanking, the bank only stores the payment data for
         // 45 days! So for verification requests after 45 days, we simply
         // treat it as successful and return.
         //
+        $days = (time() - $verify->input['payment']['created_at']) / (24 * 60 * 60);
+
         if ($days > 45)
         {
-            $verify->apiSuccess = true;
+            $this->setVerifyResponseSuccess($verify);
 
-            $verify->gatewaySuccess = true;
+            $status =  VerifyResult::STATUS_MATCH;
+        }
+
+        elseif ($this->getApiStatus($verify) !==  $this->getgatewayStatus($verify))
+        {
+            $status = VerifyResult::STATUS_MISMATCH;
+
+            $verify->match = false;
+
+            $this->saveResponseContenttoNetbankingEntity($verify);
+        }
+        else
+        {
+            $status = VerifyResult::STATUS_MATCH;
 
             $verify->match = true;
 
-            $this->trace->info(
+            $this->saveResponseContenttoNetbankingEntity($verify);
+        }
+
+        return $status;
+    }
+
+    protected function getApiStatus($verify)
+    {
+        $payment_status = $verify->input['payment']['status'];
+
+        return in_array($payment_status, [Payment\Status::AUTHORIZED, Payment\Status::CAPTURED, Payment\Status::REFUNDED]);
+    }
+
+    protected function getgatewayStatus($verify)
+    {
+        $status = $verify->verifyResponseContent['flgSuccess'];
+
+        return ($status === 'S');
+    }
+
+    protected function saveResponseContenttoNetbankingEntity($verify)
+    {
+        $attrs = $this->getMappedAttributes($verify->verifyResponseContent);
+
+        $gatewayPayment = $verify->payment;
+
+        $gatewayPayment->fill($attrs);
+
+        $gatewayPayment->saveOrFail();
+    }
+
+    protected function setVerifyResponseSuccess($verify)
+    {
+        $verify->apiSuccess = true;
+
+        $verify->gatewaySuccess = true;
+
+        $verify->match = true;
+
+        $this->trace->info(
                 TraceCode::GATEWAY_PAYMENT_VERIFY,
                 [
                     'message' => 'In HDFC netbanking, the bank only stores the payment data for 45 days!' .
                         ' Since it has been more than 45 days, we simply treat it as successful and return.',
                     'payment_id' => $input['payment']['id']
                 ]);
-
-            return $status;
-        }
-
-        $verify->apiSuccess = (($input['payment']['status'] !== Payment\Status::CREATED) and
-                               ($input['payment']['status'] !== Payment\Status::FAILED));
-
-        $verify->gatewaySuccess = ($content['flgSuccess'] === 'S');
-
-        if ($verify->apiSuccess !== $verify->gatewaySuccess)
-        {
-            $status = VerifyResult::STATUS_MISMATCH;
-        }
-
-        $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
-
-        $attrs = $this->getMappedAttributes($content);
-        $gatewayPayment->fill($attrs);
-        $gatewayPayment->saveOrFail();
-
-        return $status;
     }
+
 
     protected function processContentFromPaymentVerifyResponse($response, $request)
     {
