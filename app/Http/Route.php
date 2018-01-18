@@ -646,6 +646,7 @@ final class Route
         'dispute_migrate_adjustments'             => ['post',     'disputes/migrate_old_adjustments',               'DisputeController@migrateOldAdjustments'                           ],
         'dispute_reason_create'                   => ['post',     'disputes/reasons',                               'DisputeController@createReason'                                    ],
         'dispute_fetch_multiple'                  => ['get',      'disputes',                                       'DisputeController@fetchMultiple'                                   ],
+        'dispute_fetch'                           => ['get',      'disputes/{id}',                                  'DisputeController@get'                                             ],
 
         'merchant_payout'                         => ['post',     'merchant/payout',                                'PayoutController@postMerchantPayout'                               ],
 
@@ -907,6 +908,7 @@ final class Route
         'beta_account_fetch_multiple',
         'beta_account_post_bank_account',
         'beta_account_fetch_setl_destinations',
+        'dispute_fetch',
     ];
 
     public static $internal = [
