@@ -15,17 +15,13 @@ class Cybersource extends Base
     const FILE_NAME        = 'Cybersource_Failed_Refunds';
     const FILE_TYPE        = FileStore\Type::CYBERSOURCE_FAILED_REFUND;
 
-    const SR_NO            = 'Sr No';
-    const CYBERSOURCE_REF  = 'Cybersource Reference Number';
-    const REFUND_ID        = 'refund_id';
-    const REFUND_AMOUNT    = 'Refund Amount';
-    const PAYMENT_AMOUNT   = 'Payment Amount';
-    const REFUND_TYPE      = 'Refund Type';
-    const MERCHANT_CODE    = 'Merchant Code';
-    const TRANSACTION_DATE = 'Transaction date';
-    const REFUND_DATE      = 'refund Date';
-    const PAYMENT_ID       = 'Payment ID';
-
+    const SR_NO                   = 'Sr No';
+    const RAZORPAY_REFUND_ID      = 'Razorpay Refund ID';
+    const RAZORPAY_TRANSACTION_ID = 'Razorpay TRansaction ID';
+    const MID                     = 'MID';
+    const TRANSACTION_DATE        = 'Original Transaction date';
+    const PAYMENT_AMOUNT          = 'Original Payment Amount';
+    const REFUND_AMOUNT           = 'Original Refund Amount';
 
     protected function formatDataForFile(array $data)
     {
@@ -34,22 +30,16 @@ class Cybersource extends Base
         foreach ($data as $index => $row)
         {
            $transactionDate = Carbon::createFromTimestamp(
-                $row['payment']['created_at'], Timezone::IST)->format('Y/m/d');
-
-            $refundDate = Carbon::createFromTimestamp(
-                $row['refund']['last_attempted_at'], Timezone::IST)->format('Y/m/d');
+                $row['payment']['created_at'], Timezone::IST)->format('d/m/y H:m');
 
             $formattedData[] = [
-                self::SR_NO             => $index + 1,
-                self::REFUND_ID         => $row['refund']['id'],
-                self::CYBERSOURCE_REF    => $row['gateway']['ref'],
-                self::PAYMENT_AMOUNT    => $this->getFormattedAmount($row['payment']['amount']),
-                self::REFUND_AMOUNT     => $this->getFormattedAmount($row['refund']['amount']),
-                self::REFUND_TYPE       => $row['payment']['refund_status'],
-                self::MERCHANT_CODE     => $row['terminal']['gateway_merchant_id'],
-                self::TRANSACTION_DATE  => $transactionDate,
-                self::REFUND_DATE       => $refundDate,
-                self::PAYMENT_ID        => $row['payment']['id'],
+                self::SR_NO                   => $index + 1,
+                self::RAZORPAY_REFUND_ID      => $row['refund']['id'],
+                self::RAZORPAY_TRANSACTION_ID => $row['payment']['id'],
+                self::MID                     => 'razorpaycybs',
+                self::TRANSACTION_DATE        =>  $transactionDate,
+                self::PAYMENT_AMOUNT          => $this->getFormattedAmount($row['payment']['amount']),
+                self::REFUND_AMOUNT           => $this->getFormattedAmount($row['refund']['amount']),
             ];
         }
 
