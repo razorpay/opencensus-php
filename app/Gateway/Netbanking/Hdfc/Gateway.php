@@ -49,6 +49,7 @@ class Gateway extends Base\Gateway
         'BankRefNo'     => 'bank_payment_id',
         'fldSessionNbr' => 'reference1',
         'Date'          => 'date',
+        'flgSuccess'    => 'status'
     ];
 
     /**

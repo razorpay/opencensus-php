@@ -102,7 +102,13 @@ class NetbankingHdfcGatewayTest extends TestCase
     {
         $payment = $this->doNetbankingHdfcAuthAndCapturePayment();
 
-        $this->verifyPayment($payment['id']);
+        $verify =$this->verifyPayment($payment['id']);
+
+        assert($verify['payment']['verified'] === 1);
+
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $this->assertTestResponse($gatewayPayment, 'testPaymentVerifySuccessEntity');
     }
 
     public function testRefundExcelFile()
