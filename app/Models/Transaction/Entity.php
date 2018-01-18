@@ -630,12 +630,7 @@ class Entity extends Base\PublicEntity
                 return null;
             }
 
-            if ($this->merchant->isLinkedAccount() === true)
-            {
-                $transferId = Transfer\Entity::getSignedId($payment->getTransferId());
-
-                $reportTxn[Payment\Entity::TRANSFER_ID] = $transferId;
-            }
+            $this->addLinkedAccountTransferIdFromPayment($payment, $reportTxn);
 
             $reportTxn[Payment\Entity::DESCRIPTION] = $payment->getDescription();
             $reportTxn[Payment\Entity::NOTES]       = $payment->getNotesJson();
@@ -654,12 +649,7 @@ class Entity extends Base\PublicEntity
                 return null;
             }
 
-            if ($this->merchant->isLinkedAccount() === true)
-            {
-                $transferId = Transfer\Entity::getSignedId($payment->getTransferId());
-
-                $reportTxn[Payment\Entity::TRANSFER_ID] = $transferId;
-            }
+            $this->addLinkedAccountTransferIdFromPayment($payment, $reportTxn);
 
             $reportTxn[Refund\Entity::NOTES]      = $refund->getNotesJson();
             $reportTxn[Refund\Entity::PAYMENT_ID] = $payment->getPublicId();
@@ -713,6 +703,16 @@ class Entity extends Base\PublicEntity
         }
 
         return $reportTxn;
+    }
+
+    protected function addLinkedAccountTransferIdFromPayment(Payment\Entity $payment, & $reportTxn)
+    {
+        if ($this->merchant->isLinkedAccount() === true)
+        {
+            $transferId = Transfer\Entity::getSignedId($payment->getTransferId());
+
+            $reportTxn[Payment\Entity::TRANSFER_ID] = $transferId;
+        }
     }
 
     protected function fillPaymentDetails(Payment\Entity $payment, & $reportTxn)
