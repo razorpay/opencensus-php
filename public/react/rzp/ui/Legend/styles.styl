@@ -1,0 +1,37 @@
+.rzp-legend {
+
+  display: block;
+  margin-top: -16px;
+  width: 100%;
+
+  &:after, &:before {
+
+    content: " ";
+    display: table;
+  }
+
+  &:after {
+
+    display: table;
+    content: '';
+    clear: both;
+  }
+
+  &.rzp-legend-vertical {
+
+    height: 100%;
+
+    .rzp-legend-item {
+
+      width: 100%;
+    }
+  }
+
+  .rzp-legend-item {
+
+    padding-top: 16px;
+    padding-left: 16px;
+    float: right;
+    font-size: 12px;
+  }
+}

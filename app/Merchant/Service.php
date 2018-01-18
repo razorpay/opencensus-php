@@ -148,9 +148,6 @@ class Service extends Base\Service
     {
         $getData = [
             'route_name' => 'merchant_fetch_keys',
-            'url_params' => [
-                '{id}' => $merchantId,
-            ],
             'mode' => $mode
         ];
 
@@ -197,9 +194,6 @@ class Service extends Base\Service
     {
         $createKey = [
             'route_name' => 'merchant_create_key',
-            'url_params' => [
-                '{id}' => $merchantId,
-            ],
             'mode' => $mode
         ];
 

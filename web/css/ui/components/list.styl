@@ -1,0 +1,104 @@
+.list-container
+  .filters
+    padding: 10px 5px
+    display: flex
+    flex-wrap: wrap
+    align-content: flex-start
+    background: #fafbfc
+    button
+      margin-top: auto
+  .more-filters-following ~ .field
+    label
+      display: block
+      margin: 2px 0
+      text-transform: capitalize
+
+.table-empty, .table-pending
+  text-align: center
+  padding: 20px
+  min-width: 120px
+  &:after
+    content: 'No items to display.'
+
+.table-pending
+  &:after
+    content: 'Loading...'
+
+.table-header
+  padding: 10px 20px
+  line-height: 36px
+  border-bottom: 2px solid #eee
+
+.table-info
+  font-size: 20px
+
+.table-striped
+  .tr:nth-child(2n)
+    background: #f6f9fa
+    > div
+      border-top: 1px solid #eee
+      border-bottom: @border-top
+  .tr:last-child > div
+    border-bottom: none
+
+.table-bordered
+  border: 1px solid #eee
+
+.table-container
+  overflow: auto
+
+.table
+  width: 100%
+  display: table
+  .tr
+    display: table-row
+
+.tr
+  transition: .7s
+  &.row-enter, &.clickable:hover
+    background: $bg-highlight !important
+  &.row-exit
+    background: #FFCDCD !important
+
+.th
+  font-weight: bold
+  padding: 16px 12px
+
+.td, .th
+  display: table-cell
+  padding: 12px
+
+.td
+  > i:only-child
+    display: block
+    font-size: 12px
+    text-align: center
+
+  &:last-child
+    overflow: auto
+
+.pagination
+  float: right
+  margin: 10px
+  > div
+    border: 1px solid #eee
+    float: left
+    padding: 6px 16px
+    background: #F6F9FA
+    margin-left: -1px
+    cursor: pointer
+    &:hover
+      background: #fff
+
+.duplex
+  .table
+    table-layout: fixed
+  .tr
+    position: relative
+    &:active .td:last-child:after
+      content: 'Copied'
+      position: absolute
+      left: 100%
+      background: #fff
+      padding: 2px 6px
+      border-radius: 3px

@@ -1,0 +1,126 @@
+.approved-state
+  background-color: #fc9700
+
+.executed-state
+  background-color: #17C446
+
+.closed-state
+  background-color: #F14F4B
+
+.rejected-state
+  background-color: #F14F4B
+
+.open-state
+  background-color: #FCCB00
+
+
+.requests-container
+  .status
+      float: right
+
+  .secondary-label
+    font-size: 12px
+    color: #8a8a8a
+
+  .requests-content, .requests-actions
+    display: inline-block
+    vertical-align: top
+
+  /* Requests main content */
+  .requests-content
+    display: inline-block
+    width: 75%
+    vertical-align: top
+
+    form, .levels-container, .comments-containers
+      padding: 0 30px 10px
+      margin-top: 16px
+
+    form
+      overflow: auto
+      border-bottom: 1px solid $faded-color
+
+    /* Levels section */
+    .levels-container
+      margin: 20px 0
+      padding-bottom: 10px;
+
+      label
+        margin-bottom: 16px
+
+      .level
+        .i-yes
+          vertical-align: middle
+          margin-right: 4px
+
+        .square-pills
+          display: inline-block;
+          margin: 0 12px 8px 0
+          font-weight: bold
+          border: 1px solid #e4e4e4;
+          color: $color-semi-muted
+
+        .square-pills:not(.no-color)
+          background-color: #f3f3f3
+
+        &.inactive
+          .square-pills
+            opacity: 0.55
+
+    /* Comments section */
+    .comments-container
+      .comment-list
+        margin: 30px
+        border: 1px solid #efefef;
+        background-color: $subtle-color;
+
+      .comment
+        padding: 15px 20px
+        animation: 0.3s fadein ease-in
+
+        &:not(:first-child)
+          border-top: 1px solid $faded-color
+
+        .comment-body
+          line-height: 18px;
+
+      form
+        label
+          font-weight: bold
+
+        textarea
+          width: 100%
+          margin-left: 0
+
+  /* Requests aside content */
+  .requests-actions
+    display: inline-block
+    margin: 30px 0
+    width: 20%
+    text-align: center
+
+    .header
+      margin: 16px 0 8px
+
+    .btn
+      display: block
+
+      i
+        vertical-align: middle
+        padding: 4px
+        line-height: 8px
+        margin-right: 4px
+        font-size: 8px
+        border-radius: 50%
+        color: #fff
+
+    .pill
+      margin: 6px;
+      background-color: #fff
+      color: $color-semi-muted
+      display: inline-block
+
+    .separate
+      margin-top: 10px
+      border-color: #e2e2e2
+
