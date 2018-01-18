@@ -33,7 +33,7 @@ class Cybersource extends Base
                 self::SR_NO                   => $index + 1,
                 self::RAZORPAY_REFUND_ID      => $row['refund']['id'],
                 self::RAZORPAY_TRANSACTION_ID => $row['payment']['id'],
-                self::MID                     => 'razorpaycybs',
+                self::MID                     => $row['terminal']['gateway_terminal_id'],
                 self::TRANSACTION_DATE        => $this->getFormattedDate($row['payment']['created_at'], 'd/m/y H:m'),
                 self::PAYMENT_AMOUNT          => $this->getFormattedAmount($row['payment']['amount']),
                 self::REFUND_AMOUNT           => $this->getFormattedAmount($row['refund']['amount']),
