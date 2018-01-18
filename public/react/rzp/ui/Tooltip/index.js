@@ -3,7 +3,8 @@ import PropTypes from 'prop-types';
 
 import './styles.styl';
 
-const gutter = 10;
+const gutter = 10,
+  TOOLTIP_DELAY = 200;
 
 class Tooltip extends Component {
   constructor(props) {
@@ -106,7 +107,7 @@ class Tooltip extends Component {
   }
 
   onShowTooltip() {
-    this.showTooltipTimer = window.setTimeout(this.showTooltip, 200);
+    this.showTooltipTimer = window.setTimeout(this.showTooltip, TOOLTIP_DELAY);
   }
 
   onHideTooltip() {
@@ -122,7 +123,7 @@ class Tooltip extends Component {
         screenX: e.clientX,
         screenY: e.clientY,
       });
-    }, 200);
+    }, TOOLTIP_DELAY);
   }
 
   handleMouseEnter(e) {
