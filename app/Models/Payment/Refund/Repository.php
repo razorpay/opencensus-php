@@ -283,7 +283,7 @@ class Repository extends Base\Repository
      * six months from payment created at . It could not be processed via API
      * @return array
      */
-    public function fetchFailedCardRefundsToProcessedManually($from, $to, $gateway)
+    public function fetchFailedCardRefundsToProcessedManually($from, $to, $gateway, $timerange)
     {
         $refundAttrs = $this->dbColumn('*');
 
@@ -303,8 +303,6 @@ class Repository extends Base\Repository
 
         $paymentRefundStatus = $this->repo->payment->dbColumn(Payment\Entity::REFUND_STATUS);
 
-        $six_month_ago_timestamp = 15552000;
-
         return $this->newQuery()
                     ->select($refundAttrs)
                     ->join(Table::PAYMENT, $refundPaymentIdAttr, '=', $paymentIdAttr)
@@ -314,7 +312,7 @@ class Repository extends Base\Repository
                     ->where($refundCreatedAt, '<=', $to)
                     ->where($paymentGateway, '=', $gateway)
                     ->where($paymentMethod, '=', 'card')
-                    ->whereRaw("$refundCreatedAt - $paymentCreatedAt >= $six_month_ago_timestamp")
+                    ->whereRaw("$refundCreatedAt - $paymentCreatedAt >= $timerange")
                     ->with(['payment'])
                     ->get();
     }

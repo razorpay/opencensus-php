@@ -17,6 +17,8 @@ use RZP\Mail\Gateway\FailedRefund\Base as FailedRefundFileMail;
 class Base extends Refund\Base
 {
 
+    const CARD_GATEWAY_API_REFUND_SPAN = 15552000;
+
     public function fetchEntities(): PublicCollection
     {
         $begin = $this->gatewayFile->getBegin();
@@ -30,7 +32,8 @@ class Base extends Refund\Base
             $refunds = $this->repo->refund->fetchFailedCardRefundsToProcessedManually(
                 $begin,
                 $end,
-                static::GATEWAY
+                static::GATEWAY,
+                static::CARD_GATEWAY_API_REFUND_SPAN
                 );
         }
         else
