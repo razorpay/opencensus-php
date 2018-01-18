@@ -50,6 +50,7 @@ class Entity extends Base\PublicEntity
     const SCOPE                     = 'scope';
     const FEE_BEARER                = 'fee_bearer';
     const FEE_MODEL                 = 'fee_model';
+    const REFUND_SOURCE             = 'refund_source';
     const LINKED_ACCOUNT_KYC        = 'linked_account_kyc';
     const BRAND_COLOR               = 'brand_color';
     const HANDLE                    = 'handle';
@@ -208,6 +209,7 @@ class Entity extends Base\PublicEntity
         self::LINKED_ACCOUNT_KYC,
         self::FEE_BEARER,
         self::FEE_MODEL,
+        self::REFUND_SOURCE,
         self::BILLING_LABEL,
         self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
@@ -252,6 +254,7 @@ class Entity extends Base\PublicEntity
         self::AUTO_REFUND_DELAY      => null,
         self::AUTO_CAPTURE_LATE_AUTH => false,
         self::FEE_MODEL              => FeeModel::PREPAID,
+        self::REFUND_SOURCE          => RefundSoure::BALANCE,
         self::CHANNEL                => Settlement\Channel::ICICI,
         self::CONVERT_CURRENCY       => null,
         self::ARCHIVED_AT            => null,
@@ -835,6 +838,11 @@ class Entity extends Base\PublicEntity
     public function getFeeModel()
     {
         return $this->getAttribute(self::FEE_MODEL);
+    }
+
+    public function getRefundSource()
+    {
+        return $this->getAttribute(self::REFUND_SOURCE);
     }
 
     public function getFullLogoUrlWithSize($size = self::ORIGINAL_SIZE)

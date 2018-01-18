@@ -79,6 +79,9 @@ class CreateMerchants extends Migration
             $table->tinyInteger(Merchant::FEE_MODEL)
                   ->default(FeeModel::getValueForFeeModelString(FeeModel::PREPAID));
 
+            $table->tinyInteger(Merchant::REFUND_SOURCE)
+                  ->default(RefundSource::getValueForRefundSourceString(RefundSource::BALANCE));
+
             $table->tinyInteger(Merchant::LINKED_ACCOUNT_KYC)
                   ->default(0);
 
