@@ -2,6 +2,7 @@
 
 namespace RZP\Reconciliator\VirtualAccKotak;
 
+use Cache;
 use Config;
 use Carbon\Carbon;
 
@@ -93,7 +94,8 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         ]);
 
         // Don't alert for recent payments
-        if ($this->isRecentBankTransfer($row) === false)
+        if (($this->isRecentBankTransfer($row) === false) and
+            ($this->isAlreadyAlerted($row) === false))
         {
             $this->app['slack']->queue(
                 TraceCode::BANK_TRANSFER_UNEXPECTED,
@@ -104,6 +106,10 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'icon'     => ':x:'
                 ]
             );
+
+            $cacheKey = $this->getCacheKey($row);
+
+            Cache::put($cacheKey, $row[self::COLUMN_UTR], 360);
         }
     }
 
@@ -242,6 +248,28 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         }
 
         return false;
+    }
+
+    /**
+     * MIS files are combined for the current day. This means if we don't keep a
+     * check on which alerts we've already received, we'll receive the same set
+     * every hour when the file is sent again.
+     *
+     * @param  array $row
+     * @return bool
+     */
+    protected function isAlreadyAlerted(array $row): bool
+    {
+        $cacheKey = $this->getCacheKey($row);
+
+        return (Cache::get($cacheKey) !== null);
+    }
+
+    protected function getCacheKey(array $row): string
+    {
+        $cacheKey = 'slack.bank_transfer_processing_unexpected.' . $row[self::COLUMN_PAYEE_ACCOUNT];
+
+        return $cacheKey;
     }
 
     /**
