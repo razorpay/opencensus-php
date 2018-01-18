@@ -321,7 +321,9 @@ class Gateway extends Base\Gateway
     protected function verifyPayment($verify)
     {
         $gatewayPayment = $verify->payment;
+
         $content = $verify->verifyResponseContent;
+
         $input = $verify->input;
 
         $days = (time() - $input['payment']['created_at']) / (24 * 60 * 60);
@@ -336,7 +338,9 @@ class Gateway extends Base\Gateway
         if ($days > 45)
         {
             $verify->apiSuccess = true;
+
             $verify->gatewaySuccess = true;
+
             $verify->match = true;
 
             $this->trace->info(
