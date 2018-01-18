@@ -462,7 +462,7 @@ class Core extends Base\Core
         $credit = $amount;
         $feeCredits = $fee;
 
-        $transaction->setFeeCredits($feeCredits);
+        $transaction->setCredits($feeCredits);
         $transaction->setCreditType(Transaction\CreditType::FEE);
 
         return [$credit, $fee, $tax, $feesSplit];
@@ -1021,7 +1021,7 @@ class Core extends Base\Core
     public function updateFeeCredits(Transaction\Entity $txn)
     {
         // While filling the txn fees and amount, we have not used fee credits.
-        if ($txn->getFeeCredits() === 0)
+        if ($txn->isFeeCredits() === false)
         {
             return;
         }
@@ -1058,6 +1058,42 @@ class Core extends Base\Core
 
         // // Nodal balance needs to be saved because of amount credit update
         // $this->repo->balance->updateBalance($nodalBalance);
+    }
+
+    public function updateRefundCredits(Transaction\Entity $txn)
+    {
+        // While filling the txn fees and amount, we have not used fee credits.
+        if (($txn->isTypeRefund() === true) and
+            ($txn->isRefundCredits() === false))
+        {
+            return;
+        }
+
+        $amount = $txn->getAmount();
+
+        $merchantBalance = $this->getBalanceLockForUpdate($txn->merchant);
+
+        $merchantId = $merchantBalance->merchant->getId();
+
+        $refundCredits = $this->getMerchantCreditsOfType($merchantBalance, Credits\Type::REFUND);
+
+        if ($refundCredits < $amount)
+        {
+            throw new Exception\LogicException(
+                'Refund Credits should be higher or equal to the refund amount',
+                null,
+                [
+                    'transaction_id'    => $txn->getId(),
+                    'merchant_id'       => $merchantId,
+                    'refund_credits'    => $refundCredits,
+                    'amount'            => $amount,
+                ]);
+        }
+
+        $merchantBalance->subtractRefundCredits($amount);
+
+        //create a credit transaction for the same
+        $this->createCreditTransaction($fee, $txn, Credits\Type::REFUND);
     }
 
     protected function getNodalBalanceLockForUpdate($channel)
@@ -1132,9 +1168,13 @@ class Core extends Base\Core
         {
             $this->updateAmountCredits($txn, $entity);
         }
-        else if ($txn->getFeeCredits() > 0)
+        else if ($txn->isFeeCredits() === true)
         {
             $this->updateFeeCredits($txn);
+        }
+        else if ($txn->isRefundCredits() === true)
+        {
+            $this->updateRefundCredits($txn);
         }
     }
 

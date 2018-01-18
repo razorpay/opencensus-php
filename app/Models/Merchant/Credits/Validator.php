@@ -106,6 +106,9 @@ class Validator extends Base\Validator
             case Credits\Type::FEE:
                 return $balance->getFeeCredits();
 
+            case Credits\Type::REFUND:
+                return $balance->getRefundCredits();
+
             default:
                 return null;
         }

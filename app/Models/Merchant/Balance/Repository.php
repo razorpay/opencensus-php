@@ -85,18 +85,10 @@ class Repository extends Base\Repository
         assert ($this->isTransactionActive());
 
         $balance = $this->findOrFail($merchant->getId());
-        //$nodalBalance = $this->getNodalBalanceLockForUpdate($channel);
-
-        //$nodalCredits = $nodalBalance->getFeeCredits();
-        //$nodalCredits = $nodalCredits - $balance->getFeeCredits() + $feeCredits;
-
-        //$nodalBalance->setFeeCredits($nodalCredits);
 
         $balance->setFeeCredits($feeCredits);
 
         $balance->saveOrFail();
-
-        //$nodalBalance->saveOrFail();
 
         return $balance;
     }
