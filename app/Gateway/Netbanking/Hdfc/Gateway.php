@@ -367,12 +367,9 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
 
-        if ($gatewayPayment['received'] === false)
-        {
-            $attrs = $this->getMappedAttributes($content);
-            $gatewayPayment->fill($attrs);
-            $gatewayPayment->saveOrFail();
-        }
+        $attrs = $this->getMappedAttributes($content);
+        $gatewayPayment->fill($attrs);
+        $gatewayPayment->saveOrFail();
 
         return $status;
     }
