@@ -255,25 +255,7 @@ class Repository extends Base\Repository
 
     public function fetchFailedRefundsForGatewayBetweenTimestamps($from, $to, $gateway)
     {
-        $refundAttrs = $this->dbColumn('*');
-
-        $refundPaymentIdAttr = $this->dbColumn(Entity::PAYMENT_ID);
-
-        $refundStatus = $this->dbColumn(Refund\Entity::STATUS);
-
-        $paymentIdAttr = $this->repo->payment->dbColumn(Payment\Entity::ID);
-
-        $paymentGateway = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);
-
-        $refundCreatedAt = $this->dbColumn(Refund\Entity::CREATED_AT);
-
-        return $this->newQuery()
-                    ->select($refundAttrs)
-                    ->join(Table::PAYMENT, $refundPaymentIdAttr, '=', $paymentIdAttr)
-                    ->where($refundStatus, '=',Refund\STATUS::FAILED)
-                    ->where($paymentGateway, '=', $gateway)
-                    ->where($refundCreatedAt, '>=', $from)
-                    ->where($refundCreatedAt, '<=', $to)
+        return $this-> fetchFailedRefundsForGatewayBetweenTimestampsQuery($from, $to, $gateway)
                     ->with(['payment'])
                     ->get();
     }
@@ -285,32 +267,17 @@ class Repository extends Base\Repository
      */
     public function fetchFailedCardRefundsToProcessedManually($from, $to, $gateway, $timerange)
     {
-        $refundAttrs = $this->dbColumn('*');
-
-        $refundPaymentIdAttr = $this->dbColumn(Entity::PAYMENT_ID);
-
-        $refundStatus = $this->dbColumn(Refund\Entity::STATUS);
-
-        $refundCreatedAt = $this->dbColumn(Refund\Entity::CREATED_AT);
-
-        $paymentIdAttr = $this->repo->payment->dbColumn(Payment\Entity::ID);
-
-        $paymentCreatedAt =  $this->repo->payment->dbColumn(Payment\Entity::CREATED_AT);
-
         $paymentGateway = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);
 
         $paymentMethod  = $this->repo->payment->dbColumn(Payment\Entity::METHOD);
 
         $paymentRefundStatus = $this->repo->payment->dbColumn(Payment\Entity::REFUND_STATUS);
 
-        return $this->newQuery()
-                    ->select($refundAttrs)
-                    ->join(Table::PAYMENT, $refundPaymentIdAttr, '=', $paymentIdAttr)
-                    ->where($refundStatus, '=',Refund\STATUS::FAILED)
-                    ->whereNotNull($paymentRefundStatus)
-                    ->where($refundCreatedAt, '>=', $from)
-                    ->where($refundCreatedAt, '<=', $to)
-                    ->where($paymentGateway, '=', $gateway)
+        $refundCreatedAt = $this->dbColumn(Refund\Entity::CREATED_AT);
+
+        $paymentCreatedAt =  $this->repo->payment->dbColumn(Payment\Entity::CREATED_AT);
+
+        return $this->fetchFailedRefundsForGatewayBetweenTimestampsQuery($from, $to, $gateway)
                     ->where($paymentMethod, '=', 'card')
                     ->whereRaw("$refundCreatedAt - $paymentCreatedAt >= $timerange")
                     ->with(['payment'])
@@ -665,5 +632,31 @@ class Repository extends Base\Repository
                       });
 
         return $query->get();
+    }
+
+    private function fetchFailedRefundsForGatewayBetweenTimestampsQuery($from, $to, $gateway)
+    {
+        $refundAttrs = $this->dbColumn('*');
+
+        $refundPaymentIdAttr = $this->dbColumn(Entity::PAYMENT_ID);
+
+        $refundStatus = $this->dbColumn(Refund\Entity::STATUS);
+
+        $paymentIdAttr = $this->repo->payment->dbColumn(Payment\Entity::ID);
+
+        $paymentGateway = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);
+
+        $refundCreatedAt = $this->dbColumn(Refund\Entity::CREATED_AT);
+
+        $paymentRefundStatus = $this->repo->payment->dbColumn(Payment\Entity::REFUND_STATUS);
+
+        return $this->newQuery()
+                    ->select($refundAttrs)
+                    ->join(Table::PAYMENT, $refundPaymentIdAttr, '=', $paymentIdAttr)
+                    ->where($refundStatus, '=',Refund\STATUS::FAILED)
+                    ->whereNotNull($paymentRefundStatus)
+                    ->where($paymentGateway, '=', $gateway)
+                    ->where($refundCreatedAt, '>=', $from)
+                    ->where($refundCreatedAt, '<=', $to);
     }
 }
