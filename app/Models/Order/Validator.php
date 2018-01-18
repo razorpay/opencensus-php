@@ -362,7 +362,7 @@ class Validator extends Base\Validator
             ($order->getMethod() !== $method))
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ORDER_METHOD_DOES_NOT_MATCH_PAYMENT_METHOD);
+                ErrorCode::BAD_REQUEST_PAYMENT_METHOD_DOES_NOT_MATCH_ORDER_METHOD);
         }
     }
 }

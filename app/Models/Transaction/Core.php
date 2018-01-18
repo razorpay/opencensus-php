@@ -482,8 +482,6 @@ class Core extends Base\Core
 
         $amount = $transaction->getAmount();
 
-        $credit = 0;
-
         $credit = $amount - $fee;
 
         $transaction->setCreditType(Transaction\CreditType::DEFAULT);
