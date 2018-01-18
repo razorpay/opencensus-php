@@ -2,8 +2,6 @@ import React from 'react';
 import Group, { GroupItem } from 'rzp/ui/Group';
 import { PowerSelect } from 'react-power-select';
 
-import './styles.styl';
-
 const GroupingDropdown = ({
   grouping,
   onGroupChange,

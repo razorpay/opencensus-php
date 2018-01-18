@@ -7,8 +7,6 @@ import { globalGroupTitleMap as groupTitleMap } from "rzp/utils/pokedex";
 
 import renderTreemap from './renderTreemap';
 
-import './styles.styl';
-
 let timer = null;
 
 @connect(null, null)

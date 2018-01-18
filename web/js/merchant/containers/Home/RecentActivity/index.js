@@ -15,8 +15,6 @@ import GenericPanel, {
 import { tabs, tabsMeta } from './data';
 import PaymentsList from 'merchant/components/Payments/PaymentsList';
 
-import './styles.styl';
-
 tabsMeta.refunds.columns = [...tabsMeta.refunds.columns];
 
 tabsMeta.refunds.columns[3] = {

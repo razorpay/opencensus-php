@@ -10,8 +10,6 @@ import { isChildSameType, checkChildrenType } from 'rzp/utils/rzp-react-utils';
 import Overlay from 'rzp/ui/Overlay';
 import Spinner from 'rzp/ui/Spinner';
 
-import './styles.styl';
-
 const NoDataMsg = ({title="", subtitle=""}) => {
 
   return (

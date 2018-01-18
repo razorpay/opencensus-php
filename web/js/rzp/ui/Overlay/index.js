@@ -1,7 +1,5 @@
 import React, { Component } from 'react';
 
-import './styles.styl';
-
 class Overlay extends Component {
   constructor(props) {
     super(props);

@@ -23,8 +23,6 @@ import {
   API_INVALID_RESP,
 } from 'merchant/components/Home/data';
 
-import './styles.styl';
-
 const dateRangePresets = [
     ['One Day', -1, 'days'],
     ['Past 7 Days', -7, 'days'],

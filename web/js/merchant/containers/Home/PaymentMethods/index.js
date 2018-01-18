@@ -19,7 +19,6 @@ import GenericPanel, {
 import { API_ERROR, API_INVALID_RESP } from 'merchant/components/Home/data';
 
 import { getQuery, sampleData } from './data';
-import './styles.styl';
 
 function getLevels(hierarchy, levels = []) {
   if (hierarchy.parent) {

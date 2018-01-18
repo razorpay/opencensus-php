@@ -28,8 +28,6 @@ import { API_ERROR, API_INVALID_RESP } from 'merchant/components/Home/data';
 import Tooltip from 'merchant/components/Home/Tooltip';
 import Panel from './Panel';
 
-import './styles.styl';
-
 const csvDateFormat = 'DD-MM-YYYY';
 
 const TabContent = ({ name, value, isCurrency, title, isLoading, error }) => {

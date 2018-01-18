@@ -2,8 +2,6 @@ import React, { Component } from 'react';
 
 import { checkChildrenType } from 'rzp/utils/rzp-react-utils';
 
-import './styles.styl';
-
 class GroupItem extends Component {
   constructor(props) {
     super(props);

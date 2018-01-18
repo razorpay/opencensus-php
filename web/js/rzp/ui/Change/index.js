@@ -2,8 +2,6 @@ import React from 'react';
 
 import { getFormattedNumber } from 'rzp/utils/rzp-utils';
 
-import './styles.styl';
-
 export default ({ value, children }) => {
   const classNames = ['rzp-change'];
 

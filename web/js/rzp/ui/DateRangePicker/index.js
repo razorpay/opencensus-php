@@ -3,8 +3,6 @@ import React, { Component } from 'react';
 import { PowerSelect } from 'react-power-select';
 import Drp from 'rzp/ui/Forms/DateRangePickerField';
 
-import './styles.styl';
-
 const defaultPresets = [],
   customRangeText = 'Custom Range',
   customRangeVal = 0;

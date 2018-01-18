@@ -2,8 +2,6 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { checkChildrenType } from 'rzp/utils/rzp-react-utils';
 
-import "./styles.styl";
-
 export class Btn extends Component {
   constructor(props) {
     super(props);

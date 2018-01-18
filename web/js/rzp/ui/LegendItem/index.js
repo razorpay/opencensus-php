@@ -6,8 +6,6 @@ import LegendContent from './LegendContent';
 
 import { checkChildrenType } from 'rzp/utils/rzp-react-utils';
 
-import './styles.styl';
-
 class LegendItemInner extends Component {
   render() {
     const { children, ...itemProps } = this.props;

@@ -8,8 +8,6 @@ import LegendItem, {
   LegendContent,
 } from 'rzp/ui/LegendItem';
 
-import './styles.styl';
-
 class Legend extends Component {
   render() {
     const { children, className = '', alignment, ...otherProps } = this.props;

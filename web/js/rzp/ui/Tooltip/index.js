@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
-import './styles.styl';
-
 const gutter = 10;
 
 class Tooltip extends Component {

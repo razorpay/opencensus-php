@@ -20,8 +20,6 @@ import LastUpdated from 'merchant/components/Home/LastUpdated';
 import MoreOptionsButton from 'merchant/components/Home/MoreOptionsButton';
 import { API_ERROR, API_INVALID_RESP } from 'merchant/components/Home/data';
 
-import './styles.styl';
-
 const chartOptions = {
     tooltips: {
       enabled: false,
