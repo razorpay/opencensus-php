@@ -409,7 +409,11 @@ class ApiServiceProvider extends BaseServiceProvider
     {
         $this->app->singleton('pincodesearcher.client', function($app)
         {
-            return new PincodeSearcherClient($app);
+            $mock = $app['config']->get('applications.pincodesearcher.mock');
+
+            $implementation = $mock ? Mock\PincodeSearcherClient::class : PincodeSearcherClient::class;
+
+            return new $implementation($app);
         });
     }
 }

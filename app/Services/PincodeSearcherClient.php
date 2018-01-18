@@ -56,7 +56,7 @@ class PincodeSearcherClient
         return $key;
     }
 
-    public function sendRequest(string $url, string $method, string $data = null)
+    public function sendRequest(string $url, string $method, string $data = null): array
     {
         $url = $this->baseUrl . $url;
 
