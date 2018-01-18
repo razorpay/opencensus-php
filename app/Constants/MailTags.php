@@ -34,8 +34,8 @@ class MailTags
     const RBL_NETBANKING_REFUNDS_MAIL           = 'rbl_netbanking_refunds_mail';
     const INDUSIND_NETBANKING_REFUNDS_MAIL      = 'indusind_netbanking_refunds_mail';
     const AXIS_MIGS_FAILED_REFUNDS_MAIL         = 'migs_failed_refunds_mail';
-    const FIRST_DATA_FAILED_REFUNDS_MAIL        = 'firstData_failed_refunds_mail';
-    const CYBERSOURCE_FAILED_REFUNDS_MAIL       = 'cyberSource_failed_refunds_mail';
+    const FIRST_DATA_FAILED_REFUNDS_MAIL        = 'firstdata_failed_refunds_mail';
+    const CYBERSOURCE_FAILED_REFUNDS_MAIL       = 'cybersource_failed_refunds_mail';
     const HDFC_FAILED_REFUNDS_MAIL              = 'fss_failed_refunds_mail';
 
     const PAYU_MONEY_REFUNDS_MAIL          = 'payu_money_refunds_mail';
