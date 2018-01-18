@@ -40,7 +40,7 @@ export default class MakeAPICall extends Component {
         <Form class="full-span" style={{ width: '650px' }}>
           <div class="field url">
             <label>URL</label>
-            <span class="base-url">https://api.razorpay.com/v1/</span>
+            <span class="base-url">api/v1/</span>
             <input name="url" placeholder="relative/url" />
           </div>
           <SelectMode />
