@@ -118,6 +118,16 @@ class Entity extends Merchant\Entity
         return 'merchant';
     }
 
+    /**
+     * Same as above ^
+     *
+     * @return string
+     */
+    public function getForeignKey()
+    {
+        return self::MERCHANT_ID;
+    }
+
     public function schedules()
     {
         return $this->hasMany('RZP\Models\Schedule\Entity');
