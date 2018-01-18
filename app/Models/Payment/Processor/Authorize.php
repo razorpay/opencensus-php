@@ -772,7 +772,7 @@ trait Authorize
         {
             $card = $payment->card;
 
-            if ($card->getNetworkCode() === Card\Network::DICL)
+            if ($card->isDiners() === true)
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
@@ -1426,11 +1426,11 @@ trait Authorize
         $baseAmount = (new Currency\Core)->getBaseAmount($amount, $currency);
 
         // if gateway is doing currency conversions, actual rate used by gateway
-        // will use lower than current rates hence we also use 2 percentage lower
+        // will use lower than current rates hence we also use 1 percentage lower
         // values
         if ($payment->getConvertCurrency() === false)
         {
-            $baseAmount = (int) ceil($baseAmount * 0.98);
+            $baseAmount = (int) ceil($baseAmount * 0.99);
         }
 
         $payment->setBaseAmount($baseAmount);
@@ -3335,11 +3335,7 @@ trait Authorize
             }
         }
 
-        if (Payment\Gateway::isAuthAndPowerWallet($wallet) === true)
-        {
-            // TODO: Figure out a way this can be called here
-            // return $this->isOtpOrAuthFlow($input);
-        }
+        // TODO: Figure out a way to do this for other power wallets
 
         return true;
     }

@@ -15,6 +15,7 @@ class Phase
      * take place through the dispute's lifecycle
      */
     protected static $nonTransactionalPhases = [
+        self::RETRIEVAL,
         self::FRAUD,
     ];
 

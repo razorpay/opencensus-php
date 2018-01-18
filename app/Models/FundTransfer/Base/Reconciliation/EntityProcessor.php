@@ -37,7 +37,7 @@ abstract class EntityProcessor extends Base\Core
 
     protected $dashboardUrl;
 
-    abstract protected function getAttemptStatus(): string;
+    abstract protected function getAttemptStatus(): array;
 
     abstract protected function isMerchantLevelError(): bool;
 
@@ -88,9 +88,7 @@ abstract class EntityProcessor extends Base\Core
 
     protected function updateAttemptEntity()
     {
-        $status = $this->getAttemptStatus();
-
-        $failureReason = ($status === Attempt\Status::FAILED) ? 'Reconciliation' : null;
+        list($status, $failureReason) = $this->getAttemptStatus();
 
         // Verify status
         $oldStatus = $this->fta->getStatus();
