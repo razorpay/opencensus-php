@@ -106,8 +106,10 @@ class FeeCalculator
 
         $totalFees = $fees + $totalTaxes;
 
-        // In case the merchant is customer fee bearer, we shouldn't check $amount < $totalFees
-        if ($this->entity->merchant->isFeeBearerCustomer() === false)
+        // In case the merchant is customer fee bearer, we shouldn't check
+        // $amount < $totalFees because amount is already inclusive of the fees.
+        if (($this->entity->merchant->isFeeBearerCustomer() === false) and
+            ($amount !== 0))
         {
             if ($totalFees > $amount)
             {
@@ -353,7 +355,6 @@ class FeeCalculator
         $filters = [
             [Pricing\Entity::PAYMENT_NETWORK, $bank, true, null],
         ];
-
 
         $rules = $this->applyFiltersOnRules($rules, $filters);
 
@@ -613,7 +614,7 @@ class FeeCalculator
     }
 
     protected function traceAllRules($rules)
-     {
+    {
          $verbose = $this->isVerboseLogEnabled();
 
          if ($verbose === false)
@@ -721,7 +722,7 @@ class FeeCalculator
                 $taxValue = 2 * ((int) round(($calculationPercentage * $fee) / 10000));
             }
 
-            $taxValue = ($eligibleForGst === true) ? $taxValue: 0;
+            $taxValue = ($eligibleForGst === true) ? $taxValue : 0;
 
             $totalTaxes += $taxValue;
 

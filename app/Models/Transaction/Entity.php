@@ -439,7 +439,7 @@ class Entity extends Base\PublicEntity
 
     public function setAmount($amount)
     {
-        assert ($amount > 0);
+        assert ($amount >= 0);
 
         $this->setAttribute(self::AMOUNT, $amount);
     }
