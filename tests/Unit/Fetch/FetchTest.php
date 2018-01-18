@@ -192,18 +192,13 @@ class FetchTest extends TestCase
         {
             $fetch = E::getEntityFetch($entity);
 
-            if (empty($fetch) === false)
+            if ($fetch !== null)
             {
                 $fetchs[$entity] = $fetch;
             }
         }
 
         return $fetchs;
-    }
-
-    protected function getEntityFetch(string $entity)
-    {
-        return E::getEntityFetch($entity);
     }
 
     /**
