@@ -106,7 +106,7 @@ class Tooltip extends Component {
   }
 
   onShowTooltip() {
-    this.showTooltipTimer = window.setTimeout(this.showTooltip, 500);
+    this.showTooltipTimer = window.setTimeout(this.showTooltip, 200);
   }
 
   onHideTooltip() {
@@ -122,7 +122,7 @@ class Tooltip extends Component {
         screenX: e.clientX,
         screenY: e.clientY,
       });
-    }, 500);
+    }, 200);
   }
 
   handleMouseEnter(e) {
