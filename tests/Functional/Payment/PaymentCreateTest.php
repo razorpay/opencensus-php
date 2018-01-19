@@ -173,6 +173,7 @@ class PaymentCreateTest extends TestCase
         $paymentEntity = $this->getLastEntity('payment', true);
 
         $payment['token'] = $paymentEntity['token_id'];
+        $payment['amount'] = 2000;
 
         $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
         $payment['order_id'] = $order->getPublicId();

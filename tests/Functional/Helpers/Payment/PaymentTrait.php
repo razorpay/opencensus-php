@@ -1039,6 +1039,11 @@ trait PaymentTrait
 
         $payment['amount'] = $amount;
 
+        if (in_array($bank, Payment\Gateway::$zeroRupeeEmandateBanks, true) === true)
+        {
+            $payment['amount'] = 0;
+        }
+
         $payment['method'] = Payment\Method::EMANDATE;
         $payment['auth_type'] = Payment\AuthType::NETBANKING;
 

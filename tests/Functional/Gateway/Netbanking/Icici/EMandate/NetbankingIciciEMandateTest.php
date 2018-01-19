@@ -69,30 +69,6 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->assertEMandateEntities();
     }
 
-    /**
-     * This is the case that the payment failed
-     */
-    public function testEMandateInitialPaymentFailure()
-    {
-        $data = $this->testData[__FUNCTION__];
-
-        $this->mockSiPaymentFailure();
-
-        $payment = $this->payment;
-
-        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
-        $payment['order_id'] = $order->getPublicId();
-
-        $this->runRequestResponseFlow(
-            $data,
-            function() use ($payment)
-            {
-                $this->doAuthPayment($payment);
-            });
-
-        $this->assertEMandateInitialFailEntities();
-    }
-
     public function testEMandateScheduledPayment()
     {
         $payment = $this->payment;
@@ -105,6 +81,7 @@ class NetbankingIciciEMandateTest extends TestCase
         $paymentEntity = $this->getLastEntity(Entity::PAYMENT, true);
 
         $payment[Payment::TOKEN] = $paymentEntity[Payment::TOKEN_ID];
+        $payment['amount'] = 2000;
 
         $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
         $payment['order_id'] = $order->getPublicId();
@@ -129,6 +106,7 @@ class NetbankingIciciEMandateTest extends TestCase
         $paymentEntity = $this->getLastEntity(Entity::PAYMENT, true);
 
         $payment[Payment::TOKEN] = $paymentEntity[Payment::TOKEN_ID];
+        $payment['amount'] = 2000;
 
         $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
         $payment['order_id'] = $order->getPublicId();
@@ -149,7 +127,13 @@ class NetbankingIciciEMandateTest extends TestCase
     {
         $payment = $this->payment;
 
-        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $order = $this->fixtures->create('order:emandate_order',
+                                         [
+                                             'amount' => $payment['amount'],
+                                             'method' => 'emandate',
+                                             'payment_capture' => true
+                                         ]);
+
         $payment['order_id'] = $order->getPublicId();
 
         $this->doAuthPayment($payment);
@@ -160,9 +144,11 @@ class NetbankingIciciEMandateTest extends TestCase
         $paymentEntity = $this->getLastEntity(Entity::PAYMENT, true);
 
         $payment[Payment::TOKEN] = $paymentEntity[Payment::TOKEN_ID];
+        $payment['amount'] = 2000;
 
         $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
         $payment['order_id'] = $order->getPublicId();
+
 
         $this->mockScheduledPaymentFailure();
 
@@ -229,6 +215,7 @@ class NetbankingIciciEMandateTest extends TestCase
         $token1 = $this->getLastEntity(Entity::TOKEN, true);
 
         $payment[Payment::TOKEN] = $paymentEntity[Payment::TOKEN_ID];
+        $payment['amount'] = 2000;
 
         $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
         $payment['order_id'] = $order->getPublicId();
@@ -302,6 +289,7 @@ class NetbankingIciciEMandateTest extends TestCase
         $firstPayment = $this->getLastEntity('payment', true);
 
         $payment[Payment::TOKEN] = $firstPayment['token_id'];
+        $payment['amount'] = 2000;
 
         $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
         $payment['order_id'] = $order->getPublicId();
@@ -389,6 +377,7 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->mockDebitRequestFailure();
 
         $payment[Payment::TOKEN] = $token1[TOKEN::ID];
+        $payment['amount'] = 2000;
 
         $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
         $payment['order_id'] = $order->getPublicId();
@@ -471,6 +460,7 @@ class NetbankingIciciEMandateTest extends TestCase
         $paymentEntity = $this->getLastEntity(Entity::PAYMENT, true);
 
         $payment[Payment::TOKEN] = $paymentEntity[Payment::TOKEN_ID];
+        $payment['amount'] = 2000;
 
         $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
         $payment['order_id'] = $order->getPublicId();
@@ -511,6 +501,7 @@ class NetbankingIciciEMandateTest extends TestCase
         $paymentEntity = $this->getLastEntity(Entity::PAYMENT, true);
 
         $payment[Payment::TOKEN] = $paymentEntity[Payment::TOKEN_ID];
+        $payment['amount'] = 2000;
 
         $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
         $payment['order_id'] = $order->getPublicId();
@@ -528,30 +519,6 @@ class NetbankingIciciEMandateTest extends TestCase
             {
                 $this->doS2SRecurringPayment($payment);
             });
-    }
-
-    public function testPaymentAmountGreaterThanTokenMaxAmount()
-    {
-        // Create a payment with twice the maximum amount
-        $payment = $this->payment;
-        $payment[Payment::AMOUNT] = 2 * Token::DEFAULT_MAX_AMOUNT;
-
-        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
-        $payment['order_id'] = $order->getPublicId();
-
-        $data = $this->testData[__FUNCTION__];
-
-        $this->runRequestResponseFlow(
-            $data,
-            function() use ($payment)
-            {
-                $this->doAuthPayment($payment);
-            });
-
-        $token = $this->getLastEntity(Entity::TOKEN, true);
-        // TODO: Uncomment this line when we start accepting max amount as input
-        // $this->assertEquals(Token::DEFAULT_MAX_AMOUNT, $token[Token::MAX_AMOUNT]);
-        $this->assertGreaterThan(Token::DEFAULT_MAX_AMOUNT, $payment[Payment::AMOUNT]);
     }
 
     /**
@@ -572,6 +539,7 @@ class NetbankingIciciEMandateTest extends TestCase
 
         $payment = $this->payment;
         $payment[Payment::TOKEN] = 'token_' . $token[Token::ID];
+        $payment['amount'] = 2000;
 
         $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
         $payment['order_id'] = $order->getPublicId();
@@ -587,33 +555,6 @@ class NetbankingIciciEMandateTest extends TestCase
             {
                 $this->doAuthPayment($payment);
             });
-    }
-
-    public function testAuthorizeFailedRegistrationPayment()
-    {
-        $this->mockFailedPayment();
-
-        $data = $this->testData[__FUNCTION__];
-
-        $payment = $this->payment;
-
-        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
-        $payment['order_id'] = $order->getPublicId();
-
-        $this->runRequestResponseFlow(
-            $data,
-            function() use ($payment)
-            {
-                $this->doAuthPayment($payment);
-            });
-
-        $payment = $this->getLastEntity(Entity::PAYMENT, true);
-
-        $this->authorizeFailedPayment($payment[Payment::ID]);
-
-        $payment = $this->getLastEntity(Entity::PAYMENT, true);
-
-        $this->assertEquals(PaymentStatus::AUTHORIZED, $payment[Payment::STATUS]);
     }
 
     protected function assertSiNullGatewayToken()
@@ -635,7 +576,7 @@ class NetbankingIciciEMandateTest extends TestCase
         // Registration succeeded
         $this->assertNotNull($netbanking[Netbanking::SI_TOKEN]);
         $this->assertEquals('Y', $netbanking[Netbanking::SI_STATUS]);
-        $this->assertEquals('9999999999', $netbanking[Netbanking::BANK_PAYMENT_ID]);
+        $this->assertEquals(null, $netbanking[Netbanking::BANK_PAYMENT_ID]);
     }
 
     protected function mockScheduledPaymentFailure($status = 'PaymentDateOverdue')
@@ -662,15 +603,18 @@ class NetbankingIciciEMandateTest extends TestCase
         // Assert Netbanking Entity
         $this->assertNotNull($netbanking[Netbanking::SI_TOKEN]);
         $this->assertEquals('authorize', $netbanking[Netbanking::ACTION]);
-        // For successful payments, si requests and debit requests, the status is a Y
-        $this->assertEquals('Y', $netbanking[Netbanking::STATUS]);
+
+        // For registration-only auth, status of payment is null
+
         $this->assertEquals(IFSC::ICIC, $netbanking[Netbanking::BANK]);
 
         if ($initial === true)
         {
-            $this->assertEquals('9999999999', $netbanking[Netbanking::BANK_PAYMENT_ID]);
+            // For registration-only auth, the payment id field send by bank is "null"
+            $this->assertEquals(null, $netbanking[Netbanking::BANK_PAYMENT_ID]);
             $this->assertEquals('Y', $netbanking[Netbanking::SI_STATUS]);
             $this->assertEquals('SUC', $netbanking[Netbanking::SI_MSG]);
+            $this->assertEquals('null', $netbanking[Netbanking::STATUS]);
 
             $usedCount = 1;
         }
@@ -679,6 +623,7 @@ class NetbankingIciciEMandateTest extends TestCase
             // For every SI execution payment we increment the used count
             $usedCount = 2;
 
+            $this->assertEquals('Y', $netbanking[Netbanking::STATUS]);
             $this->assertEquals(null, $netbanking[Netbanking::SI_STATUS]);
             $this->assertEquals(null, $netbanking[Netbanking::SI_MSG]);
         }
@@ -847,7 +792,7 @@ class NetbankingIciciEMandateTest extends TestCase
 
         $this->assertNotNull($netbanking[Netbanking::SI_TOKEN]);
         $this->assertEquals('C', $netbanking[Netbanking::SI_STATUS]);
-        $this->assertEquals('9999999999', $netbanking[Netbanking::BANK_PAYMENT_ID]);
+        $this->assertEquals(null, $netbanking[Netbanking::BANK_PAYMENT_ID]);
 
         // Assert gateway token was created
         $this->assertNotNull($gatewayToken);
