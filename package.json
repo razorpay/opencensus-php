@@ -4,10 +4,7 @@
   "private": true,
   "dependencies": {
     "aws-sdk": "2.181.0",
-    "husky": "^0.14.3",
-    "lint-staged": "^6.0.0",
-    "multi-glob": "^1.0.1",
-    "prettier": "^1.10.2"
+    "multi-glob": "^1.0.1"
   },
   "scripts": {
     "precommit": "lint-staged",
@@ -21,5 +18,10 @@
       "prettier --write --single-quote --trailing-comma es5",
       "git add"
     ]
+  },
+  "devDependencies": {
+    "husky": "^0.14.3",
+    "lint-staged": "^6.0.0",
+    "prettier": "^1.10.2"
   }
 }
