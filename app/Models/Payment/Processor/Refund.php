@@ -12,6 +12,7 @@ use RZP\Models\Batch;
 use RZP\Models\Card;
 use RZP\Models\Currency;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\RefundSource;
 use RZP\Models\Payment;
 use RZP\Models\BankTransfer;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
@@ -637,8 +638,6 @@ trait Refund
         if ($this->payment->isCaptured() === true)
         {
             $this->validateMerchantBalance($refund, 'refund');
-
-            $this->validateMerchantRefundCredits($refund);
         }
 
         $refund->batch()->associate($batch);
@@ -884,7 +883,7 @@ trait Refund
             ($balance->getRefundCredits() < $refund->getBaseAmount()))
         {
             throw new Exception\BadRequestException(
-                TraceCode::BAD_REQUEST_REFUND_NOT_ENOUGH_CREDITS,
+                ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_CREDITS,
                 null,
                 $traceData);
         }

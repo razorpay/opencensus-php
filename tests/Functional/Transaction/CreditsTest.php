@@ -224,12 +224,16 @@ class CreditsTest extends TestCase
     public function testRefundCredits()
     {
         $this->fixtures->create('credits',
-          [
-            'type'        => 'refund',
-            'value'       => 100000
-          ]);
+            [
+                'type'  => 'refund',
+                'value' => 100000
+            ]);
+
+        $this->fixtures->merchant->editRefundCredits('100000', '10000000000000');
 
         $this->fixtures->merchant->edit('10000000000000', ['refund_source' => 'credits']);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
 
         $this->doAuthCaptureAndRefundPayment();
 
@@ -242,40 +246,54 @@ class CreditsTest extends TestCase
         $this->assertEquals(false, $txn['gratis']);
         $this->assertEquals('refund', $txn['credit_type']);
 
-        $this->assertEquals(1050000, $balance['balance']);
-        $this->assertEquals(10000 - $txn['fee_credits'], $balance['refund_credits']);
-
-        // do refund and validate transactions values
+        $this->assertEquals(1049000, $balance['balance']);
+        $this->assertEquals(100000 - $txn['fee_credits'], $balance['refund_credits']);
     }
 
     public function testRefundWithPartialCredits()
     {
-        // $this->fixtures->create('credits',
-        //   [
-        //     'type'        => 'refund',
-        //     'value'       => 10000
-        //   ]);
+        $this->fixtures->create('credits',
+            [
+                'type'  => 'refund',
+                'value' => 10000
+            ]);
 
-        // $this->fixtures->merchant->editFeeCredits('10000', '10000000000000');
+        $this->fixtures->merchant->editRefundCredits('10000', '10000000000000');
 
-        // $this->doAuthAndCapturePayment();
+        $this->fixtures->merchant->edit('10000000000000', ['refund_source' => 'credits']);
 
-        // do refund, it should fail
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function()
+        {
+            $this->doAuthCaptureAndRefundPayment();
+        });
     }
-
 
     public function testRefundWithCreditsDisabled()
     {
-        // $this->fixtures->create('credits',
-        //   [
-        //     'type'        => 'refund',
-        //     'value'       => 10000
-        //   ]);
+        $this->fixtures->create('credits',
+            [
+                'type'  => 'refund',
+                'value' => 100000
+            ]);
 
-        // $this->fixtures->merchant->editFeeCredits('10000', '10000000000000');
+        $this->fixtures->merchant->editRefundCredits('100000', '10000000000000');
 
-        // $this->doAuthAndCapturePayment();
+        $this->doAuthCaptureAndRefundPayment();
 
-        // do refund, it should not use credits
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(0, $txn['fee_credits']);
+        $this->assertEquals(50000, $txn['debit']);
+        $this->assertEquals(false, $txn['gratis']);
+        $this->assertEquals('default', $txn['credit_type']);
+
+        $this->assertEquals(999000, $balance['balance']);
+        $this->assertEquals(100000, $balance['refund_credits']);
     }
 }

@@ -26,6 +26,7 @@ use RZP\Models\Transfer;
 use RZP\Models\Feature;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Merchant\FeeModel;
+use RZP\Models\Merchant\RefundSource;
 use RZP\Constants\Entity as E;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
@@ -603,10 +604,8 @@ class Core extends Base\Core
             {
                 $this->updateCredits($txn, $refund);
             }
-            else
-            {
-                $this->updateBalances($txn);
-            }
+
+            $this->updateBalances($txn);
         }
 
         return $txn;
@@ -1029,7 +1028,7 @@ class Core extends Base\Core
     public function updateRefundCredits(Transaction\Entity $txn)
     {
         // While filling the txn fees and amount, we have not used fee credits.
-        if (($txn->isTypeRefund() === true) and
+        if (($txn->isTypeRefund() === false) or
             ($txn->isRefundCredits() === false))
         {
             return;
@@ -1059,7 +1058,7 @@ class Core extends Base\Core
         $merchantBalance->subtractRefundCredits($amount);
 
         //create a credit transaction for the same
-        $this->createCreditTransaction($fee, $txn, Credits\Type::REFUND);
+        $this->createCreditTransaction($amount, $txn, Credits\Type::REFUND);
     }
 
     protected function getNodalBalanceLockForUpdate($channel)
