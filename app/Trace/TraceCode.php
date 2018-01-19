@@ -687,8 +687,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const MAXMIND_RESPONSE                          = 'MAXMIND_RESPONSE';
 
-    const PINCODESEARCHER_REQUEST                   = 'PINCODESEARCHER_REQUEST';
-    const PINCODESEARCHER_RESPONSE                  = 'PINCODESEARCHER_RESPONSE';
+    const PINCODE_SEARCHER_REQUEST                  = 'PINCODE_SEARCHER_REQUEST';
+    const PINCODE_SEARCHER_RESPONSE                 = 'PINCODE_SEARCHER_RESPONSE';
 
     const HARVESTER_REQUEST                         = 'HARVESTER_REQUEST';
     const HARVESTER_RETRY                           = 'HARVESTER_RETRY';

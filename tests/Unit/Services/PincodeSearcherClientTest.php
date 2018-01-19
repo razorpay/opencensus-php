@@ -35,7 +35,7 @@ class PincodeSearcherClientTest extends TestCase
 
         $client = $this->getPincodeSearcherClient();
 
-        $this->expectException(Exception\BadRequestException::class);
+        $this->expectException(Exception\BadRequestValidationFailureException::class);
 
         $client->fetchCityAndStateFromPincode($pincode);
     }

@@ -81,13 +81,13 @@ class PincodeSearcherClient
 
         $response = $this->sendRawRequest($request);
 
-        $this->trace->info(TraceCode::PINCODESEARCHER_RESPONSE, [
+        $this->trace->info(TraceCode::PINCODE_SEARCHER_RESPONSE, [
                     'response' => $response->body
                 ]);
 
         $decodedResponse = json_decode($response->body, true);
 
-        $this->trace->info(TraceCode::PINCODESEARCHER_RESPONSE, $decodedResponse ?? []);
+        $this->trace->info(TraceCode::PINCODE_SEARCHER_RESPONSE, $decodedResponse ?? []);
 
         //check if $response is a valid json
         if (json_last_error() !== JSON_ERROR_NONE)
@@ -103,7 +103,7 @@ class PincodeSearcherClient
 
     protected function sendRawRequest(array $request)
     {
-        $this->trace->info(TraceCode::PINCODESEARCHER_REQUEST, $request);
+        $this->trace->info(TraceCode::PINCODE_SEARCHER_REQUEST, $request);
 
         $method = $request['method'];
 
@@ -149,8 +149,8 @@ class PincodeSearcherClient
     {
         if ($this->validate($pincode) === false)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_VALIDATION_FAILURE);
+            throw new Exception\BadRequestValidationFailureException(
+                $pincode . ' is not correct.');
         }
 
         $key = $this->getCacheKey($pincode);
@@ -164,7 +164,7 @@ class PincodeSearcherClient
 
         $params = http_build_query($params);
 
-        $url = static::ROUTE . '?' . $params;
+        $url = self::ROUTE . '?' . $params;
 
         $response = $this->sendRequest($url, Requests::GET);
 
@@ -190,7 +190,7 @@ class PincodeSearcherClient
 
     /**
      * Some basic checks around pincode
-     * @param  String $pincode
+     * @param int $pincode Input Pincode
      * @see https://en.wikipedia.org/wiki/Postal_Index_Number
      * @return boolean
      */
