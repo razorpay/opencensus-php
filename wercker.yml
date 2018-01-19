@@ -68,16 +68,23 @@ build:
           name: copy trace logs
           code: cp storage/logs/laravel*.log $WERCKER_REPORT_ARTIFACTS_DIR/. || true
       - script:
-          name: copy artisan server logs
-          code: cp /tmp/rzp-dbd* $WERCKER_REPORT_ARTIFACTS_DIR/
-      - script:
           name: create commit.txt
           code: git rev-parse HEAD > public/commit.txt
       - script:
           name: remove heavy directories
           code: rm --recursive --force .git web/node_modules
+      - script:
+          name: copy artisan server logs
+          code: cp /tmp/rzp-dbd* $WERCKER_REPORT_ARTIFACTS_DIR/
 deploy:
     steps:
+      - script:
+          name: check currently deployed commit
+          code: |
+            curl --fail --remote-name "$APP_EXTERNAL_URL/commit.txt" && \
+            if [[ -z "`cat commit.txt | xargs -L 2 git diff --name-only | grep -v '^web/'`" ]]; then
+               export SKIP_CODEDEPLOY=true
+            fi
       - script:
           name: check vendor dir exists
           code: if [ ! -d vendor ] ; then exit 1 ; fi;
@@ -94,6 +101,7 @@ deploy:
           application-name: dashboard
           deployment-group-name: $WERCKER_DEPLOYTARGET_NAME
           s3-bucket: rzp-code-deploy
+          skip: $SKIP_CODEDEPLOY
 
     after-steps:
       - slack-notifier:
@@ -101,12 +109,3 @@ deploy:
           channel: tech_bots
           username: wercker
           icon_url: https://cdn.rawgit.com/wantedly/step-pretty-slack-notify/master/icons/$WERCKER_RESULT.jpg
-
-s3sync:
-    steps:
-      - script:
-          name: S3 Sync
-          code: ./s3sync.js
-      - script:
-          name: remove heavy directories
-          code: rm --recursive --force .git node_modules web/node_modules
