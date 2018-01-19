@@ -502,6 +502,7 @@ class Gateway
      */
     public static $zeroRupeeEmandateBanks = [
         IFSC::UTIB,
+        IFSC::ICIC,
     ];
 
     /**
