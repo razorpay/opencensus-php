@@ -56,7 +56,7 @@ trait EmandateTrait
             $input['token'][Token\Entity::ACCOUNT_NUMBER],
             Carbon::now(Timezone::IST)->format('m/d/Y'),
             Carbon::now(Timezone::IST)->addYears(30)->format('m/d/Y'),
-            $this->formatAmount($input['payment']['amount']),
+            $this->formatAmount($input['token']['max_amount']),
         ];
 
         $data = [
