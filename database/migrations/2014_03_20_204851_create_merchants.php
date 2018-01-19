@@ -7,6 +7,7 @@ use RZP\Constants\Table;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\Merchant\FeeModel;
+use RZP\Models\Merchant\RefundSource;
 
 class CreateMerchants extends Migration
 {
