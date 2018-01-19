@@ -255,7 +255,7 @@ class Entity extends Base\PublicEntity
         self::AUTO_REFUND_DELAY      => null,
         self::AUTO_CAPTURE_LATE_AUTH => false,
         self::FEE_MODEL              => FeeModel::PREPAID,
-        self::REFUND_SOURCE          => RefundSoure::BALANCE,
+        self::REFUND_SOURCE          => RefundSource::BALANCE,
         self::CHANNEL                => Settlement\Channel::ICICI,
         self::CONVERT_CURRENCY       => null,
         self::ARCHIVED_AT            => null,
@@ -685,6 +685,11 @@ class Entity extends Base\PublicEntity
         return FeeModel::getFeeModelStringForValue($this->attributes[self::FEE_MODEL]);
     }
 
+    protected function getRefundSourceAttribute()
+    {
+        return RefundSource::getRefundSourceStringForValue($this->attributes[self::REFUND_SOURCE]);
+    }
+
     protected function getInternationalAttribute()
     {
         return (bool) $this->attributes[self::INTERNATIONAL];
@@ -951,6 +956,11 @@ class Entity extends Base\PublicEntity
     protected function setFeeModelAttribute($feeModel)
     {
         $this->attributes[self::FEE_MODEL] = FeeModel::getValueForFeeModelString($feeModel);
+    }
+
+    protected function setRefundSourceAttribute($refundSource)
+    {
+        $this->attributes[self::REFUND_SOURCE] = RefundSource::getValueForRefundSourceString($refundSource);
     }
 
     protected function setAutoRefundDelayAttribute($autoRefundDelayPeriod)

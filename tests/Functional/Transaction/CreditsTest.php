@@ -223,30 +223,30 @@ class CreditsTest extends TestCase
 
     public function testRefundCredits()
     {
-        $this->fixtures->create('credits',
-          [
-            'type'        => 'refund',
-            'value'       => 10000
-          ]);
+        // $this->fixtures->create('credits',
+        //   [
+        //     'type'        => 'refund',
+        //     'value'       => 10000
+        //   ]);
 
-        $this->fixtures->merchant->editFeeCredits('10000', '10000000000000');
+        // $this->fixtures->merchant->editFeeCredits('10000', '10000000000000');
 
-        $this->doAuthAndCapturePayment();
+        // $this->doAuthAndCapturePayment();
 
         // do refund and validate transactions values
     }
 
     public function testRefundWithPartialCredits()
     {
-        $this->fixtures->create('credits',
-          [
-            'type'        => 'refund',
-            'value'       => 10000
-          ]);
+        // $this->fixtures->create('credits',
+        //   [
+        //     'type'        => 'refund',
+        //     'value'       => 10000
+        //   ]);
 
-        $this->fixtures->merchant->editFeeCredits('10000', '10000000000000');
+        // $this->fixtures->merchant->editFeeCredits('10000', '10000000000000');
 
-        $this->doAuthAndCapturePayment();
+        // $this->doAuthAndCapturePayment();
 
         // do refund, it should fail
     }
@@ -254,15 +254,15 @@ class CreditsTest extends TestCase
 
     public function testRefundWithCreditsDisabled()
     {
-        $this->fixtures->create('credits',
-          [
-            'type'        => 'refund',
-            'value'       => 10000
-          ]);
+        // $this->fixtures->create('credits',
+        //   [
+        //     'type'        => 'refund',
+        //     'value'       => 10000
+        //   ]);
 
-        $this->fixtures->merchant->editFeeCredits('10000', '10000000000000');
+        // $this->fixtures->merchant->editFeeCredits('10000', '10000000000000');
 
-        $this->doAuthAndCapturePayment();
+        // $this->doAuthAndCapturePayment();
 
         // do refund, it should not use credits
     }
