@@ -99,6 +99,11 @@ trait EmandateTrait
             ResponseFields::CHECKSUM        => $input[RequestFields::CHECKSUM]
         ];
 
+        if ($gatewayEntity['amount'] === '0')
+        {
+            $data[ResponseFields::AMOUNT] = '';
+        }
+
         $this->content($data, 'verify_emandate');
 
         return $this->getGatewayInstance()->getEmandateEncryptedData($data);

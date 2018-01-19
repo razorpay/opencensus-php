@@ -315,8 +315,9 @@ trait EmandateTrait
     {
         $paymentAmount = $this->formatAmount($verify->input['payment'][Payment\Entity::AMOUNT]);
 
-        $verify->amountMismatch =
-            ($paymentAmount !== $verify->verifyResponseContent[ResponseFields::AMOUNT]);
+        $verifyAmount = $verify->verifyResponseContent[ResponseFields::AMOUNT] ?: '0';
+
+        $verify->amountMismatch = ($paymentAmount !== $verifyAmount);
     }
 
     protected function saveEmandateVerifyResponseIfNeeded(Verify $verify)
