@@ -83,8 +83,8 @@ deploy:
       - script:
           name: check currently deployed commit
           code: |
-            status=`curl --write-out %{http_code} --remote-name "https://dashboard.razorpay.com/commit.txt"`
-            if $status && [[ -z "`cat commit.txt | xargs -L 2 git diff --name-only | grep -v '^web/'`" ]]; then
+            status=`curl --write-out %{http_code} --remote-name "$APP_EXTERNAL_URL/commit.txt"`
+            if [ "$status" -eq "200" ] && [[ -z "`cat commit.txt | xargs -L 2 git diff --name-only | grep -v '^web/'`" ]]; then
               export SKIP_CODEDEPLOY=true
             fi
             echo SKIP_CODEDEPLOY $SKIP_CODEDEPLOY
