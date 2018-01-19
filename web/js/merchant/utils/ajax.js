@@ -1,7 +1,7 @@
 import ajax from 'rzp/utils/ajax';
 import store from '../store';
 
-export default (url, params = {}) => {
+export default (url, params = {}, baseUrl = '') => {
   if (typeof url === 'object') {
     params = url;
   } else if (typeof url === 'string') {
@@ -15,11 +15,14 @@ export default (url, params = {}) => {
   } = params;
   let mode = (params.data && params.data.mode) || store.getState().session.mode;
   ajaxParams.url = normalizeUrl(params.url);
-
   if (appendModeInQueryParam) {
     ajaxParams.data.mode = mode;
   } else if (appendModeInURL) {
-    ajaxParams.url = normalizeUrl(`/${mode}/${params.url}`);
+    ajaxParams.url = normalizeUrl(`${baseUrl}/${mode}/${params.url}`);
+    // to clear mode from data if present
+    if (params.data) {
+      params.data.mode = undefined;
+    }
   }
 
   return ajax(ajaxParams);
