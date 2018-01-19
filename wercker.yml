@@ -73,6 +73,9 @@ build:
       - script:
           name: create commit.txt
           code: git rev-parse HEAD > public/commit.txt
+      - script:
+          name: remove heavy directories
+          code: rm --recursive --force .git web/node_modules
 deploy:
     steps:
       - script:
@@ -84,9 +87,6 @@ deploy:
       - script:
           name: S3 Sync
           code: ./s3sync.js
-      - script:
-          name: remove heavy directories
-          code: rm --recursive --force .git node_modules web/node_modules
       - razorpay/aws-code-deploy@0.0.32:
           key: $AWS_KEY
           secret: $AWS_SECRET
