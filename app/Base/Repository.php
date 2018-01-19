@@ -718,7 +718,7 @@ class Repository extends \Razorpay\Spine\Repository
 
         $relations = camel_case_array($expands);
 
-        return array_values(array_unique($relations));
+        return array_values(array_filter(array_unique($relations)));
     }
 
     /**

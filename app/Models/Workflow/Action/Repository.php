@@ -17,7 +17,7 @@ class Repository extends Base\Repository
         Entity::ADMIN_ID            => 'sometimes|string|max:14',
         Entity::WORKFLOW_ID         => 'sometimes|string|max:14',
         Entity::ORG_ID              => 'sometimes|string|max:14',
-        self::EXPAND . '.*'         => 'string|in:admin,workflow,',
+        self::EXPAND . '.*'         => 'filled|string|in:admin,workflow,',
         Constants::TYPE             => 'sometimes|string|max:10',
         Entity::PERMISSION          => 'sometimes|boolean|in:0,1',
         Constants::CLOSED_ACTIONS   => 'sometimes|boolean|in:0,1',

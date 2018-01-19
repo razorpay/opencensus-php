@@ -6,21 +6,23 @@ use RZP\Exception;
 
 class BusinessType
 {
+
     /**
      * These keys are used to fetch the type of the business from its integer representation.
      * @todo: Revamp and remove this code and implement a cleaner approach.
      */
-    const TYPE1  = 'Private Limited';
-    const TYPE2  = 'Proprietorship';
-    const TYPE3  = 'Partnership';
-    const TYPE4  = 'Individual';
-    const TYPE5  = 'Not yet registered';
-    const TYPE6  = 'Public Limited';
-    const TYPE7  = 'LLP';
-    const TYPE8  = 'Educational Institutes';
-    const TYPE9  = 'Trust / Society';
-    const TYPE10 = 'NGO';
-    const TYPE11 = 'Other';
+    const TYPE1     = 'Proprietorship';
+    const TYPE2     = 'Individual';
+    const TYPE3     = 'Partnership';
+    const TYPE4     = 'Private Limited';
+    const TYPE5     = 'Public Limited';
+    const TYPE6     = 'LLP';
+    const TYPE7     = 'NGO';
+    const TYPE8     = 'Educational Institutes';
+    const TYPE9     = 'Trust';
+    const TYPE10    = 'Society';
+    const TYPE11    = 'Not yet registered';
+    const TYPE12    = 'Other';
 
     /**
      * These keys define the input keys for business_type.
@@ -34,7 +36,8 @@ class BusinessType
     const PROPRIETORSHIP         = 'proprietorship';
     const PUBLIC_LIMITED         = 'public_limited';
     const PRIVATE_LIMITED        = 'private_limited';
-    const TRUST_SOCIETY          = 'trust_society';
+    const TRUST                  = 'trust';
+    const SOCIETY                = 'society';
     const NOT_YET_REGISTERED     = 'not_yet_registered';
     const EDUCATIONAL_INSTITUTES = 'educational_institutes';
 
@@ -47,17 +50,18 @@ class BusinessType
      * @var array
      */
     protected static $typeIndexMap = [
-        self::PRIVATE_LIMITED        => 1,
-        self::PROPRIETORSHIP         => 2,
+        self::PROPRIETORSHIP         => 1,
+        self::INDIVIDUAL             => 2,
         self::PARTNERSHIP            => 3,
-        self::INDIVIDUAL             => 4,
-        self::NOT_YET_REGISTERED     => 5,
-        self::PUBLIC_LIMITED         => 6,
-        self::LLP                    => 7,
+        self::PRIVATE_LIMITED        => 4,
+        self::PUBLIC_LIMITED         => 5,
+        self::LLP                    => 6,
+        self::NGO                    => 7,
         self::EDUCATIONAL_INSTITUTES => 8,
-        self::TRUST_SOCIETY          => 9,
-        self::NGO                    => 10,
-        self::OTHER                  => 11,
+        self::TRUST                  => 9,
+        self::SOCIETY                => 10,
+        self::NOT_YET_REGISTERED     => 11,
+        self::OTHER                  => 12,
     ];
 
     public static function getType($num)

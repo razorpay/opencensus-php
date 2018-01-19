@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Entity;
+use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Mail\Merchant\SettlementFailure as SettlementFailureMail;

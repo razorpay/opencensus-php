@@ -85,6 +85,7 @@ class Entity extends Base\PublicEntity
      */
     const FILTERS                   = 'filters';
     const KEY_MERCHANT_ID           = 'merchant_id';
+    const DEFAULT_FILTER            = 'default';
 
     //
     // Configs

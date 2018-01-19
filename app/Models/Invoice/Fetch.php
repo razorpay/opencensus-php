@@ -26,7 +26,7 @@ class Fetch extends BaseFetch
             EsRepository::SEARCH_HITS => 'sometimes|boolean',
             Entity::MERCHANT_ID       => 'sometimes|alpha_num',
             Entity::ORDER_ID          => 'sometimes|string|max:20',
-            self::EXPAND_EACH         => 'string|in:payments,payments.card,user',
+            self::EXPAND_EACH         => 'filled|string|in:payments,payments.card,user',
         ],
     ];
 
