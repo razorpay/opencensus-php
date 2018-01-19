@@ -376,13 +376,18 @@ class Gateway extends Base\Gateway
 
     protected function saveResponseContenttoNetbankingEntity($verify)
     {
-        $attrs = $this->getMappedAttributes($verify->verifyResponseContent);
+        if (($verify->payment['received'] === false) or (empty($verify->payment['error_message']) === true))
+        {
+            $attrs = $this->getMappedAttributes($verify->verifyResponseContent);
 
-        $gatewayPayment = $verify->payment;
+            $gatewayPayment = $verify->payment;
 
-        $gatewayPayment->fill($attrs);
+            $gatewayPayment->fill($attrs);
 
-        $gatewayPayment->saveOrFail();
+            return $gatewayPayment->saveOrFail();
+        }
+
+        return false;
     }
 
     protected function setVerifyResponseSuccess($verify)
