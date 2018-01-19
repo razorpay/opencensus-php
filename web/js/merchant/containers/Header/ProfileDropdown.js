@@ -4,7 +4,6 @@ import Dropdown, { DropdownTrigger, DropdownContent } from 'rzp/ui/Dropdown';
 import CustomClipboard from 'rzp/ui/Clipboard/Custom';
 import { openModal, closeModal } from 'rzp/modules/modals';
 import { logout, showOrHideTour } from 'merchant/modules/session';
-import { fetchConfig } from 'merchant/modules/config';
 import SubmitFeedback from 'merchant/containers/Header/SubmitFeedback';
 
 @connect(
@@ -14,13 +13,9 @@ import SubmitFeedback from 'merchant/containers/Header/SubmitFeedback';
       ...state.config.config,
     };
   },
-  { logout, fetchConfig, closeModal, openModal, showOrHideTour }
+  { logout, closeModal, openModal, showOrHideTour }
 )
 export default class ProfileDropdown extends Component {
-  componentWillMount() {
-    this.props.fetchConfig();
-  }
-
   logout = () => {
     return this.props.logout().then(() => {
       window.location.reload();
@@ -51,7 +46,7 @@ export default class ProfileDropdown extends Component {
                     {this.props.logo_url ? (
                       <img class="img-responsive" src={this.props.logo_url} />
                     ) : (
-                      <i class="i i-business" />
+                      <i class="i-business" />
                     )}
                   </div>
                 </div>

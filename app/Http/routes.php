@@ -133,6 +133,8 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/settlements/reconcile', 'AdminController@postReconcileSettlement');
         Route::post('/admin/{mode}/reconciliate', 'AdminController@postReconciliate');
 
+        Route::post('/makeapicall/{path?}', 'AdminController@passThrough')->where('path', '.*$');
+
         Route::put('/admin/merchant/{id}/email', 'AdminController@putEditMerchantEmail');
         Route::get('/admin/{mode}/fetchentity/{entity}/{format}', 'AdminController@getMultipleEntities')
                 ->where('format', 'csv')

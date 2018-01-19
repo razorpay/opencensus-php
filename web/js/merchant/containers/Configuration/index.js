@@ -18,7 +18,7 @@ import EmailNotifications from './EmailNotifications';
 )
 export default class CongfigurationContainer extends Component {
   componentWillMount() {
-    this.props.fetchConfigAndFeatures(this.props.user.current).catch(err => {
+    this.props.fetchFeatures(this.props.user.current).catch(err => {
       this.props.showNotification({
         type: 'error',
         message: err.errors,
