@@ -242,14 +242,9 @@ class Entity extends Merchant\Entity
 
     public function setPublicFundTransferAttribute(array & $array)
     {
-        $settlementDestinationId = null;
+        $settlementDestination   = $this->getSettlementDestination();
 
-        $settlementDestination = $this->getSettlementDestination()->toArrayPublic();
-
-        if ($settlementDestination !== null)
-        {
-            $settlementDestinationId = $settlementDestination[BankAccount\Entity::ID];
-        }
+        $settlementDestinationId = $settlementDestination ? $settlementDestination->getPublicId() : null;
 
         $array[self::FUND_TRANSFER] = [
             self::DESTINATION => $settlementDestinationId,
