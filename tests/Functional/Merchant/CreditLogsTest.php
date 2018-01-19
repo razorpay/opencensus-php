@@ -22,12 +22,6 @@ class CreditLogsTest extends TestCase
         $this->ba->appAuth();
     }
 
-    // Test Credit logs creation, default should add amount credits
-    public function testCreateCreditsLog()
-    {
-        $this->startTest();
-    }
-
     // create fee credits and fetch using get route
     public function testGetCreditsLog()
     {
@@ -46,6 +40,7 @@ class CreditLogsTest extends TestCase
     public function testPositiveUpdateCredits()
     {
         $creditsLog = $this->addFeeCredits(['value' => 150, 'campaign' => 'silent-ads']);
+
         $id = $creditsLog['id'];
 
         $this->testData[__FUNCTION__]['request']['url'] .= $id;
@@ -158,6 +153,11 @@ class CreditLogsTest extends TestCase
         $this->startTest();
     }
 
+    public function testAddRefundCredits()
+    {
+        $this->startTest();
+    }
+
     public function testDeleteCreditsLog()
     {
         $creditsLog = $this->addFeeCredits(['value' => 150, 'campaign' => 'silent-ads']);
@@ -167,5 +167,31 @@ class CreditLogsTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] .= $creditsLog->getId();
 
         $this->startTest();
+    }
+
+    public function testPositiveUpdateRefundCredits()
+    {
+        $creditsLog = $this->addCredits(
+            [
+                'value'    => 150,
+                'campaign' => 'silent-ads',
+                'type'     => 'refund'
+            ]);
+
+        $id = $creditsLog['id'];
+
+        $this->testData[__FUNCTION__] = $this->testData['testPositiveUpdateCredits'];
+
+        $this->testData[__FUNCTION__]['request']['url'] .= $id;
+
+        $this->startTest();
+
+        $creditsLog = $this->getEntityById('credits', $id, true);
+
+        $this->assertEquals($creditsLog['value'], 190);
+
+        $balance = $this->fetchBalance();
+
+        $this->assertEquals($balance['refund_credits'], 190);
     }
 }

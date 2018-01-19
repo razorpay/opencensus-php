@@ -24,7 +24,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::VALUE    => 'sometimes|integer',
+        Entity::VALUE        => 'required|integer',
     ];
 
     /**
@@ -69,7 +69,7 @@ class Validator extends Base\Validator
         if ($creditsValue < self::MIN_CREDITS)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Cannot assign credits less than one rupee');
+                'Cannot assign credits less than '. self::MIN_CREDITS);
         }
 
         if ($creditsValue > $maxCreditsValue)
