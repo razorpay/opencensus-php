@@ -338,6 +338,16 @@ class Gateway extends Base\Gateway
             parent::action($input, Action::VERIFY_REVERSE);
         }
 
+        if ($this->isUnprocessedRefund($input) === true)
+        {
+            return false;
+        }
+
+        if ($this->isProcessedRefund($input) === true)
+        {
+            return true;
+        }
+
         $this->validateVerifyRefundIsPossible($input);
 
         $verify = new Base\Verify($this->gateway, $input);

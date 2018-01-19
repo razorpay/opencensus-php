@@ -771,7 +771,7 @@ trait Refund
 
         $data = array_merge($data, $input);
 
-        if ($refund->isStatusFailed() === false)
+        if ($refund->isProcessed() === true)
         {
             return $refund->getStatus();
         }
