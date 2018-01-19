@@ -334,9 +334,11 @@ class Gateway extends Base\Gateway
             $this->setVerifyResponseSuccess($verify);
 
             $status =  VerifyResult::STATUS_MATCH;
+
+            return $status;
         }
 
-        elseif ($this->getApiStatus($verify) !==  $this->getgatewayStatus($verify))
+        if ($this->getApiStatus($verify) !==  $this->getGatewayStatus($verify))
         {
             $status = VerifyResult::STATUS_MISMATCH;
 
@@ -360,12 +362,12 @@ class Gateway extends Base\Gateway
     {
         $payment_status = $verify->input['payment']['status'];
 
-        $verify->apiSuccess = in_array($payment_status, [Payment\Status::AUTHORIZED, Payment\Status::CAPTURED, Payment\Status::REFUNDED]);
+        $verify->apiSuccess = (in_array($payment_status, [Payment\Status::CREATED, Payment\Status::FAILED], true) === false);
 
         return $verify->apiSuccess;
     }
 
-    protected function getgatewayStatus($verify)
+    protected function getGatewayStatus($verify)
     {
         $status = $verify->verifyResponseContent['flgSuccess'];
 
@@ -406,7 +408,6 @@ class Gateway extends Base\Gateway
                     'payment_id' => $input['payment']['id']
                 ]);
     }
-
 
     protected function processContentFromPaymentVerifyResponse($response, $request)
     {
