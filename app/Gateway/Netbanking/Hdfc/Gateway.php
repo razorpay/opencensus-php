@@ -360,14 +360,18 @@ class Gateway extends Base\Gateway
     {
         $payment_status = $verify->input['payment']['status'];
 
-        return in_array($payment_status, [Payment\Status::AUTHORIZED, Payment\Status::CAPTURED, Payment\Status::REFUNDED]);
+        $verify->apiSuccess = in_array($payment_status, [Payment\Status::AUTHORIZED, Payment\Status::CAPTURED, Payment\Status::REFUNDED]);
+
+        return $verify->apiSuccess;
     }
 
     protected function getgatewayStatus($verify)
     {
         $status = $verify->verifyResponseContent['flgSuccess'];
 
-        return ($status === 'S');
+        $verify->gatewaySuccess = ($status === 'S');
+
+        return $verify->gatewaySuccess;
     }
 
     protected function saveResponseContenttoNetbankingEntity($verify)
