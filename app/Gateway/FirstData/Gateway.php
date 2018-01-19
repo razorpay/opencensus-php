@@ -381,6 +381,8 @@ class Gateway extends Base\Gateway
                                                              ->TransactionValues
                                                              ->TransactionState;
 
+        assertTrue(($refundGatewayStatus !== null), "Status cannot be null");
+
         $refunded = in_array($refundGatewayStatus, Status::SUCCESSFUL_REFUND_STATES, true);
 
         return $refunded;
