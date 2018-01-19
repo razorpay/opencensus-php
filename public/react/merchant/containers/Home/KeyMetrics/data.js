@@ -125,7 +125,7 @@ export const tabsMeta = {
   },
   [tabsOrder[2]]: {
     name: tabsOrder[2],
-    title: 'Refund Volume',
+    title: 'Number of Refunds',
     grouping: defaultGroupingVals,
     options: [],
     index: 'refunds',
@@ -164,7 +164,7 @@ export const tabsMeta = {
     groupByColumnName: 'saved_card',
     groupTitleMap: {
       '0': 'Other Payments',
-      '1': '\u0005Saved Card Payments',
+      '1': 'Saved Card Payments',
     },
     getCountQuery: function() {
       return {

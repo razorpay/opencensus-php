@@ -107,8 +107,6 @@ function main(
 
   layout(root);
 
-  console.log(root);
-
   var transitionSubscriber = null,
     maxFontSize = 24;
 
@@ -513,8 +511,6 @@ export default function renderTreemap(
       nester = d3.nest();
 
     let grouper = null;
-
-    item.type = key;
 
     if (key === 'card') {
       grouper = nester
