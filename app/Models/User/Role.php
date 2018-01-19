@@ -12,7 +12,7 @@ class Role
     const SELLERAPP  = 'sellerapp';
     const OWNER      = 'owner';
 
-    public static $allRoles = [
+    const ALL_ROLES = [
         self::MANAGER,
         self::OPERATIONS,
         self::FINANCE,
@@ -22,32 +22,28 @@ class Role
         self::OWNER,
     ];
 
-    public static $writerRoles = [
+    const WRITER_ROLES = [
         self::OWNER,
         self::MANAGER,
         self::OPERATIONS,
         self::ADMIN,
     ];
 
-    public static $readerRoles = [
+    const READER_ROLES = [
         self::OWNER,
         self::MANAGER,
         self::OPERATIONS,
         self::ADMIN,
         self::SELLERAPP,
-    ];
-
-    public static $allExceptSellerRole = [
-        self::MANAGER,
-        self::OPERATIONS,
-        self::FINANCE,
-        self::SUPPORT,
-        self::ADMIN,
-        self::OWNER,
     ];
 
     public static function exists(string $action): bool
     {
         return defined(get_class() . '::' . strtoupper($action));
+    }
+
+    public static function allExceptSellerRole()
+    {
+        return array_diff(self::ALL_ROLES, [self::SELLERAPP]);
     }
 }

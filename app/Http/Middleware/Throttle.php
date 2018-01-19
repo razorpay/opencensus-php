@@ -356,6 +356,14 @@ class Throttle
                 $resource = $this->getKeyId($auth);
                 break;
 
+            //
+            // User Related Routes are the routes
+            // which are dependent only on the user irrespective of merchant associated.
+            //
+            case Type::USER_AUTH:
+                $resource = $this->request->header(Http\RequestHeader::X_DASHBOARD_USER_ID);
+                break;
+
             default:
                 $resource = '';
 

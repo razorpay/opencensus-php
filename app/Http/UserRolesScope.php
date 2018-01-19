@@ -9,30 +9,33 @@ class UserRolesScope
     /**
      * @see https://docs.razorpay.com/v1/page/team-support
      */
-    protected $routeUserRoleMap = null;
+    protected $routeUserRoleMap = [];
 
     public function __construct()
     {
-        $this->setRouteRoleMap();
+        $this->setRouteUserRoleMap();
     }
 
-    public function setRouteRoleMap()
+    /**
+     * Sets Route User Role Map.
+     */
+    public function setRouteUserRoleMap()
     {
         $this->routeUserRoleMap = [
             'team_users_list'      => Role::OWNER,
-            'batch_fetch_multiple' => Role::$readerRoles,
-            'batch_fetch_by_id'    => Role::$readerRoles,
+            'batch_fetch_multiple' => Role::READER_ROLES,
+            'batch_fetch_by_id'    => Role::READER_ROLES,
         ];
     }
 
-    public function getRouteRoles($routeName)
+    /**
+     * @param $routeName
+     *
+     * @return array|mixed
+     */
+    public function getRouteUserRoles($routeName)
     {
-        if (empty($this->routeUserRoleMap[$routeName]) === false)
-        {
-            return $this->routeUserRoleMap[$routeName];
-        }
-
-        return [];
+        return $this->routeUserRoleMap[$routeName] ?? [];
     }
 }
 

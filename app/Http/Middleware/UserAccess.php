@@ -15,13 +15,6 @@ use RZP\Trace\TraceCode;
 class UserAccess
 {
     /**
-     * Application instance
-     *
-     * @var Application
-     */
-    protected $app;
-
-    /**
      * @var BasicAuth
      */
     protected $ba;
@@ -33,15 +26,13 @@ class UserAccess
      */
     public function __construct(Application $app)
     {
-        $this->app = $app;
-
         $this->repo = $app['repo'];
 
         $this->ba = $app['basicauth'];
 
         $this->router = $app['router'];
 
-        $this->trace = $this->app['trace'];
+        $this->trace = $app['trace'];
 
         $this->userRoleScope = new UserRolesScope();
     }
@@ -60,18 +51,24 @@ class UserAccess
 
         $this->ba->verifyAndSetUser();
 
-        $routePolicyresponse = $this->validateUserRoutePolicy($route);
+        $routePolicyResponse = $this->validateUserRoutePolicy($route);
 
-        if (empty($routePolicyresponse) === false)
+        if (empty($routePolicyResponse) === false)
         {
-            return $routePolicyresponse;
+            return $routePolicyResponse;
         }
 
-        $routeUserRolePolicy = $this->validateRouteUserRolesPolicy($route);
-
-        if (empty($routeUserRolePolicy) === false)
+        /**
+         * User Role to route validation will happen only in proxy auth.
+         */
+        if ($this->ba->isProxyAuth() === true)
         {
-            return $routeUserRolePolicy;
+            $routeUserRolePolicy = $this->validateRouteUserRolesPolicy($route);
+
+            if (empty($routeUserRolePolicy) === false)
+            {
+                return $routeUserRolePolicy;
+            }
         }
 
         return $next($request);
@@ -91,7 +88,7 @@ class UserAccess
 
     private function validateRouteUserRolesPolicy($route)
     {
-        $routeRoles = $this->userRoleScope->getRouteRoles($route);
+        $routeRoles = $this->userRoleScope->getRouteUserRoles($route);
 
         if (empty($routeRoles) === false)
         {
@@ -100,7 +97,7 @@ class UserAccess
             if (empty($userRole) === true)
             {
                 return ApiResponse::unauthorized(
-                    ErrorCode::BAD_REQUEST_USER_ROLE_NOT_PROVIDED);
+                    ErrorCode::BAD_REQUEST_UNAUTHORIZED_USER_ROLE_MISSING);
             }
 
             if (((is_array($routeRoles) === true) and (in_array($userRole, $routeRoles, true) === false)) or
