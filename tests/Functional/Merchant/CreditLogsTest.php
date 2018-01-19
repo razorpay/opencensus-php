@@ -8,7 +8,7 @@ use RZP\Models\Merchant\Credits;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 
-class FeeCreditsTest extends TestCase
+class CreditLogsTest extends TestCase
 {
     use PaymentTrait;
 
