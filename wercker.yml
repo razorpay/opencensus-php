@@ -44,6 +44,14 @@ build:
           name: Run artisan migrate
           code: APP_ENV=testing php artisan migrate --env=testing
 
+      - script:
+          name: create commit.txt
+          code: git rev-parse HEAD > public/commit.txt
+
+      - script:
+          name: remove heavy directories
+          code: rm --recursive --force .git web/node_modules
+
       # - script:
       #     name: run unit tests
       #     code: phpunit --stop-on-error --stop-on-failure --debug
@@ -68,12 +76,6 @@ build:
           name: copy trace logs
           code: cp storage/logs/laravel*.log $WERCKER_REPORT_ARTIFACTS_DIR/. || true
       - script:
-          name: create commit.txt
-          code: git rev-parse HEAD > public/commit.txt
-      - script:
-          name: remove heavy directories
-          code: rm --recursive --force .git web/node_modules
-      - script:
           name: copy artisan server logs
           code: cp /tmp/rzp-dbd* $WERCKER_REPORT_ARTIFACTS_DIR/
 deploy:
@@ -81,7 +83,7 @@ deploy:
       - script:
           name: check currently deployed commit
           code: |
-            curl --fail --remote-name "$APP_EXTERNAL_URL/commit.txt" && \
+            curl --remote-name "$APP_EXTERNAL_URL/commit.txt" && \
             if [[ -z "`cat commit.txt | xargs -L 2 git diff --name-only | grep -v '^web/'`" ]]; then
                export SKIP_CODEDEPLOY=true
             fi
