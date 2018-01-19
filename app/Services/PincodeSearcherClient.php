@@ -120,16 +120,16 @@ class PincodeSearcherClient
     {
         if (isset($response['status']) === true)
         {
-            if ($response['status'] === "Error")
+            if ($response['status'] === 'Error')
             {
-                $errorMessage = $response['message'] ?? "Third Party Error";
+                $errorMessage = $response['message'] ?? 'Third Party Error';
 
                 throw new Exception\ServerErrorException(
                     $errorMessage,
                     ErrorCode::SERVER_ERROR);
             }
 
-            if ($response['status'] !== "ok")
+            if ($response['status'] !== 'ok')
             {
                 throw new Exception\ServerErrorException(
                     'Server error',
