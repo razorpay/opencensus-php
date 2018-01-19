@@ -18,7 +18,7 @@ class Validator extends Base\Validator
         Entity::CAMPAIGN     => 'required|alpha_dash|max:255',
         # Value is in paise
         Entity::VALUE        => 'required|integer|between:-100000000,100000000',
-        Entity::TYPE         => 'required|alpha_dash|max:20|in:amount,fee,refund',
+        Entity::TYPE         => 'sometimes|filled|string|max:20|in:amount,fee,refund',
         Entity::EXPIRED_AT   => 'sometimes|integer',
         Entity::PROMOTION_ID => 'sometimes|alpha_num|max:14',
     ];
