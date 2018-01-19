@@ -7,7 +7,7 @@ import { PowerSelect } from 'react-power-select';
 import Definition from 'rzp/ui/Definition';
 import Change from 'rzp/ui/Change';
 import { BtnGroup, Btn } from 'rzp/ui/BtnGroup/index.js';
-import { titleCase } from 'rzp/utils/rzp-utils';
+import { titleCase, paiseToRupees } from 'rzp/utils/rzp-utils';
 import { timeScale } from 'rzp/utils/chart/new.js';
 import takeScreenshot from 'rzp/utils/screenshot';
 import Group, { GroupItem } from 'rzp/ui/Group';
@@ -36,7 +36,7 @@ const chartOptions = {
   ...timeScale({}),
   layout: {
     padding: {
-      top: 21,
+      top: 0,
       left: 0,
       right: 0,
     },
@@ -123,9 +123,9 @@ class Panel extends Component {
       trendValue = currentCount - trend.previousCount;
       trendAbsValue = Math.abs(trendValue);
 
-      trendText = (isCurrency
-        ? humanReadableIndianCurrency
-        : humanReadableIndian)(trendAbsValue);
+      trendText = isCurrency
+        ? humanReadableIndianCurrency(paiseToRupees(trendAbsValue))
+        : humanReadableIndian(trendAbsValue);
 
       trendText +=
         ' (' +
