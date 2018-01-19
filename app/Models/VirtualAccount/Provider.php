@@ -261,8 +261,14 @@ class Provider
             Tags::MERCHANT_NAME . $this->getLengthAndValue(Constants::MERCHANT_NAME),
             Tags::MERCHANT_CITY . $this->getLengthAndValue(Constants::MERCHANT_CITY),
             Tags::MERCHANT_PIN_CODE . $this->getLengthAndValue(Constants::MERCHANT_PINCODE),
+            $this->getBharatQrUpiTlv($qrCode),
             $this->getBharatQrAdditionalDetailTlv($qrCode),
         ];
+
+        if (Constants::POINT_OF_INITIATION === '12')
+        {
+            $tagArray[] = $this->getBharatQrDynamicUpiTlv($qrCode);
+        }
 
         $qrString =  implode('', $tagArray);
 
@@ -274,6 +280,26 @@ class Provider
         $qrString .= $crc;
 
         return $qrString;
+    }
+
+    protected function getBharatQrUpiTlv(QrCode\Entity $qrCode)
+    {
+        $rupayRidTlv = Tags::UPI_VPA_RUPAY_RID . $this->getLengthAndValue(Constants::RUPAY_RID);
+        $merchantVpaTlv = Tags::UPI_VPA_MERCHANT_VPA . $this->getLengthAndValue(Constants::MERCHANT_VPA);
+
+        $upiString = $rupayRidTlv . $merchantVpaTlv;
+
+        return Tags::UPI_VPA . strlen($upiString) . $upiString;
+    }
+
+    protected function getBharatQrDynamicUpiTlv(QrCode\Entity $qrCode)
+    {
+        $rupayRidTlv = Tags::UPI_VPA_RUPAY_RID . $this->getLengthAndValue(Constants::RUPAY_RID);
+        $transactionReferenceTlv = Tags::UPI_VPA_REFERENCE_TR . $this->getLengthAndValue($qrCode->getId());
+
+        $upiString = $rupayRidTlv . $transactionReferenceTlv;
+
+        return Tags::UPI_VPA_REFERENCE . strlen($upiString) . $upiString;
     }
 
     protected function getBharatQrAdditionalDetailTlv(QrCode\Entity $qrCode)
