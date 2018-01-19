@@ -5,10 +5,7 @@ import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import moment from 'moment';
 
 import Amount from 'rzp/ui/Amount';
-import {
-  paiseToRupees,
-  titleCase
-} from 'rzp/utils/rzp-utils';
+import { paiseToRupees, titleCase } from 'rzp/utils/rzp-utils';
 import {
   humanReadableIndian,
   humanReadableIndianCurrency,
@@ -354,7 +351,7 @@ class KeyMetricsContainer extends Component {
       countsOnly: true,
     });
 
-    return fetch(query)
+    return fetch(query, this.props.mode)
       .then(data => {
         if (trendRequestID !== this.trendRequestID) {
           return null;
