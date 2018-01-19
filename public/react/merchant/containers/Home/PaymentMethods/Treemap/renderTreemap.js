@@ -5,11 +5,9 @@ import {
   arrayToCsvDataUrl,
 } from 'rzp/utils/rzp-utils';
 import { humanReadableIndianCurrency } from 'rzp/utils/numerals';
-import {default as chartColors} from "rzp/utils/chart/colors";
+import { default as chartColors } from 'rzp/utils/chart/colors';
 
-import {
-  paymentMethodsColumns
-} from 'merchant/containers/Home/PaymentMethods/data';
+import { paymentMethodsColumns } from 'merchant/containers/Home/PaymentMethods/data';
 
 var defaults = {
   margin: { top: 0, right: 0, bottom: 0, left: 0 },
@@ -85,7 +83,7 @@ function main(
   var g1;
 
   var colors = {},
-      aliases = {"emi": "card"};
+    aliases = { emi: 'card' };
 
   initialize(root);
   accumulate(root);
@@ -95,23 +93,24 @@ function main(
    * Bigger the values get first colors in the
    * color palette
    */
-  ([...root.values]).sort((item1, item2) => {
-  
-    return item2.value - item1.value;
-  }).forEach((item, index) => {
- 
-    colors[item.key] = chartColors[index];
-  });
+  [...root.values]
+    .sort((item1, item2) => {
+      return item2.value - item1.value;
+    })
+    .forEach((item, index) => {
+      colors[item.key] = chartColors[index];
+    });
 
-  Object.keys(aliases).forEach((key) => {
-  
+  Object.keys(aliases).forEach(key => {
     colors[key] = colors[aliases[key]];
   });
 
   layout(root);
 
+  console.log(root);
+
   var transitionSubscriber = null,
-      maxFontSize = 24;
+    maxFontSize = 24;
 
   var globalTransition = display(root).transition;
 
@@ -151,7 +150,10 @@ function main(
     d.displayText = '';
 
     if (d.key) {
-      d.displayText = groupTitleMap[d.key] || titleCase(d.key);
+      d.displayText =
+        d.key.indexOf('__bank') >= 0
+          ? d.key.replace('__bank', '')
+          : groupTitleMap[d.key] || titleCase(d.key);
     }
 
     return (d._children = d.values)
@@ -221,24 +223,22 @@ function main(
         });
 
         if (canBeZoomed(d)) {
-
-          d3.select(this)
+          d3
+            .select(this)
             .selectAll('rect.parent')
-            .style('fill-opacity', 0.10);
+            .style('fill-opacity', 0.1);
         }
       })
       .on('mouseleave', function(d) {
-     
         if (canBeZoomed(d)) {
-
-          d3.select(this)
+          d3
+            .select(this)
             .selectAll('rect.parent')
             .style('fill-opacity', 0);
         }
       })
       .on('click', function(d) {
         if (canBeZoomed(d) && typeof onTransition === 'function') {
-
           onTransition(d);
         }
       });
@@ -345,15 +345,16 @@ function main(
         .call(text)
         .style('fill-opacity', 0);
 
-      t2
-        .each('end', function(d) {
-          d3.select(this).style('font-size', d => {
+      t2.each('end', function(d) {
+        d3
+          .select(this)
+          .style('font-size', d => {
             return Math.min((y(d.y + d.dy) - y(d.y)) * 0.2, 24) + 'px';
           })
           .selectAll('.ptext')
           .call(text)
           .style('fill-opacity', 1);
-        });
+      });
 
       t1.selectAll('rect').call(rect);
       t2.selectAll('rect').call(rect);
@@ -380,17 +381,16 @@ function main(
         return x(d.x);
       })
       .attr('y', function(d) {
-        return y(d.y) + this.getBoundingClientRect().height/2 + "px";
+        return y(d.y) + this.getBoundingClientRect().height / 2 + 'px';
       })
       .style('fill', '#ffffff')
-      .selectAll("tspan.method-text")
-      .attr('x', function (d) {
+      .selectAll('tspan.method-text')
+      .attr('x', function(d) {
         return x(d.x);
       });
 
     text.style('opacity', function(d) {
-
-      var fontSize = Number(this.parentNode.style.fontSize.replace("px", ""));
+      var fontSize = Number(this.parentNode.style.fontSize.replace('px', ''));
 
       return fontSize < 10 ||
         this.getComputedTextLength() > x(d.x + d.dx) - x(d.x) ||
@@ -419,9 +419,14 @@ function main(
   return {
     transition: globalTransition,
     display,
-    reset: () => display(root)
+    reset: () => display(root),
   };
 }
+
+const getBankName = (name, bankNames) => {
+  return (bankNames[name] || name || 'Unknown') + '__bank';
+};
+
 const getGroupingFactor = (groupKey, bankNames) => {
   if (groupKey === 'method') {
     return d =>
@@ -429,43 +434,38 @@ const getGroupingFactor = (groupKey, bankNames) => {
   } else if (groupKey === 'issuer') {
     return d =>
       d[groupKey]
-        ? bankNames[d[groupKey]] || d[groupKey]
+        ? getBankName(d[groupKey], bankNames)
         : getGroupingFactor('bank', bankNames)(d);
   } else if (groupKey === 'bank') {
-    return d => bankNames[d[groupKey]] || d[groupKey];
+    return d => getBankName(d[groupKey], bankNames);
   }
 
   return d => d[groupKey];
 };
 
 const makeCSVData = (data, bankNames, groupTitleMap) => {
-
-  const csvHeader = ["#"].concat(paymentMethodsColumns.map(titleCase))
-                         .concat(["Total(Paise)", "%Share"]),
-        csvBody = [],
-        csvFooter = paymentMethodsColumns.map(i => "").concat(["Total"]);
+  const csvHeader = ['#']
+      .concat(paymentMethodsColumns.map(titleCase))
+      .concat(['Total(Paise)', '%Share']),
+    csvBody = [],
+    csvFooter = paymentMethodsColumns.map(i => '').concat(['Total']);
 
   let total = 0;
 
   let rows = data.map((record, index) => {
-  
     let body = paymentMethodsColumns.map(columnName => {
+      let value = record[columnName];
 
-                 let value = record[columnName];
+      if (columnName === 'bank' || columnName === 'issuer') {
+        value = bankNames[value] || 'Unknown';
+      } else if (columnName === 'method') {
+        value = groupTitleMap[value] || titleCase(value);
+      } else {
+        value = titleCase(value);
+      }
 
-                 if (columnName === "bank" || columnName === "issuer") {
-
-                   value = bankNames[value];
-                 } else if (columnName === "method") {
-                 
-                   value = groupTitleMap[value] || titleCase(value);
-                 } else {
-                 
-                   value = titleCase(value);
-                 }
-                  
-                 return value;
-               });
+      return value;
+    });
 
     total += record.value;
 
@@ -476,20 +476,18 @@ const makeCSVData = (data, bankNames, groupTitleMap) => {
 
   csvFooter.push(total);
 
-  rows.sort((item1, item2) => item1[0] <= item2[0] ? -1 : 1);
+  rows.sort((item1, item2) => (item1[0] <= item2[0] ? -1 : 1));
 
   rows.forEach((row, index) => {
-  
     row.unshift(index + 1);
-    row.push((row[row.length - 1] / total * 100).toFixed(2) + "%");
+    row.push((row[row.length - 1] / total * 100).toFixed(2) + '%');
   });
-
 
   rows.unshift(csvHeader);
   rows.push(csvFooter);
 
   return arrayToCsvDataUrl(rows);
-}
+};
 
 export default function renderTreemap(
   node,
@@ -516,6 +514,8 @@ export default function renderTreemap(
 
     let grouper = null;
 
+    item.type = key;
+
     if (key === 'card') {
       grouper = nester
         .key(getGroupingFactor('type'))
@@ -530,7 +530,7 @@ export default function renderTreemap(
     return grouper && (item.values = grouper.entries(item.values));
   });
 
-  const treemapApi =  main(
+  const treemapApi = main(
     node,
     { width: node.clientWidth },
     { key: 'All Methods', values: res },

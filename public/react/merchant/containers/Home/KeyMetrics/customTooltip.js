@@ -1,6 +1,10 @@
 import moment from 'moment';
 
-import { getFormattedAmountNew, getFormattedNumber } from 'rzp/utils/rzp-utils';
+import {
+  getFormattedAmountNew,
+  getFormattedNumber,
+  rupeesToPaise,
+} from 'rzp/utils/rzp-utils';
 import { getMillisecondsFromBreakdown } from 'rzp/utils/chart/new';
 
 // tooltip element
@@ -96,7 +100,7 @@ const customToolTip = function(tooltipModel) {
       `<div class="tooltip-title clearfix">` +
       `<div class="pull-left">` +
       `<div class="tooltip-amount">${isCurrency
-        ? getFormattedAmountNew(sumOfAllDataPoints, true)
+        ? getFormattedAmountNew(rupeesToPaise(sumOfAllDataPoints), true)
         : getFormattedNumber(sumOfAllDataPoints)}</div>` +
       `<div class="sec-text tooltip-date">${formattedDate}</div>` +
       `</div>` +
