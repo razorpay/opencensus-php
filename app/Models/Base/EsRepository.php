@@ -109,7 +109,7 @@ class EsRepository extends \Razorpay\Spine\Repository
         $indexPrefix = $app['config']->get('database.es_entity_index_prefix');
         $typePrefix  = $app['config']->get('database.es_entity_type_prefix');
 
-        $this->setIndexAndTypeNameByPrefix($indexPrefix, $typePrefix);
+        $this->setIndexAndTypeName($indexPrefix, $typePrefix);
     }
 
     /**
@@ -119,11 +119,9 @@ class EsRepository extends \Razorpay\Spine\Repository
      * @param string $indexPrefix
      * @param string $typePrefix
      */
-    public function setIndexAndTypeNameByPrefix(
-        string $indexPrefix,
-        string $typePrefix)
+    public function setIndexAndTypeName(string $indexPrefix, string $typePrefix)
     {
-        $suffix = "{$this->entity}_{$this->mode}";
+        $suffix = $this->getIndexSuffix();
 
         $this->indexName = $indexPrefix . $suffix;
         $this->typeName  = $typePrefix . $suffix;
@@ -132,16 +130,25 @@ class EsRepository extends \Razorpay\Spine\Repository
     /**
      * Sets index name to a new value with new prefix.
      *
-     * Called from indexing command where in case of reindexing we might choose
+     * Called from indexing command where in case of re-indexing we might choose
      * to use new index name (via new prefix).
      *
      * @param string $indexPrefix
      */
-    public function setIndexNameByPrefix(string $indexPrefix)
+    public function setIndexName(string $indexPrefix)
     {
-        $suffix = "{$this->entity}_{$this->mode}";
+        $this->indexName = $indexPrefix . $this->getIndexSuffix();
+    }
 
-        $this->indexName = $indexPrefix . $suffix;
+    /**
+     * Returns suffix part of index name.
+     * Format: <entity>_<mode>
+     *
+     * @return string
+     */
+    public function getIndexSuffix(): string
+    {
+        return "{$this->entity}_{$this->mode}";
     }
 
     public function getIndexedFields(): array

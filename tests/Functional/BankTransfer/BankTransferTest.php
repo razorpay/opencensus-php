@@ -8,6 +8,7 @@ use Closure;
 use RZP\Models\Payment\Refund;
 use RZP\Models\BankTransfer\Entity as E;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Tests\Functional\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -1180,12 +1181,27 @@ class BankTransferTest extends TestCase
         $this->refundPayment($payment['id'], 4000000);
         $content = $this->initiatePayouts();
 
-        $reconFile = $this->generateSetlReconciliationFile($content['kotak']['payout_text_file']);
+        $reconFile = $this->generateSetlReconciliationFile(
+            $content['kotak']['payout_text_file'], Channel::KOTAK);
 
+        // Process file
         $data = $this->reconcileSettlements($reconFile);
 
         $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+
         $this->assertNotNull($attempt['utr']);
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt[Attempt\Entity::STATUS]);
+
+        // Process entities
+        $request = [
+            'url'       => '/fund_transfer_attempts/' . Channel::KOTAK,
+            'method'    => 'POST',
+            'content'   => [],
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
         $this->assertEquals(Attempt\Status::PROCESSED, $attempt['status']);
 
         $refund = $this->getLastEntity('refund', true);

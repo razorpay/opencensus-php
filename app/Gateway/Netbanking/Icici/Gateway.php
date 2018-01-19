@@ -214,10 +214,35 @@ class Gateway extends Base\Gateway
 
         $this->checkCallbackStatus($attributes, $callbackData);
 
-        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
-        $actualAmount = number_format($callbackData['AMT'], 2, '.', '');
+        $callbackAmount = $callbackData['AMT'];
 
-        $this->assertAmount($expectedAmount, $actualAmount);
+        if ($this->isFirstRecurringPayment() === true)
+        {
+            //
+            // Since there's no hot payment, we would not
+            // have an amount in the first auth request
+            // We get amount as `'null'` in these cases.
+            //
+            if ($callbackAmount !== 'null')
+            {
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::GATEWAY_ERROR_AMOUNT_TAMPERED,
+                    null,
+                    null,
+                    [
+                        'gateway_payment_id' => $gatewayPayment->getId(),
+                        'callback_data' => $callbackData,
+                        'payment_id'    => $input['payment']['id'],
+                    ]);
+            }
+        }
+        else
+        {
+            $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+            $actualAmount = number_format($callbackAmount, 2, '.', '');
+
+            $this->assertAmount($expectedAmount, $actualAmount);
+        }
 
         $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
@@ -384,6 +409,15 @@ class Gateway extends Base\Gateway
             $eMandateData = $this->getEMandateRequestData($input);
 
             $requestData = array_merge($requestData, $eMandateData);
+
+            $this->assertAmount(0, $input['payment']['amount']);
+
+            //
+            // For registration-only payments, we
+            // should not send the amount field
+            // There will be no upfront amount.
+            //
+            unset($requestData['AMT']);
         }
 
         $this->traceGatewayPaymentRequest($requestData, $input);
@@ -466,7 +500,8 @@ class Gateway extends Base\Gateway
      */
     protected function getEMandateRequestData(array $input): array
     {
-        $date = Carbon::now(Timezone::IST)->format('Y-m-d');
+        // For registration-only auth request, we need to set the payment date to any date in the future
+        $date = Carbon::now(Timezone::IST)->addDay()->format('Y-m-d');
 
         $endDate = Carbon::now(Timezone::IST)
                          ->addYears(Base\Entity::MAX_RECURRING_END_YEARS)
@@ -480,6 +515,7 @@ class Gateway extends Base\Gateway
             RequestFields::SI_PAYMENT_FREQ     => Frequency::AS_AND_WHEN,
             // Num installments = empty when charge at will
             RequestFields::SI_NUM_INSTALLMENTS => '',
+
             RequestFields::SI_AUTO_PAY_AMOUNT  => $input['token']->getMaxAmount() / 100,
             RequestFields::SI_END_DATE         => $endDate,
         ];
@@ -649,6 +685,22 @@ class Gateway extends Base\Gateway
 
     protected function checkCallbackStatus(array $attributes, array $content)
     {
+        if ($this->isFirstRecurringPayment() === true)
+        {
+            //
+            // Since there's no hot payment done in the registration request,
+            // we don't need to throw an exception here for payment failed,
+            // even in the case of mandate registration failure.
+            // The mandate registration failure will be handled in the
+            // getRecurringData() method, by setting the recurring status.
+            //
+            // Here, the gateway's hot payment should also be null.
+            // This is validated later in the flow.
+            //
+
+            return;
+        }
+
         if ((isset($attributes[ResponseFields::STATUS_LC]) === false) or
             ($attributes[ResponseFields::STATUS_LC] !== Confirmation::YES))
         {
@@ -661,6 +713,11 @@ class Gateway extends Base\Gateway
                     'gateway' => $this->gateway,
                 ]);
         }
+    }
+
+    protected function isFirstRecurringPayment()
+    {
+        return ($this->input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL);
     }
 
     protected function saveVerifyContentIfNeeded(Verify $verify)
@@ -871,7 +928,7 @@ class Gateway extends Base\Gateway
                 ($gatewayPayment->getSIToken() !== null));
     }
 
-    protected function getRecurringData(Base\Entity $gatewayPayment = null)
+    protected function getRecurringData(Base\Entity $gatewayPayment)
     {
         $siStatus = $gatewayPayment->getSIStatus();
 

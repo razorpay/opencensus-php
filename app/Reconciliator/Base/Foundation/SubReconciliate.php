@@ -313,6 +313,8 @@ class SubReconciliate extends Base\Core
                 'row'     => $row,
             ]);
 
+        $this->setSummaryCount(self::TOTAL_SUMMARY, head($row));
+
         if ($this->failUnprocessedRow === true)
         {
             return $this->setSummaryCount(self::FAILURES_SUMMARY, head($row));

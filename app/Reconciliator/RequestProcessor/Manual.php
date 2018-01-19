@@ -62,7 +62,6 @@ class Manual extends Base
      * present in the GATEWAY_SENDER_MAPPING list.
      *
      * @param array $inputDetails
-     * @throws Exception\ReconciliationException
      */
     protected function setGatewayFromInput(array $inputDetails)
     {

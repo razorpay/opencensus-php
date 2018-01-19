@@ -110,14 +110,18 @@ class Service extends Base\Service
         return $txns->toArrayPublic();
     }
 
-    public function reconcileSettlements($input)
+    public function reconcileSettlements($input, string $channel)
     {
-        return (new Kotak\Service)->reconcileSettlements($input);
+        $reconNamepsace = 'RZP\\Models\\FundTransfer\\' . ucwords($channel). '\\Reconciliation\\FileProcessor';
+
+        return (new $reconNamepsace)->process($input);
     }
 
-    public function reconcileH2HSettlements($input)
+    public function reconcileH2HSettlements($input, string $channel)
     {
-        return (new Kotak\Service)->reconcileH2HSettlements($input);
+        $reconNamepsace = 'RZP\\Models\\FundTransfer\\' . ucwords($channel). '\\Reconciliation\\FileProcessor';
+
+        return (new $reconNamepsace)->process($input);
     }
 
     public function reconcileSettlementsInTestMode($input)
@@ -125,9 +129,13 @@ class Service extends Base\Service
         return (new Kotak\ReconciliationGenerator)->reconcileSettlementsInTestMode($input);
     }
 
-    public function generateSettlementReconciliation($input)
+    public function generateSettlementReconciliation($input, string $channel)
     {
-        return (new Kotak\Service)->generateSettlementReconciliation($input);
+        $reconGeneratorNamespace = '\\RZP\\Models\FundTransfer\\' . ucfirst($channel) . '\\ReconciliationGenerator';
+
+        $filename = (new $reconGeneratorNamespace)->generateReconcileFile($input);
+
+        return ['setlReconciliationFile' => $filename];
     }
 
     public function generateSettlementReturn($input)
