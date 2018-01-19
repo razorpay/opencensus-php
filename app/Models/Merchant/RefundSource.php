@@ -6,10 +6,8 @@ class RefundSource
 {
     const BALANCE   = 'balance';
     const CREDITS   = 'credits';
-    const NA        = 'na';
 
     protected static $values = [
-        self::NA        => -1,
         self::BALANCE   => 0,
         self::CREDITS   => 1,
     ];

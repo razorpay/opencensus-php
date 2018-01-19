@@ -555,6 +555,8 @@ class Core extends Base\Core
     {
         $payment = $refund->payment;
 
+        $merchant = $refund->merchant;
+
         assert ($payment->hasTransaction() === true);
 
         $settledAt = 1;

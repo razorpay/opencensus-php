@@ -223,15 +223,27 @@ class CreditsTest extends TestCase
 
     public function testRefundCredits()
     {
-        // $this->fixtures->create('credits',
-        //   [
-        //     'type'        => 'refund',
-        //     'value'       => 10000
-        //   ]);
+        $this->fixtures->create('credits',
+          [
+            'type'        => 'refund',
+            'value'       => 100000
+          ]);
 
-        // $this->fixtures->merchant->editFeeCredits('10000', '10000000000000');
+        $this->fixtures->merchant->edit('10000000000000', ['refund_source' => 'credits']);
 
-        // $this->doAuthAndCapturePayment();
+        $this->doAuthCaptureAndRefundPayment();
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($txn['fee_credits'], $txn['amount']);
+        $this->assertEquals(0, $txn['debit']);
+        $this->assertEquals(false, $txn['gratis']);
+        $this->assertEquals('refund', $txn['credit_type']);
+
+        $this->assertEquals(1050000, $balance['balance']);
+        $this->assertEquals(10000 - $txn['fee_credits'], $balance['refund_credits']);
 
         // do refund and validate transactions values
     }
