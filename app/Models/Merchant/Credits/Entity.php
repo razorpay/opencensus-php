@@ -33,6 +33,7 @@ class Entity extends Base\PublicEntity
 
     protected $visible = array(
         self::ID,
+        self::ENTITY,
         self::CAMPAIGN,
         self::MERCHANT_ID,
         self::PROMOTION_ID,
@@ -45,6 +46,7 @@ class Entity extends Base\PublicEntity
 
     protected $public = array(
         self::ID,
+        self::ENTITY,
         self::CAMPAIGN,
         self::VALUE,
         self::TYPE,

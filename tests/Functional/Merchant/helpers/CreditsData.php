@@ -9,24 +9,27 @@ return [
 
     'testCreateCreditsLog' => [
         'request' => [
-            'url' => '/merchants/10000000000000/credits_log/',
+            'url' => '/merchants/10000000000000/credits_log',
             'method' => 'post',
             'content' => [
-                'value' => 25,
+                'value'    => 25,
                 'campaign' => 'silent-ads',
             ],
         ],
         'response' => [
             'content' => [
-                'value' => 25,
-                'campaign' => 'silent-ads',
+                'type'        => 'amount',
+                'value'       => 25,
+                'campaign'    => 'silent-ads',
+                'used'        => 0,
+                'merchant_id' => "10000000000000"
             ],
         ],
     ],
 
     'testGetCreditsLog' => [
         'request' => [
-            'url' => '/merchants/10000000000000/credits/',
+            'url' => '/credits/',
             'method' => 'get',
         ],
         'response' => [

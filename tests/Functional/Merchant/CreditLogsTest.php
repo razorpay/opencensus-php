@@ -22,25 +22,21 @@ class CreditLogsTest extends TestCase
         $this->ba->appAuth();
     }
 
+    // Test Credit logs creation, default should add amount credits
     public function testCreateCreditsLog()
     {
         $this->startTest();
     }
 
-    /*public function testCreditsLogAlreadyExists()
-    {
-        $this->fixtures->create('credits', [Credits\Entity::TYPE => Credits\Type::FEE]);
-
-        $this->testData[__FUNCTION__]['request']['content']['type'] = Credits\Type::FEE;
-
-        $this->startTest();
-    }*/
-
+    // create fee credits and fetch using get route
     public function testGetCreditsLog()
     {
-        $creditsLog = $this->fixtures->create('credits', [Credits\Entity::TYPE => Credits\Type::FEE]);
+        $creditsLog = $this->fixtures->create('credits',
+            [
+                Credits\Entity::TYPE => Credits\Type::FEE
+            ]);
 
-        $this->testData[__FUNCTION__]['request']['url'] .= $creditsLog->getId();
+        $this->testData[__FUNCTION__]['request']['url'] .= $creditsLog->getPublicId();
         $this->testData[__FUNCTION__]['response']['content']['id'] = $creditsLog->getPublicId();
 
         $this->ba->proxyAuth();
