@@ -553,96 +553,60 @@ class Core extends Base\Core
 
     public function createFromRefund(Refund\Entity $refund)
     {
+        // refund's payment must have transaction
         $payment = $refund->payment;
-
-        $merchant = $refund->merchant;
 
         assert ($payment->hasTransaction() === true);
 
-        $settledAt = 1;
+        $merchant = $refund->merchant;
 
-        $txnData = array(
+        // create Transaction
+        $txn = new Transaction\Entity;
+
+        $txn->generateId();
+
+        $txn->sourceAssociate($refund);
+
+        $txn->merchant()->associate($merchant);
+
+        $settledAt = $this->getSettledAtTimestampForRefund($refund);
+
+        $txnData = [
             Transaction\Entity::AMOUNT          => $refund->getBaseAmount(),
             Transaction\Entity::TYPE            => Transaction\Type::REFUND,
             Transaction\Entity::FEE             => 0,
             Transaction\Entity::TAX             => 0,
             Transaction\Entity::DEBIT           => $refund->getBaseAmount(),
             Transaction\Entity::CREDIT          => 0,
-            Transaction\Entity::CURRENCY        => Currency\Currency::INR);
+            Transaction\Entity::CURRENCY        => Currency\Currency::INR,
+            Transaction\Entity::CHANNEL         => $merchant->getChannel(),
+            Transaction\Entity::SETTLED_AT      => $settledAt
+        ];
 
-        $gateway = $refund->getGateway();
-
-        if ($gateway === Payment\Gateway::ATOM)
+        if ($merchant->getRefundSource() === RefundSource::CREDITS)
         {
-            $txnData[Transaction\Entity::RECONCILED_AT] = time();
+            $txnData[Transaction\Entity::DEBIT] = 0;
+
+            $txnData[Transaction\Entity::CREDITS] = $refund->getBaseAmount();
+
+            $txnData[Transaction\Entity::CREDIT_TYPE] = CreditType::REFUND;
         }
 
-        $channel = $payment->merchant->getChannel();
-
-        if ($payment->hasBeenCaptured())
-        {
-            $paymentTxn = $payment->transaction;
-
-            if ($paymentTxn->isSettled() === true)
-            {
-                $txnData[Transaction\Entity::SETTLED_AT] = $settledAt;
-            }
-            else
-            {
-                $paymentSettledAt = $paymentTxn->getSettledAt();
-
-                $txnData[Transaction\Entity::SETTLED_AT] = $paymentSettledAt;
-            }
-        }
-
-        $txnData[Transaction\Entity::CHANNEL] = $channel;
-
-        $txn = new Transaction\Entity($txnData);
-        $txn->generateId();
-
-        $txn->sourceAssociate($refund);
-        $txn->merchant()->associate($refund->merchant);
+        $txn->fill($txnData);
 
         $paymentStatus = $payment->getStatus();
 
-        switch($paymentStatus)
+        if ($payment->getStatus() === Payment\Status::CAPTURED)
         {
-            case Payment\Status::AUTHORIZED:
-                // When refunding authorized payments, we do not charge merchants
-                //$this->updateNodalBalance($txn);
-
-                break;
-
-            case Payment\Status::CAPTURED:
+            // TODO : merge all balance and credits update in updateBalances
+            if ($merchant->getRefundSource() === RefundSource::CREDITS)
+            {
+                $this->updateCredits($txn, $refund);
+            }
+            else
+            {
                 $this->updateBalances($txn);
-
-                break;
-
-            case Payment\Status::REFUNDED:
-                //
-                // We are creating refund transaction via recon also.
-                // For this, we don't have to verify on gateway whether
-                // it has already been refunded or not. Irrespective of
-                // that, we will always create a refund through recon
-                // wherever applicable (payment transaction is present)
-                //
-
-                // Payment\Refund\Validator::validateVerifyInternalRefundAllowed($payment->getGateway());
-
-                //$this->updateNodalBalance($txn);
-
-                break;
-
-            default:
-                throw new Exception\LogicException(
-                    'Should not have reached here',
-                    null,
-                    [
-                        'refund_id'         => $refund->getId(),
-                        'payment_id'        => $payment->getId(),
-                        'status'            => $paymentStatus,
-                        'transaction_id'    => $txn->getId(),
-                    ]);
+            }
         }
 
         return $txn;
@@ -1153,6 +1117,20 @@ class Core extends Base\Core
         }
 
         return $returnTime;
+    }
+
+    protected function getSettledAtTimestampForRefund(Refund\Entity $refund)
+    {
+        $payment = $refund->payment;
+
+        if ($payment->hasBeenCaptured())
+        {
+            $paymentTxn = $payment->transaction;
+
+            return ($paymentTxn->isSettled() ? 1 : $paymentTxn->getSettledAt());
+        }
+
+        return null;
     }
 
     public function calculateSettledAtTimestamp($timestamp, $addDays, $ignoreBankHolidays = false)
