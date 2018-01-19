@@ -2,7 +2,10 @@
 
 namespace RZP\Models\Feature;
 
+use DB;
+
 use RZP\Constants\Mode;
+use RZP\Trace\TraceCode;
 use RZP\Models\Base\EsRepository;
 use RZP\Models\Base\Repository as BaseRepository;
 
@@ -123,6 +126,39 @@ class Repository extends BaseRepository
                 $this->syncToEs($entity, EsRepository::DELETE, null, Mode::LIVE);
             }
         });
+    }
+
+    public function updateOnboardingSubmissionTimestamp(
+        string $merchantId,
+        string $featureName,
+        int $epochTimestamp): bool
+    {
+        $results = DB::Connection('live')->select("
+                      SELECT * FROM settings 
+                          WHERE `entity_type`='merchant' 
+                          AND `entity_id`='$merchantId'
+                          AND `module`='onboarding'
+                          AND `key` LIKE '$featureName%'
+                          AND `created_at`=1505957400
+                    ");
+
+        if (count($results) > 0)
+        {
+            $result = DB::Connection('live')->update("
+                      UPDATE settings SET created_at='$epochTimestamp'
+                          WHERE `entity_type`='merchant' 
+                          AND `entity_id`='$merchantId'
+                          AND `module`='onboarding'
+                          AND `key` LIKE '$featureName%'
+                          AND `created_at`=1505957400
+                    ");
+
+            return $result;
+        }
+
+        $this->trace->info(TraceCode::FEATURE_ONBOARDING_TIMESTAMP_UPDATE_SKIPPED);
+
+        return false;
     }
 
     private function cloneAndSaveToModeOrFail(Entity $entity, string $mode)
