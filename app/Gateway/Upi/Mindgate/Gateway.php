@@ -263,7 +263,7 @@ class Gateway extends Base\Gateway
     {
         if ($this->mode === Mode::LIVE)
         {
-            return $this->terminal['gateway_terminal_password'];
+            return $this->config['live_merchant_key'];
         }
 
         return $this->config['test_merchant_key'];

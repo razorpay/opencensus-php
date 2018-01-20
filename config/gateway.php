@@ -247,6 +247,7 @@ return [
     'upi_mindgate' => [
         'test_merchant_id'       => env('UPI_MINDGATE_TEST_MERCHANT_ID'),
         'test_merchant_key'      => env('UPI_MINDGATE_TEST_MERCHANT_KEY'),
+        'live_merchant_key'      => env('UPI_MINDGATE_GATEWAY_SECURE_SECRET'),
     ],
 
     'upi_sbi' => [
