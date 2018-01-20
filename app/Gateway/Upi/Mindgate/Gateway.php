@@ -261,12 +261,7 @@ class Gateway extends Base\Gateway
      */
     protected function getEncryptionKey()
     {
-        if ($this->mode === Mode::LIVE)
-        {
-            return $this->config['live_merchant_key'];
-        }
-
-        return $this->config['test_merchant_key'];
+        return $this->config['gateway_encryption_key'];
     }
 
     /**
