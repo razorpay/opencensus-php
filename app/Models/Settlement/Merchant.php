@@ -239,6 +239,7 @@ class Merchant
                     break;
 
                 case SetlDetails\Component::FEE_CREDITS:
+                case SetlDetails\Component::REFUND_CREDITS:
                     if ($detail['amount'] > 0)
                     {
                         $this->createSetlDetailsEntity(

@@ -986,7 +986,8 @@ class Core extends Base\Core
     public function updateFeeCredits(Transaction\Entity $txn)
     {
         // While filling the txn fees and amount, we have not used fee credits.
-        if ($txn->isFeeCredits() === false)
+        if (($txn->isFeeCredits() === false) or
+            ($txn->getCredits() === 0))
         {
             return;
         }
@@ -1168,6 +1169,10 @@ class Core extends Base\Core
             if ($type === Credits\Type::FEE)
             {
                 $credits = $merchantBalance->getFeeCredits();
+            }
+            else if ($type === Credits\Type::REFUND)
+            {
+                $credits = $merchantBalance->getRefundCredits();
             }
             else
             {

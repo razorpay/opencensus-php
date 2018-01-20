@@ -13,7 +13,7 @@ class Component
     const FEE               = 'fee';
     const TAX               = 'tax';
     const FEE_CREDITS       = 'fee_credits';
-    const REFUND_CREDITS    = 'fee_credits';
+    const REFUND_CREDITS    = 'refund_credits';
     const TRANSFER          = 'transfer';
     const REVERSAL          = 'reversal';
     const DISPUTE           = 'dispute';
