@@ -7,6 +7,7 @@ use RZP\Models\Bank\IFSC;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Netbanking\Oriental;
 use RZP\Constants\Entity as ConstantsEntity;
+use RZP\Models\Payment\Verify\Status as VerifyStatus;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class NetbankingOrientalGatewayTest extends TestCase
@@ -34,7 +35,7 @@ class NetbankingOrientalGatewayTest extends TestCase
     {
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
-        $this->assertEquals(Payment\Status::CAPTURED, $payment['status']);
+        $this->assertEquals(Payment\Status::CAPTURED, $payment[Payment\Entity::STATUS]);
 
         $netbanking = $this->getLastEntity(ConstantsEntity::NETBANKING, true);
 
@@ -65,13 +66,49 @@ class NetbankingOrientalGatewayTest extends TestCase
     {
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
-        $verify = $this->verifyPayment($payment['id']);
+        $verify = $this->verifyPayment($payment[Payment\Entity::ID]);
 
-        $this->assertEquals(1, $verify[ConstantsEntity::PAYMENT]['verified']);
+        $this->assertEquals(1, $verify[ConstantsEntity::PAYMENT][Payment\Entity::VERIFIED]);
 
         $netbanking = $this->getLastEntity(ConstantsEntity::NETBANKING, true);
 
         $this->assertTestResponse($netbanking, 'netbankingVerify');
+    }
+
+    public function testPaymentVerifyFailed()
+    {
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->mockVerifyFailed();
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment[Payment\Entity::ID]);
+            });
+
+        $payment = $this->getLastEntity(ConstantsEntity::PAYMENT, true);
+
+        $this->assertEquals(VerifyStatus::FAILED, $payment[Payment\Entity::VERIFIED]);
+
+        $netbanking = $this->getLastEntity(ConstantsEntity::NETBANKING, true);
+
+        $this->assertTestResponse($netbanking, 'netbankingVerify');
+    }
+
+    private function mockVerifyFailed()
+    {
+        $this->mockServerContentFunction(
+            function(& $content, $action = null)
+            {
+                if ($action === 'verify')
+                {
+                    $content[Oriental\ResponseFields::TXN_STATUS] = Oriental\Status::FAILED;
+                }
+            });
     }
 
     private function mockPaymentFailed()

@@ -30,7 +30,7 @@ class Server extends Mock\Server
 
         $content = $this->getAuthResponse($input);
 
-        $this->content($content);
+        $this->content($content, $this->action);
 
         $request = [
             'url'     => $input[RequestFields::RETURN_URL],
@@ -45,9 +45,11 @@ class Server extends Mock\Server
     {
         parent::verify($input);
 
-        $this->validateActionInput($input, 'verify');
+        $this->validateActionInput($input, $this->action);
 
         $response = $this->getVerifyResponse($input);
+
+        $this->content($response, $this->action);
 
         return $this->makeResponse($response);
     }

@@ -12,6 +12,7 @@ use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\GatewayErrorException;
+use RZP\Exception\PaymentVerificationException;
 
 return [
     'testPayment' => [
@@ -52,5 +53,21 @@ return [
         'status'          => 'Y',
         'bank_payment_id' => '9999999999',
         'account_number'  => '1234567890'
+    ],
+
+    'testPaymentVerifyFailed' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => PaymentVerificationException::class,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+        ],
     ],
 ];
