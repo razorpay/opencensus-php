@@ -44,18 +44,7 @@ class NetbankingOrientalGatewayTest extends TestCase
 
     public function testPaymentFailed()
     {
-        $data = $this->testData[__FUNCTION__];
-
-        $payment = $this->payment;
-
-        $this->mockPaymentFailed();
-
-        $this->runRequestResponseFlow(
-            $data,
-            function() use ($payment)
-            {
-                $this->doAuthAndCapturePayment($payment);
-            });
+        $this->createPaymentFailed();
 
         $netbanking = $this->getLastEntity(ConstantsEntity::NETBANKING, true);
 
@@ -68,18 +57,18 @@ class NetbankingOrientalGatewayTest extends TestCase
 
         $verify = $this->verifyPayment($payment[Payment\Entity::ID]);
 
-        $this->assertEquals(1, $verify[ConstantsEntity::PAYMENT][Payment\Entity::VERIFIED]);
+        $this->assertEquals(VerifyStatus::SUCCESS, $verify[ConstantsEntity::PAYMENT][Payment\Entity::VERIFIED]);
 
         $netbanking = $this->getLastEntity(ConstantsEntity::NETBANKING, true);
 
         $this->assertTestResponse($netbanking, 'netbankingVerify');
     }
 
-    public function testPaymentVerifyFailed()
+    public function testApiSuccessGatewayFailed()
     {
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
-        $data = $this->testData[__FUNCTION__];
+        $data = $this->testData['testVerifyMismatch'];
 
         $this->mockVerifyFailed();
 
@@ -97,6 +86,46 @@ class NetbankingOrientalGatewayTest extends TestCase
         $netbanking = $this->getLastEntity(ConstantsEntity::NETBANKING, true);
 
         $this->assertTestResponse($netbanking, 'netbankingVerify');
+    }
+
+    public function testApiFailedGatewaySuccess()
+    {
+        $payment = $this->createPaymentFailed();
+
+        $data = $this->testData['testVerifyMismatch'];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment[Payment\Entity::ID]);
+            });
+
+        $payment = $this->getLastEntity(ConstantsEntity::PAYMENT, true);
+
+        $this->assertEquals(VerifyStatus::FAILED, $payment[Payment\Entity::VERIFIED]);
+
+        $netbanking = $this->getLastEntity(ConstantsEntity::NETBANKING, true);
+
+        $this->assertTestResponse($netbanking, 'netbankingPaymentFailedVerifySuccess');
+    }
+
+    private function createPaymentFailed()
+    {
+        $data = $this->testData['testPaymentFailed'];
+
+        $payment = $this->payment;
+
+        $this->mockPaymentFailed();
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthAndCapturePayment($payment);
+            });
+
+        return $this->getLastEntity(ConstantsEntity::PAYMENT, true);
     }
 
     private function mockVerifyFailed()
