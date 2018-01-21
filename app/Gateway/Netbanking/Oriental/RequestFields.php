@@ -25,4 +25,11 @@ class RequestFields
     const PAYEE_ID        = 'PID';
     const PAY_REF_NUM     = 'PRN';
     const ITEM_CODE       = 'ITC';
+
+    /**
+     * Verify specific fields
+     */
+    const AMOUNT          = 'AMT';
+    const CRN             = 'CRN';
+    const BID             = 'BID';
 }
