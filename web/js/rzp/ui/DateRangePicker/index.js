@@ -34,10 +34,10 @@ class DateRangePicker extends Component {
     };
 
     this.state = {
-      startDate:null,
+      startDate: null,
       endDate,
-      selectedPreset:null,
-      presets: []
+      selectedPreset: null,
+      presets: [],
     };
 
     this.onPresetChange = this.onPresetChange.bind(this);
@@ -45,6 +45,9 @@ class DateRangePicker extends Component {
   }
 
   setDates(startDate, endDate) {
+    startDate = startDate.startOf('day');
+    endDate = endDate.startOf('day');
+
     this.setState(
       {
         startDate,
@@ -83,13 +86,12 @@ class DateRangePicker extends Component {
     this.setState({ selectedPreset: this.customPreset });
   }
 
-  updatePresets (
-    presets=this.props.presets,
-    defaultPreset=this.props.defaultPreset
+  updatePresets(
+    presets = this.props.presets,
+    defaultPreset = this.props.defaultPreset
   ) {
-  
     const now = moment();
-      
+
     let { startDate, endDate } = this.state;
 
     let { selectedPreset } = this.state;
@@ -97,13 +99,17 @@ class DateRangePicker extends Component {
     presets = presets.map(preset => {
       const text = preset[0],
         rest = preset.slice(1),
-        timeStampDiff = now.unix() - now.clone().add(...rest).unix();
+        timeStampDiff =
+          now.unix() -
+          now
+            .clone()
+            .add(...rest)
+            .unix();
 
       const result = { name: text, value: timeStampDiff };
 
       // powerSelect compares by reference
       if (selectedPreset && selectedPreset.name === text) {
-      
         selectedPreset = result;
       }
 
@@ -115,26 +121,22 @@ class DateRangePicker extends Component {
     selectedPreset = selectedPreset || presets[defaultPreset || 0];
 
     if (!startDate) {
-
       startDate = getStartDateFromDiff(selectedPreset.value, endDate);
     }
 
     this.setState({
       startDate,
       presets,
-      selectedPreset
+      selectedPreset,
     });
   }
 
-  componentWillMount () {
-  
+  componentWillMount() {
     this.updatePresets();
   }
 
   componentWillReceiveProps(nextProps) {
-
     if (nextProps.presets !== this.props.presets) {
-
       this.updatePresets(nextProps.presets);
     }
   }

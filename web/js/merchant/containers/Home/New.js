@@ -59,8 +59,8 @@ export default class HomeContainer extends Component {
   constructor(props) {
     super(props);
 
-    let endDate = moment(),
-      startDate = moment();
+    let endDate = moment().startOf('day'),
+      startDate = endDate.clone();
 
     startDate.add(...dateRangePresets[defaultPreset].slice(1));
 
@@ -216,7 +216,7 @@ export default class HomeContainer extends Component {
                 </GroupItem>
                 <GroupItem>
                   <Link className="pull-right" to="/settlements">
-                    View Settlements
+                    <span className="text-no-wrap">View Settlements</span>
                   </Link>
                 </GroupItem>
               </Group>

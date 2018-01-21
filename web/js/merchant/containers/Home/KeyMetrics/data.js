@@ -125,7 +125,7 @@ export const tabsMeta = {
   },
   [tabsOrder[2]]: {
     name: tabsOrder[2],
-    title: 'Refunds in total',
+    title: 'Number of Refunds',
     grouping: defaultGroupingVals,
     options: [],
     index: 'refunds',
@@ -157,14 +157,14 @@ export const tabsMeta = {
   },
   [tabsOrder[3]]: {
     name: tabsOrder[3],
-    title: 'Saved Cards',
+    title: 'Saved Card Payments',
     grouping: [],
     options: [],
     index: 'payments',
     groupByColumnName: 'saved_card',
     groupTitleMap: {
-      '0': 'New Card',
-      '1': 'Saved Card',
+      '0': 'Other Payments',
+      '1': 'Saved Card Payments',
     },
     getCountQuery: function() {
       return {
@@ -189,22 +189,21 @@ export const tabsMeta = {
       };
     },
     getFilterQuery: function(startTime, endTime) {
+      const createdAt = {
+        gte: startTime,
+        lte: endTime,
+      };
+
       return {
         [this.name]: [
           {
-            created_at: {
-              gte: startTime,
-              lte: endTime,
-            },
+            created_at: createdAt,
             saved_card: true,
           },
         ],
         default: [
           {
-            created_at: {
-              gte: startTime,
-              lte: endTime,
-            },
+            created_at: createdAt,
           },
         ],
       };
