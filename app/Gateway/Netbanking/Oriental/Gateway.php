@@ -2,13 +2,17 @@
 
 namespace RZP\Gateway\Netbanking\Oriental;
 
-use phpseclib\Crypt\AES;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
+use phpseclib\Crypt\AES;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
+use RZP\Constants\HashAlgo;
+use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
+use RZP\Gateway\Base\VerifyResult;
 use RZP\Exception\GatewayErrorException;
 
 /**
@@ -43,7 +47,10 @@ class Gateway extends Base\Gateway
         // Auth response mapping
         ResponseFields::PAID            => Base\Entity::STATUS,
         ResponseFields::BANK_PAYMENT_ID => Base\Entity::BANK_PAYMENT_ID,
-        ResponseFields::DEBIT_ACC_NUM   => Base\Entity::ACCOUNT_NUMBER
+        ResponseFields::DEBIT_ACC_NUM   => Base\Entity::ACCOUNT_NUMBER,
+        
+        // Verify response mapping
+        ResponseFields::BANK_PAYMENT_ID => Base\Entity::BANK_PAYMENT_ID,
     ];
 
     public function authorize(array $input)
@@ -79,6 +86,118 @@ class Gateway extends Base\Gateway
         return $this->getCallbackResponseData($input, $acquirerData);
     }
 
+    public function verify(array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        return $this->runPaymentVerifyFlow($verify);
+    }
+
+    protected final function sendPaymentVerifyRequest(Verify $verify)
+    {
+        $data = $this->getVerifyRequestData($verify);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            [
+                'gateway'    => $this->gateway,
+                'request'    => $data,
+                'payment_id' => $verify->input['payment']['id'],
+            ]);
+
+        $verify->verifyResponse = $this->sendGatewayRequest($data);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            [
+                'gateway'    => $this->gateway,
+                'response'   => $verify->verifyResponse->body,
+                'payment_id' => $verify->input['payment']['id'],
+            ]);
+
+        $verify->verifyResponseContent = $this->parseVerifyResponse($verify->verifyResponse);
+    }
+
+    protected final function verifyPayment(Verify $verify)
+    {
+        $status = $this->getVerifyMatchStatus($verify);
+
+        $verify->status = $status;
+
+        $verify->match = ($status === VerifyResult::STATUS_MATCH);
+
+        $verify->payment = $this->saveVerifyContent($verify);
+    }
+
+    private function parseVerifyResponse(\Requests_Response $response)
+    {
+        // TODO: Check this
+        return json_decode($response->body, true);
+    }
+
+    private function getVerifyMatchStatus(Verify $verify)
+    {
+        $status = VerifyResult::STATUS_MATCH;
+
+        $this->checkApiSuccess($verify);
+
+        $this->checkGatewaySuccess($verify);
+
+        if ($verify->gatewaySuccess !== $verify->apiSuccess)
+        {
+            $status = VerifyResult::STATUS_MISMATCH;
+        }
+
+        return $status;
+    }
+
+    private function checkGatewaySuccess(Verify $verify)
+    {
+        $verify->gatewaySuccess = false;
+
+        $content = $verify->verifyResponseContent;
+
+        if ($content[ResponseFields::TXN_STATUS] === Status::VERIFY_SUCCESS)
+        {
+            $verify->gatewaySuccess = true;
+        }
+    }
+
+    private function saveVerifyContent(Verify $verify)
+    {
+        $gatewayPayment = $verify->payment;
+
+        $content = $verify->verifyResponseContent;
+
+        $attributes = $this->getVerifyAttributesToSave($content, $gatewayPayment);
+
+        $gatewayPayment->fill($attributes);
+
+        $this->repo->saveOrFail($gatewayPayment);
+    }
+
+    private function getVerifyAttributesToSave(array $content, Base\Entity $gatewayPayment)
+    {
+        $attributesToSave = $this->getMappedAttributes($content);
+
+        // If auth status was not success, we update the entity with verify status
+        if ($gatewayPayment->getStatus() !== Status::SUCCESS)
+        {
+            $attributesToSave[Base\Entity::STATUS] = $this->getAuthMappedVerifyStatus($content);
+        }
+
+        return $attributesToSave;
+    }
+
+    private function getAuthMappedVerifyStatus(array $content)
+    {
+        $verifyStatus = $content[ResponseFields::TXN_STATUS];
+
+        return ($verifyStatus === Status::VERIFY_SUCCESS) ? Status::SUCCESS : Status::FAILED;
+    }
+
     private function checkActionStatus(array $content, $status = Status::SUCCESS)
     {
         if ((empty($content[ResponseFields::PAID]) === false) and
@@ -97,6 +216,60 @@ class Gateway extends Base\Gateway
         ];
 
         return $this->getStandardRequestArray($content);
+    }
+
+    private function getVerifyRequestData(Verify $verify)
+    {
+        $data = [
+            RequestFields::PAYEE_ID    => $this->getMerchantId(),
+            RequestFields::PAY_REF_NUM => $verify->input['payment']['id'],
+            RequestFields::ITEM_CODE   => strtoupper($verify->input['payment']['id']),
+            RequestFields::AMOUNT      => $verify->input['payment']['amount'] / 100,
+            RequestFields::CRN         => Currency::INR,
+            RequestFields::RETURN_URL  => $this->getCallbackUrl($verify->input['payment']['id']),
+            RequestFields::BID         => $verify->payment['bank_payment_id']
+        ];
+
+        return $this->getStandardRequestArray($data);
+    }
+
+    /**
+     * Creates the callback url for payment
+     * where the gateway can hit back to say payment
+     * is finished/authorized.
+     *
+     * @param string $paymentId
+     * @return string Callback url
+     */
+    private function getCallbackUrl(string $paymentId): string
+    {
+        $params = $this->getPaymentIdAndHashParams($paymentId);
+
+        $callbackUrl = $this->route->getUrlWithPublicCallbackAuth($params);
+
+        return $callbackUrl;
+    }
+
+    private function getPaymentIdAndHashParams(string $paymentId): array
+    {
+        $publicId = Payment\Entity::getSignedId($paymentId);
+
+        $hash = $this->getHashOf($publicId);
+
+        return ['id' => $publicId, 'hash' => $hash];
+    }
+
+    /**
+     * Returns a hash of a string.
+     *
+     * @param string $string
+     * @return string Hash of the string
+     */
+    private function getHashOf(string $string): string
+    {
+        $secret = $this->app->config->get('app.key');
+
+        return hash_hmac(HashAlgo::SHA1, $string, $secret);
     }
 
     /**

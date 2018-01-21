@@ -12,4 +12,9 @@ class ResponseFields
     const PAY_REF_NUM      = 'PRN';
     const ITEM_CODE        = 'ITC';
     const DEBIT_ACC_NUM    = 'DBACID';
+
+    /**
+     * Status of verify Txn
+     */
+    const TXN_STATUS       = 'TXN_STATUS';
 }

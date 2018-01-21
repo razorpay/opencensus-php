@@ -41,6 +41,17 @@ class Server extends Mock\Server
         return $this->makePostResponse($request);
     }
 
+    public function verify($input)
+    {
+        parent::verify($input);
+
+        $this->validateActionInput($input, 'verify');
+
+        $response = $this->getVerifyResponse($input);
+
+        return $this->makeResponse($response);
+    }
+
     private function getAuthResponse(array $input)
     {
         $queryArray = $this->getQueryArray($input[RequestFields::QUERY_STRING]);
@@ -54,6 +65,19 @@ class Server extends Mock\Server
             ResponseFields::PAY_REF_NUM     => $queryArray[RequestFields::PAY_REF_NUM],
             ResponseFields::ITEM_CODE       => $queryArray[RequestFields::ITEM_CODE],
             ResponseFields::DEBIT_ACC_NUM   => 1234567890,
+        ];
+    }
+
+    private function getVerifyResponse(array $input)
+    {
+        return [
+            ResponseFields::PAYEE_ID        => $input[RequestFields::PAYEE_ID],
+            ResponseFields::PAY_REF_NUM     => $input[RequestFields::PAY_REF_NUM],
+            ResponseFields::ITEM_CODE       => $input[RequestFields::ITEM_CODE],
+            ResponseFields::AMOUNT          => $input[RequestFields::AMOUNT],
+            ResponseFields::CURRENCY        => $input[RequestFields::CRN],
+            ResponseFields::BANK_PAYMENT_ID => $input[RequestFields::BID],
+            ResponseFields::TXN_STATUS      => Status::VERIFY_SUCCESS,
         ];
     }
 

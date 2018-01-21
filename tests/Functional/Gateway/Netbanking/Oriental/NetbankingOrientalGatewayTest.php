@@ -61,6 +61,19 @@ class NetbankingOrientalGatewayTest extends TestCase
         $this->assertTestResponse($netbanking, 'netbankingPaymentFailed');
     }
 
+    public function testPaymentVerify()
+    {
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $verify = $this->verifyPayment($payment['id']);
+
+        $this->assertEquals(1, $verify[ConstantsEntity::PAYMENT]['verified']);
+
+        $netbanking = $this->getLastEntity(ConstantsEntity::NETBANKING, true);
+
+        $this->assertTestResponse($netbanking, 'netbankingVerify');
+    }
+
     private function mockPaymentFailed()
     {
         $this->mockServerContentFunction(

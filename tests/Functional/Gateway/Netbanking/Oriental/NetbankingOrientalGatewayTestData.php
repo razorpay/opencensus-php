@@ -44,5 +44,13 @@ return [
         'status'          => 'N',
         'bank_payment_id' => '9999999999',
         'account_number'  => '1234567890'
-    ]
+    ],
+
+    'netbankingVerify' => [
+        'entity'          => 'netbanking',
+        'amount'          => 500,
+        'status'          => 'Y',
+        'bank_payment_id' => '9999999999',
+        'account_number'  => '1234567890'
+    ],
 ];
