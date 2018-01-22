@@ -615,7 +615,6 @@ class Gateway extends Base\Gateway
             {
                 return $this->getTestMerchantIdCorporate();
             }
-
         }
         else
         {
