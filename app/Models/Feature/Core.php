@@ -765,17 +765,10 @@ class Core extends Base\Core
                     continue;
                 }
 
-                $result = $this->repo->transactionOnLiveAndTest(function() use (
-                    $merchantId,
-                    $featureName,
-                    $epochTimestamp)
-                {
-                    return $this->repo->feature->updateOnboardingSubmissionTimestamp(
+                $result = $this->repo->feature->updateOnboardingSubmissionTimestamp(
                             $merchantId,
                             $featureName,
                             $epochTimestamp);
-                });
-
 
                 if ($result === true)
                 {
