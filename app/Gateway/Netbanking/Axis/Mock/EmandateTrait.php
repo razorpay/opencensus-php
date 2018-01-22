@@ -16,8 +16,6 @@ trait EmandateTrait
 {
     protected function handleEmandateAuthFlow(array $input)
     {
-        $secondPayment = false;
-
         $this->validateActionInput($input, 'emandaterequest');
 
         $data = $this->getGatewayInstance()->getEmandateDecryptedData($input[RequestFields::DATA]);

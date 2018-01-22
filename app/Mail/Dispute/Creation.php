@@ -34,9 +34,13 @@ class Creation extends Base
     {
         $this->withSwiftMessage(function ($message)
         {
+            $disputeId = $this->data['dispute']['id'];
+
             $headers = $message->getHeaders();
 
             $headers->addTextHeader(MailTags::HEADER, MailTags::DISPUTE_CREATED);
+
+            $headers->addTextHeader(MailTags::HEADER, $disputeId);
         });
 
         return $this;
