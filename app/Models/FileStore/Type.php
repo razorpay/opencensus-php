@@ -56,6 +56,8 @@ class Type
 
     const HDFC_CYBERSOURCE_FAILED_REFUND    = 'hdfc_cybersource_failed_refund';
 
+    const AXIS_CYBERSOURCE_FAILED_REFUND    =  'axis_cybersource_failed_refund';
+
     const HDFC_FSS_FAILED_REFUND            = 'hdfc_fss_failed_refund';
 
     const PNB_NETBANKING_REFUND             = 'pnb_netbanking_refund';
@@ -152,6 +154,7 @@ class Type
             self::AXIS_MIGS_FAILED_REFUND,
             self::ICIC_FIRST_DATA_FAILED_REFUND,
             self::HDFC_CYBERSOURCE_FAILED_REFUND,
+            self::AXIS_CYBERSOURCE_FAILED_REFUND,
             self::HDFC_FSS_FAILED_REFUND,
             self::MOCK_RECONCILIATION_FILE,
         ],
@@ -232,6 +235,7 @@ class Type
         self::ICIC_FIRST_DATA_FAILED_REFUND,
         self::HDFC_CYBERSOURCE_FAILED_REFUND,
         self::HDFC_FSS_FAILED_REFUND,
+        self::AXIS_CYBERSOURCE_FAILED_REFUND,
         self::MOCK_RECONCILIATION_FILE
     ];
 
@@ -270,6 +274,7 @@ class Type
             self::AXIS_MIGS_FAILED_REFUND,
             self::ICIC_FIRST_DATA_FAILED_REFUND,
             self::HDFC_CYBERSOURCE_FAILED_REFUND,
+            self::AXIS_CYBERSOURCE_FAILED_REFUND,
             self::HDFC_FSS_FAILED_REFUND,
         ],
 

@@ -20,6 +20,7 @@ class Constants
     const AXIS_MIGS        = 'axis_migs';
     const ICIC_FIRST_DATA  = 'icic_first_data';
     const HDFC_CYBERSOURCE = 'hdfc_cybersource';
+    const AXIS_CYBERSOURCE = 'axis_cybersource';
     const HDFC_FSS         = 'hdfc_fss';
 
     /**
@@ -60,6 +61,7 @@ class Constants
             self::ICIC_FIRST_DATA,
             self::HDFC_CYBERSOURCE,
             self::HDFC_FSS,
+            self::AXIS_CYBERSOURCE,
         ],
     ];
 
@@ -105,12 +107,13 @@ class Constants
         ],
 
         TYPE::REFUND_FAILED => [
-            self::UPI_ICICI       => ['supportteam@razorpay.com'],
-            self::AIRTEL_MONEY    => ['supportteam@razorpay.com'],
-            self::AXIS_MIGS       => ['supportteam@razorpay.com'],
-            self::ICIC_FIRST_DATA => ['supportteam@razorpay.com'],
-            self::HDFC_CYBERSOURCE     => ['supportteam@razorpay.com'],
-            self::HDFC_FSS        => ['supportteam@razorpay.com'],
+            self::UPI_ICICI        => ['supportteam@razorpay.com'],
+            self::AIRTEL_MONEY     => ['supportteam@razorpay.com'],
+            self::AXIS_MIGS        => ['supportteam@razorpay.com'],
+            self::ICIC_FIRST_DATA  => ['supportteam@razorpay.com'],
+            self::HDFC_CYBERSOURCE => ['supportteam@razorpay.com'],
+            self::AXIS_CYBERSOURCE => ['supportteam@razorpay.com'],
+            self::HDFC_FSS         => ['supportteam@razorpay.com'],
         ],
     ];
 }

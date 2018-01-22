@@ -238,6 +238,79 @@ class CardGatewaysFailedRefundFileTest extends TestCase
         });
     }
 
+    public function testAxisCybersourcedRefundFile()
+    {
+        Mail::fake();
+
+        $this->mockTokenex();
+
+        $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal');
+
+        $this->fixtures->create('terminal:shared_cybersource_hdfc_recurring_terminals');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->payment = $this->getDefaultPaymentArray();
+
+        $authResponse = $this->doAuthPayment($this->payment);
+
+        $payment = $this->capturePayment($authResponse['razorpay_payment_id'], $this->payment['amount']);
+
+        $this->refundPayment($payment['id'], 100);
+
+        $this->refundPayment($payment['id'], 100);
+
+        $this->refundPayment($payment['id'], 100);
+
+        $refunds = $this->getEntities('refund', [], true);
+
+        foreach ($refunds['items'] as $refund)
+        {
+            $this->fixtures->edit('refund', $refund['id'], ['status' => 'failed']);
+
+            $six_months_ago = $refund['created_at'] - 15552000;
+
+            $this->fixtures->edit('payment', $payment['id'], ['created_at' => $six_months_ago]);
+        }
+
+        $this->ba->appAuth();
+
+        $data = $this->startTest();
+
+        $entity_id = $data['items']['0']['id'];
+
+        $file = $this->getLastEntity('file_store', true);
+
+        $expectedFileContent = [
+            'type'        => 'axis_cybersource_failed_refund',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $entity_id,
+            'extension'   => 'xlsx',
+        ];
+        $this->assertArraySelectiveEquals($expectedFileContent, $file);
+
+        Mail::assertSent(FailedRefundMail::class, function ($mail)
+        {
+            $this->assertNotEmpty($mail->attachments);
+
+            $date = Carbon::today(Timezone::IST)->format('d-m-Y');
+
+            $subject = 'Cybersource failed refunds for ' . $date;
+
+            $body = 'Please find attached failed refunds information for Cybersource';
+
+            $fileName = 'Axis_Cybersource_Failed_Refunds_test_'. $date  . '.xlsx';
+
+            $this->assertEquals($subject, $mail->subject);
+
+            $this->assertEquals($body, $mail->viewData['body']);
+
+            $this->assertEquals($fileName, $mail->viewData['file_name']);
+
+            return true;
+        });
+    }
+
     public function testfssFaileddRefundFile()
     {
         Mail::fake();
