@@ -2868,4 +2868,4 @@ ALTER TABLE balance
     ADD COLUMN refund_credits BIGINT UNSIGNED DEFAULT 0 after fee_credits;
 
 ALTER TABLE merchants
-    ADD COLUMN refund_source VARCHAR(32) DEFAULT 'balance' after fee_model;
+    ADD COLUMN refund_source TINYINT(1) DEFAULT 0 after fee_model;
