@@ -8,19 +8,21 @@ use RZP\Models\FileStore;
 class HdfcFss extends Base
 {
     const GATEWAY            = Payment\Gateway::HDFC;
+    const ACQUIRER         =  Payment\Gateway::ACQUIRER_HDFC;
     const EXTENSION          = FileStore\Format::XLSX;
     const FILE_NAME          = 'Hdfc_FSS_Failed_Refunds';
     const FILE_TYPE          = FileStore\Type::FSS_FAILED_REFUND;
 
-    const SR_NO            = 'Sr No';
-    const REFUND_ID        = 'refund_id';
-    const TRANSACTION_DATE = 'Transaction date';
-    const REFUND_DATE      = 'refund Date';
-    const PAYMENT_ID       = 'Payment ID';
-    const REFUND_AMOUNT    = 'Refund Amount';
-    const PAYMENT_AMOUNT   = 'Payment Amount';
-    const MERCHANT_CODE    = 'Merchant Code';
-    const ACQUIRER         =  Payment\Gateway::ACQUIRER_HDFC;
+    const SR_NO              = 'Sr No';
+    const MECODE             = 'MECODE';
+    const TERMINAL_ID        = 'Terminal ID';
+    const CARD_NUMBER        = 'Card Number';
+    const TRANSACTION_DATE   = 'Transaction date';
+    const TARNSACTION_AMOUNT = 'Transaction Amount';
+    const REFUND_ID          = 'refund_id';
+    const PAYMENT_ID         = 'Payment ID';
+    const APPROVAL_CODE      = 'Approval Code';
+    const REFUND_AMOUNT      = 'Refund Amount';
 
     protected function formatDataForFile(array $data)
     {
@@ -29,14 +31,15 @@ class HdfcFss extends Base
         foreach ($data as $index => $row)
         {
             $formattedData[] = [
-                self::SR_NO            => $index + 1,
-                self::REFUND_ID        => $row['refund']['id'],
-                self::REFUND_DATE      => $this->getFormattedDate($row['refund']['last_attempted_at'], 'Y/m/d'),
-                self::TRANSACTION_DATE => $this->getFormattedDate($row['payment']['created_at'], 'Y/m/d'),
-                self::PAYMENT_ID       => $row['payment']['id'],
-                self::PAYMENT_AMOUNT   => $this->getFormattedAmount($row['payment']['amount']),
-                self::REFUND_AMOUNT    => $this->getFormattedAmount($row['refund']['amount']),
-                self::MERCHANT_CODE    => $row['terminal']['gateway_merchant_id']
+                self::SR_NO              => $index + 1,
+                self::TERMINAL_ID        => $row['terminal']['gateway_terminal_id'],
+                self::CARD_NUMBER        => $this->getCardNumber($row['card']['iin'], $row['card']['last4']),
+                self::TRANSACTION_DATE   => $this->getFormattedDate($row['payment']['created_at'], 'd/m/Y'),
+                self::TARNSACTION_AMOUNT => $this->getFormattedAmount($row['payment']['amount']),
+                self::REFUND_ID          => $row['refund']['id'],
+                self::PAYMENT_ID         => $row['payment']['id'],
+                self::APPROVAL_CODE      => $row['payment']['approval_code'],
+                self::REFUND_AMOUNT     => $this->getFormattedAmount($row['refund']['amount']),
             ];
         }
 

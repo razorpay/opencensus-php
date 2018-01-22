@@ -104,4 +104,9 @@ class Base extends Refund\Base
     {
         return Carbon::createFromTimestamp($date, $timezone)->format($format);
     }
+
+    protected function getCardNumber($iin, $lastFourNumber)
+    {
+        return $iin. 'XXXX-XXXX-XXXX-' . $lastFourNumber;
+    }
 }
