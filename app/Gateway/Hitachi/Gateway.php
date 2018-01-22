@@ -11,6 +11,7 @@ use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\BharatQr;
 use RZP\Constants\HashAlgo;
 use RZP\Constants\Timezone;
 use RZP\Models\Card\Network;
@@ -142,6 +143,51 @@ class Gateway extends Base\Gateway
         $verify = new Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
+    }
+
+    public function qrCallback(array $input)
+    {
+        parent::qrCallback($input);
+
+        if (isset($this->app['rzp.mode']) === false)
+        {
+            $this->determineAndSetModeForQr($input[ResponseFields::PURCHASE_ID]);
+        }
+
+        $payment = $this->createOrFetchGatewayPaymentEntityForQr($input);
+
+        $this->repo->saveOrFail($payment);
+
+        $qrData = [
+            BharatQr\Entity::AMOUNT                => $payment->getAmount(),
+            BharatQr\Entity::CARD_NUMBER           => $payment->getCardNumber(),
+            BharatQr\Entity::METHOD                => Payment\Method::CARD,
+            BharatQr\Entity::RRN                   => $payment->getRrn(),
+            BharatQr\Entity::MERCHANT_REFERENCE    => $payment->getQrCodeId(),
+            BharatQr\Entity::PROVIDER_REFERENCE_ID => $payment->getRequestId(),
+        ];
+
+        return $qrData;
+    }
+
+    protected function createOrFetchGatewayPaymentEntityForQr($input)
+    {
+        if (isset($input['razorpay_payment_id']) === true)
+        {
+            $qrCodeId = $input[ResponseFields::PURCHASE_ID];
+
+            $payment = $this->repo->fetchByQrCodeId($qrCodeId);
+
+            $payment->setPaymentId($input['razorpay_payment_id']);
+        }
+        else
+        {
+            $attributes = $this->getAttributesForQrResponse($input);
+
+            $payment = $this->createGatewayPaymentEntity($input, $attributes, Base\Action::QR_CALLBACK);
+        }
+
+        return $payment;
     }
 
     /**
@@ -447,6 +493,22 @@ class Gateway extends Base\Gateway
 
     // ----------------------------------------- Get Attributes --------------------------------------------------------
 
+    protected function getAttributesForQrResponse(array $response)
+    {
+        $attributes = [
+            Entity::RECEIVED     => true,
+            Entity::CARD_NUMBER  => $response[ResponseFields::F002],
+            Entity::CARD_NETWORK => $response[ResponseFields::F003],
+            Entity::AMOUNT       => $this->getIntegerFormattedAmount($response[ResponseFields::F004]),
+            Entity::RRN          => $response[ResponseFields::F037],
+            Entity::REQUEST_ID   => $response[ResponseFields::F038],
+            Entity::STATUS       => $response[ResponseFields::F039],
+            Entity::QR_CODE_ID   => $response[ResponseFields::PURCHASE_ID],
+        ];
+
+        return $attributes;
+    }
+
     protected function getAttributesFromAuthResponse(array $response) : array
     {
         $attributes = [
@@ -506,17 +568,23 @@ class Gateway extends Base\Gateway
 
         $action = $action ?: $this->action;
 
-        $acquirer = $input['terminal']->getGatewayAcquirer();
+        if (isset($input['terminal']) === true)
+        {
+            $acquirer = $input['terminal']->getGatewayAcquirer();
 
-        $gatewayPayment->setAcquirer($acquirer);
+            $gatewayPayment->setAcquirer($acquirer);
+        }
 
         $gatewayPayment->setAction($action);
 
-        $gatewayPayment->setPaymentId($input['payment']['id']);
+        if (isset($input['payment']) === true)
+        {
+            $gatewayPayment->setPaymentId($input['payment']['id']);
 
-        $gatewayPayment->setCurrency($input['payment']['currency']);
+            $gatewayPayment->setCurrency($input['payment']['currency']);
 
-        $gatewayPayment->setAmount($input['payment']['amount']);
+            $gatewayPayment->setAmount($input['payment']['amount']);
+        }
 
         $gatewayPayment->fill($attributes);
 

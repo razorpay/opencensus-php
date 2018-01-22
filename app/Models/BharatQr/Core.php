@@ -30,17 +30,23 @@ class Core extends Base\Core
             $input
         );
 
+        $paymentId = null;
+
         try
         {
             $bharatQr = (new Entity)->build($input);
 
            // $this->determineAndSetMode($bharatQr);
 
-            $this->mutex->acquireAndRelease(
+            $paymentId = $this->mutex->acquireAndRelease(
                 $input[Entity::MERCHANT_REFERENCE],
                 function() use ($bharatQr)
                 {
-                    (new Processor)->process($bharatQr);
+                    $bharatQr = (new Processor)->process($bharatQr);
+
+                    $paymentId = $bharatQr->payment->getId();
+
+                    return $paymentId;
                 },
                 Constants::MUTEX_TIMEOUT,
                 ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
@@ -56,7 +62,7 @@ class Core extends Base\Core
             $valid = false;
         }
 
-        return $valid;
+        return [$valid, $paymentId];
     }
 
     protected function determineAndSetMode(Entity $bharatQr)

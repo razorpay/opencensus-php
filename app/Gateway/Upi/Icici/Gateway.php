@@ -844,11 +844,12 @@ class Gateway extends Base\Gateway
     {
         parent::qrCallback($input);
 
-        $payment = $this->createGatewayPaymentEntity($input);
+        if (isset($this->app['env']) === false)
+        {
+            $this->determineAndSetModeForQr($input[Fields::MERCHANT_TRAN_ID]);
+        }
 
-        $payment->setAmount($this->getIntegerFormattedAmount($input[Fields::PAYER_AMOUNT]));
-
-        $payment->setQrCodeId($input[Fields::MERCHANT_TRAN_ID]);
+        $payment = $this->createOrFetchGatewayPaymentEntityForQr($input);
 
         $this->repo->saveOrFail($payment);
 
@@ -862,6 +863,27 @@ class Gateway extends Base\Gateway
         ];
 
         return $qrData;
+    }
+
+    protected function createOrFetchGatewayPaymentEntityForQr($input)
+    {
+        if (isset($input['razorpay_payment_id']) === true)
+        {
+            $qrCodeId = $input[Fields::MERCHANT_TRAN_ID];
+
+            $payment = $this->repo->fetchByQrCodeId($qrCodeId);
+
+            $payment->setPaymentId($input['razorpay_payment_id']);
+        }
+        else{
+            $payment = $this->createGatewayPaymentEntity($input);
+
+            $payment->setAmount($this->getIntegerFormattedAmount($input[Fields::PAYER_AMOUNT]));
+
+            $payment->setQrCodeId($input[Fields::MERCHANT_TRAN_ID]);
+        }
+
+        return $payment;
     }
 
     public function refund(array $input)

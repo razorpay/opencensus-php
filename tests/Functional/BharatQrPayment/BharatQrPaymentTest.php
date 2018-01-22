@@ -56,6 +56,34 @@ class BharatQrPaymentTest extends TestCase
         $this->assertEquals($bharatQr['expected'], true);
     }
 
+    public function testUnexpectedPayment()
+    {
+        $request = $this->testData['testQrPaymentProcess'];
+
+        $this->refreshApplication();
+
+        $this->ba->noAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $xmlResponse = $response['original'];
+
+        $response = $this->parseResponseXml($xmlResponse);
+
+        $this->assertEquals('OK', $response[0]);
+
+        // Live because by default mode is live
+        // if entity id is not given
+        $bharatQr = $this->getLastEntity('bharat_qr', true, 'live');
+
+        $payment =  $this->getLastEntity('payment', true, 'live');
+
+        $this->assertEquals('card', $payment['method']);
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertEquals($bharatQr['expected'], false);
+    }
+
     public function testUpiQrPaymentProcess()
     {
         $request = $this->testData[__FUNCTION__];
@@ -87,36 +115,15 @@ class BharatQrPaymentTest extends TestCase
 
         $this->assertEquals($qrCode['id'], $upi['qr_code_id']);
 
-        $this->assertEquals($payment['id'], $upi['payment_id']);
+        $this->assertNotNull($upi['payment_id']);
+
         $this->assertEquals($bharatQr['expected'], true);
-    }
-
-    public function testUnexpectedPayment()
-    {
-        $request = $this->testData['testQrPaymentProcess'];
-
-        $response = $this->makeRequestAndGetContent($request);
-
-        $xmlResponse = $response['original'];
-
-        $response = $this->parseResponseXml($xmlResponse);
-
-        $this->assertEquals('OK', $response[0]);
-
-        // Live because by default mode is live
-        // if entity id is not given
-        $bharatQr = $this->getLastEntity('bharat_qr', true, 'live');
-
-        $payment =  $this->getLastEntity('payment', true, 'live');
-
-        $this->assertEquals('card', $payment['method']);
-        $this->assertEquals('authorized', $payment['status']);
-
-        $this->assertEquals($bharatQr['expected'], false);
     }
 
     public function testFailedPayment()
     {
+        $this->markTestSkipped('We wont be getting notifications for failed payments');
+
         $request = $this->testData['testQrPaymentProcess'];
 
         unset($request['content']['F038']);

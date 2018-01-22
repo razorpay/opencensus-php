@@ -425,12 +425,12 @@ class BasicAuth
 
     public function directAuth()
     {
-        $key = $this->request->input('key_id');
+        //$key = $this->request->input('key_id');
 
-        if (empty($key) === false)
-        {
-            return $this->publicAuth();
-        }
+        //if (empty($key) === false)
+        //{
+        //    return $this->publicAuth();
+        //}
 
         $this->setType(Type::DIRECT_AUTH);
     }

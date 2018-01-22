@@ -53,7 +53,11 @@ class Service extends Base\Service
 
         $bharatQrInputParams = $this->callGatewayFunction($gateway, $input);
 
-        $valid = $this->core->processPayment($bharatQrInputParams);
+        list($valid, $paymentId) = $this->core->processPayment($bharatQrInputParams);
+
+        $input['razorpay_payment_id'] = $paymentId;
+
+        $this->callGatewayFunction($gateway, $input);
 
         $response = $this->getResponse($valid);
 

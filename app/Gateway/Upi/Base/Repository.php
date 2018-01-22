@@ -34,6 +34,13 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function fetchByQrCodeId($qrCodeId)
+    {
+        return $this->newQuery()
+            ->where('qr_code_id' , '=', $qrCodeId)
+            ->first();
+    }
+
     public function fetchAllForBankUpdate($limit = 100, $lastId = 0)
     {
         $paymentId = $this->repo->payment->dbColumn(Payment\Entity::ID);

@@ -40,6 +40,7 @@ class Gateway extends Base\Gateway
             case Base\Action::AUTHORIZE:
 
                 $entity->setAmount($this->input['payment']['amount']);
+
             default:
         }
 
