@@ -22,7 +22,6 @@ return [
                 'value'       => 25,
                 'campaign'    => 'silent-ads',
                 'used'        => 0,
-                'merchant_id' => "10000000000000"
             ],
         ],
     ],
