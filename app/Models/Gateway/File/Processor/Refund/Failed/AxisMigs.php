@@ -22,6 +22,7 @@ class AxisMigs extends Base
     const REFUND_TYPE            = 'Refund Type';
     const MERCHANT_CODE          = 'Merchant Code';
     const PAYMENT_ID             = 'Payment ID';
+    const ACQUIRER               =  Payment\Gateway::ACQUIRER_AXIS;
 
     protected function formatDataForFile(array $data)
     {

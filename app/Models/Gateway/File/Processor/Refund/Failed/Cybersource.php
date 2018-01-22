@@ -22,6 +22,7 @@ class Cybersource extends Base
     const TRANSACTION_DATE        = 'Original Transaction date';
     const PAYMENT_AMOUNT          = 'Original Payment Amount';
     const REFUND_AMOUNT           = 'Original Refund Amount';
+    const ACQUIRER                =  Payment\Gateway::ACQUIRER_HDFC;
 
     protected function formatDataForFile(array $data)
     {

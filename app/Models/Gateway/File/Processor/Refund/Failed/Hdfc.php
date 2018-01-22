@@ -20,6 +20,7 @@ class Hdfc extends Base
     const REFUND_AMOUNT    = 'Refund Amount';
     const PAYMENT_AMOUNT   = 'Payment Amount';
     const MERCHANT_CODE    = 'Merchant Code';
+    const ACQUIRER         =  Payment\Gateway::ACQUIRER_HDFC;
 
     protected function formatDataForFile(array $data)
     {
