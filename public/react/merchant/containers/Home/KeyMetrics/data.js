@@ -340,12 +340,20 @@ export const getTimelineData = ({
     aggregates = [],
     groupAggregatesMap = {};
 
+  let csvData = [],
+    csvHeader = ['#', 'Date'],
+    csvFooter = ['', 'Total'],
+    grandTotal = 0;
+
   if (groups.length === 0) {
+
+    csvData = csvData.concat([csvHeader, csvFooter.concat([0])]);
+
     return {
       labels: [],
       datasets: [],
       aggregates: [],
-      csv: '',
+      csv: arrayToCsvDataUrl(csvData),
     };
   }
 
@@ -516,11 +524,6 @@ export const getTimelineData = ({
 
     return result;
   }, []);
-
-  let csvData = [],
-    csvHeader = ['#', 'Date'],
-    csvFooter = ['', 'Total'],
-    grandTotal = 0;
 
   timestamps.forEach((timestamp, tsIndex) => {
     // if missing value
