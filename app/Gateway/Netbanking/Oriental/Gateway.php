@@ -345,7 +345,7 @@ class Gateway extends Base\Gateway
         return $response;
     }
 
-    private function getMerchantId()
+    public final function getMerchantId()
     {
         $merchantId = $this->getLiveMerchantId();
 
