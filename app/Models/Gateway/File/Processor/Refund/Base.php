@@ -62,10 +62,15 @@ class Base extends BaseProcessor
         {
             $payment = $refund->payment;
             $terminal = $payment->terminal;
+            $card = $payment->card;
 
             $col['refund'] = $refund->toArray();
+
             $col['payment'] = $payment->toArray();
+
             $col['terminal'] = $terminal->toArray();
+
+            $col['card'] = $card->toArray();
 
             $data[] = $col;
         }
