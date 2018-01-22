@@ -35,6 +35,7 @@ class Base extends Refund\Base
                 $begin,
                 $end,
                 static::GATEWAY,
+                static::ACQUIRER,
                 static::CARD_GATEWAY_API_REFUND_SPAN
                 );
         }

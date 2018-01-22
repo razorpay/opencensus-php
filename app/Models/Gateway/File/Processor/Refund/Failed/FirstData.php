@@ -22,6 +22,7 @@ class FirstData extends Base
     const REFUND_AMOUNT           = 'Refund Amount';
     const PAYMENT_AMOUNT          = 'Payment Amount';
     const STORE_ID                = 'Store ID';
+    const ACQUIRER                =  Payment\Gateway::ACQUIRER_ICIC;
 
     protected function formatDataForFile(array $data)
     {

@@ -285,7 +285,7 @@ class Repository extends Base\Repository
      * six months from payment created at . It could not be processed via API
      * @return array
      */
-    public function fetchFailedCardRefundsToProcessedManually($from, $to, $gateway, $timerange)
+    public function fetchFailedCardRefundsToProcessedManually($from, $to, $gateway, $acquirer, $timerange)
     {
         $refundAttrs = $this->dbColumn('*');
 
@@ -305,10 +305,18 @@ class Repository extends Base\Repository
 
         $paymentRefundStatus = $this->repo->payment->dbColumn(Payment\Entity::REFUND_STATUS);
 
+        $TerminalId = $this->repo->terminal->dbColumn(Terminal\Entity::ID);
+
+        $paymentTerminalAttr = $this->repo->payment->dbColumn(Payment\Entity::TERMINAL_ID);
+
+        $terminalAcquirerAttr = $this->repo->terminal->dbColumn(Terminal\Entity::GATEWAY_ACQUIRER);
+
         return $this->newQuery()
                     ->select($refundAttrs)
                     ->join(Table::PAYMENT, $refundPaymentIdAttr, '=', $paymentIdAttr)
+                    ->join(Table::TERMINAL,$paymentTerminalAttr, '=', $TerminalId)
                     ->where($refundStatus, '=',Refund\STATUS::FAILED)
+                    ->where($terminalAcquirerAttr, '=',$acquirer)
                     ->whereNotNull($paymentRefundStatus)
                     ->where($refundCreatedAt, '>=', $from)
                     ->where($refundCreatedAt, '<=', $to)
