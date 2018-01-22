@@ -602,6 +602,10 @@ class Core extends Base\Core
             // TODO : merge all balance and credits update in updateBalances
             if ($merchant->getRefundSource() === RefundSource::CREDITS)
             {
+                // transaction has to be saved as we create associated credit log
+                // transaction inside the updateCredits method.
+                $this->repo->saveOrFail($txn);
+
                 $this->updateCredits($txn, $refund);
             }
 
