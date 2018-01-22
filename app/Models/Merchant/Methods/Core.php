@@ -319,14 +319,9 @@ class Core extends Base\Core
         return $this->disablePaymentBanks($method, $input);
     }
 
-    protected function getPaymentMethods(Merchant\Entity $merchant)
+    protected function getPaymentMethods(Merchant\Entity $merchant): Entity
     {
         $methods = $this->repo->methods->getMethodsForMerchant($merchant);
-
-        if ($methods === null)
-        {
-            $methods = $this->setDefaultMethods($merchant);
-        }
 
         return $methods;
     }

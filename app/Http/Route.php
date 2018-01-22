@@ -1873,13 +1873,10 @@ final class Route
     // TODO: Make this a blacklist of get routes later.
     //
     public static $slaveRoutes = [
-        // 'account',
-        // 'checkout',
-        // 'checkout_public',
-        // 'checkout_hosted_get',
-        // 'merchant_methods',
+        'checkout',
+        'merchant_methods',
         // 'merchant_methods_downtime',
-        // 'merchant_checkout_preferences',
+        'merchant_checkout_preferences',
         // 'payment_get_status',
         'payment_bank_transfer_fetch',
         'batch_fetch_multiple',
