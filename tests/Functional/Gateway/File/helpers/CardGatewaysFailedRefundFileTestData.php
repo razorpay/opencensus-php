@@ -101,11 +101,11 @@ return [
         ],
     ],
 
-    'testHdfcFaileddRefundFile' => [
+    'testfssFaileddRefundFile' => [
         'request' => [
             'content' => [
                 'type'    => 'refund_failed',
-                'targets' => ['hdfc'],
+                'targets' => ['hdfc_fss'],
                 'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
                 'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp(),
             ],
@@ -124,7 +124,7 @@ return [
                         'partially_processed' => false,
                         'attempts'            => 1,
                         'type'                => 'refund_failed',
-                        'target'              => 'hdfc',
+                        'target'              => 'hdfc_fss',
                         'entity'              => 'gateway_file',
                         'admin'               => true,
                     ],

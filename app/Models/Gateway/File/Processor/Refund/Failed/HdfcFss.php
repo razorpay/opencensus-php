@@ -5,7 +5,7 @@ namespace RZP\Models\Gateway\File\Processor\Refund\Failed;
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
 
-class Hdfc extends Base
+class HdfcFss extends Base
 {
     const GATEWAY            = Payment\Gateway::HDFC;
     const EXTENSION          = FileStore\Format::XLSX;

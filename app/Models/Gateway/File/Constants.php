@@ -20,6 +20,7 @@ class Constants
     const AXIS_MIGS       = 'axis_migs';
     const ICIC_FIRST_DATA = 'icic_first_data';
     const CYBERSOURCE     = 'cybersource';
+    const HDFC_FSS        = 'hdfc_fss';
 
     /**
      * Stores a mapping of valid banks for each file type
@@ -58,7 +59,7 @@ class Constants
             self::AXIS_MIGS,
             self::ICIC_FIRST_DATA,
             self::CYBERSOURCE,
-            self::HDFC,
+            self::HDFC_FSS,
         ],
     ];
 
@@ -109,7 +110,7 @@ class Constants
             self::AXIS_MIGS       => ['supportteam@razorpay.com'],
             self::ICIC_FIRST_DATA => ['supportteam@razorpay.com'],
             self::CYBERSOURCE     => ['supportteam@razorpay.com'],
-            self::HDFC            => ['supportteam@razorpay.com'],
+            self::HDFC_FSS        => ['supportteam@razorpay.com'],
         ],
     ];
 }
