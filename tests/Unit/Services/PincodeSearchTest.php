@@ -5,7 +5,7 @@ namespace RZP\Tests\Unit\Services;
 use RZP\Exception;
 use RZP\Tests\TestCase;
 
-class PincodeSearcherClientTest extends TestCase
+class PincodeSearchTest extends TestCase
 {
     public function setUp()
     {
@@ -23,8 +23,8 @@ class PincodeSearcherClientTest extends TestCase
         $result = $client->fetchCityAndStateFromPincode($pincode);
 
         $this->assertSame([
-            'city' => "South West Delhi",
-            'state' => "Delhi",
+            'city'       => "South West Delhi",
+            'state'      => "Delhi",
             'state_code' => "DL",
         ], $result);
     }
@@ -46,6 +46,6 @@ class PincodeSearcherClientTest extends TestCase
 
     protected function getPincodeSearcherClient()
     {
-        return $this->app['pincodesearcher.client'];
+        return $this->app['pincodesearch'];
     }
 }

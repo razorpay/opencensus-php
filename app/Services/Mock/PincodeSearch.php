@@ -2,9 +2,9 @@
 
 namespace RZP\Services\Mock;
 
-use RZP\Services\PincodeSearcherClient as BasePincodeSearcherClient;
+use RZP\Services\PincodeSearch as BasePincodeSearcherClient;
 
-class PincodeSearcherClient extends BasePincodeSearcherClient
+class PincodeSearch extends BasePincodeSearcherClient
 {
     const TEST_RESPONSE = [
         'status'  => 'ok',

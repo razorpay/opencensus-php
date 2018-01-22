@@ -159,7 +159,7 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerGeolocation();
 
-        $this->registerPincodeSearcherClient();
+        $this->registerPincodeSearch();
     }
 
     /**
@@ -191,7 +191,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'workflow',
             'authservice',
             'sns',
-            'pincodesearcher.client',
+            'pincodesearch',
         ];
     }
 
@@ -405,13 +405,13 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->app['trace']->pushProcessor($apiProcessor);
     }
 
-    protected function registerPincodeSearcherClient()
+    protected function registerPincodeSearch()
     {
-        $this->app->singleton('pincodesearcher.client', function($app)
+        $this->app->singleton('pincodesearch', function($app)
         {
-            $mock = $app['config']->get('applications.pincodesearcher.mock');
+            $mock = $app['config']->get('applications.pincodesearch.mock');
 
-            $implementation = $mock ? Mock\PincodeSearcherClient::class : PincodeSearcherClient::class;
+            $implementation = $mock ? Mock\PincodeSearch::class : PincodeSearch::class;
 
             return new $implementation($app);
         });

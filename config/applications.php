@@ -175,9 +175,9 @@ return [
         ],
     ],
 
-    'pincodesearcher' => [
+    'pincodesearch' => [
         'mock'    => env('PINCODE_MOCK', false),
         'url'     => env('PINCODE_BASE_URL'),
-        'api_key' => env('PINCODE_API_KEY')
+        'api_key' => env('PINCODE_SEARCH_API_KEY')
     ],
 ];

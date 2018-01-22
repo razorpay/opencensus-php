@@ -4,15 +4,14 @@ namespace RZP\Services;
 
 use Cache;
 use Requests;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\IndianStates;
 
 
-class PincodeSearcherClient
+class PincodeSearch
 {
-
     const REQUEST_TIMEOUT = 5;
 
     // @see: https://data.gov.in/resources/all-india-pincode-directory/api
@@ -27,7 +26,7 @@ class PincodeSearcherClient
 
     const CACHE_TTL = 86400;
 
-    const CACHE_KEY_FORMAT = 'pincodesearcher_%s';
+    const CACHE_KEY_FORMAT = 'pincodesearch_%s';
 
     protected $config;
 
@@ -43,10 +42,9 @@ class PincodeSearcherClient
 
         $this->cache = $app['cache'];
 
-        $this->config = $app['config']->get('applications.pincodesearcher');
+        $this->config = $app['config']->get('applications.pincodesearch');
 
         $this->baseUrl = $this->config['url'];
-
     }
 
     protected function getCacheKey(int $pincode)
@@ -72,8 +70,8 @@ class PincodeSearcherClient
         );
 
         $request = array(
-            'url' => $url,
-            'method' => $method,
+            'url'     => $url,
+            'method'  => $method,
             'headers' => $headers,
             'options' => $options,
             'content' => $data
@@ -81,13 +79,13 @@ class PincodeSearcherClient
 
         $response = $this->sendRawRequest($request);
 
-        $this->trace->info(TraceCode::PINCODE_SEARCHER_RESPONSE, [
+        $this->trace->info(TraceCode::PINCODE_SEARCH_RESPONSE, [
                     'response' => $response->body
                 ]);
 
         $decodedResponse = json_decode($response->body, true);
 
-        $this->trace->info(TraceCode::PINCODE_SEARCHER_RESPONSE, $decodedResponse ?? []);
+        $this->trace->info(TraceCode::PINCODE_SEARCH_RESPONSE, $decodedResponse ?? []);
 
         //check if $response is a valid json
         if (json_last_error() !== JSON_ERROR_NONE)
@@ -103,7 +101,7 @@ class PincodeSearcherClient
 
     protected function sendRawRequest(array $request)
     {
-        $this->trace->info(TraceCode::PINCODE_SEARCHER_REQUEST, $request);
+        $this->trace->info(TraceCode::PINCODE_SEARCH_REQUEST, $request);
 
         $method = $request['method'];
 
@@ -135,14 +133,12 @@ class PincodeSearcherClient
                     'Server error',
                     ErrorCode::SERVER_ERROR);
             }
+        }
 
-        }
-        else
-        {
-            throw new Exception\ServerErrorException(
-                'Server error',
-                ErrorCode::SERVER_ERROR);
-        }
+        throw new Exception\ServerErrorException(
+            'Server error',
+            ErrorCode::SERVER_ERROR);
+
     }
 
     public function fetchCityAndStateFromPincode(int $pincode): array
@@ -185,7 +181,6 @@ class PincodeSearcherClient
         $this->cache->put($key, $response, static::CACHE_TTL);
 
         return $response;
-
     }
 
     /**
@@ -197,9 +192,8 @@ class PincodeSearcherClient
     protected function validate(int $pincode)
     {
         if ((strlen($pincode) !== 6) or
-            (ctype_digit($pincode) === false) or
-            (intval($pincode) > self::MAX_PINCODE) or
-            (intval($pincode) < self::MIN_PINCODE))
+            ($pincode > self::MAX_PINCODE) or
+            ($pincode < self::MIN_PINCODE))
         {
             return false;
         }
