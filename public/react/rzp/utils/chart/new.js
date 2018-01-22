@@ -16,6 +16,7 @@ global.elements.arc.borderWidth = 0;
 global.elements.point.radius = 0;
 global.elements.point.hoverRadius = 0;
 
+
 const tooltips = global.tooltips;
 tooltips.mode = 'index';
 tooltips.multiKeyBackground = 'rgba(0, 0, 0, 0)';
@@ -85,7 +86,12 @@ export const timeScale = ({ xLabel, yLabel }) => {
             beginAtZero: true,
             suggestedMax: 10,
             maxTicksLimit: 10,
-            callback: value => humanReadableIndian(value),
+            callback: value => {
+
+              // if spaces are not added, the labels get
+              // cut
+              return "    "  + humanReadableIndian(value);
+            },
             fontColor: 'rgba(45, 48, 51, 0.5)',
           },
           offset: true,
