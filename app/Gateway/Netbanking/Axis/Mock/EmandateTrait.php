@@ -16,8 +16,6 @@ trait EmandateTrait
 {
     protected function handleEmandateAuthFlow(array $input)
     {
-        $secondPayment = false;
-
         $this->validateActionInput($input, 'emandaterequest');
 
         $data = $this->getGatewayInstance()->getEmandateDecryptedData($input[RequestFields::DATA]);
@@ -98,6 +96,11 @@ trait EmandateTrait
             ResponseFields::PAYMENT_MODE    => Constants::PMD,
             ResponseFields::CHECKSUM        => $input[RequestFields::CHECKSUM]
         ];
+
+        if ($gatewayEntity['amount'] === '0')
+        {
+            $data[ResponseFields::AMOUNT] = '';
+        }
 
         $this->content($data, 'verify_emandate');
 
