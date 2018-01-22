@@ -677,7 +677,7 @@ final class Route
         'onboarding_features_update_status'       => ['put',      'onboarding/features/{feature}/status',           'FeatureController@updateFeatureActivationStatus'                   ],
         'onboarding_features_fetch_status'        => ['get',      'onboarding/features/{feature}/status',           'FeatureController@getFeatureActivationStatus'                      ],
         'onboarding_features_bulk_update_status'  => ['put',      'onboarding/features/status/bulk',                'FeatureController@bulkUpdateFeatureActivationStatus'               ],
-        'onboarding_features_update_timestamps'   => ['put',      'onboarding/features/backfill/timestamps',        'FeatureController@backfillTimestamps'                              ],
+        'onboarding_features_update_timestamps'   => ['put',      'onboarding/features/backfill_timestamps',        'FeatureController@backfillTimestamps'                              ],
 
         // Deprecated routes - maintaining for BC - Remove after dashboard changes
         'onboarding_features_fetch_submissions'   => ['get',      'onboarding/features/submissions',                'FeatureController@getFeatureOnboardingRequestsByStatus'            ],
