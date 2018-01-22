@@ -20,6 +20,8 @@ class SharpGatewayTest extends TestCase
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $this->gateway = 'sharp';
+
+        $this->mockTokenex();
     }
 
     public function testPayment()
@@ -29,6 +31,72 @@ class SharpGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals($payment['status'], 'captured');
+    }
+
+    public function testRecurringPaymentAuthenticateCard()
+    {
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $response = $this->doAuthPayment($payment);
+        $paymentId = $response['razorpay_payment_id'];
+
+        $paymentEntity = $this->getEntityById('payment', $paymentId, true);
+        
+        $this->assertNotNull($paymentEntity['token_id']);
+        $this->assertEquals('1000SharpTrmnl', $paymentEntity['terminal_id']);
+
+        $token = $paymentEntity['token_id'];
+
+        unset($payment['card']);
+
+        // Set payment for subsequent recurring payment
+        $payment['token'] = $token;
+
+        // Switch to private auth for subsequent recurring payment
+        $this->ba->privateAuth();
+
+        $response = $this->doS2sRecurringPayment($payment);
+        $paymentId = $response['razorpay_payment_id'];
+
+        $paymentEntity = $this->getEntityById('payment', $paymentId, true);
+
+
+        $this->assertNotNull($paymentEntity['token_id']);
+        $this->assertEquals('1000SharpTrmnl', $paymentEntity['terminal_id']);
+    }
+
+    public function testRecurringHardDeclinePaymentAuthenticateCard()
+    {
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+        $payment['amount'] = '5555';
+        $payment['card']['number'] = '4006660000000007';
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testRecurringSoftDeclinePaymentAuthenticateCard()
+    {
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+        $payment['amount'] = '4444';
+        $payment['card']['number'] = '4006660000000007';
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
     }
 
     public function testPaymentWithGet()

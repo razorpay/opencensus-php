@@ -4,7 +4,6 @@ namespace RZP\Models\Merchant\Account;
 
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
-use RZP\Models\BankAccount;
 use RZP\Models\Merchant\Detail;
 
 class Core extends Merchant\Core

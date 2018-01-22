@@ -199,16 +199,12 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
-        $unprocessedRefunds = $this->getUnprocessedRefunds();
-
-        $processedRefunds = $this->getProcessedRefunds();
-
-        if (in_array($input['refund']['id'], $unprocessedRefunds) === true)
+        if ($this->isUnprocessedRefund($input) === true)
         {
             return false;
         }
 
-        if (in_array($input['refund']['id'], $processedRefunds) === true)
+        if ($this->isProcessedRefund($input) === true)
         {
             return true;
         }

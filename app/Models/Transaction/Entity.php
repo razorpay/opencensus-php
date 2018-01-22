@@ -7,10 +7,11 @@ use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Dispute;
 use RZP\Models\Merchant;
+use RZP\Models\Transfer;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
-use RZP\Models\Payment\Refund;
 use RZP\Models\Transaction;
+use RZP\Models\Payment\Refund;
 
 class Entity extends Base\PublicEntity
 {
@@ -438,7 +439,7 @@ class Entity extends Base\PublicEntity
 
     public function setAmount($amount)
     {
-        assert ($amount > 0);
+        assert ($amount >= 0);
 
         $this->setAttribute(self::AMOUNT, $amount);
     }
@@ -593,6 +594,16 @@ class Entity extends Base\PublicEntity
 
         unset($reportTxn[self::ID]);
 
+        //
+        // For linked accounts alone, add the transfer_id
+        // which should show up for payment and refund
+        // entity types
+        //
+        if ($this->merchant->isLinkedAccount() === true)
+        {
+            $reportTxn[Payment\Entity::TRANSFER_ID] = null;
+        }
+
         $reportTxn[Payment\Entity::DESCRIPTION] = null;
         $reportTxn[Payment\Entity::NOTES] = null;
         $reportTxn[Refund\Entity::PAYMENT_ID] = null;
@@ -619,8 +630,10 @@ class Entity extends Base\PublicEntity
                 return null;
             }
 
+            $this->addLinkedAccountTransferIdFromPayment($payment, $reportTxn);
+
             $reportTxn[Payment\Entity::DESCRIPTION] = $payment->getDescription();
-            $reportTxn[Payment\Entity::NOTES] = $payment->getNotesJson();
+            $reportTxn[Payment\Entity::NOTES]       = $payment->getNotesJson();
 
             $this->fillPaymentDetails($payment, $reportTxn);
         }
@@ -636,7 +649,9 @@ class Entity extends Base\PublicEntity
                 return null;
             }
 
-            $reportTxn[Refund\Entity::NOTES] = $refund->getNotesJson();
+            $this->addLinkedAccountTransferIdFromPayment($payment, $reportTxn);
+
+            $reportTxn[Refund\Entity::NOTES]      = $refund->getNotesJson();
             $reportTxn[Refund\Entity::PAYMENT_ID] = $payment->getPublicId();
 
             $this->fillPaymentDetails($payment, $reportTxn);
@@ -688,6 +703,16 @@ class Entity extends Base\PublicEntity
         }
 
         return $reportTxn;
+    }
+
+    protected function addLinkedAccountTransferIdFromPayment(Payment\Entity $payment, & $reportTxn)
+    {
+        if ($this->merchant->isLinkedAccount() === true)
+        {
+            $transferId = Transfer\Entity::getSignedId($payment->getTransferId());
+
+            $reportTxn[Payment\Entity::TRANSFER_ID] = $transferId;
+        }
     }
 
     protected function fillPaymentDetails(Payment\Entity $payment, & $reportTxn)

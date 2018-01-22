@@ -235,6 +235,7 @@ class Repository extends Base\Repository
             {
                 $rPaymentId = $this->dbColumn(Refund\Entity::PAYMENT_ID);
                 $rCreatedAt = $this->dbColumn(Refund\Entity::CREATED_AT);
+                $rBaseAmount = $this->dbColumn(Refund\Entity::BASE_AMOUNT);
 
                 $pRepo = $this->repo->payment;
                 $pId = $pRepo->dbColumn(Payment\Entity::ID);
@@ -245,7 +246,8 @@ class Repository extends Base\Repository
                      ->where($rCreatedAt, '>=', $from)
                      ->where($rCreatedAt, '<=', $to)
                      ->where($pType, '=', $gatewayCode)
-                     ->where($pGateway, '=', $gateway);
+                     ->where($pGateway, '=', $gateway)
+                     ->where($rBaseAmount, '!=', 0);
             })
             ->with('payment')
             ->get();
@@ -313,6 +315,7 @@ class Repository extends Base\Repository
 
         $rPaymentId = $this->dbColumn(Refund\Entity::PAYMENT_ID);
         $rCreatedAt = $this->dbColumn(Refund\Entity::CREATED_AT);
+        $rBaseAmount = $this->dbColumn(Refund\Entity::BASE_AMOUNT);
 
         $pId = $pRepo->dbColumn(Payment\Entity::ID);
         $pType = $pRepo->dbColumn($type);
@@ -331,6 +334,7 @@ class Repository extends Base\Repository
                     ->where($pType, '=', $gatewayCode)
                     ->where($pGateway, '=', $gateway)
                     ->where($tTpv, '=', $tpvEnabled)
+                    ->where($rBaseAmount, '!=', 0)
                     ->with('payment')
                     ->get();
     }
@@ -361,6 +365,7 @@ class Repository extends Base\Repository
         $tRepo = $this->repo->terminal;
         $tTableName = $tRepo->getTableName();
 
+        $rBaseAmount = $this->dbColumn(Refund\Entity::BASE_AMOUNT);
         $rPaymentId = $this->dbColumn(Refund\Entity::PAYMENT_ID);
         $rCreatedAt = $this->dbColumn(Refund\Entity::CREATED_AT);
 
@@ -381,6 +386,7 @@ class Repository extends Base\Repository
                     ->where($pType, '=', $gatewayCode)
                     ->where($pGateway, '=', $gateway)
                     ->where($tCorp, '=', $corporate)
+                    ->where($rBaseAmount, '!=', 0)
                     ->with('payment')
                     ->get();
     }

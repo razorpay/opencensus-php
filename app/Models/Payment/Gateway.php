@@ -471,6 +471,11 @@ class Gateway
         Gateway::NETBANKING_HDFC,
     ];
 
+    public static $recurringCardNetworks = [
+        Network::MC,
+        Network::VISA,
+    ];
+
     /**
      * List of ALL auth types and the corresponding
      * banks supported by that auth type.
@@ -491,6 +496,16 @@ class Gateway
     ];
 
     /**
+     * TODO: This needs to be removed after we migrate all the gateways to
+     *
+     * @var array
+     */
+    public static $zeroRupeeEmandateBanks = [
+        IFSC::UTIB,
+        IFSC::ICIC,
+    ];
+
+    /**
      * List of gateways and the banks that they support
      * for e-mandate. This list is required because some
      * gateways might support more than one bank for
@@ -502,11 +517,6 @@ class Gateway
         Gateway::NETBANKING_ICICI   => [IFSC::ICIC],
         Gateway::NETBANKING_AXIS    => [IFSC::UTIB],
         Gateway::NETBANKING_HDFC    => [IFSC::HDFC],
-    ];
-
-    public static $recurringCardNetworks = [
-        Network::MC,
-        Network::VISA,
     ];
 
     /**
@@ -707,6 +717,11 @@ class Gateway
         return in_array($gateway, self::$recurringGateways, true);
     }
 
+    public static function isZeroRupeeFlowSupported($bank): bool
+    {
+        return in_array($bank, self::$zeroRupeeEmandateBanks, true);
+    }
+
     /**
      * Checks whether the bank requires a file-based system to register for eMandate
      *
@@ -727,6 +742,23 @@ class Gateway
     public static function isFileBasedEMandateDebitGateway(string $gateway): bool
     {
         return (in_array($gateway, self::$fileBasedEMandateDebitGateways) === true);
+    }
+
+    public static function getAllEMandateBanks(): array
+    {
+        $banks = [];
+
+        foreach (self::$emandateBanks as $emandateBanks)
+        {
+            $banks = array_merge($banks, $emandateBanks);
+        }
+
+        return array_values(array_unique($banks));
+    }
+
+    public static function getZeroRupeeEmandateBanks(): array
+    {
+        return self::$zeroRupeeEmandateBanks;
     }
 
     public static function getAvailableEmandateBanksForAuthType(string $authType): array

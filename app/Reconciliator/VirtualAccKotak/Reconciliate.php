@@ -33,7 +33,7 @@ class Reconciliate extends Base\Reconciliate
      * @param string $fileName
      * @return string
      */
-    protected function getTypeName()
+    protected function getTypeName($filename)
     {
         return self::PAYMENT;
     }

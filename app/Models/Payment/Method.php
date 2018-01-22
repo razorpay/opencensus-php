@@ -29,7 +29,7 @@ class Method
         // using emandate as a method Currently we are just
         // accepting emandate as a method from the request
         // but not actually setting the method as emandate.
-        // self::EMANDATE      => 'E-Mandate',
+        self::EMANDATE      => 'eMandate',
     ];
 
     protected static $asynchronous = [

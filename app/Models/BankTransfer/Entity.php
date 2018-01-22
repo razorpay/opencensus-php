@@ -69,6 +69,9 @@ class Entity extends Base\PublicEntity
 
     const MAX_DESCRIPTION_LENGTH = 255;
 
+    // Input keys
+    const REFUND_ID          = 'refund_id';
+
     protected $fillable = [
         self::PAYMENT_ID,
         self::PAYER_NAME,
