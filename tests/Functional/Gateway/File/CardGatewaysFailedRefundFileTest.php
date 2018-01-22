@@ -35,27 +35,7 @@ class CardGatewaysFailedRefundFileTest extends TestCase
 
         $this->fixtures->create('merchant:bank_account', ['merchant_id' => '10000000000000']);
 
-        $payment = $this->getDefaultPaymentArray();
-
-        $payment = $this->doAuthAndCapturePayment($payment);
-
-        $this->refundPayment($payment['id'], 100);
-
-        $this->refundPayment($payment['id'], 100);
-
-        $this->refundPayment($payment['id'], 100);
-
-        $refunds = $this->getEntities('refund', [], true);
-
-        foreach ($refunds['items'] as $refund)
-        {
-            $this->fixtures->edit('refund', $refund['id'], ['status' => 'failed']);
-
-            // Only those refunds that cannot be processed via API needs to appear
-            $six_months_ago = $refund['created_at'] - 15552000;
-
-            $this->fixtures->edit('payment', $payment['id'], ['created_at' => $six_months_ago]);
-        }
+        $this->createFailedRefundsforOldpayments();
 
         $this->ba->appAuth();
 
@@ -107,25 +87,7 @@ class CardGatewaysFailedRefundFileTest extends TestCase
 
         $authResponse = $this->doAuthPayment($this->payment);
 
-        $payment = $this->capturePayment($authResponse['razorpay_payment_id'], $this->payment['amount']);
-
-        $this->refundPayment($payment['id'], 100);
-
-        $this->refundPayment($payment['id'], 100);
-
-        $this->refundPayment($payment['id'], 100);
-
-        $refunds = $this->getEntities('refund', [], true);
-
-        foreach ($refunds['items'] as $refund)
-        {
-            $this->fixtures->edit('refund', $refund['id'], ['status' => 'failed']);
-
-            // Only those refunds that cannot be processed via API needs to appear
-            $six_months_ago = $refund['created_at'] - 15552000;
-
-            $this->fixtures->edit('payment', $payment['id'], ['created_at' => $six_months_ago]);
-        }
+        $this->createFailedRefundsforOldpayments();
 
         $this->ba->appAuth();
 
@@ -177,28 +139,7 @@ class CardGatewaysFailedRefundFileTest extends TestCase
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
-        $this->payment = $this->getDefaultPaymentArray();
-
-        $authResponse = $this->doAuthPayment($this->payment);
-
-        $payment = $this->capturePayment($authResponse['razorpay_payment_id'], $this->payment['amount']);
-
-        $this->refundPayment($payment['id'], 100);
-
-        $this->refundPayment($payment['id'], 100);
-
-        $this->refundPayment($payment['id'], 100);
-
-        $refunds = $this->getEntities('refund', [], true);
-
-        foreach ($refunds['items'] as $refund)
-        {
-            $this->fixtures->edit('refund', $refund['id'], ['status' => 'failed']);
-
-            $six_months_ago = $refund['created_at'] - 15552000;
-
-            $this->fixtures->edit('payment', $payment['id'], ['created_at' => $six_months_ago]);
-        }
+        $this->createFailedRefundsforOldpayments();
 
         $this->ba->appAuth();
 
@@ -254,24 +195,7 @@ class CardGatewaysFailedRefundFileTest extends TestCase
 
         $authResponse = $this->doAuthPayment($this->payment);
 
-        $payment = $this->capturePayment($authResponse['razorpay_payment_id'], $this->payment['amount']);
-
-        $this->refundPayment($payment['id'], 100);
-
-        $this->refundPayment($payment['id'], 100);
-
-        $this->refundPayment($payment['id'], 100);
-
-        $refunds = $this->getEntities('refund', [], true);
-
-        foreach ($refunds['items'] as $refund)
-        {
-            $this->fixtures->edit('refund', $refund['id'], ['status' => 'failed']);
-
-            $six_months_ago = $refund['created_at'] - 15552000;
-
-            $this->fixtures->edit('payment', $payment['id'], ['created_at' => $six_months_ago]);
-        }
+        $this->createFailedRefundsforOldpayments();
 
         $this->ba->appAuth();
 
@@ -321,25 +245,7 @@ class CardGatewaysFailedRefundFileTest extends TestCase
 
         $authResponse = $this->doAuthPayment($this->payment);
 
-        $payment = $this->capturePayment($authResponse['razorpay_payment_id'], $this->payment['amount']);
-
-        $this->refundPayment($payment['id'], 100);
-
-        $this->refundPayment($payment['id'], 100);
-
-        $this->refundPayment($payment['id'], 100);
-
-        $refunds = $this->getEntities('refund', [], true);
-
-        foreach ($refunds['items'] as $refund)
-        {
-            $this->fixtures->edit('refund', $refund['id'], ['status' => 'failed']);
-
-            // Only those refunds that cannot be processed via API needs to appear
-            $six_months_ago = $refund['created_at'] - 15552000;
-
-            $this->fixtures->edit('payment', $payment['id'], ['created_at' => $six_months_ago]);
-        }
+        $this->createFailedRefundsforOldpayments();
 
         $this->ba->appAuth();
 
@@ -377,5 +283,31 @@ class CardGatewaysFailedRefundFileTest extends TestCase
 
             return true;
         });
+    }
+
+    protected function createFailedRefundsforOldpayments()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $this->refundPayment($payment['id'], 100);
+
+        $this->refundPayment($payment['id'], 100);
+
+        $this->refundPayment($payment['id'], 100);
+
+        $refunds = $this->getEntities('refund', [], true);
+
+        foreach ($refunds['items'] as $refund)
+        {
+            $this->fixtures->edit('refund', $refund['id'], ['status' => 'failed']);
+
+            // Only those refunds that cannot be processed via API needs to appear
+            $six_months_ago = $refund['created_at'] - 15552000;
+
+            $this->fixtures->edit('payment', $payment['id'], ['created_at' => $six_months_ago]);
+        }
+
     }
 }
