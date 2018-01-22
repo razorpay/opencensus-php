@@ -108,34 +108,11 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postCreateKeys($merchantId)
-    {
-        $data = $this->service()->createKey($merchantId);
-
-        return ApiResponse::json($data);
-    }
-
-    public function getKeys($merchantId)
-    {
-        $data = $this->service()->fetchKeys($merchantId);
-
-        return ApiResponse::json($data);
-    }
-
     public function getKeySecret($keyId)
     {
         $data = (new Key\Core)->getKeySecret($keyId);
 
         return ApiResponse::json($data);
-    }
-
-    public function putKeys($merchantId, $keyId)
-    {
-        $input = Request::all();
-
-        $keys = $this->service()->updateKey($merchantId, $keyId, $input);
-
-        return ApiResponse::json($keys);
     }
 
     public function postAssignPricingPlan($id)
@@ -371,9 +348,9 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getMerchantBeneficiaryFile()
+    public function getMerchantBeneficiaryFile($channel)
     {
-        $data = $this->service()->getMerchantBeneficiaryFile();
+        $data = $this->service()->getMerchantBeneficiaryFile($channel);
 
         return ApiResponse::json($data);
     }
@@ -417,11 +394,11 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postMerchantBeneficiaryFile()
+    public function postMerchantBeneficiaryFile($channel)
     {
         $input = Request::all();
 
-        $data = $this->service()->postMerchantBeneficiaryFile($input);
+        $data = $this->service()->postMerchantBeneficiaryFile($input, $channel);
 
         return ApiResponse::json($data);
     }
@@ -561,6 +538,15 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $data = $this->service()->updateHoldFundsForMultipleMerchants($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function updateChannelForMultipleMerchants()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->updateChannelForMultipleMerchants($input);
 
         return ApiResponse::json($data);
     }
@@ -749,6 +735,13 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $response = $this->service(E::MERCHANT_DETAIL)->updateActivationStatus($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getActivationStatusChangeLog(string $id)
+    {
+        $response = $this->service(E::MERCHANT_DETAIL)->getActivationStatusChangeLog($id);
 
         return ApiResponse::json($response);
     }

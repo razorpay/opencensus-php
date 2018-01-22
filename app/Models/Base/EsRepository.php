@@ -12,7 +12,10 @@ use RZP\Exception\ServerErrorException;
 
 class EsRepository extends \Razorpay\Spine\Repository
 {
-    use Base\Traits\Es\QueryBuilder;
+    use Base\Traits\Es\QueryBuilder
+    {
+        getSortParameter as public getDefaultSortParameter;
+    }
 
     // Different actions on ES document
     const CREATE           = 'create';
@@ -106,7 +109,7 @@ class EsRepository extends \Razorpay\Spine\Repository
         $indexPrefix = $app['config']->get('database.es_entity_index_prefix');
         $typePrefix  = $app['config']->get('database.es_entity_type_prefix');
 
-        $this->setIndexAndTypeNameByPrefix($indexPrefix, $typePrefix);
+        $this->setIndexAndTypeName($indexPrefix, $typePrefix);
     }
 
     /**
@@ -116,11 +119,9 @@ class EsRepository extends \Razorpay\Spine\Repository
      * @param string $indexPrefix
      * @param string $typePrefix
      */
-    public function setIndexAndTypeNameByPrefix(
-        string $indexPrefix,
-        string $typePrefix)
+    public function setIndexAndTypeName(string $indexPrefix, string $typePrefix)
     {
-        $suffix = "{$this->entity}_{$this->mode}";
+        $suffix = $this->getIndexSuffix();
 
         $this->indexName = $indexPrefix . $suffix;
         $this->typeName  = $typePrefix . $suffix;
@@ -129,16 +130,25 @@ class EsRepository extends \Razorpay\Spine\Repository
     /**
      * Sets index name to a new value with new prefix.
      *
-     * Called from indexing command where in case of reindexing we might choose
+     * Called from indexing command where in case of re-indexing we might choose
      * to use new index name (via new prefix).
      *
      * @param string $indexPrefix
      */
-    public function setIndexNameByPrefix(string $indexPrefix)
+    public function setIndexName(string $indexPrefix)
     {
-        $suffix = "{$this->entity}_{$this->mode}";
+        $this->indexName = $indexPrefix . $this->getIndexSuffix();
+    }
 
-        $this->indexName = $indexPrefix . $suffix;
+    /**
+     * Returns suffix part of index name.
+     * Format: <entity>_<mode>
+     *
+     * @return string
+     */
+    public function getIndexSuffix(): string
+    {
+        return "{$this->entity}_{$this->mode}";
     }
 
     public function getIndexedFields(): array
@@ -263,6 +273,11 @@ class EsRepository extends \Razorpay\Spine\Repository
     {
     }
 
+    public function getSortParameter(): array
+    {
+        return $this->getDefaultSortParameter();
+    }
+
     /**
      * Builds es payload and makes bulk upsert request to es.
      *
@@ -289,18 +304,7 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $res = $this->esDao->bulkUpdate($params);
 
-        $errors = $res['errors'] ?? true;
-
-        if ($errors === true)
-        {
-            throw new ServerErrorException(
-                'Errors in bulkUpdate response',
-                ErrorCode::SERVER_ERROR_ES_OPERATION_ERRORED,
-                [
-                    'params' => $params,
-                    'res'    => $res,
-                ]);
-        }
+        $this->checkForBulkUpdateOperationErrors($params, $res);
 
         return $res;
     }
@@ -321,5 +325,40 @@ class EsRepository extends \Razorpay\Spine\Repository
         ];
 
         $this->esDao->delete($params);
+    }
+
+    protected function checkForBulkUpdateOperationErrors(array $params, array $res)
+    {
+        $errors = array_get($res, 'errors', true);
+
+        if ($errors === false)
+        {
+            return;
+        }
+
+        $items         = $res['items'] ?? [];
+        $itemsPerError = collect($items)
+                            ->filter(
+                                function($v, $k)
+                                {
+                                    return (isset($v['index']['error']) === true);
+                                })
+                            ->groupBy('index.error.type');
+
+        // Temporary: (Ref: https://github.com/razorpay/api/issues/3477)
+        // Just trace if there is only mapping errors. Otherwise if it
+        // contains other type of errors too raise exception.
+        if (($itemsPerError->count() === 1) and
+            ($itemsPerError->has('mapper_parsing_exception') === true))
+        {
+            $this->trace->info(TraceCode::ES_SYNC_FAILED, $itemsPerError->all());
+        }
+        else
+        {
+            throw new ServerErrorException(
+                'Errors in bulkUpdate response',
+                ErrorCode::SERVER_ERROR_ES_OPERATION_ERRORED,
+                $itemsPerError->all());
+        }
     }
 }

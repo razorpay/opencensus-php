@@ -29,7 +29,8 @@ class CreatePayoutsTable extends Migration
 
             $table->char(Payout::MERCHANT_ID, Payout::ID_LENGTH);
 
-            $table->char(Payout::CUSTOMER_ID, Customer\Entity::ID_LENGTH);
+            $table->char(Payout::CUSTOMER_ID, Customer\Entity::ID_LENGTH)
+                  ->nullable();
 
             $table->string(Payout::METHOD);
 
@@ -99,6 +100,8 @@ class CreatePayoutsTable extends Migration
             $table->index(Payout::METHOD);
 
             $table->index(Payout::STATUS);
+
+            $table->index([Payout::MERCHANT_ID, Payout::CREATED_AT]);
 
             $table->foreign(Payout::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)

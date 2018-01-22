@@ -107,10 +107,12 @@ return [
     ],
 
     'hitachi' => [
-        'test_merchant_id'  => env('HITACHI_GATEWAY_TEST_MERCHANT_ID'),
-        'test_terminal_id'  => env('HITACHI_GATEWAY_TEST_TERMINAL_ID'),
-        'test_hash_secret'  => env('HITACHI_GATEWAY_TEST_HASH_SECRET'),
-        'test_hash_secret2' => env('HITACHI_GATEWAY_TEST_HASH_SECRET2'),
+        'gateway_salt'       => env('HITACHI_GATEWAY_LIVE_HASH_SECRET'),
+        'gateway_salt2'      => env('HITACHI_GATEWAY_LIVE_HASH_SECRET2'),
+        'test_merchant_id'   => env('HITACHI_GATEWAY_TEST_MERCHANT_ID'),
+        'test_terminal_id'   => env('HITACHI_GATEWAY_TEST_TERMINAL_ID'),
+        'test_hash_secret'   => env('HITACHI_GATEWAY_TEST_HASH_SECRET'),
+        'test_hash_secret2'  => env('HITACHI_GATEWAY_TEST_HASH_SECRET2'),
     ],
 
     'first_data' => [
@@ -214,7 +216,26 @@ return [
     ],
 
     'aeps_icici' => [
-        'terminal_id'           => env('AEPS_TERMINAL_ID'),
+        'terminal_id'                  => env('AEPS_TERMINAL_ID'),
+        'channel_code'                 => env('AEPS_ICICI_CHANNEL_CODE'),
+        'refund_mcc_test'              => env('AEPS_ICICI_REFUND_MCC_TEST'),
+        'refund_mcc_live'              => env('AEPS_ICICI_REFUND_MCC_LIVE'),
+        'refund_payer_mobile_live'     => env('AEPS_ICICI_REFUND_PAYER_MOBILE_LIVE'),
+        'refund_payer_mobile_test'     => env('AEPS_ICICI_REFUND_PAYER_MOBILE_TEST'),
+        'refund_device_id_live'        => env('AEPS_ICICI_REFUND_DEVICE_ID_LIVE'),
+        'refund_device_id_test'        => env('AEPS_ICICI_REFUND_DEVICE_ID_TEST'),
+        'refund_profile_id_live'       => env('AEPS_ICICI_REFUND_PROFILE_ID_LIVE'),
+        'refund_profile_id_test'       => env('AEPS_ICICI_REFUND_PROFILE_ID_TEST'),
+        'refund_payer_vpa_live'        => env('AEPS_ICICI_REFUND_PAYER_VPA_LIVE'),
+        'refund_payer_vpa_test'        => env('AEPS_ICICI_REFUND_PAYER_VPA_TEST'),
+        'refund_account_provider_live' => env('AEPS_ICICI_REFUND_ACCOUNT_PROVIDER_LIVE'),
+        'refund_account_provider_test' => env('AEPS_ICICI_REFUND_ACCOUNT_PROVIDER_TEST'),
+        'refund_api_key_test'          => env('AEPS_ICICI_REFUND_API_KEY_TEST'),
+        'refund_api_key_live'          => env('AEPS_ICICI_REFUND_API_KEY_LIVE'),
+        'refund_test_private_key'      => env('AEPS_ICICI_REFUND_TEST_PRIVATE_KEY'),
+        'refund_live_private_key'      => env('AEPS_ICICI_REFUND_LIVE_PRIVATE_KEY'),
+        'refund_test_public_key'       => env('AEPS_ICICI_REFUND_TEST_PUBLIC_KEY'),
+        'refund_live_public_key'       => env('AEPS_ICICI_REFUND_LIVE_PUBLIC_KEY'),
     ],
 
     'upi_npci' => [
@@ -225,7 +246,7 @@ return [
 
     'upi_mindgate' => [
         'test_merchant_id'       => env('UPI_MINDGATE_TEST_MERCHANT_ID'),
-        'test_merchant_key'      => env('UPI_MINDGATE_TEST_MERCHANT_KEY'),
+        'gateway_encryption_key' => env('UPI_MINDGATE_GATEWAY_SECURE_SECRET'),
     ],
 
     'upi_sbi' => [

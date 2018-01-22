@@ -79,7 +79,7 @@ class RefundReconciliate extends Base\RefundReconciliate
      * @param array   $row
      * @return string $paymentId
      */
-    protected function getPaymentId($row)
+    protected function getPaymentId(array $row)
     {
         $paymentId = $this->getGatewayRefundFromGatewayTxnId($row)->getPaymentId();
 

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "040145e8b94f4e2911f8d30505caebdd",
+    "content-hash": "1e22668dca061ab924a12fc223751d3b",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -5113,16 +5113,16 @@
         },
         {
             "name": "razorpay/slack",
-            "version": "1.9.9",
+            "version": "1.10.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/slack.git",
-                "reference": "ce669ad5ae594c914013f186a14212a3d7efaca9"
+                "reference": "cd379f102901d3b32d4bc77d302651bcced559ac"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/slack/zipball/ce669ad5ae594c914013f186a14212a3d7efaca9",
-                "reference": "ce669ad5ae594c914013f186a14212a3d7efaca9",
+                "url": "https://api.github.com/repos/razorpay/slack/zipball/cd379f102901d3b32d4bc77d302651bcced559ac",
+                "reference": "cd379f102901d3b32d4bc77d302651bcced559ac",
                 "shasum": ""
             },
             "require": {
@@ -5165,25 +5165,25 @@
                 "laravel",
                 "slack"
             ],
-            "time": "2017-05-30T10:44:07+00:00"
+            "time": "2017-12-21T11:20:25+00:00"
         },
         {
             "name": "razorpay/slack-laravel",
-            "version": "1.3.9",
+            "version": "1.3.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/slack-laravel.git",
-                "reference": "0f406bfb5c67f2da29866e70d8f97387deb03629"
+                "reference": "03e747b25cd81f8f7cd399f27bbc986b7ebb7852"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/slack-laravel/zipball/0f406bfb5c67f2da29866e70d8f97387deb03629",
-                "reference": "0f406bfb5c67f2da29866e70d8f97387deb03629",
+                "url": "https://api.github.com/repos/razorpay/slack-laravel/zipball/03e747b25cd81f8f7cd399f27bbc986b7ebb7852",
+                "reference": "03e747b25cd81f8f7cd399f27bbc986b7ebb7852",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.4.0",
-                "razorpay/slack": "1.9.9"
+                "razorpay/slack": "1.10.1"
             },
             "type": "library",
             "autoload": {
@@ -5210,7 +5210,7 @@
                 "laravel",
                 "slack"
             ],
-            "time": "2017-05-30T09:30:05+00:00"
+            "time": "2017-12-21T13:00:50+00:00"
         },
         {
             "name": "razorpay/spine",
@@ -6910,6 +6910,54 @@
                 "environment"
             ],
             "time": "2016-09-01T10:05:43+00:00"
+        },
+        {
+            "name": "watson/rememberable",
+            "version": "2.0.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/dwightwatson/rememberable.git",
+                "reference": "8718614835370f67f58d86387a26bfc315fa9a8b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/dwightwatson/rememberable/zipball/8718614835370f67f58d86387a26bfc315fa9a8b",
+                "reference": "8718614835370f67f58d86387a26bfc315fa9a8b",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/database": "~5.0",
+                "illuminate/support": "~5.0",
+                "php": ">=5.4.0"
+            },
+            "require-dev": {
+                "mockery/mockery": "0.9.*",
+                "phpunit/phpunit": "4.2.*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Watson\\Rememberable\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Dwight Watson",
+                    "email": "dwight@studiousapp.com"
+                }
+            ],
+            "description": "Query caching for Laravel 5",
+            "keywords": [
+                "caching",
+                "eloquent",
+                "laravel",
+                "remember"
+            ],
+            "time": "2017-12-21T01:09:18+00:00"
         },
         {
             "name": "webmozart/assert",

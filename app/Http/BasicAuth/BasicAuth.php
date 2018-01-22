@@ -681,7 +681,7 @@ class BasicAuth
     {
         try
         {
-            Merchant\AccountEntity::verifyIdAndSilentlyStripSign($accountId);
+            Merchant\Account\Entity::verifyIdAndSilentlyStripSign($accountId);
         }
         catch (\Exception $e)
         {

@@ -17,6 +17,7 @@ use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\State\Reason;
+use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Base\PublicEntity as PublicEntity;
@@ -105,6 +106,28 @@ class Core extends Base\Core
         return $merchantDetails;
     }
 
+    /**
+     * Fills up dummy file IDs, required fields for merchant activation
+     * Use with caution
+     *
+     * @param Merchant\Entity $merchant
+     */
+    public function saveDummyActivationFiles(Merchant\Entity $merchant)
+    {
+        $merchantDetails = $merchant->merchantDetail;
+
+        $params = [
+            Entity::ADDRESS_PROOF_URL    => '100000000Dummy',
+            Entity::BUSINESS_PAN_URL     => '100000000Dummy',
+            Entity::BUSINESS_PROOF_URL   => '100000000Dummy',
+            Entity::PROMOTER_ADDRESS_URL => '100000000Dummy',
+        ];
+
+        $merchantDetails->fill($params);
+
+        $this->repo->saveOrFail($merchantDetails);
+    }
+
     public function createMerchantDetails(Merchant\Entity $merchant, array $input = [])
     {
         $merchantDetail = (new Entity)->build($input);
@@ -119,7 +142,7 @@ class Core extends Base\Core
 
             $this->trace->info(
                 TraceCode::CREATE_MERCHANT_DETAIL,
-                [ 'merchant_id'   => $merchant->getId()]);
+                ['merchant_id' => $merchant->getId()]);
         }
         catch (\Throwable $e)
         {
@@ -275,9 +298,18 @@ class Core extends Base\Core
             $archivedAt = Carbon::now(Timezone::IST)->getTimestamp();
         }
 
+        $routePermission = Permission\Name::$actionMap[$archiveAction];
+
+        $oldMerchantDetails = clone $merchantDetails;
+
         $merchantDetails->setArchivedAt($archivedAt);
 
+        $this->app['workflow']->setPermission($routePermission)->handle(
+            $oldMerchantDetails, $merchantDetails);
+
         $this->repo->saveOrFail($merchantDetails);
+
+        $this->logActionToSlack($merchantDetails->merchant, $archiveAction);
 
         return $merchantDetails;
     }

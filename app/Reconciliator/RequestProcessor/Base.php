@@ -10,7 +10,6 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Base\Core;
 use RZP\Reconciliator\Messenger;
 use RZP\Reconciliator\Validator;
-use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\FileProcessor;
 
 class Base extends Core
@@ -26,7 +25,9 @@ class Base extends Core
     /**
      * These field can be force updated with passed with request
      */
-    const REFUND_ARN = 'refund_arn';
+    const REFUND_ARN            = 'refund_arn';
+    const PAYMENT_ARN           = 'payment_arn';
+    const PAYMENT_AUTH_CODE     = 'payment_auth_code';
 
     /******************
      * Gateway constants
@@ -51,8 +52,11 @@ class Base extends Core
     const NETBANKING_BOB         = 'NetbankingBob';
     const VIRTUAL_ACC_KOTAK      = 'VirtualAccKotak';
     const JIOMONEY               = 'Jiomoney';
+    const UPI_SBI                = 'UpiSbi';
+    const PAYUMONEY              = 'PayuMoney';
     const EBS                    = 'Ebs';
     const FIRST_DATA             = 'FirstData';
+    const UPI_ICICI              = 'UpiIcici';
     const ADMIN                  = 'admin';
 
     /**
@@ -80,7 +84,10 @@ class Base extends Core
         self::JIOMONEY            => [],
         self::EBS                 => [],
         self::FIRST_DATA          => ['customer.care@icici.mailserv.in'],
+        self::UPI_ICICI           => [],
         self::VIRTUAL_ACC_KOTAK   => ['kmb.reports@kotak.com'],
+        self::UPI_SBI             => [],
+        self::PAYUMONEY           => [],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
         self::ADMIN               => ['saurav.chowdhury@razorpay.com'],
@@ -208,7 +215,7 @@ class Base extends Core
         // right password and which file has the wrong password.
         // Hence, we suppress all axis wrong password errors.
         //
-        if (($this->gateway !== Orchestrator::AXIS) and
+        if (($this->gateway !== self::AXIS) and
             (str_contains($ex->getMessage(), 'Wrong password')))
         {
             $this->messenger->raiseReconAlert(
@@ -272,7 +279,7 @@ class Base extends Core
             {
                 $level = Trace::ERROR;
 
-                if ($this->gateway === Orchestrator::AXIS)
+                if ($this->gateway === self::AXIS)
                 {
                     $level = Trace::INFO;
                 }

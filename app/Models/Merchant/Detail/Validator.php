@@ -47,7 +47,7 @@ class Validator extends Base\Validator
         Entity::PROMOTER_PAN_NAME               => 'sometimes|max:255',
         Entity::BANK_NAME                       => 'sometimes|alpha_num|between:5,20',
         Entity::BANK_ACCOUNT_NUMBER             => 'sometimes|alpha_num|between:5,20',
-        Entity::BANK_ACCOUNT_NAME               => 'sometimes|alpha_space_num|max:40',
+        Entity::BANK_ACCOUNT_NAME               => 'sometimes|alpha_space_num|max:120',
         Entity::BANK_ACCOUNT_TYPE               => 'sometimes|alpha_space|max:20',
         Entity::BANK_BRANCH                     => 'sometimes|max:255',
         Entity::BANK_BRANCH_IFSC                => 'sometimes|alpha_num|max:11|custom',
@@ -111,7 +111,7 @@ class Validator extends Base\Validator
         Entity::PROMOTER_PAN_NAME               => 'sometimes|max:255',
         Entity::BANK_NAME                       => 'sometimes|alpha_num|between:5,20',
         Entity::BANK_ACCOUNT_NUMBER             => 'sometimes|alpha_num|between:5,22',
-        Entity::BANK_ACCOUNT_NAME               => 'sometimes|alpha_space_num|max:40',
+        Entity::BANK_ACCOUNT_NAME               => 'sometimes|alpha_space_num|max:120',
         Entity::BANK_ACCOUNT_TYPE               => 'sometimes|alpha_space|max:20',
         Entity::BANK_BRANCH                     => 'sometimes|max:255',
         Entity::BANK_BRANCH_IFSC                => 'sometimes|alpha_num|max:11|custom',
@@ -170,6 +170,14 @@ class Validator extends Base\Validator
         'clarification_mode',
     ];
 
+    /**
+     * Validate the transaction report email
+     *
+     * @param $attribute
+     * @param $value
+     *
+     * @throws Exception\BadRequestValidationFailureException
+     */
     public function validateTransactionReportEmail($attribute, $value)
     {
         $emails = explode(',', $value);

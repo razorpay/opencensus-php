@@ -30,6 +30,22 @@ class Gateway extends Base\Gateway
 
     const CERTIFICATE_DIRECTORY_NAME = 'cert_dir_name';
 
+    /**
+     * Fingerprint of the root signing certificate. This ensures that
+     * while any intermediate certs may change over time (provided they
+     * are signed correctly and not expired), the root cert ensures that
+     * the trust is in the same authority. So someone else cannot
+     * create a new chain and use that.
+     *
+     * Note: Only put production cert fingerprints in here
+     */
+    const ROOT_CERT_FINGERPRINTS = [
+        // MasterCard Root
+        '32dfd35574d8811bb90ebe33846dd3a0b945e0d9',
+        // VISA
+        '70179b868c00a4fa609152223f9f3e32bde00562',
+    ];
+
     protected $gateway = 'blade';
 
 
@@ -84,7 +100,10 @@ class Gateway extends Base\Gateway
                 throw new Exception\GatewayErrorException(
                     ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
                     $enrolled,
-                    'Invalid enroll response');
+                    'Invalid enroll response',
+                    [
+                        'enrollment_status' => $enrolled
+                    ]);
         }
     }
 
@@ -113,7 +132,12 @@ class Gateway extends Base\Gateway
         {
             // Throw GatewayErrorException with authentication failed error code
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED);
+                ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
+                null,
+                null,
+                [
+                    'auth_status' => $authenticateStatus
+                ]);
         }
 
         // Blade callback response field is being used by Hitachi
@@ -128,7 +152,10 @@ class Gateway extends Base\Gateway
         if (isset($response[VERes::MESSAGE]['Error']) === true)
         {
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED);
+                ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
+                null,
+                null,
+                $response[VERes::MESSAGE]['Error']);
         }
 
         $ch = $response[VERes::MESSAGE][VERes::VERES][VERes::CH];
@@ -150,17 +177,11 @@ class Gateway extends Base\Gateway
 
     protected function updateGatewayPaymentFromCallbackResponse(
         Entity $gatewayPayment,
-        array $resp)
+        array $response)
     {
-        $gatewayPayment->setXid($resp[PARes::PURCHASE][PARes::XID]);
+        $attributes = $this->getCallbackResponseAttributes($response);
 
-        $gatewayPayment->setCavv($resp[PARes::TX][PARes::CAVV]);
-
-        $gatewayPayment->setCavvAlgorithm($resp[PARes::TX][PARes::CAVVALGORITHM]);
-
-        $gatewayPayment->setStatus($resp[PARes::TX][PARes::STATUS]);
-
-        $gatewayPayment->setEci($resp[PARes::TX][PARes::ECI]);
+        $gatewayPayment->fill($attributes);
 
         $this->repo->saveOrFail($gatewayPayment);
     }
@@ -190,6 +211,19 @@ class Gateway extends Base\Gateway
         }
     }
 
+    protected function getCallbackResponseAttributes($response)
+    {
+        $attributes = [
+            Entity::XID            => $response[PARes::PURCHASE][PARes::XID] ?? null,
+            Entity::CAVV           => $response[PARes::TX][PARes::CAVV] ?? null,
+            Entity::CAVV_ALGORITHM => $response[PARes::TX][PARes::CAVVALGORITHM] ?? null,
+            Entity::STATUS         => $response[PARes::TX][PARes::STATUS],
+            Entity::ECI            => $response[PARes::TX][PARes::ECI] ?? null,
+        ];
+
+        return $attributes;
+    }
+
     protected function validateSignatureAndInflatePares($pares)
     {
         $paresXml = gzinflate(substr($pares, 2));
@@ -197,6 +231,8 @@ class Gateway extends Base\Gateway
         $dom = $this->loadXmlViaDom($paresXml);
 
         $adapter = new XmlseclibsAdapter;
+
+        $adapter->setRootCertFingerprints(static::ROOT_CERT_FINGERPRINTS);
 
         $ret = false;
 
@@ -235,7 +271,7 @@ class Gateway extends Base\Gateway
         $paresArray = $this->xmlToArray($paresXml);
 
         // Validate Payer Authentication Response
-        $this->validatePaRes($input, $paresArray);
+        $this->validatePARes($input, $paresArray);
 
         $paresMessage = $paresArray[PARes::MESSAGE][PARes::PARES];
 
@@ -476,14 +512,14 @@ class Gateway extends Base\Gateway
     {
         $networkName = $this->getNetworkName();
 
-        return $networkName . '_v1.crt';
+        return $networkName . '_v2.crt';
     }
 
     public function getClientSslKeyName()
     {
         $networkName = $this->getNetworkName();
 
-        return $networkName . '_v1.key';
+        return $networkName . '_v2.key';
     }
 
     public function getNetworkName()
@@ -491,6 +527,7 @@ class Gateway extends Base\Gateway
         switch ($this->input['card']['network_code'])
         {
             case Card\Network::MC:
+            case Card\Network::MAES:
                 $network = Card\NetworkName::MC;
                 break;
 
@@ -641,6 +678,7 @@ class Gateway extends Base\Gateway
         switch ($input['card']['network_code'])
         {
             case Card\Network::MC:
+            case Card\Network::MAES:
                 $acqBin = $this->config['live_mastercard_acq_bin'];
                 break;
 
@@ -669,6 +707,7 @@ class Gateway extends Base\Gateway
         switch ($input['card']['network_code'])
         {
             case Card\Network::MC:
+            case Card\Network::MAES:
                 $merchantId = $this->config['live_mastercard_merchant_id'];
 
                 break;

@@ -7,8 +7,8 @@
 
 namespace RZP\Tests\Functional;
 
+use Redis;
 use Artisan;
-
 use RZP\Services\EsClient;
 use RZP\Tests\TestCase as ParentTestCase;
 
@@ -80,6 +80,10 @@ class TestCase extends ParentTestCase
         {
             $this->db->tearDown();
         }
+
+        Redis::connection('query_cache_test')->flushdb();
+
+        Redis::connection('query_cache_live')->flushdb();
 
         parent::tearDown();
     }

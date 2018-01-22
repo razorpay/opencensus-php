@@ -5,6 +5,7 @@ namespace RZP\Models\FundTransfer\Attempt;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base;
 use RZP\Models\BankAccount;
+use RZP\Models\Settlement\Channel;
 
 class Entity extends Base\PublicEntity
 {
@@ -12,6 +13,7 @@ class Entity extends Base\PublicEntity
     const SOURCE_TYPE            = 'source_type';
     const SOURCE_ID              = 'source_id';
     const MERCHANT_ID            = 'merchant_id';
+    const PURPOSE                = 'purpose';
     const BANK_ACCOUNT_ID        = 'bank_account_id';
     const BATCH_FUND_TRANSFER_ID = 'batch_fund_transfer_id';
     const CHANNEL                = 'channel';
@@ -31,6 +33,7 @@ class Entity extends Base\PublicEntity
     protected $entity = 'fund_transfer_attempt';
 
     protected $fillable = [
+        self::PURPOSE,
         self::CHANNEL,
         self::VERSION,
         self::STATUS,
@@ -45,6 +48,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::SOURCE,
         self::MERCHANT_ID,
+        self::PURPOSE,
         self::BANK_ACCOUNT_ID,
         self::BATCH_FUND_TRANSFER_ID,
         self::CHANNEL,
@@ -78,6 +82,32 @@ class Entity extends Base\PublicEntity
         self::SOURCE,
     ];
 
+    /**
+     * Generate ID with all characters in upper-case
+     * for ICICI, because their Recon file has the ID
+     * in upper-case. If we do not create it this way,
+     * when we query on this ID during reconciliation,
+     * we'd need to do a case-insensitive search
+     * which will do a full-table scan.
+     * To avoid a case-insensitive search on the table,
+     * we save the ID in upper-case.
+     */
+    public function generateId()
+    {
+        $id = static::generateUniqueId();
+
+        $channel = $this->getAttribute(self::CHANNEL);
+
+        if ($channel === Channel::ICICI)
+        {
+            $id = strtoupper($id);
+        }
+
+        $this->setAttribute(self::ID, $id);
+
+        return $this;
+    }
+
     public function source()
     {
         return $this->morphTo('source', self::SOURCE_TYPE, self::SOURCE_ID);
@@ -105,6 +135,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REMARKS);
     }
 
+    public function getFailureReason()
+    {
+        return $this->getAttribute(self::FAILURE_REASON);
+    }
+
     public function getNarration()
     {
         return $this->getAttribute(self::NARRATION);
@@ -118,6 +153,11 @@ class Entity extends Base\PublicEntity
     public function getVersion()
     {
         return $this->getAttribute(self::VERSION);
+    }
+
+    public function getBankStatusCode()
+    {
+        return $this->getAttribute(self::BANK_STATUS_CODE);
     }
 
     public function getEntityId()
@@ -143,6 +183,11 @@ class Entity extends Base\PublicEntity
     public function getMode()
     {
         return $this->getAttribute(self::MODE);
+    }
+
+    public function isRefund()
+    {
+        return ($this->getAttribute(self::PURPOSE) === Purpose::REFUND);
     }
 
     // ------------------------------- setters ---------------------------------

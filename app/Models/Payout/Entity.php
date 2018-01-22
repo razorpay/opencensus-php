@@ -10,6 +10,7 @@ use RZP\Constants\Table;
 use RZP\Models\Customer;
 use RZP\Constants\Timezone;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\FundTransfer\Attempt\Purpose;
 
 class Entity extends Base\PublicEntity
 {
@@ -65,6 +66,7 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::ID,
         self::METHOD,
+        self::PURPOSE,
         self::AMOUNT,
         self::CURRENCY,
         self::STATUS,
@@ -125,7 +127,7 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = [
         self::STATUS            => Status::CREATED,
-        self::PURPOSE           => 'refund',
+        self::PURPOSE           => Purpose::REFUND,
         self::NOTES             => [],
     ];
 
@@ -176,6 +178,11 @@ class Entity extends Base\PublicEntity
     public function batchFundTransfer()
     {
         return $this->belongsTo('RZP\Models\FundTransfer\Batch\Entity');
+    }
+
+    public function getPurpose()
+    {
+        return $this->getAttribute(self::PURPOSE);
     }
 
     public function getAmount()
@@ -346,7 +353,7 @@ class Entity extends Base\PublicEntity
     {
         $customerId = $this->getAttribute(self::CUSTOMER_ID);
 
-        $attributes[self::CUSTOMER_ID] = Customer\Entity::getSignedId($customerId);
+        $attributes[self::CUSTOMER_ID] = Customer\Entity::getSignedIdOrNull($customerId);
     }
 
     public function getPricingFeatures()

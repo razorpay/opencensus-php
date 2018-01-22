@@ -698,6 +698,7 @@ trait Refund
 
     protected function callRefundFunction($payment, $data)
     {
+        // @todo: Handle zero payment refund case
         if ($this->shouldHitGatewayForRefund($payment) === true)
         {
             return $this->callGatewayRefundFunction($payment, $data);
@@ -759,6 +760,11 @@ trait Refund
     {
         $payment = $refund->payment;
 
+        // Refunds are typically retried in groups using long-running
+        // loops. This ensures that if a refund has been updated by a
+        // different process, it is processed accordingly here.
+        $this->repo->reload($refund);
+
         $this->setPaymentAndRefundInfo($refund, $payment);
 
         $data = $this->getGatewayDataForRefund($refund, $payment);
@@ -767,7 +773,7 @@ trait Refund
 
         if ($refund->isProcessed() === true)
         {
-            return Payment\Refund\Status::PROCESSED;
+            return $refund->getStatus();
         }
 
         // true  if refunded
@@ -782,19 +788,19 @@ trait Refund
                 {
                     return $this->callRefundFunction($payment, $data);
                 });
+
+            $refund->incrementAttempts();
         }
         else
         {
-            $this->refund->setStatus(Payment\Refund\Status::PROCESSED);
+            $refund->setStatus(Payment\Refund\Status::PROCESSED);
         }
 
-        $this->refund->setGatewayRefunded($refundedOnGateway);
+        $refund->setGatewayRefunded($refundedOnGateway);
 
-        $this->refund->incrementAttempts();
+        $this->repo->saveOrFail($refund);
 
-        $this->repo->saveOrFail($this->refund);
-
-        return $this->refund->getStatus();
+        return $refund->getStatus();
     }
 
     protected function gatewaySupportsReversal($payment)
@@ -833,7 +839,17 @@ trait Refund
             $this->repo->saveOrFail($this->refund);
         });
 
-        $this->tracePaymentInfo(TraceCode::PAYMENT_REFUND_SUCCESS);
+        $this->trace->info(
+            TraceCode::PAYMENT_REFUND_SUCCESS,
+            [
+                'payment_id'            => $this->payment->getId(),
+                'payment_status'        => $this->payment->getStatus(),
+                'payment_amount'        => $this->payment->getAmount(),
+                'gateway'               => $this->payment->getGateway(),
+                'refund_id'             => $this->refund->getId(),
+                'refund_amount'         => $this->refund->getAmount(),
+                'refund_base_amount'    => $this->refund->getBaseAmount(),
+            ]);
 
         $this->app['segment']->trackPayment($this->payment, TraceCode::PAYMENT_REFUND_SUCCESS);
     }

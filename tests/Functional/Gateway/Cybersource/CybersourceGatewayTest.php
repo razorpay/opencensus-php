@@ -79,7 +79,8 @@ class CybersourceGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() use ($payment) {
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
             $this->doAuthPayment($payment);
         });
     }
@@ -91,7 +92,8 @@ class CybersourceGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() use ($payment) {
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
             $this->doAuthPayment($payment);
         });
     }
@@ -377,7 +379,7 @@ class CybersourceGatewayTest extends TestCase
 
         $this->assertEquals($refund['amount'], $actualRefund['amount']);
         $this->assertEquals('processed', $actualRefund['status']);
-        $this->assertEquals(2, $actualRefund['attempts']);
+        $this->assertEquals(1, $actualRefund['attempts']);
         $this->assertEquals(true, $actualRefund['gateway_refunded']);
     }
 
@@ -508,7 +510,7 @@ class CybersourceGatewayTest extends TestCase
 
         $this->assertEquals($refund['amount'], $actualRefund['amount']);
         $this->assertEquals('processed', $actualRefund['status']);
-        $this->assertEquals(2, $actualRefund['attempts']);
+        $this->assertEquals(1, $actualRefund['attempts']);
         $this->assertEquals(true, $actualRefund['gateway_refunded']);
 
         $response = $this->retryFailedRefunds();
@@ -650,7 +652,8 @@ class CybersourceGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() use ($payment) {
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
             $this->doAuthPayment($payment);
         });
     }
@@ -693,7 +696,29 @@ class CybersourceGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() use ($payment) {
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testGatewayVerifyAuthResponseFailure()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->mockServerContentFunction(function(&$content)
+        {
+            $content['reasonCode'] = 202;
+            $content['decision'] = 'REJECT';
+            $content['ccAuthReply'] = [
+                'reasonCode' => 202
+            ];
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
             $this->doAuthPayment($payment);
         });
     }
@@ -709,7 +734,8 @@ class CybersourceGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() use ($payment) {
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
             $this->doAuthPayment($payment);
         });
     }

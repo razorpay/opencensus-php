@@ -769,6 +769,54 @@ return [
         ],
     ],
 
+    'testDisputeFetchForMerchant' => [
+        'request'   => [
+            'method'        => 'get',
+            'url'           => '/disputes',
+        ],
+        'response'  => [
+            'content'       => [
+                'count'         => 2,
+                'items'         => [
+                    [
+                        'merchant_id'       => '10000000000000',
+                        'amount'            => 1000000,
+                        'currency'          => 'INR',
+                        'reason_code'       => 'SOMETHING_BAD',
+                        'status'            => 'open',
+                        'phase'             => 'chargeback',
+                    ],
+                    [
+                        'merchant_id'       => '10000000000000',
+                        'amount'            => 1000000,
+                        'currency'          => 'INR',
+                        'reason_code'       => 'SOMETHING_BAD',
+                        'status'            => 'open',
+                        'phase'             => 'chargeback',
+                    ],
+                ]
+            ],
+        ],
+    ],
+
+    'testFetchMerchantDetails' => [
+        'request' => [
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'   => '10000000000000',
+                'parent_id'     => null,
+                'amount'        => 1000000,
+                'currency'      => 'INR',
+                'reason_code'   => 'SOMETHING_BAD',
+                'status'        => 'open',
+                'phase'         => 'chargeback',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testEditDisputeMerchantDocumentUploadByPrivate' => [
         'request' => [
             'content' => [

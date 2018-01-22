@@ -10,19 +10,21 @@ use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Base\PublicCollection;
 use RZP\Gateway\Netbanking\Axis\Constants;
+use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 
 class Axis extends Base
 {
     use FileHandler;
 
-    const CORPORATE_FILE_NAME     = 'IConnect_Refund_RAZORPAY_CORP';
-    const NON_CORPORATE_FILE_NAME = 'IConnect_Refund_RAZORPAY';
-    const EXTENSION               = FileStore\Format::TXT;
-    const FILE_TYPE               = FileStore\Type::AXIS_NETBANKING_REFUND;
-    const GATEWAY                 = Payment\Gateway::NETBANKING_AXIS;
-    const GATEWAY_CODE            = IFSC::UTIB;
-    const PAYMENT_TYPE_ATTRIBUTE  = Payment\Entity::BANK;
+    const CORPORATE_FILE_NAME        = 'IConnect_Refund_RAZORPAY_CORP';
+    const NON_CORPORATE_FILE_NAME    = 'IConnect_Refund_RAZORPAY';
+    const EXTENSION                  = FileStore\Format::TXT;
+    const FILE_TYPE                  = FileStore\Type::AXIS_NETBANKING_REFUND;
+    const GATEWAY                    = Payment\Gateway::NETBANKING_AXIS;
+    const CORPORATE_GATEWAY_CODE     = Netbanking::UTIB_C;
+    const NON_CORPORATE_GATEWAY_CODE = IFSC::UTIB;
+    const PAYMENT_TYPE_ATTRIBUTE     = Payment\Entity::BANK;
 
     const HEADERS = [
         'Payee id', // pid
@@ -42,9 +44,13 @@ class Axis extends Base
 
         $corporate = $this->gatewayFile->getCorporate();
 
+        $gatewayCode = ($corporate === true) ?
+                        self::CORPORATE_GATEWAY_CODE :
+                        self::NON_CORPORATE_GATEWAY_CODE;
+
         $refunds = $this->repo->refund->fetchCorporateRefundsBetweenTimestamps(
             static::PAYMENT_TYPE_ATTRIBUTE,
-            static::GATEWAY_CODE,
+            $gatewayCode,
             $begin,
             $end,
             static::GATEWAY,

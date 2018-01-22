@@ -25,6 +25,7 @@ class MethodsTest extends TestCase
         $this->ba->publicLiveAuth();
 
         $this->fixtures->merchant->activate('10000000000000');
+        $this->fixtures->merchant->addFeatures('corporate_banks');
 
         $attributes = array(
             'merchant_id'               => '10000000000000',
@@ -41,7 +42,7 @@ class MethodsTest extends TestCase
 
         $count = count($content['netbanking']);
 
-        $this->assertEquals(59, $count);
+        $this->assertEquals(61, $count);
 
         $this->assertArrayNotHasKey('recurring', $content);
     }
@@ -62,11 +63,12 @@ class MethodsTest extends TestCase
     {
         $this->ba->publicTestAuth();
 
+        $this->fixtures->merchant->addFeatures('corporate_banks');
         $content = $this->getPaymentMethods();
 
         $count = count($content['netbanking']);
 
-        $this->assertEquals(59, $count);
+        $this->assertEquals(61, $count);
     }
 
     public function testBulkMethodUpdate()
@@ -131,7 +133,7 @@ class MethodsTest extends TestCase
 
         $content = $this->startTest($testData);
 
-        $this->assertCount(3, $content['recurring']['netbanking']);
+        $this->assertCount(3, $content['recurring']['emandate']);
     }
 
     public function testRecurringNetbankingOnChargeAtWillInLive()
@@ -170,7 +172,9 @@ class MethodsTest extends TestCase
 
         $content = $this->startTest($testData);
 
-        $this->assertArraySelectiveEquals(['ICIC' => 'ICICI Bank'], $content['recurring']['netbanking']);
+        $this->assertArraySelectiveEquals(
+            ['ICIC' => ['name' => 'ICICI Bank', 'auth_types' => ['netbanking']]],
+            $content['recurring']['emandate']);
     }
 
     public function testRecurringNetbankingOnSubscriptions()

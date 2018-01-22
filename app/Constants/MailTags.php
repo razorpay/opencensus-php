@@ -15,7 +15,10 @@ class MailTags
     const KOTAK_PAYOUT_SUMMARY             = 'kotak_payout_summary';
 
     const ICICI_SETTLEMENT_FILES           = 'icici_settlement_files';
+    const ICICI_BENEFICIARY_MAIL           = 'icici_beneficiary_mail';
+
     const AXIS_SETTLEMENT_FILES            = 'axis_settlement_files';
+    const AXIS_BENEFICIARY_MAIL            = 'axis_beneficiary_mail';
 
     const SETTLEMENT_FAILURE_EMAIL         = 'settlement_failure_email';
 
@@ -24,6 +27,7 @@ class MailTags
     const BOB_NETBANKING_REFUNDS_MAIL           = 'bob_netbanking_refunds_mail';
     const AXIS_NETBANKING_REFUNDS_MAIL          = 'axis_netbanking_refunds_mail';
     const AIRTEL_MONEY_REFUNDS_MAIL             = 'airtel_money_refunds_mail';
+    const AIRTEL_MONEY_FAILED_REFUNDS_MAIL      = 'airtel_money_failed_refunds_mail';
     const ICICI_NETBANKING_REFUNDS_MAIL         = 'icici_netbanking_refunds_mail';
     const FEDERAL_NETBANKING_REFUNDS_MAIL       = 'axis_netbanking_refunds_mail';
     const KOTAK_NETBANKING_REFUNDS_MAIL         = 'kotak_netbanking_refunds_mail';
@@ -32,6 +36,7 @@ class MailTags
 
     const PAYU_MONEY_REFUNDS_MAIL          = 'payu_money_refunds_mail';
     const ICICI_UPI_REFUNDS_MAIL           = 'icici_upi_refunds_mail';
+    const ICICI_UPI_FAILED_REFUNDS_MAIL    = 'icici_upi_failed_refunds_mail';
     const BATCH_IRCTC_REFUNDS_FILE         = 'batch_irctc_refunds_file';
     const BATCH_IRCTC_SETTLEMENT_FILE      = 'batch_irctc_settlement_file';
     const BATCH_REFUNDS_FILE               = 'batch_refunds_file';

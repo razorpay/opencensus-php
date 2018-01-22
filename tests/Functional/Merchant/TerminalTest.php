@@ -38,6 +38,26 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testAssignHitachiTerminal()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $url = '/merchants/'.$merchant->getKey().'/terminals';
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testAssignHitachiTerminalWithInvalidGatewayAcquirer()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $url = '/merchants/'.$merchant->getKey().'/terminals';
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
     public function testAddEmiTerminal()
     {
         $merchant = $this->getEntityById('merchant', '100000Razorpay', true);

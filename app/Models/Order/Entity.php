@@ -5,6 +5,7 @@ namespace RZP\Models\Order;
 use RZP\Models\Base;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Offer;
+use RZP\Models\Payment;
 
 class Entity extends Base\PublicEntity
 {
@@ -135,6 +136,7 @@ class Entity extends Base\PublicEntity
     protected $entity = 'order';
 
     /** Related Models */
+
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');
@@ -156,6 +158,21 @@ class Entity extends Base\PublicEntity
     }
 
     /** End Related Models */
+
+    /** Mutators */
+
+    //
+    // Temporary only. To be removed later.
+    //
+    protected function setMethodAttribute($method)
+    {
+        if ($method === Payment\Method::EMANDATE)
+        {
+            $method = Payment\Method::NETBANKING;
+        }
+
+        $this->attributes[self::METHOD] = $method;
+    }
 
     /** Appends */
 

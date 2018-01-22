@@ -14,7 +14,7 @@ class Validator
         // Ensure that this is always above 'xlsx' because of `getExtensionFromContentType`
         'zip'   => ['application/x-compressed', 'application/x-zip-compressed', 'application/zip', 'multipart/x-zip'],
         'xlsx'  => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                    'application/zip', 'application/octet-stream'],
+                    'application/zip', 'application/octet-stream', 'application/vnd.ms-excel'],
         // `text/plain` is being added here because HDFC sends CSV files with XLS extension. kthxbye
         // `application/CDFV2-unknown` is being sent for FirstData files. sigh.
         'xls'   => ['application/excel', 'application/vnd.ms-excel', 'application/msexcel',
@@ -76,7 +76,9 @@ class Validator
     const MAX_FILE_SIZE = 26214400;
 
     const FORCE_UPDATE_ALLOWED = [
-        RequestProcessor\Base::REFUND_ARN
+        RequestProcessor\Base::REFUND_ARN,
+        RequestProcessor\Base::PAYMENT_ARN,
+        RequestProcessor\Base::PAYMENT_AUTH_CODE,
     ];
 
     const MANUAL_INPUT_RULES = [
@@ -360,7 +362,11 @@ class Validator
         if (isset(RequestProcessor\Base::GATEWAY_SENDER_MAPPING[$value]) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                    'Invalid value for' . RequestProcessor\Base::GATEWAY
+                    'Invalid value for ' . RequestProcessor\Base::GATEWAY,
+                    RequestProcessor\Base::GATEWAY,
+                    [
+                        RequestProcessor\Base::GATEWAY => $value
+                    ]
             );
         }
     }
@@ -377,7 +383,7 @@ class Validator
             }
             else
             {
-                $diff = array_diff(self::FORCE_UPDATE_ALLOWED, $value);
+                $diff = array_diff($value, self::FORCE_UPDATE_ALLOWED);
                 $valid = (count($diff) === 0);
             }
         }

@@ -30,7 +30,7 @@ class Service extends Base\Service
 
         $data = $workflow->toArrayPublic();
 
-        $data['isEditable'] = $this->core()->isWorkflowEditable($workflow);
+        $data['isEditable'] = $this->core()->workflowHasOpenActions($workflow);
 
         // Dashboard requires the API in certain format
         $response = $this->convertDataToDashboardFormat($data);

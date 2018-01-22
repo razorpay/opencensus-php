@@ -68,7 +68,7 @@ class CreateMerchants extends Migration
             $table->string(Merchant::BILLING_LABEL)
                   ->nullable();
 
-            $table->integer(Merchant::SETTLEMENT_SCHEDULE);
+            $table->string(Merchant::CHANNEL, 32);
 
             $table->string(Merchant::TRANSACTION_REPORT_EMAIL)
                   ->nullable();
@@ -120,6 +120,9 @@ class CreateMerchants extends Migration
 
             $table->char(Merchant::INVOICE_CODE, 12);
 
+            $table->text(Merchant::NOTES)
+                  ->nullable();
+
             $table->integer(Merchant::CREATED_AT);
 
             $table->integer(Merchant::UPDATED_AT);
@@ -135,6 +138,8 @@ class CreateMerchants extends Migration
             $table->index(Merchant::RISK_RATING);
             $table->index(Merchant::EMAIL);
             $table->index(Merchant::AUTO_REFUND_DELAY);
+            $table->index(Merchant::CREATED_AT);
+            $table->index(Merchant::UPDATED_AT);
         });
 
         Schema::table(Table::MERCHANT, function(Blueprint $table)

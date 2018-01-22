@@ -4,6 +4,7 @@ namespace RZP\Models\Dispute;
 
 use Request;
 use RZP\Models\Base;
+use RZP\Models\Base\PublicCollection;
 
 class Service extends Base\Service
 {
@@ -37,6 +38,15 @@ class Service extends Base\Service
         }
     }
 
+    public function fetchMultiple(array $input): array
+    {
+        $merchantId = $this->merchant->getId();
+
+        $disputes = $this->repo->dispute->fetch($input, $merchantId);
+
+        return $disputes->toArrayPublic();
+    }
+
     public function migrateOldAdjustments($file): array
     {
         return $this->core()->migrateOldAdjustments($file);
@@ -47,5 +57,12 @@ class Service extends Base\Service
         $reason = (new Reason\Core)->create($input);
 
         return $reason->toArrayPublic();
+    }
+
+    public function fetch(string $id): array
+    {
+        $dispute = $this->repo->dispute->findByPublicIdAndMerchant($id, $this->merchant);
+
+        return $dispute->toArrayPublic();
     }
 }

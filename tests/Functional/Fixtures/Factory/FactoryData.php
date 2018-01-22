@@ -29,7 +29,7 @@ final class FactoryData
             'category'                 => 1100,
             'transaction_report_email' => ['test@razorpay.com'],
             'receipt_email_enabled'    => true,
-            'settlement_schedule'      => 3,
+            'channel'                  => 'kotak',
             'fee_bearer'               => \RZP\Models\Merchant\FeeBearer::PLATFORM,
             'risk_rating'              => 3,
             'invoice_code'             => '123456789011',
@@ -94,7 +94,7 @@ final class FactoryData
             'name'              => $faker->word,
             'network'           => 'Visa',
             'expiry_month'      => 01,
-            'expiry_year'       => 2018,
+            'expiry_year'       => 2024,
             'type'              => 'debit',
             'country'           => 'IN',
             'last4'             => 1111,
@@ -201,7 +201,6 @@ final class FactoryData
             // 'source_id' => 'factory:\RZP\Models\Settlement\Entity',
             'source_type' => 'settlement',
             'status' => 'initiated',
-            'channel' => 'kotak',
             'version' => 'V3',
         ]);
 
@@ -392,6 +391,14 @@ final class FactoryData
             'amount' => 1000,
         ]);
 
+        $factory(\RZP\Gateway\Upi\Base\Entity::class, [
+            'id'                 => '0',
+            'action'             => 'authorize',
+            'amount'             => 50000,
+            'acquirer'           => 'SBIN',
+            'gateway_payment_id' => 99999999999
+        ]);
+
         $factory(\RZP\Models\Customer\Entity::class, [
             'id'          => $faker->uniqueid,
             'merchant_id' => '10000000000000',
@@ -452,7 +459,7 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Gateway\Wallet\Base\Entity::class, [
-            'id'            => '12345',
+            'id'            => $faker->randomNumber(4),
             'amount'        => '0',
             'contact'       => '9918899029',
             'email'         => 'a@b.com',

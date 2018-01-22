@@ -281,6 +281,13 @@ return [
                     'activation_progress' => [
                         'type' => 'byte',
                     ],
+                    'activation_status' => [
+                        'type' => 'keyword',
+                    ],
+                    'archived_at' => [
+                        'type'   => 'date',
+                        'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
+                    ],
                     'submitted_at' => [
                         'type'   => 'date',
                         'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
