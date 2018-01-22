@@ -337,13 +337,12 @@ class Gateway extends Base\Gateway
             return $status;
         }
 
-        if ($this->getApiStatus($verify) !==  $this->getGatewayStatus($verify))
+        if ($this->getApiStatus($verify) !== $this->getGatewayStatus($verify))
         {
             $status = VerifyResult::STATUS_MISMATCH;
 
             $verify->match = false;
 
-            $this->saveResponseContenttoNetbankingEntity($verify);
         }
         else
         {
@@ -351,8 +350,9 @@ class Gateway extends Base\Gateway
 
             $verify->match = true;
 
-            $this->saveResponseContenttoNetbankingEntity($verify);
         }
+
+        $this->saveResponseContenttoNetbankingEntity($verify);
 
         return $status;
     }
