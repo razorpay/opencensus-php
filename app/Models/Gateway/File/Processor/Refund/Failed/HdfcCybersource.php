@@ -8,7 +8,7 @@ use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 
-class Cybersource extends Base
+class HdfcCybersource extends Base
 {
     const GATEWAY          = Payment\Gateway::CYBERSOURCE;
     const EXTENSION        = FileStore\Format::XLSX;

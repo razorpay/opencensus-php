@@ -165,7 +165,7 @@ class CardGatewaysFailedRefundFileTest extends TestCase
         });
     }
 
-    public function testCybersourcedRefundFile()
+    public function testHdfcCybersourcedRefundFile()
     {
         Mail::fake();
 

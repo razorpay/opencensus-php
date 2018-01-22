@@ -69,11 +69,11 @@ return [
         ],
     ],
 
-    'testCybersourcedRefundFile' => [
+    'testHdfcCybersourcedRefundFile' => [
         'request' => [
             'content' => [
                 'type'    => 'refund_failed',
-                'targets' => ['cybersource'],
+                'targets' => ['hdfc_cybersource'],
                 'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
                 'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp(),
             ],
@@ -92,7 +92,7 @@ return [
                         'partially_processed' => false,
                         'attempts'            => 1,
                         'type'                => 'refund_failed',
-                        'target'              => 'cybersource',
+                        'target'              => 'hdfc_cybersource',
                         'entity'              => 'gateway_file',
                         'admin'               => true,
                     ],
