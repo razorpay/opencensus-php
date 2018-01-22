@@ -165,7 +165,9 @@ class Repository extends BaseRepository
             return $result;
         }
 
-        $this->trace->info(TraceCode::FEATURE_ONBOARDING_TIMESTAMP_UPDATE_SKIPPED);
+        $this->trace->info(TraceCode::FEATURE_ONBOARDING_TIMESTAMP_UPDATE_SKIPPED, [
+            'query' => $query,
+        ]);
 
         return false;
     }
