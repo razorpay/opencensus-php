@@ -39,7 +39,7 @@ class Validator extends Base\Validator
         RequestFields::REQUEST_ID          => 'required|string',
         RequestFields::TRANSACTION_AMOUNT  => 'required|numeric',
         RequestFields::TRANSACTION_TIME    => 'required|string|date_format:His',
-        RequestFields::TRANSACTION_DATE    => 'required|string|date_format:mdY',
+        RequestFields::TRANSACTION_DATE    => 'required|string|date_format:dmY',
         RequestFields::RETRIEVAL_REF_NUM   => 'required|string|size:12',
         RequestFields::MERCHANT_ID         => 'required|string',
         RequestFields::TERMINAL_ID         => 'required|string',
