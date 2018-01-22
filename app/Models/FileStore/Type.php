@@ -52,11 +52,11 @@ class Type
 
     const AXIS_MIGS_FAILED_REFUND           = 'axis_migs_failed_refund';
 
-    const FIRSTDATA_FAILED_REFUND           = 'firstdata_failed_refund';
+    const ICIC_FIRST_DATA_FAILED_REFUND     = 'icic_first_data_failed_refund';
 
-    const CYBERSOURCE_FAILED_REFUND         = 'cybersource_failed_refund';
+    const HDFC_CYBERSOURCE_FAILED_REFUND    = 'hdfc_cybersource_failed_refund';
 
-    const FSS_FAILED_REFUND                 = 'fss_failed_refund';
+    const HDFC_FSS_FAILED_REFUND            = 'hdfc_fss_failed_refund';
 
     const PNB_NETBANKING_REFUND             = 'pnb_netbanking_refund';
 
@@ -150,9 +150,9 @@ class Type
             self::UPI_ICICI_FAILED_REFUND,
             self::AIRTELMONEY_WALLET_FAILED_REFUND,
             self::AXIS_MIGS_FAILED_REFUND,
-            self::FIRSTDATA_FAILED_REFUND,
-            self::CYBERSOURCE_FAILED_REFUND,
-            self::FSS_FAILED_REFUND,
+            self::ICIC_FIRST_DATA_FAILED_REFUND,
+            self::HDFC_CYBERSOURCE_FAILED_REFUND,
+            self::HDFC_FSS_FAILED_REFUND,
             self::MOCK_RECONCILIATION_FILE,
         ],
 
@@ -229,9 +229,9 @@ class Type
         self::UPI_ICICI_FAILED_REFUND,
         self::AIRTELMONEY_WALLET_FAILED_REFUND,
         self::AXIS_MIGS_FAILED_REFUND,
-        self::FIRSTDATA_FAILED_REFUND,
-        self::CYBERSOURCE_FAILED_REFUND,
-        self::FSS_FAILED_REFUND,
+        self::ICIC_FIRST_DATA_FAILED_REFUND,
+        self::HDFC_CYBERSOURCE_FAILED_REFUND,
+        self::HDFC_FSS_FAILED_REFUND,
         self::MOCK_RECONCILIATION_FILE
     ];
 
@@ -268,9 +268,9 @@ class Type
             self::UPI_ICICI_FAILED_REFUND,
             self::AIRTELMONEY_WALLET_FAILED_REFUND,
             self::AXIS_MIGS_FAILED_REFUND,
-            self::FIRSTDATA_FAILED_REFUND,
-            self::CYBERSOURCE_FAILED_REFUND,
-            self::FSS_FAILED_REFUND,
+            self::ICIC_FIRST_DATA_FAILED_REFUND,
+            self::HDFC_CYBERSOURCE_FAILED_REFUND,
+            self::HDFC_FSS_FAILED_REFUND,
         ],
 
         self::INVOICE_BUCKET_CONFIG => [

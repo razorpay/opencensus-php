@@ -136,7 +136,7 @@ class CardGatewaysFailedRefundFileTest extends TestCase
         $file = $this->getLastEntity('file_store', true);
 
         $expectedFileContent = [
-            'type'        => 'firstdata_failed_refund',
+            'type'        => 'icic_first_data_failed_refund',
             'entity_type' => 'gateway_file',
             'entity_id'   => $entity_id,
             'extension'   => 'xlsx',
@@ -209,7 +209,7 @@ class CardGatewaysFailedRefundFileTest extends TestCase
         $file = $this->getLastEntity('file_store', true);
 
         $expectedFileContent = [
-            'type'        => 'cybersource_failed_refund',
+            'type'        => 'hdfc_cybersource_failed_refund',
             'entity_type' => 'gateway_file',
             'entity_id'   => $entity_id,
             'extension'   => 'xlsx',
@@ -277,7 +277,7 @@ class CardGatewaysFailedRefundFileTest extends TestCase
         $file = $this->getLastEntity('file_store', true);
 
         $expectedFileContent = [
-            'type'        => 'fss_failed_refund',
+            'type'        => 'hdfc_fss_failed_refund',
             'entity_type' => 'gateway_file',
             'entity_id'   => $entity_id,
             'extension'   => 'xlsx',
