@@ -19,7 +19,7 @@ class Validator extends Base\Validator
         Entity::CUSTOMER_ID     => 'sometimes|filled',
         Entity::NOTES           => 'sometimes|notes',
         Entity::METHOD          => 'sometimes|in:netbanking,emandate',
-        Entity::BANK            => 'sometimes_if:method,netbanking,emandate|filled',
+        Entity::BANK            => 'sometimes|filled',
         Entity::ACCOUNT_NUMBER  => 'sometimes|filled|string|max:50|min:5',
         Entity::OFFER_ID        => 'sometimes|string|size:20'
     );
@@ -306,24 +306,13 @@ class Validator extends Base\Validator
             return;
         }
 
-        switch ($input['method'])
+        $supportedBanks = Netbanking::getSupportedBanks();
+
+        // @fixme: make it generic
+        if ((isset($input['method']) === true) and
+            ($input['method'] === Payment\Method::EMANDATE))
         {
-            case Payment\Method::EMANDATE:
-                $supportedBanks = Payment\Gateway::getAllEMandateBanks();
-                break;
-
-            case Payment\Method::NETBANKING:
-                $supportedBanks = Netbanking::getSupportedBanks();
-                break;
-
-            default:
-                throw new Exception\BadRequestValidationFailureException(
-                    'Invalid method passed for the order',
-                    Entity::METHOD,
-                    [
-                        'input' => $input
-                    ]);
-
+            $supportedBanks = Payment\Gateway::getAllEMandateBanks();
         }
 
         $bank = $input[Entity::BANK];

@@ -12,6 +12,7 @@ use RZP\Models\Batch;
 use RZP\Models\Card;
 use RZP\Models\Currency;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\RefundSource;
 use RZP\Models\Payment;
 use RZP\Models\BankTransfer;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
@@ -760,6 +761,11 @@ trait Refund
     {
         $payment = $refund->payment;
 
+        // Refunds are typically retried in groups using long-running
+        // loops. This ensures that if a refund has been updated by a
+        // different process, it is processed accordingly here.
+        $this->repo->reload($refund);
+
         $this->setPaymentAndRefundInfo($refund, $payment);
 
         $data = $this->getGatewayDataForRefund($refund, $payment);
@@ -768,7 +774,7 @@ trait Refund
 
         if ($refund->isProcessed() === true)
         {
-            return Payment\Refund\Status::PROCESSED;
+            return $refund->getStatus();
         }
 
         // true  if refunded
@@ -783,19 +789,19 @@ trait Refund
                 {
                     return $this->callRefundFunction($payment, $data);
                 });
+
+            $refund->incrementAttempts();
         }
         else
         {
-            $this->refund->setStatus(Payment\Refund\Status::PROCESSED);
+            $refund->setStatus(Payment\Refund\Status::PROCESSED);
         }
 
-        $this->refund->setGatewayRefunded($refundedOnGateway);
+        $refund->setGatewayRefunded($refundedOnGateway);
 
-        $this->refund->incrementAttempts();
+        $this->repo->saveOrFail($refund);
 
-        $this->repo->saveOrFail($this->refund);
-
-        return $this->refund->getStatus();
+        return $refund->getStatus();
     }
 
     protected function gatewaySupportsReversal($payment)
@@ -862,24 +868,33 @@ trait Refund
     {
         $merchant = $refund->merchant;
 
-        $balance = (new Merchant\Balance\Repository)->getMerchantBalance($merchant);
+        $balance = $this->repo->balance->getMerchantBalance($merchant);
 
-        if ($balance->getBalance() < $refund->getBaseAmount())
+        $traceData = [
+            'type'              => $type,
+            'message'           => 'Not enough balance',
+            'merchant_balance'  => $balance->getBalance(),
+            'merchant_credits'  => $balance->getRefundCredits(),
+            'refund_amount'     => $refund->getBaseAmount(),
+            'refund_id'         => $refund->getId(),
+        ];
+
+        if (($merchant->getRefundSource() === RefundSource::CREDITS) and
+            ($balance->getRefundCredits() < $refund->getBaseAmount()))
         {
-            $traceMessage = [
-                'type'              => $type,
-                'message'           => 'Not enough balance',
-                'merchant_balance'  => $balance->getBalance(),
-                'refund_amount'     => $refund->getBaseAmount(),
-                'refund_id'         => $refund->getId(),
-            ];
-
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_CREDITS,
+                null,
+                $traceData);
+        }
+        else if ($balance->getBalance() < $refund->getBaseAmount())
+        {
             if ($type === 'refund')
             {
                 $this->app['segment']->trackPayment(
                     $refund->payment,
                     TraceCode::PAYMENT_REFUND_FAILURE,
-                    $traceMessage);
+                    $traceData);
 
                 $error = ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE;
             }
@@ -892,11 +907,11 @@ trait Refund
                 throw new Exception\LogicException(
                     'Invalid type for refund validate balance - ' . $type,
                     null,
-                    $traceMessage
+                    $traceData
                 );
             }
 
-            throw new Exception\BadRequestException($error, null, $traceMessage);
+            throw new Exception\BadRequestException($error, null, $traceData);
         }
     }
 
