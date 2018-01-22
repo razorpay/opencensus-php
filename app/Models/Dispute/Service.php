@@ -4,7 +4,6 @@ namespace RZP\Models\Dispute;
 
 use Request;
 use RZP\Models\Base;
-use RZP\Models\Dispute\File\Entity as DisputeFileEntity;
 
 class Service extends Base\Service
 {
@@ -34,7 +33,7 @@ class Service extends Base\Service
         else if (($this->auth->isPrivateAuth() === true) or
             ($this->auth->isProxyAuth() === true))
         {
-            return $this->updateForMerchant($dispute, $input);
+            return $this->core()->updateFilesAndInputForMerchant($dispute, $input);
         }
     }
 
@@ -48,42 +47,5 @@ class Service extends Base\Service
         $reason = (new Reason\Core)->create($input);
 
         return $reason->toArrayPublic();
-    }
-
-    protected function updateForMerchant(Entity $dispute, array $input): array
-    {
-        $files = [];
-
-        $fileCore = new File\Core();
-
-        if (array_key_exists(DisputeFileEntity::FILES, $input) === true)
-        {
-            $files = $input[DisputeFileEntity::FILES];
-
-            $files = $fileCore->checkFileInput($files);
-
-            unset($input[DisputeFileEntity::FILES]);
-        }
-
-        $response = $this->repo->transaction(function() use ($dispute, $fileCore, $files, $input)
-        {
-            $response = [];
-
-            if (empty($input) === false)
-            {
-                $dispute = $this->core()->updateForMerchant($dispute, $input);
-            }
-
-            if (empty($files) === false )
-            {
-                $response['files'] = $fileCore->uploadFiles($dispute, $files);
-            }
-
-            $response['dispute'] = $dispute->toArrayPublic();
-
-            return $response;
-        });
-
-        return $response;
     }
 }

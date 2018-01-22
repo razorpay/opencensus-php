@@ -15,6 +15,7 @@ use RZP\Models\Admin\Action;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\Dispute as DisputeMailer;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Models\Dispute\File\Entity as DisputeFileEntity;
 
 class Core extends Base\Core
 {
@@ -114,6 +115,48 @@ class Core extends Base\Core
 
             return $dispute;
         });
+    }
+
+    /**
+     * @param Entity $dispute
+     * @param array $input
+     * @return array
+     */
+    public function updateFilesAndInputForMerchant(Entity $dispute, array $input): array
+    {
+        $files = [];
+
+        $fileCore = new File\Core();
+
+        if (array_key_exists(DisputeFileEntity::FILES, $input) === true)
+        {
+            $files = $input[DisputeFileEntity::FILES];
+
+            $files = $fileCore->checkFileInput($files);
+
+            unset($input[DisputeFileEntity::FILES]);
+        }
+
+        $response = $this->repo->transaction(function() use ($dispute, $fileCore, $files, $input)
+        {
+            $response = [];
+
+            if (empty($input) === false)
+            {
+                $dispute = $this->updateForMerchant($dispute, $input);
+            }
+
+            if (empty($files) === false )
+            {
+                $response['files'] = $fileCore->uploadFiles($dispute, $files);
+            }
+
+            $response['dispute'] = $dispute->toArrayPublic();
+
+            return $response;
+        });
+
+        return $response;
     }
 
     /**
