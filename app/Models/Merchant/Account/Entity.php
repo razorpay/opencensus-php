@@ -118,6 +118,16 @@ class Entity extends Merchant\Entity
         return 'merchant';
     }
 
+    /**
+     * Same as above ^
+     *
+     * @return string
+     */
+    public function getForeignKey()
+    {
+        return self::MERCHANT_ID;
+    }
+
     public function schedules()
     {
         return $this->hasMany('RZP\Models\Schedule\Entity');
@@ -232,14 +242,9 @@ class Entity extends Merchant\Entity
 
     public function setPublicFundTransferAttribute(array & $array)
     {
-        $settlementDestinationId = null;
+        $settlementDestination   = $this->getSettlementDestination();
 
-        $settlementDestination = $this->getSettlementDestination()->toArrayPublic();
-
-        if ($settlementDestination !== null)
-        {
-            $settlementDestinationId = $settlementDestination[BankAccount\Entity::ID];
-        }
+        $settlementDestinationId = $settlementDestination ? $settlementDestination->getPublicId() : null;
 
         $array[self::FUND_TRANSFER] = [
             self::DESTINATION => $settlementDestinationId,

@@ -1033,11 +1033,16 @@ trait PaymentTrait
         return $payment;
     }
 
-    protected function getEmandateNetbankingRecurringPaymentArray($bank = 'HDFC')
+    protected function getEmandateNetbankingRecurringPaymentArray($bank = 'HDFC', $amount = 2000)
     {
         $payment = $this->getDefaultNetbankingPaymentArray($bank);
 
-        $payment['amount'] = 2000;
+        $payment['amount'] = $amount;
+
+        if (in_array($bank, Payment\Gateway::$zeroRupeeEmandateBanks, true) === true)
+        {
+            $payment['amount'] = 0;
+        }
 
         $payment['method'] = Payment\Method::EMANDATE;
         $payment['auth_type'] = Payment\AuthType::NETBANKING;

@@ -325,7 +325,7 @@ class Server extends Base\Mock\Server
 
     protected function getEncryptionKey()
     {
-        $key = config('gateway.upi_mindgate.test_merchant_key');
+        $key = config('gateway.upi_mindgate.gateway_encryption_key');
 
         return hex2bin($key);
     }

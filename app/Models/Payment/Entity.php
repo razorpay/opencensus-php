@@ -118,6 +118,7 @@ class Entity extends Base\PublicEntity
     // Relations
     const CARD                  = 'card';
     const EMI_PLAN              = 'emi_plan';
+    const DISPUTES              = 'disputes';
 
     // Tells us whether this payment is a initial or auto recurring type
     const RECURRING_TYPE        = 'recurring_type';
@@ -283,6 +284,7 @@ class Entity extends Base\PublicEntity
         self::ACQUIRER_DATA,
         // self::SUBSCRIPTION_ID,
         self::EMI_PLAN,
+        self::DISPUTES,
         self::CREATED_AT,
     ];
 
@@ -854,6 +856,19 @@ class Entity extends Base\PublicEntity
 
 // ----------------------- Mutator ---------------------------------------------
 
+    //
+    // Temporary only. To be removed later.
+    //
+    protected function setMethodAttribute($method)
+    {
+        if ($method === Payment\Method::EMANDATE)
+        {
+            $method = Payment\Method::NETBANKING;
+        }
+
+        $this->attributes[self::METHOD] = $method;
+    }
+
     protected function setAmountAttribute($amount)
     {
         $this->attributes[self::AMOUNT] = (int) $amount;
@@ -1170,7 +1185,12 @@ class Entity extends Base\PublicEntity
 
     public function isEmandate()
     {
-        return ($this->getAttribute(self::METHOD) === Payment\Method::EMANDATE);
+        //
+        // TODO: Remove the second condition after we start
+        // storing `emandate` as method in the payment entity.
+        //
+        return (($this->getAttribute(self::METHOD) === Payment\Method::EMANDATE) or
+                (($this->isNetbanking() === true) and ($this->isRecurring() === true)));
     }
 
     public function isWallet()

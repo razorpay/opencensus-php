@@ -7,39 +7,110 @@ use RZP\Models\Payment;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Currency\Currency;
 
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        Entity::AMOUNT          =>  'required|integer|min:100',
-        Entity::CURRENCY        =>  'required|size:3|in:INR,USD',
-        Entity::RECEIPT         =>  'sometimes|nullable|string|max:40',
-        Entity::PAYMENT_CAPTURE =>  'filled|boolean',
-        Entity::CUSTOMER_ID     =>  'sometimes|filled',
-        Entity::NOTES           =>  'sometimes|notes',
-        Entity::METHOD          =>  'sometimes|in:netbanking',
-        Entity::BANK            =>  'sometimes|filled|custom',
-        Entity::ACCOUNT_NUMBER  =>  'sometimes|filled|string|max:50|min:5',
-        Entity::OFFER_ID        =>  'sometimes|string|size:20'
+        Entity::AMOUNT          => 'required|integer|min:0',
+        Entity::CURRENCY        => 'required|size:3|in:INR,USD',
+        Entity::RECEIPT         => 'sometimes|nullable|string|max:40',
+        Entity::PAYMENT_CAPTURE => 'filled|boolean',
+        Entity::CUSTOMER_ID     => 'sometimes|filled',
+        Entity::NOTES           => 'sometimes|notes',
+        Entity::METHOD          => 'sometimes|in:netbanking,emandate',
+        Entity::BANK            => 'sometimes|filled',
+        Entity::ACCOUNT_NUMBER  => 'sometimes|filled|string|max:50|min:5',
+        Entity::OFFER_ID        => 'sometimes|string|size:20'
     );
 
     protected static $createValidators = [
         Entity::ACCOUNT_NUMBER,
         Entity::AMOUNT,
+        Entity::BANK,
+        'method_fee_bearer',
+        Entity::CURRENCY,
     ];
 
     protected function validateAmount($input)
     {
-        $maxAmountAllowed = $this->entity->merchant->getMaxPaymentAmount();
-
         $amount = $input['amount'];
+
+        if ((isset($input[Entity::METHOD]) === false) or
+            ($input[Entity::METHOD] !== Payment\Method::EMANDATE))
+        {
+            if ($amount < 100)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'The amount must be at least 100.',
+                    Entity::AMOUNT,
+                    [Entity::AMOUNT => $amount]);
+            }
+        }
+        else if ($input[Entity::METHOD] === Payment\Method::EMANDATE)
+        {
+            //
+            // Note that an emandate payment order can be created for second recurring also.
+            // Hence, we cannot enforce 0rs for ALL emandate payment orders.
+            //
+            if ((isset($input[Entity::BANK]) === true) and
+                (Payment\Gateway::isZeroRupeeFlowSupported($input[Entity::BANK]) === false) and
+                ($amount < 100))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'The amount must be at least 100.',
+                    Entity::AMOUNT,
+                    [Entity::AMOUNT => $amount]);
+            }
+        }
+
+        $maxAmountAllowed = $this->entity->merchant->getMaxPaymentAmount();
 
         if ($amount > $maxAmountAllowed)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Amount exceeds maximum amount allowed.',
-                'amount',
-                ['amount' => $amount]);
+                Entity::AMOUNT,
+                [Entity::AMOUNT => $amount]);
+        }
+    }
+
+    protected function validateCurrency($input)
+    {
+        if (isset($input[Entity::METHOD]) === false)
+        {
+            return;
+        }
+
+        $currency = $input[Entity::CURRENCY];
+        $method = $input[Entity::METHOD];
+
+        if (in_array($method, [Payment\Method::NETBANKING, Payment\Method::EMANDATE], true))
+        {
+            if ($currency !== Currency::INR)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'The currency should be INR when method is ' . $method);
+            }
+        }
+    }
+
+    protected function validateMethodFeeBearer($input)
+    {
+        if (isset($input[Entity::METHOD]) === false)
+        {
+            return;
+        }
+
+        if ($input[Entity::METHOD] === Payment\Method::EMANDATE)
+        {
+            $merchant = $this->entity->merchant;
+
+            if ($merchant->isFeeBearerCustomer() === true)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Order creation failed. Please contact Razorpay for further assistance.');
+            }
         }
     }
 
@@ -57,10 +128,14 @@ class Validator extends Base\Validator
 
         $this->validateOrderCurrency($payment->getCurrency());
 
+        $this->validateAutoCapture($payment);
+
         // TPV Check is done before check for generic order payment match.
         $this->validateMerchantSpecificData($payment);
 
         $this->validateOrderBank($payment->getBank());
+
+        $this->validateOrderMethod($payment->getMethod());
     }
 
     /**
@@ -157,6 +232,25 @@ class Validator extends Base\Validator
         $this->validateOrderTpvChecks($payment);
     }
 
+    public function validateAutoCapture(Payment\Entity $payment)
+    {
+        $order = $this->entity;
+
+        if (($payment->isEmandate() === true) and
+            ($order->getPaymentCapture() === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'payment_capture should be true for eMandate payments.',
+                Entity::PAYMENT_CAPTURE,
+                [
+                    'payment_id' => $payment->getId(),
+                    'method' => $payment->getMethod(),
+                    'auth_type' => $payment->getAuthType(),
+                    'order_id'  => $order->getId(),
+                ]);
+        }
+    }
+
     protected function validateOrderTpvChecks(Payment\Entity $payment = null)
     {
         $order = $this->entity;
@@ -205,9 +299,23 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateBank($attribute, $bank)
+    protected function validateBank($input)
     {
+        if (isset($input[Entity::BANK]) === false)
+        {
+            return;
+        }
+
         $supportedBanks = Netbanking::getSupportedBanks();
+
+        // @fixme: make it generic
+        if ((isset($input['method']) === true) and
+            ($input['method'] === Payment\Method::EMANDATE))
+        {
+            $supportedBanks = Payment\Gateway::getAllEMandateBanks();
+        }
+
+        $bank = $input[Entity::BANK];
 
         if (in_array($bank, $supportedBanks, true) === false)
         {
@@ -255,5 +363,17 @@ class Validator extends Base\Validator
                     $input
                 ]);
         };
+    }
+
+    protected function validateOrderMethod(string $method = null)
+    {
+        $order = $this->entity;
+
+        if (($order->getMethod() !== null) and
+            ($order->getMethod() !== $method))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_METHOD_DOES_NOT_MATCH_ORDER_METHOD);
+        }
     }
 }
