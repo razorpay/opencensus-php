@@ -187,9 +187,10 @@ const customToolTip = function(tooltipModel) {
     crossHair.style.marginLeft = -(crossHairWidth / 2) + diff + 'px';
   }
 
-  // if there is only one point hide crosshair,
-  // right now hiding all the time
-  crossHair.style.display = 'none';
+  // if there is only one point hide crosshair
+  crossHair.style.display = this._data.labels.length === 1
+                              ? 'none'
+                              : 'block';
 };
 
 function positioner(elements, eventPosition) {

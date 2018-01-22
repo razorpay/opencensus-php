@@ -17,17 +17,6 @@ import PaymentsList from 'merchant/components/Payments/PaymentsList';
 
 import './styles.styl';
 
-tabsMeta.refunds.columns = [...tabsMeta.refunds.columns];
-
-tabsMeta.refunds.columns[3] = {
-  ...tabsMeta.refunds.columns[3],
-  transfomer: (value, record) => {
-    const paymentAmount = (record.payment && record.payment.amount) || 0;
-
-    return <Amount value={paymentAmount} />;
-  },
-};
-
 const Row = ({ record, tabName }) => {
   const tabMeta = tabsMeta[tabName];
 
