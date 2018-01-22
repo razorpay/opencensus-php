@@ -10,7 +10,7 @@ class IcicFirstData extends Base
 {
     const GATEWAY          = Payment\Gateway::FIRST_DATA;
     const EXTENSION        = FileStore\Format::XLSX;
-    const FILE_NAME        = 'FirstData_Failed_Refunds';
+    const FILE_NAME        = 'Icic_FirstData_Failed_Refunds';
     const FILE_TYPE        = FileStore\Type::FIRSTDATA_FAILED_REFUND;
 
     const SR_NO                   = 'Sr No';

@@ -12,7 +12,7 @@ class HdfcCybersource extends Base
 {
     const GATEWAY          = Payment\Gateway::CYBERSOURCE;
     const EXTENSION        = FileStore\Format::XLSX;
-    const FILE_NAME        = 'Cybersource_Failed_Refunds';
+    const FILE_NAME        = 'Hdfc_Cybersource_Failed_Refunds';
     const FILE_TYPE        = FileStore\Type::CYBERSOURCE_FAILED_REFUND;
 
     const SR_NO                   = 'Sr No';

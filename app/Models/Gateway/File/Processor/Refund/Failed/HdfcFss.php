@@ -9,7 +9,7 @@ class HdfcFss extends Base
 {
     const GATEWAY            = Payment\Gateway::HDFC;
     const EXTENSION          = FileStore\Format::XLSX;
-    const FILE_NAME          = 'FSS_Failed_Refunds';
+    const FILE_NAME          = 'Hdfc_FSS_Failed_Refunds';
     const FILE_TYPE          = FileStore\Type::FSS_FAILED_REFUND;
 
     const SR_NO            = 'Sr No';

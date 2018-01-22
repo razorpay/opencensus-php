@@ -153,7 +153,7 @@ class CardGatewaysFailedRefundFileTest extends TestCase
 
             $body = 'Please find attached failed refunds information for FirstData';
 
-            $fileName = 'FirstData_Failed_Refunds_test_'. $date  . '.xlsx';
+            $fileName = 'Icic_FirstData_Failed_Refunds_test_'. $date  . '.xlsx';
 
             $this->assertEquals($subject, $mail->subject);
 
@@ -226,7 +226,7 @@ class CardGatewaysFailedRefundFileTest extends TestCase
 
             $body = 'Please find attached failed refunds information for Cybersource';
 
-            $fileName = 'Cybersource_Failed_Refunds_test_'. $date  . '.xlsx';
+            $fileName = 'Hdfc_Cybersource_Failed_Refunds_test_'. $date  . '.xlsx';
 
             $this->assertEquals($subject, $mail->subject);
 
@@ -294,7 +294,7 @@ class CardGatewaysFailedRefundFileTest extends TestCase
 
             $body = 'Please find attached failed refunds information for FSS';
 
-            $fileName = 'FSS_Failed_Refunds_test_'. $date  . '.xlsx';
+            $fileName = 'Hdfc_FSS_Failed_Refunds_test_'. $date  . '.xlsx';
 
             $this->assertEquals($subject, $mail->subject);
 
