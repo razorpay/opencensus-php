@@ -133,25 +133,34 @@ class Repository extends BaseRepository
         string $featureName,
         int $epochTimestamp): bool
     {
-        $results = DB::Connection('live')->select("
-                      SELECT * FROM settings 
-                          WHERE `entity_type`='merchant' 
-                          AND `entity_id`='$merchantId'
-                          AND `module`='onboarding'
-                          AND `key` LIKE '$featureName%'
-                          AND `created_at`=1505957400
-                    ");
+        $query = "SELECT * FROM settings 
+                      WHERE `entity_type`='merchant' 
+                      AND `entity_id`='$merchantId'
+                      AND `module`='onboarding'
+                      AND `key` LIKE '$featureName%'
+                      AND `created_at`=1505957400";
+
+        $results = DB::Connection('live')->select($query);
 
         if (count($results) > 0)
         {
-            $result = DB::Connection('live')->update("
-                      UPDATE settings SET created_at='$epochTimestamp'
+            $updatedAt = '';
+
+            // Update the timestamp only if it was not updated
+            if ($results[0]->updated_at === "1505957400")
+            {
+                $updatedAt = ', updated_at=' . $epochTimestamp;
+            }
+
+            $query = "UPDATE settings 
+                          SET created_at='$epochTimestamp'$updatedAt
                           WHERE `entity_type`='merchant' 
                           AND `entity_id`='$merchantId'
                           AND `module`='onboarding'
                           AND `key` LIKE '$featureName%'
-                          AND `created_at`=1505957400
-                    ");
+                          AND `created_at`=1505957400";
+
+            $result = DB::Connection('live')->update($query);
 
             return $result;
         }
