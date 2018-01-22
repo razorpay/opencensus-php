@@ -357,7 +357,7 @@ class Gateway extends Base\Gateway
         return $status;
     }
 
-    protected function getApiStatus($verify)
+    protected function getApiStatus(Verify $verify)
     {
         $payment_status = $verify->input['payment']['status'];
 
@@ -366,7 +366,7 @@ class Gateway extends Base\Gateway
         return $verify->apiSuccess;
     }
 
-    protected function getGatewayStatus($verify)
+    protected function getGatewayStatus(Verify $verify)
     {
         $status = $verify->verifyResponseContent['flgSuccess'];
 
@@ -375,7 +375,7 @@ class Gateway extends Base\Gateway
         return $verify->gatewaySuccess;
     }
 
-    protected function saveResponseContenttoNetbankingEntity($verify)
+    protected function saveResponseContenttoNetbankingEntity(Verify $verify)
     {
         if (($verify->payment['received'] === false) or (empty($verify->payment['error_message']) === true))
         {
