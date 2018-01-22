@@ -163,14 +163,6 @@ export default class CreateVirtualAccount extends Component {
     });
   };
 
-  handleChange = () => {
-    setTimeout(() =>
-      document
-        .getElementsByClassName('virtual-account-powerselect__Menu')[0]
-        .parentNode.classList.add('super-impose')
-    );
-  };
-
   handleSelect = ({ option }) => {
     // For setting in redux-form
     if (option) {
@@ -246,7 +238,6 @@ export default class CreateVirtualAccount extends Component {
                       </div>
                     );
                   }}
-                  onClick={this.handleChange}
                   onChange={this.handleSelect}
                   afterOptionsComponent={select => (
                     <QuickAddComponent
@@ -281,7 +272,9 @@ export default class CreateVirtualAccount extends Component {
                     type="checkbox"
                     normalize={value => Number(value)}
                   />
-                <label for="numeric" class="icon i-check">Numeric</label>
+                  <label for="numeric" class="icon i-check">
+                    Numeric
+                  </label>
                 </div>
               )}
 

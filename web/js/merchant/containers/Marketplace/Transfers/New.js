@@ -172,18 +172,6 @@ export default class TransferNew extends Component {
     );
   };
 
-  handleClick = () => {
-    this.typeAheadSkin.classList.add('hide');
-
-    setTimeout(
-      () =>
-        document.getElementsByClassName('transfers-powerselect__Menu')[0] &&
-        document
-          .getElementsByClassName('transfers-powerselect__Menu')[0]
-          .parentNode.classList.add('super-impose')
-    );
-  };
-
   handleSelect = ({ option }) => {
     this.typeAheadSkin.classList.remove('hide');
 
