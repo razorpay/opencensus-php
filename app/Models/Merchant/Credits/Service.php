@@ -16,13 +16,13 @@ class Service extends Base\Service
 
         $creditsLog = (new Credits\Core)->create($merchant, $input);
 
-        return $creditsLog->toArray();
+        return $creditsLog->toArrayPublic();
     }
 
-    public function fetchCreditsLog($mid, $id)
+    public function fetchCreditsLog($id)
     {
         // Raises Exception if record does not exist.
-        $creditsLog = $this->repo->credits->findByIdAndMerchantId($id, $mid);
+        $creditsLog = $this->repo->credits->findByPublicIdAndMerchant($id, $this->merchant);
 
         return $creditsLog->toArrayPublic();
     }
@@ -34,13 +34,17 @@ class Service extends Base\Service
      */
     public function updateCreditsLog($mid, $id, $input)
     {
-        $credits = $input['value'];
+        $id = Entity::verifyIdAndSilentlyStripSign($id);
 
         $creditsLog = $this->repo->credits->findByIdAndMerchantId($id, $mid);
 
+        $creditsLog->getValidator()->validateInput('edit', $input);
+
+        $credits = $input['value'];
+
         $creditsLog = (new Credits\Core)->updateCredits($creditsLog, $credits);
 
-        return $creditsLog->toArray();
+        return $creditsLog->toArrayPublic();
     }
 
     /**

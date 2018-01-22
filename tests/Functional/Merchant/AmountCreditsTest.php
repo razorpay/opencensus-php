@@ -36,7 +36,7 @@ class AmountCreditsTest extends TestCase
     {
         $creditsLog = $this->fixtures->create('credits');
 
-        $this->testData[__FUNCTION__]['request']['url'] .= $creditsLog->getId();
+        $this->testData[__FUNCTION__]['request']['url'] .= $creditsLog->getPublicId();
         $this->testData[__FUNCTION__]['response']['content']['id'] = $creditsLog->getPublicId();
 
         $this->ba->proxyAuth();

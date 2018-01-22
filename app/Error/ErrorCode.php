@@ -390,6 +390,7 @@ class ErrorCode
 
     const BAD_REQUEST_REFUND_FAILED                                                 = 'BAD_REQUEST_REFUND_FAILED';
     const BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE                                     = 'BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE';
+    const BAD_REQUEST_REFUND_NOT_ENOUGH_CREDITS                                     = 'BAD_REQUEST_REFUND_NOT_ENOUGH_CREDITS';
 
     const BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE                                     = 'BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE';
     const BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD                                        = 'BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD';
