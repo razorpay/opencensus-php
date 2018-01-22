@@ -18,7 +18,7 @@ class Constants
     const UPI_ICICI       = 'upi_icici';
     const AIRTEL_MONEY    = 'airtel_money';
     const AXIS_MIGS       = 'axis_migs';
-    const FIRST_DATA      = 'first_data';
+    const ICIC_FIRST_DATA = 'icic_first_data';
     const CYBERSOURCE     = 'cybersource';
 
     /**
@@ -56,7 +56,7 @@ class Constants
             self::UPI_ICICI,
             self::AIRTEL_MONEY,
             self::AXIS_MIGS,
-            self::FIRST_DATA,
+            self::ICIC_FIRST_DATA,
             self::CYBERSOURCE,
             self::HDFC,
         ],
@@ -104,12 +104,12 @@ class Constants
         ],
 
         TYPE::REFUND_FAILED => [
-            self::UPI_ICICI    => ['supportteam@razorpay.com'],
-            self::AIRTEL_MONEY => ['supportteam@razorpay.com'],
-            self::AXIS_MIGS    => ['supportteam@razorpay.com'],
-            self::FIRST_DATA   => ['supportteam@razorpay.com'],
-            self::CYBERSOURCE  => ['supportteam@razorpay.com'],
-            self::HDFC         => ['supportteam@razorpay.com'],
+            self::UPI_ICICI       => ['supportteam@razorpay.com'],
+            self::AIRTEL_MONEY    => ['supportteam@razorpay.com'],
+            self::AXIS_MIGS       => ['supportteam@razorpay.com'],
+            self::ICIC_FIRST_DATA => ['supportteam@razorpay.com'],
+            self::CYBERSOURCE     => ['supportteam@razorpay.com'],
+            self::HDFC            => ['supportteam@razorpay.com'],
         ],
     ];
 }

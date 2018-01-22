@@ -6,7 +6,7 @@ use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Models\Base\PublicCollection;
 
-class FirstData extends Base
+class IcicFirstData extends Base
 {
     const GATEWAY          = Payment\Gateway::FIRST_DATA;
     const EXTENSION        = FileStore\Format::XLSX;

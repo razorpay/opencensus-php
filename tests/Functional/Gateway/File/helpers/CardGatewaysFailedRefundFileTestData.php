@@ -41,7 +41,7 @@ return [
         'request' => [
             'content' => [
                 'type'    => 'refund_failed',
-                'targets' => ['first_data'],
+                'targets' => ['icic_first_data'],
                 'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
                 'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp(),
             ],
@@ -60,7 +60,7 @@ return [
                         'partially_processed' => false,
                         'attempts'            => 1,
                         'type'                => 'refund_failed',
-                        'target'              => 'first_data',
+                        'target'              => 'icic_first_data',
                         'entity'              => 'gateway_file',
                         'admin'               => true,
                     ],
