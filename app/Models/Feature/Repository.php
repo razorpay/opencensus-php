@@ -147,7 +147,7 @@ class Repository extends BaseRepository
             $updatedAt = '';
 
             // Update the timestamp only if it was not updated
-            if ($results[0]->updated_at === "1505957400")
+            if (intval($results[0]->updated_at) === 1505957400)
             {
                 $updatedAt = ', updated_at=' . $epochTimestamp;
             }
