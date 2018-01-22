@@ -126,10 +126,6 @@ class Throttle
         {
             $this->process(Type::ADMIN_AUTH);
         }
-        else if (in_array($route, Http\Route::$user, true) === true)
-        {
-            $this->process(Type::USER_AUTH);
-        }
         else if (in_array($route, Http\Route::$private, true) === true)
         {
             if ($this->isDashboard() === true)
@@ -354,14 +350,6 @@ class Throttle
             //
             case Type::PUBLIC_AUTH:
                 $resource = $this->getKeyId($auth);
-                break;
-
-            //
-            // User Related Routes are the routes
-            // which are dependent only on the user irrespective of merchant associated.
-            //
-            case Type::USER_AUTH:
-                $resource = $this->request->header(Http\RequestHeader::X_DASHBOARD_USER_ID);
                 break;
 
             default:

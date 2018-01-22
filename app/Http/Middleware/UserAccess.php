@@ -79,7 +79,7 @@ class UserAccess
         $user = $this->ba->getUser();
 
         if ((empty($user) === true) and
-            (in_array($route, Route::$user, true) === true))
+            (in_array($route, Route::$userWhitelistedRoutes, true) === true))
         {
             return ApiResponse::unauthorized(
                 ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED);

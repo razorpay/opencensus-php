@@ -10,11 +10,6 @@ class Type
     const ADMIN_AUTH        = 'admin';
 
     /**
-     * User Auth when a user (merchant user) is making request.
-     */
-    const USER_AUTH         = 'user';
-
-    /**
      * Basically means no auth is being used.
      */
     const DIRECT_AUTH       = 'direct';

@@ -1124,6 +1124,7 @@ final class Route
         'settings_upsert',
         'settings_delete',
         'user_merchant_upgrade',
+        'user_resend_verification',
         'user_fetch_email',
         'emandate_debit_reconcile',
         'user_reset_password_create',
@@ -1321,7 +1322,7 @@ final class Route
         'onboarding_features_update',
     ];
 
-    public static $user = [
+    public static $userWhitelistedRoutes = [
         'user_resend_verification',
         'user_fetch',
     ];
