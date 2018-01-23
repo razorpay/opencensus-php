@@ -135,14 +135,6 @@ class Fetch
     protected $trace;
 
     /**
-     * This class is being experimented with few entities for now. If enabled is
-     * true (set dynamically or committed in code) the new flow will be used.
-     *
-     * @var boolean
-     */
-    protected $enabled = false;
-
-    /**
      * Cached value for default rules.
      * Should be accessed via getDefaultFetchRules() because if this is null
      * it sets and keeps the instance value and then return.
@@ -167,11 +159,6 @@ class Fetch
         $this->auth = $app['basicauth'];
 
         $this->trace = $app['trace'];
-    }
-
-    public function isEnabled(): bool
-    {
-        return ($this->enabled === true);
     }
 
     /**

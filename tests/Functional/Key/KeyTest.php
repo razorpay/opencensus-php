@@ -28,6 +28,8 @@ class KeyTest extends TestCase
      */
     public function testNewKeyIdRandom()
     {
+        $this->ba->proxyAuthTest();
+
         $content = $this->startTest();
 
         $id = $this->fixtures->generateUniqueId();
@@ -47,20 +49,10 @@ class KeyTest extends TestCase
         $id = $merchant['id'];
 
         $testData = & $this->testData[__FUNCTION__];
-        $testData['request']['url'] = '/merchants/'.$id.'/keys/rzp_test_TheTestAuthKey';
+        $testData['request']['url'] = '/keys/rzp_test_TheTestAuthKey';
 
-        $this->ba->appAuth();
+        $this->ba->proxyAuth('rzp_test_' . $id);
         $content = $this->startTest();
-    }
-
-    protected function startTest($testDataToReplace = [])
-    {
-        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
-        $name = $trace[1]['function'];
-
-        $testData = $this->testData[$name];
-
-        return $this->runRequestResponseFlow($testData);
     }
 }
 

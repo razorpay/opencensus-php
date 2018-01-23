@@ -37,6 +37,13 @@ class Table
     const DISPUTE               = 'disputes';
     const ADDRESS               = 'addresses';
     const MERCHANT              = 'merchants';
+
+    // Account entity is currently pointing to the 'merchants' table.
+    // It will be used for basic CRUD operations over regular merchants,
+    // sub-merchants as well as linked accounts. For more information, please
+    // follow the discussions in #tech_accounts channel and PR: #2179
+    const ACCOUNT               = 'merchants';
+
     const EMI_PLAN              = 'emi_plans';
     const SCHEDULE              = 'schedules';
     const TERMINAL              = 'terminals';

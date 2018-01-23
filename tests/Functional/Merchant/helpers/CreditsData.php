@@ -9,24 +9,26 @@ return [
 
     'testCreateCreditsLog' => [
         'request' => [
-            'url' => '/merchants/10000000000000/credits_log/',
+            'url' => '/merchants/10000000000000/credits_log',
             'method' => 'post',
             'content' => [
-                'value' => 25,
+                'value'    => 25,
                 'campaign' => 'silent-ads',
             ],
         ],
         'response' => [
             'content' => [
-                'value' => 25,
-                'campaign' => 'silent-ads',
+                'type'        => 'amount',
+                'value'       => 25,
+                'campaign'    => 'silent-ads',
+                'used'        => 0,
             ],
         ],
     ],
 
     'testGetCreditsLog' => [
         'request' => [
-            'url' => '/merchants/10000000000000/credits/',
+            'url' => '/credits/',
             'method' => 'get',
         ],
         'response' => [
@@ -301,6 +303,26 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testAddRefundCredits' => [
+        'request' => [
+            'url' => '/merchants/10000000000000/credits_log',
+            'method' => 'post',
+            'content' => [
+                'type'     => 'refund',
+                'value'    => 25,
+                'campaign' => 'silent-ads',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'type'        => 'refund',
+                'value'       => 25,
+                'campaign'    => 'silent-ads',
+                'used'        => 0,
+            ],
         ],
     ],
 ];

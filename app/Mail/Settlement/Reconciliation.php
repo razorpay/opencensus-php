@@ -2,13 +2,20 @@
 
 namespace RZP\Mail\Settlement;
 
-use RZP\Constants\MailTags;
-
-class KotakReconciliation extends Base
+class Reconciliation extends Base
 {
+    protected $channel;
+
+    public function __construct(array $data, string $channel)
+    {
+        parent::__construct($data);
+
+        $this->channel = $channel;
+    }
+
     protected function getFromHeader()
     {
-        return 'Kotak Settlement';
+        return Constants::HEADER_MAP[$this->channel];
     }
 
     protected function addSubject()
@@ -33,11 +40,11 @@ class KotakReconciliation extends Base
 
     protected function getSubject()
     {
-        return 'Re: Kotak Settlement files for ' . $this->data['date'];
+        return 'Re: '. ucfirst($this->channel) . ' Settlement files for ' . $this->data['date'];
     }
 
     protected function getMailTag()
     {
-        return MailTags::KOTAK_SETTLEMENT_FILES;
+        return Constants::MAILTAG_MAP[$this->channel];
     }
 }

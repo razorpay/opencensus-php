@@ -141,6 +141,103 @@ return [
             ],
         ],
     ],
+    'testEMandateOrderWithCustomerFeeBearer' => [
+        'request' => [
+            'content' => [
+                'amount'         => 0,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'method'         => 'emandate',
+                'bank'           => 'UTIB',
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Order creation failed. Please contact Razorpay for further assistance.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+    'testEmandateRegistrationOrderWithZeroRupee' => [
+        'request' => [
+            'content' => [
+                'amount'         => 0,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'method'         => 'emandate',
+                'bank'           => 'UTIB',
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'         => 0,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+            ],
+        ],
+    ],
+    'testEmandateRegistrationOrderWithoutZeroRupee' => [
+        'request' => [
+            'content' => [
+                'amount'         => 0,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'method'         => 'emandate',
+                'bank'           => 'HDFC',
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The amount must be at least 100.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+    'testEmandateRegistrationOrderWithInvalidBank' => [
+        'request' => [
+            'content' => [
+                'amount'         => 1000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'method'         => 'emandate',
+                'bank'           => 'IDBI',
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ORDER_BANK_INVALID
+        ],
+    ],
     'testCreateTPVOrderWithInvalidAccountNumber' => [
         'request' => [
             'content' => [

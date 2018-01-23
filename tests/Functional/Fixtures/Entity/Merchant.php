@@ -235,6 +235,9 @@ class Merchant extends Base
 
     public function createScheduleTask(array $attributes = array())
     {
+        // TODO: To check for better ways of solving this issue
+        $mode = Config::get('database.default');
+
         $scheduleAttributes = [];
 
         if (isset($attributes['schedule']) === true)
@@ -244,13 +247,13 @@ class Merchant extends Base
             unset ($attributes['schedule']);
         }
 
-        $schedule = $this->fixtures->create('schedule', $scheduleAttributes);
+        $schedule = $this->fixtures->on($mode)->create('schedule', $scheduleAttributes);
 
         $defaultValues = ['schedule_id' => $schedule->getId()];
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        return $this->fixtures->create('schedule_task', $attributes);
+        return $this->fixtures->on($mode)->create('schedule_task', $attributes);
     }
 
     public function activate($id = '10000000000000')
@@ -361,6 +364,11 @@ class Merchant extends Base
     public function editFeeCredits($credits, $id = '10000000000000')
     {
         return $this->fixtures->edit('balance', $id, ['fee_credits' => $credits]);
+    }
+
+    public function editRefundCredits($credits, $id = '10000000000000')
+    {
+        return $this->fixtures->edit('balance', $id, ['refund_credits' => $credits]);
     }
 
     public function editCreditsforNodalAccount($credits, $type = Credits\Type::AMOUNT)

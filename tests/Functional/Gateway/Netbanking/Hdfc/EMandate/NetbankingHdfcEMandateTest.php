@@ -46,6 +46,9 @@ class NetbankingHdfcEMandateTest extends TestCase
     {
         $payment = $this->payment;
 
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $payment['order_id'] = $order->getPublicId();
+
         $this->doAuthPayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
@@ -67,6 +70,9 @@ class NetbankingHdfcEMandateTest extends TestCase
     {
         $payment = $this->payment;
 
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $payment['order_id'] = $order->getPublicId();
+
         $payment = $this->doAuthPayment($payment);
 
         $this->verifyPayment($payment['razorpay_payment_id']);
@@ -79,6 +85,9 @@ class NetbankingHdfcEMandateTest extends TestCase
     public function testSecondRecurringPaymentVerify()
     {
         $payment = $this->payment;
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $payment['order_id'] = $order->getPublicId();
 
         $this->doAuthPayment($payment);
 
@@ -95,6 +104,9 @@ class NetbankingHdfcEMandateTest extends TestCase
             ]);
 
         $payment[Payment\Entity::TOKEN] = $tokenId;
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $payment['order_id'] = $order->getPublicId();
 
         // Second recurring payment request
         $this->doS2SRecurringPayment($payment);
@@ -345,6 +357,9 @@ class NetbankingHdfcEMandateTest extends TestCase
     {
         $payment = $this->payment;
 
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $payment['order_id'] = $order->getPublicId();
+
         $this->doAuthPayment($payment);
 
         $paymentEntity = $this->getLastEntity('payment', true);
@@ -360,6 +375,9 @@ class NetbankingHdfcEMandateTest extends TestCase
             ]);
 
         $payment[Payment\Entity::TOKEN] = $tokenId;
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $payment['order_id'] = $order->getPublicId();
 
         // Second recurring payment request
         $content = $this->doS2SRecurringPayment($payment);

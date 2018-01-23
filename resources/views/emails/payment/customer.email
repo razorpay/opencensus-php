@@ -183,9 +183,13 @@
                           <tr>
                             <td class="center lighttext">
                               <hr class="wide">
-                              <center>
-                                If this is correct, you don't need to take any further action.<br>
-                                Please <a title="Click to send us a mail" href="mailto:contact@razorpay.com">contact us</a> in case of any discrepancy.
+                              <center style="font-size: 10px">
+                                We are a payment gateway and only facilitate merchants with on-line payments.
+                                <br>
+                                We request you to contact the merchant for any service related queries.
+                                <br>
+                                If you want to dispute a payment, please visit our <a title="Razorpay" href="https://razorpay.com">website</a>
+                                and follow the instructions on the chat window.
                               </center>
                             </td>
                             <td class="expander"></td>

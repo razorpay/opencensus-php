@@ -108,34 +108,11 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postCreateKeys($merchantId)
-    {
-        $data = $this->service()->createKey($merchantId);
-
-        return ApiResponse::json($data);
-    }
-
-    public function getKeys($merchantId)
-    {
-        $data = $this->service()->fetchKeys($merchantId);
-
-        return ApiResponse::json($data);
-    }
-
     public function getKeySecret($keyId)
     {
         $data = (new Key\Core)->getKeySecret($keyId);
 
         return ApiResponse::json($data);
-    }
-
-    public function putKeys($merchantId, $keyId)
-    {
-        $input = Request::all();
-
-        $keys = $this->service()->updateKey($merchantId, $keyId, $input);
-
-        return ApiResponse::json($keys);
     }
 
     public function postAssignPricingPlan($id)
@@ -617,9 +594,9 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getCreditsLog(Credits\Service $service, $mid, $id)
+    public function getCreditsLog(Credits\Service $service, $id)
     {
-        $data = $service->fetchCreditsLog($mid, $id);
+        $data = $service->fetchCreditsLog($id);
 
         return ApiResponse::json($data);
     }

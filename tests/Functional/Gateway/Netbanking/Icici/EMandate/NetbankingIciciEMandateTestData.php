@@ -16,22 +16,6 @@ return [
         'entity'          => 'netbanking',
     ],
 
-    'testEMandateInitialPaymentFailure' => [
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'                 => RZP\Exception\GatewayErrorException::class,
-            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-        ],
-    ],
-
     'testUnknownReasonSecondRecurringFailure' => [
         'response'  => [
             'content'     => [
@@ -164,22 +148,6 @@ return [
         ],
     ],
 
-    'testPaymentAmountGreaterThanTokenMaxAmount' => [
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_AMOUNT_GREATER_THAN_TOKEN_MAX_AMOUNT,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'                 => RZP\Exception\BadRequestException::class,
-            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_GREATER_THAN_TOKEN_MAX_AMOUNT,
-        ],
-    ],
-
     'testTokenPassedInFirstRecurringPayment' => [
         'response'  => [
             'content'     => [
@@ -193,22 +161,6 @@ return [
         'exception' => [
             'class'                 => RZP\Exception\BadRequestException::class,
             'internal_error_code'   => ErrorCode::BAD_REQUEST_NB_TOKEN_PASSED_IN_FIRST_RECURRING,
-        ],
-    ],
-
-    'testAuthorizeFailedRegistrationPayment' => [
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'                 => RZP\Exception\GatewayErrorException::class,
-            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
         ],
     ],
 ];

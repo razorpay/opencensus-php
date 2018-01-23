@@ -4,20 +4,21 @@ namespace RZP\Models\Merchant;
 
 use Config;
 
-use RZP\Models\User;
-use RZP\Models\Base;
 use RZP\Models\Emi;
+use RZP\Models\Base;
+use RZP\Models\User;
+use RZP\Models\State;
 use RZP\Models\Feature;
 use RZP\Models\Terminal;
 use RZP\Constants\Table;
-use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
-use RZP\Models\Invitation;
-use RZP\Models\Merchant\Detail;
-use RZP\Models\State;
+use RZP\Error\ErrorCode;
 use RZP\Models\Settlement;
+use RZP\Models\Invitation;
 use Conner\Tagging\Taggable;
+use RZP\Models\Merchant\Detail;
 use RZP\Exception\LogicException;
+use RZP\Models\Base\Traits\NotesTrait;
 
 /**
  * @property Detail\Entity $merchantDetail
@@ -25,6 +26,7 @@ use RZP\Exception\LogicException;
 class Entity extends Base\PublicEntity
 {
     use Taggable;
+    use NotesTrait;
 
     const ID                        = 'id';
     const ORG_ID                    = 'org_id';
@@ -48,6 +50,7 @@ class Entity extends Base\PublicEntity
     const SCOPE                     = 'scope';
     const FEE_BEARER                = 'fee_bearer';
     const FEE_MODEL                 = 'fee_model';
+    const REFUND_SOURCE             = 'refund_source';
     const LINKED_ACCOUNT_KYC        = 'linked_account_kyc';
     const BRAND_COLOR               = 'brand_color';
     const HANDLE                    = 'handle';
@@ -61,6 +64,7 @@ class Entity extends Base\PublicEntity
     const CONVERT_CURRENCY          = 'convert_currency';
     const ARCHIVED_AT               = 'archived_at';
     const SUSPENDED_AT              = 'suspended_at';
+    const NOTES                     = 'notes';
 
     // Coupon Related Data for display only
     const COUPON_CODE               = 'coupon_code';
@@ -82,6 +86,7 @@ class Entity extends Base\PublicEntity
      */
     const FILTERS                   = 'filters';
     const KEY_MERCHANT_ID           = 'merchant_id';
+    const DEFAULT_FILTER            = 'default';
 
     //
     // Configs
@@ -157,6 +162,7 @@ class Entity extends Base\PublicEntity
         self::CATEGORY,
         self::CATEGORY2,
         self::FEE_MODEL,
+        self::REFUND_SOURCE,
         self::LOGO_URL,
         self::FEE_BEARER,
         self::HOLD_FUNDS,
@@ -173,6 +179,7 @@ class Entity extends Base\PublicEntity
         self::RECEIPT_EMAIL_ENABLED,
         self::AUTO_CAPTURE_LATE_AUTH,
         self::TRANSACTION_REPORT_EMAIL,
+        self::NOTES,
     ];
 
     // Requires PHP 5.6
@@ -203,6 +210,7 @@ class Entity extends Base\PublicEntity
         self::LINKED_ACCOUNT_KYC,
         self::FEE_BEARER,
         self::FEE_MODEL,
+        self::REFUND_SOURCE,
         self::BILLING_LABEL,
         self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
@@ -224,6 +232,7 @@ class Entity extends Base\PublicEntity
         self::ORG_ID,
         self::GROUPS,
         self::ADMINS,
+        self::NOTES,
      ];
 
     protected $defaults = [
@@ -246,10 +255,12 @@ class Entity extends Base\PublicEntity
         self::AUTO_REFUND_DELAY      => null,
         self::AUTO_CAPTURE_LATE_AUTH => false,
         self::FEE_MODEL              => FeeModel::PREPAID,
+        self::REFUND_SOURCE          => RefundSource::BALANCE,
         self::CHANNEL                => Settlement\Channel::ICICI,
         self::CONVERT_CURRENCY       => null,
         self::ARCHIVED_AT            => null,
         self::SUSPENDED_AT           => null,
+        self::NOTES                  => [],
     ];
 
     protected $publicSetters = [
@@ -540,7 +551,7 @@ class Entity extends Base\PublicEntity
     public function methods()
     {
         return $this->hasOne(
-            'RZP\Models\Merchant\Methods\Entity');
+            'RZP\Models\Merchant\Methods\Entity', self::MERCHANT_ID);
     }
 
     public function terminals()
@@ -672,6 +683,11 @@ class Entity extends Base\PublicEntity
     protected function getFeeModelAttribute()
     {
         return FeeModel::getFeeModelStringForValue($this->attributes[self::FEE_MODEL]);
+    }
+
+    protected function getRefundSourceAttribute()
+    {
+        return RefundSource::getRefundSourceStringForValue($this->attributes[self::REFUND_SOURCE]);
     }
 
     protected function getInternationalAttribute()
@@ -830,6 +846,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FEE_MODEL);
     }
 
+    public function getRefundSource()
+    {
+        return $this->getAttribute(self::REFUND_SOURCE);
+    }
+
     public function getFullLogoUrlWithSize($size = self::ORIGINAL_SIZE)
     {
         $relativeLogoUrl = $this->getLogoUrl();
@@ -935,6 +956,11 @@ class Entity extends Base\PublicEntity
     protected function setFeeModelAttribute($feeModel)
     {
         $this->attributes[self::FEE_MODEL] = FeeModel::getValueForFeeModelString($feeModel);
+    }
+
+    protected function setRefundSourceAttribute($refundSource)
+    {
+        $this->attributes[self::REFUND_SOURCE] = RefundSource::getValueForRefundSourceString($refundSource);
     }
 
     protected function setAutoRefundDelayAttribute($autoRefundDelayPeriod)
@@ -1182,7 +1208,7 @@ class Entity extends Base\PublicEntity
 
         $data = array_only($data, $reportFields);
 
-        $data[self::ID] = AccountEntity::getSignedId($this->getAttribute(self::ID));
+        $data[self::ID] = Account\Entity::getSignedId($this->getAttribute(self::ID));
 
         return $data;
     }
@@ -1235,7 +1261,12 @@ class Entity extends Base\PublicEntity
 
     public function users()
     {
-        return $this->belongsToMany(User\Entity::class, Table::MERCHANT_USERS)
+        //
+        // The foreign key should be specified explicitly as it otherwise fetches from the
+        // entity name by appending '_id' to it. When this code is called from Account\Entity,
+        // it tries to look for account_id and crashes.
+        //
+        return $this->belongsToMany(User\Entity::class, Table::MERCHANT_USERS, self::MERCHANT_ID)
                     ->withPivot(User\Entity::ROLE)
                     ->orderBy(self::NAME);
     }

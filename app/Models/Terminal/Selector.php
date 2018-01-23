@@ -8,6 +8,7 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Gateway\Rule;
@@ -146,13 +147,18 @@ class Selector extends Base\Core
                     '76lEBqibDvhOzY',
                 ];
 
-                $selectedTerminalId = array_rand($rupayTerminalSet);
+                $selectedTerminalId = $rupayTerminalSet[array_rand($rupayTerminalSet)];
 
                 $terminal = $this->repo->terminal->find($selectedTerminalId);
 
                 $sortedTerminals = [$terminal];
 
                 $sortedTerminals;
+            }
+            else if (($payment->isCard() === true) and ($payment->card->isDiners() === true))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
             }
             else
             {

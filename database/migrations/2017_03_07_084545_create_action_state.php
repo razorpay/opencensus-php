@@ -61,6 +61,7 @@ class CreateActionState extends Migration
             $table->index(State::ENTITY_ID);
             $table->index(State::ENTITY_TYPE);
             $table->index(State::CREATED_AT);
+            $table->index([State::ENTITY_ID, State::ENTITY_TYPE]);
         });
     }
 

@@ -15,7 +15,7 @@ class Repository extends Base\Repository
 
     protected $entityFetchParamRules = [
         Entity::RECIPIENT           => 'sometimes|string|max:20',
-        self::EXPAND . '.*'         => 'string|in:recipient_settlement,',
+        self::EXPAND . '.*'         => 'filled|string|in:recipient_settlement,',
     ];
 
     protected $appFetchParamRules = [
