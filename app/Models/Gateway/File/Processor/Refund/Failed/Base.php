@@ -60,7 +60,9 @@ class Base extends Refund\Base
 
             $mailData = $this->formatDataForMail($data);
 
-            $refundFileMail = new FailedRefundFileMail($mailData, static::GATEWAY, $recipients);
+            $target = $this->gatewayFile->getTarget();
+
+            $refundFileMail = new FailedRefundFileMail($mailData, $target, $recipients);
 
             Mail::queue($refundFileMail);
 
