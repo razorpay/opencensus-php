@@ -145,6 +145,11 @@ class Core extends Base\Core
      */
     public function updateFilesAndInputForMerchant(Entity $dispute, array $input): array
     {
+        $this->trace->info(
+            TraceCode::DISPUTE_EDIT_REQUEST_FOR_MERCHANT,
+            array_merge($input, [Entity::ID => $dispute->getId()])
+        );
+
         $files = [];
 
         $fileCore = new File\Core();
