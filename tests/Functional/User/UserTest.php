@@ -35,6 +35,8 @@ class UserTest extends TestCase
 
         $testData['request']['url'] = '/users/' . $user['id'];
 
+        $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
+
         $this->ba->appAuth();
 
         $this->startTest();
