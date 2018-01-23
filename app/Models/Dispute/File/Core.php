@@ -4,14 +4,13 @@ namespace RZP\Models\Dispute\File;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Services\UfhService;
 use RZP\Models\Base\StorageClient;
-use RZP\Models\Base\Traits\FileHandlerTrait;
 use RZP\Models\Dispute\Entity as DisputeEntity;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class Core extends Base\Core
 {
-    use FileHandlerTrait;
-
     public function create(DisputeEntity $dispute, array $input)
     {
         $this->trace->info(
@@ -32,12 +31,16 @@ class Core extends Base\Core
 
     protected function uploadAndCreateFile(DisputeEntity $dispute, array $fileInput)
     {
-        $url = $this->uploadFileAndGetUrl($fileInput[Entity::FILE],
-                        Entity::STORAGE_PATH, $this->getStorageClient());
+        $file = $fileInput[Entity::FILE];
+
+        $uploadedFileDetails = $this->app['ufh.service']->uploadFileAndGetUrl($file,
+                                                                            $this->getStorageFileName($dispute, $file),
+                                                                            $fileInput[Entity::CATEGORY],
+                                                                            $dispute);
 
         $input = [
             Entity::DISPUTE_ID          => $dispute->getId(),
-            Entity::URL                 => $url,
+            Entity::URL                 => $uploadedFileDetails[UfhService::SIGNED_URL],
             Entity::NAME                => $fileInput[Entity::NAME],
             Entity::CATEGORY            => $fileInput[Entity::CATEGORY],
         ];
@@ -80,6 +83,12 @@ class Core extends Base\Core
         }
 
         return $disputeFiles;
+    }
+
+    protected function getStorageFileName(DisputeEntity $dispute, UploadedFile $file): string
+    {
+        return $dispute->getEntityName() . '/' . $dispute->merchant->getPublicId() . '/' .
+                          $dispute->getPublicId() . '/' . $file->getFileName();
     }
 
     protected function getStorageClient(): StorageClient
