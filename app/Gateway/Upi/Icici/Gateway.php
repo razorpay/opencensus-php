@@ -884,7 +884,8 @@ class Gateway extends Base\Gateway
 
             $payment->setPaymentId($input['razorpay_payment_id']);
         }
-        else{
+        else
+        {
             $payment = $this->createGatewayPaymentEntity($input);
 
             $payment->setAmount($this->getIntegerFormattedAmount($input[Fields::PAYER_AMOUNT]));

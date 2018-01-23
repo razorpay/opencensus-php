@@ -14,7 +14,7 @@ class Repository extends Base\Repository
             ->where('qr_code_id' , '=', $qrCodeId)
             ->first();
     }
-    
+
     // TODO: Rename the function to a proper one
     // and fix the get auth code function for emi
     public function findCapturedPaymentByIdOrFail($paymentId)

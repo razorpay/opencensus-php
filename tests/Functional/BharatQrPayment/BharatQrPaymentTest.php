@@ -23,14 +23,14 @@ class BharatQrPaymentTest extends TestCase
         $this->fixtures->merchant->activate();
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
-
-        $this->qrCode = $this->createVirtualAccount();
-
-        $this->ba->directAuth();
     }
 
     public function testQrPaymentProcess()
     {
+        $this->qrCode = $this->createVirtualAccount();
+
+        $this->ba->directAuth();
+
         $request = $this->testData[__FUNCTION__];
 
         $qrCodeId = substr($this->qrCode['id'], 3);
@@ -62,8 +62,6 @@ class BharatQrPaymentTest extends TestCase
     {
         $request = $this->testData['testQrPaymentProcess'];
 
-        $this->refreshApplication();
-
         $this->ba->noAuth();
 
         $response = $this->makeRequestAndGetContent($request);
@@ -88,6 +86,10 @@ class BharatQrPaymentTest extends TestCase
 
     public function testUpiQrPaymentProcess()
     {
+        $this->qrCode = $this->createVirtualAccount();
+
+        $this->ba->directAuth();
+
         $request = $this->testData[__FUNCTION__];
 
         $qrCode = $this->getLastEntity('qr_code', true);
@@ -143,9 +145,15 @@ class BharatQrPaymentTest extends TestCase
 
     public function testDuplicateNotification()
     {
+        $this->qrCode = $this->createVirtualAccount();
+
+        $this->ba->directAuth();
+
         $request = $this->testData['testQrPaymentProcess'];
 
-        $request['content']['PurchaseID'] = $this->qrCode['id'];
+        $qrCodeId = substr($this->qrCode['id'], 3);
+
+        $request['content']['PurchaseID'] = $qrCodeId;
 
         $response = $this->makeRequestAndGetContent($request);
 

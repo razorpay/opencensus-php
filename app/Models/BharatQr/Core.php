@@ -42,6 +42,11 @@ class Core extends Base\Core
                 {
                     $bharatQr = (new Processor)->process($bharatQr);
 
+                    if ($bharatQr === null)
+                    {
+                        return null;
+                    }
+
                     $paymentId = $bharatQr->payment->getId();
 
                     return $paymentId;
@@ -53,7 +58,6 @@ class Core extends Base\Core
         }
         catch (\Throwable $ex)
         {
-            s($ex->getMessage());
             $this->trace->traceException(
                 $ex, Trace::ERROR, TraceCode::BHARAT_QR_PAYMENT_PROCESSING_FAILED, $input);
 
