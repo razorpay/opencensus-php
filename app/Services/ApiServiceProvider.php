@@ -128,6 +128,18 @@ class ApiServiceProvider extends BaseServiceProvider
             return new HarvesterClient($app);
         });
 
+        $this->app->singleton('ufh.service', function ($app)
+        {
+            $ufhServiceMock = $app['config']->get('applications.ufh.mock');
+
+            if ($ufhServiceMock === true)
+            {
+                return new Mock\UfhService($app);
+            }
+
+            return new UfhService($app);
+        });
+
         $this->app->singleton('gateway_file', function($app)
         {
             return new GatewayFileManager($app);
