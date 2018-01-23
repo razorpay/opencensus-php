@@ -621,9 +621,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AMOUNT_PAIDOUT, $amount);
     }
 
-    public function setGatewayBharatQr()
+    public function setGatewayBharatQr(string $gateway)
     {
-        $this->setGateway(Payment\Gateway::BHARAT_QR);
+        $this->setGateway($gateway);
     }
 
     /**

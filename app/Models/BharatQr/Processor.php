@@ -122,7 +122,7 @@ class Processor extends VirtualAccount\Processor
 
             $bharatQr->payment()->associate($payment);
 
-            $payment->setGatewayBharatQr();
+            $payment->setGatewayBharatQr($bharatQr->getGateway());
 
             $bharatQr->virtualAccount()->associate($this->virtualAccount);
 

@@ -12,6 +12,7 @@ class Entity extends Base\PublicEntity
     const PAYMENT_ID            = 'payment_id';
     const EXPECTED              = 'expected';
     const VIRTUAL_ACCOUNT_ID    = 'virtual_account_id';
+    const GATEWAY               = 'gateway';
     const GATEWAY_MERCHANT_ID   = 'gateway_merchant_id';
     //card or upi
     const METHOD                = 'method';
@@ -40,6 +41,7 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
         self::AMOUNT,
+        self::GATEWAY,
         self::GATEWAY_MERCHANT_ID,
         self::METHOD,
         self::VPA,
@@ -132,6 +134,11 @@ class Entity extends Base\PublicEntity
     }
 
     // ----------------------- Getters -----------------------
+
+    public function getGateway()
+    {
+        $this->getAttribute(self::GATEWAY);
+    }
 
     public function getProviderReferenceId()
     {

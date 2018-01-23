@@ -34,6 +34,9 @@ class CreateBharatQrTable extends Migration
             $table->tinyInteger(BharatQr::EXPECTED)
                   ->default(0);
 
+            $table->string(BharatQr::GATEWAY)
+                  ->nullable();
+
             $table->string(BharatQr::GATEWAY_MERCHANT_ID)
                   ->nullable();
 
