@@ -63,6 +63,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::EXPECTED,
         self::AMOUNT,
+        self::GATEWAY,
         self::PAYMENT_ID,
         self::VIRTUAL_ACCOUNT_ID,
         self::GATEWAY_MERCHANT_ID,
@@ -137,7 +138,7 @@ class Entity extends Base\PublicEntity
 
     public function getGateway()
     {
-        $this->getAttribute(self::GATEWAY);
+        return $this->getAttribute(self::GATEWAY);
     }
 
     public function getProviderReferenceId()
