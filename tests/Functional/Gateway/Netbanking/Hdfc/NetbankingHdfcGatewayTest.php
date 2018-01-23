@@ -103,6 +103,29 @@ class NetbankingHdfcGatewayTest extends TestCase
         $payment = $this->doNetbankingHdfcAuthAndCapturePayment();
 
         $this->verifyPayment($payment['id']);
+
+        $verify =$this->verifyPayment($payment['id']);
+
+        assert($verify['payment']['verified'] === 1);
+
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $this->assertTestResponse($gatewayPayment, 'testPaymentVerifySuccessEntity');
+    }
+
+    public function testVerifyOldPayment()
+    {
+        $payment = $this->doNetbankingHdfcAuthAndCapturePayment();
+
+        $FourtySixDaysAgoTimeStamp = Carbon::parse('46 days ago')->timestamp;
+
+        $this->fixtures->edit('payment', $payment['id'], ['created_at' => $FourtySixDaysAgoTimeStamp ]);
+
+        $verify = $this->verifyPayment($payment['id']);
+
+        $this->assertTrue($verify['gateway']['gatewaySuccess']);
+
+        $this->assertTrue($verify['gateway']['gatewaySuccess']);
     }
 
     public function testRefundExcelFile()
