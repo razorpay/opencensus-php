@@ -69,6 +69,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_CHECKOUT_INVALID_ID                   = 'PAYMENT_CHECKOUT_INVALID_ID';
     const PAYMENT_WEBHOOK                               = 'PAYMENT_WEBHOOK';
     const PAYMENT_OTP_READ_FAILURE                      = 'PAYMENT_OTP_READ_FAILURE';
+    const PAYMENT_OTP_RESEND_REQUEST                    = 'PAYMENT_OTP_RESEND_REQUEST';
     const PAYMENT_METADATA                              = 'PAYMENT_METADATA';
     const PAYMENT_CREATE_ON_PUBLIC                      = 'PAYMENT_CREATE_ON_PUBLIC';
     const PAYMENT_CARD_NOT_ENROLLED                     = 'PAYMENT_CARD_NOT_ENROLLED';

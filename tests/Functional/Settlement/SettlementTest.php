@@ -291,20 +291,13 @@ class SettlementTest extends TestCase
     {
         $this->ba->appAuth();
 
-        $this->fixtures->create('credits', [
-                       'type'        => 'fee',
-                       'value'       => 50000,
-                   ]);
+        $this->fixtures->create('credits',
+            [
+                'type'        => 'fee',
+                'value'       => 50000,
+           ]);
 
-         $this->fixtures->create('credits', [
-                       'type'        => 'fee',
-                       'value'       => 50000,
-                       'merchant_id' => '10NodalAccount',
-                   ]);
-
-        // $this->fixtures->merchant->createBankAccount();
         $this->fixtures->merchant->editFeeCredits('50000', Account::TEST_ACCOUNT);
-        $this->fixtures->merchant->editCreditsforNodalAccount('50000', 'fee');
 
         $payments = $this->createPaymentEntities();
 
@@ -316,6 +309,7 @@ class SettlementTest extends TestCase
             ];
 
             $refund = $this->fixtures->create('refund:from_payment', $attrs);
+
             $refunds[] = $refund;
         }
 
