@@ -6,8 +6,6 @@ use Crypt;
 use Config;
 use ApiResponse;
 
-use Illuminate\Routing\Router;
-use RZP\Base\RepositoryManager;
 use RZP\Exception;
 use RZP\Http\Route;
 use RZP\Models\Key;
@@ -16,6 +14,9 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use Illuminate\Routing\Router;
+use RZP\Base\RepositoryManager;
+use RZP\Models\User\Entity as User;
 
 /**
  * Class BasicAuth
@@ -237,7 +238,11 @@ class BasicAuth
 
     protected $orgHostName = null;
 
-    // User is set from the id received in X-Dashboard-User-Id header.
+    /**
+     * User is set from the id received in X-Dashboard-User-Id header.
+     *
+     * @var \RZP\Models\User\Entity | null
+     */
     protected $user        = null;
 
     public function __construct($app)
@@ -1517,17 +1522,30 @@ class BasicAuth
         return $this->orgHostName;
     }
 
-    public function setUser($user)
+    /**
+     * Sets User Entity
+     *
+     * @param \RZP\Models\User\Entity $user
+     *
+     * @return $this
+     */
+    public function setUser(User $user)
     {
         $this->user = $user;
 
         return $this;
     }
 
+    /**
+     * Returns User or null based on the X-Dashboard-User-Id header
+     *
+     * @return null|\RZP\Models\User\Entity
+     */
     public function getUser()
     {
         return $this->user;
     }
+
     /**
      * Verifies and sets user from the headers.
      */

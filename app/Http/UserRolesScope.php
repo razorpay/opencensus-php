@@ -22,20 +22,19 @@ class UserRolesScope
     public function setRouteUserRoleMap()
     {
         $this->routeUserRoleMap = [
-            'team_users_list'      => Role::OWNER,
+            'team_users_list'      => [Role::OWNER],
             'batch_fetch_multiple' => Role::READER_ROLES,
             'batch_fetch_by_id'    => Role::READER_ROLES,
         ];
     }
 
     /**
-     * @param $routeName
+     * @param string $routeName
      *
      * @return array|mixed
      */
-    public function getRouteUserRoles($routeName)
+    public function getRouteUserRoles(string $routeName)
     {
-        return $this->routeUserRoleMap[$routeName] ?? [];
+        return $this->routeUserRoleMap[$routeName] ?? null;
     }
 }
-

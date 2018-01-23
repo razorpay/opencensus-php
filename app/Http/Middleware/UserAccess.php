@@ -5,12 +5,10 @@ namespace RZP\Http\Middleware;
 use Closure;
 use ApiResponse;
 
-use Illuminate\Foundation\Application;
 use RZP\Http\Route;
-use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Http\UserRolesScope;
-use RZP\Trace\TraceCode;
+use Illuminate\Foundation\Application;
 
 class UserAccess
 {
@@ -18,6 +16,13 @@ class UserAccess
      * @var BasicAuth
      */
     protected $ba;
+
+    /**
+     * \RZP\Base\RepositoryManager
+     *
+     * @var mixed
+     */
+    protected $repo;
 
     /**
      * UserAccess constructor.
@@ -31,8 +36,6 @@ class UserAccess
         $this->ba = $app['basicauth'];
 
         $this->router = $app['router'];
-
-        $this->trace = $app['trace'];
 
         $this->userRoleScope = new UserRolesScope();
     }
@@ -79,7 +82,7 @@ class UserAccess
         $user = $this->ba->getUser();
 
         if ((empty($user) === true) and
-            (in_array($route, Route::$userWhitelistedRoutes, true) === true))
+            (in_array($route, Route::$userWhitelist, true) === true))
         {
             return ApiResponse::unauthorized(
                 ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED);
@@ -90,22 +93,23 @@ class UserAccess
     {
         $routeRoles = $this->userRoleScope->getRouteUserRoles($route);
 
-        if (empty($routeRoles) === false)
+        if ($routeRoles === null)
         {
-            $userRole = $this->getUserRole();
+            return;
+        }
 
-            if (empty($userRole) === true)
-            {
-                return ApiResponse::unauthorized(
-                    ErrorCode::BAD_REQUEST_UNAUTHORIZED_USER_ROLE_MISSING);
-            }
+        $userRole = $this->getUserRole();
 
-            if (((is_array($routeRoles) === true) and (in_array($userRole, $routeRoles, true) === false)) or
-                ($routeRoles !== $userRole))
-            {
-                return ApiResponse::unauthorized(
-                    ErrorCode::BAD_REQUEST_UNAUTHORIZED);
-            }
+        if (empty($userRole) === true)
+        {
+            return ApiResponse::unauthorized(
+                ErrorCode::BAD_REQUEST_UNAUTHORIZED_USER_ROLE_MISSING);
+        }
+
+        if (in_array($userRole, $routeRoles, true) === false)
+        {
+            return ApiResponse::unauthorized(
+                ErrorCode::BAD_REQUEST_UNAUTHORIZED);
         }
     }
 

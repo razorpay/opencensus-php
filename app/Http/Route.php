@@ -1322,7 +1322,7 @@ final class Route
         'onboarding_features_update',
     ];
 
-    public static $userWhitelistedRoutes = [
+    public static $userWhitelist = [
         'user_resend_verification',
         'user_fetch',
     ];
