@@ -733,4 +733,81 @@ class Core extends Base\Core
             $this->logActionToSlack($merchant, SlackActions::PRODUCT_ACTIVATION, $data);
         }
     }
+
+    public function backfillTimestamps(array $featureRequests): array
+    {
+        $success   = 0;
+        $failed    = 0;
+        $failedIds = [];
+
+        $validator = new Validator;
+
+        foreach ($featureRequests as $featureRequest)
+        {
+            try
+            {
+                $validator->validateInput('feature_request_timestamp', $featureRequest);
+
+                $featureName = $featureRequest[Entity::FEATURE];
+                $timestamp   = $featureRequest[Entity::TIMESTAMP];
+                $merchantId  = $featureRequest[Entity::MERCHANT_ID];
+
+                $epochTimestamp = (int) date("U", strtotime($timestamp));
+
+                if ($epochTimestamp === 0)
+                {
+                    $failed += 1;
+
+                    array_push($failedIds, $featureRequest);
+
+                    $this->trace->info(TraceCode::FEATURE_ONBOARDING_TIMESTAMP_INVALID, $featureRequest);
+
+                    continue;
+                }
+
+                $result = $this->repo->feature->updateOnboardingSubmissionTimestamp(
+                            $merchantId,
+                            $featureName,
+                            $epochTimestamp);
+
+                if ($result === true)
+                {
+                    $success += 1;
+                }
+                else
+                {
+                    $failed += 1;
+
+                    array_push($failedIds, $featureRequest);
+
+                    $this->trace->info(
+                        TraceCode::FEATURE_ONBOARDING_TIMESTAMP_UPDATE_FAILED, [
+                            'data' => $featureRequest,
+                            'error' => 'database update failed'
+                        ]);
+                }
+            }
+            catch (\Throwable $ex)
+            {
+                $failed += 1;
+
+                array_push($failedIds, $featureRequest);
+
+                $this->trace->info(
+                    TraceCode::FEATURE_ONBOARDING_TIMESTAMP_UPDATE_FAILED, [
+                        'data' => $featureRequest,
+                        'error' => $ex->getMessage()
+                    ]);
+            }
+        }
+
+        $response = [
+            'success'        => $success,
+            'failed'         => $failed,
+            'failed_entries' => $failedIds
+        ];
+
+        return $response;
+
+    }
 }
