@@ -54,7 +54,10 @@ return [
                 'expired'       => env('AWS_WEBHOOKS_TEST_QUEUE'),
                 'cancelled'     => env('AWS_WEBHOOKS_TEST_QUEUE'),
                 'completed'     => env('AWS_WEBHOOKS_TEST_QUEUE'),
-            ]
+            ],
+            'settlement' => [
+                'processed'     => env('AWS_WEBHOOKS_TEST_QUEUE'),
+            ],
         ],
         'live' => [
             'payment' => [
@@ -83,7 +86,10 @@ return [
                 'expired'       => env('AWS_WEBHOOKS_LIVE_QUEUE'),
                 'cancelled'     => env('AWS_WEBHOOKS_LIVE_QUEUE'),
                 'completed'     => env('AWS_WEBHOOKS_LIVE_QUEUE'),
-            ]
+            ],
+            'settlement' => [
+                'processed'     => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+            ],
         ],
     ],
 

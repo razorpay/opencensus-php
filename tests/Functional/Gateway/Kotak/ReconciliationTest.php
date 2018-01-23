@@ -70,7 +70,7 @@ class ReconciliationTest extends TestCase
         Mail::assertSent(ReconciliationMail::class);
     }
 
-    public function testReconEntiyForKotak()
+    public function testReconEntityForKotak()
     {
         Mail::fake();
 

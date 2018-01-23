@@ -89,6 +89,7 @@ class Pricing extends Base
                 'fixed_rate'          => 0,
                 'international'       => 0,
             ],
+
             [
                 'id'                  => '1zE3CYqf1zbyrD',
                 'plan_id'             => $pricingPlanId,

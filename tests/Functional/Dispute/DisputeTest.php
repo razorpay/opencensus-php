@@ -200,6 +200,13 @@ class DisputeTest extends TestCase
         $this->startTest();
     }
 
+    public function testDisputeCreateWithNonArrayMerchantEmail()
+    {
+        $this->updateCreateTestData();
+
+        $this->startTest();
+    }
+
     public function testDisputeCreateWithInvalidMerchantEmail()
     {
         $this->updateCreateTestData();
@@ -207,7 +214,7 @@ class DisputeTest extends TestCase
         $this->startTest();
     }
 
-    public function testDisputeCreateWithInvalidMerchantEmail2()
+    public function testDisputeCreateWithWhitespaceMerchantEmail()
     {
         $this->updateCreateTestData();
 
@@ -571,6 +578,15 @@ class DisputeTest extends TestCase
         $this->assertEquals($disputes[1]->payment->getId(), $content['items'][0]['payment_id']);
     }
 
+    public function testFetchMerchantDetails()
+    {
+        $this->ba->privateAuth();
+
+        $testData = $this->updateDetailsFetchTestData();
+
+        $this->startTest($testData);
+    }
+
     // ---------------------------- helper methods-------------------------------
 
     protected function updateCreateTestData(string $paymentId = null): array
@@ -621,6 +637,23 @@ class DisputeTest extends TestCase
         $name = $trace[1]['function'];
 
         $testData = &$this->testData[$name];
+
+        return $testData;
+    }
+
+    protected function updateDetailsFetchTestData(array $attributes = []): array
+    {
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+
+        $name = $trace[1]['function'];
+
+        $dispute = $this->fixtures->create('dispute', $attributes);
+
+        $this->merchant = $dispute->merchant;
+
+        $testData = &$this->testData[$name];
+
+        $testData['request']['url'] = '/disputes/' . $dispute->getPublicId();
 
         return $testData;
     }

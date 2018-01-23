@@ -441,7 +441,7 @@ class HdfcGatewayTest extends TestCase
 
         $refund = $this->getEntityById('refund', $refund['id'], true);
 
-        $this->assertEquals(2, $refund['attempts']);
+        $this->assertEquals(1, $refund['attempts']);
         $this->assertEquals('processed', $refund['status']);
     }
 

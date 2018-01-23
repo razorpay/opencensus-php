@@ -49,6 +49,7 @@ class Entity
     const EMI_PLAN              = 'emi_plan';
     const CUSTOMER              = 'customer';
     const MERCHANT              = 'merchant';
+    const ACCOUNT               = 'account';
     const REVERSAL              = 'reversal';
     const SCHEDULE              = 'schedule';
     const TERMINAL              = 'terminal';
@@ -194,6 +195,7 @@ class Entity
         self::CUSTOMER              => \RZP\Models\Customer::class,
         self::EMI_PLAN              => \RZP\Models\Emi::class,
         self::MERCHANT              => \RZP\Models\Merchant::class,
+        self::ACCOUNT               => \RZP\Models\Merchant\Account::class,
         self::SCHEDULE              => \RZP\Models\Schedule::class,
         self::APP_TOKEN             => \RZP\Models\Customer\AppToken::class,
         self::INVITATION            => \RZP\Models\Invitation::class,

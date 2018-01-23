@@ -173,6 +173,7 @@ class PublicErrorDescription
     const BAD_REQUEST_REFUND_FAILED                                             = 'Refund failed';
     const BAD_REQUEST_PAYMENT_ALREADY_REFUNDED                                  = 'Refund failed';
     const BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE                                 = 'Your account does not have enough balance to carry out the refund operation. You can add funds to your account from your Razorpay dashboard or capture new payments.';
+    const BAD_REQUEST_REFUND_NOT_ENOUGH_CREDITS                                 = 'Your account does not have enough credits to carry out the refund operation.';
     const BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE                                 = 'Your account does not have enough balance to carry out the payout operation. You can add funds to your account from your Razorpay dashboard or capture new payments.';
     const BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD                                    = 'This operation is not allowed. Please contact Razorpay support for details.';
     const BAD_REQUEST_MERCHANT_FUNDS_ALREADY_ON_HOLD                            = 'The merchant funds are already on hold';
@@ -371,6 +372,7 @@ class PublicErrorDescription
     const BAD_REQUEST_ORDER_ACCOUNT_NUMBER_INCORRECT_LENGTH                     = 'Account number is of incorrect length for this bank.';
     const BAD_REQUEST_ORDER_BANK_INVALID                                        = 'Bank code provided is invalid.';
     const BAD_REQUEST_ORDER_BANK_DOES_NOT_MATCH_PAYMENT_BANK                    = 'Bank code provided does not match order bank.';
+    const BAD_REQUEST_PAYMENT_METHOD_DOES_NOT_MATCH_ORDER_METHOD                = 'Payment method provided does not match order method.';
 
     const BAD_REQUEST_CUSTOMER_ALREADY_EXISTS                                   = 'Customer already exists for the merchant';
     const BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED                                 = 'Customer contact number is not set';

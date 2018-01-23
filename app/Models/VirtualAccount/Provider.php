@@ -49,11 +49,10 @@ class Provider
     // Standard root is used when handle is set.
     const ROOT = [
         self::YESBANK => [
-            // Todo
             'numeric' => [
-                'default' => '222444',
-                'handle'  => '222444',
-                'special' => '222444',
+                'default' => '222333',
+                'handle'  => '222333',
+                'special' => '222333',
             ],
             'alpha_numeric' => [
                 'default' => null,
@@ -111,7 +110,7 @@ class Provider
         '139913' => '00',
         '139914' => '0',
         // YesBank
-        '222444' => '00',
+        '222333' => '00',
     ];
 
     const PRIVILEGED_NUMERIC_HANDLE_MAPPING = [

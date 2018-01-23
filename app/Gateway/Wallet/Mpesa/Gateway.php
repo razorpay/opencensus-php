@@ -633,7 +633,11 @@ class Gateway extends Base\Gateway
                 $context['soap_response'] = $client->__getLastResponse();
             }
 
-            $this->trace->error(TraceCode::GATEWAY_SOAP_FAULT, $context);
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::GATEWAY_SOAP_FAULT,
+                $context);
 
             $this->handleSoapFault($e, $method);
         }

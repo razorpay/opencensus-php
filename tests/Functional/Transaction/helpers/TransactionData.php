@@ -174,4 +174,20 @@ return [
         'pricing_rule_id' => null,
         'channel'         => 'kotak',
     ],
+
+    'testRefundWithPartialCredits' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Your account does not have enough credits to carry out the refund operation.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_CREDITS,
+        ],
+    ],
 ];
