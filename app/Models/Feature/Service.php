@@ -367,5 +367,15 @@ class Service extends Base\Service
 
         return $response;
     }
+
+    public function backfillTimestamps(array $input): array
+    {
+        if (isset($input[Entity::DATA]) === true)
+        {
+            return (new Core)->backfillTimestamps($input[Entity::DATA]);
+        }
+
+        return [];
+    }
 }
 
