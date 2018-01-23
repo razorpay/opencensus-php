@@ -1,7 +1,5 @@
 <?php
 
-use RZP\Gateway\Hdfc;
-use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
@@ -361,4 +359,19 @@ return [
         ],
     ],
 
+    'testUserWhiteListAuthenticate' => [
+        'request' => [
+            'method' => 'POST',
+            'url'    => '/users/resend-verification',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_NOT_AUTHENTICATED,
+                ]
+            ],
+            'status_code' => 401,
+        ],
+    ],
 ];

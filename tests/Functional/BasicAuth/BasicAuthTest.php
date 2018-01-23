@@ -249,6 +249,13 @@ class BasicAuthTest extends TestCase
         $this->startTest();
     }
 
+    public function testUserWhiteListAuthenticate()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
     public function startTest($testDataToReplace = array())
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
