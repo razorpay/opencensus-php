@@ -110,7 +110,7 @@ class Base extends BaseProcessor
      */
     public function createFile($data)
     {
-        // // Don't process further if file is already generated
+        // Don't process further if file is already generated
         if ($this->isFileGenerated() === true)
         {
             return;

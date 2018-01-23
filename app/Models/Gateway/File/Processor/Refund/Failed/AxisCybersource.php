@@ -14,7 +14,7 @@ class AxisCybersource extends Base
     const EXTENSION        = FileStore\Format::XLSX;
     const FILE_NAME        = 'Axis_Cybersource_Failed_Refunds';
     const FILE_TYPE        = FileStore\Type::AXIS_CYBERSOURCE_FAILED_REFUND;
-    const ACQUIRER                =  Payment\Gateway::ACQUIRER_HDFC;
+    const ACQUIRER         =  Payment\Gateway::ACQUIRER_HDFC;
 
     const SR_NO                   = 'Sr No';
     const CARD_NUMBER             = 'Card Number';
