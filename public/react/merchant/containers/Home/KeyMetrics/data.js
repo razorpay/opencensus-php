@@ -1,6 +1,10 @@
 import moment from 'moment';
 
-import { titleCase, arrayToCsvDataUrl } from 'rzp/utils/rzp-utils';
+import {
+  titleCase,
+  arrayToCsvDataUrl,
+  paiseToRupees
+} from 'rzp/utils/rzp-utils';
 import colors from 'rzp/utils/chart/colors.js';
 import {
   globalGroupTitleMap,
@@ -272,7 +276,7 @@ export const getTimelineData = ({
   endTime,
   breakdown = 'daily',
   groupTitleMap = {},
-  valueTransformer = null,
+  isCurrency = false
 }) => {
   /*
    * Pokedex data will be completely denormalized without any grouping
@@ -283,7 +287,6 @@ export const getTimelineData = ({
    * @param {Array} data*
    * @param {String} groupByColumnName*
    * @param {Object} groupTitleMap
-   * @param {Function} valueTransformer
    *
    * Description:
    * `data` is the pokedex response
@@ -292,13 +295,6 @@ export const getTimelineData = ({
    * by which the grouping should be made
    *
    * `groupTitleMap` is a dictionary that maps group values to custom names
-   *
-   * `valueTransformer` a function that will be called on each value in
-   * the record, if passed the function will get the following arguments
-   * 1) the value of the current point
-   * 2) the total record given by pokedex
-   * 3) the value of the group
-   *
    */
 
   // grouping by column, ex. group by payment method (card, netbanking)
@@ -343,7 +339,7 @@ export const getTimelineData = ({
   let csvData = [],
     csvHeader = ['#', 'Date'],
     csvFooter = ['', 'Total'],
-    grandTotal = 0;
+    csvGrandTotal = 0;
 
   if (groups.length === 0) {
 
@@ -395,10 +391,7 @@ export const getTimelineData = ({
         groupMap =
           timelineGroupMap[timestamp] || (timelineGroupMap[timestamp] = {});
 
-      groupMap[groupName] =
-        typeof valueTransformer === 'function'
-          ? valueTransformer(item.value, item, groupName)
-          : item.value;
+      groupMap[groupName] = item.value;
 
       otherGroups.forEach(groupName => {
         groupMap[groupName] = groupMap[groupName] || 0;
@@ -548,7 +541,7 @@ export const getTimelineData = ({
       // `datasets` variable will get populated due to reference
       groupData.push({
         t: timestamp,
-        y: yAxisVal,
+        y: isCurrency ? paiseToRupees(yAxisVal) : yAxisVal,
       });
 
       aggregateData.value += yAxisVal;
@@ -570,11 +563,14 @@ export const getTimelineData = ({
     csvHeader.push(aggregate.label);
     csvFooter.push(aggregate.value);
 
-    grandTotal += aggregate.value;
+    csvGrandTotal += aggregate.value;
+    aggregate.value = isCurrency
+                        ? paiseToRupees(aggregate.value)
+                        : aggregate.value;
   });
 
-  csvHeader.push('Total');
-  csvFooter.push(grandTotal);
+  csvHeader.push(`Total${isCurrency ? "(Paise)" : ""}`);
+  csvFooter.push(csvGrandTotal);
 
   csvData.unshift(csvHeader);
   csvData.push(csvFooter);

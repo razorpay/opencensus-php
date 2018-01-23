@@ -3,7 +3,6 @@ import { Pie } from 'react-chartjs-2';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
-import { paiseToRupees, shortenText, titleCase } from 'rzp/utils/rzp-utils';
 import takeScreenshot from 'rzp/utils/screenshot';
 import { showNotification } from 'rzp/modules/notifications';
 
@@ -112,7 +111,7 @@ class Traffic extends Component {
         const { labels, datasets, legendData, csv } = getPieData({
           data: distribution.result,
           groupByColumnName: meta.groupBy,
-          valueTransformer: meta.isCurrency && paiseToRupees,
+          isCurrency: meta.isCurrency,
           groupTitleMap: { Mobile: 'mWeb' },
         });
 

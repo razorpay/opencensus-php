@@ -48,7 +48,7 @@ class DateRangePicker extends Component {
 
   setDates(startDate, endDate) {
     startDate = startDate.startOf('day');
-    endDate = endDate.startOf('day');
+    endDate = endDate.endOf('day');
 
     this.setState(
       {
