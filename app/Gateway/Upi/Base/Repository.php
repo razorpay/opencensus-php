@@ -2,11 +2,10 @@
 
 namespace RZP\Gateway\Upi\Base;
 
-use RZP\Exception;
 use RZP\Gateway\Base;
-use RZP\Gateway\Upi\Base\Entity;
-use RZP\Constants\Table;
 use RZP\Models\Payment;
+use RZP\Constants\Table;
+use RZP\Gateway\Base\Action;
 
 class Repository extends Base\Repository
 {
@@ -27,10 +26,25 @@ class Repository extends Base\Repository
                     ->pluck('gateway_payment_id');
     }
 
+    public function fetchByGatewayPaymentIdAndAction(string $gatewayPaymentId, string $action = Action::AUTHORIZE)
+    {
+        return $this->newQuery()
+                    ->where('gateway_payment_id', '=', $gatewayPaymentId)
+                    ->where('action', '=', $action)
+                    ->firstOrFail();
+    }
+
     public function fetchByPaymentId($paymentId)
     {
         return $this->newQuery()
-                    ->where('payment_id' , '=', $paymentId)
+                    ->where(Entity::PAYMENT_ID , '=', $paymentId)
+                    ->first();
+    }
+
+    public function fetchByRefundId(string $refundId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::REFUND_ID , '=', $refundId)
                     ->first();
     }
 

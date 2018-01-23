@@ -60,6 +60,7 @@ class Gateway
     const ACQUIRER_ICIC      = 'icic';
     const ACQUIRER_AXIS      = 'axis';
     const ACQUIRER_AMEX      = 'amex';
+    const ACQUIRER_RATN      = 'ratn';
 
     const NOT_SUPPORTED      = 'not_supported';
     const SUPPORTED          = 'supported';
@@ -71,6 +72,7 @@ class Gateway
         self::FIRST_DATA  => [self::ACQUIRER_ICIC],
         self::AMEX        => [self::ACQUIRER_AMEX],
         self::AEPS_ICICI  => [self::ACQUIRER_ICIC],
+        self::HITACHI     => [self::ACQUIRER_RATN],
     ];
 
     const POWER_WALLETS = [
@@ -109,6 +111,11 @@ class Gateway
     */
     const UNKNOWN_REFUNDS_VALIDATION_GATEWAYS = [
         self::WALLET_FREECHARGE
+    ];
+
+    const MCC_FILTER_GATEWAYS = [
+        self::HDFC,
+        self::HITACHI,
     ];
 
     /**
@@ -405,6 +412,7 @@ class Gateway
         self::ACQUIRER_ICIC => IFSC::ICIC,
         self::ACQUIRER_AXIS => IFSC::UTIB,
         self::ACQUIRER_AMEX => Network::AMEX,
+        self::ACQUIRER_RATN => IFSC::RATN,
     ];
 
     /**
@@ -463,10 +471,38 @@ class Gateway
         Gateway::NETBANKING_HDFC,
     ];
 
-    public static $eMandateBanks = [
-        IFSC::ICIC,
+    public static $recurringCardNetworks = [
+        Network::MC,
+        Network::VISA,
+    ];
+
+    /**
+     * List of ALL auth types and the corresponding
+     * banks supported by that auth type.
+     *
+     * @var array
+     */
+    public static $emandateBanks = [
+        AuthType::NETBANKING => [
+            IFSC::ICIC,
+            IFSC::UTIB,
+            IFSC::HDFC,
+        ],
+        AuthType::AADHAAR => [
+            // IFSC::ICIC,
+            // IFSC::UTIB,
+            // IFSC::HDFC,
+        ]
+    ];
+
+    /**
+     * TODO: This needs to be removed after we migrate all the gateways to
+     *
+     * @var array
+     */
+    public static $zeroRupeeEmandateBanks = [
         IFSC::UTIB,
-        IFSC::HDFC,
+        IFSC::ICIC,
     ];
 
     /**
@@ -481,11 +517,6 @@ class Gateway
         Gateway::NETBANKING_ICICI   => [IFSC::ICIC],
         Gateway::NETBANKING_AXIS    => [IFSC::UTIB],
         Gateway::NETBANKING_HDFC    => [IFSC::HDFC],
-    ];
-
-    public static $recurringCardNetworks = [
-        Network::MC,
-        Network::VISA,
     ];
 
     /**
@@ -686,6 +717,11 @@ class Gateway
         return in_array($gateway, self::$recurringGateways, true);
     }
 
+    public static function isZeroRupeeFlowSupported($bank): bool
+    {
+        return in_array($bank, self::$zeroRupeeEmandateBanks, true);
+    }
+
     /**
      * Checks whether the bank requires a file-based system to register for eMandate
      *
@@ -708,16 +744,33 @@ class Gateway
         return (in_array($gateway, self::$fileBasedEMandateDebitGateways) === true);
     }
 
-    /**
-     * @param string $bank
-     *
-     * @return bool
-     */
-    public static function isRecurringSupportedOnBank(string $bank) : bool
+    public static function getAllEMandateBanks(): array
     {
-        $gateway = self::$netbankingToGatewayMap[$bank];
+        $banks = [];
 
-        return self::isRecurringGateway($gateway);
+        foreach (self::$emandateBanks as $emandateBanks)
+        {
+            $banks = array_merge($banks, $emandateBanks);
+        }
+
+        return array_values(array_unique($banks));
+    }
+
+    public static function getZeroRupeeEmandateBanks(): array
+    {
+        return self::$zeroRupeeEmandateBanks;
+    }
+
+    public static function getAvailableEmandateBanksForAuthType(string $authType): array
+    {
+        $banks = [];
+
+        if (isset(self::$emandateBanks[$authType]) === true)
+        {
+            $banks = self::$emandateBanks[$authType];
+        }
+
+        return $banks;
     }
 
     public static function getChannel($gateway)

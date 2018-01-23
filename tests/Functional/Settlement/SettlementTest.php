@@ -82,8 +82,7 @@ class SettlementTest extends TestCase
         $this->deleteSetlFiles();
 
         $urls = [
-            '/settlements/reconcile/generate',
-            '/settlements/reconcile',
+            '/settlements/h2hreconcile/kotak',
         ];
 
         $this->ba->appAuth();
@@ -292,20 +291,13 @@ class SettlementTest extends TestCase
     {
         $this->ba->appAuth();
 
-        $this->fixtures->create('credits', [
-                       'type'        => 'fee',
-                       'value'       => 50000,
-                   ]);
+        $this->fixtures->create('credits',
+            [
+                'type'        => 'fee',
+                'value'       => 50000,
+           ]);
 
-         $this->fixtures->create('credits', [
-                       'type'        => 'fee',
-                       'value'       => 50000,
-                       'merchant_id' => '10NodalAccount',
-                   ]);
-
-        // $this->fixtures->merchant->createBankAccount();
         $this->fixtures->merchant->editFeeCredits('50000', Account::TEST_ACCOUNT);
-        $this->fixtures->merchant->editCreditsforNodalAccount('50000', 'fee');
 
         $payments = $this->createPaymentEntities();
 
@@ -317,6 +309,7 @@ class SettlementTest extends TestCase
             ];
 
             $refund = $this->fixtures->create('refund:from_payment', $attrs);
+
             $refunds[] = $refund;
         }
 
@@ -664,7 +657,7 @@ class SettlementTest extends TestCase
         Mail::assertSent(IciciSettlementMail::class);
     }
 
-    public function testMerchantSettlementV2()
+    public function testMerchantSettlementV2Kotak()
     {
         Mail::fake();
 

@@ -128,6 +128,10 @@ class Entity extends Base\Entity
         self::ID
     ];
 
+    protected $diff = [
+        self::BUSINESS_NAME,
+    ];
+
     protected static function boot()
     {
         parent::boot();

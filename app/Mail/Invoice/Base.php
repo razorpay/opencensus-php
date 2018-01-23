@@ -72,7 +72,7 @@ class Base extends Mailable
     {
         $email = Constants::MAIL_ADDRESSES[Constants::NOREPLY];
 
-        $header = Constants::HEADERS[Constants::SUPPORT];
+        $header = Constants::HEADERS[Constants::NOREPLY];
 
         $this->replyTo($email, $header);
 

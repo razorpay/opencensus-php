@@ -49,6 +49,7 @@ class Validator extends Base\Validator
         Entity::RISK_THRESHOLD              => 'sometimes|integer|min:0|max:20',
         Entity::FEE_BEARER                  => 'sometimes|in:customer,platform',
         Entity::FEE_MODEL                   => 'sometimes|in:prepaid,postpaid',
+        Entity::REFUND_SOURCE               => 'sometimes|string|max:32|in:balance,credits',
         Entity::MAX_PAYMENT_AMOUNT          => 'sometimes|integer',
         // max: 5 days (don't change max value without consult), min:60 minutes
         Entity::AUTO_REFUND_DELAY           => 'sometimes|string|custom',
@@ -108,6 +109,11 @@ class Validator extends Base\Validator
     protected static $updateHoldFundsRules = [
         'hold_funds'   => 'required|boolean',
         'merchant_ids' => 'required|array'
+    ];
+
+    protected static $updateChannelRules = [
+        'channel'       => 'required|string|max:32|custom',
+        'merchant_ids'  => 'required|array'
     ];
 
     protected static $updateBankAccountRules = [

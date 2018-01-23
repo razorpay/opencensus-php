@@ -123,17 +123,116 @@ trait PaymentFirstDataTrait
         });
     }
 
-    protected function getErrorInVerifyRefund()
+    protected function getFailureInVerifyRefund()
     {
         $this->mockServerContentFunction(function (& $content, $action = null)
         {
             if ($action === 'verify_refund')
             {
-                // Simulating a random error from FirstData
-                // Can't use ERROR_ACTION_RESPONSE, because VerifyRefund
-                // interprets that as a refund failed, and retries.
-                // We just want to throw an error somehow.
-                $content = SoapWrapper::ERROR_SOAP_SKELETON;
+                $content = '<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+    <SOAP-ENV:Header/>
+    <SOAP-ENV:Body>
+        <ipgapi:IPGApiActionResponse xmlns:a1="http://ipg-online.com/ipgapi/schemas/a1" xmlns:ipgapi="http://ipg-online.com/ipgapi/schemas/ipgapi" xmlns:v1="http://ipg-online.com/ipgapi/schemas/v1">
+            <ipgapi:successfully>true</ipgapi:successfully>
+            <a1:TransactionValues>
+                <v1:CreditCardTxType>
+                    <v1:Type>return</v1:Type>
+                </v1:CreditCardTxType>
+                <v1:CreditCardData>
+                    <v1:CardNumber>607093...2841</v1:CardNumber>
+                    <v1:ExpMonth>12</v1:ExpMonth>
+                    <v1:ExpYear>23</v1:ExpYear>
+                    <v1:Brand>RUPAY</v1:Brand>
+                </v1:CreditCardData>
+                <v1:Payment>
+                    <v1:ChargeTotal>3769</v1:ChargeTotal>
+                    <v1:Currency>356</v1:Currency>
+                </v1:Payment>
+                <v1:TransactionDetails>
+                    <v1:InvoiceNumber>8klInV4YrI8NBZ</v1:InvoiceNumber>
+                    <v1:OrderId>8klInV4YrI8NBZ</v1:OrderId>
+                    <v1:MerchantTransactionId>8tUoNltx1QiQpZ</v1:MerchantTransactionId>
+                    <v1:TDate>1510529772</v1:TDate>
+                </v1:TransactionDetails>
+                <ipgapi:IPGApiOrderResponse>
+                    <ipgapi:ApprovalCode>N:-30084:Cannot return chargeback transaction</ipgapi:ApprovalCode>
+                    <ipgapi:Brand>RUPAY</ipgapi:Brand>
+                    <ipgapi:Country>IND</ipgapi:Country>
+                    <ipgapi:OrderId>8klInV4YrI8NBZ</ipgapi:OrderId>
+                    <ipgapi:IpgTransactionId>65699567616</ipgapi:IpgTransactionId>
+                    <ipgapi:PayerSecurityLevel>y</ipgapi:PayerSecurityLevel>
+                    <ipgapi:PaymentType>CREDITCARD</ipgapi:PaymentType>
+                    <ipgapi:ReferencedTDate>1510529772</ipgapi:ReferencedTDate>
+                    <ipgapi:TDate>1510529772</ipgapi:TDate>
+                    <ipgapi:TDateFormatted>2017.11.13 05:06:12 (IST)</ipgapi:TDateFormatted>
+                    <ipgapi:TerminalID>87000265</ipgapi:TerminalID>
+                </ipgapi:IPGApiOrderResponse>
+                <a1:Brand>RUPAY</a1:Brand>
+                <a1:TransactionType>RETURN</a1:TransactionType>
+                <a1:TransactionState>DECLINED</a1:TransactionState>
+                <a1:UserID>1</a1:UserID>
+                <a1:SubmissionComponent>API</a1:SubmissionComponent>
+            </a1:TransactionValues>
+        </ipgapi:IPGApiActionResponse>
+    </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>';
+            }
+        });
+    }
+
+    protected function getSuccessInVerifyRefund()
+    {
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify_refund')
+            {
+                $content = '<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+    <SOAP-ENV:Header/>
+    <SOAP-ENV:Body>
+        <ipgapi:IPGApiActionResponse xmlns:a1="http://ipg-online.com/ipgapi/schemas/a1" xmlns:ipgapi="http://ipg-online.com/ipgapi/schemas/ipgapi" xmlns:v1="http://ipg-online.com/ipgapi/schemas/v1">
+            <ipgapi:successfully>true</ipgapi:successfully>
+            <a1:TransactionValues>
+                <v1:CreditCardTxType>
+                    <v1:Type>return</v1:Type>
+                </v1:CreditCardTxType>
+                <v1:CreditCardData>
+                    <v1:CardNumber>607093...2841</v1:CardNumber>
+                    <v1:ExpMonth>12</v1:ExpMonth>
+                    <v1:ExpYear>23</v1:ExpYear>
+                    <v1:Brand>RUPAY</v1:Brand>
+                </v1:CreditCardData>
+                <v1:Payment>
+                    <v1:ChargeTotal>3769</v1:ChargeTotal>
+                    <v1:Currency>356</v1:Currency>
+                </v1:Payment>
+                <v1:TransactionDetails>
+                    <v1:InvoiceNumber>8klInV4YrI8NBZ</v1:InvoiceNumber>
+                    <v1:OrderId>8klInV4YrI8NBZ</v1:OrderId>
+                    <v1:MerchantTransactionId>8tUoNltx1QiQpZ</v1:MerchantTransactionId>
+                    <v1:TDate>1510529772</v1:TDate>
+                </v1:TransactionDetails>
+                <ipgapi:IPGApiOrderResponse>
+                    <ipgapi:ApprovalCode>Y:30084:Everything is awesome</ipgapi:ApprovalCode>
+                    <ipgapi:Brand>RUPAY</ipgapi:Brand>
+                    <ipgapi:Country>IND</ipgapi:Country>
+                    <ipgapi:OrderId>8klInV4YrI8NBZ</ipgapi:OrderId>
+                    <ipgapi:IpgTransactionId>65699567616</ipgapi:IpgTransactionId>
+                    <ipgapi:PayerSecurityLevel>y</ipgapi:PayerSecurityLevel>
+                    <ipgapi:PaymentType>CREDITCARD</ipgapi:PaymentType>
+                    <ipgapi:ReferencedTDate>1510529772</ipgapi:ReferencedTDate>
+                    <ipgapi:TDate>1510529772</ipgapi:TDate>
+                    <ipgapi:TDateFormatted>2017.11.13 05:06:12 (IST)</ipgapi:TDateFormatted>
+                    <ipgapi:TerminalID>87000265</ipgapi:TerminalID>
+                </ipgapi:IPGApiOrderResponse>
+                <a1:Brand>RUPAY</a1:Brand>
+                <a1:TransactionType>RETURN</a1:TransactionType>
+                <a1:TransactionState>CAPTURED</a1:TransactionState>
+                <a1:UserID>1</a1:UserID>
+                <a1:SubmissionComponent>API</a1:SubmissionComponent>
+            </a1:TransactionValues>
+        </ipgapi:IPGApiActionResponse>
+    </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>';
             }
         });
     }

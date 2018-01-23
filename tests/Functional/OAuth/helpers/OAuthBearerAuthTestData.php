@@ -97,6 +97,24 @@ return [
         ],
     ],
 
+    'testBearerAuthWriteAccessReadRoute' => [
+        'request'  => [
+            'url'     => '/payments/pay_10000000000000',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'entity'   => 'payment',
+                'id'       => 'pay_10000000000000',
+                'amount'   => 1000000,
+                'currency' => 'INR',
+                'status'   => 'created',
+                'method'   => 'card',
+                'captured' => false,
+            ],
+        ],
+    ],
+
     'testBearerAuthOutsideOfScope' => [
         'request'  => [
             'url'    => '/payments/create',

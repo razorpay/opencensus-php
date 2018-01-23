@@ -235,6 +235,7 @@ class Repository extends Base\Repository
             {
                 $rPaymentId = $this->dbColumn(Refund\Entity::PAYMENT_ID);
                 $rCreatedAt = $this->dbColumn(Refund\Entity::CREATED_AT);
+                $rBaseAmount = $this->dbColumn(Refund\Entity::BASE_AMOUNT);
 
                 $pRepo = $this->repo->payment;
                 $pId = $pRepo->dbColumn(Payment\Entity::ID);
@@ -245,10 +246,38 @@ class Repository extends Base\Repository
                      ->where($rCreatedAt, '>=', $from)
                      ->where($rCreatedAt, '<=', $to)
                      ->where($pType, '=', $gatewayCode)
-                     ->where($pGateway, '=', $gateway);
+                     ->where($pGateway, '=', $gateway)
+                     ->where($rBaseAmount, '!=', 0);
             })
             ->with('payment')
             ->get();
+
+        return $refunds;
+    }
+
+    public function fetchFailedRefundsForGatewayBetweenTimestamps($from, $to, $gateway)
+    {
+        $refundAttrs = $this->dbColumn('*');
+
+        $refundPaymentIdAttr = $this->dbColumn(Entity::PAYMENT_ID);
+
+        $refundStatus = $this->dbColumn(Refund\Entity::STATUS);
+
+        $paymentIdAttr = $this->repo->payment->dbColumn(Payment\Entity::ID);
+
+        $paymentGateway = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);
+
+        $refundCreatedAt = $this->dbColumn(Refund\Entity::CREATED_AT);
+
+        return $this->newQuery()
+                    ->select($refundAttrs)
+                    ->join(Table::PAYMENT, $refundPaymentIdAttr, '=', $paymentIdAttr)
+                    ->where($refundStatus, '=',Refund\STATUS::FAILED)
+                    ->where($paymentGateway, '=', $gateway)
+                    ->where($refundCreatedAt, '>=', $from)
+                    ->where($refundCreatedAt, '<=', $to)
+                    ->with(['payment'])
+                    ->get();
 
         return $refunds;
     }
@@ -281,6 +310,7 @@ class Repository extends Base\Repository
 
         $rPaymentId = $this->dbColumn(Refund\Entity::PAYMENT_ID);
         $rCreatedAt = $this->dbColumn(Refund\Entity::CREATED_AT);
+        $rBaseAmount = $this->dbColumn(Refund\Entity::BASE_AMOUNT);
 
         $pId = $pRepo->dbColumn(Payment\Entity::ID);
         $pType = $pRepo->dbColumn($type);
@@ -299,6 +329,7 @@ class Repository extends Base\Repository
                     ->where($pType, '=', $gatewayCode)
                     ->where($pGateway, '=', $gateway)
                     ->where($tTpv, '=', $tpvEnabled)
+                    ->where($rBaseAmount, '!=', 0)
                     ->with('payment')
                     ->get();
     }
@@ -329,6 +360,7 @@ class Repository extends Base\Repository
         $tRepo = $this->repo->terminal;
         $tTableName = $tRepo->getTableName();
 
+        $rBaseAmount = $this->dbColumn(Refund\Entity::BASE_AMOUNT);
         $rPaymentId = $this->dbColumn(Refund\Entity::PAYMENT_ID);
         $rCreatedAt = $this->dbColumn(Refund\Entity::CREATED_AT);
 
@@ -349,6 +381,7 @@ class Repository extends Base\Repository
                     ->where($pType, '=', $gatewayCode)
                     ->where($pGateway, '=', $gateway)
                     ->where($tCorp, '=', $corporate)
+                    ->where($rBaseAmount, '!=', 0)
                     ->with('payment')
                     ->get();
     }
@@ -597,7 +630,7 @@ class Repository extends Base\Repository
                                   ->whereNull($receipt)
                                   ->where($status, '!=', Order\Status::PAID)
                                   ->groupBy($orderId);
-                          });
+                      });
 
         return $query->get();
     }

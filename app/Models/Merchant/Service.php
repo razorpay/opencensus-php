@@ -30,6 +30,7 @@ use RZP\Models\Schedule;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\User;
 use RZP\Trace\TraceCode;
+use RZP\Models\Transaction;
 
 class Service extends Base\Service
 {
@@ -131,7 +132,7 @@ class Service extends Base\Service
         (new User\Service)->updateUserMerchantMapping($ownerId, $userMerchantMappingInputData);
     }
 
-    private function addLinkedAccountReferral($aggregratorMerchant, $account)
+    public function addLinkedAccountReferral($aggregratorMerchant, $account)
     {
         $tagInputData = [
             'tags' => ['ref-'.$aggregratorMerchant->id],
@@ -139,7 +140,8 @@ class Service extends Base\Service
 
         $this->addTags($account->id, $tagInputData);
     }
-    protected function saveMerchantAndApplyCoupon(Entity $merchant, array $input)
+
+    public function saveMerchantAndApplyCoupon(Entity $merchant, array $input)
     {
         $this->repo->saveOrFail($merchant);
 
@@ -176,7 +178,7 @@ class Service extends Base\Service
         return $result;
     }
 
-    public function edit($id, array $input)
+    public function edit(string $id, array $input): array
     {
         $this->trace->info(
             TraceCode::MERCHANT_EDIT,
@@ -222,7 +224,7 @@ class Service extends Base\Service
         Mail::queue($createSubMerchantMail);
     }
 
-    public function editEmail($id, array $input) :array
+    public function editEmail($id, array $input): array
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
@@ -237,7 +239,7 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
-    public function editConfig(array $input)
+    public function editConfig(array $input): array
     {
         // Adds uploaded logo's url to the input.
         $this->uploadLogoIfFound($input);
@@ -247,7 +249,7 @@ class Service extends Base\Service
         return $this->merchant->toArrayConfig();
     }
 
-    public function deleteMerchantLogo()
+    public function deleteMerchantLogo(): array
     {
         $this->merchant->setLogoUrl(null);
 
@@ -270,7 +272,7 @@ class Service extends Base\Service
     }
 
     // This is on internal auth
-    public function fetch($id)
+    public function fetch(string $id): array
     {
         $merchant = $this->repo->merchant->findOrFailPublicWithRelations(
             $id, ['methods', Entity::GROUPS, Entity::ADMINS]);
@@ -278,7 +280,7 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
-    public function fetchMultiple($input)
+    public function fetchMultiple(array $input): array
     {
         $merchants = $this->repo->merchant->fetch($input);
 
@@ -286,7 +288,7 @@ class Service extends Base\Service
     }
 
     // This is on proxy auth
-    public function fetchConfig()
+    public function fetchConfig(): array
     {
         $merchantId = $this->merchant->getId();
 
@@ -335,45 +337,6 @@ class Service extends Base\Service
         $balance = $this->repo->balance->editMerchantAmountCredits($merchant, $amountCredits);
 
         return $balance->toArray();
-    }
-
-    public function createKey($merchantId)
-    {
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
-
-        $keyData = (new Key\Core)->createFirstKey($merchant, $this->mode);
-
-        if ($this->mode === MODE::LIVE)
-        {
-            $action = Merchant\Action::LIVE_KEYS_CREATED;
-        }
-        elseif ($this->mode === MODE::TEST)
-        {
-            $action = Merchant\Action::TEST_KEYS_CREATED;
-        }
-
-        if ($action !== null)
-        {
-            $this->app['eventManager']->trackEvents($merchant, $action, $merchant->toArrayEvent());
-        }
-
-        return $keyData;
-    }
-
-    public function updateKey($merchantId, $keyId, array $input)
-    {
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
-
-        return (new Key\Core)->rollKey($merchantId, $keyId, $input, $this->mode);
-    }
-
-    public function fetchKeys($merchantId)
-    {
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
-
-        $keys = $this->repo->key->getKeysForMerchant($merchantId);
-
-        return $keys->toArrayPublic();
     }
 
     public function assignPricingPlan($id, $input)
@@ -528,6 +491,7 @@ class Service extends Base\Service
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         $act = new Activate($this->app);
+
         $act->activate($merchant);
 
         return $merchant->toArrayPublic();
@@ -987,6 +951,59 @@ class Service extends Base\Service
 
         $this->trace->info(
             TraceCode::MERCHANT_HOLD_FUNDS_BULK_UPDATE_RESPONSE,
+            $response
+        );
+
+        return $response;
+    }
+
+    public function updateChannelForMultipleMerchants(array $input)
+    {
+        (new Validator)->validateInput('update_channel', $input);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_CHANNEL_BULK_UPDATE_REQUEST,
+            $input
+        );
+
+        $merchantIds = $input['merchant_ids'];
+
+        $channel = $input['channel'];
+
+        $successCount = $failedCount = 0;
+
+        $failedIds = [];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            try
+            {
+                // update channel in merchant entity
+                $this->edit($merchantId, ['channel' => $channel]);
+
+                $data = (new Transaction\BulkUpdate)->updateMultipleTransactions($merchantId, $channel);
+
+                $successCount++;
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException($ex);
+
+                $failedCount++;
+
+                $failedIds[] = $merchantId;
+            }
+        }
+
+        $response = [
+            'total'     => count($merchantIds),
+            'success'   => $successCount,
+            'failed'    => $failedCount,
+            'failedIds' => $failedIds,
+        ];
+
+        $this->trace->info(
+            TraceCode::MERCHANT_CHANNEL_BULK_UPDATE_RESPONSE,
             $response
         );
 
@@ -1524,9 +1541,9 @@ class Service extends Base\Service
         return $mailer;
     }
 
-    public function fetchAnalytics($input)
+    public function fetchAnalytics(array $input): array
     {
-        (new Core())->validateFilterAttributesAndAddMerchantId($this->merchant->getId(), $input);
+        $input = (new Core())->validateInputFiltersAndAddMerchantId($this->merchant->getId(), $input);
 
         return $this->app['eventManager']->query($input);
     }

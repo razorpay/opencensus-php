@@ -8,6 +8,7 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Gateway\Rule;
@@ -119,6 +120,45 @@ class Selector extends Base\Core
                 $terminal = $this->repo->terminal->find(Shared::SHARP_RAZORPAY_TERMINAL);
 
                 $sortedTerminals = array($terminal);
+            }
+            else if (($payment->isCard() === true) and ($payment->card->isRuPay() === true))
+            {
+                //
+                // Only for Rupay card transactions if no terminal is found, we
+                // want to distribute payments via the following logic.
+                //
+
+                //
+                // We want to give 40 % load to FSS terminal 94RNvZoogX4kOB, and
+                // equal 10% load to other Firstdata terminals, hence the below
+                // array  structure
+                // courtsey : Sunny sir _/\_
+                //
+                $rupayTerminalSet = [
+                    '94RNvZoogX4kOB',
+                    '94RNvZoogX4kOB',
+                    '94RNvZoogX4kOB',
+                    '94RNvZoogX4kOB',
+                    '76wS0y0kLvd2Z9',
+                    '81x0D4UfzB1T7V',
+                    '8f65Iykp4YRF31',
+                    '7mugQsqdruXGSd',
+                    '8AcyFtPYDi2rdx',
+                    '76lEBqibDvhOzY',
+                ];
+
+                $selectedTerminalId = $rupayTerminalSet[array_rand($rupayTerminalSet)];
+
+                $terminal = $this->repo->terminal->find($selectedTerminalId);
+
+                $sortedTerminals = [$terminal];
+
+                $sortedTerminals;
+            }
+            else if (($payment->isCard() === true) and ($payment->card->isDiners() === true))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
             }
             else
             {
