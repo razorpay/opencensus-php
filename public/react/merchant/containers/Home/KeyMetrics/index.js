@@ -5,7 +5,11 @@ import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import moment from 'moment';
 
 import Amount from 'rzp/ui/Amount';
-import { paiseToRupees, titleCase } from 'rzp/utils/rzp-utils';
+import {
+  paiseToRupees,
+  titleCase,
+  getPercentage
+} from 'rzp/utils/rzp-utils';
 import {
   humanReadableIndian,
   humanReadableIndianCurrency,
@@ -15,6 +19,8 @@ import { showNotification } from 'rzp/modules/notifications';
 
 import { fetch } from 'merchant/modules/pokedex';
 import {
+  NUM_TRANSACTIONS,
+  SAVED_CARDS,
   tabsOrder,
   tabsMeta,
   getQuery,
@@ -35,9 +41,17 @@ const TabContent = ({ name, value, isCurrency, title, isLoading, error }) => {
    * Component responsible for rendering content in each Tab
    */
 
-  let formattedValue = isCurrency
-    ? humanReadableIndianCurrency(paiseToRupees(value))
-    : humanReadableIndian(value);
+  let formattedValue = value;
+    
+  if (name !== SAVED_CARDS) {
+
+    formattedValue = isCurrency
+                       ? humanReadableIndianCurrency(paiseToRupees(value))
+                       : humanReadableIndian(value);
+  } else {
+  
+    formattedValue = formattedValue + "%";
+  }
 
   /*
    * checks if the current tab is showing currency values and renders
@@ -195,9 +209,17 @@ class KeyMetricsContainer extends Component {
           const mainStat = resp.data[tabName];
 
           if (mainStat) {
-            tabState.data.count = mainStat.result[0]
-              ? mainStat.result[0].value
-              : 0;
+            const count = tabState.data.count = mainStat.result[0]
+                            ? mainStat.result[0].value
+                            : 0;
+
+            if (tabName === SAVED_CARDS) {
+           
+              tabState.data.count = getPercentage(
+                tabsState[NUM_TRANSACTIONS].data.count,
+                count
+              );
+            }
           }
 
           // Timeline data

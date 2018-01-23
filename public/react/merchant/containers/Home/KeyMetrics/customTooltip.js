@@ -3,7 +3,7 @@ import moment from 'moment';
 import {
   getFormattedAmountNew,
   getFormattedNumber,
-  rupeesToPaise,
+  rupeesToPaise
 } from 'rzp/utils/rzp-utils';
 import { getMillisecondsFromBreakdown } from 'rzp/utils/chart/new';
 
@@ -92,7 +92,10 @@ const customToolTip = function(tooltipModel) {
       ),
       startDate = datasets[0].data[dataPoints[0].index].t,
       endDate = startDate + getMillisecondsFromBreakdown(breakdown),
-      formattedDate = moment(startDate).format('ddd, Do MMM'),
+      isSameYear = (new Date(startDate)).getFullYear() === (new Date()).getFullYear(),
+      formattedDate = moment(startDate).format(
+        `ddd, Do MMM${isSameYear ? '' : ' YYYY'}`
+      ),
       url = `${externalUrl}?from=${startDate / 1000}&to=${endDate / 1000}`;
 
     // appending title to innerHtml
@@ -130,9 +133,11 @@ const customToolTip = function(tooltipModel) {
 
       const labelHTML = `<span class="label sec-text">${label}</span>`;
 
-      const labelValue = `<span class="label-value">${isCurrency
-        ? getFormattedAmountNew(value, true)
-        : getFormattedNumber(value)}</span>`;
+      const labelValue = `<span class="label-value">` +
+                           `${isCurrency
+                               ? getFormattedAmountNew(rupeesToPaise(value), true)
+                               : getFormattedNumber(value)}` +
+                         `</span>`;
 
       // appending rows with each line
       rows += `<div class="tooltip-row clearfix">${labelIcon}${labelHTML}${labelValue}</div>`;
