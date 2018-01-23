@@ -322,6 +322,9 @@
                 <b>Select your UPI app</b>
                 <div>Payment will be made to <span class="bold">razorpay@icici</span></div>
             </div>
+            <div id="error-msg" class="center red hide">
+             Some error has occurred
+            </div>
             <div id="spinner" class="hide">
                 <div class="spin">
                     <div></div>
@@ -466,50 +469,54 @@
 
         var pollStatus = function (){};
         var initUpiActivity = function(){};
-        if (CheckoutBridge) {
-            var poll_url = data.request.url, intent_url = data.data.intent_url;
+        if (data.type === 'intent') {
+            if (CheckoutBridge) {
+                var poll_url = data.request.url, intent_url = data.data.intent_url;
 
-            initUpiActivity = function() {
-                gel('retry_btn').classList.add('hide');
-                gel('message-txt').classList.remove('red');
-                CheckoutBridge.callNativeIntent && CheckoutBridge.callNativeIntent(intent_url);
-            }
-
-            initUpiActivity();
-
-            pollStatus = function(resp) {
-                if (false && (!Object.keys(resp).length || resp.Status === 'Failed')) {
-                   gel('retry_btn').classList.remove('hide');
-                } else {
-                    gel('spinner').classList.remove('hide');
-                    gel('cancel_btn').classList.add('hide');
-                    gel('message-txt').innerHTML = "<b>Confirming your payment...</b>";
-
-                    recurseAjax(
-                        poll_url,
-                        function(response) {
-                            if(response.razorpay_payment_id) {
-                                gel('message-txt').innerHTML = "<b>Payment is Successful!</b>";
-                                gel('message-txt').classList.add('green');
-                                gel('cancel_btn').classList.add('hide');
-                                gel('spinner').classList.add('hide');
-                                setTimeout(function(){CheckoutBridge.oncomplete(JSON.stringify(resp))}, 1000);
-                            }
-                            else {
-                                gel('message-txt').innerHTML = "<b>Payment Failed!</b>";
-                                gel('message-txt').classList.add('red');
-                                gel('retry_btn').classList.remove('hide');
-                                gel('spinner').classList.add('hide');
-                            }
-                        },
-                        function(response) {
-                            if (response) {
-                                return false;
-                                return response.status != 'success' || response.status != 'failed';
-                            }
-                        }
-                    )
+                initUpiActivity = function() {
+                    gel('retry_btn').classList.add('hide');
+                    gel('message-txt').classList.remove('red');
+                    CheckoutBridge.callNativeIntent && CheckoutBridge.callNativeIntent(intent_url);
                 }
+
+                initUpiActivity();
+
+                pollStatus = function(resp) {
+                    if (!Object.keys(resp).length || resp.Status === 'Failed') {
+                       gel('retry_btn').classList.remove('hide');
+                    } else {
+                        gel('spinner').classList.remove('hide');
+                        gel('cancel_btn').classList.add('hide');
+                        gel('message-txt').innerHTML = "<b>Confirming your payment...</b>";
+
+                        recurseAjax(
+                            poll_url,
+                            function(response) {
+                                if(response.razorpay_payment_id) {
+                                    gel('message-txt').innerHTML = "<b>Payment is Successful!</b>";
+                                    gel('message-txt').classList.add('green');
+                                    gel('cancel_btn').classList.add('hide');
+                                    gel('spinner').classList.add('hide');
+                                    setTimeout(function(){CheckoutBridge.oncomplete(JSON.stringify(resp))}, 1000);
+                                }
+                                else {
+                                    gel('message-txt').innerHTML = "<b>Payment Failed!</b>";
+                                    gel('message-txt').classList.add('red');
+                                    gel('retry_btn').classList.remove('hide');
+                                    gel('spinner').classList.add('hide');
+                                }
+                            },
+                            function(response) {
+                                if (response) {
+                                    return false;
+                                    return response.status != 'success' || response.status != 'failed';
+                                }
+                            }
+                        )
+                    }
+                }
+            } else {
+                gel('error-msg').classList.add('hide');
             }
         } else {
             recurseAjax(request_url, function(response){
