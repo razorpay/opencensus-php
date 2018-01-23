@@ -52,9 +52,9 @@ class Constants extends Base\Constants
         Target::UPI_ICICI        => MailTags::ICICI_UPI_FAILED_REFUNDS_MAIL,
         Target::AIRTEL_MONEY     => MailTags::AIRTEL_MONEY_FAILED_REFUNDS_MAIL,
         Target::AXIS_MIGS        => MailTags::AXIS_MIGS_FAILED_REFUNDS_MAIL,
-        Target::ICIC_FIRST_DATA  => MailTags::FIRST_DATA_FAILED_REFUNDS_MAIL,
-        Target::HDFC_CYBERSOURCE => MailTags::CYBERSOURCE_FAILED_REFUNDS_MAIL,
-        Target::HDFC_FSS         => MailTags::HDFC_FAILED_REFUNDS_MAIL,
+        Target::ICIC_FIRST_DATA  => MailTags::ICICI_FIRST_DATA_FAILED_REFUNDS_MAIL,
+        Target::HDFC_CYBERSOURCE => MailTags::HDFC_CYBERSOURCE_FAILED_REFUNDS_MAIL,
+        Target::HDFC_FSS         => MailTags::HDFC_FSS_FAILED_REFUNDS_MAIL,
         Target::AXIS_CYBERSOURCE => MailTags::AXIS_CYBERSOURCE_FAILED_REFUNDS_MAIL,
     ];
 }
