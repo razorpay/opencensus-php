@@ -52,6 +52,17 @@ class ValidationFields
     ];
 
     /**
+     * Fields required when merchant is an NGO
+     * for submitting the activation form
+     *
+     * @var array
+     */
+    const NGO_MERCHANT_FIELDS = [
+        Entity::FORM_12A_URL,
+        Entity::FORM_80G_URL,
+    ];
+
+    /**
      * Fields required for all types of marketplace linked accounts
      * for submitting the activation form
      *
