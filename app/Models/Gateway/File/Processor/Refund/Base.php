@@ -70,7 +70,10 @@ class Base extends BaseProcessor
 
             $col['terminal'] = $terminal->toArray();
 
-            $col['card'] = $card->toArray();
+            if (empty($col['card']) == false)
+            {
+                $col['card'] = $card->toArray();
+            }
 
             $data[] = $col;
         }
