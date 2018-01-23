@@ -37,6 +37,7 @@ class MailTags
     const FIRST_DATA_FAILED_REFUNDS_MAIL        = 'firstdata_failed_refunds_mail';
     const CYBERSOURCE_FAILED_REFUNDS_MAIL       = 'cybersource_failed_refunds_mail';
     const HDFC_FAILED_REFUNDS_MAIL              = 'fss_failed_refunds_mail';
+    const AXIS_CYBERSOURCE_FAILED_REFUNDS_MAIL  = 'axis_cybersource_failed_refunds_mail';
 
     const PAYU_MONEY_REFUNDS_MAIL          = 'payu_money_refunds_mail';
     const ICICI_UPI_REFUNDS_MAIL           = 'icici_upi_refunds_mail';

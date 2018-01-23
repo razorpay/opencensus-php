@@ -61,7 +61,7 @@ class CardGatewaysFailedRefundFileTest extends TestCase
 
             $subject = 'Axis Migs failed refunds for ' . $date;
 
-            $body = 'Please find attached failed refunds information for Axis Migs';
+            $body = 'Please process the attached refunds for Axis Migs';
 
             $fileName = 'Axis_Migs_Failed_Refunds_test_'. $date  . '.xlsx';
 
@@ -113,7 +113,7 @@ class CardGatewaysFailedRefundFileTest extends TestCase
 
             $subject = 'FirstData failed refunds for ' . $date;
 
-            $body = 'Please find attached failed refunds information for FirstData';
+            $body = 'Please process the attached refunds for ICICI FirstData';
 
             $fileName = 'Icic_FirstData_Failed_Refunds_test_'. $date  . '.xlsx';
 
@@ -163,9 +163,9 @@ class CardGatewaysFailedRefundFileTest extends TestCase
 
             $date = Carbon::today(Timezone::IST)->format('d-m-Y');
 
-            $subject = 'Cybersource failed refunds for ' . $date;
+            $subject = 'HDFC Cybersource failed refunds for ' . $date;
 
-            $body = 'Please find attached failed refunds information for Cybersource';
+            $body = 'Please process the attached refunds for HDFC Cybersource';
 
             $fileName = 'Hdfc_Cybersource_Failed_Refunds_test_'. $date  . '.xlsx';
 
@@ -219,9 +219,9 @@ class CardGatewaysFailedRefundFileTest extends TestCase
 
             $date = Carbon::today(Timezone::IST)->format('d-m-Y');
 
-            $subject = 'Cybersource failed refunds for ' . $date;
+            $subject = 'Axis Cybersource failed refunds for ' . $date;
 
-            $body = 'Please find attached failed refunds information for Cybersource';
+            $body = 'Please process the attached refunds for Axis Cybersource';
 
             $fileName = 'Axis_Cybersource_Failed_Refunds_test_'. $date  . '.xlsx';
 
@@ -269,9 +269,9 @@ class CardGatewaysFailedRefundFileTest extends TestCase
 
             $date = Carbon::today(Timezone::IST)->format('d-m-Y');
 
-            $subject = 'FSS failed refunds for ' . $date;
+            $subject = 'HDFC FSS failed refunds for ' . $date;
 
-            $body = 'Please find attached failed refunds information for FSS';
+            $body = 'Please process the attached refunds for HDFC FSS';
 
             $fileName = 'Hdfc_FSS_Failed_Refunds_test_'. $date  . '.xlsx';
 
@@ -308,6 +308,5 @@ class CardGatewaysFailedRefundFileTest extends TestCase
 
             $this->fixtures->edit('payment', $payment['id'], ['created_at' => $six_months_ago]);
         }
-
     }
 }

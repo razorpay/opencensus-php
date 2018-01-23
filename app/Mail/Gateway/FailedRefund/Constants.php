@@ -4,52 +4,57 @@ namespace RZP\Mail\Gateway\FailedRefund;
 
 use RZP\Mail\Base;
 use RZP\Constants\MailTags;
-use RZP\Models\Payment\Gateway;
+use RZP\Models\Gateway\File\Constants as Target;
 
 class Constants extends Base\Constants
 {
     const HEADER_MAP = [
-        Gateway::UPI_ICICI          => 'UPI Icici Failed Refunds',
-        Gateway::WALLET_AIRTELMONEY => 'Airtel Money Failed Refunds',
-        Gateway::AXIS_MIGS          => 'Axis Migs Failed Refunds',
-        Gateway::FIRST_DATA         => 'FirstData Failed Refunds',
-        Gateway::CYBERSOURCE        => 'Cybersource Failed Refunds',
-        Gateway::HDFC               => 'FSS Failed Refunds',
+        Target::UPI_ICICI        => 'UPI Icici Failed Refunds',
+        Target::AIRTEL_MONEY     => 'Airtel Money Failed Refunds',
+        Target::AXIS_MIGS        => 'Axis Migs Failed Refunds',
+        Target::ICIC_FIRST_DATA  => 'FirstData Failed Refunds',
+        Target::HDFC_CYBERSOURCE => 'Cybersource Failed Refunds',
+        Target::HDFC_FSS         => 'FSS Failed Refunds',
+        Target::AXIS_CYBERSOURCE => 'Axis Cybersource Failed Refunds ',
     ];
 
     const SUBJECT_MAP = [
-        Gateway::UPI_ICICI          => 'UPI Icici failed refunds file for ',
-        Gateway::WALLET_AIRTELMONEY => 'Airtel Money failed refunds file for ',
-        Gateway::AXIS_MIGS          => 'Axis Migs failed refunds for ',
-        Gateway::FIRST_DATA         => 'FirstData failed refunds for ',
-        Gateway::CYBERSOURCE        => 'Cybersource failed refunds for ',
-        Gateway::HDFC               => 'FSS failed refunds for ',
+        Target::UPI_ICICI        => 'UPI Icici failed refunds file for ',
+        Target::AIRTEL_MONEY     => 'Airtel Money failed refunds file for ',
+        Target::AXIS_MIGS        => 'Axis Migs failed refunds for ',
+        Target::ICIC_FIRST_DATA  => 'FirstData failed refunds for ',
+        Target::HDFC_CYBERSOURCE => 'HDFC Cybersource failed refunds for ',
+        Target::HDFC_FSS         => 'HDFC FSS failed refunds for ',
+        Target::AXIS_CYBERSOURCE => 'Axis Cybersource failed refunds for ',
     ];
 
     const BODY_MAP = [
-        Gateway::UPI_ICICI          => 'Please find attached failed refunds information for UPI ICICI',
-        Gateway::WALLET_AIRTELMONEY => 'Please find attached failed refunds information for Airtel Money',
-        Gateway::AXIS_MIGS          => 'Please find attached failed refunds information for Axis Migs',
-        Gateway::FIRST_DATA         => 'Please find attached failed refunds information for FirstData',
-        Gateway::CYBERSOURCE        => 'Please find attached failed refunds information for Cybersource',
-        Gateway::HDFC               => 'Please find attached failed refunds information for FSS',
+        Target::UPI_ICICI        => 'Please find attached failed refunds information for UPI ICICI',
+        Target::AIRTEL_MONEY     => 'Please find attached failed refunds information for Airtel Money',
+        Target::AXIS_MIGS        => 'Please process the attached refunds for Axis Migs',
+        Target::ICIC_FIRST_DATA  => 'Please process the attached refunds for ICICI FirstData',
+        Target::HDFC_CYBERSOURCE => 'Please process the attached refunds for HDFC Cybersource',
+        Target::HDFC_FSS         => 'Please process the attached refunds for HDFC FSS',
+        Target::AXIS_CYBERSOURCE => 'Please process the attached refunds for Axis Cybersource',
     ];
 
     const MAIL_TEMPLATE_MAP = [
-        Gateway::UPI_ICICI           => 'emails.message',
-        Gateway::WALLET_AIRTELMONEY  => 'emails.message',
-        Gateway::AXIS_MIGS           => 'emails.message',
-        Gateway::FIRST_DATA          => 'emails.message',
-        Gateway::CYBERSOURCE         => 'emails.message',
-        Gateway::HDFC                => 'emails.message',
+        Target::UPI_ICICI        => 'emails.message',
+        Target::AIRTEL_MONEY     => 'emails.message',
+        Target::AXIS_MIGS        => 'emails.message',
+        Target::ICIC_FIRST_DATA  => 'emails.message',
+        Target::HDFC_CYBERSOURCE => 'emails.message',
+        Target::HDFC_FSS         => 'emails.message',
+        Target::AXIS_CYBERSOURCE => 'emails.message',
     ];
 
     const MAILTAG_MAP = [
-        Gateway::UPI_ICICI           => MailTags::ICICI_UPI_FAILED_REFUNDS_MAIL,
-        Gateway::WALLET_AIRTELMONEY  => MailTags::AIRTEL_MONEY_FAILED_REFUNDS_MAIL,
-        Gateway::AXIS_MIGS           => MailTags::AXIS_MIGS_FAILED_REFUNDS_MAIL,
-        Gateway::FIRST_DATA          => MailTags::FIRST_DATA_FAILED_REFUNDS_MAIL,
-        Gateway::CYBERSOURCE         => MailTags::CYBERSOURCE_FAILED_REFUNDS_MAIL,
-        Gateway::HDFC                => MailTags::HDFC_FAILED_REFUNDS_MAIL,
+        Target::UPI_ICICI        => MailTags::ICICI_UPI_FAILED_REFUNDS_MAIL,
+        Target::AIRTEL_MONEY     => MailTags::AIRTEL_MONEY_FAILED_REFUNDS_MAIL,
+        Target::AXIS_MIGS        => MailTags::AXIS_MIGS_FAILED_REFUNDS_MAIL,
+        Target::ICIC_FIRST_DATA  => MailTags::FIRST_DATA_FAILED_REFUNDS_MAIL,
+        Target::HDFC_CYBERSOURCE => MailTags::CYBERSOURCE_FAILED_REFUNDS_MAIL,
+        Target::HDFC_FSS         => MailTags::HDFC_FAILED_REFUNDS_MAIL,
+        Target::AXIS_CYBERSOURCE => MailTags::AXIS_CYBERSOURCE_FAILED_REFUNDS_MAIL,
     ];
 }
