@@ -167,6 +167,8 @@ class UserTest extends TestCase
 
         $testData['request']['url'] = '/users/' . $user['id'] . '/password';
 
+        $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $user['id'];
+
         $this->ba->appAuth();
 
         $this->startTest();
@@ -186,6 +188,8 @@ class UserTest extends TestCase
         $testData['request']['content'] = $content;
 
         $testData['request']['url'] = '/users/' . $user['id'] . '/password';
+
+        $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $user['id'];
 
         $this->ba->appAuth();
 

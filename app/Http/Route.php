@@ -1340,6 +1340,7 @@ final class Route
     public static $userWhitelist = [
         'user_resend_verification',
         'user_fetch',
+        'user_change_password',
     ];
 
     public static $routePermission = [

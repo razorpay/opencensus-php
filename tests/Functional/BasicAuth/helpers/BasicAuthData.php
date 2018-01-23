@@ -374,4 +374,27 @@ return [
             'status_code' => 401,
         ],
     ],
+
+    'testFailedMerchantUserRouteValidation' => [
+        'request'  => [
+            'url'     => '/batches',
+            'method'  => 'get',
+            'content' => [
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard'           => 'true',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_USER_ROLE_MISSING,
+                ]
+            ],
+            'status_code' => 401,
+        ],
+    ],
+
+
 ];
