@@ -677,6 +677,7 @@ final class Route
         'onboarding_features_update_status'       => ['put',      'onboarding/features/{feature}/status',           'FeatureController@updateFeatureActivationStatus'                   ],
         'onboarding_features_fetch_status'        => ['get',      'onboarding/features/{feature}/status',           'FeatureController@getFeatureActivationStatus'                      ],
         'onboarding_features_bulk_update_status'  => ['put',      'onboarding/features/status/bulk',                'FeatureController@bulkUpdateFeatureActivationStatus'               ],
+        'onboarding_features_update_timestamps'   => ['put',      'onboarding/features/backfill_timestamps',        'FeatureController@backfillTimestamps'                              ],
 
         // Deprecated routes - maintaining for BC - Remove after dashboard changes
         'onboarding_features_fetch_submissions'   => ['get',      'onboarding/features/submissions',                'FeatureController@getFeatureOnboardingRequestsByStatus'            ],
@@ -1339,6 +1340,7 @@ final class Route
         'onboarding_features_fetch_status',
         'onboarding_features_bulk_update_status',
         'onboarding_features_update',
+        'onboarding_features_update_timestamps',
     ];
 
     public static $routePermission = [
@@ -1484,6 +1486,7 @@ final class Route
         'onboarding_features_update'             => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
         'onboarding_features_fetch_details'      => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
         'onboarding_features_get_submissions'    => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
+        'onboarding_features_update_timestamps'  => '*',
         'geoip_update'                           => '*',
         'batch_process_by_id'                    => Permission::RETRY_BATCH,
         'reports_refund_irctc'                   => '*',

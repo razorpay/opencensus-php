@@ -200,6 +200,13 @@ class DisputeTest extends TestCase
         $this->startTest();
     }
 
+    public function testDisputeCreateWithNonArrayMerchantEmail()
+    {
+        $this->updateCreateTestData();
+
+        $this->startTest();
+    }
+
     public function testDisputeCreateWithInvalidMerchantEmail()
     {
         $this->updateCreateTestData();
@@ -207,7 +214,7 @@ class DisputeTest extends TestCase
         $this->startTest();
     }
 
-    public function testDisputeCreateWithInvalidMerchantEmail2()
+    public function testDisputeCreateWithWhitespaceMerchantEmail()
     {
         $this->updateCreateTestData();
 

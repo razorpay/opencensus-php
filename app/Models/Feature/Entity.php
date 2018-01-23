@@ -15,6 +15,8 @@ class Entity extends Base\PublicEntity
     // Input request keys, not part of actual entity
     const NAMES       = 'names';
     const SHOULD_SYNC = 'should_sync';
+    const DATA        = 'data';
+    const TIMESTAMP   = 'timestamp';
 
     // Keys used for tracing requests
     const OLD_FEATURES = 'old_features';
