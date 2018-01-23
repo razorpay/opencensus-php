@@ -253,6 +253,8 @@ class Provider
             $visaTlv,
             $masterCardTlv,
             $rupayCardTlv,
+            $this->getBharatQrUpiTlv(),
+            $this->getBharatQrDynamicUpiTlv($qrCode),
             Tags::MERCHANT_CATEGORY .$this->getLengthAndValue(Constants::MERCHANT_CATEGORY),
             Tags::CURRENCY_CODE . $this->getLengthAndValue(Constants::CURRENCY_CODE),
             $this->getBharatQrAmountTlv($qrCode),
@@ -260,14 +262,8 @@ class Provider
             Tags::MERCHANT_NAME . $this->getLengthAndValue(Constants::MERCHANT_NAME),
             Tags::MERCHANT_CITY . $this->getLengthAndValue(Constants::MERCHANT_CITY),
             Tags::MERCHANT_PIN_CODE . $this->getLengthAndValue(Constants::MERCHANT_PINCODE),
-            $this->getBharatQrUpiTlv($qrCode),
             $this->getBharatQrAdditionalDetailTlv($qrCode),
         ];
-
-        if (Constants::POINT_OF_INITIATION === '12')
-        {
-            $tagArray[] = $this->getBharatQrDynamicUpiTlv($qrCode);
-        }
 
         $qrString =  implode('', $tagArray);
 
@@ -281,7 +277,7 @@ class Provider
         return $qrString;
     }
 
-    protected function getBharatQrUpiTlv(QrCode\Entity $qrCode)
+    protected function getBharatQrUpiTlv()
     {
         $rupayRidTlv = Tags::UPI_VPA_RUPAY_RID . $this->getLengthAndValue(Constants::RUPAY_RID);
         $merchantVpaTlv = Tags::UPI_VPA_MERCHANT_VPA . $this->getLengthAndValue(Constants::MERCHANT_VPA);
