@@ -223,18 +223,6 @@ export default class EditMerchant extends Component {
             ))}
           </SelectField>
 
-          <ShowWhen permission="edit_merchant_risk_threshold">
-            <Field
-              label="Risk Threshold"
-              name="risk_threshold"
-              defaultValue={details.risk_threshold}
-              type="number"
-              min="5"
-              max="20"
-              placeholder="Valid range: 5 - 20"
-            />
-          </ShowWhen>
-
           <Field
             label="Website"
             name="website"
