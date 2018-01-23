@@ -56,7 +56,7 @@ class UserAccess
 
         $routePolicyResponse = $this->validateUserRoutePolicy($route);
 
-        if (empty($routePolicyResponse) === false)
+        if ($routePolicyResponse !== null)
         {
             return $routePolicyResponse;
         }
@@ -68,7 +68,7 @@ class UserAccess
         {
             $routeUserRolePolicy = $this->validateRouteUserRolesPolicy($route);
 
-            if (empty($routeUserRolePolicy) === false)
+            if ($routeUserRolePolicy !== null)
             {
                 return $routeUserRolePolicy;
             }
