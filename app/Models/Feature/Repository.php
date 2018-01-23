@@ -2,10 +2,7 @@
 
 namespace RZP\Models\Feature;
 
-use DB;
-
 use RZP\Constants\Mode;
-use RZP\Trace\TraceCode;
 use RZP\Models\Base\EsRepository;
 use RZP\Models\Base\Repository as BaseRepository;
 
@@ -126,50 +123,6 @@ class Repository extends BaseRepository
                 $this->syncToEs($entity, EsRepository::DELETE, null, Mode::LIVE);
             }
         });
-    }
-
-    public function updateOnboardingSubmissionTimestamp(
-        string $merchantId,
-        string $featureName,
-        int $epochTimestamp): bool
-    {
-        $query = "SELECT * FROM settings 
-                      WHERE `entity_type`='merchant' 
-                      AND `entity_id`='$merchantId'
-                      AND `module`='onboarding'
-                      AND `key` LIKE '$featureName%'
-                      AND `created_at`=1505957400";
-
-        $results = DB::Connection('live')->select($query);
-
-        if (count($results) > 0)
-        {
-            $updatedAt = '';
-
-            // Update the timestamp only if it was not updated
-            if (intval($results[0]->updated_at) === 1505957400)
-            {
-                $updatedAt = ', updated_at=' . $epochTimestamp;
-            }
-
-            $query = "UPDATE settings 
-                          SET created_at='$epochTimestamp'$updatedAt
-                          WHERE `entity_type`='merchant' 
-                          AND `entity_id`='$merchantId'
-                          AND `module`='onboarding'
-                          AND `key` LIKE '$featureName%'
-                          AND `created_at`=1505957400";
-
-            $result = DB::Connection('live')->update($query);
-
-            return $result;
-        }
-
-        $this->trace->info(TraceCode::FEATURE_ONBOARDING_TIMESTAMP_UPDATE_SKIPPED, [
-            'query' => $query,
-        ]);
-
-        return false;
     }
 
     private function cloneAndSaveToModeOrFail(Entity $entity, string $mode)

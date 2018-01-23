@@ -147,13 +147,4 @@ class FeatureController extends Controller
 
         return ApiResponse::json($response);
     }
-
-    public function backfillTimestamps()
-    {
-        $input = Request::all();
-
-        $response = $this->service()->backfillTimestamps($input);
-
-        return ApiResponse::json($response);
-    }
 }

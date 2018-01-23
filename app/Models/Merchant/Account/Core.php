@@ -61,6 +61,7 @@ class Core extends Merchant\Core
             (new Merchant\Detail\Core)->saveMerchantDetails($merchantDetailsInput, $account);
 
             return $account;
+
         });
 
         $this->trace->info(
