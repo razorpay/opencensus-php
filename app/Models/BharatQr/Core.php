@@ -36,8 +36,6 @@ class Core extends Base\Core
         {
             $bharatQr = (new Entity)->build($input);
 
-           // $this->determineAndSetMode($bharatQr);
-
             $paymentId = $this->mutex->acquireAndRelease(
                 $input[Entity::MERCHANT_REFERENCE],
                 function() use ($bharatQr)
@@ -63,21 +61,5 @@ class Core extends Base\Core
         }
 
         return [$valid, $paymentId];
-    }
-
-    protected function determineAndSetMode(Entity $bharatQr)
-    {
-        $merchantReference = $bharatQr->getMerchantReference();
-
-        (new QrCode\Entity)->stripSignWithoutValidation($merchantReference);
-
-        $mode = $this->app['repo']->determineLiveOrTestModeForEntity($merchantReference, 'qr_code');
-
-        if ($mode === null)
-        {
-            $mode = Mode::LIVE;
-        }
-
-        $this->app['basicauth']->setModeAndDbConnection($mode);
     }
 }
