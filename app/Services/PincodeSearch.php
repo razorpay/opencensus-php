@@ -133,6 +133,8 @@ class PincodeSearch
                     'Server error',
                     ErrorCode::SERVER_ERROR);
             }
+
+            return;
         }
 
         throw new Exception\ServerErrorException(
