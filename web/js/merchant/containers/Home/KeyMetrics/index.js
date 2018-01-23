@@ -209,7 +209,7 @@ class KeyMetricsContainer extends Component {
               endTime: endDate.unix(),
               breakdown: tabState.selectedBreakdown,
               groupTitleMap: tabMeta.groupTitleMap || { Mobile: 'mWeb' },
-              valueTransformer: isCurrency && paiseToRupees,
+              isCurrency,
             });
 
             const downloadFileName = `${title}, ${startDate.format(

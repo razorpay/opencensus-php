@@ -114,7 +114,15 @@ export default class Treemap extends Component {
   handleResize() {
     window.clearTimeout(timer);
 
-    this.node.style.width = this.node.parentNode.clientWidth + 'px';
+    const parent = this.node.parentNode;
+
+    // if resize is only vertical
+    if (this.node.clientWidth === parent.clientWidth) {
+    
+      return;
+    }
+
+    this.node.style.width = parent.clientWidth + 'px';
 
     timer = window.setTimeout(() => {
       this.renderTreemap(this.props.data);

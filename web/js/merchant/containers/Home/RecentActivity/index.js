@@ -15,17 +15,6 @@ import GenericPanel, {
 import { tabs, tabsMeta } from './data';
 import PaymentsList from 'merchant/components/Payments/PaymentsList';
 
-tabsMeta.refunds.columns = [...tabsMeta.refunds.columns];
-
-tabsMeta.refunds.columns[3] = {
-  ...tabsMeta.refunds.columns[3],
-  transfomer: (value, record) => {
-    const paymentAmount = (record.payment && record.payment.amount) || 0;
-
-    return <Amount value={paymentAmount} />;
-  },
-};
-
 const Row = ({ record, tabName }) => {
   const tabMeta = tabsMeta[tabName];
 
