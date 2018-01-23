@@ -12,9 +12,9 @@ class Constants extends Base\Constants
         Target::UPI_ICICI        => 'UPI Icici Failed Refunds',
         Target::AIRTEL_MONEY     => 'Airtel Money Failed Refunds',
         Target::AXIS_MIGS        => 'Axis Migs Failed Refunds',
-        Target::ICIC_FIRST_DATA  => 'FirstData Failed Refunds',
-        Target::HDFC_CYBERSOURCE => 'Cybersource Failed Refunds',
-        Target::HDFC_FSS         => 'FSS Failed Refunds',
+        Target::ICIC_FIRST_DATA  => 'ICICI FirstData Failed Refunds',
+        Target::HDFC_CYBERSOURCE => 'HDFC Cybersource Failed Refunds',
+        Target::HDFC_FSS         => 'HDFC FSS Failed Refunds',
         Target::AXIS_CYBERSOURCE => 'Axis Cybersource Failed Refunds ',
     ];
 
