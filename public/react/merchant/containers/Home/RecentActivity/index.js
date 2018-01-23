@@ -27,7 +27,7 @@ const Row = ({ record, tabName }) => {
 
         value =
           typeof columnMeta.transfomer === 'function'
-            ? columnMeta.transfomer(value, record)
+            ? columnMeta.transfomer(value, record, tabName)
             : value;
 
         return <td key={index}>{value}</td>;

@@ -61,6 +61,12 @@ export default class HomeContainer extends Component {
   constructor(props) {
     super(props);
 
+    // recording new analytics interactions in hotjar
+    if (typeof window.hj === "function") {
+    
+      window.hj('trigger', 'new_analytics');
+    }
+
     let endDate = moment().endOf('day'),
       startDate = endDate.clone().startOf('day');
 

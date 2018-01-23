@@ -52,16 +52,28 @@ const getDefaultFilterQuery = (startTime, endTime) => {
 
 export const breakdownVals = ['daily', 'weekly', 'monthly'];
 
+const TRANSACTION_VOLUME = "transactionVolume",
+      NUM_TRANSACTIONS = "numTransactions",
+      REFUNDS = "refunds",
+      SAVED_CARDS = "savedCards";
+
+export {
+  TRANSACTION_VOLUME,
+  NUM_TRANSACTIONS,
+  SAVED_CARDS,
+  REFUNDS,
+};
+
 export const tabsOrder = [
-  'transactionVolume',
-  'numTransactions',
-  'refunds',
-  'savedCards',
+  TRANSACTION_VOLUME,
+  NUM_TRANSACTIONS,
+  SAVED_CARDS,
+  REFUNDS,
 ];
 
 export const tabsMeta = {
-  [tabsOrder[0]]: {
-    name: tabsOrder[0],
+  [TRANSACTION_VOLUME]: {
+    name: TRANSACTION_VOLUME,
     title: 'Payment Volume',
     grouping: defaultGroupingVals,
     options: [],
@@ -95,8 +107,8 @@ export const tabsMeta = {
       };
     },
   },
-  [tabsOrder[1]]: {
-    name: tabsOrder[1],
+  [NUM_TRANSACTIONS]: {
+    name: NUM_TRANSACTIONS,
     title: 'Number of Payments',
     grouping: defaultGroupingVals,
     options: [],
@@ -127,8 +139,8 @@ export const tabsMeta = {
       };
     },
   },
-  [tabsOrder[2]]: {
-    name: tabsOrder[2],
+  [REFUNDS]: {
+    name: REFUNDS,
     title: 'Number of Refunds',
     grouping: defaultGroupingVals,
     options: [],
@@ -159,8 +171,8 @@ export const tabsMeta = {
       };
     },
   },
-  [tabsOrder[3]]: {
-    name: tabsOrder[3],
+  [SAVED_CARDS]: {
+    name: SAVED_CARDS,
     title: 'Saved Card Payments',
     grouping: [],
     options: [],
