@@ -94,7 +94,7 @@ export default class User {
   }
 
   get isNewAnalyticsEnabled() {
-    return (this.tags || []).indexOf('new_analytics') !== -1;
+    return (this.tags || []).indexOf('New_analytics') !== -1;
   }
 
   get enabledFeatures() {
