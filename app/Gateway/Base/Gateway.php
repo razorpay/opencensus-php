@@ -11,7 +11,6 @@ use Symfony\Component\DomCrawler\Crawler;
 use RZP\Exception;
 use RZP\Http\Route;
 use RZP\Constants\Mode;
-use RZP\Models\QrCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -341,20 +340,6 @@ class Gateway
     public function getMode()
     {
         return $this->mode;
-    }
-
-    protected function determineAndSetModeForQr(string $merchantReference)
-    {
-        (new QrCode\Entity)->stripSignWithoutValidation($merchantReference);
-
-        $mode = $this->app['repo']->determineLiveOrTestModeForEntity($merchantReference, 'qr_code');
-
-        if ($mode === null)
-        {
-            $mode = Mode::LIVE;
-        }
-
-        $this->app['basicauth']->setModeAndDbConnection($mode);
     }
 
     protected function getIntegerFormattedAmount(string $amount)

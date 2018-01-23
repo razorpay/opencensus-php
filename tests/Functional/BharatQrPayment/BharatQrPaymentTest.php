@@ -33,7 +33,9 @@ class BharatQrPaymentTest extends TestCase
     {
         $request = $this->testData[__FUNCTION__];
 
-        $request['content']['PurchaseID'] = $this->qrCode['id'];
+        $qrCodeId = substr($this->qrCode['id'], 3);
+
+        $request['content']['PurchaseID'] = $qrCodeId;
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -90,7 +92,9 @@ class BharatQrPaymentTest extends TestCase
 
         $qrCode = $this->getLastEntity('qr_code', true);
 
-        $request['content']['merchantTranId'] = $qrCode['id'];
+        $qrCodeId = substr($qrCode['id'], 3);
+
+        $request['content']['merchantTranId'] = $qrCodeId;
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -113,7 +117,7 @@ class BharatQrPaymentTest extends TestCase
 
         $upi = $this->getLastEntity('upi', true);
 
-        $this->assertEquals($qrCode['id'], $upi['qr_code_id']);
+        $this->assertEquals($qrCodeId, $upi['qr_code_id']);
 
         $this->assertNotNull($upi['payment_id']);
 

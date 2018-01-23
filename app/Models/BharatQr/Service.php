@@ -3,30 +3,14 @@
 namespace RZP\Models\BharatQr;
 
 use RZP\Models\Base;
+use RZP\Models\QrCode;
+use RZP\Constants\Mode;
 use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Gateway;
 use RZP\Trace\TraceCode;
-use RZP\Models\Payment\Method;
 
 class Service extends Base\Service
 {
-    protected $map = [
-        NotificationParams::F002        => Entity::CARD_NUMBER,
-        NotificationParams::F003        => Entity::CARD_NETWORK,
-        NotificationParams::F004        => Entity::AMOUNT,
-        NotificationParams::F011        => Entity::TRACE_NUMBER,
-        NotificationParams::F012        => Entity::TRANSACTION_TIME,
-        NotificationParams::F013        => Entity::TRANSACTION_DATE,
-        NotificationParams::F037        => Entity::RRN,
-        NotificationParams::F038        => Entity::PROVIDER_REFERENCE_ID,
-        NotificationParams::F039        => Entity::STATUS_CODE,
-        NotificationParams::F041        => Entity::GATEWAY_TERMINAL_ID,
-        NotificationParams::F042        => Entity::GATEWAY_MERCHANT_ID,
-        NotificationParams::F102        => Entity::GATEWAY_TERMINAL_DESC,
-        NotificationParams::PURCHASE_ID => Entity::MERCHANT_REFERENCE,
-        NotificationParams::SENDER_NAME => Entity::CUSTOMER_NAME,
-    ];
-
     protected $gatewayMapping = [
         'icici'   => Gateway::UPI_ICICI,
         'hitachi' => Gateway::HITACHI,
@@ -51,6 +35,14 @@ class Service extends Base\Service
             ]
         );
 
+        $gateway = $this->gatewayMapping[$gateway];
+
+        $gatewayClass = $this->app['gateway']->gateway($gateway);
+
+        $qrCodeId = $gatewayClass->getMerchantReferenceForQr($input);
+
+        $this->determineAndSetModeForQr($qrCodeId);
+
         $bharatQrInputParams = $this->callGatewayFunction($gateway, $input);
 
         list($valid, $paymentId) = $this->core->processPayment($bharatQrInputParams);
@@ -68,7 +60,8 @@ class Service extends Base\Service
     {
         $action = Action::QR_CALLBACK;
 
-        return $this->app['gateway']->call($this->gatewayMapping[$gateway], $action, $gatewayInput, null);
+
+        return $this->app['gateway']->call($gateway, $action, $gatewayInput, null);
     }
 
     protected function getResponse(bool $valid)
@@ -91,32 +84,17 @@ class Service extends Base\Service
         return $response;
     }
 
-    protected function getMappedAttributes(array $attributes)
+    protected function determineAndSetModeForQr(string $merchantReference)
     {
-        $attr = [];
+        (new QrCode\Entity)->stripSignWithoutValidation($merchantReference);
 
-        $map = $this->map;
+        $mode = $this->app['repo']->determineLiveOrTestModeForEntity($merchantReference, 'qr_code');
 
-        foreach ($attributes as $key => $value)
+        if ($mode === null)
         {
-            if (isset($map[$key]))
-            {
-                $newKey = $map[$key];
-
-                $attr[$newKey] = $value;
-            }
+            $mode = Mode::LIVE;
         }
 
-        return $attr;
-    }
-
-    protected function getBharatQrInputParams(array $input)
-    {
-        $input = $this->getMappedAttributes($input);
-
-        // For now notification only comes for card method
-        $input[Entity::METHOD] = Method::CARD;
-
-        return $input;
+        $this->app['basicauth']->setModeAndDbConnection($mode);
     }
 }

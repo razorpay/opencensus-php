@@ -145,14 +145,14 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
+    public function getMerchantReferenceForQr(array $input)
+    {
+        return $input[ResponseFields::PURCHASE_ID];
+    }
+
     public function qrCallback(array $input)
     {
         parent::qrCallback($input);
-
-        if (isset($this->app['rzp.mode']) === false)
-        {
-            $this->determineAndSetModeForQr($input[ResponseFields::PURCHASE_ID]);
-        }
 
         $payment = $this->createOrFetchGatewayPaymentEntityForQr($input);
 

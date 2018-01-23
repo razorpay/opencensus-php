@@ -29,6 +29,9 @@ class CreateUpi extends Migration
             $table->char(Upi::REFUND_ID, Payment::ID_LENGTH)
                   ->nullable();
 
+            $table->char(Upi::QR_CODE_ID, Payment::ID_LENGTH)
+                ->nullable();
+
             $table->string(Upi::ACTION);
 
             $table->string(Upi::TYPE)

@@ -840,14 +840,14 @@ class Gateway extends Base\Gateway
         ];
     }
 
+    public function getMerchantReferenceForQr(array $input)
+    {
+        return $input[Fields::MERCHANT_TRAN_ID];
+    }
+
     public function qrCallback(array $input)
     {
         parent::qrCallback($input);
-
-        if (isset($this->app['env']) === false)
-        {
-            $this->determineAndSetModeForQr($input[Fields::MERCHANT_TRAN_ID]);
-        }
 
         $payment = $this->createOrFetchGatewayPaymentEntityForQr($input);
 
