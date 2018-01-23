@@ -47,7 +47,7 @@
       })
     </script>
   @endif
-  @else
+@else
   <!-- jQuery & angular -->
   <script src='{{$cdnDashboardUrl}}{{asset('js/generated/pre.js')}}'></script>
   <!-- Merchant Js-->
