@@ -26,27 +26,6 @@ tooltips.intersect = false;
 global.hover.mode = 'index';
 global.hover.intersect = false;
 
-export const colors = [
-  [75, 84, 113],
-  [95, 127, 185],
-  [117, 194, 216],
-  [172, 172, 231],
-  [235, 120, 120],
-  [35, 183, 229],
-  [52, 152, 219],
-  [46, 204, 113],
-  [230, 126, 34],
-  [241, 196, 15],
-  [155, 89, 182],
-  [231, 76, 60],
-  [26, 188, 156],
-];
-
-const rgb = (array, alpha) => {
-  if (alpha) return `rgba(${array[0]}, ${array[1]}, ${array[2]}, ${alpha})`;
-  return `rgb(${array[0]}, ${array[1]}, ${array[2]})`;
-};
-
 export const timeScale = ({ xLabel, yLabel }) => {
   let scalesObj = {
     scales: {
@@ -118,32 +97,6 @@ export const timeScale = ({ xLabel, yLabel }) => {
   }
 
   return scalesObj;
-};
-
-export const processLineData = data => {
-  data.datasets.map((d, index) => {
-    let color = colors[index];
-    d.pointBorderColor = '#fff';
-    d.pointHoverBorderColor = '#fff';
-    d.pointBackgroundColor = rgb(color);
-    d.borderColor = rgb(color);
-    d.backgroundColor = rgb(color);
-  });
-  return data;
-};
-
-export const createLineData = (rawData, column, title) => {
-  return processLineData({
-    labels: rawData.map(d => moment(d.created_at * 1e3)),
-    datasets: [
-      {
-        label: title,
-        data: rawData.map(d => {
-          return d[column];
-        }),
-      },
-    ],
-  });
 };
 
 export const getMillisecondsFromBreakdown = breakdown => {

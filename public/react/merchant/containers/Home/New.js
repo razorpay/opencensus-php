@@ -61,8 +61,8 @@ export default class HomeContainer extends Component {
   constructor(props) {
     super(props);
 
-    let endDate = moment().startOf('day'),
-      startDate = endDate.clone();
+    let endDate = moment().endOf('day'),
+      startDate = endDate.clone().startOf('day');
 
     startDate.add(...dateRangePresets[defaultPreset].slice(1));
 

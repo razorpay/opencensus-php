@@ -497,6 +497,12 @@ export default function renderTreemap(
   groupTitleMap,
   bankNames
 ) {
+
+  if (!d3 || !bankNames) {
+
+    return {};
+  }
+
   node.innerHTML = '';
 
   const csvUrl = makeCSVData(res, bankNames, groupTitleMap);
