@@ -1,16 +1,13 @@
+import {getDefaultPaymentFilter} from 'rzp/utils/pokedex';
+
 const paymentMethodsColumns = [
   'method', 'bank', 'issuer', 'network', 'wallet', 'type'
 ];
 
-const getQuery = ({ merchantId, startTime, endTime }) => ({
+const getQuery = ({ startTime, endTime }) => ({
   filters: {
     default: [
-      {
-        created_at: {
-          gte: startTime,
-          lte: endTime,
-        },
-      },
+      getDefaultPaymentFilter(startTime, endTime) 
     ],
   },
   aggregations: {

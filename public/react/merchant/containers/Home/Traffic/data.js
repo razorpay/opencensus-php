@@ -6,7 +6,11 @@ import {
   paiseToRupees
 } from 'rzp/utils/rzp-utils';
 import colors from 'rzp/utils/chart/colors.js';
-import { globalGroupTitleMap, groupByPlatform } from 'rzp/utils/pokedex.js';
+import {
+  globalGroupTitleMap,
+  groupByPlatform,
+  getDefaultPaymentFilter
+} from 'rzp/utils/pokedex.js';
 
 const dateFormat = 'Do MMM YYYY';
 
@@ -35,12 +39,7 @@ const getQuery = ({ startTime, endTime, group }) => {
   return {
     filters: {
       default: [
-        {
-          created_at: {
-            gte: startTime,
-            lte: endTime,
-          },
-        },
+        getDefaultPaymentFilter(startTime, endTime)
       ],
     },
     aggregations: {

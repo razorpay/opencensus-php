@@ -111,3 +111,39 @@ export const groupByPlatform = records => {
 
   return groupedData;
 };
+
+export const oldestTransactionQuery = {
+  filters: {
+    default: [],
+  },
+  aggregations: {
+    records: {
+      agg_type: 'oldest',
+      details: {
+        index: 'payments',
+        limit: 1,
+        result_fields: ['created_at'],
+      },
+    },
+  },
+};
+
+export const getDefaultFilter = (startTime, endTime) => {
+
+  return {
+    created_at: {
+      gte: startTime,
+      lte: endTime
+    }
+  };
+};
+
+export const getDefaultPaymentFilter = (startTime, endTime) => {
+
+  return {
+    ...getDefaultFilter(startTime, endTime),
+    authorized_at: {
+      gt: 0
+    }
+  };
+};
