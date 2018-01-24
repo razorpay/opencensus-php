@@ -6,6 +6,11 @@ use RZP\Tests\Functional\TestCase;
 
 class AnalyticsTest extends TestCase
 {
+    /**
+     * @var Merchant\Core
+     */
+    protected $core;
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/helpers/AnalyticsTestData.php';
@@ -41,7 +46,7 @@ class AnalyticsTest extends TestCase
     {
         $merchantId = '10000000000000';
 
-        $actual = $this->core->validateInputFiltersAndAddMerchantId($merchantId, $input);
+        $actual = $this->core->processMerchantAnalyticsQuery($merchantId, $input);
 
         $this->assertArraySelectiveEquals($expected, $actual);
     }
