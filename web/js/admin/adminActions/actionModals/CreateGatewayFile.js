@@ -6,6 +6,7 @@ import Field, {
   ToField,
   TextAreaField,
   CheckField,
+  SelectMode,
 } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 import { notifySuccess, closeModal } from 'common/modal';
@@ -24,7 +25,7 @@ const typeToTargetMap = {
   // claim: [],
   refund_failed: [
     'upi_icici',
-    //   'airtel_money',
+    'airtel_money',
     //   'amex',
     //   'first_data',
     //   'cybersource',
@@ -49,10 +50,10 @@ export default class CreateGatewayFile extends Component {
     });
   };
 
-  handleSubmit = body => {
+  handleSubmit = ({ mode, ...body }) => {
     return adminPost({
       route_name: 'gateway_file_create',
-      mode: 'test',
+      mode,
       body: {
         type: body.type,
         begin: Number(
@@ -88,6 +89,8 @@ export default class CreateGatewayFile extends Component {
     } = this.state;
     return (
       <Form class="full-span full-elements">
+        <SelectMode defaultValue="live" />
+
         <SelectField
           label="Type"
           value={currentType}
