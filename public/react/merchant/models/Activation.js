@@ -57,6 +57,8 @@ const activationStepMap = {
     'business_pan_url',
     'address_proof_url',
     'promoter_address_url',
+    'form_12a_url',
+    'form_80g_url',
   ],
 };
 
@@ -101,6 +103,8 @@ const getFileDetails = data => {
     promoter_proof_url: 'promoter_proof',
     promoter_pan_url: 'promoter_pan_proof',
     promoter_address_url: 'promoter_address_proof',
+    form_12a_url: 'ngo_12a_proof',
+    form_80g_url: 'ngo_80g_proof',
   };
 
   let fileDetails = [];
