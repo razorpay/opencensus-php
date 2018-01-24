@@ -77,7 +77,7 @@ class ApiRequestAny
 
                 $this->options['headers']['X-Dashboard-User-Role'] = $currentMerchant->role;
 
-                $this->options['auth'][0] .= '_'.$currentMerchant->id;
+                $mode .= '_'.$currentMerchant->id;
 
             }
             else if ($routeName === 'admin')
