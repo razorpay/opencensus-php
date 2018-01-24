@@ -7,7 +7,11 @@ import { PowerSelect } from 'react-power-select';
 import Definition from 'rzp/ui/Definition';
 import Change from 'rzp/ui/Change';
 import { BtnGroup, Btn } from 'rzp/ui/BtnGroup/index.js';
-import { titleCase, paiseToRupees } from 'rzp/utils/rzp-utils';
+import {
+  titleCase,
+  paiseToRupees,
+  getPercentage
+} from 'rzp/utils/rzp-utils';
 import { timeScale } from 'rzp/utils/chart/new.js';
 import takeScreenshot from 'rzp/utils/screenshot';
 import Group, { GroupItem } from 'rzp/ui/Group';
@@ -131,7 +135,7 @@ class Panel extends Component {
         ' (' +
         (trend.currentCount === 0
           ? trend.previousCount !== 0 ? 100 : 0
-          : (trendAbsValue / currentCount * 100).toFixed(2)) +
+          : getPercentage(currentCount, trendAbsValue)) +
         '%)';
     }
 

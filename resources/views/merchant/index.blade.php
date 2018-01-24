@@ -14,7 +14,21 @@
     window.rzp_org = {!! $org !!};
     window.api_host = "{!! $api_host !!}"
   </script>
-
+  <!-- Hotjar Tracking Code for dashboard.razorpay.com -->
+  @if(env('APP_ENV') === 'production')
+    <script>
+      if (location.hostname === 'dashboard.razorpay.com') {
+        (function(h,o,t,j,a,r){
+          h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
+          h._hjSettings={hjid:575141,hjsv:5};
+          a=o.getElementsByTagName('head')[0];
+          r=o.createElement('script');r.async=1;
+          r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
+          a.appendChild(r);
+        })(window,document,'//static.hotjar.com/c/hotjar-','.js?sv=');
+      }
+    </script>
+  @endif
   <script src="{{$cdnDashboardUrl}}/dist/merchant-entry.js"></script>
   <!-- smooch code -->
   @if(env('APP_ENV') === 'production')
@@ -35,17 +49,3 @@
 @endif
 
 @include('partials/footer')
-
-<!-- Hotjar Tracking Code for dashboard.razorpay.com -->
-<script>
-  if (location.hostname === 'dashboard.razorpay.com') {
-    (function(h,o,t,j,a,r){
-      h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
-      h._hjSettings={hjid:575141,hjsv:5};
-      a=o.getElementsByTagName('head')[0];
-      r=o.createElement('script');r.async=1;
-      r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
-      a.appendChild(r);
-    })(window,document,'//static.hotjar.com/c/hotjar-','.js?sv=');
-  }
-</script>

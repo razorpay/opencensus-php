@@ -18,9 +18,9 @@ const commonMeta = {
     },
     {
       recordKey: 'id',
-      transfomer: value => {
+      transfomer: (value, record, tabName) => {
         return (
-          <Link to={`/payments/${value}`}>
+          <Link to={`/${tabName}/${value}`}>
             <code>{value}</code>
           </Link>
         );

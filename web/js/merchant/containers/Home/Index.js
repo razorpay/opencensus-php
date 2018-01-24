@@ -56,7 +56,8 @@ defaults.global.layout = {
     fetchSettlements,
   }
 )
-export default class HomeContainer extends Component {
+
+class HomeContainer extends Component {
   componentWillMount() {
     this.props.fetchEntityTotals();
     this.props.fetchPaymentBreakup();
@@ -160,6 +161,21 @@ export default class HomeContainer extends Component {
           </div>
         </div>
       </div>
+    );
+  }
+}
+
+@connect(state => {
+  return {
+    user: state.session.user
+  };
+}, null)
+export default class HomeSwitcher extends Component {
+
+  render () {
+  
+    return (
+      this.props.user.isNewAnalyticsEnabled ? <NewHome/> : <HomeContainer/>
     );
   }
 }
