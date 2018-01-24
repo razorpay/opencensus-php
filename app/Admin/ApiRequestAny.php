@@ -87,7 +87,7 @@ class ApiRequestAny
 
                 $this->options['headers']['X-Admin-Token'] = $adminUser->token;
 
-                $this->options['headers']['X-Org-Id'] = $adminUser->org_id;
+                $this->options['headers']['X-Org-Hostname'] = \Request::server('SERVER_NAME');
 
             }
             else if ($routeName === 'user')
