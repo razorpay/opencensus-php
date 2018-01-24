@@ -22,6 +22,10 @@ import {
   OLDEST_TXN_ERROR,
   API_INVALID_RESP,
 } from 'merchant/components/Home/data';
+import GenericPanel, {
+  PanelBody,
+} from 'merchant/components/Home/GenericPanel';
+
 
 import './styles.styl';
 
@@ -290,6 +294,17 @@ export default class HomeContainer extends Component {
                   <RecentActivity />
                 </div>
               </div>
+            </div>
+          </div>
+          <div className="row home-credits-section">
+            <div className="col-md-12">
+              <GenericPanel>
+                <PanelBody>
+                  <div className="text-center">
+                    Please share your feedback/suggestions by clicking the red button on the edge of your screen. You could also write to us at <a target="_blank" href="mailto:support@razorpay.com">support@razorpay.com</a>.
+                  </div>
+                </PanelBody>
+              </GenericPanel>
             </div>
           </div>
         </div>
