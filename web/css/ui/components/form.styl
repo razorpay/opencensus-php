@@ -71,9 +71,6 @@ button, .btn
       vertical-align: top
     label
       margin-right: 10px
-  &.multi
-    input, textarea, select
-      width: 27% !important
 .checkbox
   background: none
   box-shadow: none
@@ -180,10 +177,13 @@ form
         margin-right: 8%
 
     // full-elements class on <Form> makes the <Field> elements to take 100% on right side otherwise default width
-    &.full-elements .field
+    &.full-elements .field:not(.multi)
       >select, >input:not([type=checkbox]), >textarea, .DayPickerInput
         width: 55%
-
+    &.full-elements .multi
+      >select, >input:not([type=checkbox]), >textarea, .DayPickerInput
+        width: 26.5%
+    
 
 // Used for labels
 .required:after
