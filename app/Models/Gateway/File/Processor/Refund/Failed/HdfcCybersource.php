@@ -42,6 +42,5 @@ class HdfcCybersource extends Base
         }
 
         return $formattedData;
-
     }
 }
