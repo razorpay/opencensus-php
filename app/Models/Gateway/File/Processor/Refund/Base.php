@@ -61,8 +61,8 @@ class Base extends BaseProcessor
         foreach ($refunds as $refund)
         {
             $payment = $refund->payment;
+
             $terminal = $payment->terminal;
-            $card = $payment->card;
 
             $col['refund'] = $refund->toArray();
 
@@ -70,9 +70,9 @@ class Base extends BaseProcessor
 
             $col['terminal'] = $terminal->toArray();
 
-            if (empty($card) == false)
+            if ($payment->hasCard() === true)
             {
-                $col['card'] = $card->toArray();
+                $col['card'] = $payment->card->toArray();
             }
 
             $data[] = $col;
