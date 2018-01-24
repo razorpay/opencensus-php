@@ -10,7 +10,9 @@ import {
   globalGroupTitleMap,
   groupBy,
   groupByPlatform,
-} from 'rzp/utils/pokedex.js';
+  getDefaultFilter,
+  getDefaultPaymentFilter
+} from 'rzp/utils/pokedex';
 
 const dateFormat = 'Do MMM YYYY';
 
@@ -36,19 +38,6 @@ function getGroupQuery(value) {
 
   return (groupObj && groupObj.query) || [];
 }
-
-const getDefaultFilterQuery = (startTime, endTime) => {
-  return {
-    default: [
-      {
-        created_at: {
-          gte: startTime,
-          lte: endTime,
-        },
-      },
-    ],
-  };
-};
 
 export const breakdownVals = ['daily', 'weekly', 'monthly'];
 
@@ -151,6 +140,7 @@ export const tabsMeta = {
       return {
         [this.name]: {
           agg_type: 'count',
+          filter_key: 'refunds',
           details: {
             index: this.index,
           },
@@ -163,6 +153,7 @@ export const tabsMeta = {
       return {
         [`${this.name}Histogram`]: {
           agg_type: 'count',
+          filter_key: 'refunds',
           details: {
             index: this.index,
             group_by: [...grouping, `histogram_${breakdown}`],
@@ -170,6 +161,14 @@ export const tabsMeta = {
         },
       };
     },
+    getFilterQuery: function (startTime, endTime) {
+    
+      return {
+        "refunds" : [
+          getDefaultFilter(startTime, endTime)
+        ]
+      }
+    }
   },
   [SAVED_CARDS]: {
     name: SAVED_CARDS,
@@ -179,7 +178,7 @@ export const tabsMeta = {
     index: 'payments',
     groupByColumnName: 'saved_card',
     groupTitleMap: {
-      '0': 'Other Payments',
+      '0': 'All Card Payments',
       '1': 'Saved Card Payments',
     },
     getCountQuery: function() {
@@ -197,30 +196,32 @@ export const tabsMeta = {
       return {
         [`${this.name}Histogram`]: {
           agg_type: 'count',
+          filter_key: 'cardsOnly',
           details: {
             index: this.index,
             group_by: ['saved_card', `histogram_${breakdown}`],
-          },
+          }
         },
       };
     },
     getFilterQuery: function(startTime, endTime) {
-      const createdAt = {
-        gte: startTime,
-        lte: endTime,
-      };
+      const defaultFilter = getDefaultPaymentFilter(
+                              startTime,
+                              endTime
+                            );
 
       return {
         [this.name]: [
           {
-            created_at: createdAt,
+            ...defaultFilter,
             saved_card: true,
           },
         ],
-        default: [
+        "cardsOnly": [
           {
-            created_at: createdAt,
-          },
+            ...defaultFilter,
+            method: ["card", "emi"]
+          }
         ],
       };
     },
@@ -245,7 +246,9 @@ export const getQuery = options => {
     return {
       filters: tabMeta.getFilterQuery
         ? tabMeta.getFilterQuery(startTime, endTime)
-        : getDefaultFilterQuery(startTime, endTime),
+        : {"default": [
+             getDefaultPaymentFilter(startTime, endTime)
+          ]},
       aggregations: {
         ...tabMeta.getCountQuery(),
         ...(!countsOnly && tabMeta.getHistogramQuery(groupBy, breakdown)),
