@@ -46,11 +46,11 @@ class GenericController extends Controller
 
     public function handleGuest($path = '/')
     {
-        return $this->handleAny($path, null);
+        return $this->handleAny(null, $path);
     }
 
     public function handleUser($path)
     {
-        return $this->handleAny($path, 'live');
+        return $this->handleAny('live', $path);
     }
 }

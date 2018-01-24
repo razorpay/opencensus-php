@@ -27,14 +27,18 @@ class ApiRequestAny
     protected $client;
 
     const RAZORPAY_ACCOUNT_HEADER = 'X-Razorpay-Account';
+
     const CONTENT_TYPE_JSON = 'application/json';
+
     const CONTENT_TYPE_FORM = 'application/x-www-form-urlencoded';
+
     const CONTENT_TYPE_MULTIPART_PREFIX = 'multipart/form-data;';
 
     /**
      * Construct a RawApiRequest instance
-     * @param array $auth of auth (proxy|admin)
-     * @param string $path relative path of the request
+     *
+     * @param string $mode live|test
+     * @param string $base_url base url of dashboard
      */
     function __construct($mode, $base_url = null)
     {
@@ -98,9 +102,9 @@ class ApiRequestAny
             }
         }
 
-        if ($mode) {
+        if (empty($mode) === false) {
             $this->options['auth'] = [
-                'rzp_'.$mode,
+                'rzp_' . $mode,
                 Config::get('api.auth_pass')
             ];
         }
