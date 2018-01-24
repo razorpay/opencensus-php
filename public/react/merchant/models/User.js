@@ -93,8 +93,8 @@ export default class User {
     return this.isFeatureEnabled('report_v2');
   }
 
-  get isAnalyticsEnabled() {
-    return this.isFeatureEnabled('analytics');
+  get isNewAnalyticsEnabled() {
+    return (this.tags || []).indexOf('New_analytics') !== -1;
   }
 
   get enabledFeatures() {

@@ -104,12 +104,12 @@ const numberFormatRegex = /(.{1,2})(?=.(..)+(\...)$)/g;
 
 export const getFixedINRAmount = amount => (Number(amount) / 100).toFixed(2);
 
-export const getFormattedNumber = value => {
-  if (typeof value === 'number') {
+export const getFixedNumber = value => {
+
+  if (typeof value === "number") {
+  
     value = value.toFixed(2);
   }
-
-  value = value.replace(numberFormatRegex, '$1,');
 
   const valueArr = value.split('.');
 
@@ -118,6 +118,16 @@ export const getFormattedNumber = value => {
   }
 
   return value;
+}
+
+export const getFormattedNumber = value => {
+  if (typeof value === 'number') {
+    value = value.toFixed(2);
+  }
+
+  value = value.replace(numberFormatRegex, '$1,');
+
+  return getFixedNumber(value);
 };
 
 export const currencySymbols = {
@@ -318,6 +328,39 @@ export const getEventCategoryFromPath = pathname => {
       return null;
   }
 };
+
+export const getPercentage = (divident, divisor) => {
+
+  let value = 0;
+
+  if (divident) {
+  
+    value = getFixedNumber(divisor / divident * 100);
+  } 
+
+  return Number(value);
+}
+
+export const getPercentages = (...args) => {
+
+  /*
+   * Given Number arguments, returns a dictionary
+   * with keys as given numbers and values as the 
+   * percentage of value compared to sum
+   *
+   * eg:
+   * getPercentages(1,2,3); // => {1: "16.67", 2: "33.33", 3: "50"}
+   */
+
+  const sum = args.reduce((sum, item) => item + sum, 0);
+
+  return args.reduce((result, item) => {
+  
+    result[item] = getPercentage(sum, item);
+
+    return result;
+  }, {});
+}
 
 export const getEMI = (principle, length, rate) => {
   /*

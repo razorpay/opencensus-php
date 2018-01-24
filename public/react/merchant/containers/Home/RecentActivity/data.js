@@ -18,9 +18,9 @@ const commonMeta = {
     },
     {
       recordKey: 'id',
-      transfomer: value => {
+      transfomer: (value, record, tabName) => {
         return (
-          <Link to={`/payments/${value}`}>
+          <Link to={`/${tabName}/${value}`}>
             <code>{value}</code>
           </Link>
         );
@@ -33,8 +33,10 @@ const commonMeta = {
     {
       recordKey: 'status',
       transfomer: (value, entity) => {
-        let Label =
-          entity === 'settlement' ? SettlementStatusLabel : PaymentStatusLabel;
+
+        let Label = entity.entity === 'settlement'
+                      ? SettlementStatusLabel
+                      : PaymentStatusLabel;
         value = value || 'refunded';
 
         return <Label status={value} />;
@@ -44,23 +46,7 @@ const commonMeta = {
 };
 
 const tabs = ['payments', 'settlements', 'refunds'],
-  tabsMeta = {
-    [tabs[2]]: {
-      columns: [
-        null,
-        null,
-        null,
-        {
-          recordKey: 'payment_id',
-          transfomer: value => (
-            <Link to={`/payments/${value}`}>
-              <code>{value}</code>
-            </Link>
-          ),
-        },
-      ],
-    },
-  };
+  tabsMeta = {};
 
 tabs.forEach(tabName => {
   tabsMeta[tabName] = tabsMeta[tabName] || Object.create(commonMeta);
