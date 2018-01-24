@@ -59,8 +59,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::group(['middleware'  =>  ['auth:user', 'verified']], function()
     {
         Route::any('/user/generic', 'GenericController@handle');
-        Route::any('/merchant/api/{mode}/{path}', 'GenericController@handleAny')->where(['mode' => '/(live)|(test)/',
-                                                                                         'path' => '.*'])->name('merchant');
+        Route::any('/merchant/api/{mode}/{path}', 'GenericController@handleAny')->where(['path' => '.*'])->name('merchant');
         // Account Routes
         Route::get('/{mode}/accounts', 'MerchantController@getAccounts')->name('get_accounts');
 
