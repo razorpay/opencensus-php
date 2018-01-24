@@ -72,7 +72,7 @@ class ApiRequestAny
 
         $routeName = Route::currentRouteName();
 
-        if ($routeName) {
+        if (empty($routeName) === false) {
 
             if ($routeName === 'merchant')
             {
@@ -81,7 +81,7 @@ class ApiRequestAny
 
                 $this->options['headers']['X-Dashboard-User-Role'] = $currentMerchant->role;
 
-                $mode .= '_'.$currentMerchant->id;
+                $mode .= '_' . $currentMerchant->id;
 
             }
             else if ($routeName === 'admin')
@@ -139,7 +139,6 @@ class ApiRequestAny
         {
             $this->options['body'] = $input;
         }
-
     }
 
     /**
@@ -204,5 +203,4 @@ class ApiRequestAny
 
         return [$errors, null];
     }
-
 }
