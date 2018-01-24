@@ -127,11 +127,11 @@ class Accessor extends Base\Core
      *                          an associative array is saved. Example,
      *                          "closed" => ["max_limit" => "2000000"]
      *
-     * @param string|null  $value
+     * @param mixed  $value
      *
      * @return Accessor
      */
-    public function upsert($key, string $value = null): Accessor
+    public function upsert($key, $value = null): Accessor
     {
         $this->trace->info(TraceCode::SETTINGS_UPSERT_REQUEST, [$key, $value]);
 

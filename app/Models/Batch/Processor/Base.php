@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\File\File;
 
 use RZP\Models\Batch;
 use RZP\Models\Invoice;
+use RZP\Models\Settings;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -54,6 +55,11 @@ class Base extends BaseModel\Core
     protected $params = [];
 
     /**
+     * @var Settings\Accessor
+     */
+    protected $settingsAccessor;
+
+    /**
      * Holds local file path of input and output file respectively.
      * They are re-used in the flow.
      * E.g.
@@ -67,11 +73,10 @@ class Base extends BaseModel\Core
     {
         parent::__construct();
 
-        $this->mutex = $this->app['api.mutex'];
-
-        $this->batch = $batch;
-
-        $this->merchant = $batch->merchant;
+        $this->mutex            = $this->app['api.mutex'];
+        $this->batch            = $batch;
+        $this->merchant         = $batch->merchant;
+        $this->settingsAccessor = Settings\Accessor::for($this->batch, Settings\Module::BATCH);
     }
 
     public function setParams(array $params = null)
@@ -86,11 +91,11 @@ class Base extends BaseModel\Core
 
     /**
     * Stores input file to file store, does parsing and basic validation and
-    * then saves the batch.
+    * then saves the batch with its input configurations.
     *
     * @param array $input
     */
-    public function storeInputFileAndSaveBatch(array $input)
+    public function storeInputFileAndSaveBatchWithSettings(array $input)
     {
         //
         // We upload the file and create file store entity first. As of now
@@ -113,12 +118,24 @@ class Base extends BaseModel\Core
 
         $ufhFile->entity()->associate($this->batch);
 
-        $this->repo->transaction(function () use ($ufhFile)
+        $this->repo->transaction(function () use ($ufhFile, $input)
         {
             $this->repo->saveOrFail($ufhFile);
 
             $this->repo->saveOrFail($this->batch);
+
+            $this->saveSettings($input);
         });
+    }
+
+    protected function saveSettings(array $input)
+    {
+        if (isset($input[Batch\Entity::CONFIG]) === true)
+        {
+            $config = $input[Batch\Entity::CONFIG];
+
+            $this->settingsAccessor->upsert($config)->save();
+        }
     }
 
     /**

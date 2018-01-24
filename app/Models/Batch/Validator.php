@@ -65,7 +65,7 @@ class Validator extends Base\Validator
         Entity::TYPE            => 'required|in:reconciliation',
         Entity::GATEWAY         => 'required|string|max:25',
         Entity::FILE            => 'required|file',
-        Entity::INPUT_DETAILS   => 'required|array',
+        Entity::CONFIG          => 'filled|array',
     ];
 
     protected static $emandateCreateRules = [
