@@ -36,9 +36,10 @@ class AxisCybersource extends Base
             $formattedData[] = [
                 self::SR_NO              => $index + 1,
                 self::CARD_NUMBER        => $this->getCardNumber($row['card']['iin'], $row['card']['last4']),
+                self::TRANSACTION_AMOUNT => $this->getFormattedAmount($row['payment']['amount']),
                 self::MERCHANT_TRAN_REF  => $row['gateway']['ref'],
                 self::MID                => $row['terminal']['gateway_terminal_id'],
-                self::REFUND_AMOUNT      => $this->getFormattedAmount($row['payment']['amount']),
+                self::REFUND_AMOUNT      => $this->getFormattedAmount($row['refund']['amount']),
                 self::TRANSACTION_DATE   => $this->getFormattedDate($row['payment']['created_at'], 'd/m/y H:m'),
                 self::APPROVAL_CODE      => $row['gateway']['authorizationCode'],
                 self::RAZORPAY_REFUND_ID => $row['refund']['id'],
