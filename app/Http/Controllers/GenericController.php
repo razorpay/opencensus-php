@@ -35,41 +35,22 @@ class GenericController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function handleGuest($path = '/')
+    public function handleAny($mode, $path)
     {
-        $request = new App\Admin\ApiRequestAny();
+        $request = new App\Admin\ApiRequestAny($mode);
 
         list($error, $data) = $request->send($path);
 
         return AppResponse::jsonResponse($error, $data);
     }
 
-    /* Catchall route: /admin/api/{any} */
-    public function handleAdmin($auth, $path)
+    public function handleGuest($path = '/')
     {
-        $request = new App\Admin\ApiRequestAny();
-
-        list($error, $data) = $request->sendWithAdminToken($auth, $path);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function handleMerchant($mode, $path)
-    {
-        $request = new App\Admin\ApiRequestAny();
-
-        list($error, $data) = $request->sendWithMerchantProxy($mode, $path);
-
-        return AppResponse::jsonResponse($error, $data);
+        return $this->handleAny($path, null);
     }
 
     public function handleUser($path)
     {
-        $request = new App\Admin\ApiRequestAny();
-
-        list($error, $data) = $request->sendWithUserId($path);
-
-        return AppResponse::jsonResponse($error, $data);
+        return $this->handleAny($path, 'live');
     }
-
 }
