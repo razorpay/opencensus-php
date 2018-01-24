@@ -76,18 +76,6 @@ export default class ContactDetailsForm extends Component {
           </div>
 
           <div class="form-group">
-            <label class="col-md-3 control-label">Landline</label>
-            <div class="col-md-9">
-              <Field
-                name="contact_landline"
-                component={InputField}
-                class="form-control"
-                placeholder="Landline"
-              />
-            </div>
-          </div>
-
-          <div class="form-group">
             <div class="col-md-offset-3 col-md-9">
               <div class="btn-toolbar">
                 <AsyncButton
