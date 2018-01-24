@@ -10,6 +10,7 @@ use RZP\Models\Workflow\Action\Differ;
 use RZP\Exception\EarlyWorkflowResponse;
 use RZP\Models\Workflow\Service as WorkflowService;
 use RZP\Models\Workflow\Action\Differ\EntityValidator;
+use RZP\Models\Workflow\Action\MakerType;
 use RZP\Constants\Entity as ConstantsEntity;
 
 class Service
@@ -99,7 +100,6 @@ class Service
         if (empty($entityId) === true)
         {
             $routeParams = $this->router->current()->parameters();
-
             // Pick the `id` first, if not then the first value
             // First value is not entirely robust though
             $entityId = $routeParams['id'] ?? (array_values($routeParams)[0] ?? null);
@@ -146,15 +146,16 @@ class Service
 
         $permission = $this->getPermission();
 
-        $admin = $this->ba->getAdmin();
+        $maker = $this->getWorkflowMaker();
 
-        $maker = $admin->getName() ?? $admin->getUsername() ?? $admin->getEmail();
+        $makerName = $maker->getName() ?? $maker->getEmail();
 
         $differEntity = [
             Differ\Entity::ENTITY_NAME  => $entity,
             Differ\Entity::ENTITY_ID    => $entityId,
-            Differ\Entity::ADMIN_ID     => $admin->id,
-            Differ\Entity::MAKER        => $maker,
+            Differ\Entity::MAKER        => $makerName,
+            Differ\Entity::MAKER_ID     => $maker->getId(),
+            Differ\Entity::MAKER_TYPE   => $this->getWorkflowMakerType(),
             Differ\Entity::TYPE         => Differ\Type::MAKER,
             Differ\Entity::URL          => $request->getUri(),
             Differ\Entity::ROUTE_PARAMS => $routeParams,
@@ -246,10 +247,15 @@ class Service
             return false;
         }
 
-        $admin = $this->ba->getAdmin();
+        $maker = $this->getWorkflowMaker();
+
+        if ($maker === false)
+        {
+            return false;
+        }
 
         $permissionHasWorkflow = (new WorkflowService)->permissionHasWorkflow(
-            $permission, $admin->getOrgId());
+            $permission, $maker->getOrgId());
 
         return $permissionHasWorkflow;
     }
@@ -398,5 +404,35 @@ class Service
         }
 
         return $action->toArrayPublic();
+    }
+
+    public function getWorkflowMaker()
+    {
+        if ($this->ba->isAdminAuth() === true)
+        {
+            return $this->ba->getAdmin();
+        }
+
+        if ($this->ba->isProxyAuth() === true)
+        {
+            return $this->ba->getMerchant();
+        }
+
+        return false;
+    }
+
+    public function getWorkflowMakerType()
+    {
+        if ($this->ba->isAdminAuth() === true)
+        {
+            return MakerType::ADMIN;
+        }
+
+        if ($this->ba->isProxyAuth() === true)
+        {
+            return MakerType::MERCHANT;
+        }
+
+        return false;
     }
 }

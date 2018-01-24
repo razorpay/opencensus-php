@@ -65,6 +65,8 @@ class WorkflowRequestListingTest extends TestCase
 
         $action = $this->fixtures->create('workflow_action', [
             'admin_id'      => Org::MAKER_ADMIN,
+            'maker_id'      => Org::MAKER_ADMIN,
+            'maker_type'    => 'admin',
             'state'         => \RZP\Models\State\Name::CLOSED,
         ]);
 

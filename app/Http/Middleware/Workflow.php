@@ -60,11 +60,10 @@ class Workflow
 
         // Disable workflows if:
         // - It is mocked
-        // - There's no admin user in current context. This means
-        // that the route might be running under proxy/app without
-        // any admin context
+        // - There's no admin user or merchant proxy in current context.
         if (($this->config->get('heimdall.workflows.mock') === true) or
-            ($this->ba->isAdminAuth() !== true))
+            ($this->ba->isAdminAuth() !== true and $this->ba->isProxyAuth() !== true) or
+            ($this->app['api.route']->isWorkflowExecuteOrApproveCall() and $this->ba->isAdminAuth() !== true))
         {
             return $next($request);
         }
@@ -84,10 +83,16 @@ class Workflow
                 return $next($request);
             }
 
-            $admin = $this->ba->getAdmin();
+            $maker = $this->app['workflow']->getWorkflowMaker();
+
+            // if the maker isn't one of Admin or Merchant, ignore workflow.
+            if ($maker === false)
+            {
+                return $next($request);
+            }
 
             $permissionHasWorkflow = (new WorkflowService)->permissionHasWorkflow(
-                $permission, $admin->getOrgId());
+                $permission, $maker->getOrgId());
 
             // If the permissions has no workflow assigned to it
             // then let's not apply any maker-checker process

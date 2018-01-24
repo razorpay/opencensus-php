@@ -47,6 +47,10 @@ class CreateWorkflowAction extends Migration
 
             $table->char(Action::ADMIN_ID, Action::ID_LENGTH);
 
+            $table->char(Action::MAKER_ID, Action::ID_LENGTH);
+
+            $table->char(Action::MAKER_TYPE, Action::ID_LENGTH);
+
             $table->char(Action::ORG_ID, Action::ID_LENGTH);
 
             $table->char(Action::STATE_CHANGER_ID, Action::ID_LENGTH)

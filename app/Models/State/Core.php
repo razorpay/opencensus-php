@@ -12,16 +12,18 @@ class Core extends Base\Core
 {
     /**
      * @param array        $input
-     * @param Admin\Entity $admin
+     * @param PublicEntity $maker
      * @param  Action      $action
      *
      * @return Entity $state
      */
-    public function createForWorkflowAction(array $input, Admin\Entity $admin, Action $action): Entity
+    public function createForWorkflowAction(array $input, PublicEntity $maker, Action $action): Entity
     {
         $state = $this->create($input);
 
-        $state->admin()->associate($admin);
+        $makerEntityName = $maker->getEntity();
+
+        $state->$makerEntityName()->associate($maker);
 
         $state->entity()->associate($action);
 

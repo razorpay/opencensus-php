@@ -12,6 +12,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Base;
 use RZP\Models\Admin\Permission;
+use RZP\Models\Workflow\Action\Entity as WAE;
 use RZP\Models\Base\Traits\RevisionableTrait;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -212,6 +213,11 @@ class Entity extends Base\Entity
     public function tokens()
     {
         return $this->hasMany('RZP\Models\Admin\Admin\Token\Entity');
+    }
+
+    public function workflows()
+    {
+        return $this->morphMany('RZP\Models\Workflow\Action\Entity', WAE::MAKER);
     }
 
     public function getPermissionsList()

@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
+use RZP\Models\Workflow\Action\MakerType;
 use RZP\Models\Admin\Permission as AdminPermission;
 
 class WorkflowAction extends Base
@@ -24,6 +25,8 @@ class WorkflowAction extends Base
         $action = $this->fixtures->create('workflow_action', [
             'id'            => self::DEFAULT_WORKFLOW_ACTION_ID,
             'admin_id'      => Org::SUPER_ADMIN,
+            'maker_id'      => Org::SUPER_ADMIN,
+            'maker_type'    => MakerType::ADMIN,
             'permission_id' => $this->defaultWorkflowPermission->getId(),
         ]);
 
@@ -38,6 +41,8 @@ class WorkflowAction extends Base
         $action = $this->fixtures->create('workflow_action', [
             'id'            => self::DEFAULT_WORKFLOW_CLOSED_ACTION_ID,
             'admin_id'      => Org::SUPER_ADMIN,
+            'maker_id'      => Org::SUPER_ADMIN,
+            'maker_type'    => MakerType::ADMIN,
             'permission_id' => $this->defaultWorkflowPermission->getId(),
             'state'         => \RZP\Models\State\Name::CLOSED,
         ]);

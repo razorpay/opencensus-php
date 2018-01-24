@@ -12,6 +12,8 @@ use RZP\Models\Workflow\Action;
 use RZP\Models\Base as BaseModel;
 use RZP\Models\Admin\Permission;
 
+use RZP\Constants\Entity as E;
+
 class Entity extends BaseModel\PublicEntity
 {
     const ORG_ID            = 'org_id';
@@ -70,12 +72,21 @@ class Entity extends BaseModel\PublicEntity
 
     public function setPublicStateChangerIdAttribute(array &$attributes)
     {
-        $adminId = $this->getAttribute(Action\Entity::STATE_CHANGER_ID);
+        $id = $this->getAttribute(Action\Entity::STATE_CHANGER_ID);
 
-        if ($adminId !== null)
+        if ($id !== null)
         {
-            $attributes[Action\Entity::STATE_CHANGER_ID] = Admin\Entity::getSignedId($adminId);
+            $attributes[Action\Entity::STATE_CHANGER_ID] = Admin\Entity::getSignedId($id);
         }
+    }
+
+    public function setPublicMakerIdAttribute(array & $attributes)
+    {
+        $makerId = $this->getAttribute(Action\Entity::MAKER_ID);
+
+        $makerClass = E::getEntityClass($this->getAttribute(Action\Entity::MAKER_TYPE));
+
+        $attributes[Action\Entity::MAKER_ID] = $makerClass::getSignedId($makerId);
     }
 
     public function setPublicActionIdAttribute(array &$attributes)
