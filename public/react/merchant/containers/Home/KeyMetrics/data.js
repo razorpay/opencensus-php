@@ -131,11 +131,10 @@ export const tabsMeta = {
   [REFUNDS]: {
     name: REFUNDS,
     title: 'Number of Refunds',
-    grouping: defaultGroupingVals,
+    grouping: [],
     options: [],
     index: 'refunds',
-    getGroupObj,
-    getGroupQuery,
+    groupByColumnName: "method",
     getCountQuery: function() {
       return {
         [this.name]: {
@@ -148,7 +147,6 @@ export const tabsMeta = {
       };
     },
     getHistogramQuery: function(grouping, breakdown) {
-      grouping = this.getGroupQuery(grouping);
 
       return {
         [`${this.name}Histogram`]: {
@@ -156,7 +154,10 @@ export const tabsMeta = {
           filter_key: 'refunds',
           details: {
             index: this.index,
-            group_by: [...grouping, `histogram_${breakdown}`],
+            group_by: [
+              this.groupByColumnName,
+              `histogram_${breakdown}`
+            ],
           },
         },
       };
@@ -199,7 +200,10 @@ export const tabsMeta = {
           filter_key: 'cardsOnly',
           details: {
             index: this.index,
-            group_by: ['saved_card', `histogram_${breakdown}`],
+            group_by: [
+              this.groupByColumnName,
+              `histogram_${breakdown}`
+            ],
           }
         },
       };
