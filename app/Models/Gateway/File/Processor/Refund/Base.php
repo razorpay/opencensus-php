@@ -131,6 +131,7 @@ class Base extends BaseProcessor
         }
         catch (\Throwable $e)
         {
+            s($e);
             throw new GatewayFileException(
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
                 [

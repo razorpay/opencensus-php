@@ -275,8 +275,7 @@ class Repository extends Base\Repository
                        ->where($refundStatus, '=',Refund\STATUS::FAILED)
                        ->where($refundCreatedAt, '>=', $from)
                        ->where($refundCreatedAt, '<=', $to)
-                       ->with(['payment'])
-                       ->get();
+                       ->with(['payment']);
 
         if ($gateway !== null)
         {

@@ -4,6 +4,7 @@ namespace RZP\Models\Gateway\File\Processor\Refund\Failed;
 
 use Carbon\Carbon;
 
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
@@ -32,6 +33,25 @@ class All extends Base
     const PAYMENT_TIME          = 'Payment Time';
     const REFUND_TIME           = 'Refund Time';
 
+    public function generateData(PublicCollection $refunds)
+    {
+        $data = [];
+
+        foreach ($refunds as $refund)
+        {
+            $payment = $refund->payment;
+            $merchant = $refund->merchant;
+
+            $col['refund'] = $refund->toArray();
+            $col['payment'] = $payment->toArray();
+            $col['merchant'] = $merchant->toArray();
+
+            $data[] = $col;
+        }
+
+        return $data;
+    }
+
     protected function formatDataForFile(array $data)
     {
         $formattedData = [];
@@ -39,10 +59,10 @@ class All extends Base
         foreach ($data as $index => $row)
         {
             $paymentDate = Carbon::createFromTimestamp(
-                $row['payment']['created_at'], Timezone::IST)->format('d/m/Y');
+                $row['payment']['created_at'], Timezone::IST)->format('d/m/Y H:i:s');
 
             $refundDate = Carbon::createFromTimestamp(
-                $row['refund']['created_at'], Timezone::IST)->format('d/m/Y');
+                $row['refund']['created_at'], Timezone::IST)->format('d/m/Y H:i:s');
 
             $timeDiff = $row['refund']['created_at'] - $row['payment']['created_at'];
 
@@ -55,7 +75,7 @@ class All extends Base
                 self::PAYMENT_AMOUNT        => $this->getFormattedAmount($row['payment']['base_amount']),
                 self::TOTAL_REFUNDED_AMOUNT => $this->getFormattedAmount($row['payment']['base_amount_refunded']),
                 self::PAYMENT_GATEWAY       => $row['payment']['gateway'],
-                self::REFUND_TYPE           => $this->getRefundType(),
+                self::REFUND_TYPE           => $this->getRefundType($row),
                 self::GATEWAY_CAPTURED      => $row['payment']['gateway_captured'],
                 self::ATTEMPTS              => $row['refund']['attempts'],
                 self::TERMINAL_ID           => $row['payment']['terminal_id'],
@@ -80,7 +100,31 @@ class All extends Base
 
         $M = floor($seconds / 2592000);
 
-        return "$M months, $d days, $h hours, $m minutes, $s seconds";
+        $timeStr = "$s seconds";
+
+        if ($m > 0)
+        {
+            $timeStr = "$m minutes";
+        }
+
+        if ($h > 0)
+        {
+            $timeStr = "$h hours";
+        }
+
+        if ($d > 0)
+        {
+            $timeStr = "$d days";
+        }
+
+        if ($M > 0)
+        {
+            $timeStr = "$M months";
+        }
+
+        $timeStr .= " old";
+
+        return $timeStr;
     }
 
     protected function getRefundType($row)
