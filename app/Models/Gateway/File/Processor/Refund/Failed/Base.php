@@ -66,7 +66,6 @@ class Base extends Refund\Base
         }
         catch (\Throwable $e)
         {
-            s($e);
             throw new GatewayFileException(
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_FILE,
                 [
