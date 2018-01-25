@@ -80,7 +80,7 @@ export default class ReportsContainer extends Component {
       id: user.current,
       email: user.email,
       tag: 'My Account',
-      tagIcon: 'icon-account',
+      tagIcon: 'i-account',
     };
 
     // populate custom configs

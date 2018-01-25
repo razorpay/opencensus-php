@@ -156,39 +156,35 @@ export default props => {
               </span>,
               <span key="retrying-info"> {retryingInfo}</span>,
             ]}
-          {
-            do {
-              if (
-                item.status === 'issued' &&
-                (['active', 'pending', 'halted', 'completed'].indexOf(
-                  subscriptionStatus
-                ) > -1 ||
-                  (subscriptionStatus === 'cancelled' &&
-                    (index > 1 ||
-                      (subscriptionType !== 3 && subscriptionType !== 1))))
-              ) {
-                <AsyncButton
-                  class="btn-link no-padding"
-                  text=" Attempt Charge"
-                  pendingText="Attempting..."
-                  onClick={() => onManualAttempt(item.id, subscriptionId)}
-                />;
-              }
+          {do {
+            if (
+              item.status === 'issued' &&
+              (['active', 'pending', 'halted', 'completed'].indexOf(
+                subscriptionStatus
+              ) > -1 ||
+                (subscriptionStatus === 'cancelled' &&
+                  (index > 1 ||
+                    (subscriptionType !== 3 && subscriptionType !== 1))))
+            ) {
+              <AsyncButton
+                class="btn-link no-padding"
+                text=" Attempt Charge"
+                pendingText="Attempting..."
+                onClick={() => onManualAttempt(item.id, subscriptionId)}
+              />;
             }
-          }
+          }}
         </div>
       </div>
 
-      {
-        do {
-          if (isRowClickable) {
-            <span
-              class="row-item icon icon-chevron-right"
-              onClick={() => goToLink(item.id, index)}
-            />;
-          }
+      {do {
+        if (isRowClickable) {
+          <span
+            class="row-item i i-chevron-right"
+            onClick={() => goToLink(item.id, index)}
+          />;
         }
-      }
+      }}
     </div>
   );
 };

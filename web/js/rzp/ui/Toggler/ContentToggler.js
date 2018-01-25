@@ -39,9 +39,7 @@ export default class ContentToggler extends BaseToggler {
           </div>
           {hasMore && (
             <div className="less-content-arrow text-primary">
-              <i
-                className={'icon icon-chevron-' + (showMore ? 'up' : 'down')}
-              />
+              <i className={'i i-chevron-' + (showMore ? 'up' : 'down')} />
             </div>
           )}
         </div>

@@ -121,7 +121,9 @@ export default class IssueInvoiceConfirmModal extends Component {
                       component="input"
                       type="checkbox"
                     />
-                    <label for="sms_notify" class="icon i-check">{customer.contact}</label>
+                    <label for="sms_notify" class="i i-check">
+                      {customer.contact}
+                    </label>
                   </div>
                 )}
 
@@ -133,7 +135,9 @@ export default class IssueInvoiceConfirmModal extends Component {
                       component="input"
                       type="checkbox"
                     />
-                    <label for="email_notify" class="icon i-check">{customer.email}</label>
+                    <label for="email_notify" class="i i-check">
+                      {customer.email}
+                    </label>
                   </div>
                 )}
 

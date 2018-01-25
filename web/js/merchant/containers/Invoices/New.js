@@ -325,8 +325,9 @@ export default class InvoicesNewContainer extends Component {
           window.rzpAnalytics({
             eventCategory: 'Dashboard - Invoice',
             eventAction: 'Resend - Invoice',
-            eventLabel: `invoice_id=${this.props.invoice
-              .id}|${stringifyQueryParamsWithPipe(props)}`,
+            eventLabel: `invoice_id=${
+              this.props.invoice.id
+            }|${stringifyQueryParamsWithPipe(props)}`,
           });
           this.props.showNotification({
             type: 'success',
@@ -715,7 +716,7 @@ export default class InvoicesNewContainer extends Component {
                                 type="checkbox"
                                 disabled={locked}
                               />
-                            <label for="partial_payment" class="icon i-check">
+                              <label for="partial_payment" class="i i-check">
                                 Enable Partial Payments
                               </label>
                             </div>

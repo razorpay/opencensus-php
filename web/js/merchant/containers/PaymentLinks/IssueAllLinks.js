@@ -64,7 +64,9 @@ export default class IssueAllLinksModal extends Component {
                 component={CheckboxField}
                 type="checkbox"
               />
-            <label for="sms_notify" class="icon icon-check">Send SMS</label>
+              <label for="sms_notify" class="i i-check">
+                Send SMS
+              </label>
             </div>
 
             <div class="rzpCheckbox">
@@ -74,7 +76,9 @@ export default class IssueAllLinksModal extends Component {
                 component={CheckboxField}
                 type="checkbox"
               />
-            <label for="email_notify" class="icon i-check">Send Email</label>
+              <label for="email_notify" class="i i-check">
+                Send Email
+              </label>
             </div>
 
             {mode === 'test' && (

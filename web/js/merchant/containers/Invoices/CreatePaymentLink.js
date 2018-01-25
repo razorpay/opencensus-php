@@ -314,7 +314,7 @@ export default class CreatePaymentLink extends Component {
                           type="checkbox"
                           disabled={locked}
                         />
-                        <label for="partial_payment" class="icon i-check">
+                        <label for="partial_payment" class="i i-check">
                           Enable Partial Payments
                         </label>
                       </div>

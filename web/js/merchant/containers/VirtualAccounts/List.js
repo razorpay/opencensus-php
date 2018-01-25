@@ -206,7 +206,7 @@ export default class VirtualAccountsListContainer extends ListContainer {
                     class="btn btn-primary"
                     onClick={this.showCreateVAModal}
                   >
-                    <i class="icon icon-plus" />
+                    <i class="i i-plus" />
                     <span>Create Virtual Account</span>
                   </button>
                 </div>

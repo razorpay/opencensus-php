@@ -77,9 +77,9 @@ export default ({
             data-toggle="collapse"
             onClick={toggleMobileNav}
           >
-            <span class="icon-bar" />
-            <span class="icon-bar" />
-            <span class="icon-bar" />
+            <span class="i-bar" />
+            <span class="i-bar" />
+            <span class="i-bar" />
           </button>
         </div>
         <div

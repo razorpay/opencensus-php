@@ -79,7 +79,7 @@ export class ReportsContainer extends Component {
         id: user.current,
         email: user.email,
         tag: 'My Account',
-        tagIcon: 'icon-account',
+        tagIcon: 'i-account',
       });
       this.setState({
         merchantAccounts: merchantAccounts,
@@ -169,9 +169,7 @@ export class ReportsContainer extends Component {
       });
     }
 
-    if (user.isMarketplaceEnabled ||
-        user.tags.indexOf('Openwallet') !== -1) {
-
+    if (user.isMarketplaceEnabled || user.tags.indexOf('Openwallet') !== -1) {
       this.entityOptions.push({
         value: 'transfer',
         id: 'transfer',
@@ -179,7 +177,6 @@ export class ReportsContainer extends Component {
       });
 
       if (user.isMarketplaceEnabled) {
-
         this.entityOptions.push({
           value: 'reversal',
           id: 'reversal',
