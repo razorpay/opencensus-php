@@ -46,11 +46,11 @@ class Reconciliator
 
     public function generateReconciliation(array $input)
     {
-        $entites = $this->getEntitiesToReconcile();
+        $entities = $this->getEntitiesToReconcile();
 
         $inputData = [];
 
-        foreach ($entites as $entity)
+        foreach ($entities as $entity)
         {
             $data[$entity->getEntity()] = $entity->toArray();
 
@@ -84,7 +84,7 @@ class Reconciliator
     }
 
     protected function createFile(
-        array $content,
+        $content,
         string $type = FileStore\Type::MOCK_RECONCILIATION_FILE,
         string $store = FileStore\Store::S3)
     {

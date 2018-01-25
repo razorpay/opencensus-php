@@ -77,7 +77,7 @@ trait ReconTrait
 
         foreach ($payments as $payment)
         {
-            $this->fixtures->edit('payment', $payment, ['created_at' => $createdAt]);
+            $this->fixtures->edit('payment', $payment, ['created_at' => $createdAt, 'authorized_at' => $createdAt + 100]);
         }
 
         return $payments;
@@ -92,7 +92,7 @@ trait ReconTrait
             'base_amount'       => $this->payment['amount'],
             'amount_authorized' => $this->payment['amount'],
             'status'            => 'captured',
-            'gateway'           => $this->gateway
+            'gateway'           => $this->gateway,
         ];
 
         $payment = $this->fixtures->create('payment', $attributes);
@@ -101,8 +101,13 @@ trait ReconTrait
 
         $this->fixtures->edit('payment', $payment->getId(), ['transaction_id' => $transaction->getId()]);
 
-        $this->fixtures->create($this->method, ['payment_id' => $payment->getId()]);
+        $this->createGatewayEntity($payment);
 
         return $payment->getId();
+    }
+
+    private function createGatewayEntity($payment)
+    {
+        $this->fixtures->create($this->method, ['payment_id' => $payment->getId()]);
     }
 }

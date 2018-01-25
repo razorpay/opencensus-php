@@ -50,6 +50,7 @@ class Base extends Core
     const NETBANKING_INDUSIND    = 'NetbankingIndusind';
     const NETBANKING_PNB         = 'NetbankingPnb';
     const NETBANKING_BOB         = 'NetbankingBob';
+    const NETBANKING_ORIENTAL    = 'NetbankingOriental';
     const VIRTUAL_ACC_KOTAK      = 'VirtualAccKotak';
     const JIOMONEY               = 'Jiomoney';
     const UPI_SBI                = 'UpiSbi';
@@ -79,6 +80,7 @@ class Base extends Core
         self::NETBANKING_FEDERAL  => ['fednetrm@federalbank.co.in'],
         self::NETBANKING_RBL      => ['internetbanking@rblbank.com'],
         self::NETBANKING_INDUSIND => [],
+        self::NETBANKING_ORIENTAL => [], // TODO: Add email here
         self::NETBANKING_PNB      => [],
         self::NETBANKING_BOB      => [],
         self::JIOMONEY            => [],

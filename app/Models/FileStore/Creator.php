@@ -665,6 +665,7 @@ class Creator extends Base\Core
             case Format::TXT:
             case Format::ENC:
             case Format::PDF:
+            case Format::DAT:
                 $this->writeTextFile();
                 break;
 
