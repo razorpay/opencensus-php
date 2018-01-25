@@ -18,7 +18,7 @@ pipeline:
       - touch /etc/php7/conf.d/nanotime.ini
       - echo -n "extension=nanotime.so" >> /etc/php7/conf.d/nanotime.ini
       - php -m
-      - composer config -g github-oauth.github.com $GIT_TOKEN
+      - composer config --global github-oauth.github.com $GIT_TOKEN
       - composer install --no-interaction
       - php -d memory_limit=1024M vendor/phpunit/phpunit/phpunit --debug --verbose
   build:
