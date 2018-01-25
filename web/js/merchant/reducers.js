@@ -12,6 +12,7 @@ import profileReducer from 'merchant/modules/profile';
 import customersReducer from 'merchant/modules/customers';
 import itemsReducer from 'merchant/modules/items';
 import orderReducer from 'merchant/modules/orders/details';
+import disputeReducer from 'merchant/modules/disputes/details';
 import settlementReducer from 'merchant/modules/settlements/details';
 import webhooksReducer from 'merchant/modules/webhooks';
 import keysReducer from 'merchant/modules/keys';
@@ -82,6 +83,7 @@ export default combineReducers({
   settlements: settlementsReducer,
   settlement: settlementReducer,
   disputes: disputesReducer,
+  dispute: disputeReducer,
   webhooks: webhooksReducer,
   keys: keysReducer,
   credits: creditsReducer,
