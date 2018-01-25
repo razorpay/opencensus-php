@@ -44,6 +44,7 @@ import {
   mpPaymentsReducer,
   refundsReducer,
   settlementsReducer,
+  disputesReducer,
 } from 'rzp/modules/collection';
 
 import {
@@ -80,6 +81,7 @@ export default combineReducers({
   payment: paymentReducer,
   settlements: settlementsReducer,
   settlement: settlementReducer,
+  disputes: disputesReducer,
   webhooks: webhooksReducer,
   keys: keysReducer,
   credits: creditsReducer,

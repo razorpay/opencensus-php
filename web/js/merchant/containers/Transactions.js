@@ -7,6 +7,7 @@ import RefundsList from 'merchant/containers/Refunds/List';
 import BatchUpload from 'merchant/containers/Refunds/BatchUpload';
 import BatchUploads from 'merchant/containers/Refunds/BatchList';
 import OrdersList from 'merchant/containers/Orders/List';
+import DisputesList from 'merchant/containers/Disputes/List';
 
 export default class TransactionsContainer extends Component {
   render() {
@@ -32,6 +33,7 @@ export default class TransactionsContainer extends Component {
             </NavLink>
           </ShowWhen>
           <NavLink to="/orders">Orders</NavLink>
+          <NavLink to="/disputes">Disputes</NavLink>
         </header>
         <TestModeBanner />
         <content>
@@ -41,6 +43,7 @@ export default class TransactionsContainer extends Component {
             <Route path="/refunds" component={RefundsList} />
             <Route path="/orders" component={OrdersList} />
             <Route path="/payments" component={PaymentsList} />
+            <Route path="/disputes" component={DisputesList} />
           </Switch>
         </content>
       </tabbed-container>

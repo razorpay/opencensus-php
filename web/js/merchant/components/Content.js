@@ -139,6 +139,7 @@ export default class Content extends Component {
           <Route path="/payments" component={Transactions} />
           <Route path="/refunds" component={Transactions} />
           <Route path="/orders" component={Transactions} />
+          <Route path="/disputes" component={Transactions} />
 
           <Route path="/settlements" component={Settlements} />
 

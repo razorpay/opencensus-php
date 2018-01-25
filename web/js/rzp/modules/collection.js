@@ -9,6 +9,7 @@ import Order from 'merchant/models/Order';
 import Settlement from 'merchant/models/Settlement';
 import Reversal from 'merchant/models/Reversal';
 import Transfer from 'merchant/models/Transfer';
+import Dispute from 'merchant/models/Dispute';
 
 // useEntityReducer tells whether to use common reducer or entity-specific
 export const fetchAll = (params, Entity, namespace) => {
@@ -129,3 +130,6 @@ export const linkBatchesReducer = makeCollectionReducer('BATCHLINKS');
 export const fetchSettlements = params =>
   fetchAll(params, Settlement, 'SETTLEMENTS');
 export const settlementsReducer = makeCollectionReducer('SETTLEMENTS');
+
+export const fetchDisputes = params => fetchAll(params, Dispute, 'DISPUTES');
+export const disputesReducer = makeCollectionReducer('DISPUTES');
