@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import moment from 'moment';
 
+import DisputeListFilter from 'merchant/components/Disputes/DisputeListFilter';
 import { fetchDisputes as fetchAll } from 'rzp/modules/collection';
 import DataTable from 'rzp/ui/Table/DataTable';
 import { titleCase } from 'common/util';
@@ -52,6 +53,15 @@ export default class Dispute extends ListContainer {
   render() {
     return (
       <div class="content-wrapper">
+        <DisputeListFilter
+          form="DisputeListFilter"
+          type="link"
+          count={this.state.count}
+          onSubmit={this.search}
+          onSearchAnalytics={this.onSearchAnalytics}
+          onClearAnalytics={this.onClearAnalytics}
+        />
+
         <DataTable
           title="Disputes"
           columns={[
