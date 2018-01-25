@@ -12,6 +12,9 @@ class RefundFile extends Base\RefundFile
 {
     const DELIMITER               = '|';
     const DATE_FORMAT             = 'Ymd';
+    const FILE_NAME               = 'REFUND_NB_OBC_RAZORPAY_';
+    const HEADER_NAME             = 'HOBCUTLPRFD';
+    const TAIL_NAME               = 'TOBCUTLPRFD';
 
     private $date;
 
@@ -87,10 +90,10 @@ class RefundFile extends Base\RefundFile
 
         $data = array_merge($data, [$this->getLastLine($count, $totalAmount)]);
 
-        return $this->generateText($data, '\r\n', true);
+        return $this->generateText($data);
     }
 
-    protected function generateText($data, $glue = '~', $ignoreLastNewline = false)
+    protected function generateText($data, $glue = "\r\n", $ignoreLastNewline = true)
     {
         $txt = '';
 
@@ -105,7 +108,7 @@ class RefundFile extends Base\RefundFile
             if (($ignoreLastNewline === false) or
                 (($ignoreLastNewline === true) and ($count > 0)))
             {
-                $txt .= "\r\n";
+                $txt .= $glue;
             }
         }
 
@@ -114,14 +117,14 @@ class RefundFile extends Base\RefundFile
 
     private function getInitialLine()
     {
-        $line = ['HOBCUTLPRFD', $this->date, $this->getMerchantId()];
+        $line = [self::HEADER_NAME, $this->date, $this->getMerchantId()];
 
         return implode(self::DELIMITER, $line);
     }
 
     private function getLastLine(int $count, int $totalAmount)
     {
-        $line = ['TOBCUTLPRFD', $this->date, $count, $totalAmount];
+        $line = [self::TAIL_NAME, $this->date, $count, $totalAmount];
 
         return implode(self::DELIMITER, $line);
     }
@@ -133,8 +136,7 @@ class RefundFile extends Base\RefundFile
 
     protected function getFileToWriteNameWithoutExt()
     {
-        // TODO: Merchant name or Razorpay?
-        return 'REFUND_NB_OBC_MERCHANTNAME_' . $this->date;
+        return self::FILE_NAME . $this->date;
     }
 
     protected function getMerchantId()
