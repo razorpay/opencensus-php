@@ -269,17 +269,21 @@ class Repository extends Base\Repository
 
         $refundCreatedAt = $this->dbColumn(Refund\Entity::CREATED_AT);
 
-        return $this->newQuery()
-                    ->select($refundAttrs)
-                    ->join(Table::PAYMENT, $refundPaymentIdAttr, '=', $paymentIdAttr)
-                    ->where($refundStatus, '=',Refund\STATUS::FAILED)
-                    ->where($paymentGateway, '=', $gateway)
-                    ->where($refundCreatedAt, '>=', $from)
-                    ->where($refundCreatedAt, '<=', $to)
-                    ->with(['payment'])
-                    ->get();
+        $query =  $this->newQuery()
+                       ->select($refundAttrs)
+                       ->join(Table::PAYMENT, $refundPaymentIdAttr, '=', $paymentIdAttr)
+                       ->where($refundStatus, '=',Refund\STATUS::FAILED)
+                       ->where($refundCreatedAt, '>=', $from)
+                       ->where($refundCreatedAt, '<=', $to)
+                       ->with(['payment'])
+                       ->get();
 
-        return $refunds;
+        if ($gateway !== null)
+        {
+            $query->where($paymentGateway, '=', $gateway);
+        }
+
+        return $query->get();
     }
 
     public function fetchRefundsForTpvBetweenTimestamps(
