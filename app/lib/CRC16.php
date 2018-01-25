@@ -25,7 +25,7 @@ class CRC16
 
         $byteArray = unpack('C*', $data);
 
-        $expectedCRC = $this->calculateCrcMsb($byteArray, $ccittPoly, self::MAX_VALUE_SIGNED);
+        $expectedCRC = $this->calculateCrcMsb($byteArray, $ccittPoly, self::MAX_VALUE_UNSIGNED);
 
         $hex = dechex($expectedCRC);
 
