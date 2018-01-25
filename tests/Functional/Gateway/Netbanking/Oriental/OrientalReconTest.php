@@ -85,6 +85,148 @@ class OrientalReconTest extends TestCase
         }
     }
 
+    public function testReconAmountValidationFailed()
+    {
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $payment = $this->makePaymentsSince($createdAt, 1)[0];
+
+        $this->ba->appAuth();
+
+        $this->mockReconContentFunction(
+            function(& $content, $action = null)
+            {
+                if ($action === 'col_payment_oriental_recon')
+                {
+                    // Setting amount to 1 will cause payment amount validation to fail
+                    $content[3] = 1;
+                }
+            });
+
+        $fileContents = $this->generateReconFile();
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $response = $this->reconcile($uploadedFile, Recon::NETBANKING_ORIENTAL);
+
+        // Assert that the payment was not reconciled
+        $this->assertEquals(1, $response['total_count']);
+        $this->assertEquals(0, $response['success_count']);
+        $this->assertEquals(1, $response['failure_count']);
+
+        $netbanking = $this->getLastEntity('netbanking', true);
+
+        $payment = $this->getEntityById('payment', $payment, true);
+
+        $this->assertNull($payment['gateway_captured']);
+
+        // Date is not persisted as the payment amount validation failed
+        $this->assertNull($netbanking['date']);
+
+        $this->assertNull($netbanking['bank_payment_id']);
+
+        $transactionId = $payment['transaction_id'];
+
+        $transaction = $this->getEntityById('transaction', $transactionId, true);
+
+        // Transaction is not reconciled
+        $this->assertNull($transaction['reconciled_at']);
+    }
+
+    public function testReconPaymentAlreadyReconciled()
+    {
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $this->makePaymentsSince($createdAt, 1)[0];
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $transaction = $this->getEntityById('transaction', $payment['transaction_id'], true);
+
+        $this->fixtures->edit('transaction', $transaction['id'], ['reconciled_at' => $createdAt]);
+
+        $this->ba->appAuth();
+
+        $fileContents = $this->generateReconFile();
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $response = $this->reconcile($uploadedFile, Recon::NETBANKING_ORIENTAL);
+
+        // Total count = 1
+        $this->assertEquals(1, $response['total_count']);
+        $this->assertEquals(1, $response['success_count']);
+
+        // The payment is already reconciled, so failure count = 0
+        $this->assertEquals(0, $response['failure_count']);
+
+        $netbanking = $this->getLastEntity('netbanking', true);
+
+        $payment = $this->getEntityById('payment', $payment['id'], true);
+
+        $this->assertNull($payment['gateway_captured']);
+
+        // Date is not persisted as the payment amount validation failed
+        $this->assertNull($netbanking['date']);
+
+        $this->assertNull($netbanking['bank_payment_id']);
+
+        $transactionId = $payment['transaction_id'];
+
+        $transaction = $this->getEntityById('transaction', $transactionId, true);
+
+        // Transaction is reconciled
+        $this->assertNotNull($transaction['reconciled_at']);
+    }
+
+    public function testReconPaymentIdEmpty()
+    {
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $payment = $this->makePaymentsSince($createdAt, 1)[0];
+
+        $this->ba->appAuth();
+
+        $this->mockReconContentFunction(
+            function(& $content, $action = null)
+            {
+                if ($action === 'col_payment_oriental_recon')
+                {
+                    // Setting payment id to 0
+                    $content[4] = 0;
+                }
+            });
+
+        $fileContents = $this->generateReconFile();
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $response = $this->reconcile($uploadedFile, Recon::NETBANKING_ORIENTAL);
+
+        // Assert that the payment was not reconciled
+        $this->assertEquals(1, $response['total_count']);
+        $this->assertEquals(0, $response['success_count']);
+        $this->assertEquals(1, $response['failure_count']);
+
+        $netbanking = $this->getLastEntity('netbanking', true);
+
+        $payment = $this->getEntityById('payment', $payment, true);
+
+        $this->assertNull($payment['gateway_captured']);
+
+        // Date is not persisted as the payment amount validation failed
+        $this->assertNull($netbanking['date']);
+
+        $this->assertNull($netbanking['bank_payment_id']);
+
+        $transactionId = $payment['transaction_id'];
+
+        $transaction = $this->getEntityById('transaction', $transactionId, true);
+
+        // Transaction is not reconciled
+        $this->assertNull($transaction['reconciled_at']);
+    }
+
     private function createUploadedFile($file)
     {
         $this->assertFileExists($file);
