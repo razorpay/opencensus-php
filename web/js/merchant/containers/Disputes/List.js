@@ -42,13 +42,7 @@ const resolvedOn = {
   value: getTime('resolved_on'),
 };
 
-@connect(
-  state => ({
-    ...state.disputes,
-    items: state.disputes.items.map(item => ({ ...item, entity: 'dispute' })),
-  }),
-  { fetchAll }
-)
+@connect(state => state.disputes, { fetchAll })
 export default class Dispute extends ListContainer {
   render() {
     return (
