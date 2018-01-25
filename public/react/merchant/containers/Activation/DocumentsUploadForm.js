@@ -141,10 +141,10 @@ export default class DocumentsUploadForm extends Component {
           {business_type == 7 && [
             <div class="form-group" key="form_12a">
               <label class="col-md-3 control-label label-required">
-                FORM 12A
+                Form 12A Allotment Letter
               </label>
               <div class="col-md-9">
-                <span class="help-block">{/* TODO: Yet to be added */}</span>
+                <span class="help-block">Mandatory for NGOs</span>
                 <FileUploadInputButton
                   accept="image/jpeg,image/png,application/pdf,application/x-pdf"
                   uploadedFileName={files.ngo_12a_proof}
@@ -157,10 +157,10 @@ export default class DocumentsUploadForm extends Component {
             </div>,
             <div class="form-group" key="form_80g">
               <label class="col-md-3 control-label label-required">
-                FORM 80G
+                Form 80G Allotment Letter
               </label>
               <div class="col-md-9">
-                <span class="help-block">{/* TODO: Yet to be added */}</span>
+                <span class="help-block">Mandatory for NGOs</span>
                 <FileUploadInputButton
                   accept="image/jpeg,image/png,application/pdf,application/x-pdf"
                   uploadedFileName={files.ngo_80g_proof}
