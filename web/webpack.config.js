@@ -50,13 +50,6 @@ module.exports = {
           options: {
             presets: ['env', 'react', 'stage-0'],
             plugins: [
-              [
-                'transform-runtime',
-                {
-                  polyfill: true,
-                  regenerator: true,
-                },
-              ],
               'transform-decorators-legacy',
               'react-html-attrs',
             ],
@@ -66,7 +59,7 @@ module.exports = {
     ],
   },
 
-  devtool: isProd ? 'hidden-source-map' : false,
+  devtool: isProd ? false : false,
 
   plugins,
 };

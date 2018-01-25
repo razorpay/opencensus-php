@@ -21,6 +21,7 @@ files=$(cat <<-END
   DayPicker       react-day-picker/lib/daypicker.min.js
   Chart           chart.js/dist/Chart.min.js
   PropTypes       prop-types/prop-types.min.js
+  d3              d3/build/d3.min.js
 END
 )
 

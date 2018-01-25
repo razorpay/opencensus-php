@@ -1,10 +1,5 @@
 import { getCookie } from './cookies';
-
-let store = null;
-
-if (!process.env.RZP_ADMIN) {
-  store = require('merchant/store');
-}
+import store from 'merchant/store';
 
 export default (url, params = {}) => {
   let {
