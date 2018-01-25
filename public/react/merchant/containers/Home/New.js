@@ -301,7 +301,7 @@ export default class HomeContainer extends Component {
               <GenericPanel>
                 <PanelBody>
                   <div className="text-center">
-                    Please share your feedback/suggestions by clicking the red button on the edge of your screen. You could also write to us at <a target="_blank" href="mailto:support@razorpay.com">support@razorpay.com</a>.
+                    Please share your feedback/suggestions by clicking the red button on the right edge of your screen. You could also write to us at <a target="_blank" href="mailto:support@razorpay.com">support@razorpay.com</a>.
                   </div>
                 </PanelBody>
               </GenericPanel>

@@ -5,6 +5,12 @@ import PaymentsListFilter from 'merchant/components/Payments/PaymentsListFilter'
 import { stringifyQueryParamsWithPipe } from 'rzp/utils/rzp-utils';
 
 export default class PaymentsListContainer extends ListContainer {
+
+  constructor (props) {
+  
+    super(props);
+  }
+
   componentDidMount() {
     const { pathname } = this.props.location;
     if (pathname && pathname.indexOf('route') < 0) {

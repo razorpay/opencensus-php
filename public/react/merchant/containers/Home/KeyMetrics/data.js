@@ -179,7 +179,7 @@ export const tabsMeta = {
     index: 'payments',
     groupByColumnName: 'saved_card',
     groupTitleMap: {
-      '0': 'All Card Payments',
+      '0': 'Other Card Payments',
       '1': 'Saved Card Payments',
     },
     getCountQuery: function() {
@@ -189,6 +189,7 @@ export const tabsMeta = {
           agg_type: 'count',
           details: {
             index: this.index,
+            group_by: [this.groupByColumnName]
           },
         },
       };
@@ -197,7 +198,7 @@ export const tabsMeta = {
       return {
         [`${this.name}Histogram`]: {
           agg_type: 'count',
-          filter_key: 'cardsOnly',
+          filter_key: this.name,
           details: {
             index: this.index,
             group_by: [
@@ -216,12 +217,6 @@ export const tabsMeta = {
 
       return {
         [this.name]: [
-          {
-            ...defaultFilter,
-            saved_card: true,
-          },
-        ],
-        "cardsOnly": [
           {
             ...defaultFilter,
             method: ["card", "emi"]
