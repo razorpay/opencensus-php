@@ -54,13 +54,13 @@ services:
   livedb:
     image: mysql
     environment:
-      - MYSQL_ROOT_PASSWORD=root
       - MYSQL_DATABASE=api
+      - MYSQL_ROOT_PASSWORD=root1
   testdb:
     image: mysql
     environment:
-      - MYSQL_ROOT_PASSWORD=root
       - MYSQL_DATABASE=api_test
+      - MYSQL_ROOT_PASSWORD=root2
   redis:
     image: redis
   elasticsearch:
