@@ -133,7 +133,7 @@ export default class MerchantAnalyticStats extends Component {
         total_payments: {
           agg_type: 'count',
           details: {
-            index: 'payment',
+            index: 'payments',
             column: 'base_amount',
           },
         },
@@ -154,7 +154,7 @@ export default class MerchantAnalyticStats extends Component {
         payments_volume: {
           agg_type: 'sum',
           details: {
-            index: 'payment',
+            index: 'payments',
             column: 'base_amount',
           },
         },
@@ -168,7 +168,7 @@ export default class MerchantAnalyticStats extends Component {
         recent_payments: {
           agg_type: 'recent',
           details: {
-            index: 'payment',
+            index: 'payments',
             column: 'base_amount',
             result_fields: ['id', 'status', 'created_at'],
           },
