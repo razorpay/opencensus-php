@@ -42,6 +42,8 @@ export default class DatePickerField extends Component {
           id={input.name}
           date={date}
           focused={focused}
+          hideKeyboardShortcutsPanel={true}
+          readOnly={true}
           initialVisibleMonth={() =>
             date ? moment(date, 'MM YYYY') : moment()
           }

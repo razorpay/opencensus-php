@@ -149,7 +149,7 @@ class DateRangePicker extends Component {
     return (
       <div className="rzp-daterange-picker clearfix">
         <div className="icon-container pull-left">
-          {!!icon ? icon : <i class="icon icon-date-range" />}
+          {!!icon ? icon : <i class="i i-date-range" />}
         </div>
         <div className="presets-container pull-left">
           {presets.length > 0 && (

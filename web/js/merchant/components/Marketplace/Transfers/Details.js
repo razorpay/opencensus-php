@@ -276,6 +276,8 @@ export default class TransferDetails extends Component {
                           name="holdUntil"
                           numberOfMonths={1}
                           disabled={this.state.onHold !== 'on_hold_until'}
+                          hideKeyboardShortcutsPanel={true}
+                          readOnly={true}
                           isDayBlocked={date => {
                             date = date
                               .clone()

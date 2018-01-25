@@ -94,9 +94,9 @@ export default class DateRangePickerField extends Component {
 
     return (
       <div
-        class={`daterangepicker-container ${this.state.focused
-          ? 'datepicker--focused'
-          : ''}`}
+        class={`daterangepicker-container ${
+          this.state.focused ? 'datepicker--focused' : ''
+        }`}
       >
         <i class="i i-date-range" />
         <DateRangePicker
@@ -107,6 +107,8 @@ export default class DateRangePickerField extends Component {
           focusedInput={this.state.focused}
           isOutsideRange={day => moment().isBefore(day)}
           initialVisibleMonth={_ => from}
+          hideKeyboardShortcutsPanel={true}
+          readOnly={true}
           {...otherProps}
         />
         <span class="caret" />

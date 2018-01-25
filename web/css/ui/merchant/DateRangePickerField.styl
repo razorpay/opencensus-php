@@ -3,7 +3,7 @@
 
   .i-date-range {
     position: absolute;
-    top: 6px;
+    top: 9px;
     left: 8px;
     z-index: 1;
     font-size: 20px;
@@ -52,7 +52,7 @@
 
   .DateRangePickerInput >.DateInput input {
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 500;
     padding: 4px 8px;
   }
 
@@ -73,6 +73,24 @@
     }
   }
 
+  .CalendarDay__hovered_span, .CalendarDay__hovered_span:hover {
+    background: #e9e6f8;
+    border: 1px solid #cbcce0;
+    color: #706e77;
+  }
+
+  .DateInput_input__focused {
+    border-bottom: none;
+  }
+
+  .DateRangePicker_picker {
+    margin-top: -25px;
+  }
+
+  .DateInput_fang {
+    margin-top: -24px;
+  }
+
   .CalendarDay__selected {
     &,
     &:active,
@@ -82,4 +100,19 @@
       color: #fff;
     }
   }
+}
+
+
+.rzp-daterange-picker .DateRangePickerInput >.DateInput:first-child input {
+  padding-left: 10px;
+}
+
+.rzp-daterange-picker .DateRangePickerInput .DateRangePickerInput_arrow {
+  top: 0;
+  line-height: 38px;
+  left: 50%;
+}
+
+.rzp-daterange-picker .DateRangePickerInput .DateInput_input {
+  height: 38px;
 }
