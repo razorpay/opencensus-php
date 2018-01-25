@@ -255,7 +255,7 @@ class Entity
         self::NETBANKING_CORPORATION => \RZP\Gateway\Netbanking\Corporation::class,
         self::NETBANKING_KOTAK       => \RZP\Gateway\Netbanking\Kotak::class,
         self::NETBANKING_ICICI       => \RZP\Gateway\Netbanking\Icici::class,
-        self::NETBANKING_OBC         => \RZP\Gateway\Netbanking\Oriental::class,
+        self::NETBANKING_OBC         => \RZP\Gateway\Netbanking\Obc::class,
         self::NETBANKING_AIRTEL      => \RZP\Gateway\Netbanking\Airtel::class,
         self::NETBANKING_FEDERAL     => \RZP\Gateway\Netbanking\Federal::class,
         self::NETBANKING_RBL         => \RZP\Gateway\Netbanking\Rbl::class,

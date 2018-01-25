@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Gateway\Netbanking\Oriental;
+namespace RZP\Gateway\Netbanking\Obc;
 
 class ResponseFields
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Tests\Functional\Gateway\Oriental;
+namespace RZP\Tests\Functional\Gateway\Obc;
 
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;

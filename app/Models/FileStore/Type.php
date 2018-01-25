@@ -50,7 +50,7 @@ class Type
 
     const PNB_NETBANKING_CLAIMS             = 'pnb_netbanking_claims';
 
-    const ORIENTAL_NETBANKING_REFUND        = 'oriental_netbanking_refund';
+    const OBC_NETBANKING_REFUND             = 'obc_netbanking_refund';
 
     const BATCH_INPUT                       = 'batch_input';
     const BATCH_OUTPUT                      = 'batch_output';
@@ -119,7 +119,7 @@ class Type
             self::RBL_NETBANKING_REFUND,
             self::INDUSIND_NETBANKING_REFUND,
             self::INDUSIND_NETBANKING_CLAIM,
-            self::ORIENTAL_NETBANKING_REFUND,
+            self::OBC_NETBANKING_REFUND,
             self::AXIS_NETBANKING_CLAIMS,
             self::AIRTELMONEY_WALLET_REFUND,
             self::PAYUMONEY_WALLET_REFUND,
@@ -200,7 +200,7 @@ class Type
         self::CORPORATION_NETBANKING_REFUND,
         self::ICICI_NETBANKING_REFUND,
         self::AXIS_NETBANKING_REFUND,
-        self::ORIENTAL_NETBANKING_REFUND,
+        self::OBC_NETBANKING_REFUND,
         self::AXIS_EMANDATE_DEBIT,
         self::FEDERAL_NETBANKING_REFUND,
         self::RBL_NETBANKING_REFUND,
@@ -232,7 +232,7 @@ class Type
             self::AXIS_NETBANKING_CLAIMS,
             self::AIRTELMONEY_WALLET_REFUND,
             self::PAYUMONEY_WALLET_REFUND,
-            self::ORIENTAL_NETBANKING_REFUND,
+            self::OBC_NETBANKING_REFUND,
             self::ICICI_UPI_REFUND,
             self::SBI_UPI_REFUND,
             self::FUND_TRANSFER_DEFAULT,

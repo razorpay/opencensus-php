@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Gateway\Netbanking\Oriental;
+namespace RZP\Gateway\Netbanking\Obc;
 
 use RZP\Constants\Mode;
 use RZP\Exception\LogicException;
@@ -22,11 +22,11 @@ use phpseclib\Crypt\AES;
  * @see https://drive.google.com/drive/u/0/folders/1A5ULegmYTyv3yVgAD33wwi6wQZk50Nmt
  *
  * Class Gateway
- * @package RZP\Gateway\Netbanking\Oriental
+ * @package RZP\Gateway\Netbanking\Obc
  */
 class Gateway extends Base\Gateway
 {
-    protected $gateway = Payment\Gateway::NETBANKING_ORIENTAL;
+    protected $gateway = Payment\Gateway::NETBANKING_OBC;
 
     /**
      * Variable to store the gateway attributes after mapping
@@ -48,7 +48,7 @@ class Gateway extends Base\Gateway
         ResponseFields::PAID            => Base\Entity::STATUS,
         ResponseFields::BANK_PAYMENT_ID => Base\Entity::BANK_PAYMENT_ID,
         ResponseFields::DEBIT_ACC_NUM   => Base\Entity::ACCOUNT_NUMBER,
-        
+
         // Verify response mapping
         ResponseFields::BANK_PAYMENT_ID => Base\Entity::BANK_PAYMENT_ID,
     ];

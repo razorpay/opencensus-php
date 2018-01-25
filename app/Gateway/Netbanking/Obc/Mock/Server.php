@@ -1,17 +1,17 @@
 <?php
 
-namespace RZP\Gateway\Netbanking\Oriental\Mock;
+namespace RZP\Gateway\Netbanking\Obc\Mock;
 
 use RZP\Gateway\Base\Mock;
 use RZP\Models\Currency\Currency;
-use RZP\Gateway\Netbanking\Oriental\Status;
-use RZP\Gateway\Netbanking\Oriental\RequestFields;
-use RZP\Gateway\Netbanking\Oriental\ResponseFields;
+use RZP\Gateway\Netbanking\Obc\Status;
+use RZP\Gateway\Netbanking\Obc\RequestFields;
+use RZP\Gateway\Netbanking\Obc\ResponseFields;
 
 /**
  * This class cannot be marked as final as it will be mocked for test cases
  * Class Server
- * @package RZP\Gateway\Netbanking\Oriental\Mock
+ * @package RZP\Gateway\Netbanking\Obc\Mock
  */
 class Server extends Mock\Server
 {

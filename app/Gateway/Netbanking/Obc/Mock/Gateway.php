@@ -1,11 +1,11 @@
 <?php
 
-namespace RZP\Gateway\Netbanking\Oriental\Mock;
+namespace RZP\Gateway\Netbanking\Obc\Mock;
 
-use RZP\Gateway\Netbanking\Oriental;
+use RZP\Gateway\Netbanking\Obc;
 use RZP\Gateway\Base\Mock\GatewayTrait;
 
-final class Gateway extends Oriental\Gateway
+final class Gateway extends Obc\Gateway
 {
     use GatewayTrait;
 
@@ -13,7 +13,7 @@ final class Gateway extends Oriental\Gateway
     {
         $request = parent::authorize($input);
 
-        $bank = explode('_', $this->gateway)[1];
+        $bank = 'obc';
 
         $request['url'] = $this->route->getUrlWithPublicAuth(
                             'mock_netbanking_payment',

@@ -25,7 +25,7 @@ class Terminal extends Base
         $this->createSharedNetbankingKotakTerminal();
         $this->createSharedNetbankingIciciTerminal();
         $this->createSharedNetbankingAirtelTerminal();
-        $this->createSharedNetbankingOrientalTerminal();
+        $this->createSharedNetbankingObcTerminal();
         $this->createSharedNetbankingAxisTerminal();
         $this->createSharedNetbankingFederalTerminal();
         $this->createSharedNetbankingBobTerminal();
@@ -1063,14 +1063,14 @@ class Terminal extends Base
         return parent::create($attributes);
     }
 
-    public function createSharedNetbankingOrientalTerminal(array $attributes = [])
+    public function createSharedNetbankingObcTerminal(array $attributes = [])
     {
         $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
 
         $defaultValues = [
-            'id'                        => Shared::NETBANKING_ORIENTAL_TERMINAL,
+            'id'                        => Shared::NETBANKING_OBC_TERMINAL,
             'merchant_id'               => $merchantId,
-            'gateway'                   => Gateway::NETBANKING_ORIENTAL,
+            'gateway'                   => Gateway::NETBANKING_OBC,
             'gateway_merchant_id'       => 'test_merchant_id',
             'netbanking'                => 1,
         ];

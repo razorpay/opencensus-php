@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Tests\Functional\Gateway\Oriental;
+namespace RZP\Tests\Functional\Gateway\Netbanking\Obc;
 
 use Carbon\Carbon;
 use RZP\Models\Payment;
@@ -10,13 +10,13 @@ use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Refund;
 use RZP\Tests\Functional\TestCase;
-use RZP\Gateway\Netbanking\Oriental;
+use RZP\Gateway\Netbanking\Obc;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Models\Payment\Verify\Status as VerifyStatus;
 use RZP\Gateway\Netbanking\Base\Entity as Netbanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
-class NetbankingOrientalGatewayTest extends TestCase
+class NetbankingObcGatewayTest extends TestCase
 {
     use PaymentTrait;
 
@@ -26,15 +26,15 @@ class NetbankingOrientalGatewayTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__ . '/NetbankingOrientalGatewayTestData.php';
+        $this->testDataFilePath = __DIR__ . '/NetbankingObcGatewayTestData.php';
 
         parent::setUp();
 
         $this->payment = $this->getDefaultNetbankingPaymentArray($this->bank);
 
-        $this->gateway = Payment\Gateway::NETBANKING_ORIENTAL;
+        $this->gateway = Payment\Gateway::NETBANKING_OBC;
 
-        $this->fixtures->create('terminal:shared_netbanking_oriental_terminal');
+        $this->fixtures->create('terminal:shared_netbanking_obc_terminal');
     }
 
     public function testPayment()
@@ -141,7 +141,7 @@ class NetbankingOrientalGatewayTest extends TestCase
 
         $testData = $this->testData['netbankingVerify'];
 
-        $testData[Netbanking::STATUS] = Oriental\Status::FAILED;
+        $testData[Netbanking::STATUS] = Obc\Status::FAILED;
 
         $this->assertArraySelectiveEquals($testData, $netbanking);
     }
@@ -154,14 +154,14 @@ class NetbankingOrientalGatewayTest extends TestCase
         $payment = $this->doAuthAndCapturePayment($this->payment)[Payment\Entity::ID];
         $this->refundPayment($payment);
 
-        $data = $this->generateRefundsExcelForNbOriental();
+        $data = $this->generateRefundsExcelForNbObc();
 
-        $this->assertArrayHasKey(Payment\Gateway::NETBANKING_ORIENTAL, $data);
+        $this->assertArrayHasKey(Payment\Gateway::NETBANKING_OBC, $data);
 
-        $this->assertEquals(3, $data[Payment\Gateway::NETBANKING_ORIENTAL][Constants::COUNT]);
-        $this->assertTrue(file_exists($data[Payment\Gateway::NETBANKING_ORIENTAL][Constants::FILE]));
+        $this->assertEquals(3, $data[Payment\Gateway::NETBANKING_OBC]['count']);
+        $this->assertTrue(file_exists($data[Payment\Gateway::NETBANKING_OBC]['file']));
 
-        $filePath = $data[Payment\Gateway::NETBANKING_ORIENTAL][Constants::FILE];
+        $filePath = $data[Payment\Gateway::NETBANKING_OBC]['file'];
 
         $this->assertRefundFileContents($filePath, $payments, $refunds);
 
@@ -169,11 +169,11 @@ class NetbankingOrientalGatewayTest extends TestCase
         $file = $this->getLastEntity(ConstantsEntity::FILE_STORE, true);
 
         // Asserting the properties of the fileStore object that was created and uploaded into the S3 bucket
-        $this->assertEquals(FileStore\Type::ORIENTAL_NETBANKING_REFUND, $file[FileStore\Entity::TYPE]);
+        $this->assertEquals(FileStore\Type::OBC_NETBANKING_REFUND, $file[FileStore\Entity::TYPE]);
         $this->assertEquals(FileStore\Store::S3, $file[FileStore\Entity::STORE]);
         $this->assertEquals(FileStore\Format::TXT, $file[FileStore\Entity::EXTENSION]);
 
-        unlink($data[Payment\Gateway::NETBANKING_ORIENTAL][Constants::FILE]);
+        unlink($data[Payment\Gateway::NETBANKING_OBC]['file']);
     }
 
     private function assertRefundFileContents(string $file, array $payments, array $refunds)
@@ -182,7 +182,7 @@ class NetbankingOrientalGatewayTest extends TestCase
 
         $currentLineNumber = 0;
 
-        $numRefunds = sizeof($refunds);
+        $numRefunds = count($refunds);
 
         while (($row = fgetcsv($handle, 0, '|')) !== false)
         {
@@ -252,7 +252,7 @@ class NetbankingOrientalGatewayTest extends TestCase
         return [$payments, $refunds];
     }
 
-    private function generateRefundsExcelForNbOriental()
+    private function generateRefundsExcelForNbObc()
     {
         $this->ba->appAuth();
 
@@ -293,7 +293,7 @@ class NetbankingOrientalGatewayTest extends TestCase
             {
                 if ($action === 'verify')
                 {
-                    $content[Oriental\ResponseFields::TXN_STATUS] = Oriental\Status::FAILED;
+                    $content[Obc\ResponseFields::TXN_STATUS] = Obc\Status::FAILED;
                 }
             });
     }
@@ -303,7 +303,7 @@ class NetbankingOrientalGatewayTest extends TestCase
         $this->mockServerContentFunction(
             function(& $content, $action = null)
             {
-                $content[Oriental\ResponseFields::PAID] = Oriental\Status::FAILED;
+                $content[Obc\ResponseFields::PAID] = Obc\Status::FAILED;
             });
     }
 }

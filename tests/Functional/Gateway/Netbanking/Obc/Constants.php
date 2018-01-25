@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Tests\Functional\Gateway\Oriental;
+namespace RZP\Tests\Functional\Gateway\Netbanking\Obc;
 
 class Constants
 {

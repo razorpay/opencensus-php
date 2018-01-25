@@ -75,7 +75,7 @@ return [
     'mock_netbanking_rbl'         => env('NETBANKING_RBL_MOCK'),
     'mock_netbanking_indusind'    => env('NETBANKING_INDUSIND_MOCK'),
     'mock_netbanking_pnb'         => env('NETBANKING_PNB_MOCK'),
-    'mock_netbanking_obc'         => env('NETBANKING_ORIENTAL_MOCK'),
+    'mock_netbanking_obc'         => env('NETBANKING_OBC_MOCK'),
     'mock_billdesk'               => env('BILLDESK_MOCK'),
     'mock_blade'                  => env('BLADE_MOCK'),
     'mock_ebs'                    => env('EBS_MOCK'),
@@ -337,8 +337,8 @@ return [
     ],
 
     'netbanking_obc' => [
-        'test_merchant_id'       => env('NETBANKING_ORIENTAL_GATEWAY_TEST_MERCHANT_ID'),
-        'test_hash_secret'       => env('NETBANKING_ORIENTAL_GATEWAY_TEST_HASH_SECRET'),
+        'test_merchant_id'       => env('NETBANKING_OBC_GATEWAY_TEST_MERCHANT_ID'),
+        'test_hash_secret'       => env('NETBANKING_OBC_GATEWAY_TEST_HASH_SECRET'),
     ],
 
     'netbanking_kotak' => [

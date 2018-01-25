@@ -1,9 +1,9 @@
 <?php
 
-namespace RZP\Gateway\Netbanking\Oriental\Mock;
+namespace RZP\Gateway\Netbanking\Obc\Mock;
 
 use RZP\Base;
-use RZP\Gateway\Netbanking\Oriental\RequestFields;
+use RZP\Gateway\Netbanking\Obc\RequestFields;
 
 final class Validator extends Base\Validator
 {

@@ -1108,7 +1108,7 @@ class DatabaseSeeder extends Seeder
         $this->createNetbankingKotakTerminals();
         $this->createNetbankingIciciTerminals();
         $this->createNetbankingAirtelTerminals();
-        $this->createNetbankingOrientalTerminal();
+        $this->createNetbankingObcTerminal();
         $this->createNetbankingAxisTerminal();
         $this->createNetbankingFederalTerminal();
         $this->createNetbankingIndusindTerminal();
@@ -1464,13 +1464,13 @@ class DatabaseSeeder extends Seeder
         );
     }
 
-    protected function createNetbankingOrientalTerminal()
+    protected function createNetbankingObcTerminal()
     {
         DB::table(Table::TERMINAL)->insert(
             [
-                'id'                    => Terminal\Shared::NETBANKING_ORIENTAL_TERMINAL,
+                'id'                    => Terminal\Shared::NETBANKING_OBC_TERMINAL,
                 'merchant_id'           => Account::TEST_ACCOUNT,
-                'gateway'               => Gateway::NETBANKING_ORIENTAL,
+                'gateway'               => Gateway::NETBANKING_OBC,
                 'card'                  => '0',
                 'netbanking'            => '1',
                 'gateway_merchant_id'   => 'test_merchant_netbanking_oriental',
