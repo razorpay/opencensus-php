@@ -253,10 +253,9 @@ class Provider
             $visaTlv,
             $masterCardTlv,
             $rupayCardTlv,
-            // Removing this as we will be sending VA reference always.
-            // Will support static QR code in another PR
-            // $this->getBharatQrUpiTlv(),
-            $this->getBharatQrDynamicUpiTlv($qrCode),
+            $this->getBharatQrUpiTlv(),
+            // This tag is not supported by UPI ICICI
+            // $this->getBharatQrDynamicUpiTlv($qrCode),
             Tags::MERCHANT_CATEGORY .$this->getLengthAndValue(Constants::MERCHANT_CATEGORY),
             Tags::CURRENCY_CODE . $this->getLengthAndValue(Constants::CURRENCY_CODE),
             $this->getBharatQrAmountTlv($qrCode),
