@@ -110,6 +110,6 @@ class Base extends Refund\Base
 
     protected function getCardNumber($iin, $lastFourNumber)
     {
-        return $iin. '****-****-****-' . $lastFourNumber;
+        return $iin . '****-****-****-' . $lastFourNumber;
     }
 }
