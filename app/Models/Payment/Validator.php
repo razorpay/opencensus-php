@@ -13,6 +13,7 @@ use RZP\Exception;
 use RZP\Models\Payment;
 use Razorpay\IFSC\IFSC;
 use RZP\Constants\Mode;
+use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Currency\Currency;
@@ -124,6 +125,7 @@ class Validator extends Base\Validator
         // Ideally, we should be using custom. But
         // due to dot notation, we cannot use it.
         'ifsc',
+        'order_id',
     ];
 
     protected function validateIfsc(array $input)
@@ -169,6 +171,20 @@ class Validator extends Base\Validator
                 throw new Exception\BadRequestValidationFailureException(
                     'The vpa field is required when method is upi.');
             }
+        }
+    }
+
+    protected function validateOrderId(array $input)
+    {
+        $merchant = $this->entity->merchant;
+
+        $feature = Feature\Constants::ORDER_ID_MANDATORY;
+
+        if (($merchant->isFeatureEnabled($feature) === true) and
+            (isset($input[Payment\Entity::ORDER_ID]) === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED_MISSING_ORDER_ID);
         }
     }
 
