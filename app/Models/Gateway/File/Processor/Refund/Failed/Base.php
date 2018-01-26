@@ -54,9 +54,7 @@ class Base extends Refund\Base
 
             $mailData = $this->formatDataForMail($data);
 
-            $target = $this->gatewayFile->getTarget();
-
-            $refundFileMail = new FailedRefundFileMail($mailData, $target, $recipients);
+            $refundFileMail = new FailedRefundFileMail($mailData, static::GATEWAY, $recipients);
 
             Mail::queue($refundFileMail);
 
@@ -65,7 +63,7 @@ class Base extends Refund\Base
             $this->gatewayFile->setStatus(Status::FILE_SENT);
         }
         catch (\Throwable $e)
-        {
+        {s($e);
             throw new GatewayFileException(
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_FILE,
                 [
