@@ -12,7 +12,7 @@ use RZP\Constants\Timezone;
 class All extends Base
 {
     const EXTENSION             = FileStore\Format::CSV;
-    const GATEWAY               = null; // fetch for all gateways
+    const GATEWAY               = ''; // fetch for all gateways
     const FILE_NAME             = 'Failed_Refunds';
     const FILE_TYPE             = FileStore\Type::GATEWAY_FAILED_REFUNDS;
 

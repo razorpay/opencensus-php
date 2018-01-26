@@ -277,7 +277,7 @@ class Repository extends Base\Repository
                        ->where($refundCreatedAt, '<=', $to)
                        ->with(['payment']);
 
-        if ($gateway !== null)
+        if (empty($gateway) === false)
         {
             $query->where($paymentGateway, '=', $gateway);
         }
