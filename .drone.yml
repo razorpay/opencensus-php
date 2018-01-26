@@ -20,7 +20,7 @@ pipeline:
       - php -m
       - composer config --global github-oauth.github.com $GIT_TOKEN
       - composer install --no-interaction
-      - php -d memory_limit=1024M vendor/phpunit/phpunit/phpunit --debug --verbose --filter testGetOnboardingQuestions
+      - php -d memory_limit=1024M vendor/phpunit/phpunit/phpunit --debug --verbose
   build:
     image: plugins/docker
     repo: razorpay/api
