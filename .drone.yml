@@ -55,12 +55,12 @@ services:
     image: mysql
     environment:
       - MYSQL_DATABASE=api
-      - MYSQL_ROOT_PASSWORD=root1
+      - MYSQL_ROOT_PASSWORD=root
   testdb:
     image: mysql
     environment:
       - MYSQL_DATABASE=api_test
-      - MYSQL_ROOT_PASSWORD=root2
+      - MYSQL_ROOT_PASSWORD=root
   redis:
     image: redis
   elasticsearch:
