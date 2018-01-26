@@ -5,7 +5,7 @@ pipeline:
     environment:
       - DB_LIVE_HOST=livedb
       - DB_TEST_HOST=testdb
-      - DB_AUTH_HOST=livedb
+      - DB_AUTH_HOST=authdb
       - REDIS_HOST=redis
       - ES_HOST=elasticsearch
       - ES_AUDIT_HOST=elasticsearch
@@ -60,6 +60,11 @@ services:
     image: mysql
     environment:
       - MYSQL_DATABASE=api_test
+      - MYSQL_ROOT_PASSWORD=root
+  authdb:
+    image: mysql
+    environment:
+      - MYSQL_DATABASE=auth
       - MYSQL_ROOT_PASSWORD=root
   redis:
     image: redis
