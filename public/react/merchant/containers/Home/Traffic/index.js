@@ -213,7 +213,6 @@ class Traffic extends Component {
     // fixing with and height of chart container so that
     // the chart size would not grow
     this.chartContent.style.width = width + 'px';
-    this.chartContent.style.height = height + 'px';
   }
 
   render() {
