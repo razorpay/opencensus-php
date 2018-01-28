@@ -155,10 +155,11 @@ return array(
         ],
 
         'throttle_redis' => [
-            'host'     => env('REDIS_HOST'),
-            'port'     => env('REDIS_PORT'),
-            'database' => env('THROTTLE_REDIS_DB'),
-            'timeout'  => 30,
+            'host'               => env('REDIS_HOST'),
+            'port'               => env('REDIS_PORT'),
+            'database'           => env('THROTTLE_REDIS_DB'),
+            'timeout'            => 5,
+            'read_write_timeout' => 5,
         ],
 
         'query_cache_test' => [
