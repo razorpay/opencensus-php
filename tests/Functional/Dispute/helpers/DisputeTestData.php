@@ -431,7 +431,7 @@ return [
 
     'testDisputeEdit' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status'                 => 'under_review',
                 'expires_on'             => '1912162918',
@@ -451,7 +451,7 @@ return [
 
     'testDisputeEditWon' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status'                 => 'won',
                 'expires_on'             => '1912162918',
@@ -471,7 +471,7 @@ return [
 
     'testDisputeEditClose' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status'                 => 'closed',
                 'expires_on'             => '1912162918',
@@ -491,7 +491,7 @@ return [
 
     'testDisputeEditDeductOnLost' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status' => 'lost',
             ],
@@ -509,7 +509,7 @@ return [
 
     'testDisputeEditDoNotDeductOnLostIfDeducted' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status' => 'lost',
             ],
@@ -527,7 +527,7 @@ return [
 
     'testDisputeEditInvalidStatus' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status'                 => 'review',
                 'expires_on'             => '1912162918',
@@ -551,7 +551,7 @@ return [
 
     'testDisputeEditExtraInput' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status'                 => 'under_review',
                 'expires_on'             => '1912162918',
@@ -576,7 +576,7 @@ return [
 
     'testDisputeEditClosed' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status'                 => 'under_review',
                 'expires_on'             => '1912162918',
@@ -600,7 +600,7 @@ return [
 
     'testDisputeReversalWinLogic' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status'        => 'won'
             ],
@@ -612,7 +612,7 @@ return [
 
     'testDisputeReversalLostLogic' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status'        => 'lost'
             ],
@@ -624,7 +624,7 @@ return [
 
     'testDisputeEditForNoInitialParent' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
             ],
         ],
@@ -635,7 +635,7 @@ return [
 
     'testDisputeEditWithExistingParent' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
             ],
         ],
@@ -648,7 +648,7 @@ return [
 
     'testDisputeEditReplaceParent' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
             ],
         ],
@@ -659,7 +659,7 @@ return [
 
     'testDisputeEditReplaceParentWithAlreadyLinkedParent' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
             ],
         ],
@@ -680,7 +680,7 @@ return [
 
     'testDisputeLostPartiallyAccepted' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status'                    => 'lost',
             ],
@@ -692,7 +692,7 @@ return [
 
     'testDisputeLostPartiallyAcceptedForNoOnsetDeduct' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status'                    => 'lost',
             ],
@@ -704,7 +704,7 @@ return [
 
     'testDisputeLostPartiallyAcceptedWithInvalidAcceptedAmount' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status'                    => 'lost',
             ],
@@ -726,7 +726,7 @@ return [
 
     'testDisputeLostPartiallyAcceptedWithZeroAcceptedAmount' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status'                    => 'lost',
                 'accepted_amount'           => 0,
@@ -749,7 +749,7 @@ return [
 
     'testNonTransactionalDisputeInvalidClose' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status'        => 'lost'
             ],
@@ -886,7 +886,7 @@ return [
             'content' => [
                 'accept_dispute'    => true,
             ],
-            'method' => 'patch',
+            'method' => 'post',
         ],
         'response' => [
             'content' => [

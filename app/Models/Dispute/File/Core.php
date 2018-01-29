@@ -35,7 +35,7 @@ class Core extends Base\Core
             TraceCode::DISPUTE_FILES_UPLOAD,
             [
                 'id'          => $dispute->getId(),
-                'file'        => array_except($fileInput[Entity::FILE]),
+                'file'        => array_except($fileInput, Entity::FILE),
             ]);
 
         $file = $fileInput[Entity::FILE];
