@@ -25,10 +25,10 @@ pipeline:
   build:
     image: plugins/docker
     repo: razorpay/api
-    build_args:
-     - GIT_COMMIT_HASH=$DRONE_COMMIT_SHA
     secrets: [docker_username, docker_password, git_token]
     build_args_from_env: [git_token]
+    build_args:
+     - GIT_COMMIT_HASH=$DRONE_COMMIT_SHA
     tags: ${DRONE_REPO_BRANCH}-${DRONE_COMMIT_SHA}
     when:
       status: [success]
