@@ -22,6 +22,7 @@ vendor_a=$(cat <<-END
   moment          moment/min/moment.min.js
   DayPicker       react-day-picker/lib/daypicker.min.js
   Chart           chart.js/dist/Chart.min.js
+  PropTypes  prop-types/prop-types$APPEND_MIN.js
 END
 )
 
