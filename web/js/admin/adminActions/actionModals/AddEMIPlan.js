@@ -10,6 +10,16 @@ const options = {
   duration: [3, 6, 9, 12, 15, 18, 21, 24],
   methods: ['', 'card'],
   subvention: ['', 'customer', 'merchant'],
+  bank: {
+    RATN: 'RBL',
+    HDFC: 'HDFC',
+    UTIB: 'Axis',
+    KKBK: 'Kotak',
+    ICIC: 'ICICI',
+    FDRL: 'Federal',
+    INDB: 'Indusind',
+    SCBL: 'Standard Chartered',
+  },
 };
 
 export default class AddEMIPlan extends Component {
@@ -35,14 +45,11 @@ export default class AddEMIPlan extends Component {
           </label>
           {this.state.selectedSource === 'bank' ? (
             <select name="bank">
-              <option value="RATN">RBL</option>
-              <option value="HDFC">HDFC</option>
-              <option value="UTIB">Axis</option>
-              <option value="KKBK">Kotak</option>
-              <option value="ICIC">ICICI</option>
-              <option value="FDRL">Federal</option>
-              <option value="INDB">Indusind</option>
-              <option value="SCBL">Standard Chartered</option>
+              {Object.keys(options.bank).map(key => (
+                <option value={key} key={key}>
+                  {options.bank[key]}
+                </option>
+              ))}
             </select>
           ) : (
             <select name="network">
@@ -102,7 +109,6 @@ export default class AddEMIPlan extends Component {
           class="btn"
           pendingClass="small spinner"
           onSubmit={body => {
-            console.log(body);
             return adminPost({
               body,
               route_name: 'emi_plan_add',

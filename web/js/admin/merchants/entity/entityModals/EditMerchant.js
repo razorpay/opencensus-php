@@ -82,9 +82,7 @@ export default class EditMerchant extends Component {
     }
 
     if (body.auto_refund_delay_val) {
-      body.auto_refund_delay = `${body.auto_refund_delay_val} ${
-        body.auto_refund_delay_type
-      }`;
+      body.auto_refund_delay = `${body.auto_refund_delay_val} ${body.auto_refund_delay_type}`;
 
       delete body.auto_refund_delay_type;
       delete body.auto_refund_delay_val;
@@ -280,8 +278,7 @@ export default class EditMerchant extends Component {
             defaultValue={details.auto_capture_late_auth ? '1' : '0'}
           />
 
-          {details.convert_currency !== null &&
-          details.convert_currency !== undefined ? (
+          {details.convert_currency != null ? (
             <SwitchField
               label="Convert Currency"
               name="convert_currency"
