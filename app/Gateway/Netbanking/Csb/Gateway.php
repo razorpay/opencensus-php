@@ -2,10 +2,13 @@
 
 namespace RZP\Gateway\Netbanking\Csb;
 
-use RZP\Constants\HashAlgo;
+use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
+use RZP\Constants\HashAlgo;
+use RZP\Gateway\Base\Action;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Constants\Mode as RZPMode;
+use RZP\Exception\GatewayErrorException;
 
 class Gateway extends Base\Gateway
 {
@@ -13,9 +16,16 @@ class Gateway extends Base\Gateway
         /**
          * Fields from authorize request used to create gateway payment entity
          */
-        RequestFields::CHNPGSYN     => Base\Entity::REFERENCE1,
-        RequestFields::CHNPGCODE    => Base\Entity::MERCHANT_CODE,
-        RequestFields::AMOUNT       => Base\Entity::AMOUNT,
+        RequestFields::CHNPGSYN      => Base\Entity::REFERENCE1,
+        RequestFields::CHNPGCODE     => Base\Entity::MERCHANT_CODE,
+        RequestFields::AMOUNT        => Base\Entity::AMOUNT,
+
+        /**
+         * Fields from the authorize response
+         */
+        ResponseFields::TRAN_REF_NUM => Base\Entity::BANK_PAYMENT_ID,
+        ResponseFields::STATUS       => Base\Entity::STATUS,
+        ResponseFields::NARRATION    => Base\Entity::ERROR_MESSAGE, // TODO: Ensure this is correct
     ];
 
     /**
@@ -46,7 +56,21 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        sd('Reached callback function');
+        $content = $input['gateway'];
+
+        $this->assertPaymentId($input['payment']['id'], $content[ResponseFields::BANK_REF_NUM]);
+
+        // TODO: Is there a checksum here? If not we should verify.
+
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
+
+        $this->updateGatewayPaymentEntity($gatewayPayment, $content);
+
+        $this->checkResponseStatus($content);
+
+        $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
+
+        return $this->getCallbackResponseData($input, $acquirerData);
     }
 
     public function verify(array $input)
@@ -54,6 +78,19 @@ class Gateway extends Base\Gateway
         parent::verify($input);
 
         sd('Reached verify function');
+    }
+
+    private function checkResponseStatus(array $content)
+    {
+        if ((empty($content[ResponseFields::STATUS]) === false) and
+            ($content[ResponseFields::STATUS] !== Status::SUCCESS))
+        {
+            throw new GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                null,
+                null,
+                $content);
+        }
     }
 
     /**
