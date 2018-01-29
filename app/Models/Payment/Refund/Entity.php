@@ -361,8 +361,8 @@ class Entity extends Base\PublicEntity
         // 'RailYatri', 'Treebo', 'Goibibo',
         // 'Goeventz', 'RentoMojo', 'Voonik',
         // 'Zomato', 'Swiggy', 'Yatra'
-        // 'Mr Button', 'Zefo', 'Goomo',
-        // 'Goomo',
+        // 'Mr Button', 'Zefo', 'Zefo',
+        // 'Goomo', 'Goomo'
         //
 
         $merchantIds = [
@@ -371,8 +371,8 @@ class Entity extends Base\PublicEntity
             '5yvFZKqbBjEBsr', '3d2EGdZF6CAYVc', '6ZLE5BE57SExGF',
             '6B94xSUfS76yht', '4bnk7yysqr5Wx5', '4zGGr9ZwCTH1gh',
             '6H7N6hlcv29OMG', '8S0i1kWYyF2woQ', '87qTXzFTBLFN7i',
-            '5PKFA3s9dpIwPn', '6RGC8wjp5U2K2e', '8STmhcK1Gd1JVo',
-            '7kBHljwok8Fsom',
+            '5PKFA3s9dpIwPn', '6RGC8wjp5U2K2e', '3fiAig3CaxCxM3',
+            '8STmhcK1Gd1JVo', '7kBHljwok8Fsom',
         ];
 
         $currentMerchantId = $this->getMerchantId();
