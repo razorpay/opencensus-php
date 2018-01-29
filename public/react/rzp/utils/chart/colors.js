@@ -3,7 +3,7 @@ const colors = [
   '#6E8EEE', // dark blue
   '#97E2FE', // light blue
   '#D3CFFF', // violet
-  '#93F5E9', // teal
+  '#8ae2d7', // teal
   '#F9BCE1', // pink
   '#F6D8B4', // biscuit
   '#FFABAB', // red
