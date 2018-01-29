@@ -6,7 +6,7 @@ use RZP\Gateway\Base;
 
 class Server extends Base\Mock\Server
 {
-    protected function authorize($input)
+    public function authorize($input)
     {
         parent::authorize($input);
 
