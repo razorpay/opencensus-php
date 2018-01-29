@@ -38,8 +38,6 @@ export const saveFile = ({ step, file, fieldName, accountId = '' }) => {
     promoter_proof: 'promoter_proof_url',
     promoter_pan_proof: 'promoter_pan_url',
     promoter_address_proof: 'promoter_address_url',
-    ngo_12a_proof: 'form_12a_url',
-    ngo_80g_proof: 'form_80g_url',
   };
   formData.append('route_name', 'merchant_activation_upload_file');
   formData.append('file', file);

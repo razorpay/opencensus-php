@@ -29,6 +29,11 @@ export default ({ merchant_details: merchantDetails, title }) => (
           defaultValue={merchantDetails.contact_mobile}
           required
         />
+        <Field
+          label="Landline"
+          name="email"
+          defaultValue={merchantDetails.contact_landline}
+        />
       </Form>
     )}
   </div>

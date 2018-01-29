@@ -183,6 +183,22 @@ export default class BusinessDetails extends Component {
             />
 
             <Field
+              label="Date of Establishment"
+              name="business_doe"
+              placeholder="Date of Establishment (MM/DD/YYYY)"
+              defaultValue={merchantDetails.business_doe}
+              required
+            />
+
+            <Field
+              label="Date of Establishment"
+              name="business_doe"
+              placeholder="Date of Establishment (MM/DD/YYYY)"
+              defaultValue={merchantDetails.business_doe}
+              required
+            />
+
+            <Field
               label="Company CIN"
               name="company_cin"
               infoMsg={() => (
@@ -259,6 +275,32 @@ export default class BusinessDetails extends Component {
               placeholder="Name on PAN (provided above)"
               infoMsg="Mandatory for Companies"
               defaultValue={merchantDetails.company_pan_name}
+            />
+
+            <SelectField
+              label="Expected annual transaction volume (INR)"
+              name="transaction_volume"
+              defaultValue={merchantDetails.transaction_volume}
+              required
+            >
+              <option value="1">{'< 1 Lakh'}</option>
+              <option value="2">1 to 10 lakh</option>
+              <option value="3">10 Lakh to 1 Crore</option>
+              <option value="4">> 1 Crore</option>
+            </SelectField>
+
+            <Field
+              label="Expected average transaction value"
+              name="transaction_value"
+              placeholder="E.g. Average price of the commodities you sell"
+              defaultValue={merchantDetails.transaction_value}
+            />
+
+            <Field
+              label="Expected average transaction value"
+              name="transaction_value"
+              placeholder="E.g. Average price of the commodities you sell"
+              defaultValue={merchantDetails.transaction_value}
             />
 
             <Field

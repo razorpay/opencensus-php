@@ -369,6 +369,24 @@ export default class BusinessDetailsForm extends Component {
               </fieldset>
 
               <div class="form-group">
+                <label class="col-md-3 control-label label-required">
+                  Date of Establishment
+                </label>
+                <div class="col-md-9">
+                  <Field
+                    name="business_doe"
+                    component={InputField}
+                    type="date"
+                    max={moment().format('YYYY-MM-DD')}
+                    placeholder="Date of Establishment (YYYY-MM-DD)"
+                    class="form-control"
+                    disabled={locked}
+                    validate={[required()]}
+                  />
+                </div>
+              </div>
+
+              <div class="form-group">
                 <label class="col-md-3 control-label">
                   GST Identification Number
                 </label>
@@ -445,6 +463,42 @@ export default class BusinessDetailsForm extends Component {
                     <i class="icon icon-info-circle" />
                     <span>Mandatory for Companies</span>
                   </small>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-md-3 control-label label-required">
+                  Expected annual transaction volume (INR)
+                </label>
+                <div class="col-md-9">
+                  <Field
+                    name="transaction_volume"
+                    component={InputField}
+                    tagName="select"
+                    class="form-control"
+                    disabled={locked}
+                    validate={[required()]}
+                  >
+                    <option />
+                    <option value="1">&lt; 1 Lakh</option>
+                    <option value="2">1 to 10 lakh</option>
+                    <option value="3">10 Lakh to 1 Crore</option>
+                    <option value="4">&gt; 1 Crore</option>
+                  </Field>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="col-md-3 control-label label-required">
+                  Expected average transaction value
+                </label>
+                <div class="col-md-9">
+                  <Field
+                    name="transaction_value"
+                    component={InputField}
+                    class="form-control"
+                    placeholder="E.g. Average price of the commodities you sell"
+                    validate={[required()]}
+                  />
                 </div>
               </div>
             </div>
