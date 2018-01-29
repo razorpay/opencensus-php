@@ -30,3 +30,6 @@ storage/
 #eclipse
 .buildpath
 .project
+
+#intellij
+api.iml
