@@ -120,7 +120,7 @@ export default ({ payment, transfers, onCreateTransfer }) => {
           </span>
         </Definition>
       </div>
-      {payment.status === 'captured' &&
+      {!transfers.loading  && payment.status === 'captured' &&
         payment.amount !== amountTransferred && (
           <div className="m-b">
             <CreateTransferBtn
