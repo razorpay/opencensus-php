@@ -4,12 +4,12 @@ export const BROWSER = 'Browser';
 export const DESKTOP = 'Desktop';
 export const MOBILE = 'Mobile';
 export const ANDROID = 'Android';
-export const IOS = 'IOS';
+export const IOS = 'iOS';
 
 export const globalGroupTitleMap = {
   upi: 'UPI',
   emi: 'EMI',
-  ios: 'IOS',
+  ios: IOS,
 };
 
 const platformsMap = {

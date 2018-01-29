@@ -74,6 +74,7 @@ export default class HomeContainer extends Component {
     if (typeof window.hj === "function") {
     
       window.hj('trigger', 'new_analytics');
+      window.hj('tagRecording', ['new_analytics']);
     }
 
     let endDate = moment().endOf('day'),
@@ -301,7 +302,9 @@ export default class HomeContainer extends Component {
               <GenericPanel>
                 <PanelBody>
                   <div className="text-center">
-                    Please share your feedback/suggestions by clicking the red button on the right edge of your screen. You could also write to us at <a target="_blank" href="mailto:support@razorpay.com">support@razorpay.com</a>.
+                    <small>
+                      <i class="icon icon-info-circle"></i> Please share your feedback/suggestions by clicking the Feedback button on the right edge of your screen. You could also write to us at <a target="_blank" href="mailto:support@razorpay.com">support@razorpay.com</a>.
+                    </small>
                   </div>
                 </PanelBody>
               </GenericPanel>
