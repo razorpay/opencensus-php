@@ -4,19 +4,6 @@
     <title></title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
-        @keyframes pulsate {
-            0% {
-              transform: scale(.1);
-              opacity: 0.0;
-            }
-            50% {
-              opacity: 1;
-            }
-            100% {
-              transform: scale(1.2);
-              opacity: 0;
-            }
-        }
 
         * {
             margin: 0;
@@ -129,10 +116,6 @@
             background: #FBFBFB;
         }
 
-        .right {
-            float: right;
-        }
-
         .card {
             padding: 24px;
             background: #fff;
@@ -140,15 +123,6 @@
         }
 
         .center {
-            text-align: center;
-        }
-
-        .bold {
-            font-weight: bold;
-        }
-
-        .pad {
-            padding-top: 15px;
             text-align: center;
         }
 
@@ -190,13 +164,12 @@
             animation-delay: 0.65s;
         }
 
-        #resend-text {
-            margin-top: 10px;
-            text-align: center;
+        #spinner {
+            padding: 15px 0 10px;
         }
 
-        #spinner {
-            padding: 15px 0 40px
+        .more-pad {
+            padding-bottom: 40px;
         }
 
         #content {
@@ -215,14 +188,11 @@
             box-shadow: 0px 4px 20px rgba(0,0,0,0.10);
         }
 
-        #overlay.shown {
-            display: block;
-        }
-
         #message-txt {
             font-size: 20px;
             padding: 0 25px 25px;
         }
+
         #message-txt div {
             font-size: 16px;
             margin-top: 12px;
@@ -231,43 +201,6 @@
 
         #banner {
             padding: 24px;
-        }
-
-        #paymentdetails {
-            font-size: 22px;
-            color: #616161;
-        }
-
-        #amount:after {
-            content: "";
-            clear: both
-        }
-
-        #contact {
-            display: inline-block;
-        }
-
-        #prompt {
-            line-height: 36px;
-            font-size: 18px;
-            min-height: 76px;
-        }
-
-        #otpform {
-            min-height: 280px;
-        }
-
-        #otp {
-            font-size: 28px;
-            width: 120px;
-            margin: 10px auto;
-            border: 0;
-            border-bottom: 2px solid #ddd;
-            letter-spacing: 1px;
-            text-align: center;
-            outline: none;
-            padding: 10px;
-            display: block;
         }
 
         .buttons div {
@@ -281,33 +214,18 @@
             border: 0;
             border-bottom-left-radius: 2px;
             border-bottom-right-radius: 2px;
+            cursor: pointer;
         }
 
         #cancel_btn {
             color: #3395ff;
             margin-top: 40px;
             border-top: 1px solid #ececec;
+            cursor: pointer;
         }
 
         .hide {
             display: none !important;
-        }
-
-
-        #resend, #addfunds {
-            font-size: 16px;
-            cursor: pointer;
-            border-bottom: 1px solid #00BE70;
-            padding-bottom: 4px;
-            line-height: 30px;
-        }
-
-        #addfunds {
-            display: none;
-        }
-
-        #addfunds.shown {
-            display: inline-block;
         }
 
     </style>
@@ -317,15 +235,22 @@
         <div id="banner" class='center'>
             <img src="https://cdn.razorpay.com/logo.svg" id="logo" height="28px" style="height: 28px; margin: 20px auto;display: block;">
         </div>
+
         <div class="loadingcard">
-            <div id='message-txt' class="center">
-                <b>Select your UPI app</b>
-                <div>Payment will be made to <span class="bold">razorpay@icici</span></div>
-            </div>
-            <div id="error-msg" class="center red hide">
-             No UPI apps found on this device
-            </div>
-            <div id="spinner" class="hide">
+            @if ($data['type'] === 'intent')
+                <div id='message-txt' class="center">
+                    <b>Select your UPI app</b>
+                    <div>Payment will be made to <b>razorpay@icici</b></div>
+                </div>
+            @else
+                <div id='message-txt' class="center">
+                    <div>Please accept collect request from <b>razorpay@icici</b> in your UPI app</div>
+                </div>
+            @endif
+
+            <div id="error_msg" class="center red hide">No UPI apps found on this device</div>
+
+            <div id="spinner" class={{ $data['type'] === ' intent' ? 'hide more-pad' : ''}}>
                 <div class="spin">
                     <div></div>
                 </div>
@@ -333,11 +258,13 @@
                     <div></div>
                 </div>
             </div>
+
             <div class="center buttons">
                 <div id="cancel_btn"><b>Cancel Payment</b></div>
                 <div class="hide" id="retry_btn" onclick="initUpiActivity()"><b>Retry Payment</b></div>
             </div>
         </div>
+
         <form id='form' method="POST">
         </form>
         <form id="form2" name="form2">
@@ -516,7 +443,8 @@
                     }
                 }
             } else {
-                gel('error-msg').classList.remove('hide');
+                console.log('checking...');
+                gel('error_msg').classList.remove('hide');
                 gel('retry_btn').classList.add('hide');
             }
         } else {
