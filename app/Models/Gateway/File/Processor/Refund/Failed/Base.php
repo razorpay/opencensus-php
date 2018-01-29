@@ -63,7 +63,7 @@ class Base extends Refund\Base
             $this->gatewayFile->setStatus(Status::FILE_SENT);
         }
         catch (\Throwable $e)
-        {s($e);
+        {
             throw new GatewayFileException(
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_FILE,
                 [
