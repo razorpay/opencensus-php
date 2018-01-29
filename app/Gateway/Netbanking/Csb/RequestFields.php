@@ -27,4 +27,9 @@ class RequestFields
      * We would be sending the authorize request data in this field
      */
     const AUTH_DATA    = 'vData';
+
+    /**
+     * Custom defined field used only in Mock/Server.php
+     */
+    const CHECKSUM     = 'CHECKSUM';
 }

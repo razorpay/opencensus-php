@@ -81,19 +81,26 @@ class Gateway extends Base\Gateway
 
         $content = implode('|', $content);
 
-        $content .= '|' . $this->getHashOfString($content);
+        $checkSum = $this->getHashOfString($content);
 
         $content = [
-            RequestFields::AUTH_DATA => base64_encode($content)
+            RequestFields::AUTH_DATA => base64_encode($content . '|' . $checkSum)
         ];
 
         return $this->getStandardRequestArray($content);
     }
 
-    protected function getHashOfString($str)
+    /**
+     * Exposing this method as a public API for the mock server to access
+     *
+     * @override
+     * @param $str
+     * @return string
+     */
+    public function getHashOfString($str)
     {
         // TODO: Verify that this is the right way to generate the checksum
-        hash(HashAlgo::SHA256, $str);
+        return hash(HashAlgo::CRC32, $str);
     }
 
     protected function getMerchantId()
@@ -106,6 +113,18 @@ class Gateway extends Base\Gateway
         }
 
         return $merchantId;
+    }
+
+    /**
+     * Overriding this method so that it can be exposed as a public API for the mock server
+     *
+     * @override
+     * @param $actual
+     * @param $generated
+     */
+    public function compareHashes($actual, $generated)
+    {
+        parent::compareHashes($actual, $generated);
     }
 
     protected function getTestMerchantId()
