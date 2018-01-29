@@ -425,7 +425,7 @@ class Service extends Base\Service
         $this->merchant->reload();
 
         // This is the same format we'll set in the google spreadsheet
-        $timestamp = Carbon::createFromTimeStamp(time(), Timezone::IST)->format('j/m/Y');
+        $timestamp = Carbon::createFromTimeStamp(time(), Timezone::IST)->format('Y-m-j');
 
         $userName = $input['contact_name'] ?? '';
 
@@ -449,7 +449,7 @@ class Service extends Base\Service
             Constants::INDIVIDUAL      => $userName,
             Merchant\Entity::NAME      => $merchant->name,
             Constants::REF             => $referrer,
-            Constants::TIMESTAMP       => $timestamp,
+            Constants::SIGNUP_DATE     => $timestamp,
             Constants::CONTACT         => $phoneNumber,
             Entity::BUSINESS_TYPE      => $businessType,
             Entity::TRANSACTION_VOLUME => $transactionVolume,
