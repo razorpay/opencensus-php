@@ -198,7 +198,7 @@ class Handler extends ExceptionHandler
             Trace::ALERT,
             TraceCode::REQUEST_THROTTLED);
 
-        $response = ApiResponse::rateLimitExceeded();
+        $response = ApiResponse::rateLimitExceeded($exception->getData());
 
         return $response;
     }

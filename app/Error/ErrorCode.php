@@ -541,6 +541,7 @@ class ErrorCode
     const BAD_REQUEST_INVALID_OS                                                    = 'BAD_REQUEST_INVALID_OS';
     const BAD_REQUEST_INVALID_DEVICE                                                = 'BAD_REQUEST_INVALID_DEVICE';
     const BAD_REQUEST_INVALID_INTEGRATION                                           = 'BAD_REQUEST_INVALID_INTEGRATION';
+    const BAD_REQUEST_BLOCKED                                                       = 'BAD_REQUEST_BLOCKED';
 
     const BAD_REQUEST_REPORTING_INTEGRATION                                         = 'BAD_REQUEST_REPORTING_INTEGRATION';
 

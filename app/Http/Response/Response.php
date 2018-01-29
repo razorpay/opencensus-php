@@ -88,9 +88,26 @@ class Response
         return $this->generateErrorResponse(ErrorCode::BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED);
     }
 
-    public function rateLimitExceeded()
+    public function rateLimitExceeded(array $limits = [])
     {
-        return $this->generateErrorResponse(ErrorCode::BAD_REQUEST_RATE_LIMIT_EXCEEDED);
+        $response = $this->generateErrorResponse(ErrorCode::BAD_REQUEST_RATE_LIMIT_EXCEEDED);
+
+        return $this->withRateLimitHeaders($response, $limits);
+    }
+
+    public function withRateLimitHeaders($response, array $limits = [])
+    {
+        $headers = $response->headers;
+
+        if (empty($limits) === false)
+        {
+            $headers->set('X-RateLimit-Limit', $limits[0]);
+            $headers->set('X-RateLimit-Remaining', $limits[1]);
+            $headers->set('X-RateLimit-Reset', $limits[2]);
+            $headers->set('X-RateLimit-RetryAfter', $limits[3]);
+        }
+
+        return $response;
     }
 
     public function onlyHttpsAllowed()
