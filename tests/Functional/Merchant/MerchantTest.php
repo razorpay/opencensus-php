@@ -1344,6 +1344,8 @@ class MerchantTest extends TestCase
 
     public function testQueryCacheHitForKey()
     {
+        config(['app.query_cache.mock' => false]);
+
         Event::fake();
 
         $payment = $this->getDefaultPaymentArray();
@@ -1409,6 +1411,8 @@ class MerchantTest extends TestCase
 
     public function testQueryCacheFlushForKey()
     {
+        config(['app.query_cache.mock' => false]);
+
         Event::fake();
 
         $this->ba->proxyAuthTest();
