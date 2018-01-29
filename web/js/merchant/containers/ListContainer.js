@@ -10,9 +10,17 @@ export default class ListContainer extends Component {
     confirm: PropTypes.func,
   };
 
-  constructor() {
-    super(...arguments);
+  constructor(props, ...args) {
+    super(props, ...args);
     this.searchFilters = {};
+
+    const searchString = props.location.search.trim();
+
+    if (searchString) {
+      const params = getURLQueryParams(searchString);
+      this.searchFilters = params;
+    }
+
     this.state = {
       status: {},
     };

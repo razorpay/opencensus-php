@@ -16,6 +16,7 @@ import {
 } from 'rzp/utils/numerals';
 import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
 import { showNotification } from 'rzp/modules/notifications';
+import { groupBy } from 'rzp/utils/pokedex';
 
 import { fetch } from 'merchant/modules/pokedex';
 import {
@@ -207,16 +208,30 @@ class KeyMetricsContainer extends Component {
           const mainStat = resp.data[tabName];
 
           if (mainStat) {
-            const count = tabState.data.count = mainStat.result[0]
-                            ? mainStat.result[0].value
-                            : 0;
 
             if (tabName === SAVED_CARDS) {
            
+              const data = groupBy(
+                mainStat.result,
+                tabMeta.groupByColumnName
+              ),
+              savedCardsValue = data["1"]
+                                  ? data["1"][0].value
+                                  : 0,
+              otherCardsValue = data["0"]
+                                  ? data["0"][0].value
+                                  : 0;
+                                
+
               tabState.data.count = getPercentage(
-                tabsState[NUM_TRANSACTIONS].data.count,
-                count
+                savedCardsValue + otherCardsValue,
+                savedCardsValue
               );
+            } else {
+            
+              tabState.data.count = mainStat.result[0]
+                                      ? mainStat.result[0].value
+                                      : 0;
             }
           }
 

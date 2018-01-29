@@ -15,7 +15,7 @@ const getStartDateFromDiff = (diff, endDate) => {
    * given , diff (seconds) and endDate , gives startDate
    */
 
-  return moment(endDate.toDate() - diff * 1000);
+  return moment(endDate.toDate() - diff * 1000).startOf("day");
 };
 
 class DateRangePicker extends Component {
