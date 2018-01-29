@@ -9,7 +9,6 @@ const activationStepMap = {
     'contact_email',
     'transaction_report_email',
     'contact_mobile',
-    'contact_landline',
     'role',
     'department',
   ],
@@ -28,9 +27,6 @@ const activationStepMap = {
     'business_operation_state',
     'business_operation_city',
     'business_operation_pin',
-    'business_doe',
-    'transaction_volume',
-    'transaction_value',
     'gstin',
     'p_gstin',
     'promoter_pan',
@@ -220,11 +216,7 @@ export default class Activation extends Entity {
   serializeProperty(prop) {
     // The below fields should not be sent if they are not set, as the api expects them only when they are set
     if (
-      [
-        'business_international',
-        'transaction_volume',
-        'transaction_value',
-      ].indexOf(prop) !== -1 &&
+      ['business_international'].indexOf(prop) !== -1 &&
       isBlank(this[prop])
     ) {
       return undefined;
