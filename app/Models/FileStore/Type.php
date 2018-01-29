@@ -84,6 +84,8 @@ class Type
     const MERCHANT_PROMOTER_PROOF_URL           = 'promoter_proof_url';
     const MERCHANT_PROMOTER_PAN_URL             = 'promoter_pan_url';
     const MERCHANT_PROMOTER_ADDRESS_URL         = 'promoter_address_url';
+    const MERCHANT_FORM_12A_URL                 = 'form_12a_url';
+    const MERCHANT_FORM_80G_URL                 = 'form_80g_url';
 
     const SETTLEMENT_BUCKET_CONFIG              = 'settlement_bucket_config';
     const TEST_BUCKET_CONFIG                    = 'test_bucket_config';
@@ -155,6 +157,8 @@ class Type
             self::MERCHANT_PROMOTER_PROOF_URL,
             self::MERCHANT_PROMOTER_PAN_URL,
             self::MERCHANT_PROMOTER_ADDRESS_URL,
+            self::MERCHANT_FORM_12A_URL,
+            self::MERCHANT_FORM_80G_URL,
         ],
 
         Constants\Entity::INVOICE => [
@@ -266,6 +270,8 @@ class Type
             self::MERCHANT_PROMOTER_PROOF_URL,
             self::MERCHANT_PROMOTER_PAN_URL,
             self::MERCHANT_PROMOTER_ADDRESS_URL,
+            self::MERCHANT_FORM_12A_URL,
+            self::MERCHANT_FORM_80G_URL,
         ],
 
         self::H2H_BUCKET_CONFIG => [
