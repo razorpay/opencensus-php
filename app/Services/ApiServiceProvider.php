@@ -170,6 +170,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerHttplugMockClient();
 
         $this->registerGeolocation();
+
+        $this->registerPincodeSearch();
     }
 
     /**
@@ -201,6 +203,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'workflow',
             'authservice',
             'sns',
+            'pincodesearch',
         ];
     }
 
@@ -412,5 +415,17 @@ class ApiServiceProvider extends BaseServiceProvider
         $apiProcessor = new RZP\Trace\ApiTraceProcessor($this->app);
 
         $this->app['trace']->pushProcessor($apiProcessor);
+    }
+
+    protected function registerPincodeSearch()
+    {
+        $this->app->singleton('pincodesearch', function($app)
+        {
+            $mock = $app['config']->get('applications.pincodesearch.mock');
+
+            $implementation = $mock ? Mock\PincodeSearch::class : PincodeSearch::class;
+
+            return new $implementation($app);
+        });
     }
 }

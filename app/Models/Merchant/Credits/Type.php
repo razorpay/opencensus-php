@@ -6,4 +6,5 @@ class Type
 {
     const AMOUNT = 'amount';
     const FEE    = 'fee';
+    const REFUND = 'refund';
 }

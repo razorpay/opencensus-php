@@ -211,8 +211,11 @@ class Merchant
 
             $details[SetlComponent::FEE]['amount'] += ($txn->getFee() - $txn->getTax());
 
-            // FeeCredits is either zero or equal to fees.
-            $details[SetlComponent::FEE_CREDITS]['amount'] += $txn->getFeeCredits();
+            // Add credits if txn is of type fee credits.
+            $details[SetlComponent::FEE_CREDITS]['amount'] += ($txn->isFeeCredits() ? $txn->getCredits() : 0);
+
+            // Add credits if txn is of type refund credits.
+            $details[SetlComponent::REFUND_CREDITS]['amount'] += ($txn->isRefundCredits() ? $txn->getCredits() : 0);
         }
 
         return $details;
@@ -236,6 +239,7 @@ class Merchant
                     break;
 
                 case SetlDetails\Component::FEE_CREDITS:
+                case SetlDetails\Component::REFUND_CREDITS:
                     if ($detail['amount'] > 0)
                     {
                         $this->createSetlDetailsEntity(

@@ -114,10 +114,15 @@ class SettlementTest extends TestCase
         $this->assertSame($content['count'], 0);
     }
 
-    protected function createPaymentEntities(int $count = 5, $merchantId = null)
+    protected function createPaymentEntities(int $count = 5, $merchantId = null, $dt = null)
     {
-        $createdAt = Carbon::today(Timezone::IST)->subDays(50)->timestamp + 5;
-        $capturedAt = Carbon::today(Timezone::IST)->subDays(50)->timestamp + 10;
+        if ($dt === null)
+        {
+            $dt = Carbon::today(Timezone::IST)->subDays(50);
+        }
+
+        $createdAt = $dt->timestamp + 5;
+        $capturedAt = $dt->timestamp + 10;
 
         $attrs = [
             'captured_at' => $capturedAt,
@@ -291,20 +296,13 @@ class SettlementTest extends TestCase
     {
         $this->ba->appAuth();
 
-        $this->fixtures->create('credits', [
-                       'type'        => 'fee',
-                       'value'       => 50000,
-                   ]);
+        $this->fixtures->create('credits',
+            [
+                'type'        => 'fee',
+                'value'       => 50000,
+           ]);
 
-         $this->fixtures->create('credits', [
-                       'type'        => 'fee',
-                       'value'       => 50000,
-                       'merchant_id' => '10NodalAccount',
-                   ]);
-
-        // $this->fixtures->merchant->createBankAccount();
         $this->fixtures->merchant->editFeeCredits('50000', Account::TEST_ACCOUNT);
-        $this->fixtures->merchant->editCreditsforNodalAccount('50000', 'fee');
 
         $payments = $this->createPaymentEntities();
 
@@ -316,6 +314,7 @@ class SettlementTest extends TestCase
             ];
 
             $refund = $this->fixtures->create('refund:from_payment', $attrs);
+
             $refunds[] = $refund;
         }
 
@@ -758,7 +757,9 @@ class SettlementTest extends TestCase
 
         $this->fixtures->merchant->createAccount('7thBRSDflu7NHL');
 
-        $payments = $this->createPaymentEntities(5, '7thBRSDflu7NHL');
+        $dt = Carbon::create(2017, 12, 12, 16, 0, 0, 'Asia/Kolkata')->subDays(5);
+
+        $payments = $this->createPaymentEntities(5, '7thBRSDflu7NHL', $dt);
 
         foreach ($payments as $payment)
         {

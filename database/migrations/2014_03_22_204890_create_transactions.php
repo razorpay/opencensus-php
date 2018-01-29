@@ -79,7 +79,7 @@ class CreateTransactions extends Migration
             $table->tinyInteger(Transaction::GRATIS)
                   ->default(0);
 
-            $table->integer(Transaction::FEE_CREDITS)
+            $table->integer(Transaction::CREDITS)
                   ->unsigned()
                   ->default(0);
 

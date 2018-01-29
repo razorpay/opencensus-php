@@ -2864,3 +2864,12 @@ ALTER TABLE `workflow_actions`
 ALTER TABLE merchants
     ADD COLUMN notes TEXT DEFAULT NULL AFTER invoice_code;
 
+ALTER TABLE balance
+    ADD COLUMN refund_credits BIGINT UNSIGNED DEFAULT 0 after fee_credits;
+
+ALTER TABLE merchants
+    ADD COLUMN refund_source TINYINT(1) DEFAULT 0 after fee_model;
+
+ALTER TABLE `merchant_details`
+    ADD COLUMN `form_12a_url` VARCHAR(255) DEFAULT NULL AFTER `promoter_address_url`,
+    ADD COLUMN `form_80g_url` VARCHAR(255) DEFAULT NULL AFTER `form_12a_url`;

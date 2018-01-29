@@ -21,7 +21,9 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getPaymentId(array $row)
     {
-        return $row[self::PAYMENT_ID];
+        $paymentId = $row[self::PAYMENT_ID];
+
+        return trim($paymentId, "'");
     }
 
     /**

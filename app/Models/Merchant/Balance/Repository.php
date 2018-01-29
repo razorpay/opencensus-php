@@ -80,23 +80,38 @@ class Repository extends Base\Repository
         });
     }
 
+    public function editMerchantRefundCredits($merchant, $credits)
+    {
+        $channel = $merchant->getChannel();
+
+        return $this->transaction(function () use ($merchant, $credits, $channel)
+        {
+            return $this->editMerchantRefundCreditsInTransaction($merchant, $credits, $channel);
+        });
+    }
+
     private function editMerchantFeeCreditsInTransaction($merchant, $feeCredits, $channel)
     {
         assert ($this->isTransactionActive());
 
         $balance = $this->findOrFail($merchant->getId());
-        //$nodalBalance = $this->getNodalBalanceLockForUpdate($channel);
-
-        //$nodalCredits = $nodalBalance->getFeeCredits();
-        //$nodalCredits = $nodalCredits - $balance->getFeeCredits() + $feeCredits;
-
-        //$nodalBalance->setFeeCredits($nodalCredits);
 
         $balance->setFeeCredits($feeCredits);
 
         $balance->saveOrFail();
 
-        //$nodalBalance->saveOrFail();
+        return $balance;
+    }
+
+    private function editMerchantRefundCreditsInTransaction($merchant, $credits, $channel)
+    {
+        assert ($this->isTransactionActive());
+
+        $balance = $this->findOrFail($merchant->getId());
+
+        $balance->setRefundCredits($credits);
+
+        $balance->saveOrFail();
 
         return $balance;
     }
