@@ -58,13 +58,11 @@ class All extends Base
 
         foreach ($data as $index => $row)
         {
-            $paymentDate = Carbon::createFromTimestamp(
-                $row['payment']['created_at'], Timezone::IST)->format('d/m/Y H:i:s');
+            $paymentDate = Carbon::createFromTimestamp($row['payment']['created_at'], Timezone::IST);
 
-            $refundDate = Carbon::createFromTimestamp(
-                $row['refund']['created_at'], Timezone::IST)->format('d/m/Y H:i:s');
+            $refundDate = Carbon::createFromTimestamp($row['refund']['created_at'], Timezone::IST);
 
-            $timeDiff = $row['refund']['created_at'] - $row['payment']['created_at'];
+            $timeDiff = $paymentDate->diffForHumans($refundDate);
 
             $formattedData[] = [
                 self::SR_NO                 => $index + 1,
@@ -79,55 +77,16 @@ class All extends Base
                 self::GATEWAY_CAPTURED      => $row['payment']['gateway_captured'],
                 self::ATTEMPTS              => $row['refund']['attempts'],
                 self::TERMINAL_ID           => $row['payment']['terminal_id'],
-                self::TIME_SINCE_PAID       => $this->seconds2human($timeDiff),
-                self::PAYMENT_TIME          => $paymentDate,
-                self::REFUND_TIME           => $refundDate
+                self::TIME_SINCE_PAID       => $timeDiff,
+                self::PAYMENT_TIME          => $paymentDate->format('d/m/Y H:i:s'),
+                self::REFUND_TIME           => $refundDate->format('d/m/Y H:i:s')
             ];
         }
 
         return $formattedData;
     }
 
-    protected function seconds2human(int $seconds)
-    {
-        $s = $seconds % 60;
-
-        $m = floor(($seconds % 3600) / 60);
-
-        $h = floor(($seconds % 86400) / 3600);
-
-        $d = floor(($seconds % 2592000) / 86400);
-
-        $M = floor($seconds / 2592000);
-
-        $timeStr = "$s seconds";
-
-        if ($m > 0)
-        {
-            $timeStr = "$m minutes";
-        }
-
-        if ($h > 0)
-        {
-            $timeStr = "$h hours";
-        }
-
-        if ($d > 0)
-        {
-            $timeStr = "$d days";
-        }
-
-        if ($M > 0)
-        {
-            $timeStr = "$M months";
-        }
-
-        $timeStr .= " old";
-
-        return $timeStr;
-    }
-
-    protected function getRefundType($row)
+   protected function getRefundType($row)
     {
         $paymentAmount = $row['payment']['amount'];
 
