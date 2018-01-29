@@ -2,11 +2,14 @@
 
 namespace RZP\Gateway\Netbanking\Csb\Mock;
 
+use RZP\Gateway\Base\Mock\GatewayTrait;
 use RZP\Models\Payment;
 use RZP\Gateway\Netbanking\Csb;
 
 class Gateway extends Csb\Gateway
 {
+    use GatewayTrait;
+
     /**
      * This variable should such that the corresponding entity name is of the format netbanking_{bank},
      * where {bank} must be mapped to the variable set below.

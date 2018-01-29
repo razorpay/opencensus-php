@@ -2,17 +2,23 @@
 
 namespace RZP\Gateway\Netbanking\Csb;
 
+use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
-use RZP\Gateway\Base\Entity;
 use RZP\Models\Terminal;
 use RZP\Constants\HashAlgo;
 use RZP\Gateway\Base\Action;
+use RZP\Gateway\Base\Entity;
+use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Constants\Mode as RZPMode;
+use RZP\Gateway\Base\VerifyResult;
+use RZP\Models\Payment\Gateway as PG;
 use RZP\Exception\GatewayErrorException;
 
 class Gateway extends Base\Gateway
 {
+    protected $gateway = PG::NETBANKING_CSB;
+
     protected $map = [
         /**
          * Fields from authorize request used to create gateway payment entity
@@ -74,11 +80,44 @@ class Gateway extends Base\Gateway
         return $this->getCallbackResponseData($input, $acquirerData);
     }
 
-    public function verify(array $input)
+    public function verify(array $input): array
     {
         parent::verify($input);
 
-        sd('Reached verify function');
+        $verify = new Verify($this->gateway, $input);
+
+        return $this->runPaymentVerifyFlow($verify);
+    }
+
+    public function sendPaymentVerifyRequest(Verify $verify)
+    {
+        $request = $this->getVerifyRequestData($verify);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            $request);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            [
+                'gateway'    => $this->gateway,
+                'response'   => $response->body,
+                'payment_id' => $verify->input['payment']['id'],
+            ]
+        );
+
+        $verify->verifyResponseContent = $this->parseVerifyResponse($response->body);
+    }
+
+    public function verifyPayment(Verify $verify)
+    {
+        $verify->status = $this->getVerifyStatus($verify);
+
+        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
+
+        $verify->payment = $this->saveVerifyContent($verify);
     }
 
     /**
@@ -131,6 +170,86 @@ class Gateway extends Base\Gateway
         }
     }
 
+    private function getVerifyRequestData(Verify $verify)
+    {
+        $input = $verify->input;
+
+        $gatewayPayment = $verify->payment;
+
+        $content = [
+            Constants::CHNPGSYN,
+            Constants::CHNPGCODE,
+            $this->getMerchantId(),
+            $input['payment']['id'],
+            $input['payment']['amount'] / 100,
+            $gatewayPayment->getBankPaymentId(),
+            Mode::VERIFY,
+        ];
+
+        $content = implode('|', $content);
+
+        $checkSum = $this->getHashOfString($content);
+
+        $content = [
+            RequestFields::POST_DATA => base64_encode($content . '|' . $checkSum)
+        ];
+
+        return $this->getStandardRequestArray($content);
+    }
+
+    private function parseVerifyResponse(string $response)
+    {
+        return (array) simplexml_load_string($response);
+    }
+
+    private function getVerifyStatus(Verify $verify)
+    {
+        $status = VerifyResult::STATUS_MATCH;
+
+        $this->checkApiSuccess($verify);
+
+        $this->checkGatewaySuccess($verify);
+
+        if ($verify->gatewaySuccess !== $verify->apiSuccess)
+        {
+            $status = VerifyResult::STATUS_MISMATCH;
+        }
+
+        return $status;
+    }
+
+    private function checkGatewaySuccess(Verify $verify)
+    {
+        $verify->gatewaySuccess = false;
+
+        $content = $verify->verifyResponseContent;
+
+        $status = $content[ResponseFields::VERIFICATION];
+
+        // content will contain status 100 or 101
+        if ($status === Status::SUCCESS)
+        {
+            $verify->gatewaySuccess = true;
+        }
+    }
+
+    private function saveVerifyContent(Verify $verify)
+    {
+        $wallet = $verify->payment;
+
+        $content = $verify->verifyResponseContent;
+
+        $contentToSave = [];
+
+        if ((empty($wallet[Base\Entity::STATUS]) === false) or
+            ($wallet[Base\Entity::STATUS] !== Status::SUCCESS))
+        {
+            $contentToSave[Base\Entity::STATUS] = $content[ResponseFields::VERIFICATION];
+        }
+
+        $this->updateGatewayPaymentEntity($wallet, $contentToSave, false);
+    }
+
     /**
      * This method gets the required authorize request as per API contract.
      * @see https://docs.google.com/document/d/153ypkOhWNIetN3kV153gevKz2EIBO4aGj4XjIguLB0Y/edit#
@@ -159,7 +278,7 @@ class Gateway extends Base\Gateway
         $checkSum = $this->getHashOfString($content);
 
         $content = [
-            RequestFields::AUTH_DATA => base64_encode($content . '|' . $checkSum)
+            RequestFields::POST_DATA => base64_encode($content . '|' . $checkSum)
         ];
 
         return $this->getStandardRequestArray($content);

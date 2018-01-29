@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Gateway\Netbanking\Csb;
 use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 use RZP\Tests\Functional\TestCase;
+use RZP\Gateway\Netbanking\Csb\Status;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Gateway\Netbanking\Base\Entity as Netbanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -45,4 +46,32 @@ class NetbankingCsbGatewayTest extends TestCase
 
         $this->assertTestResponse($netbanking);
     }
+
+    // TODO: testPaymentFailed
+
+    public function testPaymentVerify()
+    {
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $verify = $this->verifyPayment($payment[Payment\Entity::ID]);
+
+        $this->assertEquals(true, $verify['gateway']['apiSuccess']);
+        $this->assertEquals(true, $verify['gateway']['gatewaySuccess']);
+
+        $payment = $this->getLastEntity(ConstantsEntity::PAYMENT, true);
+        $netbanking = $this->getLastEntity(ConstantsEntity::NETBANKING, true);
+
+        // Status remains in Success after verify
+        $this->assertEquals(Status::SUCCESS, $netbanking[Netbanking::STATUS]);
+
+        $this->assertEquals($verify[ConstantsEntity::PAYMENT][Payment\Entity::ID], $payment[Payment\Entity::ID]);
+        $this->assertEquals(1, $payment[Payment\Entity::VERIFIED]);
+        $this->assertEquals(Payment\Status::CAPTURED, $payment[Payment\Entity::STATUS]);
+    }
+
+    // TODO: testPaymentFailedVerify
+
+    // TODO: testPaymentFailedVerifyFailed
+
+    // TODO: testPaymentSuccessVerifyFailed
 }

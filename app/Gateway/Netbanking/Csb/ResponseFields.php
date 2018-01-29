@@ -24,4 +24,9 @@ class ResponseFields
 
     const BANKID       = 'BankId';
     const CHNPGCODE    = 'CHNPGCODE';
+
+    /**
+     * Verification XML element
+     */
+    const VERIFICATION = 'Verification';
 }

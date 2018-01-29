@@ -18,4 +18,15 @@ class Validator extends Base\Validator
         RequestFields::MODE         => 'required|string|in:P',
         RequestFields::CHECKSUM     => 'required|string|size:8'
     ];
+
+    protected static $verifyRules = [
+        RequestFields::CHNPGSYN     => 'required|string|in:' . Constants::CHNPGSYN,
+        RequestFields::CHNPGCODE    => 'required|string|in:' . Constants::CHNPGCODE,
+        RequestFields::PAYEE_ID     => 'required|string',
+        RequestFields::BANK_REF_NUM => 'required|string|size:14',
+        RequestFields::AMOUNT       => 'required|integer',
+        RequestFields::TRAN_REF_NUM => 'required|integer|in:9999999999',
+        RequestFields::MODE         => 'required|string|in:V',
+        RequestFields::CHECKSUM     => 'required|string|size:8'
+    ];
 }

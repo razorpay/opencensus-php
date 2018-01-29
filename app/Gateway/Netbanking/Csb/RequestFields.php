@@ -24,9 +24,9 @@ class RequestFields
     const DATE_TIME    = 'DT';
 
     /**
-     * We would be sending the authorize request data in this field
+     * We would be sending the request data in this field
      */
-    const AUTH_DATA    = 'vData';
+    const POST_DATA    = 'vData';
 
     /**
      * Custom defined field used only in Mock/Server.php

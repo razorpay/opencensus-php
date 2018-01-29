@@ -29,6 +29,21 @@ class Server extends Base\Mock\Server
         return $request[RequestFields::RETURN_URL] . '?' . http_build_query($response);
     }
 
+    public function verify($input)
+    {
+        parent::verify($input);
+
+        $request = $this->getVerifyRequest($input);
+
+        $this->verifyChecksum($request);
+
+        $this->validateActionInput($request, $this->action);
+
+        $response = $this->getVerifyResponse();
+
+        return $this->makeResponse($response);
+    }
+
     /**
      * Using the gatewayInstance like a singleton object
      *
@@ -68,9 +83,48 @@ class Server extends Base\Mock\Server
         return $content;
     }
 
+    private function getVerifyResponse()
+    {
+        $xmlRoot = "<Xml />";
+
+        $response = [
+            ResponseFields::VERIFICATION => Status::SUCCESS
+        ];
+
+        $this->content($response, $this->action);
+
+        //
+        // Simple XML Element takes the values of the associate array
+        // as the XML elements. Therefore, we need to flip the array
+        // to ensure that the keys are selected instead.
+        //
+        $gatewayParam = array_flip($response);
+
+        $gatewayParamXml = new \SimpleXMLElement($xmlRoot);
+
+        //
+        // Recursively walks through the array and adds each entry in $gatewayParam
+        // into $gatewayParamXml as an XML child of the origin XML root.
+        //
+        array_walk_recursive($gatewayParam, [$gatewayParamXml, 'addChild']);
+
+        return trim(explode('?>', $gatewayParamXml->asXML())[1]);
+    }
+
+    private function getVerifyRequest(array $input)
+    {
+        $data = $input[RequestFields::POST_DATA];
+
+        $base64DecodedRequestString = base64_decode($data);
+
+        $requestArray = explode('|', $base64DecodedRequestString);
+
+        return array_combine($this->getVerifyRequestFields(), $requestArray);
+    }
+
     private function getAuthorizeRequest(array $input)
     {
-        $data = $input[RequestFields::AUTH_DATA];
+        $data = $input[RequestFields::POST_DATA];
 
         $base64DecodedRequestString = base64_decode($data);
 
@@ -106,6 +160,20 @@ class Server extends Base\Mock\Server
             RequestFields::BANK_REF_NUM,
             RequestFields::AMOUNT,
             RequestFields::RETURN_URL,
+            RequestFields::MODE,
+            RequestFields::CHECKSUM
+        ];
+    }
+
+    private function getVerifyRequestFields()
+    {
+        return [
+            RequestFields::CHNPGSYN,
+            RequestFields::CHNPGCODE,
+            RequestFields::PAYEE_ID,
+            RequestFields::BANK_REF_NUM,
+            RequestFields::AMOUNT,
+            RequestFields::TRAN_REF_NUM,
             RequestFields::MODE,
             RequestFields::CHECKSUM
         ];

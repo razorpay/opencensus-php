@@ -8,5 +8,5 @@ class Url
     const LIVE_DOMAIN = 'https://to-be-filled-url.com';
 
     const AUTHORIZE   = '/BkPgEmVantageIntf.aspx';
-    const VERIFY      = 'BkPgVrfyEmVantageIntf.aspx';
+    const VERIFY      = '/BkPgVrfyEmVantageIntf.aspx';
 }
