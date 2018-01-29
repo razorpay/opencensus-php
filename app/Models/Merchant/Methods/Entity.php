@@ -291,6 +291,11 @@ class Entity extends Base\PublicEntity
 
     public function isMpesaEnabled()
     {
+        if ($this->getMerchantId() !== '4izmfM9TFCAgFN')
+        {
+            return false;
+        }
+
         return $this->getAttribute(self::MPESA);
     }
 
@@ -345,6 +350,11 @@ class Entity extends Base\PublicEntity
         $func = 'is' . studly_case($method) . 'Enabled';
 
         return $this->$func();
+    }
+
+    public function getMerchantId()
+    {
+        return $this->getAttribute(self::MERCHANT_ID);
     }
 
     public function getEnabledWallets()

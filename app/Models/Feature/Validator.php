@@ -47,12 +47,6 @@ class Validator extends Base\Validator
         Constants::PRODUCT  => 'sometimes|string|custom',
     ];
 
-    protected static $featureRequestTimestampRules = [
-        Entity::MERCHANT_ID => 'required|string|size:14',
-        Entity::FEATURE     => 'required|in:marketplace,virtual_accounts,subscriptions',
-        Entity::TIMESTAMP   => 'required|string',
-    ];
-
     protected function validateName($attribute, $value)
     {
         $allFeatures = array_keys(Constants::$featureValueMap);

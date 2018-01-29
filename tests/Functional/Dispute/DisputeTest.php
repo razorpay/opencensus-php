@@ -30,7 +30,7 @@ class DisputeTest extends TestCase
     {
         $testData = $this->updateCreateTestData();
 
-        $testData['response']['content']['payment_id'] = $this->payment->getId();
+        $testData['response']['content']['payment_id'] = $this->payment->getPublicId();
 
         $this->startTest($testData);
 
@@ -53,7 +53,7 @@ class DisputeTest extends TestCase
 
         $testData = $this->updateCreateTestData();
 
-        $testData['response']['content']['payment_id'] = $this->payment->getId();
+        $testData['response']['content']['payment_id'] = $this->payment->getPublicId();
 
         $this->startTest($testData);
 
@@ -75,7 +75,7 @@ class DisputeTest extends TestCase
     {
         $testData = $this->updateCreateTestData();
 
-        $testData['response']['content']['payment_id'] = $this->payment->getId();
+        $testData['response']['content']['payment_id'] = $this->payment->getPublicId();
 
         $this->startTest($testData);
 
@@ -574,8 +574,8 @@ class DisputeTest extends TestCase
         $this->assertEquals(2, $content['count']);
         $this->assertEquals($disputes[0]->getId(), Entity::stripDefaultSign($content['items'][1]['id']));
         $this->assertEquals($disputes[1]->getId(), Entity::stripDefaultSign($content['items'][0]['id']));
-        $this->assertEquals($disputes[0]->payment->getId(), $content['items'][1]['payment_id']);
-        $this->assertEquals($disputes[1]->payment->getId(), $content['items'][0]['payment_id']);
+        $this->assertEquals($disputes[0]->payment->getPublicId(), $content['items'][1]['payment_id']);
+        $this->assertEquals($disputes[1]->payment->getPublicId(), $content['items'][0]['payment_id']);
     }
 
     public function testFetchMerchantDetails()

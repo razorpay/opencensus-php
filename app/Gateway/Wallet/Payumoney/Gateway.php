@@ -163,6 +163,21 @@ class Gateway extends Base\Gateway
         return $verify->status;
     }
 
+    public function verifyRefund(array $input)
+    {
+        if ($this->isUnprocessedRefund($input) === true)
+        {
+            return false;
+        }
+
+        if ($this->isProcessedRefund($input) === true)
+        {
+            return true;
+        }
+
+        parent::verifyRefund($input);
+    }
+
     protected function saveVerifyContentIfNeeded($gatewayPayment, $response)
     {
         $content = $response['result'][0];
