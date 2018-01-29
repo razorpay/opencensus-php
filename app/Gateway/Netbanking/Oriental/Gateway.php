@@ -61,6 +61,9 @@ class Gateway extends Base\Gateway
 
         $this->createGatewayPaymentEntity($this->gatewayAttribues);
 
+        // Resetting this object to null to free up the memory occupied by the contents of this object
+        $this->gatewayAttribues = [];
+
         $this->traceGatewayPaymentRequest($request, $input);
 
         return $request;
