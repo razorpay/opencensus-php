@@ -15,7 +15,7 @@ function appendLink(src) {
   document.documentElement.appendChild(link);
 }
 
-document.write('<script src="' + prefixCdn('vendor.js') + '"></script>');
+document.write('<script src="' + prefixCdn('vendor_a.js') + '"></script>');
 document.write('<script src="' + prefixCdn('admin.js') + '"></script>');
 
 appendLink(prefixCdn('css/admin.css'));

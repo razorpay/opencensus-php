@@ -6,7 +6,7 @@ let plugins = [];
 
 module.exports = {
   externals: [].reduce.call(
-    (process.env.externals || '').split(' '),
+    (process.env.externals || '').split(/\s+/),
     (prev, next, index, arr) => {
       if (index % 2) {
         prev[next.split('/')[0]] = arr[index - 1];
