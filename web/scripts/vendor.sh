@@ -32,9 +32,9 @@ vendor_m=$(cat <<-END
   React           react/umd/react.$REACT_ENV.js
   ReactDOM        react-dom/umd/react-dom.$REACT_ENV.js
   ReactRouterDOM  react-router-dom/umd/react-router-dom$APPEND_MIN.js
-  redux           redux/dist/redux$APPEND_MIN.js
-  reactRedux      react-redux/dist/react-redux$APPEND_MIN.js
-  reduxForm       redux-form/dist/redux-form$APPEND_MIN.js
+  Redux           redux/dist/redux$APPEND_MIN.js
+  ReactRedux      react-redux/dist/react-redux$APPEND_MIN.js
+  ReduxForm       redux-form/dist/redux-form$APPEND_MIN.js
   moment          moment/min/moment.min.js
   Chart           chart.js/dist/Chart$APPEND_MIN.js
   PropTypes       prop-types/prop-types$APPEND_MIN.js
