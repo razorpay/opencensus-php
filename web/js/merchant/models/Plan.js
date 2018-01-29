@@ -3,9 +3,7 @@ import Subscription from './Subscription';
 import { rupeesToPaise } from 'rzp/utils/rzp-utils';
 
 export default class Plan extends GenericEntity {
-  listRouteName = 'plan_fetch_multiple';
-  detailsRouteName = 'plan_account_fetch';
-  deleteRouteName = 'plan_delete';
+  resourceUrl = 'plans';
 
   resourceFields = ['period', 'interval', 'item', 'notes'];
 
@@ -14,14 +12,14 @@ export default class Plan extends GenericEntity {
   }
 
   fetchSubscriptions() {
-    let data = {};
-
-    data.query_params = JSON.stringify({
+    let data = {
       plan_id: this.id,
-    });
+    };
 
-    data.route_name = 'subscription_fetch_multiple';
-    return this.makeGenericAjaxCall({ data }).then(response => {
+    return this.makeGenericAjaxCall({
+      data: { plan_id: this.id },
+      url: 'subscriptions',
+    }).then(response => {
       response.data.items = response.data.items.map(item =>
         new Subscription(item).deserialize()
       );
