@@ -39,12 +39,6 @@ export default class EditMerchant extends Component {
             placeholder="Valid range: 5 - 20"
           />
           <AsyncButton
-            text="Cancel"
-            class="btn btn-default"
-            pendingClass="small spinner"
-            onSubmit={closeModal}
-          />
-          <AsyncButton
             text="Save"
             class="btn"
             pendingClass="small spinner"
