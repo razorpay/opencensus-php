@@ -325,6 +325,7 @@ export default class TransferNew extends Component {
                         component={DatePickerField}
                         name="holdUntil"
                         required
+                        placeholder="Select Date"
                         disabled={this.props.onHold !== 'on_hold_until'}
                         isDayBlocked={date => {
                           date = date

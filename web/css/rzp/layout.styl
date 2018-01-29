@@ -379,8 +379,52 @@ body.ReactModal__Body--open {
   display: block;
 }
 
+.SingleDatePicker_picker {
+  margin-top: -25px;
+
+  .CalendarDay__blocked_calendar {
+    background-color: rgba(0, 0, 0, 0.05);
+    border-color: #E4E7E7;
+  }
+
+  .CalendarMonth_caption {
+    margin-bottom: 10px;
+  }
+
+  .CalendarDay__selected {
+    border-color: #6a5ace;
+    background-color: #6a5ace;
+  }
+}
+
 .SingleDatePickerInput {
   border-color: #cfdadd;
+  width: 100%;
+
+  .DateInput {
+    height: 32px;
+  }
+
+  .DateInput_fang {
+    margin-top: -25px;
+  }
+
+  .DateInput_input__focused {
+    border-bottom: 0;
+  }
+
+  .DateInput_input__disabled {
+    font-style: normal;
+  }
+
+  .DateInput_input {
+    border-bottom: 0;
+    color: #757575;
+    font-size: inherit;
+    padding: 1px;
+    padding-left: 8px;
+    height: 100%;
+  }
 }
 
 .SingleDatePicker__tether--show {
