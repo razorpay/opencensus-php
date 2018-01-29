@@ -84,7 +84,7 @@ deploy:
           name: check currently deployed commit
           code: |
             status=`curl --write-out %{http_code} --remote-name "$APP_EXTERNAL_URL/commit.txt"`
-            if [ "$status" -eq "200" ] && [[ -z "`cat commit.txt | xargs -L 2 git diff --name-only | grep -v '^web/'`" ]]; then
+            if [ "$status" -eq "200" ] && commit=`cat commit.txt` && [[ -z "`git merge-base --is-ancestor $commit HEAD && (git diff --name-only $commit | grep -v '^web/') || echo 1`" ]]; then
               export SKIP_CODEDEPLOY=true
             fi
             echo SKIP_CODEDEPLOY $SKIP_CODEDEPLOY
