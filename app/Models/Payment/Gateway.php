@@ -154,6 +154,8 @@ class Gateway
         Payment\Gateway::UPI_ICICI,
         Payment\Gateway::WALLET_PAYZAPP,
         Payment\Gateway::WALLET_MPESA,
+        Payment\Gateway::WALLET_PAYUMONEY,
+        Payment\Gateway::WALLET_FREECHARGE,
     ];
 
     public static $channels = [
