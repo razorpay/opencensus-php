@@ -831,7 +831,7 @@ return [
                     ]
                 ],
             ],
-            'method' => 'patch',
+            'method' => 'post',
             'files' => [],
         ],
         'response' => [
@@ -854,7 +854,7 @@ return [
                     ]
                 ],
             ],
-            'method' => 'patch',
+            'method' => 'post',
             'files' => [],
         ],
         'response' => [
@@ -868,7 +868,7 @@ return [
             'content' => [
                 'accept_dispute'    => true,
             ],
-            'method' => 'patch',
+            'method' => 'post',
         ],
         'response' => [
             'content' => [

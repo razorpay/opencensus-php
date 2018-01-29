@@ -31,6 +31,13 @@ class Core extends Base\Core
 
     protected function uploadAndCreateFile(DisputeEntity $dispute, array $fileInput)
     {
+        $this->trace->info(
+            TraceCode::DISPUTE_FILES_UPLOAD,
+            [
+                'id'          => $dispute->getId(),
+                'file'        => array_except($fileInput[Entity::FILE]),
+            ]);
+
         $file = $fileInput[Entity::FILE];
 
         $uploadedFileDetails = $this->app['ufh.service']->uploadFileAndGetUrl($file,

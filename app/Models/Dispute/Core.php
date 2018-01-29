@@ -147,8 +147,7 @@ class Core extends Base\Core
     {
         $this->trace->info(
             TraceCode::DISPUTE_EDIT_REQUEST_FOR_MERCHANT,
-            array_merge($input, [Entity::ID => $dispute->getId()])
-        );
+            [Entity::ID => $dispute->getId()]);
 
         $files = [];
 
