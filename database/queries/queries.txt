@@ -2873,3 +2873,6 @@ ALTER TABLE merchants
 ALTER TABLE `merchant_details`
     ADD COLUMN `form_12a_url` VARCHAR(255) DEFAULT NULL AFTER `promoter_address_url`,
     ADD COLUMN `form_80g_url` VARCHAR(255) DEFAULT NULL AFTER `form_12a_url`;
+
+ALTER TABLE qr_code
+    ADD COLUMN short_url varchar(255) NOT NULL after qr_string;

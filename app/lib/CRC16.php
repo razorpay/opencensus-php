@@ -25,7 +25,7 @@ class CRC16
 
         $byteArray = unpack('C*', $data);
 
-        $expectedCRC = $this->calculateCrcMsb($byteArray, $ccittPoly, self::MAX_VALUE_SIGNED);
+        $expectedCRC = $this->calculateCrcMsb($byteArray, $ccittPoly, self::MAX_VALUE_UNSIGNED);
 
         $hex = dechex($expectedCRC);
 
@@ -97,10 +97,9 @@ class CRC16
      */
     private function calculateCrcMsb(array $data, int $poly, int $initialCrcValue)
     {
-        /**
-         * Starting point is at maximum value of
-         * 16 bit number
-         */
+        //
+        // Starting point is at maximum value of 16 bit number
+        //
         $crc = $initialCrcValue;
 
         $crcTable = $this->genCrc16TableMsb($poly);

@@ -970,6 +970,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GEOLOCATION_UPDATE_RESPONSE                   = 'GEOLOCATION_UPDATE_RESPONSE';
     const GEOLOCATION_FAILURE                           = 'GEOLOCATION_FAILURE';
 
+    const QR_CODE_URL                                   = 'QR_CODE_URL';
     const QUERY_CACHE_STORE_ERROR                       = 'QUERY_CACHE_STORE_ERROR';
     const QUERY_CACHE_FLUSH_ERROR                       = 'QUERY_CACHE_FLUSH_ERROR';
     const QUERY_CACHE_EVENT_ERROR                       = 'QUERY_CACHE_EVENT_ERROR';
