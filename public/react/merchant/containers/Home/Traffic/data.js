@@ -1,8 +1,16 @@
 import moment from 'moment';
 
-import { titleCase, arrayToCsvDataUrl } from 'rzp/utils/rzp-utils';
+import {
+  titleCase,
+  arrayToCsvDataUrl,
+  paiseToRupees
+} from 'rzp/utils/rzp-utils';
 import colors from 'rzp/utils/chart/colors.js';
-import { globalGroupTitleMap, groupByPlatform } from 'rzp/utils/pokedex.js';
+import {
+  globalGroupTitleMap,
+  groupByPlatform,
+  getDefaultPaymentFilter
+} from 'rzp/utils/pokedex.js';
 
 const dateFormat = 'Do MMM YYYY';
 
@@ -31,12 +39,7 @@ const getQuery = ({ startTime, endTime, group }) => {
   return {
     filters: {
       default: [
-        {
-          created_at: {
-            gte: startTime,
-            lte: endTime,
-          },
-        },
+        getDefaultPaymentFilter(startTime, endTime)
       ],
     },
     aggregations: {
@@ -56,13 +59,12 @@ const getPieData = ({
   data,
   groupByColumnName,
   groupTitleMap = {},
-  valueTransformer = null,
+  isCurrency,
 }) => {
   /*
    * @param {Array} data*
    * @param {String} groupByColumnName*
    * @param {Object} groupTitleMap
-   * @param {Function} valueTransformer
    *
    * Description:
    * `data` is the pokedex response
@@ -71,22 +73,20 @@ const getPieData = ({
    * by which the grouping should be made
    *
    * `groupTitleMap` is a dictionary that maps group values to custom names
-   *
-   * `valueTransformer` a function that will be called on each value in
-   * the record, if passed the function will get the following arguments
-   * 1) the value of the current point
-   * 2) the total record given by pokedex
-   * 3) the value of the group
    */
 
   const labels = [],
-    datasets = { data: [], backgroundColor: colors },
+    datasets = {
+                 data: [],
+                 backgroundColor: colors,
+                 hoverBackgroundColor: colors
+               },
     legendData = [];
 
-  let csvHeader = ['', 'Count', '%Split'],
+  let csvHeader = ['', `Total${isCurrency ? '(Paise)' : ''}`, '%Split'],
     csvFooter = ['Total'],
     csvData = [],
-    grandTotal = 0;
+    csvGrandTotal = 0;
 
   const groupedData = groupByPlatform(data);
 
@@ -101,32 +101,34 @@ const getPieData = ({
     let value = groupedData[groupName].reduce(
       (result, item) => result + item.value,
       0
-    );
+    ),
+        displayValue = isCurrency
+                         ? paiseToRupees(value)
+                         : value;
 
-    value =
-      typeof valueTransformer === 'function'
-        ? valueTransformer(value, groupedData, groupName)
-        : value;
-
-    datasets.data.push(value);
+    datasets.data.push(displayValue);
     groupCSVData.push(value);
 
     legendData.push({
       color: colors[index % colors.length],
       label: groupTitle,
-      value,
+      value: displayValue,
     });
 
     csvData.push(groupCSVData);
-    grandTotal += value;
+    csvGrandTotal += value;
   });
 
   csvData = csvData.map(row => {
-    row.push(`${grandTotal > 0 ? (row[1] / grandTotal * 100).toFixed(2) : 0}%`);
+
+    // calculating %share column
+    row.push(`${csvGrandTotal > 0
+                  ? (row[1] / csvGrandTotal * 100).toFixed(2)
+                  : 0}%`);
     return row;
   });
 
-  csvFooter.push(grandTotal);
+  csvFooter.push(csvGrandTotal);
 
   csvData.unshift(csvHeader);
   csvData.push(csvFooter);

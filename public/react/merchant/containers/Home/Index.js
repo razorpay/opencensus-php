@@ -1,15 +1,18 @@
 import React, { Component } from 'react';
-import Header from 'rzp/ui/Header';
 import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
 import moment from 'moment';
-import * as HomeActions from 'merchant/modules/home';
+import { Redirect } from 'react-router-dom';
+
+import Header from 'rzp/ui/Header';
 import {
   fetchPayments,
   fetchRefunds,
   fetchSettlements,
 } from 'rzp/modules/collection';
 import DateRangePickerField from 'rzp/ui/Forms/DateRangePickerField';
+
+import * as HomeActions from 'merchant/modules/home';
 import InfoCardList from 'merchant/components/Home/InfoCardList';
 import RecentEntityTable from 'merchant/components/Home/EntityTable';
 import AnalyticsGraph from 'merchant/components/Home/AnalyticsGraph';
@@ -57,7 +60,8 @@ defaults.global.layout = {
     fetchSettlements,
   }
 )
-export default class HomeContainer extends Component {
+
+class HomeContainer extends Component {
   componentWillMount() {
     this.props.fetchEntityTotals();
     this.props.fetchPaymentBreakup();
@@ -161,6 +165,25 @@ export default class HomeContainer extends Component {
           </div>
         </div>
       </div>
+    );
+  }
+}
+
+@connect(state => {
+  return {
+    user: state.session.user
+  };
+}, null)
+export default class HomeSwitcher extends Component {
+
+  render () {
+  
+    return (
+
+      // if the tag is enabled, force user to new dashboard
+      this.props.user.isNewAnalyticsEnabled
+        ? <Redirect to="/dashboard_v2"/>
+        : <HomeContainer/>
     );
   }
 }

@@ -73,7 +73,9 @@ export default class EditMerchant extends Component {
       body.admins = body.admins.split(',');
     }
     body.max_payment_amount *= 100;
-    body.transaction_report_email = body.transaction_report_email.split(',');
+    body.transaction_report_email = body.transaction_report_email
+      ? body.transaction_report_email.split(',')
+      : [];
 
     this.dropUnchangedFields(body);
 

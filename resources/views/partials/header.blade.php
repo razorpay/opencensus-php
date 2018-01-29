@@ -11,6 +11,18 @@
   <meta name="description" content="Online payment gateway for India with the best in class API, integration procedure, robust security and powerful dashboard" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <script type="text/javascript">
+        _rzpAQ = [];
+        function emptyRzpAQ () {
+            if (typeof ga === 'undefined' || (_rzpAQ && _rzpAQ.length === 0)) return;
+            var q = [].concat(_rzpAQ);
+            _rzpAQ = [];
+            if (q.length > 0) {
+                for (var i = 0; i < q.length; i++) {
+                    window.rzpAnalytics(q[i]);
+                }
+            }
+        }
+        var _qChckr = setInterval(emptyRzpAQ, 500);
         /**
          * Method to track Google Analytics
          * @param {Object} eventData Data of the event
@@ -19,11 +31,15 @@
             // If there's no data, don't track anything
             if (!data) return;
 
-            // If ga is undefined, try again after 500 ms
+            // If ga is undefined, push to queue
             if (typeof ga === 'undefined') {
-                setTimeout(rzpAnalytics, 500, data);
+                _rzpAQ.push(data);
                 return;
             };
+
+            // `ga` exists now, empty the queue.
+            clearInterval(_qChckr);
+            emptyRzpAQ();
 
             switch (data.name) {
                 case 'set_dimensions': // Set the dimensions

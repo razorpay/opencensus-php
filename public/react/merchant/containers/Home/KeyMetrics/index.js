@@ -5,16 +5,23 @@ import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import moment from 'moment';
 
 import Amount from 'rzp/ui/Amount';
-import { paiseToRupees, titleCase } from 'rzp/utils/rzp-utils';
+import {
+  paiseToRupees,
+  titleCase,
+  getPercentage
+} from 'rzp/utils/rzp-utils';
 import {
   humanReadableIndian,
   humanReadableIndianCurrency,
 } from 'rzp/utils/numerals';
 import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
 import { showNotification } from 'rzp/modules/notifications';
+import { groupBy } from 'rzp/utils/pokedex';
 
 import { fetch } from 'merchant/modules/pokedex';
 import {
+  NUM_TRANSACTIONS,
+  SAVED_CARDS,
   tabsOrder,
   tabsMeta,
   getQuery,
@@ -35,9 +42,17 @@ const TabContent = ({ name, value, isCurrency, title, isLoading, error }) => {
    * Component responsible for rendering content in each Tab
    */
 
-  let formattedValue = isCurrency
-    ? humanReadableIndianCurrency(paiseToRupees(value))
-    : humanReadableIndian(value);
+  let formattedValue = value;
+    
+  if (name !== SAVED_CARDS) {
+
+    formattedValue = isCurrency
+                       ? humanReadableIndianCurrency(paiseToRupees(value))
+                       : humanReadableIndian(value);
+  } else {
+  
+    formattedValue = formattedValue + "%";
+  }
 
   /*
    * checks if the current tab is showing currency values and renders
@@ -195,9 +210,31 @@ class KeyMetricsContainer extends Component {
           const mainStat = resp.data[tabName];
 
           if (mainStat) {
-            tabState.data.count = mainStat.result[0]
-              ? mainStat.result[0].value
-              : 0;
+
+            if (tabName === SAVED_CARDS) {
+           
+              const data = groupBy(
+                mainStat.result,
+                tabMeta.groupByColumnName
+              ),
+              savedCardsValue = data["1"]
+                                  ? data["1"][0].value
+                                  : 0,
+              otherCardsValue = data["0"]
+                                  ? data["0"][0].value
+                                  : 0;
+                                
+
+              tabState.data.count = getPercentage(
+                savedCardsValue + otherCardsValue,
+                savedCardsValue
+              );
+            } else {
+            
+              tabState.data.count = mainStat.result[0]
+                                      ? mainStat.result[0].value
+                                      : 0;
+            }
           }
 
           // Timeline data
@@ -211,7 +248,7 @@ class KeyMetricsContainer extends Component {
               endTime: endDate.unix(),
               breakdown: tabState.selectedBreakdown,
               groupTitleMap: tabMeta.groupTitleMap || { Mobile: 'mWeb' },
-              valueTransformer: isCurrency && paiseToRupees,
+              isCurrency,
             });
 
             const downloadFileName = `${title}, ${startDate.format(

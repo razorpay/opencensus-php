@@ -9,6 +9,8 @@ import Amount from 'rzp/ui/Amount';
 import Sticky from 'rzp/ui/Sticky';
 import Group, { GroupItem } from 'rzp/ui/Group';
 import { showNotification } from 'rzp/modules/notifications';
+import DateRangePicker from 'rzp/ui/DateRangePicker';
+import {oldestTransactionQuery} from 'rzp/utils/pokedex';
 
 import { fetch } from 'merchant/modules/pokedex';
 import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
@@ -16,12 +18,14 @@ import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
 import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
 import Traffic from 'merchant/containers/Home/Traffic';
 import RecentActivity from 'merchant/containers/Home/RecentActivity';
-import DateRangePicker from 'rzp/ui/DateRangePicker';
 import {
-  oldestTransactionQuery,
   OLDEST_TXN_ERROR,
   API_INVALID_RESP,
 } from 'merchant/components/Home/data';
+import GenericPanel, {
+  PanelBody,
+} from 'merchant/components/Home/GenericPanel';
+
 
 import './styles.styl';
 
@@ -38,8 +42,12 @@ const getPreviousDates = ({ startDate, endDate }) => {
   const diff = endDate.diff(startDate);
 
   return {
-    startDate: startDate.clone().subtract(diff, 'ms'),
-    endDate: endDate.clone().subtract(diff, 'ms'),
+    startDate: startDate.clone()
+                        .subtract(diff, 'ms'),
+    endDate: endDate.clone()
+                    .subtract(1, 'day')
+                    .subtract(diff, 'ms')
+                    .endOf("day"),
   };
 };
 
@@ -50,6 +58,7 @@ const bodyClass = ' analytics-v2-active';
     return {
       user: state.session.user,
       mode: state.session.mode,
+      current_balance: state.home.current_balance,
     };
   },
   {
@@ -61,8 +70,15 @@ export default class HomeContainer extends Component {
   constructor(props) {
     super(props);
 
-    let endDate = moment().startOf('day'),
-      startDate = endDate.clone();
+    // recording new analytics interactions in hotjar
+    if (typeof window.hj === "function") {
+    
+      window.hj('trigger', 'new_analytics');
+      window.hj('tagRecording', ['new_analytics']);
+    }
+
+    let endDate = moment().endOf('day'),
+      startDate = endDate.clone().startOf('day');
 
     startDate.add(...dateRangePresets[defaultPreset].slice(1));
 
@@ -189,7 +205,7 @@ export default class HomeContainer extends Component {
   }
 
   render() {
-    let mode = this.props.mode;
+    let {mode, current_balance} = this.props;
 
     const {
       startDate,
@@ -213,7 +229,10 @@ export default class HomeContainer extends Component {
               <Group>
                 <GroupItem>
                   <span>
-                    Current Balance: <Amount value={38760} />
+                    Current Balance: {
+                      !current_balance.loading &&
+                      <Amount value={current_balance.data.balance} />
+                    }
                   </span>
                 </GroupItem>
                 <GroupItem>
@@ -276,6 +295,19 @@ export default class HomeContainer extends Component {
                   <RecentActivity />
                 </div>
               </div>
+            </div>
+          </div>
+          <div className="row home-credits-section">
+            <div className="col-md-12">
+              <GenericPanel>
+                <PanelBody>
+                  <div className="text-center">
+                    <small>
+                      <i class="icon icon-info-circle"></i> Please share your feedback/suggestions by clicking the Feedback button on the right edge of your screen. You could also write to us at <a target="_blank" href="mailto:support@razorpay.com">support@razorpay.com</a>.
+                    </small>
+                  </div>
+                </PanelBody>
+              </GenericPanel>
             </div>
           </div>
         </div>

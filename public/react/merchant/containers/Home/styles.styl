@@ -114,10 +114,37 @@ $actionItemsHeight = 40px;
         }
       }
 
+      @media (max-width: 1024px) {
+
+        width: 100%;
+
+        &.traffic-container {
+
+          padding-right: 0;
+        }
+
+        &.activity-container {
+
+          padding-left: 0;
+        }
+      }
+
       div.panel {
 
         margin-bottom: 0;
       }
+    }
+  }
+
+  .home-credits-section {
+
+    margin-top: 24px;
+    color: #8991ae;
+
+    .panel .panel-body {
+
+      height: auto;
+      padding: 0;
     }
   }
 }
