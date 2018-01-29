@@ -7,6 +7,22 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
 return [
+    'testCreatePaymentWithoutOrderId' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payment processing failed due to missing order id',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED_MISSING_ORDER_ID
+        ],
+    ],
+
     'testCreatePaymentWithInvalidMethod' => [
         'response' => [
             'content' => [

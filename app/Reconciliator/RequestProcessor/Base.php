@@ -93,6 +93,14 @@ class Base extends Core
         self::ADMIN               => ['saurav.chowdhury@razorpay.com'],
     ];
 
+    /**
+     * Set of attributes, which act as configuration for recon processing
+     * and can be optionally passed in the request.
+     */
+    const CONFIG_PARAMS = [
+        self::FORCE_UPDATE
+    ];
+
     protected $validator;
 
     protected $fileProcessor;

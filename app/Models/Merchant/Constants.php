@@ -71,6 +71,8 @@ final class Constants
         Detail\Entity::BUSINESS_PAN_URL            => 5,
         Detail\Entity::ADDRESS_PROOF_URL           => 5,
         Detail\Entity::PROMOTER_ADDRESS_URL        => 5,
+        Detail\Entity::FORM_12A_URL                => 5,
+        Detail\Entity::FORM_80G_URL                => 5,
     ];
 
     const STEP_MAP_ACCOUNT = [
@@ -93,6 +95,8 @@ final class Constants
         Detail\Entity::BUSINESS_PAN_URL     => 'business_pan_proof',
         Detail\Entity::ADDRESS_PROOF_URL    => 'address_proof',
         Detail\Entity::PROMOTER_ADDRESS_URL => 'promoter_address_proof',
+        Detail\Entity::FORM_12A_URL         => 'form_12a_url',
+        Detail\Entity::FORM_80G_URL         => 'form_80g_url',
     ];
 
     const UPLOAD_KEYS_ACCOUNT = [
