@@ -404,7 +404,7 @@ class Gateway extends Base\Gateway
                 [
                     'message' => 'In HDFC netbanking, the bank only stores the payment data for 45 days!' .
                         ' Since it has been more than 45 days, we simply treat it as successful and return.',
-                    'payment_id' => $input['payment']['id']
+                    'payment_id' => $verify->input['payment']['id']
                 ]);
     }
 

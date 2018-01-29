@@ -950,7 +950,7 @@ class Gateway extends Base\Gateway
             Fields::ORIGINAL_MERCHANT_TRAN_ID       => $payment['id'],
             Fields::REFUND_AMOUNT                   => $this->formatAmount($refund['amount']),
             Fields::NOTE                            => 'Razorpay Refund ' . $refund['id'],
-            Fields::ONLINE_REFUND                   => 'Y',
+            Fields::ONLINE_REFUND                   => $this->isOnlineRefund($refund),
         ];
 
         $content = $this->transformRequestArrayToContent($data);
@@ -966,6 +966,23 @@ class Gateway extends Base\Gateway
             ]);
 
         return $request;
+    }
+
+    /**
+     * This is done in order to fix refund retry
+     * if refund fails in first attempt
+     * refund is retried with offline mode
+     *
+     * @return string
+     */
+    protected function isOnlineRefund(array $refund)
+    {
+        if (empty($refund['attempts']) === true)
+        {
+            return 'Y';
+        }
+
+        return 'N';
     }
 
     /**

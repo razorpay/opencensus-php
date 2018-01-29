@@ -25,6 +25,35 @@ class PaymentCreateTest extends TestCase
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
     }
 
+    public function testCreatePaymentWithoutOrderId()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->fixtures->merchant->addFeatures(['order_id_mandatory']);
+
+        $this->runRequestResponseFlow($testData, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testCreatePaymentWithValidOrderId()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->create('order', ['id' => '100000000order']);
+
+        $payment['amount'] = 1000000;
+
+        $payment['order_id'] = 'order_100000000order';
+
+        $this->fixtures->merchant->addFeatures(['order_id_mandatory']);
+
+        $this->doAuthPayment($payment);
+    }
+
     public function testCreatePaymentWithInvalidMethod()
     {
         $payment = $this->getDefaultPaymentArray();
