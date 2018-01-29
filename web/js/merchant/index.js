@@ -2,7 +2,6 @@ import 'react-dates/initialize';
 import { Provider } from 'react-redux';
 import { render } from 'react-dom';
 import { HashRouter as Router } from 'react-router-dom';
-import { Tabs } from 'react-tabs';
 
 import 'rzp/utils/polyfills';
 import store from './store';

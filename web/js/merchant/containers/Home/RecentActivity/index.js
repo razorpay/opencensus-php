@@ -12,8 +12,8 @@ import GenericPanel, {
   PanelBody,
   PanelTopbar,
 } from 'merchant/components/Home/GenericPanel';
+import TabsContainer from 'rzp/ui/Tabs';
 import { tabs, tabsMeta } from './data';
-import PaymentsList from 'merchant/components/Payments/PaymentsList';
 
 const Row = ({ record, tabName }) => {
   const tabMeta = tabsMeta[tabName];
@@ -78,60 +78,48 @@ export default class RecentActivity extends Component {
   }
 
   render() {
-    const { selectedTab } = this.state,
-      selectedTabData = this.props[selectedTab],
-      numColumns = tabsMeta[selectedTab].numColumns;
 
     let body = null;
 
-    if (selectedTabData.loading || selectedTabData.items.length === 0) {
-      body = (
-        <tr>
-          <td colSpan={numColumns}>
-            <center>
-              {selectedTabData.loading ? 'Please Wait...' : 'No Records found.'}
-            </center>
-          </td>
-        </tr>
+    let tabContent = [];
+
+    tabs.forEach(selectedTab => {
+      const selectedTabData = this.props[selectedTab], numColumns = tabsMeta[selectedTab].numColumns;
+      let body;
+
+      if (selectedTabData.loading || selectedTabData.items.length === 0) {
+        body = (
+          <tr>
+            <td colSpan={numColumns}>
+              <center>
+                {selectedTabData.loading ? 'Please Wait...' : 'No Records found.'}
+              </center>
+            </td>
+          </tr>
+        );
+      } else {
+        body = selectedTabData.items.map((record, index) => {
+          return <Row key={index} record={record} tabName={selectedTab} />;
+        });
+      }
+
+      tabContent.push(
+        <table class="table table-striped table-activity">
+          <tbody>
+          {body}
+          </tbody>
+        </table>
       );
-    } else {
-      body = selectedTabData.items.map((record, index) => {
-        return <Row key={index} record={record} tabName={selectedTab} />;
-      });
-    }
+    });
+
 
     return (
-      <GenericPanel
-        className="recent-activity-cont"
-        isLoading={selectedTabData.loading}
+      <TabsContainer
+        tabNames={tabs}
+        className="some-class panel recent-activity-cont"
       >
-        <PanelTopbar>
-          <tabbed-container>
-            <div className="row">
-              {tabs.map((tabName, index) => {
-                const className =
-                  (tabName === selectedTab ? 'active ' : '') + 'col-sm-4';
-
-                return (
-                  <a
-                    className={className}
-                    key={index}
-                    name={tabName}
-                    onClick={this.handleTabClick}
-                  >
-                    {tabName.toUpperCase()}
-                  </a>
-                );
-              })}
-            </div>
-          </tabbed-container>
-        </PanelTopbar>
-        <PanelBody>
-          <table className="table table-striped">
-            <tbody>{body}</tbody>
-          </table>
-        </PanelBody>
-      </GenericPanel>
+        {tabContent}
+      </TabsContainer>
     );
   }
 }
