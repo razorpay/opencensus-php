@@ -1933,6 +1933,24 @@ class DatabaseSeeder extends Seeder
         );
     }
 
+    protected function createNetbankingCsbTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                    => Terminal\Shared::NETBANKING_CSB_TERMINAL,
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::NETBANKING_CSB,
+                'card'                  => '0',
+                'netbanking'            => '1',
+                'recurring'             => '0',
+                'gateway_merchant_id'   => 'netbanking_csb_merchant_id',
+                'gateway_secure_secret' => Crypt::encrypt('netbanking_csb_random_hash_secret'),
+                'created_at'            => time(),
+                'updated_at'            => time()
+            ]
+        );
+    }
+
     protected function createEbsTerminal()
     {
         DB::table(Table::TERMINAL)->insert(

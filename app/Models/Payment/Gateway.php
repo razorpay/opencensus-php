@@ -38,6 +38,7 @@ class Gateway
     const NETBANKING_INDUSIND    = 'netbanking_indusind';
     const NETBANKING_KOTAK       = 'netbanking_kotak';
     const NETBANKING_RBL         = 'netbanking_rbl';
+    const NETBANKING_CSB         = 'netbanking_csb';
     const NETBANKING_PNB         = 'netbanking_pnb';
     const PAYTM                  = 'paytm';
     const SHARP                  = 'sharp';
@@ -624,6 +625,7 @@ class Gateway
         IFSC::UTIB => Gateway::NETBANKING_AXIS,
         IFSC::RATN => Gateway::NETBANKING_RBL,
         IFSC::PUNB => Gateway::NETBANKING_PNB,
+        IFSC::CSBK => Gateway::NETBANKING_CSB,
     ];
 
     /**

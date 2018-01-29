@@ -35,6 +35,7 @@ return [
         'netbanking_rbl',
         'netbanking_indusind',
         'netbanking_pnb',
+        'netbanking_csb',
         'sharp',
         'wallet_olamoney',
         'upi_icici',
@@ -74,6 +75,7 @@ return [
     'mock_netbanking_rbl'         => env('NETBANKING_RBL_MOCK'),
     'mock_netbanking_indusind'    => env('NETBANKING_INDUSIND_MOCK'),
     'mock_netbanking_pnb'         => env('NETBANKING_PNB_MOCK'),
+    'mock_netbanking_csb'         => env('NETBANKING_CSB_MOCK'),
     'mock_billdesk'               => env('BILLDESK_MOCK'),
     'mock_blade'                  => env('BLADE_MOCK'),
     'mock_ebs'                    => env('EBS_MOCK'),
@@ -415,6 +417,11 @@ return [
     'netbanking_pnb' => [
         'test_hash_secret'  => env('NETBANKING_PNB_GATEWAY_TEST_HASH_SECRET'),
         'live_hash_secret'  => env('NETBANKING_PNB_GATEWAY_LIVE_HASH_SECRET'),
+    ],
+
+    'netbanking_csb' => [
+        'test_hash_secret'  => env('NETBANKING_CSB_GATEWAY_TEST_HASH_SECRET'),
+        'live_hash_secret'  => env('NETBANKING_CSB_GATEWAY_LIVE_HASH_SECRET'),
     ],
 
     'sharp' => [
