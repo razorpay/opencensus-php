@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Netbanking\Csb;
 
 use RZP\Error\ErrorCode;
+use RZP\Gateway\Base\Entity;
 use RZP\Models\Terminal;
 use RZP\Constants\HashAlgo;
 use RZP\Gateway\Base\Action;
@@ -80,6 +81,43 @@ class Gateway extends Base\Gateway
         sd('Reached verify function');
     }
 
+    /**
+     * Exposing this method as a public API for the mock server to access
+     *
+     * @override
+     * @param $str
+     * @return string
+     */
+    public function getHashOfString($str)
+    {
+        // TODO: Verify that this is the right way to generate the checksum
+        return hash(HashAlgo::CRC32, $str);
+    }
+
+    /**
+     * Overriding this method so that it can be exposed as a public API for the mock server
+     *
+     * @override
+     * @param $actual
+     * @param $generated
+     */
+    public function compareHashes($actual, $generated)
+    {
+        parent::compareHashes($actual, $generated);
+    }
+
+    protected function updateGatewayPaymentEntity(
+        Entity $gatewayPayment,
+        array $attributes,
+        bool $mapped = true)
+    {
+        $attributes = $this->getMappedAttributes($attributes);
+
+        $attributes[Base\Entity::RECEIVED] = true;
+
+        return parent::updateGatewayPaymentEntity($gatewayPayment, $attributes, false);
+    }
+
     private function checkResponseStatus(array $content)
     {
         if ((empty($content[ResponseFields::STATUS]) === false) and
@@ -127,19 +165,6 @@ class Gateway extends Base\Gateway
         return $this->getStandardRequestArray($content);
     }
 
-    /**
-     * Exposing this method as a public API for the mock server to access
-     *
-     * @override
-     * @param $str
-     * @return string
-     */
-    public function getHashOfString($str)
-    {
-        // TODO: Verify that this is the right way to generate the checksum
-        return hash(HashAlgo::CRC32, $str);
-    }
-
     protected function getMerchantId()
     {
         $merchantId = $this->getLiveMerchantId();
@@ -150,18 +175,6 @@ class Gateway extends Base\Gateway
         }
 
         return $merchantId;
-    }
-
-    /**
-     * Overriding this method so that it can be exposed as a public API for the mock server
-     *
-     * @override
-     * @param $actual
-     * @param $generated
-     */
-    public function compareHashes($actual, $generated)
-    {
-        parent::compareHashes($actual, $generated);
     }
 
     protected function getTestMerchantId()
