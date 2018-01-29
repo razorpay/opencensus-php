@@ -425,7 +425,7 @@ class Service extends Base\Service
         $this->merchant->reload();
 
         // This is the same format we'll set in the google spreadsheet
-        $timestamp = Carbon::createFromTimeStamp(time(), Timezone::IST)->format('Y-m-j');
+        $timestamp = Carbon::createFromTimeStamp(time(), Timezone::IST)->format('Y-m-d\TH:i:s+05:30');
 
         $userName = $input['contact_name'] ?? '';
 
