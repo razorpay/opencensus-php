@@ -12,6 +12,7 @@ final class Constants
     const TIMESTAMP                               = 'timestamp';
     const REF                                     = 'ref';
     const DATE                                    = 'date';
+    const SIGNUP_DATE                             = 'signup_date';
 
     /**
      * Step Map gives information on attributes filled by merchant Step wise.
