@@ -11,7 +11,6 @@ use RZP\Models\Payment;
 use RZP\Gateway\Utility;
 use RZP\Trace\TraceCode;
 use phpseclib\Crypt\RSA;
-use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Upi\Base;
 use RZP\Constants\Timezone;
@@ -20,8 +19,6 @@ use RZP\Gateway\Upi\Base\Entity;
 use RZP\Gateway\Base\VerifyResult;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Gateway\Base\AuthorizeFailed;
-use RZP\Gateway\Upi\Base\ProviderCode;
-use RZP\Gateway\Upi\Icici\ResponseCodeMap;
 use RZP\Models\Payment\Verify\Action as VerifyAction;
 
 class Gateway extends Base\Gateway
@@ -398,7 +395,7 @@ class Gateway extends Base\Gateway
             Fields::NOTE             => $this->getPaymentRemark($input),
             // sub-merchant name field only supports alphanumeric
             // hence replacing all the spaces to empty string here.
-            Fields::SUBMERCHANT_NAME => preg_replace('/\s+/', '', $input['merchant']->getFilteredDba()),
+            Fields::SUBMERCHANT_NAME => $this->getSubMerchantName($input),
             Fields::PAYER_VA_REQ     => $input['payment']['vpa'],
             Fields::SUBMERCHANT_ID   => $this->getSubMerchantId($input),
             Fields::TERMINAL_ID      => $this->getTerminalId($input),
@@ -477,6 +474,13 @@ class Gateway extends Base\Gateway
         $description = $input['merchant']->getFilteredDba() . ' ' . $filteredPaymentDescription;
 
         return ($description ? substr($description, 0, 50) : 'Pay via Razorpay');
+    }
+
+    protected function getSubMerchantName(array $input): string
+    {
+        $dba = preg_replace('/\s+/', '', $input['merchant']->getFilteredDba());
+
+        return ($dba ? substr($dba, 0, 30) : 'Razorpay');
     }
 
     /**
@@ -702,6 +706,11 @@ class Gateway extends Base\Gateway
         return $status;
     }
 
+    /**
+     * We need to implement alreadyRefunded
+     * @see https://github.com/razorpay/api/issues/6984
+     */
+
     public function verifyRefund(array $input)
     {
         parent::verify($input);
@@ -893,7 +902,7 @@ class Gateway extends Base\Gateway
             Fields::ORIGINAL_MERCHANT_TRAN_ID       => $payment['id'],
             Fields::REFUND_AMOUNT                   => $this->formatAmount($refund['amount']),
             Fields::NOTE                            => 'Razorpay Refund ' . $refund['id'],
-            Fields::ONLINE_REFUND                   => 'Y',
+            Fields::ONLINE_REFUND                   => $this->isOnlineRefund($refund),
         ];
 
         $content = $this->transformRequestArrayToContent($data);
@@ -909,6 +918,23 @@ class Gateway extends Base\Gateway
             ]);
 
         return $request;
+    }
+
+    /**
+     * This is done in order to fix refund retry
+     * if refund fails in first attempt
+     * refund is retried with offline mode
+     *
+     * @return string
+     */
+    protected function isOnlineRefund(array $refund)
+    {
+        if (empty($refund['attempts']) === true)
+        {
+            return 'Y';
+        }
+
+        return 'N';
     }
 
     /**

@@ -10,7 +10,7 @@ class Type
     // Terminal to be used for first recurring transaction
     const RECURRING_3DS     = 'recurring_3ds';
 
-    // Terminal to be used for non-3DS transactions after first succesful payment
+    // Terminal to be used for non-3DS transactions after first successful payment
     const RECURRING_NON_3DS = 'recurring_non_3ds';
 
     // Terminal to be used for IVR transactions

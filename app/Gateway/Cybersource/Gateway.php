@@ -244,6 +244,16 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
+        if ($this->isUnprocessedRefund($input) === true)
+        {
+            return false;
+        }
+
+        if ($this->isProcessedRefund($input) === true)
+        {
+            return true;
+        }
+
         $content = $this->sendRefundVerifyRequest($input);
 
         $refundReplies = $this->fetchRefundGatewayReplyFromContent($content);
@@ -921,7 +931,7 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            // We are doing this because paymentNetworkTransactionId and 
+            // We are doing this because paymentNetworkTransactionId and
             // ProcessorResponse should be present if payment is successful.
             $attributes[E::GATEWAY_TRANSACTION_ID] = $ccAuthReply[F::PAYMENT_NETWORK_TXN_ID];
             $attributes[E::PROCESSOR_RESPONSE] = $ccAuthReply[F::PROCESSOR_RESPONSE];

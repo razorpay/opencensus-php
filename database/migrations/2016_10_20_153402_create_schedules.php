@@ -49,6 +49,7 @@ class CreateSchedules extends Migration
                   ->unsigned()
                   ->nullable();
 
+            $table->index(Schedule::NAME);
             $table->index(Schedule::CREATED_AT);
 
             $table->foreign(Schedule::MERCHANT_ID)

@@ -80,7 +80,8 @@ class Repository extends Base\Repository
         $transactionDebit       = $this->dbColumn(Entity::DEBIT);
         $transactionTax         = $this->dbColumn(Entity::TAX);
         $transactionFee         = $this->dbColumn(Entity::FEE);
-        $transactionFeeCredits  = $this->dbColumn(Entity::FEE_CREDITS);
+        $transactionFeeCredits  = $this->dbColumn(Entity::CREDITS);
+        $transactionCreditsType = $this->dbColumn(Entity::CREDIT_TYPE);
 
         $txns = $this->newQuery()
                     ->select(
@@ -96,7 +97,8 @@ class Repository extends Base\Repository
                         $transactionDebit,
                         $transactionTax,
                         $transactionFee,
-                        $transactionFeeCredits
+                        $transactionFeeCredits,
+                        $transactionCreditsType
                     )
                     ->join(Table::MERCHANT, $merchantId, '=', $transactionMerchantId)
                     ->where(Entity::SETTLED_AT, '<', $timestamp)

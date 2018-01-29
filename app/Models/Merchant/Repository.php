@@ -360,7 +360,7 @@ class Repository extends Base\Repository
         Entity $parent,
         bool $fail = false)
     {
-        AccountEntity::verifyIdAndStripSign($accountId);
+        Account\Entity::verifyIdAndStripSign($accountId);
 
         $query   = $this->newQuery()->where(Entity::PARENT_ID, $parent->getId());
         $account = $fail ? $query->findOrFailPublic($accountId) : $query->find($accountId);

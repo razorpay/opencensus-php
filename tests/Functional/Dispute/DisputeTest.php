@@ -30,7 +30,7 @@ class DisputeTest extends TestCase
     {
         $testData = $this->updateCreateTestData();
 
-        $testData['response']['content']['payment_id'] = $this->payment->getId();
+        $testData['response']['content']['payment_id'] = $this->payment->getPublicId();
 
         $this->startTest($testData);
 
@@ -53,7 +53,7 @@ class DisputeTest extends TestCase
 
         $testData = $this->updateCreateTestData();
 
-        $testData['response']['content']['payment_id'] = $this->payment->getId();
+        $testData['response']['content']['payment_id'] = $this->payment->getPublicId();
 
         $this->startTest($testData);
 
@@ -75,7 +75,7 @@ class DisputeTest extends TestCase
     {
         $testData = $this->updateCreateTestData();
 
-        $testData['response']['content']['payment_id'] = $this->payment->getId();
+        $testData['response']['content']['payment_id'] = $this->payment->getPublicId();
 
         $this->startTest($testData);
 
@@ -200,6 +200,13 @@ class DisputeTest extends TestCase
         $this->startTest();
     }
 
+    public function testDisputeCreateWithNonArrayMerchantEmail()
+    {
+        $this->updateCreateTestData();
+
+        $this->startTest();
+    }
+
     public function testDisputeCreateWithInvalidMerchantEmail()
     {
         $this->updateCreateTestData();
@@ -207,7 +214,7 @@ class DisputeTest extends TestCase
         $this->startTest();
     }
 
-    public function testDisputeCreateWithInvalidMerchantEmail2()
+    public function testDisputeCreateWithWhitespaceMerchantEmail()
     {
         $this->updateCreateTestData();
 
@@ -536,7 +543,7 @@ class DisputeTest extends TestCase
         $input = [
             'amount'                => 10000,
             'deduct_at_onset'       => 0,
-            'phase'                 => Phase::RETRIEVAL,
+            'phase'                 => Phase::FRAUD,
         ];
         $testdata = $this->updateEditTestData($input);
 
@@ -567,8 +574,17 @@ class DisputeTest extends TestCase
         $this->assertEquals(2, $content['count']);
         $this->assertEquals($disputes[0]->getId(), Entity::stripDefaultSign($content['items'][1]['id']));
         $this->assertEquals($disputes[1]->getId(), Entity::stripDefaultSign($content['items'][0]['id']));
-        $this->assertEquals($disputes[0]->payment->getId(), $content['items'][1]['payment_id']);
-        $this->assertEquals($disputes[1]->payment->getId(), $content['items'][0]['payment_id']);
+        $this->assertEquals($disputes[0]->payment->getPublicId(), $content['items'][1]['payment_id']);
+        $this->assertEquals($disputes[1]->payment->getPublicId(), $content['items'][0]['payment_id']);
+    }
+
+    public function testFetchMerchantDetails()
+    {
+        $this->ba->privateAuth();
+
+        $testData = $this->updateDetailsFetchTestData();
+
+        $this->startTest($testData);
     }
 
     // ---------------------------- helper methods-------------------------------
@@ -621,6 +637,23 @@ class DisputeTest extends TestCase
         $name = $trace[1]['function'];
 
         $testData = &$this->testData[$name];
+
+        return $testData;
+    }
+
+    protected function updateDetailsFetchTestData(array $attributes = []): array
+    {
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+
+        $name = $trace[1]['function'];
+
+        $dispute = $this->fixtures->create('dispute', $attributes);
+
+        $this->merchant = $dispute->merchant;
+
+        $testData = &$this->testData[$name];
+
+        $testData['request']['url'] = '/disputes/' . $dispute->getPublicId();
 
         return $testData;
     }

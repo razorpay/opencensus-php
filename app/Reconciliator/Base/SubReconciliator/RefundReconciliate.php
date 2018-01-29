@@ -59,15 +59,15 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
             $reconciled = $this->checkIfAlreadyReconciled($this->refund);
 
+            // Increment the total count for the summary
+            $this->setSummaryCount(self::TOTAL_SUMMARY, $refundId);
+
             if ($reconciled === true)
             {
                 $this->handleAlreadyReconciled($refundId);
 
                 return;
             }
-
-            // Increment the total count for the summary
-            $this->setSummaryCount(self::TOTAL_SUMMARY, $refundId);
 
             $validate = $this->validateRefundDetails($row);
 

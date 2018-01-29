@@ -338,6 +338,16 @@ class Gateway extends Base\Gateway
             parent::action($input, Action::VERIFY_REVERSE);
         }
 
+        if ($this->isUnprocessedRefund($input) === true)
+        {
+            return false;
+        }
+
+        if ($this->isProcessedRefund($input) === true)
+        {
+            return true;
+        }
+
         $this->validateVerifyRefundIsPossible($input);
 
         $verify = new Base\Verify($this->gateway, $input);
@@ -367,9 +377,15 @@ class Gateway extends Base\Gateway
 
         $this->updateOrCreateRefundEntity($refundFields, $input);
 
-        $refundGatewayStatus = (string) $verifyRefundResponse->children('a1', true)->TransactionState;
+        $refundGatewayStatus = (string) $verifyRefundResponse->children('a1', true)
+                                                             ->TransactionValues
+                                                             ->TransactionState;
 
-        return in_array($refundGatewayStatus, Status::SUCCESSFUL_REFUND_STATES, true);
+        assertTrue(($refundGatewayStatus !== null), "Status cannot be null");
+
+        $refunded = in_array($refundGatewayStatus, Status::SUCCESSFUL_REFUND_STATES, true);
+
+        return $refunded;
     }
 
     protected function updateOrCreateRefundEntity(array $refundFields, array $input)

@@ -2784,6 +2784,18 @@ ALTER TABLE virtual_accounts
 ALTER TABLE `merchants`
     ADD COLUMN `channel` VARCHAR(32) DEFAULT 'kotak' AFTER `billing_label`;
 
+ALTER TABLE payments
+    CHANGE COLUMN `global_token` `auth_type` VARCHAR(14) DEFAULT NULL;
+
+ALTER TABLE payments
+    ADD INDEX `payments_auth_type_index` (`auth_type`);
+
+ALTER TABLE tokens
+    ADD COLUMN beneficiary_name VARCHAR(120) DEFAULT NULL AFTER account_number;
+
+ALTER TABLE tokens
+    ADD COLUMN ifsc VARCHAR(16) DEFAULT NULL AFTER beneficiary_name;
+
 ALTER TABLE settings
     MODIFY COLUMN created_at INT(11) NOT NULL,
     MODIFY COLUMN updated_at INT(11) NOT NULL;
@@ -2799,3 +2811,65 @@ ALTER TABLE merchant_invoice
     MODIFY COLUMN amount bigint(20)  NOT NULL,
     MODIFY COLUMN tax int(11) NOT NULL,
     MODIFY COLUMN amount_due bigint(20) NOT NULL DEFAULT 0;
+
+ALTER TABLE workflow_steps
+    ADD COLUMN deleted_at INT UNSIGNED DEFAULT NULL
+    AFTER updated_at;
+
+ALTER TABLE workflow_steps
+    ADD INDEX `workflow_steps_created_at_deleted_at_index` (`created_at`,`deleted_at`);
+
+ALTER TABLE fund_transfer_attempts
+    MODIFY COLUMN bank_status_code varchar(30) DEFAULT NULL;
+
+ALTER TABLE `action_comments`
+    ADD INDEX `action_comments_entity_id_entity_type_index` (`entity_id`, `entity_type`);
+
+ALTER TABLE `action_state`
+    ADD INDEX `action_state_entity_id_entity_type_index` (`entity_id`,`entity_type`);
+
+ALTER TABLE `admins`
+    ADD INDEX `admins_email_index` (`email`),
+    ADD INDEX `admins_created_at_index` (`created_at`),
+    ADD INDEX `admins_last_login_at_index` (`last_login_at`);
+
+ALTER TABLE `bank_accounts`
+    DROP INDEX `bankaccounts_entity_id_index`,
+    ADD INDEX `bankaccounts_entity_id_type_index` (`entity_id`, `type`);
+
+ALTER TABLE `features`
+    DROP INDEX `features_name_index`;
+
+ALTER TABLE `merchants`
+    ADD INDEX `merchants_created_at_index` (`created_at`),
+    ADD INDEX `merchants_updated_at_index` (`updated_at`);
+
+ALTER TABLE `merchant_details`
+    ADD INDEX `merchant_details_created_at_index` (`created_at`),
+    ADD INDEX `merchant_details_updated_at_index` (`updated_at`);
+
+ALTER TABLE `risk`
+    DROP INDEX `risk_merchant_id_foreign`,
+    ADD INDEX `risk_merchant_id_created_at_index` (`merchant_id`,`created_at`);
+
+ALTER TABLE `schedules`
+    ADD INDEX `schedules_name_index` (`name`);
+
+ALTER TABLE `users`
+    ADD INDEX `users_confirm_token_index` (`confirm_token`);
+
+ALTER TABLE `workflow_actions`
+    ADD INDEX `workflow_actions_entity_id_entity_name_index`(`entity_id`,`entity_name`);
+
+ALTER TABLE merchants
+    ADD COLUMN notes TEXT DEFAULT NULL AFTER invoice_code;
+
+ALTER TABLE balance
+    ADD COLUMN refund_credits BIGINT UNSIGNED DEFAULT 0 after fee_credits;
+
+ALTER TABLE merchants
+    ADD COLUMN refund_source TINYINT(1) DEFAULT 0 after fee_model;
+
+ALTER TABLE `merchant_details`
+    ADD COLUMN `form_12a_url` VARCHAR(255) DEFAULT NULL AFTER `promoter_address_url`,
+    ADD COLUMN `form_80g_url` VARCHAR(255) DEFAULT NULL AFTER `form_12a_url`;

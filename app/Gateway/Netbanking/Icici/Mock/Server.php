@@ -121,7 +121,9 @@ class Server extends Base\Mock\Server
         $response = [
             ResponseFields::PAYMENT_ID    => $input[RequestFields::PAYMENT_ID],
             ResponseFields::ITEM_CODE     => strtoupper($input[RequestFields::ITEM_CODE]),
-            ResponseFields::AMOUNT        => $input[RequestFields::AMOUNT],
+
+            // If the amount is not sent, it's a registration-only emandate auth request
+            ResponseFields::AMOUNT        => $input[RequestFields::AMOUNT] ??  'null',
             ResponseFields::CURRENCY_CODE => $input[RequestFields::CURRENCY_CODE],
             ResponseFields::PAID          => Confirmation::YES,
         ];
@@ -137,6 +139,12 @@ class Server extends Base\Mock\Server
             $response[ResponseFields::SI_SCHEDULE_ID] = uniqid();
             $response[ResponseFields::SI_STATUS]      = Confirmation::YES;
             $response[ResponseFields::SI_MESSAGE]     = 'SUC';
+
+            // For mandate registration-only auth request, the payment status is 'null'
+            $response[ResponseFields::PAID]           = 'null';
+
+            // Since there's no hot payment, BID won't exist
+            unset($response[ResponseFields::BANK_PAYMENT_ID]);
         }
 
         return $response;
