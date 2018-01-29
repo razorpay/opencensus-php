@@ -323,7 +323,7 @@
                 <div>Payment will be made to <span class="bold">razorpay@icici</span></div>
             </div>
             <div id="error-msg" class="center red hide">
-             Some error has occurred
+             No UPI apps found on this device
             </div>
             <div id="spinner" class="hide">
                 <div class="spin">
@@ -516,7 +516,8 @@
                     }
                 }
             } else {
-                gel('error-msg').classList.add('hide');
+                gel('error-msg').classList.remove('hide');
+                gel('retry_btn').classList.add('hide');
             }
         } else {
             recurseAjax(request_url, function(response){
