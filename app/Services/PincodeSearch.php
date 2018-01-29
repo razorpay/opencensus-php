@@ -116,31 +116,32 @@ class PincodeSearch
 
     protected function checkErrors(array $response)
     {
-        if (isset($response['status']) === true)
+        if (isset($response['status']) === false)
         {
-            if ($response['status'] === 'Error')
-            {
-                $errorMessage = $response['message'] ?? 'Third Party Error';
+            throw new Exception\IntegrationException(
+                'Third Party Error',
+                $response
+            );
+        }
 
-                throw new Exception\ServerErrorException(
-                    $errorMessage,
-                    ErrorCode::SERVER_ERROR);
-            }
-
-            if ($response['status'] !== 'ok')
-            {
-                throw new Exception\ServerErrorException(
-                    'Server error',
-                    ErrorCode::SERVER_ERROR);
-            }
-
+        if ($response['status'] === 'ok')
+        {
             return;
         }
 
-        throw new Exception\ServerErrorException(
-            'Server error',
-            ErrorCode::SERVER_ERROR);
+        if ($response['status'] === 'Error')
+        {
+            $errorMessage = $response['message'] ?? 'Third Party Error';
 
+            throw new Exception\IntegrationException(
+                $errorMessage,
+                $response
+            );
+        }
+
+        throw new Exception\IntegrationException(
+            'Something Went Wrong',
+            $response);
     }
 
     public function fetchCityAndStateFromPincode(int $pincode): array
@@ -199,6 +200,7 @@ class PincodeSearch
         {
             return false;
         }
+
         return true;
     }
 
