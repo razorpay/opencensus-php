@@ -691,8 +691,7 @@ class Service extends Base\Service
             TraceCode::REFUND_RETRY_INITIATED,
             $input);
 
-        // Adding a lock for 15 minutes to avoid race conditions on the cron.
-        // This cron is only executed once a day for now.
+        // Adding a lock for 60 minutes to avoid race conditions on the cron.
         $summary = $this->mutex->acquireAndRelease(
             'refund_retry_failed',
             function() use ($input)
@@ -746,7 +745,7 @@ class Service extends Base\Service
                     'status'        => $status,
                 ];
             },
-            900,
+            3600,
             ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
 
         $this->trace->info(

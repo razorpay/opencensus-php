@@ -389,7 +389,7 @@ class Gateway extends Base\Gateway
         $createdAt = Carbon::createFromTimestamp($input['payment']['created_at'], Timezone::IST);
 
         $time = $createdAt->format(self::TIME_FORMAT);
-        $date = $createdAt->format('mdY');
+        $date = $createdAt->format('dmY');
 
         $content = [
             RequestFields::TRANSACTION_TYPE    => TransactionType::REFUND,

@@ -35,6 +35,7 @@ trait PaymentTrait
     use PaymentEbsTrait;
     use PaymentCreationTrait;
     use PaymentFssTrait;
+    use PaymentWalletAirtelMoneyTrait;
 
     use RequestResponseFlowTrait
     {
@@ -457,7 +458,7 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function getWalletFormViaCreateRoute($payment)
+    protected function getFormViaCreateRoute($payment, $view = 'gateway.gatewayWalletForm')
     {
         $request = [
             'method'  => 'POST',
@@ -469,7 +470,7 @@ trait PaymentTrait
 
         $response = $this->makeRequestParent($request);
 
-        $response->assertViewIs('gateway.gatewayWalletForm');
+        $response->assertViewIs($view);
         $response->assertHeader('content-type', 'text/html; charset=UTF-8');
 
         return $this->getFormRequestFromResponse($response->getContent(), 'http://localhost');
@@ -1027,6 +1028,25 @@ trait PaymentTrait
         $payment['amount'] = 2000;
 
         $payment['recurring'] = true;
+
+        $payment['customer_id'] = 'cust_100000customer';
+
+        return $payment;
+    }
+
+    protected function getEmandateNetbankingRecurringPaymentArray($bank = 'HDFC', $amount = 2000)
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray($bank);
+
+        $payment['amount'] = $amount;
+
+        if (in_array($bank, Payment\Gateway::$zeroRupeeEmandateBanks, true) === true)
+        {
+            $payment['amount'] = 0;
+        }
+
+        $payment['method'] = Payment\Method::EMANDATE;
+        $payment['auth_type'] = Payment\AuthType::NETBANKING;
 
         $payment['customer_id'] = 'cust_100000customer';
 

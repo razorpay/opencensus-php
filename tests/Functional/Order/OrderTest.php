@@ -77,6 +77,34 @@ class OrderTest extends TestCase
         return $order;
     }
 
+    public function testEMandateOrderWithCustomerFeeBearer()
+    {
+        $this->fixtures->merchant->enableConvenienceFeeModel();
+
+        $this->startTest();
+    }
+
+    public function testEmandateRegistrationOrderWithZeroRupee()
+    {
+        $order = $this->startTest();
+
+        return $order;
+    }
+
+    public function testEmandateRegistrationOrderWithoutZeroRupee()
+    {
+        $order = $this->startTest();
+
+        return $order;
+    }
+
+    public function testEmandateRegistrationOrderWithInvalidBank()
+    {
+        $order = $this->startTest();
+
+        return $order;
+    }
+
     public function testCreateTPVOrderWithInvalidAccountNumber()
     {
         $this->startTest();

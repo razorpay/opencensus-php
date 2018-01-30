@@ -23,6 +23,26 @@ class Gateway extends Base\Gateway
 
         if ($this->isSecondRecurringPaymentRequest($input))
         {
+            if (($input['payment']['method'] === 'card') and
+                ($input['card']['iin'] === '400666') and
+                ($input['card']['last4'] === '0007'))
+            {
+
+                //Soft Decline for recurring payments
+                if ($input['payment']['amount'] === 4444)
+                {
+                    throw new Exception\GatewayErrorException(
+                        ErrorCode::BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE);
+                }
+
+                //Hard Decline for recurring payments
+                if ($input['payment']['amount'] === 5555)
+                {
+                    throw new Exception\GatewayErrorException(
+                        ErrorCode::BAD_REQUEST_CARD_STOLEN_OR_LOST );
+                }
+            }
+
             return;
         }
 
@@ -32,6 +52,7 @@ class Gateway extends Base\Gateway
             'method'            => $input['payment']['method'],
             'payment_id'        => $input['payment']['id'],
             'callback_url'      => $input['callbackUrl'],
+            'auth_type'         => $input['payment']['auth_type'],
             // This need to be 0 because if it's `false`, frontend converts
             // to "false" and Sharp server treats "false" as `true`.
             'recurring'         => 0,
@@ -112,6 +133,28 @@ class Gateway extends Base\Gateway
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE);
+        }
+
+        if ((isset($input['payment']['recurring']) === true) and
+            ($input['payment']['recurring'] === true) and
+            ($input['payment']['method'] === 'card') and
+            ($input['card']['iin'] === '400666') and
+            ($input['card']['last4'] === '0007'))
+        {
+
+            //Soft Decline for recurring payments
+            if ($input['payment']['amount'] === 4444)
+            {
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE);
+            }
+
+            //Hard Decline for recurring payments
+            if ($input['payment']['amount'] === 5555)
+            {
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_CARD_STOLEN_OR_LOST );
+            }
         }
 
         $this->verifyPaymentCreateResponse($input);

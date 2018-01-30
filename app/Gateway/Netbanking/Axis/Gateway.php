@@ -36,9 +36,6 @@ class Gateway extends Base\Gateway
         RequestFields::AMOUNT                   => Base\Entity::AMOUNT,
         RequestFields::MERCHANT_REFERENCE       => Base\Entity::PAYMENT_ID,
         RequestFields::ITEM_CODE                => Base\Entity::REFERENCE1,
-
-        // E Mandate specific fields
-        Emandate\RequestFields::CUSTOMER_REF_NO => Base\Entity::SI_TOKEN
     ];
 
     public function setGatewayParams($input, $mode, $terminal)
@@ -618,7 +615,6 @@ class Gateway extends Base\Gateway
             {
                 return $this->getTestMerchantIdCorporate();
             }
-
         }
         else
         {

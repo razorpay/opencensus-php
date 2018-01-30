@@ -19,6 +19,11 @@ class Validator extends Base\Validator
         Entity::SOURCE_TYPE     => 'sometimes|filled|string|max:32|in:refund,payout'
     ];
 
+    protected static $bulkReconcileRules = [
+        'from' => 'required_with:to|epoch|date_format:U',
+        'to'   => 'required_with:from|epoch|date_format:U',
+    ];
+
     protected function validateStatus($attribute, $value)
     {
         if (Status::isValidForBulkUpdate($value) === false)

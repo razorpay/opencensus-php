@@ -362,7 +362,11 @@ class Validator
         if (isset(RequestProcessor\Base::GATEWAY_SENDER_MAPPING[$value]) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                    'Invalid value for' . RequestProcessor\Base::GATEWAY
+                    'Invalid value for ' . RequestProcessor\Base::GATEWAY,
+                    RequestProcessor\Base::GATEWAY,
+                    [
+                        RequestProcessor\Base::GATEWAY => $value
+                    ]
             );
         }
     }

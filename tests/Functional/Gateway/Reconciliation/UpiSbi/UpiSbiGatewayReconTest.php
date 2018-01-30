@@ -1,5 +1,7 @@
 <?php
 
+namespace RZP\Tests\Functional\Gateway\Reconciliation\UpiSbiGatewayReconTest;
+
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 
@@ -33,6 +35,8 @@ class UpiSbiGatewayReconTest extends TestCase
         $this->gateway = Payment\Gateway::UPI_SBI;
 
         $this->fixtures->create('terminal:shared_upi_mindgate_sbi_terminal');
+
+        $this->gateway = Payment\Gateway::UPI_SBI;
 
         $this->fixtures->merchant->enableMethod(Merchant\Account::TEST_ACCOUNT, Payment\Method::UPI);
     }

@@ -37,6 +37,8 @@ class Entity extends Base\PublicEntity
     const RECURRING_STATUS          = 'recurring_status';
     const RECURRING_FAILURE_REASON  = 'recurring_failure_reason';
     const RECURRING_DETAILS         = 'recurring_details';
+    const BENEFICIARY_NAME          = 'beneficiary_name';
+    const IFSC                      = 'ifsc';
     const USED_COUNT                = 'used_count';
     const USED_AT                   = 'used_at';
     const EXPIRED_AT                = 'expired_at';
@@ -70,6 +72,8 @@ class Entity extends Base\PublicEntity
         self::WALLET,
         self::METHOD,
         self::ACCOUNT_NUMBER,
+        self::BENEFICIARY_NAME,
+        self::IFSC,
         self::TOKEN,
         self::GATEWAY_TOKEN,
         self::GATEWAY_TOKEN2,
@@ -84,6 +88,8 @@ class Entity extends Base\PublicEntity
         self::BANK,
         self::WALLET,
         self::ACCOUNT_NUMBER,
+        self::BENEFICIARY_NAME,
+        self::IFSC,
         self::TOKEN,
         self::METHOD,
         self::CARD_ID,
@@ -124,6 +130,8 @@ class Entity extends Base\PublicEntity
         self::WALLET                    => null,
         self::CARD_ID                   => null,
         self::ACCOUNT_NUMBER            => null,
+        self::IFSC                      => null,
+        self::BENEFICIARY_NAME          => null,
         self::BANK                      => null,
         self::GATEWAY_TOKEN2            => null,
         self::RECURRING                 => false,
@@ -195,6 +203,16 @@ class Entity extends Base\PublicEntity
     public function getAccountNumber()
     {
         return $this->getAttribute(self::ACCOUNT_NUMBER);
+    }
+
+    public function getBeneficiaryName()
+    {
+        return $this->getAttribute(self::BENEFICIARY_NAME);
+    }
+
+    public function getIfsc()
+    {
+        return $this->getAttribute(self::IFSC);
     }
 
     public function getToken()

@@ -14,6 +14,7 @@ class Validator extends Base\Validator
     const INVALID_STATUS_CHANGE_MESSAGE                 = 'Invalid status change';
     const INVALID_CLARIFICATION_MODE_MESSAGE            = 'Invalid clarification mode';
     const INVALID_CLARIFICATION_MODE_FOR_STATUS_MESSAGE = 'Clarification mode should not be sent for this status';
+    const INVALID_FILE_NON_NGO_ORGANISATION_TYPE        = 'Invalid file for non NGO organisation type';
 
     protected static $createRules = [
         Entity::CONTACT_NAME                    => 'sometimes|alpha_space|max:255',
@@ -71,6 +72,8 @@ class Validator extends Base\Validator
         Entity::PROMOTER_PROOF_URL              => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
         Entity::PROMOTER_PAN_URL                => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
         Entity::PROMOTER_ADDRESS_URL            => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
+        Entity::FORM_12A_URL                    => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip|custom',
+        Entity::FORM_80G_URL                    => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip|custom',
         Entity::TRANSACTION_REPORT_EMAIL        => 'sometimes|custom',
         Entity::ROLE                            => 'sometimes|max:255',
         Entity::DEPARTMENT                      => 'sometimes|max:255',
@@ -135,6 +138,8 @@ class Validator extends Base\Validator
         Entity::PROMOTER_PROOF_URL              => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
         Entity::PROMOTER_PAN_URL                => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
         Entity::PROMOTER_ADDRESS_URL            => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
+        Entity::FORM_12A_URL                    => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip|custom',
+        Entity::FORM_80G_URL                    => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip|custom',
         Entity::TRANSACTION_REPORT_EMAIL        => 'sometimes|custom',
         Entity::ROLE                            => 'sometimes|max:255',
         Entity::DEPARTMENT                      => 'sometimes|max:255',
@@ -170,6 +175,14 @@ class Validator extends Base\Validator
         'clarification_mode',
     ];
 
+    /**
+     * Validate the transaction report email
+     *
+     * @param $attribute
+     * @param $value
+     *
+     * @throws Exception\BadRequestValidationFailureException
+     */
     public function validateTransactionReportEmail($attribute, $value)
     {
         $emails = explode(',', $value);
@@ -235,6 +248,22 @@ class Validator extends Base\Validator
         if (in_array($newStatus, Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING[$currentStatus], true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(self::INVALID_STATUS_CHANGE_MESSAGE);
+        }
+    }
+
+    public function validateForm12aUrl($attribute, $value)
+    {
+        if ($this->entity->getBusinessType() !== BusinessType::NGO)
+        {
+            throw new Exception\BadRequestValidationFailureException(self::INVALID_FILE_NON_NGO_ORGANISATION_TYPE);
+        }
+    }
+
+    public function validateForm80gUrl($attribute, $value)
+    {
+        if ($this->entity->getBusinessType() !== BusinessType::NGO)
+        {
+            throw new Exception\BadRequestValidationFailureException(self::INVALID_FILE_NON_NGO_ORGANISATION_TYPE);
         }
     }
 

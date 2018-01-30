@@ -14,6 +14,7 @@ class Method
     const TRANSFER      = 'transfer';
     const BANK_TRANSFER = 'bank_transfer';
     const AEPS          = 'aeps';
+    const EMANDATE      = 'emandate';
 
     protected static $methods = [
         self::CARD          => 'Card',
@@ -24,6 +25,11 @@ class Method
         self::EMI           => 'EMI',
         self::TRANSFER      => 'Marketplace Transfer',
         self::BANK_TRANSFER => 'Bank Transfer',
+        // TODO: Uncomment this when we actually want to start
+        // using emandate as a method Currently we are just
+        // accepting emandate as a method from the request
+        // but not actually setting the method as emandate.
+        self::EMANDATE      => 'eMandate',
     ];
 
     protected static $asynchronous = [

@@ -17,6 +17,7 @@ class Module
     const OPENWALLET    = 'openwallet';
     const ONBOARDING    = 'onboarding';
     const SUBSCRIPTIONS = 'subscriptions';
+    const BATCH         = 'batch';
 
     /**
      * @param string $module

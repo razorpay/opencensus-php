@@ -24,24 +24,25 @@
     </td>
   </tr>
 </table>
+@if(!isset($showContact) || $showContact !== false)
+  <table class="row footer">
+    <tr>
+      <td class="wrapper last">
 
-<table class="row footer">
-  <tr>
-    <td class="wrapper last">
+        <table class="seven columns">
+          <tr>
+            <td class="center">
+              <center>
+                Reach out to us by replying
+                to this email or at <a href="mailto:support@razorpay.com">
+                support@razorpay.com</a>
+              </center>
+            </td>
+            <td class="expander"></td>
+          </tr>
+        </table>
 
-      <table class="seven columns">
-        <tr>
-          <td class="center">
-            <center>
-              Reach out to us by replying
-              to this email or at <a href="mailto:support@razorpay.com">
-              support@razorpay.com</a>
-            </center>
-          </td>
-          <td class="expander"></td>
-        </tr>
-      </table>
-
-    </td>
-  </tr>
-</table>
+      </td>
+    </tr>
+  </table>
+@endif

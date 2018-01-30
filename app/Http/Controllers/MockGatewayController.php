@@ -316,7 +316,7 @@ class MockGatewayController extends Controller
     {
         $input = Request::all();
 
-        $recon = $this->gateway->recon($gateway);
+        $recon = $this->gateway->recon($gateway, $input);
 
         return $recon->generateReconciliation($input);
     }

@@ -524,6 +524,13 @@ class Entity extends Base\PublicEntity
         return ($network === Card\Network::$fullName[Card\Network::RUPAY]);
     }
 
+    public function isDiners()
+    {
+        $network = $this->getNetwork();
+
+        return ($network === Card\Network::$fullName[Card\Network::DICL]);
+    }
+
     public function isDebit()
     {
         $type = $this->getType();

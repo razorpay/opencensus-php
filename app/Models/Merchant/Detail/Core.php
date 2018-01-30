@@ -142,7 +142,7 @@ class Core extends Base\Core
 
             $this->trace->info(
                 TraceCode::CREATE_MERCHANT_DETAIL,
-                [ 'merchant_id'   => $merchant->getId()]);
+                ['merchant_id' => $merchant->getId()]);
         }
         catch (\Throwable $e)
         {

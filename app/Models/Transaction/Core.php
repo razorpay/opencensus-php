@@ -26,6 +26,7 @@ use RZP\Models\Transfer;
 use RZP\Models\Feature;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Merchant\FeeModel;
+use RZP\Models\Merchant\RefundSource;
 use RZP\Constants\Entity as E;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
@@ -318,8 +319,20 @@ class Core extends Base\Core
             list($credit, $fee, $tax, $feesSplit) = $this->calculatePostpaidFee($txn);
         }
 
-        $txn->setCredit($credit);
+        $txn->setCredit(0);
         $txn->setDebit(0);
+
+        if ($credit >= 0)
+        {
+            $txn->setCredit($credit);
+        }
+        else
+        {
+            $debit = -1 * $credit;
+
+            $txn->setDebit($debit);
+        }
+
         $txn->setFee($fee);
         $txn->setTax($tax);
 
@@ -344,12 +357,15 @@ class Core extends Base\Core
 
         list($fee, $tax, $feesSplit) = $this->calculateMerchantFees($transaction);
 
+        $entity = $transaction->source;
+
         switch (true)
         {
             case ($transaction->isFeeBearerCustomer()):
                 return $this->calculateFeeForPrepaidDefault($transaction);
 
-            case ($amountCredits > 0):
+            // @todo: Need to rethink this.
+            case (($amountCredits > 0) and ($entity->getAmount() !== 0)):
                 return $this->calculateFeeForAmountCredit($transaction);
 
             case ($feeCredits >= $fee):
@@ -377,9 +393,11 @@ class Core extends Base\Core
 
         list($fee, $tax, $feesSplit) = $this->calculateMerchantFees($transaction);
 
+        $entity = $transaction->source;
+
         switch (true)
         {
-            case ($amountCredits > 0):
+            case (($amountCredits > 0) and ($entity->getAmount() !== 0)):
                 return $this->calculateFeeForAmountCredit($transaction);
 
             case ($feeCredits >= $fee):
@@ -445,7 +463,7 @@ class Core extends Base\Core
         $credit = $amount;
         $feeCredits = $fee;
 
-        $transaction->setFeeCredits($feeCredits);
+        $transaction->setCredits($feeCredits);
         $transaction->setCreditType(Transaction\CreditType::FEE);
 
         return [$credit, $fee, $tax, $feesSplit];
@@ -536,94 +554,62 @@ class Core extends Base\Core
 
     public function createFromRefund(Refund\Entity $refund)
     {
+        // refund's payment must have transaction
         $payment = $refund->payment;
 
         assert ($payment->hasTransaction() === true);
 
-        $settledAt = 1;
+        $merchant = $refund->merchant;
 
-        $txnData = array(
+        // create Transaction
+        $txn = new Transaction\Entity;
+
+        $txn->generateId();
+
+        $txn->sourceAssociate($refund);
+
+        $txn->merchant()->associate($merchant);
+
+        $settledAt = $this->getSettledAtTimestampForRefund($refund);
+
+        $txnData = [
             Transaction\Entity::AMOUNT          => $refund->getBaseAmount(),
             Transaction\Entity::TYPE            => Transaction\Type::REFUND,
             Transaction\Entity::FEE             => 0,
             Transaction\Entity::TAX             => 0,
             Transaction\Entity::DEBIT           => $refund->getBaseAmount(),
             Transaction\Entity::CREDIT          => 0,
-            Transaction\Entity::CURRENCY        => Currency\Currency::INR);
+            Transaction\Entity::CURRENCY        => Currency\Currency::INR,
+            Transaction\Entity::CHANNEL         => $merchant->getChannel(),
+            Transaction\Entity::SETTLED_AT      => $settledAt
+        ];
 
-        $gateway = $refund->getGateway();
-
-        if ($gateway === Payment\Gateway::ATOM)
+        if ($merchant->getRefundSource() === RefundSource::CREDITS)
         {
-            $txnData[Transaction\Entity::RECONCILED_AT] = time();
+            $txnData[Transaction\Entity::DEBIT] = 0;
+
+            $txnData[Transaction\Entity::CREDITS] = $refund->getBaseAmount();
+
+            $txnData[Transaction\Entity::CREDIT_TYPE] = CreditType::REFUND;
         }
 
-        $channel = $payment->merchant->getChannel();
-
-        if ($payment->hasBeenCaptured())
-        {
-            $paymentTxn = $payment->transaction;
-
-            if ($paymentTxn->isSettled() === true)
-            {
-                $txnData[Transaction\Entity::SETTLED_AT] = $settledAt;
-            }
-            else
-            {
-                $paymentSettledAt = $paymentTxn->getSettledAt();
-
-                $txnData[Transaction\Entity::SETTLED_AT] = $paymentSettledAt;
-            }
-        }
-
-        $txnData[Transaction\Entity::CHANNEL] = $channel;
-
-        $txn = new Transaction\Entity($txnData);
-        $txn->generateId();
-
-        $txn->sourceAssociate($refund);
-        $txn->merchant()->associate($refund->merchant);
+        $txn->fill($txnData);
 
         $paymentStatus = $payment->getStatus();
 
-        switch($paymentStatus)
+        if ($payment->getStatus() === Payment\Status::CAPTURED)
         {
-            case Payment\Status::AUTHORIZED:
-                // When refunding authorized payments, we do not charge merchants
-                //$this->updateNodalBalance($txn);
+            // TODO : merge all balance and credits update in updateBalances
+            if ($merchant->getRefundSource() === RefundSource::CREDITS)
+            {
+                // transaction has to be saved as we create associated credit log
+                // transaction inside the updateCredits method.
+                $this->repo->saveOrFail($txn);
 
-                break;
+                $this->updateCredits($txn, $refund);
+            }
 
-            case Payment\Status::CAPTURED:
-                $this->updateBalances($txn);
-
-                break;
-
-            case Payment\Status::REFUNDED:
-                //
-                // We are creating refund transaction via recon also.
-                // For this, we don't have to verify on gateway whether
-                // it has already been refunded or not. Irrespective of
-                // that, we will always create a refund through recon
-                // wherever applicable (payment transaction is present)
-                //
-
-                // Payment\Refund\Validator::validateVerifyInternalRefundAllowed($payment->getGateway());
-
-                //$this->updateNodalBalance($txn);
-
-                break;
-
-            default:
-                throw new Exception\LogicException(
-                    'Should not have reached here',
-                    null,
-                    [
-                        'refund_id'         => $refund->getId(),
-                        'payment_id'        => $payment->getId(),
-                        'status'            => $paymentStatus,
-                        'transaction_id'    => $txn->getId(),
-                    ]);
+            $this->updateBalances($txn);
         }
 
         return $txn;
@@ -1004,7 +990,8 @@ class Core extends Base\Core
     public function updateFeeCredits(Transaction\Entity $txn)
     {
         // While filling the txn fees and amount, we have not used fee credits.
-        if ($txn->getFeeCredits() === 0)
+        if (($txn->isFeeCredits() === false) or
+            ($txn->getCredits() === 0))
         {
             return;
         }
@@ -1041,6 +1028,42 @@ class Core extends Base\Core
 
         // // Nodal balance needs to be saved because of amount credit update
         // $this->repo->balance->updateBalance($nodalBalance);
+    }
+
+    public function updateRefundCredits(Transaction\Entity $txn)
+    {
+        // While filling the txn fees and amount, we have not used fee credits.
+        if (($txn->isTypeRefund() === false) or
+            ($txn->isRefundCredits() === false))
+        {
+            return;
+        }
+
+        $amount = $txn->getAmount();
+
+        $merchantBalance = $this->getBalanceLockForUpdate($txn->merchant);
+
+        $merchantId = $merchantBalance->merchant->getId();
+
+        $refundCredits = $this->getMerchantCreditsOfType($merchantBalance, Credits\Type::REFUND);
+
+        if ($refundCredits < $amount)
+        {
+            throw new Exception\LogicException(
+                'Refund Credits should be higher or equal to the refund amount',
+                null,
+                [
+                    'transaction_id'    => $txn->getId(),
+                    'merchant_id'       => $merchantId,
+                    'refund_credits'    => $refundCredits,
+                    'amount'            => $amount,
+                ]);
+        }
+
+        $merchantBalance->subtractRefundCredits($amount);
+
+        //create a credit transaction for the same
+        $this->createCreditTransaction($amount, $txn, Credits\Type::REFUND);
     }
 
     protected function getNodalBalanceLockForUpdate($channel)
@@ -1100,6 +1123,20 @@ class Core extends Base\Core
         return $returnTime;
     }
 
+    protected function getSettledAtTimestampForRefund(Refund\Entity $refund)
+    {
+        $payment = $refund->payment;
+
+        if ($payment->hasBeenCaptured())
+        {
+            $paymentTxn = $payment->transaction;
+
+            return ($paymentTxn->isSettled() ? 1 : $paymentTxn->getSettledAt());
+        }
+
+        return null;
+    }
+
     public function calculateSettledAtTimestamp($timestamp, $addDays, $ignoreBankHolidays = false)
     {
         $capturedAt = Carbon::createFromTimestamp($timestamp, Timezone::IST);
@@ -1115,9 +1152,13 @@ class Core extends Base\Core
         {
             $this->updateAmountCredits($txn, $entity);
         }
-        else if ($txn->getFeeCredits() > 0)
+        else if ($txn->isFeeCredits() === true)
         {
             $this->updateFeeCredits($txn);
+        }
+        else if ($txn->isRefundCredits() === true)
+        {
+            $this->updateRefundCredits($txn);
         }
     }
 
@@ -1132,6 +1173,10 @@ class Core extends Base\Core
             if ($type === Credits\Type::FEE)
             {
                 $credits = $merchantBalance->getFeeCredits();
+            }
+            else if ($type === Credits\Type::REFUND)
+            {
+                $credits = $merchantBalance->getRefundCredits();
             }
             else
             {

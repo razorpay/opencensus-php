@@ -26,9 +26,13 @@ class Core extends Base\Core
 
         $admin->build($input);
 
+        // order of arg is important for diff to be stored in ES
+        // This is done to apply eloquent casts to input
+        $dirtyData = array_merge($input, $admin->toArray());
+
         $this->app['workflow']
             ->setEntityAndId($admin->getEntity(), $admin->getId())
-            ->handle((new \StdClass()), $input);
+            ->handle((new \StdClass()), $dirtyData);
 
         $this->repo->saveOrFail($admin);
 
