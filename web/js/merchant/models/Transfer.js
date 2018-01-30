@@ -1,8 +1,7 @@
 import GenericEntity from './GenericEntity';
 
 export default class Transfer extends GenericEntity {
-  listRouteName = 'transfer_fetch_multiple';
-  detailsRouteName = 'transfer_fetch';
+  resourceUrl = 'transfers';
 
   resourceFields = [
     'account',
@@ -20,40 +19,23 @@ export default class Transfer extends GenericEntity {
     let params = { '{id}': this.id };
 
     return this.makeGenericAjaxCall({
+      url: `${this.resourceUrl}/${this.id}/reversals`,
       method: 'post',
-      data: {
-        route_name: 'transfer_reversal',
-        url_params: JSON.stringify(params),
-        body: {
-          ...data,
-        },
-      },
+      data,
     });
   }
 
   update(data) {
-    let params = { '{id}': this.id };
-
     return this.makeGenericAjaxCall({
+      url: `${this.resourceUrl}/${this.id}`,
       method: 'patch',
-      data: {
-        route_name: 'transfer_edit',
-        url_params: JSON.stringify(params),
-        body: {
-          ...data,
-        },
-      },
+      data,
     });
   }
 
   fetchReversals() {
-    let data = {};
-
-    data.url_params = JSON.stringify({
-      '{id}': this.id,
+    return this.makeGenericAjaxCall({
+      url: `${this.resourceUrl}/${this.id}/reversals`,
     });
-    data.route_name = 'transfer_reversal';
-
-    return this.makeGenericAjaxCall({ data });
   }
 }
