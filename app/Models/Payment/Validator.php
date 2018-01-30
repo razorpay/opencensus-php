@@ -26,7 +26,7 @@ class Validator extends Base\Validator
         'amount'                     => 'required|integer',
         'currency'                   => 'required|string|size:3',
         'method'                     => 'required|string|custom',
-        'vpa'                        => 'sometimes_if:method,upi|string|max:100|custom',
+        'vpa'                        => 'sometimes_if:method,upi|string|filled|max:100|custom',
         'aadhaar'                    => 'required_if:method,aeps|array',
         'aadhaar.number'             => 'required_if:method,aeps|size:12|string',
         'aadhaar.fingerprint'        => 'required_if:method,aeps|max:999|string',
@@ -242,7 +242,7 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateVpa($attribute, $vpa, $parameter)
+    protected function validateVpa($attribute, $vpa)
     {
         if ((isset($this->data['_']['flow']) === true) and
             ($this->data['_']['flow'] === 'intent'))
