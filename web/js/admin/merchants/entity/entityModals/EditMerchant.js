@@ -67,17 +67,27 @@ export default class EditMerchant extends Component {
   }
 
   handleConfirm = body => {
+    let auto_refund_delay = [];
     body.groups = this.selectedGroups.keys();
     if (body.admins) {
       body.admins = body.admins.split(',');
     }
     body.max_payment_amount *= 100;
-    body.transaction_report_email = body.transaction_report_email.split(',');
+    body.transaction_report_email = body.transaction_report_email
+      ? body.transaction_report_email.split(',')
+      : [];
 
     this.dropUnchangedFields(body);
 
     if (body.transaction_report_email) {
       body.transaction_report_email = body.transaction_report_email.join(',');
+    }
+
+    if (body.auto_refund_delay_val) {
+      body.auto_refund_delay = `${body.auto_refund_delay_val} ${body.auto_refund_delay_type}`;
+
+      delete body.auto_refund_delay_type;
+      delete body.auto_refund_delay_val;
     }
 
     if (!Object.keys(body).length) {
@@ -213,18 +223,6 @@ export default class EditMerchant extends Component {
             ))}
           </SelectField>
 
-          <ShowWhen permission="edit_merchant_risk_threshold">
-            <Field
-              label="Risk Threshold"
-              name="risk_threshold"
-              defaultValue={details.risk_threshold}
-              type="number"
-              min="5"
-              max="20"
-              placeholder="Valid range: 5 - 20"
-            />
-          </ShowWhen>
-
           <Field
             label="Website"
             name="website"
@@ -265,6 +263,30 @@ export default class EditMerchant extends Component {
             <option value="prepaid">Prepaid</option>
             <option value="postpaid">Postpaid</option>
           </SelectField>
+
+          <div class="field multi">
+            <label>Auto Refund Delay</label>
+            <input name="auto_refund_delay_val" />
+            <select name="auto_refund_delay_type">
+              <option value="days">Days</option>
+              <option value="hours">Hours</option>
+              <option value="mins">Minutes</option>
+            </select>
+          </div>
+
+          <SwitchField
+            label="Auto Capture Late Auth"
+            name="auto_capture_late_auth"
+            defaultValue={details.auto_capture_late_auth ? '1' : '0'}
+          />
+
+          {details.convert_currency != null ? (
+            <SwitchField
+              label="Convert Currency"
+              name="convert_currency"
+              defaultValue={details.convert_currency ? '1' : '0'}
+            />
+          ) : null}
 
           <div class="field">
             <label>Groups</label>

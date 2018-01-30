@@ -40,8 +40,10 @@ export default class ActivationWizard extends Component {
   };
 
   componentWillMount() {
+    const needKyc = this.props.data['need_kyc'] || 0;
+
     this.setState({
-      linkedAccountKyc: this.props.data['need_kyc'] || 0,
+      linkedAccountKyc: needKyc,
     });
 
     if (this.props.accountId) {
@@ -49,7 +51,7 @@ export default class ActivationWizard extends Component {
         activationForm =>
           activationForm.name !== 'activationContactDetails' &&
           activationForm.name !== 'activationWebsiteDetails' &&
-          (this.state.linkedAccountKyc === 0
+          (needKyc === 0
             ? activationForm.name !== 'activationDocumentUpload'
             : true)
       );
