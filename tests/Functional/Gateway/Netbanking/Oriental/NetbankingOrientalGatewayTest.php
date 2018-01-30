@@ -37,6 +37,9 @@ class NetbankingOrientalGatewayTest extends TestCase
 
         $this->assertEquals(Payment\Status::CAPTURED, $payment[Payment\Entity::STATUS]);
 
+        // For netbanking payments, acquirer data contains bank_transaction_id which is equal to reference1 attribute
+        $this->assertEquals(9999999999, $payment[Payment\Entity::ACQUIRER_DATA]['bank_transaction_id']);
+
         $netbanking = $this->getLastEntity(ConstantsEntity::NETBANKING, true);
 
         $this->assertTestResponse($netbanking);
@@ -44,7 +47,12 @@ class NetbankingOrientalGatewayTest extends TestCase
 
     public function testPaymentFailed()
     {
-        $this->createPaymentFailed();
+        $payment = $this->createPaymentFailed();
+
+        $this->assertEquals(Payment\Status::FAILED, $payment[Payment\Entity::STATUS]);
+
+        // The payment fails and an exception is thrown before acquirer data is updated
+        $this->assertNull($payment[Payment\Entity::ACQUIRER_DATA]['bank_transaction_id']);
 
         $netbanking = $this->getLastEntity(ConstantsEntity::NETBANKING, true);
 

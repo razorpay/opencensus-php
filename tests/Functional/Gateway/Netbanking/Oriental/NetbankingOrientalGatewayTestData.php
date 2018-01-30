@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: mayankamencherla
- * Date: 12/01/18
- * Time: 4:26 PM
- */
 
 namespace RZP\Tests\Functional\Gateway\Oriental;
 
