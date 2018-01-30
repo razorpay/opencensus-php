@@ -93,7 +93,7 @@ class NetbankingCsbGatewayTest extends TestCase
         $this->assertEquals(1, $payment[Payment\Entity::VERIFIED]);
         $this->assertEquals(Payment\Status::CAPTURED, $payment[Payment\Entity::STATUS]);
     }
-    
+
     public function testPaymentFailedVerify()
     {
         $payment = $this->testPaymentFailed();
@@ -113,7 +113,12 @@ class NetbankingCsbGatewayTest extends TestCase
 
         $netbanking = $this->getLastEntity(ConstantsEntity::NETBANKING, true);
 
-        $this->assertTestResponse($netbanking, 'testPaymentFailedNetbankingEntity');
+        $testData = $this->testData['testPaymentFailedNetbankingEntity'];
+
+        // The status changes from 'N' to 'Y' after verification
+        $testData['status'] = 'Y';
+
+        $this->assertArraySelectiveEquals($testData, $netbanking);
     }
 
     // TODO: testPaymentFailedVerifyFailed

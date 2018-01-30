@@ -244,7 +244,7 @@ class Gateway extends Base\Gateway
         if ((empty($wallet[Base\Entity::STATUS]) === false) or
             ($wallet[Base\Entity::STATUS] !== Status::SUCCESS))
         {
-            $contentToSave[Base\Entity::STATUS] = $content[ResponseFields::VERIFICATION];
+            $contentToSave[ResponseFields::STATUS] = $content[ResponseFields::VERIFICATION];
         }
 
         $this->updateGatewayPaymentEntity($wallet, $contentToSave, false);
