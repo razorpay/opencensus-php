@@ -358,7 +358,7 @@ export const getTimelineData = ({
       groupColor = colors[index % colors.length];
 
     const dataset = {
-      label: titleCase(groupLabel),
+      label: groupLabel,
       backgroundColor: groupColor,
       borderColor: groupColor,
       data: [],
