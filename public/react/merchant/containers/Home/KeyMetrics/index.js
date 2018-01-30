@@ -217,11 +217,12 @@ class KeyMetricsContainer extends Component {
               );
 
               /*
+               * For Saved Card Txns tab
                * 1) If number of saved cards is less than 15%
                *    hide the tab for the merchant
-               * 2) If tab is already hidden, we should not show again
+               * 2) Decide to show the tab or not only on initial load
                */
-              if (tabState.data.showTab) {
+              if (isInitialLoad) {
                 tabState.data.showTab = tabState.data.count > 15;
               }
             } else {
