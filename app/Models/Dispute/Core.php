@@ -171,13 +171,13 @@ class Core extends Base\Core
                 $dispute = $this->updateForMerchant($dispute, $input);
             }
 
-            if (empty($files) === false )
-            {
-                $response['files'] = $fileCore->uploadFiles($dispute, $files);
-            }
-
             $response['dispute'] = $dispute->toArrayPublic();
 
+            if (empty($files) === false )
+            {
+                $response['dispute']['files'] = $fileCore->uploadFiles($dispute, $files);
+            }
+            
             return $response;
         });
 
