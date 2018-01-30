@@ -4,6 +4,7 @@ namespace RZP\Http\Controllers;
 
 use ApiResponse;
 use Request;
+use RZP\Models\Feature\Constants;
 
 class FeatureController extends Controller
 {
@@ -33,7 +34,7 @@ class FeatureController extends Controller
      */
     public function addFeaturesToAccounts(string $entityId)
     {
-        return $this->addFeatures('account', $entityId);
+        return $this->addFeatures(Constants::MERCHANT, $entityId);
     }
 
     /**
@@ -45,7 +46,7 @@ class FeatureController extends Controller
      */
     public function addFeaturesToApplications(string $entityId)
     {
-        return $this->addFeatures('application', $entityId);
+        return $this->addFeatures(Constants::APPLICATION, $entityId);
     }
 
     public function multiAssignFeature()
