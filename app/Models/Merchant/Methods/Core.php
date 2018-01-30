@@ -53,7 +53,7 @@ class Core extends Base\Core
         return $methods->toArray();
     }
 
-    public function validatePricingPlanForMethods($merchant, $plan, $methods = null)
+    public function validatePricingPlanForMethods($merchant, $plan, $methods)
     {
         if ($methods === null)
         {
@@ -82,13 +82,8 @@ class Core extends Base\Core
         $this->validateInternationalPricingForMerchant($merchant, $plan);
     }
 
-    public function checkPricing($merchant, $methods = null)
+    public function checkPricing($merchant, $methods)
     {
-        if ($methods === null)
-        {
-            $methods = $this->getPaymentMethods($merchant);
-        }
-
         $plan = $this->repo->pricing->getMerchantPricingPlan($merchant);
 
         $this->validatePricingPlanForMethods($merchant, $plan, $methods);
