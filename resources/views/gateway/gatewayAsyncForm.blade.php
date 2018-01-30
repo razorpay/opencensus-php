@@ -384,14 +384,14 @@
         }
 
         function addCls(el, cl) {
-            var rgx = new RegExp('\\b' + cl+'\\b');
-            if(!rgx.test(cl)) {
-               el.className += ' ' + cl;
+            var rgx = new RegExp('\\b' + cl + '\\b');
+            if(!rgx.test(el.className)) {
+               el.className = el.className + ' ' + cl;
             }
         }
 
         function removeCls(el, cl) {
-            var rgx = new RegExp('\\b' + cl+'\\b', 'g');
+            var rgx = new RegExp('\\b' + cl + '\\b', 'g');
             el.className = el.className.replace(rgx, '');
         }
 
@@ -423,8 +423,20 @@
                     for (i in resp) {
                         if (resp.hasOwnProperty(i)) { respLen ++;}
                     }
-                    if (!respLen) {
-                       removeCls(gel('retry-btn'), 'hide')
+                    var front_fail;
+                    if (respLen && resp.response) {
+                        var qry = resp.response.split('&');
+                        for (var i = 0; i < qry.length; i++) {
+                            var key = qry[i].split('=');
+                            if ( key[0] && key[0].toLowerCase() === 'txnid') {
+                                front_fail = key[1] === 'undefined' || key[1] === 'null'; break;
+                            }
+                        }
+                    }
+                    if (!respLen || front_fail ) {
+                       removeCls(gel('cancel-btn'), 'hide');
+                       removeCls(gel('retry-btn'), 'hide');
+                       addCls(gel('spinner'), 'hide');
                     } else {
                         removeCls(gel('spinner'), 'hide')
                         addCls(gel('cancel-btn'), 'hide');
@@ -438,15 +450,16 @@
                                     addCls(gel('message-txt'), 'green');
                                     addCls(gel('cancel-btn'), 'green');
                                     addCls(gel('spinner'), 'hide');
+
+                                    CheckoutBridge.oncomplete(JSON.stringify(resp));
                                 }
                                 else {
                                     gel('message-txt').innerHTML = "<b>Payment Failed!</b>";
                                     addCls(gel('message-txt'), 'red');
                                     removeCls(gel('retry-btn'), 'hide')
                                     addCls(gel('spinner'), 'hide');
+                                    CheckoutBridge.oncomplete(JSON.stringify(resp || {error: 'Some error occurred'}));
                                 }
-
-                                CheckoutBridge.oncomplete(JSON.stringify(resp));
                             },
                             function(response) {
                                 if (response) {
