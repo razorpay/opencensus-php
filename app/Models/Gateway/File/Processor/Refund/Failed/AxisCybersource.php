@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Models\Base\PublicCollection;
 
 class AxisCybersource extends Base
 {
@@ -26,6 +27,25 @@ class AxisCybersource extends Base
     const APPROVAL_CODE           = 'Approval Code';
     const RAZORPAY_TRANSACTION_ID = 'Razorpay Payment ID';
     const RAZORPAY_REFUND_ID      = 'Razorpay Refund ID';
+
+    const CARD_GATEWAY_API_REFUND_SPAN = 15552000;
+
+    public function fetchEntities(): PublicCollection
+    {
+        $begin = $this->gatewayFile->getBegin();
+
+        $end = $this->gatewayFile->getEnd();
+
+        $refunds = $this->repo->refund->fetchFailedCardRefundsToProcessedManually(
+            $begin,
+            $end,
+            static::GATEWAY,
+            static::ACQUIRER,
+            static::CARD_GATEWAY_API_REFUND_SPAN
+            );
+
+        return $refunds;
+    }
 
     protected function formatDataForFile(array $data)
     {

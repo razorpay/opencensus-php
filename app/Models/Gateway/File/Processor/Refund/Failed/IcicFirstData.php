@@ -24,6 +24,25 @@ class IcicFirstData extends Base
     const STORE_ID                = 'Store ID';
     const ACQUIRER                =  Payment\Gateway::ACQUIRER_ICIC;
 
+    const CARD_GATEWAY_API_REFUND_SPAN = 15552000;
+
+    public function fetchEntities(): PublicCollection
+    {
+        $begin = $this->gatewayFile->getBegin();
+
+        $end = $this->gatewayFile->getEnd();
+
+        $refunds = $this->repo->refund->fetchFailedCardRefundsToProcessedManually(
+            $begin,
+            $end,
+            static::GATEWAY,
+            static::ACQUIRER,
+            static::CARD_GATEWAY_API_REFUND_SPAN
+            );
+
+        return $refunds;
+    }
+
     protected function formatDataForFile(array $data)
     {
         $formattedData = [];

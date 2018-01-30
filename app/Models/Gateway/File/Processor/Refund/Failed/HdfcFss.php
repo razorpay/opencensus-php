@@ -4,6 +4,7 @@ namespace RZP\Models\Gateway\File\Processor\Refund\Failed;
 
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
+use RZP\Models\Base\PublicCollection;
 
 class HdfcFss extends Base
 {
@@ -23,6 +24,25 @@ class HdfcFss extends Base
     const PAYMENT_ID         = 'Payment ID';
     const APPROVAL_CODE      = 'Approval Code';
     const REFUND_AMOUNT      = 'Refund Amount';
+
+    const CARD_GATEWAY_API_REFUND_SPAN = 15552000;
+
+    public function fetchEntities(): PublicCollection
+    {
+        $begin = $this->gatewayFile->getBegin();
+
+        $end = $this->gatewayFile->getEnd();
+
+        $refunds = $this->repo->refund->fetchFailedCardRefundsToProcessedManually(
+            $begin,
+            $end,
+            static::GATEWAY,
+            static::ACQUIRER,
+            static::CARD_GATEWAY_API_REFUND_SPAN
+            );
+
+        return $refunds;
+    }
 
     protected function formatDataForFile(array $data)
     {
