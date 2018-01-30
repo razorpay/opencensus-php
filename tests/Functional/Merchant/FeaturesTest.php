@@ -43,6 +43,16 @@ class FeaturesTest extends TestCase
         $this->startTest();
     }
 
+    public function testAddFeatureToApplication()
+    {
+        $this->addFeatureToEntity(Mode::TEST, true, ['dummy'], 'application', '1000000DemoApp');
+    }
+
+    public function testAddFeatureToAccount()
+    {
+        $this->addFeatureToEntity(Mode::TEST, true, ['dummy'], 'account', '100DemoAccount');
+    }
+
     public function testDeleteNonExistentFeatureFromMerchant()
     {
         $this->ba->adminAuth('test', null, 'org_100000razorpay');
@@ -1023,6 +1033,39 @@ class FeaturesTest extends TestCase
             'failed'        => 0,
             'failed_ids'    => []
         ];
+
+        $this->startTest($testData);
+    }
+
+    /**
+     * Adds a feature to an entity
+     *
+     * @param string      $addToMode
+     * @param bool        $shouldSync
+     * @param array       $featureNames
+     */
+    protected function addFeaturesToEntity(
+        string $addToMode,
+        bool $shouldSync,
+        array $featureNames,
+        string $entityType,
+        string $entityId)
+    {
+        $authMethod = 'appAuth' . studly_case($addToMode);
+
+        $this->ba->$authMethod();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['names'] = $featureNames;
+
+        $testData['request']['content']['should_sync'] = (int) $shouldSync;
+
+        $testData['request']['url'] = '/features/' . $entityType . 's/' . $entityId;
+
+        $testData['response']['content'][0]['entity_type'] = $entityType;
+
+        $testData['response']['content'][0]['entity_id'] = $entityId;
 
         $this->startTest($testData);
     }

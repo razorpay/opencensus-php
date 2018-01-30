@@ -707,4 +707,27 @@ return [
             'content' => [ ]
         ]
     ],
+
+    'addFeaturesToEntity' => [
+        'request'  => [
+            'url'     => '/features/applications/1000000DemoApp',
+            'method'  => 'post',
+            'server'  => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+            'content' => [
+                'names'       => ['dummy'],
+            ]
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'name'        => 'dummy',
+                    'entity_type' => 'application',
+                    'entity_id'   => '1000000DemoApp'
+                ]
+            ]
+        ]
+    ],
 ];
