@@ -151,13 +151,13 @@ class Core extends Base\Core
 
         $files = [];
 
-        $fileCore = new File\Core();
+        $fileCore = new File\Core;
 
         if (array_key_exists(DisputeFileEntity::FILES, $input) === true)
         {
             $files = $input[DisputeFileEntity::FILES];
 
-            $files = $fileCore->checkFileInput($files);
+            $files = $fileCore->checkFilesInput($files);
 
             unset($input[DisputeFileEntity::FILES]);
         }
@@ -197,7 +197,7 @@ class Core extends Base\Core
             array_merge($input, [Entity::ID => $dispute->getId()])
         );
 
-        (new Validator)->validateInput('merchant_edit', $input);
+        (new Validator)->validateInput(Validator::OPERATION_MERCHANT_EDIT, $input);
 
         $input = $this->generateInputForMerchantEdit($dispute, $input);
 

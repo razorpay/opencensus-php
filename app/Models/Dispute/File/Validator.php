@@ -32,7 +32,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $inputFilesRules = [
-        Entity::FILES             => 'required|array|between:1,'.Entity::MAX_NUM_FILES,
+        Entity::FILES              => 'required|array|between:1,'.Entity::MAX_NUM_FILES,
     ];
 
     protected function validateCategory(string $attribute, string $value)

@@ -52,6 +52,7 @@ class Entity extends Base\PublicEntity
         self::FILE_ID,
         self::NAME,
         self::CATEGORY,
+        self::CREATED_AT,
     ];
 
     protected $dates = [

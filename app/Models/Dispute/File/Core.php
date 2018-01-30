@@ -58,7 +58,7 @@ class Core extends Base\Core
         return $file;
     }
 
-    public function checkFileInput(array $files): array
+    public function checkFilesInput(array $files): array
     {
         $validator = new Validator();
 

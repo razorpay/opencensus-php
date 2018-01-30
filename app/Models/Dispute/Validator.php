@@ -9,6 +9,8 @@ use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
+    const OPERATION_MERCHANT_EDIT = 'merchant_edit';
+
     protected static $createRules = [
         Entity::GATEWAY_DISPUTE_ID     => 'required|alpha_num',
         Entity::GATEWAY_DISPUTE_STATUS => 'sometimes|string',
