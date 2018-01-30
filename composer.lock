@@ -132,7 +132,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2017-08-11T21:16:28+00:00"
+            "time": "2017-07-26T22:05:53+00:00"
         },
         {
             "name": "aws/aws-sdk-php-laravel",
@@ -1935,7 +1935,7 @@
                 "crawlerdetect",
                 "php crawler detect"
             ],
-            "time": "2017-08-07T18:48:00+00:00"
+            "time": "2017-07-03T20:56:40+00:00"
         },
         {
             "name": "jenssegers/agent",
@@ -2391,7 +2391,7 @@
                 "framework",
                 "laravel"
             ],
-            "time": "2017-08-03T12:59:42+00:00"
+            "time": "2017-07-19T19:26:19+00:00"
         },
         {
             "name": "laravel/tinker",
@@ -2645,7 +2645,7 @@
                 "sftp",
                 "storage"
             ],
-            "time": "2017-08-06T17:41:04+00:00"
+            "time": "2017-04-28T10:15:08+00:00"
         },
         {
             "name": "league/oauth2-server",
@@ -3568,7 +3568,7 @@
                 "parser",
                 "php"
             ],
-            "time": "2017-07-28T14:45:09+00:00"
+            "time": "2017-06-28T20:53:48+00:00"
         },
         {
             "name": "paragonie/random_compat",
@@ -3795,7 +3795,7 @@
                 "message",
                 "psr7"
             ],
-            "time": "2017-08-03T10:12:53+00:00"
+            "time": "2017-03-02T06:56:00+00:00"
         },
         {
             "name": "php-http/guzzle6-adapter",
@@ -4364,6 +4364,7 @@
                 "xls",
                 "xlsx"
             ],
+            "abandoned": "phpoffice/phpspreadsheet",
             "time": "2015-05-01T07:00:55+00:00"
         },
         {
@@ -4835,7 +4836,7 @@
                 "interactive",
                 "shell"
             ],
-            "time": "2017-07-29T19:30:02+00:00"
+            "time": "2017-07-22T15:14:19+00:00"
         },
         {
             "name": "ramsey/uuid",
@@ -4917,7 +4918,7 @@
                 "identifier",
                 "uuid"
             ],
-            "time": "2017-08-04T13:39:04+00:00"
+            "time": "2017-03-26T20:37:53+00:00"
         },
         {
             "name": "razorpay/ec2-metadata",
@@ -5108,7 +5109,7 @@
                 "php",
                 "razorpay"
             ],
-            "time": "2017-08-03T11:25:15+00:00"
+            "time": "2017-07-17T20:11:53+00:00"
         },
         {
             "name": "razorpay/slack",
@@ -5323,10 +5324,10 @@
                 "trace"
             ],
             "support": {
-                "source": "https://github.com/razorpay/trace/tree/2.0.6",
+                "source": "https://github.com/razorpay/trace/tree/2.0.4",
                 "issues": "https://github.com/razorpay/trace/issues"
             },
-            "time": "2017-10-24T13:59:57+00:00"
+            "time": "2017-10-03T14:26:14+00:00"
         },
         {
             "name": "razorpay/ufh-sdk-php",
@@ -5334,27 +5335,16 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/ufh-sdk-php.git",
-                "reference": "892a35415d6ef235806c472992af92a204e4e3fa"
+                "reference": "14550e3374dc62017187070254d1a62480ff0746"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/ufh-sdk-php/zipball/892a35415d6ef235806c472992af92a204e4e3fa",
-                "reference": "892a35415d6ef235806c472992af92a204e4e3fa",
+                "url": "https://api.github.com/repos/razorpay/ufh-sdk-php/zipball/14550e3374dc62017187070254d1a62480ff0746",
+                "reference": "14550e3374dc62017187070254d1a62480ff0746",
                 "shasum": ""
             },
             "require": {
-                "php-http/client-implementation": "^1.0",
-                "php-http/discovery": "^1.0",
-                "php-http/httplug": "^1.0",
-                "php-http/message": "^1.0",
-                "php-http/message-factory": "^1.0",
-                "php-http/multipart-stream-builder": "^1.0",
-                "psr/http-message": "^1.0"
-            },
-            "require-dev": {
-                "guzzlehttp/psr7": "^1.3",
-                "php-http/mock-client": "^1.0",
-                "phpunit/phpunit": "~6.3.0"
+                "guzzlehttp/guzzle": "~6.0"
             },
             "type": "library",
             "autoload": {
@@ -5382,7 +5372,7 @@
                 "source": "https://github.com/razorpay/ufh-sdk-php/tree/master",
                 "issues": "https://github.com/razorpay/ufh-sdk-php/issues"
             },
-            "time": "2017-12-18T09:54:09+00:00"
+            "time": "2018-01-30T07:21:27+00:00"
         },
         {
             "name": "razorpay/upi-clients",
@@ -5426,7 +5416,7 @@
                 "source": "https://github.com/razorpay/upi-clients/tree/master",
                 "issues": "https://github.com/razorpay/upi-clients/issues"
             },
-            "time": "2017-08-10T18:30:30+00:00"
+            "time": "2017-06-09T09:05:10+00:00"
         },
         {
             "name": "react/promise",
@@ -5855,7 +5845,7 @@
             ],
             "description": "Symfony Console Component",
             "homepage": "https://symfony.com",
-            "time": "2017-07-29T21:27:59+00:00"
+            "time": "2017-07-03T13:19:36+00:00"
         },
         {
             "name": "symfony/css-selector",
@@ -5964,7 +5954,7 @@
             ],
             "description": "Symfony Debug Component",
             "homepage": "https://symfony.com",
-            "time": "2017-07-28T15:27:31+00:00"
+            "time": "2017-07-05T13:02:37+00:00"
         },
         {
             "name": "symfony/event-dispatcher",
@@ -6611,7 +6601,7 @@
                 "uri",
                 "url"
             ],
-            "time": "2017-07-21T17:43:13+00:00"
+            "time": "2017-06-24T09:29:48+00:00"
         },
         {
             "name": "symfony/translation",
@@ -6744,7 +6734,7 @@
                 "debug",
                 "dump"
             ],
-            "time": "2017-07-28T06:06:09+00:00"
+            "time": "2017-07-10T14:18:27+00:00"
         },
         {
             "name": "symfony/yaml",
@@ -7093,7 +7083,7 @@
             ],
             "description": "Sends PHP test coverage information to Codacy.",
             "homepage": "https://github.com/codacy/php-codacy-coverage",
-            "time": "2017-08-09T14:23:33+00:00"
+            "time": "2017-04-05T13:51:33+00:00"
         },
         {
             "name": "fzaninotto/faker",
