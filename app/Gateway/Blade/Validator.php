@@ -54,7 +54,7 @@ class Validator extends JitValidator
         'Message.PARes.pan'                                                             => 'required|digits_between:13,19',
         'Message.PARes.Extension'                                                       => 'sometimes',
         'Message.PARes.Extension.@attributes.id'                                        => 'required_with:Message.PARes.Extension',
-        'Message.PARes.Extension.@attributes.critical'                                  => 'sometimes|critical',
+        'Message.PARes.Extension.@attributes.critical'                                  => 'sometimes',
         'Message.Signature'                                                             => 'sometimes|array',
         'Message.Signature.SignedInfo'                                                  => 'sometimes|array',
         'Message.Signature.SignedInfo.@attributes.xmlns'                                => 'sometimes',
