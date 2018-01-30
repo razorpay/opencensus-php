@@ -37,6 +37,30 @@ class FeatureController extends Controller
         return ApiResponse::json($data);
     }
 
+    /**
+     * Assigns features to accounts
+     *
+     * @param string|null $entityId
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function addFeaturesToAccounts(string $entityId)
+    {
+        return $this->addFeatures('account', $entityId);
+    }
+
+    /**
+     * Assigns features to applications
+     *
+     * @param string|null $entityId
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function addFeaturesToApplications(string $entityId)
+    {
+        return $this->addFeatures('application', $entityId);
+    }
+
     public function multiAssignFeature()
     {
         $input = Request::all();
