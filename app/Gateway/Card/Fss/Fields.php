@@ -45,6 +45,8 @@ class Fields
 
     const UDF5                          = 'udf5';
 
+    const UDF3                          = 'udf3';
+
     const TRAN_DATA                     = 'trandata';
 
     const TRANPORTAL_ID                 = 'tranportalId';
