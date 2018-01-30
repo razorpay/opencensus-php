@@ -24,7 +24,9 @@ class StorageClient
      * @param string $folderPath
      * @param string $bucketName
      */
-    public function __construct($folderPath = self::BASE_FOLDER_PATH, $bucketName = self::BUCKET_NAME)
+    public function __construct(
+        $folderPath = self::BASE_FOLDER_PATH,
+        $bucketName = self::BUCKET_NAME)
     {
         $this->folderPath = $folderPath;
 

@@ -34,22 +34,23 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::DISPUTE_FILES_UPLOAD,
             [
-                'id'          => $dispute->getId(),
-                'file'        => array_except($fileInput, Entity::FILE),
+                'id'   => $dispute->getId(),
+                'file' => array_except($fileInput, Entity::FILE),
             ]);
 
         $file = $fileInput[Entity::FILE];
 
-        $uploadedFileDetails = $this->app['ufh.service']->uploadFileAndGetUrl($file,
-                                                                            $this->getStorageFileName($dispute, $file),
-                                                                            $fileInput[Entity::CATEGORY],
-                                                                            $dispute);
+        $uploadedFileDetails = $this->app['ufh.service']->uploadFileAndGetUrl(
+                                                            $file,
+                                                            $this->getStorageFileName($dispute, $file),
+                                                            $fileInput[Entity::CATEGORY],
+                                                            $dispute);
 
         $input = [
-            Entity::DISPUTE_ID          => $dispute->getId(),
-            Entity::URL                 => $uploadedFileDetails[UfhService::SIGNED_URL],
-            Entity::NAME                => $fileInput[Entity::NAME],
-            Entity::CATEGORY            => $fileInput[Entity::CATEGORY],
+            Entity::DISPUTE_ID => $dispute->getId(),
+            Entity::URL        => $uploadedFileDetails[UfhService::SIGNED_URL],
+            Entity::NAME       => $fileInput[Entity::NAME],
+            Entity::CATEGORY   => $fileInput[Entity::CATEGORY],
         ];
 
         $file = $this->create($dispute, $input);
