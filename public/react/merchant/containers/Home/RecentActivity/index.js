@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
 
 import {
   fetchPayments,
@@ -11,6 +12,7 @@ import { titleCase } from 'rzp/utils/rzp-utils';
 import GenericPanel, {
   PanelBody,
   PanelTopbar,
+  PanelFooter,
 } from 'merchant/components/Home/GenericPanel';
 import { tabs, tabsMeta } from './data';
 import PaymentsList from 'merchant/components/Payments/PaymentsList';
@@ -76,7 +78,7 @@ export default class RecentActivity extends Component {
   }
 
   componentWillMount() {
-    this.fetchData({ count: 10 });
+    this.fetchData({ count: 5 });
   }
 
   render() {
@@ -133,6 +135,15 @@ export default class RecentActivity extends Component {
             <tbody>{body}</tbody>
           </table>
         </PanelBody>
+        <PanelFooter>
+          <div className="clearfix">
+            <div className="pull-right">
+              <Link target="_blank" to={`/${selectedTab}`}>
+                View all {titleCase(selectedTab)}
+              </Link>
+            </div>
+          </div>
+        </PanelFooter>
       </GenericPanel>
     );
   }

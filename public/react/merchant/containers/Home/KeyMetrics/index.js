@@ -5,11 +5,7 @@ import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import moment from 'moment';
 
 import Amount from 'rzp/ui/Amount';
-import {
-  paiseToRupees,
-  titleCase,
-  getPercentage
-} from 'rzp/utils/rzp-utils';
+import { paiseToRupees, titleCase, getPercentage } from 'rzp/utils/rzp-utils';
 import {
   humanReadableIndian,
   humanReadableIndianCurrency,
@@ -43,15 +39,13 @@ const TabContent = ({ name, value, isCurrency, title, isLoading, error }) => {
    */
 
   let formattedValue = value;
-    
-  if (name !== SAVED_CARDS) {
 
+  if (name !== SAVED_CARDS) {
     formattedValue = isCurrency
-                       ? humanReadableIndianCurrency(paiseToRupees(value))
-                       : humanReadableIndian(value);
+      ? humanReadableIndianCurrency(paiseToRupees(value))
+      : humanReadableIndian(value);
   } else {
-  
-    formattedValue = formattedValue + "%";
+    formattedValue = formattedValue + '%';
   }
 
   /*
@@ -150,6 +144,8 @@ class KeyMetricsContainer extends Component {
           error: '',
         },
 
+        showTab: true,
+
         error: '',
       };
     });
@@ -210,30 +206,28 @@ class KeyMetricsContainer extends Component {
           const mainStat = resp.data[tabName];
 
           if (mainStat) {
-
             if (tabName === SAVED_CARDS) {
-           
-              const data = groupBy(
-                mainStat.result,
-                tabMeta.groupByColumnName
-              ),
-              savedCardsValue = data["1"]
-                                  ? data["1"][0].value
-                                  : 0,
-              otherCardsValue = data["0"]
-                                  ? data["0"][0].value
-                                  : 0;
-                                
+              const data = groupBy(mainStat.result, tabMeta.groupByColumnName),
+                savedCardsValue = data['1'] ? data['1'][0].value : 0,
+                otherCardsValue = data['0'] ? data['0'][0].value : 0;
 
               tabState.data.count = getPercentage(
                 savedCardsValue + otherCardsValue,
                 savedCardsValue
               );
+
+              /*
+               * 1) If number of saved cards is less than 15%
+               *    hide the tab for the merchant
+               * 2) If tab is already hidden, we should not show again
+               */
+              if (tabState.data.showTab) {
+                tabState.data.showTab = tabState.data.count > 15;
+              }
             } else {
-            
               tabState.data.count = mainStat.result[0]
-                                      ? mainStat.result[0].value
-                                      : 0;
+                ? mainStat.result[0].value
+                : 0;
             }
           }
 
@@ -541,7 +535,10 @@ class KeyMetricsContainer extends Component {
 
   render() {
     const { tabsState, loading } = this.state,
-      { startDate, endDate } = this.props;
+      { startDate, endDate, showGrouping } = this.props,
+      visibleTabs = tabsOrder.filter(
+        tabName => tabsState[tabName].data.showTab
+      );
 
     return (
       <Tabs className="keymetrics">
@@ -550,7 +547,7 @@ class KeyMetricsContainer extends Component {
           activeTabClassName="active"
           disabledTabClassName="disabled"
         >
-          {tabsOrder.map((tabName, index) => {
+          {visibleTabs.map((tabName, index) => {
             const tabData = tabsState[tabName].data,
               { isCurrency, title } = tabsMeta[tabName];
 
@@ -558,7 +555,7 @@ class KeyMetricsContainer extends Component {
               <Tab
                 key={index}
                 onClick={() => this.handleTabChange(tabName)}
-                style={{ width: 100 / tabsOrder.length + '%' }}
+                style={{ width: 100 / visibleTabs.length + '%' }}
               >
                 <TabContent
                   value={tabData.count}
@@ -573,7 +570,7 @@ class KeyMetricsContainer extends Component {
           })}
         </TabList>
 
-        {tabsOrder.map((tabName, index) => {
+        {visibleTabs.map((tabName, index) => {
           const tabState = tabsState[tabName],
             { isCurrency } = tabsMeta[tabName];
 
@@ -592,6 +589,7 @@ class KeyMetricsContainer extends Component {
                 isCurrency={isCurrency}
                 onScreenshot={this.onScreenshot}
                 externalUrl={`/#/app/${tabsMeta[tabName].index}`}
+                showGrouping={showGrouping}
               />
             </TabPanel>
           );
