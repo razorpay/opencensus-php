@@ -26,7 +26,7 @@ class CreateDisputeFiles extends Migration
 
             $table->string(DisputeFileEntity::DISPUTE_ID, DisputeEntity::ID_LENGTH);
 
-            $table->string(DisputeFileEntity::FILE_ID, 255);
+            $table->string(DisputeFileEntity::FILE_ID, 50);
 
             $table->string(DisputeFileEntity::NAME, 50);
 

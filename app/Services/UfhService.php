@@ -12,7 +12,7 @@ class UfhService
 {
     const FILE_ID       = 'file_id';
 
-    const SIGNED_URL    = 'signed_url';
+    const RELATIVE_LOCATION    = 'relative_location';
 
     protected $config;
 
@@ -93,7 +93,7 @@ class UfhService
 
         return [
             self::FILE_ID    => $parsedBody['id'],
-            self::SIGNED_URL => $parsedBody['location'],
+            self::RELATIVE_LOCATION => $parsedBody['location'],
         ];
     }
 

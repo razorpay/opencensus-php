@@ -11,8 +11,6 @@ class UfhService extends BaseUfhClient
 {
     const MOCK_FILE_ID      = 'rzp_file_mock_id_1000000';
 
-    const MOCK_BASE_URL     = 'https://mock.rzp.io/storage/s3/';
-
     /**
      * @param UploadedFile $file
      * @param string $storageFileName
@@ -45,7 +43,7 @@ class UfhService extends BaseUfhClient
 
         return [
             self::FILE_ID    => self::MOCK_FILE_ID,
-            self::SIGNED_URL => self::MOCK_BASE_URL . $storageFileName,
+            self::RELATIVE_LOCATION => $storageFileName,
         ];
     }
 }

@@ -32,7 +32,6 @@ class Entity extends Base\PublicEntity
 
     const S3_BUCKET_NAME = 'dispute_files_bucket';
 
-
     protected $entity = ConstantEntity::DISPUTE_FILE;
 
     protected $generateIdOnCreate = true;
