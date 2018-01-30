@@ -9,9 +9,12 @@ use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
-    public function addFeatures(array $input)
+    public function addFeatures(
+        array $input,
+        string $entityType = null,
+        string $entityId = null): array
     {
-        $featureParams = $this->buildFeatureParams($input);
+        $featureParams = $this->buildFeatureParams($input, $entityType, $entityId);
 
         $shouldSync = (bool) ($input[Entity::SHOULD_SYNC] ?? false);
 
@@ -238,13 +241,16 @@ class Service extends Base\Service
         return $settings;
     }
 
-    protected function buildFeatureParams($input)
+    protected function buildFeatureParams(
+        array $input,
+        string $entityType = null,
+        string $entityId = null): Base\Collection
     {
         $featureParams = new Base\Collection;
 
-        $entityType = $input[Entity::ENTITY_TYPE];
+        $entityType = $entityType ?? $input[Entity::ENTITY_TYPE];
 
-        $entityId = $input[Entity::ENTITY_ID];
+        $entityId = $entityId ?? $input[Entity::ENTITY_ID];
 
         $featureNames = $input[Constants::NAMES];
 

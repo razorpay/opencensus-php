@@ -559,6 +559,12 @@ class Core extends Base\Core
         Entity $feature,
         bool $shouldSync)
     {
+        if ($feature->getEntityType() !== Constants::MERCHANT)
+        {
+            // Return if the feature is not for a merchant
+            return;
+        }
+
         $merchantId = $feature->getEntityId();
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);

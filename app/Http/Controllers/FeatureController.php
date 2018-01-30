@@ -7,13 +7,45 @@ use Request;
 
 class FeatureController extends Controller
 {
-    public function addFeatures()
+    /**
+     * Adds features to entities
+     *
+     * @param string|null $entityType
+     * @param string|null $entityId
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function addFeatures(string $entityType = null, string $entityId = null)
     {
         $input = Request::all();
 
-        $data = $this->service()->addFeatures($input);
+        $data = $this->service()->addFeatures($input, $entityType, $entityId);
 
         return ApiResponse::json($data);
+    }
+
+    /**
+     * Assigns features to accounts
+     *
+     * @param string|null $entityId
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function addFeaturesToAccounts(string $entityId)
+    {
+        return $this->addFeatures('account', $entityId);
+    }
+
+    /**
+     * Assigns features to applications
+     *
+     * @param string|null $entityId
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function addFeaturesToApplications(string $entityId)
+    {
+        return $this->addFeatures('application', $entityId);
     }
 
     public function multiAssignFeature()

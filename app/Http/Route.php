@@ -447,11 +447,6 @@ final class Route
         'addon_fetch_multiple'                    => ['get',      'addons',                                         'SubscriptionController@getAddons'                                  ],
         'addon_delete'                            => ['delete',   'addons/{addonId}',                               'SubscriptionController@deleteAddon'                                ],
         'billdesk_create_cancelled_refunds'       => ['post',     'refunds/billdesk/cancelled',                     'RefundController@postCreateBilldeskCancelledRefunds'               ],
-        'feature_add'                             => ['post',     'features',                                       'FeatureController@addFeatures'                                     ],
-        'feature_delete'                          => ['delete',   'features/{entityId}/{featureName}',              'FeatureController@deleteFeature'                                   ],
-        'feature_get_multiple'                    => ['get',      'features/{entityId}',                            'FeatureController@getFeatures'                                     ],
-        'feature_bulk_assign'                     => ['post',     'features/assign',                                'FeatureController@multiAssignFeature'                              ],
-        'feature_bulk_remove'                     => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
         'upi_fill_bank'                           => ['patch',    'gateway/upi_fill_bank',                          'GatewayController@fillUpiBank'                                     ],
         'mailgun_webhook'                         => ['post',     'mailgun/callback/{type}',                        'AdminController@postMailgunCallback'                               ],
         'offer_create'                            => ['post',     'offers',                                         'OfferController@createOffer'                                       ],
@@ -715,6 +710,15 @@ final class Route
 
         // Pincode Service
         'pincode_get'                             => ['get',      'pincodes/{id}',                                  'PincodeSearchController@get'                                       ],
+
+        // Features
+        'feature_add'                             => ['post',     'features',                                       'FeatureController@addFeatures'                                     ],
+        'feature_delete'                          => ['delete',   'features/{entityId}/{featureName}',              'FeatureController@deleteFeature'                                   ],
+        'feature_get_multiple'                    => ['get',      'features/{entityId}',                            'FeatureController@getFeatures'                                     ],
+        'feature_bulk_assign'                     => ['post',     'features/assign',                                'FeatureController@multiAssignFeature'                              ],
+        'feature_bulk_remove'                     => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
+        'feature_add_accounts'                    => ['post',     'features/accounts/{entityId}',                   'FeatureController@addFeaturesToAccounts'                           ],
+        'feature_add_applications'                => ['post',     'features/applications/{entityId}',               'FeatureController@addFeaturesToApplications'                       ],
     ];
 
     public static $public = [
@@ -1154,6 +1158,8 @@ final class Route
         'geoip_update',
         'fund_transfer_attempt_reconcile',
         'merchant_tags_bulk',
+        'feature_add_accounts',
+        'feature_add_applications',
     ];
 
     public static $proxy = [
