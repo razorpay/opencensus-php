@@ -11,7 +11,7 @@ class Url
     public static $urlMap = [
         Acquirer::FSS => [
             self::TEST_DOMAIN => "https://merchanthubtest.fssnet.co.in/",
-            self::LIVE_DOMAIN => "",
+            self::LIVE_DOMAIN => "https://merchanthub.fsspay.com/",
 
             Action::PURCHASE  => "PGAggregator/MerchaggrPayment.htm?param=paymentInit&",
             Action::REFUND    => "PGAggregator/MerchaggrPayment.htm?param=supportInitTCPIP",
