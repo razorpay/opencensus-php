@@ -57,12 +57,14 @@ class UfhService
     {
         // TODO : See if any validation on input arguments is required
 
-        $filePath = $file->getPath() . '/' . $file->getFileName();
+
+        $ext = $file->getClientOriginalExtension();
+
+        $movedFile = $file->move(storage_path('files/filestore'), $storageFileName . '.' . $ext);
 
         $requestData = [
-            'file'          => fopen($filePath, 'r'),
+            'file'          => fopen($movedFile->getPathname(), 'r'),
             'name'          => $storageFileName,
-            'extension'     => $file->getClientOriginalExtension(),
             'type'          => $type,
             'entity_id'     => $entity->getPublicId(),
             'entity_type'   => $entity->getEntityName(),
