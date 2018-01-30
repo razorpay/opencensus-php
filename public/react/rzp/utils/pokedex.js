@@ -28,6 +28,8 @@ const osMap = {
   '5': IOS,
 };
 
+export const platformGroupingVals = ['platform', 'os', 'device'];
+
 export const getPlatformName = value => {
   return platformsMap[value] || OTHERS;
 };
@@ -129,21 +131,19 @@ export const oldestTransactionQuery = {
 };
 
 export const getDefaultFilter = (startTime, endTime) => {
-
   return {
     created_at: {
       gte: startTime,
-      lte: endTime
-    }
+      lte: endTime,
+    },
   };
 };
 
 export const getDefaultPaymentFilter = (startTime, endTime) => {
-
   return {
     ...getDefaultFilter(startTime, endTime),
     authorized_at: {
-      gt: 0
-    }
+      gt: 0,
+    },
   };
 };
