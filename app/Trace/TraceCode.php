@@ -69,6 +69,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_CHECKOUT_INVALID_ID                   = 'PAYMENT_CHECKOUT_INVALID_ID';
     const PAYMENT_WEBHOOK                               = 'PAYMENT_WEBHOOK';
     const PAYMENT_OTP_READ_FAILURE                      = 'PAYMENT_OTP_READ_FAILURE';
+    const PAYMENT_OTP_RESEND_REQUEST                    = 'PAYMENT_OTP_RESEND_REQUEST';
     const PAYMENT_METADATA                              = 'PAYMENT_METADATA';
     const PAYMENT_CREATE_ON_PUBLIC                      = 'PAYMENT_CREATE_ON_PUBLIC';
     const PAYMENT_CARD_NOT_ENROLLED                     = 'PAYMENT_CARD_NOT_ENROLLED';
@@ -686,6 +687,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EXCHANGE_RESPONSE                         = 'EXCHANGE_RESPONSE';
 
     const MAXMIND_RESPONSE                          = 'MAXMIND_RESPONSE';
+
+    const PINCODE_SEARCH_REQUEST                    = 'PINCODE_SEARCH_REQUEST';
+    const PINCODE_SEARCH_RESPONSE                   = 'PINCODE_SEARCH_RESPONSE';
 
     const HARVESTER_REQUEST                         = 'HARVESTER_REQUEST';
     const HARVESTER_RETRY                           = 'HARVESTER_RETRY';

@@ -72,6 +72,14 @@ class TestCase extends ParentTestCase
         $this->db->setUp();
 
         $this->db->runFixtures($this->fixtures);
+
+        //
+        // Redis cache flushing needs to be in setUp and not tearDown as some
+        // tests, mock the redis facade and the connection methods are not
+        // available for the mock object in tearDown.
+        //
+        Redis::connection('query_cache_test')->flushdb();
+        Redis::connection('query_cache_live')->flushdb();
     }
 
     public function tearDown()
@@ -80,10 +88,6 @@ class TestCase extends ParentTestCase
         {
             $this->db->tearDown();
         }
-
-        Redis::connection('query_cache_test')->flushdb();
-
-        Redis::connection('query_cache_live')->flushdb();
 
         parent::tearDown();
     }

@@ -594,9 +594,9 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getCreditsLog(Credits\Service $service, $mid, $id)
+    public function getCreditsLog(Credits\Service $service, $id)
     {
-        $data = $service->fetchCreditsLog($mid, $id);
+        $data = $service->fetchCreditsLog($id);
 
         return ApiResponse::json($data);
     }

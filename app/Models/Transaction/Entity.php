@@ -33,7 +33,7 @@ class Entity extends Base\PublicEntity
     const GATEWAY_SETTLED_AT  = 'gateway_settled_at';
     const API_FEE             = 'api_fee';
     const GRATIS              = 'gratis';
-    const FEE_CREDITS         = 'fee_credits';
+    const CREDITS             = 'fee_credits';
     const ESCROW_BALANCE      = 'escrow_balance';
     const RECONCILED_AT       = 'reconciled_at';
     const CHANNEL             = 'channel';
@@ -68,7 +68,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_SETTLED_AT,
         self::TAX,
         self::GRATIS,
-        self::FEE_CREDITS,
+        self::CREDITS,
         self::BALANCE,
         self::ESCROW_BALANCE,
         self::PRICING_RULE_ID,
@@ -120,7 +120,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_SERVICE_TAX   => null,
         self::BALANCE               => null,
         self::API_FEE               => null,
-        self::FEE_CREDITS           => 0,
+        self::CREDITS               => 0,
         self::ESCROW_BALANCE        => null,
         self::SETTLED_AT            => null,
         self::SETTLEMENT_ID         => null,
@@ -149,7 +149,7 @@ class Entity extends Base\PublicEntity
         self::FEE                 => 'int',
         self::GATEWAY_AMOUNT      => 'int',
         self::GRATIS              => 'bool',
-        self::FEE_CREDITS         => 'int',
+        self::CREDITS             => 'int',
         self::ON_HOLD             => 'bool',
         self::SETTLED_AT          => 'int',
         self::GATEWAY_SETTLED_AT  => 'int',
@@ -358,9 +358,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FEE);
     }
 
-    public function getFeeCredits()
+    public function getCredits()
     {
-        return $this->getAttribute(self::FEE_CREDITS);
+        return $this->getAttribute(self::CREDITS);
     }
 
     public function getApiFee()
@@ -463,9 +463,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::GRATIS, $gratis);
     }
 
-    public function setFeeCredits(int $credits)
+    public function setCredits(int $credits)
     {
-        $this->setAttribute(self::FEE_CREDITS, $credits);
+        $this->setAttribute(self::CREDITS, $credits);
     }
 
     public function setDebit($amount)
@@ -565,7 +565,12 @@ class Entity extends Base\PublicEntity
 
     public function isFeeCredits()
     {
-        return $this->getAttribute(self::FEE_CREDITS);
+        return ($this->getAttribute(self::CREDIT_TYPE) === CreditType::FEE);
+    }
+
+    public function isRefundCredits()
+    {
+        return ($this->getAttribute(self::CREDIT_TYPE) === CreditType::REFUND);
     }
 
     public function isOnHold()

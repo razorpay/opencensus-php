@@ -528,8 +528,7 @@ class Checkout
         $isEmailOrContactOptional = (($merchant->isFeatureEnabled(Feature\Constants::EMAIL_OPTIONAL) === true) or
                                      ($merchant->isFeatureEnabled(Feature\Constants::CONTACT_OPTIONAL) === true));
 
-        $rememberCustomer = (($merchant->isFeatureEnabled(Feature\Constants::NOFLASHCHECKOUT) === false) and
-                            ($isEmailOrContactOptional === false));
+        $rememberCustomer = ($merchant->isFeatureEnabled(Feature\Constants::NOFLASHCHECKOUT) === false);
 
         // if card saving is enabled, create a session and set a key
         if ($rememberCustomer === true)

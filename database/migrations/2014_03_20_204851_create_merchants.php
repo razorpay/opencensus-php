@@ -7,6 +7,7 @@ use RZP\Constants\Table;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\Merchant\FeeModel;
+use RZP\Models\Merchant\RefundSource;
 
 class CreateMerchants extends Migration
 {
@@ -78,6 +79,9 @@ class CreateMerchants extends Migration
 
             $table->tinyInteger(Merchant::FEE_MODEL)
                   ->default(FeeModel::getValueForFeeModelString(FeeModel::PREPAID));
+
+            $table->tinyInteger(Merchant::REFUND_SOURCE)
+                  ->default(RefundSource::getValueForRefundSourceString(RefundSource::BALANCE));
 
             $table->tinyInteger(Merchant::LINKED_ACCOUNT_KYC)
                   ->default(0);
