@@ -95,7 +95,7 @@ class Core extends Base\Core
     protected function getStorageFileName(DisputeEntity $dispute, UploadedFile $file): string
     {
         return $dispute->getEntityName() . '/' . $dispute->merchant->getPublicId() . '/' .
-                          $dispute->getPublicId() . '/' . $file->getFileName();
+                          $dispute->getPublicId() . '/' . $file->getClientOriginalName();
     }
 
     protected function getStorageClient(): StorageClient

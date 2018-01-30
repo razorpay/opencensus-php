@@ -62,7 +62,7 @@ class UfhService
         $requestData = [
             'file'          => fopen($filePath, 'r'),
             'name'          => $storageFileName,
-            'extension'     => $file->getExtension(),
+            'extension'     => $file->getClientOriginalExtension(),
             'type'          => $type,
             'entity_id'     => $entity->getPublicId(),
             'entity_type'   => $entity->getEntityName(),
