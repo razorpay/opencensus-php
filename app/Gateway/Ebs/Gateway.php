@@ -852,10 +852,8 @@ class Gateway extends Base\Gateway
             $attributes[Entity::ERROR_CODE]        = $response[Resp::ERROR_CODE];
             $attributes[Entity::ERROR_DESCRIPTION] = $response[Resp::ERROR];
         }
-        else
-        {
-            $attributes[Entity::REFUND_ID] = $input['refund'][Payment\Refund\Entity::ID];
-        }
+
+        $attributes[Entity::REFUND_ID] = $input['refund'][Payment\Refund\Entity::ID];
 
         return $attributes;
     }
