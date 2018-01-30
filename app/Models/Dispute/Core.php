@@ -164,18 +164,16 @@ class Core extends Base\Core
 
         $response = $this->repo->transaction(function() use ($dispute, $fileCore, $files, $input)
         {
-            $response = [];
-
             if (empty($input) === false)
             {
                 $dispute = $this->updateForMerchant($dispute, $input);
             }
 
-            $response['dispute'] = $dispute->toArrayPublic();
+            $response = $dispute->toArrayPublic();
 
             if (empty($files) === false )
             {
-                $response['dispute']['files'] = $fileCore->uploadFiles($dispute, $files);
+                $response['files'] = $fileCore->uploadFiles($dispute, $files);
             }
             
             return $response;

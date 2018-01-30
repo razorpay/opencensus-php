@@ -856,7 +856,7 @@ return [
                     [
                         'name'      => 'myfile2.pdf',
                         'category'  => 'delivery_proof',
-                    ]
+                    ],
                 ],
             ],
             'method' => 'post',
@@ -864,6 +864,24 @@ return [
         ],
         'response' => [
             'content' => [
+                'entity'        => 'dispute',
+                'amount'        => '1000000',
+                'currency'      => 'INR',
+                'reason_code'   => 'SOMETHING_BAD',
+                'status'        => 'open',
+                'phase'         => 'chargeback',
+                'files'         => [
+                    [
+                        'file_id'       => 'rzp_file_mock_id_1000000',
+                        'name'          => 'myfile1.png',
+                        'category'      => 'explanation_letter',
+                    ],
+                    [
+                        'file_id'       => 'rzp_file_mock_id_1000000',
+                        'name'          => 'myfile2.png',
+                        'category'      => 'delivery_proof',
+                    ],
+                ]
             ],
         ],
     ],
@@ -879,7 +897,7 @@ return [
                     [
                         'name'      => 'myfile2.pdf',
                         'category'  => 'delivery_proof',
-                    ]
+                    ],
                 ],
             ],
             'method' => 'post',
@@ -887,6 +905,24 @@ return [
         ],
         'response' => [
             'content' => [
+                'entity'        => 'dispute',
+                'amount'        => '1000000',
+                'currency'      => 'INR',
+                'reason_code'   => 'SOMETHING_BAD',
+                'status'        => 'open',
+                'phase'         => 'chargeback',
+                'files'         => [
+                    [
+                        'file_id'       => 'rzp_file_mock_id_1000000',
+                        'name'          => 'myfile1.png',
+                        'category'      => 'explanation_letter',
+                    ],
+                    [
+                        'file_id'       => 'rzp_file_mock_id_1000000',
+                        'name'          => 'myfile2.png',
+                        'category'      => 'delivery_proof',
+                    ],
+                ],
             ],
         ],
     ],
@@ -900,11 +936,9 @@ return [
         ],
         'response' => [
             'content' => [
-                'dispute'   => [
-                    'amount'            => 10100,
-                    'status'            => 'lost',
-                    'phase'             => 'chargeback',
-                ]
+                'amount'            => 10100,
+                'status'            => 'lost',
+                'phase'             => 'chargeback',
             ],
         ],
     ],
@@ -918,11 +952,9 @@ return [
         ],
         'response' => [
             'content' => [
-                'dispute'   => [
-                    'amount'            => 10100,
-                    'status'            => 'closed',
-                    'phase'             => 'fraud',
-                ],
+                'amount'            => 10100,
+                'status'            => 'closed',
+                'phase'             => 'fraud',
             ],
         ],
     ],

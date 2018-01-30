@@ -5,7 +5,6 @@ namespace RZP\Models\Dispute\File;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Services\UfhService;
-use RZP\Models\Base\StorageClient;
 use RZP\Models\Dispute\Entity as DisputeEntity;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -100,10 +99,5 @@ class Core extends Base\Core
 
         return $dispute->getEntityName() . '/' . $dispute->merchant->getPublicId() . '/' .
                           $dispute->getPublicId() . '/' . $nameWithoutExtension;
-    }
-
-    protected function getStorageClient(): StorageClient
-    {
-        return (new StorageClient(Entity::S3_FOLDER_PATH, Entity::S3_BUCKET_NAME));
     }
 }

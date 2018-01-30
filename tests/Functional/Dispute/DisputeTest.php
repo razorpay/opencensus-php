@@ -677,8 +677,8 @@ class DisputeTest extends TestCase
         $this->assertEquals($dispute['id'], $content['files'][1]['dispute_id']);
         $this->assertEquals($files['items'][0]['dispute_id'], $dispute['id']);
         $this->assertEquals($files['items'][1]['dispute_id'], $dispute['id']);
-        $this->assertEquals($files['items'][0]['url'], $content['files'][1]['url']);
-        $this->assertEquals($files['items'][1]['url'], $content['files'][0]['url']);
+        $this->assertEquals($files['items'][0]['file_id'], $content['files'][1]['file_id']);
+        $this->assertEquals($files['items'][1]['file_id'], $content['files'][0]['file_id']);
     }
 
     // ---------------------------- helper methods-------------------------------
