@@ -77,7 +77,6 @@ final class ThrottleV2
         $this->appsConfig = $app['config']->get('applications');
         $this->trace      = $app['trace'];
         $this->router     = $app['router'];
-        $this->redis      = Redis::connection($this->config['driver'])->client();
     }
 
     public function handle($request, \Closure $next)
@@ -122,7 +121,7 @@ final class ThrottleV2
      */
     private function getThrottleSettings(string $route, string $identifier): array
     {
-        return $this->redis->pipeline(
+        return $this->redisClient()->pipeline(
             function ($pipe) use ($route, $identifier)
             {
                 $pipe->hgetall(self::THROTTLE_SETTINGS_KEY_1);
@@ -197,7 +196,7 @@ final class ThrottleV2
 
         try
         {
-            $limiter  = new LeakyBucket\Redis($maxBucketSize, $leakRate, $leakDuration, $this->redis);
+            $limiter  = new LeakyBucket\Redis($maxBucketSize, $leakRate, $leakDuration, $this->redisClient());
             $response = $limiter->attempt($key);
             $allowed  = array_shift($response);
             $limits   = $response;
@@ -243,6 +242,11 @@ final class ThrottleV2
                 $settings[0]["$mode:$auth:limits:$key"] ??
         // Else the default value
                 $default;
+    }
+
+    private function redisClient(): \Predis\Client
+    {
+        return $this->redis ?: ($this->redis = Redis::connection($this->config['driver'])->client());
     }
 
     /**
