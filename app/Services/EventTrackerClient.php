@@ -169,22 +169,18 @@ class EventTrackerClient extends AbstractEventClient
     {
         try
         {
-            $isInternational = null;
-
-            if ($payment->getCardId() !== null)
-            {
-                $isInternational = $payment->isInternational();
-            }
-
             $properties = [
                 'payment_id'        => $payment->getPublicId(),
                 'merchant_id'       => $payment->merchant->getId(),
                 'merchant_name'     => $payment->merchant->getBillingLabel(),
+                'merchant_category' => $payment->merchant->getCategory2(),
                 'amount'            => $payment->getAmount(),
                 'method'            => $payment->getMethod(),
                 'requestId'         => $this->request->getId(),
-                'international'     => $isInternational,
                 'version'           => self::VERSION,
+                'created_at'        => $payment->getCreatedAt(),
+                'contact'           => $payment->getContact(),
+                'email'             => $payment->getEmail(),
             ];
 
             $method = $payment->getMethod();
@@ -206,6 +202,19 @@ class EventTrackerClient extends AbstractEventClient
             if ($method === Method::UPI)
             {
                 $properties['vpa'] = $payment->getVpa();
+            }
+
+            if ($payment->getCardId() !== null)
+            {
+                $properties['iin'] = $payment->card->getIin();
+                $properties['iin_network'] = $payment->card->getNetwork();
+                $properties['iin_type'] = $payment->card->getType();
+                $properties['international'] = $payment->isInternational();
+            }
+
+            if ($payment->hasOrder())
+            {
+                $properties['attempts'] = $payment->order->getAttempts();
             }
 
             $merchant = $payment->merchant;
