@@ -45,12 +45,12 @@ class FeaturesTest extends TestCase
 
     public function testAddFeatureToApplication()
     {
-        $this->addFeatureToEntity(Mode::TEST, true, ['dummy'], 'application', '1000000DemoApp');
+        $this->addFeaturesToEntity(Mode::TEST, true, ['dummy'], 'application', '1000000DemoApp');
     }
 
     public function testAddFeatureToAccount()
     {
-        $this->addFeatureToEntity(Mode::TEST, true, ['dummy'], 'account', '100DemoAccount');
+        $this->addFeaturesToEntity(Mode::TEST, true, ['dummy'], 'account', '100DemoAccount');
     }
 
     public function testDeleteNonExistentFeatureFromMerchant()
