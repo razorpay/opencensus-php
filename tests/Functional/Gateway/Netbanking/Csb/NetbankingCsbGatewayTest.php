@@ -46,6 +46,8 @@ class NetbankingCsbGatewayTest extends TestCase
         $this->assertEquals($netbanking[Netbanking::BANK_PAYMENT_ID], $payment[Payment\Entity::ACQUIRER_DATA]['bank_transaction_id']);
 
         $this->assertTestResponse($netbanking);
+
+        return $payment;
     }
 
     public function testPaymentFailed()
@@ -98,7 +100,7 @@ class NetbankingCsbGatewayTest extends TestCase
     {
         $payment = $this->testPaymentFailed();
 
-        $data = $this->testData[__FUNCTION__];
+        $data = $this->testData['testVerifyMismatch'];
 
         $this->runRequestResponseFlow(
             $data,
@@ -116,14 +118,59 @@ class NetbankingCsbGatewayTest extends TestCase
         $testData = $this->testData['testPaymentFailedNetbankingEntity'];
 
         // The status changes from 'N' to 'Y' after verification
-        $testData['status'] = 'Y';
+        $testData['status'] = Status::SUCCESS;
 
         $this->assertArraySelectiveEquals($testData, $netbanking);
     }
 
-    // TODO: testPaymentFailedVerifyFailed
+    public function testPaymentFailedVerifyFailed()
+    {
+        $payment = $this->testPaymentFailed();
 
-    // TODO: testPaymentSuccessVerifyFailed
+        $this->mockPaymentVerifyFailed();
+
+        $verify = $this->verifyPayment($payment[Payment\Entity::ID]);
+
+        $this->assertEquals(false, $verify['gateway']['apiSuccess']);
+        $this->assertEquals(false, $verify['gateway']['gatewaySuccess']);
+
+        $payment = $this->getLastEntity(ConstantsEntity::PAYMENT, true);
+        $netbanking = $this->getLastEntity(ConstantsEntity::NETBANKING, true);
+
+        // Status remains in failed after verify
+        $this->assertEquals(Status::FAILURE, $netbanking[Netbanking::STATUS]);
+
+        $this->assertEquals($verify[ConstantsEntity::PAYMENT][Payment\Entity::ID], $payment[Payment\Entity::ID]);
+        $this->assertEquals(1, $payment[Payment\Entity::VERIFIED]);
+        $this->assertEquals(Payment\Status::FAILED, $payment[Payment\Entity::STATUS]);
+    }
+
+    public function testPaymentSuccessVerifyFailed()
+    {
+        $payment = $this->testPayment();
+
+        $data = $this->testData['testVerifyMismatch'];
+
+        $this->mockPaymentVerifyFailed();
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment[Payment\Entity::ID]);
+            });
+
+        $payment = $this->getLastEntity(ConstantsEntity::PAYMENT, true);
+
+        $this->assertEquals(Payment\Status::CAPTURED, $payment[Payment\Entity::STATUS]);
+
+        $netbanking = $this->getLastEntity(ConstantsEntity::NETBANKING, true);
+
+        // The status doesn't get updated from Y to N
+        $testData = $this->testData['testPayment'];
+
+        $this->assertArraySelectiveEquals($testData, $netbanking);
+    }
 
     private function mockPaymentFailed()
     {

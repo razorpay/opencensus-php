@@ -47,7 +47,7 @@ return [
         'error_message'   => 'Payment failed'
     ],
 
-    'testPaymentFailedVerify' => [
+    'testVerifyMismatch' => [
         'response'  => [
             'content'     => [
                 'error' => [

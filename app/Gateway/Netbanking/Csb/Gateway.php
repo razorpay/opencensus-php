@@ -241,7 +241,7 @@ class Gateway extends Base\Gateway
 
         $contentToSave = [];
 
-        if ((empty($wallet[Base\Entity::STATUS]) === false) or
+        if ((empty($wallet[Base\Entity::STATUS]) === true) or
             ($wallet[Base\Entity::STATUS] !== Status::SUCCESS))
         {
             $contentToSave[ResponseFields::STATUS] = $content[ResponseFields::VERIFICATION];
