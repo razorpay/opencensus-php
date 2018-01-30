@@ -897,6 +897,10 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
+        $dt = Carbon::createFromTimestamp(1517077800, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
         $this->fixtures->create('gateway_downtime:card', [
             'gateway' => 'ALL',
             'issuer'  => 'ALL',
@@ -909,6 +913,10 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
+        $dt = Carbon::createFromTimestamp(1517077800, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
         $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway' => 'netbanking_hdfc',
             'issuer'  => 'ALL']);
@@ -919,6 +927,10 @@ class MerchantTest extends TestCase
     public function testGetNetbankingDowntimeInfoWithSharedNetbankingGateway()
     {
         $this->ba->publicAuth();
+
+        $dt = Carbon::createFromTimestamp(1517077800, Timezone::IST);
+
+        Carbon::setTestNow($dt);
 
         $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway' => 'billdesk',
@@ -931,9 +943,17 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
+        $dt = Carbon::createFromTimestamp(1517077800, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
         $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway' => 'billdesk',
             'issuer'  => 'ALL']);
+
+        $dt = Carbon::createFromTimestamp(1517077800, Timezone::IST);
+
+        Carbon::setTestNow($dt);
 
         $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway' => 'netbanking_hdfc',
@@ -946,6 +966,10 @@ class MerchantTest extends TestCase
     {
          $this->ba->publicAuth();
 
+         $dt = Carbon::createFromTimestamp(1517077800, Timezone::IST);
+
+         Carbon::setTestNow($dt);
+
          $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway' => 'ebs',
             'issuer'  => 'ALL']);
@@ -956,6 +980,10 @@ class MerchantTest extends TestCase
     public function testGetNetbankingDowntimeInfoWithIssuerExclusiveToGateway()
     {
         $this->ba->publicAuth();
+
+        $dt = Carbon::createFromTimestamp(1517077800, Timezone::IST);
+
+        Carbon::setTestNow($dt);
 
         $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway' => 'billdesk',
@@ -968,6 +996,10 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
+        $dt = Carbon::createFromTimestamp(1517077800, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
         $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway' => 'billdesk',
             'issuer'  => 'NA']);
@@ -978,6 +1010,10 @@ class MerchantTest extends TestCase
     public function testGetNetbankingDowntimeInfoWithGatewayAll()
     {
         $this->ba->publicAuth();
+
+        $dt = Carbon::createFromTimestamp(1517077800, Timezone::IST);
+
+        Carbon::setTestNow($dt);
 
         $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway' => 'ALL',
@@ -990,10 +1026,18 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
+        $dt = Carbon::createFromTimestamp(1517077800, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
         $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway'     => 'netbanking_hdfc',
             'issuer'      => 'HDFC',
             'reason_code' => 'ISSUER_DOWN']);
+
+        $dt = Carbon::createFromTimestamp(1517077800, Timezone::IST);
+
+        Carbon::setTestNow($dt);
 
         $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway'     => 'billdesk',
@@ -1006,6 +1050,10 @@ class MerchantTest extends TestCase
     public function testGetCheckoutPreferencesWithCardDowntimeWithIssuerOrNetworkUnknown()
     {
         $this->ba->publicAuth();
+
+        $dt = Carbon::createFromTimestamp(1517077800, Timezone::IST);
+
+        Carbon::setTestNow($dt);
 
         $this->fixtures->create('gateway_downtime:card', [
             'gateway' => 'first_data',
@@ -1021,6 +1069,10 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
+        $dt = Carbon::createFromTimestamp(1517077800, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
         $this->fixtures->create('gateway_downtime:card', [
             'gateway' => 'hdfc',
             'issuer'  => 'ALL',
@@ -1032,6 +1084,10 @@ class MerchantTest extends TestCase
     public function testGetCheckoutPreferencesWithCardDowntimeWithGatewayExclusiveNetworkDown()
     {
         $this->ba->publicAuth();
+
+        $dt = Carbon::createFromTimestamp(1517077800, Timezone::IST);
+
+        Carbon::setTestNow($dt);
 
         $this->fixtures->create('gateway_downtime:card', [
             'gateway' => 'hdfc',
@@ -1045,6 +1101,10 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
+        $dt = Carbon::createFromTimestamp(1517077800, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
         $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway' => 'ALL',
             'issuer'  => 'HDFC',]);
@@ -1055,6 +1115,10 @@ class MerchantTest extends TestCase
     public function testGetCheckoutPreferencesWithNetbankingDowntimeWithSharedNetbankingGateway()
     {
         $this->ba->publicAuth();
+
+        $dt = Carbon::createFromTimestamp(1517077800, Timezone::IST);
+
+        Carbon::setTestNow($dt);
 
         $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway' => 'billdesk',
@@ -1067,6 +1131,10 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
+         $dt = Carbon::createFromTimestamp(1517077800, Timezone::IST);
+
+         Carbon::setTestNow($dt);
+
          $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway' => 'billdesk',
             'issuer'  => 'ALLA',]);
@@ -1078,6 +1146,10 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
+        $dt = Carbon::createFromTimestamp(1517077800, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
         $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway'     => 'netbanking_hdfc',
             'issuer'      => 'ALL',]);
@@ -1088,6 +1160,10 @@ class MerchantTest extends TestCase
     public function testGetCheckoutPreferencesWithWalletDowntime()
     {
         $this->ba->publicAuth();
+
+        $dt = Carbon::createFromTimestamp(1517077800, Timezone::IST);
+
+        Carbon::setTestNow($dt);
 
         $this->fixtures->create('gateway_downtime:wallet', [
             'gateway' => 'wallet_olamoney',
