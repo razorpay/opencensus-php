@@ -6,6 +6,7 @@ use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\GatewayErrorException;
+use RZP\Exception\PaymentVerificationException;
 
 return [
     'testPayment' => [
@@ -44,5 +45,21 @@ return [
         'reference1'      => 'RazorpayPay',
         'received'        => true,
         'error_message'   => 'Payment failed'
+    ],
+
+    'testPaymentFailedVerify' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => PaymentVerificationException::class,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+        ],
     ],
 ];

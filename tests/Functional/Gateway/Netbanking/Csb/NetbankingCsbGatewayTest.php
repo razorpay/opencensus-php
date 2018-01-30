@@ -70,6 +70,8 @@ class NetbankingCsbGatewayTest extends TestCase
         $netbanking = $this->getLastEntity(ConstantsEntity::NETBANKING, true);
 
         $this->assertTestResponse($netbanking, __FUNCTION__ . 'NetbankingEntity');
+
+        return $payment;
     }
 
     public function testPaymentVerify()
@@ -91,8 +93,28 @@ class NetbankingCsbGatewayTest extends TestCase
         $this->assertEquals(1, $payment[Payment\Entity::VERIFIED]);
         $this->assertEquals(Payment\Status::CAPTURED, $payment[Payment\Entity::STATUS]);
     }
+    
+    public function testPaymentFailedVerify()
+    {
+        $payment = $this->testPaymentFailed();
 
-    // TODO: testPaymentFailedVerify
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment[Payment\Entity::ID]);
+            });
+
+        $payment = $this->getLastEntity(ConstantsEntity::PAYMENT, true);
+
+        $this->assertEquals(Payment\Status::FAILED, $payment[Payment\Entity::STATUS]);
+
+        $netbanking = $this->getLastEntity(ConstantsEntity::NETBANKING, true);
+
+        $this->assertTestResponse($netbanking, 'testPaymentFailedNetbankingEntity');
+    }
 
     // TODO: testPaymentFailedVerifyFailed
 
@@ -105,6 +127,18 @@ class NetbankingCsbGatewayTest extends TestCase
             {
                 $content[ResponseFields::STATUS] = Status::FAILURE;
                 $content[ResponseFields::NARRATION] = 'Payment failed';
+            });
+    }
+
+    private function mockPaymentVerifyFailed()
+    {
+        $this->mockServerContentFunction(
+            function(& $content, $action = null)
+            {
+                if ($action === 'verify')
+                {
+                    $content[ResponseFields::VERIFICATION] = Status::FAILURE;
+                }
             });
     }
 }
