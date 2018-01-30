@@ -145,18 +145,17 @@ final class ThrottleV2
      */
     private function checkIfRequestIsBlocked(string $mode, string $auth, string $identifier, array $settings)
     {
-        $blocked = false ||
-                    // If Route is blocked
-                    (empty($settings[1]['blocked']) === false) ||
-                    // Else if Rote is blocked on given mode
+        // If Route is blocked
+        $blocked = (empty($settings[1]['blocked']) === false) ||
+        // Else if Rote is blocked on given mode
                     (empty($settings[1]["$mode:blocked"]) === false) ||
-                    // Else if Route is blocked on given mode, identifier
+        // Else if Route is blocked on given mode, identifier
                     (empty($settings[1]["$mode:$identifier:blocked"]) === false) ||
-                    // Else if Identifier is blocked
+        // Else if Identifier is blocked
                     (empty($settings[2]['blocked']) === false) ||
-                    // Else if Identifier is blocked for given mode
+        // Else if Identifier is blocked for given mode
                     (empty($settings[2]["$mode:blocked"]) === false) ||
-                    // Else if Identifier is blocked for given mode, auth
+        // Else if Identifier is blocked for given mode, auth
                     (empty($settings[2]["$mode:$auth:blocked"]) === false);
 
         if ($blocked)
@@ -188,8 +187,7 @@ final class ThrottleV2
     {
         // Considers IP address for public routes only in constructing throttle key
         $key           = "$identifier$mode$route" . ($auth === AuthType::PUBLIC_AUTH ? $request->ip() : '');
-
-        // Defaults to "leak at the rate of 3 per sec and allows max burst of 50"
+        // Throttle defaults to "leak at the rate of 3 per sec and allows max burst of 50"
         $leakRate      = $this->getThrottleLimits(self::LEAK_RATE_VALUE, 3, $mode, $auth, $identifier, $settings);
         $leakDuration  = $this->getThrottleLimits(self::LEAK_RATE_DURATION, 1000, $mode, $auth, $identifier, $settings);
         $maxBucketSize = $this->getThrottleLimits(self::MAX_BUCKET_SIZE, 50, $mode, $auth, $identifier, $settings);
@@ -199,8 +197,7 @@ final class ThrottleV2
 
         try
         {
-            $limiter = new LeakyBucket\Redis($maxBucketSize, $leakRate, $leakDuration, $this->redis);
-
+            $limiter  = new LeakyBucket\Redis($maxBucketSize, $leakRate, $leakDuration, $this->redis);
             $response = $limiter->attempt($key);
             $allowed  = array_shift($response);
             $limits   = $response;
@@ -238,13 +235,13 @@ final class ThrottleV2
         string $identifier,
         array $settings): int
     {
-        return null ??
-                // Value for given route, mode, auth & identifier combination
-                $settings[1]["$mode:$auth:$identifier:limits:$key"] ??
-                // Else value for given route, mode & auth combination
+        // Value for given route, mode, auth & identifier combination
+        return $settings[1]["$mode:$auth:$identifier:limits:$key"] ??
+        // Else value for given route, mode & auth combination
                 $settings[1]["$mode:$auth:limits:$key"] ??
-                // Else value for given mode & auth combination
+        // Else value for given mode & auth combination
                 $settings[0]["$mode:$auth:limits:$key"] ??
+        // Else the default value
                 $default;
     }
 
@@ -268,6 +265,8 @@ final class ThrottleV2
         $mode = substr($key, 4, 4);
         // Just for not getting broken elsewhere if someone sends incorrect key
         $mode = Mode::exists($mode) ? $mode : Mode::LIVE;
+        // Key is actually just the part after rzp_{$mode}_
+        $key  = substr($key, 9);
 
         if (in_array($route, Route::$internal, true) === true)
         {
