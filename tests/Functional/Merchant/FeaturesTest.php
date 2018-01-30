@@ -12,6 +12,7 @@ use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Models\Feature\Entity as FeatureEntity;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Mail\Merchant\FeatureEnabled as FeatureEnabledEmail;
 
@@ -43,14 +44,41 @@ class FeaturesTest extends TestCase
         $this->startTest();
     }
 
-    public function testAddFeatureToApplication()
+    public function testApplicationFeatures()
     {
-        $this->addFeaturesToEntity(Mode::TEST, true, ['dummy'], 'application', '1000000DemoApp');
+        $appId = '1000000DemoApp';
+
+        $this->addFeaturesToEntity(
+            Mode::TEST,
+            true,
+            ['dummy'],
+            Constants::APPLICATION,
+            $appId);
+
+        $this->deleteFeaturesFromEntity(Mode::TEST,
+            true,
+            'dummy',
+            Constants::APPLICATION,
+            $appId);
     }
 
-    public function testAddFeatureToAccount()
+    public function testAccountFeatures()
     {
-        $this->addFeaturesToEntity(Mode::TEST, true, ['dummy'], 'account', '100DemoAccount');
+        $accountId = '10000000000001';
+
+        $this->fixtures->create('merchant', ['id' => $accountId]);
+
+        $this->addFeaturesToEntity(Mode::TEST,
+            true,
+            ['dummy'],
+            'account',
+            $accountId);
+
+        $this->deleteFeaturesFromEntity(Mode::TEST,
+            true,
+            'dummy',
+            Constants::ACCOUNT,
+            $accountId);
     }
 
     public function testDeleteNonExistentFeatureFromMerchant()
@@ -1063,9 +1091,31 @@ class FeaturesTest extends TestCase
 
         $testData['request']['url'] = '/features/' . $entityType . 's/' . $entityId;
 
-        $testData['response']['content'][0]['entity_type'] = $entityType;
+        // For merchants and accounts as entity_type, only merchants will be stored in the db
+        if (($entityType === Constants::MERCHANT) or ($entityType === Constants::ACCOUNT))
+        {
+            $testData['response']['content'][0]['entity_type'] = Constants::MERCHANT;
+        }
 
         $testData['response']['content'][0]['entity_id'] = $entityId;
+
+        $this->startTest($testData);
+    }
+
+    protected function deleteFeaturesFromEntity(
+        string $deleteFromMode,
+        bool $shouldSync,
+        string $featureName,
+        string $entityType,
+        string $entityId)
+    {
+        $this->ba->adminAuth($deleteFromMode, null, 'org_100000razorpay');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/features/' . $entityType . 's/' . $entityId . '/' . $featureName;
+
+        $testData['request']['content']['should_sync'] = (int) $shouldSync;
 
         $this->startTest($testData);
     }

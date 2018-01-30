@@ -730,4 +730,19 @@ return [
             ]
         ]
     ],
+
+    'deleteFeaturesFromEntity' => [
+        'request'  => [
+            'url'     => "/features/accounts/100DemoAccount/dummy",
+            'method'  => 'delete',
+            'server'  => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+            'content' => [ ]
+        ],
+        'response' => [
+            'content' => [ ]
+        ]
+    ],
 ];
