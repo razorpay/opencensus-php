@@ -207,7 +207,7 @@
             padding: 15px;
         }
 
-        #retry_btn {
+        #retry-btn {
             display: block;
             background: #3395ff;
             color: #fff;
@@ -217,7 +217,7 @@
             cursor: pointer;
         }
 
-        #cancel_btn {
+        #cancel-btn {
             color: #3395ff;
             margin-top: 40px;
             border-top: 1px solid #ececec;
@@ -248,7 +248,7 @@
                 </div>
             @endif
 
-            <div id="error_msg" class="center red hide">No UPI apps found on this device</div>
+            <div id="error-msg" class="center red hide">No UPI apps found on this device</div>
 
             <div id="spinner" class={{ $data['type'] === ' intent' ? 'hide more-pad' : ''}}>
                 <div class="spin">
@@ -260,8 +260,8 @@
             </div>
 
             <div class="center buttons">
-                <div id="cancel_btn"><b>Cancel Payment</b></div>
-                <div class="hide" id="retry_btn" onclick="initUpiActivity()"><b>Retry Payment</b></div>
+                <div id="cancel-btn"><b>Cancel Payment</b></div>
+                <div class="hide" id="retry-btn" onclick="initUpiActivity()"><b>Retry Payment</b></div>
             </div>
         </div>
 
@@ -283,11 +283,6 @@
         var cancel_url = '/v1/payments/{{$data["payment_id"]}}/cancel?key_id='+key_id;
         var callback_url = '/v1/payments/{{$data["payment_id"]}}/redirect_callback?key_id='+key_id;
         var gel =  document.getElementById.bind(document);
-
-        var start_delay = 5000;
-        var end_delay = 1000;
-        var normalize_time = 60000;
-
 
         function each(iteratee, eachFunc, thisArg) {
           var i;
@@ -365,19 +360,15 @@
           }
         }
 
-        var delay = start_delay;
-        var delta = 400;
+        var start_delay, end_delay, normalize_time, delay, delta = 400;
+        var modDelay = function(){};
 
         function recurseAjax(url, callback, continueTill, mature) {
           defer(function() {
             var xhr = ajax({
               url: url,
               callback: function(response) {
-                if (delay <= end_delay){
-                    delay = end_delay;
-                } else {
-                    delay -= delta;
-                }
+                modDelay();
 
                 if (continueTill.call(xhr, response)) {
                   recurseAjax(url, callback, continueTill, true);
@@ -392,28 +383,51 @@
           }, delay)
         }
 
+        function addCls(el, cl) {
+            var rgx = new RegExp('\\b' + cl+'\\b');
+            if(!rgx.test(cl)) {
+               el.className += ' ' + cl;
+            }
+        }
 
+        function removeCls(el, cl) {
+            var rgx = new RegExp('\\b' + cl+'\\b', 'g');
+            el.className = el.className.replace(rgx, '');
+        }
 
         var pollStatus = function (){};
         var initUpiActivity = function(){};
         if (data.type === 'intent') {
             if (CheckoutBridge) {
+                start_delay = 1000; end_delay = 5000; normalize_time = 33000; delay = start_delay;
+                modDelay =  function() {
+                    if (delay >= end_delay){
+                        delay = end_delay;
+                    } else {
+                        delay += delta;
+                    }
+                }
+
                 var poll_url = data.request.url, intent_url = data.data.intent_url;
 
                 initUpiActivity = function() {
-                    gel('retry_btn').classList.add('hide');
-                    gel('message-txt').classList.remove('red');
+                    addCls(gel('retry-btn'), 'hide');
+                    removeCls(gel('message-txt'), 'red')
                     CheckoutBridge.callNativeIntent && CheckoutBridge.callNativeIntent(intent_url);
                 }
 
                 initUpiActivity();
 
                 pollStatus = function(resp) {
-                    if (!Object.keys(resp).length || resp.Status === 'Failed') {
-                       gel('retry_btn').classList.remove('hide');
+                    var respLen = 0, i;
+                    for (i in resp) {
+                        if (resp.hasOwnProperty(i)) { respLen ++;}
+                    }
+                    if (!respLen) {
+                       removeCls(gel('retry-btn'), 'hide')
                     } else {
-                        gel('spinner').classList.remove('hide');
-                        gel('cancel_btn').classList.add('hide');
+                        removeCls(gel('spinner'), 'hide')
+                        addCls(gel('cancel-btn'), 'hide');
                         gel('message-txt').innerHTML = "<b>Confirming your payment...</b>";
 
                         recurseAjax(
@@ -421,17 +435,18 @@
                             function(response) {
                                 if(response.razorpay_payment_id) {
                                     gel('message-txt').innerHTML = "<b>Payment is Successful!</b>";
-                                    gel('message-txt').classList.add('green');
-                                    gel('cancel_btn').classList.add('hide');
-                                    gel('spinner').classList.add('hide');
-                                    setTimeout(function(){CheckoutBridge.oncomplete(JSON.stringify(resp))}, 1000);
+                                    addCls(gel('message-txt'), 'green');
+                                    addCls(gel('cancel-btn'), 'green');
+                                    addCls(gel('spinner'), 'hide');
                                 }
                                 else {
                                     gel('message-txt').innerHTML = "<b>Payment Failed!</b>";
-                                    gel('message-txt').classList.add('red');
-                                    gel('retry_btn').classList.remove('hide');
-                                    gel('spinner').classList.add('hide');
+                                    addCls(gel('message-txt'), 'red');
+                                    removeCls(gel('retry-btn'), 'hide')
+                                    addCls(gel('spinner'), 'hide');
                                 }
+
+                                CheckoutBridge.oncomplete(JSON.stringify(resp));
                             },
                             function(response) {
                                 if (response) {
@@ -443,11 +458,18 @@
                     }
                 }
             } else {
-                console.log('checking...');
-                gel('error_msg').classList.remove('hide');
-                gel('retry_btn').classList.add('hide');
+                removeCls(gel('error-msg'), 'hide')
+                addCls(gel('retry-btn'), 'hide');
             }
         } else {
+            start_delay = 5000; end_delay = 1000; normalize_time = 60000; delay = start_delay;
+            modDelay =  function() {
+                if (delay <= end_delay){
+                    delay = end_delay;
+                } else {
+                    delay -= delta;
+                }
+            }
             recurseAjax(request_url, function(response){
                 /*
                  * Redirecting to callback_url regardless of whether payment is
@@ -460,7 +482,7 @@
             })
         }
 
-        gel('cancel_btn').onclick = function () {
+        gel('cancel-btn').onclick = function () {
             ajax({
                 url: cancel_url,
                 callback: function(){
