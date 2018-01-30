@@ -75,22 +75,6 @@ traffic-responsive() {
 
     display: block;
 
-    @media (max-width: 1024px) {
-
-      > div {
-
-        traffic-responsive();
-      }
-    }
-
-    &.traffic-hidden {
-
-      > div {
-
-        traffic-responsive();
-      }
-    }
-
     &> div {
 
       width: 50%;
@@ -150,6 +134,22 @@ traffic-responsive() {
         margin-bottom: 0;
       }
     }
+
+    @media (max-width: 1024px) {
+
+      > div {
+
+        traffic-responsive();
+      }
+    }
+
+    &.traffic-hidden {
+
+      > div {
+
+        traffic-responsive();
+      }
+    }
   }
 
   .home-credits-section {
@@ -157,10 +157,15 @@ traffic-responsive() {
     margin-top: 24px;
     color: #8991ae;
 
-    .panel .panel-body {
+    .panel {
 
-      height: auto;
-      padding: 0;
+      padding: 8px;
+
+      .panel-body {
+
+        height: auto;
+        padding: 0;
+      }
     }
   }
 }
