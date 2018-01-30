@@ -713,12 +713,14 @@ final class Route
 
         // Features
         'feature_add'                             => ['post',     'features',                                       'FeatureController@addFeatures'                                     ],
-        'feature_delete'                          => ['delete',   'features/{entityId}/{featureName}',              'FeatureController@deleteFeature'                                   ],
-        'feature_get_multiple'                    => ['get',      'features/{entityId}',                            'FeatureController@getFeatures'                                     ],
-        'feature_bulk_assign'                     => ['post',     'features/assign',                                'FeatureController@multiAssignFeature'                              ],
-        'feature_bulk_remove'                     => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
         'feature_add_accounts'                    => ['post',     'features/accounts/{entityId}',                   'FeatureController@addFeaturesToAccounts'                           ],
         'feature_add_applications'                => ['post',     'features/applications/{entityId}',               'FeatureController@addFeaturesToApplications'                       ],
+        'feature_get_accounts'                    => ['get',      'features/accounts/{entityId}',                   'FeatureController@getAccountFeatures'                              ],
+        'feature_get_applications'                => ['get',      'features/applications/{entityId}',               'FeatureController@getApplicationFeatures'                          ],
+        'feature_get_multiple'                    => ['get',      'features/{entityId}',                            'FeatureController@getMerchantFeatures'                             ],
+        'feature_delete'                          => ['delete',   'features/{entityId}/{featureName}',              'FeatureController@deleteFeature'                                   ],
+        'feature_bulk_assign'                     => ['post',     'features/assign',                                'FeatureController@multiAssignFeature'                              ],
+        'feature_bulk_remove'                     => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
     ];
 
     public static $public = [
@@ -1064,6 +1066,8 @@ final class Route
         'subscription_cancel_due',
         'billdesk_reconcile_cancelled',
         'feature_get_multiple',
+        'feature_get_accounts',
+        'feature_get_applications',
         'feature_add',
         'feature_bulk_assign',
         'feature_bulk_remove',
@@ -1426,6 +1430,8 @@ final class Route
         'merchant_put_payment_methods'           => Permission::EDIT_MERCHANT_METHODS,
         'balance_fetch'                          => Permission::VIEW_MERCHANT_BALANCE,
         'feature_get_multiple'                   => Permission::VIEW_MERCHANT_FEATURES,
+        'feature_get_accounts'                   => Permission::VIEW_MERCHANT_FEATURES,
+        'feature_get_applications'               => Permission::VIEW_MERCHANT_FEATURES,
         'merchant_actions'                       => '*',
         'merchant_live_enable'                   => Permission::EDIT_MERCHANT_ENABLE_LIVE,
         'merchant_live_disable'                  => Permission::EDIT_MERCHANT_DISABLE_LIVE,

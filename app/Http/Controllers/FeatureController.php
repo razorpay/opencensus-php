@@ -75,9 +75,24 @@ class FeatureController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getFeatures(string $entityId)
+    public function getMerchantFeatures(string $entityId)
     {
-        $data = $this->service()->getFeatures($entityId);
+        return $this->getFeatures('merchant', $entityId);
+    }
+
+    public function getAccountFeatures(string $entityId)
+    {
+        return $this->getFeatures('account', $entityId);
+    }
+
+    public function getApplicationFeatures(string $entityId)
+    {
+        return $this->getFeatures('application', $entityId);
+    }
+
+    protected function getFeatures(string $entityType, string $entityId)
+    {
+        $data = $this->service()->getFeatures($entityType, $entityId);
 
         return ApiResponse::json($data);
     }

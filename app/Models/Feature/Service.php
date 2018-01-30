@@ -28,11 +28,11 @@ class Service extends Base\Service
         return $features->toArray();
     }
 
-    public function getFeatures(string $entityId)
+    public function getFeatures(string $entityType, string $entityId)
     {
         $response = new Base\Collection;
 
-        $response['assigned_features'] = $this->repo->feature->findByEntityId($entityId);
+        $response['assigned_features'] = $this->repo->feature->findByEntityTypeAndEntityId($entityType, $entityId);
 
         // all_features is a list of currently available features in the system
         $response['all_features'] = array_keys(Constants::$featureValueMap);

@@ -16,9 +16,10 @@ class Repository extends BaseRepository
         Entity::NAME        => 'sometimes|string|max:25'
     );
 
-    public function findByEntityId(string $entityId)
+    public function findByEntityTypeAndEntityId(string $entityType, string $entityId)
     {
         return $this->newQuery()
+                    ->where(Entity::ENTITY_TYPE, $entityType)
                     ->where(Entity::ENTITY_ID, $entityId)
                     ->get();
     }

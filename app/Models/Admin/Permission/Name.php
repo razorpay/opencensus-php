@@ -10,6 +10,7 @@ class Name
     const VIEW_ALL_MERCHANTS                  = 'view_all_merchants';
     const VIEW_MERCHANT                       = 'view_merchant';
     const VIEW_MERCHANT_BALANCE               = 'view_merchant_balance';
+    // @todo - Rename view_merchant_features to view_features as features have now been extended to applications as well.
     const VIEW_MERCHANT_FEATURES              = 'view_merchant_features';
     const VIEW_MERCHANT_BANKS                 = 'view_merchant_banks';
     const VIEW_NETWORKS                       = 'view_networks';
