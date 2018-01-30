@@ -140,6 +140,8 @@ class MerchantInvoiceTest extends TestCase
 
     public function testInvoiceEntityCreateForPrevMonth()
     {
+        $this->markTestSkipped();
+
         $this->createData();
 
         $this->ba->appAuth();
@@ -191,6 +193,8 @@ class MerchantInvoiceTest extends TestCase
 
     public function testInvoiceEntityCreateForGivenMonthYear()
     {
+        $this->markTestSkipped();
+
         $this->createData();
 
         $this->ba->appAuth();
@@ -328,6 +332,8 @@ class MerchantInvoiceTest extends TestCase
 
     public function testInvoiceEntityCreateForGivenMerchant()
     {
+        $this->markTestSkipped();
+        
         $this->createData();
 
         $this->ba->appAuth();
