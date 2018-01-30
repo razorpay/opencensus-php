@@ -8,6 +8,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Netbanking\Oriental;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Models\Payment\Verify\Status as VerifyStatus;
+use RZP\Gateway\Netbanking\Base\Entity as Netbanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class NetbankingOrientalGatewayTest extends TestCase
@@ -116,6 +117,28 @@ class NetbankingOrientalGatewayTest extends TestCase
         $netbanking = $this->getLastEntity(ConstantsEntity::NETBANKING, true);
 
         $this->assertTestResponse($netbanking, 'netbankingPaymentFailedVerifySuccess');
+    }
+
+    public function testPaymentFailedVerifyFailed()
+    {
+        $payment = $this->createPaymentFailed();
+
+        $this->mockVerifyFailed();
+
+        $this->verifyPayment($payment[Payment\Entity::ID]);
+
+        $payment = $this->getLastEntity(ConstantsEntity::PAYMENT, true);
+
+        // apiSuccess = failed and gatewaySuccess = failed so VerifyStatus = Success
+        $this->assertEquals(VerifyStatus::SUCCESS, $payment[Payment\Entity::VERIFIED]);
+
+        $netbanking = $this->getLastEntity(ConstantsEntity::NETBANKING, true);
+
+        $testData = $this->testData['netbankingVerify'];
+
+        $testData[Netbanking::STATUS] = Oriental\Status::FAILED;
+
+        $this->assertArraySelectiveEquals($testData, $netbanking);
     }
 
     private function createPaymentFailed()
