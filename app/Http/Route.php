@@ -719,6 +719,7 @@ final class Route
         'feature_get_applications'                => ['get',      'features/applications/{entityId}',               'FeatureController@getApplicationFeatures'                          ],
         'feature_get_multiple'                    => ['get',      'features/{entityId}',                            'FeatureController@getMerchantFeatures'                             ],
         'feature_delete'                          => ['delete',   'features/{entityId}/{featureName}',              'FeatureController@deleteFeature'                                   ],
+        'feature_delete_applications'             => ['delete',   'features/{entityType}/{entityId}/{featureName}', 'FeatureController@deleteEntityFeature'                             ],
         'feature_bulk_assign'                     => ['post',     'features/assign',                                'FeatureController@multiAssignFeature'                              ],
         'feature_bulk_remove'                     => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
     ];
@@ -1318,6 +1319,7 @@ final class Route
         'setl_update_channel_bulk',
         'setl_fetch_schedule',
         'feature_delete',
+        'feature_delete_applications',
         'admin_dummy_account_test',
         'admin_get_file',
         // workflows
@@ -1411,6 +1413,7 @@ final class Route
         'admin_lead_get_multiple'                => Permission::VIEW_MERCHANT_INVITE,
         'admin_dummy_account_test'               => Permission::VIEW_MERCHANT,
         'feature_delete'                         => Permission::DELETE_MERCHANT_FEATURES,
+        'feature_delete_applications'            => Permission::DELETE_MERCHANT_FEATURES,
         'workflow_create'                        => Permission::CREATE_WORKFLOW, // Fix permissions
         'workflow_get'                           => Permission::VIEW_WORKFLOW,
         'workflow_get_multiple'                  => Permission::VIEW_ALL_WORKFLOW,

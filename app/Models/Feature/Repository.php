@@ -24,9 +24,10 @@ class Repository extends BaseRepository
                     ->get();
     }
 
-    public function findByEntityIdAndNameOrFail(string $entityId, string $featureName)
+    public function findByEntityTypeEntityIdAndNameOrFail(string $entityType,string $entityId, string $featureName)
     {
         return $this->newQuery()
+                    ->where(Entity::ENTITY_TYPE, $entityType)
                     ->where(Entity::ENTITY_ID, $entityId)
                     ->where(Entity::NAME, $featureName)
                     ->firstOrFailPublic();

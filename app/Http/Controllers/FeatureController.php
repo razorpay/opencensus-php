@@ -66,11 +66,33 @@ class FeatureController extends Controller
         return ApiResponse::json($data);
     }
 
+    /**
+     * Deletes the feature association with the merchant
+     *
+     * @param string $entityId
+     * @param string $featureName
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function deleteFeature(string $entityId, string $featureName)
+    {
+        return $this->deleteEntityFeature('merchants', $entityId, $featureName);
+    }
+
+    /**
+     * Deletes the feature association with an entity
+     *
+     * @param string $entityType
+     * @param string $entityId
+     * @param string $featureName
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function deleteEntityFeature(string $entityType, string $entityId, string $featureName)
     {
         $input = Request::all();
 
-        $data = $this->service()->deleteFeature($entityId, $featureName, $input);
+        $data = $this->service()->deleteEntityFeature($entityType, $entityId, $featureName, $input);
 
         return ApiResponse::json($data);
     }

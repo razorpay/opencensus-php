@@ -40,18 +40,47 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function deleteFeature(string $entityId, string $featureName, array $input)
+    /**
+     * Delete the feature association with an entity
+     *
+     * @param string $routeEndpoint
+     * @param string $entityId
+     * @param string $featureName
+     * @param array  $input
+     *
+     * @return array
+     */
+    public function deleteEntityFeature(string $routeEndpoint, string $entityId, string $featureName, array $input)
     {
-        $feature = $this->repo->feature->findByEntityIdAndNameOrFail($entityId, $featureName);
+        $entityType = Entity::getEntityTypeFromRouteEndpoint($routeEndpoint);
+
+        $feature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail($entityType, $entityId, $featureName);
 
         $shouldSync = (bool) ($input[Entity::SHOULD_SYNC] ?? false);
 
         (new Core)->delete($feature, $shouldSync);
 
         // We delete the tag also along with feature.
-        (new Merchant\Service)->deleteTag($entityId, $feature->getName());
+        $this->deleteTagIfApplicable($entityType, $entityId, $feature->getName());
 
         return $feature->toArrayDeleted();
+    }
+
+    /**
+     * Delete the tag if the entity type is merchant
+     *
+     * @param string $entityType
+     * @param string $entityId
+     * @param string $featureName
+     */
+    protected function deleteTagIfApplicable(string $entityType, string $entityId, string $featureName)
+    {
+        if ($entityType !== Constants::MERCHANT)
+        {
+            return;
+        }
+
+        (new Merchant\Service)->deleteTag($entityId, $featureName);
     }
 
     public function multiAssignFeature($input)
@@ -105,7 +134,8 @@ class Service extends Base\Service
 
         foreach ($entityIds as $entityId)
         {
-            $feature = $this->repo->feature->findByEntityIdAndNameOrFail(
+            $feature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail(
+                        'merchant',
                         $entityId,
                         $featureName);
 
@@ -372,6 +402,19 @@ class Service extends Base\Service
         ];
 
         return $response;
+    }
+
+    /**
+     * For eg: 'account' from 'accounts'
+     *
+     * @param string $routeEndpoint
+     *
+     * @return string
+     */
+    protected function getEntityTypeFromRouteEndpoint(string $routeEndpoint): string
+    {
+        // strip the last character 's'
+        return substr($routeEndpoint, 0, -1);
     }
 }
 
