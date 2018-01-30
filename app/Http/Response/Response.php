@@ -95,10 +95,19 @@ class Response
         return $this->withRateLimitHeaders($response, $limits);
     }
 
+    /**
+     * Adds rate limit headers to given response.
+     *
+     * @param  \Illuminate\Http\JsonResponse $response
+     * @param  array                         $limits
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function withRateLimitHeaders($response, array $limits = [])
     {
         $headers = $response->headers;
 
+        // $limits contains 4 values in a list, following values respectively.
         if (empty($limits) === false)
         {
             $headers->set('X-RateLimit-Limit', $limits[0]);

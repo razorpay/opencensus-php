@@ -186,18 +186,9 @@ class Handler extends ExceptionHandler
 
     protected function throttleExceptionHandler(ThrottleException $exception)
     {
-        //
-        // TODO: Trace different level for different auths here
-        // Take auth as one of the params for ThrottleException
-        //
-        // Currently using level ALERT, as we're only throttling
-        // admin auth, which should never be rate-limited at all
-        //
-        $this->traceException(
-            $exception,
-            Trace::ALERT,
-            TraceCode::REQUEST_THROTTLED);
+        $this->traceException($exception, Trace::ALERT, TraceCode::REQUEST_THROTTLED);
 
+        // Throttle exception's data has limits values to be used in response headers
         $response = ApiResponse::rateLimitExceeded($exception->getData());
 
         return $response;
