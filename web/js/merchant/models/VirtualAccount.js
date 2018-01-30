@@ -12,9 +12,7 @@ const fields = [
 ];
 
 export default class VirtualAccount extends GenericEntity {
-  listRouteName = 'virtual_account_fetch_multiple';
-  detailsRouteName = 'virtual_account_fetch';
-  deleteRouteName = 'virtual_account_delete';
+  resourceUrl = 'virtual_accounts';
 
   resourceFields() {
     let resourceFields = fields.slice();
@@ -26,14 +24,8 @@ export default class VirtualAccount extends GenericEntity {
   }
 
   fetchPayments() {
-    let data = {
-      route_name: 'virtual_account_fetch_payments',
-    };
-    data.url_params = JSON.stringify({
-      '{id}': this.id,
-    });
-
-    return this.makeGenericAjaxCall({ data }).then(response => {
+    const url = `${this.resourceUrl}/${this.id}/payments`;
+    return this.makeGenericAjaxCall({ url }).then(response => {
       response.data.items = response.data.items.map(item =>
         new Payment(item).deserialize()
       );
@@ -47,6 +39,7 @@ export default class VirtualAccount extends GenericEntity {
       route_name: 'bank_transfer_process',
     };
     return this.makeGenericAjaxCall({
+      url: '/user/generic',
       method: 'post',
       data,
     });
