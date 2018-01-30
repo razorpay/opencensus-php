@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Gateway\Netbanking\Csb;
 
+use RZP\Gateway\Netbanking\Csb\ResponseFields;
 use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 use RZP\Tests\Functional\TestCase;
@@ -47,7 +48,29 @@ class NetbankingCsbGatewayTest extends TestCase
         $this->assertTestResponse($netbanking);
     }
 
-    // TODO: testPaymentFailed
+    public function testPaymentFailed()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $this->mockPaymentFailed();
+
+        $payment = $this->payment;
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthAndCapturePayment($payment);
+            });
+
+        $payment = $this->getLastEntity(ConstantsEntity::PAYMENT, true);
+
+        $this->assertEquals(Payment\Status::FAILED, $payment[Payment\Entity::STATUS]);
+
+        $netbanking = $this->getLastEntity(ConstantsEntity::NETBANKING, true);
+
+        $this->assertTestResponse($netbanking, __FUNCTION__ . 'NetbankingEntity');
+    }
 
     public function testPaymentVerify()
     {
@@ -74,4 +97,14 @@ class NetbankingCsbGatewayTest extends TestCase
     // TODO: testPaymentFailedVerifyFailed
 
     // TODO: testPaymentSuccessVerifyFailed
+
+    private function mockPaymentFailed()
+    {
+        $this->mockServerContentFunction(
+            function(& $content, $action = null)
+            {
+                $content[ResponseFields::STATUS] = Status::FAILURE;
+                $content[ResponseFields::NARRATION] = 'Payment failed';
+            });
+    }
 }
