@@ -25,6 +25,7 @@ class Validator extends Base\Validator
         Fields::CURRENCY_CODE       => 'required|string',
         Fields::TYPE                => 'required|string|custom',
         Fields::UDF5                => 'required|string|in:TrackID,trackid',
+        Fields::UDF3                => 'sometimes|string',
         Fields::LANGUAGE_ID         => 'required|string|in:USA',
         Fields::ID                  => 'required|string',
         Fields::PASSWORD            => 'sometimes|string',
@@ -51,6 +52,7 @@ class Validator extends Base\Validator
         Fields::ID                  => 'required|string',
         Fields::PASSWORD            => 'sometimes|string',
         Fields::UDF5                => 'sometimes|string',
+        Fields::UDF3                => 'sometimes|string',
         Fields::LANGUAGE_ID         => 'sometimes|string',
         Fields::BANK_CODE           => 'sometimes|string',
     ];
