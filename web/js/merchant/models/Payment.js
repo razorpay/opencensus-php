@@ -46,6 +46,12 @@ export default class Payment extends GenericEntity {
     return this.makeGenericAjaxCall({ method, data, url });
   }
 
+  transfer(data) {
+    const method = 'post';
+    const url = `${this.resourceUrl}/${this.id}/transfers`;
+    return this.makeGenericAjaxCall({ method, data, url });
+  }
+
   fetchCardDetails() {
     return this.makeGenericAjaxCall({
       url: `${this.resourceUrl}/${this.id}/card`,
