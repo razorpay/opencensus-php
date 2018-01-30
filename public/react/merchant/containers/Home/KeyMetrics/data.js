@@ -3,7 +3,7 @@ import moment from 'moment';
 import {
   titleCase,
   arrayToCsvDataUrl,
-  paiseToRupees
+  paiseToRupees,
 } from 'rzp/utils/rzp-utils';
 import colors from 'rzp/utils/chart/colors.js';
 import {
@@ -11,8 +11,9 @@ import {
   groupBy,
   groupByPlatform,
   getDefaultFilter,
-  getDefaultPaymentFilter
+  getDefaultPaymentFilter,
 } from 'rzp/utils/pokedex';
+import { platformGroupingVals } from 'rzp/utils/pokedex';
 
 const dateFormat = 'Do MMM YYYY';
 
@@ -25,7 +26,7 @@ const defaultGroupingVals = [
   {
     value: 'platform',
     text: 'By Platforms',
-    query: ['platform', 'os', 'device'],
+    query: platformGroupingVals,
   },
 ];
 
@@ -41,17 +42,12 @@ function getGroupQuery(value) {
 
 export const breakdownVals = ['daily', 'weekly', 'monthly'];
 
-const TRANSACTION_VOLUME = "transactionVolume",
-      NUM_TRANSACTIONS = "numTransactions",
-      REFUNDS = "refunds",
-      SAVED_CARDS = "savedCards";
+const TRANSACTION_VOLUME = 'transactionVolume',
+  NUM_TRANSACTIONS = 'numTransactions',
+  REFUNDS = 'refunds',
+  SAVED_CARDS = 'savedCards';
 
-export {
-  TRANSACTION_VOLUME,
-  NUM_TRANSACTIONS,
-  SAVED_CARDS,
-  REFUNDS,
-};
+export { TRANSACTION_VOLUME, NUM_TRANSACTIONS, SAVED_CARDS, REFUNDS };
 
 export const tabsOrder = [
   TRANSACTION_VOLUME,
@@ -134,7 +130,7 @@ export const tabsMeta = {
     grouping: [],
     options: [],
     index: 'refunds',
-    groupByColumnName: "method",
+    groupByColumnName: 'method',
     getCountQuery: function() {
       return {
         [this.name]: {
@@ -147,29 +143,22 @@ export const tabsMeta = {
       };
     },
     getHistogramQuery: function(grouping, breakdown) {
-
       return {
         [`${this.name}Histogram`]: {
           agg_type: 'count',
           filter_key: 'refunds',
           details: {
             index: this.index,
-            group_by: [
-              this.groupByColumnName,
-              `histogram_${breakdown}`
-            ],
+            group_by: [this.groupByColumnName, `histogram_${breakdown}`],
           },
         },
       };
     },
-    getFilterQuery: function (startTime, endTime) {
-    
+    getFilterQuery: function(startTime, endTime) {
       return {
-        "refunds" : [
-          getDefaultFilter(startTime, endTime)
-        ]
-      }
-    }
+        refunds: [getDefaultFilter(startTime, endTime)],
+      };
+    },
   },
   [SAVED_CARDS]: {
     name: SAVED_CARDS,
@@ -189,7 +178,7 @@ export const tabsMeta = {
           agg_type: 'count',
           details: {
             index: this.index,
-            group_by: [this.groupByColumnName]
+            group_by: [this.groupByColumnName],
           },
         },
       };
@@ -201,26 +190,20 @@ export const tabsMeta = {
           filter_key: this.name,
           details: {
             index: this.index,
-            group_by: [
-              this.groupByColumnName,
-              `histogram_${breakdown}`
-            ],
-          }
+            group_by: [this.groupByColumnName, `histogram_${breakdown}`],
+          },
         },
       };
     },
     getFilterQuery: function(startTime, endTime) {
-      const defaultFilter = getDefaultPaymentFilter(
-                              startTime,
-                              endTime
-                            );
+      const defaultFilter = getDefaultPaymentFilter(startTime, endTime);
 
       return {
         [this.name]: [
           {
             ...defaultFilter,
-            method: ["card", "emi"]
-          }
+            method: ['card', 'emi'],
+          },
         ],
       };
     },
@@ -245,9 +228,9 @@ export const getQuery = options => {
     return {
       filters: tabMeta.getFilterQuery
         ? tabMeta.getFilterQuery(startTime, endTime)
-        : {"default": [
-             getDefaultPaymentFilter(startTime, endTime)
-          ]},
+        : {
+            default: [getDefaultPaymentFilter(startTime, endTime)],
+          },
       aggregations: {
         ...tabMeta.getCountQuery(),
         ...(!countsOnly && tabMeta.getHistogramQuery(groupBy, breakdown)),
@@ -290,7 +273,7 @@ export const getTimelineData = ({
   endTime,
   breakdown = 'daily',
   groupTitleMap = {},
-  isCurrency = false
+  isCurrency = false,
 }) => {
   /*
    * Pokedex data will be completely denormalized without any grouping
@@ -356,7 +339,6 @@ export const getTimelineData = ({
     csvGrandTotal = 0;
 
   if (groups.length === 0) {
-
     csvData = csvData.concat([csvHeader, csvFooter.concat([0])]);
 
     return {
@@ -579,11 +561,11 @@ export const getTimelineData = ({
 
     csvGrandTotal += aggregate.value;
     aggregate.value = isCurrency
-                        ? paiseToRupees(aggregate.value)
-                        : aggregate.value;
+      ? paiseToRupees(aggregate.value)
+      : aggregate.value;
   });
 
-  csvHeader.push(`Total${isCurrency ? "(Paise)" : ""}`);
+  csvHeader.push(`Total${isCurrency ? '(Paise)' : ''}`);
   csvFooter.push(csvGrandTotal);
 
   csvData.unshift(csvHeader);

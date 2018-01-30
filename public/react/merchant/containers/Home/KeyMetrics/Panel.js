@@ -7,11 +7,7 @@ import { PowerSelect } from 'react-power-select';
 import Definition from 'rzp/ui/Definition';
 import Change from 'rzp/ui/Change';
 import { BtnGroup, Btn } from 'rzp/ui/BtnGroup/index.js';
-import {
-  titleCase,
-  paiseToRupees,
-  getPercentage
-} from 'rzp/utils/rzp-utils';
+import { titleCase, paiseToRupees, getPercentage } from 'rzp/utils/rzp-utils';
 import { timeScale } from 'rzp/utils/chart/new.js';
 import takeScreenshot from 'rzp/utils/screenshot';
 import Group, { GroupItem } from 'rzp/ui/Group';
@@ -110,6 +106,7 @@ class Panel extends Component {
         lastUpdatedAt,
         isCurrency,
         externalUrl,
+        showGrouping,
       } = this.props,
       dateFormat = 'DD MMM YYYY',
       { grouping, options } = this.meta,
@@ -207,15 +204,16 @@ class Panel extends Component {
                 );
               })}
             </BtnGroup>
-            {grouping.length > 0 && (
-              <div className="panel-action-item">
-                <GroupingDropdown
-                  onGroupChange={this.handleGroupingChange}
-                  grouping={grouping}
-                  selectedGrouping={selectedGrouping}
-                />
-              </div>
-            )}
+            {showGrouping &&
+              grouping.length > 0 && (
+                <div className="panel-action-item">
+                  <GroupingDropdown
+                    onGroupChange={this.handleGroupingChange}
+                    grouping={grouping}
+                    selectedGrouping={selectedGrouping}
+                  />
+                </div>
+              )}
             <div className="panel-action-item">
               <MoreOptionsButton
                 csvData={data.csv}
