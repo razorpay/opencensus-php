@@ -173,6 +173,7 @@ class PublicErrorDescription
     const BAD_REQUEST_REFUND_FAILED                                             = 'Refund failed';
     const BAD_REQUEST_PAYMENT_ALREADY_REFUNDED                                  = 'Refund failed';
     const BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE                                 = 'Your account does not have enough balance to carry out the refund operation. You can add funds to your account from your Razorpay dashboard or capture new payments.';
+    const BAD_REQUEST_REFUND_NOT_ENOUGH_CREDITS                                 = 'Your account does not have enough credits to carry out the refund operation.';
     const BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE                                 = 'Your account does not have enough balance to carry out the payout operation. You can add funds to your account from your Razorpay dashboard or capture new payments.';
     const BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD                                    = 'This operation is not allowed. Please contact Razorpay support for details.';
     const BAD_REQUEST_MERCHANT_FUNDS_ALREADY_ON_HOLD                            = 'The merchant funds are already on hold';
@@ -273,6 +274,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_NO_RESPONSE_RECEIVED_FROM_BANK                    = 'Payment declined due to not receiving timely response from bank';
     const BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR                                 = 'Payment failed due to error in the bank system';
     const BAD_REQUEST_PAYMENT_FAILED_MAYBE_DUE_TO_INVALID_INPUT                 = 'Payment processing failed most probably due to invalid card input';
+    const BAD_REQUEST_PAYMENT_FAILED_MISSING_ORDER_ID                           = 'Payment processing failed due to missing order id';
     const BAD_REQUEST_PAYMENT_FAILED_DUE_TO_INVALID_BIN                         = 'Payment processing failed most probably due to invalid card input';
     const BAD_REQUEST_PAYMENT_CANCELLED                                         = 'Payment processing cancelled';
     const BAD_REQUEST_PAYMENT_DECLINED_CONTACT_ISSUING_BANK                     = 'Payment processing declined by card issuing bank. Please contact issuing bank to determine reason.';
@@ -313,6 +315,7 @@ class PublicErrorDescription
     const BAD_REQUEST_UNAUTHORIZED_INVALID_HASH                                 = 'Hash Data is invalid.';
     const BAD_REQUEST_NB_TOKEN_PASSED_IN_FIRST_RECURRING                        = 'Token should not be passed in first netbanking recurring payment';
     const BAD_REQUEST_NB_UNCONFIRMED_TOKEN_PASSED_IN_SECOND_RECURRING           = 'Token is not confirmed for recurring payments';
+    const BAD_REQUEST_VALIDATION_FAILURE                                        = 'Validation Failure';
 
     const BAD_REQUEST_GATEWAY_REFUND_ABSENT                                     = 'Refund not done on the gateway side.';
     const BAD_REQUEST_INVALID_GATEWAY                                           = 'Invalid gateway provided for the request';

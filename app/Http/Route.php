@@ -161,15 +161,15 @@ final class Route
         'create_submerchant_user'                 => ['post',     'submerchant/user/{id}',                          'MerchantController@postSubMerchantUser'                            ],
         'balance_fetch'                           => ['get',      'balance',                                        'MerchantController@getAccountBalance'                              ],
         'credits_create'                          => ['post',     'merchants/{id}/credits_log',                     'MerchantController@postCreateCreditsLog'                           ],
-        'credits_fetch_by_id'                     => ['get',      'merchants/{mid}/credits/{id}',                   'MerchantController@getCreditsLog'                                  ],
         'credits_edit'                            => ['put',      'merchants/{mid}/credits/{id}',                   'MerchantController@putCreditsLog'                                  ],
         'credits_delete'                          => ['delete',   'merchants/{mid}/credits/{id}',                   'MerchantController@deleteCreditsLog'                               ],
+        'credits_fetch_by_id'                     => ['get',      'credits/{id}',                                   'MerchantController@getCreditsLog'                                  ],
+        'credits_fetch_multiple'                  => ['get',      'credits',                                        'MerchantController@getCreditsLogs'                                 ],
         'merchant_get_features'                   => ['get',      'merchants/{id}/features',                        'MerchantController@getMerchantFeatures'                            ],
         'merchant_update_features'                => ['post',     'merchants/{id}/features',                        'MerchantController@updateMerchantFeatures'                         ],
         'merchants_update_hold_funds'             => ['put',      'merchants/hold_funds/bulk',                      'MerchantController@updateHoldFundsForMultipleMerchants'            ],
         'merchants_update_channel'                => ['put',      'merchants/channel/bulk',                         'MerchantController@updateChannelForMultipleMerchants'              ],
         'merchants_update_bank_account'           => ['put',      'merchants/bank_account/bulk',                    'MerchantController@updateBankAccountForMultipleMerchants'          ],
-        'credits_fetch_multiple'                  => ['get',      'credits',                                        'MerchantController@getCreditsLogs'                                 ],
         'methods_update_merchants'                => ['put',      'methods/bulkupdate',                             'MerchantController@updateMethodsForMultipleMerchants'              ],
         'gratis_postpaid_transactions'            => ['post',     'merchants/gratis/postpaid',                      'MerchantController@markGratisTransactionPostpaid'                  ],
         'terminal_delete'                         => ['delete',   'terminals/{id}',                                 'TerminalController@deleteTerminal'                                 ],
@@ -706,6 +706,9 @@ final class Route
         'beta_account_fetch_multiple'             => ['get',      'beta/accounts',                                  'AccountController@list'                                            ],
         'beta_account_post_bank_account'          => ['post',     'beta/accounts/{id}/bank_accounts',               'AccountController@createOrChangeBankAccount'                       ],
         'beta_account_fetch_setl_destinations'    => ['get',      'beta/accounts/{id}/settlement_destinations',     'AccountController@fetchSettlementDestinations'                     ],
+
+        // Pincode Service
+        'pincode_get'                             => ['get',      'pincodes/{id}',                                  'PincodeSearchController@get'                                       ],
     ];
 
     public static $public = [
@@ -1239,6 +1242,7 @@ final class Route
         'reporting_log_list',
         'reporting_log_create',
         'ufh_get_file_signed_url',
+        'pincode_get',
     ];
 
     // These will run on internal auth with the assurance
