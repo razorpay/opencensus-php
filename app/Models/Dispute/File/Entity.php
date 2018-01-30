@@ -9,7 +9,7 @@ use RZP\Constants\Entity as ConstantEntity;
 class Entity extends Base\PublicEntity
 {
     const DISPUTE_ID          = 'dispute_id';
-    const URL                 = 'url';
+    const FILE_ID             = 'file_id';
     const NAME                = 'name';
     const CATEGORY            = 'category';
     const CREATED_AT          = 'created_at';
@@ -40,7 +40,7 @@ class Entity extends Base\PublicEntity
     protected $visible = [
         self::ID,
         self::DISPUTE_ID,
-        self::URL,
+        self::FILE_ID,
         self::NAME,
         self::CATEGORY,
         self::CREATED_AT,
@@ -49,7 +49,7 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::DISPUTE_ID,
-        self::URL,
+        self::FILE_ID,
         self::NAME,
         self::CATEGORY,
     ];
@@ -66,9 +66,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::DISPUTE_ID);
     }
 
-    public function getUrl()
+    public function getFileId()
     {
-        return $this->getAttribute(self::URL);
+        return $this->getAttribute(self::FILE_ID);
     }
 
     public function dispute()

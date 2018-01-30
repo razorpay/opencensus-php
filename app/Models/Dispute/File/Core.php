@@ -48,7 +48,7 @@ class Core extends Base\Core
 
         $input = [
             Entity::DISPUTE_ID => $dispute->getId(),
-            Entity::URL        => $uploadedFileDetails[UfhService::SIGNED_URL],
+            Entity::FILE_ID    => $uploadedFileDetails[UfhService::FILE_ID],
             Entity::NAME       => $fileInput[Entity::NAME],
             Entity::CATEGORY   => $fileInput[Entity::CATEGORY],
         ];

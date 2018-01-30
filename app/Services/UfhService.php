@@ -55,8 +55,6 @@ class UfhService
                                         string $type,
                                         Entity $entity): array
     {
-        // TODO : See if any validation on input arguments is required
-
         $ext = $file->getClientOriginalExtension();
 
         $movedFile = $file->move(storage_path('files/filestore'), $storageFileName . '.' . $ext);
