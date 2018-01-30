@@ -793,13 +793,13 @@ class FeaturesTest extends TestCase
      * @param string      $addToMode
      * @param bool        $shouldSync
      * @param array       $featureNames
-     * @param string|null $merchant_id
+     * @param string|null $merchantId
      */
     protected function addFeatures(
         string $addToMode,
         bool $shouldSync = false,
         array $featureNames = ['dummy'],
-        string $merchant_id = null)
+        string $merchantId = null)
     {
         $authMethod = 'appAuth' . studly_case($addToMode);
 
@@ -817,9 +817,9 @@ class FeaturesTest extends TestCase
             $testData['request']['content']['should_sync'] = 1;
         }
 
-        if ($merchant_id !== null)
+        if ($merchantId !== null)
         {
-            $testData['request']['content']['entity_id'] = $merchant_id;
+            $testData['request']['content']['entity_id'] = $merchantId;
         }
 
         $this->startTest($testData);
