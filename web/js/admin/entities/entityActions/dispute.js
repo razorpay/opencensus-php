@@ -16,7 +16,7 @@ export default ({ entity, mode, updateEntity }) => {
     // Edit Dispute
     return fetch({
       url: '/admin/generic',
-      method: 'patch',
+      method: 'post',
       params: {
         route_name: 'dispute_edit',
         url_params: {
