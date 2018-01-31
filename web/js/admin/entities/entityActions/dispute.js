@@ -22,6 +22,7 @@ export default ({ entity, mode, updateEntity }) => {
         url_params: {
           '{id}': entity.id,
         },
+        merchant_id: entity.merchant_id,
         mode: mode,
       },
       data: {
