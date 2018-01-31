@@ -74,26 +74,9 @@ class UfhService
 
         $response = $this->ufhClient->upload($requestData);
 
-        // TODO : Parsing logic to be changed, hence update this
-        return $this->validateAndGetParsedResponse($response);
-    }
-
-    protected function validateAndGetParsedResponse($response): array
-    {
-        $status     = $response->getStatusCode();
-
-        $body       = $response->getBody();
-
-        $parsedBody = json_decode($body, true);
-
-        if ($status !== 200)
-        {
-            throw new IntegrationException(null, $parsedBody);
-        }
-
         return [
-            self::FILE_ID    => $parsedBody['id'],
-            self::RELATIVE_LOCATION => $parsedBody['location'],
+            self::FILE_ID           => $response['id'],
+            self::RELATIVE_LOCATION => $response['location'],
         ];
     }
 

@@ -42,7 +42,7 @@ class UfhService extends BaseUfhClient
             array_except($requestData, ['file']));
 
         return [
-            self::FILE_ID    => self::MOCK_FILE_ID,
+            self::FILE_ID           => self::MOCK_FILE_ID,
             self::RELATIVE_LOCATION => $storageFileName,
         ];
     }
