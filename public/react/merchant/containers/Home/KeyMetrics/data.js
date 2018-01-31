@@ -40,7 +40,23 @@ function getGroupQuery(value) {
   return (groupObj && groupObj.query) || [];
 }
 
-export const breakdownVals = ['daily', 'weekly', 'monthly'];
+export const breakdownVals = [
+  {
+    value: 'daily',
+    isEnabled: (startDate, endDate) => !startDate.isSame(endDate, 'day'),
+    title: 'Daily',
+  },
+  {
+    value: 'weekly',
+    isEnabled: (startDate, endDate) => !startDate.isSame(endDate, 'isoWeek'),
+    title: 'Weekly',
+  },
+  {
+    value: 'monthly',
+    isEnabled: (startDate, endDate) => !startDate.isSame(endDate, 'month'),
+    title: 'Monthly',
+  },
+];
 
 const TRANSACTION_VOLUME = 'transactionVolume',
   NUM_TRANSACTIONS = 'numTransactions',
