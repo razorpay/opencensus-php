@@ -13,11 +13,12 @@ import GenericPanel, {
   PanelFooter,
 } from 'merchant/components/Home/GenericPanel';
 import { groupValues, groupMeta, getQuery, getPieData } from './data';
-import GroupingDropdown from 'merchant/components/Home/GroupingDropdown';
+import GroupingDropdown from 'merchant/containers/Home/GroupingDropdown';
 import Legend from 'merchant/components/Home/Legend';
 import LastUpdated from 'merchant/components/Home/LastUpdated';
-import MoreOptionsButton from 'merchant/components/Home/MoreOptionsButton';
+import MoreOptionsButton from 'merchant/containers/Home/MoreOptionsButton';
 import { API_ERROR, API_INVALID_RESP } from 'merchant/components/Home/data';
+import { trackGoToLinks } from 'merchant/containers/Home/ga';
 
 import './styles.styl';
 
@@ -221,7 +222,7 @@ class Traffic extends Component {
       { isCurrency } = groupMeta[selectedGrouping.value],
       { chartData, legendData } = groupState,
       hasNoData = !chartData || chartData.labels.length === 0,
-      { startDate, endDate } = this.props;
+      { startDate, endDate, sectionTitle } = this.props;
 
     return (
       <GenericPanel
@@ -238,13 +239,15 @@ class Traffic extends Component {
                 selectedGrouping={selectedGrouping}
                 onGroupChange={this.onGroupChange}
                 displayTextKey="title"
+                sectionTitle={sectionTitle}
               />
             </div>
             <div className="panel-action-item">
               <MoreOptionsButton
-                onImageExport={this.handleImageExportClick}
+                handleImageDownload={this.handleImageExportClick}
                 csvData={groupState.csvData}
                 pngData={groupState.pngData}
+                sectionTitle={sectionTitle}
               />
             </div>
           </div>
@@ -281,6 +284,7 @@ class Traffic extends Component {
             <Link
               target="_blank"
               to={`/payments?from=${startDate.unix()}&to=${endDate.unix()}`}
+              onClick={() => trackGoToLinks('Payments', sectionTitle)}
             >
               View all Payments
             </Link>
