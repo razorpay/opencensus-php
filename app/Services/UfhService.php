@@ -36,10 +36,13 @@ class UfhService
             'base_uri'      => $this->config['url'],
             'username'      => $this->config['auth']['username'],
             'password'      => $this->config['auth']['password'],
+            'headers'       => [
+                'X-Merchant-Id' => $this->ba->getMerchantId(),
+            ],
             'X-Merchant-Id' => $this->ba->getMerchantId(),
         ];
 
-        $this->ufhClient = (new UfhClient())->setconfig($config);
+        $this->ufhClient = new UfhClient($config);
     }
 
     /**
