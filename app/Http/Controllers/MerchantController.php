@@ -791,6 +791,15 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function bulkTagMerchants()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->bulkTag($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function markGratisTransactionPostpaid()
     {
         $input = Request::all();
