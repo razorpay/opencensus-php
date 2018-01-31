@@ -893,6 +893,22 @@ class MerchantTest extends TestCase
         $this->fixtures->merchant->disableTPV();
     }
 
+    public function testGetCheckoutPreferencesForMagicEnabledMerchant()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures(['magic']);
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesForMagicDisabledMerchant()
+    {
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
     public function testGetCheckoutPreferencesWithAllCardGeatewayDowntime()
     {
         $this->ba->publicAuth();
