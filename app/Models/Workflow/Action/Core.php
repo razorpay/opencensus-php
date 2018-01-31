@@ -33,8 +33,7 @@ class Core extends Base\Core
         $input[Entity::MAKER_ID] = $maker->getId();
 
         $params = [
-            Entity::ORG_ID      => $maker->getOrgId(),
-            Entity::ADMIN_ID    => $maker->getId()
+            Entity::ORG_ID      => $maker->getOrgId()
         ];
 
         $orgId = $maker->getOrgId();
@@ -108,7 +107,6 @@ class Core extends Base\Core
 
         $params = [
             Entity::ORG_ID          => Org\Entity::$strip($input[Entity::ORG_ID]),
-            Entity::ADMIN_ID        => Admin\Entity::$strip($input[Entity::ADMIN_ID]),
             Entity::MAKER_ID        => $makerClass::$strip($input[Entity::MAKER_ID]),
             Entity::MAKER_TYPE      => $input[Entity::MAKER_TYPE],
             Entity::WORKFLOW_ID     => Workflow\Entity::$strip($input[Entity::WORKFLOW_ID]),
@@ -551,9 +549,9 @@ class Core extends Base\Core
         string $entityName,
         string $permissionName)
     {
-        $admin = $this->app['basicauth']->getAdmin();
+        $maker = $this->app['workflow']->getWorkflowMaker();
 
-        $orgId = $admin->getOrgId();
+        $orgId = $maker->getOrgId();
 
         $permissionId = $this->repo
                              ->permission

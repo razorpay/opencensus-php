@@ -389,14 +389,14 @@ class Service
 
         $count = $workflowAction->count();
 
-        $admin = $this->ba->getAdmin();
+        $maker = $this->app['workflow']->getWorkflowMaker();
 
         // Transaction failed and no entry was created
         if ($count === 0)
         {
             // Let's re-try creating workflow action and relevant entities
 
-            $action = $core->create($data, $retry = true, $admin);
+            $action = $core->create($data, $retry = true, $maker);
         }
         else
         {
@@ -413,7 +413,7 @@ class Service
             return $this->ba->getAdmin();
         }
 
-        if ($this->ba->isProxyAuth() === true)
+        if ($this->ba->getMerchant() !== null)
         {
             return $this->ba->getMerchant();
         }
@@ -428,7 +428,7 @@ class Service
             return MakerType::ADMIN;
         }
 
-        if ($this->ba->isProxyAuth() === true)
+        if ($this->ba->getMerchant() !== null)
         {
             return MakerType::MERCHANT;
         }

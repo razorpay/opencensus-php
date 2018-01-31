@@ -1130,6 +1130,7 @@ final class Route
         'dispute_edit',
         'merchant_get_tags',
         'account_fetch',
+        'merchant_add_bank_account',
     ];
 
     // These will run on internal auth with the assurance

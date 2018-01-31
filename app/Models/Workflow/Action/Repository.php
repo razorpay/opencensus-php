@@ -201,9 +201,13 @@ class Repository extends Base\Repository
                         });
             },
             'workflow.steps.role',
-            'maker' => function ($query)
+            'maker' => function ($query) use ($actionEntity)
             {
-                $query->withTrashed();
+                // Since only Admin uses soft deletes
+                if ($actionEntity->getMakerType() === MakerType::ADMIN)
+                {
+                    $query->withTrashed();
+                }
             },
             'stateChanger' => function ($query)
             {

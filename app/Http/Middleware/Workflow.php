@@ -20,6 +20,8 @@ class Workflow
     // Mostly because workflow will be trigger
     // inside the code since the generic handler
     // is too generic to handle the diffing.
+    // Workflows for EXCLUDED_PERMISSIONS will be triggered from inside
+    // the code.
     const EXCLUDED_PERMISSIONS = [
         Permission::EDIT_MERCHANT_METHODS,
         Permission::ASSIGN_MERCHANT_BANKS,
@@ -60,10 +62,7 @@ class Workflow
 
         // Disable workflows if:
         // - It is mocked
-        // - There's no admin user or merchant proxy in current context.
-        if (($this->config->get('heimdall.workflows.mock') === true) or
-            ($this->ba->isAdminAuth() !== true and $this->ba->isProxyAuth() !== true) or
-            ($this->app['api.route']->isWorkflowExecuteOrApproveCall() and $this->ba->isAdminAuth() !== true))
+        if ($this->config->get('heimdall.workflows.mock') === true)
         {
             return $next($request);
         }
