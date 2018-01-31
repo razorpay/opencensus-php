@@ -1312,7 +1312,7 @@ class BasicAuth
         $this->merchant = $account;
     }
 
-    protected function checkMerchantActivatedForLive()
+    public function checkMerchantActivatedForLive()
     {
         $mode = $this->getMode();
 
