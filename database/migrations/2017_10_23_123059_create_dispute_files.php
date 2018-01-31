@@ -41,6 +41,8 @@ class CreateDisputeFiles extends Migration
             $table->index(DisputeFileEntity::CREATED_AT);
             $table->index(DisputeFileEntity::UPDATED_AT);
 
+            $table->unique([DisputeFileEntity::DISPUTE_ID, DisputeFileEntity::FILE_ID]);
+
             $table->foreign(DisputeFileEntity::DISPUTE_ID)
                 ->references(DisputeEntity::ID)
                 ->on(Table::DISPUTE)
