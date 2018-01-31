@@ -26,7 +26,8 @@ class CreateDisputeFiles extends Migration
 
             $table->string(DisputeFileEntity::DISPUTE_ID, DisputeEntity::ID_LENGTH);
 
-            $table->string(DisputeFileEntity::FILE_ID, 50);
+            $table->string(DisputeFileEntity::FILE_ID, 50)
+                ->unique();
 
             $table->string(DisputeFileEntity::NAME, 50);
 
@@ -39,8 +40,6 @@ class CreateDisputeFiles extends Migration
 
             $table->index(DisputeFileEntity::CREATED_AT);
             $table->index(DisputeFileEntity::UPDATED_AT);
-
-            $table->unique([DisputeFileEntity::DISPUTE_ID, DisputeFileEntity::FILE_ID]);
 
             $table->foreign(DisputeFileEntity::DISPUTE_ID)
                 ->references(DisputeEntity::ID)
