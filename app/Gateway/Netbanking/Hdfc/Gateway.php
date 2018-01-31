@@ -150,15 +150,6 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
-    public function reconcileRegisterEmandate(array $input)
-    {
-        parent::reconcileRegisterEmandate($input);
-
-        $response = (new EMandateRegistrationReconFile)->process($input);
-
-        return $response;
-    }
-
     protected function validateCallbackChecksum($input)
     {
         $checksum = $input['gateway']['CheckSum'] ?? null;

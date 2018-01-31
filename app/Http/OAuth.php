@@ -6,6 +6,7 @@ use ApiResponse;
 use Razorpay\OAuth\OAuthServer;
 use Razorpay\OAuth\Token\Entity as OAuthToken;
 
+use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
@@ -196,6 +197,17 @@ class OAuth
         // Sets the mode for the request, and database connection
         $this->ba->setMode($mode);
         \Database\DefaultConnection::set($mode);
+
+        try
+        {
+            $this->ba->checkMerchantActivatedForLive();
+        }
+        catch (Exception\LogicException $e)
+        {
+            return ApiResponse::generateErrorResponse(
+                ErrorCode::BAD_REQUEST_UNAUTHORIZED_OAUTH_MERCHANT_NOT_ACTIVATED);
+        }
+
 
         // Sets the identifiers that are sent in trace logs
         $this->ba->setAccessTokenId($response[OAuthToken::ID]);
