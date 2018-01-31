@@ -12,6 +12,9 @@ import {
   validatePANCard,
   validateCIN,
 } from 'rzp/utils/validators';
+import { states } from 'rzp/utils/constants';
+
+import ajax from 'merchant/utils/ajax';
 
 const selector = formValueSelector('activationBusinessDetails');
 @connect(state => {
@@ -25,7 +28,7 @@ const selector = formValueSelector('activationBusinessDetails');
   };
 }, null)
 export default class BusinessDetailsForm extends Component {
-  updateOperationalAddress = (event, newValue) => {
+  updateOperationalAddress = () => {
     setTimeout(() => {
       // Allow the redux-form to update the store
       let props = this.props;
@@ -48,6 +51,24 @@ export default class BusinessDetailsForm extends Component {
         );
       }
     });
+  };
+
+  //Fetch state/city details based on pincode.
+  fetchPincodeDetails = (e, code) => {
+    const pincode = e.target.value;
+    if (pincode.length === 6) {
+      ajax({
+        url: `/merchant/api/test/pincodes/${pincode}`,
+        method: 'get',
+        appendModeInURL: false,
+      }).then(response => {
+        if (response.data) {
+          this.props.change(`business_${code}_pin`, pincode);
+          this.props.change(`business_${code}_city`, response.data.city);
+          this.props.change(`business_${code}_state`, response.data.state_code);
+        }
+      });
+    }
   };
 
   render() {
@@ -233,17 +254,41 @@ export default class BusinessDetailsForm extends Component {
 
               <div class="form-group">
                 <label class="col-md-3 control-label label-required">
+                  Registered Address Pincode
+                </label>
+                <div class="col-md-9">
+                  <Field
+                    name="business_registered_pin"
+                    component={InputField}
+                    class="form-control"
+                    placeholder="Registered Address Pincode"
+                    onChange={e => this.fetchPincodeDetails(e, 'registered')}
+                    validate={[required(), validatePincodeLength]}
+                  />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="col-md-3 control-label label-required">
                   Registration Address State
                 </label>
                 <div class="col-md-9">
                   <Field
                     name="business_registered_state"
                     component={InputField}
+                    tagName="select"
                     class="form-control"
                     placeholder="Registered Address State"
                     onChange={this.updateOperationalAddress}
                     validate={[required()]}
-                  />
+                  >
+                    <option />
+                    {Object.keys(states).map(stateCode => (
+                      <option value={stateCode} key={stateCode}>
+                        {states[stateCode]}
+                      </option>
+                    ))}
+                  </Field>
                 </div>
               </div>
 
@@ -259,22 +304,6 @@ export default class BusinessDetailsForm extends Component {
                     placeholder="Registered Address City"
                     onChange={this.updateOperationalAddress}
                     validate={[required()]}
-                  />
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label class="col-md-3 control-label label-required">
-                  Registered Address Pincode
-                </label>
-                <div class="col-md-9">
-                  <Field
-                    name="business_registered_pin"
-                    component={InputField}
-                    class="form-control"
-                    placeholder="Registered Address Pincode"
-                    onChange={this.updateOperationalAddress}
-                    validate={[required(), validatePincodeLength]}
                   />
                 </div>
               </div>
@@ -324,16 +353,40 @@ export default class BusinessDetailsForm extends Component {
 
                 <div class="form-group">
                   <label class="col-md-3 control-label label-required">
+                    Operational Address Pincode
+                  </label>
+                  <div class="col-md-9">
+                    <Field
+                      name="business_operation_pin"
+                      component={InputField}
+                      class="form-control"
+                      placeholder="Operational Address Pincode"
+                      validate={[required(), validatePincodeLength]}
+                      onChange={e => this.fetchPincodeDetails(e, 'operation')}
+                    />
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="col-md-3 control-label label-required">
                     Operational Address State
                   </label>
                   <div class="col-md-9">
                     <Field
                       name="business_operation_state"
                       component={InputField}
+                      tagName="select"
                       class="form-control"
                       placeholder="Operational Address State"
                       validate={[required()]}
-                    />
+                    >
+                      <option />
+                      {Object.keys(states).map(stateCode => (
+                        <option value={stateCode} key={stateCode}>
+                          {states[stateCode]}
+                        </option>
+                      ))}
+                    </Field>
                   </div>
                 </div>
 
@@ -348,21 +401,6 @@ export default class BusinessDetailsForm extends Component {
                       class="form-control"
                       placeholder="Operational Address City"
                       validate={[required()]}
-                    />
-                  </div>
-                </div>
-
-                <div class="form-group">
-                  <label class="col-md-3 control-label label-required">
-                    Operational Address Pincode
-                  </label>
-                  <div class="col-md-9">
-                    <Field
-                      name="business_operation_pin"
-                      component={InputField}
-                      class="form-control"
-                      placeholder="Operational Address Pincode"
-                      validate={[required(), validatePincodeLength]}
                     />
                   </div>
                 </div>

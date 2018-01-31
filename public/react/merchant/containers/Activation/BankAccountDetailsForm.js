@@ -6,6 +6,8 @@ import Fieldset from 'rzp/ui/Forms/Fieldset';
 import { required, validatePincodeLength } from 'rzp/utils/validators';
 import { states } from 'rzp/utils/constants';
 
+import ajax from 'merchant/utils/ajax';
+
 function verifyAccountNumber(value, allValues, props) {
   return value !== allValues.bank_account_number
     ? "Bank Number doesn't match"
@@ -28,6 +30,25 @@ export default class BankDetailsForm extends Component {
         ? true
         : false;
   }
+
+  //Fetch state/city details based on pincode.
+  fetchPincodeDetails = e => {
+    const pincode = e.target.value;
+    if (pincode.length === 6) {
+      ajax({
+        url: `/merchant/api/test/pincodes/${pincode}`,
+        method: 'get',
+        appendModeInURL: false,
+      }).then(response => {
+        if (response.data) {
+          this.props.change('bank_beneficiary_pin', pincode);
+          this.props.change('bank_beneficiary_city', response.data.city);
+          this.props.change('bank_beneficiary_state', response.data.state_code);
+        }
+      });
+    }
+  };
+
   render() {
     let {
       handleSubmit,
@@ -174,6 +195,22 @@ export default class BankDetailsForm extends Component {
 
               <div class="form-group">
                 <label class="col-md-3 control-label label-required">
+                  Beneficiary Address Pincode
+                </label>
+                <div class="col-md-9">
+                  <Field
+                    name="bank_beneficiary_pin"
+                    component={InputField}
+                    class="form-control"
+                    placeholder="Beneficiary Address Pincode"
+                    validate={[required(), validatePincodeLength]}
+                    onChange={this.fetchPincodeDetails}
+                  />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="col-md-3 control-label label-required">
                   Beneficiary Address City
                 </label>
                 <div class="col-md-9">
@@ -208,21 +245,6 @@ export default class BankDetailsForm extends Component {
                       </option>
                     ))}
                   </Field>
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label class="col-md-3 control-label label-required">
-                  Beneficiary Address Pincode
-                </label>
-                <div class="col-md-9">
-                  <Field
-                    name="bank_beneficiary_pin"
-                    component={InputField}
-                    class="form-control"
-                    placeholder="Beneficiary Address Pincode"
-                    validate={[required(), validatePincodeLength]}
-                  />
                 </div>
               </div>
             </div>
