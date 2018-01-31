@@ -45,6 +45,7 @@ export default class Model extends BaseModel {
     return this.request('fetchMerchantDetails', this.fetchFn(data)).then(
       data => {
         if (data) {
+          this.setAutoRefundDelay(data);
           this.merchant.details = data;
         }
 
@@ -336,6 +337,32 @@ export default class Model extends BaseModel {
     // Value is changed and view is re-rendered
     this.merchant.details = { ...this.merchant.details, ...data };
     this.merchant = { ...this.merchant }; // To force re-render the view
+  }
+
+  /**
+   * Sets the auto refund delay value and type.
+   * `data` is passed by reference.
+   * @param {Object} data
+   */
+  setAutoRefundDelay(data) {
+    // Set Auto Refund Delay (value and type)
+    let { auto_refund_delay: delay } = data;
+    if (delay) {
+      let val, type;
+      if (delay % (24 * 60 * 60) === 0) {
+        val = delay / (24 * 60 * 60);
+        type = 'days';
+      } else if (delay % (60 * 60) === 0) {
+        val = delay / (60 * 60);
+        type = 'hours';
+      } else {
+        val = delay / 60;
+        type = 'mins';
+      }
+      data.auto_refund_delay_val = val;
+      data.auto_refund_delay_type = type;
+      delete data.auto_refund_delay;
+    }
   }
 
   @action

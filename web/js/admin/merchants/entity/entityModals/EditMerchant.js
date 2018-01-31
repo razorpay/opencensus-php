@@ -77,18 +77,20 @@ export default class EditMerchant extends Component {
       ? body.transaction_report_email.split(',')
       : [];
 
+    if (body.auto_refund_delay_val || body.auto_refund_delay_type) {
+      body.auto_refund_delay = `${body.auto_refund_delay_val} ${
+        body.auto_refund_delay_type
+      }`;
+    }
+
     this.dropUnchangedFields(body);
 
     if (body.transaction_report_email) {
       body.transaction_report_email = body.transaction_report_email.join(',');
     }
 
-    if (body.auto_refund_delay_val) {
-      body.auto_refund_delay = `${body.auto_refund_delay_val} ${body.auto_refund_delay_type}`;
-
-      delete body.auto_refund_delay_type;
-      delete body.auto_refund_delay_val;
-    }
+    delete body.auto_refund_delay_type;
+    delete body.auto_refund_delay_val;
 
     if (!Object.keys(body).length) {
       notifyError('Edit something before clicking Save');
@@ -100,6 +102,8 @@ export default class EditMerchant extends Component {
         if (data) {
           closeModal();
           notifySuccess('Merchant edited successfully');
+
+          this.props.props.setAutoRefundDelay(data);
           this.props.props.updateDetails(data);
         }
       })
@@ -266,8 +270,14 @@ export default class EditMerchant extends Component {
 
           <div class="field multi">
             <label>Auto Refund Delay</label>
-            <input name="auto_refund_delay_val" />
-            <select name="auto_refund_delay_type">
+            <input
+              name="auto_refund_delay_val"
+              defaultValue={details.auto_refund_delay_val || 5}
+            />
+            <select
+              name="auto_refund_delay_type"
+              defaultValue={details.auto_refund_delay_type || 'days'}
+            >
               <option value="days">Days</option>
               <option value="hours">Hours</option>
               <option value="mins">Minutes</option>

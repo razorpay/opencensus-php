@@ -17,7 +17,7 @@ const getStartDateFromDiff = (diff, endDate) => {
    * given , diff (seconds) and endDate , gives startDate
    */
 
-  return moment(endDate.toDate() - diff * 1000).startOf("day");
+  return moment(endDate.toDate() - diff * 1000).startOf('day');
 };
 
 class DateRangePicker extends Component {
@@ -46,7 +46,7 @@ class DateRangePicker extends Component {
     this.onDatesChange = this.onDatesChange.bind(this);
   }
 
-  setDates(startDate, endDate) {
+  setDates(startDate, endDate, preset) {
     startDate = startDate.startOf('day');
     endDate = endDate.endOf('day');
 
@@ -58,7 +58,7 @@ class DateRangePicker extends Component {
       () => {
         return (
           this.props.onDatesChange &&
-          this.props.onDatesChange(startDate, endDate)
+          this.props.onDatesChange(startDate, endDate, preset)
         );
       }
     );
@@ -71,7 +71,11 @@ class DateRangePicker extends Component {
       let endDate = moment(),
         startDate = getStartDateFromDiff(selectedPreset.value, endDate);
 
-      this.setDates(startDate, endDate);
+      this.setDates(startDate, endDate, selectedPreset);
+
+      if (this.props.onSelectPreset) {
+        this.props.onSelectPreset(selectedPreset);
+      }
     }
   }
 
@@ -83,7 +87,7 @@ class DateRangePicker extends Component {
       return;
     }
 
-    this.setDates(moment(from * 1000), moment(to * 1000));
+    this.setDates(moment(from * 1000), moment(to * 1000), this.customPreset);
 
     this.setState({ selectedPreset: this.customPreset });
   }
@@ -177,4 +181,5 @@ class DateRangePicker extends Component {
   }
 }
 
+export { customRangeText };
 export default DateRangePicker;

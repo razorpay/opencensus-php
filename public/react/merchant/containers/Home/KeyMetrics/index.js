@@ -28,6 +28,11 @@ import { API_ERROR, API_INVALID_RESP } from 'merchant/components/Home/data';
 import Tooltip from 'merchant/components/Home/Tooltip';
 import Panel from './Panel';
 
+import {
+  trackTabClick,
+  trackBreakdownChange,
+  trackSavedCardsHidden,
+} from './ga';
 import './styles.styl';
 
 const csvDateFormat = 'DD-MM-YYYY';
@@ -115,7 +120,7 @@ class KeyMetricsContainer extends Component {
         tabState.selectedGrouping = grouping[0];
       }
 
-      tabState.selectedBreakdown = breakdownVals[0];
+      tabState.selectedBreakdown = breakdownVals[0].value;
 
       tabState.data = {
         loading: false,
@@ -224,6 +229,10 @@ class KeyMetricsContainer extends Component {
                */
               if (isInitialLoad) {
                 tabState.data.showTab = tabState.data.count > 15;
+
+                if (!tabState.data.showTab) {
+                  trackSavedCardsHidden(tabState.data.count);
+                }
               }
             } else {
               tabState.data.count = mainStat.result[0]
@@ -479,6 +488,8 @@ class KeyMetricsContainer extends Component {
         return !data.loading && data.fetchData && this.fetchData();
       }
     );
+
+    trackTabClick(tabsMeta[tabName].title);
   }
 
   onGroupingChange(tabName, selectedGrouping) {
@@ -507,6 +518,8 @@ class KeyMetricsContainer extends Component {
     this.setState({ tabsState }, () => {
       this.fetchData();
     });
+
+    trackBreakdownChange(selectedBreakdown);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -516,11 +529,27 @@ class KeyMetricsContainer extends Component {
       startDate.toDate() - this.props.startDate.toDate() !== 0 ||
       endDate.toDate() - this.props.endDate.toDate() !== 0
     ) {
-      const { tabsState } = this.state;
+      const { tabsState, selectedTab } = this.state,
+        { selectedBreakdown } = tabsState[selectedTab];
 
       // when switched tabs, new data should be fetched as the global
       // daterange changed
       this.clearCache(tabsState);
+
+      /*
+       * if the changed daterange doesn't fit for the
+       * selected breakdown switch to daily
+       */
+      if (selectedBreakdown !== 'daily') {
+        if (
+          (selectedBreakdown === 'weekly' &&
+            startDate.isSame(endDate, 'week')) ||
+          (selectedBreakdown === 'monthly' &&
+            startDate.isSame(endDate, 'month'))
+        ) {
+          tabsState[selectedTab].selectedBreakdown = 'daily';
+        }
+      }
 
       this.setState({ tabsState }, () => {
         const fetchAllReq = this.fetchData(true);
@@ -536,7 +565,7 @@ class KeyMetricsContainer extends Component {
 
   render() {
     const { tabsState, loading } = this.state,
-      { startDate, endDate, showGrouping } = this.props,
+      { startDate, endDate, showGrouping, sectionTitle } = this.props,
       visibleTabs = tabsOrder.filter(
         tabName => tabsState[tabName].data.showTab
       );
@@ -591,6 +620,7 @@ class KeyMetricsContainer extends Component {
                 onScreenshot={this.onScreenshot}
                 externalUrl={`/#/app/${tabsMeta[tabName].index}`}
                 showGrouping={showGrouping}
+                sectionTitle={sectionTitle}
               />
             </TabPanel>
           );
