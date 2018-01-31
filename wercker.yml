@@ -76,6 +76,15 @@ build:
 deploy:
     steps:
       - script:
+          name: Check if branch is master
+          code: |
+            if [ "$APP_ENV" == "prod" ]; then
+              if [ "$WERCKER_GIT_BRANCH" != "master" ]; then
+                echo "[ERROR] Cannot deploy a non-master branch to prod"
+                exit 1
+              fi
+            fi
+      - script:
           name: check vendor dir exists
           code: if [ ! -d vendor ] ; then exit 1 ; fi;
       - script:
