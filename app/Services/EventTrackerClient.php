@@ -204,15 +204,17 @@ class EventTrackerClient extends AbstractEventClient
                 $properties['vpa'] = $payment->getVpa();
             }
 
-            if ($payment->getCardId() !== null)
+            if ($payment->hasCard() === true)
             {
-                $properties['iin'] = $payment->card->getIin();
-                $properties['iin_network'] = $payment->card->getNetwork();
-                $properties['iin_type'] = $payment->card->getType();
+                $properties['card_iin'] = $payment->card->getIin();
+                $properties['card_network'] = $payment->card->getNetwork();
+                $properties['card_type'] = $payment->card->getType();
+                $properties['card_country'] = $payment->card->getCountry();
+                $properties['card_issuer'] = $payment->card->getIssuer();
                 $properties['international'] = $payment->isInternational();
             }
 
-            if ($payment->hasOrder())
+            if ($payment->hasOrder() === true)
             {
                 $properties['attempts'] = $payment->order->getAttempts();
             }
