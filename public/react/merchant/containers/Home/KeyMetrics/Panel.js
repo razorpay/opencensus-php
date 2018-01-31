@@ -18,10 +18,10 @@ import {
 import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
 
 import { tabsMeta, breakdownVals } from './data';
-import GroupingDropdown from 'merchant/components/Home/GroupingDropdown';
+import GroupingDropdown from 'merchant/containers/Home/GroupingDropdown';
 import Legend from 'merchant/components/Home/Legend';
 import LastUpdated from 'merchant/components/Home/LastUpdated';
-import MoreOptionsButton from 'merchant/components/Home/MoreOptionsButton';
+import MoreOptionsButton from 'merchant/containers/Home/MoreOptionsButton';
 import GenericPanel, {
   PanelTopbar,
   PanelBody,
@@ -29,6 +29,8 @@ import GenericPanel, {
 } from 'merchant/components/Home/GenericPanel';
 import customToolTip, { positioner } from './customTooltip';
 import Tooltip from 'merchant/components/Home/Tooltip';
+
+import { trackGoToLinks } from './ga';
 
 Chart.Tooltip.positioners.custom = positioner;
 
@@ -107,6 +109,8 @@ class Panel extends Component {
         isCurrency,
         externalUrl,
         showGrouping,
+        tabName,
+        sectionTitle,
       } = this.props,
       dateFormat = 'DD MMM YYYY',
       { grouping, options } = this.meta,
@@ -211,6 +215,7 @@ class Panel extends Component {
                     onGroupChange={this.handleGroupingChange}
                     grouping={grouping}
                     selectedGrouping={selectedGrouping}
+                    sectionTitle={`${sectionTitle} | ${this.meta.title}`}
                   />
                 </div>
               )}
@@ -218,7 +223,9 @@ class Panel extends Component {
               <MoreOptionsButton
                 csvData={data.csv}
                 pngData={data.png}
-                onImageExport={this.handleImageExportClick}
+                sectionTitle={sectionTitle}
+                tabName={this.meta.title}
+                handleImageDownload={this.handleImageExportClick}
               />
             </div>
           </div>
@@ -253,6 +260,11 @@ class Panel extends Component {
               target="_blank"
               to={`/${this.meta
                 .index}?from=${startDate.unix()}&to=${endDate.unix()}`}
+              onClick={() =>
+                trackGoToLinks(
+                  titleCase(this.meta.index),
+                  sectionTitle + ' | ' + this.meta.title
+                )}
             >
               {`View all ${titleCase(this.meta.index)}`}
             </Link>

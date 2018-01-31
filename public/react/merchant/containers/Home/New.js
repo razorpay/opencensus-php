@@ -9,7 +9,7 @@ import Amount from 'rzp/ui/Amount';
 import Sticky from 'rzp/ui/Sticky';
 import Group, { GroupItem } from 'rzp/ui/Group';
 import { showNotification } from 'rzp/modules/notifications';
-import DateRangePicker from 'rzp/ui/DateRangePicker';
+import DateRangePicker, { customRangeText } from 'rzp/ui/DateRangePicker';
 import {
   oldestTransactionQuery,
   getDefaultPaymentFilter,
@@ -31,6 +31,12 @@ import {
 } from 'merchant/components/Home/data';
 import GenericPanel, { PanelBody } from 'merchant/components/Home/GenericPanel';
 
+import {
+  trackDatesChange,
+  trackPresetChange,
+  trackSettlementsClick,
+  trackPlatformAnalyticsHidden,
+} from './ga';
 import './styles.styl';
 
 const dateRangePresets = [
@@ -55,6 +61,12 @@ const getPreviousDates = ({ startDate, endDate }) => {
 };
 
 const bodyClass = ' analytics-v2-active';
+
+// used to show titles for sections and also GA
+const keymetricsSectionTitle = 'Transactions Overview',
+  paymentInsightsTitle = 'Payment Insights',
+  trafficSectionTitle = 'Traffic split on platforms',
+  recentActivityTitle = 'Recent Activity';
 
 @connect(
   state => {
@@ -175,9 +187,12 @@ export default class HomeContainer extends Component {
           return;
         }
 
+        const ratio = (totalByPlatform[OTHERS] || 0) / grandTotal;
+
         // if `Others` platform count is greater than 30%
         // do not show grouping
-        if ((totalByPlatform[OTHERS] || 0) / grandTotal > 0.3) {
+        if (ratio < 0.3) {
+          trackPlatformAnalyticsHidden(ratio * 100);
           return;
         }
 
@@ -265,7 +280,7 @@ export default class HomeContainer extends Component {
       });
   }
 
-  onDatesChange(startDate, endDate) {
+  onDatesChange(startDate, endDate, selectedPreset) {
     const { oldestTransactionDate } = this.state;
 
     this.setState(
@@ -281,6 +296,10 @@ export default class HomeContainer extends Component {
         this.fetchOldestTransactionDate();
       }
     );
+
+    if (selectedPreset.name === customRangeText) {
+      trackDatesChange(startDate, endDate);
+    }
   }
 
   componentWillMount() {
@@ -316,6 +335,7 @@ export default class HomeContainer extends Component {
                 presets={dateRangePresets}
                 onDatesChange={this.onDatesChange}
                 defaultPreset={defaultPreset}
+                onSelectPreset={trackPresetChange}
               />
             </div>
             <div className="pull-right">
@@ -330,7 +350,12 @@ export default class HomeContainer extends Component {
                 </GroupItem>
                 <GroupItem>
                   <Link className="pull-right" to="/settlements">
-                    <span className="text-no-wrap">View Settlements</span>
+                    <span
+                      className="text-no-wrap"
+                      onClick={trackSettlementsClick}
+                    >
+                      View Settlements
+                    </span>
                   </Link>
                 </GroupItem>
               </Group>
@@ -342,7 +367,7 @@ export default class HomeContainer extends Component {
           <div className="row">
             <div className="col-md-12">
               <p className="section-title keymetrics-title">
-                Transactions Overview
+                {keymetricsSectionTitle}
               </p>
             </div>
             <div className="col-md-12">
@@ -352,19 +377,21 @@ export default class HomeContainer extends Component {
                 oldestTransactionDate={oldestTransactionDate}
                 mode={mode}
                 showGrouping={showGrouping}
+                sectionTitle={keymetricsSectionTitle}
               />
             </div>
           </div>
 
           <div className="row">
             <div className="col-md-12">
-              <p className="section-title">Payment Insights</p>
+              <p className="section-title">{paymentInsightsTitle}</p>
             </div>
             <div className="col-md-12">
               <PaymentMethods
                 startDate={startDate}
                 endDate={endDate}
                 mode={mode}
+                sectionTitle={paymentInsightsTitle}
               />
             </div>
           </div>
@@ -378,21 +405,24 @@ export default class HomeContainer extends Component {
               {showGrouping && (
                 <div className="traffic-container">
                   <p className="content-title section-title">
-                    Traffic split on platforms
+                    {trafficSectionTitle}
                   </p>
                   <div className="content">
                     <Traffic
                       startDate={startDate}
                       endDate={endDate}
                       mode={mode}
+                      sectionTitle={trafficSectionTitle}
                     />
                   </div>
                 </div>
               )}
               <div className="activity-container">
-                <p className="content-title section-title">Recent Activity</p>
+                <p className="content-title section-title">
+                  {recentActivityTitle}
+                </p>
                 <div className="content">
-                  <RecentActivity />
+                  <RecentActivity sectionTitle={recentActivityTitle} />
                 </div>
               </div>
             </div>

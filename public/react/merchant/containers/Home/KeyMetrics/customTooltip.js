@@ -3,9 +3,11 @@ import moment from 'moment';
 import {
   getFormattedAmountNew,
   getFormattedNumber,
-  rupeesToPaise
+  rupeesToPaise,
 } from 'rzp/utils/rzp-utils';
 import { getMillisecondsFromBreakdown } from 'rzp/utils/chart/new';
+
+import { trackTooltipDeepdive } from './ga';
 
 // tooltip element
 const tooltipDOM = document.createElement('div');
@@ -92,7 +94,8 @@ const customToolTip = function(tooltipModel) {
       ),
       startDate = datasets[0].data[dataPoints[0].index].t,
       endDate = startDate + getMillisecondsFromBreakdown(breakdown),
-      isSameYear = (new Date(startDate)).getFullYear() === (new Date()).getFullYear(),
+      isSameYear =
+        new Date(startDate).getFullYear() === new Date().getFullYear(),
       formattedDate = moment(startDate).format(
         `ddd, Do MMM${isSameYear ? '' : ' YYYY'}`
       ),
@@ -108,7 +111,7 @@ const customToolTip = function(tooltipModel) {
       `<div class="sec-text tooltip-date">${formattedDate}</div>` +
       `</div>` +
       `<div class="pull-right">` +
-      `<a href="${url}" class="ex-link"` +
+      `<a href="${url}" class="ex-link deepdive-link"` +
       ` target="_blank">` +
       `<svg xmlns="http://www.w3.org/2000/svg">` +
       `<path d="M1.444 11.556V1.444H5.5V0H1.444C.65 0 0 .65 0 1.444v10.112C0 12.35.65 13 1.444 13h10.112C12.35 13 13 12.35 13 11.556V7.5h-1.444v4.056H1.444zM8.873 1.444h1.671L3.467 8.522l1.01 1.011 7.079-7.077v1.671H13V0H8.873v1.444z"/>` +
@@ -133,11 +136,12 @@ const customToolTip = function(tooltipModel) {
 
       const labelHTML = `<span class="label sec-text">${label}</span>`;
 
-      const labelValue = `<span class="label-value">` +
-                           `${isCurrency
-                               ? getFormattedAmountNew(rupeesToPaise(value), true)
-                               : getFormattedNumber(value)}` +
-                         `</span>`;
+      const labelValue =
+        `<span class="label-value">` +
+        `${isCurrency
+          ? getFormattedAmountNew(rupeesToPaise(value), true)
+          : getFormattedNumber(value)}` +
+        `</span>`;
 
       // appending rows with each line
       rows += `<div class="tooltip-row clearfix">${labelIcon}${labelHTML}${labelValue}</div>`;
@@ -149,6 +153,8 @@ const customToolTip = function(tooltipModel) {
     // inserting innerHtml into inner div of chart js tooltip
     var innerTooltip = tooltipDOM.querySelector('.custom-tooltip-inner');
     innerTooltip.innerHTML = innerHtml;
+
+    innerTooltip.querySelector('.deepdive-link').onclick = trackTooltipDeepdive;
 
     innerTooltip.appendChild(caret);
     innerTooltip.appendChild(crossHair);
@@ -193,9 +199,7 @@ const customToolTip = function(tooltipModel) {
   }
 
   // if there is only one point hide crosshair
-  crossHair.style.display = this._data.labels.length === 1
-                              ? 'none'
-                              : 'block';
+  crossHair.style.display = this._data.labels.length === 1 ? 'none' : 'block';
 };
 
 function positioner(elements, eventPosition) {
