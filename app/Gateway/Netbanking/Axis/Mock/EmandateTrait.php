@@ -4,10 +4,11 @@ namespace RZP\Gateway\Netbanking\Axis\Mock;
 
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
+use RZP\Models\Customer\Token;
 use RZP\Gateway\Netbanking\Axis\Emandate\Constants;
+use RZP\Gateway\Netbanking\Axis\Emandate\StatusCode;
 use RZP\Gateway\Netbanking\Axis\Emandate\RequestFields;
 use RZP\Gateway\Netbanking\Axis\Emandate\ResponseFields;
-use RZP\Gateway\Netbanking\Axis\Emandate\StatusCode;
 use RZP\Models\Currency\Currency;
 
 use Carbon\Carbon;
@@ -88,7 +89,8 @@ trait EmandateTrait
             ResponseFields::CUSTOMER_REF_NO => $input[RequestFields::CUSTOMER_REF_NO],
             ResponseFields::BANK_REF_NO     => 9999999999,
             ResponseFields::CURRENCY        => Currency::INR,
-            ResponseFields::AMOUNT          => $gatewayEntity['amount'],
+            // Amount needs to be set according to whether it's initial recurring payment or auto
+            ResponseFields::AMOUNT          => (string) Token\Entity::DEFAULT_MAX_AMOUNT / 100,
             ResponseFields::STATUS_CODE     => StatusCode::SUCCESS,
             ResponseFields::REMARKS         => 'Success',
             ResponseFields::TRANS_REF_NO    => 101714472,
