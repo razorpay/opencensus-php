@@ -38,6 +38,13 @@ export default class FlashCheckout extends Component {
     this.setState({ fcEnabled: !noFlashCheckout.value });
   }
 
+  analytics = action => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Settings',
+      eventAction: `${action} - Flash Checkout`
+    });
+  }
+
   toggleFc = () => {
     let fcEnabled  = this.state.fcEnabled;
     let shouldSync = 1;
@@ -51,6 +58,11 @@ export default class FlashCheckout extends Component {
     return this.props
       .updateFeatures(data, this.props.user.current)
       .then(res => {
+        if (fcEnabled) {
+          this.analytics('Disable');
+        } else {
+          this.analytics('Enable');
+        }
         this.props.showNotification({
           type: 'success',
           message: 'Your preference was saved',
