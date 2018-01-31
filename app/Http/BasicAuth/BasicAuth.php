@@ -371,6 +371,8 @@ class BasicAuth
 
             $this->setProxyTrue();
 
+            $this->setAdminAuthIfApplicable();
+
             return $this->checkAndSetAccountScope();
         }
 

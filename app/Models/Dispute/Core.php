@@ -16,6 +16,7 @@ use RZP\Models\Admin\Action;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\Dispute as DisputeMailer;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Models\Dispute\File\Entity as DisputeFileEntity;
 
 class Core extends Base\Core
 {
@@ -135,6 +136,70 @@ class Core extends Base\Core
                     return $dispute;
                 });
             });
+    }
+
+    /**
+     * @param Entity $dispute
+     * @param array $input
+     * @return array
+     */
+    public function updateFilesAndInputForMerchant(Entity $dispute, array $input): array
+    {
+        $this->trace->info(
+            TraceCode::DISPUTE_EDIT_REQUEST_FOR_MERCHANT,
+            [Entity::ID => $dispute->getId()]);
+
+        $files = [];
+
+        $fileCore = new File\Core;
+
+        if (array_key_exists(DisputeFileEntity::FILES, $input) === true)
+        {
+            $files = $input[DisputeFileEntity::FILES];
+
+            $files = $fileCore->checkFilesInput($files);
+
+            unset($input[DisputeFileEntity::FILES]);
+        }
+
+        $response = $this->repo->transaction(function() use ($dispute, $fileCore, $files, $input)
+        {
+            if (empty($input) === false)
+            {
+                $dispute = $this->updateForMerchant($dispute, $input);
+            }
+
+            $response = $dispute->toArrayPublic();
+
+            if (empty($files) === false )
+            {
+                $response['files'] = $fileCore->uploadFiles($dispute, $files);
+            }
+            
+            return $response;
+        });
+
+        return $response;
+    }
+
+    /**
+     * @param Entity $dispute
+     * @param array  $input
+     *
+     * @return Entity
+     */
+    public function updateForMerchant(Entity $dispute, array $input): Entity
+    {
+        $this->trace->info(
+            TraceCode::DISPUTE_EDIT_REQUEST_FOR_MERCHANT,
+            array_merge($input, [Entity::ID => $dispute->getId()])
+        );
+
+        (new Validator)->validateInput(Validator::OPERATION_MERCHANT_EDIT, $input);
+
+        $input = $this->generateInputForMerchantEdit($dispute, $input);
+
+        return $this->update($dispute, $input);
     }
 
     /**
@@ -440,5 +505,22 @@ class Core extends Base\Core
         $length = $endDate->diffInDays(Carbon::now(Timezone::IST));
 
         return $length;
+    }
+
+    protected function generateInputForMerchantEdit(Entity $dispute, array $input): array
+    {
+        if (empty($input[Entity::ACCEPT_DISPUTE]) === false)
+        {
+            $input[Entity::STATUS] = Status::LOST;
+
+            if (in_array($dispute->getPhase(), Phase::getNonTransactionalPhases()) === true)
+            {
+                $input[Entity::STATUS] = Status::CLOSED;
+            }
+
+            unset($input[Entity::ACCEPT_DISPUTE]);
+        }
+
+        return $input;
     }
 }
