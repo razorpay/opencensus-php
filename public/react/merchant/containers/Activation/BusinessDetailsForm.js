@@ -63,12 +63,24 @@ export default class BusinessDetailsForm extends Component {
         appendModeInURL: false,
       }).then(response => {
         if (response.data) {
-          this.props.change(`business_${code}_pin`, pincode);
-          this.props.change(`business_${code}_city`, response.data.city);
-          this.props.change(`business_${code}_state`, response.data.state_code);
+          this.updateStateCityFormField(
+            response.data.city,
+            response.data.state_code,
+            code
+          );
+        } else {
+          //- Empty the state/city fields
+          this.updateStateCityFormField(null, null, code);
         }
       });
+    } else {
+      this.updateStateCityFormField(null, null, code);
     }
+  };
+
+  updateStateCityFormField = (city = null, state = null, code) => {
+    this.props.change(`business_${code}_city`, city);
+    this.props.change(`business_${code}_state`, state);
   };
 
   render() {

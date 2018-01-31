@@ -41,12 +41,23 @@ export default class BankDetailsForm extends Component {
         appendModeInURL: false,
       }).then(response => {
         if (response.data) {
-          this.props.change('bank_beneficiary_pin', pincode);
-          this.props.change('bank_beneficiary_city', response.data.city);
-          this.props.change('bank_beneficiary_state', response.data.state_code);
+          this.updateStateCityFormField(
+            response.data.city,
+            response.data.state_code
+          );
+        } else {
+          //- Empty the state/city fields
+          this.updateStateCityFormField();
         }
       });
+    } else {
+      this.updateStateCityFormField();
     }
+  };
+
+  updateStateCityFormField = (city = null, state = null) => {
+    this.props.change('bank_beneficiary_city', city);
+    this.props.change('bank_beneficiary_state', state);
   };
 
   render() {
