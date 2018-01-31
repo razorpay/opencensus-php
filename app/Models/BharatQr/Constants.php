@@ -11,6 +11,9 @@ class Constants
     const MERCHANT_CATEGORY     = '5399';
     const CURRENCY_CODE         = '356';
     const COUNTRY_CODE          = 'IN';
+    // TODO: All of these need to be dynamically set
+    // based on which merchant is making the request
+    // issue: https://github.com/razorpay/api/issues/7237
     const MERCHANT_NAME         = 'PAYMENTS';
     const MERCHANT_CITY         = 'BANGALORE';
     const MERCHANT_PINCODE      = '560030';

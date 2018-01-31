@@ -49,6 +49,7 @@ class Handler extends BaseHandler
      * @param array $fileDetails  Array containing File Params
      *
      * @return string saved file Url
+     * @throws \Exception
      */
     public function save(array $bucketConfig, array $fileDetails)
     {
