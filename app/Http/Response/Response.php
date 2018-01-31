@@ -110,10 +110,12 @@ class Response
         // $limits contains 4 values in a list, following values respectively.
         if (empty($limits) === false)
         {
-            $headers->set('X-RateLimit-Limit', $limits[0]);
-            $headers->set('X-RateLimit-Remaining', $limits[1]);
-            $headers->set('X-RateLimit-Reset', $limits[2]);
-            $headers->set('X-RateLimit-RetryAfter', $limits[3]);
+            $response->withHeaders([
+                Header::X_RATELIMIT_LIMIT       => $limits[0],
+                Header::X_RATELIMIT_REMAINING   => $limits[1],
+                Header::X_RATELIMIT_RESET       => $limits[2],
+                Header::X_RATELIMIT_RETRYAFTER  => $limits[3],
+            ]);
         }
 
         return $response;
