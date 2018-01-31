@@ -146,7 +146,7 @@
             vertical-align: middle;
             display: inline-block;
             border-radius: 50%;
-            border: 4px solid #29b7d6;
+            border: 4px solid #3395ff;
             -webkit-animation: spin 1.3s linear infinite;
                -moz-animation: spin 1.3s linear infinite;
                 -ms-animation: spin 1.3s linear infinite;
@@ -237,7 +237,7 @@
         </div>
 
         <div class="loadingcard">
-            @if ($data['type'] === 'intent')
+            @if ($data['data']['type'] === 'intent')
                 <div id='message-txt' class="center">
                     <b>Select your UPI app</b>
                     <div>Payment will be made to <b>razorpay@icici</b></div>
@@ -250,7 +250,7 @@
 
             <div id="error-msg" class="center red hide">No UPI apps found on this device</div>
 
-            <div id="spinner" class={{ $data['type'] === ' intent' ? 'hide more-pad' : ''}}>
+            <div id="spinner" class={{ $data['data']['type'] === ' intent' ? 'hide more-pad' : ''}}>
                 <div class="spin">
                     <div></div>
                 </div>
@@ -268,20 +268,20 @@
         <form id='form' method="POST">
         </form>
         <form id="form2" name="form2">
-            <input type="hidden" name="type" value="{{$data['type']}}">
-            <input type="hidden" name="gateway" value="{{$data['gateway']}}">
+            <input type="hidden" name="type" value="{{$data['data']['type']}}">
+            <input type="hidden" name="gateway" value="{{$data['data']['gateway']}}">
         </form>
     </div>
 
     <script type="text/javascript">
         // Async Payment data //
-        var data = {!!utf8_json_encode($data)!!};
+        var data = {!!utf8_json_encode($data['data'])!!};
         // Async Payment data //
-        var request_url = '{{$data['request']['url']}}';
+        var request_url = '{{$data['data']['request']['url']}}';
 
         var key_id = '{{ App::getFacadeRoot()['basicauth']->getPublicKey() }}';
-        var cancel_url = '/v1/payments/{{$data["payment_id"]}}/cancel?key_id='+key_id;
-        var callback_url = '/v1/payments/{{$data["payment_id"]}}/redirect_callback?key_id='+key_id;
+        var cancel_url = '{{$data["api"]}}/v1/payments/{{$data["data"]["payment_id"]}}/cancel?key_id='+key_id;
+        var callback_url = '{{$data["api"]}}/v1/payments/{{$data["data"]["payment_id"]}}/redirect_callback?key_id='+key_id;
         var gel =  document.getElementById.bind(document);
 
         function each(iteratee, eachFunc, thisArg) {
