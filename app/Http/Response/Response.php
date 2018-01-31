@@ -105,8 +105,6 @@ class Response
      */
     public function withRateLimitHeaders($response, array $limits = [])
     {
-        $headers = $response->headers;
-
         // $limits contains 4 values in a list, following values respectively.
         if (empty($limits) === false)
         {
