@@ -7,6 +7,7 @@ import { required, validatePincodeLength } from 'rzp/utils/validators';
 import { states } from 'rzp/utils/constants';
 
 import ajax from 'merchant/utils/ajax';
+import store from 'merchant/store';
 
 function verifyAccountNumber(value, allValues, props) {
   return value !== allValues.bank_account_number
@@ -34,9 +35,11 @@ export default class BankDetailsForm extends Component {
   //Fetch state/city details based on pincode.
   fetchPincodeDetails = e => {
     const pincode = e.target.value;
+    const mode = store.getState().session.mode;
+
     if (pincode.length === 6) {
       ajax({
-        url: `/merchant/api/test/pincodes/${pincode}`,
+        url: `/merchant/api/${mode}/pincodes/${pincode}`,
         method: 'get',
         appendModeInURL: false,
       }).then(response => {

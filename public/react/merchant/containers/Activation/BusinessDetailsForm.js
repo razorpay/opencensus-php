@@ -15,6 +15,7 @@ import {
 import { states } from 'rzp/utils/constants';
 
 import ajax from 'merchant/utils/ajax';
+import store from 'merchant/store';
 
 const selector = formValueSelector('activationBusinessDetails');
 @connect(state => {
@@ -56,9 +57,11 @@ export default class BusinessDetailsForm extends Component {
   //Fetch state/city details based on pincode.
   fetchPincodeDetails = (e, code) => {
     const pincode = e.target.value;
+    const mode = store.getState().session.mode;
+
     if (pincode.length === 6) {
       ajax({
-        url: `/merchant/api/test/pincodes/${pincode}`,
+        url: `/merchant/api/${mode}/pincodes/${pincode}`,
         method: 'get',
         appendModeInURL: false,
       }).then(response => {

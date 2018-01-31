@@ -106,7 +106,7 @@ export default class ActivationWizard extends Component {
         (info = ActivationStatusInfo(data))
       ) : null;
     } else {
-      //- Not to be shown when used in marketplace
+      //- Not to be shown when used in marketplace when accessing this form via 'Route'
       if (!accountId) {
         info = (
           <div class="alert alert-info text-center">
@@ -160,7 +160,7 @@ const ActivationStatusInfo = data => {
   if (data.activation_status === 'under_review') {
     return (
       <div class="alert alert-info text-center">
-        Your activation form is submitted and is under review. The process can
+        Your activation form is submitted and is under review. The process may
         take upto <b>2 working days</b>. If any clarification is needed, we will
         contact you on your registered email address - {data.contact_email}
       </div>
