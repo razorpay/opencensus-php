@@ -37,7 +37,6 @@ class CreateDisputeFiles extends Migration
 
             $table->integer(DisputeFileEntity::UPDATED_AT);
 
-            $table->index(DisputeFileEntity::DISPUTE_ID);
             $table->index(DisputeFileEntity::CREATED_AT);
             $table->index(DisputeFileEntity::UPDATED_AT);
 
