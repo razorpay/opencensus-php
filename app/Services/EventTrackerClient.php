@@ -169,22 +169,18 @@ class EventTrackerClient extends AbstractEventClient
     {
         try
         {
-            $isInternational = null;
-
-            if ($payment->getCardId() !== null)
-            {
-                $isInternational = $payment->isInternational();
-            }
-
             $properties = [
                 'payment_id'        => $payment->getPublicId(),
                 'merchant_id'       => $payment->merchant->getId(),
                 'merchant_name'     => $payment->merchant->getBillingLabel(),
+                'merchant_category' => $payment->merchant->getCategory2(),
                 'amount'            => $payment->getAmount(),
                 'method'            => $payment->getMethod(),
                 'requestId'         => $this->request->getId(),
-                'international'     => $isInternational,
                 'version'           => self::VERSION,
+                'created_at'        => $payment->getCreatedAt(),
+                'contact'           => $payment->getContact(),
+                'email'             => $payment->getEmail(),
             ];
 
             $method = $payment->getMethod();
@@ -206,6 +202,21 @@ class EventTrackerClient extends AbstractEventClient
             if ($method === Method::UPI)
             {
                 $properties['vpa'] = $payment->getVpa();
+            }
+
+            if ($payment->hasCard() === true)
+            {
+                $properties['card_iin'] = $payment->card->getIin();
+                $properties['card_network'] = $payment->card->getNetwork();
+                $properties['card_type'] = $payment->card->getType();
+                $properties['card_country'] = $payment->card->getCountry();
+                $properties['card_issuer'] = $payment->card->getIssuer();
+                $properties['international'] = $payment->isInternational();
+            }
+
+            if ($payment->hasOrder() === true)
+            {
+                $properties['attempts'] = $payment->order->getAttempts();
             }
 
             $merchant = $payment->merchant;
