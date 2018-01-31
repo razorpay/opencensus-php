@@ -182,7 +182,7 @@ class EventTrackerClient extends AbstractEventClient
                 'email'             => $payment->getEmail(),
             ];
 
-            if ($payment->hasAttribute('created_at') === true)
+            if (array_key_exists('created_at', $payment->getAttributes()) === true)
             {
                 $properties['created_at'] = $payment->getCreatedAt();
             }
