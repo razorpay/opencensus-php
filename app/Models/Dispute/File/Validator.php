@@ -12,7 +12,6 @@ class Validator extends Base\Validator
     const operationInputFiles = 'input_files';
 
     protected static $createRules = [
-        Entity::DISPUTE_ID         => 'required|string|max:14',
         Entity::FILE_ID            => 'required|string|max:50',
         Entity::NAME               => 'required|string|max:50',
         Entity::CATEGORY           => 'required|string|custom',
@@ -40,11 +39,12 @@ class Validator extends Base\Validator
         if (Category::exists($value) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Not a valid dispute file category: ' . $value);
+                'Not a valid dispute file category: ' . $value,
+                $attribute);
         }
     }
 
-    public function validateFileDetails($file)
+    public function validateFileDetails(array $file)
     {
         $this->validateInput(self::operationUploadFile, $file);
     }

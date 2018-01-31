@@ -671,14 +671,20 @@ class DisputeTest extends TestCase
 
         $dispute['id'] = DisputeEntity::stripDefaultSign($dispute['id']);
 
-        $this->assertEquals(2, sizeof($content['files']));
-        $this->assertEquals(2, $files['count']);
-        $this->assertEquals($dispute['id'], $content['files'][0]['dispute_id']);
-        $this->assertEquals($dispute['id'], $content['files'][1]['dispute_id']);
-        $this->assertEquals($files['items'][0]['dispute_id'], $dispute['id']);
-        $this->assertEquals($files['items'][1]['dispute_id'], $dispute['id']);
-        $this->assertEquals($files['items'][0]['file_id'], $content['files'][1]['file_id']);
-        $this->assertEquals($files['items'][1]['file_id'], $content['files'][0]['file_id']);
+        $expected = [
+            'files' => [
+                [
+                    'dispute_id'    => $dispute['id'],
+                    'file_id'       => $files['items'][1]['file_id'],
+                ],
+                [
+                    'dispute_id'    => $dispute['id'],
+                    'file_id'       => $files['items'][0]['file_id'],
+                ]
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($expected, $content);
     }
 
     // ---------------------------- helper methods-------------------------------

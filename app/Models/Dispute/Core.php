@@ -513,7 +513,7 @@ class Core extends Base\Core
         {
             $input[Entity::STATUS] = Status::LOST;
 
-            if (in_array($dispute->getPhase(), Phase::getNonTransactionalPhases()))
+            if (in_array($dispute->getPhase(), Phase::getNonTransactionalPhases()) === true)
             {
                 $input[Entity::STATUS] = Status::CLOSED;
             }

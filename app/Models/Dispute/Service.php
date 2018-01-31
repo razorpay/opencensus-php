@@ -25,14 +25,14 @@ class Service extends Base\Service
     {
         $dispute = $this->repo->dispute->findByPublicIdAndMerchant($id, $this->merchant);
 
-        if ($this->auth->isAdminAuth())
+        if ($this->auth->isAdminAuth() === true)
         {
             $dispute = $this->core()->update($dispute, $input);
 
             return $dispute->toArrayAdmin();
         }
         else if (($this->auth->isPrivateAuth() === true) or
-            ($this->auth->isProxyAuth() === true))
+                ($this->auth->isProxyAuth() === true))
         {
             return $this->core()->updateFilesAndInputForMerchant($dispute, $input);
         }

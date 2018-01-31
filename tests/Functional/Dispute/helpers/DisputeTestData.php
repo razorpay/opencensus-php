@@ -865,7 +865,7 @@ return [
         'response' => [
             'content' => [
                 'entity'        => 'dispute',
-                'amount'        => '1000000',
+                'amount'        => 1000000,
                 'currency'      => 'INR',
                 'reason_code'   => 'SOMETHING_BAD',
                 'status'        => 'open',
@@ -878,7 +878,7 @@ return [
                     ],
                     [
                         'file_id'       => 'rzp_file_mock_id_1000000',
-                        'name'          => 'myfile2.png',
+                        'name'          => 'myfile2.pdf',
                         'category'      => 'delivery_proof',
                     ],
                 ]
@@ -906,7 +906,7 @@ return [
         'response' => [
             'content' => [
                 'entity'        => 'dispute',
-                'amount'        => '1000000',
+                'amount'        => 1000000,
                 'currency'      => 'INR',
                 'reason_code'   => 'SOMETHING_BAD',
                 'status'        => 'open',
@@ -919,7 +919,7 @@ return [
                     ],
                     [
                         'file_id'       => 'rzp_file_mock_id_1000000',
-                        'name'          => 'myfile2.png',
+                        'name'          => 'myfile2.pdf',
                         'category'      => 'delivery_proof',
                     ],
                 ],

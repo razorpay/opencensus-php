@@ -15,6 +15,8 @@ class Category
 
     public static function exists(string $category): bool
     {
-        return defined(get_class() . '::' . strtoupper($category));
+        $key = __CLASS__ . '::' . strtoupper($category);
+
+        return ((defined($key) === true) and (constant($key) === $category));
     }
 }

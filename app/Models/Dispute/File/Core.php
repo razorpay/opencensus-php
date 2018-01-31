@@ -46,7 +46,6 @@ class Core extends Base\Core
                                                             $dispute);
 
         $input = [
-            Entity::DISPUTE_ID => $dispute->getId(),
             Entity::FILE_ID    => $uploadedFileDetails[UfhService::FILE_ID],
             Entity::NAME       => $fileInput[Entity::NAME],
             Entity::CATEGORY   => $fileInput[Entity::CATEGORY],
@@ -77,7 +76,7 @@ class Core extends Base\Core
             TraceCode::DISPUTE_FILES_UPLOAD,
             [
                 'id'          => $dispute->getId(),
-                'files_count' => sizeof($files),
+                'files_count' => count($files),
             ]);
 
         $disputeFiles = [];
@@ -86,7 +85,7 @@ class Core extends Base\Core
         {
             $file = $this->uploadAndCreateFile($dispute, $fileInput);
 
-            array_push($disputeFiles, $file->toArrayPublic());
+            $disputeFiles[] = $file->toArrayPublic();
         }
 
         return $disputeFiles;
@@ -95,7 +94,8 @@ class Core extends Base\Core
     protected function getStorageFileName(DisputeEntity $dispute, UploadedFile $file): string
     {
         $nameWithoutExtension = str_replace('.' . $file->getClientOriginalExtension() ,
-            '' , $file->getClientOriginalName());
+                                            '' ,
+                                            $file->getClientOriginalName());
 
         return $dispute->getEntityName() . '/' . $dispute->merchant->getPublicId() . '/' .
                           $dispute->getPublicId() . '/' . $nameWithoutExtension;
