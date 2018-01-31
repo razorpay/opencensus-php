@@ -185,7 +185,6 @@ class EventTrackerClient extends AbstractEventClient
             if ($payment->hasAttribute('created_at') === true)
             {
                 $properties['created_at'] = $payment->getCreatedAt();
-
             }
 
             $method = $payment->getMethod();
