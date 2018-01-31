@@ -9,9 +9,10 @@ class GatewayDowntime extends Base
 {
     public function createCard(array $attributes = [])
     {
-        $begin = Carbon::now(Timezone::IST)->subMinutes(60)->timestamp;
+        // Sunday, 28 January 2018 00:00:00 GMT+05:30
+        $begin = Carbon::createFromTimestamp(1517077800, Timezone::IST)->subMinutes(60)->timestamp;
 
-        $end = Carbon::now(Timezone::IST)->addMinutes(60)->timestamp;
+        $end = Carbon::createFromTimestamp(1517077800, Timezone::IST)->addMinutes(60)->timestamp;
 
         $cardAttributes = [
             'method'      => 'card',
@@ -33,9 +34,10 @@ class GatewayDowntime extends Base
 
     public function createNetbanking(array $attributes = [])
     {
-        $begin = Carbon::now(Timezone::IST)->subMinutes(60)->timestamp;
+        // Sunday, 28 January 2018 00:00:00 GMT+05:30
+        $begin = Carbon::createFromTimestamp(1517077800, Timezone::IST)->subMinutes(60)->timestamp;
 
-        $end = Carbon::now(Timezone::IST)->addMinutes(60)->timestamp;
+        $end = Carbon::createFromTimestamp(1517077800, Timezone::IST)->addMinutes(60)->timestamp;
 
         $netbankingAttributes = [
             'method'      => 'netbanking',
@@ -56,9 +58,10 @@ class GatewayDowntime extends Base
 
     public function createWallet(array $attributes = [])
     {
-        $begin = Carbon::now(Timezone::IST)->subMinutes(60)->timestamp;
+        // Sunday, 28 January 2018 00:00:00 GMT+05:30
+        $begin = Carbon::createFromTimestamp(1517077800, Timezone::IST)->subMinutes(60)->timestamp;
 
-        $end = Carbon::now(Timezone::IST)->addMinutes(60)->timestamp;
+        $end = Carbon::createFromTimestamp(1517077800, Timezone::IST)->addMinutes(60)->timestamp;
 
         $walletAttributes = [
             'method'      => 'wallet',

@@ -24,7 +24,6 @@ final class Constants
         Detail\Entity::CONTACT_EMAIL               => 1,
         Detail\Entity::TRANSACTION_REPORT_EMAIL    => 1,
         Detail\Entity::CONTACT_MOBILE              => 1,
-        Detail\Entity::CONTACT_LANDLINE            => 1,
 
         Detail\Entity::BUSINESS_TYPE               => 2,
         Detail\Entity::BUSINESS_NAME               => 2,
@@ -40,9 +39,6 @@ final class Constants
         Detail\Entity::BUSINESS_OPERATION_STATE    => 2,
         Detail\Entity::BUSINESS_OPERATION_CITY     => 2,
         Detail\Entity::BUSINESS_OPERATION_PIN      => 2,
-        Detail\Entity::BUSINESS_DOE                => 2,
-        Detail\Entity::TRANSACTION_VOLUME          => 2,
-        Detail\Entity::TRANSACTION_VALUE           => 2,
         Detail\Entity::GSTIN                       => 2,
         Detail\Entity::P_GSTIN                     => 2,
         Detail\Entity::PROMOTER_PAN                => 2,
