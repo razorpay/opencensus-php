@@ -639,6 +639,7 @@ return [
         'offer_update'                      => 'offers/{id}',
         'invitation_fetch'                  => 'invitations',
         'reports_refund_irctc'              => 'reports/refund/irctc',
+        'dispute_edit'                      => 'disputes/{id}',
     ],
 
     // auth
@@ -784,7 +785,6 @@ return [
         'gateway_delete_rule'               => 'gateway/rules/{id}',
         // Payment Dispute
         'payment_disputes'                  => 'payments/{id}/disputes',
-        'dispute_edit'                      => 'disputes/{id}',
         // Batch actions
         'batch_process_by_id'               => 'batches/{id}/process',
     ],
