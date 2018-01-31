@@ -1,11 +1,4 @@
 const track = ({ eventCategory, eventAction, eventLabel, eventValue }) => {
-  console.log({
-    eventCategory,
-    eventAction,
-    eventLabel,
-    eventValue,
-  });
-
   if (!window.rzpAnalytics) {
     return;
   }

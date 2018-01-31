@@ -191,7 +191,7 @@ export default class HomeContainer extends Component {
 
         // if `Others` platform count is greater than 30%
         // do not show grouping
-        if (ratio < 0.3) {
+        if (ratio > 0.3) {
           trackPlatformAnalyticsHidden(ratio * 100);
           return;
         }

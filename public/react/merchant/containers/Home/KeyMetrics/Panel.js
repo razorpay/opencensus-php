@@ -144,6 +144,8 @@ class Panel extends Component {
     chartOptions.isCurrency = isCurrency;
     chartOptions.externalUrl = externalUrl;
     chartOptions.breakdown = selectedBreakdown;
+    chartOptions.graphStartDate = startDate.toDate();
+    chartOptions.graphEndDate = endDate.toDate();
 
     return (
       <GenericPanel
@@ -201,11 +203,17 @@ class Panel extends Component {
               onChange={this.handleBreakdownChange}
             >
               {breakdownVals.map((item, index) => {
-                return (
-                  <Btn value={item} key={index} className="btn-default">
-                    {titleCase(item)}
-                  </Btn>
-                );
+                const btnProps = {
+                  value: item.value,
+                  key: index,
+                  className: 'btn-default',
+                };
+
+                if (!item.isEnabled(startDate, endDate)) {
+                  btnProps.disabled = 'disabled';
+                }
+
+                return <Btn {...btnProps}>{item.title}</Btn>;
               })}
             </BtnGroup>
             {showGrouping &&

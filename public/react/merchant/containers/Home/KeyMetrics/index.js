@@ -120,7 +120,7 @@ class KeyMetricsContainer extends Component {
         tabState.selectedGrouping = grouping[0];
       }
 
-      tabState.selectedBreakdown = breakdownVals[0];
+      tabState.selectedBreakdown = breakdownVals[0].value;
 
       tabState.data = {
         loading: false,
@@ -529,11 +529,27 @@ class KeyMetricsContainer extends Component {
       startDate.toDate() - this.props.startDate.toDate() !== 0 ||
       endDate.toDate() - this.props.endDate.toDate() !== 0
     ) {
-      const { tabsState } = this.state;
+      const { tabsState, selectedTab } = this.state,
+        { selectedBreakdown } = tabsState[selectedTab];
 
       // when switched tabs, new data should be fetched as the global
       // daterange changed
       this.clearCache(tabsState);
+
+      /*
+       * if the changed daterange doesn't fit for the
+       * selected breakdown switch to daily
+       */
+      if (selectedBreakdown !== 'daily') {
+        if (
+          (selectedBreakdown === 'weekly' &&
+            startDate.isSame(endDate, 'week')) ||
+          (selectedBreakdown === 'monthly' &&
+            startDate.isSame(endDate, 'month'))
+        ) {
+          tabsState[selectedTab].selectedBreakdown = 'daily';
+        }
+      }
 
       this.setState({ tabsState }, () => {
         const fetchAllReq = this.fetchData(true);
