@@ -1127,6 +1127,53 @@ class Service extends Base\Service
     }
 
     /**
+     * Bulk add or remove tags from a list of merchant_ids
+     *
+     * Input:
+     *
+     * name = Tag_Name
+     * action = insert/delete
+     * merchant_ids = [array, of, ids]
+     *
+     * @param array $input
+     *
+     * @return array
+     */
+    public function bulkTag(array $input)
+    {
+        $this->trace->info(TraceCode::MERCHANT_TAGS_BULK_REQUEST, $input);
+
+        (new Validator)->validateInput('bulk_tag', $input);
+
+        $merchantIds = $input['merchant_ids'];
+        // Action: 'insert' or 'delete'
+        $action      = $input['action'];
+        $tagName     = $input['name'];
+
+        $tagFunction = $action . 'Tag';
+
+        $failedIds = [];
+
+        foreach($merchantIds as $merchantId)
+        {
+            try
+            {
+                $this->{$tagFunction}($merchantId, $tagName);
+            }
+            catch (\Throwable $t)
+            {
+                $failedIds[] = $merchantId;
+            }
+        }
+
+        return [
+            'total_count'  => count($merchantIds),
+            'failed_count' => count($failedIds),
+            'failed_ids'   => $failedIds
+        ];
+    }
+
+    /**
      * used for getting tags of the merchant
      * @param string $id
      */
@@ -1139,9 +1186,14 @@ class Service extends Base\Service
 
     /**
      * used for adding tags to merchant
+     * This function uses retag(), which overwrites all previous tags
+     * with the ones passed in the $input array
+     *
      * @param string $id
-     * @param array $input which contains the tags of the merchant
-     * @param bool $slackNotify
+     * @param array  $input which contains the tags of the merchant
+     * @param bool   $slackNotify
+     *
+     * @return
      */
     public function addTags($id, $input, $slackNotify = false)
     {
@@ -1175,6 +1227,25 @@ class Service extends Base\Service
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         $merchant->untag($tagName);
+
+        $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
+
+        return $merchant->tagNames();
+    }
+
+    /**
+     * Tag a merchant for a single tag
+     *
+     * @param string $merchantId
+     * @param string $tagName
+     *
+     * @return mixed
+     */
+    public function insertTag(string $merchantId, string $tagName)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $merchant->tag($tagName);
 
         $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
 
