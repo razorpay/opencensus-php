@@ -9,6 +9,15 @@ final class Gateway extends Oriental\Gateway
 {
     use GatewayTrait;
 
+    private $bank;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->bank = explode('_', $this->gateway)[1];
+    }
+
     public function authorize(array $input)
     {
         $request = parent::authorize($input);

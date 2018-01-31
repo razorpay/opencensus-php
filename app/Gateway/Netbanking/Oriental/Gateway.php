@@ -24,8 +24,6 @@ use RZP\Exception\GatewayErrorException;
  */
 class Gateway extends Base\Gateway
 {
-    protected $bank = 'oriental';
-
     protected $gateway = Payment\Gateway::NETBANKING_ORIENTAL;
 
     /**
