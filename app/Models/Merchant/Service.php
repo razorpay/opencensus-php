@@ -1139,7 +1139,7 @@ class Service extends Base\Service
      *
      * @return array
      */
-    public function bulkTag(array $input)
+    public function bulkTag(array $input): array
     {
         $this->trace->info(TraceCode::MERCHANT_TAGS_BULK_REQUEST, $input);
 
@@ -1154,14 +1154,25 @@ class Service extends Base\Service
 
         $failedIds = [];
 
-        foreach($merchantIds as $merchantId)
+        foreach ($merchantIds as $merchantId)
         {
             try
             {
+                //
+                // Calls either:
+                // $this->insertTag() or $this->deleteTag()
+                //
                 $this->{$tagFunction}($merchantId, $tagName);
             }
             catch (\Throwable $t)
             {
+                $this->trace->error(
+                    TraceCode::MERCHANT_TAGS_BULK_EXCEPTION,
+                    [
+                        'merchant_id' => $merchantId,
+                        'tag_name'    => $tagName
+                    ]);
+
                 $failedIds[] = $merchantId;
             }
         }
