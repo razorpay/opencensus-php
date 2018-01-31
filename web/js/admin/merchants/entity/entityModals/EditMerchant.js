@@ -84,7 +84,9 @@ export default class EditMerchant extends Component {
     }
 
     if (body.auto_refund_delay_val) {
-      body.auto_refund_delay = `${body.auto_refund_delay_val} ${body.auto_refund_delay_type}`;
+      body.auto_refund_delay = `${body.auto_refund_delay_val} ${
+        body.auto_refund_delay_type
+      }`;
 
       delete body.auto_refund_delay_type;
       delete body.auto_refund_delay_val;
@@ -266,7 +268,7 @@ export default class EditMerchant extends Component {
 
           <div class="field multi">
             <label>Auto Refund Delay</label>
-            <input name="auto_refund_delay_val" />
+            <input name="auto_refund_delay_val" defaultValue={5} />
             <select name="auto_refund_delay_type">
               <option value="days">Days</option>
               <option value="hours">Hours</option>
