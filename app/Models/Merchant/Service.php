@@ -36,8 +36,10 @@ class Service extends Base\Service
 {
     use Notify;
 
-    const COUPON_RESPONSE = 'apply_coupon';
-    const OAUTH_MAIL      = 'oauth_mail';
+    const COUPON_RESPONSE   = 'apply_coupon';
+    const OAUTH_MAIL        = 'oauth_mail';
+    const APPLICATION       = 'application';
+
 
     /**
      * Creates a merchant and saves in database
@@ -780,6 +782,17 @@ class Service extends Base\Service
         $webhooks = $this->repo->webhook->fetch([], $this->merchant->getId());
 
         return $webhooks->toArrayPublic();
+    }
+
+    public function createOAuthAppWebhook(string $appId, array $input): array
+    {
+        $input[Webhook\Entity::ENTITY_TYPE] = self::APPLICATION;
+
+        $input[Webhook\Entity::ENTITY_ID] = $appId;
+
+        $webhook = (new Webhook\Core)->createWebhook($this->merchant, $input);
+
+        return $webhook->toArrayPublic();
     }
 
     public function patchMerchantBeneficiaryCode()

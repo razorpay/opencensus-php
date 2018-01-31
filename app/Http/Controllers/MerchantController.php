@@ -9,7 +9,6 @@ use RZP\Models\Key;
 use RZP\Models\Report;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
-use RZP\Models\Terminal;
 use RZP\Constants\Entity;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Detail;
@@ -390,6 +389,15 @@ class MerchantController extends Controller
     public function getWebhooks()
     {
         $data = $this->service()->getWebhooks();
+
+        return ApiResponse::json($data);
+    }
+
+    public function postOAuthApplicationWebhook(string $appId)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->createOAuthAppWebhook($appId, $input);
 
         return ApiResponse::json($data);
     }
