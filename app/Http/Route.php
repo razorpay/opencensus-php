@@ -912,7 +912,6 @@ final class Route
         'beta_account_post_bank_account',
         'beta_account_fetch_setl_destinations',
         'dispute_fetch',
-        'dispute_edit',
     ];
 
     public static $internal = [
@@ -1243,6 +1242,7 @@ final class Route
         'reporting_log_create',
         'ufh_get_file_signed_url',
         'pincode_get',
+        'dispute_edit',
     ];
 
     // These will run on internal auth with the assurance

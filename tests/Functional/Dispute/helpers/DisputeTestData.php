@@ -845,47 +845,6 @@ return [
         ],
     ],
 
-    'testEditDisputeMerchantDocumentUploadByPrivate' => [
-        'request' => [
-            'content' => [
-                'upload_files'  =>  [
-                    [
-                        'name'      => 'myfile1.png',
-                        'category'  => 'explanation_letter',
-                    ],
-                    [
-                        'name'      => 'myfile2.pdf',
-                        'category'  => 'delivery_proof',
-                    ],
-                ],
-            ],
-            'method' => 'post',
-            'files' => [],
-        ],
-        'response' => [
-            'content' => [
-                'entity'        => 'dispute',
-                'amount'        => 1000000,
-                'currency'      => 'INR',
-                'reason_code'   => 'SOMETHING_BAD',
-                'status'        => 'open',
-                'phase'         => 'chargeback',
-                'files'         => [
-                    [
-                        'file_id'       => 'rzp_file_mock_id_1000000',
-                        'name'          => 'myfile1.png',
-                        'category'      => 'explanation_letter',
-                    ],
-                    [
-                        'file_id'       => 'rzp_file_mock_id_1000000',
-                        'name'          => 'myfile2.pdf',
-                        'category'      => 'delivery_proof',
-                    ],
-                ]
-            ],
-        ],
-    ],
-
     'testEditDisputeMerchantDocumentUploadByProxy' => [
         'request' => [
             'content' => [
@@ -913,12 +872,12 @@ return [
                 'phase'         => 'chargeback',
                 'files'         => [
                     [
-                        'file_id'       => 'rzp_file_mock_id_1000000',
+                        'file_id'       => 'rzp_file_mock_id_1000000_explanation_letter',
                         'name'          => 'myfile1.png',
                         'category'      => 'explanation_letter',
                     ],
                     [
-                        'file_id'       => 'rzp_file_mock_id_1000000',
+                        'file_id'       => 'rzp_file_mock_id_1000000_delivery_proof',
                         'name'          => 'myfile2.pdf',
                         'category'      => 'delivery_proof',
                     ],

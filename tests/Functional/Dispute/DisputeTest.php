@@ -598,17 +598,6 @@ class DisputeTest extends TestCase
         $this->startTest($testData);
     }
 
-    public function testEditDisputeMerchantDocumentUploadByPrivate()
-    {
-        $this->ba->privateAuth();
-
-        $testData = $this->updateUploadDocumentData();
-
-        $content = $this->runRequestResponseFlow($testData);
-
-        $this->checkUploadedFilesArray($content);
-    }
-
     public function testEditDisputeMerchantDocumentUploadByProxy()
     {
         $this->ba->proxyAuth();
