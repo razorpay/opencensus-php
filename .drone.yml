@@ -32,6 +32,9 @@ pipeline:
     tags: ${DRONE_REPO_BRANCH}-${DRONE_COMMIT_SHA}
     when:
       status: [success]
+      event:
+        exclude: [deployment]
+        include: [push]
   build-notify:
     image: plugins/slack
     secrets: [slack_webhook]
@@ -51,6 +54,10 @@ pipeline:
         Started at: {{build.started}}
         Time taken: {{since build.started}}
         Link: {{build.link}}
+    when:
+      event:
+        exclude: [deployment]
+        include: [push]
 services:
   livedb:
     image: mysql
@@ -72,26 +79,49 @@ services:
   elasticsearch:
     image: elasticsearch:5.2-alpine
 pipeline:
-        deploy-qa:
-          image: razorpay/drone-kubernetes
-          pull: true
-          secrets:
-            - docker_username
-            - docker_password
-            - kubernetes_server_qa
-            - kubernetes_server_cert_qa
-            - kubernetes_client_cert
-            - kubernetes_client_key
-          kubernetes_user: drone
-          kubernetes_server: $KUBERNETES_SERVER_QA
-          kubernetes_cert: $KUBERNETES_SERVER_CERT_QA
-          kubernetes_client_cert: $KUBERNETES_CLIENT_CERT
-          kubernetes_client_key: $KUBERNETES_CLIENT_KEY
-          deployment: api
-          repo: razorpay/api
-          container: razorpay/api
-          namespace: func
-          tag:
-            - ${DRONE_COMMIT_SHA}
-          when:
-            branch: [ drone ]
+  deploy-qa-func:
+    image: razorpay/drone-kubernetes
+    pull: true
+    secrets:
+      - docker_username
+      - docker_password
+      - server_url_qa
+      - server_cert_qa
+      - client_cert_qa
+      - client_key_qa
+    user: drone
+    cluster: qa
+    deployment: api
+    repo: razorpay/api
+    container: api
+    namespace: func
+    tag:
+      - ${DRONE_COMMIT_SHA}
+    when:
+      environment: qa-func
+      event:
+        exclude: [push]
+        include: [deployment]
+  deploy-stage-echo:
+    image: razorpay/drone-kubernetes
+    pull: true
+    secrets:
+      - docker_username
+      - docker_password
+      - server_url_stage
+      - server_cert_stage
+      - client_cert_stage
+      - client_key_stage
+    user: drone
+    cluster: stage
+    deployment: api
+    repo: razorpay/api
+    container: api
+    namespace: func
+    tag:
+      - ${DRONE_COMMIT_SHA}
+    when:
+      environment: stage-echo
+      event:
+        exclude: [push]
+        include: [deployment]
