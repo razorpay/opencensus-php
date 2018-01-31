@@ -4,7 +4,6 @@ namespace RZP\Models\Dispute;
 
 use Request;
 use RZP\Models\Base;
-use RZP\Models\Base\PublicCollection;
 
 class Service extends Base\Service
 {

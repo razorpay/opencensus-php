@@ -4,7 +4,6 @@ namespace RZP\Models\Dispute\File;
 
 use RZP\Base;
 use RZP\Exception;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class Validator extends Base\Validator
 {

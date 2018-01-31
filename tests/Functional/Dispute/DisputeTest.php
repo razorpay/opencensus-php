@@ -787,13 +787,12 @@ class DisputeTest extends TestCase
         $fileSize = ($fileSize === -1) ? filesize($filePath) : $fileSize;
 
         $uploadedFile = new UploadedFile(
-            $filePath,
-            $filePath,
-            $mimeType,
-            $fileSize,
-            null,
-            true
-        );
+                                        $filePath,
+                                        $filePath,
+                                        $mimeType,
+                                        $fileSize,
+                                        null,
+                                        true);
 
         return $uploadedFile;
     }

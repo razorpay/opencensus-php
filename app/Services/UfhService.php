@@ -5,7 +5,6 @@ namespace RZP\Services;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\Entity;
 use Razorpay\Ufh\Client as UfhClient;
-use RZP\Exception\IntegrationException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class UfhService
