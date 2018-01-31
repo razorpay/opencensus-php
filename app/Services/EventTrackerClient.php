@@ -178,10 +178,15 @@ class EventTrackerClient extends AbstractEventClient
                 'method'            => $payment->getMethod(),
                 'requestId'         => $this->request->getId(),
                 'version'           => self::VERSION,
-                'created_at'        => $payment->getCreatedAt(),
                 'contact'           => $payment->getContact(),
                 'email'             => $payment->getEmail(),
             ];
+
+            if ($payment->hasAttribute('created_at') === true)
+            {
+                $properties['created_at'] = $payment->getCreatedAt();
+
+            }
 
             $method = $payment->getMethod();
 
