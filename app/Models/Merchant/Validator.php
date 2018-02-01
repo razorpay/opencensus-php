@@ -90,6 +90,13 @@ class Validator extends Base\Validator
         Entity::ACTION                      => 'required|custom'
     ];
 
+    protected static $bulkTagRules = [
+        'action'         => 'required|string|filled|max:10|in:insert,delete',
+        'name'           => 'required|string|filled',
+        'merchant_ids'   => 'required|array',
+        'merchant_ids.*' => 'required|string|filled|max:14'
+    ];
+
     protected static $oauthMailRules = [
         'client_id'    => 'required|alpha_num|size:14',
         'user_id'      => 'required|alpha_num|size:14',

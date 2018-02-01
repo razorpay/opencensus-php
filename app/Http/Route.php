@@ -158,6 +158,7 @@ final class Route
         'merchant_create_invoice_entities'        => ['post',     'merchants/invoice/create',                       'MerchantInvoiceController@postCreateInvoiceEntities'               ],
         'merchant_details_fetch'                  => ['get',      'merchants/details',                              'MerchantController@getMerchantDetails'                             ],
         'merchant_invoice_add_bulk'               => ['post',     'merchants/invoice/bulk',                         'MerchantInvoiceController@postMultipleEntities'                    ],
+        'merchant_tags_bulk'                      => ['post',     'merchants/tags/bulk',                            'MerchantController@bulkTagMerchants'                               ],
         'create_submerchant_user'                 => ['post',     'submerchant/user/{id}',                          'MerchantController@postSubMerchantUser'                            ],
         'balance_fetch'                           => ['get',      'balance',                                        'MerchantController@getAccountBalance'                              ],
         'credits_create'                          => ['post',     'merchants/{id}/credits_log',                     'MerchantController@postCreateCreditsLog'                           ],
@@ -1151,6 +1152,7 @@ final class Route
         'fund_transfer_attempt_reconcile',
         'transaction_bulk_update',
         'setl_update_channel_bulk',
+        'merchant_tags_bulk',
     ];
 
     public static $proxy = [
