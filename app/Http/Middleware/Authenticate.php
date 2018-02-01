@@ -118,7 +118,7 @@ class Authenticate
         {
             $ret = $this->ba->privateAuth();
         }
-        else if (in_array($route, Route::$public, true) === true)
+        else if (in_array($route, array_merge(Route::$public, Route::$web), true) === true)
         {
             //
             // For public routes, OAuth sends a public_token using BasicAuth

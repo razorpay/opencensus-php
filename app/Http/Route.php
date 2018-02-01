@@ -716,11 +716,11 @@ final class Route
     ];
 
     public static $public = [
-        'checkout',
-        'payment_create',
-        'payment_create_checkout',
-        'payment_create_jsonp',
-        'payment_create_ajax',
+        // 'checkout',
+        // 'payment_create',
+        // 'payment_create_checkout',
+        // 'payment_create_jsonp',
+        // 'payment_create_ajax',
         'payment_create_fees',
         'payment_otp_submit',
         'payment_otp_resend',
@@ -736,7 +736,7 @@ final class Route
         // 'invoice_view',
         'merchant_public_get_banks',
         'merchant_methods',
-        'merchant_checkout_preferences',
+        // 'merchant_checkout_preferences',
         'mock_atom_init_payment',
         'mock_acs',
         'mock_atom_choose_org',
@@ -760,13 +760,13 @@ final class Route
         'mock_wallet_payment_with_paymentid',
         'dummy_return_callback',
         'emi_plans_fetch_multiple',
-        'customer_get_saved_status',
-        'app_delete_token',
-        'app_fetch_payments',
-        'customer_logout_global',
+        // 'customer_get_saved_status',
+        // 'app_delete_token',
+        // 'app_fetch_payments',
+        // 'customer_logout_global',
         'customer_create_token_public',
         'otp_post',
-        'otp_verify',
+        // 'otp_verify',
         'otp_verify_app',
         'device_create',
         'merchant_methods_downtime',
@@ -1531,6 +1531,20 @@ final class Route
         'qr_code_download_live',
         'qr_code_download_test',
         'gateway_payment_callback_bharatqr',
+    ];
+
+    public static $web = [
+        'checkout',
+        'merchant_checkout_preferences',
+        'otp_verify',
+        'customer_get_saved_status',
+        'payment_create',
+        'payment_create_checkout',
+        'payment_create_jsonp',
+        'payment_create_ajax',
+        'app_fetch_payments',
+        'customer_logout_global',
+        'app_delete_token',
     ];
 
     public static $internalApps = [

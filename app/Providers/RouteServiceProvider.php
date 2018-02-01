@@ -100,7 +100,7 @@ class RouteServiceProvider extends ServiceProvider
             ['middleware' => 'web'],
             function ($router)
             {
-                $this->route->addRouteGroups(['public', 'publicCallback', 'direct']);
+                $this->route->addRouteGroups(['web']);
             }
         );
     }
@@ -111,7 +111,14 @@ class RouteServiceProvider extends ServiceProvider
             ['middleware' => 'api'],
             function ($router)
             {
-                $this->route->addRouteGroups(['admin', 'internal', 'private', 'proxy', 'device']);
+                $this->route->addRouteGroups(['public',
+                    'publicCallback',
+                    'direct',
+                    'admin',
+                    'internal',
+                    'private',
+                    'proxy',
+                    'device']);
             }
         );
     }
