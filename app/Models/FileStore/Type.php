@@ -64,6 +64,8 @@ class Type
 
     const PNB_NETBANKING_CLAIMS             = 'pnb_netbanking_claims';
 
+    const GATEWAY_FAILED_REFUNDS            = 'gateway_failed_refunds';
+
     const BATCH_INPUT                       = 'batch_input';
     const BATCH_OUTPUT                      = 'batch_output';
     const RECONCILIATION_BATCH_INPUT        = 'reconciliation_batch_input';
@@ -159,6 +161,7 @@ class Type
             self::AXIS_CYBERSOURCE_FAILED_REFUND,
             self::HDFC_FSS_FAILED_REFUND,
             self::MOCK_RECONCILIATION_FILE,
+            self::GATEWAY_FAILED_REFUNDS,
         ],
 
         Constants\Entity::BATCH => [
@@ -240,7 +243,8 @@ class Type
         self::HDFC_CYBERSOURCE_FAILED_REFUND,
         self::HDFC_FSS_FAILED_REFUND,
         self::AXIS_CYBERSOURCE_FAILED_REFUND,
-        self::MOCK_RECONCILIATION_FILE
+        self::MOCK_RECONCILIATION_FILE,
+        self::GATEWAY_FAILED_REFUNDS,
     ];
 
     /**

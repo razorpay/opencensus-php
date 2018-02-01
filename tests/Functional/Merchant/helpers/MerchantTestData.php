@@ -1012,6 +1012,30 @@ return [
         ],
     ],
 
+    'testGetCheckoutPreferencesForMagicEnabledMerchant' => [
+        'request'  => [
+            'url'    => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'magic' => true,
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesForMagicDisabledMerchant' => [
+        'request'  => [
+            'url'    => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'magic' => false,
+            ],
+        ],
+    ],
+
     'testGetCheckoutPreferencesWithNonOrderRelatedOffer' => [
         'request' => [
             'url'    => '/preferences',

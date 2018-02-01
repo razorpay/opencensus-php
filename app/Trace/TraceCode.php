@@ -221,7 +221,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_TOKEN_TOO_MANY_PRESENT                = 'GATEWAY_TOKEN_TOO_MANY_PRESENT';
 
     const CANCEL_INVOICE                                = 'CANCEL_INVOICE';
-    const INVOICE_EXPIRE_VIA_CRON_FAILED                = 'INVOICE_EXPIRE_VIA_CRON_FAILED';
     const INVOICES_EXPIRE_CRON_SUMMARY                  = 'INVOICES_EXPIRE_CRON_SUMMARY';
     const INVOICE_INVALID_CONTACT_NUMBER                = 'INVOICE_INVALID_CONTACT_NUMBER';
     const INVOICE_CREATE_REQUEST                        = 'INVOICE_CREATE_REQUEST';
@@ -647,6 +646,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const AWS_S3_LOGO_UPLOAD                        = 'AWS_S3_LOGO_UPLOAD';
     const AWS_S3_LOGO_UPLOADED                      = 'AWS_S3_LOGO_UPLOADED';
     const AWS_FILE_UPLOAD                           = 'AWS_FILE_UPLOAD';
+    const AWS_FILE_UPLOADED                         = 'AWS_FILE_UPLOADED';
     const AWS_FILE_DOWNLOAD                         = 'AWS_FILE_DOWNLOAD';
     const AWS_FILE_DELETE                           = 'AWS_FILE_DELETE';
     const LOGO_IMAGE_DETAILS                        = 'LOGO_IMAGE_DETAILS';
@@ -803,6 +803,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FEATURE_MULTI_ASSIGN_REQUEST                  = 'FEATURE_MULTI_ASSIGN_REQUEST';
     const FEATURE_MULTI_REMOVE_REQUEST                  = 'FEATURE_MULTI_REMOVE_REQUEST';
 
+    const MERCHANT_TAGS_BULK_REQUEST                    = 'MERCHANT_TAGS_BULK_REQUEST';
+    const MERCHANT_TAGS_BULK_EXCEPTION                  = 'MERCHANT_TAGS_BULK_EXCEPTION';
+
     const MERCHANT_METHODS_BULK_UPDATE                  = 'MERCHANT_METHODS_BULK_UPDATE';
     const MERCHANT_CHANNEL_BULK_UPDATE_REQUEST          = 'MERCHANT_CHANNEL_BULK_UPDATE_REQUEST';
     const MERCHANT_CHANNEL_BULK_UPDATE_RESPONSE         = 'MERCHANT_CHANNEL_BULK_UPDATE_RESPONSE';
@@ -913,6 +916,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Trace codes for dispute entity
     const DISPUTE_CREATE_REQUEST                        = 'DISPUTE_CREATE_REQUEST';
     const DISPUTE_EDIT_REQUEST                          = 'DISPUTE_EDIT_REQUEST';
+    const DISPUTE_EDIT_REQUEST_FOR_MERCHANT             = 'DISPUTE_EDIT_REQUEST_FOR_MERCHANT';
     const DISPUTE_REVERSAL_REQUEST                      = 'DISPUTE_REVERSAL_REQUEST';
     const DISPUTE_REVERSAL_SUCCESS                      = 'DISPUTE_REVERSAL_SUCCESS';
     const DISPUTE_TRANSFER_SUCCESS                      = 'DISPUTE_TRANSFER_SUCCESS';
@@ -920,6 +924,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DISPUTE_ADJUSTMENT_MIGRATE_ERROR              = 'DISPUTE_ADJUSTMENT_MIGRATE_ERROR';
     const DISPUTE_REASON_CREATE                         = 'DISPUTE_REASON_CREATE';
     const DISPUTE_SAME_PARENT_LINKING                   = 'DISPUTE_SAME_PARENT_LINKING';
+    const DISPUTE_FILE_CREATE                           = 'DISPUTE_FILE_CREATE';
+    const DISPUTE_FILES_UPLOAD                          = 'DISPUTE_FILES_UPLOAD';
 
     const GRATIS_TO_POSTPAID_INPUT                      = 'GRATIS_TO_POSTPAID_INPUT';
     const GRATIS_TO_POSTPAID_FAILED                     = 'GRATIS_TO_POSTPAID_FAILED';
@@ -965,6 +971,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FEATURE_ENABLED_MERCHANT_NOT_NOTIFIED         = 'FEATURE_ENABLED_MERCHANT_NOT_NOTIFIED';
 
     const MAILCHIMP_JOB_ERROR                           = 'MAILCHIMP_JOB_ERROR';
+
+    const UPLOAD_FILE_DETAILS                           = 'UPLOAD_FILE_DETAILS';
 
     // To log various debugs for a migrate command
     const BATCH_MIGRATE_DEBUG                           = 'BATCH_MIGRATE_DEBUG';

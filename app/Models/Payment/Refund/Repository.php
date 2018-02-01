@@ -325,6 +325,8 @@ class Repository extends Base\Repository
                     ->whereRaw("$refundCreatedAt - $paymentCreatedAt >= $timerange")
                     ->with(['payment'])
                     ->get();
+
+        return $query->get();
     }
 
 

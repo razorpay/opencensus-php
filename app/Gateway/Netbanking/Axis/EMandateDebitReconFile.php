@@ -18,17 +18,15 @@ class EMandateDebitReconFile extends BaseEMandateDebitReconFile
     const STATUS_FAILURE = 'return';
 
     // Headings
-    const HEADING_MERCHANT_ID     = 'CMPNY_CODE';
-    const HEADING_BANK_REF_NUMBER = 'CUSTOMER_UID';
-    const HEADING_PAYMENT_ID      = 'MERCHANT_URN';
-    const HEADING_CUSTOMER_NAME   = 'FIRST_NAME';
-    const HEADING_DEBIT_ACCOUNT   = 'DEBIT_ACCOUNT';
-    const HEADING_START_DATE      = 'START_DATE';
-    const HEADING_END_DATE        = 'END_DATE';
-    const HEADING_MAXIMUM_AMOUNT  = 'MAXIMUM_AMOUNT';
-    const HEADING_PERIOD          = 'PERIOD';
-    const HEADING_STATUS          = 'STATUS';
-    const HEADING_REMARK          = 'REMARK';
+    const HEADING_PAYMENT_ID        = 'INVOICE_NO';
+    const HEADING_DEBIT_DATE        = 'BILL_DEBIT_DATE';
+    const HEADING_MERCHANT_ID       = 'COMPANY_CODE';
+    const HEADING_BANK_REF_NUMBER   = 'CUSTOMER_UID';
+    const HEADING_CUSTOMER_NAME     = 'CUSTOMER_NAME';
+    const HEADING_DEBIT_ACCOUNT     = 'DEBIT_ACCOUNT';
+    const HEADING_DEBIT_AMOUNT      = 'DEBIT_BILL_AMOUNT';
+    const HEADING_STATUS            = 'STATUS';
+    const HEADING_REMARK            = 'REMARKS';
 
     protected $gateway = Payment\Gateway::NETBANKING_AXIS;
 

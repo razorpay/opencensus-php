@@ -22,7 +22,7 @@ class IndianStates
     const JH = 'JH';
     const KA = 'KA';
     const KE = 'KE';
-    const LA = 'LA';
+    const LD = 'LD';
     const MP = 'MP';
     const MH = 'MH';
     const MA = 'MA';
@@ -33,7 +33,7 @@ class IndianStates
     const PO = 'PO';
     const PB = 'PB';
     const RJ = 'RJ';
-    const SI = 'SI';
+    const SK = 'SK';
     const TN = 'TN';
     const TR = 'TR';
     const TG = 'TG';
@@ -60,7 +60,7 @@ class IndianStates
         'JHARKHAND'                     => self::JH,
         'KARNATAKA'                     => self::KA,
         'KERALA'                        => self::KE,
-        'LAKSHADWEEP'                   => self::LA,
+        'LAKSHADWEEP'                   => self::LD,
         'MADHYA PRADESH'                => self::MP,
         'MAHARASHTRA'                   => self::MH,
         'MANIPUR'                       => self::MA,
@@ -71,7 +71,7 @@ class IndianStates
         'PONDICHERRY'                   => self::PO,
         'PUNJAB'                        => self::PB,
         'RAJASTHAN'                     => self::RJ,
-        'SIKKIM'                        => self::SI,
+        'SIKKIM'                        => self::SK,
         'TAMIL NADU'                    => self::TN,
         'TRIPURA'                       => self::TR,
         'TELANGANA'                     => self::TG,

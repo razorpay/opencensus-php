@@ -16,6 +16,7 @@ class Constants extends Base\Constants
         Target::HDFC_CYBERSOURCE => 'HDFC Cybersource Failed Refunds',
         Target::HDFC_FSS         => 'HDFC FSS Failed Refunds',
         Target::AXIS_CYBERSOURCE => 'Axis Cybersource Failed Refunds ',
+
     ];
 
     const SUBJECT_MAP = [
@@ -26,6 +27,7 @@ class Constants extends Base\Constants
         Target::HDFC_CYBERSOURCE => 'HDFC Cybersource failed refunds for ',
         Target::HDFC_FSS         => 'HDFC FSS failed refunds for ',
         Target::AXIS_CYBERSOURCE => 'Axis Cybersource failed refunds for ',
+        ''                          => 'Failed Refunds file for ',
     ];
 
     const BODY_MAP = [
@@ -36,6 +38,7 @@ class Constants extends Base\Constants
         Target::HDFC_CYBERSOURCE => 'Please process the attached refunds for HDFC Cybersource',
         Target::HDFC_FSS         => 'Please process the attached refunds for HDFC FSS',
         Target::AXIS_CYBERSOURCE => 'Please process the attached refunds for Axis Cybersource',
+        ''                       => 'Please find attached failed refunds information.',
     ];
 
     const MAIL_TEMPLATE_MAP = [
@@ -46,6 +49,7 @@ class Constants extends Base\Constants
         Target::HDFC_CYBERSOURCE => 'emails.message',
         Target::HDFC_FSS         => 'emails.message',
         Target::AXIS_CYBERSOURCE => 'emails.message',
+        ''                       => 'emails.message',
     ];
 
     const MAILTAG_MAP = [
@@ -56,5 +60,6 @@ class Constants extends Base\Constants
         Target::HDFC_CYBERSOURCE => MailTags::HDFC_CYBERSOURCE_FAILED_REFUNDS_MAIL,
         Target::HDFC_FSS         => MailTags::HDFC_FSS_FAILED_REFUNDS_MAIL,
         Target::AXIS_CYBERSOURCE => MailTags::AXIS_CYBERSOURCE_FAILED_REFUNDS_MAIL,
+        ''                       => MailTags::FAILED_REFUNDS_MAIL,
     ];
 }
