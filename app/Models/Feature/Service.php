@@ -405,18 +405,5 @@ class Service extends Base\Service
 
         return $response;
     }
-
-    /**
-     * For eg: 'account' from 'accounts'
-     *
-     * @param string $routeEndpoint
-     *
-     * @return string
-     */
-    protected function getEntityTypeFromRouteEndpoint(string $routeEndpoint): string
-    {
-        // strip the last character 's'
-        return substr($routeEndpoint, 0, -1);
-    }
 }
 

@@ -2,14 +2,42 @@
 
 namespace RZP\Http\Controllers;
 
-use ApiResponse;
 use Request;
+use ApiResponse;
+
 use RZP\Models\Feature\Constants;
 
 class FeatureController extends Controller
 {
     /**
+     * Assigns features to accounts
+     *
+     * @param string|null $entityId
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function addAccountFeatures(string $entityId)
+    {
+        return $this->addFeatures(Constants::MERCHANT, $entityId);
+    }
+
+    /**
+     * Assigns features to applications
+     *
+     * @param string|null $entityId
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function addApplicationFeatures(string $entityId)
+    {
+        return $this->addFeatures(Constants::APPLICATION, $entityId);
+    }
+
+    /**
      * Adds features to entities
+     *
+     * @todo: Remove the default null values once the feature_add route is
+     *        removed and change the access modifier to protected.
      *
      * @param string|null $entityType
      * @param string|null $entityId
@@ -23,30 +51,6 @@ class FeatureController extends Controller
         $data = $this->service()->addFeatures($input, $entityType, $entityId);
 
         return ApiResponse::json($data);
-    }
-
-    /**
-     * Assigns features to accounts
-     *
-     * @param string|null $entityId
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function addFeaturesToAccounts(string $entityId)
-    {
-        return $this->addFeatures(Constants::MERCHANT, $entityId);
-    }
-
-    /**
-     * Assigns features to applications
-     *
-     * @param string|null $entityId
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function addFeaturesToApplications(string $entityId)
-    {
-        return $this->addFeatures(Constants::APPLICATION, $entityId);
     }
 
     public function multiAssignFeature()
@@ -70,6 +74,7 @@ class FeatureController extends Controller
     /**
      * Deletes the feature association with the merchant
      *
+     * @deprecated Use deleteEntityFeature instead.
      * @param string $entityId
      * @param string $featureName
      *
@@ -77,7 +82,7 @@ class FeatureController extends Controller
      */
     public function deleteFeature(string $entityId, string $featureName)
     {
-        return $this->deleteEntityFeature('merchants', $entityId, $featureName);
+        return $this->deleteEntityFeature(Constants::MERCHANTS, $entityId, $featureName);
     }
 
     /**
@@ -98,21 +103,50 @@ class FeatureController extends Controller
         return ApiResponse::json($data);
     }
 
+    /**
+     * Returns the features assigned to the merchant
+     *
+     * @deprecated Use getAccountFeatures instead
+     * @param string|null $entityId
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function getMerchantFeatures(string $entityId)
     {
-        return $this->getFeatures('merchants', $entityId);
+        return $this->getFeatures(Constants::MERCHANTS, $entityId);
     }
 
+    /**
+     * Returns the features assigned to the account
+     *
+     * @param string|null $entityId
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function getAccountFeatures(string $entityId)
     {
-        return $this->getFeatures('accounts', $entityId);
+        return $this->getFeatures(Constants::ACCOUNTS, $entityId);
     }
 
+    /**
+     * Returns the features assigned to the application
+     *
+     * @param string|null $entityId
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function getApplicationFeatures(string $entityId)
     {
-        return $this->getFeatures('applications', $entityId);
+        return $this->getFeatures(Constants::APPLICATIONS, $entityId);
     }
 
+    /**
+     * Returns the features assigned to the entity
+     *
+     * @param string|null $entityId
+     *
+     * @return \Illuminate\Http\Response
+     */
     protected function getFeatures(string $entityType, string $entityId)
     {
         $data = $this->service()->getFeatures($entityType, $entityId);
