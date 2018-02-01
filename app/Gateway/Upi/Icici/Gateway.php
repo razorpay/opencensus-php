@@ -170,13 +170,13 @@ class Gateway extends Base\Gateway
     protected function getIntentRequest($input, $response)
     {
         $content = [
-            IntentParams::PAYEE_ADDRESS => $input['terminal']->getGatewayMerchantId2() ?? self::DEFAULT_PAYEE_VPA,
-            IntentParams::PAYEE_NAME    => preg_replace('/\s+/', '', $input['merchant']->getFilteredDba()),
-            IntentParams::TXN_REF_ID    => $response['refId'],
-            IntentParams::TXN_NOTE      => $this->getPaymentRemark($input),
-            IntentParams::TXN_AMOUNT    => $input['payment']['amount'] / 100,
-            IntentParams::TXN_CURRENCY  => 'INR',
-            IntentParams::MCC           => '5411',
+            Base\IntentParams::PAYEE_ADDRESS => $input['terminal']->getGatewayMerchantId2() ?? self::DEFAULT_PAYEE_VPA,
+            Base\IntentParams::PAYEE_NAME    => preg_replace('/\s+/', '', $input['merchant']->getFilteredDba()),
+            Base\IntentParams::TXN_REF_ID    => $response['refId'],
+            Base\IntentParams::TXN_NOTE      => $this->getPaymentRemark($input),
+            Base\IntentParams::TXN_AMOUNT    => $input['payment']['amount'] / 100,
+            Base\IntentParams::TXN_CURRENCY  => 'INR',
+            Base\IntentParams::MCC           => '5411',
         ];
 
         $query = str_replace(' ', '', urldecode(http_build_query($content)));

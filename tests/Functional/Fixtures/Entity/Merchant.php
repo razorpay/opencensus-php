@@ -301,6 +301,16 @@ class Merchant extends Base
         return $this->fixtures->edit('methods', $id, ['paytm' => false]);
     }
 
+    public function enableUpi($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['upi' => true]);
+    }
+
+    public function disableUpi($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['upi' => false]);
+    }
+
     public function enableCard($id = '10000000000000')
     {
         return $this->fixtures->edit('methods', $id, ['debit_card' => true, 'credit_card' => true]);

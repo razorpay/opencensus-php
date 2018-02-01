@@ -333,8 +333,12 @@ class PaymentCreateController extends Controller
             else if (($data['type'] === 'async') or
                      ($data['type'] === 'intent'))
             {
+                $templateData = [
+                    'data' => $data,
+                    'api'  => $this->config->get('url.api.production')
+                ];
                 return View::make('gateway.gatewayAsyncForm')
-                           ->with('data', $data);
+                           ->with('data', $templateData);
             }
             else if ($data['type'] === 'wallet')
             {

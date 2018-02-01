@@ -371,6 +371,8 @@ class BasicAuth
 
             $this->setProxyTrue();
 
+            $this->setAdminAuthIfApplicable();
+
             return $this->checkAndSetAccountScope();
         }
 
@@ -1312,7 +1314,7 @@ class BasicAuth
         $this->merchant = $account;
     }
 
-    protected function checkMerchantActivatedForLive()
+    public function checkMerchantActivatedForLive()
     {
         $mode = $this->getMode();
 

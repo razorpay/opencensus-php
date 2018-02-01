@@ -12,9 +12,12 @@ class Tags
     // const AMEX                  = '11';
     const RUPAY                 = '06';
     const UPI_VPA               = '26';
+    // Under 26
     const UPI_VPA_RUPAY_RID     = '00';
+    // Under 26
     const UPI_VPA_MERCHANT_VPA  = '01';
     const UPI_VPA_REFERENCE     = '27';
+    // Under 27
     const UPI_VPA_REFERENCE_TR  = '01';
     const MERCHANT_CATEGORY     = '52';
     const CURRENCY_CODE         = '53';

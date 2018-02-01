@@ -108,30 +108,31 @@ class Processor extends VirtualAccount\Processor
     {
         $paymentProcessor = new PaymentProcessor($this->merchant);
 
-        $payment = $this->repo->transaction(function() use (
-                    $bharatQr,
-                    $paymentProcessor)
-        {
-            $paymentInput = $this->getBharatQrPaymentArray($bharatQr);
+        $payment = $this->repo->transaction(
+                        function() use ($bharatQr, $paymentProcessor)
+                        {
+                            $paymentInput = $this->getBharatQrPaymentArray($bharatQr);
 
-            $res = $paymentProcessor->process($paymentInput);
+                            $res = $paymentProcessor->process($paymentInput);
 
-            $payment = $this->repo
-                            ->payment
-                            ->findByPublicId($res['razorpay_payment_id']);
+                            $payment = $this->repo
+                                            ->payment
+                                            ->findByPublicId($res['razorpay_payment_id']);
 
-            $bharatQr->payment()->associate($payment);
+                            $bharatQr->payment()->associate($payment);
 
-            $payment->setGatewayBharatQr($bharatQr->getGateway());
 
-            $bharatQr->virtualAccount()->associate($this->virtualAccount);
+                            $payment->setGatewayBharatQr($bharatQr->getGateway());
 
-            $this->repo->saveOrFail($bharatQr);
 
-            $this->updateVirtualAccount($bharatQr);
+                            $bharatQr->virtualAccount()->associate($this->virtualAccount);
 
-            return $payment;
-        });
+                            $this->repo->saveOrFail($bharatQr);
+
+                            $this->updateVirtualAccount($bharatQr);
+
+                            return $payment;
+                        });
 
         if ($bharatQr->isExpected() === true)
         {

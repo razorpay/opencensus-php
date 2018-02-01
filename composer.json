@@ -71,6 +71,7 @@
         },
         {
             "type": "vcs",
+            "no-api": true,
             "url": "git@github.com:razorpay/ufh-sdk-php.git"
         }
     ],

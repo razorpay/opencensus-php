@@ -48,6 +48,18 @@ class WebhookTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateWebhookWhenAlreadyCreated()
+    {
+        $this->fixtures->create('webhook');
+
+        $this->startTest();
+    }
+
+    public function testCreateOAuthAppWebhook()
+    {
+        $this->startTest();
+    }
+
     public function testCreateWebhookWithInternalIp()
     {
         $this->markTestSkipped();
@@ -81,6 +93,11 @@ class WebhookTest extends TestCase
     {
         $this->createWebhook();
 
+        $this->startTest();
+    }
+
+    public function testCreateOAuthAppWebhookInvalidAppId()
+    {
         $this->startTest();
     }
 

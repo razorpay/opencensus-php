@@ -2,10 +2,14 @@
 
 namespace RZP\Models\Merchant\Detail;
 
+use RZP\Exception;
+
 class RejectionReasons
 {
     const CODE                                    = 'code';
     const DESCRIPTION                             = 'description';
+
+    const INVALID_REJECTION_REASON_CODE           = 'Invalid rejection reason code';
 
     /*
      * Reason Categories
@@ -242,4 +246,23 @@ class RejectionReasons
             ],
         ],
     ];
+
+    /**
+     * Given a rejection reason code, it will return the corresponding rejection reason description
+     *
+     * @param string $reasonCode
+     *
+     * @return string $reasonDescription
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public static function getReasonDescriptionByReasonCode(string $reasonCode): string
+    {
+        if (isset(self::REASON_CODES_DESCRIPTIONS_MAPPING[$reasonCode]) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                self::INVALID_REJECTION_REASON_CODE);
+        }
+
+        return self::REASON_CODES_DESCRIPTIONS_MAPPING[$reasonCode];
+    }
 }

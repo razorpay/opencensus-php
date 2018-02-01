@@ -32,6 +32,12 @@ class CreateWebhooks extends Migration
 
             $table->integer(Webhook::EVENTS);
 
+            $table->string(Webhook::ENTITY_TYPE, 100)
+                  ->nullable();
+
+            $table->char(Webhook::ENTITY_ID, Webhook::ID_LENGTH)
+                  ->nullable();
+
             $table->integer(Webhook::FAILURE_COUNT)
                   ->default(0);
 
@@ -43,6 +49,8 @@ class CreateWebhooks extends Migration
 
             $table->text(Webhook::SECRET)
                   ->nullable();
+
+            $table->unique([Webhook::MERCHANT_ID, Webhook::ENTITY_ID]);
 
             $table->index(Webhook::ACTIVE);
             $table->index(Webhook::CREATED_AT);

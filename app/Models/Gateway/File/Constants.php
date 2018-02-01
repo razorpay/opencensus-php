@@ -50,6 +50,7 @@ class Constants
             self::AXIS,
         ],
         TYPE::REFUND_FAILED => [
+            'All',
             self::UPI_ICICI,
             self::AIRTEL_MONEY,
         ],

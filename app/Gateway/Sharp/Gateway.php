@@ -52,11 +52,16 @@ class Gateway extends Base\Gateway
             'method'            => $input['payment']['method'],
             'payment_id'        => $input['payment']['id'],
             'callback_url'      => $input['callbackUrl'],
-            'auth_type'         => $input['payment']['auth_type'],
             // This need to be 0 because if it's `false`, frontend converts
             // to "false" and Sharp server treats "false" as `true`.
             'recurring'         => 0,
         ];
+
+
+        if (isset($input['payment']['auth_type']) === true)
+        {
+            $content['auth_type'] = $input['payment']['auth_type'];
+        }
 
         if (isset($input['payment']['recurring']) === true)
         {
