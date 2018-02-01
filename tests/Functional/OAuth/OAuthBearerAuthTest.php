@@ -139,4 +139,15 @@ class OAuthBearerAuthTest extends OAuthTestCase
 
         $this->startTest();
     }
+
+    public function testBearerAuthLiveModeInActiveMerchant()
+    {
+        $accessToken = $this->generateOAuthAccessToken(['mode' => 'live']);
+
+        $this->ba->oauthBearerAuth($accessToken);
+
+        $this->fixtures->create('payment', ['id' => '10000000000000']);
+
+        $this->startTest();
+    }
 }

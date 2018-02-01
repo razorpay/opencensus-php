@@ -3841,7 +3841,7 @@
                 "message",
                 "psr7"
             ],
-            "time": "2017-08-03T10:12:53+00:00"
+            "time": "2017-03-02T06:56:00+00:00"
         },
         {
             "name": "php-http/guzzle6-adapter",
@@ -4410,6 +4410,7 @@
                 "xls",
                 "xlsx"
             ],
+            "abandoned": "phpoffice/phpspreadsheet",
             "time": "2015-05-01T07:00:55+00:00"
         },
         {
@@ -5306,7 +5307,7 @@
                 "source": "https://github.com/razorpay/spine/tree/laravel5.4",
                 "issues": "https://github.com/razorpay/spine/issues"
             },
-            "time": "2017-07-03T03:54:18+00:00"
+            "time": "2017-07-03 03:54:18"
         },
         {
             "name": "razorpay/trace",
@@ -5380,27 +5381,16 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/ufh-sdk-php.git",
-                "reference": "892a35415d6ef235806c472992af92a204e4e3fa"
+                "reference": "14550e3374dc62017187070254d1a62480ff0746"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/ufh-sdk-php/zipball/892a35415d6ef235806c472992af92a204e4e3fa",
-                "reference": "892a35415d6ef235806c472992af92a204e4e3fa",
+                "url": "https://api.github.com/repos/razorpay/ufh-sdk-php/zipball/14550e3374dc62017187070254d1a62480ff0746",
+                "reference": "14550e3374dc62017187070254d1a62480ff0746",
                 "shasum": ""
             },
             "require": {
-                "php-http/client-implementation": "^1.0",
-                "php-http/discovery": "^1.0",
-                "php-http/httplug": "^1.0",
-                "php-http/message": "^1.0",
-                "php-http/message-factory": "^1.0",
-                "php-http/multipart-stream-builder": "^1.0",
-                "psr/http-message": "^1.0"
-            },
-            "require-dev": {
-                "guzzlehttp/psr7": "^1.3",
-                "php-http/mock-client": "^1.0",
-                "phpunit/phpunit": "~6.3.0"
+                "guzzlehttp/guzzle": "~6.0"
             },
             "type": "library",
             "autoload": {
@@ -5424,11 +5414,7 @@
                 "sdk",
                 "ufh"
             ],
-            "support": {
-                "source": "https://github.com/razorpay/ufh-sdk-php/tree/master",
-                "issues": "https://github.com/razorpay/ufh-sdk-php/issues"
-            },
-            "time": "2017-12-18T09:54:09+00:00"
+            "time": "2018-01-30T07:21:27+00:00"
         },
         {
             "name": "razorpay/upi-clients",
@@ -5472,7 +5458,7 @@
                 "source": "https://github.com/razorpay/upi-clients/tree/master",
                 "issues": "https://github.com/razorpay/upi-clients/issues"
             },
-            "time": "2017-08-10T18:30:30+00:00"
+            "time": "2017-06-09T09:05:10+00:00"
         },
         {
             "name": "react/promise",

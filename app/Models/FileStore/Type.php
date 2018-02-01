@@ -50,6 +50,8 @@ class Type
 
     const PNB_NETBANKING_CLAIMS             = 'pnb_netbanking_claims';
 
+    const GATEWAY_FAILED_REFUNDS            = 'gateway_failed_refunds';
+
     const BATCH_INPUT                       = 'batch_input';
     const BATCH_OUTPUT                      = 'batch_output';
     const RECONCILIATION_BATCH_INPUT        = 'reconciliation_batch_input';
@@ -141,6 +143,7 @@ class Type
             self::PNB_NETBANKING_REFUND,
             self::PNB_NETBANKING_CLAIMS,
             self::MOCK_RECONCILIATION_FILE,
+            self::GATEWAY_FAILED_REFUNDS,
         ],
 
         Constants\Entity::BATCH => [
@@ -219,7 +222,8 @@ class Type
         self::FUND_TRANSFER_H2H,
         self::PNB_NETBANKING_REFUND,
         self::PNB_NETBANKING_CLAIMS,
-        self::MOCK_RECONCILIATION_FILE
+        self::MOCK_RECONCILIATION_FILE,
+        self::GATEWAY_FAILED_REFUNDS,
     ];
 
     /**
@@ -252,6 +256,7 @@ class Type
             self::BATCH_OUTPUT,
             self::PNB_NETBANKING_REFUND,
             self::PNB_NETBANKING_CLAIMS,
+            self::GATEWAY_FAILED_REFUNDS,
         ],
 
         self::INVOICE_BUCKET_CONFIG => [

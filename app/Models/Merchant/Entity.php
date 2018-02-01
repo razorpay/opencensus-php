@@ -574,7 +574,7 @@ class Entity extends Base\PublicEntity
 
     public function webhook()
     {
-        return $this->hasOne(
+        return $this->hasMany(
             'RZP\Models\Merchant\Webhook\Entity');
     }
 
