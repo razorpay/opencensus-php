@@ -745,4 +745,18 @@ return [
             'content' => [ ]
         ]
     ],
+
+    'verifyFeaturePresenceForEntity' => [
+        'request'  => [
+            'url'    => '/features/accounts/100DemoAccount',
+            'method' => 'get',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
 ];
