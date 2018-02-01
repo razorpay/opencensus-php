@@ -84,6 +84,7 @@ export default class BusinessDetailsForm extends Component {
   updateStateCityFormField = (city = null, state = null, code) => {
     this.props.change(`business_${code}_city`, city);
     this.props.change(`business_${code}_state`, state);
+    this.updateOperationalAddress();
   };
 
   render() {
