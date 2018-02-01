@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "a0de66de5108f4ef5fb574a421f64d2c",
+    "content-hash": "6b286218d4dd349d15aa32ab346a8869",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -5307,7 +5307,7 @@
                 "source": "https://github.com/razorpay/spine/tree/laravel5.4",
                 "issues": "https://github.com/razorpay/spine/issues"
             },
-            "time": "2017-07-03 03:54:18"
+            "time": "2017-07-03T03:54:18+00:00"
         },
         {
             "name": "razorpay/trace",
