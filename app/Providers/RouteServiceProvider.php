@@ -70,10 +70,11 @@ class RouteServiceProvider extends ServiceProvider
          * - middleware:auth - All routes have Throttle and Authenticate
          *     middleware applied to them
          */
-        $routeGroupGlobalParams = array(
+        $routeGroupGlobalParams = [
             'prefix'        => 'v1',
             'namespace'     => $this->namespace,
-            'middleware'    => ['throttle', 'auth', 'admin_access', 'workflow', 'event_tracker']);
+            'middleware'    => ['throttle', 'auth', 'admin_access', 'workflow', 'event_tracker']
+        ];
 
         $router->group(
             $routeGroupGlobalParams,
@@ -89,16 +90,15 @@ class RouteServiceProvider extends ServiceProvider
     {
         $router->group(
             [],
-            function ($router)
-            {
+            function($router) {
                 $this->route->addRouteGroups(['public',
-                    'publicCallback',
-                    'direct',
-                    'admin',
-                    'internal',
-                    'private',
-                    'proxy',
-                    'device']);
+                                              'publicCallback',
+                                              'direct',
+                                              'admin',
+                                              'internal',
+                                              'private',
+                                              'proxy',
+                                              'device']);
             }
         );
     }

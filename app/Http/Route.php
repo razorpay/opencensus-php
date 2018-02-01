@@ -2231,17 +2231,15 @@ final class Route
         $uri = $info[1];
         $action = $info[2];
 
+        $router = $this->router->$method($uri, ['as' => $name, 'uses' => $action]);
+
         //
-        // We add the web middle group, conditionally to routes
-        // which require cokkie / session access
+        // We add the web middleware group, conditionally to routes
+        // which require cookie / session access
         //
         if (in_array($name, self::$session, true) === true)
         {
-            $this->router->$method($uri, ['as' => $name, 'uses' => $action])->middleware('web');
-        }
-        else
-        {
-            $this->router->$method($uri, ['as' => $name, 'uses' => $action]);
+            $router->middleware('web');
         }
     }
 
