@@ -73,42 +73,22 @@ class RouteServiceProvider extends ServiceProvider
         $routeGroupGlobalParams = array(
             'prefix'        => 'v1',
             'namespace'     => $this->namespace,
-            'middleware'    => ['throttle', 'auth', 'admin_access', 'workflow']);
+            'middleware'    => ['throttle', 'auth', 'admin_access', 'workflow', 'event_tracker']);
 
         $router->group(
             $routeGroupGlobalParams,
             function ($router)
             {
-                $this->mapWebRoutes($router);
                 $this->mapApiRoutes($router);
             });
 
         $this->route->defineAllExtraRoutes();
     }
 
-    /**
-     * Define the "web" routes for the application.
-     *
-     * These routes all receive session state, CSRF protection, etc.
-     *
-     * @param  \Illuminate\Routing\Router  $router
-     * @return void
-     */
-    protected function mapWebRoutes(Router $router)
-    {
-        $router->group(
-            ['middleware' => 'web'],
-            function ($router)
-            {
-                $this->route->addRouteGroups(['web']);
-            }
-        );
-    }
-
     protected function mapApiRoutes(Router $router)
     {
         $router->group(
-            ['middleware' => 'api'],
+            [],
             function ($router)
             {
                 $this->route->addRouteGroups(['public',

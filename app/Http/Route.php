@@ -716,11 +716,11 @@ final class Route
     ];
 
     public static $public = [
-        // 'checkout',
-        // 'payment_create',
-        // 'payment_create_checkout',
-        // 'payment_create_jsonp',
-        // 'payment_create_ajax',
+        'checkout',
+        'payment_create',
+        'payment_create_checkout',
+        'payment_create_jsonp',
+        'payment_create_ajax',
         'payment_create_fees',
         'payment_otp_submit',
         'payment_otp_resend',
@@ -736,7 +736,7 @@ final class Route
         // 'invoice_view',
         'merchant_public_get_banks',
         'merchant_methods',
-        // 'merchant_checkout_preferences',
+        'merchant_checkout_preferences',
         'mock_atom_init_payment',
         'mock_acs',
         'mock_atom_choose_org',
@@ -760,13 +760,13 @@ final class Route
         'mock_wallet_payment_with_paymentid',
         'dummy_return_callback',
         'emi_plans_fetch_multiple',
-        // 'customer_get_saved_status',
-        // 'app_delete_token',
-        // 'app_fetch_payments',
-        // 'customer_logout_global',
+        'customer_get_saved_status',
+        'app_delete_token',
+        'app_fetch_payments',
+        'customer_logout_global',
         'customer_create_token_public',
         'otp_post',
-        // 'otp_verify',
+        'otp_verify',
         'otp_verify_app',
         'device_create',
         'merchant_methods_downtime',
@@ -2228,7 +2228,18 @@ final class Route
         $uri = $info[1];
         $action = $info[2];
 
-        $this->router->$method($uri, ['as' => $name, 'uses' => $action]);
+        //
+        // We add the web middle group, conditionally to routes
+        // which require cokkie / session access
+        //
+        if (in_array($name, self::$web, true) === true)
+        {
+            $this->router->$method($uri, ['as' => $name, 'uses' => $action])->middleware('web');
+        }
+        else
+        {
+            $this->router->$method($uri, ['as' => $name, 'uses' => $action]);
+        }
     }
 
     public function defineAllExtraRoutes()

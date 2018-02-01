@@ -145,10 +145,6 @@ class Throttle
         {
             $this->process(Type::PUBLIC_AUTH);
         }
-        else if (in_array($route, Http\Route::$web, true) === true)
-        {
-            $this->process(Type::PUBLIC_AUTH);
-        }
         else if (in_array($route, Http\Route::$proxy, true) === true)
         {
             $this->process(Type::PROXY_AUTH);
