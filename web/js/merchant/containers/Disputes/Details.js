@@ -6,7 +6,7 @@ import * as DisputeActions from 'merchant/modules/disputes/details';
 import DisputeDetails from 'merchant/components/Disputes/Details';
 
 const findDispute = (disputes, disputeId) =>
-  disputes.find(({ id }) => id === disputeId) || {};
+  disputes.find(({ id }) => id === disputeId) || disputeId;
 
 @withRouter
 @connect(
@@ -22,14 +22,15 @@ export default class DisputeDetailsContainer extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    this.props.loadDispute(findDispute(this.props.disputes, nextProps.id));
+    nextProps.disputes.length &&
+      this.props.loadDispute(findDispute(this.props.disputes, nextProps.id));
   }
 
   render() {
-    const { item: dispute } = this.props;
+    const { item: dispute, loading, error } = this.props;
     return (
       <div>
-        <DisputeDetails dispute={dispute} />
+        <DisputeDetails isLoading={loading} dispute={dispute} error={error} />
       </div>
     );
   }

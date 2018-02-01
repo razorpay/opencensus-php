@@ -3,87 +3,95 @@ import { Link } from 'react-router-dom';
 
 import Amount from 'rzp/ui/Amount';
 import Time from 'rzp/ui/Time';
+import Spinner from 'rzp/ui/Spinner';
+import Alert from 'rzp/ui/Forms/Alert';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { DisputeStatusLabel } from 'merchant/components/StatusLabel';
 import { titleCase } from 'rzp/utils/rzp-utils';
 import { daysLeftInExpiry } from 'merchant/utils/disputes';
 
 export default props => {
-  const { dispute } = props;
+  const { dispute, isLoading, error } = props;
   return (
     <div class="content-wrapper content-sm txn-details">
-      <div class="panel panel-default SliderPanel">
-        <div class="panel-heading">{dispute.id}</div>
-
-        <div class="SliderPanel__Body">
-          <div class="alert alert-warning rzp-banner">
-            <div class="rzp-banner-text">
-              Customer has raised a dispute for&nbsp;
-              <Amount
-                value={dispute.amount}
-                currency={dispute.currency}
-              />.&nbsp; To contest the dispute, upload all the supporting
-              documents. If you choose to accept this dispute, or you do not
-              respond by <Time value={dispute.expires_on} format="ll" /> you
-              will lose the dispute and the disputed amount will be deducted
-              from your account.
-            </div>
-          </div>
-
-          <div class="panel-body">
-            <div class="list-group details-row-container">
-              {/* disputed amount */}
-              <EntityDetailRow label="Amount">
-                <Amount value={dispute.amount} currency={dispute.currency} />
-              </EntityDetailRow>
-
-              {/* status of dispute */}
-              <EntityDetailRow label="Status">
-                <DisputeStatusLabel status={dispute.status} />
-              </EntityDetailRow>
+      {isLoading ? (
+        <div class="page-spinner-container">
+          <Spinner />
+        </div>
+      ) : (
+        <div class="panel panel-default SliderPanel">
+          <div class="panel-heading">{dispute.id}</div>
+          <Alert type="error" message={error} />
+          <div class="SliderPanel__Body">
+            <div class="alert alert-warning rzp-banner">
+              <div class="rzp-banner-text">
+                Customer has raised a dispute for&nbsp;
+                <Amount
+                  value={dispute.amount}
+                  currency={dispute.currency}
+                />.&nbsp; To contest the dispute, upload all the supporting
+                documents. If you choose to accept this dispute, or you do not
+                respond by <Time value={dispute.expires_on} format="ll" /> you
+                will lose the dispute and the disputed amount will be deducted
+                from your account.
+              </div>
             </div>
 
-            {/* expiry date of dispute */}
-            <EntityDetailRow label="Respond By">
-              <Time value={dispute.expires_on} format="LL" />
-              &nbsp;({daysLeftInExpiry(dispute.expires_on, 'In ')})
-            </EntityDetailRow>
+            <div class="panel-body">
+              <div class="list-group details-row-container">
+                {/* disputed amount */}
+                <EntityDetailRow label="Amount">
+                  <Amount value={dispute.amount} currency={dispute.currency} />
+                </EntityDetailRow>
 
-            {/* phase of dispute */}
-            <EntityDetailRow label="Type" value={titleCase(dispute.phase)} />
+                {/* status of dispute */}
+                <EntityDetailRow label="Status">
+                  <DisputeStatusLabel status={dispute.status} />
+                </EntityDetailRow>
+              </div>
 
-            {/* reason_description of dispute */}
-            <EntityDetailRow
-              label="Reason"
-              value={dispute.reason_description}
-            />
+              {/* expiry date of dispute */}
+              <EntityDetailRow label="Respond By">
+                <Time value={dispute.expires_on} format="LL" />
+                &nbsp;({daysLeftInExpiry(dispute.expires_on, 'In ')})
+              </EntityDetailRow>
 
-            {/* created_at of dispute */}
-            <EntityDetailRow label="Disputed On">
-              <Time value={dispute.created_at} format="'LL|hh:mm A" />
-            </EntityDetailRow>
+              {/* phase of dispute */}
+              <EntityDetailRow label="Type" value={titleCase(dispute.phase)} />
 
-            {/* payment */}
-            <EntityDetailRow label="Payment">
-              <Link to={`/payments/${dispute.payment_id}`}>
-                <code>{dispute.payment_id}</code>
-              </Link>
-            </EntityDetailRow>
+              {/* reason_description of dispute */}
+              <EntityDetailRow
+                label="Reason"
+                value={dispute.reason_description}
+              />
 
-            {/* comment */}
-            <EntityDetailRow
-              label="Comment"
-              value={() => dispute.comment || '--'}
-            />
+              {/* created_at of dispute */}
+              <EntityDetailRow label="Disputed On">
+                <Time value={dispute.created_at} format="'LL|hh:mm A" />
+              </EntityDetailRow>
 
-            {/* documents uploaded */}
-            {/*<EntityDetailRow
+              {/* payment */}
+              <EntityDetailRow label="Payment">
+                <Link to={`/payments/${dispute.payment_id}`}>
+                  <code>{dispute.payment_id}</code>
+                </Link>
+              </EntityDetailRow>
+
+              {/* comment */}
+              <EntityDetailRow
+                label="Comment"
+                value={() => dispute.comment || '--'}
+              />
+
+              {/* documents uploaded */}
+              {/*<EntityDetailRow
               label="Upload Documents"
               value="The documents should be .jpeg, .png or .pdf format with the maximum size of 1 MB"
             />*/}
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
