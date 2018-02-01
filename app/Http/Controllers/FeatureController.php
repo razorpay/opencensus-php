@@ -11,7 +11,7 @@ use RZP\Models\Feature\Constants;
 class FeatureController extends Controller
 {
     /**
-     * Adds features to entities
+     * Assigns features to accounts
      *
      * @return \Illuminate\Http\Response
      */
@@ -35,30 +35,6 @@ class FeatureController extends Controller
         $data = $this->service()->addFeatures($input, $routeName, $entityId);
 
         return ApiResponse::json($data);
-    }
-
-    /**
-     * Assigns features to accounts
-     *
-     * @param string|null $entityId
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function addFeaturesToAccounts(string $entityId)
-    {
-        return $this->addFeatures('account', $entityId);
-    }
-
-    /**
-     * Assigns features to applications
-     *
-     * @param string|null $entityId
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function addFeaturesToApplications(string $entityId)
-    {
-        return $this->addFeatures('application', $entityId);
     }
 
     public function multiAssignFeature()
