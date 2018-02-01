@@ -1121,6 +1121,7 @@ class DatabaseSeeder extends Seeder
         $this->createOpenwalletTerminals();
         $this->createVodafoneMpesaTerminal();
         $this->createNetbankingRblTerminal();
+        $this->createNetbankingCsbTerminal();
         $this->createEbsTerminal();
         $this->createAepsTerminal();
     }
