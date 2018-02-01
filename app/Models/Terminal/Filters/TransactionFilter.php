@@ -30,6 +30,7 @@ class TransactionFilter extends Terminal\Filter
         'gateway',
         'subscription',
         'tpv',
+        'upi',
         'pharma',
         'corporate',
         'mcc',
@@ -258,6 +259,25 @@ class TransactionFilter extends Terminal\Filter
                     'reference'             => $reference
                 ]);
         }
+    }
+
+    protected function upiFilter(Terminal\Entity $terminal)
+    {
+        $payment = $this->input['payment'];
+
+        if ($payment->isUpi() === true)
+        {
+            $flow = $payment->getMetadata('flow', 'collect');
+
+            if ($flow === 'intent')
+            {
+                $gateway = $terminal->getGateway();
+
+                return Gateway::isUpiIntentFlowSupported($gateway);
+            }
+        }
+
+        return true;
     }
 
     protected function corporateFilter(Terminal\Entity $terminal)

@@ -688,6 +688,10 @@ class Gateway
         Gateway::AXIS_MIGS
     ];
 
+    public static $upiIntentGateways = [
+        Gateway::UPI_ICICI
+    ];
+
     public static function getAcquirerName(string $acquirer)
     {
         $code = self::$acquirerToCodeMap[$acquirer];
@@ -722,6 +726,11 @@ class Gateway
     public static function isZeroRupeeFlowSupported($bank): bool
     {
         return in_array($bank, self::$zeroRupeeEmandateBanks, true);
+    }
+
+    public static function isUpiIntentFlowSupported($gateway): bool
+    {
+        return in_array($gateway, self::$upiIntentGateways, true);
     }
 
     /**
