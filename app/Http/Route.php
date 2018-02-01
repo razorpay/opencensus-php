@@ -1533,6 +1533,23 @@ final class Route
         'gateway_payment_callback_bharatqr',
     ];
 
+    /**
+     * List of routes, requiring session changes
+     */
+    public static $session = [
+        'checkout',
+        'merchant_checkout_preferences',
+        'otp_verify',
+        'customer_get_saved_status',
+        'payment_create',
+        'payment_create_checkout',
+        'payment_create_jsonp',
+        'payment_create_ajax',
+        'app_fetch_payments',
+        'customer_logout_global',
+        'app_delete_token',
+    ];
+
     public static $internalApps = [
         'dashboard' => ['*'],
 
@@ -2214,7 +2231,16 @@ final class Route
         $uri = $info[1];
         $action = $info[2];
 
-        $this->router->$method($uri, ['as' => $name, 'uses' => $action]);
+        $router = $this->router->$method($uri, ['as' => $name, 'uses' => $action]);
+
+        //
+        // We add the web middleware group, conditionally to routes
+        // which require cookie / session access
+        //
+        if (in_array($name, self::$session, true) === true)
+        {
+            $router->middleware('web');
+        }
     }
 
     public function defineAllExtraRoutes()

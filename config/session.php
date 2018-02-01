@@ -30,7 +30,7 @@ return array(
     | Below number is equivalent to 30 days
 	*/
 
-	'lifetime' => 2592000,
+	'lifetime' => 43200,
 
 	'expire_on_close' => false,
 
