@@ -10,13 +10,6 @@
             padding: 0;
         }
 
-        @font-face {
-            font-family:'lato';
-            src: -apple-system, BlinkMacSystemFont,  "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell",  "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
-            font-weight:normal;
-            font-style:normal
-        }
-
         @-webkit-keyframes spin {
           0% {
             -webkit-transform: scale(0.5);
@@ -109,7 +102,7 @@
 
         html, body {
             height: 100%;
-            font-family: 'lato';
+            font-family:'lato', -apple-system, BlinkMacSystemFont,  "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell",  "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
         }
 
         html {
