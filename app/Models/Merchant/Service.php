@@ -1084,11 +1084,7 @@ class Service extends Base\Service
 
     public function getMerchantFeatures()
     {
-        $merchant = $this->merchant;
-
-        $data = (new Feature\Service)->getFeaturesForEntity($merchant);
-
-        return $data;
+        return (new Feature\Service)->getFeaturesForEntity($this->merchant);
     }
 
     public function addOrRemoveMerchantFeatures(array $input)

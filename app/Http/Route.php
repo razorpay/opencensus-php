@@ -713,13 +713,13 @@ final class Route
 
         // Features
         'feature_add'                             => ['post',     'features',                                       'FeatureController@addFeatures'                                     ],
-        'feature_add_accounts'                    => ['post',     'features/accounts/{entityId}',                   'FeatureController@addFeaturesToAccounts'                           ],
-        'feature_add_applications'                => ['post',     'features/applications/{entityId}',               'FeatureController@addFeaturesToApplications'                       ],
-        'feature_get_accounts'                    => ['get',      'features/accounts/{entityId}',                   'FeatureController@getAccountFeatures'                              ],
-        'feature_get_applications'                => ['get',      'features/applications/{entityId}',               'FeatureController@getApplicationFeatures'                          ],
+        'feature_add_accounts'                    => ['post',     'accounts/{entityId}/features',                   'FeatureController@addFeaturesToAccounts'                           ],
+        'feature_add_applications'                => ['post',     'applications/{entityId}/features',               'FeatureController@addFeaturesToApplications'                       ],
+        'feature_get_accounts'                    => ['get',      'accounts/{entityId}/features',                   'FeatureController@getAccountFeatures'                              ],
+        'feature_get_applications'                => ['get',      'applications/{entityId}/features',               'FeatureController@getApplicationFeatures'                          ],
         'feature_get_multiple'                    => ['get',      'features/{entityId}',                            'FeatureController@getMerchantFeatures'                             ],
         'feature_delete'                          => ['delete',   'features/{entityId}/{featureName}',              'FeatureController@deleteFeature'                                   ],
-        'feature_delete_applications'             => ['delete',   'features/{entityType}/{entityId}/{featureName}', 'FeatureController@deleteEntityFeature'                             ],
+        'feature_delete_applications'             => ['delete',   '{entityType}/{entityId}/features/{featureName}', 'FeatureController@deleteEntityFeature'                             ],
         'feature_bulk_assign'                     => ['post',     'features/assign',                                'FeatureController@multiAssignFeature'                              ],
         'feature_bulk_remove'                     => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
     ];

@@ -100,17 +100,17 @@ class FeatureController extends Controller
 
     public function getMerchantFeatures(string $entityId)
     {
-        return $this->getFeatures('merchant', $entityId);
+        return $this->getFeatures('merchants', $entityId);
     }
 
     public function getAccountFeatures(string $entityId)
     {
-        return $this->getFeatures('account', $entityId);
+        return $this->getFeatures('accounts', $entityId);
     }
 
     public function getApplicationFeatures(string $entityId)
     {
-        return $this->getFeatures('application', $entityId);
+        return $this->getFeatures('applications', $entityId);
     }
 
     protected function getFeatures(string $entityType, string $entityId)

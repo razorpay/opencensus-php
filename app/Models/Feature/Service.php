@@ -28,8 +28,10 @@ class Service extends Base\Service
         return $features->toArray();
     }
 
-    public function getFeatures(string $entityType, string $entityId)
+    public function getFeatures(string $routeEndpoint, string $entityId)
     {
+        $entityType = Entity::getEntityTypeFromRouteEndpoint($routeEndpoint);
+
         $response = new Base\Collection;
 
         $response['assigned_features'] = $this->repo->feature->findByEntityTypeAndEntityId($entityType, $entityId);
