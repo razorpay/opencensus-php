@@ -232,6 +232,7 @@ class EventTrackerClient extends AbstractEventClient
         catch (Exception $e)
         {
             $this->trace->traceException($e, Trace::ERROR, TraceCode::EVENT_MISSING_PAYMENT_PROPERTY);
+            return [];
         }
     }
 
