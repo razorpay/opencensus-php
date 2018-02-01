@@ -80,8 +80,6 @@ class FeaturesTest extends TestCase
             'account',
             $accountId);
 
-        $this->verifyFeaturePresence(Mode::TEST, [$dummy], '10000000000001');
-
         $this->verifyFeaturePresenceForEntity(Mode::TEST, Constants::ACCOUNT, $accountId, [$dummy]);
 
         $this->deleteFeaturesFromEntity(Mode::TEST,
