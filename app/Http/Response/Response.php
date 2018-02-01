@@ -88,35 +88,9 @@ class Response
         return $this->generateErrorResponse(ErrorCode::BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED);
     }
 
-    public function rateLimitExceeded(array $limits = [])
+    public function rateLimitExceeded()
     {
-        $response = $this->generateErrorResponse(ErrorCode::BAD_REQUEST_RATE_LIMIT_EXCEEDED);
-
-        return $this->withRateLimitHeaders($response, $limits);
-    }
-
-    /**
-     * Adds rate limit headers to given response.
-     *
-     * @param  \Illuminate\Http\JsonResponse $response
-     * @param  array                         $limits
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function withRateLimitHeaders($response, array $limits = [])
-    {
-        // $limits contains 4 values in a list, following values respectively.
-        if (empty($limits) === false)
-        {
-            $response->withHeaders([
-                Header::X_RATELIMIT_LIMIT       => $limits[0],
-                Header::X_RATELIMIT_REMAINING   => $limits[1],
-                Header::X_RATELIMIT_RESET       => $limits[2],
-                Header::X_RATELIMIT_RETRYAFTER  => $limits[3],
-            ]);
-        }
-
-        return $response;
+        return $this->generateErrorResponse(ErrorCode::BAD_REQUEST_RATE_LIMIT_EXCEEDED);
     }
 
     public function onlyHttpsAllowed()

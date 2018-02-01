@@ -186,12 +186,9 @@ class Handler extends ExceptionHandler
 
     protected function throttleExceptionHandler(ThrottleException $exception)
     {
-        $this->traceException($exception, Trace::ALERT, TraceCode::REQUEST_THROTTLED);
+        $this->traceException($exception, Trace::ALERT, TraceCode::THROTTLE_REQUEST_THROTTLED);
 
-        // Throttle exception's data has limits values to be used in response headers
-        $response = ApiResponse::rateLimitExceeded($exception->getData());
-
-        return $response;
+        return ApiResponse::rateLimitExceeded();
     }
 
     protected function baseExceptionHandler(BaseException $exception)

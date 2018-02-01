@@ -19,8 +19,11 @@ final class Constant
      */
     const IDENTIFIER_SETTINGS_KEY_PREFIX = 't:i:';
 
-    const LIMITS                         = 'l';
-    const BLOCKED                        = 'b';
+    /**
+     * Key id -> Mid is kept in cache for faster access
+     */
+    const JUST_ANOTHER_PREFIX            = 't:kmp:';
+
     const LEAK_RATE_VALUE                = 'lrv';
     const LEAK_RATE_DURATION             = 'lrd';
     const MAX_BUCKET_SIZE                = 'mbs';

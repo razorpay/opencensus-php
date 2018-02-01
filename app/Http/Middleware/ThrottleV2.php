@@ -9,9 +9,8 @@ final class ThrottleV2
 {
     public function handle($request, \Closure $next)
     {
-        $limits   = (new Throttle)->throttle($request);
-        $response = $next($request);
+        (new Throttle)->throttle($request);
 
-        return ApiResponse::withRateLimitHeaders($response, $limits);
+        return $next($request);
     }
 }
