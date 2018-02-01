@@ -178,10 +178,14 @@ class EventTrackerClient extends AbstractEventClient
                 'method'            => $payment->getMethod(),
                 'requestId'         => $this->request->getId(),
                 'version'           => self::VERSION,
-                'created_at'        => $payment->getCreatedAt(),
                 'contact'           => $payment->getContact(),
                 'email'             => $payment->getEmail(),
             ];
+
+            if (array_key_exists('created_at', $payment->getAttributes()) === true)
+            {
+                $properties['created_at'] = $payment->getCreatedAt();
+            }
 
             $method = $payment->getMethod();
 
@@ -228,6 +232,7 @@ class EventTrackerClient extends AbstractEventClient
         catch (Exception $e)
         {
             $this->trace->traceException($e, Trace::ERROR, TraceCode::EVENT_MISSING_PAYMENT_PROPERTY);
+            return [];
         }
     }
 
