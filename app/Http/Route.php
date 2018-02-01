@@ -158,6 +158,7 @@ final class Route
         'merchant_create_invoice_entities'        => ['post',     'merchants/invoice/create',                       'MerchantInvoiceController@postCreateInvoiceEntities'               ],
         'merchant_details_fetch'                  => ['get',      'merchants/details',                              'MerchantController@getMerchantDetails'                             ],
         'merchant_invoice_add_bulk'               => ['post',     'merchants/invoice/bulk',                         'MerchantInvoiceController@postMultipleEntities'                    ],
+        'merchant_tags_bulk'                      => ['post',     'merchants/tags/bulk',                            'MerchantController@bulkTagMerchants'                               ],
         'create_submerchant_user'                 => ['post',     'submerchant/user/{id}',                          'MerchantController@postSubMerchantUser'                            ],
         'balance_fetch'                           => ['get',      'balance',                                        'MerchantController@getAccountBalance'                              ],
         'credits_create'                          => ['post',     'merchants/{id}/credits_log',                     'MerchantController@postCreateCreditsLog'                           ],
@@ -199,6 +200,7 @@ final class Route
         'webhook_edit'                            => ['put',      'webhooks/{id}',                                  'MerchantController@putWebhook'                                     ],
         'webhook_fetch'                           => ['get',      'webhooks/{id}',                                  'MerchantController@getWebhook'                                     ],
         'webhook_fetch_multiple'                  => ['get',      'webhooks',                                       'MerchantController@getWebhooks'                                    ],
+        'oauth_app_webhook_create'                => ['post',     'oauth/applications/{id}/webhooks',               'MerchantController@postOAuthApplicationWebhook'                    ],
         'merchant_create_key'                     => ['post',     'keys',                                           'KeyController@postCreateKeys'                                      ],
         'merchant_fetch_keys'                     => ['get',      'keys',                                           'KeyController@getKeys'                                             ],
         'merchant_replace_key'                    => ['put',      'keys/{id}',                                      'KeyController@putKeys'                                             ],
@@ -831,6 +833,7 @@ final class Route
         'webhook_edit',
         'webhook_fetch',
         'webhook_fetch_multiple',
+        'oauth_app_webhook_create',
         'setl_fetch_by_id',
         'setl_fetch_multiple',
         'setl_combined_report',
@@ -1147,6 +1150,7 @@ final class Route
         'fund_transfer_attempt_reconcile',
         'transaction_bulk_update',
         'setl_update_channel_bulk',
+        'merchant_tags_bulk',
     ];
 
     public static $proxy = [

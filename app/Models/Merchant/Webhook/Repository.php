@@ -48,6 +48,16 @@ class Repository extends Base\Repository
         return $webhook;
     }
 
+    public function findMultipleByMerchantAndEntityId(
+        Merchant\Entity $merchant,
+        string $entityId = null)
+    {
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, '=', $merchant->getId())
+                    ->where(Entity::ENTITY_ID, '=', $entityId)
+                    ->get();
+    }
+
     public function bumpFailureCount($webhook)
     {
         $webhook->bumpFailureCount();
