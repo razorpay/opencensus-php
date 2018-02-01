@@ -459,12 +459,6 @@ class OrderTest extends TestCase
 
     public function testPaymentWithFailedOfferCheck()
     {
-        //
-        // Mobikwik MID was unexpectedly disabled
-        // https://github.com/razorpay/incidents/issues/157
-        //
-        $this->markTestSkipped('Mobikwik temporarily disabled.');
-
         $this->fixtures->merchant->enableMobikwik();
 
         $this->testCreateOrderWithOffer();

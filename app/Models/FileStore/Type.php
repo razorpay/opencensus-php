@@ -50,6 +50,8 @@ class Type
 
     const PNB_NETBANKING_CLAIMS             = 'pnb_netbanking_claims';
 
+    const GATEWAY_FAILED_REFUNDS            = 'gateway_failed_refunds';
+
     const BATCH_INPUT                       = 'batch_input';
     const BATCH_OUTPUT                      = 'batch_output';
     const RECONCILIATION_BATCH_INPUT        = 'reconciliation_batch_input';
@@ -57,6 +59,8 @@ class Type
     const BLANK                             = 'blank';
 
     const INVOICE_PDF                       = 'invoice_pdf';
+
+    const QR_CODE_IMAGE                     = 'qr_code_image';
 
     const REPORT                            = 'report';
 
@@ -92,6 +96,7 @@ class Type
     const H2H_BUCKET_CONFIG                     = 'h2h_bucket_config';
     const RECON_BUCKET_CONFIG                   = 'recon_bucket_config';
     const MOCK_RECONCILIATION_FILE              = 'mock_reconciliation_file';
+    const CUSTOMER_BUCKET_CONFIG                = 'customer_bucket_config';
 
     // File contants required for merchant feature onboarding
     const FEATURE_ONBOARDING                = FeatureConstants::ONBOARDING;
@@ -138,6 +143,7 @@ class Type
             self::PNB_NETBANKING_REFUND,
             self::PNB_NETBANKING_CLAIMS,
             self::MOCK_RECONCILIATION_FILE,
+            self::GATEWAY_FAILED_REFUNDS,
         ],
 
         Constants\Entity::BATCH => [
@@ -160,6 +166,10 @@ class Type
 
         Constants\Entity::INVOICE => [
             self::INVOICE_PDF,
+        ],
+
+        Constants\Entity::QR_CODE => [
+            self::QR_CODE_IMAGE,
         ],
 
         Constants\Entity::BATCH_FUND_TRANSFER => [
@@ -212,7 +222,8 @@ class Type
         self::FUND_TRANSFER_H2H,
         self::PNB_NETBANKING_REFUND,
         self::PNB_NETBANKING_CLAIMS,
-        self::MOCK_RECONCILIATION_FILE
+        self::MOCK_RECONCILIATION_FILE,
+        self::GATEWAY_FAILED_REFUNDS,
     ];
 
     /**
@@ -245,10 +256,15 @@ class Type
             self::BATCH_OUTPUT,
             self::PNB_NETBANKING_REFUND,
             self::PNB_NETBANKING_CLAIMS,
+            self::GATEWAY_FAILED_REFUNDS,
         ],
 
         self::INVOICE_BUCKET_CONFIG => [
-            self::INVOICE_PDF
+            self::INVOICE_PDF,
+        ],
+
+        self::CUSTOMER_BUCKET_CONFIG => [
+            self::QR_CODE_IMAGE,
         ],
 
         self::ACTIVATION_BUCKET_CONFIG => [
