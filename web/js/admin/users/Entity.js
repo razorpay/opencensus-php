@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { observable, extendObservable, action } from 'mobx';
 import { observer } from 'mobx-react';
 import { adminFetch, adminPost, adminPut, adminDelete } from 'common/fetch';
-import { notifyDone, notifySuccess } from 'common/modal';
+import { notifySuccess, notifyError } from 'common/modal';
 import UserForm from './UserForm';
 import { isWorkflow } from 'common/util';
 import { prevent } from 'common/util';
@@ -106,6 +106,7 @@ export default class EditUser extends Component {
     return request(data).then(response => {
       if (response) {
         if (isWorkflow(response)) {
+          notifySuccess('Workflow created successfully');
           return;
         }
 
@@ -146,8 +147,13 @@ export function removeEntity(e) {
 
   return adminDelete(params).then(response => {
     if (response) {
+      if (isWorkflow(response)) {
+        notifySuccess('Workflow created successfully');
+        return;
+      }
+
       this.collection.items.remove(this);
-      notifyDone();
+      notifySuccess('User delete successfully');
     }
   });
 }
