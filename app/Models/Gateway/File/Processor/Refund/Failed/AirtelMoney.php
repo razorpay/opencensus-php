@@ -32,7 +32,7 @@ class AirtelMoney extends Base
             $formattedData[] = [
                 self::SR_NO               => $index + 1,
                 self::CUSTOMER_PHONE      => $row['gateway']['contact'],
-                self::TRANSACTION_DATE    => $this->getFormattedDate($row['payment']['created_at'], 'd/m/Y' ),
+                self::TRANSACTION_DATE    => $this->getFormattedDate($row['payment']['created_at'], 'd/m/Y'),
                 self::PAYMENT_AMOUNT      => $this->getFormattedAmount($row['payment']['amount']),
                 self::REFUND_AMOUNT       => $this->getFormattedAmount($row['refund']['amount']),
                 self::REFUND_TYPE         => $row['payment']['refund_status'],

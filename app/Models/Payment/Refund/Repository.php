@@ -285,7 +285,7 @@ class Repository extends Base\Repository
      * six months from payment created at . It could not be processed via API
      * @return array
      */
-    public function fetchFailedCardRefundsToProcessedManually($from, $to, $gateway, $acquirer, $timerange)
+    public function fetchFailedCardRefundsToProcessManually($from, $to, $gateway, $acquirer, $timerange)
     {
         $refundAttrs = $this->dbColumn('*');
 

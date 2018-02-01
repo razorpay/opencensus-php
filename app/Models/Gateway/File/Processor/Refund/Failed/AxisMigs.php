@@ -32,7 +32,7 @@ class AxisMigs extends Base
 
         $end = $this->gatewayFile->getEnd();
 
-        $refunds = $this->repo->refund->fetchFailedCardRefundsToProcessedManually(
+        $refunds = $this->repo->refund->fetchFailedCardRefundsToProcessManually(
             $begin,
             $end,
             static::GATEWAY,
