@@ -221,7 +221,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_TOKEN_TOO_MANY_PRESENT                = 'GATEWAY_TOKEN_TOO_MANY_PRESENT';
 
     const CANCEL_INVOICE                                = 'CANCEL_INVOICE';
-    const INVOICE_EXPIRE_VIA_CRON_FAILED                = 'INVOICE_EXPIRE_VIA_CRON_FAILED';
     const INVOICES_EXPIRE_CRON_SUMMARY                  = 'INVOICES_EXPIRE_CRON_SUMMARY';
     const INVOICE_INVALID_CONTACT_NUMBER                = 'INVOICE_INVALID_CONTACT_NUMBER';
     const INVOICE_CREATE_REQUEST                        = 'INVOICE_CREATE_REQUEST';
@@ -803,6 +802,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_FEATURE_UPDATE                       = 'MERCHANT_FEATURE_UPDATE';
     const FEATURE_MULTI_ASSIGN_REQUEST                  = 'FEATURE_MULTI_ASSIGN_REQUEST';
     const FEATURE_MULTI_REMOVE_REQUEST                  = 'FEATURE_MULTI_REMOVE_REQUEST';
+
+    const MERCHANT_TAGS_BULK_REQUEST                    = 'MERCHANT_TAGS_BULK_REQUEST';
+    const MERCHANT_TAGS_BULK_EXCEPTION                  = 'MERCHANT_TAGS_BULK_EXCEPTION';
 
     const MERCHANT_METHODS_BULK_UPDATE                  = 'MERCHANT_METHODS_BULK_UPDATE';
     const MERCHANT_CHANNEL_BULK_UPDATE_REQUEST          = 'MERCHANT_CHANNEL_BULK_UPDATE_REQUEST';
