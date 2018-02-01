@@ -6,10 +6,10 @@ import Time from 'rzp/ui/Time';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { DisputeStatusLabel } from 'merchant/components/StatusLabel';
 import { titleCase } from 'rzp/utils/rzp-utils';
+import { daysLeftInExpiry } from 'merchant/utils/disputes';
 
 export default props => {
   const { dispute } = props;
-
   return (
     <div class="content-wrapper content-sm txn-details">
       <div class="panel panel-default SliderPanel">
@@ -24,9 +24,9 @@ export default props => {
                 currency={dispute.currency}
               />.&nbsp; To contest the dispute, upload all the supporting
               documents. If you choose to accept this dispute, or you do not
-              respond by {moment(dispute.expires_on, 'X').format('ll')} you will
-              lose the dispute and the disputed amount will be deducted from
-              your account.
+              respond by <Time value={dispute.expires_on} format="ll" /> you
+              will lose the dispute and the disputed amount will be deducted
+              from your account.
             </div>
           </div>
 
@@ -46,6 +46,7 @@ export default props => {
             {/* expiry date of dispute */}
             <EntityDetailRow label="Respond By">
               <Time value={dispute.expires_on} format="LL" />
+              &nbsp;({daysLeftInExpiry(dispute.expires_on, 'In ')})
             </EntityDetailRow>
 
             {/* phase of dispute */}
@@ -56,6 +57,11 @@ export default props => {
               label="Reason"
               value={dispute.reason_description}
             />
+
+            {/* created_at of dispute */}
+            <EntityDetailRow label="Disputed On">
+              <Time value={dispute.created_at} format="'LL|hh:mm A" />
+            </EntityDetailRow>
 
             {/* payment */}
             <EntityDetailRow label="Payment">
@@ -71,10 +77,10 @@ export default props => {
             />
 
             {/* documents uploaded */}
-            <EntityDetailRow
+            {/*<EntityDetailRow
               label="Upload Documents"
               value="The documents should be .jpeg, .png or .pdf format with the maximum size of 1 MB"
-            />
+            />*/}
           </div>
         </div>
       </div>

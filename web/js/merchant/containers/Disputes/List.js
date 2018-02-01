@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import moment from 'moment';
 
 import DisputeListFilter from 'merchant/components/Disputes/DisputeListFilter';
+import { daysLeftInExpiry } from 'merchant/utils/disputes';
 import { fetchDisputes as fetchAll } from 'rzp/modules/collection';
 import DataTable from 'rzp/ui/Table/DataTable';
 import { titleCase } from 'common/util';
@@ -24,16 +25,12 @@ const type = {
 const respondIn = {
   title: 'Respond In',
   value: item => {
-    const currentDateStamp = new Date().getTime() / 1000;
-    if (item.expires_on > currentDateStamp) {
-      // calculating days from milliseconds
-      const noOfDaysRemaining =
-        (item.expires_on - currentDateStamp) / 60 / 60 / 60;
-      return noOfDaysRemaining > 0
-        ? `${Math.ceil(noOfDaysRemaining)} Day(s)`
-        : 'Today';
-    }
-    return '--';
+    const respondIn = daysLeftInExpiry(item.expires_on);
+    return respondIn === 'Today' ? (
+      <strong class="text-danger">{respondIn}</strong>
+    ) : (
+      respondIn
+    );
   },
 };
 
