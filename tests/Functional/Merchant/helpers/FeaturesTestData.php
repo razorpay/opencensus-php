@@ -710,7 +710,7 @@ return [
 
     'addFeaturesToEntity' => [
         'request'  => [
-            'url'     => '/features/applications/1000000DemoApp',
+            'url'     => '/applications/1000000DemoApp/features',
             'method'  => 'post',
             'server'  => [
                 'HTTP_X-Dashboard'            => 'true',
@@ -733,7 +733,7 @@ return [
 
     'deleteFeaturesFromEntity' => [
         'request'  => [
-            'url'     => "/features/accounts/100DemoAccount/dummy",
+            'url'     => "/accounts/100DemoAccount/features/dummy",
             'method'  => 'delete',
             'server'  => [
                 'HTTP_X-Dashboard'            => 'true',
@@ -748,7 +748,7 @@ return [
 
     'verifyFeaturePresenceForEntity' => [
         'request'  => [
-            'url'    => '/features/accounts/100DemoAccount',
+            'url'    => '/accounts/100DemoAccount/features',
             'method' => 'get',
             'server' => [
                 'HTTP_X-Dashboard'            => 'true',

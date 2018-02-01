@@ -70,17 +70,23 @@ class FeaturesTest extends TestCase
     {
         $accountId = '10000000000001';
 
+        $dummy = 'dummy';
+
         $this->fixtures->create('merchant', ['id' => $accountId]);
 
         $this->addFeaturesToEntity(Mode::TEST,
             true,
-            ['dummy'],
+            [$dummy],
             'account',
             $accountId);
 
+        $this->verifyFeaturePresence(Mode::TEST, [$dummy], '10000000000001');
+
+        $this->verifyFeaturePresenceForEntity(Mode::TEST, Constants::ACCOUNT, $accountId, [$dummy]);
+
         $this->deleteFeaturesFromEntity(Mode::TEST,
             true,
-            'dummy',
+            $dummy,
             Constants::ACCOUNT,
             $accountId);
     }
@@ -1093,7 +1099,7 @@ class FeaturesTest extends TestCase
 
         $testData['request']['content']['should_sync'] = (int) $shouldSync;
 
-        $testData['request']['url'] = '/features/' . $entityType . 's/' . $entityId;
+        $testData['request']['url'] = '/' . $entityType . 's/' . $entityId . '/features';
 
         // For merchants and accounts as entity_type, only merchants will be stored in the db
         if (($entityType === Constants::MERCHANT) or ($entityType === Constants::ACCOUNT))
@@ -1117,7 +1123,7 @@ class FeaturesTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = '/features/' . $entityType . 's/' . $entityId . '/' . $featureName;
+        $testData['request']['url'] = '/' . $entityType . 's/' . $entityId . '/features/' . $featureName;
 
         $testData['request']['content']['should_sync'] = (int) $shouldSync;
 
@@ -1132,7 +1138,7 @@ class FeaturesTest extends TestCase
     {
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = '/features/' . $entityType . 's/' . $entityId . '/';
+        $testData['request']['url'] = '/' . $entityType . 's/' . $entityId . '/features';
 
         $authMethod = 'appAuth' . studly_case($mode);
 
