@@ -3,6 +3,7 @@
 namespace RZP\Models\QrCode;
 
 use RZP\Models\Base;
+use RZP\Models\FileStore;
 use RZP\Models\VirtualAccount\Provider;
 
 class Entity extends Base\PublicEntity
@@ -14,6 +15,7 @@ class Entity extends Base\PublicEntity
     const ENTITY_TYPE               = 'entity_type';
     const AMOUNT                    = 'amount';
     const QR_STRING                 = 'qr_string';
+    const SHORT_URL                 = 'short_url';
 
     protected static $sign = 'qr';
 
@@ -29,19 +31,14 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::AMOUNT,
         self::PROVIDER,
+        self::SHORT_URL,
         self::QR_STRING,
         self::CREATED_AT,
     ];
 
     protected $public = [
         self::ID,
-        self::AMOUNT,
-        // This is not needed for now.
-        // As provider will be only bharat qr
-        // self::PROVIDER,
-        // This will be removed later as we will be
-        // providing qr code image
-        self::QR_STRING,
+        self::SHORT_URL,
         self::CREATED_AT,
     ];
 
@@ -63,9 +60,26 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
+    public function files()
+    {
+        return $this->morphMany(FileStore\Entity::class, 'entity');
+    }
+
     // --------------------- END RELATIONS ---------------------
 
     // --------------------- GETTERS ---------------------
+
+    /**
+     * Gets the most recent qrcode file
+     *
+     * @return FileStore\Entity
+     */
+    public function qrCodeFile(): FileStore\Entity
+    {
+        return $this->files()
+                    ->where(FileStore\Entity::TYPE, '=', FileStore\Type::QR_CODE_IMAGE)
+                    ->firstOrFail();
+    }
 
     public function getAmount()
     {
@@ -94,9 +108,25 @@ class Entity extends Base\PublicEntity
         return number_format($amount / 100, 2, '.', '');
     }
 
+    /**
+     * Returns string to be used a qrcode file path in s3 store.
+     * Format: qrcode/{qrcodeid}_{epoch}
+     *
+     * @return string
+     */
+    public function getQrCodeFilename(): string
+    {
+        return 'qrcodes/'. $this->getId();
+    }
+
     // --------------------- END GETTERS ---------------------
 
     // --------------------- SETTERS ---------------------
+
+    public function setShortUrl(string $shortUrl)
+    {
+        $this->setAttribute(self::SHORT_URL, $shortUrl);
+    }
 
     public function setQrString(string $qrString)
     {

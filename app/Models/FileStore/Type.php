@@ -60,6 +60,8 @@ class Type
 
     const INVOICE_PDF                       = 'invoice_pdf';
 
+    const QR_CODE_IMAGE                     = 'qr_code_image';
+
     const REPORT                            = 'report';
 
     const FUND_TRANSFER_DEFAULT             = 'fund_transfer_default';
@@ -94,6 +96,7 @@ class Type
     const H2H_BUCKET_CONFIG                     = 'h2h_bucket_config';
     const RECON_BUCKET_CONFIG                   = 'recon_bucket_config';
     const MOCK_RECONCILIATION_FILE              = 'mock_reconciliation_file';
+    const CUSTOMER_BUCKET_CONFIG                = 'customer_bucket_config';
 
     // File contants required for merchant feature onboarding
     const FEATURE_ONBOARDING                = FeatureConstants::ONBOARDING;
@@ -163,6 +166,10 @@ class Type
 
         Constants\Entity::INVOICE => [
             self::INVOICE_PDF,
+        ],
+
+        Constants\Entity::QR_CODE => [
+            self::QR_CODE_IMAGE,
         ],
 
         Constants\Entity::BATCH_FUND_TRANSFER => [
@@ -253,7 +260,11 @@ class Type
         ],
 
         self::INVOICE_BUCKET_CONFIG => [
-            self::INVOICE_PDF
+            self::INVOICE_PDF,
+        ],
+
+        self::CUSTOMER_BUCKET_CONFIG => [
+            self::QR_CODE_IMAGE,
         ],
 
         self::ACTIVATION_BUCKET_CONFIG => [

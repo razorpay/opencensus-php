@@ -2880,3 +2880,6 @@ ALTER TABLE webhooks
 
 ALTER TABLE webhooks
     ADD UNIQUE INDEX webhooks_merchant_id_entity_id_unique (merchant_id,entity_id);
+
+ALTER TABLE qr_code
+    ADD COLUMN short_url varchar(255) NOT NULL after qr_string;
