@@ -14,8 +14,4 @@ class Header
     const WWW_AUTHENTICATE              = 'WWW-Authenticate';
     const X_RAZORPAY_SIGNATURE          = 'X-Razorpay-Signature';
     const ACCESS_CONTROL_ALLOW_ORIGIN   = 'Access-Control-Allow-Origin';
-    const X_RATELIMIT_LIMIT             = 'X-RateLimit-Limit';
-    const X_RATELIMIT_REMAINING         = 'X-RateLimit-Remaining';
-    const X_RATELIMIT_RESET             = 'X-RateLimit-Reset';
-    const X_RATELIMIT_RETRYAFTER        = 'X-RateLimit-RetryAfter';
 }

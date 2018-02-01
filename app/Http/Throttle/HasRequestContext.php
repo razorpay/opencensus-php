@@ -6,11 +6,17 @@ use Illuminate\Http\Request;
 
 use RZP\Http\Route;
 use RZP\Constants\Mode;
-use RZP\Error\ErrorCode;
 use RZP\Http\RequestHeader;
-use RZP\Exception\BadRequestException;
-use RZP\Http\BasicAuth\Type as AuthType;
+use RZP\Http\BasicAuth\Type;
 
+/**
+ * Extracts various variables from request to be used
+ * in throttling logic. This doesn't do any database/
+ * redis calls etc.
+ *
+ * Keeping this outside of core throttle logic to maintain
+ * clarity.
+ */
 trait HasRequestContext
 {
     private $route;
@@ -19,6 +25,11 @@ trait HasRequestContext
     private $secret;
     private $mode;
     private $auth;
+
+    //
+    // In one request some(and not all) of below identifiers are set. Further
+    // in throttle core logic we construct throttle key using the one available.
+    //
 
     private $keyId;
     private $mid;
@@ -32,10 +43,12 @@ trait HasRequestContext
         $this->request = $request;
         $this->route   = $this->router->currentRouteName();
 
+        //
         // Key can come
         // - in request input as key_id for public routes
         // - as part of route parameters for callback URLS
         // - as part of route parameters for callback URLS
+        //
         $key = $this->request->input('key_id') ?:
                 $this->router->current()->parameter('key') ?:
                 $this->request->getUser();
@@ -50,49 +63,49 @@ trait HasRequestContext
 
         if (in_array($this->route, Route::$internal, true) === true)
         {
-            $this->auth = AuthType::PRIVILEGE_AUTH;
+            $this->auth = Type::PRIVILEGE_AUTH;
             $this->internalapp = $this->getInternalAppName($secret);
         }
         else if (in_array($this->route, Route::$admin, true) === true)
         {
-            $this->auth = AuthType::ADMIN_AUTH;
+            $this->auth = Type::ADMIN_AUTH;
             $this->adminEmail = $request->headers(RequestHeader::X_DASHBOARD_ADMIN_EMAIL);
         }
         else if ((in_array($this->route, Route::$private, true) === true) and
             ($this->isDashboard($request) === true))
         {
-            $this->auth = AuthType::PROXY_AUTH;
+            $this->auth = Type::PROXY_AUTH;
             $this->mid = $this->key;
         }
         else if ((in_array($this->route, Route::$private, true) === true) and
             ($this->isDashboard($request) === false))
         {
-            $this->auth = AuthType::PRIVATE_AUTH;
+            $this->auth = Type::PRIVATE_AUTH;
             $this->keyId = $this->key;
         }
         else if (in_array($this->route, Route::$public, true) === true)
         {
-            $this->auth = AuthType::PUBLIC_AUTH;
+            $this->auth = Type::PUBLIC_AUTH;
             $this->keyId = $this->key;
         }
         else if (in_array($this->route, Route::$publicCallback, true) === true)
         {
-            $this->auth = AuthType::PUBLIC_AUTH;
+            $this->auth = Type::PUBLIC_AUTH;
             $this->keyId = $this->key;
         }
         else if (in_array($this->route, Route::$proxy, true) === true)
         {
-            $this->auth = AuthType::PROXY_AUTH;
+            $this->auth = Type::PROXY_AUTH;
             $this->mid = $this->key;
         }
         else if (in_array($this->route, Route::$device, true) === true)
         {
-            $this->auth = AuthType::DEVICE_AUTH;
+            $this->auth = Type::DEVICE_AUTH;
             $this->device = $secret;
         }
         else if (in_array($this->route, Route::$direct, true) === true)
         {
-            $this->auth = AuthType::DIRECT_AUTH;
+            $this->auth = Type::DIRECT_AUTH;
         }
     }
 
@@ -114,6 +127,6 @@ trait HasRequestContext
 
     private function isPrivateAuth(): bool
     {
-        return ($this->auth === AuthType::PRIVATE_AUTH);
+        return ($this->auth === Type::PRIVATE_AUTH);
     }
 }
