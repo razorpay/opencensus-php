@@ -1533,7 +1533,10 @@ final class Route
         'gateway_payment_callback_bharatqr',
     ];
 
-    public static $web = [
+    /**
+     * List of routes, requiring session changes
+     */
+    public static $session = [
         'checkout',
         'merchant_checkout_preferences',
         'otp_verify',
@@ -2232,7 +2235,7 @@ final class Route
         // We add the web middle group, conditionally to routes
         // which require cokkie / session access
         //
-        if (in_array($name, self::$web, true) === true)
+        if (in_array($name, self::$session, true) === true)
         {
             $this->router->$method($uri, ['as' => $name, 'uses' => $action])->middleware('web');
         }
