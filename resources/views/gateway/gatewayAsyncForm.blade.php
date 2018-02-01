@@ -450,22 +450,18 @@
                                     addCls(gel('message-txt'), 'green');
                                     addCls(gel('cancel-btn'), 'green');
                                     addCls(gel('spinner'), 'hide');
-
-                                    CheckoutBridge.oncomplete(JSON.stringify(resp));
                                 }
                                 else {
                                     gel('message-txt').innerHTML = "<b>Payment Failed!</b>";
                                     addCls(gel('message-txt'), 'red');
                                     removeCls(gel('retry-btn'), 'hide')
                                     addCls(gel('spinner'), 'hide');
-                                    CheckoutBridge.oncomplete(JSON.stringify(resp || {error: 'Some error occurred'}));
                                 }
+
+                                CheckoutBridge.oncomplete(JSON.stringify(response));
                             },
                             function(response) {
-                                if (response) {
-                                    return false;
-                                    return response.status != 'success' || response.status != 'failed';
-                                }
+                                return response && response.status;
                             }
                         )
                     }
