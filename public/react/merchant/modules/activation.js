@@ -1,6 +1,7 @@
 import ajax from 'merchant/utils/ajax';
 import Activation from 'merchant/models/Activation';
 import { set, merge, push } from 'rzp/utils/immutable';
+import store from 'merchant/store';
 
 export const ACTIVATION_FETCH = 'ACTIVATION_FETCH';
 export const ACTIVATION_SAVE_STEP = 'ACTIVATION_SAVE_STEP';
@@ -171,3 +172,27 @@ export default function(state = initialState, action) {
       return state;
   }
 }
+
+/**
+ * Fetch city and state based on pincode provided
+*/
+export const getPincodeDetails = (pincode, changeFunc) => {
+  const mode = store.getState().session.mode;
+
+  if (pincode.length === 6) {
+    ajax({
+      url: `/merchant/api/${mode}/pincodes/${pincode}`,
+      method: 'get',
+      appendModeInURL: false,
+    })
+      .then(response => {
+        if (response.data) {
+          changeFunc(response.data.city, response.data.state_code);
+        }
+      })
+      .catch(e => changeFunc()); //- send empty values if error
+  } else {
+    //- send empty values if length less or greater than 6
+    changeFunc();
+  }
+};

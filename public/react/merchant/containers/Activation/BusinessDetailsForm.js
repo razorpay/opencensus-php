@@ -14,8 +14,7 @@ import {
 } from 'rzp/utils/validators';
 import { states } from 'rzp/utils/constants';
 
-import ajax from 'merchant/utils/ajax';
-import store from 'merchant/store';
+import { getPincodeDetails } from 'merchant/modules/activation';
 
 const selector = formValueSelector('activationBusinessDetails');
 @connect(state => {
@@ -57,33 +56,12 @@ export default class BusinessDetailsForm extends Component {
   //Fetch state/city details based on pincode.
   fetchPincodeDetails = (e, code) => {
     const pincode = e.target.value;
-    const mode = store.getState().session.mode;
 
-    if (pincode.length === 6) {
-      ajax({
-        url: `/merchant/api/${mode}/pincodes/${pincode}`,
-        method: 'get',
-        appendModeInURL: false,
-      }).then(response => {
-        if (response.data) {
-          this.updateStateCityFormField(
-            response.data.city,
-            response.data.state_code,
-            code
-          );
-        } else {
-          //- Empty the state/city fields
-          this.updateStateCityFormField(null, null, code);
-        }
-      });
-    } else {
-      this.updateStateCityFormField(null, null, code);
-    }
-  };
-
-  updateStateCityFormField = (city = null, state = null, code) => {
-    this.props.change(`business_${code}_city`, city);
-    this.props.change(`business_${code}_state`, state);
+    getPincodeDetails(e.target.value, (city = null, state = null) => {
+      this.props.change(`business_${code}_city`, city);
+      this.props.change(`business_${code}_state`, state);
+      this.updateOperationalAddress();
+    });
   };
 
   render() {
