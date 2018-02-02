@@ -83,9 +83,7 @@ class Repository extends Base\Repository
         $transactionFeeCredits  = $this->dbColumn(Entity::CREDITS);
         $transactionCreditsType = $this->dbColumn(Entity::CREDIT_TYPE);
 
-        $slaveConn = $this->getSlaveConnection();
-
-        $txns = $this->newQueryWithConnection($slaveConn)
+        $txns = $this->newQuery()
                     ->select(
                         $transactionId,
                         $transactionMerchantId,
