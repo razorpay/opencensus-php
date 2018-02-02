@@ -97,7 +97,7 @@ class Throttle
             {
                 $pipe->hgetall(Constant::GLOBAL_SETTINGS_KEY);
                 $pipe->hgetall(Constant::ROUTE_SETTINGS_KEY_REFIX . $this->route);
-                $pipe->hgetall(Constant::IDENTIFIER_SETTINGS_KEY_PREFIX . $this->getIdentifier());
+                $pipe->hgetall(Constant::ID_SETTINGS_KEY_PREFIX . $this->getIdSettingsKey());
             });
     }
 
@@ -136,22 +136,36 @@ class Throttle
         return $limits;
     }
 
-    private function getIdentifier(): string
+    private function getIdSettingsKey(): string
     {
-        return $this->device ??
-                $this->adminEmail ??
-                $this->internalAppName ??
-                $this->oauthAppId ??
-                $this->mid ??
-                '';
+        return $this->internalAppName ?:
+                $this->device ?:
+                $this->adminEmail ?:
+                $this->oauthAppId ?:
+                $this->mid;
     }
 
     private function getThrottleKey(): string
     {
-        return "{$this->route}:{$this->mode}:{$this->auth}:{$this->getIdentifier()}:".
-                // Adds IP address only for public authentications, in other
-                // cases we have some identifier e.g. mid, email etc.
-                ($this->isPrivateAuth() ? '' : $this->request->ip());
+        $prefix = "{$this->route}:{$this->mode}:{$this->auth}";
+
+        //
+        // - Defaults to mid (which can be empty for direct auth)
+        // - In case of oauth application the throttle happens on application
+        //   + mid combination
+        //
+        $id = $this->internalAppName ?:
+                $this->device ?:
+                $this->adminEmail ?:
+                ($this->oauthAppId ? "{$this->oauthAppId}:{$this->mid}" : $this->mid);
+
+        //
+        // Adds IP address only for public authentications, in other
+        // cases we have some identifier e.g. mid, email etc.
+        //
+        $ip = $this->isPrivateAuth() ? '' : $this->request->ip();
+
+        return "$prefix:$id:$ip";
     }
 
     private function getThrottleRateValue(): int
@@ -171,13 +185,43 @@ class Throttle
 
     private function getThrottleValue(string $key, int $default): int
     {
-                // Value for given route, mode, auth & identifier combination
-        return $this->settings[1]["{$this->mode}:{$this->auth}:{$this->getIdentifier()}:l:{$key}"] ??
-                // Else value for given route, mode & auth combination
-                $this->settings[1]["{$this->mode}:{$this->auth}:l:{$key}"] ??
-                // Else value for given mode & auth combination
-                $this->settings[0]["{$this->mode}:{$this->auth}:l:{$key}"] ??
-                // Else the default value
+        //
+        // Redis data structures:
+        //
+        // Key: t
+        // Value: {
+        //      skip:                       1
+        //      mock:                       1
+        //
+        //      <mode>:<auth>:ltv:          2
+        //      <mode>:<auth>:ltd:          1000
+        //      <mode>:<auth>:mbs:          50
+        //
+        //      <mode>:<auth>:<route>:ltv:  2
+        //      <mode>:<auth>:<route>:ltd:  1000
+        //      <mode>:<auth>:<route>:mbs:  50
+        // }
+        //
+        // Key: t:i:<mid>
+        // Value: {
+        //      -- Same setting as above - across or per route
+        // }
+        //
+        // Key: t:i:<oauthappid>
+        // Value: {
+        //      -- Same setting as above - across or per route
+        //      (Applies to the application + mid combination)
+        // }
+        //
+
+                // Value for given mid/application id, mode, auth & route
+        return $this->settings[1]["{$this->mode}:{$this->auth}:{$this->route}:{$key}"] ??
+                // Value for given mid/application id, mode & auth
+                $this->settings[1]["{$this->mode}:{$this->auth}:{$key}"] ??
+                // Value for given mode, auth & route
+                $this->settings[0]["{$this->mode}:{$this->auth}:{$this->route}:{$key}"] ??
+                // Value for given mode & auth
+                $this->settings[0]["{$this->mode}:{$this->auth}:{$key}"] ??
                 $default;
     }
 
