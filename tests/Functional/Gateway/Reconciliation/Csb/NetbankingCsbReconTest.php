@@ -115,7 +115,8 @@ class NetbankingCsbReconTest extends TestCase
 
         $payment = $this->fixtures->create('payment', $attributes);
 
-        $transaction = $this->fixtures->create('transaction', ['entity_id' => $payment->getId(), 'merchant_id' => '10000000000000']);
+        $transaction = $this->fixtures->create('transaction',
+                                              ['entity_id' => $payment->getId(), 'merchant_id' => '10000000000000']);
 
         $this->fixtures->edit('payment', $payment->getId(), ['transaction_id' => $transaction->getId()]);
 
@@ -123,6 +124,8 @@ class NetbankingCsbReconTest extends TestCase
             $this->method,
             [
                 'payment_id'      => $payment->getId(),
+                'bank_payment_id' => 9999999999,
+                'reference1'      => 'csb_payee_id',
                 'bank'            => IFSC::CSBK,
                 'caps_payment_id' => strtoupper($payment->getId()),
                 'status'          => 'Y', // Success payments

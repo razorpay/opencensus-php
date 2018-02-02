@@ -276,6 +276,10 @@ class Gateway extends Base\Gateway
             RequestFields::MODE         => Mode::PAY,
         ];
 
+        //
+        // We are setting the gatewayAttributes variable here so that it
+        // can be used to create the gateway payment entity later.
+        //
         $this->gatewayAttributes = $content;
 
         $content = array_values($content);

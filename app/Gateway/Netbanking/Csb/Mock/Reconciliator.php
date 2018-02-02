@@ -45,16 +45,18 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
 
                         $amount = $item[ConstantsEntity::PAYMENT][Payment\Entity::AMOUNT] / 100;
 
-                        $carry[] = [
-                            $item[ConstantsEntity::PAYMENT][Payment\Entity::ID],
-                            $item[ConstantsEntity::NETBANKING][Netbanking::BANK_PAYMENT_ID],
-                            $item[ConstantsEntity::NETBANKING][Netbanking::REFERENCE1],
-                            number_format($amount, 2, '.', ''),
-                            $item[ConstantsEntity::NETBANKING][Netbanking::STATUS],
-                            $date,
-                        ];
-
-                        return $carry;
+                        return array_merge(
+                            $carry,
+                            [
+                                [
+                                    $item[ConstantsEntity::PAYMENT][Payment\Entity::ID],
+                                    $item[ConstantsEntity::NETBANKING][Netbanking::BANK_PAYMENT_ID],
+                                    $item[ConstantsEntity::NETBANKING][Netbanking::REFERENCE1],
+                                    number_format($amount, 2, '.', ''),
+                                    $item[ConstantsEntity::NETBANKING][Netbanking::STATUS],
+                                    $date,
+                                ]
+                            ]);
                     },
                     []
                 );
