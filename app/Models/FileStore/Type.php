@@ -46,6 +46,20 @@ class Type
 
     const SBI_UPI_REFUND                    = 'sbi_upi_refund';
 
+    const UPI_ICICI_FAILED_REFUND           = 'upi_icici_failed_refund';
+
+    const AIRTELMONEY_WALLET_FAILED_REFUND  = 'airtelmoney_wallet_failed_refund';
+
+    const AXIS_MIGS_FAILED_REFUND           = 'axis_migs_failed_refund';
+
+    const ICIC_FIRST_DATA_FAILED_REFUND     = 'icic_first_data_failed_refund';
+
+    const HDFC_CYBERSOURCE_FAILED_REFUND    = 'hdfc_cybersource_failed_refund';
+
+    const AXIS_CYBERSOURCE_FAILED_REFUND    = 'axis_cybersource_failed_refund';
+
+    const HDFC_FSS_FAILED_REFUND            = 'hdfc_fss_failed_refund';
+
     const PNB_NETBANKING_REFUND             = 'pnb_netbanking_refund';
 
     const PNB_NETBANKING_CLAIMS             = 'pnb_netbanking_claims';
@@ -142,6 +156,13 @@ class Type
             self::ICICI_EMI_FILE_SFTP,
             self::PNB_NETBANKING_REFUND,
             self::PNB_NETBANKING_CLAIMS,
+            self::UPI_ICICI_FAILED_REFUND,
+            self::AIRTELMONEY_WALLET_FAILED_REFUND,
+            self::AXIS_MIGS_FAILED_REFUND,
+            self::ICIC_FIRST_DATA_FAILED_REFUND,
+            self::HDFC_CYBERSOURCE_FAILED_REFUND,
+            self::AXIS_CYBERSOURCE_FAILED_REFUND,
+            self::HDFC_FSS_FAILED_REFUND,
             self::MOCK_RECONCILIATION_FILE,
             self::GATEWAY_FAILED_REFUNDS,
         ],
@@ -222,6 +243,13 @@ class Type
         self::FUND_TRANSFER_H2H,
         self::PNB_NETBANKING_REFUND,
         self::PNB_NETBANKING_CLAIMS,
+        self::UPI_ICICI_FAILED_REFUND,
+        self::AIRTELMONEY_WALLET_FAILED_REFUND,
+        self::AXIS_MIGS_FAILED_REFUND,
+        self::ICIC_FIRST_DATA_FAILED_REFUND,
+        self::HDFC_CYBERSOURCE_FAILED_REFUND,
+        self::HDFC_FSS_FAILED_REFUND,
+        self::AXIS_CYBERSOURCE_FAILED_REFUND,
         self::MOCK_RECONCILIATION_FILE,
         self::GATEWAY_FAILED_REFUNDS,
     ];
@@ -256,7 +284,13 @@ class Type
             self::BATCH_OUTPUT,
             self::PNB_NETBANKING_REFUND,
             self::PNB_NETBANKING_CLAIMS,
-            self::GATEWAY_FAILED_REFUNDS,
+            self::UPI_ICICI_FAILED_REFUND,
+            self::AIRTELMONEY_WALLET_FAILED_REFUND,
+            self::AXIS_MIGS_FAILED_REFUND,
+            self::ICIC_FIRST_DATA_FAILED_REFUND,
+            self::HDFC_CYBERSOURCE_FAILED_REFUND,
+            self::AXIS_CYBERSOURCE_FAILED_REFUND,
+            self::HDFC_FSS_FAILED_REFUND,
         ],
 
         self::INVOICE_BUCKET_CONFIG => [
