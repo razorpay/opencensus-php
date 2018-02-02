@@ -24,14 +24,7 @@ const type = {
 
 const respondIn = {
   title: 'Respond In',
-  value: item => {
-    const respondIn = daysLeftInExpiry(item.expires_on);
-    return respondIn === 'Today' ? (
-      <strong class="text-danger">{respondIn}</strong>
-    ) : (
-      respondIn
-    );
-  },
+  value: item => daysLeftInExpiry(item.expires_on),
 };
 
 const resolvedOn = {
