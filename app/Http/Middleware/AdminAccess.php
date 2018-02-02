@@ -204,7 +204,21 @@ class AdminAccess
 
     private function policyChecker($routeName, $admin, $merchant = null)
     {
-        $permission = $this->getRoutePermission($routeName);
+        try
+        {
+            $permission = $this->getRoutePermission($routeName);
+        }
+        catch (Exception\BadRequestException $ex)
+        {
+            if ($ex->getCode() === ErrorCode::BAD_REQUEST_PERMISSION_ERROR)
+            {
+                $permission = '*';
+            }
+            else
+            {
+                throw $ex;
+            }
+        }
 
         // We have the following:
         // - permission
