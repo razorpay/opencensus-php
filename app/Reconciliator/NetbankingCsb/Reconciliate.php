@@ -20,6 +20,8 @@ class Reconciliate extends Base\Reconciliate
     const STATUS          = 'status';
     const DATE            = 'date';
 
+    const DELIMITER       = '^';
+
     protected function getTypeName($fileName)
     {
         // We only do a payment reconciliation process for CSB
@@ -50,6 +52,6 @@ class Reconciliate extends Base\Reconciliate
 
     public function getDelimiter()
     {
-        return '^';
+        return self::DELIMITER;
     }
 }

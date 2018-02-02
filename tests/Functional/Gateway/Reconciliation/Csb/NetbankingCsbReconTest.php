@@ -44,11 +44,7 @@ class NetbankingCsbReconTest extends TestCase
 
         $this->ba->appAuth();
 
-        $fileContents = $this->generateReconFile();
-
-        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
-
-        $response = $this->reconcile($uploadedFile, Recon::NETBANKING_CSB);
+        $response = $this->generateAndUploadReconFile();
 
         // We assert that all 3 payments were reconciled
         $this->assertEquals(3, $response['total_count']);
@@ -106,11 +102,7 @@ class NetbankingCsbReconTest extends TestCase
                 $content[0][3] = 1;
             });
 
-        $fileContents = $this->generateReconFile();
-
-        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
-
-        $this->reconcile($uploadedFile, Recon::NETBANKING_CSB);
+        $this->generateAndUploadReconFile();
 
         $netbanking = $this->getLastEntity('netbanking', true);
 
@@ -133,11 +125,7 @@ class NetbankingCsbReconTest extends TestCase
                 $content[0][0] = "";
             });
 
-        $fileContents = $this->generateReconFile();
-
-        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
-
-        $this->reconcile($uploadedFile, Recon::NETBANKING_CSB);
+        $this->generateAndUploadReconFile();
 
         $netbanking = $this->getLastEntity('netbanking', true);
 
@@ -160,17 +148,22 @@ class NetbankingCsbReconTest extends TestCase
                 $content[0][4] = "N";
             });
 
-        $fileContents = $this->generateReconFile();
-
-        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
-
-        $this->reconcile($uploadedFile, Recon::NETBANKING_CSB);
+        $this->generateAndUploadReconFile();
 
         $netbanking = $this->getLastEntity('netbanking', true);
 
         $payment = $this->getEntityById('payment', $payment, true);
 
         $this->assertPaymentReconSkipped($payment, $netbanking);
+    }
+
+    private function generateAndUploadReconFile()
+    {
+        $fileContents = $this->generateReconFile();
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        return $this->reconcile($uploadedFile, Recon::NETBANKING_CSB);
     }
 
     private function createUploadedFile($file)
