@@ -1,4 +1,4 @@
-box: pronav/dash
+box: pronav/dash-test
 
 build:
     services:
@@ -39,7 +39,15 @@ build:
       - script:
           name: build
           code: npm run build
-
+      - script:
+          name: set browser
+          code: |
+            export CHROME_BIN=/usr/bin/chromium-browser
+      - script:
+          name: run test
+          code: |
+            CHROME_BIN --headless --disable-gpu --remote-debugging-port=9222
+            npm test
       - script:
           name: Run artisan migrate
           code: APP_ENV=testing php artisan migrate --env=testing
