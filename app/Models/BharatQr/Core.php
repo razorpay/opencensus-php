@@ -30,13 +30,13 @@ class Core extends Base\Core
             $input
         );
 
-        $paymentId = null;
+        $payment = null;
 
         try
         {
             $bharatQr = (new Entity)->build($input);
 
-            $paymentId = $this->mutex->acquireAndRelease(
+            $payment = $this->mutex->acquireAndRelease(
                 $input[Entity::MERCHANT_REFERENCE],
                 function() use ($bharatQr)
                 {
@@ -47,9 +47,9 @@ class Core extends Base\Core
                         return null;
                     }
 
-                    $paymentId = $bharatQr->payment->getId();
+                    $payment = $bharatQr->payment->toArray();
 
-                    return $paymentId;
+                    return $payment;
                 },
                 Constants::MUTEX_TIMEOUT,
                 ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
@@ -64,6 +64,6 @@ class Core extends Base\Core
             $valid = false;
         }
 
-        return [$valid, $paymentId];
+        return [$valid, $payment];
     }
 }

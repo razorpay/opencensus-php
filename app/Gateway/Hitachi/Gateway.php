@@ -150,42 +150,31 @@ class Gateway extends Base\Gateway
         return $input[ResponseFields::PURCHASE_ID];
     }
 
-    public function qrCallback(array $input)
+    public function qrNotification(array $input)
     {
-        parent::qrCallback($input);
+        parent::qrNotification($input);
 
-        $payment = $this->createOrFetchGatewayPaymentEntityForQr($input);
-
-        $this->repo->saveOrFail($payment);
+        if (empty($input['payment']) === false)
+        {
+            $this->createGatewayPaymentEntityForQr($input);
+        }
 
         $qrData = [
-            BharatQr\Entity::AMOUNT                => $payment->getAmount(),
-            BharatQr\Entity::CARD_NUMBER           => $payment->getCardNumber(),
+            BharatQr\Entity::AMOUNT                => $this->getIntegerFormattedAmount($input[ResponseFields::F004]),
+            BharatQr\Entity::CARD_NUMBER           => $input[ResponseFields::F002],
             BharatQr\Entity::METHOD                => Payment\Method::CARD,
-            BharatQr\Entity::RRN                   => $payment->getRrn(),
-            BharatQr\Entity::MERCHANT_REFERENCE    => $payment->getQrCodeId(),
-            BharatQr\Entity::PROVIDER_REFERENCE_ID => $payment->getRequestId(),
+            BharatQr\Entity::MERCHANT_REFERENCE    => $input[ResponseFields::PURCHASE_ID],
+            BharatQr\Entity::PROVIDER_REFERENCE_ID => $input[ResponseFields::F038],
         ];
 
         return $qrData;
     }
 
-    protected function createOrFetchGatewayPaymentEntityForQr($input)
+    protected function createGatewayPaymentEntityForQr($input)
     {
-        if (isset($input['razorpay_payment_id']) === true)
-        {
-            $qrCodeId = $input[ResponseFields::PURCHASE_ID];
+       $attributes = $this->getAttributesForQrResponse($input);
 
-            $payment = $this->repo->fetchByQrCodeId($qrCodeId);
-
-            $payment->setPaymentId($input['razorpay_payment_id']);
-        }
-        else
-        {
-            $attributes = $this->getAttributesForQrResponse($input);
-
-            $payment = $this->createGatewayPaymentEntity($input, $attributes, Base\Action::QR_CALLBACK);
-        }
+        $payment = $this->createGatewayPaymentEntity($input, $attributes, Base\Action::QR_NOTIFICATION);
 
         return $payment;
     }
@@ -503,7 +492,6 @@ class Gateway extends Base\Gateway
             Entity::RRN          => $response[ResponseFields::F037],
             Entity::REQUEST_ID   => $response[ResponseFields::F038],
             Entity::STATUS       => $response[ResponseFields::F039],
-            Entity::QR_CODE_ID   => $response[ResponseFields::PURCHASE_ID],
         ];
 
         return $attributes;
@@ -577,14 +565,11 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment->setAction($action);
 
-        if (isset($input['payment']) === true)
-        {
-            $gatewayPayment->setPaymentId($input['payment']['id']);
+        $gatewayPayment->setPaymentId($input['payment']['id']);
 
-            $gatewayPayment->setCurrency($input['payment']['currency']);
+        $gatewayPayment->setCurrency($input['payment']['currency']);
 
-            $gatewayPayment->setAmount($input['payment']['amount']);
-        }
+        $gatewayPayment->setAmount($input['payment']['amount']);
 
         $gatewayPayment->fill($attributes);
 

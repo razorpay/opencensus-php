@@ -17,7 +17,7 @@ class Validator extends Base\Validator
         Entity::PROVIDER_REFERENCE_ID => 'required|string',
         Entity::MERCHANT_REFERENCE    => 'sometimes|string',
         Entity::TRACE_NUMBER          => 'sometimes|string',
-        Entity::RRN                   => 'required|string',
+        Entity::RRN                   => 'sometimes|string',
         Entity::STATUS_CODE           => 'sometimes|string',
         Entity::CUSTOMER_NAME         => 'sometimes|string',
         Entity::TRANSACTION_TIME      => 'sometimes|string',

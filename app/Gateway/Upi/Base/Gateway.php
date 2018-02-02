@@ -22,10 +22,7 @@ class Gateway extends Base\Gateway
 
         $action = $action ?? $this->action;
 
-        if (isset($this->input['payment']['id']) === true)
-        {
-            $entity->setPaymentId($this->input['payment']['id']);
-        }
+        $entity->setPaymentId($this->input['payment']['id']);
 
         switch ($action)
         {
@@ -37,11 +34,8 @@ class Gateway extends Base\Gateway
 
                 break;
 
-            case Base\Action::AUTHORIZE:
-
-                $entity->setAmount($this->input['payment']['amount']);
-
             default:
+                $entity->setAmount($this->input['payment']['amount']);
         }
 
         $entity->setAction($action);

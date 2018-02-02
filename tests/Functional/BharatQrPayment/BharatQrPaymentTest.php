@@ -119,8 +119,6 @@ class BharatQrPaymentTest extends TestCase
 
         $upi = $this->getLastEntity('upi', true);
 
-        $this->assertEquals($qrCodeId, $upi['qr_code_id']);
-
         $this->assertNotNull($upi['payment_id']);
 
         $this->assertEquals($bharatQr['expected'], true);

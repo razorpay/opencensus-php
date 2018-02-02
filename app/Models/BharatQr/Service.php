@@ -47,9 +47,9 @@ class Service extends Base\Service
 
         $bharatQrInputParams[Entity::GATEWAY] = $gateway;
 
-        list($valid, $paymentId) = $this->core->processPayment($bharatQrInputParams);
+        list($valid, $payment) = $this->core->processPayment($bharatQrInputParams);
 
-        $input['razorpay_payment_id'] = $paymentId;
+        $input['payment'] = $payment;
 
         $this->callGatewayFunction($gateway, $input);
 
@@ -60,8 +60,7 @@ class Service extends Base\Service
 
     protected function callGatewayFunction(string $gateway, array $gatewayInput)
     {
-        $action = Action::QR_CALLBACK;
-
+        $action = Action::QR_NOTIFICATION;
 
         return $this->app['gateway']->call($gateway, $action, $gatewayInput, null);
     }

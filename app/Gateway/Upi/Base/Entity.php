@@ -21,7 +21,6 @@ class Entity extends Base\Entity
     const NPCI_REFERENCE_ID     = 'npci_reference_id';
     const PAYMENT_ID            = 'payment_id';
     const REFUND_ID             = 'refund_id';
-    const QR_CODE_ID            = 'qr_code_id';
     const EXPIRY_TIME           = 'expiry_time';
     const RECEIVED              = 'received';
     const STATUS_CODE           = 'status_code';
@@ -47,7 +46,6 @@ class Entity extends Base\Entity
         self::NPCI_REFERENCE_ID,
         self::REFUND_ID,
         self::PAYMENT_ID,
-        self::QR_CODE_ID,
         self::RECEIVED,
         self::STATUS_CODE,
         self::VPA,
@@ -69,7 +67,6 @@ class Entity extends Base\Entity
         self::NPCI_REFERENCE_ID,
         self::PAYMENT_ID,
         self::REFUND_ID,
-        self::QR_CODE_ID,
         self::RECEIVED,
         self::STATUS_CODE,
         self::VPA,
@@ -110,11 +107,6 @@ class Entity extends Base\Entity
         $this->setAttribute(self::AMOUNT, $amount);
     }
 
-    public function setQrCodeId(string $qrCodeId)
-    {
-        $this->setAttribute(self::QR_CODE_ID, $qrCodeId);
-    }
-
     public function getPaymentId()
     {
         return $this->getAttribute(self::PAYMENT_ID);
@@ -123,11 +115,6 @@ class Entity extends Base\Entity
     public function getGatewayPaymentId()
     {
         return $this->getAttribute(self::GATEWAY_PAYMENT_ID);
-    }
-
-    public function getQrCodeId()
-    {
-        return $this->getAttribute(self::QR_CODE_ID);
     }
 
     public function setGatewayPaymentId(string $value)

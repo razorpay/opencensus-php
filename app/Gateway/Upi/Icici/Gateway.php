@@ -854,46 +854,24 @@ class Gateway extends Base\Gateway
         return $input[Fields::MERCHANT_TRAN_ID];
     }
 
-    public function qrCallback(array $input)
+    public function qrNotification(array $input)
     {
-        parent::qrCallback($input);
+        parent::qrNotification($input);
 
-        $payment = $this->createOrFetchGatewayPaymentEntityForQr($input);
-
-        $this->repo->saveOrFail($payment);
+        if (empty($input['payment']) === false)
+        {
+            $this->createGatewayPaymentEntity($input);
+        }
 
         $qrData = [
-            BharatQr\Entity::AMOUNT                => $payment->getAmount(),
-            BharatQr\Entity::VPA                   => $payment->getVpa(),
+            BharatQr\Entity::AMOUNT                => $this->getIntegerFormattedAmount($input[Fields::PAYER_AMOUNT]),
+            BharatQr\Entity::VPA                   => $input[Fields::PAYER_VA],
             BharatQr\Entity::METHOD                => Payment\Method::UPI,
-            BharatQr\Entity::RRN                   => $payment->getGatewayPaymentId(),
-            BharatQr\Entity::MERCHANT_REFERENCE    => $payment->getQrCodeId(),
-            BharatQr\Entity::PROVIDER_REFERENCE_ID => $payment->getGatewayPaymentId(),
+            BharatQr\Entity::MERCHANT_REFERENCE    => $input[Fields::MERCHANT_TRAN_ID],
+            BharatQr\Entity::PROVIDER_REFERENCE_ID => $input[Fields::BANK_RRN],
         ];
 
         return $qrData;
-    }
-
-    protected function createOrFetchGatewayPaymentEntityForQr($input)
-    {
-        if (isset($input['razorpay_payment_id']) === true)
-        {
-            $qrCodeId = $input[Fields::MERCHANT_TRAN_ID];
-
-            $payment = $this->repo->fetchByQrCodeId($qrCodeId);
-
-            $payment->setPaymentId($input['razorpay_payment_id']);
-        }
-        else
-        {
-            $payment = $this->createGatewayPaymentEntity($input);
-
-            $payment->setAmount($this->getIntegerFormattedAmount($input[Fields::PAYER_AMOUNT]));
-
-            $payment->setQrCodeId($input[Fields::MERCHANT_TRAN_ID]);
-        }
-
-        return $payment;
     }
 
     public function refund(array $input)

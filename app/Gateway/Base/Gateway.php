@@ -232,11 +232,11 @@ class Gateway
         $this->input = $input;
     }
 
-    public function qrCallback(array $input)
+    public function qrNotification(array $input)
     {
         $this->input = $input;
 
-        $this->action = Action::QR_CALLBACK;
+        $this->action = Action::QR_NOTIFICATION;
     }
 
     public function capture(array $input)

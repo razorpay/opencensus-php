@@ -30,9 +30,6 @@ class CreateHitachiGateway extends Migration
             $table->char(Hitachi::REFUND_ID, Refund::ID_LENGTH)
                   ->nullable();
 
-            $table->char(Hitachi::QR_CODE_ID, Refund::ID_LENGTH)
-                ->nullable();
-
             $table->char(Hitachi::ACQUIRER, 10)
                   ->nullable();
 

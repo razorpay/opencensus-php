@@ -6,7 +6,6 @@ use RZP\Gateway\Base;
 
 class Entity extends Base\Entity
 {
-    const QR_CODE_ID    = 'qr_code_id';
     const ACQUIRER      = 'acquirer';
     const AMOUNT        = 'amount';
     const CURRENCY      = 'currency';
@@ -56,7 +55,6 @@ class Entity extends Base\Entity
         self::STATUS,
         self::AMOUNT,
         self::CARD_NUMBER,
-        self::QR_CODE_ID,
     ];
 
     protected $casts = [
@@ -84,11 +82,6 @@ class Entity extends Base\Entity
         $this->setAttribute(self::ACTION, $action);
     }
 
-    public function setQrCodeId($qrCodeId)
-    {
-        $this->setAttribute(self::QR_CODE_ID, $qrCodeId);
-    }
-
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
@@ -112,10 +105,5 @@ class Entity extends Base\Entity
     public function getRequestId()
     {
         return $this->getAttribute(self::REQUEST_ID);
-    }
-
-    public function getQrCodeId()
-    {
-        return $this->getAttribute(self::QR_CODE_ID);
     }
 }
