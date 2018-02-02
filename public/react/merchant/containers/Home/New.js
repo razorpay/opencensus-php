@@ -290,10 +290,7 @@ export default class HomeContainer extends Component {
         oldestTransactionDate: {
           ...oldestTransactionDate,
           ...getPreviousDates({ startDate, endDate }),
-        },
-      },
-      () => {
-        this.fetchOldestTransactionDate();
+        }
       }
     );
 
