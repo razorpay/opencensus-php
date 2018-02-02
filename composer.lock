@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "6b286218d4dd349d15aa32ab346a8869",
+    "content-hash": "710a9e400d1f7411d2b9c444b69e748f",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -1506,34 +1506,40 @@
         },
         {
             "name": "graham-campbell/throttle",
-            "version": "v5.3.0",
+            "version": "dev-master",
             "source": {
                 "type": "git",
-                "url": "https://github.com/GrahamCampbell/Laravel-Throttle.git",
-                "reference": "a6df8ca608304f8149275be392a43d070b20d0eb"
+                "url": "https://github.com/jitendra-1217/Laravel-Throttle.git",
+                "reference": "945c41792189db62486afa44d9ff00a9044276c7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/GrahamCampbell/Laravel-Throttle/zipball/a6df8ca608304f8149275be392a43d070b20d0eb",
-                "reference": "a6df8ca608304f8149275be392a43d070b20d0eb",
+                "url": "https://api.github.com/repos/jitendra-1217/Laravel-Throttle/zipball/945c41792189db62486afa44d9ff00a9044276c7",
+                "reference": "945c41792189db62486afa44d9ff00a9044276c7",
                 "shasum": ""
             },
             "require": {
-                "illuminate/cache": "5.1.*|5.2.*|5.3.*|5.4.*",
-                "illuminate/contracts": "5.1.*|5.2.*|5.3.*|5.4.*",
-                "illuminate/http": "5.1.*|5.2.*|5.3.*|5.4.*",
-                "illuminate/support": "5.1.*|5.2.*|5.3.*|5.4.*",
-                "php": ">=5.5.9"
+                "illuminate/cache": "5.1.*|5.2.*|5.3.*|5.4.*|5.5.*",
+                "illuminate/contracts": "5.1.*|5.2.*|5.3.*|5.4.*|5.5.*",
+                "illuminate/http": "5.1.*|5.2.*|5.3.*|5.4.*|5.5.*",
+                "illuminate/support": "5.1.*|5.2.*|5.3.*|5.4.*|5.5.*",
+                "php": "^7.0"
             },
             "require-dev": {
-                "graham-campbell/testbench": "^3.1",
-                "mockery/mockery": "^0.9.4",
-                "phpunit/phpunit": "^4.8|^5.0"
+                "graham-campbell/analyzer": "^2.0",
+                "graham-campbell/testbench": "^4.0|^5.0",
+                "mockery/mockery": "^1.0",
+                "phpunit/phpunit": "^6.5"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "5.3-dev"
+                    "dev-master": "6.0-dev"
+                },
+                "laravel": {
+                    "providers": [
+                        "GrahamCampbell\\Throttle\\ThrottleServiceProvider"
+                    ]
                 }
             },
             "autoload": {
@@ -1541,7 +1547,11 @@
                     "GrahamCampbell\\Throttle\\": "src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "GrahamCampbell\\Tests\\Throttle\\": "tests/"
+                }
+            },
             "license": [
                 "MIT"
             ],
@@ -1557,13 +1567,17 @@
                 "GrahamCampbell",
                 "Laravel Throttle",
                 "Laravel-Throttle",
+                "Throttle",
                 "framework",
                 "laravel",
                 "rate limit",
                 "throttle",
                 "throttling"
             ],
-            "time": "2017-01-01T13:34:57+00:00"
+            "support": {
+                "source": "https://github.com/jitendra-1217/Laravel-Throttle/tree/master"
+            },
+            "time": "2018-02-01T19:48:04+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
@@ -5370,10 +5384,10 @@
                 "trace"
             ],
             "support": {
-                "source": "https://github.com/razorpay/trace/tree/2.0.4",
+                "source": "https://github.com/razorpay/trace/tree/2.0.6",
                 "issues": "https://github.com/razorpay/trace/issues"
             },
-            "time": "2017-10-03T14:26:14+00:00"
+            "time": "2017-10-24T13:59:57+00:00"
         },
         {
             "name": "razorpay/ufh-sdk-php",
@@ -5462,7 +5476,7 @@
                 "source": "https://github.com/razorpay/upi-clients/tree/master",
                 "issues": "https://github.com/razorpay/upi-clients/issues"
             },
-            "time": "2017-06-09T09:05:10+00:00"
+            "time": "2017-08-10T18:30:30+00:00"
         },
         {
             "name": "react/promise",
@@ -9101,6 +9115,7 @@
         "razorpay/razorpay": 20,
         "razorpay/spine": 20,
         "razorpay/upi-clients": 20,
+        "graham-campbell/throttle": 20,
         "razorpay/oauth": 20,
         "razorpay/ufh-sdk-php": 20,
         "codacy/coverage": 20,
