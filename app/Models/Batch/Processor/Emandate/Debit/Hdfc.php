@@ -5,7 +5,7 @@ namespace RZP\Models\Batch\Processor\Emandate\Debit;
 use RZP\Exception;
 use RZP\Gateway\Netbanking\Base as NetbankingBase;
 use RZP\Gateway\Netbanking\Hdfc\EMandateDebitFileHeadings as Headings;
-use RZP\Gateway\Netbanking\Hdfc\ErrorCode;
+use RZP\Error\ErrorCode;
 use RZP\Models\Payment\Gateway;
 
 class Hdfc extends Base

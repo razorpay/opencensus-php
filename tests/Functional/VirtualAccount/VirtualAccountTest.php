@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\VirtualAccount;
 
 use Closure;
 use Mockery;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Webhook;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
@@ -70,7 +71,11 @@ class VirtualAccountTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedResponse, $response);
 
-        $qrString = $response['receivers'][0]['qr_string'];
+        $qrCode = $this->getLastEntity('qr_code', true);
+
+        $qrString = $qrCode['qr_string'];
+
+        $this->assertRegExp('^http://dwarf.razorpay.in/^', $qrCode['short_url']);
 
         $tlvArray = $this->getTagMappedValues($qrString);
 
@@ -102,11 +107,97 @@ class VirtualAccountTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedResponse, $response);
 
-        $qrString = $response['receivers'][0]['qr_string'];
+        $qrCode = $this->getLastEntity('qr_code', true);
+
+        $qrString = $qrCode['qr_string'];
 
         $tlvArray = $this->getTagMappedValues($qrString);
 
         $this->assertEquals($tlvArray['54'], '100.00');
+    }
+
+    public function testDownloadQrCode()
+    {
+        $response = $this->createVirtualAccount([
+            'receiver_types'  => 'qr_code',
+            'amount_expected' => 10000,
+        ]);
+
+        $qrCodeId = $response['receivers'][0]['id'];
+
+        $request = [
+            'method'  => 'GET',
+            'url'     => '/t/qrcode/' . $qrCodeId,
+        ];
+
+        $this->ba->directAuth();
+
+        $response = $this->sendRequest($request);
+
+        $this->assertContentTypeForResponse('image/png', $response);
+    }
+
+    public function testDownloadQrInLiveMode()
+    {
+        $response = $this->createVirtualAccount([
+            'receiver_types'  => 'qr_code',
+            'amount_expected' => 10000,
+        ]);
+
+        $qrCodeId = $response['receivers'][0]['id'];
+
+        $request = [
+            'method'  => 'GET',
+            'url'     => '/l/qrcode/' . $qrCodeId,
+        ];
+
+        $this->ba->directAuth();
+
+        $this->expectException(BadRequestException::class);
+
+        $this->sendRequest($request);
+    }
+
+    public function testDownloadQrInTestMode()
+    {
+        $this->fixtures->merchant->activate();
+
+        $attributes =  [
+            'name'            => 'Test virtual account',
+            'description'     => 'VA for tests',
+            'amount_expected' => 10000,
+            'receivers'       => [
+                'types' => [
+                    'qr_code',
+                ],
+            ],
+            'notes'           => [
+                'a' => 'b',
+            ],
+        ];
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/virtual_accounts',
+            'content' => $attributes,
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $qrCodeId = $response['receivers'][0]['id'];
+
+        $request = [
+            'method'  => 'GET',
+            'url'     => '/t/qrcode/' . $qrCodeId,
+        ];
+
+        $this->ba->directAuth();
+
+        $this->expectException(BadRequestException::class);
+
+        $this->sendRequest($request);
     }
 
     public function testCreateVirtualAccountWithDescriptor()

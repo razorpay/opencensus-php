@@ -493,6 +493,13 @@ class Core extends Base\Core
 
         $validationFields = ValidationFields::DASHBOARD_FIELDS;
 
+        if ($merchantDetails->getBusinessType() === BusinessType::NGO)
+        {
+            $ngoValidationFields = ValidationFields::NGO_MERCHANT_FIELDS;
+
+            $validationFields = array_merge($validationFields, $ngoValidationFields);
+        }
+
         $merchant = $merchantDetails->merchant;
 
         if ($merchant->isLinkedAccount() === true)

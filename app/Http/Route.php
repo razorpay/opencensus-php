@@ -190,6 +190,8 @@ final class Route
         'fund_transfer_attempt_bulk_update'       => ['patch',    'fund_transfer_attempts',                         'FundTransferAttemptController@bulkUpdate'                          ],
         'fund_transfer_attempt_reconcile'         => ['post',     'fund_transfer_attempts/{channel}',               'FundTransferAttemptController@bulkReconcile',                      ],
         'gateway_payment_callback_bharatqr'       => ['post',     'payment/callback/bharatqr',                      'BharatQrController@processBharatQrPayment'                         ],
+        'qr_code_download_live'                   => ['get',      'l/qrcode/{id}',                                  'QrCodeController@fetchLiveQrCode'                                  ],
+        'qr_code_download_test'                   => ['get',      't/qrcode/{id}',                                  'QrCodeController@fetchTestQrCode'                                  ],
         'virtual_account_create'                  => ['post',     'virtual_accounts',                               'VirtualAccountController@create'                                   ],
         'virtual_account_edit'                    => ['patch',    'virtual_accounts/{id}',                          'VirtualAccountController@update'                                   ],
         'virtual_account_fetch'                   => ['get',      'virtual_accounts/{id}',                          'VirtualAccountController@get'                                      ],
@@ -1526,7 +1528,26 @@ final class Route
         'upi_npci_request',
         'upi_zero_call',
         'mock_billdesk_payment',
+        'qr_code_download_live',
+        'qr_code_download_test',
         'gateway_payment_callback_bharatqr',
+    ];
+
+    /**
+     * List of routes, requiring session changes
+     */
+    public static $session = [
+        'checkout',
+        'merchant_checkout_preferences',
+        'otp_verify',
+        'customer_get_saved_status',
+        'payment_create',
+        'payment_create_checkout',
+        'payment_create_jsonp',
+        'payment_create_ajax',
+        'app_fetch_payments',
+        'customer_logout_global',
+        'app_delete_token',
     ];
 
     public static $internalApps = [
@@ -2210,7 +2231,16 @@ final class Route
         $uri = $info[1];
         $action = $info[2];
 
-        $this->router->$method($uri, ['as' => $name, 'uses' => $action]);
+        $router = $this->router->$method($uri, ['as' => $name, 'uses' => $action]);
+
+        //
+        // We add the web middleware group, conditionally to routes
+        // which require cookie / session access
+        //
+        if (in_array($name, self::$session, true) === true)
+        {
+            $router->middleware('web');
+        }
     }
 
     public function defineAllExtraRoutes()
