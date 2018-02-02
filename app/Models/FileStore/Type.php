@@ -56,7 +56,7 @@ class Type
 
     const HDFC_CYBERSOURCE_FAILED_REFUND    = 'hdfc_cybersource_failed_refund';
 
-    const AXIS_CYBERSOURCE_FAILED_REFUND    =  'axis_cybersource_failed_refund';
+    const AXIS_CYBERSOURCE_FAILED_REFUND    = 'axis_cybersource_failed_refund';
 
     const HDFC_FSS_FAILED_REFUND            = 'hdfc_fss_failed_refund';
 

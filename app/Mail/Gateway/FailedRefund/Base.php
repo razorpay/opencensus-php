@@ -43,9 +43,9 @@ class Base extends Mailable
 
     protected function addRecipients()
     {
-        $emails = (empty($this->emails) === true) ? Constants::RECIPIENT_EMAILS_MAP[$this->type] : $this->emails;
+        $this->emails ?: Constants::RECIPIENT_EMAILS_MAP[$this->type];
 
-        $this->to($emails);
+        $this->to($this->emails);
 
         return $this;
     }

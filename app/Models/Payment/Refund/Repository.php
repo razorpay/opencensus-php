@@ -322,7 +322,7 @@ class Repository extends Base\Repository
                     ->where($refundCreatedAt, '<=', $to)
                     ->where($paymentGateway, '=', $gateway)
                     ->where($paymentMethod, '=', 'card')
-                    ->whereRaw('? - ? >= ?', [$refundCreatedAt, $paymentCreatedAt, $timerange])
+                    ->whereRaw("'%?%' - '%?%'>= '%?%'", [$refundCreatedAt, $paymentCreatedAt, $timerange])
                     ->with(['payment'])
                     ->get();
 
