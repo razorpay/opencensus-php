@@ -132,7 +132,8 @@ class TransactionController extends Controller
         $year = intval($input['year']);
 
         // GST is applicable from 1st July 2017
-        $isGstApplicable = (($year >= 2017) and ($month >= 7));
+        $isGstApplicable = false;
+        $isGstApplicable = ($year >= 2017 and $month >= 7);
 
         if ($isGstApplicable) {
             $input['format'] = 'new';
