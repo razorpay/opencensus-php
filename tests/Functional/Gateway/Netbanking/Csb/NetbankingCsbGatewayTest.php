@@ -211,15 +211,19 @@ class NetbankingCsbGatewayTest extends TestCase
 
         $refundAmounts = [500, 500, 100];
 
-        foreach ($refundAmounts as $ind => $amount)
-        {
-            // We increment $ind in the local scope so that srno = $ind = 1
-            $refund = $refundsFileContents[$ind++];
+        array_map(
+            function($amount, $index) use ($refundsFileContents)
+            {
+                // We increment $ind in the local scope so that srno = $ind = 1
+                $refund = $refundsFileContents[$index];
 
-            $this->assertEquals($ind, $refund['srno']);
-            $this->assertEquals(500, $refund['txn_amountrs_ps']);
-            $this->assertEquals($amount, $refund['refund']);
-        }
+                $this->assertEquals(++$index, $refund['srno']);
+                $this->assertEquals(500, $refund['txn_amountrs_ps']);
+                $this->assertEquals($amount, $refund['refund']);
+            },
+            $refundAmounts,
+            array_keys($refundAmounts)
+        );
 
         $this->assertEquals(3, count($refundsFileContents));
 
@@ -246,24 +250,19 @@ class NetbankingCsbGatewayTest extends TestCase
 
     private function createRefundForFileGeneration()
     {
-        $refunds = [];
+        return array_map(
+            function($amount)
+            {
+                $refund = $this->doAuthCaptureAndRefundPayment($this->payment, $amount);
 
-        $refunds[] = $this->doAuthCaptureAndRefundPayment($this->payment);
-        $refunds[] = $this->doAuthCaptureAndRefundPayment($this->payment);
+                $createdAt = Carbon::yesterday(Timezone::IST)->addHours(10)
+                                                                ->addMinutes(45)
+                                                                ->getTimestamp();
 
-        // One partial refund of 100 rupees
-        $refunds[] = $this->doAuthCaptureAndRefundPayment($this->payment, 10000);
-
-        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(10)
-                                                         ->addMinutes(45)
-                                                         ->getTimestamp();
-
-        foreach($refunds as $refund)
-        {
-            $this->fixtures->edit('refund', $refund['id'], ['created_at' => $createdAt]);
-        }
-
-        return $refunds;
+                $this->fixtures->edit('refund', $refund['id'], ['created_at' => $createdAt]);
+            },
+            [50000, 50000, 10000]
+        );
     }
 
     private function mockPaymentFailed()
