@@ -8,7 +8,11 @@ use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
+use RZP\Constants\Entity as ConstantsEntity;
+use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\Gateway\File\Processor\FileHandler;
+use RZP\Models\Payment\Refund\Entity as RefundEntity;
+use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
 
 class Csbk extends Base
 {
@@ -23,6 +27,7 @@ class Csbk extends Base
 
     const BANK_CODE              = 'CSB';
     const MERCHANT_NAME          = 'RAZORPAY';
+    const DATE_FORMAT            = 'd-m-y';
 
     protected function formatDataForFile(array $data)
     {
@@ -31,30 +36,32 @@ class Csbk extends Base
             function(array $carry, array $row)
             {
                 $date = Carbon::createFromTimestamp(
-                            $row['payment']['created_at'],
+                            $row[ConstantsEntity::PAYMENT][PaymentEntity::CREATED_AT],
                             Timezone::IST)
-                            ->format('d-m-y');
+                            ->format(self::DATE_FORMAT);
 
                 $refundDate = Carbon::createFromTimestamp(
-                                $row['refund']['created_at'],
+                                $row[ConstantsEntity::REFUND][RefundEntity::CREATED_AT],
                                 Timezone::IST)
-                                ->format('d-m-y');
+                                ->format(self::DATE_FORMAT);
 
-                $netbanking = $this->repo->netbanking->findByPaymentIdAndAction($row['payment']['id'],
+                $paymentId = $row[ConstantsEntity::PAYMENT][PaymentEntity::ID];
+
+                $netbanking = $this->repo->netbanking->findByPaymentIdAndAction($paymentId,
                                                                                 Action::AUTHORIZE);
 
                 $carry[] = [
                     'Sr.No'              => sizeof($carry) + 1,
-                    'Refund Id'          => $row['refund']['id'],
+                    'Refund Id'          => $row[ConstantsEntity::REFUND][RefundEntity::ID],
                     'Bank Id'            => self::BANK_CODE,
                     'Merchant Name'      => self::MERCHANT_NAME,
                     'Txn date'           => $date,
                     'Refund Date'        => $refundDate,
-                    'Bank Merchant Code' => $netbanking['reference1'],
-                    'Bank Ref No'        => $netbanking['bank_payment_id'],
-                    'PGI Reference No'   => $row['payment']['id'], // TODO: Check if this is actually payment id
-                    'Txn Amount(Rs Ps)'  => $row['payment']['amount'] / 100,
-                    'Refund'             => $row['refund']['amount'] / 100,
+                    'Bank Merchant Code' => $netbanking[NetbankingEntity::REFERENCE1],
+                    'Bank Ref No'        => $netbanking[NetbankingEntity::BANK_PAYMENT_ID],
+                    'PGI Reference No'   => $paymentId, // TODO: Check if this is actually payment id
+                    'Txn Amount(Rs Ps)'  => $row[ConstantsEntity::PAYMENT][PaymentEntity::AMOUNT] / 100,
+                    'Refund'             => $row[ConstantsEntity::REFUND][RefundEntity::AMOUNT] / 100,
                 ];
 
                 return $carry;
@@ -82,7 +89,7 @@ class Csbk extends Base
                         $data,
                         function(int $carry, array $item)
                         {
-                            $carry += $item['refund']['amount'] / 100;
+                            $carry += $item[ConstantsEntity::REFUND][RefundEntity::AMOUNT] / 100;
 
                             return $carry;
                         },

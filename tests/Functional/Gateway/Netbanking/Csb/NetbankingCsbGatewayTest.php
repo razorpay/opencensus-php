@@ -191,12 +191,12 @@ class NetbankingCsbGatewayTest extends TestCase
 
         $file = $this->getLastEntity(ConstantsEntity::FILE_STORE, true);
 
-        $this->checkRefundTextData($data['items'][0], $file);
+        $this->checkRefundExcelData($data['items'][0], $file);
 
         $this->checkMailQueue($file);
     }
 
-    private function checkRefundTextData(array $data, array $file)
+    private function checkRefundExcelData(array $data, array $file)
     {
         $this->assertNotNull($data[File\Entity::FILE_GENERATED_AT]);
         $this->assertNotNull($data[File\Entity::SENT_AT]);
