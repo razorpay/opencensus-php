@@ -4,21 +4,35 @@ namespace RZP\Reconciliator\NetbankingCsb;
 
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
+use RZP\Gateway\Base\Action;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
     const PAYMENT_ID      = 'payment_id';
     const STATUS          = 'status';
     const AMOUNT          = 'amount';
+    const DATE            = 'date';
     
     protected function getPaymentId(array $row)
     {
         return $row[self::PAYMENT_ID];
     }
 
+    protected function getGatewayPayment($paymentId)
+    {
+        return $this->repo
+                    ->netbanking
+                    ->findByPaymentIdAndAction($paymentId, Action::AUTHORIZE);
+    }
+
     protected function getReconPaymentStatus(array $row)
     {
         return $row[self::STATUS] ?? 'Y';
+    }
+
+    protected function getGatewayPaymentDate($row)
+    {
+        return $row[self::DATE] ?? null;
     }
 
     protected function validatePaymentAmountEqualsReconAmount(array $row)

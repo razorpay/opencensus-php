@@ -220,4 +220,9 @@ class Entity extends Base\Entity
     {
         return $this->getAttribute(self::SI_MSG);
     }
+
+    public function setDate(string $date)
+    {
+        $this->setAttribute(self::DATE, $date);
+    }
 }

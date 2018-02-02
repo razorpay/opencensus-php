@@ -55,32 +55,41 @@ class NetbankingCsbReconTest extends TestCase
         $this->assertEquals(3, $response['success_count']);
         $this->assertEquals(0, $response['failure_count']);
 
-        $wallets = $this->getEntities('wallet', [], true);
+        $netbankings = $this->getEntities('netbanking', [], true);
 
-        foreach ($wallets['items'] as $id => $wallet)
-        {
-            $payment = $this->getEntityById('payment', $payments[$id], true);
+        array_map(
+            function($netbanking, $id) use ($payments)
+            {
+                $payment = $this->getEntityById('payment', $payments[$id], true);
 
-            $this->assertEquals(true, $payment['gateway_captured']);
+                $this->assertEquals(true, $payment['gateway_captured']);
 
-            // we persist date as per recon date
-            $this->assertNotNull($wallet['date']);
+                // we persist date into the nb entity as per recon file date
+                $this->assertNotNull($netbanking['date']);
 
-            $transactionId = $payment['transaction_id'];
+                $transactionId = $payment['transaction_id'];
 
-            $transaction = $this->getEntityById('transaction', $transactionId, true);
+                $transaction = $this->getEntityById('transaction', $transactionId, true);
 
-            // Transaction is reconciled
-            $this->assertNotNull($transaction['reconciled_at']);
+                // Transaction is reconciled
+                $this->assertNotNull($transaction['reconciled_at']);
 
-            // We persist gateway settled at
-            $this->assertNotNull($transaction['gateway_settled_at']);
+                //
+                // We do not persist gateway settled at
+                // This is because the recon file doesn't contain a settled at date
+                //
+                $this->assertNull($transaction['gateway_settled_at']);
 
-            // Service tax and gateway fee are recorded in the
-            // transaction entity as per hardcoded values in mock recon file
-            $this->assertEquals(2345, $transaction['gateway_service_tax']);
-            $this->assertEquals(3000, $transaction['gateway_fee']);
-        }
+                //
+                // Service tax and gateway fee are not returned in the recon file.
+                // This is why we do not save these two attributes in the transaction entity
+                //
+                $this->assertEquals(0, $transaction['gateway_service_tax']);
+                $this->assertEquals(0, $transaction['gateway_fee']);
+            },
+            $netbankings['items'],
+            array_keys($netbankings['items'])
+        );
     }
 
     private function createUploadedFile($file)
