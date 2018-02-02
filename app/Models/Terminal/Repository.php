@@ -85,7 +85,9 @@ class Repository extends Base\Repository
     {
         $merchantIds = [$merchant->getId(), Merchant\Account::SHARED_ACCOUNT];
 
-        $query = $this->newQuery()
+        $slaveConn = $this->getSlaveConnection();
+
+        $query = $this->newQueryWithConnection($slaveConn)
                       ->enabled();
 
         $this->addMerchantWhereCondition($query, $merchantIds);
