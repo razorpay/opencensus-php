@@ -671,7 +671,6 @@ class Creator extends Base\Core
             case Format::XLSX:
                 Config::set('excel::export.calculate', true);
 
-            case Format::ODS:
             case Format::CSV:
                 $this->writeToExcelFile();
 

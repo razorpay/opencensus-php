@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Base\Mock;
 
 use App;
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\FileStore;
 use RZP\Base\RepositoryManager;
 
@@ -46,13 +47,13 @@ class Reconciliator
 
     public function generateReconciliation(array $input)
     {
-        $entites = $this->getEntitiesToReconcile();
+        $entities = $this->getEntitiesToReconcile();
 
         $inputData = [];
 
-        foreach ($entites as $entity)
+        foreach ($entities as $entity)
         {
-            $data[$entity->getEntity()] = $entity->toArray();
+            $data = $this->getEntityAsArray($entity);
 
             $this->addGatewayEntityIfNeeded($data);
 
@@ -84,7 +85,7 @@ class Reconciliator
     }
 
     protected function createFile(
-        array $content,
+        $content,
         string $type = FileStore\Type::MOCK_RECONCILIATION_FILE,
         string $store = FileStore\Store::S3)
     {
@@ -121,6 +122,17 @@ class Reconciliator
         }
 
         return $txt;
+    }
+
+    /**
+     * This method can overridden in the child class.
+     *
+     * @param PublicEntity $entity
+     * @return array
+     */
+    protected function getEntityAsArray(PublicEntity $entity): array
+    {
+        return [$entity->getEntity() => $entity->toArray()];
     }
 
     /**

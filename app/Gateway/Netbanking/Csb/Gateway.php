@@ -26,6 +26,14 @@ class Gateway extends Base\Gateway
 {
     protected $gateway = PG::NETBANKING_CSB;
 
+    /**
+     * This array is modified while getting the authorize request.
+     * It is used to create the gateway netbanking entity.
+     * @see getAuthorizeRequest
+     * @var array
+     */
+    private $gatewayAttributes = [];
+
     protected $map = [
         /**
          * Fields from authorize request used to create gateway payment entity
@@ -41,14 +49,6 @@ class Gateway extends Base\Gateway
         ResponseFields::STATUS       => Base\Entity::STATUS,
         ResponseFields::NARRATION    => Base\Entity::ERROR_MESSAGE, // TODO: Ensure this is correct
     ];
-
-    /**
-     * This array is modified while getting the authorize request.
-     * It is used to create the gateway netbanking entity.
-     * @see getAuthorizeRequest
-     * @var array
-     */
-    private $gatewayAttributes = [];
 
     public function authorize(array $input)
     {

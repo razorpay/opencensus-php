@@ -70,14 +70,21 @@ trait ReconTrait
 
     protected function makePaymentsSince(int $createdAt, int $count = 3)
     {
+        $payments = [];
+
         for ($i = 0; $i < $count; $i++)
         {
-            $payments[] = $this->createPayment();
-        }
+            $payment = $this->createPayment();
 
-        foreach ($payments as $payment)
-        {
-            $this->fixtures->edit('payment', $payment, ['created_at' => $createdAt]);
+            $this->fixtures->edit(
+                'payment',
+                $payment,
+                [
+                    'created_at'    => $createdAt,
+                    'authorized_at' => $createdAt + 10
+                ]);
+
+            $payments[] = $payment;
         }
 
         return $payments;

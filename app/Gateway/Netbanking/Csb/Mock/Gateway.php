@@ -22,9 +22,7 @@ class Gateway extends Csb\Gateway
     {
         parent::__construct();
 
-        $gateway = Payment\Gateway::NETBANKING_CSB;
-
-        $this->bank = explode('_', $gateway)[1];
+        $this->bank = explode('_', $this->gateway)[1];
     }
 
     public function authorize(array $input)
