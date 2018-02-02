@@ -58,7 +58,9 @@ async function admin(browser) {
 
 let browser;
 async function test()   {
-  browser = await puppeteer.launch();
+  browser = await puppeteer.launch({
+    args: ['--no-sandbox', '--user-data-dir=/tmp']
+  });
   console.log('Browser testing started...');
 
   console.log(await merchant(browser));
@@ -74,7 +76,7 @@ test().then(_=> {
   console.log('Puppeteer successful');
   process.exit(0);
 }).catch(er=>{
-  browser.close();
+  browser && browser.close();
   console.log(er);
   console.log('Puppeteer failed');
   process.exit(1);
