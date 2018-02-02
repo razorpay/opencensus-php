@@ -49,6 +49,8 @@ trait ReconTrait
 
     protected function mockReconContentFunction($closure, $gateway = null, array $input = [])
     {
+        $gateway = $gateway ?: $this->gateway;
+
         $recon = $this->mockRecon($gateway, $input)
                       ->shouldReceive('content')
                       ->andReturnUsing($closure)

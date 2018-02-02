@@ -5,6 +5,8 @@ namespace RZP\Reconciliator\NetbankingCsb;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
+use RZP\Gateway\Netbanking\Csb\Status;
+use RZP\Models\Payment\Status as PaymentStatus;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
@@ -27,7 +29,9 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getReconPaymentStatus(array $row)
     {
-        return $row[self::STATUS] ?? 'Y';
+        $status = $row[self::STATUS] ?? Status::SUCCESS;
+
+        return $this->getApiPaymentStatus($status);
     }
 
     protected function getGatewayPaymentDate($row)
@@ -58,5 +62,15 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     private function getReconPaymentAmount(array $row)
     {
         return Base\Helper::getIntegerFormattedAmount($row[self::AMOUNT]);
+    }
+
+    private function getApiPaymentStatus(string $status)
+    {
+        if ($status === Status::FAILURE)
+        {
+            return PaymentStatus::FAILED;
+        }
+
+        return PaymentStatus::CAPTURED;
     }
 }

@@ -92,6 +92,87 @@ class NetbankingCsbReconTest extends TestCase
         );
     }
 
+    public function testReconRefundAmountValidationFailure()
+    {
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $payment = $this->makePaymentsSince($createdAt, 1)[0];
+
+        $this->ba->appAuth();
+
+        $this->mockReconContentFunction(
+            function (& $content, $action = null)
+            {
+                $content[0][3] = 1;
+            });
+
+        $fileContents = $this->generateReconFile();
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile($uploadedFile, Recon::NETBANKING_CSB);
+
+        $netbanking = $this->getLastEntity('netbanking', true);
+
+        $payment = $this->getEntityById('payment', $payment, true);
+
+        $this->assertPaymentReconSkipped($payment, $netbanking);
+    }
+
+    public function testPaymentIdAbsentReconciliation()
+    {
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $payment = $this->makePaymentsSince($createdAt, 1)[0];
+
+        $this->ba->appAuth();
+
+        $this->mockReconContentFunction(
+            function (& $content, $action = null)
+            {
+                $content[0][0] = "";
+            });
+
+        $fileContents = $this->generateReconFile();
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile($uploadedFile, Recon::NETBANKING_CSB);
+
+        $netbanking = $this->getLastEntity('netbanking', true);
+
+        $payment = $this->getEntityById('payment', $payment, true);
+
+        $this->assertPaymentReconSkipped($payment, $netbanking);
+    }
+
+    public function testReconPaymentFailedReconciliation()
+    {
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $payment = $this->makePaymentsSince($createdAt, 1)[0];
+
+        $this->ba->appAuth();
+
+        $this->mockReconContentFunction(
+            function (& $content, $action = null)
+            {
+                $content[0][4] = "N";
+            });
+
+        $fileContents = $this->generateReconFile();
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile($uploadedFile, Recon::NETBANKING_CSB);
+
+        $netbanking = $this->getLastEntity('netbanking', true);
+
+        $payment = $this->getEntityById('payment', $payment, true);
+
+        $this->assertPaymentReconSkipped($payment, $netbanking);
+    }
+
     private function createUploadedFile($file)
     {
         $this->assertFileExists($file);
@@ -108,6 +189,21 @@ class NetbankingCsbReconTest extends TestCase
         );
 
         return $uploadedFile;
+    }
+
+    private function assertPaymentReconSkipped(array $payment, array $netbanking)
+    {
+        // The payment will not be reconciled as the amount did not match
+        $this->assertEquals(false, $payment['gateway_captured']);
+
+        $this->assertNull($netbanking['date']);
+
+        $transactionId = $payment['transaction_id'];
+
+        $transaction = $this->getEntityById('transaction', $transactionId, true);
+
+        // Transaction is not reconciled
+        $this->assertNull($transaction['reconciled_at']);
     }
 
     protected final function createPayment()
