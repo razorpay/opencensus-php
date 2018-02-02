@@ -14,6 +14,13 @@ use RZP\Models\Gateway\File\Processor\FileHandler;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
 
+/**
+ * This Gateway File child class was developed as per API contract from CSBK.
+ * @see https://drive.google.com/drive/folders/15d5rWx9w8CctZJTPvipE3tWGrm0AEpRE
+ *
+ * Class Csbk
+ * @package RZP\Models\Gateway\File\Processor\Refund
+ */
 class Csbk extends Base
 {
     use FileHandler;
