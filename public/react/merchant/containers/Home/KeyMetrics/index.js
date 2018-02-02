@@ -536,20 +536,29 @@ class KeyMetricsContainer extends Component {
       // daterange changed
       this.clearCache(tabsState);
 
-      /*
-       * if the changed daterange doesn't fit for the
-       * selected breakdown switch to daily
-       */
-      if (selectedBreakdown !== 'daily') {
-        if (
-          (selectedBreakdown === 'weekly' &&
-            startDate.isSame(endDate, 'week')) ||
-          (selectedBreakdown === 'monthly' &&
-            startDate.isSame(endDate, 'month'))
-        ) {
-          tabsState[selectedTab].selectedBreakdown = 'daily';
+      // check the daterange and correct the breakdown in each tab
+      // if needed
+      tabsOrder.forEach((tabName) => {
+
+        const tabState = tabsState[tabName],
+              selectedBreakdown = tabState.selectedBreakdown;
+
+        if (selectedBreakdown !== 'daily') {
+
+          const showWeekly = !startDate.isSame(endDate, 'week'),
+                showMonthly = !startDate.isSame(endDate, 'month');
+
+          if (selectedBreakdown === 'weekly'  && !showWeekly  ||
+              selectedBreakdown === 'monthly' && !showMonthly   ) {
+
+            /*
+             * if the changed daterange doesn't fit for the
+             * selected breakdown switch to daily
+             */
+            tabState.selectedBreakdown = 'daily';
+          }
         }
-      }
+      });
 
       this.setState({ tabsState }, () => {
         const fetchAllReq = this.fetchData(true);
