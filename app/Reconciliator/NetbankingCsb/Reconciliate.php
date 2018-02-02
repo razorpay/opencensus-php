@@ -4,6 +4,13 @@ namespace RZP\Reconciliator\NetbankingCsb;
 
 use RZP\Reconciliator\Base;
 
+/**
+ * This class was developed as per the sample file shared by the CSB POC.
+ * @see https://drive.google.com/drive/folders/15d5rWx9w8CctZJTPvipE3tWGrm0AEpRE
+ *
+ * Class Reconciliate
+ * @package RZP\Reconciliator\NetbankingCsb
+ */
 class Reconciliate extends Base\Reconciliate
 {
     const PAYMENT_ID      = 'payment_id';

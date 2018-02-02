@@ -11,6 +11,13 @@ use RZP\Gateway\Base\Action;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Gateway\Netbanking\Base\Entity as Netbanking;
 
+/**
+ * This class was developed as per the sample file shared by the CSB POC.
+ * @see https://drive.google.com/drive/folders/15d5rWx9w8CctZJTPvipE3tWGrm0AEpRE
+ *
+ * Class Reconciliator
+ * @package RZP\Gateway\Netbanking\Csb\Mock
+ */
 class Reconciliator extends Base\Mock\PaymentReconciliator
 {
     protected $gateway = Payment\Gateway::NETBANKING_CSB;
