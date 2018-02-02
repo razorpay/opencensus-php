@@ -287,7 +287,7 @@ class Repository extends Base\Repository
      */
     public function fetchFailedCardRefundsToProcessManually($from, $to, $gateway, $acquirer, $timerange)
     {
-        $refundAttrs = $this->dbColumn('*');
+        $refundAttributes = $this->dbColumn('*');
 
         $refundPaymentIdAttr = $this->dbColumn(Entity::PAYMENT_ID);
 
@@ -312,7 +312,7 @@ class Repository extends Base\Repository
         $terminalAcquirerAttr = $this->repo->terminal->dbColumn(Terminal\Entity::GATEWAY_ACQUIRER);
 
         return $this->newQuery()
-                    ->select($refundAttrs)
+                    ->select($refundAttributes)
                     ->join(Table::PAYMENT, $refundPaymentIdAttr, '=', $paymentIdAttr)
                     ->join(Table::TERMINAL,$paymentTerminalAttr, '=', $TerminalId)
                     ->where($refundStatus, '=',Refund\STATUS::FAILED)
@@ -322,7 +322,7 @@ class Repository extends Base\Repository
                     ->where($refundCreatedAt, '<=', $to)
                     ->where($paymentGateway, '=', $gateway)
                     ->where($paymentMethod, '=', 'card')
-                    ->whereRaw("$refundCreatedAt - $paymentCreatedAt >= $timerange")
+                    ->whereRaw('? - ? >= ?', [$refundCreatedAt, $paymentCreatedAt, $timerange])
                     ->with(['payment'])
                     ->get();
 
