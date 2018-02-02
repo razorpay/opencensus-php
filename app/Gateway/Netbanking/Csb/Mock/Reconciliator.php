@@ -5,11 +5,9 @@ namespace RZP\Gateway\Netbanking\Csb\Mock;
 use Carbon\Carbon;
 use RZP\Gateway\Base;
 use RZP\Models\Payment;
-use RZP\Models\Terminal;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
-use RZP\Models\Base\PublicEntity;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Gateway\Netbanking\Base\Entity as Netbanking;
 
@@ -50,7 +48,7 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
                         $carry[] = [
                             $item[ConstantsEntity::PAYMENT][Payment\Entity::ID],
                             $item[ConstantsEntity::NETBANKING][Netbanking::BANK_PAYMENT_ID],
-                            $item[ConstantsEntity::TERMINAL][Terminal\Entity::ID],
+                            $item[ConstantsEntity::NETBANKING][Netbanking::REFERENCE1],
                             number_format($amount, 2, '.', ''),
                             $item[ConstantsEntity::NETBANKING][Netbanking::STATUS],
                             $date,
@@ -66,28 +64,6 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
         return $this->generateText($data, '^');
     }
 
-    /**
-     * We need the CSB Merchant ID, and therefore we also fetch the terminal entity here.
-     *
-     * @return PublicCollection
-     */
-    protected function getEntitiesToReconcile()
-    {
-        $createdAtStart = Carbon::yesterday(Timezone::IST)->getTimestamp();
-
-        $createdAtEnd = Carbon::today(Timezone::IST)->getTimestamp();
-
-        $statuses = [
-            Payment\Status::AUTHORIZED,
-            Payment\Status::CAPTURED,
-            Payment\Status::REFUNDED
-        ];
-
-        return $this->repo
-                    ->payment
-                    ->fetchPaymentsAndTerminalsWithStatus($createdAtStart, $createdAtEnd, $this->gateway, $statuses);
-    }
-
     protected function addGatewayEntityIfNeeded(array & $data)
     {
         $paymentId = $data[ConstantsEntity::PAYMENT][Payment\Entity::ID];
@@ -97,22 +73,5 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
                                                  ->netbanking
                                                  ->findByPaymentIdAndAction($paymentId, Action::AUTHORIZE)
                                                  ->toArray();
-    }
-
-    /**
-     * CSB needs terminal entity in array format as well.
-     *
-     * @override
-     * @param PublicEntity $entity
-     * @return array
-     */
-    protected final function getEntityAsArray(PublicEntity $entity): array
-    {
-        $terminal = $entity->terminal;
-
-        return [
-            ConstantsEntity::PAYMENT  => $entity->toArray(),
-            ConstantsEntity::TERMINAL => $terminal->toArray()
-        ];
     }
 }
