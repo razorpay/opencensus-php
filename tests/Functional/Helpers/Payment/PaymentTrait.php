@@ -2,8 +2,10 @@
 
 namespace RZP\Tests\Functional\Helpers\Payment;
 
+use Carbon\Carbon;
 use Mockery;
 use Requests;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Models\Merchant\Account;
 use RZP\Http\BasicAuth\BasicAuth;
@@ -84,7 +86,7 @@ trait PaymentTrait
         return $payment;
     }
 
-    protected function doAuthCaptureAndRefundPayment($payment = null)
+    protected function doAuthCaptureAndRefundPayment($payment = null, $amount = null)
     {
         if ($payment === null)
         {
@@ -93,7 +95,7 @@ trait PaymentTrait
 
         $payment = $this->doAuthAndCapturePayment($payment);
 
-        $refund = $this->refundPayment($payment['id']);
+        $refund = $this->refundPayment($payment['id'], $amount);
 
         return $refund;
     }
@@ -473,6 +475,22 @@ trait PaymentTrait
         $response->assertHeader('content-type', 'text/html; charset=UTF-8');
 
         return $this->getFormRequestFromResponse($response->getContent(), 'http://localhost');
+    }
+
+    protected function generateRefundsGatewayFile(string $bank)
+    {
+        $request = [
+            'url'       => '/gateway/files',
+            'method'    => 'POST',
+            'content'   => [
+                'targets' => [$bank],
+                'type'    => 'refund',
+                'begin'   => Carbon::yesterday(Timezone::IST)->getTimestamp(),
+                'end'     => Carbon::today(Timezone::IST)->getTimestamp()
+            ],
+        ];
+
+        return $this->makeRequestAndGetContent($request);
     }
 
     protected function makeOtpCallback($url)

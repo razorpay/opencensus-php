@@ -26,6 +26,7 @@ class MailTags
     const HDFC_NETBANKING_REFUNDS_MAIL          = 'hdfc_netbanking_refunds_mail';
     const BOB_NETBANKING_REFUNDS_MAIL           = 'bob_netbanking_refunds_mail';
     const AXIS_NETBANKING_REFUNDS_MAIL          = 'axis_netbanking_refunds_mail';
+    const CSB_NETBANKING_REFUNDS_MAIL           = 'csb_netbanking_refunds_mail';
     const AIRTEL_MONEY_REFUNDS_MAIL             = 'airtel_money_refunds_mail';
     const AIRTEL_MONEY_FAILED_REFUNDS_MAIL      = 'airtel_money_failed_refunds_mail';
     const ICICI_NETBANKING_REFUNDS_MAIL         = 'icici_netbanking_refunds_mail';

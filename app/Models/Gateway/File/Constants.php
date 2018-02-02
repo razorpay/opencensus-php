@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Gateway\File;
 
-use RZP\Models\Payment\Gateway;
+use RZP\Models\Bank\IFSC;
 use RZP\Mail\Base\Constants as MailConstants;
 
 class Constants
@@ -17,6 +17,7 @@ class Constants
     const SCBL            = 'scbl';
     const UPI_ICICI       = 'upi_icici';
     const AIRTEL_MONEY    = 'airtel_money';
+    const CSB             = IFSC::CSBK;
 
     /**
      * Stores a mapping of valid banks for each file type
@@ -24,7 +25,8 @@ class Constants
     const SUPPORTED_TARGETS = [
         Type::REFUND => [
             self::HDFC,
-            self::ICICI
+            self::ICICI,
+            self::CSB,
         ],
         Type::CLAIM => [
         ],
@@ -69,6 +71,7 @@ class Constants
         Type::REFUND => [
             self::HDFC  => ['Directpay.Refunds@hdfcbank.com', 'settlements@razorpay.com'],
             self::ICICI => ['icici.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
+            self::CSB   => ['settlements@razorpay.com'], // TODO: Add csb refunds email
         ],
 
         Type::COMBINED => [

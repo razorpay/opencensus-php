@@ -2,14 +2,20 @@
 
 namespace RZP\Tests\Functional\Gateway\Netbanking\Csb;
 
-use RZP\Gateway\Netbanking\Csb\ResponseFields;
+use Mail;
+use Excel;
+use Carbon\Carbon;
 use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
+use RZP\Constants\Timezone;
+use RZP\Models\Gateway\File;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Netbanking\Csb\Status;
 use RZP\Constants\Entity as ConstantsEntity;
+use RZP\Gateway\Netbanking\Csb\ResponseFields;
 use RZP\Gateway\Netbanking\Base\Entity as Netbanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 
 class NetbankingCsbGatewayTest extends TestCase
 {
@@ -170,6 +176,94 @@ class NetbankingCsbGatewayTest extends TestCase
         $testData = $this->testData['testPayment'];
 
         $this->assertArraySelectiveEquals($testData, $netbanking);
+    }
+
+    public function testRefundFileGeneration()
+    {
+        Mail::fake();
+
+        $this->createRefundForFileGeneration();
+
+        // gateway file generation route is an internal auth
+        $this->ba->appAuth();
+
+        $data = $this->generateRefundsGatewayFile(IFSC::CSBK);
+
+        $file = $this->getLastEntity(ConstantsEntity::FILE_STORE, true);
+
+        $this->checkRefundTextData($data['items'][0], $file);
+
+        $this->checkMailQueue($file);
+    }
+
+    private function checkRefundTextData(array $data, array $file)
+    {
+        $this->assertNotNull($data[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNotNull($data[File\Entity::SENT_AT]);
+        $this->assertNull($data[File\Entity::FAILED_AT]);
+        $this->assertNull($data[File\Entity::ACKNOWLEDGED_AT]);
+
+        $filePath = storage_path('files/filestore') . '/' . $file['location'];
+
+        $this->assertTrue(file_exists($filePath));
+
+        $refundsFileContents = Excel::load($filePath)->all()->toArray();
+
+        $refundAmounts = [500, 500, 100];
+
+        foreach ($refundAmounts as $ind => $amount)
+        {
+            // We increment $ind in the local scope so that srno = $ind = 1
+            $refund = $refundsFileContents[$ind++];
+
+            $this->assertEquals($ind, $refund['srno']);
+            $this->assertEquals(500, $refund['txn_amountrs_ps']);
+            $this->assertEquals($amount, $refund['refund']);
+        }
+
+        $this->assertEquals(3, count($refundsFileContents));
+
+        unlink($filePath);
+    }
+
+    private function checkMailQueue(array $file)
+    {
+        Mail::assertSent(RefundFileMail::class, function ($mail) use ($file)
+        {
+            $body = 'Please forward the CSB Netbanking refunds file to UBPS operations team';
+
+            $this->assertEquals($body, $mail->viewData['body']);
+
+            $this->assertEquals('1100.00', $mail->viewData['amount']);
+
+            $this->assertEquals('3', $mail->viewData['count']);
+
+            $this->assertEquals('emails.message', $mail->view);
+
+            return true;
+        });
+    }
+
+    private function createRefundForFileGeneration()
+    {
+        $refunds = [];
+
+        $refunds[] = $this->doAuthCaptureAndRefundPayment($this->payment);
+        $refunds[] = $this->doAuthCaptureAndRefundPayment($this->payment);
+
+        // One partial refund of 100 rupees
+        $refunds[] = $this->doAuthCaptureAndRefundPayment($this->payment, 10000);
+
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(10)
+                                                         ->addMinutes(45)
+                                                         ->getTimestamp();
+
+        foreach($refunds as $refund)
+        {
+            $this->fixtures->edit('refund', $refund['id'], ['created_at' => $createdAt]);
+        }
+
+        return $refunds;
     }
 
     private function mockPaymentFailed()

@@ -30,6 +30,8 @@ class Type
 
     const FEDERAL_NETBANKING_REFUND         = 'federal_netbanking_refund';
 
+    const CSB_NETBANKING_REFUND             = 'csb_netbanking_refund';
+
     const RBL_NETBANKING_REFUND             = 'rbl_netbanking_refund';
 
     const RBL_NETBANKING_CLAIM              = 'rbl_netbanking_claim';
@@ -121,6 +123,7 @@ class Type
             self::AIRTELMONEY_WALLET_REFUND,
             self::PAYUMONEY_WALLET_REFUND,
             self::RBL_NETBANKING_CLAIM,
+            self::CSB_NETBANKING_REFUND,
             self::ICICI_UPI_REFUND,
             self::SBI_UPI_REFUND,
             self::REPORT,
@@ -189,6 +192,7 @@ class Type
         self::ICICI_EMI_FILE_MAIL,
         self::ICICI_EMI_FILE_SFTP,
         self::KOTAK_NETBANKING_CLAIM,
+        self::CSB_NETBANKING_REFUND,
         self::KOTAK_NETBANKING_REFUND,
         self::HDFC_NETBANKING_REFUND,
         self::HDFC_EMANDATE_REGISTER,
@@ -226,6 +230,7 @@ class Type
             self::HDFC_EMANDATE_DEBIT,
             self::AXIS_NETBANKING_REFUND,
             self::AXIS_NETBANKING_CLAIMS,
+            self::CSB_NETBANKING_REFUND,
             self::AIRTELMONEY_WALLET_REFUND,
             self::PAYUMONEY_WALLET_REFUND,
             self::ICICI_UPI_REFUND,
