@@ -3,8 +3,10 @@
 namespace RZP\Base;
 
 use DB;
+use Config;
 use Illuminate\Support\Facades\App;
 
+use Database\Connection;
 use RZP\Models;
 use RZP\Exception;
 use RZP\Jobs\EsSync;
@@ -771,5 +773,19 @@ class Repository extends \Razorpay\Spine\Repository
     protected function hasEntityFetch(): bool
     {
         return (empty($this->entityFetch) === false);
+    }
+
+    protected function getSlaveConnection(string $mode = null)
+    {
+        if ($this->app['env'] === 'testing')
+        {
+            return Config::get('database.default');
+        }
+
+        $mode = $mode ?? $this->app['rzp.mode'];
+
+        $connection = ($mode === MODE::TEST) ? Connection::SLAVE_TEST : Connection::SLAVE_LIVE;
+
+        return $connection;
     }
 }
