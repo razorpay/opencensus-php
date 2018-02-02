@@ -26,39 +26,40 @@ class Csbk extends Base
 
     protected function formatDataForFile(array $data)
     {
-        $fileData = [];
+        return array_reduce(
+            $data,
+            function(array $carry, array $row)
+            {
+                $date = Carbon::createFromTimestamp(
+                            $row['payment']['created_at'],
+                            Timezone::IST)
+                            ->format('d-m-y');
 
-        foreach ($data as $ind => $row)
-        {
-            $date = Carbon::createFromTimestamp(
-                $row['payment']['created_at'],
-                Timezone::IST)
-                ->format('d-m-y');
+                $refundDate = Carbon::createFromTimestamp(
+                                $row['refund']['created_at'],
+                                Timezone::IST)
+                                ->format('d-m-y');
 
-            $refundDate = Carbon::createFromTimestamp(
-                $row['refund']['created_at'],
-                Timezone::IST)
-                ->format('d-m-y');
+                $netbanking = $this->repo->netbanking->findByPaymentIdAndAction($row['payment']['id'],
+                                                                                Action::AUTHORIZE);
 
-            $netbanking = $this->repo->netbanking->findByPaymentIdAndAction($row['payment']['id'],
-                                                                            Action::AUTHORIZE);
+                $carry[] = [
+                    'Sr.No'              => sizeof($carry) + 1,
+                    'Refund Id'          => $row['refund']['id'],
+                    'Bank Id'            => self::BANK_CODE,
+                    'Merchant Name'      => self::MERCHANT_NAME,
+                    'Txn date'           => $date,
+                    'Refund Date'        => $refundDate,
+                    'Bank Merchant Code' => $netbanking['reference1'],
+                    'Bank Ref No'        => $netbanking['bank_payment_id'],
+                    'PGI Reference No'   => $row['payment']['id'], // TODO: Check if this is actually payment id
+                    'Txn Amount(Rs Ps)'  => $row['payment']['amount'] / 100,
+                    'Refund'             => $row['refund']['amount'] / 100,
+                ];
 
-            $fileData[] = [
-                'Sr.No'              => ++$ind,
-                'Refund Id'          => $row['refund']['id'],
-                'Bank Id'            => self::BANK_CODE,
-                'Merchant Name'      => self::MERCHANT_NAME,
-                'Txn date'           => $date,
-                'Refund Date'        => $refundDate,
-                'Bank Merchant Code' => $netbanking['reference1'],
-                'Bank Ref No'        => $netbanking['bank_payment_id'],
-                'PGI Reference No'   => $row['payment']['id'], // TODO: Check if this is actually payment id
-                'Txn Amount(Rs Ps)'  => $row['payment']['amount'] / 100,
-                'Refund'             => $row['refund']['amount'] / 100,
-            ];
-        }
-
-        return $fileData;
+                return $carry;
+            },
+            []);
     }
 
     protected function getFileToWriteNameWithoutExt()

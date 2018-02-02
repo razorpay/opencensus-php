@@ -645,7 +645,6 @@ class Gateway
         IFSC::RATN => Gateway::NETBANKING_RBL,
         IFSC::INDB => Gateway::NETBANKING_INDUSIND,
         IFSC::PUNB => Gateway::NETBANKING_PNB,
-        IFSC::CSBK => Gateway::NETBANKING_CSB
     ];
 
     /**
