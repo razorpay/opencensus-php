@@ -30,6 +30,14 @@ class Reconciliate extends Base\Reconciliate
     {
         assert($type === self::PAYMENT);
 
+        //
+        // We are returning an array directly instead of adding this array as a
+        // property of the class. This is because adding this array as a property
+        // of the class would leave additional memory allocated to the class
+        // as long as there exists an object of this class within the current scope.
+        // This would cause additional memory leaks to the PHP process.
+        //
+
         return [
             self::PAYMENT_ID,
             self::BANK_PAYMENT_ID,
