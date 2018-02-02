@@ -1493,6 +1493,7 @@ final class Route
         'geoip_update'                           => '*',
         'batch_process_by_id'                    => Permission::RETRY_BATCH,
         'reports_refund_irctc'                   => '*',
+        'merchant_get_tags'                      => '*',
     ];
 
     public static $direct = [
