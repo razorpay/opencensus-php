@@ -96,6 +96,8 @@ class Core extends Base\Core
 
                 $this->sendDisputeMailToMerchant($dispute, $merchant, $input);
 
+                $this->firePaymentDisputedEvent($payment, $dispute);
+
                 return $dispute;
 
             });

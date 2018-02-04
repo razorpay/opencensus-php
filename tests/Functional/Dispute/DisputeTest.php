@@ -8,15 +8,18 @@ use RZP\Models\Dispute\Entity;
 use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Models\Dispute\Entity as DisputeEntity;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Mail\Dispute\Creation as DisputeCreationMail;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Dispute\File\Entity as DisputeFileEntity;
 
 class DisputeTest extends TestCase
 {
-    use RequestResponseFlowTrait;
+    use WebhookTrait;
+    use PaymentTrait;
 
     protected $payment = null;
 
@@ -92,6 +95,27 @@ class DisputeTest extends TestCase
         $this->startTest($testData);
 
         Mail::assertNotSent(DisputeCreationMail::class);
+    }
+
+    public function testDisputeCreatedWebhook()
+    {
+        $this->createWebhook(['events' => ['payment.disputed' => '1']]);
+
+        $payment = $this->doAuthAndCapturePayment();
+
+        $paymentId = $payment['id'];
+
+        $testData = $this->updateCreateTestData($paymentId);
+
+        $eventTestDataKey = 'testDisputeCreatedWebhookEventData';
+
+        $this->setInfernoExpectations([$eventTestDataKey]);
+
+        $this->testData[$eventTestDataKey]['payload']['dispute']['entity']['payment_id'] = $paymentId;
+
+        $this->ba->appAuth();
+
+        $this->startTest($testData);
     }
 
     public function testDisputeCreateWithDeduct()

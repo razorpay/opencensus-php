@@ -52,8 +52,6 @@ trait WebhookTrait
                 $expectedEvent = $this->testData[$testDataKey];
                 $actualEvent   = json_decode($actualWebhook['event'], true);
 
-                sd($actualEvent);
-
                 $this->assertArraySelectiveEquals($expectedEvent, $actualEvent);
 
                 return true;
