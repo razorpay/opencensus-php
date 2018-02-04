@@ -94,7 +94,7 @@ class ApiEventSubscriber extends Base\Core
         }
         else
         {
-            $this->mainEntity = $params[self::MAIN];
+            $this->mainEntity  = $params[self::MAIN];
             $this->withPayload = $params[self::WITH] ?? [];
         }
 
@@ -316,6 +316,13 @@ class ApiEventSubscriber extends Base\Core
         $this->prepareAndDispatchWebhook($payload);
     }
 
+    protected function onPaymentDisputed($payment)
+    {
+        $payload = $this->getPaymentPayloadWithDispute($payment);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
     protected function getP2pPayload($p2p)
     {
         $source = $p2p->source;
@@ -446,6 +453,18 @@ class ApiEventSubscriber extends Base\Core
         ];
 
         return $payload;
+    }
+
+    protected function getPaymentPayloadWithDispute($payment)
+    {
+        $partialPayload[Constants\Entity::PAYMENT] = [
+            'entity' => $payment->toArrayPublic()
+        ];
+
+        // Add dispute entity defined in `withPayload`
+        $this->addExtraDataToPayload($partialPayload);
+
+        return $partialPayload;
     }
 
     protected function prepareAndDispatchWebhook(array $payload)
