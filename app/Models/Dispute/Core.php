@@ -5,6 +5,8 @@ namespace RZP\Models\Dispute;
 use DB;
 use Mail;
 use Carbon\Carbon;
+
+use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -14,8 +16,10 @@ use RZP\Models\Adjustment;
 use RZP\Constants\Timezone;
 use RZP\Models\Admin\Action;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Listeners\ApiEventSubscriber;
 use RZP\Mail\Dispute as DisputeMailer;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
 use RZP\Models\Dispute\File\Entity as DisputeFileEntity;
 
 class Core extends Base\Core
@@ -522,5 +526,17 @@ class Core extends Base\Core
         }
 
         return $input;
+    }
+
+    protected function firePaymentDisputedEvent(Payment\Entity $payment, Entity $dispute)
+    {
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $payment,
+            ApiEventSubscriber::WITH => [
+                Constants\Entity::DISPUTE => $dispute,
+            ]
+        ];
+
+        $this->app['events']->fire('api.' . WebhookEvent::PAYMENT_DISPUTED, $eventPayload);
     }
 }
