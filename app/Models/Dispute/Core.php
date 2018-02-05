@@ -5,7 +5,9 @@ namespace RZP\Models\Dispute;
 use DB;
 use Mail;
 use Carbon\Carbon;
+
 use RZP\Models\Base;
+use RZP\Services\Mutex;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
@@ -21,9 +23,14 @@ use RZP\Models\Dispute\File\Entity as DisputeFileEntity;
 class Core extends Base\Core
 {
     use FileHandlerTrait;
-  
-    const DEBIT_ADJUSTMENT_DESCRIPTION = 'Debit disputed amount';
+
+    const DEBIT_ADJUSTMENT_DESCRIPTION  = 'Debit disputed amount';
     const CREDIT_ADJUSTMENT_DESCRIPTION = 'Credit to reverse a previous dispute debit';
+
+    /**
+     * @var Mutex
+     */
+    protected $mutex;
 
     public function __construct()
     {
@@ -38,6 +45,7 @@ class Core extends Base\Core
      * @param array          $input
      *
      * @return Entity
+     * @throws \RZP\Exception\BadRequestException
      */
     public function create(
         Payment\Entity $payment,
@@ -102,6 +110,7 @@ class Core extends Base\Core
      * @param array  $input
      *
      * @return Entity
+     * @throws \RZP\Exception\BadRequestException
      */
     public function update(Entity $dispute, array $input): Entity
     {
@@ -171,9 +180,9 @@ class Core extends Base\Core
 
             $response = $dispute->toArrayPublic();
 
-            if (empty($files) === false )
+            if (empty($files) === false)
             {
-                $response['files'] = $fileCore->uploadFiles($dispute, $files);
+                $response[Entity::FILES] = $fileCore->uploadFiles($dispute, $files);
             }
             
             return $response;
@@ -187,6 +196,7 @@ class Core extends Base\Core
      * @param array  $input
      *
      * @return Entity
+     * @throws \RZP\Exception\BadRequestException
      */
     public function updateForMerchant(Entity $dispute, array $input): Entity
     {

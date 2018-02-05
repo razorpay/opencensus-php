@@ -3,6 +3,7 @@
 namespace RZP\Models\Dispute;
 
 use Request;
+
 use RZP\Models\Base;
 
 class Service extends Base\Service
@@ -31,7 +32,7 @@ class Service extends Base\Service
             return $dispute->toArrayAdmin();
         }
         else if (($this->auth->isPrivateAuth() === true) or
-                ($this->auth->isProxyAuth() === true))
+                 ($this->auth->isProxyAuth() === true))
         {
             return $this->core()->updateFilesAndInputForMerchant($dispute, $input);
         }

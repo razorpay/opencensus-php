@@ -48,6 +48,9 @@ class Entity extends Base\PublicEntity
     // Key for accepting dispute by merchant
     const ACCEPT_DISPUTE          = 'accept_dispute';
 
+    // Output keys
+    const FILES                   = 'files';
+
     protected static $sign = 'disp';
 
     protected $entity = 'dispute';
