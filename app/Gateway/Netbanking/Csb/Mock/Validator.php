@@ -16,7 +16,7 @@ class Validator extends Base\Validator
         RequestFields::AMOUNT       => 'required|integer',
         RequestFields::RETURN_URL   => 'required|string|url',
         RequestFields::MODE         => 'required|string|in:P',
-        RequestFields::CHECKSUM     => 'required|string|size:8'
+        RequestFields::CHECKSUM     => 'required|string'
     ];
 
     protected static $verifyRules = [
@@ -27,6 +27,6 @@ class Validator extends Base\Validator
         RequestFields::AMOUNT       => 'required|integer',
         RequestFields::TRAN_REF_NUM => 'required|integer|in:9999999999',
         RequestFields::MODE         => 'required|string|in:V',
-        RequestFields::CHECKSUM     => 'required|string|size:8'
+        RequestFields::CHECKSUM     => 'required|string'
     ];
 }

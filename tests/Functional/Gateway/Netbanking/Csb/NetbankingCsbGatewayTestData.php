@@ -15,7 +15,7 @@ return [
         'bank'            => 'CSBK',
         'bank_payment_id' => '9999999999',
         'status'          => 'Y',
-        'reference1'      => 'RazorpayPay',
+        'reference1'      => 'RazorPay',
         'received'        => true,
         'error_message'   => 'Payment successful'
     ],
@@ -42,7 +42,7 @@ return [
         'bank'            => 'CSBK',
         'bank_payment_id' => '9999999999',
         'status'          => 'N',
-        'reference1'      => 'RazorpayPay',
+        'reference1'      => 'RazorPay',
         'received'        => true,
         'error_message'   => 'Payment failed'
     ],

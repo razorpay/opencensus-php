@@ -139,16 +139,16 @@ class Server extends Base\Mock\Server
 
         unset($request[RequestFields::CHECKSUM]);
 
-        $generatedCheckSum = $this->getAuthCheckSum($request);
+        $generatedCheckSum = $this->getChecksum($request);
 
         $this->getGatewayInstance()->compareHashes($checkSum, $generatedCheckSum);
     }
 
-    private function getAuthCheckSum(array $request)
+    private function getChecksum(array $request)
     {
-        $content = implode('|', array_values($request));
+        $content = array_values($request);
 
-        return $this->getGatewayInstance()->getHashOfString($content);
+        return $this->getGatewayInstance()->computeChecksum($content);
     }
 
     private function getAuthorizeRequestFields()

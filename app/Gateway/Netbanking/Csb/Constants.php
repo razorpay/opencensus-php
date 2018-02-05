@@ -13,7 +13,7 @@ class Constants
      * These values are confirmed to be used in UAT.
      * TODO: Check if they are the same for live as well.
      */
-    const CHNPGSYN  = 'RazorpayPay';
+    const CHNPGSYN  = 'RazorPay';
     const CHNPGCODE = '000000RazorPwy018126';
 
     const NARRATION = 'Payment successful';

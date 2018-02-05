@@ -1245,6 +1245,7 @@ class Terminal extends Base
             'merchant_id'           => $merchantId,
             'gateway'               => Gateway::NETBANKING_CSB,
             'gateway_merchant_id'   => 'netbanking_csb_merchant_id',
+            'gateway_merchant_id2'  => 'netbanking_csb_merchant_id2',
             'gateway_secure_secret' => 'random_hash_secret',
             'netbanking'            => 1,
         ];

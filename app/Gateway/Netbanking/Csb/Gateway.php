@@ -193,13 +193,9 @@ class Gateway extends Base\Gateway
             Mode::VERIFY,
         ];
 
-        $content = implode('|', $content);
+        $contentToEncode = $this->computeStringToEncode($content);
 
-        $checkSum = $this->getHashOfString($content);
-
-        $content = [
-            RequestFields::POST_DATA => base64_encode($content . '|' . $checkSum)
-        ];
+        $content = [RequestFields::POST_DATA => base64_encode($contentToEncode)];
 
         return $this->getStandardRequestArray($content);
     }
@@ -267,9 +263,9 @@ class Gateway extends Base\Gateway
     private function getAuthorizeRequest(array $input): array
     {
         $content = [
-            RequestFields::CHNPGSYN     => Constants::CHNPGSYN,
-            RequestFields::CHNPGCODE    => Constants::CHNPGCODE,
-            RequestFields::PAYEE_ID     => $this->getMerchantId(),
+            RequestFields::CHNPGSYN     => Constants::CHNPGSYN, // TODO: These are terminal specific
+            RequestFields::CHNPGCODE    => Constants::CHNPGCODE, // TODO: These are terminal specific
+            RequestFields::PAYEE_ID     => $this->getMerchantId2(),
             RequestFields::BANK_REF_NUM => $input['payment']['id'],
             RequestFields::AMOUNT       => $input['payment']['amount'] / 100,
             RequestFields::RETURN_URL   => $input['callbackUrl'],
@@ -278,17 +274,51 @@ class Gateway extends Base\Gateway
 
         $this->gatewayAttributes = $content;
 
-        $content = array_values($content);
+        $contentToEncode = $this->computeStringToEncode(array_values($content));
 
-        $content = implode('|', $content);
-
-        $checkSum = $this->getHashOfString($content);
-
-        $content = [
-            RequestFields::POST_DATA => base64_encode($content . '|' . $checkSum)
-        ];
+        $content = [RequestFields::POST_DATA => base64_encode($contentToEncode)];
 
         return $this->getStandardRequestArray($content);
+    }
+
+    /**
+     * This method does the following:
+     * 1. Takes in the array to be hashed
+     * 2. Computes the hash of the array
+     * 3. Removes the hash key from the array
+     * 4. Adds computed checksum to array
+     * 4. Implodes into required format string and returns
+     *
+     *
+     * @param array $content
+     * @return string
+     */
+    private function computeStringToEncode(array $content): string
+    {
+        $checkSum = $this->computeChecksum($content);
+
+        // Add the checksum value to the end of the array
+        array_push($content, $checkSum);
+
+        return implode('|', $content);
+    }
+
+    public final function computeChecksum(array $content)
+    {
+        // Add the secret to the end of the content array to be hashed
+        array_push($content, $this->getSecret());
+
+        $contentToHash = implode('|', $content);
+
+        // Remove the last element of the array which is the checksum key
+        array_pop($content);
+
+        return (string) hexdec($this->getHashOfString($contentToHash));
+    }
+
+    private function getMerchantId2(): string
+    {
+        return $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2];
     }
 
     protected function getMerchantId(): string
