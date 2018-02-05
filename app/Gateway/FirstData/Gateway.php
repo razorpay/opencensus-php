@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\FirstData;
 
+use App;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use Requests_Hooks;
@@ -354,38 +355,88 @@ class Gateway extends Base\Gateway
 
         $this->sendVerifyRequest($verify);
 
-        $verifyRefundResponse = $verify->verifyResponseContent;
+        $refunded = $this->verifyRefundResponse($verify);
 
-        if ($verifyRefundResponse === null)
+        return $refunded;
+    }
+
+    protected function verifyRefundResponse(Base\Verify $verify)
+    {
+        $refundTransactionValue = $this->getRefundTransactionValue($verify);
+
+        if ($refundTransactionValue === null)
         {
-            // FirstData is returning an an invalid response, i.e. success flag
-            // set to false, implying that the id does not exist on their end
             return false;
         }
 
-        $xmlResponse  = $verifyRefundResponse->children('a1', true)
-                                             ->TransactionValues
-                                             ->children('ipgapi', true)
-                                             ->IPGApiOrderResponse
-                                             ->children('ipgapi', true);
+        $xmlResponse  = $refundTransactionValue->children('ipgapi', true)
+                                               ->IPGApiOrderResponse
+                                               ->children('ipgapi', true);
 
         $refundResponse = json_decode(json_encode($xmlResponse), true);
 
         $this->setApproval($refundResponse[ApiResponseFields::APPROVAL_CODE]);
 
-        $refundFields = $this->getRefundFields($refundResponse, $input['refund']);
+        $refundFields = $this->getRefundFields($refundResponse, $verify->input['refund']);
 
-        $this->updateOrCreateRefundEntity($refundFields, $input);
+        $this->updateOrCreateRefundEntity($refundFields, $verify->input);
 
-        $refundGatewayStatus = (string) $verifyRefundResponse->children('a1', true)
-                                                             ->TransactionValues
-                                                             ->TransactionState;
+        $refundGatewayStatus = (string) $refundTransactionValue->TransactionState;
 
         assertTrue(($refundGatewayStatus !== null), "Status cannot be null");
 
         $refunded = in_array($refundGatewayStatus, Status::SUCCESSFUL_REFUND_STATES, true);
 
         return $refunded;
+    }
+
+    protected function getRefundTransactionValue(Base\Verify $verify)
+    {
+        $verifyRefundResponse = $verify->verifyResponseContent;
+
+        if ($verifyRefundResponse === null)
+        {
+            // FirstData is returning an an invalid response, i.e. success flag
+            // set to false, implying that the id does not exist on their end
+            return null;
+        }
+
+        $refundTransactionValue = null;
+
+        if ($this->action ===  Action::VERIFY_REVERSE)
+        {
+            $refundTransactionValue  = $verifyRefundResponse->children('a1', true)
+                                                      ->TransactionValues;
+        }
+        else
+        {
+            $xmlResponse  = $verifyRefundResponse->children('a1', true)
+                                                 ->TransactionValues;
+
+            foreach ($verifyRefundResponse->children('a1', true)->TransactionValues as $transactionValue)
+            {
+                $refundId = (string) $transactionValue->children('v1', true)
+                                                      ->TransactionDetails
+                                                      ->MerchantTransactionId;
+
+                if ($refundId === $this->getRefundId())
+                {
+                    $refundTransactionValue = $transactionValue;
+                }
+            }
+        }
+
+        return $refundTransactionValue;
+    }
+
+    protected function getRefundId()
+    {
+        if (App::environment('testing') === true)
+        {
+            return 'FakeRfndId';
+        }
+
+        return $this->input['refund']['id'];
     }
 
     protected function updateOrCreateRefundEntity(array $refundFields, array $input)
@@ -1172,6 +1223,7 @@ class Gateway extends Base\Gateway
         switch ($this->action)
         {
             case Action::VERIFY:
+            case Action::VERIFY_REFUND:
                 $reference = [
                     ApiRequestFields::A1_INQUIRY_ORDER => [
                         ApiRequestFields::A1_ORDER_ID => $input['payment']['id'],
@@ -1184,14 +1236,6 @@ class Gateway extends Base\Gateway
                     ApiRequestFields::A1_INQUIRY_TRANSACTION => [
                         ApiRequestFields::A1_STORE_ID        => $this->getStoreId(),
                         ApiRequestFields::A1_MERCHANT_TXN_ID => $input['payment']['id'],
-                    ],
-                ];
-                break;
-            case Action::VERIFY_REFUND:
-                $reference = [
-                    ApiRequestFields::A1_INQUIRY_TRANSACTION => [
-                        ApiRequestFields::A1_STORE_ID        => $this->getStoreId(),
-                        ApiRequestFields::A1_MERCHANT_TXN_ID => $input['refund']['id'],
                     ],
                 ];
         }
