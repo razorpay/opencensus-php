@@ -6,12 +6,15 @@ use Razorpay\IFSC\IFSC;
 use RZP\Base;
 use RZP\Constants\Mode;
 use RZP\Exception;
+use RZP\Models\Merchant\Detail\Entity as MDE;
 
 class Validator extends Base\Validator
 {
-    const INVALID_IFSC_CODE_MESSAGE = 'Invalid IFSC Code in Bank Account';
+    const INVALID_IFSC_CODE_MESSAGE         = 'Invalid IFSC Code in Bank Account';
+    const INVALID_ADDRESS_PROOF_URL_MESSAGE = 'Invalid Address Proof File in Details or Invalid Auth';
 
     protected static $addBankAccountRules = [
+        MDE::ADDRESS_PROOF_URL         => 'sometimes',
         Entity::IFSC_CODE              => 'required|alpha_num|size:11',
         Entity::ACCOUNT_NUMBER         => 'required|alpha_num|between:5,22',
         Entity::BENEFICIARY_NAME       => 'required|between:4,120|alpha_space_num',
@@ -90,6 +93,15 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 self::INVALID_IFSC_CODE_MESSAGE);
+        }
+    }
+
+    function validateAddressProofUrl($input)
+    {
+        if ($this->app['basicauth']->isProxyAuth() === false or empty($input) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                self::INVALID_ADDRESS_PROOF_URL_MESSAGE);
         }
     }
 

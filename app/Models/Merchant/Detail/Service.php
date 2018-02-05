@@ -92,6 +92,26 @@ class Service extends Base\Service
 
         $merchantDetails->edit($input);
 
+        $params = $this->storeActivationFile($merchant, $merchantDetails, $input);
+
+        $merchantDetails->fill($params);
+
+        $response = $core->createResponse($merchantDetails);
+
+        $merchantDetails->setActivationProgress($response['verification']['activation_progress']);
+
+        $this->repo->saveOrFail($merchantDetails);
+
+        return $response;
+    }
+
+    public function storeActivationFile(
+        Merchant\Entity $merchant,
+        Merchant\Detail\Entity $merchantDetails,
+        array $input
+    )
+    {
+
         $params = [];
 
         foreach ($input as $key => $value)
@@ -111,15 +131,18 @@ class Service extends Base\Service
             $params[$key] = FileStore\Entity::verifyIdAndSilentlyStripSign($file['id']);
         }
 
-        $merchantDetails->fill($params);
+        return $params;
+    }
 
-        $response = $core->createResponse($merchantDetails);
+    public function uploadActivationFileTemporarily(Merchant\Entity $merchant, array $input)
+    {
+        $core = new Core;
 
-        $merchantDetails->setActivationProgress($response['verification']['activation_progress']);
+        $merchantDetails = $core->getMerchantDetails($merchant, $input);
 
-        $this->repo->saveOrFail($merchantDetails);
+        $params = $this->storeActivationFile($merchant, $merchantDetails, $input);
 
-        return $response;
+        return $params;
     }
 
     public function editMerchantDetails($id, array $input)
