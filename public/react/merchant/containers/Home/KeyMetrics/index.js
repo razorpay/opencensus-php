@@ -234,10 +234,10 @@ class KeyMetricsContainer extends Component {
                * 2) Decide to show the tab or not only on initial load
                */
               if (isInitialLoad) {
-                tabState.data.showTab = tabState.data.count > 15;
+                tabState.data.showTab = tabState.data.percent > 15;
 
                 if (!tabState.data.showTab) {
-                  trackSavedCardsHidden(tabState.data.count);
+                  trackSavedCardsHidden(tabState.data.percent);
                 }
               }
             } else {
