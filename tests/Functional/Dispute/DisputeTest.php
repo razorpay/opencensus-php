@@ -607,6 +607,13 @@ class DisputeTest extends TestCase
         $content = $this->runRequestResponseFlow($testData);
 
         $this->checkUploadedFilesArray($content);
+
+        // Check dispute fetch for embedded files attribute
+        $this->ba->proxyAuth();
+
+        $fetchData = $this->testData['testDisputeFetchWithFiles'];
+
+        $this->runRequestResponseFlow($fetchData);
     }
 
     public function testEditDisputeMerchantAcceptDispute()
