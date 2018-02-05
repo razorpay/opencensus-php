@@ -281,6 +281,7 @@ export class ReportsContainer extends Component {
       };
     }
 
+    ajaxParams.timeout = 4500*60;
     return this.props
       .generateReport(ajaxParams)
       .then(data => {
@@ -302,7 +303,7 @@ export class ReportsContainer extends Component {
       .catch(e => {
         this.props.showNotification({
           type: 'error',
-          message: 'No data found for given time range',
+          message: (e.errors === '' || (e.errors instanceof Array && e.errors[0] === '')) ? 'File size is too large. Please contact support.' : 'No data found for given time range',
         });
       });
   };
