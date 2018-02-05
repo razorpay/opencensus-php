@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Redis;
 
 use RZP\Trace\TraceCode;
 use RZP\Exception\ThrottleException;
+use RZP\Exception\BadRequestException;
 
 /**
  * Throttle requests to API
@@ -43,6 +44,7 @@ class Throttle
     private $repo;
     private $redis;
     private $settings;
+    private $isUnitTests;
 
     public function __construct()
     {
@@ -53,6 +55,7 @@ class Throttle
         $this->trace        = $app['trace'];
         $this->router       = $app['router'];
         $this->repo         = $app['repo'];
+        $this->isUnitTests  = $app->runningUnitTests();
     }
 
     public function throttle($request): array
@@ -71,12 +74,14 @@ class Throttle
 
             return $this->attemptThrottle();
         }
-        catch (ThrottleException $e)
-        {
-            throw $e;
-        }
         catch (\Throwable $e)
         {
+            if (($e instanceof ThrottleException) or
+                ($e instanceof BadRequestException))
+            {
+                throw $e;
+            }
+
             $this->trace->traceException($e);
 
             return [];
@@ -147,8 +152,13 @@ class Throttle
 
     private function getThrottleKey(): string
     {
-        $id     = $this->internalAppName ?: $this->device ?: $this->adminEmail ?: $this->mid;
-        $ip     = $this->isPublicAuth() ? $this->request->ip() : '';
+        $id = $this->internalAppName ?:
+                $this->device ?:
+                $this->adminEmail ?:
+                $this->mid ?:
+                $this->oauthPublicToken;
+
+        $ip = $this->isPublicAuth() ? $this->request->ip() : '';
 
         return "{$this->route}:{$this->mode}:{$this->auth}:{$this->oauthAppId}:{$id}:{$ip}";
     }

@@ -2,12 +2,15 @@
 
 namespace RZP\Http\Throttle;
 
+use Lcobucci\JWT\Parser;
 use Illuminate\Http\Request;
 
+use RZP\Http\OAuth;
 use RZP\Http\Route;
-use RZP\Constants\Mode;
 use RZP\Http\RequestHeader;
 use RZP\Http\BasicAuth\Type;
+use RZP\Http\BasicAuth\BasicAuth;
+use RZP\Exception\BadRequestException;
 
 /**
  * Extracts various variables from request to be used
@@ -34,6 +37,7 @@ trait HasRequestContext
     private $keyId;
     private $mid;
     private $oauthAppId;
+    private $oauthPublicToken;
     private $internalAppName;
     private $adminEmail;
     private $device;
@@ -43,23 +47,36 @@ trait HasRequestContext
         $this->request = $request;
         $this->route   = $this->router->currentRouteName();
 
-        //
+        $this->setKeySecretAndRelatedVars();
+        $this->setAdditionalVarsByRouteMaps();
+    }
+
+    private function setKeySecretAndRelatedVars()
+    {
         // Key can come
         // - in request input as key_id for public routes
         // - as part of route parameters for callback URLS
         // - as part of route parameters for callback URLS
-        //
         $key = $this->request->input('key_id') ?:
                 $this->router->current()->parameter('key') ?:
                 $this->request->getUser();
 
-        // Key is actually just the part after rzp_{$mode}_
-        $this->key = substr($key, 9);
-        $this->mode = substr($key, 4, 4);
-        // Just for not getting broken elsewhere if someone sends incorrect key
-        $this->mode = Mode::exists($this->mode) ? $this->mode : Mode::LIVE;
+        // Validate key length
+        $validKeyLengths = BasicAuth::$validKeyLengths;
+        array_push($validKeyLengths, OAuth::PUBLIC_TOKEN_LENGTH);
+        if (in_array(strlen($key), $validKeyLengths) === false)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY);
+        }
 
+        $this->key    = $key;
+        $this->mode   = substr($key, 4, 4);
         $this->secret = $this->request->getPassword();
+    }
+
+    private function setAdditionalVarsByRouteMaps()
+    {
+        $keyWithNoPrefix = substr($this->key, 9);
 
         if (in_array($this->route, Route::$internal, true) === true)
         {
@@ -72,31 +89,46 @@ trait HasRequestContext
             $this->adminEmail = $request->headers(RequestHeader::X_DASHBOARD_ADMIN_EMAIL);
         }
         else if ((in_array($this->route, Route::$private, true) === true) and
+            (empty($token = $this->getBearerToken()) === false))
+        {
+            $this->auth = Type::PRIVATE_AUTH;
+
+            $parsed = (new Parser)->parse($token);
+            $this->oauthAppId = $token->getClaim('aud');
+            $this->mid = $token->getClaim('merchant_id');
+        }
+        else if ((in_array($this->route, Route::$private, true) === true) and
             ($this->isDashboard() === true))
         {
             $this->auth = Type::PROXY_AUTH;
-            $this->mid = $this->key;
+            $this->mid = $keyWithNoPrefix;
         }
         else if ((in_array($this->route, Route::$private, true) === true) and
             ($this->isDashboard() === false))
         {
             $this->auth = Type::PRIVATE_AUTH;
-            $this->keyId = $this->key;
+            $this->keyId = $keyWithNoPrefix;
+        }
+        else if ((in_array($this->route, Route::$public, true) === true) and
+            ($this->isKeyOAuthPublicToken() === true))
+        {
+            $this->auth = Type::PUBLIC_AUTH;
+            $this->oauthPublicToken = $keyWithNoPrefix;
         }
         else if (in_array($this->route, Route::$public, true) === true)
         {
             $this->auth = Type::PUBLIC_AUTH;
-            $this->keyId = $this->key;
+            $this->keyId = $keyWithNoPrefix;
         }
         else if (in_array($this->route, Route::$publicCallback, true) === true)
         {
             $this->auth = Type::PUBLIC_AUTH;
-            $this->keyId = $this->key;
+            $this->keyId = $keyWithNoPrefix;
         }
         else if (in_array($this->route, Route::$proxy, true) === true)
         {
             $this->auth = Type::PROXY_AUTH;
-            $this->mid = $this->key;
+            $this->mid = $keyWithNoPrefix;
         }
         else if (in_array($this->route, Route::$device, true) === true)
         {
@@ -108,6 +140,9 @@ trait HasRequestContext
             $this->auth = Type::DIRECT_AUTH;
         }
     }
+
+    // TODO: Following methods are redundant between here and at least
+    //       one more place in \RZP\Http namespace. Move these out.
 
     private function getInternalAppName()
     {
@@ -128,5 +163,23 @@ trait HasRequestContext
     private function isPublicAuth(): bool
     {
         return ($this->auth === Type::PUBLIC_AUTH);
+    }
+
+    private function getBearerToken(): string
+    {
+        return $this->isUnitTests ? $this->request->bearerToken() : $this->getBearerTokenForApache();
+    }
+
+    private function getBearerTokenForApache(): string
+    {
+        $headers = getallheaders()['Authorization'] ?? null;
+
+        return starts_with($headers, 'Bearer ') ? substr($headers, 7) : '';
+    }
+
+    private function isKeyOAuthPublicToken(): string
+    {
+        return ((strlen($this->key) === OAuth::PUBLIC_TOKEN_LENGTH) and
+                (substr($this->key, 8, 7) === '_oauth_'));
     }
 }
