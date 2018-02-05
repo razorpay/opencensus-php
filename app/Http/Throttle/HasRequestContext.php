@@ -72,13 +72,13 @@ trait HasRequestContext
             $this->adminEmail = $request->headers(RequestHeader::X_DASHBOARD_ADMIN_EMAIL);
         }
         else if ((in_array($this->route, Route::$private, true) === true) and
-            ($this->isDashboard($request) === true))
+            ($this->isDashboard() === true))
         {
             $this->auth = Type::PROXY_AUTH;
             $this->mid = $this->key;
         }
         else if ((in_array($this->route, Route::$private, true) === true) and
-            ($this->isDashboard($request) === false))
+            ($this->isDashboard() === false))
         {
             $this->auth = Type::PRIVATE_AUTH;
             $this->keyId = $this->key;
@@ -109,24 +109,24 @@ trait HasRequestContext
         }
     }
 
-    private function getInternalAppName(string $secret)
+    private function getInternalAppName()
     {
         foreach ($this->applications as $name => $config)
         {
-            if (($config['secret'] ?? '') === $secret)
+            if (($config['secret'] ?? '') === $this->secret)
             {
                 return $name;
             }
         }
     }
 
-    private function isDashboard(string $secret): bool
+    private function isDashboard(): bool
     {
-        return ($this->getInternalAppName($secret) === 'dashboard');
+        return ($this->getInternalAppName() === 'dashboard');
     }
 
-    private function isPrivateAuth(): bool
+    private function isPublicAuth(): bool
     {
-        return ($this->auth === Type::PRIVATE_AUTH);
+        return ($this->auth === Type::PUBLIC_AUTH);
     }
 }

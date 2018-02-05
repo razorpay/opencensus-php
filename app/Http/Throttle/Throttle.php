@@ -147,25 +147,10 @@ class Throttle
 
     private function getThrottleKey(): string
     {
-        $prefix = "{$this->route}:{$this->mode}:{$this->auth}";
+        $id     = $this->internalAppName ?: $this->device ?: $this->adminEmail ?: $this->mid;
+        $ip     = $this->isPublicAuth() ? $this->request->ip() : '';
 
-        //
-        // - Defaults to mid (which can be empty for direct auth)
-        // - In case of oauth application the throttle happens on application
-        //   + mid combination
-        //
-        $id = $this->internalAppName ?:
-                $this->device ?:
-                $this->adminEmail ?:
-                ($this->oauthAppId ? "{$this->oauthAppId}:{$this->mid}" : $this->mid);
-
-        //
-        // Adds IP address only for public authentications, in other
-        // cases we have some identifier e.g. mid, email etc.
-        //
-        $ip = $this->isPrivateAuth() ? '' : $this->request->ip();
-
-        return "$prefix:$id:$ip";
+        return "{$this->route}:{$this->mode}:{$this->auth}:{$this->oauthAppId}:{$id}:{$ip}";
     }
 
     private function getThrottleRateValue(): int
