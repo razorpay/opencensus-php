@@ -24,7 +24,10 @@ class Gateway extends Csb\Gateway
 
         $gateway = Payment\Gateway::NETBANKING_CSB;
 
-        $this->bank = explode('_', $gateway)[1];
+        $gatewayArray = explode('_', $gateway);
+
+        // We pass in a variable, as only actual variables can be passed in by reference.
+        $this->bank = end($gatewayArray);
     }
 
     public function authorize(array $input)
