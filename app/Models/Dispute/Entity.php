@@ -287,6 +287,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo(Merchant\Entity::class);
     }
 
+    public function files()
+    {
+        return $this->hasMany(File\Entity::class);
+    }
+
     public function parent()
     {
         return $this->belongsTo(Entity::class, self::PARENT_ID, self::ID);

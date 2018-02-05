@@ -80,6 +80,16 @@ class Validator extends Base\Validator
                 ['input' => $input, 'payment_id' => $payment->getId()]);
         }
 
+        //
+        // This function is called before the build validator
+        // Hence, if amount is not set, return from here and let
+        // the build validator take care of it
+        //
+        if (isset($input[Entity::AMOUNT]) === false)
+        {
+            return;
+        }
+
         if ($payment->getAmount() < $input[Entity::AMOUNT])
         {
             throw new Exception\BadRequestException(
