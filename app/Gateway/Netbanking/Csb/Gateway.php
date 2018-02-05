@@ -134,7 +134,7 @@ class Gateway extends Base\Gateway
      * @param $str
      * @return string
      */
-    public function getHashOfString($str)
+    public function getHashOfString($str): string
     {
         // TODO: Verify that this is the right way to generate the checksum
         return hash(HashAlgo::CRC32, $str);
@@ -177,7 +177,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    private function getVerifyRequestData(Verify $verify)
+    private function getVerifyRequestData(Verify $verify): array
     {
         $input = $verify->input;
 
@@ -204,12 +204,12 @@ class Gateway extends Base\Gateway
         return $this->getStandardRequestArray($content);
     }
 
-    private function parseVerifyResponse(string $response)
+    private function parseVerifyResponse(string $response): array
     {
         return (array) simplexml_load_string($response);
     }
 
-    private function getVerifyStatus(Verify $verify)
+    private function getVerifyStatus(Verify $verify): string
     {
         $status = VerifyResult::STATUS_MATCH;
 
@@ -291,7 +291,7 @@ class Gateway extends Base\Gateway
         return $this->getStandardRequestArray($content);
     }
 
-    protected function getMerchantId()
+    protected function getMerchantId(): string
     {
         $merchantId = $this->getLiveMerchantId();
 
@@ -303,7 +303,7 @@ class Gateway extends Base\Gateway
         return $merchantId;
     }
 
-    protected function getTestMerchantId()
+    protected function getTestMerchantId(): string
     {
         // TODO: Ensure this is right
         return $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
