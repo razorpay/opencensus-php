@@ -823,9 +823,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CONVERT_CURRENCY, $convert);
     }
 
-    public function setAuthenticationType(string $authenticationType)
+    public function setAuthType(string $authType)
     {
-        $this->setAttribute(self::AUTHENTICATION_TYPE, $authenticationType);
+        $this->setAttribute(self::AUTH_TYPE, $authType);
     }
 
     public function setMetadataKey($key, $value)
@@ -988,7 +988,7 @@ class Entity extends Base\PublicEntity
 
                 // TODO: Will this be available for netbanking (both direct and npci?), aadhaar?
                 // TODO: What will reference1 be for debit requests? Where do we get this from?
-                // TODO: In debit request, authentication_type will be null?
+                // TODO: In debit request, auth_type will be null?
 
                 $acquirerData = [
                     'bank_transaction_id' => $this->getAttribute(self::REFERENCE1)
@@ -1474,11 +1474,6 @@ class Entity extends Base\PublicEntity
     public function getVpa()
     {
         return $this->getAttribute(self::VPA);
-    }
-
-    public function getAuthenticationType()
-    {
-        return $this->getAttribute(self::AUTHENTICATION_TYPE);
     }
 
     public function getContact()

@@ -790,9 +790,9 @@ class Gateway
         return $banks;
     }
 
-    public static function isEmandateSupportedOnBank(string $bank, string $authenticationType): bool
+    public static function isEmandateSupportedOnBank(string $bank, string $authType): bool
     {
-        return (in_array($bank, self::$emandateBanks[$authenticationType], true) === true);
+        return (in_array($bank, self::$emandateBanks[$authType], true) === true);
     }
 
     public static function getAvailableEmandateBanks()

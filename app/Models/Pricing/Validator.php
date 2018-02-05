@@ -174,7 +174,7 @@ class Validator extends Base\Validator
         }
 
         if (($input[Entity::PAYMENT_METHOD] === Payment\Method::NETBANKING) or
-            ($input[Entity::PAYMENT_METHOD] === Payment\Method::NETBANKING))
+            ($input[Entity::PAYMENT_METHOD] === Payment\Method::EMANDATE))
         {
             if (IFSC::exists($input[Entity::PAYMENT_NETWORK]) === false)
             {
