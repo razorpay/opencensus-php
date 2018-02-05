@@ -160,7 +160,9 @@ class RawApiRequest
     {
         if ($input['auth'] === 'proxy' and empty($_COOKIE['rzp_utm']) === false)
         {
-            $this->params['headers']['Cookie'] = 'rzp_utm=' . $_COOKIE['rzp_utm'];
+            $cookie = 'rzp_utm=' . urlencode($_COOKIE['rzp_utm']);
+
+            $this->params['headers']['Cookie'] = $cookie;
         }
     }
 
