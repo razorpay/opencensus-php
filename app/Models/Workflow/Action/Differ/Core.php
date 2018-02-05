@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\FileStore;
 use RZP\Models\Base\EsDao;
 use RZP\Events\DifferEvent;
 use RZP\Models\Workflow\Action;
@@ -72,6 +73,38 @@ class Core extends Base\Core
         {
             $diff = $esResponse[0]['_source'][Entity::DIFF];
         }
+
+        $accessor = new FileStore\Accessor;
+
+        if (array_key_exists(Entity::AUTH_DETAILS, $esResponse[0]['_source']) and
+            array_key_exists('merchant_id', $esResponse[0]['_source'][Entity::AUTH_DETAILS])
+        )
+        {
+            $accessor->merchantId($esResponse[0]['_source'][Entity::AUTH_DETAILS]['merchant_id']);
+        }
+
+        // TODO:: add code for getting the expiring URLs for the files
+        $transformFunc = function($diff) use($accessor)
+        {
+            foreach ($diff as $key => $value)
+            {
+                if (Files::exists($key) === true)
+                {
+                    $diff[$key] = (function($value) use ($accessor)
+                    {
+                        $signedUrls = $accessor->id($value)
+                                               ->getSignedUrl();
+
+                        return $signedUrls[$value];
+                    })($value);
+                }
+            }
+
+            return $diff;
+        };
+
+        $diff["old"] = $transformFunc($diff["old"]);
+        $diff["new"] = $transformFunc($diff["new"]);
 
         return $diff;
     }
@@ -191,7 +224,7 @@ class Core extends Base\Core
                     $oldEntityData = [];
 
                     $entityClass = ConstantsEntity::getEntityClass($entity);
-                    
+
                     $newEntity = new $entityClass;
 
                     // Run validator
@@ -370,7 +403,7 @@ class Core extends Base\Core
         }
     }
 
-    protected function createRelationDiff(    
+    protected function createRelationDiff(
         $oldIds,
         $newIds,
         $relatedEntityName)
