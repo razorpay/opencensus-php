@@ -7,7 +7,8 @@
 
 namespace RZP\Tests\Functional;
 
-use Redis;
+use Illuminate\Support\Facades\Redis;
+
 use Artisan;
 use RZP\Services\EsClient;
 use RZP\Tests\TestCase as ParentTestCase;

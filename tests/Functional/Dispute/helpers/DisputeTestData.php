@@ -864,23 +864,27 @@ return [
         ],
         'response' => [
             'content' => [
-                'entity'        => 'dispute',
-                'amount'        => 1000000,
-                'currency'      => 'INR',
-                'reason_code'   => 'SOMETHING_BAD',
-                'status'        => 'open',
-                'phase'         => 'chargeback',
-                'files'         => [
-                    [
-                        'file_id'       => 'rzp_file_mock_id_1000000_explanation_letter',
-                        'name'          => 'myfile1.png',
-                        'category'      => 'explanation_letter',
-                    ],
-                    [
-                        'file_id'       => 'rzp_file_mock_id_1000000_delivery_proof',
-                        'name'          => 'myfile2.pdf',
-                        'category'      => 'delivery_proof',
-                    ],
+                'entity'      => 'dispute',
+                'amount'      => 1000000,
+                'currency'    => 'INR',
+                'reason_code' => 'SOMETHING_BAD',
+                'status'      => 'open',
+                'phase'       => 'chargeback',
+                'files'       => [
+                    'entity' => 'collection',
+                    'count'  => 2,
+                    'items'  => [
+                        [
+                            'file_id'  => 'rzp_file_mock_id_1000000_explanation_letter',
+                            'name'     => 'myfile1.png',
+                            'category' => 'explanation_letter',
+                        ],
+                        [
+                            'file_id'  => 'rzp_file_mock_id_1000000_delivery_proof',
+                            'name'     => 'myfile2.pdf',
+                            'category' => 'delivery_proof',
+                        ],
+                    ]
                 ],
             ],
         ],

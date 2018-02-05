@@ -658,17 +658,19 @@ class DisputeTest extends TestCase
 
         $files = $this->getEntities('dispute_file', [], true);
 
-        $dispute['id'] = DisputeEntity::stripDefaultSign($dispute['id']);
-
         $expected = [
             'files' => [
-                [
-                    'dispute_id'    => $dispute['id'],
-                    'file_id'       => $files['items'][1]['file_id'],
-                ],
-                [
-                    'dispute_id'    => $dispute['id'],
-                    'file_id'       => $files['items'][0]['file_id'],
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        'dispute_id' => $dispute['id'],
+                        'file_id'    => $files['items'][1]['file_id'],
+                    ],
+                    [
+                        'dispute_id' => $dispute['id'],
+                        'file_id'    => $files['items'][0]['file_id'],
+                    ]
                 ]
             ]
         ];
