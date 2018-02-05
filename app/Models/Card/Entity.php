@@ -488,6 +488,11 @@ class Entity extends Base\PublicEntity
         return (Card\Network::isUnsupportedNetwork($network));
     }
 
+    public function isNetworkUnknown(): bool
+    {
+        return ($this->getNetworkCode() === Card\Network::UNKNOWN);
+    }
+
     public function isInternational()
     {
         return (bool) $this->getAttribute(self::INTERNATIONAL);

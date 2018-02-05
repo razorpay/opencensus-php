@@ -43,7 +43,10 @@ class Entity extends Base\PublicEntity
      *  Field for edit input, when accepted chargeback amount
      *  is lesser than disputed amount.
      */
-    const ACCEPTED_AMOUNT = 'accepted_amount';
+    const ACCEPTED_AMOUNT         = 'accepted_amount';
+
+    // Key for accepting dispute by merchant
+    const ACCEPT_DISPUTE          = 'accept_dispute';
 
     protected static $sign = 'disp';
 

@@ -169,13 +169,13 @@ class Gateway extends Base\Gateway
     protected function getIntentRequest($input, $response)
     {
         $content = [
-            IntentParams::PAYEE_ADDRESS => $input['terminal']->getGatewayMerchantId2() ?? self::DEFAULT_PAYEE_VPA,
-            IntentParams::PAYEE_NAME    => preg_replace('/\s+/', '', $input['merchant']->getFilteredDba()),
-            IntentParams::TXN_REF_ID    => $response['refId'],
-            IntentParams::TXN_NOTE      => $this->getPaymentRemark($input),
-            IntentParams::TXN_AMOUNT    => $input['payment']['amount'] / 100,
-            IntentParams::TXN_CURRENCY  => 'INR',
-            IntentParams::MCC           => '5411',
+            Base\IntentParams::PAYEE_ADDRESS => $input['terminal']->getGatewayMerchantId2() ?? self::DEFAULT_PAYEE_VPA,
+            Base\IntentParams::PAYEE_NAME    => preg_replace('/\s+/', '', $input['merchant']->getFilteredDba()),
+            Base\IntentParams::TXN_REF_ID    => $response['refId'],
+            Base\IntentParams::TXN_NOTE      => $this->getPaymentRemark($input),
+            Base\IntentParams::TXN_AMOUNT    => $input['payment']['amount'] / 100,
+            Base\IntentParams::TXN_CURRENCY  => 'INR',
+            Base\IntentParams::MCC           => '5411',
         ];
 
         $query = str_replace(' ', '', urldecode(http_build_query($content)));
@@ -827,6 +827,11 @@ class Gateway extends Base\Gateway
 
         assertTrue($content[Fields::MERCHANT_ID] === $gatewayPayment->getMerchantId());
         assertTrue($content[Fields::MERCHANT_TRAN_ID] === $gatewayPayment->getPaymentId());
+
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $actualAmount   = number_format($content[Fields::PAYER_AMOUNT], 2, '.', '');
+
+        $this->assertAmount($expectedAmount, $actualAmount);
 
         if ($status !== Status::SUCCESS)
         {

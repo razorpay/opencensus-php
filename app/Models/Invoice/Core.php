@@ -407,12 +407,7 @@ class Core extends Base\Core
             {
                 $summary['failed_invoice_ids'][] = $invoice->getId();
 
-                $this->trace->traceException(
-                    $e,
-                    Trace::ERROR,
-                    TraceCode::INVOICE_EXPIRE_VIA_CRON_FAILED,
-                    ['id' => $invoice->getId()]
-                );
+                $this->trace->traceException($e, null, null, ['id' => $invoice->getId()]);
             }
         }
 

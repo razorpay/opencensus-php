@@ -103,7 +103,7 @@ class BusinessType
      */
     public static function getKeyFromIndex($index)
     {
-        if ($index === null)
+        if (empty($index) === true)
         {
             return '';
         }

@@ -438,6 +438,7 @@ return [
     'bharat_qr' => [
         'visa_acquirer_code'       => env('BHARAT_QR_VISA_ACQUIRER_CODE'),
         'mastercard_acquirer_code' => env('BHARAT_QR_MASTERCARD_ACQUIRER_CODE'),
+        'rupay_acquirer_code'      => env('BHARAT_QR_RUPAY_ACQUIRER_CODE'),
         'identifier_padding'       => env('BHARAT_QR_IDENTIFIER_PADDING'),
     ],
 

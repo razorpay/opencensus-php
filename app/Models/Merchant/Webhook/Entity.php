@@ -16,6 +16,8 @@ class Entity extends Base\PublicEntity
     const MERCHANT_ID        = 'merchant_id';
     const URL                = 'url';
     const EVENTS             = 'events';
+    const ENTITY_TYPE        = 'entity_type';
+    const ENTITY_ID          = 'entity_id';
     const FAILURE_COUNT      = 'failure_count';
     const ACTIVE             = 'active';
     const CREATED_AT         = 'created_at';
@@ -38,7 +40,15 @@ class Entity extends Base\PublicEntity
         self::URL,
         self::ACTIVE,
         self::EVENTS,
-        self::SECRET
+        self::SECRET,
+        /*
+         * Entity type and id are fillable as in case
+         * of OAuth application, `application` and
+         * `application_id` are from a different db (auth)
+         * and cannot be associated as relations.
+         */
+        self::ENTITY_TYPE,
+        self::ENTITY_ID
     ];
 
     protected $visible = [
@@ -135,6 +145,16 @@ class Entity extends Base\PublicEntity
     public function getLastSuccessfulAt()
     {
         return $this->getAttribute(self::LAST_SUCCESSFUL_AT);
+    }
+
+    public function getEntityId()
+    {
+        return $this->getAttribute(self::ENTITY_ID);
+    }
+
+    public function getEntityType()
+    {
+        return $this->getAttribute(self::ENTITY_TYPE);
     }
 
     public function getTimeDifferenceFromLastSuccessInHour()

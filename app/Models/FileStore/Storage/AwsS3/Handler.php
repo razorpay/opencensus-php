@@ -6,6 +6,7 @@ use Aws;
 use Config;
 
 use RZP\Trace\TraceCode;
+use RZP\Models\FileStore\Store;
 use RZP\Models\FileStore\Storage\Base\Handler as BaseHandler;
 use RZP\Models\FileStore\Utility;
 
@@ -48,11 +49,23 @@ class Handler extends BaseHandler
      * @param array $fileDetails  Array containing File Params
      *
      * @return string saved file Url
+     * @throws \Exception
      */
     public function save(array $bucketConfig, array $fileDetails)
     {
         if ($this->config['mock'] === true)
         {
+            $filePath = storage_path(Store::STORAGE_DIRECTORY) . $fileDetails['key'];
+
+            $dirPath = dirname($filePath);
+
+            if (file_exists($dirPath) === false)
+            {
+                (new Utility)->callFileOperation('mkdir', [$dirPath, 0777, true]);
+            }
+
+            copy($fileDetails['path'] , $filePath);
+
             return $fileDetails['path'];
         }
 

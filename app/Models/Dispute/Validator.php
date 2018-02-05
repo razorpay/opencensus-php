@@ -9,6 +9,8 @@ use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
+    const OPERATION_MERCHANT_EDIT = 'merchant_edit';
+
     protected static $createRules = [
         Entity::GATEWAY_DISPUTE_ID     => 'required|alpha_num',
         Entity::GATEWAY_DISPUTE_STATUS => 'sometimes|string',
@@ -38,6 +40,10 @@ class Validator extends Base\Validator
 
     protected static $editValidators = [
         'non_transactional_disputes_closure',
+    ];
+
+    protected static $merchantEditRules = [
+        Entity::ACCEPT_DISPUTE         => 'sometimes|boolean',
     ];
 
     protected function validatePhase(string $attribute, string $value)

@@ -219,6 +219,11 @@ class Gateway extends Base\Gateway
 
         assertTrue($content[ResponseFields::UPI_TXN_ID] === $gatewayPayment->getGatewayPaymentId());
 
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $actualAmount   = number_format($content[ResponseFields::AMOUNT], 2, '.', '');
+
+        $this->assertAmount($expectedAmount, $actualAmount);
+
         $this->checkResponseStatus($content[ResponseFields::STATUS]);
 
         // Authorization was successful

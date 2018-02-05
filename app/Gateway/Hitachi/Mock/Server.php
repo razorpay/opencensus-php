@@ -112,7 +112,7 @@ class Server extends Base\Mock\Server
             ResponseFields::MERCHANT_REF_NUMBER => $input[RequestFields::MERCHANT_REF_NUMBER],
             ResponseFields::RETRIEVAL_REF_NUM   => Str::random(12),
             ResponseFields::RESPONSE_CODE       => '00',
-            ResponseFields::STATUS              => 'S',
+            ResponseFields::STATUS              => 'Success',
         ];
 
         return $response;
