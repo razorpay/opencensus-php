@@ -88,5 +88,3 @@ class Entity extends Base\PublicEntity
         $array[self::DISPUTE_ID] = Dispute\Entity::getSignedIdOrNull($disputeId);
     }
 }
-
-
