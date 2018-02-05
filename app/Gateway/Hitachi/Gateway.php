@@ -403,6 +403,11 @@ class Gateway extends Base\Gateway
             RequestFields::REQUEST_ID          => UniqueIdEntity::generateUniqueId(),
         ];
 
+        if ($input['merchant']['id'] === '6ZJzxyLFWrGs74')
+        {
+            $content[RequestFields::MERCHANT_REF_NUMBER] = $input['refund']['id'];
+        }
+
         return $this->getStandardRequestArray($content);
     }
 
@@ -422,6 +427,11 @@ class Gateway extends Base\Gateway
             RequestFields::MERCHANT_ID         => $this->getMerchantId(),
             RequestFields::MERCHANT_REF_NUMBER => $input['payment']['id'],
         ];
+
+        if ($input['merchant']['id'] === '6ZJzxyLFWrGs74')
+        {
+            $content[RequestFields::MERCHANT_REF_NUMBER] = $input['refund']['id'];
+        }
 
         return $this->getStandardRequestArray($content);
     }
