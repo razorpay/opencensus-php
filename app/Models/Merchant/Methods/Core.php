@@ -13,6 +13,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Card\Network;
+use RZP\Models\Pricing\Plan;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Feature\Constants;
@@ -53,7 +54,7 @@ class Core extends Base\Core
         return $methods->toArray();
     }
 
-    public function validatePricingPlanForMethods(Merchant\Entity $merchant, PublicCollection $plan, PublicCollection $methods)
+    public function validatePricingPlanForMethods(Merchant\Entity $merchant, Plan $plan, Entity $methods)
     {
         $methodsToCheck = Payment\Method::getAllPaymentMethods();
 
@@ -77,7 +78,7 @@ class Core extends Base\Core
         $this->validateInternationalPricingForMerchant($merchant, $plan);
     }
 
-    public function checkPricing(Merchant\Entity $merchant, PublicCollection $methods)
+    public function checkPricing(Merchant\Entity $merchant, Entity $methods)
     {
         $plan = $this->repo->pricing->getMerchantPricingPlan($merchant);
 
