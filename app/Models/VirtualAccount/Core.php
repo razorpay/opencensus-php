@@ -88,6 +88,10 @@ class Core extends Base\Core
                 break;
 
             default:
+                // We don't throw exception here
+                // because receiver is already validated
+                // and we don't want to put any validation
+                // for receiver being enabled by default
                 return;
         }
     }
@@ -117,7 +121,7 @@ class Core extends Base\Core
         // Removing the below check for crypto merchants so that they can
         // create new VAs with the same descriptor, using a different provider.
         // Default provider for crypto merchants has already been changed.
-        if ($virtualAccount->merchant->isCategoryCryptocurrency() === true)
+        if ($virtualAccount->merchant->isCategory2Cryptocurrency() === true)
         {
             return;
         }

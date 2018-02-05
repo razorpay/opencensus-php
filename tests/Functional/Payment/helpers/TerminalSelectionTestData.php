@@ -52,5 +52,22 @@ return [
             'message'             => 'Terminal should not be null',
             'internal_error_code' => ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
         ],
+    ],
+
+    'testUpiFilterRejectsMindgate' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => ErrorCode::SERVER_ERROR,
+                    'description' => PublicErrorDescription::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'               => \RZP\Exception\RuntimeException::class,
+            'message'             => 'Terminal should not be null',
+            'internal_error_code' => ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
+        ],
     ]
 ];

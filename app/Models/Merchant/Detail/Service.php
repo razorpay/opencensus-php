@@ -281,6 +281,21 @@ class Service extends Base\Service
         return $merchantDetails->toArrayPublic();
     }
 
+    /**
+     * This function is used for getting the activation status change log of a merchant
+     * @param string $merchantId
+     *
+     * @return array
+     */
+    public function getActivationStatusChangeLog(string $merchantId): array
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $activationStatusChangeLog = (new Merchant\Core)->getActivationStatusChangeLog($merchant);
+
+        return $activationStatusChangeLog->toArrayPublic();
+    }
+
     public function getRejectionReasons()
     {
         return RejectionReasons::REJECTION_REASONS_MAPPING;
@@ -407,8 +422,10 @@ class Service extends Base\Service
 
     private function getZapierData($merchant, $input)
     {
+        $this->merchant->reload();
+
         // This is the same format we'll set in the google spreadsheet
-        $timestamp = Carbon::createFromTimeStamp(time(), Timezone::IST)->format('j/m/Y');
+        $timestamp = Carbon::createFromTimeStamp(time(), Timezone::IST)->format('Y-m-d\TH:i:s+05:30');
 
         $userName = $input['contact_name'] ?? '';
 
@@ -426,19 +443,23 @@ class Service extends Base\Service
 
         $referrer = $merchant->referrer ?? '';
 
-        return [
+        $data = [
             Entity::ID                 => $merchant->id,
             Merchant\Entity::EMAIL     => $merchant->email,
             Constants::INDIVIDUAL      => $userName,
             Merchant\Entity::NAME      => $merchant->name,
             Constants::REF             => $referrer,
-            Constants::TIMESTAMP       => $timestamp,
+            Constants::SIGNUP_DATE     => $timestamp,
             Constants::CONTACT         => $phoneNumber,
             Entity::BUSINESS_TYPE      => $businessType,
             Entity::TRANSACTION_VOLUME => $transactionVolume,
             Entity::ROLE               => $role,
             Entity::DEPARTMENT         => $department,
         ];
+
+        (new User\Service)->addUtmParameters($data);
+
+        return $data;
     }
 
     /**

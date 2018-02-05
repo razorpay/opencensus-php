@@ -914,20 +914,18 @@ class TerminalSelectionTest extends TestCase
 
         $payment = $this->getDefaultNetbankingPaymentArray('ICIC');
 
-        $this->runRequestResponseFlow($data, function() use ($payment)
-        {
-           $this->doAuthPayment($payment);
-        });
+        $this->doAuthPayment($payment);
 
         $payment1 = $this->getLastEntity('payment', true);
         $billdesk = $this->getLastEntity('billdesk', true);
 
-        $this->assertEquals('DrctNbBdkTmnl1', $payment1['terminal_id']);
-        $this->assertEquals('ICO', $billdesk['BankID']);
+        $this->assertEquals('SharNbBdkTmnl1', $payment1['terminal_id']);
+        $this->assertEquals('ICI', $billdesk['BankID']);
 
         $this->fixtures->merchant->editCategory2('corporate');
+        $this->fixtures->merchant->addFeatures('corporate_banks');
 
-        $payment = $this->getDefaultNetbankingPaymentArray('ICIC');
+        $payment = $this->getDefaultNetbankingPaymentArray('ICIC_C');
 
         $this->runRequestResponseFlow($data, function() use ($payment)
         {
@@ -1164,6 +1162,23 @@ class TerminalSelectionTest extends TestCase
         $this->assertEquals('ShrdNbBdkHouse', $payment1['terminal_id']);
     }
 
+    public function testCorporateBankTerminalSelection()
+    {
+        $this->fixtures->create('terminal:billdesk_terminal', ['corporate' => 1]);
+        $this->fixtures->create('terminal:shared_netbanking_icici_corp_terminal', ['merchant_id' => '10000000000000']);
+        $this->fixtures->merchant->addFeatures('corporate_banks');
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        // Amount filter should have rejected the housing terminal
+        $payment['bank'] = 'ICIC_C';
+
+        $this->doAuthAndCapturePayment($payment);
+        $payment1 = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('100NbIcicCrpTl', $payment1['terminal_id']);
+    }
+
     public function testMccFilterWithSharedCategoryTerminal()
     {
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
@@ -1300,5 +1315,42 @@ class TerminalSelectionTest extends TestCase
             $payment = $this->getDefaultPaymentArray();
             $this->doAuthPayment($payment, null, $key);
         });
+    }
+
+    public function testUpiFilterRejectsMindgate()
+    {
+        $iciciTerminal = $this->fixtures->create('terminal:shared_upi_icici_terminal', ['enabled' => false]);
+        $mgTerminal = $this->fixtures->create('terminal:shared_upi_mindgate_terminal', ['gateway' => 'upi_mindgate']);
+
+        $this->fixtures->merchant->addFeatures(['upi_intent']);
+        $this->fixtures->merchant->enableUpi();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function ()
+        {
+            $payment = $this->getDefaultUpiPaymentArray();
+            unset($payment['vpa']);
+
+            $payment['_']['flow'] = 'intent';
+
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testUpiFilterSelectsMindgate()
+    {
+        $iciciTerminal = $this->fixtures->create('terminal:shared_upi_icici_terminal', ['enabled' => false]);
+        $mgTerminal = $this->fixtures->create('terminal:shared_upi_mindgate_terminal', ['gateway' => 'upi_mindgate']);
+
+        $this->fixtures->merchant->enableUpi();
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($mgTerminal->getId(), $payment['terminal_id']);
     }
 }

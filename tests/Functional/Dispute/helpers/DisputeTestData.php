@@ -346,7 +346,7 @@ return [
         ],
     ],
 
-    'testDisputeCreateWithInvalidMerchantEmail' => [
+    'testDisputeCreateWithNonArrayMerchantEmail' => [
         'request' => [
             'method'  => 'post',
             'content' => [
@@ -374,7 +374,7 @@ return [
         ],
     ],
 
-    'testDisputeCreateWithInvalidMerchantEmail2' => [
+    'testDisputeCreateWithInvalidMerchantEmail' => [
         'request' => [
             'method'  => 'post',
             'content' => [
@@ -392,6 +392,34 @@ return [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'The merchant_emails.1 must be a valid email address.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testDisputeCreateWithWhitespaceMerchantEmail' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'gateway_dispute_id'   => '4342frf34r',
+                'raised_on'            => '946684800',
+                'expires_on'           => '1912162918',
+                'amount'               => 100,
+                'deduct_at_onset'      => 0,
+                'phase'                => 'chargeback',
+                'merchant_emails'      => [' '],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The merchant_emails.0 field is required.',
                 ],
             ],
             'status_code' => 400,
@@ -431,7 +459,7 @@ return [
 
     'testDisputeEdit' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status'                 => 'under_review',
                 'expires_on'             => '1912162918',
@@ -451,7 +479,7 @@ return [
 
     'testDisputeEditWon' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status'                 => 'won',
                 'expires_on'             => '1912162918',
@@ -471,7 +499,7 @@ return [
 
     'testDisputeEditClose' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status'                 => 'closed',
                 'expires_on'             => '1912162918',
@@ -491,7 +519,7 @@ return [
 
     'testDisputeEditDeductOnLost' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status' => 'lost',
             ],
@@ -509,7 +537,7 @@ return [
 
     'testDisputeEditDoNotDeductOnLostIfDeducted' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status' => 'lost',
             ],
@@ -527,7 +555,7 @@ return [
 
     'testDisputeEditInvalidStatus' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status'                 => 'review',
                 'expires_on'             => '1912162918',
@@ -551,7 +579,7 @@ return [
 
     'testDisputeEditExtraInput' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status'                 => 'under_review',
                 'expires_on'             => '1912162918',
@@ -576,7 +604,7 @@ return [
 
     'testDisputeEditClosed' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status'                 => 'under_review',
                 'expires_on'             => '1912162918',
@@ -600,7 +628,7 @@ return [
 
     'testDisputeReversalWinLogic' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status'        => 'won'
             ],
@@ -612,7 +640,7 @@ return [
 
     'testDisputeReversalLostLogic' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status'        => 'lost'
             ],
@@ -624,7 +652,7 @@ return [
 
     'testDisputeEditForNoInitialParent' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
             ],
         ],
@@ -635,7 +663,7 @@ return [
 
     'testDisputeEditWithExistingParent' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
             ],
         ],
@@ -648,7 +676,7 @@ return [
 
     'testDisputeEditReplaceParent' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
             ],
         ],
@@ -659,7 +687,7 @@ return [
 
     'testDisputeEditReplaceParentWithAlreadyLinkedParent' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
             ],
         ],
@@ -680,7 +708,7 @@ return [
 
     'testDisputeLostPartiallyAccepted' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status'                    => 'lost',
             ],
@@ -692,7 +720,7 @@ return [
 
     'testDisputeLostPartiallyAcceptedForNoOnsetDeduct' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status'                    => 'lost',
             ],
@@ -704,7 +732,7 @@ return [
 
     'testDisputeLostPartiallyAcceptedWithInvalidAcceptedAmount' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status'                    => 'lost',
             ],
@@ -726,7 +754,7 @@ return [
 
     'testDisputeLostPartiallyAcceptedWithZeroAcceptedAmount' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status'                    => 'lost',
                 'accepted_amount'           => 0,
@@ -749,7 +777,7 @@ return [
 
     'testNonTransactionalDisputeInvalidClose' => [
         'request' => [
-            'method'  => 'patch',
+            'method'  => 'post',
             'content' => [
                 'status'        => 'lost'
             ],
@@ -795,6 +823,97 @@ return [
                         'phase'             => 'chargeback',
                     ],
                 ]
+            ],
+        ],
+    ],
+
+    'testFetchMerchantDetails' => [
+        'request' => [
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'   => '10000000000000',
+                'parent_id'     => null,
+                'amount'        => 1000000,
+                'currency'      => 'INR',
+                'reason_code'   => 'SOMETHING_BAD',
+                'status'        => 'open',
+                'phase'         => 'chargeback',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testEditDisputeMerchantDocumentUploadByProxy' => [
+        'request' => [
+            'content' => [
+                'upload_files'  =>  [
+                    [
+                        'name'      => 'myfile1.png',
+                        'category'  => 'explanation_letter',
+                    ],
+                    [
+                        'name'      => 'myfile2.pdf',
+                        'category'  => 'delivery_proof',
+                    ],
+                ],
+            ],
+            'method' => 'post',
+            'files' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity'        => 'dispute',
+                'amount'        => 1000000,
+                'currency'      => 'INR',
+                'reason_code'   => 'SOMETHING_BAD',
+                'status'        => 'open',
+                'phase'         => 'chargeback',
+                'files'         => [
+                    [
+                        'file_id'       => 'rzp_file_mock_id_1000000_explanation_letter',
+                        'name'          => 'myfile1.png',
+                        'category'      => 'explanation_letter',
+                    ],
+                    [
+                        'file_id'       => 'rzp_file_mock_id_1000000_delivery_proof',
+                        'name'          => 'myfile2.pdf',
+                        'category'      => 'delivery_proof',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testEditDisputeMerchantAcceptDispute' => [
+        'request' => [
+            'content' => [
+                'accept_dispute'    => true,
+            ],
+            'method' => 'post',
+        ],
+        'response' => [
+            'content' => [
+                'amount'            => 10100,
+                'status'            => 'lost',
+                'phase'             => 'chargeback',
+            ],
+        ],
+    ],
+
+    'testEditDisputeMerchantAcceptDisputeForNonTransactional' => [
+        'request' => [
+            'content' => [
+                'accept_dispute'    => true,
+            ],
+            'method' => 'post',
+        ],
+        'response' => [
+            'content' => [
+                'amount'            => 10100,
+                'status'            => 'closed',
+                'phase'             => 'fraud',
             ],
         ],
     ],

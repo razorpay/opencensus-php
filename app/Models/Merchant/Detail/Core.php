@@ -17,6 +17,7 @@ use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\State\Reason;
+use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Base\PublicEntity as PublicEntity;
@@ -105,6 +106,28 @@ class Core extends Base\Core
         return $merchantDetails;
     }
 
+    /**
+     * Fills up dummy file IDs, required fields for merchant activation
+     * Use with caution
+     *
+     * @param Merchant\Entity $merchant
+     */
+    public function saveDummyActivationFiles(Merchant\Entity $merchant)
+    {
+        $merchantDetails = $merchant->merchantDetail;
+
+        $params = [
+            Entity::ADDRESS_PROOF_URL    => '100000000Dummy',
+            Entity::BUSINESS_PAN_URL     => '100000000Dummy',
+            Entity::BUSINESS_PROOF_URL   => '100000000Dummy',
+            Entity::PROMOTER_ADDRESS_URL => '100000000Dummy',
+        ];
+
+        $merchantDetails->fill($params);
+
+        $this->repo->saveOrFail($merchantDetails);
+    }
+
     public function createMerchantDetails(Merchant\Entity $merchant, array $input = [])
     {
         $merchantDetail = (new Entity)->build($input);
@@ -119,7 +142,7 @@ class Core extends Base\Core
 
             $this->trace->info(
                 TraceCode::CREATE_MERCHANT_DETAIL,
-                [ 'merchant_id'   => $merchant->getId()]);
+                ['merchant_id' => $merchant->getId()]);
         }
         catch (\Throwable $e)
         {
@@ -275,9 +298,18 @@ class Core extends Base\Core
             $archivedAt = Carbon::now(Timezone::IST)->getTimestamp();
         }
 
+        $routePermission = Permission\Name::$actionMap[$archiveAction];
+
+        $oldMerchantDetails = clone $merchantDetails;
+
         $merchantDetails->setArchivedAt($archivedAt);
 
+        $this->app['workflow']->setPermission($routePermission)->handle(
+            $oldMerchantDetails, $merchantDetails);
+
         $this->repo->saveOrFail($merchantDetails);
+
+        $this->logActionToSlack($merchantDetails->merchant, $archiveAction);
 
         return $merchantDetails;
     }
@@ -343,6 +375,14 @@ class Core extends Base\Core
                 (new Merchant\Activate)->activate($merchantDetails->merchant, true);
             }
 
+            if ($input[Entity::ACTIVATION_STATUS] === Status::REJECTED)
+            {
+                $this->triggerWorkflowForRejectionActivationStatusChange(
+                    $oldMerchantDetails,
+                    $newMerchantDetails,
+                    $rejectionReasons);
+            }
+
             $this->repo->saveOrFail($merchantDetails);
 
             $stateData = [
@@ -368,6 +408,37 @@ class Core extends Base\Core
         $bankData = $bankCore->buildBankAccountArrayFromMerchantDetail($merchantDetails);
 
         $bankCore->createOrChangeBankAccount($bankData, $merchantDetails->merchant);
+    }
+
+    /**
+     * Triggers workflow when activation status is changed to rejected
+     * @param Entity $oldMerchantDetails
+     * @param Entity $newMerchantDetails
+     * @param array $rejectionReasons
+     */
+    protected function triggerWorkflowForRejectionActivationStatusChange(
+        Entity $oldMerchantDetails,
+        Entity $newMerchantDetails,
+        array $rejectionReasons)
+    {
+        $oldMerchantDetailsArray = $oldMerchantDetails->toArray();
+
+        $newMerchantDetailsArray = $newMerchantDetails->toArray();
+
+        $rejectionReasonDescriptions = [];
+
+        foreach ($rejectionReasons as $rejectionReason)
+        {
+            $rejectionReasonCode = $rejectionReason[Reason\Entity::REASON_CODE] ?? "";
+
+            $rejectionReasonDescriptions[] = RejectionReasons::getReasonDescriptionByReasonCode($rejectionReasonCode);
+        }
+
+        $newMerchantDetailsArray[Entity::REJECTION_REASONS] = $rejectionReasonDescriptions;
+
+        $workflow = $this->app['workflow']
+                         ->setEntity($newMerchantDetails->getEntity())
+                         ->handle($oldMerchantDetailsArray, $newMerchantDetailsArray);
     }
 
     /**
@@ -421,6 +492,13 @@ class Core extends Base\Core
         $requiredFields = [];
 
         $validationFields = ValidationFields::DASHBOARD_FIELDS;
+
+        if ($merchantDetails->getBusinessType() === BusinessType::NGO)
+        {
+            $ngoValidationFields = ValidationFields::NGO_MERCHANT_FIELDS;
+
+            $validationFields = array_merge($validationFields, $ngoValidationFields);
+        }
 
         $merchant = $merchantDetails->merchant;
 

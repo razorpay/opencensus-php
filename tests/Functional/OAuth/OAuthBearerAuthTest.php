@@ -89,6 +89,17 @@ class OAuthBearerAuthTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testBearerAuthWriteAccessReadRoute()
+    {
+        $accessToken = $this->generateOAuthAccessToken(['scopes' => ['read_write']]);
+
+        $this->ba->oauthBearerAuth($accessToken);
+
+        $this->fixtures->create('payment', ['id' => '10000000000000']);
+
+        $this->startTest();
+    }
+
     public function testBearerAuthOutsideOfScope()
     {
         $accessToken = $this->generateOAuthAccessToken();
@@ -125,6 +136,17 @@ class OAuthBearerAuthTest extends OAuthTestCase
         $accessToken = $this->generateOAuthAccessToken(['expires_at' => $pastExpiry]);
 
         $this->ba->oauthBearerAuth($accessToken);
+
+        $this->startTest();
+    }
+
+    public function testBearerAuthLiveModeInActiveMerchant()
+    {
+        $accessToken = $this->generateOAuthAccessToken(['mode' => 'live']);
+
+        $this->ba->oauthBearerAuth($accessToken);
+
+        $this->fixtures->create('payment', ['id' => '10000000000000']);
 
         $this->startTest();
     }

@@ -21,11 +21,13 @@ class Shared
     const NETBANKING_CORPORATION_TERMINAL    = '100NbCorpTrmnl';
     const NETBANKING_KOTAK_TERMINAL          = '100NbKotakTmnl';
     const NETBANKING_ICICI_TERMINAL          = '100NbIciciTmnl';
+    const NETBANKING_ICICI_CRP_TERMINAL      = '100NbIcicCrpTl';
     const NETBANKING_ICICI_TPV_TERMINAL      = '100NbIcicTpvTl';
     const NETBANKING_ICICI_REC_TERMINAL      = '100NbIcicRecTl';
     const NETBANKING_HDFC_REC_TERMINAL       = '100NbHdfcRecTl';
     const NETBANKING_AIRTEL_TERMINAL         = '100NbAirtlTmnl';
     const NETBANKING_AXIS_TERMINAL           = '100NbAxisTrmnl';
+    const NETBANKING_AXIS_CRP_TERMINAL       = '100NbAxisCrpTl';
     const NETBANKING_AXIS_TPV_TERMINAL       = '100NbAxisTpvTl';
     const NETBANKING_AXIS_REC_TERMINAL       = '100NbAxisRecTl';
     const NETBANKING_FEDERAL_TERMINAL        = '100NbFdrlTrmnl';
@@ -119,7 +121,7 @@ class Shared
         self::NETBANKING_FEDERAL_TERMINAL        => Gateway::NETBANKING_FEDERAL,
         self::NETBANKING_RBL_TERMINAL            => Gateway::NETBANKING_RBL,
         self::NETBANKING_INDUSIND_TERMINAL       => Gateway::NETBANKING_INDUSIND,
-        self::NETBANKING_PNB_TERMINAL            => Gateway::NETBANKING_PNB_TERMINAL,
+        self::NETBANKING_PNB_TERMINAL            => Gateway::NETBANKING_PNB,
         self::OLAMONEY_RAZORPAY_TERMINAL         => Gateway::WALLET_OLAMONEY,
         self::PAYTM_RAZORPAY_TERMINAL            => Gateway::PAYTM,
         self::PAYZAPP_RAZORPAY_TERMINAL          => Gateway::WALLET_PAYZAPP,

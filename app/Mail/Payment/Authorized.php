@@ -2,6 +2,8 @@
 
 namespace RZP\Mail\Payment;
 
+use RZP\Mail\Base\Constants;
+
 class Authorized extends Base
 {
     protected function addHtmlView()
@@ -37,5 +39,35 @@ class Authorized extends Base
     public function isCustomerReceiptEmail()
     {
         return true;
+    }
+
+    protected function getSenderEmail(): string
+    {
+        return Constants::MAIL_ADDRESSES[Constants::NOREPLY];
+    }
+
+    protected function getSenderHeader(): string
+    {
+        return Constants::HEADERS[Constants::NOREPLY];
+    }
+
+    protected function getCustomCustomerReplyToEmail(): string
+    {
+        $merchantId = $this->data['merchant']['id'];
+
+        $email = Constants::MAIL_ADDRESSES[Constants::NOREPLY];
+
+        // Zebpay
+        if ($merchantId === '8iMbVsEnv1HCo0')
+        {
+            $email = 'support@zebpay.com';
+        }
+        // Koinex
+        else if ($merchantId === '8Gx5vN29m83OUY')
+        {
+            $email = 'team@koinex.in';
+        }
+
+        return $email;
     }
 }

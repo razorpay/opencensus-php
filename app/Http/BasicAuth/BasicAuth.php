@@ -371,6 +371,8 @@ class BasicAuth
 
             $this->setProxyTrue();
 
+            $this->setAdminAuthIfApplicable();
+
             return $this->checkAndSetAccountScope();
         }
 
@@ -679,7 +681,7 @@ class BasicAuth
     {
         try
         {
-            Merchant\AccountEntity::verifyIdAndSilentlyStripSign($accountId);
+            Merchant\Account\Entity::verifyIdAndSilentlyStripSign($accountId);
         }
         catch (\Exception $e)
         {
@@ -1312,7 +1314,7 @@ class BasicAuth
         $this->merchant = $account;
     }
 
-    protected function checkMerchantActivatedForLive()
+    public function checkMerchantActivatedForLive()
     {
         $mode = $this->getMode();
 

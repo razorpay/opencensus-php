@@ -16,6 +16,7 @@ use RZP\Models\Admin\Action;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\Dispute as DisputeMailer;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Models\Dispute\File\Entity as DisputeFileEntity;
 
 class Core extends Base\Core
 {
@@ -23,6 +24,13 @@ class Core extends Base\Core
   
     const DEBIT_ADJUSTMENT_DESCRIPTION = 'Debit disputed amount';
     const CREDIT_ADJUSTMENT_DESCRIPTION = 'Credit to reverse a previous dispute debit';
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->mutex = $this->app['api.mutex'];
+    }
 
     /**
      * @param Payment\Entity $payment
@@ -43,44 +51,50 @@ class Core extends Base\Core
                 'payment_id' => $payment->getId()
             ]);
 
-        (new Validator)->validatePaymentForDispute($input, $payment);
-
-        $parent = $this->checkAndGetParent($input);
-
-        $dispute = (new Entity)->build($input);
-
-        $merchant = $payment->merchant;
-
-        $this->setRelationsAndDerivedAttributes($dispute, $parent, $payment, $reason);
-
-        // entity id is required to create associated transaction
-        $dispute->generateId();
-
-        $this->app['workflow']
-            ->setEntityAndId($dispute->getEntity(), $dispute->getId())
-            ->handle((new \stdClass), $dispute);
-
-        $dispute->setAuditAction(Action::CREATE_DISPUTE);
-
-        $payment->setDisputed(true);
-
-        $dispute = $this->repo->transaction(function() use ($dispute)
-        {
-            if ($dispute->getDeductAtOnset() === true)
+        return $this->mutex->acquireAndRelease(
+            $payment->getId(),
+            function() use ($payment, $reason, $input)
             {
-                $this->createNegativeAdjustmentAndUpdateDispute($dispute);
-            }
+                (new Validator)->validatePaymentForDispute($input, $payment);
 
-            $this->repo->saveOrFail($dispute->payment);
+                $parent = $this->checkAndGetParent($input);
 
-            $this->repo->saveOrFail($dispute);
+                $dispute = (new Entity)->build($input);
 
-            return $dispute;
-        });
+                $merchant = $payment->merchant;
 
-        $this->sendDisputeMailToMerchant($dispute, $merchant, $input);
+                $this->setRelationsAndDerivedAttributes($dispute, $parent, $payment, $reason);
 
-        return $dispute;
+                // entity id is required to create associated transaction
+                $dispute->generateId();
+
+                $this->app['workflow']
+                    ->setEntityAndId($dispute->getEntity(), $dispute->getId())
+                    ->handle((new \stdClass), $dispute);
+
+                $dispute->setAuditAction(Action::CREATE_DISPUTE);
+
+                $payment->setDisputed(true);
+
+                $dispute = $this->repo->transaction(function() use ($dispute)
+                {
+                    if ($dispute->getDeductAtOnset() === true)
+                    {
+                        $this->createNegativeAdjustmentAndUpdateDispute($dispute);
+                    }
+
+                    $this->repo->saveOrFail($dispute->payment);
+
+                    $this->repo->saveOrFail($dispute);
+
+                    return $dispute;
+                });
+
+                $this->sendDisputeMailToMerchant($dispute, $merchant, $input);
+
+                return $dispute;
+
+            });
     }
 
     /**
@@ -96,25 +110,96 @@ class Core extends Base\Core
             array_merge($input, [Entity::ID => $dispute->getId()])
         );
 
-        $parent = $this->checkAndGetParent($input, $dispute);
+        $paymentId = $dispute->getPaymentId();
 
-        $dispute->edit($input);
+        return $this->mutex->acquireAndRelease(
+            $paymentId,
+            function() use ($dispute, $input) {
 
-        $dispute->setAuditAction(Action::EDIT_DISPUTE);
+                $parent = $this->checkAndGetParent($input, $dispute);
 
-        if ($parent !== null)
+                $dispute->edit($input);
+
+                $dispute->setAuditAction(Action::EDIT_DISPUTE);
+
+                if ($parent !== null)
+                {
+                    $dispute->parent()->associate($parent);
+                }
+
+                return $this->repo->transaction(function() use ($dispute, $input)
+                {
+                    $this->handleDisputeClosure($dispute, $input);
+
+                    $this->repo->saveOrFail($dispute);
+
+                    return $dispute;
+                });
+            });
+    }
+
+    /**
+     * @param Entity $dispute
+     * @param array $input
+     * @return array
+     */
+    public function updateFilesAndInputForMerchant(Entity $dispute, array $input): array
+    {
+        $this->trace->info(
+            TraceCode::DISPUTE_EDIT_REQUEST_FOR_MERCHANT,
+            [Entity::ID => $dispute->getId()]);
+
+        $files = [];
+
+        $fileCore = new File\Core;
+
+        if (array_key_exists(DisputeFileEntity::FILES, $input) === true)
         {
-            $dispute->parent()->associate($parent);
+            $files = $input[DisputeFileEntity::FILES];
+
+            $files = $fileCore->checkFilesInput($files);
+
+            unset($input[DisputeFileEntity::FILES]);
         }
 
-        return $this->repo->transaction(function() use ($dispute, $input)
+        $response = $this->repo->transaction(function() use ($dispute, $fileCore, $files, $input)
         {
-            $this->handleDisputeClosure($dispute, $input);
+            if (empty($input) === false)
+            {
+                $dispute = $this->updateForMerchant($dispute, $input);
+            }
 
-            $this->repo->saveOrFail($dispute);
+            $response = $dispute->toArrayPublic();
 
-            return $dispute;
+            if (empty($files) === false )
+            {
+                $response['files'] = $fileCore->uploadFiles($dispute, $files);
+            }
+            
+            return $response;
         });
+
+        return $response;
+    }
+
+    /**
+     * @param Entity $dispute
+     * @param array  $input
+     *
+     * @return Entity
+     */
+    public function updateForMerchant(Entity $dispute, array $input): Entity
+    {
+        $this->trace->info(
+            TraceCode::DISPUTE_EDIT_REQUEST_FOR_MERCHANT,
+            array_merge($input, [Entity::ID => $dispute->getId()])
+        );
+
+        (new Validator)->validateInput(Validator::OPERATION_MERCHANT_EDIT, $input);
+
+        $input = $this->generateInputForMerchantEdit($dispute, $input);
+
+        return $this->update($dispute, $input);
     }
 
     /**
@@ -240,9 +325,9 @@ class Core extends Base\Core
             return;
         }
 
-        $dispute->setResolvedAt(Carbon::now()->getTimestamp());
-
         $payment = $dispute->payment;
+
+        $dispute->setResolvedAt(Carbon::now()->getTimestamp());
 
         $payment->setDisputed(false);
 
@@ -420,5 +505,22 @@ class Core extends Base\Core
         $length = $endDate->diffInDays(Carbon::now(Timezone::IST));
 
         return $length;
+    }
+
+    protected function generateInputForMerchantEdit(Entity $dispute, array $input): array
+    {
+        if (empty($input[Entity::ACCEPT_DISPUTE]) === false)
+        {
+            $input[Entity::STATUS] = Status::LOST;
+
+            if (in_array($dispute->getPhase(), Phase::getNonTransactionalPhases()) === true)
+            {
+                $input[Entity::STATUS] = Status::CLOSED;
+            }
+
+            unset($input[Entity::ACCEPT_DISPUTE]);
+        }
+
+        return $input;
     }
 }

@@ -3,10 +3,27 @@
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
-use Gateway\Hdfc;
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 return [
-   'testCreatePaymentWithInvalidMethod' => [
+    'testCreatePaymentWithoutOrderId' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payment processing failed due to missing order id',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED_MISSING_ORDER_ID
+        ],
+    ],
+
+    'testCreatePaymentWithInvalidMethod' => [
         'response' => [
             'content' => [
                 'error' => [
@@ -20,9 +37,9 @@ return [
             'class' => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
-   ],
+    ],
 
-   'testCreatePaymentWithoutMethod' => [
+    'testCreatePaymentWithoutMethod' => [
        'response' => [
            'content' => [
                'merchant_id'        => '10000000000000',
@@ -33,9 +50,9 @@ return [
                'reason_description' => 'This is a serious fraud',
            ],
        ],
-   ],
+    ],
 
-   'testCreatePaymentWithoutCardNumber' => [
+    'testCreatePaymentWithoutCardNumber' => [
         'response' => [
             'content' => [
                 'error' => [
@@ -49,9 +66,9 @@ return [
             'class' => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
-   ],
+    ],
 
-   'testCreatePaymentWithoutContact' => [
+    'testCreatePaymentWithoutContact' => [
         'response' => [
             'content' => [
                 'error' => [
@@ -65,9 +82,9 @@ return [
             'class' => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
-   ],
+    ],
 
-   'testIntlPaymentWhenNotAllowed' => [
+    'testIntlPaymentWhenNotAllowed' => [
         'response' => [
             'content' => [
                 'error' => [
@@ -81,9 +98,9 @@ return [
             'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED
         ],
-   ],
+    ],
 
-   'testCreatePaymentInEs' => [
+    'testCreatePaymentInEs' => [
         'body' => [
             [
                 'index' => [
@@ -95,9 +112,9 @@ return [
                 'merchant_id' => '10000000000000',
             ],
         ],
-   ],
+    ],
 
-   'testPaymentCreateCallingCallbackRouteTwiceForError' => [
+    'testPaymentCreateCallingCallbackRouteTwiceForError' => [
         'response' => [
             'content' => [
                 'error' => [
@@ -111,5 +128,54 @@ return [
             'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE,
         ],
-   ],
+    ],
+
+    'testSecondRecurringWithMissingBankAccountDetailsAndAuthType' => [
+        'request' => [
+            'content' => [
+                'type'    => 'emandate_debit',
+                'targets' => ['axis'],
+                'begin'   => Carbon::today(Timezone::IST)->timestamp,
+                'end'     => Carbon::tomorrow(Timezone::IST)->timestamp,
+            ],
+            'url' => '/gateway/files',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'status'              => 'file_sent',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 1,
+                        'sender'              => 'emandate@razorpay.com',
+                        'type'                => 'emandate_debit',
+                        'target'              => 'axis',
+                        'entity'              => 'gateway_file',
+                        'admin'               => true
+                    ],
+                ],
+            ]
+        ]
+    ],
+
+    'testEmandatePaymentCreateFailIfBankMissing' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The bank field is required when method is emandate.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ]
 ];

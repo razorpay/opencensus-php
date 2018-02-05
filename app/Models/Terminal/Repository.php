@@ -81,34 +81,53 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
-    public function getTerminalsForMerchantAndSharedMerchant(Merchant\Entity $merchant, bool $emandate = false)
+    public function getTerminalsForMerchantAndSharedMerchant(Merchant\Entity $merchant)
     {
         $merchantIds = [$merchant->getId(), Merchant\Account::SHARED_ACCOUNT];
 
         $query = $this->newQuery()
                       ->enabled();
 
-        if ($emandate === true)
-        {
-            $this->addEmandateQueryFilters($query);
-        }
-
         $this->addMerchantWhereCondition($query, $merchantIds);
 
         return $query->get();
     }
 
-    protected function addEmandateQueryFilters($query)
+    public function getEmandateNetbankingTerminalsForMerchantAndSharedMerchant(
+        Merchant\Entity $merchant): PublicCollection
     {
+        $merchantIds = [$merchant->getId(), Merchant\Account::SHARED_ACCOUNT];
+
         //
         // Emandate terminals have type 6 (recurring 3ds + recurring non 3ds)
         // This is because we don't have different terminals for the first
         // auth transaction and then subsequent recurring transactions.
         //
 
-        $query->where(Entity::NETBANKING, true)
-              ->where(Entity::TYPE, 6)
-              ->whereIn(Entity::GATEWAY, Payment\Gateway::$recurringGateways);
+        $query = $this->newQuery()
+                      ->enabled()
+                      ->where(Entity::NETBANKING, true)
+                      ->where(Entity::TYPE, 6)
+                      ->whereIn(Entity::GATEWAY, Payment\Gateway::$recurringGateways);
+
+        $this->addMerchantWhereCondition($query, $merchantIds);
+
+        return $query->get();
+    }
+
+    public function getDirectRecurringTerminalsOfType(Merchant\Entity $merchant, int $type)
+    {
+        $merchantIds = [$merchant->getId()];
+
+        $query = $this->newQuery()
+                      ->enabled()
+                      ->where(Entity::TYPE, '=', $type)
+                      // TODO: This is a temporary hard-code. Remove it later!
+                      ->whereIn(Entity::GATEWAY, [Payment\Gateway::AXIS_MIGS, Payment\Gateway::HDFC]);
+
+        $this->addMerchantWhereCondition($query, $merchantIds);
+
+        return $query->get();
     }
 
     protected function addMerchantWhereCondition($query, array $merchantIds)

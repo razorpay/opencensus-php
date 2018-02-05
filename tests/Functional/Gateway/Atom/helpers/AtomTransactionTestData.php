@@ -36,7 +36,7 @@ return [
         // 'escrow_balance' => 998562,
         'merchant_id' => '10000000000000',
         'pricing_rule_id' => null,
-        'channel' => 'atom',
+        'channel' => 'kotak',
     ],
 
     'txnDataAfterPaymentOnSharedTerminal' => [

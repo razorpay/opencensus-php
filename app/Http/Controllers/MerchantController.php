@@ -9,7 +9,6 @@ use RZP\Models\Key;
 use RZP\Models\Report;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
-use RZP\Models\Terminal;
 use RZP\Constants\Entity;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Detail;
@@ -108,34 +107,11 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postCreateKeys($merchantId)
-    {
-        $data = $this->service()->createKey($merchantId);
-
-        return ApiResponse::json($data);
-    }
-
-    public function getKeys($merchantId)
-    {
-        $data = $this->service()->fetchKeys($merchantId);
-
-        return ApiResponse::json($data);
-    }
-
     public function getKeySecret($keyId)
     {
         $data = (new Key\Core)->getKeySecret($keyId);
 
         return ApiResponse::json($data);
-    }
-
-    public function putKeys($merchantId, $keyId)
-    {
-        $input = Request::all();
-
-        $keys = $this->service()->updateKey($merchantId, $keyId, $input);
-
-        return ApiResponse::json($keys);
     }
 
     public function postAssignPricingPlan($id)
@@ -371,9 +347,9 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getMerchantBeneficiaryFile()
+    public function getMerchantBeneficiaryFile($channel)
     {
-        $data = $this->service()->getMerchantBeneficiaryFile();
+        $data = $this->service()->getMerchantBeneficiaryFile($channel);
 
         return ApiResponse::json($data);
     }
@@ -417,11 +393,20 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postMerchantBeneficiaryFile()
+    public function postOAuthApplicationWebhook(string $appId)
     {
         $input = Request::all();
 
-        $data = $this->service()->postMerchantBeneficiaryFile($input);
+        $data = $this->service()->createOAuthAppWebhook($appId, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postMerchantBeneficiaryFile($channel)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->postMerchantBeneficiaryFile($input, $channel);
 
         return ApiResponse::json($data);
     }
@@ -565,6 +550,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function updateChannelForMultipleMerchants()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->updateChannelForMultipleMerchants($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function updateBankAccountForMultipleMerchants()
     {
         $input = Request::all();
@@ -608,9 +602,9 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getCreditsLog(Credits\Service $service, $mid, $id)
+    public function getCreditsLog(Credits\Service $service, $id)
     {
-        $data = $service->fetchCreditsLog($mid, $id);
+        $data = $service->fetchCreditsLog($id);
 
         return ApiResponse::json($data);
     }
@@ -753,6 +747,13 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getActivationStatusChangeLog(string $id)
+    {
+        $response = $this->service(E::MERCHANT_DETAIL)->getActivationStatusChangeLog($id);
+
+        return ApiResponse::json($response);
+    }
+
     public function getRejectionReasons()
     {
         $response = $this->service(E::MERCHANT_DETAIL)->getRejectionReasons();
@@ -786,6 +787,15 @@ class MerchantController extends Controller
     public function deleteTag($id, $tagName)
     {
         $response = $this->service()->deleteTag($id, $tagName);
+
+        return ApiResponse::json($response);
+    }
+
+    public function bulkTagMerchants()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->bulkTag($input);
 
         return ApiResponse::json($response);
     }

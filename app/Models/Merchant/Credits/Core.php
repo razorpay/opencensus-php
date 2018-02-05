@@ -12,11 +12,6 @@ class Core extends Base\Core
 {
     public function create($merchant, $input)
     {
-        if (isset($input[Credits\Entity::TYPE]) === false)
-        {
-            $input[Credits\Entity::TYPE] = Credits\Type::AMOUNT;
-        }
-
         $creditsLog = (new Credits\Entity)->build($input);
 
         $creditsLog->setAuditAction(Action::CREATE_MERCHANT_CREDITS);
@@ -64,6 +59,14 @@ class Core extends Base\Core
             $newCredits = $merchantFeeCredits + $credits;
 
             $this->repo->balance->editMerchantFeeCredits($merchant, $newCredits);
+        }
+        else if ($type === Credits\Type::REFUND)
+        {
+            $merchantRefundCredits = $merchant->balance->getRefundCredits();
+
+            $newCredits = $merchantRefundCredits + $credits;
+
+            $this->repo->balance->editMerchantRefundCredits($merchant, $newCredits);
         }
     }
 

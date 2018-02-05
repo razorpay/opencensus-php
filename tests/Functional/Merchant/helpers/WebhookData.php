@@ -28,6 +28,54 @@ return [
         ]
     ],
 
+    'testCreateWebhookWhenAlreadyCreated' => [
+        'request' => [
+            'url' => '/webhooks',
+            'content' => [
+                'url' => 'http://example.com',
+                'events' => [
+                    'payment.authorized' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Webhook already created.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateOAuthAppWebhook' => [
+        'request' => [
+            'url' => '/oauth/applications/10000000000App/webhooks',
+            'content' => [
+                'url' => 'http://example.com',
+                'events' => [
+                    'payment.authorized' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'url' => 'http://example.com',
+                'events' => [
+                    'payment.authorized' => true,
+                ],
+                'active' => true,
+            ]
+        ],
+    ],
+
     'testCreateWebhookWithLargerSecret' => [
         'request' => [
             'url' => '/webhooks',
@@ -193,6 +241,32 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateOAuthAppWebhookInvalidAppId' => [
+        'request' => [
+            'url' => '/oauth/applications/10000000000Appp/webhooks',
+            'content' => [
+                'url' => 'http://example.com',
+                'events' => [
+                    'payment.authorized' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The entity id must be 14 characters.'
                 ],
             ],
             'status_code' => 400,
@@ -575,4 +649,22 @@ return [
         ],
         // 'webhook_id' => '4WVwsVEmeO3wwp',
     ],
+
+    'testTransferSettlementWebhook' => [
+        'event' => [
+            'entity'     => 'event',
+            'event'      => 'settlement.processed',
+            'contains'   => [
+                'settlement'
+            ],
+            'payload'    => [
+                'settlement' => [
+                    'entity' => [
+                        'entity' => 'settlement',
+                        'amount' => 2500
+                    ]
+                ]
+            ],
+        ]
+    ]
 ];

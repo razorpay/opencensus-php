@@ -68,6 +68,11 @@ return [
         'terminal_id' => '100NbHdfcTrmnl',
     ],
 
+    'testPaymentVerifySuccessEntity' => [
+        'received' => true,
+        'bank'     => 'HDFC',
+    ],
+
     'testAmountTampering' => [
         'response'  => [
             'content'     => [

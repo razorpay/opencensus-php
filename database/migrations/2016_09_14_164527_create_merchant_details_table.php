@@ -190,6 +190,12 @@ class CreateMerchantDetailsTable extends Migration
             $table->string(MerchantDetail::PROMOTER_ADDRESS_URL)
                   ->nullable();
 
+            $table->string(MerchantDetail::FORM_12A_URL, 255)
+                  ->nullable();
+
+            $table->string(MerchantDetail::FORM_80G_URL, 255)
+                  ->nullable();
+
             $table->string(MerchantDetail::TRANSACTION_REPORT_EMAIL)
                   ->nullable();
 
@@ -248,6 +254,8 @@ class CreateMerchantDetailsTable extends Migration
             $table->index(MerchantDetail::ACTIVATION_STATUS);
 
             $table->index(MerchantDetail::ARCHIVED_AT);
+            $table->index(MerchantDetail::CREATED_AT);
+            $table->index(MerchantDetail::UPDATED_AT);
         });
     }
 

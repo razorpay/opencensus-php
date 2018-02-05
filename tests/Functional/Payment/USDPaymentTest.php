@@ -104,7 +104,7 @@ class USDPaymentTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals($payment['convert_currency'], false);
-        $this->assertEquals($payment['base_amount'], 49000);
+        $this->assertEquals($payment['base_amount'], 49500);
     }
 
     public function testUsdPaymentMerchantUsdDisabled()

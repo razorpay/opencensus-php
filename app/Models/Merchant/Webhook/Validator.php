@@ -11,9 +11,12 @@ use RZP\Trace\TraceCode;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::URL     => 'required|string|url|max:255|min:3',
-        Entity::EVENTS  => 'required|array',
-        Entity::SECRET  => 'sometimes|string|max:255',
+        Entity::URL         => 'required|string|url|max:255|min:3',
+        Entity::EVENTS      => 'required|array',
+        Entity::SECRET      => 'sometimes|string|max:255',
+        Entity::ENTITY_TYPE => 'sometimes|string|max:100|in:application',
+        Entity::ENTITY_ID   => 'required_if:entity_type,application|
+                                    string|size:14|unique:webhooks,entity_id',
     ];
 
     protected static $createValidators = [

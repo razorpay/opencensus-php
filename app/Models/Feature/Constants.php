@@ -57,7 +57,10 @@ class Constants
     const SKIP_HOLD_FUNDS_ON_PAYOUT     = 'skip_hold_funds_on_payout';
     const REPORT_V2                     = 'report_v2';
     const UPI_INTENT                    = 'upi_intent';
-
+    const CORPORATE_BANKS               = 'corporate_banks';
+    const ORDER_ID_MANDATORY            = 'order_id_mandatory';
+    const MAGIC                         = 'magic';
+    const NEW_ANALYTICS                 = 'new_analytics';
 
     // Different actions for feature activation flow
     const CREATE           = 'create';
@@ -118,6 +121,10 @@ class Constants
         self::SKIP_HOLD_FUNDS_ON_PAYOUT     => true,
         self::REPORT_V2                     => true,
         self::UPI_INTENT                    => true,
+        self::CORPORATE_BANKS               => true,
+        self::ORDER_ID_MANDATORY            => true,
+        self::MAGIC                         => true,
+        self::NEW_ANALYTICS                 => true,
     ];
 
     // Keys used in the feature on-boarding workflow
@@ -184,6 +191,11 @@ class Constants
             'display_name'  => 'Report V2',
             'documentation' => ''
         ],
+        self::E_MANDATE => [
+            'feature'   => self::E_MANDATE,
+            'display_name'  => 'E-Mandate',
+            'documentation' => '',
+        ]
     ];
 
     /*

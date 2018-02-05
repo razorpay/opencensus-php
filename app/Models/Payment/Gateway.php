@@ -60,6 +60,7 @@ class Gateway
     const ACQUIRER_ICIC      = 'icic';
     const ACQUIRER_AXIS      = 'axis';
     const ACQUIRER_AMEX      = 'amex';
+    const ACQUIRER_RATN      = 'ratn';
 
     const NOT_SUPPORTED      = 'not_supported';
     const SUPPORTED          = 'supported';
@@ -71,6 +72,7 @@ class Gateway
         self::FIRST_DATA  => [self::ACQUIRER_ICIC],
         self::AMEX        => [self::ACQUIRER_AMEX],
         self::AEPS_ICICI  => [self::ACQUIRER_ICIC],
+        self::HITACHI     => [self::ACQUIRER_RATN],
     ];
 
     const POWER_WALLETS = [
@@ -111,6 +113,11 @@ class Gateway
         self::WALLET_FREECHARGE
     ];
 
+    const MCC_FILTER_GATEWAYS = [
+        self::HDFC,
+        self::HITACHI,
+    ];
+
     /**
     * Gateways for which we may need to force authorize payments
     * since their verify API's stop working after a certain time
@@ -147,6 +154,8 @@ class Gateway
         Payment\Gateway::UPI_ICICI,
         Payment\Gateway::WALLET_PAYZAPP,
         Payment\Gateway::WALLET_MPESA,
+        Payment\Gateway::WALLET_PAYUMONEY,
+        Payment\Gateway::WALLET_FREECHARGE,
     ];
 
     public static $channels = [
@@ -376,6 +385,7 @@ class Gateway
         self::HITACHI => [
             Network::MC,
             Network::VISA,
+            Network::MAES,
         ],
         self::FIRST_DATA => [
             Network::MC,
@@ -410,6 +420,7 @@ class Gateway
         self::ACQUIRER_ICIC => IFSC::ICIC,
         self::ACQUIRER_AXIS => IFSC::UTIB,
         self::ACQUIRER_AMEX => Network::AMEX,
+        self::ACQUIRER_RATN => IFSC::RATN,
     ];
 
     /**
@@ -468,17 +479,38 @@ class Gateway
         Gateway::NETBANKING_HDFC,
     ];
 
+    public static $recurringCardNetworks = [
+        Network::MC,
+        Network::VISA,
+    ];
+
+    /**
+     * List of ALL auth types and the corresponding
+     * banks supported by that auth type.
+     *
+     * @var array
+     */
     public static $emandateBanks = [
-        AuthenticationType::NETBANKING => [
+        AuthType::NETBANKING => [
             IFSC::ICIC,
             IFSC::UTIB,
             IFSC::HDFC,
         ],
-        AuthenticationType::AADHAAR => [
-            IFSC::ICIC,
-            IFSC::UTIB,
-            IFSC::HDFC,
+        AuthType::AADHAAR => [
+            // IFSC::ICIC,
+            // IFSC::UTIB,
+            // IFSC::HDFC,
         ]
+    ];
+
+    /**
+     * TODO: This needs to be removed after we migrate all the gateways to
+     *
+     * @var array
+     */
+    public static $zeroRupeeEmandateBanks = [
+        IFSC::UTIB,
+        IFSC::ICIC,
     ];
 
     /**
@@ -493,11 +525,6 @@ class Gateway
         Gateway::NETBANKING_ICICI   => [IFSC::ICIC],
         Gateway::NETBANKING_AXIS    => [IFSC::UTIB],
         Gateway::NETBANKING_HDFC    => [IFSC::HDFC],
-    ];
-
-    public static $recurringCardNetworks = [
-        Network::MC,
-        Network::VISA,
     ];
 
     /**
@@ -587,6 +614,11 @@ class Gateway
      * @var array
      */
     public static $netbankingToGatewayMap = [
+        //corp banks
+        Netbanking::ICIC_C => Gateway::NETBANKING_ICICI,
+        Netbanking::UTIB_C => Gateway::NETBANKING_AXIS,
+
+        // retail banks
         IFSC::ICIC => Gateway::NETBANKING_ICICI,
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
         IFSC::BARB => Gateway::NETBANKING_BOB,
@@ -662,6 +694,10 @@ class Gateway
         Gateway::AXIS_MIGS
     ];
 
+    public static $upiIntentGateways = [
+        Gateway::UPI_ICICI
+    ];
+
     public static function getAcquirerName(string $acquirer)
     {
         $code = self::$acquirerToCodeMap[$acquirer];
@@ -672,11 +708,6 @@ class Gateway
         }
 
         return BaseIFSC::getBankName($code);
-    }
-
-    public static function isNetbankingBankDirectlySupported($bank)
-    {
-        return in_array($bank, Netbanking::getDirectlyNetbankingBanks());
     }
 
     public static function isDirectNetbankingGateway(string $gateway)
@@ -696,6 +727,16 @@ class Gateway
     public static function isRecurringGateway($gateway): bool
     {
         return in_array($gateway, self::$recurringGateways, true);
+    }
+
+    public static function isZeroRupeeFlowSupported($bank): bool
+    {
+        return in_array($bank, self::$zeroRupeeEmandateBanks, true);
+    }
+
+    public static function isUpiIntentFlowSupported($gateway): bool
+    {
+        return in_array($gateway, self::$upiIntentGateways, true);
     }
 
     /**
@@ -720,16 +761,33 @@ class Gateway
         return (in_array($gateway, self::$fileBasedEMandateDebitGateways) === true);
     }
 
-    /**
-     * @param string $bank
-     *
-     * @return bool
-     */
-    public static function isRecurringSupportedOnBank(string $bank): bool
+    public static function getAllEMandateBanks(): array
     {
-        $gateway = self::$netbankingToGatewayMap[$bank];
+        $banks = [];
 
-        return self::isRecurringGateway($gateway);
+        foreach (self::$emandateBanks as $emandateBanks)
+        {
+            $banks = array_merge($banks, $emandateBanks);
+        }
+
+        return array_values(array_unique($banks));
+    }
+
+    public static function getZeroRupeeEmandateBanks(): array
+    {
+        return self::$zeroRupeeEmandateBanks;
+    }
+
+    public static function getAvailableEmandateBanksForAuthType(string $authType): array
+    {
+        $banks = [];
+
+        if (isset(self::$emandateBanks[$authType]) === true)
+        {
+            $banks = self::$emandateBanks[$authType];
+        }
+
+        return $banks;
     }
 
     public static function isEmandateSupportedOnBank(string $bank, string $authenticationType): bool
@@ -929,7 +987,7 @@ class Gateway
     {
         $exclusiveNetworks = self::getExclusiveNetworksForGateway($gateway);
 
-        return in_array($network, $exclusiveNetworks, true);
+        return in_array($network, $exclusiveNetworks, true) === true;
     }
 
     public static function getGatewaysForNetbankingBank($bank, $isTPV = false)
@@ -937,7 +995,7 @@ class Gateway
         $gateways = [];
 
         // Check for direct netbanking gateway
-        if (self::isNetbankingBankDirectlySupported($bank))
+        if (Netbanking::isNetbankingBankDirectlySupported($bank) === true)
         {
             $gateways[] = self::$netbankingToGatewayMap[$bank];
         }
@@ -945,7 +1003,7 @@ class Gateway
         // Add netbanking gateways that support bank
         foreach (self::$netbankingGateways as $netbankingGateway)
         {
-            if (Netbanking::isBankSupportedByGateway($bank, $netbankingGateway, $isTPV))
+            if (Netbanking::isBankSupportedByGateway($bank, $netbankingGateway, $isTPV) === true)
             {
                 $gateways[] = $netbankingGateway;
             }
@@ -959,7 +1017,7 @@ class Gateway
         $gateways = [];
 
         // Check for direct netbanking gateway
-        if (self::isNetbankingBankDirectlySupported($bank))
+        if (Netbanking::isNetbankingBankDirectlySupported($bank) === true)
         {
             $gateways['direct'] = self::$netbankingToGatewayMap[$bank];
         }

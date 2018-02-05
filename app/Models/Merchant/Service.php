@@ -28,16 +28,18 @@ use RZP\Models\Merchant\Webhook;
 use RZP\Models\Offer;
 use RZP\Models\Schedule;
 use RZP\Models\Schedule\Task as ScheduleTask;
-use RZP\Models\Settlement\Holidays;
 use RZP\Models\User;
 use RZP\Trace\TraceCode;
+use RZP\Models\Transaction;
 
 class Service extends Base\Service
 {
     use Notify;
 
-    const COUPON_RESPONSE = 'apply_coupon';
-    const OAUTH_MAIL      = 'oauth_mail';
+    const COUPON_RESPONSE   = 'apply_coupon';
+    const OAUTH_MAIL        = 'oauth_mail';
+    const APPLICATION       = 'application';
+
 
     /**
      * Creates a merchant and saves in database
@@ -132,7 +134,7 @@ class Service extends Base\Service
         (new User\Service)->updateUserMerchantMapping($ownerId, $userMerchantMappingInputData);
     }
 
-    private function addLinkedAccountReferral($aggregratorMerchant, $account)
+    public function addLinkedAccountReferral($aggregratorMerchant, $account)
     {
         $tagInputData = [
             'tags' => ['ref-'.$aggregratorMerchant->id],
@@ -140,7 +142,8 @@ class Service extends Base\Service
 
         $this->addTags($account->id, $tagInputData);
     }
-    protected function saveMerchantAndApplyCoupon(Entity $merchant, array $input)
+
+    public function saveMerchantAndApplyCoupon(Entity $merchant, array $input)
     {
         $this->repo->saveOrFail($merchant);
 
@@ -177,7 +180,7 @@ class Service extends Base\Service
         return $result;
     }
 
-    public function edit($id, array $input)
+    public function edit(string $id, array $input): array
     {
         $this->trace->info(
             TraceCode::MERCHANT_EDIT,
@@ -223,7 +226,7 @@ class Service extends Base\Service
         Mail::queue($createSubMerchantMail);
     }
 
-    public function editEmail($id, array $input) :array
+    public function editEmail($id, array $input): array
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
@@ -238,7 +241,7 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
-    public function editConfig(array $input)
+    public function editConfig(array $input): array
     {
         // Adds uploaded logo's url to the input.
         $this->uploadLogoIfFound($input);
@@ -248,7 +251,7 @@ class Service extends Base\Service
         return $this->merchant->toArrayConfig();
     }
 
-    public function deleteMerchantLogo()
+    public function deleteMerchantLogo(): array
     {
         $this->merchant->setLogoUrl(null);
 
@@ -271,7 +274,7 @@ class Service extends Base\Service
     }
 
     // This is on internal auth
-    public function fetch($id)
+    public function fetch(string $id): array
     {
         $merchant = $this->repo->merchant->findOrFailPublicWithRelations(
             $id, ['methods', Entity::GROUPS, Entity::ADMINS]);
@@ -279,7 +282,7 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
-    public function fetchMultiple($input)
+    public function fetchMultiple(array $input): array
     {
         $merchants = $this->repo->merchant->fetch($input);
 
@@ -287,7 +290,7 @@ class Service extends Base\Service
     }
 
     // This is on proxy auth
-    public function fetchConfig()
+    public function fetchConfig(): array
     {
         $merchantId = $this->merchant->getId();
 
@@ -336,45 +339,6 @@ class Service extends Base\Service
         $balance = $this->repo->balance->editMerchantAmountCredits($merchant, $amountCredits);
 
         return $balance->toArray();
-    }
-
-    public function createKey($merchantId)
-    {
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
-
-        $keyData = (new Key\Core)->createFirstKey($merchant, $this->mode);
-
-        if ($this->mode === MODE::LIVE)
-        {
-            $action = Merchant\Action::LIVE_KEYS_CREATED;
-        }
-        elseif ($this->mode === MODE::TEST)
-        {
-            $action = Merchant\Action::TEST_KEYS_CREATED;
-        }
-
-        if ($action !== null)
-        {
-            $this->app['eventManager']->trackEvents($merchant, $action, $merchant->toArrayEvent());
-        }
-
-        return $keyData;
-    }
-
-    public function updateKey($merchantId, $keyId, array $input)
-    {
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
-
-        return (new Key\Core)->rollKey($merchantId, $keyId, $input, $this->mode);
-    }
-
-    public function fetchKeys($merchantId)
-    {
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
-
-        $keys = $this->repo->key->getKeysForMerchant($merchantId);
-
-        return $keys->toArrayPublic();
     }
 
     public function assignPricingPlan($id, $input)
@@ -529,6 +493,7 @@ class Service extends Base\Service
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         $act = new Activate($this->app);
+
         $act->activate($merchant);
 
         return $merchant->toArrayPublic();
@@ -819,6 +784,17 @@ class Service extends Base\Service
         return $webhooks->toArrayPublic();
     }
 
+    public function createOAuthAppWebhook(string $appId, array $input): array
+    {
+        $input[Webhook\Entity::ENTITY_TYPE] = self::APPLICATION;
+
+        $input[Webhook\Entity::ENTITY_ID] = $appId;
+
+        $webhook = (new Webhook\Core)->createWebhook($this->merchant, $input);
+
+        return $webhook->toArrayPublic();
+    }
+
     public function patchMerchantBeneficiaryCode()
     {
         $data = (new BankAccount\Core)->updateBeneficiaryCodes();
@@ -826,11 +802,18 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function getMerchantBeneficiaryFile()
+    /**
+     * Send beneficiary registration request for ALL activated merchants
+     *
+     * @param string $channel
+     *
+     * @return array
+     */
+    public function getMerchantBeneficiaryFile(string $channel): array
     {
-        $file = (new BankAccount\BeneficiaryFile)->generate();
+        $response = (new BankAccount\BeneficiaryFile)->generate($channel);
 
-        return $file;
+        return $response;
     }
 
     public function getCheckoutPreferences($input)
@@ -861,51 +844,21 @@ class Service extends Base\Service
     }
 
     /**
-    *   Generate and Send the beneficary file to nodal account's bank
-    *   if a new merchant has been activated since
-    *   if (monday)  - 3 days
-    *   else         - 1 day
-    */
-    public function postMerchantBeneficiaryFile($input)
+     *   Generate and Send the beneficary file to nodal account's bank
+     *   if a new merchant has been activated since
+     *   if (monday)  - 3 days
+     *   else         - 1 day
+     *
+     * @param array $input
+     * @param string $channel
+     *
+     * @return array
+     */
+    public function postMerchantBeneficiaryFile(array $input, string $channel): array
     {
-        if (isset($input['on']))
-        {
-            $today = Carbon::createFromTimestamp($input['on'], Timezone::IST);
-        }
-        else
-        {
-            $today = Carbon::today(Timezone::IST);
-        }
+        $response = (new BankAccount\BeneficiaryFile)->generateBetweenTimestamps($input, $channel);
 
-        if (Holidays::isWorkingDay($today) === false)
-        {
-            return ['message' => 'Today is a holiday! Happy holidays :)'];
-        }
-
-        $from = Holidays::getPreviousWorkingDay($today);
-
-        $newBeneficiaryCount = $this->repo->bank_account->getCountOfBankAccountsCreatedBetween(
-                                                        $from->getTimestamp(),
-                                                        $today->getTimestamp());
-
-        if ($newBeneficiaryCount > 0)
-        {
-            (new BankAccount\BeneficiaryFile)->generateBetweenTimestamps(
-                                                        $from->getTimestamp(),
-                                                        $today->getTimestamp());
-        }
-
-        $message = "Merchant Beneficiary file generated. Beneficiary added since".
-                " last report is ". $newBeneficiaryCount;
-
-        $this->slack->queue($message,[],['channel' => Config::get('slack.channels.settlements')]);
-
-        //Log response in trace
-        $this->trace->info(
-            TraceCode::MERCHANT_BENEFICIARY_FILE_GENERATE,
-            array('new_beneficiaries_added' => $newBeneficiaryCount));
-
-        return $newBeneficiaryCount;
+        return $response;
     }
 
     /**
@@ -1017,6 +970,59 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function updateChannelForMultipleMerchants(array $input)
+    {
+        (new Validator)->validateInput('update_channel', $input);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_CHANNEL_BULK_UPDATE_REQUEST,
+            $input
+        );
+
+        $merchantIds = $input['merchant_ids'];
+
+        $channel = $input['channel'];
+
+        $successCount = $failedCount = 0;
+
+        $failedIds = [];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            try
+            {
+                // update channel in merchant entity
+                $this->edit($merchantId, ['channel' => $channel]);
+
+                $data = (new Transaction\BulkUpdate)->updateMultipleTransactions($merchantId, $channel);
+
+                $successCount++;
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException($ex);
+
+                $failedCount++;
+
+                $failedIds[] = $merchantId;
+            }
+        }
+
+        $response = [
+            'total'     => count($merchantIds),
+            'success'   => $successCount,
+            'failed'    => $failedCount,
+            'failedIds' => $failedIds,
+        ];
+
+        $this->trace->info(
+            TraceCode::MERCHANT_CHANNEL_BULK_UPDATE_RESPONSE,
+            $response
+        );
+
+        return $response;
+    }
+
     public function updateBankAccountForMultipleMerchants(array $input)
     {
         (new Validator)->validateInput('updateBankAccount', $input);
@@ -1121,6 +1127,64 @@ class Service extends Base\Service
     }
 
     /**
+     * Bulk add or remove tags from a list of merchant_ids
+     *
+     * Input:
+     *
+     * name = Tag_Name
+     * action = insert/delete
+     * merchant_ids = [array, of, ids]
+     *
+     * @param array $input
+     *
+     * @return array
+     */
+    public function bulkTag(array $input): array
+    {
+        $this->trace->info(TraceCode::MERCHANT_TAGS_BULK_REQUEST, $input);
+
+        (new Validator)->validateInput('bulk_tag', $input);
+
+        $merchantIds = $input['merchant_ids'];
+        // Action: 'insert' or 'delete'
+        $action      = $input['action'];
+        $tagName     = $input['name'];
+
+        $tagFunction = $action . 'Tag';
+
+        $failedIds = [];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            try
+            {
+                //
+                // Calls either:
+                // $this->insertTag() or $this->deleteTag()
+                //
+                $this->{$tagFunction}($merchantId, $tagName);
+            }
+            catch (\Throwable $t)
+            {
+                $this->trace->error(
+                    TraceCode::MERCHANT_TAGS_BULK_EXCEPTION,
+                    [
+                        'merchant_id' => $merchantId,
+                        'tag_name'    => $tagName
+                    ]);
+
+                $failedIds[] = $merchantId;
+            }
+        }
+
+        return [
+            'total_count'  => count($merchantIds),
+            'failed_count' => count($failedIds),
+            'failed_ids'   => $failedIds
+        ];
+    }
+
+    /**
      * used for getting tags of the merchant
      * @param string $id
      */
@@ -1133,9 +1197,14 @@ class Service extends Base\Service
 
     /**
      * used for adding tags to merchant
+     * This function uses retag(), which overwrites all previous tags
+     * with the ones passed in the $input array
+     *
      * @param string $id
-     * @param array $input which contains the tags of the merchant
-     * @param bool $slackNotify
+     * @param array  $input which contains the tags of the merchant
+     * @param bool   $slackNotify
+     *
+     * @return
      */
     public function addTags($id, $input, $slackNotify = false)
     {
@@ -1169,6 +1238,25 @@ class Service extends Base\Service
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         $merchant->untag($tagName);
+
+        $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
+
+        return $merchant->tagNames();
+    }
+
+    /**
+     * Tag a merchant for a single tag
+     *
+     * @param string $merchantId
+     * @param string $tagName
+     *
+     * @return mixed
+     */
+    public function insertTag(string $merchantId, string $tagName)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $merchant->tag($tagName);
 
         $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
 
@@ -1548,9 +1636,9 @@ class Service extends Base\Service
         return $mailer;
     }
 
-    public function fetchAnalytics($input)
+    public function fetchAnalytics(array $input): array
     {
-        (new Core())->validateFilterAttributesAndAddMerchantId($this->merchant->getId(), $input);
+        $input = (new Core())->processMerchantAnalyticsQuery($this->merchant->getId(), $input);
 
         return $this->app['eventManager']->query($input);
     }

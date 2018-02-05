@@ -12,6 +12,8 @@ class Channel
     const ICICI     = 'icici';
     const AXIS      = 'axis';
     const YESBANK   = 'yesbank';
+    const HDFC      = 'hdfc';
+    const RBL       = 'rbl';
 
     public static $gateways = [
         self::KOTAK => [
@@ -46,7 +48,9 @@ class Channel
     {
         return [
             self::KOTAK,
-            self::YESBANK
+            self::YESBANK,
+            self::AXIS,
+            self::ICICI,
         ];
     }
 
@@ -70,6 +74,6 @@ class Channel
 
     public static function exists($channel)
     {
-        return defined(get_class() . '::' . strtolower($channel));
+        return defined(get_class() . '::' . strtoupper($channel));
     }
 }

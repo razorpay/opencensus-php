@@ -49,6 +49,7 @@ class Validator extends Base\Validator
         Entity::RISK_THRESHOLD              => 'sometimes|integer|min:0|max:20',
         Entity::FEE_BEARER                  => 'sometimes|in:customer,platform',
         Entity::FEE_MODEL                   => 'sometimes|in:prepaid,postpaid',
+        Entity::REFUND_SOURCE               => 'sometimes|string|max:32|in:balance,credits',
         Entity::MAX_PAYMENT_AMOUNT          => 'sometimes|integer',
         // max: 5 days (don't change max value without consult), min:60 minutes
         Entity::AUTO_REFUND_DELAY           => 'sometimes|string|custom',
@@ -89,6 +90,13 @@ class Validator extends Base\Validator
         Entity::ACTION                      => 'required|custom'
     ];
 
+    protected static $bulkTagRules = [
+        'action'         => 'required|string|filled|max:10|in:insert,delete',
+        'name'           => 'required|string|filled',
+        'merchant_ids'   => 'required|array',
+        'merchant_ids.*' => 'required|string|filled|max:14'
+    ];
+
     protected static $oauthMailRules = [
         'client_id'    => 'required|alpha_num|size:14',
         'user_id'      => 'required|alpha_num|size:14',
@@ -108,6 +116,11 @@ class Validator extends Base\Validator
     protected static $updateHoldFundsRules = [
         'hold_funds'   => 'required|boolean',
         'merchant_ids' => 'required|array'
+    ];
+
+    protected static $updateChannelRules = [
+        'channel'       => 'required|string|max:32|custom',
+        'merchant_ids'  => 'required|array'
     ];
 
     protected static $updateBankAccountRules = [
@@ -358,7 +371,7 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED);
         }
 
-        if ($merchant->isArchived() === true)
+        if ($merchant->merchantDetail->isArchived() === true)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_UNARCHIVE_BEFORE_ACTIVATION);

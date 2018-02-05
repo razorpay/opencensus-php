@@ -46,11 +46,4 @@ class Repository extends Base\Repository
                     ->groupBy(Entity::STEP_ID)
                     ->get();
     }
-
-    public function findManyByStepIds(array $stepIds)
-    {
-        return $this->newQuery()
-                    ->whereIn(Entity::STEP_ID, $stepIds)
-                    ->get();
-    }
 }

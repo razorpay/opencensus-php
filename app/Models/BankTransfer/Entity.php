@@ -69,6 +69,9 @@ class Entity extends Base\PublicEntity
 
     const MAX_DESCRIPTION_LENGTH = 255;
 
+    // Input keys
+    const REFUND_ID          = 'refund_id';
+
     protected $fillable = [
         self::PAYMENT_ID,
         self::PAYER_NAME,
@@ -257,6 +260,8 @@ class Entity extends Base\PublicEntity
         if (isset($input[self::PAYEE_ACCOUNT]) === true)
         {
             $input[self::PAYEE_ACCOUNT] = str_replace(' ', '', $input[self::PAYEE_ACCOUNT]);
+
+            $input[self::PAYEE_ACCOUNT] = strtoupper($input[self::PAYEE_ACCOUNT]);
         }
     }
 

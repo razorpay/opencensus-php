@@ -197,35 +197,44 @@ class Reporting
      */
     protected function filterConfigsByFeatureAndTags(array $configs): array
     {
-
+        //
         // $item is a collection for easy operations. Also $configs is empty
         // in case reporting is mocked.
+        //
         $items = collect($configs['items'] ?? []);
 
         $merchant = $this->ba->getMerchant();
+        $tags     = array_map('strtolower', $merchant->tagNames());
+        $features = $merchant->getEnabledFeatures();
 
-        // Reversals, transfers are shared reports, which should be applicable
-        // only to marketplace merchants and so we remove them fron configs list
-        // otherwise.
-        if ($merchant->isFeatureEnabled(Feature::MARKETPLACE) === false)
+        $hasPlTag                      = in_array('payment_link_report', $tags, true);
+        $hasMarketplaceTag             = in_array(Feature::MARKETPLACE, $features, true);
+        $hasOpenwalletTag              = in_array(Feature::OPENWALLET, $features, true);
+        $hasMarketplaceOrOpenwalletTag = ($hasMarketplaceTag or $hasOpenwalletTag);
+
+        $items = $items->filter(function ($value, $key) use (
+            $hasPlTag,
+            $hasMarketplaceTag,
+            $hasMarketplaceOrOpenwalletTag)
         {
-            $items = $items->reject(function ($value, $key)
+            switch ($value['type'])
             {
-                return in_array($value['type'], [Table::TRANSFER, Table::REVERSAL], true);
-            });
-        }
+                // Keep invoice type only if payment_link_report is enabled
+                case Table::INVOICE:
+                    return $hasPlTag;
 
-        // Payment links report is shared as well but should only be visible to
-        // merchants with specific tags.
-        $merchantTags = $merchant->tagNames();
+                // Keep transfer type only if one of marketplace or openwallet is enabled
+                case Table::TRANSFER:
+                    return $hasMarketplaceOrOpenwalletTag;
 
-        if (in_array('Payment_Link_Report', $merchantTags, true) === false)
-        {
-            $items = $items->reject(function ($value, $key)
-            {
-                return in_array($value['type'], [Table::INVOICE], true);
-            });
-        }
+                // Keep reversal type only if marketplace is enabled
+                case Table::REVERSAL:
+                    return $hasMarketplaceTag;
+
+                default:
+                    return true;
+            }
+        });
 
         $configs['items'] = $items->values()->all();
         $configs['count'] = $items->count();

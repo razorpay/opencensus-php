@@ -52,7 +52,7 @@ class Format
         self::PNG   => ['image/png', 'application/pgp'],
         self::TXT   => ['text/plain', 'application/pgp'],
         self::XLSX  => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/pgp',
-                        'application/octet-stream', 'text/plain'],
+                        'application/octet-stream', 'text/plain', 'application/zlib'],
         // `text/plain` is being added here because HDFC sends recon CSV files with XLS extension
         // `application/CDFV2-unknown` is being sent as mime_type for FirstData recon files
         self::XLS   => ['application/excel', 'application/vnd.ms-excel', 'application/msexcel',

@@ -31,6 +31,8 @@ class CreateFundTransferAttemptsTable extends Migration
 
             $table->string(FundTransferAttempt::MERCHANT_ID, Merchant::ID_LENGTH);
 
+            $table->string(FundTransferAttempt::PURPOSE, 32);
+
             $table->char(FundTransferAttempt::BANK_ACCOUNT_ID, BankAccount::ID_LENGTH)
                   ->nullable();
 
@@ -38,7 +40,7 @@ class CreateFundTransferAttemptsTable extends Migration
 
             $table->string(FundTransferAttempt::VERSION, 3);
 
-            $table->string(FundTransferAttempt::BANK_STATUS_CODE, 4)
+            $table->string(FundTransferAttempt::BANK_STATUS_CODE, 30)
                   ->nullable();
 
             $table->char(FundTransferAttempt::MODE, 30)

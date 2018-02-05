@@ -103,7 +103,11 @@ class Gateway extends Base\Gateway
             RequestFields::ENCRYPTED_DATA => $encryptedData
         ];
 
-        $request = $this->getStandardRequestArray($requestData);
+        // Since live mode relative URL is different, we set the type of URL to AUTHORIZE_LIVE
+        // for LIVE mode and null(which is the default argument passed as type) for test mode
+        $type = (($this->mode === Mode::LIVE) ? (strtoupper($this->action . '_' . $this->mode)) : null);
+
+        $request = $this->getStandardRequestArray($requestData, 'post', $type);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_REQUEST,

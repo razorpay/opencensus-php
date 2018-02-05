@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Gateway\Reconciliation;
 use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 use RZP\Reconciliator\FirstData\PaymentReconciliate as FDPaymentRecon;
@@ -14,6 +15,7 @@ class ReconciliationFileTest extends TestCase
 {
     use FileHandlerTrait;
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     protected $payment;
     protected $recurringPayment;
@@ -40,7 +42,7 @@ class ReconciliationFileTest extends TestCase
 
         // Recurring authorised payment
         $payment1 = $this->getNewPaymentEntity(true, false);
-        $gatewayPayment1 = $this->getLastEntity('first_data', true);
+        $gatewayPayment1 = $this->getDbLastEntityToArray('first_data');
 
         $this->assertNull($payment1['reference1']);
         $this->assertNull($payment1['reference2']);
@@ -49,7 +51,7 @@ class ReconciliationFileTest extends TestCase
 
         // Non Recurring captured payment
         $payment2 = $this->getNewPaymentEntity(false, true);
-        $gatewayPayment2 = $this->getLastEntity('first_data', true);
+        $gatewayPayment2 = $this->getDbLastEntityToArray('first_data');
 
         $this->assertNull($payment2['reference1']);
 
@@ -58,17 +60,29 @@ class ReconciliationFileTest extends TestCase
         $file = $this->writeToExcelFile($entries, 'first_data');
         $this->runForFiles([$file], 'FirstData');
 
-        $updatedPayment1 = $this->getEntityById('payment' ,$payment1['id'], true);
+        $updatedPayment1 = $this->getDbEntityById('payment' ,$payment1['id']);
 
         $this->assertEquals($entries[0][FDPaymentRecon::COLUMN_ARN], $updatedPayment1['reference1']);
         $this->assertEquals($entries[0][FDPaymentRecon::COLUMN_AUTH_CODE], $updatedPayment1['reference2']);
         $this->assertTrue($updatedPayment1['gateway_captured']);
 
-        $updatedPayment2 = $this->getEntityById('payment' ,$payment2['id'], true);
+        $updatedPayment2 = $this->getDbEntityById('payment' ,$payment2['id']);
 
         $this->assertEquals($entries[1][FDPaymentRecon::COLUMN_ARN], $updatedPayment2['reference1']);
         // Recon should not overwrite reference2 if it was saved before
         $this->assertEquals($payment2['reference2'], $updatedPayment2['reference2']);
+
+        // Overriding Entity to test force update
+        unset($entries[1]);
+        $entries[0][FDPaymentRecon::COLUMN_ARN]         = 'force_updated_arn';
+        $entries[0][FDPaymentRecon::COLUMN_AUTH_CODE]   = 'force_updated_auth_code';
+
+        $file = $this->writeToExcelFile($entries, 'first_data');
+        $this->runForFiles([$file], 'FirstData', ['payment_arn', 'payment_auth_code']);
+
+        $updatedPayment1 = $this->getDbEntityById('payment' ,$payment1['id']);
+        $this->assertEquals($entries[0][FDPaymentRecon::COLUMN_ARN], $updatedPayment1['reference1']);
+        $this->assertEquals($entries[0][FDPaymentRecon::COLUMN_AUTH_CODE], $updatedPayment1['reference2']);
     }
 
     public function testHdfcFssReconPaymentFile()
@@ -78,7 +92,7 @@ class ReconciliationFileTest extends TestCase
 
         // Recurring authorised payment
         $payment1 = $this->getNewPaymentEntity(true, false);
-        $gatewayPayment1 = $this->getLastEntity('hdfc', true);
+        $gatewayPayment1 = $this->getDbLastEntityToArray('hdfc');
 
         $this->assertNull($payment1['reference1']);
         $this->assertNull($payment1['reference2']);
@@ -88,7 +102,7 @@ class ReconciliationFileTest extends TestCase
         $file = $this->writeToExcelFile($entries, 'fss');
         $this->runForFiles([$file], 'HDFC');
 
-        $updatedPayment1 = $this->getEntityById('payment' ,$payment1['id'], true);
+        $updatedPayment1 = $this->getDbEntityById('payment' ,$payment1['id']);
 
         $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_ARN[0]], "'" . $updatedPayment1['reference1']);
         $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_AUTH_CODE[0]], "'" . $updatedPayment1['reference2']);
@@ -102,7 +116,7 @@ class ReconciliationFileTest extends TestCase
 
         // Recurring authorised payment
         $payment1 = $this->getNewPaymentEntity(true, false);
-        $gatewayPayment1 = $this->getLastEntity('cybersource', true);
+        $gatewayPayment1 = $this->getDbLastEntityToArray('cybersource');
 
         $this->assertNull($payment1['reference1']);
         $this->assertNull($payment1['reference2']);
@@ -112,7 +126,7 @@ class ReconciliationFileTest extends TestCase
         $file = $this->writeToExcelFile($entries, 'cybersource');
         $this->runForFiles([$file], 'HDFC');
 
-        $updatedPayment1 = $this->getEntityById('payment' ,$payment1['id'], true);
+        $updatedPayment1 = $this->getDbEntityById('payment' ,$payment1['id']);
 
         $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_ARN[0]], "'" . $updatedPayment1['reference1']);
         $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_AUTH_CODE[0]], "'" . $updatedPayment1['reference2']);
@@ -126,7 +140,7 @@ class ReconciliationFileTest extends TestCase
 
         // Recurring authorised payment
         $payment1 = $this->getNewPaymentEntity(true, false);
-        $gatewayPayment1 = $this->getLastEntity('axis_migs', true);
+        $gatewayPayment1 = $this->getDbLastEntityToArray('axis_migs');
 
         $this->assertNull($payment1['reference1']);
         $this->assertNull($payment1['reference2']);
@@ -136,7 +150,7 @@ class ReconciliationFileTest extends TestCase
         $file = $this->writeToExcelFile($entries, 'axis', 'files/settlement','Sale');
         $this->runForFiles([$file], 'Axis');
 
-        $updatedPayment1 = $this->getEntityById('payment' ,$payment1['id'], true);
+        $updatedPayment1 = $this->getDbEntityById('payment' ,$payment1['id']);
 
         $this->assertEquals($entries[0][AxisPaymentRecon::COLUMN_ARN], $updatedPayment1['reference1']);
         $this->assertEquals($entries[0][AxisPaymentRecon::COLUMN_AUTH_CODE], $updatedPayment1['reference2']);
@@ -151,7 +165,7 @@ class ReconciliationFileTest extends TestCase
 
         // Recurring authorised payment
         $payment1 = $this->getNewPaymentEntity(false, true);
-        $gatewayPayment1 = $this->getLastEntity('cybersource', true);
+        $gatewayPayment1 = $this->getDbLastEntityToArray('cybersource');
 
         $this->assertNull($payment1['reference1']);
 
@@ -160,7 +174,7 @@ class ReconciliationFileTest extends TestCase
         $file = $this->writeToExcelFile($entries, 'axis', 'files/settlement','Sale');
         $this->runForFiles([$file], 'Axis');
 
-        $updatedPayment1 = $this->getEntityById('payment' ,$payment1['id'], true);
+        $updatedPayment1 = $this->getDbEntityById('payment' ,$payment1['id']);
 
         $this->assertEquals($entries[0][AxisPaymentRecon::COLUMN_ARN], $updatedPayment1['reference1']);
         // Recon should not overwrite reference2 if it was saved before
@@ -175,7 +189,7 @@ class ReconciliationFileTest extends TestCase
 
         // Recurring authorised payment
         $refund1 = $this->getNewRefundEntity(true, false);
-        $gatewayPayment1 = $this->getLastEntity('hdfc', true);
+        $gatewayPayment1 = $this->getDbLastEntityToArray('hdfc');
 
         $this->assertNull($refund1['arn']);
 
@@ -184,7 +198,7 @@ class ReconciliationFileTest extends TestCase
         $file = $this->writeToExcelFile($entries, 'fss');
         $this->runForFiles([$file], 'HDFC');
 
-        $updatedRefund1 = $this->getEntityById('refund', $refund1['id'], true);
+        $updatedRefund1 = $this->getDbEntityById('refund', $refund1['id'])->toArrayAdmin();
 
         $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_ARN[0]], "'" . $updatedRefund1['arn']);
 
@@ -194,7 +208,7 @@ class ReconciliationFileTest extends TestCase
         $file = $this->writeToExcelFile($entries, 'fss');
         $this->runForFiles([$file], 'HDFC', ['refund_arn']);
 
-        $updatedRefund1 = $this->getEntityById('refund', $refund1['id'], true);
+        $updatedRefund1 = $this->getDbEntityById('refund', $refund1['id'])->toArrayAdmin();
 
         $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_ARN[0]], "'" . $updatedRefund1['arn']);
 
@@ -210,26 +224,28 @@ class ReconciliationFileTest extends TestCase
 
         $this->doAuthPayment($payment);
 
-        $paymentEntity = $this->getLastPayment(true);
+        $paymentEntity = $this->getDbLastPayment();
 
         if ($recurring === true)
         {
+            $paymentArray = $paymentEntity->toArrayPublic();
             unset($payment['card']);
-            $payment['token'] = $paymentEntity['token_id'];
+            $payment['token'] = $paymentArray['token_id'];
 
             $this->doS2SRecurringPayment($payment);
 
-            $paymentEntity = $this->getLastPayment(true);
+            $paymentEntity = $this->getDbLastPayment();
         }
 
         if ($captured === true)
         {
-            $this->capturePayment($paymentEntity['id'], $paymentEntity['amount']);
+            $paymentArray = $paymentEntity->toArrayPublic();
+            $this->capturePayment($paymentArray['id'], $paymentArray['amount']);
 
-            $paymentEntity = $this->getLastPayment(true);
+            $paymentEntity = $this->getDbLastPayment();
         }
 
-        return $paymentEntity;
+        return $paymentEntity->toArrayAdmin();
     }
 
     private function getNewRefundEntity($captured = false)
@@ -238,7 +254,7 @@ class ReconciliationFileTest extends TestCase
 
         $this->refundPayment($payment['id']);
 
-        return $this->getLastEntity('refund', true);
+        return $this->getDbLastRefund('refund')->toArrayAdmin();
     }
 
     private function overrideFirstDataPayment(array $payment, array $forceOverride = [])
@@ -298,6 +314,8 @@ class ReconciliationFileTest extends TestCase
 
     protected function runForFiles(array $files, string $gateway, array $forceUpdate = [])
     {
+        $this->ba->appAuth();
+
         $testData = $this->testData['reconciliate'];
 
         $testData['request']['content']['gateway'] = $gateway;

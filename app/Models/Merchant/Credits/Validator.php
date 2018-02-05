@@ -12,18 +12,19 @@ class Validator extends Base\Validator
     const MAX_AMOUNT_CREDITS = 100000000;
     const MAX_FEE_CREDITS    = 50000000;
     const MIN_CREDITS        = -1000000;
+    const MAX_REFUND_CREDITS = 100000000;
 
     protected static $createRules = [
         Entity::CAMPAIGN     => 'required|alpha_dash|max:255',
         # Value is in paise
         Entity::VALUE        => 'required|integer|between:-100000000,100000000',
-        Entity::TYPE         => 'required|alpha_dash|max:20|in:amount,fee',
+        Entity::TYPE         => 'sometimes|filled|string|max:20|in:amount,fee,refund',
         Entity::EXPIRED_AT   => 'sometimes|integer',
         Entity::PROMOTION_ID => 'sometimes|alpha_num|max:14',
     ];
 
     protected static $editRules = [
-        Entity::VALUE    => 'sometimes|integer',
+        Entity::VALUE        => 'required|integer',
     ];
 
     /**
@@ -68,7 +69,7 @@ class Validator extends Base\Validator
         if ($creditsValue < self::MIN_CREDITS)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Cannot assign credits less than one rupee');
+                'Cannot assign credits less than '. self::MIN_CREDITS);
         }
 
         if ($creditsValue > $maxCreditsValue)
@@ -88,6 +89,9 @@ class Validator extends Base\Validator
             case Credits\Type::FEE:
                 return self::MAX_FEE_CREDITS;
 
+            case Credits\Type::REFUND:
+                return self::MAX_REFUND_CREDITS;
+
             default:
                 return self::MAX_AMOUNT_CREDITS;
         }
@@ -105,6 +109,9 @@ class Validator extends Base\Validator
 
             case Credits\Type::FEE:
                 return $balance->getFeeCredits();
+
+            case Credits\Type::REFUND:
+                return $balance->getRefundCredits();
 
             default:
                 return null;

@@ -416,6 +416,21 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
+    public function verifyRefund(array $input)
+    {
+        if ($this->isUnprocessedRefund($input) === true)
+        {
+            return false;
+        }
+
+        if ($this->isProcessedRefund($input) === true)
+        {
+            return true;
+        }
+
+        parent::verifyRefund($input);
+    }
+
     public function checkBalance(array $input)
     {
         $userBalance = $this->getUserWalletBalance($input);

@@ -5,9 +5,7 @@ namespace RZP\Models\Settlement;
 use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Models\Merchant as M;
-use RZP\Models\Settlement;
-use RZP\Models\Transaction;
-use RZP\Models\BankAccount;
+use RZP\Exception;
 
 class Repository extends Base\Repository
 {
@@ -111,5 +109,28 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->whereIn(Entity::ID, $setlIds2)
                     ->get();
+    }
+
+    public function updateChannel(string $settlementId, string $channel)
+    {
+        $values = [Entity::CHANNEL => $channel];
+
+        $count = $this->newQuery()
+                      ->where(Entity::ID, $settlementId)
+                      ->where(Entity::STATUS, Status::FAILED)
+                      ->update($values);
+
+        if ($count !== 1)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Failed to update expected number to row',
+                null,
+                [
+                    'settlement_id' => $settlementId,
+                    'channel'       => $channel,
+                ]);
+        }
+
+        return $count;
     }
 }

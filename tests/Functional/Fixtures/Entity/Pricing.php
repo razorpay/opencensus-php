@@ -89,6 +89,7 @@ class Pricing extends Base
                 'fixed_rate'          => 0,
                 'international'       => 0,
             ],
+
             [
                 'id'                  => '1zE3CYqf1zbyrD',
                 'plan_id'             => $pricingPlanId,
@@ -120,6 +121,18 @@ class Pricing extends Base
                 'plan_name'           => 'testDefaultPlan',
                 'feature'             => 'payment',
                 'payment_method'      => 'upi',
+                'payment_method_type' => null,
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'percent_rate'        => 250,
+                'fixed_rate'          => 0,
+            ],
+            [
+                'id'                  => '1zE3QYFf1zbys6',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'payment',
+                'payment_method'      => 'aeps',
                 'payment_method_type' => null,
                 'payment_network'     => null,
                 'payment_issuer'      => null,
@@ -326,5 +339,5 @@ class Pricing extends Base
             $pricing->fill($row);
             $repo->saveOrFail($pricing);
         }
-   }
+    }
 }

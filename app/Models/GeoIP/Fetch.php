@@ -11,7 +11,7 @@ class Fetch extends BaseFetch
         Fetch::DEFAULTS => [
             Entity::IP          => 'filled|ip',
             Entity::CITY        => 'filled|string|max:100',
-            Entity::COUNTRY     => 'filled|string|max:4'
+            Entity::COUNTRY     => 'filled|string|max:4',
         ],
     ];
 
@@ -20,8 +20,6 @@ class Fetch extends BaseFetch
             Entity::IP,
             Entity::CITY,
             Entity::COUNTRY,
-        ]
+        ],
     ];
-
-    protected $enabled = true;
 }

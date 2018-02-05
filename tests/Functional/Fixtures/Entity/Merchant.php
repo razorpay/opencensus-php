@@ -67,6 +67,24 @@ class Merchant extends Base
         $apiBalance = $this->createEntityInTestAndLive('balance', ['id' => Account::ATOM_ACCOUNT, 'balance' => '1000000']);
     }
 
+    public function createAccount($merchantId)
+    {
+        $apiMerchant = $this->fixtures->create('merchant', ['id' => $merchantId]);
+        $apiBalance = $this->createEntityInTestAndLive('balance', ['id' => $merchantId, 'balance' => '1000000']);
+
+        $this->fixtures->on('test')->create('terminal', ['id' => $merchantId, 'merchant_id' => $merchantId]);
+        $this->fixtures->on('live')->create('terminal', ['id' => $merchantId, 'merchant_id' => $merchantId]);
+        $this->fixtures->on('test')->create('key', ['merchant_id' => $merchantId, 'id' => $merchantId], 'test');
+        $this->fixtures->on('live')->create('key', ['merchant_id' => $merchantId, 'id' => $merchantId], 'live');
+        $this->fixtures->on('test')->create('bank_account', ['merchant_id' => $merchantId, 'entity_id' => $merchantId]);
+
+        $this->fixtures->on('test')->create('merchant:add_payment_banks', ['merchant_id' => $merchantId]);
+
+        $this->fixtures->create('merchant:schedule_task', ['merchant_id' => $merchantId]);
+
+        $this->fixtures->merchant->enableInternational($merchantId);
+    }
+
     public function createEventAccount()
     {
         $merchant = $this->fixtures->create('merchant', [
@@ -217,6 +235,9 @@ class Merchant extends Base
 
     public function createScheduleTask(array $attributes = array())
     {
+        // TODO: To check for better ways of solving this issue
+        $mode = Config::get('database.default');
+
         $scheduleAttributes = [];
 
         if (isset($attributes['schedule']) === true)
@@ -226,13 +247,13 @@ class Merchant extends Base
             unset ($attributes['schedule']);
         }
 
-        $schedule = $this->fixtures->create('schedule', $scheduleAttributes);
+        $schedule = $this->fixtures->on($mode)->create('schedule', $scheduleAttributes);
 
         $defaultValues = ['schedule_id' => $schedule->getId()];
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        return $this->fixtures->create('schedule_task', $attributes);
+        return $this->fixtures->on($mode)->create('schedule_task', $attributes);
     }
 
     public function activate($id = '10000000000000')
@@ -278,6 +299,16 @@ class Merchant extends Base
     public function disablePaytm($id = '10000000000000')
     {
         return $this->fixtures->edit('methods', $id, ['paytm' => false]);
+    }
+
+    public function enableUpi($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['upi' => true]);
+    }
+
+    public function disableUpi($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['upi' => false]);
     }
 
     public function enableCard($id = '10000000000000')
@@ -343,6 +374,11 @@ class Merchant extends Base
     public function editFeeCredits($credits, $id = '10000000000000')
     {
         return $this->fixtures->edit('balance', $id, ['fee_credits' => $credits]);
+    }
+
+    public function editRefundCredits($credits, $id = '10000000000000')
+    {
+        return $this->fixtures->edit('balance', $id, ['refund_credits' => $credits]);
     }
 
     public function editCreditsforNodalAccount($credits, $type = Credits\Type::AMOUNT)

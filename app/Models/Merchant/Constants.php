@@ -12,6 +12,7 @@ final class Constants
     const TIMESTAMP                               = 'timestamp';
     const REF                                     = 'ref';
     const DATE                                    = 'date';
+    const SIGNUP_DATE                             = 'signup_date';
 
     /**
      * Step Map gives information on attributes filled by merchant Step wise.
@@ -23,7 +24,6 @@ final class Constants
         Detail\Entity::CONTACT_EMAIL               => 1,
         Detail\Entity::TRANSACTION_REPORT_EMAIL    => 1,
         Detail\Entity::CONTACT_MOBILE              => 1,
-        Detail\Entity::CONTACT_LANDLINE            => 1,
 
         Detail\Entity::BUSINESS_TYPE               => 2,
         Detail\Entity::BUSINESS_NAME               => 2,
@@ -39,9 +39,6 @@ final class Constants
         Detail\Entity::BUSINESS_OPERATION_STATE    => 2,
         Detail\Entity::BUSINESS_OPERATION_CITY     => 2,
         Detail\Entity::BUSINESS_OPERATION_PIN      => 2,
-        Detail\Entity::BUSINESS_DOE                => 2,
-        Detail\Entity::TRANSACTION_VOLUME          => 2,
-        Detail\Entity::TRANSACTION_VALUE           => 2,
         Detail\Entity::GSTIN                       => 2,
         Detail\Entity::P_GSTIN                     => 2,
         Detail\Entity::PROMOTER_PAN                => 2,
@@ -70,6 +67,8 @@ final class Constants
         Detail\Entity::BUSINESS_PAN_URL            => 5,
         Detail\Entity::ADDRESS_PROOF_URL           => 5,
         Detail\Entity::PROMOTER_ADDRESS_URL        => 5,
+        Detail\Entity::FORM_12A_URL                => 5,
+        Detail\Entity::FORM_80G_URL                => 5,
     ];
 
     const STEP_MAP_ACCOUNT = [
@@ -92,6 +91,8 @@ final class Constants
         Detail\Entity::BUSINESS_PAN_URL     => 'business_pan_proof',
         Detail\Entity::ADDRESS_PROOF_URL    => 'address_proof',
         Detail\Entity::PROMOTER_ADDRESS_URL => 'promoter_address_proof',
+        Detail\Entity::FORM_12A_URL         => 'form_12a_url',
+        Detail\Entity::FORM_80G_URL         => 'form_80g_url',
     ];
 
     const UPLOAD_KEYS_ACCOUNT = [

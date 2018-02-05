@@ -30,6 +30,10 @@ class Entity extends Base\PublicEntity
     const PROCESSED_AT           = 'processed_at';
     const SETTLED_ON             = 'settled_on';
 
+    // Nodal Nodal Settlement Constants
+    const GATEWAY                = 'gateway';
+    const DESTINATION            = 'destination';
+
     protected static $sign = 'setl';
 
     protected $entity = 'settlement';
@@ -81,11 +85,12 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::ATTEMPTS => 1,
+        self::ATTEMPTS          => 1,
+        self::SETTLED_ON        => null,
     ];
 
     protected $casts = [
-        self::ATTEMPTS => 'int',
+        self::ATTEMPTS          => 'int',
     ];
 
     protected $dates = [
@@ -202,6 +207,11 @@ class Entity extends Base\PublicEntity
     public function getBatchFundTransferId()
     {
         return $this->getAttribute(self::BATCH_FUND_TRANSFER_ID);
+    }
+
+    public function hasTransaction()
+    {
+        return ($this->isAttributeNotNull(self::TRANSACTION_ID));
     }
 
     // --------------------------------- setters -------------------------------
