@@ -14,6 +14,8 @@ use RZP\Constants\Mode as RZPMode;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Payment\Gateway as PG;
 use RZP\Exception\GatewayErrorException;
+use RZP\Exception\PaymentVerificationException;
+use RZP\Models\Payment\Verify\Action as VerifyAction;
 
 /**
  * This gateway was developed as per the API contract shared by the bank.
@@ -106,16 +108,27 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
-            [
-                'gateway'    => $this->gateway,
-                'response'   => $response->body,
-                'payment_id' => $verify->input['payment']['id'],
-            ]
-        );
+        $data = [
+            'gateway'    => $this->gateway,
+            'response'   => $response->body,
+            'payment_id' => $verify->input['payment']['id'],
+        ];
 
-        $verify->verifyResponseContent = $this->parseVerifyResponse($response->body);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE, $data);
+
+        try
+        {
+            $verify->verifyResponseContent = $this->parseVerifyResponse($response->body);
+        }
+        catch (\Exception $e)
+        {
+            throw new PaymentVerificationException(
+                $data,
+                $verify,
+                VerifyAction::RETRY,
+                ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+                $e);
+        }
     }
 
     public function verifyPayment(Verify $verify)
@@ -200,9 +213,9 @@ class Gateway extends Base\Gateway
         return $this->getStandardRequestArray($content);
     }
 
-    private function parseVerifyResponse(string $response): array
+    private function parseVerifyResponse(string $responseString): array
     {
-        return (array) simplexml_load_string($response);
+        return (array) simplexml_load_string($responseString);
     }
 
     private function getVerifyStatus(Verify $verify): string
