@@ -149,10 +149,11 @@ class Core extends Base\Core
 
     /**
      * @param Entity $dispute
-     * @param array $input
-     * @return array
+     * @param array  $input
+     *
+     * @return Entity
      */
-    public function updateFilesAndInputForMerchant(Entity $dispute, array $input): array
+    public function updateFilesAndInputForMerchant(Entity $dispute, array $input): Entity
     {
         $this->trace->info(
             TraceCode::DISPUTE_EDIT_REQUEST_FOR_MERCHANT,
@@ -171,24 +172,26 @@ class Core extends Base\Core
             unset($input[DisputeFileEntity::FILES]);
         }
 
-        $response = $this->repo->transaction(function() use ($dispute, $fileCore, $files, $input)
+        $dispute = $this->repo->transaction(function() use ($dispute, $fileCore, $files, $input)
         {
             if (empty($input) === false)
             {
                 $dispute = $this->updateForMerchant($dispute, $input);
             }
 
-            $response = $dispute->toArrayPublic();
-
             if (empty($files) === false)
             {
-                $response[Entity::FILES] = $fileCore->uploadFiles($dispute, $files);
+                $fileCore->uploadFiles($dispute, $files);
             }
-            
-            return $response;
+
+            return $dispute;
         });
 
-        return $response;
+        //
+        // Load the 'files' relation on the dispute entity
+        // before return
+        //
+        return $dispute->load(Entity::FILES);
     }
 
     /**

@@ -70,7 +70,7 @@ class Core extends Base\Core
         return $files;
     }
 
-    public function uploadFiles(DisputeEntity $dispute, array $files): array
+    public function uploadFiles(DisputeEntity $dispute, array $files)
     {
         $this->trace->info(
             TraceCode::DISPUTE_FILES_UPLOAD,
@@ -79,16 +79,10 @@ class Core extends Base\Core
                 'files_count' => count($files),
             ]);
 
-        $disputeFiles = [];
-
         foreach ($files as $fileInput)
         {
-            $file = $this->uploadAndCreateFile($dispute, $fileInput);
-
-            $disputeFiles[] = $file->toArrayPublic();
+            $this->uploadAndCreateFile($dispute, $fileInput);
         }
-
-        return $disputeFiles;
     }
 
     protected function getStorageFileName(DisputeEntity $dispute, UploadedFile $file): string

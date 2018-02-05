@@ -34,7 +34,9 @@ class Service extends Base\Service
         else if (($this->auth->isPrivateAuth() === true) or
                  ($this->auth->isProxyAuth() === true))
         {
-            return $this->core()->updateFilesAndInputForMerchant($dispute, $input);
+            $dispute = $this->core()->updateFilesAndInputForMerchant($dispute, $input);
+
+            return $dispute->toArrayPublic();
         }
     }
 
