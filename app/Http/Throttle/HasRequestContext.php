@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 
 use RZP\Http\OAuth;
 use RZP\Http\Route;
+use RZP\Error\ErrorCode;
 use RZP\Http\RequestHeader;
 use RZP\Http\BasicAuth\Type;
 use RZP\Http\BasicAuth\BasicAuth;
@@ -26,6 +27,7 @@ trait HasRequestContext
     private $request;
     private $key;
     private $secret;
+    private $bearerToken;
     private $mode;
     private $auth;
 
@@ -47,11 +49,11 @@ trait HasRequestContext
         $this->request = $request;
         $this->route   = $this->router->currentRouteName();
 
-        $this->setKeySecretAndRelatedVars();
-        $this->setAdditionalVarsByRouteMaps();
+        $this->setAuthVars();
+        $this->setAdditionalVars();
     }
 
-    private function setKeySecretAndRelatedVars()
+    private function setAuthVars()
     {
         // Key can come
         // - in request input as key_id for public routes
@@ -61,9 +63,14 @@ trait HasRequestContext
                 $this->router->current()->parameter('key') ?:
                 $this->request->getUser();
 
+        // Direct authentication and bearer token case
+        if (empty($key) === true)
+        {
+            return;
+        }
         // Validate key length
-        $validKeyLengths = BasicAuth::$validKeyLengths;
-        array_push($validKeyLengths, OAuth::PUBLIC_TOKEN_LENGTH);
+        $validKeyLengths   = BasicAuth::$validKeyLengths;
+        $validKeyLengths[] = OAuth::PUBLIC_TOKEN_LENGTH;
         if (in_array(strlen($key), $validKeyLengths) === false)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY);
@@ -74,18 +81,18 @@ trait HasRequestContext
         $this->secret = $this->request->getPassword();
     }
 
-    private function setAdditionalVarsByRouteMaps()
+    private function setAdditionalVars()
     {
-        $keyWithNoPrefix = substr($this->key, 9);
+        $key = substr($this->key, 9); // Excluding rzp_test_ prefix
 
         if (in_array($this->route, Route::$internal, true) === true)
         {
-            $this->auth = Type::PRIVILEGE_AUTH;
+            $this->auth        = Type::PRIVILEGE_AUTH;
             $this->internalapp = $this->getInternalAppName($secret);
         }
         else if (in_array($this->route, Route::$admin, true) === true)
         {
-            $this->auth = Type::ADMIN_AUTH;
+            $this->auth       = Type::ADMIN_AUTH;
             $this->adminEmail = $request->headers(RequestHeader::X_DASHBOARD_ADMIN_EMAIL);
         }
         else if ((in_array($this->route, Route::$private, true) === true) and
@@ -93,46 +100,46 @@ trait HasRequestContext
         {
             $this->auth = Type::PRIVATE_AUTH;
 
-            $parsed = (new Parser)->parse($token);
-            $this->oauthAppId = $token->getClaim('aud');
-            $this->mid = $token->getClaim('merchant_id');
+            $parsed           = (new Parser)->parse($token);
+            $this->oauthAppId = $parsed->getClaim('aud');
+            $this->mid        = $parsed->getClaim('merchant_id');
         }
         else if ((in_array($this->route, Route::$private, true) === true) and
             ($this->isDashboard() === true))
         {
             $this->auth = Type::PROXY_AUTH;
-            $this->mid = $keyWithNoPrefix;
+            $this->mid  = $key;
         }
         else if ((in_array($this->route, Route::$private, true) === true) and
             ($this->isDashboard() === false))
         {
-            $this->auth = Type::PRIVATE_AUTH;
-            $this->keyId = $keyWithNoPrefix;
+            $this->auth  = Type::PRIVATE_AUTH;
+            $this->keyId = $key;
         }
         else if ((in_array($this->route, Route::$public, true) === true) and
             ($this->isKeyOAuthPublicToken() === true))
         {
-            $this->auth = Type::PUBLIC_AUTH;
-            $this->oauthPublicToken = $keyWithNoPrefix;
+            $this->auth             = Type::PUBLIC_AUTH;
+            $this->oauthPublicToken = substr($key, 6); // Further excludes oauth_ part :)
         }
         else if (in_array($this->route, Route::$public, true) === true)
         {
-            $this->auth = Type::PUBLIC_AUTH;
-            $this->keyId = $keyWithNoPrefix;
+            $this->auth  = Type::PUBLIC_AUTH;
+            $this->keyId = $key;
         }
         else if (in_array($this->route, Route::$publicCallback, true) === true)
         {
-            $this->auth = Type::PUBLIC_AUTH;
-            $this->keyId = $keyWithNoPrefix;
+            $this->auth  = Type::PUBLIC_AUTH;
+            $this->keyId = $key;
         }
         else if (in_array($this->route, Route::$proxy, true) === true)
         {
             $this->auth = Type::PROXY_AUTH;
-            $this->mid = $keyWithNoPrefix;
+            $this->mid  = $key;
         }
         else if (in_array($this->route, Route::$device, true) === true)
         {
-            $this->auth = Type::DEVICE_AUTH;
+            $this->auth   = Type::DEVICE_AUTH;
             $this->device = $secret;
         }
         else if (in_array($this->route, Route::$direct, true) === true)
@@ -177,7 +184,7 @@ trait HasRequestContext
         return starts_with($headers, 'Bearer ') ? substr($headers, 7) : '';
     }
 
-    private function isKeyOAuthPublicToken(): string
+    private function isKeyOAuthPublicToken(): bool
     {
         return ((strlen($this->key) === OAuth::PUBLIC_TOKEN_LENGTH) and
                 (substr($this->key, 8, 7) === '_oauth_'));

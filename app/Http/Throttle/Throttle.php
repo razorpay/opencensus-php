@@ -101,7 +101,6 @@ class Throttle
             function ($pipe)
             {
                 $pipe->hgetall(Constant::GLOBAL_SETTINGS_KEY);
-                $pipe->hgetall(Constant::ROUTE_SETTINGS_KEY_REFIX . $this->route);
                 $pipe->hgetall(Constant::ID_SETTINGS_KEY_PREFIX . $this->getIdSettingsKey());
             });
     }
@@ -147,7 +146,8 @@ class Throttle
                 $this->device ?:
                 $this->adminEmail ?:
                 $this->oauthAppId ?:
-                $this->mid;
+                $this->mid ?:
+                '';
     }
 
     private function getThrottleKey(): string
@@ -231,12 +231,12 @@ class Throttle
             return;
         }
 
-        $key = Constant::KEYID_MID_KEY_PREFIX . $this->key;
+        $key = Constant::KEYID_MID_KEY_PREFIX . $this->keyId;
         $mid = $this->redis->get($key);
 
         if (empty($mid) === true)
         {
-            $mid = $this->repo->key->connection($this->mode)->findOrFail($this->key)->getMerchantId();
+            $mid = $this->repo->key->connection($this->mode)->findOrFailPublic($this->keyId)->getMerchantId();
             $this->redis->setex($key, 604800, $mid);
         }
 
