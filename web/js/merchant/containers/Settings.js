@@ -9,22 +9,42 @@ import Webhooks from 'merchant/containers/Webhooks/List';
 import Applications from 'merchant/containers/Applications/';
 import ApplicationsNew from 'merchant/containers/Applications/new';
 
+const analyticsGoTo = name => {
+  window.rzpAnalytics({
+    eventCategory: 'Dashboard - Settings',
+    eventAction: `Go To - ${name}`
+  });
+}
+
 @withRouter
 export default class Settings extends Component {
+  componentDidMount() {
+    analyticsGoTo('Settings');
+  }
+
   render() {
     return (
       <tabbed-container>
         <header id="settings-header">
           <ShowWhen myRole="owner manager admin">
-            <NavLink to="/config">Configuration</NavLink>
+            <NavLink
+              to="/config"
+              onClick={() => analyticsGoTo('Configuration')}
+            >Configuration</NavLink>
           </ShowWhen>
 
           <ShowWhen myRole="owner manager admin">
-            <NavLink to="/webhooks">Webhooks</NavLink>
+            <NavLink
+              to="/webhooks"
+              onClick={() => analyticsGoTo('Webhooks')}
+            >Webhooks</NavLink>
           </ShowWhen>
 
           <ShowWhen myRole="owner admin">
-            <NavLink to="/keys">API Keys</NavLink>
+            <NavLink
+              to="/keys"
+               onClick={() => analyticsGoTo('API Keys')}
+            >API Keys</NavLink>
           </ShowWhen>
 
           <ShowWhen featureEnabled="Oauth" myRole="owner">

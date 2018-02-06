@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
 
 import {
   fetchPayments,
@@ -11,11 +12,14 @@ import { titleCase } from 'rzp/utils/rzp-utils';
 import GenericPanel, {
   PanelBody,
   PanelTopbar,
+  PanelFooter,
 } from 'merchant/components/Home/GenericPanel';
-import TabsContainer from 'rzp/ui/Tabs';
 import { tabs, tabsMeta } from './data';
+import PaymentsList from 'merchant/components/Payments/PaymentsList';
 
-const Row = ({ record, tabName }) => {
+import { trackTabClick, trackEntityClick, trackGoToLinks } from './ga';
+
+const Row = ({ record, tabName, tabTitle, sectionTitle }) => {
   const tabMeta = tabsMeta[tabName];
 
   return (
@@ -27,6 +31,17 @@ const Row = ({ record, tabName }) => {
           typeof columnMeta.transfomer === 'function'
             ? columnMeta.transfomer(value, record, tabName)
             : value;
+
+        if (columnMeta.recordKey === 'id') {
+          value = (
+            <value.type
+              {...value.props}
+              onClick={() => trackEntityClick(tabTitle, sectionTitle)}
+            >
+              {value.props.children}
+            </value.type>
+          );
+        }
 
         return <td key={index}>{value}</td>;
       })}
@@ -65,6 +80,7 @@ export default class RecentActivity extends Component {
     const tabName = e.target.getAttribute('name');
 
     this.setState({ selectedTab: tabName });
+    trackTabClick(titleCase(tabName), this.props.sectionTitle);
   }
 
   fetchData(params) {
@@ -74,52 +90,87 @@ export default class RecentActivity extends Component {
   }
 
   componentWillMount() {
-    this.fetchData({ count: 10 });
+    this.fetchData({ count: 5 });
   }
 
   render() {
+    const { selectedTab } = this.state,
+      selectedTabData = this.props[selectedTab],
+      numColumns = tabsMeta[selectedTab].numColumns,
+      selectedTabTitle = titleCase(selectedTab);
 
     let body = null;
 
-    let tabContent = [];
-
-    tabs.forEach(selectedTab => {
-      const selectedTabData = this.props[selectedTab], numColumns = tabsMeta[selectedTab].numColumns;
-      let body;
-
-      if (selectedTabData.loading || selectedTabData.items.length === 0) {
-        body = (
-          <tr>
-            <td colSpan={numColumns}>
-              <center>
-                {selectedTabData.loading ? 'Please Wait...' : 'No Records found.'}
-              </center>
-            </td>
-          </tr>
-        );
-      } else {
-        body = selectedTabData.items.map((record, index) => {
-          return <Row key={index} record={record} tabName={selectedTab} />;
-        });
-      }
-
-      tabContent.push(
-        <table class="table table-striped table-activity">
-          <tbody>
-          {body}
-          </tbody>
-        </table>
+    if (selectedTabData.loading || selectedTabData.items.length === 0) {
+      body = (
+        <tr>
+          <td colSpan={numColumns}>
+            <center>
+              {selectedTabData.loading ? 'Please Wait...' : 'No Records found.'}
+            </center>
+          </td>
+        </tr>
       );
-    });
-
+    } else {
+      body = selectedTabData.items.map((record, index) => {
+        return (
+          <Row
+            key={index}
+            record={record}
+            tabName={selectedTab}
+            tabTitle={selectedTabTitle}
+            sectionTitle={this.props.sectionTitle}
+          />
+        );
+      });
+    }
 
     return (
-      <TabsContainer
-        tabNames={tabs}
-        className="some-class panel recent-activity-cont"
+      <GenericPanel
+        className="recent-activity-cont"
+        isLoading={selectedTabData.loading}
       >
-        {tabContent}
-      </TabsContainer>
+        <PanelTopbar>
+          <tabbed-container>
+            <div className="row">
+              {tabs.map((tabName, index) => {
+                const className =
+                  (tabName === selectedTab ? 'active ' : '') + 'col-sm-4';
+
+                return (
+                  <a
+                    className={className}
+                    key={index}
+                    name={tabName}
+                    onClick={this.handleTabClick}
+                  >
+                    {tabName.toUpperCase()}
+                  </a>
+                );
+              })}
+            </div>
+          </tabbed-container>
+        </PanelTopbar>
+        <PanelBody>
+          <table className="table table-striped">
+            <tbody>{body}</tbody>
+          </table>
+        </PanelBody>
+        <PanelFooter>
+          <div className="clearfix">
+            <div className="pull-right">
+              <Link
+                target="_blank"
+                to={`/${selectedTab}`}
+                onClick={() =>
+                  trackGoToLinks(selectedTabTitle, this.props.sectionTitle)}
+              >
+                View all {selectedTabTitle}
+              </Link>
+            </div>
+          </div>
+        </PanelFooter>
+      </GenericPanel>
     );
   }
 }

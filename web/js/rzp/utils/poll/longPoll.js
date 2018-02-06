@@ -7,10 +7,11 @@ const _poll = options => {
   const {
     fetchFunc,
     validator,
-    minWaitTime = 0,
     resolve,
     reject,
     shouldAbortPoll,
+    getNextCallWaitime,
+    minWaitTime = 0,
   } = options;
 
   const startTime = Date.now();
@@ -28,13 +29,17 @@ const _poll = options => {
       if (shouldResolve) {
         resolve(resp);
       } else {
-        const diff = startTime - Date.now();
+
+        const diff = startTime - Date.now(),
+              waitTime = (getNextCallWaitime
+                            ? getNextCallWaitime()
+                            : minWaitTime) - diff;
 
         window.setTimeout(() => {
           // after timer, if we findout the poll
           // should be aborted, just return;
           return !shouldAbortPoll() && _poll(options);
-        }, minWaitTime - diff);
+        }, waitTime);
       }
     })
     .catch(reject);

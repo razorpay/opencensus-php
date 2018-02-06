@@ -89,7 +89,17 @@ export default class WizardItem extends Component {
   save = props => {
     return this._save(props)
       .then(response => {
-        let step = this.props.step;
+        let {
+          step,
+          steps
+        } = this.props;
+        let lastCompletedStep = 0;
+        Object.keys(steps).forEach(_step => {
+          if (steps[_step] === 'success') {
+            lastCompletedStep = parseInt(_step);
+          }
+        });
+        window.trackViz && window.trackViz({ act: lastCompletedStep })
 
         // For updating the accounts list view on success of activation
         if (step === this.finalStep && this.props.callback) {

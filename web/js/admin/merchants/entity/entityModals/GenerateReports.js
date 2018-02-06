@@ -247,6 +247,7 @@ export default class GenerateReports extends Component {
       };
     }
 
+    ajaxParams.timeout = 4500 * 60; // Timeout 4min for large reports
     return fetch(ajaxParams)
       .then(data => {
         if (data) {

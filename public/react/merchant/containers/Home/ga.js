@@ -1,0 +1,56 @@
+import { setTrackData } from 'rzp/utils/googleAnalytics';
+
+const pageTitle = 'Dashboard - Home V2';
+
+export const track = setTrackData({ eventCategory: pageTitle });
+
+export const trackPresetChange = preset => {
+  track({
+    eventAction: 'Select - Date Dropdown',
+    eventLabel: preset.name,
+    eventValue: preset.value,
+  });
+};
+
+export const trackDatesChange = (from, to) => {
+  const seconds = to.unix() - from.unix(),
+    fromDateString = from.toLocaleString(),
+    toDateString = to.toLocaleString();
+
+  track({
+    eventAction: 'Select - Start Date',
+    eventLabel: fromDateString,
+  });
+
+  track({
+    eventAction: 'Select - End Date',
+    eventLabel: toDateString,
+  });
+
+  track({
+    eventAction: 'Select - Date Range',
+    eventLabel: `${fromDateString} - ${toDateString}`,
+    eventValue: seconds,
+  });
+};
+
+export const trackGoToLinks = (toText, fromText) => {
+  track({
+    eventAction: `Go to - ${toText}`,
+    eventLabel: `From ${fromText}`,
+  });
+};
+
+export const trackSettlementsClick = () => {
+  trackGoToLinks('Settlements', pageTitle);
+};
+
+export const trackPlatformAnalyticsHidden = percent => {
+  track({
+    eventAction: 'Data Hide - Platform',
+    eventLabel: `${percent}%`,
+    eventValue: percent,
+  });
+};
+
+export default track;

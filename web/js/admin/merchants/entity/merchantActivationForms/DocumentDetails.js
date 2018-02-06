@@ -242,6 +242,52 @@ export default class DocumentDetails extends Component {
                   </div>
                 )}
               />
+
+              <EntityRow
+                label="Form 12A Allotment Letter"
+                className="separate m-t left-align"
+                value={() => (
+                  <div>
+                    <span class="info-block">Mandatory for NGOs</span>
+                    <div class="m-t left-align">
+                      {
+                        do {
+                          if (files.form_12a_url) {
+                            <a href={files.form_12a_url} target="_blank">
+                              {files.form_12a_url}
+                            </a>;
+                          } else {
+                            <a>No file Uploaded</a>;
+                          }
+                        }
+                      }
+                    </div>
+                  </div>
+                )}
+              />
+
+              <EntityRow
+                label="Form 80G Allotment Letter"
+                className="separate m-t left-align"
+                value={() => (
+                  <div>
+                    <span class="info-block">Mandatory for NGOs</span>
+                    <div class="m-t left-align">
+                      {
+                        do {
+                          if (files.form_80g_url) {
+                            <a href={files.form_80g_url} target="_blank">
+                              {files.form_80g_url}
+                            </a>;
+                          } else {
+                            <a>No file Uploaded</a>;
+                          }
+                        }
+                      }
+                    </div>
+                  </div>
+                )}
+              />
             </div>
           </div>
         )}

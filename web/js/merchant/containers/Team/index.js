@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
-import AsyncButton from 'react-async-button';
+import { Redirect } from 'react-router-dom';
 import HeaderAction from 'rzp/ui/HeaderAction';
 import { fetchTeamDetails } from 'rzp/modules/team';
 import * as NotificationsActions from 'rzp/modules/notifications';
@@ -24,7 +24,10 @@ import User from './User';
 )
 export default class TeamContainer extends Component {
   componentWillMount() {
-    this.props.fetchTeamDetails({ merchant_id: this.props.merchant.current });
+    if(this.props.merchant.userRole === 'owner') {
+      this.props.fetchTeamDetails({ merchant_id: this.props.merchant.current });
+    }
+
   }
 
   render() {
@@ -35,58 +38,61 @@ export default class TeamContainer extends Component {
     );
 
     return (
-      <div>
-        <HeaderAction>
-          <div class="btn-toolbar pull-right">
-            <a
-              class="btn btn-link"
-              href="https://docs.razorpay.com/v1/page/team-support"
-              target="_blank"
-            >
-              Documentation &nbsp;
-              <i class="i i-external-link" />
-            </a>
-          </div>
-        </HeaderAction>
+        this.props.merchant.userRole === 'owner' ? (
+        <div>
+          <HeaderAction>
+            <div class="btn-toolbar pull-right">
+              <a
+                class="btn btn-link"
+                href="https://docs.razorpay.com/v1/page/team-support"
+                target="_blank"
+              >
+                Documentation &nbsp;
+                <i class="icon icon-external-link" />
+              </a>
+            </div>
+          </HeaderAction>
 
-        <div class="content-wrapper content-sm">
-          <NewInvitation />
+          <div class="content-wrapper content-sm">
+            <NewInvitation />
 
-          {otherUsers.length ? (
-            <div>
-              <div class="panel-heading">Team Members</div>
-              <table class="table table-noborder">
-                <tbody>
-                  {otherUsers.map(user => (
+            {otherUsers.length
+              ? <div>
+                <div class="panel-heading">Team Members</div>
+                <table class="table table-noborder">
+                  <tbody>
+                  {otherUsers.map(user =>
                     <User
                       key={user.id}
                       user={user}
                       form={`editUser_${user.id}`}
                     />
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : null}
+                  )}
+                  </tbody>
+                </table>
+              </div>
+              : null}
 
-          {invitations.length ? (
-            <div>
-              <div class="panel-heading">Pending Invitations</div>
-              <table class="table table-noborder">
-                <tbody>
-                  {invitations.map(invite => (
+            {invitations.length
+              ? <div>
+                <div class="panel-heading">Pending Invitations</div>
+                <table class="table table-noborder">
+                  <tbody>
+                  {invitations.map(invite =>
                     <Invitation
                       key={invite.id}
                       invite={invite}
                       form={`editInvitation_${invite.id}`}
                     />
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : null}
+                  )}
+                  </tbody>
+                </table>
+              </div>
+              : null}
+          </div>
         </div>
-      </div>
+      ) :
+      <Redirect to="/profile" />
     );
   }
 }

@@ -1,6 +1,7 @@
 import ajax from 'merchant/utils/ajax';
 import Activation from 'merchant/models/Activation';
 import { set, merge, push } from 'rzp/utils/immutable';
+import store from 'merchant/store';
 
 export const ACTIVATION_FETCH = 'ACTIVATION_FETCH';
 export const ACTIVATION_SAVE_STEP = 'ACTIVATION_SAVE_STEP';
@@ -38,6 +39,8 @@ export const saveFile = ({ step, file, fieldName, accountId = '' }) => {
     promoter_proof: 'promoter_proof_url',
     promoter_pan_proof: 'promoter_pan_url',
     promoter_address_proof: 'promoter_address_url',
+    ngo_12a_proof: 'form_12a_url',
+    ngo_80g_proof: 'form_80g_url',
   };
   formData.append('route_name', 'merchant_activation_upload_file');
   formData.append('file', file);
@@ -169,3 +172,27 @@ export default function(state = initialState, action) {
       return state;
   }
 }
+
+/**
+ * Fetch city and state based on pincode provided
+*/
+export const getPincodeDetails = (pincode, changeFunc) => {
+  const mode = store.getState().session.mode;
+
+  if (pincode.length === 6) {
+    ajax({
+      url: `/merchant/api/${mode}/pincodes/${pincode}`,
+      method: 'get',
+      appendModeInURL: false,
+    })
+      .then(response => {
+        if (response.data) {
+          changeFunc(response.data.city, response.data.state_code);
+        }
+      })
+      .catch(e => changeFunc()); //- send empty values if error
+  } else {
+    //- send empty values if length less or greater than 6
+    changeFunc();
+  }
+};

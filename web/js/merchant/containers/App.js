@@ -103,16 +103,18 @@ export default class App extends Component {
       } else if (!user.isActivated) {
         currentMode = 'test';
       }
-      window.rzpAnalytics({
-        name: 'set_dimensions',
-        dimensions: {
-          dimension1: currentMode, // Mode
-          dimension2: user.name, // Merchant Name
-          dimension3: user.id, // Merchant ID
-          dimension4: user.user.email, // Logged User Email
-          dimension5: user.role, // Logged User Role
-        },
-      });
+      if (user && user.user) {
+        window.rzpAnalytics({
+          name: 'set_dimensions',
+          dimensions: {
+            dimension1: currentMode, // Mode
+            dimension2: user.name, // Merchant Name
+            dimension3: user.id, // Merchant ID
+            dimension4: user.user.email, // Logged User Email
+            dimension5: user.role, // Logged User Role
+          },
+        });
+      }
 
       return Promise.resolve({ data: user });
     } else {
@@ -188,6 +190,11 @@ export default class App extends Component {
   }
 
   switchMode = mode => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Header',
+      eventAction: 'Switch - Mode',
+      eventLabel: mode
+    });
     let user = this.props.user;
     if (mode === 'live' && !user.isActivated) {
       this.props.openModal({

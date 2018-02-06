@@ -346,6 +346,8 @@ class Service extends Base\Service
 
         $data['user'] = $userDetails;
 
+        $activated = false;
+
         // Default values in case no merchant is associated
         // with the user account
         $data['pre_signup'] = [];
@@ -389,6 +391,11 @@ class Service extends Base\Service
 
                     $data['tags'] = (new Merchant\Service)->getMerchantTags($currentMerchantId);
                 }
+
+                if (((bool) $merchant['activated']) === true)
+                {
+                    $activated = true;
+                }
             }
 
             $preSignupValues = array_values($data['pre_signup']);
@@ -405,8 +412,6 @@ class Service extends Base\Service
             {
                 $data['pre_signup_complete'] = true;
             }
-
-            $activated = (bool) $merchant['activated'];
 
             // There are approx 3k merchants who have not
             // filled "role" or "department", but are

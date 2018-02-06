@@ -40,8 +40,10 @@ export default class ActivationWizard extends Component {
   };
 
   componentWillMount() {
+    const needKyc = this.props.data['need_kyc'] || 0;
+
     this.setState({
-      linkedAccountKyc: this.props.data['need_kyc'] || 0,
+      linkedAccountKyc: needKyc,
     });
 
     if (this.props.accountId) {
@@ -49,7 +51,7 @@ export default class ActivationWizard extends Component {
         activationForm =>
           activationForm.name !== 'activationContactDetails' &&
           activationForm.name !== 'activationWebsiteDetails' &&
-          (this.state.linkedAccountKyc === 0
+          (needKyc === 0
             ? activationForm.name !== 'activationDocumentUpload'
             : true)
       );
@@ -100,20 +102,24 @@ export default class ActivationWizard extends Component {
             ? 'The account has been activated'
             : 'Your account is already activated'}
         </div>
-      ) : (
-        <div class="alert alert-info">
-          Your activation form is submitted and is under review. The process can
-          take upto <b>2 working days</b>. If any clarification is needed, we
-          will contact you on your registered email address -{' '}
-          {data.contact_email}
-        </div>
-      );
+      ) : !accountId ? (
+        (info = ActivationStatusInfo(data))
+      ) : null;
+    } else {
+      //- Not to be shown when used in marketplace when accessing this form via 'Route'
+      if (!accountId) {
+        info = (
+          <div class="alert alert-info text-center">
+            Complete and submit your activation form to start live transactions
+            on Razorpay.
+          </div>
+        );
+      }
     }
 
     return (
       <div>
         {info}
-
         <Tabs
           class="activation-wizard"
           selectedIndex={this.state.selectedTabIndex}
@@ -149,3 +155,24 @@ export default class ActivationWizard extends Component {
     );
   }
 }
+
+const ActivationStatusInfo = data => {
+  if (data.activation_status === 'under_review') {
+    return (
+      <div class="alert alert-info text-center">
+        Your activation form is submitted and is under review. The process may
+        take upto <b>2 working days</b>. If any clarification is needed, we will
+        contact you on your registered email address - {data.contact_email}
+      </div>
+    );
+  } else if (data.activation_status === 'needs_clarification') {
+    return (
+      <div class="alert alert-info text-center">
+        We have sent you an email seeking clarification about your activation
+        form. Please check your registered email - {data.contact_email}.
+      </div>
+    );
+  } else {
+    return null;
+  }
+};

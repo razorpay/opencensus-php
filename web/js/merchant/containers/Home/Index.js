@@ -36,6 +36,20 @@ defaults.global.layout = {
   },
 };
 
+const analyticsGoTo = name => {
+  window.rzpAnalytics({
+    eventCategory: 'Dashboard - Home',
+    eventAction: `Go To - ${name}`
+  });
+};
+
+const analyticsOpenDetails = name => {
+  window.rzpAnalytics({
+    eventCategory: 'Dashboard - Home',
+    eventAction: `Open Details - ${name}`
+  });
+};
+
 // graph data
 // numbers
 @connect(
@@ -147,16 +161,22 @@ class HomeContainer extends Component {
 
           <div class="row RecentTxns">
             <RecentEntityTable
+              onSeeAll={() => analyticsGoTo('Payments')}
+              onOpenDetails={() => analyticsOpenDetails('Payments')}
               entity="payment"
               data={payments}
               loading={payments.loading}
             />
             <RecentEntityTable
+              onSeeAll={() => analyticsGoTo('Refunds')}
+              onOpenDetails={() => analyticsOpenDetails('Refunds')}
               entity="refund"
               data={refunds}
               loading={refunds.loading}
             />
             <RecentEntityTable
+              onSeeAll={() => analyticsGoTo('Settlements')}
+              onOpenDetails={() => analyticsOpenDetails('Settlements')}
               entity="settlement"
               data={settlements}
               loading={settlements.loading}

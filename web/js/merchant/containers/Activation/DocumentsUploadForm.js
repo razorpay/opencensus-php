@@ -8,6 +8,7 @@ export default class DocumentsUploadForm extends Component {
   render() {
     let { saveFile, goBack, goNext, accountId } = this.props;
     let files = this.props.uploadedFiles;
+    let { business_type } = this.props.data;
 
     return (
       <form class="form-horizontal">
@@ -135,6 +136,42 @@ export default class DocumentsUploadForm extends Component {
               </div>
             </div>
           )}
+
+          {/* Only show it when the business type is NGO */}
+          {business_type == 7 && [
+            <div class="form-group" key="form_12a">
+              <label class="col-md-3 control-label label-required">
+                Form 12A Allotment Letter
+              </label>
+              <div class="col-md-9">
+                <span class="help-block">Mandatory for NGOs</span>
+                <FileUploadInputButton
+                  accept="image/jpeg,image/png,application/pdf,application/x-pdf"
+                  uploadedFileName={files.ngo_12a_proof}
+                  maxSize="8000000"
+                  onChange={event => {
+                    return saveFile(event, 'ngo_12a_proof');
+                  }}
+                />
+              </div>
+            </div>,
+            <div class="form-group" key="form_80g">
+              <label class="col-md-3 control-label label-required">
+                Form 80G Allotment Letter
+              </label>
+              <div class="col-md-9">
+                <span class="help-block">Mandatory for NGOs</span>
+                <FileUploadInputButton
+                  accept="image/jpeg,image/png,application/pdf,application/x-pdf"
+                  uploadedFileName={files.ngo_80g_proof}
+                  maxSize="8000000"
+                  onChange={event => {
+                    return saveFile(event, 'ngo_80g_proof');
+                  }}
+                />
+              </div>
+            </div>,
+          ]}
 
           <div class="form-group">
             <div class="col-md-offset-3 col-md-9">

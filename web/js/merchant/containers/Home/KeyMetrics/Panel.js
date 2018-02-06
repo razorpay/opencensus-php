@@ -7,11 +7,7 @@ import { PowerSelect } from 'react-power-select';
 import Definition from 'rzp/ui/Definition';
 import Change from 'rzp/ui/Change';
 import { BtnGroup, Btn } from 'rzp/ui/BtnGroup/index.js';
-import {
-  titleCase,
-  paiseToRupees,
-  getPercentage
-} from 'rzp/utils/rzp-utils';
+import { titleCase, paiseToRupees, getPercentage } from 'rzp/utils/rzp-utils';
 import { timeScale } from 'rzp/utils/chart/new.js';
 import takeScreenshot from 'rzp/utils/screenshot';
 import Group, { GroupItem } from 'rzp/ui/Group';
@@ -22,10 +18,10 @@ import {
 import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
 
 import { tabsMeta, breakdownVals } from './data';
-import GroupingDropdown from 'merchant/components/Home/GroupingDropdown';
+import GroupingDropdown from 'merchant/containers/Home/GroupingDropdown';
 import Legend from 'merchant/components/Home/Legend';
 import LastUpdated from 'merchant/components/Home/LastUpdated';
-import MoreOptionsButton from 'merchant/components/Home/MoreOptionsButton';
+import MoreOptionsButton from 'merchant/containers/Home/MoreOptionsButton';
 import GenericPanel, {
   PanelTopbar,
   PanelBody,
@@ -33,6 +29,8 @@ import GenericPanel, {
 } from 'merchant/components/Home/GenericPanel';
 import customToolTip, { positioner } from './customTooltip';
 import Tooltip from 'merchant/components/Home/Tooltip';
+
+import { trackGoToLinks } from './ga';
 
 Chart.Tooltip.positioners.custom = positioner;
 
@@ -110,6 +108,9 @@ class Panel extends Component {
         lastUpdatedAt,
         isCurrency,
         externalUrl,
+        showGrouping,
+        tabName,
+        sectionTitle,
       } = this.props,
       dateFormat = 'DD MMM YYYY',
       { grouping, options } = this.meta,
@@ -143,6 +144,8 @@ class Panel extends Component {
     chartOptions.isCurrency = isCurrency;
     chartOptions.externalUrl = externalUrl;
     chartOptions.breakdown = selectedBreakdown;
+    chartOptions.graphStartDate = startDate.toDate();
+    chartOptions.graphEndDate = endDate.toDate();
 
     return (
       <GenericPanel
@@ -200,27 +203,37 @@ class Panel extends Component {
               onChange={this.handleBreakdownChange}
             >
               {breakdownVals.map((item, index) => {
-                return (
-                  <Btn value={item} key={index} className="btn-default">
-                    {titleCase(item)}
-                  </Btn>
-                );
+                const btnProps = {
+                  value: item.value,
+                  key: index,
+                  className: 'btn-default',
+                };
+
+                if (!item.isEnabled(startDate, endDate)) {
+                  btnProps.disabled = 'disabled';
+                }
+
+                return <Btn {...btnProps}>{item.title}</Btn>;
               })}
             </BtnGroup>
-            {grouping.length > 0 && (
-              <div className="panel-action-item">
-                <GroupingDropdown
-                  onGroupChange={this.handleGroupingChange}
-                  grouping={grouping}
-                  selectedGrouping={selectedGrouping}
-                />
-              </div>
-            )}
+            {showGrouping &&
+              grouping.length > 0 && (
+                <div className="panel-action-item">
+                  <GroupingDropdown
+                    onGroupChange={this.handleGroupingChange}
+                    grouping={grouping}
+                    selectedGrouping={selectedGrouping}
+                    sectionTitle={`${sectionTitle} | ${this.meta.title}`}
+                  />
+                </div>
+              )}
             <div className="panel-action-item">
               <MoreOptionsButton
                 csvData={data.csv}
                 pngData={data.png}
-                onImageExport={this.handleImageExportClick}
+                sectionTitle={sectionTitle}
+                tabName={this.meta.title}
+                handleImageDownload={this.handleImageExportClick}
               />
             </div>
           </div>
@@ -255,6 +268,11 @@ class Panel extends Component {
               target="_blank"
               to={`/${this.meta
                 .index}?from=${startDate.unix()}&to=${endDate.unix()}`}
+              onClick={() =>
+                trackGoToLinks(
+                  titleCase(this.meta.index),
+                  sectionTitle + ' | ' + this.meta.title
+                )}
             >
               {`View all ${titleCase(this.meta.index)}`}
             </Link>
