@@ -10,18 +10,34 @@ class Reconciliate extends Base\Reconciliate
     const REFUND_RECON_FILE_NAME    = 'refund_report';
     const PAYMENT_RECON_FILE_NAME   = 'mis_report';
 
+    const SHEET0_NAME               = 'Recon MIS';
+
     protected function getTypeName($fileName)
     {
+        $type = null;
+
         if (strpos(strtolower($fileName), self::PAYMENT_RECON_FILE_NAME) !== false)
         {
-            return self::PAYMENT;
+            $type = self::PAYMENT;
         }
         else if (strpos(strtolower($fileName), self::REFUND_RECON_FILE_NAME) !== false)
         {
-            return self::REFUND;
+            $type = self::REFUND;
         }
 
-        return null;
+        return $type;
+    }
+
+    public function getSheetNames(array $fileDetails = [])
+    {
+        $reconType = $this->getTypeName($fileDetails['file_name']);
+
+        if ($reconType === self::PAYMENT)
+        {
+            return [self::SHEET0_NAME];
+        }
+
+        return [];
     }
 
     protected function getFileName(array $extraDetails): string

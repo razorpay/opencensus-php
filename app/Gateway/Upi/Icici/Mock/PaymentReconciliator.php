@@ -5,6 +5,7 @@ namespace RZP\Gateway\Upi\Icici\Mock;
 use Carbon\Carbon;
 use RZP\Gateway\Base;
 use RZP\Models\Payment;
+use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Base\PublicCollection;
 
@@ -17,6 +18,12 @@ class PaymentReconciliator extends Base\Mock\PaymentReconciliator
      * @var string
      */
     protected $fileToWriteName = 'MIS_REPORT';
+
+    /**
+     * The name of the sheet to be processed is Refund MIS
+     * @var string
+     */
+    protected $sheetName = 'Recon MIS';
 
     /**
      * The parent class's method gets only successful payments,
@@ -76,6 +83,25 @@ class PaymentReconciliator extends Base\Mock\PaymentReconciliator
         }
 
         return $data;
+    }
+
+    protected function createFile(
+        array $content,
+        string $type = FileStore\Type::MOCK_RECONCILIATION_FILE,
+        string $store = FileStore\Store::S3)
+    {
+        $creator = new FileStore\Creator;
+
+        $creator->extension($this->fileExtension)
+                ->content($content)
+                ->name($this->fileToWriteName)
+                ->sheetName($this->sheetName)
+                ->store($store)
+                ->type($type)
+                ->headers($this->shouldAddHeaders)
+                ->save();
+
+        return $creator;
     }
 
     /**

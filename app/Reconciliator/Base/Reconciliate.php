@@ -169,7 +169,7 @@ class Reconciliate extends Base\Core
      * This should be implemented in the child class if the gateway needs to
      * look at only certain sheets present in the excel file and not all of them.
      */
-    public function getSheetNames()
+    public function getSheetNames(array $fileDetails = [])
     {
         return null;
     }
