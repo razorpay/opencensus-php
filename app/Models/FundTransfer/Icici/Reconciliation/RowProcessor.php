@@ -29,7 +29,7 @@ class RowProcessor extends BaseRowProcessor
         switch ($mode)
         {
             case Mode::RTGS:
-                $utr = (($bankStatus === Status::PAID) ? $remarks :null);
+                $utr = (($bankStatus === Status::PAID) ? $remarks : null);
                 break;
 
             case Mode::NEFT:
@@ -47,7 +47,7 @@ class RowProcessor extends BaseRowProcessor
             self::CMS_REF_NO        => $cmsRefNo,
         ];
 
-        $this->reconEntityId = $this->parsedData['payment_ref_no'];
+        $this->reconEntityId = $this->parsedData[self::PAYMENT_REF_NO];
     }
 
     protected function updateReconEntity()

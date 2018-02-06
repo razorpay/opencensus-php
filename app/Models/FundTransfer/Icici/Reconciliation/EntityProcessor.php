@@ -10,6 +10,13 @@ use RZP\Models\FundTransfer\Base\Reconciliation\EntityProcessor as BaseEntityPro
 
 class EntityProcessor extends BaseEntityProcessor
 {
+
+    /**
+     * Remark messages received when the transaction failed from our end.
+     * Remark will start with the below string in such case
+     */
+    const INTERNAL_FAILURE_REMARK = 'Rejected by RTGS Gateway';
+
     protected function getAttemptStatus(): array
     {
         $status = $this->fta->getStatus();
@@ -65,6 +72,16 @@ class EntityProcessor extends BaseEntityProcessor
 
     protected function isMerchantLevelError(): bool
     {
+        $remarks = $this->fta->getRemarks();
+
+        $status  = $this->fta->getStatus();
+
+        if (($status === Attempt\Status::FAILED) and
+            (empty($remarks) === false))
+        {
+            return (stripos($remarks, self::INTERNAL_FAILURE_REMARK) === false);
+        }
+
         return false;
     }
 }
