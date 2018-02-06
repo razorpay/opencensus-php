@@ -621,11 +621,11 @@ class Gateway
         //corp banks
         Netbanking::ICIC_C => Gateway::NETBANKING_ICICI,
         Netbanking::UTIB_C => Gateway::NETBANKING_AXIS,
+        Netbanking::BARB_R => Gateway::NETBANKING_BOB,
 
         // retail banks
         IFSC::ICIC => Gateway::NETBANKING_ICICI,
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
-        IFSC::BARB => Gateway::NETBANKING_BOB,
         IFSC::CORP => Gateway::NETBANKING_CORPORATION,
         IFSC::AIRP => Gateway::NETBANKING_AIRTEL,
         IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
@@ -649,10 +649,11 @@ class Gateway
         IFSC::KKBK => Gateway::NETBANKING_KOTAK,
         IFSC::UTIB => Gateway::NETBANKING_AXIS,
         IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
-        IFSC::BARB => Gateway::NETBANKING_BOB,
         IFSC::RATN => Gateway::NETBANKING_RBL,
         IFSC::INDB => Gateway::NETBANKING_INDUSIND,
         IFSC::PUNB => Gateway::NETBANKING_PNB,
+
+        Netbanking::BARB_R => Gateway::NETBANKING_BOB,
     ];
 
     /**

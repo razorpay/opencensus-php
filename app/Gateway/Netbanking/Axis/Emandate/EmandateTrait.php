@@ -57,7 +57,7 @@ trait EmandateTrait
             Frequency::ADHOC,
             $input['token'][Token\Entity::ACCOUNT_NUMBER],
             Carbon::now(Timezone::IST)->format('m/d/Y'),
-            Carbon::now(Timezone::IST)->addYears(30)->format('m/d/Y'),
+            Carbon::now(Timezone::IST)->addYears(Netbanking\Entity::MAX_RECURRING_END_YEARS)->format('m/d/Y'),
             $maxAmount,
         ];
 

@@ -1107,7 +1107,7 @@ class Entity extends Base\PublicEntity
             return null;
         }
 
-        return $this->merchantDetail->getGstin() ?? $this->merchantDetail->getPGstin();
+        return $this->merchantDetail->getGstin() ?: $this->merchantDetail->getPGstin();
     }
 
     public function getBusinessRegisteredState()

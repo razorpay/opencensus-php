@@ -2384,10 +2384,7 @@ trait Authorize
         //
         // This flow gets called for non recurring tokens also.
         //
-        if ($token->isRecurring() === true)
-        {
-            $this->eventTokenStatus($token, $oldRecurringStatus);
-        }
+        $this->eventTokenStatus($token, $oldRecurringStatus);
     }
 
     protected function updateTokenOnAuthorizedForRecurring(
