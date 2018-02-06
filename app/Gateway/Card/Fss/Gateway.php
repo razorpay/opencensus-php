@@ -272,7 +272,7 @@ class Gateway extends Base\Gateway
         switch ($gatewayAquirer)
         {
             case Acquirer::FSS:
-                $requestContent[Fields::BANK_CODE] = $input[E::TERMINAL][Terminal\Entity::GATEWAY_ACCESS_CODE];
+                $requestContent[Fields::BANK_CODE] = BankCodes::getBankCodeByIfsc($input[E::CARD][Card\Entity::ISSUER]);
                 $requestContent[Fields::UDF5]      = strtolower(Constants::TRACK_ID);
                 $requestContent[Fields::UDF3]      = $input[E::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_ID];
 
