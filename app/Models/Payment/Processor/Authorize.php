@@ -3761,6 +3761,12 @@ trait Authorize
             throw new Exception\BadRequestValidationFailureException(
                 'UPI intent is not enabled for the merchant');
         }
+
+        if (isset($payment['vpa']) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The vpa field is not required and not shouldn\'t be sent.');
+        }
     }
 
     protected function checkAndValidateAmexIfNotEnabled($methods, $card)
