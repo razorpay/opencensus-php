@@ -52,6 +52,21 @@ class Entity extends Base\PublicEntity
         self::NAME,
     ];
 
+    /**
+     * Maps the route endpoints to the corresponding Entity type
+     *
+     * @var array
+     */
+    protected static $routeToEntityTypeMap = [
+        Constants::MERCHANTS    => Constants::MERCHANT,
+        Constants::ACCOUNTS     => Constants::MERCHANT,
+        Constants::APPLICATIONS => Constants::APPLICATION,
+    ];
+
+    protected static $oauthBlacklistedFeatures = [
+        Constants::S2S
+    ];
+
     public function getName()
     {
         return $this->getAttribute(self::NAME);
