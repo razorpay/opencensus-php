@@ -17,6 +17,9 @@ export const fetch = (query, mode) => {
   return ajax('/user/generic', {
     appendModeInURL: false,
     method: 'post',
+    headers: {
+      'Content-Type': "application/json"
+    },
     contentType: 'application/json',
     data: JSON.stringify({
       route_name: 'merchant_analytics',
