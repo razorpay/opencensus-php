@@ -716,7 +716,7 @@ export default class InvoicesNewContainer extends Component {
                                 type="checkbox"
                                 disabled={locked}
                               />
-                              <label for="partial_payment" class="i i-check">
+                              <label for="partial_payment" class="icon i-check">
                                 Enable Partial Payments
                               </label>
                             </div>
