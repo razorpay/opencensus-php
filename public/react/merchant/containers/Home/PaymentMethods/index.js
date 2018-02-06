@@ -19,6 +19,7 @@ import GenericPanel, {
 import { API_ERROR, API_INVALID_RESP } from 'merchant/components/Home/data';
 import { trackGoToLinks } from 'merchant/containers/Home/ga';
 
+import { trackBreadcrumbClick } from './ga';
 import { getQuery, sampleData } from './data';
 import './styles.styl';
 
@@ -192,9 +193,13 @@ class PaymentMethods extends Component {
                 {levels.map((level, index) => (
                   <BreadcrumbItem
                     key={index}
-                    onClick={() =>
-                      index + 1 !== levelsLength &&
-                      this.onLevelChange(level.data)}
+                    onClick={() => {
+
+                      trackBreadcrumbClick(level.data);
+
+                      return index + 1 !== levelsLength &&
+                             this.onLevelChange(level.data)}
+                    }
                   >
                     {level.name}
                   </BreadcrumbItem>

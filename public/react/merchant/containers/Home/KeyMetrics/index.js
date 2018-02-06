@@ -37,7 +37,11 @@ import './styles.styl';
 
 const csvDateFormat = 'DD-MM-YYYY';
 
-const TabContent = ({ name, value, isCurrency, title, isLoading, error }) => {
+const TabContent = ({
+  name, value, percent,
+  isCurrency, title, isLoading,
+  error
+}) => {
   /*
    * Description:
    * Component responsible for rendering content in each Tab
@@ -50,7 +54,7 @@ const TabContent = ({ name, value, isCurrency, title, isLoading, error }) => {
       ? humanReadableIndianCurrency(paiseToRupees(value))
       : humanReadableIndian(value);
   } else {
-    formattedValue = formattedValue + '%';
+    formattedValue = percent + '%';
   }
 
   /*
@@ -216,7 +220,9 @@ class KeyMetricsContainer extends Component {
                 savedCardsValue = data['1'] ? data['1'][0].value : 0,
                 otherCardsValue = data['0'] ? data['0'][0].value : 0;
 
-              tabState.data.count = getPercentage(
+              tabState.data.count = savedCardsValue;
+
+              tabState.data.percent = getPercentage(
                 savedCardsValue + otherCardsValue,
                 savedCardsValue
               );
@@ -228,10 +234,10 @@ class KeyMetricsContainer extends Component {
                * 2) Decide to show the tab or not only on initial load
                */
               if (isInitialLoad) {
-                tabState.data.showTab = tabState.data.count > 15;
+                tabState.data.showTab = tabState.data.percent > 15;
 
                 if (!tabState.data.showTab) {
-                  trackSavedCardsHidden(tabState.data.count);
+                  trackSavedCardsHidden(tabState.data.percent);
                 }
               }
             } else {
@@ -426,11 +432,22 @@ class KeyMetricsContainer extends Component {
           fetchAllReq.then(() => {
             tabsOrder.forEach(tabName => {
               const tabState = tabsState[tabName],
-                { trend } = tabState.data,
-                previousCount = data[tabName].result[0]
-                  ? data[tabName].result[0].value
-                  : 0,
+                { trend } = tabState.data;
+
+              let previousCount = data[tabName].result[0]
+                    ? data[tabName].result[0].value
+                    : 0,
                 currentCount = tabState.data.count;
+
+              if (tabName === SAVED_CARDS) {
+              
+                const savedCardData = data[tabName]
+                                        .result
+                                        .filter(item => item.saved_card)[0];
+
+                previousCount = savedCardData
+                                  ? savedCardData.value : 0;
+              }
 
               trend.loading = false;
               trend.previousCount = previousCount;
@@ -536,20 +553,29 @@ class KeyMetricsContainer extends Component {
       // daterange changed
       this.clearCache(tabsState);
 
-      /*
-       * if the changed daterange doesn't fit for the
-       * selected breakdown switch to daily
-       */
-      if (selectedBreakdown !== 'daily') {
-        if (
-          (selectedBreakdown === 'weekly' &&
-            startDate.isSame(endDate, 'week')) ||
-          (selectedBreakdown === 'monthly' &&
-            startDate.isSame(endDate, 'month'))
-        ) {
-          tabsState[selectedTab].selectedBreakdown = 'daily';
+      // check the daterange and correct the breakdown in each tab
+      // if needed
+      tabsOrder.forEach((tabName) => {
+
+        const tabState = tabsState[tabName],
+              selectedBreakdown = tabState.selectedBreakdown;
+
+        if (selectedBreakdown !== 'daily') {
+
+          const showWeekly = !startDate.isSame(endDate, 'week'),
+                showMonthly = !startDate.isSame(endDate, 'month');
+
+          if (selectedBreakdown === 'weekly'  && !showWeekly  ||
+              selectedBreakdown === 'monthly' && !showMonthly   ) {
+
+            /*
+             * if the changed daterange doesn't fit for the
+             * selected breakdown switch to daily
+             */
+            tabState.selectedBreakdown = 'daily';
+          }
         }
-      }
+      });
 
       this.setState({ tabsState }, () => {
         const fetchAllReq = this.fetchData(true);
@@ -594,6 +620,7 @@ class KeyMetricsContainer extends Component {
                   title={title}
                   isLoading={loading}
                   error={tabData.error}
+                  percent={tabData.percent}
                 />
               </Tab>
             );

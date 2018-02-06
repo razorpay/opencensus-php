@@ -6,8 +6,7 @@ import Fieldset from 'rzp/ui/Forms/Fieldset';
 import { required, validatePincodeLength } from 'rzp/utils/validators';
 import { states } from 'rzp/utils/constants';
 
-import ajax from 'merchant/utils/ajax';
-import store from 'merchant/store';
+import { getPincodeDetails } from 'merchant/modules/activation';
 
 function verifyAccountNumber(value, allValues, props) {
   return value !== allValues.bank_account_number
@@ -35,32 +34,11 @@ export default class BankDetailsForm extends Component {
   //Fetch state/city details based on pincode.
   fetchPincodeDetails = e => {
     const pincode = e.target.value;
-    const mode = store.getState().session.mode;
 
-    if (pincode.length === 6) {
-      ajax({
-        url: `/merchant/api/${mode}/pincodes/${pincode}`,
-        method: 'get',
-        appendModeInURL: false,
-      }).then(response => {
-        if (response.data) {
-          this.updateStateCityFormField(
-            response.data.city,
-            response.data.state_code
-          );
-        } else {
-          //- Empty the state/city fields
-          this.updateStateCityFormField();
-        }
-      });
-    } else {
-      this.updateStateCityFormField();
-    }
-  };
-
-  updateStateCityFormField = (city = null, state = null) => {
-    this.props.change('bank_beneficiary_city', city);
-    this.props.change('bank_beneficiary_state', state);
+    getPincodeDetails(e.target.value, (city = null, state = null) => {
+      this.props.change('bank_beneficiary_city', city);
+      this.props.change('bank_beneficiary_state', state);
+    });
   };
 
   render() {

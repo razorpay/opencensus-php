@@ -95,6 +95,7 @@ function getValue(result, mode, attributes) {
     // remove _id from tail
     let entityName = key.slice(0, -3);
     let id = prefixEntityValue(entityName, value);
+    if (entityName === 'file') {entityName = 'file_store'}
     value = (
       <a class="link" href={`/admin/entity/${entityName}/${mode}/${id}`}>
         {id}
