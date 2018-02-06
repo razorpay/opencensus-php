@@ -66,6 +66,8 @@ class Authenticate
 
         $bearerToken = $this->getBearerTokenFromHeaders($request);
 
+        $isBearerAuth = false;
+
         //
         // If the request was sent with Bearer auth (OAuth),
         // authenticate with the access token, else go for the
@@ -74,6 +76,8 @@ class Authenticate
         if (empty($bearerToken) === false)
         {
             $ret = $this->authenticateBearerAuth($route, $bearerToken);
+
+            $isBearerAuth = true;
         }
         else
         {
@@ -81,7 +85,7 @@ class Authenticate
         }
 
         // Post process after auth completes
-        $ret = $this->postAuthenticationProcessing($ret);
+        $ret = $this->postAuthenticationProcessing($ret, $isBearerAuth);
 
         if ($ret !== null)
         {
@@ -197,18 +201,19 @@ class Authenticate
      * Post process after auth completes
      * Function returns non-null value for failure flow
      *
-     * @param $authReturn
+     * @param      $authReturn
+     * @param bool $isBearerAuth
      *
-     * @return mixed
+     * @return null
      */
-    protected function postAuthenticationProcessing($authReturn)
+    protected function postAuthenticationProcessing($authReturn, bool $isBearerAuth)
     {
         if ($authReturn !== null)
         {
             return $authReturn;
         }
 
-        $featureCheck = $this->ba->feature();
+        $featureCheck = $this->ba->verifyFeatureAccess($authReturn, $isBearerAuth);
 
         if ($featureCheck !== null)
         {

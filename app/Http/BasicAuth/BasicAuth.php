@@ -11,6 +11,7 @@ use RZP\Http\Route;
 use RZP\Models\Key;
 use RZP\Models\Device;
 use RZP\Constants\Mode;
+use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
@@ -639,11 +640,6 @@ class BasicAuth
         $this->fetchMerchantOfKey($this->key);
     }
 
-    public function feature()
-    {
-        return $this->verifyFeatureAccess();
-    }
-
 // --------------------- Basic Auths Ends --------------------------------------
 
 // --------------------- Verifiers ---------------------------------------------
@@ -651,8 +647,13 @@ class BasicAuth
     /**
      * Checks if the accessed route is a feature route, if yes
      * checks if the merchant has access to the feature
+     *
+     * @param array $authReturn
+     * @param bool  $isBearerAuth
+     *
+     * @return null
      */
-    public function verifyFeatureAccess()
+    public function verifyFeatureAccess(array $authReturn, bool $isBearerAuth)
     {
         $currentRoute = $this->route->getCurrentRouteName();
 
@@ -662,9 +663,9 @@ class BasicAuth
         //
         // TODO: Fix this! BA calls Route and Route calls BA. Not a good design.
         //
-        $features = Route::getFeaturesForRoute($currentRoute);
+        $routeFeatures = Route::getFeaturesForRoute($currentRoute);
 
-        if (empty($features) === true)
+        if (empty($routeFeatures) === true)
         {
             return null;
         }
@@ -675,14 +676,83 @@ class BasicAuth
         //
         $merchantFeatures = $this->merchant->getEnabledFeatures();
 
-        $commonFeatures = array_intersect($merchantFeatures, $features);
+        $routeFeaturesAvailableWithMerc = array_intersect($routeFeatures, $merchantFeatures);
 
-        if (empty($commonFeatures) === false)
+        $allowAccess = $this->allowFeatureRouteAccess(
+                        $routeFeatures,
+                        $routeFeaturesAvailableWithMerc,
+                        $authReturn,
+                        $isBearerAuth);
+
+        if ($allowAccess === true)
         {
             return null;
         }
 
         return ApiResponse::routeNotFound();
+    }
+
+    protected function allowFeatureRouteAccess(
+        array $routeFeatures,
+        array $routeFeaturesAvailableWithMerc,
+        array $authReturn,
+        bool $isBearerAuth): bool
+    {
+        // OAuth application is accessing with the merchant's token
+        if ($isBearerAuth === true)
+        {
+            //
+            // 1. If the application has any of the route features required,
+            //    allow the application to access the resource directly.
+            //
+
+            $applicationId = $authReturn['application']['id'];
+
+            $application = Feature\Constants::APPLICATION;
+
+            //
+            // Fetch all the features of the application
+            // that is trying to access the resource
+            //
+            $applicationFeatures = $this->repo->feature->findByEntityTypeAndEntityId($application, $applicationId);
+
+            $routeFeaturesAvailableWithApp = array_intersect($routeFeatures, $applicationFeatures);
+
+            if (empty($routeFeaturesAvailableWithApp) === false)
+            {
+                return true;
+            }
+
+            //
+            // 2. If the application does not have any of the required route features,
+            //    check the merchant features and allow the application to access the
+            //    resource if the feature required is not a blacklisted feature.
+            //
+
+            $oauthBlacklistedFeatures = Feature\Entity::$oauthBlacklistedFeatures;
+
+            $routeFeaturesAvailableWithMercWhitelisted = array_diff(
+                                                            $routeFeaturesAvailableWithMerc,
+                                                            $oauthBlacklistedFeatures);
+
+            if (empty($routeFeaturesAvailableWithMercWhitelisted) === false)
+            {
+                return true;
+            }
+        }
+        else
+        {
+            //
+            // If the merchant is directly accessing the resource, allow if the
+            // merchant has any of the route features required to access the resource.
+            //
+            if (empty($routeFeaturesAvailableWithMerc) === false)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     protected function verifyAccountId(string & $accountId)
