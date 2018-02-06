@@ -2883,3 +2883,8 @@ ALTER TABLE webhooks
 
 ALTER TABLE qr_code
     ADD COLUMN short_url varchar(255) NOT NULL after qr_string;
+
+ALTER TABLE hitachi
+    ADD INDEX `hitachi_prequestid_index`(`pRequestId`),
+    ADD INDEX `hitachi_prrn_index`(`pRRN`),
+    ADD INDEX `hitachi_action_index`(`action`);

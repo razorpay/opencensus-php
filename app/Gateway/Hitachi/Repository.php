@@ -10,6 +10,20 @@ class Repository extends Base\Repository
 {
     protected $entity = 'hitachi';
 
+    // These are admin allowed params to search on.
+    protected $appFetchParamRules = [
+        Entity::PAYMENT_ID => 'sometimes|string|max:18',
+        Entity::ACTION     => 'sometimes|alpha|max:10',
+        Entity::REFUND_ID  => 'sometimes|string|max:19',
+        Entity::REQUEST_ID => 'sometimes|string|max:14',
+        Entity::RRN        => 'sometimes|string|max:12',
+    ];
+
+    protected $signedIds = [
+        Entity::PAYMENT_ID,
+        Entity::REFUND_ID,
+    ];
+
     // TODO: Rename the function to a proper one
     // and fix the get auth code function for emi
     public function findCapturedPaymentByIdOrFail($paymentId)
