@@ -13,7 +13,7 @@ const gateWayOptions = [
   'Ebs',
   'PayZapp',
   'Mobikwik',
-  'Payumoney',
+  'PayuMoney',
   'Olamoney',
   'Kotak',
   'Paytm',
@@ -32,6 +32,10 @@ const gateWayOptions = [
   'Virtual Accounts Kotak',
 ];
 
+const optionValueMap = {
+  'Virtual Accounts Kotak': 'VirtualAccKotak',
+};
+
 UploadReconciliationFile.permission = 'add_reconciliation_file';
 UploadReconciliationFile.title = 'Upload Reconciliation File (Payment/Refund)';
 export default function UploadReconciliationFile() {
@@ -40,7 +44,10 @@ export default function UploadReconciliationFile() {
       <SelectMode />
       <SelectField label="Gateway" name="gateway">
         {gateWayOptions.map((opt, idx) => (
-          <option key={idx} value={opt.replace(/\s/g, '')}>
+          <option
+            key={idx}
+            value={optionValueMap[opt] || opt.replace(/\s/g, '')}
+          >
             {opt}
           </option>
         ))}

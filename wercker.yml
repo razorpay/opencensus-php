@@ -5,6 +5,9 @@ build:
       - redis
     steps:
       - script:
+          name: lint all php files
+          code: ./scripts/phplint.sh
+      - script:
           name: copy env file
           code: cp ./environment/.env.wercker ./environment/.env.testing
 
@@ -75,6 +78,15 @@ build:
           code: git rev-parse HEAD > public/commit.txt
 deploy:
     steps:
+      - script:
+          name: Check if branch is master
+          code: |
+            if [ "$APP_ENV" == "prod" ]; then
+              if [ "$WERCKER_GIT_BRANCH" != "master" ]; then
+                echo "[ERROR] Cannot deploy a non-master branch to prod"
+                exit 1
+              fi
+            fi
       - script:
           name: check vendor dir exists
           code: if [ ! -d vendor ] ; then exit 1 ; fi;

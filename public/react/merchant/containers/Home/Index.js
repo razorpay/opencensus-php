@@ -1,15 +1,18 @@
 import React, { Component } from 'react';
-import Header from 'rzp/ui/Header';
 import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
 import moment from 'moment';
-import * as HomeActions from 'merchant/modules/home';
+import { Redirect } from 'react-router-dom';
+
+import Header from 'rzp/ui/Header';
 import {
   fetchPayments,
   fetchRefunds,
   fetchSettlements,
 } from 'rzp/modules/collection';
 import DateRangePickerField from 'rzp/ui/Forms/DateRangePickerField';
+
+import * as HomeActions from 'merchant/modules/home';
 import InfoCardList from 'merchant/components/Home/InfoCardList';
 import RecentEntityTable from 'merchant/components/Home/EntityTable';
 import AnalyticsGraph from 'merchant/components/Home/AnalyticsGraph';
@@ -32,6 +35,20 @@ defaults.global.layout = {
     top: 5,
     right: 5,
   },
+};
+
+const analyticsGoTo = name => {
+  window.rzpAnalytics({
+    eventCategory: 'Dashboard - Home',
+    eventAction: `Go To - ${name}`
+  });
+};
+
+const analyticsOpenDetails = name => {
+  window.rzpAnalytics({
+    eventCategory: 'Dashboard - Home',
+    eventAction: `Open Details - ${name}`
+  });
 };
 
 // graph data
@@ -145,16 +162,22 @@ class HomeContainer extends Component {
 
           <div class="row RecentTxns">
             <RecentEntityTable
+              onSeeAll={() => analyticsGoTo('Payments')}
+              onOpenDetails={() => analyticsOpenDetails('Payments')}
               entity="payment"
               data={payments}
               loading={payments.loading}
             />
             <RecentEntityTable
+              onSeeAll={() => analyticsGoTo('Refunds')}
+              onOpenDetails={() => analyticsOpenDetails('Refunds')}
               entity="refund"
               data={refunds}
               loading={refunds.loading}
             />
             <RecentEntityTable
+              onSeeAll={() => analyticsGoTo('Settlements')}
+              onOpenDetails={() => analyticsOpenDetails('Settlements')}
               entity="settlement"
               data={settlements}
               loading={settlements.loading}
@@ -176,7 +199,11 @@ export default class HomeSwitcher extends Component {
   render () {
   
     return (
-      this.props.user.isNewAnalyticsEnabled ? <NewHome/> : <HomeContainer/>
+
+      // if the tag is enabled, force user to new dashboard
+      this.props.user.isNewAnalyticsEnabled
+        ? <Redirect to="/dashboard_v2"/>
+        : <HomeContainer/>
     );
   }
 }

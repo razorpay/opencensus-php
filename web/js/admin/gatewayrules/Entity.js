@@ -6,6 +6,8 @@ import Field, {
   SelectMethod,
   TextAreaField,
 } from 'ui/Field';
+
+import AsyncButton from 'ui/AsyncButton';
 import { openModal, notifyError } from 'common/modal';
 import { observer } from 'mobx-react';
 import user from 'admin/user';
@@ -56,6 +58,9 @@ const fields = [
   item => ['Currency', item.currency],
   item => item.international && ['International', item.international],
   item => (item.iins.length && ['IINs', item.iins]) || null,
+  item =>
+    (item.type === 'filter' && ['Network Category', item.network_category]) ||
+    null,
   item => (item.min_amount && ['Min Amount', item.min_amount]) || null,
   item => (item.max_amount && ['Max Amount', item.max_amount]) || null,
   item => item.issuer && ['Issuer', item.issuer],
@@ -121,7 +126,7 @@ class GatewayRuleForm extends Component {
   render() {
     let { model } = this.props;
     return (
-      <Form class="entity-container" onSubmit={this.handleSubmit}>
+      <Form class="entity-container">
         {model.id && (
           <div class="field">
             <label>Rule Id</label>
@@ -274,6 +279,15 @@ class GatewayRuleForm extends Component {
           />
         )}
 
+        {(this.state.type === 'filter' || model.type === 'filter') && (
+          <Field
+            label="Network Category"
+            name="network_category"
+            defaultValue={model.network_category}
+            disabled={!!model.id}
+          />
+        )}
+
         <SelectField
           name="shared_terminal"
           label="Shared Terminal"
@@ -290,7 +304,12 @@ class GatewayRuleForm extends Component {
           name="comment"
           style={{ width: '275px' }}
         />
-        <button>Save</button>
+        <AsyncButton
+          text="OK"
+          class="btn"
+          pendingClass="btn spinner"
+          onSubmit={this.handleSubmit}
+        />
       </Form>
     );
   }

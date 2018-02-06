@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
 
 import {
   fetchPayments,
@@ -11,13 +12,15 @@ import { titleCase } from 'rzp/utils/rzp-utils';
 import GenericPanel, {
   PanelBody,
   PanelTopbar,
+  PanelFooter,
 } from 'merchant/components/Home/GenericPanel';
 import { tabs, tabsMeta } from './data';
 import PaymentsList from 'merchant/components/Payments/PaymentsList';
 
+import { trackTabClick, trackEntityClick, trackGoToLinks } from './ga';
 import './styles.styl';
 
-const Row = ({ record, tabName }) => {
+const Row = ({ record, tabName, tabTitle, sectionTitle }) => {
   const tabMeta = tabsMeta[tabName];
 
   return (
@@ -29,6 +32,17 @@ const Row = ({ record, tabName }) => {
           typeof columnMeta.transfomer === 'function'
             ? columnMeta.transfomer(value, record, tabName)
             : value;
+
+        if (columnMeta.recordKey === 'id') {
+          value = (
+            <value.type
+              {...value.props}
+              onClick={() => trackEntityClick(tabTitle, sectionTitle)}
+            >
+              {value.props.children}
+            </value.type>
+          );
+        }
 
         return <td key={index}>{value}</td>;
       })}
@@ -67,6 +81,7 @@ export default class RecentActivity extends Component {
     const tabName = e.target.getAttribute('name');
 
     this.setState({ selectedTab: tabName });
+    trackTabClick(titleCase(tabName), this.props.sectionTitle);
   }
 
   fetchData(params) {
@@ -76,13 +91,14 @@ export default class RecentActivity extends Component {
   }
 
   componentWillMount() {
-    this.fetchData({ count: 10 });
+    this.fetchData({ count: 5 });
   }
 
   render() {
     const { selectedTab } = this.state,
       selectedTabData = this.props[selectedTab],
-      numColumns = tabsMeta[selectedTab].numColumns;
+      numColumns = tabsMeta[selectedTab].numColumns,
+      selectedTabTitle = titleCase(selectedTab);
 
     let body = null;
 
@@ -98,7 +114,15 @@ export default class RecentActivity extends Component {
       );
     } else {
       body = selectedTabData.items.map((record, index) => {
-        return <Row key={index} record={record} tabName={selectedTab} />;
+        return (
+          <Row
+            key={index}
+            record={record}
+            tabName={selectedTab}
+            tabTitle={selectedTabTitle}
+            sectionTitle={this.props.sectionTitle}
+          />
+        );
       });
     }
 
@@ -133,6 +157,20 @@ export default class RecentActivity extends Component {
             <tbody>{body}</tbody>
           </table>
         </PanelBody>
+        <PanelFooter>
+          <div className="clearfix">
+            <div className="pull-right">
+              <Link
+                target="_blank"
+                to={`/${selectedTab}`}
+                onClick={() =>
+                  trackGoToLinks(selectedTabTitle, this.props.sectionTitle)}
+              >
+                View all {selectedTabTitle}
+              </Link>
+            </div>
+          </div>
+        </PanelFooter>
       </GenericPanel>
     );
   }

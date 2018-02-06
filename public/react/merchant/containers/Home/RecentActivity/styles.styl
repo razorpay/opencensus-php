@@ -63,15 +63,31 @@ $gutter = 21px;
   .panel-body {
 
     padding-top: 0;
-    overflow: auto;
+    overflow: hidden;
 
     table {
 
       margin-bottom: 0;
+      border-bottom: 0;
+
+      tr:nth-of-type(even) {
+
+        background-color: #f9f9f9;
+      }
+
+      tr:nth-of-type(odd) { 
+
+        background-color: transparent;
+      }
 
       td {
 
-        padding: 17px 8px;
+        padding: 12px 8px;
+
+        > * {
+
+          line-height: 13px;
+        }
 
         &:first-child {
 

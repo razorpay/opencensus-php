@@ -189,7 +189,53 @@ export class ReportsContainer extends Component {
     }
   }
 
+  analytics = values => {
+    let {
+      entity,
+      type,
+      date
+    } = values;
+
+    const eOpts = this.entityOptions;
+
+    let eOpt;
+    for (let i = 0; i < eOpts.length; i++) {
+      if (eOpts[i].value === entity) {
+        eOpt = eOpts[i];
+        break;
+      }
+    }
+
+    if (!eOpt) {
+      return;
+    }
+
+    let label = eOpt.label;
+
+    if (entity !== 'transaction' && entity !== 'invoice') {
+      label = label + ' Report'
+    }
+    let analyticsLabel = '';
+    if (entity !== 'invoice') {
+      label = titleCase(type) + ' ' + label;
+      if (type === 'daily') {
+        analyticsLabel = `date=${date.get('date')}-${date.get('month') + 1}-${date.get('year')}`
+      } else if (type === 'monthly') {
+        analyticsLabel = `month=${date.get('month') + 1}`
+      }
+    } else {
+      analyticsLabel = `month=${date.get('month') + 1}-${date.get('year')}`;
+    }
+
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Reports',
+      eventAction: label,
+      eventLabel: analyticsLabel
+    });
+  }
+
   prepareGenerateReport = values => {
+    this.analytics(values);
     let { entity, type, date, invoiceDate } = values;
     const account_id =
       this.props.user.isMarketplaceEnabled &&
@@ -235,6 +281,7 @@ export class ReportsContainer extends Component {
       };
     }
 
+    ajaxParams.timeout = 4500*60;
     return this.props
       .generateReport(ajaxParams)
       .then(data => {
@@ -256,7 +303,7 @@ export class ReportsContainer extends Component {
       .catch(e => {
         this.props.showNotification({
           type: 'error',
-          message: 'No data found for given time range',
+          message: (e.errors === '' || (e.errors instanceof Array && e.errors[0] === '')) ? 'File size is too large. Please contact support.' : 'No data found for given time range',
         });
       });
   };

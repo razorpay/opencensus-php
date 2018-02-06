@@ -2,6 +2,21 @@
 $background-color = #FAFBFC;
 $actionItemsHeight = 40px;
 
+traffic-responsive() {
+
+  width: 100%;
+
+  &.traffic-container {
+
+    padding-right: 0;
+  }
+
+  &.activity-container {
+
+    padding-left: 0;
+  }
+}
+
 .dashboard-home {
 
   > .rzp-sticky > .sticky-content {
@@ -119,16 +134,38 @@ $actionItemsHeight = 40px;
         margin-bottom: 0;
       }
     }
+
+    @media (max-width: 1024px) {
+
+      > div {
+
+        traffic-responsive();
+      }
+    }
+
+    &.traffic-hidden {
+
+      > div {
+
+        traffic-responsive();
+      }
+    }
   }
 
   .home-credits-section {
 
     margin-top: 24px;
+    color: #8991ae;
 
-    .panel .panel-body {
+    .panel {
 
-      height: auto;
-      padding: 0;
+      padding: 8px;
+
+      .panel-body {
+
+        height: auto;
+        padding: 0;
+      }
     }
   }
 }

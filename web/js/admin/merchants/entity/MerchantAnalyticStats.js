@@ -133,42 +133,42 @@ export default class MerchantAnalyticStats extends Component {
         total_payments: {
           agg_type: 'count',
           details: {
-            index: 'payment',
+            index: 'payments',
             column: 'base_amount',
           },
         },
         total_settlements: {
           agg_type: 'count',
           details: {
-            index: 'settlement',
+            index: 'settlements',
             column: 'base_amount',
           },
         },
         total_refunds: {
           agg_type: 'count',
           details: {
-            index: 'refund',
+            index: 'refunds',
             column: 'base_amount',
           },
         },
         payments_volume: {
           agg_type: 'sum',
           details: {
-            index: 'payment',
+            index: 'payments',
             column: 'base_amount',
           },
         },
         recent_balance: {
           agg_type: 'recent',
           details: {
-            index: 'balance',
+            index: 'balances',
             column: 'base_amount',
           },
         },
         recent_payments: {
           agg_type: 'recent',
           details: {
-            index: 'payment',
+            index: 'payments',
             column: 'base_amount',
             result_fields: ['id', 'status', 'created_at'],
           },
@@ -176,7 +176,7 @@ export default class MerchantAnalyticStats extends Component {
         recent_refunds: {
           agg_type: 'recent',
           details: {
-            index: 'refund',
+            index: 'refunds',
             column: 'base_amount',
             result_fields: ['id', 'status', 'created_at'],
           },
@@ -184,7 +184,7 @@ export default class MerchantAnalyticStats extends Component {
         recent_settlements: {
           agg_type: 'recent',
           details: {
-            index: 'settlement',
+            index: 'settlements',
             column: 'base_amount',
             result_fields: ['id', 'status', 'created_at'],
           },
@@ -192,7 +192,7 @@ export default class MerchantAnalyticStats extends Component {
         recent_transactions: {
           agg_type: 'recent',
           details: {
-            index: 'transaction',
+            index: 'transactions',
             result_fields: ['created_at'],
           },
         },
@@ -207,7 +207,7 @@ export default class MerchantAnalyticStats extends Component {
         transaction_histogram: {
           agg_type: 'sum',
           details: {
-            index: 'transaction',
+            index: 'transactions',
             column: 'base_amount',
             group_by: ['histogram_daily'],
           },
@@ -216,7 +216,7 @@ export default class MerchantAnalyticStats extends Component {
           agg_type: 'count',
           filter_key: 'filter_success_trans',
           details: {
-            index: 'transaction',
+            index: 'transactions',
             column: 'base_amount',
             group_by: ['histogram_weekly'],
           },

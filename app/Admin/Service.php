@@ -361,9 +361,20 @@ class Service extends Base\Service
 
             $this->logMerchantEdits($id, $input);
 
-            if (isset($input['transaction_report_email']))
+            if ((isset($input['transaction_report_email']) === true) or (isset($input['website']) === true))
             {
-                $params = ['transaction_report_email' => $csvEmail];
+                $params = [];
+
+                if ((isset($input['transaction_report_email']) === true))
+                {
+                    $params['transaction_report_email'] = $csvEmail;
+                }
+
+                if ((isset($input['website']) === true))
+                {
+                    $params['business_website'] = $input['website'];
+                }
+
                 // Only when it is changed on API side we update on the dashboard side as well
                 list($error, $details) = (new MerchantDetails\Service)->updateMerchantByAdminOnAPI($params, $id);
             }

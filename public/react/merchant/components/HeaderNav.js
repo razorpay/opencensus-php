@@ -4,6 +4,13 @@ import { PowerSelect } from 'react-power-select';
 import ShowWhen from 'merchant/components/ShowWhen';
 import ProfileDropdown from 'merchant/containers/Header/ProfileDropdown';
 
+const analytics = (action) => {
+  window.rzpAnalytics({
+    eventCategory: 'Dashboard - Header',
+    eventAction: action
+  });
+};
+
 const ModesDropdown = ({ mode, modeFormatted, onSwitchMode }) => {
   return (
     <Dropdown>
@@ -107,12 +114,12 @@ export default ({
                 </li>
               : null}
             <li>
-              <a target="_blank" href="https://docs.razorpay.com">
+              <a target="_blank" href="https://docs.razorpay.com" onClick={() => analytics('Go To - Documentation')}>
                 <span>Documentation</span>
               </a>
             </li>
             <li id="profile-dropdown">
-              <ProfileDropdown />
+              <ProfileDropdown analytics={analytics} />
             </li>
           </ul>
         </div>

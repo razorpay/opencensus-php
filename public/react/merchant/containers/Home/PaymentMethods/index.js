@@ -1,4 +1,4 @@
-import moment from "moment";
+import moment from 'moment';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
@@ -9,7 +9,7 @@ import { showNotification } from 'rzp/modules/notifications';
 
 import Treemap from 'merchant/containers/Home/PaymentMethods/Treemap';
 import LastUpdated from 'merchant/components/Home/LastUpdated';
-import MoreOptionsButton from 'merchant/components/Home/MoreOptionsButton';
+import MoreOptionsButton from 'merchant/containers/Home/MoreOptionsButton';
 import { fetch } from 'merchant/modules/pokedex';
 import GenericPanel, {
   PanelTopbar,
@@ -17,7 +17,9 @@ import GenericPanel, {
   PanelFooter,
 } from 'merchant/components/Home/GenericPanel';
 import { API_ERROR, API_INVALID_RESP } from 'merchant/components/Home/data';
+import { trackGoToLinks } from 'merchant/containers/Home/ga';
 
+import { trackBreadcrumbClick } from './ga';
 import { getQuery, sampleData } from './data';
 import './styles.styl';
 
@@ -48,7 +50,7 @@ class PaymentMethods extends Component {
       csvData: null,
       isLoading: false,
       error: '',
-      hierarchy: {values: []}
+      hierarchy: { values: [] },
     };
 
     this.requestId = 0;
@@ -58,7 +60,6 @@ class PaymentMethods extends Component {
   }
 
   fetchData(startDate, endDate) {
-
     this.setState({
       isLoading: true,
       error: '',
@@ -125,15 +126,13 @@ class PaymentMethods extends Component {
   }
 
   onCSVData(csvUrl) {
-
-    const {startDate, endDate} = this.props;
+    const { startDate, endDate } = this.props;
 
     this.setState({
       csvData: {
-        name: `Payment Insights, ${
-              moment(startDate).format(csvDateFormat)} to ${
-              moment(endDate).format(csvDateFormat)
-              }(Razorpay).csv`,
+        name: `Payment Insights, ${moment(startDate).format(
+          csvDateFormat
+        )} to ${moment(endDate).format(csvDateFormat)}(Razorpay).csv`,
         url: csvUrl,
       },
     });
@@ -143,7 +142,7 @@ class PaymentMethods extends Component {
     this.setState({
       levels: getLevels(hierarchy),
       currentLevel: hierarchy,
-      hierarchy
+      hierarchy,
     });
   }
 
@@ -175,7 +174,7 @@ class PaymentMethods extends Component {
 
   render() {
     const { levels, csvData, isLoading, data, error } = this.state,
-      { startDate, endDate } = this.props,
+      { startDate, endDate, sectionTitle } = this.props,
       levelsLength = levels.length,
       hasNoData = !data || data.length === 0;
 
@@ -194,9 +193,13 @@ class PaymentMethods extends Component {
                 {levels.map((level, index) => (
                   <BreadcrumbItem
                     key={index}
-                    onClick={() =>
-                      index + 1 !== levelsLength &&
-                      this.onLevelChange(level.data)}
+                    onClick={() => {
+
+                      trackBreadcrumbClick(level.data);
+
+                      return index + 1 !== levelsLength &&
+                             this.onLevelChange(level.data)}
+                    }
                   >
                     {level.name}
                   </BreadcrumbItem>
@@ -206,7 +209,10 @@ class PaymentMethods extends Component {
           </div>
           <div className="panel-actions pull-right">
             <div className="panel-action-item">
-              <MoreOptionsButton csvData={csvData} />
+              <MoreOptionsButton
+                csvData={csvData}
+                sectionTitle={sectionTitle}
+              />
             </div>
           </div>
         </PanelTopbar>
@@ -226,6 +232,7 @@ class PaymentMethods extends Component {
             <Link
               target="_blank"
               to={`/payments?from=${startDate.unix()}&to=${endDate.unix()}`}
+              onClick={() => trackGoToLinks('Payments', sectionTitle)}
             >
               View all Payments
             </Link>

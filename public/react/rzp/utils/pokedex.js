@@ -4,12 +4,12 @@ export const BROWSER = 'Browser';
 export const DESKTOP = 'Desktop';
 export const MOBILE = 'Mobile';
 export const ANDROID = 'Android';
-export const IOS = 'IOS';
+export const IOS = 'iOS';
 
 export const globalGroupTitleMap = {
   upi: 'UPI',
   emi: 'EMI',
-  ios: 'IOS',
+  ios: IOS,
 };
 
 const platformsMap = {
@@ -27,6 +27,8 @@ const osMap = {
   '4': ANDROID,
   '5': IOS,
 };
+
+export const platformGroupingVals = ['platform', 'os', 'device'];
 
 export const getPlatformName = value => {
   return platformsMap[value] || OTHERS;
@@ -129,21 +131,19 @@ export const oldestTransactionQuery = {
 };
 
 export const getDefaultFilter = (startTime, endTime) => {
-
   return {
     created_at: {
       gte: startTime,
-      lte: endTime
-    }
+      lte: endTime,
+    },
   };
 };
 
 export const getDefaultPaymentFilter = (startTime, endTime) => {
-
   return {
     ...getDefaultFilter(startTime, endTime),
     authorized_at: {
-      gt: 0
-    }
+      gt: 0,
+    },
   };
 };

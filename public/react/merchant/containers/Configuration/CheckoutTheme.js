@@ -31,9 +31,19 @@ export default class CheckoutTheme extends Component {
       });
   };
 
-  render() {
-    let { handleSubmit } = this.props;
+  onSave = e => {
+    this.analytics();
+    this.props.handleSubmit(this.props.onSave)(e);
+  }
 
+  analytics = () => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Settings',
+      eventAction: 'Change - Checkout Theme'
+    });
+  }
+
+  render() {
     return (
       <div class="panel panel-default">
         <div class="panel-heading">Checkout Theme</div>
@@ -110,7 +120,7 @@ export default class CheckoutTheme extends Component {
                 class="btn btn-default pull-right"
                 text="Save Changes"
                 pendingText="Saving..."
-                onClick={handleSubmit(this.props.onSave)}
+                onClick={this.onSave}
               />
             </div>
           </form>
