@@ -49,6 +49,7 @@ class Entity
     const EMI_PLAN              = 'emi_plan';
     const CUSTOMER              = 'customer';
     const MERCHANT              = 'merchant';
+    const ACCOUNT               = 'account';
     const REVERSAL              = 'reversal';
     const SCHEDULE              = 'schedule';
     const TERMINAL              = 'terminal';
@@ -68,6 +69,7 @@ class Entity
     const GATEWAY_FILE          = 'gateway_file';
     const BANK_ACCOUNT          = 'bank_account';
     const FILE_HANDLER          = 'file_handler';
+    const DISPUTE_FILE          = 'dispute_file';
     const SUBSCRIPTION          = 'subscription';
     const GATEWAY_TOKEN         = 'gateway_token';
     const BANK_TRANSFER         = 'bank_transfer';
@@ -195,6 +197,7 @@ class Entity
         self::CUSTOMER              => \RZP\Models\Customer::class,
         self::EMI_PLAN              => \RZP\Models\Emi::class,
         self::MERCHANT              => \RZP\Models\Merchant::class,
+        self::ACCOUNT               => \RZP\Models\Merchant\Account::class,
         self::SCHEDULE              => \RZP\Models\Schedule::class,
         self::APP_TOKEN             => \RZP\Models\Customer\AppToken::class,
         self::INVITATION            => \RZP\Models\Invitation::class,
@@ -202,6 +205,7 @@ class Entity
         self::FEE_BREAKUP           => \RZP\Models\Transaction\FeeBreakup::class,
         self::BANK_ACCOUNT          => \RZP\Models\BankAccount::class,
         self::SUBSCRIPTION          => \RZP\Models\Plan\Subscription::class,
+        self::DISPUTE_FILE          => \RZP\Models\Dispute\File::class,
         self::GATEWAY_TOKEN         => \RZP\Models\Customer\GatewayToken::class,
         self::SCHEDULE_TASK         => \RZP\Models\Schedule\Task::class,
         self::DISPUTE_REASON        => \RZP\Models\Dispute\Reason::class,

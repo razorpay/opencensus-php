@@ -4,10 +4,11 @@ namespace RZP\Gateway\Netbanking\Axis\Mock;
 
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
+use RZP\Models\Customer\Token;
 use RZP\Gateway\Netbanking\Axis\Emandate\Constants;
+use RZP\Gateway\Netbanking\Axis\Emandate\StatusCode;
 use RZP\Gateway\Netbanking\Axis\Emandate\RequestFields;
 use RZP\Gateway\Netbanking\Axis\Emandate\ResponseFields;
-use RZP\Gateway\Netbanking\Axis\Emandate\StatusCode;
 use RZP\Models\Currency\Currency;
 
 use Carbon\Carbon;
@@ -16,8 +17,6 @@ trait EmandateTrait
 {
     protected function handleEmandateAuthFlow(array $input)
     {
-        $secondPayment = false;
-
         $this->validateActionInput($input, 'emandaterequest');
 
         $data = $this->getGatewayInstance()->getEmandateDecryptedData($input[RequestFields::DATA]);
@@ -90,7 +89,8 @@ trait EmandateTrait
             ResponseFields::CUSTOMER_REF_NO => $input[RequestFields::CUSTOMER_REF_NO],
             ResponseFields::BANK_REF_NO     => 9999999999,
             ResponseFields::CURRENCY        => Currency::INR,
-            ResponseFields::AMOUNT          => $gatewayEntity['amount'],
+            // Amount needs to be set according to whether it's initial recurring payment or auto
+            ResponseFields::AMOUNT          => (string) Token\Entity::DEFAULT_MAX_AMOUNT / 100,
             ResponseFields::STATUS_CODE     => StatusCode::SUCCESS,
             ResponseFields::REMARKS         => 'Success',
             ResponseFields::TRANS_REF_NO    => 101714472,
@@ -98,6 +98,11 @@ trait EmandateTrait
             ResponseFields::PAYMENT_MODE    => Constants::PMD,
             ResponseFields::CHECKSUM        => $input[RequestFields::CHECKSUM]
         ];
+
+        if ($gatewayEntity['amount'] === '0')
+        {
+            $data[ResponseFields::AMOUNT] = '';
+        }
 
         $this->content($data, 'verify_emandate');
 

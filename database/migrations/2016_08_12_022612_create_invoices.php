@@ -168,6 +168,7 @@ class CreateInvoices extends Migration
             $table->index(Entity::CUSTOMER_EMAIL);
             $table->index(Entity::TYPE);
             $table->index(Entity::SOURCE);
+            $table->index([Entity::MERCHANT_ID, Entity::CREATED_AT]);
 
             $table->unique([Entity::MERCHANT_ID, Entity::RECEIPT]);
 

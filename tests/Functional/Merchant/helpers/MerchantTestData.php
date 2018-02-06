@@ -8,7 +8,7 @@ return [
     'testCreateKey' => [
         'request' => [
             'method' => 'POST',
-            'url' => '/merchants/1X4hRFHFx4UiXt/keys',
+            'url' => '/keys',
             'content' => [
             ]
         ],
@@ -23,7 +23,7 @@ return [
     'testCreateKeyForNonActivatedMerchant' => [
         'request' => [
             'method' => 'POST',
-            'url' => '/merchants/1X4hRFHFx4UiXt/keys',
+            'url' => '/keys',
             'content' => [
             ]
         ],
@@ -113,7 +113,7 @@ return [
         'request' => [
             'content' => [
             ],
-            'url' => '/merchants/10000000000000/keys',
+            'url' => '/keys',
             'method' => 'get'
         ],
         'response' => [
@@ -133,7 +133,7 @@ return [
         'request' => [
             'content' => [
             ],
-            'url' => '/merchants/10000000000000/keys/rzp_test_TheTestAuthKey',
+            'url' => '/keys/rzp_test_TheTestAuthKey',
             'method' => 'PUT',
         ],
         'response' => [
@@ -151,7 +151,7 @@ return [
             'content' => [
                 'delay_roll' => '1'
             ],
-            'url' => '/merchants/10000000000000/keys/rzp_test_TheTestAuthKey',
+            'url' => '/keys/rzp_test_TheTestAuthKey',
             'method' => 'PUT',
         ],
         'response' => [
@@ -168,7 +168,7 @@ return [
         'request' => [
             'content' => [
             ],
-            'url' => '/merchants/10000000000000/keys/rzp_test_TheTestAuthKey',
+            'url' => '/keys/rzp_test_TheTestAuthKey',
             'method' => 'PUT',
         ],
         'response' => [
@@ -190,7 +190,7 @@ return [
         'request' => [
             'content' => [
             ],
-            'url' => '/merchants/10000000000000/keys/rzp_test_1DP5mmOlF5G5ag',
+            'url' => '/keys/rzp_test_1DP5mmOlF5G5ag',
             'method' => 'PUT',
         ],
         'response' => [
@@ -1012,6 +1012,30 @@ return [
         ],
     ],
 
+    'testGetCheckoutPreferencesForMagicEnabledMerchant' => [
+        'request'  => [
+            'url'    => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'magic' => true,
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesForMagicDisabledMerchant' => [
+        'request'  => [
+            'url'    => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'magic' => false,
+            ],
+        ],
+    ],
+
     'testGetCheckoutPreferencesWithNonOrderRelatedOffer' => [
         'request' => [
             'url'    => '/preferences',
@@ -1250,7 +1274,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 30,
+                'count' => 29,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -1445,13 +1469,6 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'BARB_R',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
                             'issuer' => 'PUNB_C',
                         ],
                     ],
@@ -1475,7 +1492,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 31,
+                'count' => 30,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -1671,13 +1688,6 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'BARB_C',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'BARB_R',
                         ],
                     ],
                     [
@@ -1914,7 +1924,6 @@ return [
                                 'TMBL',
                                 'TNSC',
                                 'BARB_C',
-                                'BARB_R',
                                 'PUNB_C',
                                 'LAVB_C'
                             ],

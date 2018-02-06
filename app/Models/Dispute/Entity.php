@@ -43,7 +43,10 @@ class Entity extends Base\PublicEntity
      *  Field for edit input, when accepted chargeback amount
      *  is lesser than disputed amount.
      */
-    const ACCEPTED_AMOUNT = 'accepted_amount';
+    const ACCEPTED_AMOUNT         = 'accepted_amount';
+
+    // Key for accepting dispute by merchant
+    const ACCEPT_DISPUTE          = 'accept_dispute';
 
     protected static $sign = 'disp';
 
@@ -100,6 +103,7 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
+        self::ENTITY,
         self::MERCHANT_ID,
         self::PAYMENT_ID,
         self::PARENT_ID,
@@ -114,6 +118,12 @@ class Entity extends Base\PublicEntity
         self::PHASE,
         self::COMMENTS,
         self::CREATED_AT,
+    ];
+
+    protected $publicSetters = [
+        self::ID,
+        self::ENTITY,
+        self::PAYMENT_ID,
     ];
 
     protected $casts = [
@@ -183,6 +193,12 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::EXPIRES_ON, $time);
     }
 
+    public function setPublicPaymentIdAttribute(array & $attributes)
+    {
+        $attributes[self::PAYMENT_ID] =
+            Payment\Entity::getSignedId($this->getAttribute(self::PAYMENT_ID));
+    }
+
     // ----------------------- Setters Ends-------------------------------------
 
     // ----------------------- Getters -----------------------------------------
@@ -190,6 +206,11 @@ class Entity extends Base\PublicEntity
     public function getParentId()
     {
         return $this->getAttribute(self::PARENT_ID);
+    }
+
+    public function getPaymentId()
+    {
+        return $this->getAttribute(self::PAYMENT_ID);
     }
 
     public function getAmount()

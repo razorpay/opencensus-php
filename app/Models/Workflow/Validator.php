@@ -26,12 +26,16 @@ class Validator extends Base\Validator
     ];
 
     public function validatePermissionHasOneWorkflow(
-        string $orgId, array $perms)
+        string $orgId, array $perms, string $excludeWorkflow = null)
     {
         $workflowIds = (new Repository)->getWorkflowIdsForPermissionsAndOrgId(
             $orgId, $perms);
 
-        if (empty($workflowIds->toArray()) === false)
+        $workflowIds = $workflowIds->toArray();
+
+        $workflowIds = array_diff($workflowIds, [$excludeWorkflow]);
+
+        if (empty($workflowIds) === false)
         {
             $data = [
                 'workflow_ids'   => $workflowIds,
@@ -49,7 +53,8 @@ class Validator extends Base\Validator
     {
         $permsWithWorkflowEnabled = (new Permission\Repository)->getPermissionsWithWorkflowEnabled($orgId);
 
-        $permIds = array_map(function($permission){
+        $permIds = array_map(function($permission)
+        {
             return $permission['id'];
         }, $permsWithWorkflowEnabled->toArray());
 
@@ -60,26 +65,6 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_PERMISSION_DISABLED_FOR_WORKFLOW,
                         null, $diffPerms);
-        }
-    }
-
-    public function validateCheckersExistForWorkflow()
-    {
-        $workflow = $this->entity;
-
-        $stepIds = $workflow->steps()->pluck(Step\Entity::ID)->toArray();
-
-        $checkers = (new Checker\Repository)->findManyByStepIds($stepIds);
-
-        $checkers = array_map(function ($checker){
-            return $checker['id'];
-        }, $checkers->toArray());
-
-        if (empty($checkers) === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_WORKFLOW_STEPS_CANNOT_BE_EDITED,
-                'checkers', $checkers);
         }
     }
 }

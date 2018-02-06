@@ -3,12 +3,13 @@
 namespace RZP\Gateway\Sharp;
 
 use Crypt;
-use RZP\Constants\Mode;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Models\Payment;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\Models\Customer\Token;
 
 class Gateway extends Base\Gateway
 {
@@ -22,16 +23,50 @@ class Gateway extends Base\Gateway
 
         if ($this->isSecondRecurringPaymentRequest($input))
         {
+            if (($input['payment']['method'] === 'card') and
+                ($input['card']['iin'] === '400666') and
+                ($input['card']['last4'] === '0007'))
+            {
+
+                //Soft Decline for recurring payments
+                if ($input['payment']['amount'] === 4444)
+                {
+                    throw new Exception\GatewayErrorException(
+                        ErrorCode::BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE);
+                }
+
+                //Hard Decline for recurring payments
+                if ($input['payment']['amount'] === 5555)
+                {
+                    throw new Exception\GatewayErrorException(
+                        ErrorCode::BAD_REQUEST_CARD_STOLEN_OR_LOST );
+                }
+            }
+
             return;
         }
 
-        $content = array(
-            'action'        => 'authorize',
-            'amount'        => $input['payment']['amount'],
-            'method'        => $input['payment']['method'],
-            'payment_id'    => $input['payment']['id'],
-            'callback_url'  => $input['callbackUrl'],
-        );
+        $content = [
+            'action'            => 'authorize',
+            'amount'            => $input['payment']['amount'],
+            'method'            => $input['payment']['method'],
+            'payment_id'        => $input['payment']['id'],
+            'callback_url'      => $input['callbackUrl'],
+            // This need to be 0 because if it's `false`, frontend converts
+            // to "false" and Sharp server treats "false" as `true`.
+            'recurring'         => 0,
+        ];
+
+
+        if (isset($input['payment']['auth_type']) === true)
+        {
+            $content['auth_type'] = $input['payment']['auth_type'];
+        }
+
+        if (isset($input['payment']['recurring']) === true)
+        {
+            $content['recurring'] = boolval($input['payment']['recurring']) ? 1 : 0;
+        }
 
         if ($content['method'] === 'card')
         {
@@ -105,9 +140,33 @@ class Gateway extends Base\Gateway
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE);
         }
 
+        if ((isset($input['payment']['recurring']) === true) and
+            ($input['payment']['recurring'] === true) and
+            ($input['payment']['method'] === 'card') and
+            ($input['card']['iin'] === '400666') and
+            ($input['card']['last4'] === '0007'))
+        {
+
+            //Soft Decline for recurring payments
+            if ($input['payment']['amount'] === 4444)
+            {
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE);
+            }
+
+            //Hard Decline for recurring payments
+            if ($input['payment']['amount'] === 5555)
+            {
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_CARD_STOLEN_OR_LOST );
+            }
+        }
+
         $this->verifyPaymentCreateResponse($input);
 
         $acquirerData = $this->getAcquirerData($input, null);
+
+        $this->addRecurringDataIfApplicable($input, $acquirerData);
 
         return $this->getCallbackResponseData($input, $acquirerData);
     }
@@ -227,11 +286,11 @@ class Gateway extends Base\Gateway
             $content = [];
         }
 
-        $request = array(
+        $request = [
             'url' => $url,
             'method' => $method,
             'content' => $content,
-        );
+        ];
 
         return $request;
     }
@@ -248,6 +307,12 @@ class Gateway extends Base\Gateway
 
     protected function isSecondRecurringPaymentRequest($input)
     {
+        if (($this->app['basicauth']->isPrivateAuth() === false) and
+            ($this->app['basicauth']->isPrivilegeAuth() === false))
+        {
+            return false;
+        }
+
         if (($input['payment']['recurring'] === true) and
             ($input['token'] !== null) and
             ($input['token']->isRecurring() === true))
@@ -256,5 +321,36 @@ class Gateway extends Base\Gateway
         }
 
         return false;
+    }
+
+    protected function addRecurringDataIfApplicable(array $input, array & $acquirerData)
+    {
+        if (($input['payment']['recurring'] === true) and
+            ($input['payment']['method'] === 'netbanking'))
+        {
+            $recurringData = $this->getRecurringData($input['gateway']);
+
+            $acquirerData = array_merge($acquirerData, $recurringData);
+        }
+    }
+
+    protected function getRecurringData($gatewayInput)
+    {
+        $recurringStatus = Token\RecurringStatus::CONFIRMED;
+
+        if ((isset($gatewayInput['token_recurring_status']) === false) or
+            ($gatewayInput['token_recurring_status'] !== Token\RecurringStatus::CONFIRMED))
+        {
+            $recurringStatus = Token\RecurringStatus::REJECTED;
+        }
+
+        $recurringData[Token\Entity::RECURRING_STATUS] = $recurringStatus;
+
+        if ($recurringStatus === Token\RecurringStatus::REJECTED)
+        {
+            $recurringData[Token\Entity::RECURRING_FAILURE_REASON] = 'Rejected by bank';
+        }
+
+        return $recurringData;
     }
 }

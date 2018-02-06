@@ -17,15 +17,14 @@ class OAuthScopes
      * @var array
      */
     protected static $scopes = [
-
         // Just a dummy route, gets used in tests
         'feature_dummy' => ['dummy.read']
     ];
 
     /**
-     * Gets array of scopes that a route is mapped to. Tokens will be given
-     * access if they have at least one of the route scopes allowed during token
-     * creation.
+     * Gets array of scopes that a route is mapped to.
+     * Tokens will be given access if they have at least one
+     * of the route scopes allowed during token creation.
      *
      * @param string $route
      *
@@ -41,8 +40,8 @@ class OAuthScopes
     }
 
     /**
-     * If no scope is defined for a route, we assign a default set of scopes
-     * to the route
+     * If no scope is defined for a route, we assign
+     * a default set of scopes to the route
      *
      * @param array  $scopes
      * @param string $route
@@ -54,6 +53,11 @@ class OAuthScopes
         //
         // Adds the default scopes for the current route to existing $scopes
         //
-        $scopes[] = ($routeParams[0] === 'get') ? self::READ_ONLY : self::READ_WRITE;
+        $scopes[] = self::READ_WRITE;
+
+        if ($routeParams[0] === 'get')
+        {
+            $scopes[] = self::READ_ONLY;
+        }
     }
 }

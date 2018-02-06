@@ -228,6 +228,9 @@ class CreatePayments extends Migration
             $table->string(Payment::RECURRING_TYPE)
                   ->nullable();
 
+            $table->string(Payment::AUTH_TYPE, 14)
+                  ->nullable();
+
             // Adds created_at and updated_at columns to the table
             $table->integer(Payment::CREATED_AT);
             $table->integer(Payment::UPDATED_AT);
@@ -251,10 +254,12 @@ class CreatePayments extends Migration
             $table->index(Payment::LATE_AUTHORIZED);
             $table->index(Payment::ON_HOLD);
             $table->index(Payment::ON_HOLD_UNTIL);
+            $table->index(Payment::AUTH_TYPE);
 
             $table->index(Payment::DISPUTED);
             $table->index(Payment::UPDATED_AT);
             $table->index(Payment::CAPTURED_AT);
+            $table->index([Payment::MERCHANT_ID, Payment::CREATED_AT]);
 
             $table->foreign(Payment::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)

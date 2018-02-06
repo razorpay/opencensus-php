@@ -18,7 +18,6 @@ class ValidationFields
             Entity::BANK_BENEFICIARY_STATE,
             Entity::BANK_BRANCH_IFSC,
             Entity::BUSINESS_DBA,
-            Entity::BUSINESS_DOE,
             Entity::BUSINESS_INTERNATIONAL,
             Entity::BUSINESS_MODEL,
             Entity::BUSINESS_NAME,
@@ -41,14 +40,23 @@ class ValidationFields
             Entity::PROMOTER_ADDRESS_URL,
             Entity::PROMOTER_PAN_NAME,
             Entity::TRANSACTION_REPORT_EMAIL,
-            Entity::TRANSACTION_VALUE,
-            Entity::TRANSACTION_VOLUME,
             Entity::WEBSITE_ABOUT,
             Entity::WEBSITE_CONTACT,
             Entity::WEBSITE_PRICING,
             Entity::WEBSITE_PRIVACY,
             Entity::WEBSITE_REFUND,
             Entity::WEBSITE_TERMS,
+    ];
+
+    /**
+     * Fields required when merchant is an NGO
+     * for submitting the activation form
+     *
+     * @var array
+     */
+    const NGO_MERCHANT_FIELDS = [
+        Entity::FORM_12A_URL,
+        Entity::FORM_80G_URL,
     ];
 
     /**

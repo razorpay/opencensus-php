@@ -77,6 +77,34 @@ class OrderTest extends TestCase
         return $order;
     }
 
+    public function testEMandateOrderWithCustomerFeeBearer()
+    {
+        $this->fixtures->merchant->enableConvenienceFeeModel();
+
+        $this->startTest();
+    }
+
+    public function testEmandateRegistrationOrderWithZeroRupee()
+    {
+        $order = $this->startTest();
+
+        return $order;
+    }
+
+    public function testEmandateRegistrationOrderWithoutZeroRupee()
+    {
+        $order = $this->startTest();
+
+        return $order;
+    }
+
+    public function testEmandateRegistrationOrderWithInvalidBank()
+    {
+        $order = $this->startTest();
+
+        return $order;
+    }
+
     public function testCreateTPVOrderWithInvalidAccountNumber()
     {
         $this->startTest();
@@ -431,12 +459,6 @@ class OrderTest extends TestCase
 
     public function testPaymentWithFailedOfferCheck()
     {
-        //
-        // Mobikwik MID was unexpectedly disabled
-        // https://github.com/razorpay/incidents/issues/157
-        //
-        $this->markTestSkipped('Mobikwik temporarily disabled.');
-
         $this->fixtures->merchant->enableMobikwik();
 
         $this->testCreateOrderWithOffer();

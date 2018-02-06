@@ -3,8 +3,9 @@
 namespace RZP\Tests\Functional\Gateway\FirstData;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
+use RZP\Exception;
 use RZP\Models\Payment;
+use RZP\Constants\Timezone;
 use RZP\Tests\Functional\Fixtures\Entity\Terminal;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -180,7 +181,7 @@ class FirstDataGatewayTest extends TestCase
 
         $this->assertEquals($refund['amount'], $actualRefund['amount']);
         $this->assertEquals('processed', $actualRefund['status']);
-        $this->assertEquals(2, $actualRefund['attempts']);
+        $this->assertEquals(1, $actualRefund['attempts']);
         $this->assertEquals(true, $actualRefund['gateway_refunded']);
 
         $firstData = $this->getLastEntity('first_data', true);
@@ -212,21 +213,61 @@ class FirstDataGatewayTest extends TestCase
 
         $refundId = explode('_', $refund['id'], 2)[1];
 
-        $this->getErrorInVerifyRefund();
+        $this->getFailureInVerifyRefund();
 
         $response = $this->retryFailedRefunds();
 
         $actualRefund = $this->getEntityById('refund', $refundId, true);
 
         $this->assertEquals($refund['amount'], $actualRefund['amount']);
-        $this->assertEquals('failed', $actualRefund['status']);
-        $this->assertEquals(1, $actualRefund['attempts']);
-        $this->assertEquals(false, $actualRefund['gateway_refunded']);
+        $this->assertEquals('processed', $actualRefund['status']);
+        $this->assertEquals(2, $actualRefund['attempts']);
+        $this->assertEquals(true, $actualRefund['gateway_refunded']);
 
         $firstData = $this->getLastEntity('first_data', true);
 
         $this->assertEquals($actualRefund['id'], 'rfnd_'.$firstData['refund_id']);
+        $this->assertEquals('CAPTURED', $firstData['status']);
+    }
+
+    public function testVerifyRefundSuccessfulOnGateway()
+    {
+        $payment = $this->doAuthAndCapturePayment();
+
+        $this->getErrorInReturn();
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals(1, $refund['attempts']);
+
+        $firstData = $this->getLastEntity('first_data', true);
+
+        $this->assertEquals($refund['id'], 'rfnd_'.$firstData['refund_id']);
         $this->assertEquals('FAILED', $firstData['status']);
+
+        $time = Carbon::now(Timezone::IST)->addMinutes(35);
+        Carbon::setTestNow($time);
+
+        $refundId = explode('_', $refund['id'], 2)[1];
+
+        $this->getSuccessInVerifyRefund();
+
+        $response = $this->retryFailedRefunds();
+
+        $actualRefund = $this->getEntityById('refund', $refundId, true);
+
+        $this->assertEquals($refund['amount'], $actualRefund['amount']);
+        $this->assertEquals('processed', $actualRefund['status']);
+        $this->assertEquals(1, $actualRefund['attempts']);
+        $this->assertEquals(true, $actualRefund['gateway_refunded']);
+
+        $firstData = $this->getLastEntity('first_data', true);
+
+        $this->assertEquals($actualRefund['id'], 'rfnd_'.$firstData['refund_id']);
+        $this->assertEquals('CAPTURED', $firstData['status']);
     }
 
     public function testVerifyReverse()
@@ -711,6 +752,62 @@ class FirstDataGatewayTest extends TestCase
             });
 
         $this->doAuthPayment($this->payment);
+    }
+
+    public function testLongApprovalCode()
+    {
+        $longApprovalCodeArray = [
+            'N',
+            '03',
+            'Timeout expired. The timeout period elapsed prior to obtaining a connection from the pool.'.
+                'This may have occurred because all pooled connections were in use and max pool size was reached.'
+        ];
+
+        $this->getOveriddenApprovalCode(implode(':', $longApprovalCodeArray));
+
+        $this->makeRequestAndCatchException(
+            function()
+            {
+                $this->doAuthPayment($this->payment);
+            },
+            Exception\GatewayErrorException::class,
+            // Error code for N:03 is mapped to Invalid Merchant
+            "The payment has been rejected by the gateway." .
+                "\nGateway Error Code: N:03\nGateway Error Desc: Invalid merchant");
+    }
+
+    public function testInvalidApprovalCode()
+    {
+        $invalidApprovalCode = 'Invalid code';
+
+        $this->getOveriddenApprovalCode($invalidApprovalCode);
+
+        $this->makeRequestAndCatchException(
+            function()
+            {
+                $this->doAuthPayment($this->payment);
+            },
+            Exception\GatewayErrorException::class,
+            // Any invalid code is mapped to General Error
+            "Payment processing failed due to error at bank or wallet gateway" .
+            "\nGateway Error Code: Invalid code\nGateway Error Desc: General Error");
+    }
+
+    public function testWaitingRupayCode()
+    {
+        $ApprovalCode = '?:waiting RUPAY';
+
+        $this->getOveriddenApprovalCode($ApprovalCode);
+
+        $this->makeRequestAndCatchException(
+            function()
+            {
+                $this->doAuthPayment($this->payment);
+            },
+            Exception\GatewayErrorException::class,
+            // Any invalid code is mapped to General Error
+            "Payment was not completed on time." .
+            "\nGateway Error Code: ?:waiting RUPAY\nGateway Error Desc: Waiting for Rupay");
     }
 }
 

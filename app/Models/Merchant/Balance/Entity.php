@@ -12,15 +12,19 @@ class Entity extends Base\PublicEntity
     const ON_HOLD        = 'on_hold';
     const AMOUNT_CREDITS = 'credits';
     const FEE_CREDITS    = 'fee_credits';
+    const REFUND_CREDITS = 'refund_credits';
 
-    protected $fillable = array(
-        self::ID);
+    protected $fillable = [
+        self::ID
+    ];
 
-    protected $visible = array(
+    protected $visible = [
         self::ID,
         self::BALANCE,
         self::AMOUNT_CREDITS,
-        self::FEE_CREDITS);
+        self::FEE_CREDITS,
+        self::REFUND_CREDITS
+    ];
 
     protected $entity = 'balance';
 
@@ -33,6 +37,7 @@ class Entity extends Base\PublicEntity
     protected $casts = [
         self::AMOUNT_CREDITS => 'integer',
         self::FEE_CREDITS    => 'integer',
+        self::REFUND_CREDITS => 'integer',
         self::BALANCE        => 'integer',
     ];
 
@@ -76,6 +81,11 @@ class Entity extends Base\PublicEntity
     public function getFeeCredits()
     {
         return $this->getAttribute(self::FEE_CREDITS);
+    }
+
+    public function getRefundCredits()
+    {
+        return $this->getAttribute(self::REFUND_CREDITS);
     }
 
     public function merchant()
@@ -151,6 +161,17 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::FEE_CREDITS, $credits);
     }
 
+    public function subtractRefundCredits($amount)
+    {
+        $credits = $this->getRefundCredits();
+
+        $credits -= $amount;
+
+        assert($credits >= 0);
+
+        $this->setAttribute(self::REFUND_CREDITS, $credits);
+    }
+
     public function setAmountCredits($credits)
     {
         assert ($credits >= 0);
@@ -163,6 +184,13 @@ class Entity extends Base\PublicEntity
         assert ($credits >= 0);
 
         $this->setAttribute(self::FEE_CREDITS, $credits);
+    }
+
+    public function setRefundCredits(int $credits)
+    {
+        assert ($credits >= 0);
+
+        $this->setAttribute(self::REFUND_CREDITS, $credits);
     }
 
     public function save(array $options = array())

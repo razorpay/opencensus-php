@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\VirtualAccount;
 
 use Closure;
 use Mockery;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Webhook;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
@@ -49,6 +50,17 @@ class VirtualAccountTest extends TestCase
         $this->assertArraySelectiveEquals($expectedResponse, $response);
     }
 
+    public function testCreateVirtualAccountCrypto()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['category2' => 'cryptocurrency']);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() {
+            $this->createVirtualAccount();
+        });
+    }
+
     public function testCreateVirtualAccountWithBharatQr()
     {
         $response = $this->createVirtualAccount([
@@ -59,7 +71,11 @@ class VirtualAccountTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedResponse, $response);
 
-        $qrString = $response['receivers'][0]['qr_string'];
+        $qrCode = $this->getLastEntity('qr_code', true);
+
+        $qrString = $qrCode['qr_string'];
+
+        $this->assertRegExp('^http://dwarf.razorpay.in/^', $qrCode['short_url']);
 
         $tlvArray = $this->getTagMappedValues($qrString);
 
@@ -91,11 +107,97 @@ class VirtualAccountTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedResponse, $response);
 
-        $qrString = $response['receivers'][0]['qr_string'];
+        $qrCode = $this->getLastEntity('qr_code', true);
+
+        $qrString = $qrCode['qr_string'];
 
         $tlvArray = $this->getTagMappedValues($qrString);
 
         $this->assertEquals($tlvArray['54'], '100.00');
+    }
+
+    public function testDownloadQrCode()
+    {
+        $response = $this->createVirtualAccount([
+            'receiver_types'  => 'qr_code',
+            'amount_expected' => 10000,
+        ]);
+
+        $qrCodeId = $response['receivers'][0]['id'];
+
+        $request = [
+            'method'  => 'GET',
+            'url'     => '/t/qrcode/' . $qrCodeId,
+        ];
+
+        $this->ba->directAuth();
+
+        $response = $this->sendRequest($request);
+
+        $this->assertContentTypeForResponse('image/png', $response);
+    }
+
+    public function testDownloadQrInLiveMode()
+    {
+        $response = $this->createVirtualAccount([
+            'receiver_types'  => 'qr_code',
+            'amount_expected' => 10000,
+        ]);
+
+        $qrCodeId = $response['receivers'][0]['id'];
+
+        $request = [
+            'method'  => 'GET',
+            'url'     => '/l/qrcode/' . $qrCodeId,
+        ];
+
+        $this->ba->directAuth();
+
+        $this->expectException(BadRequestException::class);
+
+        $this->sendRequest($request);
+    }
+
+    public function testDownloadQrInTestMode()
+    {
+        $this->fixtures->merchant->activate();
+
+        $attributes =  [
+            'name'            => 'Test virtual account',
+            'description'     => 'VA for tests',
+            'amount_expected' => 10000,
+            'receivers'       => [
+                'types' => [
+                    'qr_code',
+                ],
+            ],
+            'notes'           => [
+                'a' => 'b',
+            ],
+        ];
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/virtual_accounts',
+            'content' => $attributes,
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $qrCodeId = $response['receivers'][0]['id'];
+
+        $request = [
+            'method'  => 'GET',
+            'url'     => '/t/qrcode/' . $qrCodeId,
+        ];
+
+        $this->ba->directAuth();
+
+        $this->expectException(BadRequestException::class);
+
+        $this->sendRequest($request);
     }
 
     public function testCreateVirtualAccountWithDescriptor()
@@ -104,7 +206,7 @@ class VirtualAccountTest extends TestCase
 
         $vba = $this->getLastEntity('bank_account', true);
         // Handle is unset so default root is used with default handle
-        $this->assertRegexp("/11111100[0-9]{9}$/", $vba['account_number']);
+        $this->assertRegexp("/11122200[0-9]{9}$/", $vba['account_number']);
 
         $this->fixtures->merchant->setHandle('hand');
 
@@ -118,7 +220,7 @@ class VirtualAccountTest extends TestCase
 
         $vba = $this->getLastEntity('bank_account', true);
         // Handle is set, but numeric accounts can still be created
-        $this->assertRegexp("/11111100[0-9]{9}$/", $vba['account_number']);
+        $this->assertRegexp("/11122200[0-9]{9}$/", $vba['account_number']);
     }
 
     public function testCreateVirtualAccountOldFormat()
@@ -128,7 +230,7 @@ class VirtualAccountTest extends TestCase
 
         $vba = $this->getLastEntity('bank_account', true);
         // Handle is not set so default root is used with given descriptor
-        $this->assertStringStartsWith('11111100', $vba['account_number']);
+        $this->assertStringStartsWith('11122200', $vba['account_number']);
 
         // With handle
         $this->fixtures->merchant->setHandle('hand');
@@ -155,7 +257,7 @@ class VirtualAccountTest extends TestCase
         // receivers[types][]=bank_account
         $response = $this->createVirtualAccount([]);
         $vba = $this->getLastEntity('bank_account', true);
-        $this->assertStringStartsWith('11111100', $vba['account_number']);
+        $this->assertStringStartsWith('11122200', $vba['account_number']);
 
         // Sending descriptor throws error, can't use with numeric
         // receivers[types][]=bank_account&receivers[bank_account][desriptor]=desc
@@ -182,7 +284,7 @@ class VirtualAccountTest extends TestCase
         // receivers[types][]=bank_account
         $response = $this->createVirtualAccount([]);
         $vba = $this->getLastEntity('bank_account', true);
-        $this->assertStringStartsWith('11111100', $vba['account_number']);
+        $this->assertStringStartsWith('11122200', $vba['account_number']);
 
         // Sending descriptor throws error, can't use with numeric
         // receivers[types][]=bank_account&receivers[bank_account][desriptor]=desc
@@ -225,6 +327,13 @@ class VirtualAccountTest extends TestCase
         $vba = $this->getLastEntity('bank_account', true);
         // Handle is set so standard root is used with given handle
         $this->assertEquals("RAZRHAN10CHARDESC", $vba['account_number']);
+
+        // 10 char descriptors are also allowed with numeric
+        $response = $this->createVirtualAccount([], true, '0123456789');
+
+        $vba = $this->getLastEntity('bank_account', true);
+        // Shorter handle is set so special root is used with given descriptor
+        $this->assertEquals("11122290123456789", $vba['account_number']);
     }
 
     public function testCreateVirtualAccountWithIdenticalDescriptor()

@@ -5,9 +5,7 @@ namespace RZP\Models\Settlement;
 use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Models\Merchant as M;
-use RZP\Models\Settlement;
-use RZP\Models\Transaction;
-use RZP\Models\BankAccount;
+use RZP\Exception;
 
 class Repository extends Base\Repository
 {
@@ -27,12 +25,13 @@ class Repository extends Base\Repository
         Entity::UTR                    => 'sometimes|alpha_num',
     ];
 
-    public function getFailedSettlementsForRetry(array $setlIds, $channel)
+    public function getFailedSettlementsForRetry(array $setlIds, string $channel)
     {
         $merchantId = $this->repo->merchant->dbColumn(M\Entity::ID);
 
-        $settlementMerchantId = $this->dbColumn(Settlement\Entity::MERCHANT_ID);
-        $settlementId = $this->dbColumn(Settlement\Entity::ID);
+        $settlementId = $this->dbColumn(Entity::ID);
+        $settlementMerchantId = $this->dbColumn(Entity::MERCHANT_ID);
+        $settlementChannel = $this->dbColumn(Entity::CHANNEL);
 
         $cols = $this->dbColumn('*');
 
@@ -42,7 +41,7 @@ class Repository extends Base\Repository
                       ->where(Entity::STATUS, '=', Status::FAILED)
                       ->whereIn($settlementId, $setlIds)
                       ->where(M\Entity::HOLD_FUNDS, '=', 0)
-                      ->where(Entity::CHANNEL, '=', $channel)
+                      ->where($settlementChannel, '=', $channel)
                       ->with('merchant', 'merchant.bankAccount', 'setlTransactions')
                       ->get();
 
@@ -110,5 +109,28 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->whereIn(Entity::ID, $setlIds2)
                     ->get();
+    }
+
+    public function updateChannel(string $settlementId, string $channel)
+    {
+        $values = [Entity::CHANNEL => $channel];
+
+        $count = $this->newQuery()
+                      ->where(Entity::ID, $settlementId)
+                      ->where(Entity::STATUS, Status::FAILED)
+                      ->update($values);
+
+        if ($count !== 1)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Failed to update expected number to row',
+                null,
+                [
+                    'settlement_id' => $settlementId,
+                    'channel'       => $channel,
+                ]);
+        }
+
+        return $count;
     }
 }

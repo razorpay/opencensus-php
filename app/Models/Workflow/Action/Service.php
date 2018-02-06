@@ -87,41 +87,52 @@ class Service extends Base\Service
 
     public function getActionDetails(string $actionId)
     {
+        $data = [];
+
         $admin = $this->app['basicauth']->getAdmin();
 
         $orgId = $admin->getOrgId();
 
         Entity::verifyIdAndStripSign($actionId);
 
-        $relations = ['workflow.steps', 'admin', 'permission'];
-
+        // findByIdAndOrgId returns a collection so extracting the first element.
+        // Cannot use firstorfailPublic here because findByIdAndOrgId returns collection.
         $action = $this->repo
                        ->workflow_action
-                       ->findByIdAndOrgId($actionId, $orgId, $relations)
+                       ->getActionDetails($actionId, $orgId)
                        ->first();
-
-        $data = $action->toArrayPublicWithAdminAndSteps();
-
-        // Checkers
-        $checkers = $this->repo
-                         ->action_checker
-                         ->fetchByActionIdWithRelations(
-                             $actionId, [Entity::ADMIN]);
-
-        $data['checkers'] = $checkers->map(function ($checker) {
-            return $checker->toArrayPublic();
-        })->toArray();
-
-        // Comments
-        $comments = $this->repo
-                         ->comment
-                         ->fetchByActionIdWithRelations(
-                             $actionId, [Entity::ADMIN]);
-
-        $data['comments'] = $comments->map(function ($comment)
+        
+        // $action can be null because we don't validate the result after fetching from the collection.
+        if (empty($action) === false)
         {
-            return $comment->toArrayPublic();
-        });
+            $data = $action->toArrayPublic();
+
+            // Checkers
+            $checkers = $this->repo
+                             ->action_checker
+                             ->fetchByActionIdWithRelations(
+                                $actionId, [Entity::ADMIN]);
+
+            $data['checkers'] = $checkers->map(function ($checker) {
+                return $checker->toArrayPublic();
+            })->toArray();
+
+            // Comments
+            $comments = $this->repo
+                ->comment
+                ->fetchByActionIdWithRelations(
+                    $actionId, [Entity::ADMIN]);
+
+            $data['comments'] = $comments->map(function ($comment)
+            {
+                return $comment->toArrayPublic();
+            });
+        }
+        else
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND, null, $actionId);
+        }
 
         return $data;
     }

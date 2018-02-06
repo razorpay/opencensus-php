@@ -39,7 +39,7 @@ class Repository extends Base\Repository
 
     public function editMerchantAmountCredits($merchant, $amountCredits)
     {
-        $channel = Settlement\Channel::KOTAK;
+        $channel = $merchant->getChannel();
 
         return $this->transaction(function () use ($merchant, $amountCredits, $channel)
         {
@@ -72,11 +72,21 @@ class Repository extends Base\Repository
 
     public function editMerchantFeeCredits($merchant, $feeCredits)
     {
-        $channel = Settlement\Channel::KOTAK;
+        $channel = $merchant->getChannel();
 
         return $this->transaction(function () use ($merchant, $feeCredits, $channel)
         {
             return $this->editMerchantFeeCreditsInTransaction($merchant, $feeCredits, $channel);
+        });
+    }
+
+    public function editMerchantRefundCredits($merchant, $credits)
+    {
+        $channel = $merchant->getChannel();
+
+        return $this->transaction(function () use ($merchant, $credits, $channel)
+        {
+            return $this->editMerchantRefundCreditsInTransaction($merchant, $credits, $channel);
         });
     }
 
@@ -85,18 +95,23 @@ class Repository extends Base\Repository
         assert ($this->isTransactionActive());
 
         $balance = $this->findOrFail($merchant->getId());
-        //$nodalBalance = $this->getNodalBalanceLockForUpdate($channel);
-
-        //$nodalCredits = $nodalBalance->getFeeCredits();
-        //$nodalCredits = $nodalCredits - $balance->getFeeCredits() + $feeCredits;
-
-        //$nodalBalance->setFeeCredits($nodalCredits);
 
         $balance->setFeeCredits($feeCredits);
 
         $balance->saveOrFail();
 
-        //$nodalBalance->saveOrFail();
+        return $balance;
+    }
+
+    private function editMerchantRefundCreditsInTransaction($merchant, $credits, $channel)
+    {
+        assert ($this->isTransactionActive());
+
+        $balance = $this->findOrFail($merchant->getId());
+
+        $balance->setRefundCredits($credits);
+
+        $balance->saveOrFail();
 
         return $balance;
     }

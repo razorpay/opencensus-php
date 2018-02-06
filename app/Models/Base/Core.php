@@ -145,4 +145,22 @@ class Core
     {
         return ($this->mode === Mode::LIVE);
     }
+
+    /**
+     * Changes the mode to live mode
+     */
+    protected function setLiveMode()
+    {
+        $liveMode = Mode::LIVE;
+
+        //
+        // This function updates the mode and app['rzp.mode'] properties
+        // of the BasicAuth class that has been initialized.
+        //
+        $this->app['basicauth']->setModeAndDbConnection($liveMode);
+
+        $this->mode = $liveMode;
+
+        return;
+    }
 }

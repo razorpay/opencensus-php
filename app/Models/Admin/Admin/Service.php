@@ -386,6 +386,10 @@ class Service extends Base\Service
 
         $admin->getValidator()->validateSelfEditForbidden($authAdmin, $admin);
 
+        // Trigger workflow
+        $this->app['workflow']
+             ->handle($admin, (new \StdClass()));
+
         $admin->setAuditAction(Action::DELETE_ADMIN);
 
         return $this->core()->delete($admin);

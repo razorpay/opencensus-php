@@ -81,7 +81,7 @@ class Merchant
         $apiFee,
         $tax,
         $setlTime,
-        array $setlDetailAmounts): array
+        array $setlDetailAmounts): Entity
     {
         $this->amount = $amount;
         $this->apiFee = $apiFee;
@@ -92,26 +92,50 @@ class Merchant
         $this->setlTime = $setlTime;
         $this->setlDetailAmounts = $setlDetailAmounts;
 
-        $this->createSetlEntityAndTxn();
+        $this->setlDetails = new Base\PublicCollection;
 
-        // Create Settlement attempt entity
+        $this->repo->transaction(function()
+        {
+            //create new settlement entity
+            $this->newSettlementEntity();
+
+            // Create Settlement Details entity
+            $this->createSettlementDetailsEntities();
+
+            // update schedule tasks
+            $this->updateMerchantScheduleTask();
+
+            // save settlement and details
+            $this->saveSettlementEntitiesToDb();
+
+            // Update transactions for settlement
+            $this->updateTransactions();
+        });
+
+        return $this->setl;
+    }
+
+    public function createTransaction($settlement)
+    {
+        $this->setl = $settlement;
+
+        $this->repo->transaction(function()
+        {
+            $this->setlTransaction = (new Transaction\Core)->createFromSettlement($this->setl);
+
+            $this->repo->saveOrFail($this->setlTransaction);
+
+            $this->repo->saveOrFail($this->setl);
+        });
+    }
+
+    public function createSettlementAttempt() : FundTransferAttempt\Entity
+    {
+        assert($this->setl->hasTransaction(), true);
+
         $this->createSettlementAttemptEntity();
 
-        // Create Settlement Details entity
-        $this->setlDetails = new Base\PublicCollection;
-        $this->createSettlementDetailsEntities();
-
-        // Updates merchant and api balance
-        $this->updateBalances();
-
-        $this->updateMerchantScheduleTask();
-
-        $this->saveChangesToDb();
-
-        // Update transactions
-        $this->updateTransactions();
-
-        return [$this->setl, $this->bankTransferAtpt];
+        return $this->bankTransferAtpt;
     }
 
     protected function updateTransactions()
@@ -129,6 +153,7 @@ class Merchant
     public function createSettlementDetails($setl)
     {
         $this->setl = $setl;
+
         $this->txns = $setl->setlTransactions;
 
         $this->setlDetails = new Base\PublicCollection;
@@ -186,8 +211,11 @@ class Merchant
 
             $details[SetlComponent::FEE]['amount'] += ($txn->getFee() - $txn->getTax());
 
-            // FeeCredits is either zero or equal to fees.
-            $details[SetlComponent::FEE_CREDITS]['amount'] += $txn->getFeeCredits();
+            // Add credits if txn is of type fee credits.
+            $details[SetlComponent::FEE_CREDITS]['amount'] += ($txn->isFeeCredits() ? $txn->getCredits() : 0);
+
+            // Add credits if txn is of type refund credits.
+            $details[SetlComponent::REFUND_CREDITS]['amount'] += ($txn->isRefundCredits() ? $txn->getCredits() : 0);
         }
 
         return $details;
@@ -211,6 +239,7 @@ class Merchant
                     break;
 
                 case SetlDetails\Component::FEE_CREDITS:
+                case SetlDetails\Component::REFUND_CREDITS:
                     if ($detail['amount'] > 0)
                     {
                         $this->createSetlDetailsEntity(
@@ -259,42 +288,6 @@ class Merchant
         return $setlDetailEntity;
     }
 
-    protected function createSetlEntityAndTxn()
-    {
-        // Create settlement transaction
-        $this->newSettlementTransaction();
-
-        // Create settlement entity
-        $this->newSettlementEntity();
-
-        $this->setlTransaction->source()->associate($this->setl);
-    }
-
-    protected function newSettlementTransaction()
-    {
-        $txn = new Transaction\Entity;
-
-        $values = array(
-            Transaction\Entity::DEBIT       => $this->amount,
-            Transaction\Entity::CREDIT      => 0,
-            Transaction\Entity::CURRENCY    => 'INR',
-            Transaction\Entity::GATEWAY_FEE => 0,
-            Transaction\Entity::API_FEE     => 0,
-            Transaction\Entity::SETTLED     => 1,
-            Transaction\Entity::SETTLED_AT  => time(),
-            Transaction\Entity::FEE         => 0,
-            Transaction\Entity::AMOUNT      => $this->amount,
-            Transaction\Entity::TYPE        => Transaction\Type::SETTLEMENT,
-            Transaction\Entity::CHANNEL     => $this->channel,
-        );
-
-        $txn->fillAndGenerateId($values);
-
-        $txn->merchant()->associate($this->merchant);
-
-        $this->setlTransaction = $txn;
-    }
-
     protected function newSettlementEntity()
     {
         $setl = (new Settlement\Entity)->generateId();
@@ -309,7 +302,6 @@ class Merchant
 
         $setl = $setl->build($input);
 
-        $setl->transaction()->associate($this->setlTransaction);
         $setl->merchant()->associate($this->merchant);
 
         $setl->bankAccount()->associate($this->bankAccount);
@@ -342,6 +334,7 @@ class Merchant
             FundTransferAttempt\Entity::CHANNEL         => $this->channel,
             FundTransferAttempt\Entity::VERSION         => FundTransferAttempt\Version::V3,
             FundTransferAttempt\Entity::STATUS          => FundTransferAttempt\Status::INITIATED,
+            FundTransferAttempt\Entity::PURPOSE         => FundTransferAttempt\Purpose::SETTLEMENT,
         ];
 
         $fundTransferAttempt->fillAndGenerateId($values);
@@ -352,25 +345,18 @@ class Merchant
 
         $fundTransferAttempt->bankAccount()->associate($this->bankAccount);
 
+        $this->repo->saveOrFail($fundTransferAttempt);
+
         $this->bankTransferAtpt = $fundTransferAttempt;
     }
 
-    protected function saveChangesToDb()
+    protected function saveSettlementEntitiesToDb()
     {
-        $this->repo->saveOrFail($this->setlTransaction);
-
         $this->repo->saveOrFail($this->setl);
-
-        $this->repo->saveOrFail($this->bankTransferAtpt);
 
         $this->repo->saveOrFailCollection($this->setlDetails);
 
         $this->repo->saveOrFailCollection($this->scheduleTasks);
-    }
-
-    protected function updateBalances(): Transaction\Entity
-    {
-        return (new Transaction\Core)->updateBalances($this->setlTransaction);
     }
 
     protected function updateMerchantScheduleTask()

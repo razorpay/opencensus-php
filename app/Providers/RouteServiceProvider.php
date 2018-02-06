@@ -25,9 +25,6 @@ class RouteServiceProvider extends ServiceProvider
 
     /**
      * Define your route model bindings, pattern filters, etc.
-     *
-     * @param  \Illuminate\Routing\Router  $router
-     * @return void
      */
     public function boot()
     {
@@ -70,51 +67,38 @@ class RouteServiceProvider extends ServiceProvider
          * - namespace - All the routes defined have a controller and action.
          *     We only define the class name of the controller, the namespace
          *     is derived from this parameter.
-         * - middleware:auth - All routes have Authenticate middleware applied
-         *     to them
+         * - middleware:auth - All routes have Throttle and Authenticate
+         *     middleware applied to them
          */
-        $routeGroupGlobalParams = array(
+        $routeGroupGlobalParams = [
             'prefix'        => 'v1',
             'namespace'     => $this->namespace,
-            'middleware'    => ['auth', 'admin_access', 'workflow']);
+            'middleware'    => ['throttle', 'auth', 'admin_access', 'workflow', 'event_tracker']
+        ];
 
         $router->group(
             $routeGroupGlobalParams,
             function ($router)
             {
-                $this->mapWebRoutes($router);
                 $this->mapApiRoutes($router);
             });
 
         $this->route->defineAllExtraRoutes();
     }
 
-    /**
-     * Define the "web" routes for the application.
-     *
-     * These routes all receive session state, CSRF protection, etc.
-     *
-     * @param  \Illuminate\Routing\Router  $router
-     * @return void
-     */
-    protected function mapWebRoutes(Router $router)
-    {
-        $router->group(
-            ['middleware' => 'web'],
-            function ($router)
-            {
-                $this->route->addRouteGroups(['public', 'publicCallback', 'direct']);
-            }
-        );
-    }
-
     protected function mapApiRoutes(Router $router)
     {
         $router->group(
-            ['middleware' => 'api'],
-            function ($router)
-            {
-                $this->route->addRouteGroups(['admin', 'internal', 'private', 'proxy', 'device']);
+            [],
+            function($router) {
+                $this->route->addRouteGroups(['public',
+                                              'publicCallback',
+                                              'direct',
+                                              'admin',
+                                              'internal',
+                                              'private',
+                                              'proxy',
+                                              'device']);
             }
         );
     }

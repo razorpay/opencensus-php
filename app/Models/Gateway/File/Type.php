@@ -10,6 +10,7 @@ class Type
     const COMBINED          = 'combined';
     const EMANDATE_REGISTER = 'emandate_register';
     const EMANDATE_DEBIT    = 'emandate_debit';
+    const REFUND_FAILED     = 'refund_failed';
 
     // Sub types for gateway_file entity
     const TPV           = 'tpv';

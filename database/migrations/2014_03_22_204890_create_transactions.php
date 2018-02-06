@@ -79,7 +79,7 @@ class CreateTransactions extends Migration
             $table->tinyInteger(Transaction::GRATIS)
                   ->default(0);
 
-            $table->integer(Transaction::FEE_CREDITS)
+            $table->integer(Transaction::CREDITS)
                   ->unsigned()
                   ->default(0);
 
@@ -142,6 +142,8 @@ class CreateTransactions extends Migration
             $table->index(Transaction::CREATED_AT);
 
             $table->index(Transaction::UPDATED_AT);
+
+            $table->index([Transaction::MERCHANT_ID, Transaction::CREATED_AT]);
 
             $table->foreign(Transaction::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)

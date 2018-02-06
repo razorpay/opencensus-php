@@ -950,9 +950,23 @@ class Gateway
         return $this->gateway . '_' . $input['payment']['id'];
     }
 
+    protected function isProcessedRefund($input)
+    {
+        $processedRefunds = $this->getProcessedRefunds();
+
+        return (in_array($input['refund']['id'], $processedRefunds) === true);
+    }
+
+    protected function isUnprocessedRefund($input)
+    {
+        $unprocessedRefunds = $this->getUnprocessedRefunds();
+
+        return (in_array($input['refund']['id'], $unprocessedRefunds) === true);
+    }
+
     protected function getProcessedRefunds()
     {
-        $refunds =  $this->cache->get(strtoupper($this->gateway) . '_PROCESSED_REFUNDS');
+        $refunds = $this->cache->get('GATEWAY_PROCESSED_REFUNDS');
 
         if (empty($refunds) === true)
         {
@@ -964,7 +978,7 @@ class Gateway
 
     protected function getUnprocessedRefunds()
     {
-        $refunds = $this->cache->get(strtoupper($this->gateway) . '_UNPROCESSED_REFUNDS');
+        $refunds = $this->cache->get('GATEWAY_UNPROCESSED_REFUNDS');
 
         if (empty($refunds) === true)
         {

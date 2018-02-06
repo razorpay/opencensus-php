@@ -55,12 +55,21 @@ class Constants
     const MOBIKWIK_OFFERS               = 'mobikwik_offers';
     const ALLOW_DC_RECURRING            = 'allow_dc_recurring';
     const SKIP_HOLD_FUNDS_ON_PAYOUT     = 'skip_hold_funds_on_payout';
+    const REPORT_V2                     = 'report_v2';
     const UPI_INTENT                    = 'upi_intent';
-
+    const CORPORATE_BANKS               = 'corporate_banks';
+    const ORDER_ID_MANDATORY            = 'order_id_mandatory';
+    const MAGIC                         = 'magic';
+    const NEW_ANALYTICS                 = 'new_analytics';
 
     // Different actions for feature activation flow
     const CREATE           = 'create';
     const UPDATE           = 'update';
+
+    public static $recurringFeatures = [
+        self::CHARGE_AT_WILL,
+        self::SUBSCRIPTIONS,
+    ];
 
     // TODO: Use this instead of allFeatures once in final code change pr
     public static $featureValueMap = [
@@ -110,7 +119,12 @@ class Constants
         self::MOBIKWIK_OFFERS               => true,
         self::ALLOW_DC_RECURRING            => true,
         self::SKIP_HOLD_FUNDS_ON_PAYOUT     => true,
+        self::REPORT_V2                     => true,
         self::UPI_INTENT                    => true,
+        self::CORPORATE_BANKS               => true,
+        self::ORDER_ID_MANDATORY            => true,
+        self::MAGIC                         => true,
+        self::NEW_ANALYTICS                 => true,
     ];
 
     // Keys used in the feature on-boarding workflow
@@ -172,6 +186,16 @@ class Constants
             'display_name'  => 'Smart Collect',
             'documentation' => 'smart-collect'
         ],
+        self::REPORT_V2 => [
+            'feature'       => self::REPORT_V2,
+            'display_name'  => 'Report V2',
+            'documentation' => ''
+        ],
+        self::E_MANDATE => [
+            'feature'   => self::E_MANDATE,
+            'display_name'  => 'E-Mandate',
+            'documentation' => '',
+        ]
     ];
 
     /*

@@ -12,6 +12,7 @@
 /storage/files/logos/*
 /storage/files/report/*
 /storage/files/settlement/*
+/storage/files/qrcodes/*
 /.git/*
 /report
 /docs

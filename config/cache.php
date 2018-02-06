@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'default' => env('CACHE_DRIVER', 'file'),
+    'default'        => env('CACHE_DRIVER', 'file'),
 
     'secure_default' => env('SECURE_CACHE_DRIVER', 'file'),
 
@@ -70,6 +70,20 @@ return [
             'connection' => 'secure'
         ],
 
+        'throttle_redis' => [
+            'driver' => 'redis',
+            'connection' => 'throttle_redis'
+        ],
+
+        'query_cache_test' => [
+            'driver'     => 'redis',
+            'connection' => 'query_cache_test',
+        ],
+
+        'query_cache_live' => [
+            'driver'     => 'redis',
+            'connection' => 'query_cache_live',
+        ],
     ],
 
     /*

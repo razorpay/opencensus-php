@@ -366,14 +366,12 @@ class Gateway extends Base\Gateway
 
     public function verifyRefund(array $input)
     {
-        // We have to initiate a manual refund for this payment
-        // Last request was timed out
-        if ($input['refund']['id'] === '8oBcDiz4VXwGQm')
+        if ($this->isUnprocessedRefund($input) === true)
         {
             return false;
         }
 
-        if ($input['refund']['id'] === '8Y60wKPC3AfjHM')
+        if ($this->isProcessedRefund($input) === true)
         {
             return true;
         }

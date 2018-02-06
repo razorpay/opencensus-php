@@ -4,123 +4,80 @@ namespace RZP\Models\BankAccount;
 
 use App;
 use Mail;
+use Config;
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
 
-use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\FileStore;
+use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
-use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
+use RZP\Constants\Timezone;
+use RZP\Models\Settlement\Holidays;
 
 class BeneficiaryFile extends Base\Core
 {
-    protected static $fileToWriteName = 'Kotak_Beneficiary_File';
-
-    const DEFAULT_PRICING_RATE = 30000000;
-
-    const SIGNED_URL_DURATION = '1440';
-
-    public function generate()
+    public function generate(string $channel): array
     {
-        $list = (new BankAccount\Repository)->getAllActivatedMerchantAccountsOrderedByCreatedAt();
+        $bankAccounts = (new BankAccount\Repository)->getAllActivatedMerchantAccountsOrderedByCreatedAt();
 
-        $result = $this->createBenefeciaryFile($list);
+        $result = $this->generateBeneficiaryFile($bankAccounts, $channel);
 
         return $result;
     }
 
-    public function generateBetweenTimestamps($from, $to)
+    public function generateBetweenTimestamps(array $input, string $channel): array
     {
-        $list = (new BankAccount\Repository)->getMerchantBankAccountsBetweenTimestamp($from, $to);
+        (new Validator)->validateInput('beneficiary_register', $input);
 
-        $result = $this->createBenefeciaryFile($list);
-
-        return $result;
-    }
-
-    protected function createBenefeciaryFile($list)
-    {
-        $data = array();
-
-        foreach ($list as $ba)
+        if (isset($input[Entity::ON]))
         {
-            $array = [
-                'Client_Code'           => 'RAZORNODAL',
-                'Bene_Code'             => $ba->getBeneficiaryCode(),
-                'Bene_Name'             => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_NAME),
-                'Bene_Add_1'            => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_ADDRESS1),
-                'Bene_Add_2'            => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_ADDRESS2),
-                'Bene_Add_3'            => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_ADDRESS3),
-                'Bene_Add_4'            => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_ADDRESS4),
-                'Bene_Add_5'            => '',
-                'Bene_City'             => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_CITY),
-                'Bene_Pin'              => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_PIN),
-                'State'                 => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_STATE),
-                'Country'               => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_COUNTRY),
-                'Bene_Email'            => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_EMAIL),
-                'Bene_Mobile'           => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_MOBILE),
-                'Bene_Tel'              => '',
-                'Bene_Fax'              => '',
-                'IFSC'                  => $ba->getAttribute(BankAccount\Entity::IFSC_CODE),
-                'Bene_A/c No'           => $ba->getAttribute(BankAccount\Entity::ACCOUNT_NUMBER),
-            ];
-
-            array_push($data, $array);
+            $today = Carbon::createFromTimestamp($input['on'], Timezone::IST);
+        }
+        else
+        {
+            $today = Carbon::today(Timezone::IST);
         }
 
-        $merchantsCount = count($list);
+        if (Holidays::isWorkingDay($today) === false)
+        {
+            return ['message' => 'Today is a holiday! Happy holidays :)'];
+        }
 
-        $fileData = $this->generateFile($data);
+        $from = Holidays::getPreviousWorkingDay($today);
 
-        $this->sendKotakBeneficiaryFileMail($fileData, $merchantsCount);
+        $bankAccounts = $this->repo->bank_account->getMerchantBankAccountsBetweenTimestamp(
+            $from->getTimestamp(),
+            $today->getTimestamp());
 
-        return ['url' => $fileData['local_file_path']];
+        if ($bankAccounts->count() === 0)
+        {
+            return ['message' => 'No Beneficiary added since last report.'];
+        }
+
+        $newBeneficiaryCount = $bankAccounts->count();
+
+        $message = "Merchant Beneficiary file generated. Beneficiary added since".
+            " last report is ". $newBeneficiaryCount;
+
+        $this->app['slack']->queue($message, [], ['channel' => Config::get('slack.channels.settlements')]);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_BENEFICIARY_FILE_GENERATE,
+            ['new_beneficiaries_added' => $newBeneficiaryCount]);
+
+        $result = $this->generateBeneficiaryFile($bankAccounts, $channel, $input);
+
+        return $result;
     }
 
-    protected function generateFile(array $data): array
+    protected function generateBeneficiaryFile(
+        Base\PublicCollection $bankAccounts,
+        string $channel,
+        array $input = []): array
     {
-        $fileName = $this->getFileToWriteNameWithoutExt();
+        $beneClass = 'RZP\Models\FundTransfer\\' . ucwords($channel) . '\Beneficiary';
 
-        $creator = new FileStore\Creator;
+        $response = (new $beneClass)->register($bankAccounts, $input);
 
-        $creator->extension(FileStore\Format::XLSX)
-                ->content($data)
-                ->name($fileName)
-                ->store(FileStore\Store::S3)
-                ->type(FileStore\Type::BENEFICIARY_FILE)
-                ->save();
-
-        $file = $creator->get();
-
-        $signedFileUrl = $creator->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
-
-        $data = [
-            'signed_url'      => $signedFileUrl,
-            'local_file_path' => $file['local_file_path'],
-            'file_name'       => basename($file['local_file_path']),
-        ];
-
-        return $data;
-    }
-
-    protected function getFileToWriteNameWithoutExt(): string
-    {
-        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
-
-        $mode = $this->mode;
-
-        $fileName = static::$fileToWriteName . '_' . $mode . '_' . $time;
-
-        return $fileName;
-    }
-
-    protected function sendKotakBeneficiaryFileMail(array $fileData, int $merchantsCount)
-    {
-        $data = $fileData + ['merchants_count' => $merchantsCount];
-
-        $beneficiaryFileMail = new BeneficiaryFileMail($data);
-
-        Mail::queue($beneficiaryFileMail);
+        return $response;
     }
 }

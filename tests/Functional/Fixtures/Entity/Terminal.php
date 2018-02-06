@@ -574,6 +574,28 @@ class Terminal extends Base
         $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createMigsRecurringTerminalWithBothRecurringTypes(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                        => 'MiGSRcg3DSN3DS',
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'axis_migs',
+            'gateway_acquirer'          => 'axis',
+            'card'                      => 1,
+            'type'                      => [
+                Type::RECURRING_NON_3DS => '1',
+                Type::RECURRING_3DS => '1'
+            ],
+            'gateway_merchant_id'       => 'random',
+            'gateway_terminal_id'       => 'recurring_random',
+            'gateway_terminal_password' => 'razorpay_password',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedCybersourceAxisTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::CYBERSOURCE_AXIS_TERMINAL;
@@ -953,6 +975,18 @@ class Terminal extends Base
         return parent::create($attributes);
     }
 
+    public function createSharedNetbankingIciciCorpTerminal(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                => Shared::NETBANKING_ICICI_CRP_TERMINAL,
+            'corporate'         => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createSharedNetbankingIciciTerminal($attributes);
+    }
+
     public function createSharedNetbankingIciciRecurringTerminal(array $attributes = [])
     {
         $attributes = [
@@ -1075,6 +1109,16 @@ class Terminal extends Base
             'id'                => Shared::NETBANKING_AXIS_TPV_TERMINAL,
             'network_category'  => 'securities',
             'tpv'               => 1,
+        ];
+
+        return $this->createSharedNetbankingAxisTerminal($attributes);
+    }
+
+    public function createSharedNetbankingAxisCorpTerminal(array $attributes = [])
+    {
+        $attributes = [
+            'id'                => Shared::NETBANKING_AXIS_CRP_TERMINAL,
+            'corporate'         => 1,
         ];
 
         return $this->createSharedNetbankingAxisTerminal($attributes);
@@ -1255,6 +1299,23 @@ class Terminal extends Base
             'gateway_merchant_id2'      => 'razorpay@eazypay',
             'gateway_terminal_password' => 'razorpay_password',
             'upi'                       => true,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedAepsIciciTerminal(array $attributes)
+    {
+        $termId = Shared::AEPS_ICICI_RAZORPAY_TERMINAL;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'aeps_icici',
+            'gateway_terminal_id'       => 'aeps_terminal_id',
+            'aeps'                      => true,
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

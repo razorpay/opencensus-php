@@ -32,7 +32,7 @@ class BasicEntityReport extends BaseReport
     protected $entityToRelationFetchMap = [
         E::TRANSACTION  => [
             // Maps transaction source to entities that need to be fetched
-            E::PAYMENT  => [E::ORDER],
+            E::PAYMENT  => [E::ORDER, E::CARD],
             E::REFUND   => [
                 E::PAYMENT,
                 E::PAYMENT . '.' . E::CARD,
@@ -123,6 +123,9 @@ class BasicEntityReport extends BaseReport
         // currently limiting the api response can break the merchant integration
         // so overwriting the limits for now
         list($count, $skip) = [200000, 0];
+
+        $count = $input['count'] ?? $count;
+        $skip  = $input['skip'] ?? $skip;
 
         list($data, $count) = $this->getReportData($from, $to, $count, $skip);
 

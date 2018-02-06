@@ -5,14 +5,16 @@ namespace RZP\Listeners;
 use Illuminate\Events\Dispatcher;
 
 use App;
+
 use RZP\Constants;
-use RZP\Jobs\WebHook;
 use RZP\Models\Base;
-use RZP\Models\Customer\Token;
+use RZP\Jobs\WebHook;
 use RZP\Models\Event;
-use RZP\Models\Payment;
 use RZP\Models\Invoice;
+use RZP\Models\Merchant;
 use RZP\Jobs\DispatchRouter;
+use RZP\Models\Customer\Token;
+use RZP\Jobs\Invoice\Job as InvoiceJob;
 use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
 
 class ApiEventSubscriber extends Base\Core
@@ -190,14 +192,15 @@ class ApiEventSubscriber extends Base\Core
 
     protected function onInvoicePaid($payment)
     {
-        //
-        // Other than firing web hook in this case, we also update invoice's copy
-        // of customer details if that is empty, with payment's attributes.
-        //
-        // Refer $notWebhookOnlyEvents also.
-        //
+        // Pulls customer info from payment and updates invoice's if not set
         (new Invoice\Core)->setCustomerDetailsFromPaymentIfAbsent($payment);
 
+        // Fires a job so in async pdf can be refreshed
+        $job = new InvoiceJob($this->getMode(), InvoiceJob::CAPTURED, $payment->getInvoiceId());
+
+        (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
+
+        // Follows web hook related code conditionally, Refer $notWebhookOnlyEvents
         if ($this->webhookEnabledForEvent === false)
         {
             return;
@@ -302,6 +305,13 @@ class ApiEventSubscriber extends Base\Core
     protected function onTokenRejected($token)
     {
         $payload = $this->getTokenPayload($token);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onSettlementProcessed($settlement)
+    {
+        $payload = $this->getSettlementPayload($settlement);
 
         $this->prepareAndDispatchWebhook($payload);
     }
@@ -427,6 +437,17 @@ class ApiEventSubscriber extends Base\Core
         return $payload;
     }
 
+    protected function getSettlementPayload($settlement)
+    {
+        $payload = [
+            Constants\Entity::SETTLEMENT => [
+                'entity' => $settlement->toArrayPublic(),
+            ],
+        ];
+
+        return $payload;
+    }
+
     protected function prepareAndDispatchWebhook(array $payload)
     {
         $data = $this->getWebhookData($payload);
@@ -439,11 +460,16 @@ class ApiEventSubscriber extends Base\Core
     protected function getWebhookData($payload)
     {
         $eventFired = $this->event;
-        $entity = $this->mainEntity;
-        $webhook = $entity->merchant->webhook;
+        $entity     = $this->mainEntity;
+        $merchant   = $this->getMerchantFromEntity($entity);
+        $webhook    = $merchant->webhook;
+
+        // Send the signed account id of the merchant associated with the entity, along with the payload
+        // In case of settlements, $entity->merchant is the the merchant to whom the settlement is processed
+        $signedAccountId = Merchant\Account\Entity::getSignedId($entity->merchant->getId());
 
         $attributes = array(
-            Event\Entity::EVENT       => $eventFired,
+            Event\Entity::EVENT      => $eventFired,
             //
             // The same event may or may not contain some entities, based on the state.
             // For example, if subscription.pending is fired on an auth failure,
@@ -451,20 +477,21 @@ class ApiEventSubscriber extends Base\Core
             // If it's fired on capture failure, it'll contain both subscription and payment
             // entity. For this reason, we cannot have a static list of contains array.
             //
-            Event\Entity::CONTAINS    => array_keys($payload),
-            Event\Entity::CREATED_AT  => $entity->getUpdatedAt(),
+            Event\Entity::ACCOUNT_ID => $signedAccountId,
+            Event\Entity::CONTAINS   => array_keys($payload),
+            Event\Entity::CREATED_AT => $entity->getUpdatedAt(),
         );
 
         $event = new Event\Entity($attributes);
 
         $event->setPayload($payload);
 
-        $event->merchant()->associate($entity->merchant);
+        $event->merchant()->associate($merchant);
 
         $data = array(
-            'mode'          => $this->getMode(),
-            'event'         => json_encode($event->toArrayPublic()),
-            'webhook_id'    => $webhook->getId()
+            'mode'       => $this->getMode(),
+            'event'      => json_encode($event->toArrayPublic()),
+            'webhook_id' => $webhook->getId()
         );
 
         return $data;
@@ -490,10 +517,39 @@ class ApiEventSubscriber extends Base\Core
 
     protected function isWebhookEnabledForEvent(Base\PublicEntity $entity)
     {
-        $webhook = $this->repo->webhook->findByMerchant($entity->merchant);
+        $merchant = $this->getMerchantFromEntity($entity);
+
+        $webhook = $this->repo->webhook->findByMerchant($merchant);
 
         return (($webhook !== null) and
                 ($webhook->isActive()) and
                 ($webhook->isEventEnabled($this->event)));
+    }
+
+    /**
+     * Returns the entity's merchant.
+     * If the merchant is a linked account, returns the parent merchant.
+     *
+     * @param Base\PublicEntity $entity
+     *
+     * @return Merchant\Entity
+     */
+    protected function getMerchantFromEntity(Base\PublicEntity $entity): Merchant\Entity
+    {
+        if (($entity instanceof Merchant\Account\Entity) === true)
+        {
+            $merchant = $entity;
+        }
+        else
+        {
+            $merchant = $entity->merchant;
+        }
+
+        if ($merchant->isLinkedAccount() === true)
+        {
+            $merchant = $merchant->parent;
+        }
+
+        return $merchant;
     }
 }

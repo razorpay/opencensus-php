@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Dispute;
 
+use Request;
 use RZP\Models\Base;
 
 class Service extends Base\Service
@@ -21,11 +22,28 @@ class Service extends Base\Service
 
     public function update(string $id, array $input): array
     {
-        $dispute = $this->repo->dispute->findByPublicId($id);
+        $dispute = $this->repo->dispute->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $dispute = $this->core()->update($dispute, $input);
+        if ($this->auth->isAdminAuth() === true)
+        {
+            $dispute = $this->core()->update($dispute, $input);
 
-        return $dispute->toArrayPublic();
+            return $dispute->toArrayAdmin();
+        }
+        else if (($this->auth->isPrivateAuth() === true) or
+                ($this->auth->isProxyAuth() === true))
+        {
+            return $this->core()->updateFilesAndInputForMerchant($dispute, $input);
+        }
+    }
+
+    public function fetchMultiple(array $input): array
+    {
+        $merchantId = $this->merchant->getId();
+
+        $disputes = $this->repo->dispute->fetch($input, $merchantId);
+
+        return $disputes->toArrayPublic();
     }
 
     public function migrateOldAdjustments($file): array
@@ -38,5 +56,12 @@ class Service extends Base\Service
         $reason = (new Reason\Core)->create($input);
 
         return $reason->toArrayPublic();
+    }
+
+    public function fetch(string $id): array
+    {
+        $dispute = $this->repo->dispute->findByPublicIdAndMerchant($id, $this->merchant);
+
+        return $dispute->toArrayPublic();
     }
 }

@@ -7,7 +7,6 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 
 use RZP\Trace\TraceCode;
 use RZP\Models\Batch as BatchModel;
-use Razorpay\Trace\Logger as Trace;
 
 /**
  * Represents asynchronous Batch job for IRCTC.
@@ -78,7 +77,7 @@ class IrctcBatch extends Job implements ShouldQueue
         {
             $this->trace->traceException(
                 $e,
-                Trace::ERROR,
+                null,
                 TraceCode::IRCTC_BATCH_JOB_ERROR,
                 [
                     'data' => $this->batches

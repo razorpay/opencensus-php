@@ -139,7 +139,7 @@ class HitachiGatewayTest extends TestCase
         $this->assertEquals($verifyResponseContent[Hitachi\ResponseFields::REQUEST_ID],
                             $hitachi[Hitachi\Entity::REQUEST_ID]);
 
-        $this->assertEquals('S', $hitachi[Hitachi\Entity::STATUS]);
+        $this->assertEquals('Success', $hitachi[Hitachi\Entity::STATUS]);
     }
 
     public function testPaymentVerifyFailed()

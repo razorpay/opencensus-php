@@ -8,6 +8,7 @@ use Closure;
 use RZP\Models\Payment\Refund;
 use RZP\Models\BankTransfer\Entity as E;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Tests\Functional\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -241,8 +242,6 @@ class BankTransferTest extends TestCase
         $this->assertEquals('9876543210123456789', $bankAccount['account_number']);
 
         $payment =  $this->getLastEntity('payment', true);
-
-        $data = $this->testData['bankTransferImpsFailedRefund'];
 
         // IMPS refunds are permitted...
         $this->refundPayment($payment['id'], 4000000);
@@ -891,6 +890,81 @@ class BankTransferTest extends TestCase
         $this->assertEquals($differentAccountNumber, $bankTransfer['payee_account']);
     }
 
+    public function testBankTransferProcessCryptoBlock()
+    {
+        $accountNumber = $this->bankAccount['account_number'];
+        $ifsc = $this->bankAccount['ifsc'];
+
+        $this->fixtures->merchant->edit('10000000000000', ['category2' => 'cryptocurrency']);
+
+        $this->makeRequestAndGetContent([
+            'method'  => 'PUT',
+            'url'     => '/config/keys',
+            'content' => [
+                'block_bank_transfers_for_crypto' => '1',
+            ],
+        ]);
+
+        // Process API always returns true
+        $response = $this->processBankTransfer($accountNumber, $ifsc);
+        $this->assertEquals(true, $response['valid']);
+        $this->assertNull($response['message']);
+
+        // Customer bank account created
+        $bankAccount = $this->getLastEntity('bank_account', true);
+        $this->assertEquals('HDFC0000001', $bankAccount['ifsc']);
+        $this->assertEquals('9876543210123456789', $bankAccount['account_number']);
+        $this->assertEquals('HDFC Bank', $bankAccount['bank_name']);
+
+        // Created bank transfer is an unexpected one
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
+        $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
+        $this->assertEquals($bankAccount['id'], 'ba_'.$bankTransfer['payer_bank_account_id']);
+        $this->assertEquals(false, $bankTransfer['expected']);
+        $this->assertNotNull($bankTransfer['payment_id']);
+
+        // Invalid account forced creation of a temp acc for default merchant
+        $virtualAccount =  $this->getLastEntity('virtual_account', true);
+        $this->assertEquals('10000000000000', $virtualAccount['merchant_id']);
+        $this->assertEquals(5000000, $virtualAccount['amount_paid']);
+        $this->assertEquals(5000000, $virtualAccount['amount_received']);
+        $this->assertEquals(5000000, $virtualAccount['amount_expected']);
+        $this->assertEquals('paid', $virtualAccount['status']);
+
+        // Payment is not captured, but left in authorized state for auto-refund
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('authorized', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+
+        $this->refundAuthorizedPayment($payment['id']);
+
+        // Payment is refunded
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('refunded', $payment['status']);
+
+        // Refund is created
+        $refund = $this->getLastEntity('refund', true);
+        $this->assertEquals($payment['id'], $refund['payment_id']);
+        $this->assertEquals('created', $refund['status']);
+        $this->assertEquals(5000000, $refund['amount']);
+
+        // Transaction is created for refund
+        $transaction = $this->getLastEntity('transaction', true);
+        $this->assertEquals('refund', $transaction['type']);
+        $this->assertEquals($refund['id'], $transaction['entity_id']);
+
+        // Fund transfer attempt created for refund
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertEquals('created', $attempt['status']);
+        $this->assertEquals($refund['id'], $attempt['source']);
+        $this->assertEquals('10000000000000', $attempt['merchant_id']);
+        $this->assertEquals($bankAccount['id'], 'ba_'.$attempt['bank_account_id']);
+        $this->assertEquals('ACC DOESNT EXIST-'.$bankTransfer['utr'], $attempt['narration']);
+    }
+
     public function testBankTransferProcessInvalidAccount()
     {
         $accountNumber = 'RAZORPINVALIDACCOUNT';
@@ -958,6 +1032,8 @@ class BankTransferTest extends TestCase
 
     public function testBankTransferYesBankRefundsNotAllowed()
     {
+        $this->markTestSkipped("Yesbank refunds temporarily allowed");
+
         $accountNumber = $this->bankAccount['account_number'];
 
         $data =$this->testData[__FUNCTION__];
@@ -1105,12 +1181,27 @@ class BankTransferTest extends TestCase
         $this->refundPayment($payment['id'], 4000000);
         $content = $this->initiatePayouts();
 
-        $reconFile = $this->generateSetlReconciliationFile($content['kotak']['payout_text_file']);
+        $reconFile = $this->generateSetlReconciliationFile(
+            $content['kotak']['payout_text_file'], Channel::KOTAK);
 
+        // Process file
         $data = $this->reconcileSettlements($reconFile);
 
         $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+
         $this->assertNotNull($attempt['utr']);
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt[Attempt\Entity::STATUS]);
+
+        // Process entities
+        $request = [
+            'url'       => '/fund_transfer_attempts/' . Channel::KOTAK,
+            'method'    => 'POST',
+            'content'   => [],
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
         $this->assertEquals(Attempt\Status::PROCESSED, $attempt['status']);
 
         $refund = $this->getLastEntity('refund', true);

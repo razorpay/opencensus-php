@@ -4,19 +4,12 @@ namespace RZP\Reconciliator\Base;
 
 use App;
 
-use RZP\Models\Card;
-use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
-use RZP\Gateway\AxisMigs;
-use RZP\Models\Card\IIN;
-use RZP\Models\Transaction;
 use RZP\Models\Payment\Refund;
 use RZP\Reconciliator\Messenger;
 use RZP\Models\Base\PublicEntity;
-use RZP\Exception\LogicException;
 use RZP\Models\Base\UniqueIdEntity;
-use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\RequestProcessor;
 use RZP\Exception\ReconciliationException;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
@@ -30,9 +23,6 @@ class RefundReconciliate extends Foundation\SubReconciliate
     // This will need to be overridden in each gateway's refund recon.
     const COLUMN_REFUND_AMOUNT = '';
 
-    protected $repo;
-    protected $trace;
-    protected $app;
     protected $messenger;
 
     /**
@@ -69,6 +59,9 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
             $reconciled = $this->checkIfAlreadyReconciled($this->refund);
 
+            // Increment the total count for the summary
+            $this->setSummaryCount(self::TOTAL_SUMMARY, $refundId);
+
             if ($reconciled === true)
             {
                 $this->handleAlreadyReconciled($refundId);
@@ -76,14 +69,11 @@ class RefundReconciliate extends Foundation\SubReconciliate
                 return;
             }
 
-            // Increment the total count for the summary
-            $this->setSummaryCount(self::TOTAL_SUMMARY, $refundId);
-
             $validate = $this->validateRefundDetails($row);
 
             if ($validate === true)
             {
-                $persistSuccess = $this->persistReconciliationData();
+                $persistSuccess = $this->persistReconciliationData($rowDetails);
 
                 if ($persistSuccess === false)
                 {
@@ -182,7 +172,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
         return true;
     }
 
-    protected function persistReconciliationData()
+    protected function persistReconciliationData(array $rowDetails)
     {
         $refundTransaction = $this->refund->transaction;
 
@@ -210,6 +200,8 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
         // Sets the reconciled_at in the transactions entity, on a successful reconciliation.
         $this->persistReconciledAt($this->refund);
+
+        $this->persistGatewaySettledAt($this->refund, $rowDetails);
 
         return true;
     }
@@ -343,8 +335,8 @@ class RefundReconciliate extends Foundation\SubReconciliate
         if (UniqueIdEntity::verifyUniqueId($refundId, false) === false)
         {
             $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
                 [
-                    'trace_code' => TraceCode::RECON_INFO_ALERT,
                     'message'    => 'Refund ID being sent in the file is not as expected.',
                     'row'        => $row,
                     'refund_id'  => $refundId,
@@ -552,6 +544,8 @@ class RefundReconciliate extends Foundation\SubReconciliate
         }
 
         $this->persistGatewayArn($rowDetails, $gatewayRefund);
+
+        $this->repo->saveOrFail($gatewayRefund);
     }
 
     /**

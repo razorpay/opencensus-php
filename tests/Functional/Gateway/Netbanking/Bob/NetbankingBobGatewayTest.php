@@ -31,7 +31,7 @@ class NetbankingBobGatewayTest extends TestCase
 
         $this->gateway = 'netbanking_bob';
 
-        $this->bank = 'BARB';
+        $this->bank = 'BARB_R';
 
         $this->payment = $this->getDefaultNetbankingPaymentArray($this->bank);
 
@@ -150,7 +150,7 @@ class NetbankingBobGatewayTest extends TestCase
 
         $this->refundPayment($payment['id']);
 
-        $data = $this->generateRefundsExcelForNb('BARB');
+        $data = $this->generateRefundsExcelForNb('BARB_R');
 
         $this->assertEquals($data['netbanking_bob']['count'], 3);
 
