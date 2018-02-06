@@ -29,6 +29,9 @@ class CreateFssGateway extends Migration
             $table->string(FSS::ACTION, 10)
                   ->nullable();
 
+            $table->string(FSS::ACQUIRER, 10)
+                  ->nullable();
+
             $table->tinyInteger(FSS::RECEIVED)
                   ->default(0);
 

@@ -333,6 +333,8 @@ class Gateway extends Base\Gateway
     {
         $gatewayPaymentEntity = $this->getNewGatewayPaymentEntity();
 
+        $gatewayPaymentEntity->setAcquirer($input['terminal']['gateway_acquirer']);
+
         $gatewayPaymentEntity->setPaymentId($input['payment']['id']);
 
         if (empty($input['refund']['id']) === false)

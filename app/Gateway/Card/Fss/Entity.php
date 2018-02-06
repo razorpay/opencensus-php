@@ -7,6 +7,7 @@ use RZP\Constants;
 
 class Entity extends Base\Entity
 {
+    const ACQUIRER                  = 'acquirer';
     const AMOUNT                    = 'amount';
     const CURRENCY                  = 'currency';
     const STATUS                    = 'status';
@@ -20,8 +21,6 @@ class Entity extends Base\Entity
 
     protected $fields = [
         self::ID,
-        self::CREATED_AT,
-        self::UPDATED_AT,
         self::PAYMENT_ID,
         self::ACTION,
         self::REFUND_ID,
@@ -36,6 +35,8 @@ class Entity extends Base\Entity
         self::POST_DATE,
         self::ERROR_MESSAGE,
         self::AUTH_RES_CODE,
+        self::UPDATED_AT,
+        self::CREATED_AT,
     ];
 
     protected $fillable = [
@@ -83,6 +84,11 @@ class Entity extends Base\Entity
     public function getErrorMessage()
     {
         return $this->getAttribute(self::ERROR_MESSAGE);
+    }
+
+    public function setAcquirer($acquirer)
+    {
+        $this->setAttribute(self::ACQUIRER, $acquirer);
     }
 
     public function setAction($action)
