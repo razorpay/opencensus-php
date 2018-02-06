@@ -9,16 +9,17 @@ use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\State;
 use RZP\Models\Feature;
-use RZP\Models\Terminal;
 use RZP\Constants\Table;
-use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
-use RZP\Models\Settlement;
+use RZP\Models\Merchant;
+use RZP\Models\Terminal;
 use RZP\Models\Invitation;
+use RZP\Models\Settlement;
 use Conner\Tagging\Taggable;
 use RZP\Models\Merchant\Detail;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Base\QueryCache\Cacheable;
 
 /**
  * @property Detail\Entity $merchantDetail
@@ -27,6 +28,7 @@ class Entity extends Base\PublicEntity
 {
     use Taggable;
     use NotesTrait;
+    use Cacheable;
 
     const ID                       = 'id';
     const ORG_ID                   = 'org_id';
@@ -130,6 +132,8 @@ class Entity extends Base\PublicEntity
 
     const ROLE                      = 'role';
     const PIVOT                     = 'pivot';
+
+    const QUERY_CACHE_VERSION = 'v1';
 
     protected $entity = 'merchant';
 
@@ -310,6 +314,16 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
         self::ACTIVATED_AT,
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::updated(function ($merchant)
+        {
+            static::flushCache('merchant_' . $merchant->getId());
+        });
+    }
 
     const MAX_PAYMENT_AMOUNT_DEFAULT = 50000000;
     const RISK_THRESHOLD_DEFAULT     = 5;

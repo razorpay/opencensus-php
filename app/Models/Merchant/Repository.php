@@ -3,18 +3,26 @@
 namespace RZP\Models\Merchant;
 
 use Closure;
+
 use RZP\Exception;
-use RZP\Models\Base;
 use RZP\Base\Common;
+use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Pricing;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
+use RZP\Models\Merchant\Balance;
+use RZP\Models\Base\QueryCache\CacheFindQueries;
 
 class Repository extends Base\Repository
 {
+    use CacheFindQueries;
+
+    // Cache TTL defined in minutes
+    const CACHE_TTL = 5;
+
     use Base\RepositoryUpdateTestAndLive;
 
     const SUB_ACCOUNTS_ONLY_VALUE = '1';

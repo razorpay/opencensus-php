@@ -256,6 +256,13 @@ class Repository extends \Razorpay\Spine\Repository
         return $entity->setConnection($this->connection)->newQuery();
     }
 
+    public function findOrFail($id, $columns = array('*'))
+    {
+        if ( ! is_null($model = $this->find($id, $columns))) return $model;
+
+        $this->processDbQueryFailure('find', array('id' => $id, 'columns' => $columns));
+    }
+
     protected function processDbQueryFailure($operation, $attributes = null)
     {
         $e = $this->getExceptionDataArray($operation, $attributes);
