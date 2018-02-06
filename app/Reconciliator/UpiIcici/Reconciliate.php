@@ -9,12 +9,6 @@ class Reconciliate extends Base\Reconciliate
 {
     const REFUND_RECON_FILE_NAME    = 'refund_report';
     const PAYMENT_RECON_FILE_NAME   = 'mis_report';
-    const START_ROW                 = 2;
-
-    public function getStartRow($fileDetails)
-    {
-        return self::START_ROW;
-    }
 
     protected function getTypeName($fileName)
     {
