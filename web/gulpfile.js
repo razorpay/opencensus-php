@@ -1,3 +1,5 @@
+require('../signup');
+
 const gulp = require('gulp');
 const stylus = require('gulp-stylus');
 const iconFontGenerator = require('icon-font-generator/lib');

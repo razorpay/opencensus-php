@@ -35,13 +35,19 @@
   @if(env('APP_ENV') === 'production')
     <script src='https://cdn.smooch.io/smooch.min.js'></script>
     <script>
-      window.smoochScript = $.getScript('https://cdn.smooch.io/smooch.min.js', function() {
-        Smooch
-          .init({appToken: '02o6kuyoscqkwiqr3ld3lbehw'})
-          .then(function () {
-              Smooch._rzpReady = true; // custom prop
-          });
-      })
+      (function () {
+        var script = document.createElement("script");
+        script.onload = function() {
+          Smooch
+            .init({appToken: '02o6kuyoscqkwiqr3ld3lbehw'})
+            .then(function () {
+                Smooch._rzpReady = true; // custom prop
+            });
+        };
+        script.src = "https://cdn.smooch.io/smooch.min.js";
+
+        document.getElementsByTagName("head")[0].appendChild(script);
+      }());
     </script>
   @endif
 @else

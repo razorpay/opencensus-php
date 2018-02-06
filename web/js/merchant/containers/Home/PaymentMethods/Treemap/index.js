@@ -34,17 +34,6 @@ export default class Treemap extends Component {
     this.onHideTooltip = ::this.onHideTooltip;
   }
 
-  componentWillMount() {
-    // this will be executed when script download is done,
-    // if data is ready, and component is already mounted
-    // by the time script gets downloaded render treemap
-    return (
-      this.componentMounted &&
-      this.props.data &&
-      this.renderTreemap(this.props.data)
-    );
-  }
-
   showTooltip({ amount, percent, label }) {
     this.setState({
       tooltip: {

@@ -598,10 +598,7 @@ class KeyMetricsContainer extends Component {
     return (
       <Tabs className="keymetrics">
         <TabList
-          className="nav nav-tabs nav-justified"
-          activeTabClassName="active"
-          disabledTabClassName="disabled"
-        >
+          className="nav nav-tabs nav-justified">
           {visibleTabs.map((tabName, index) => {
             const tabData = tabsState[tabName].data,
               { isCurrency, title } = tabsMeta[tabName];

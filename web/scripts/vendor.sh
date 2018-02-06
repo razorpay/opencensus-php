@@ -39,7 +39,7 @@ vendor_m=$(cat <<-END
   moment          moment/min/moment.min.js
   Chart           chart.js/dist/Chart$APPEND_MIN.js
   PropTypes       prop-types/prop-types$APPEND_MIN.js
-  d3              d3/build/d3$APPEND_MIN.js
+  d3              d3/d3$APPEND_MIN.js
 END
 )
 
