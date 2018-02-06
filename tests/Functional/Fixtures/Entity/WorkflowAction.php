@@ -24,7 +24,6 @@ class WorkflowAction extends Base
     {
         $action = $this->fixtures->create('workflow_action', [
             'id'            => self::DEFAULT_WORKFLOW_ACTION_ID,
-            'admin_id'      => Org::SUPER_ADMIN,
             'maker_id'      => Org::SUPER_ADMIN,
             'maker_type'    => MakerType::ADMIN,
             'permission_id' => $this->defaultWorkflowPermission->getId(),
@@ -40,7 +39,6 @@ class WorkflowAction extends Base
     {
         $action = $this->fixtures->create('workflow_action', [
             'id'            => self::DEFAULT_WORKFLOW_CLOSED_ACTION_ID,
-            'admin_id'      => Org::SUPER_ADMIN,
             'maker_id'      => Org::SUPER_ADMIN,
             'maker_type'    => MakerType::ADMIN,
             'permission_id' => $this->defaultWorkflowPermission->getId(),
