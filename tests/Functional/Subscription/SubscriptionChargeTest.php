@@ -28,7 +28,7 @@ class SubscriptionChargeTest extends TestCase
 
     public function setUp()
     {
-        $this->markTestSkipped('Time mock issue');
+       // $this->markTestSkipped('Time mock issue');
 
         $this->testDataFilePath = __DIR__ . '/Helpers/SubscriptionTestData.php';
 
@@ -46,7 +46,7 @@ class SubscriptionChargeTest extends TestCase
 
         $this->setupMockDns();
 
-        Carbon::setTestNow();
+        Carbon::setTestNow("10-1-2018 12:00:00");
     }
 
     public function tearDown()
