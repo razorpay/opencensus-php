@@ -5,6 +5,9 @@ build:
       - redis
     steps:
       - script:
+          name: lint all php files
+          code: ./scripts/phplint.sh
+      - script:
           name: copy env file
           code: cp ./environment/.env.wercker ./environment/.env.testing
 
