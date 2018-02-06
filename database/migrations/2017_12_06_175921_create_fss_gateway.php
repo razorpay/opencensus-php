@@ -71,11 +71,6 @@ class CreateFssGateway extends Migration
 
             $table->integer(FSS::UPDATED_AT);
 
-            $table->foreign(FSS::PAYMENT_ID)
-                  ->references(FSS::ID)
-                  ->on(Table::PAYMENT)
-                  ->on_delete('restrict');
-
             $table->index(FSS::PAYMENT_ID);
 
             $table->index(FSS::STATUS);
@@ -101,11 +96,6 @@ class CreateFssGateway extends Migration
      */
     public function down()
     {
-        Schema::table(Table::CARD_FSS, function($table)
-        {
-            $table->dropForeign(Table::CARD_FSS . '_' . FSS::PAYMENT_ID . '_foreign');
-        });
-
         Schema::drop(Table::CARD_FSS);
     }
 }
