@@ -293,6 +293,13 @@ class Gateway extends Base\Gateway
         // We will be using this to map to our gateway entity
         $this->gatewayAttribues = $queryArray;
 
+        //
+        // The code below does the following:
+        // 1. Takes in the array $queryArray in the form [key1 => value1, key2 => value2]
+        // 2. Implodes array key-value pairs with ~ as delimiter as [key1 ~ value1, key2 ~ value2]
+        // 3. Implodes that using | as delimiter as key1~value1|key2~value2
+        //
+
         $queryStringToEncrypt = implode(
             "|",
             array_map(
