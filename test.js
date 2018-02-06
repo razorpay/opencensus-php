@@ -1,10 +1,7 @@
 #!/usr/bin/env node
 const puppeteer = require('puppeteer');
-
-
-'use strict';
-
 const http = require('http');
+const env = require('process').env;
 
 const ecstatic = require('ecstatic')({
   root: `${__dirname}/public`,
@@ -17,67 +14,49 @@ http.createServer(ecstatic).listen(8080);
 console.log('Listening on :8080');
 
 async function merchant(browser) {
-  const page = await browser.newPage();
-
-  let err = false;
-  const timeout = setTimeout(async _ => {
-    err = 'MERCHANT FAILED...ERROR: timeout';
+  let timeout = setTimeout(_ => {
+    throw 'Merchant Test Timed out';
   }, 5000);
-
+  const page = await browser.newPage();
   await page.goto('http://localhost:8080/test/merchant.html#/app');
 
-  if (err) {
-    throw err;
-  }
-
-  return page.waitForSelector('.layout.rzp').then(async ()=> {
+  return page.waitForSelector('.layout.rzp').then(_ => {
     clearTimeout(timeout);
-    return 'SUCCESS...merchant';
-  }).catch(e => `MERCHANT FAILED...ERROR: ${e}`);
+    console.log('Merchant Successful');
+  });
 }
 
 async function admin(browser) {
-  const page = await browser.newPage();
-
-  let err = false;
-  const timeout = setTimeout(async _ => {
-    err = 'ADMIN FAILED...ERROR: timeout';
+  let timeout = setTimeout(_ => {
+    throw 'Admin Test Timed out';
   }, 5000);
-
+  const page = await browser.newPage();
   await page.goto('http://localhost:8080/test/admin.html#/admin');
 
-  if (err) {
-    throw err;
-  }
-
-  return page.waitForSelector('#app-container').then(async ()=> {
+  return page.waitForSelector('#app-container').then(_ => {
     clearTimeout(timeout);
-    return 'SUCCESS...admin';
-  }).catch(e => `ADMIN FAILED...ERROR: ${e}`);
+    console.log('Admin Successful');
+  });
 }
 
 let browser;
-async function test()   {
+async function test() {
   browser = await puppeteer.launch({
-    args: ['--no-sandbox', '--user-data-dir=/tmp']
+    executablePath: env.CHROME_BIN || '/usr/bin/chromium',
+    args: ['--no-sandbox', '--user-data-dir=/tmp'],
   });
   console.log('Browser testing started...');
 
-  console.log(await merchant(browser));
-  console.log(await admin(browser));
+  await Promise.all([merchant(browser), admin(browser)]);
+}
 
-  return;
-};
-
-
-
-test().then(_=> {
-  browser.close();
-  console.log('Puppeteer successful');
-  process.exit(0);
-}).catch(er=>{
-  browser && browser.close();
-  console.log(er);
-  console.log('Puppeteer failed');
-  process.exit(1);
-});
+test()
+  .then(_ => {
+    console.log('Puppeteer successful');
+    process.exit();
+  })
+  .catch(er => {
+    console.log(er);
+    console.log('Puppeteer failed');
+    process.exit(1);
+  });
