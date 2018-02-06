@@ -74,7 +74,7 @@ export default class ProceedFormFields extends Component {
                   component="input"
                   type="checkbox"
                 />
-                <label for="sms_notify" class="i i-check">
+                <label for="sms_notify" class="icon i-check">
                   Sms Notify
                 </label>
               </div>
@@ -86,7 +86,7 @@ export default class ProceedFormFields extends Component {
                   component="input"
                   type="checkbox"
                 />
-                <label for="email_notify" class="i i-check">
+                <label for="email_notify" class="icon i-check">
                   Email Notify
                 </label>
               </div>
