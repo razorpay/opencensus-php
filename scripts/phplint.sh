@@ -2,7 +2,7 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-for dir in app config public resources; do
+for dir in app config public resources database bootstrap; do
 	find $dir -iname "*.php" | xargs -n1 php -l
 done
 
