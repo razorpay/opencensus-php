@@ -26,8 +26,8 @@ class Validator extends Base\Validator
         RequestFields::BANK_REF_NUM => 'required|string|size:14',
         RequestFields::AMOUNT       => 'required|integer',
         RequestFields::RETURN_URL   => 'required|string|url',
-        RequestFields::TRAN_REF_NUM => 'required|integer|in:9999999999',
-        RequestFields::MODE         => 'required|string|in:V',
+        RequestFields::TRAN_REF_NUM => 'sometimes|integer|in:9999999999',
+        RequestFields::MODE         => 'required|string|in:V,S',
         RequestFields::CHECKSUM     => 'required|string'
     ];
 }

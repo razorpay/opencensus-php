@@ -204,9 +204,16 @@ class Gateway extends Base\Gateway
             $input['payment']['id'],
             $input['payment']['amount'] / 100,
             $this->getCallbackUrl($input['payment']['id']),
-            $gatewayPayment->getBankPaymentId(),
-            Mode::VERIFY,
         ];
+
+        if ($gatewayPayment->getBankPaymentId() !== "null")
+        {
+            $content = array_merge($content, [$gatewayPayment->getBankPaymentId(), Mode::VERIFY]);
+        }
+        else
+        {
+            array_push($content, Mode::VERIFY_WO_TID);
+        }
 
         $contentToEncode = $this->computeStringToEncode($content);
 
