@@ -303,7 +303,7 @@ class Gateway extends Base\Gateway
             array_map(
                 function($key, $value)
                 {
-                    return $key . '~' . $value;
+                    return Constants::SHOPPING_MALL . $key . '~' . $value;
                 },
                 array_keys($queryArray),
                 array_values($queryArray)

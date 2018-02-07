@@ -17,6 +17,8 @@ final class Validator extends Base\Validator
         RequestFields::QUERY_STRING => 'required|string'
     ];
 
+    // TODO: Validate Query String
+
     protected static $verifyRules = [
         RequestFields::PAYEE_ID    => 'required|string',
         RequestFields::PAY_REF_NUM => 'required|string|size:14',

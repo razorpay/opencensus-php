@@ -93,7 +93,7 @@ class Server extends Mock\Server
         {
             $explodedArray = explode('~', $subArray);
 
-            $key = $explodedArray[0];
+            $key = explode('.', $explodedArray[0])[1];
 
             $value = $explodedArray[1];
 
