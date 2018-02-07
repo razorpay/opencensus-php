@@ -9,6 +9,7 @@ use RZP\Models\Gateway\File\Constants as Target;
 class Constants extends Base\Constants
 {
     const HEADER_MAP = [
+        ''                       => 'Failed Refunds',
         Target::UPI_ICICI        => 'UPI Icici Failed Refunds',
         Target::AIRTEL_MONEY     => 'Airtel Money Failed Refunds',
         Target::AXIS_MIGS        => 'Axis Migs Failed Refunds',
