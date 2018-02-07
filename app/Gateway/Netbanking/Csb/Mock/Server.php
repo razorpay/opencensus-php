@@ -3,12 +3,12 @@
 namespace RZP\Gateway\Netbanking\Csb\Mock;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
 use RZP\Gateway\Base;
+use RZP\Constants\Timezone;
+use RZP\Gateway\Netbanking\Csb\Status;
 use RZP\Gateway\Netbanking\Csb\Constants;
 use RZP\Gateway\Netbanking\Csb\RequestFields;
 use RZP\Gateway\Netbanking\Csb\ResponseFields;
-use RZP\Gateway\Netbanking\Csb\Status;
 
 class Server extends Base\Mock\Server
 {
@@ -63,18 +63,20 @@ class Server extends Base\Mock\Server
     private function getAuthorizeResponse(array $request)
     {
         // TODO: Check if this format is correct
-        $date = Carbon::now(Timezone::IST)->format('dmy');
+        $date = Carbon::now(Timezone::IST)->format('d-M-Y H:i:s A');
+
+        $narration = $request[RequestFields::PAYEE_ID] . ' ' . $request[RequestFields::BANK_REF_NUM];
 
         $content = [
             ResponseFields::PAYEE_ID     => $request[RequestFields::PAYEE_ID],
             ResponseFields::BANK_REF_NUM => $request[RequestFields::BANK_REF_NUM],
             ResponseFields::AMOUNT       => $request[RequestFields::AMOUNT],
             ResponseFields::MODE         => $request[RequestFields::MODE],
-            ResponseFields::NARRATION    => Constants::NARRATION,
+            ResponseFields::NARRATION    => $narration,
             ResponseFields::DATE_TIME    => $date,
             ResponseFields::TRAN_REF_NUM => 9999999999, // TODO: Check the diff b/w this and bankId
             ResponseFields::STATUS       => Status::SUCCESS,
-            ResponseFields::BANKID       => 9999999999,
+            ResponseFields::BANKID       => Constants::BANK_ID,
             ResponseFields::CHNPGCODE    => $request[RequestFields::CHNPGCODE]
         ];
 

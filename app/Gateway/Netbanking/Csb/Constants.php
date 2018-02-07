@@ -16,5 +16,5 @@ class Constants
     const CHNPGSYN  = 'RazorPay';
     const CHNPGCODE = '000000RazorPwy018126';
 
-    const NARRATION = 'Payment successful';
+    const BANK_ID   = 'CSB';
 }

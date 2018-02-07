@@ -17,7 +17,6 @@ return [
         'status'          => 'Y',
         'reference1'      => 'RazorPay',
         'received'        => true,
-        'error_message'   => 'Payment successful'
     ],
 
     'testPaymentFailed' => [
