@@ -2125,6 +2125,37 @@ return [
         ],
     ],
 
+    'testGetCheckoutRouteWithMerchantSubEmi' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'methods' => [
+                    'emi_options' => [
+                        'HDFC' => [
+                            [
+                                'duration'   => 9,
+                                'interest'   => 12,
+                                'subvention' => 'customer',
+                                'min_amount' => 500000
+                            ],
+                            [
+                                'duration'   => 9,
+                                'interest'   => 0,
+                                'subvention' => 'merchant',
+                                'min_amount' => 527315
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+        ],
+    ],
+
     'testGetCheckoutRouteWithSavedGlobal' => [
         'request' => [
             'url' => '/preferences',
