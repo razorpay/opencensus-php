@@ -6,10 +6,13 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Gateway\Blade\Mock\CardNumber;
 
 use RZP\Reconciliator\FirstData\PaymentReconciliate as FDPaymentRecon;
 use RZP\Reconciliator\HDFC\PaymentReconciliate as HDFCPaymentRecon;
 use RZP\Reconciliator\Axis\PaymentReconciliate as AxisPaymentRecon;
+use RZP\Reconciliator\Hitachi\PaymentReconciliate as HitachiPaymentRecon;
+use RZP\Reconciliator\Hitachi\RefundReconciliate as HitachiRefundRecon;
 
 class ReconciliationFileTest extends TestCase
 {
@@ -311,6 +314,27 @@ class ReconciliationFileTest extends TestCase
 
         return $facade;
     }
+    
+    private function overrideHitachiPayment(array $payment, array $forceOverride = [])
+    {
+        $facade = $this->testData['facades']['hitachi'];
+        $facade[HitachiPaymentRecon::COLUMN_PAYMENT_ID]     = $payment['payment_id'];
+        $facade[HitachiPaymentRecon::COLUMN_PAYMENT_AMOUNT] = intval($payment['amount'] / 100);
+        $facade[HitachiPaymentRecon::COLUMN_AUTH_CODE]      = random_integer(6);
+        $facade[HitachiPaymentRecon::COLUMN_ARN]            = str_random(24);
+
+        return array_merge($facade, $forceOverride);
+    }
+
+    private function overrideHitachiRefund(array $payment, array $forceOverride = [])
+    {
+        $facade = $this->overrideHitachiPayment($payment, $forceOverride);
+
+        $facade['message_type'] = '0220';
+        $facade[HitachiRefundRecon::COLUMN_REFUND_ID] = $payment['refund_id'];
+
+        return $facade;
+    }
 
     protected function runForFiles(array $files, string $gateway, array $forceUpdate = [])
     {
@@ -353,4 +377,57 @@ class ReconciliationFileTest extends TestCase
             null,
             true);
     }
+    
+    public function testHitachiReconPaymentFile()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_hitachi_terminal');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        $this->payment['card']['number'] = CardNumber::VALID_ENROLL_NUMBER;
+
+        $payment1 = $this->getNewPaymentEntity(false,true);
+
+        $gatewayPayment1 = $this->getLastEntity('hitachi', true);
+
+        $this->assertNull($payment1['reference1']);
+
+        $entries[] = $this->overrideHitachiPayment($gatewayPayment1);
+
+        $file = $this->writeToExcelFile($entries, 'hitachi');
+
+        $this->runForFiles([$file], 'Hitachi');
+
+        $updatedPayment1 = $this->getEntityById('payment', $payment1['id'], true);
+
+        $this->assertEquals($entries[0][HitachiPaymentRecon::COLUMN_ARN], $updatedPayment1['reference1']);
+        $this->assertEquals($entries[0][HitachiPaymentRecon::COLUMN_AUTH_CODE], $updatedPayment1['reference2']);
+
+        $this->assertTrue($updatedPayment1['gateway_captured']);
+    }
+
+    public function testHitachiReconRefundFile()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_hitachi_terminal');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        $this->payment['card']['number'] = CardNumber::VALID_ENROLL_NUMBER;
+
+        $refund1 = $this->getNewRefundEntity(true, false);
+
+        $gatewayPayment1 = $this->getDbLastEntityToArray('hitachi');
+
+        $this->assertNull($refund1['arn']);
+
+        $entries[] = $this->overrideHitachiRefund($gatewayPayment1);
+
+        $file = $this->writeToExcelFile($entries, 'hitachi');
+        $this->runForFiles([$file], 'Hitachi');
+
+        $updatedRefund1 = $this->getDbEntityById('refund', $refund1['id'])->toArrayAdmin();
+
+        $this->assertEquals($entries[0][HitachiRefundRecon::COLUMN_ARN], $updatedRefund1['arn']);
+    }
+
 }
