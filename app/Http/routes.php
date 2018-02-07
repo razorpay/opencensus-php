@@ -35,8 +35,8 @@ Route::group(['middleware' => ['web']], function () {
         // Adding the following here since auth:user middleware should be after cors
         Route::options('/session', 'UserController@getSessionData')->middleware(['cors', 'auth:user']);
         Route::get('/session', 'UserController@getSessionData')->middleware(['cors', 'auth:user']);
+        // Route::any('/api/{path}', 'GenericController@handlePath')->where(['path' => '.*'])->name('user');
     });
-        Route::any('/user/api/{path}', 'GenericController@handleUser')->where(['path' => '.*']);
 
     Route::group(['middleware' => 'auth:user', 'prefix' => 'user'], function()
     {
@@ -54,12 +54,12 @@ Route::group(['middleware' => ['web']], function () {
     {
         Route::any('/guest/generic', 'GenericController@handle');
     });
-    Route::any('/api/{path?}', 'GenericController@handleGuest')->where(['path' => '.*']);
+    Route::any('/api/{path?}', 'GenericController@handlePath')->where(['path' => '.*']);
 
     Route::group(['middleware'  =>  ['auth:user', 'verified']], function()
     {
         Route::any('/user/generic', 'GenericController@handle');
-        Route::any('/merchant/api/{mode}/{path}', 'GenericController@handleMerchant')->where(['path' => '.*']);
+        Route::any('/merchant/api/{mode}/{path}', 'GenericController@handleAny')->where(['path' => '.*'])->name('merchant');
         // Account Routes
         Route::get('/{mode}/accounts', 'MerchantController@getAccounts')->name('get_accounts');
 
@@ -103,7 +103,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::group(['middleware'  =>  ['admin', 'admin_access']], function()
     {
         Route::any('/admin/generic', 'GenericController@handle');
-        Route::any('/admin/api/{auth}/{path}', 'GenericController@handleAdmin')->where(['path' => '.*']);
+        // Route::any('/admin/api/{mode}/{path}', 'GenericController@handleAny')->where(['path' => '.*'])->name('admin');
         Route::get('/admin/user', 'AdminController@getAdmin');
         Route::get('/admin/user/logout', 'AdminController@getLogout');
         Route::get('/admin/user/keepalive', 'AdminController@getKeepAlive');

@@ -389,7 +389,7 @@ export function getDetailsViewMap(model) {
     {
       label: 'Tags',
       value:
-        details && details.tags ? details.tags.join(', ').toLowerCase() : '',
+        details && details.tags ? details.tags.join(', ') : '',
     },
     {
       label: 'Features',
