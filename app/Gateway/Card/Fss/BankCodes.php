@@ -13,7 +13,7 @@ class BankCodes
      * @var array
      */
     public static $bankCodes = [
-        Bank::UTBI => 1113,
+        Bank::UTIB => 1113,
         Bank::IOBA => 1114,
         Bank::ANDB => 1115,
         Bank::SYNB => 1116,
