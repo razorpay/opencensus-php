@@ -200,7 +200,7 @@ class Gateway extends Base\Gateway
         $content = [
             Constants::CHNPGSYN,
             Constants::CHNPGCODE,
-            $this->getMerchantId(),
+            $this->getMerchantId2(), // TODO: Check this
             $input['payment']['id'],
             $input['payment']['amount'] / 100,
             $this->getCallbackUrl($input['payment']['id']),
@@ -242,7 +242,7 @@ class Gateway extends Base\Gateway
 
         $content = $verify->verifyResponseContent;
 
-        $status = $content[ResponseFields::VERIFICATION];
+        $status = trim($content[ResponseFields::VERIFICATION]);
 
         // content will contain status 100 or 101
         if ($status === Status::SUCCESS)
