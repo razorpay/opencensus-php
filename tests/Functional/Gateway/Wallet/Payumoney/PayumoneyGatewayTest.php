@@ -663,7 +663,7 @@ class PayumoneyGatewayTest extends TestCase
 
         $data = $this->generateRefundsExcelForPayumoneyWallet(true);
 
-        $this->assertEquals(3, $data['wallet_payumoney']['count']);
+        $this->assertEquals(4, $data['wallet_payumoney']['count']);
         $this->assertTrue(file_exists($data['wallet_payumoney']['file']));
 
         unlink($data['wallet_payumoney']['file']);

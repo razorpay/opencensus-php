@@ -113,9 +113,6 @@ class ReconciliationTest extends TestCase
     {
         Mail::fake();
 
-        // Mocking time to 22:30 for settlements to get processed
-        Carbon::setTestNow(Carbon::create(2016, 11, 15, 23, 0, 0, Timezone::IST));
-
         // Create payments and refunds with timestamps two days back
         $prEntities = $this->createPaymentAndRefundEntities();
 
@@ -142,9 +139,6 @@ class ReconciliationTest extends TestCase
         $this->assertTestResponse($data, 'matchSummaryForReconFile');
 
         Mail::assertSent(ReconciliationMail::class);
-
-        // Resetting time
-        Carbon::setTestNow();
     }
 
     public function testReconEntiyFailureForKotak()

@@ -69,7 +69,7 @@ class EloquentEx extends \Razorpay\Spine\Entity
 
     public function freshTimestamp()
     {
-        return Carbon::now()->timestamp;
+        return Carbon::now()->getTimestamp();
     }
 
     public function getTable()

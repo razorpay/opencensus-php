@@ -244,6 +244,7 @@ class AirtelmoneyGatewayTest extends TestCase
     public function testRefundExcelFileForAParticularMonth()
     {
         $knownDate = Carbon::create(2016, 5, 21);
+
         Carbon::setTestNow($knownDate);
 
         $defaultPayment = $this->getDefaultWalletPaymentArray('airtelmoney');
@@ -274,7 +275,7 @@ class AirtelmoneyGatewayTest extends TestCase
 
         $data = $this->generateRefundsExcelForAirtelmoneyWallet(true);
 
-        $this->assertEquals(3, $data['wallet_airtelmoney']['count']);
+        $this->assertEquals(4, $data['wallet_airtelmoney']['count']);
         $this->assertTrue(file_exists($data['wallet_airtelmoney']['file']));
 
         Carbon::setTestNow();

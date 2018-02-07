@@ -2,10 +2,9 @@
 
 namespace RZP\Models\Payment\Processor;
 
-use Carbon\Carbon;
-use JMS\Serializer\Tests\Fixtures\Discriminator\Car;
 use Mail;
 use RZP\Error;
+use Carbon\Carbon;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Card;
