@@ -162,29 +162,6 @@ export default class BusinessDetailsForm extends Component {
 
               <div class="form-group">
                 <label class="col-md-3 control-label label-required">
-                  International Payments Required?
-                </label>
-                <div class="col-md-9 checkbox">
-                  <label class="i-switch">
-                    <Field
-                      name="business_international"
-                      component={CheckboxField}
-                      disabled={locked}
-                    />
-                    <i />
-                  </label>
-                  <small class="help-block">
-                    <i class="icon icon-info-circle" />
-                    <span>
-                      Please note that applications for international
-                      transactions take longer time to process.
-                    </span>
-                  </small>
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label class="col-md-3 control-label label-required">
                   Payments Accepted for:
                 </label>
                 <div class="col-md-9">
@@ -223,6 +200,31 @@ export default class BusinessDetailsForm extends Component {
                     <span>
                       Please give a brief explanation of your business model and
                       future plans (Essential for startups)
+                    </span>
+                  </small>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="col-md-3 control-label label-required">
+                  International Payments Required?
+                </label>
+                <div class="col-md-9">
+                  <div class="checkbox rzpCheckbox">
+                    <Field
+                      name="business_international"
+                      id="business_international"
+                      component="input"
+                      type="checkbox"
+                      disabled={locked}
+                    />
+                    <label for="business_international" />
+                  </div>
+                  <small class="help-block">
+                    <i class="icon icon-info-circle" />
+                    <span>
+                      Please note that applications for international
+                      transactions take longer time to process.
                     </span>
                   </small>
                 </div>
@@ -306,16 +308,17 @@ export default class BusinessDetailsForm extends Component {
                   <label class="col-md-3 control-label">
                     Operational Address same as Registered Address
                   </label>
-                  <div class="col-md-9 checkbox">
-                    <label class="i-switch">
+                  <div class="col-md-9">
+                    <div class="checkbox rzpCheckbox">
                       <Field
                         name="or_same"
+                        id="or_same"
                         component="input"
                         type="checkbox"
                         onChange={this.updateOperationalAddress}
                       />
-                      <i />
-                    </label>
+                      <label htmlFor="or_same" />
+                    </div>
                     <small class="help-block">
                       <i class="icon icon-info-circle" />
                       <span>
@@ -327,77 +330,79 @@ export default class BusinessDetailsForm extends Component {
                 </div>
               ) : null}
 
-              <fieldset disabled={this.props.or_same}>
-                <div class="form-group">
-                  <label class="col-md-3 control-label label-required">
-                    Operational Address
-                  </label>
-                  <div class="col-md-9">
-                    <Field
-                      name="business_operation_address"
-                      component={InputField}
-                      tagName="textarea"
-                      class="form-control"
-                      placeholder="Operational Address"
-                      validate={[required()]}
-                    />
+              {!this.props.or_same ? (
+                <fieldset disabled={this.props.or_same}>
+                  <div class="form-group">
+                    <label class="col-md-3 control-label label-required">
+                      Operational Address
+                    </label>
+                    <div class="col-md-9">
+                      <Field
+                        name="business_operation_address"
+                        component={InputField}
+                        tagName="textarea"
+                        class="form-control"
+                        placeholder="Operational Address"
+                        validate={[required()]}
+                      />
+                    </div>
                   </div>
-                </div>
 
-                <div class="form-group">
-                  <label class="col-md-3 control-label label-required">
-                    Operational Address Pincode
-                  </label>
-                  <div class="col-md-9">
-                    <Field
-                      name="business_operation_pin"
-                      component={InputField}
-                      class="form-control"
-                      placeholder="Operational Address Pincode"
-                      validate={[required(), validatePincodeLength]}
-                      onChange={e => this.fetchPincodeDetails(e, 'operation')}
-                    />
+                  <div class="form-group">
+                    <label class="col-md-3 control-label label-required">
+                      Operational Address Pincode
+                    </label>
+                    <div class="col-md-9">
+                      <Field
+                        name="business_operation_pin"
+                        component={InputField}
+                        class="form-control"
+                        placeholder="Operational Address Pincode"
+                        validate={[required(), validatePincodeLength]}
+                        onChange={e => this.fetchPincodeDetails(e, 'operation')}
+                      />
+                    </div>
                   </div>
-                </div>
 
-                <div class="form-group">
-                  <label class="col-md-3 control-label label-required">
-                    Operational Address State
-                  </label>
-                  <div class="col-md-9">
-                    <Field
-                      name="business_operation_state"
-                      component={InputField}
-                      tagName="select"
-                      class="form-control"
-                      placeholder="Operational Address State"
-                      validate={[required()]}
-                    >
-                      <option />
-                      {Object.keys(states).map(stateCode => (
-                        <option value={stateCode} key={stateCode}>
-                          {states[stateCode]}
-                        </option>
-                      ))}
-                    </Field>
+                  <div class="form-group">
+                    <label class="col-md-3 control-label label-required">
+                      Operational Address State
+                    </label>
+                    <div class="col-md-9">
+                      <Field
+                        name="business_operation_state"
+                        component={InputField}
+                        tagName="select"
+                        class="form-control"
+                        placeholder="Operational Address State"
+                        validate={[required()]}
+                      >
+                        <option />
+                        {Object.keys(states).map(stateCode => (
+                          <option value={stateCode} key={stateCode}>
+                            {states[stateCode]}
+                          </option>
+                        ))}
+                      </Field>
+                    </div>
                   </div>
-                </div>
 
-                <div class="form-group">
-                  <label class="col-md-3 control-label label-required">
-                    Operational Address City
-                  </label>
-                  <div class="col-md-9">
-                    <Field
-                      name="business_operation_city"
-                      component={InputField}
-                      class="form-control"
-                      placeholder="Operational Address City"
-                      validate={[required()]}
-                    />
+                  <div class="form-group">
+                    <label class="col-md-3 control-label label-required">
+                      Operational Address City
+                    </label>
+                    <div class="col-md-9">
+                      <Field
+                        name="business_operation_city"
+                        component={InputField}
+                        class="form-control"
+                        placeholder="Operational Address City"
+                        validate={[required()]}
+                      />
+                    </div>
                   </div>
-                </div>
-              </fieldset>
+                </fieldset>
+              ) : null}
 
               <div class="form-group">
                 <label class="col-md-3 control-label">
