@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Netbanking\Csb;
 
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
@@ -202,6 +203,7 @@ class Gateway extends Base\Gateway
             $this->getMerchantId(),
             $input['payment']['id'],
             $input['payment']['amount'] / 100,
+            $this->getCallbackUrl($input['payment']['id']),
             $gatewayPayment->getBankPaymentId(),
             Mode::VERIFY,
         ];
@@ -350,5 +352,42 @@ class Gateway extends Base\Gateway
     {
         // TODO: Ensure this is right
         return $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
+    }
+
+    /**
+     * Creates the callback url for payment
+     * where the gateway can hit back to say payment
+     * is finished/authorized.
+     *
+     * @param string $paymentId
+     * @return string Callback url
+     */
+    private function getCallbackUrl(string $paymentId): string
+    {
+        $params = $this->getPaymentIdAndHashParams($paymentId);
+
+        return $this->route->getUrlWithPublicCallbackAuth($params);
+    }
+
+    private function getPaymentIdAndHashParams(string $paymentId): array
+    {
+        $publicId = Payment\Entity::getSignedId($paymentId);
+
+        $hash = $this->getHashOf($publicId);
+
+        return ['id' => $publicId, 'hash' => $hash];
+    }
+
+    /**
+     * Returns a hash of a string.
+     *
+     * @param string $string
+     * @return string Hash of the string
+     */
+    private function getHashOf(string $string): string
+    {
+        $secret = $this->app->config->get('app.key');
+
+        return hash_hmac(HashAlgo::SHA1, $string, $secret);
     }
 }

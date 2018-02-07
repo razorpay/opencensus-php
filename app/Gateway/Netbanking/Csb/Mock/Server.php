@@ -175,6 +175,7 @@ class Server extends Base\Mock\Server
             RequestFields::PAYEE_ID,
             RequestFields::BANK_REF_NUM,
             RequestFields::AMOUNT,
+            RequestFields::RETURN_URL,
             RequestFields::TRAN_REF_NUM,
             RequestFields::MODE,
             RequestFields::CHECKSUM

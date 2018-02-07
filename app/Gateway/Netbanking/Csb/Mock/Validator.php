@@ -25,6 +25,7 @@ class Validator extends Base\Validator
         RequestFields::PAYEE_ID     => 'required|string',
         RequestFields::BANK_REF_NUM => 'required|string|size:14',
         RequestFields::AMOUNT       => 'required|integer',
+        RequestFields::RETURN_URL   => 'required|string|url',
         RequestFields::TRAN_REF_NUM => 'required|integer|in:9999999999',
         RequestFields::MODE         => 'required|string|in:V',
         RequestFields::CHECKSUM     => 'required|string'
