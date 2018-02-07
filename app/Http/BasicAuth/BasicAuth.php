@@ -652,7 +652,7 @@ class BasicAuth
      *
      * @return null
      */
-    public function verifyFeatureAccessByApplication(array $authReturn)
+    public function verifyFeatureAccessByApplication($authReturn)
     {
         $routeFeatures = $this->getCurrentRouteFeatures();
 
@@ -664,9 +664,9 @@ class BasicAuth
         $routeFeaturesAvailableWithMerc = $this->getRouteFeaturesAvailableWithMerc($routeFeatures);
 
         $allowAccess = $this->allowApplicationAccessToFeatureRoute(
-                        $routeFeatures,
-                        $routeFeaturesAvailableWithMerc,
-                        $authReturn);
+                                $routeFeatures,
+                                $routeFeaturesAvailableWithMerc,
+                                $authReturn);
 
         if ($allowAccess === true)
         {
@@ -684,7 +684,7 @@ class BasicAuth
      *
      * @return null
      */
-    public function verifyFeatureAccessByMerchant($authReturn)
+    public function verifyFeatureAccessByMerchant()
     {
         $routeFeatures = $this->getCurrentRouteFeatures();
 
@@ -736,7 +736,7 @@ class BasicAuth
     protected function allowApplicationAccessToFeatureRoute(
         array $routeFeatures,
         array $routeFeaturesAvailableWithMerc,
-        array $authReturn): bool
+        $authReturn): bool
     {
         //
         // 1. If the application has any of the route features required,
@@ -752,6 +752,8 @@ class BasicAuth
         // that is trying to access the resource
         //
         $applicationFeatures = $this->repo->feature->findByEntityTypeAndEntityId($application, $applicationId);
+
+        $applicationFeatures = $applicationFeatures->toArray();
 
         $routeFeaturesAvailableWithApp = array_intersect($routeFeatures, $applicationFeatures);
 

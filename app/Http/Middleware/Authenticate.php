@@ -207,6 +207,11 @@ class Authenticate
      */
     protected function postApplicationAuthenticationProcessing($authReturn)
     {
+        if (is_array($authReturn) === false)
+        {
+            return $authReturn;
+        }
+
         $featureCheck = $this->ba->verifyFeatureAccessByApplication($authReturn);
 
         return $featureCheck;

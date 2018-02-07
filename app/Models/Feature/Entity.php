@@ -63,7 +63,7 @@ class Entity extends Base\PublicEntity
         Constants::APPLICATIONS => Constants::APPLICATION,
     ];
 
-    protected static $oauthBlacklistedFeatures = [
+    public static $oauthBlacklistedFeatures = [
         Constants::S2S
     ];
 
