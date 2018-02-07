@@ -46,7 +46,7 @@
     "react-timeago": "^3.4.3",
     "react-transition-group": "^2.2.1",
     "redux": "^3.7.2",
-    "redux-form": "^7.2.1",
+    "redux-form": "6.8.0",
     "uglifyjs-webpack-plugin": "^1.1.6",
     "webpack": "^3.10.0"
   },
