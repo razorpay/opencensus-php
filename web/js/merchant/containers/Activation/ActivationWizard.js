@@ -1,8 +1,9 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import { destroy } from 'redux-form';
-import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import WizardItem from './WizardItem';
+
+import Tabs, { Tab, TabPane } from 'rzp/ui/ReactTabs';
 
 @connect(state => state.activation, { destroy })
 export default class ActivationWizard extends Component {
@@ -78,7 +79,7 @@ export default class ActivationWizard extends Component {
     let iconType = this.props.steps[stepNumber];
 
     return (
-      <a
+      <span
         class={
           iconType === 'success'
             ? 'text-success'
@@ -87,7 +88,7 @@ export default class ActivationWizard extends Component {
       >
         {icon[iconType]}
         <span>{title}</span>
-      </a>
+      </span>
     );
   }
 
@@ -122,23 +123,18 @@ export default class ActivationWizard extends Component {
         {info}
         <Tabs
           class="activation-wizard"
-          selectedIndex={this.state.selectedTabIndex}
+          selectedTabIndex={this.state.selectedTabIndex}
           onSelect={index => this.gotoTab(index + 1)}
         >
-          <TabList
-            class="nav nav-tabs"
-            activeTabClassName="active"
-            disabledTabClassName="disabled"
-          >
-            {this.activationForms.map((form, index) => (
-              <Tab key={form.name}>
-                {this.renderNavAnchor(index + 1, form.title)}
-              </Tab>
-            ))}
-          </TabList>
 
           {this.activationForms.map((form, index) => (
-            <TabPanel key={form.name}>
+            <Tab key={form.name}>
+              {this.renderNavAnchor(index + 1, form.title)}
+            </Tab>
+          ))}
+
+          {this.activationForms.map((form, index) => (
+            <TabPane key={form.name}>
               <WizardItem
                 form={form.name}
                 step={index + 1}
@@ -148,7 +144,7 @@ export default class ActivationWizard extends Component {
                 callback={this.props.callback}
                 linkedAccountKyc={this.state.linkedAccountKyc}
               />
-            </TabPanel>
+            </TabPane>
           ))}
         </Tabs>
       </div>
