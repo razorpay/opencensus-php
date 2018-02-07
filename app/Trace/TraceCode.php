@@ -741,6 +741,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PRICING_RULE_DOES_NOT_EXISTS                  = 'PRICING_RULE_DOES_NOT_EXISTS';
 
     const BATCH_CREATE_REQUEST                          = 'BATCH_CREATE_REQUEST';
+    const BATCH_FILE_VALIDATE_REQUEST                   = 'BATCH_FILE_VALIDATE_REQUEST';
     const BATCH_CREATED                                 = 'BATCH_CREATED';
     const BATCH_UPLOADING_FILE                          = 'BATCH_UPLOADING_FILE';
     const BATCH_UPLOAD_FILE                             = 'BATCH_UPLOAD_FILE';

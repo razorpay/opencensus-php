@@ -40,7 +40,7 @@ class PaymentLink
         // Get draft, sms_notify, email_notify from $params or use default as
         // 1, 0 and 0 respectively.
 
-        $draft       = $params[Invoice\Entity::DRAFT] ?? '1';
+        $draft       = $params[Invoice\Entity::DRAFT] ?? '0';
         $smsNotify   = $params[Invoice\Entity::SMS_NOTIFY] ?? '0';
         $emailNotify = $params[Invoice\Entity::EMAIL_NOTIFY] ?? '0';
 

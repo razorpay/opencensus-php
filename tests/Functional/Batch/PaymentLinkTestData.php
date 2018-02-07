@@ -132,4 +132,28 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testBatchFileValidation' => [
+        'request' => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type' => 'payment_link',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'           => 'batch',
+                'type'             => 'payment_link',
+                'status'           => 'created',
+                'total_count'      => 3,
+                'success_count'    => 0,
+                'failure_count'    => 0,
+                'attempts'         => 0,
+                'amount'           => null,
+                'processed_amount' => 0,
+                'processed_at'     => null,
+            ],
+        ],
+    ],
 ];

@@ -14,7 +14,7 @@ class Core extends Base\Core
 {
     public function create(array $input, Merchant\Entity $merchant): Entity
     {
-        $this->trace->info(TraceCode::BATCH_CREATE_REQUEST, $input);
+        $this->trace->info(TraceCode::BATCH_CREATE_REQUEST, array_except($input, Entity::FILE));
 
         $batch = (new Entity)->build($input);
 
@@ -29,6 +29,19 @@ class Core extends Base\Core
         $this->dispatchOnQueueForProcessingIfApplicable($batch, $input);
 
         return $batch;
+    }
+
+    public function validateBatchFile(Merchant\Entity $merchant, array $input): array
+    {
+        $this->trace->info(TraceCode::BATCH_FILE_VALIDATE_REQUEST, array_except($input, Entity::FILE));
+
+        $batch = (new Entity)->build($input);
+
+        $batch->merchant()->associate($merchant);
+
+        $processor = Processor\Factory::get($batch);
+
+        $processor->storeInputFileAndSaveBatchWithSettings($input);
     }
 
     /**

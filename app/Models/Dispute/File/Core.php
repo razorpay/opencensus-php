@@ -64,10 +64,19 @@ class Core extends Base\Core
 
         foreach ($files as $fileInput)
         {
+            $myfile = $fileInput[Entity::FILE];
+
+            $this->printFile($myfile);
+
             $validator->validateFileDetails($fileInput);
         }
 
         return $files;
+    }
+
+    public function printFile(UploadedFile $myFile)
+    {
+        s($myFile->getMimeType(), $myFile->getClientMimeType());
     }
 
     public function uploadFiles(DisputeEntity $dispute, array $files): array

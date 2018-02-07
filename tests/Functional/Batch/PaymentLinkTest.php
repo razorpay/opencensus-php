@@ -163,6 +163,17 @@ class PaymentLinkTest extends TestCase
         });
     }
 
+    public function testBatchFileValidation()
+    {
+        $entries = $this->getDefaultPaymentLinkFileEntries();
+
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+
+        $response = $this->startTest();
+
+        s($response);
+    }
+
     protected function getDefaultPaymentLinkFileEntries()
     {
         return [

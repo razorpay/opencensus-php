@@ -6,6 +6,7 @@ use RZP\Base;
 use RZP\Models\Invoice;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Models\Batch\Header;
 use RZP\Exception\BaseException;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Feature\Constants as Feature;
@@ -266,9 +267,6 @@ class Validator extends Base\Validator
         // Associative array with index as input file's row index and values
         // as the error message.
 
-        $errors = [];
-        $errorEntries = [];
-
         foreach ($entries as $idx => $entry)
         {
             $input = Helpers\PaymentLink::getEntityInput($entry, $params);
@@ -276,12 +274,7 @@ class Validator extends Base\Validator
             // Need to create dummy entity and associate merchant
             // for the validation around max allowed payment to happen.
 
-            $rule = Invoice\Validator::CREATE_DRAFT;
-
-            if ($input[Invoice\Entity::DRAFT] === '0')
-            {
-                $rule = Invoice\Validator::CREATE_ISSUED;
-            }
+            $rule = Invoice\Validator::CREATE_ISSUED;
 
             $invoice = new Invoice\Entity;
 
@@ -290,33 +283,27 @@ class Validator extends Base\Validator
             try
             {
                 $invoice->getValidator()->validateInput($rule, $input);
+
+                $error = [
+                    Header::ERROR_CODE          => null,
+                    Header::ERROR_DESCRIPTION   => null,
+                ];
+
+                $entries[$idx] = ($entry + $error);
             }
             catch (BaseException $e)
             {
-                $idx++;
+                $error = [
+                    Header::ERROR_CODE          => $e->getError()->getPublicErrorCode(),
+                    Header::ERROR_DESCRIPTION   => $e->getError()->getDescription(),
+                ];
 
-                $errors[$idx]       = $e->getError()->getDescription();
-                $errorEntries[$idx] = $entry;
+                $entries[$idx] = ($entry + $error);
             }
             finally
             {
                 unset($invoice);
             }
-        }
-
-        $errorsCount = count($errors);
-
-        if ($errorsCount > 0)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_BATCH_PAYMENT_LINK_FILE_ERRORS,
-                Entity::FILE,
-                [
-                    'count'         => $errorsCount,
-                    'errors'        => $errors,
-                    'error_entries' => $errorEntries,
-                    'merchant_id'   => $merchant->getId(),
-                ]);
         }
     }
 

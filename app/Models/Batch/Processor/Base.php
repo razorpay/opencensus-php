@@ -116,6 +116,8 @@ class Base extends BaseModel\Core
 
         $this->validateInputFileAndUpdateBatch($ufh->getFullFilePath(), $input);
 
+        sd([]);
+
         $ufhFile->entity()->associate($this->batch);
 
         $this->repo->transaction(function () use ($ufhFile, $input)
@@ -555,6 +557,7 @@ class Base extends BaseModel\Core
         $entries = $this->parseFile($filePath);
 
         $this->validateEntries($entries, $input);
+        sd($entries);
 
         $this->fillBatchEntityWithInputFileDetails($entries);
     }
@@ -583,7 +586,7 @@ class Base extends BaseModel\Core
      * @param array $entries
      * @param array $input
      */
-    protected function validateEntries(array $entries, array $input)
+    protected function validateEntries(array & $entries, array $input)
     {
         $this->batch->getValidator()->validateEntries($entries, $input, $this->merchant);
     }
