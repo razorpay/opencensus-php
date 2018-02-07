@@ -2891,3 +2891,5 @@ ALTER TABLE hitachi
 
 ALTER TABLE iins
     ADD COLUMN flows INTEGER UNSIGNED DEFAULT 1 AFTER otp_read;
+
+ALTER TABLE payments Change token emi_subvention varchar(14);
