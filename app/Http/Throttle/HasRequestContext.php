@@ -68,10 +68,11 @@ trait HasRequestContext
         {
             return;
         }
+
         // Validate key length
         $validKeyLengths   = BasicAuth::$validKeyLengths;
         $validKeyLengths[] = OAuth::PUBLIC_TOKEN_LENGTH;
-        if (in_array(strlen($key), $validKeyLengths) === false)
+        if (in_array(strlen($key), $validKeyLengths, true) === false)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY);
         }

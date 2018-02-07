@@ -188,12 +188,12 @@ class Throttle
         //      skip:                       1
         //      mock:                       1
         //
-        //      <mode>:<auth>:ltv:          2
-        //      <mode>:<auth>:ltd:          1000
+        //      <mode>:<auth>:lrv:          2
+        //      <mode>:<auth>:lrd:          1000
         //      <mode>:<auth>:mbs:          50
         //
-        //      <mode>:<auth>:<route>:ltv:  2
-        //      <mode>:<auth>:<route>:ltd:  1000
+        //      <mode>:<auth>:<route>:lrv:  2
+        //      <mode>:<auth>:<route>:lrd:  1000
         //      <mode>:<auth>:<route>:mbs:  50
         // }
         //
