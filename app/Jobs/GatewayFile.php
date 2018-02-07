@@ -88,7 +88,8 @@ class GatewayFile extends Job implements ShouldQueue
      */
     protected function handleException(\Throwable $e)
     {
-        $this->trace->traceException($e, Trace::ERROR, TraceCode::GATEWAY_FILE_JOB_ERROR);
+        $this->trace->traceException(
+            $e, Trace::ERROR, TraceCode::GATEWAY_FILE_JOB_ERROR, [File\Entity::ID => $this->gatewayFileId]);
 
         if (($this->attempts() >= self::MAX_ALLOWED_ATTEMPTS) or
             ($e instanceof BadRequestException))
