@@ -272,6 +272,8 @@ class Gateway extends Base\Gateway
         switch ($gatewayAquirer)
         {
             case Acquirer::FSS:
+                $requestContent[Fields::UDF5]      = strtolower(Constants::TRACK_ID);
+
                 if ($this->mode === Mode::TEST)
                 {
                     $requestContent[Fields::ID]         = $this->config['fss']['terminal_id'];
@@ -281,7 +283,6 @@ class Gateway extends Base\Gateway
                 else
                 {
                     $requestContent[Fields::BANK_CODE] = BankCodes::getBankCodeByIfsc($input[E::CARD][Card\Entity::ISSUER]);
-                    $requestContent[Fields::UDF5]      = strtolower(Constants::TRACK_ID);
                     $requestContent[Fields::UDF3]      = $input[E::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_ID];
                 }
 
