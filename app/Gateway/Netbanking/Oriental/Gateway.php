@@ -123,11 +123,9 @@ class Gateway extends Base\Gateway
 
     protected final function verifyPayment(Verify $verify)
     {
-        $status = $this->getVerifyMatchStatus($verify);
+        $verify->status = $this->getVerifyMatchStatus($verify);
 
-        $verify->status = $status;
-
-        $verify->match = ($status === VerifyResult::STATUS_MATCH);
+        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
 
         $verify->payment = $this->saveVerifyContent($verify);
     }
