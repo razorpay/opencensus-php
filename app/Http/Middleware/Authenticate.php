@@ -209,12 +209,7 @@ class Authenticate
     {
         $featureCheck = $this->ba->verifyFeatureAccessByApplication($authReturn);
 
-        if ($featureCheck !== null)
-        {
-            return $featureCheck;
-        }
-
-        return null;
+        return $featureCheck;
     }
 
     /**
@@ -234,12 +229,7 @@ class Authenticate
 
         $featureCheck = $this->ba->verifyFeatureAccessByMerchant($authReturn);
 
-        if ($featureCheck !== null)
-        {
-            return $featureCheck;
-        }
-
-        return null;
+        return $featureCheck;
     }
 
     private function getBearerTokenFromHeaders($request)

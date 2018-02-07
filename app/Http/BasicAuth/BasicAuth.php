@@ -661,13 +661,7 @@ class BasicAuth
             return null;
         }
 
-        //
-        // If the merchant has at least one of the features
-        // in the $features array enabled, we allow the request
-        //
-        $merchantFeatures = $this->merchant->getEnabledFeatures();
-
-        $routeFeaturesAvailableWithMerc = array_intersect($routeFeatures, $merchantFeatures);
+        $routeFeaturesAvailableWithMerc = $this->getRouteFeaturesAvailableWithMerc($routeFeatures);
 
         $allowAccess = $this->allowApplicationAccessToFeatureRoute(
                         $routeFeatures,
@@ -699,13 +693,7 @@ class BasicAuth
             return null;
         }
 
-        //
-        // If the merchant has at least one of the features
-        // in the $features array enabled, we allow the request
-        //
-        $merchantFeatures = $this->merchant->getEnabledFeatures();
-
-        $routeFeaturesAvailableWithMerc = array_intersect($routeFeatures, $merchantFeatures);
+        $routeFeaturesAvailableWithMerc = $this->getRouteFeaturesAvailableWithMerc($routeFeatures);
 
         //
         // If the merchant is directly accessing the resource, allow if the
@@ -732,6 +720,17 @@ class BasicAuth
         $routeFeatures = Route::getFeaturesForRoute($currentRoute);
 
         return $routeFeatures;
+    }
+
+    protected function getRouteFeaturesAvailableWithMerc(array $routeFeatures)
+    {
+        //
+        // If the merchant has at least one of the features
+        // in the $features array enabled, we allow the request
+        //
+        $merchantFeatures = $this->merchant->getEnabledFeatures();
+
+        return array_intersect($routeFeatures, $merchantFeatures);
     }
 
     protected function allowApplicationAccessToFeatureRoute(
