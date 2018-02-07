@@ -66,8 +66,6 @@ class Authenticate
 
         $bearerToken = $this->getBearerTokenFromHeaders($request);
 
-        $isBearerAuth = false;
-
         //
         // If the request was sent with Bearer auth (OAuth),
         // authenticate with the access token, else go for the
@@ -77,16 +75,18 @@ class Authenticate
         {
             $ret = $this->authenticateBearerAuth($route, $bearerToken);
 
-            $isBearerAuth = true;
+            // Post process after auth completes
+            $ret = $this->postApplicationAuthenticationProcessing($ret);
         }
         else
         {
             $ret = $this->authenticateBasicAuth($route);
+
+            // Post process after auth completes
+            $ret = $this->postMerchantAuthenticationProcessing($ret);
         }
 
-        // Post process after auth completes
-        $ret = $this->postAuthenticationProcessing($ret, $isBearerAuth);
-
+        // non-null value indicates failure flow
         if ($ret !== null)
         {
             return $ret;
@@ -202,18 +202,37 @@ class Authenticate
      * Function returns non-null value for failure flow
      *
      * @param      $authReturn
-     * @param bool $isBearerAuth
      *
      * @return null
      */
-    protected function postAuthenticationProcessing($authReturn, bool $isBearerAuth)
+    protected function postApplicationAuthenticationProcessing($authReturn)
+    {
+        $featureCheck = $this->ba->verifyFeatureAccessByApplication($authReturn);
+
+        if ($featureCheck !== null)
+        {
+            return $featureCheck;
+        }
+
+        return null;
+    }
+
+    /**
+     * Post process after auth completes
+     * Function returns non-null value for failure flow
+     *
+     * @param      $authReturn
+     *
+     * @return null
+     */
+    protected function postMerchantAuthenticationProcessing($authReturn)
     {
         if ($authReturn !== null)
         {
             return $authReturn;
         }
 
-        $featureCheck = $this->ba->verifyFeatureAccess($authReturn, $isBearerAuth);
+        $featureCheck = $this->ba->verifyFeatureAccessByMerchant($authReturn);
 
         if ($featureCheck !== null)
         {
