@@ -2888,3 +2888,6 @@ ALTER TABLE hitachi
     ADD INDEX `hitachi_prequestid_index`(`pRequestId`),
     ADD INDEX `hitachi_prrn_index`(`pRRN`),
     ADD INDEX `hitachi_action_index`(`action`);
+
+ALTER TABLE iins
+    ADD COLUMN flows INTEGER UNSIGNED DEFAULT 1 AFTER otp_read;
