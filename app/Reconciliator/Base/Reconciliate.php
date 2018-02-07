@@ -171,7 +171,7 @@ class Reconciliate extends Base\Core
      */
     public function getSheetNames(array $fileDetails = [])
     {
-        return null;
+        return [];
     }
 
     /**

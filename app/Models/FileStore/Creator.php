@@ -146,7 +146,7 @@ class Creator extends Base\Core
      *
      * @var string
      */
-    private $sheetName = 'Sheet 1';
+    protected $sheetName = 'Sheet 1';
 
     const DEFAULT_STORE    = 's3';
 
