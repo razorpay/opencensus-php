@@ -2,7 +2,6 @@
 
 namespace RZP\Gateway\FirstData;
 
-use App;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use Requests_Hooks;
@@ -403,10 +402,10 @@ class Gateway extends Base\Gateway
 
         $refundTransactionValue = null;
 
-        if ($this->action ===  Action::VERIFY_REVERSE)
+        if ($this->action === Action::VERIFY_REVERSE)
         {
             $refundTransactionValue  = $verifyRefundResponse->children('a1', true)
-                                                      ->TransactionValues;
+                                                            ->TransactionValues;
         }
         else
         {
@@ -419,7 +418,7 @@ class Gateway extends Base\Gateway
                                                       ->TransactionDetails
                                                       ->MerchantTransactionId;
 
-                if ($refundId === $this->getRefundId())
+                if ($refundId === $verify->input['refund']['id'])
                 {
                     $refundTransactionValue = $transactionValue;
                 }
@@ -427,16 +426,6 @@ class Gateway extends Base\Gateway
         }
 
         return $refundTransactionValue;
-    }
-
-    protected function getRefundId()
-    {
-        if (App::environment('testing') === true)
-        {
-            return 'FakeRfndId';
-        }
-
-        return $this->input['refund']['id'];
     }
 
     protected function updateOrCreateRefundEntity(array $refundFields, array $input)

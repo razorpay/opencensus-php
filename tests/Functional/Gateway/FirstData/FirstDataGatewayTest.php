@@ -175,6 +175,8 @@ class FirstDataGatewayTest extends TestCase
 
         $this->clearMockFunction();
 
+        $this->getFailureInVerifyRefund($refundId);
+
         $response = $this->retryFailedRefunds();
 
         $actualRefund = $this->getEntityById('refund', $refundId, true);
@@ -212,7 +214,7 @@ class FirstDataGatewayTest extends TestCase
 
         $refundId = explode('_', $refund['id'], 2)[1];
 
-        $this->getFailureInVerifyRefund();
+        $this->getFailureInVerifyRefund($refund['id']);
 
         $response = $this->retryFailedRefunds();
 

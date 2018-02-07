@@ -123,13 +123,13 @@ trait PaymentFirstDataTrait
         });
     }
 
-    protected function getFailureInVerifyRefund()
+    protected function getFailureInVerifyRefund($refundId = 'FakeRfndId')
     {
-        $this->mockServerContentFunction(function (& $content, $action = null)
+        $this->mockServerContentFunction(function (& $content, $action = null) use ($refundId)
         {
             if ($action === 'verify_refund')
             {
-                $content = str_replace('FakeRfndId', 'AnotherRefund', $content);
+                $content = str_replace('FakeRfndId', $refundId, $content);
             }
         });
     }
