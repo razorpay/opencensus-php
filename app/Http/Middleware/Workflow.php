@@ -60,9 +60,13 @@ class Workflow
     {
         $routeName = $this->router->currentRouteName();
 
+        $maker = $this->app['workflow']->getWorkflowMaker();
+
         // Disable workflows if:
         // - It is mocked
-        if ($this->config->get('heimdall.workflows.mock') === true)
+        // - If the maker isn't one of Admin or Merchant
+        if ($this->config->get('heimdall.workflows.mock') === true or
+            $maker === false)
         {
             return $next($request);
         }
@@ -82,16 +86,8 @@ class Workflow
                 return $next($request);
             }
 
-            $maker = $this->app['workflow']->getWorkflowMaker();
-
-            // if the maker isn't one of Admin or Merchant, ignore workflow.
-            if ($maker === false)
-            {
-                return $next($request);
-            }
-
             $permissionHasWorkflow = (new WorkflowService)->permissionHasWorkflow(
-                $permission, $maker->getOrgId());
+                $permission, $this->ba->getOrgId());
 
             // If the permissions has no workflow assigned to it
             // then let's not apply any maker-checker process

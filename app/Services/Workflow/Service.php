@@ -389,7 +389,7 @@ class Service
 
         $count = $workflowAction->count();
 
-        $maker = $this->app['workflow']->getWorkflowMaker();
+        $maker = $this->getWorkflowMaker();
 
         // Transaction failed and no entry was created
         if ($count === 0)

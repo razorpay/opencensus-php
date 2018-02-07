@@ -214,13 +214,10 @@ class Service extends Base\Service
 
     protected function getSignedUrl(string $fileStoreId, string $merchantId)
     {
-        $accessor = new FileStore\Accessor;
+        $core = new FileStore\Core;
 
-        $signedUrls = $accessor->id($fileStoreId)
-                               ->merchantId($merchantId)
-                               ->getSignedUrl();
+        return $core->getSignedUrl($fileStoreId, $merchantId);
 
-        return $signedUrls[$fileStoreId];
     }
 
     private function getFieldsToStepMap() : array
