@@ -47,14 +47,7 @@ class SubscriptionChargeTest extends TestCase
         // This is set to 10 Jan 2018
         // Because in test cases subsription start date is set
         // to 20 Jan 2018 and it should always be in future
-        Carbon::setTestNow("10-1-2018 12:00:00");
-    }
-
-    public function tearDown()
-    {
-        parent::tearDown();
-
-        Carbon::setTestNow();
+        Carbon::setTestNow("10-1-2018 3:00:00");
     }
 
     public function testSubscriptionFirstCharge()

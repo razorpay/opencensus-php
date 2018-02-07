@@ -259,23 +259,19 @@ class AirtelmoneyGatewayTest extends TestCase
 
         $refunds = $this->getEntities('refund', [], true);
 
-        // Convert the created_at dates to yesterday's so that they are picked
-        // up during refund excel generation
-        foreach ($refunds['items'] as $refund)
-        {
-            $createdAt = Carbon::yesterday(Timezone::IST)->timestamp + 5;
-            $this->fixtures->edit('refund', $refund['id'], [
-                'created_at' => $createdAt,
-                'updated_at' => $createdAt
-            ]);
-        }
-
         $payment = $this->doAuthAndCapturePayment($defaultPayment);
-        $this->refundPayment($payment['id']);
+        $refund = $this->refundPayment($payment['id']);
+
+        $createdAt = Carbon::today(Timezone::IST)->addMonth(1)->timestamp + 5;
+
+        $this->fixtures->edit('refund', $refund['id'], [
+            'created_at' => $createdAt,
+            'updated_at' => $createdAt
+        ]);
 
         $data = $this->generateRefundsExcelForAirtelmoneyWallet(true);
 
-        $this->assertEquals(4, $data['wallet_airtelmoney']['count']);
+        $this->assertEquals(3, $data['wallet_airtelmoney']['count']);
         $this->assertTrue(file_exists($data['wallet_airtelmoney']['file']));
 
         Carbon::setTestNow();
