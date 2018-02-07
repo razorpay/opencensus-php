@@ -347,8 +347,13 @@ class Gateway extends Base\Gateway
 
     private function parseGatewayResponse(array $response)
     {
-        // TODO: Handle decryption here
-        return $response;
+        $encryptedString = array_keys($response)[0];
+
+        $decryptedString = $this->decrypt($encryptedString);
+
+        parse_str($decryptedString, $decryptedArray);
+
+        return $decryptedArray;
     }
 
     private function getMerchantId()

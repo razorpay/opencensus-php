@@ -30,8 +30,6 @@ class Server extends Mock\Server
 
         $content = $this->getAuthResponse($input);
 
-        $this->content($content, $this->action);
-
         $request = [
             'url'     => $input[RequestFields::RETURN_URL],
             'content' => $content,
@@ -54,11 +52,11 @@ class Server extends Mock\Server
         return $this->makeResponse($response);
     }
 
-    private function getAuthResponse(array $input)
+    private function getAuthResponse(array $input): array
     {
         $queryArray = $this->getQueryArray($input[RequestFields::QUERY_STRING]);
 
-        return [
+        $content = [
             ResponseFields::PAID            => Status::SUCCESS,
             ResponseFields::BANK_PAYMENT_ID => 9999999999,
             ResponseFields::CURRENCY        => Currency::INR,
@@ -68,9 +66,17 @@ class Server extends Mock\Server
             ResponseFields::ITEM_CODE       => $queryArray[RequestFields::ITEM_CODE],
             ResponseFields::DEBIT_ACC_NUM   => 1234567890,
         ];
+
+        $this->content($content, $this->action);
+
+        $queryStringToEncrypt = http_build_query($content);
+
+        $encryptedString = $this->getGatewayInstance()->encrypt($queryStringToEncrypt);
+
+        return [$encryptedString => ""];
     }
 
-    private function getVerifyResponse(array $input)
+    private function getVerifyResponse(array $input): array
     {
         return [
             ResponseFields::PAYEE_ID        => $input[RequestFields::PAYEE_ID],
