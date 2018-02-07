@@ -1,9 +1,10 @@
 import { titleCase } from 'rzp/utils/rzp-utils';
 
-const StatusLabel = statusMap => ({ status }) =>
+const StatusLabel = statusMap => ({ status }) => (
   <span class={`status-label label ${statusMap[status]}`}>
     {titleCase(status)}
-  </span>;
+  </span>
+);
 
 export const invoiceStatusMap = {
   draft: 'label-muted',
@@ -65,6 +66,13 @@ export const planStatusMap = {
   inactive: 'label-muted',
 };
 
+export const activationStatusMap = {
+  activated: 'label-success',
+  rejected: 'label-danger',
+  needs_clarification: 'label-pending',
+  under_review: 'label-info',
+};
+
 const entityMap = {
   payment: paymentStatusMap,
   settlement: settlementStatusMap,
@@ -74,6 +82,7 @@ const entityMap = {
   virtual_account: virtualAccountStatusMap,
   subscription: subscriptionStatusMap,
   plan: planStatusMap,
+  activation: activationStatusMap,
 };
 
 export const InvoiceStatusLabel = StatusLabel(invoiceStatusMap);
@@ -84,5 +93,6 @@ export const BatchUploadStatusLabel = StatusLabel(batchUploadStatusMap);
 export const VirtualAccountStatusLabel = StatusLabel(virtualAccountStatusMap);
 export const SubscriptionStatusLabel = StatusLabel(subscriptionStatusMap);
 export const PlanStatusLabel = StatusLabel(planStatusMap);
+export const ActivationStatusLabel = StatusLabel(activationStatusMap);
 
 export default item => StatusLabel(entityMap[item.entity])(item);
