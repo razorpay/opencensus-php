@@ -542,3 +542,55 @@ dl.rzp-definition {
   }
 }
 /* End Component: rzp/ui/Definition.js */
+
+/* Component: merchant/components/File/Upload.js */
+.file {
+  &.upload {
+    height: 83px;
+    width: 443px;
+    border: 1px dashed;
+
+    .drop-zone {
+      height: 100%;
+      width: 100%;
+      display: table;
+
+      .content {
+        display: table-cell;
+        vertical-align: middle;
+        margin: auto;
+        text-align: center;
+      }
+    }
+  }
+}
+/* End Component: merchant/components/File/Upload.js */
+
+/* Component: merchant/components/File/Staged */
+.staged-file {
+  width: 100%;
+  height: 70px;
+  border-bottom: 1px solid #CCC;
+
+  .file-icon,
+  .file-details {
+    height: 100%;
+    box-sizing: border-box;
+  }
+  $fileIconWidth = 10%;
+  .file-icon {
+    width: $fileIconWidth;
+  }
+
+  .file-details {
+    width: 100% - $fileIconWidth;
+    display: table;
+    padding-left: 10px;
+
+    & > div {
+      display: table-cell;
+      vertical-align: middle;
+    }
+  }
+}
+/* End Component: merchant/components/File/Staged */
