@@ -46,6 +46,8 @@ class Gateway
     const UPI_ICICI              = 'upi_icici';
     const AEPS_ICICI             = 'aeps_icici';
 
+    const CARD_FSS               = 'card_fss';
+
     const WALLET_AIRTELMONEY = 'wallet_airtelmoney';
     const WALLET_FREECHARGE  = 'wallet_freecharge';
     const WALLET_JIOMONEY    = 'wallet_jiomoney';
@@ -60,6 +62,7 @@ class Gateway
     const ACQUIRER_ICIC      = 'icic';
     const ACQUIRER_AXIS      = 'axis';
     const ACQUIRER_AMEX      = 'amex';
+    const ACQUIRER_FSS       = 'fss';
     const ACQUIRER_RATN      = 'ratn';
 
     const NOT_SUPPORTED      = 'not_supported';
@@ -72,6 +75,7 @@ class Gateway
         self::FIRST_DATA  => [self::ACQUIRER_ICIC],
         self::AMEX        => [self::ACQUIRER_AMEX],
         self::AEPS_ICICI  => [self::ACQUIRER_ICIC],
+        self::CARD_FSS    => [self::ACQUIRER_FSS],
         self::HITACHI     => [self::ACQUIRER_RATN],
     ];
 
@@ -154,6 +158,7 @@ class Gateway
         Payment\Gateway::UPI_ICICI,
         Payment\Gateway::WALLET_PAYZAPP,
         Payment\Gateway::WALLET_MPESA,
+        Payment\Gateway::CARD_FSS,
         Payment\Gateway::WALLET_PAYUMONEY,
         Payment\Gateway::WALLET_FREECHARGE,
     ];
@@ -213,6 +218,7 @@ class Gateway
             self::FIRST_DATA,
             self::BLADE,
             self::HITACHI,
+            self::CARD_FSS,
         ],
 
         Method::NETBANKING => [
@@ -386,6 +392,10 @@ class Gateway
             Network::VISA,
             Network::MAES,
             Network::RUPAY,
+        ],
+        self::CARD_FSS => [
+            Network::MC,
+            Network::VISA,
         ],
     ];
 

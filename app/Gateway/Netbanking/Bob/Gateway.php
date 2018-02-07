@@ -93,7 +93,9 @@ class Gateway extends Base\Gateway
             RequestFields::BANK_FIXED_VALUE => Constants::BANK_FIXED_VALUE,
             RequestFields::BILLER_NAME      => Constants::BILLER_NAME,
             RequestFields::AMOUNT           => $this->formatAmount($payment[Payment::AMOUNT]),
-            RequestFields::CALLBACK_URL     => $input['callbackUrl'],
+            // When a user cancels the payment, they seem to be sending the data
+            // via URL params and without adding the '?' separator
+            RequestFields::CALLBACK_URL     => $input['callbackUrl'] . '?',
             RequestFields::PAYMENT_ID       => $payment[Payment::ID]
         ];
 
@@ -135,6 +137,22 @@ class Gateway extends Base\Gateway
 
     protected function getCallbackContent(array $input): array
     {
+        // Quickfix for the case where they send the data over query params
+        // when the user cancels the payment
+        if (isset($input['gateway'][RequestFields::ENCRYPTED_DATA]) === false)
+        {
+            $this->trace->info(
+                TraceCode::GATEWAY_PAYMENT_CALLBACK,
+                [
+                    'gateway'            => $this->gateway,
+                    'gateway_response'   => $input['gateway'],
+                    'payment_id'         => $input['payment']['id']
+                ]
+            );
+
+            throw new Exception\GatewayErrorException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+        }
+
         $encryptedData = $input['gateway'][RequestFields::ENCRYPTED_DATA];
 
         $content = $this->getEncryptor()->decryptData($encryptedData);

@@ -2182,11 +2182,28 @@ trait Authorize
 
         $payment->setBank($iinEntity->getIssuer());
 
-        $subvention = $payment->merchant->getEmiSubvention();
-
         // Set emi plan id
         $emiPlan = $this->repo->emi_plan->fetchRelevantEmiPlan(
-                                            $iinEntity, $emiDuration, $subvention);
+                                            $iinEntity, $emiDuration);
+
+        $emiMerchantSubvention = $this->repo->merchant_emi_plans->fetchByMerchantAndEmiPlan(
+                                                                        $payment->merchant->getId(),
+                                                                        $emiPlan->getId());
+
+        $payment->setEmiSubvention(Emi\Subvention::CUSTOMER);
+
+        if ($emiMerchantSubvention !== null)
+        {
+            $amount = $payment->getAmount();
+
+            $merchantPayback = $emiPlan->getMerchantPayback();
+
+            $baseAmount = Emi\Calculator::calculateSubventedAmount($amount, $merchantPayback);
+
+            $payment->setAmountAttribute($baseAmount);
+
+            $payment->setEmiSubvention(Emi\Subvention::MERCHANT);
+        }
 
         $payment->getValidator()->validateMinAmountWithEmiPlanAmount($emiPlan);
 
@@ -3760,6 +3777,12 @@ trait Authorize
         {
             throw new Exception\BadRequestValidationFailureException(
                 'UPI intent is not enabled for the merchant');
+        }
+
+        if (isset($payment['vpa']) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The vpa field is not required and not shouldn\'t be sent.');
         }
     }
 

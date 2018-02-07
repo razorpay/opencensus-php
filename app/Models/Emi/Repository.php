@@ -17,22 +17,19 @@ class Repository extends Base\Repository
         Entity::NETWORK         => 'sometimes|string|max:12',
     );
 
-    public function fetchEmiPlans($subvention)
+    public function fetchEmiPlans()
     {
         return $this->newQuery()
-                    ->where(Entity::SUBVENTION, $subvention)
                     ->get();
     }
 
-    public function fetchRelevantEmiPlan(IIN\Entity $iin, int $duration, string $subvention)
+    public function fetchRelevantEmiPlan(IIN\Entity $iin, int $duration)
     {
         $bank = $iin->getIssuer();
         $network = $iin->getNetworkCode();
 
         $query = $this->newQuery()
-                      ->where(Entity::DURATION, '=', $duration)
-                      ->where(Entity::SUBVENTION, $subvention);
-
+                      ->where(Entity::DURATION, '=', $duration);
         if ($bank)
         {
             $query->where(Entity::BANK, '=', $bank);

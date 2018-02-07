@@ -244,13 +244,6 @@ class Validator extends Base\Validator
 
     protected function validateVpa($attribute, $vpa)
     {
-        if ((isset($this->data['_']['flow']) === true) and
-            ($this->data['_']['flow'] === 'intent'))
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'The vpa field is not required and not shouldn\'t be sent.');
-        }
-
         $vpaParts = explode('@', $vpa);
 
         if ((count($vpaParts) !== 2) or
