@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import numeral from 'numeral';
-import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import moment from 'moment';
 
 import Amount from 'rzp/ui/Amount';
+import Tabs, { Tab, TabPane } from 'rzp/ui/ReactTabs';
 import { paiseToRupees, titleCase, getPercentage } from 'rzp/utils/rzp-utils';
 import {
   humanReadableIndian,
@@ -62,27 +62,25 @@ const TabContent = ({
    *
    */
   return (
-    <a>
-      <div>
-        <h1>
-          {!isLoading ? (
-            <span>
-              {error ? (
-                '--'
-              ) : (
-                <span>
-                  {formattedValue}
-                  <Tooltip value={value} isCurrency={isCurrency} />
-                </span>
-              )}
-            </span>
-          ) : (
-            <PlaceholderLoader />
-          )}
-        </h1>
-        <span>{!isLoading ? title : <PlaceholderLoader />}</span>
-      </div>
-    </a>
+    <div>
+      <h1>
+        {!isLoading ? (
+          <span>
+            {error ? (
+              '--'
+            ) : (
+              <span>
+                {formattedValue}
+                <Tooltip value={value} isCurrency={isCurrency} />
+              </span>
+            )}
+          </span>
+        ) : (
+          <PlaceholderLoader />
+        )}
+      </h1>
+      <span>{!isLoading ? title : <PlaceholderLoader />}</span>
+    </div>
   );
 };
 
@@ -596,39 +594,38 @@ class KeyMetricsContainer extends Component {
       );
 
     return (
-      <Tabs className="keymetrics">
-        <TabList
-          className="nav nav-tabs nav-justified">
-          {visibleTabs.map((tabName, index) => {
-            const tabData = tabsState[tabName].data,
-              { isCurrency, title } = tabsMeta[tabName];
+      <Tabs
+         className="keymetrics"
+         justified={true}>
+        {visibleTabs.map((tabName, index) => {
+          const tabData = tabsState[tabName].data,
+            { isCurrency, title } = tabsMeta[tabName];
 
-            return (
-              <Tab
-                key={index}
-                onClick={() => this.handleTabChange(tabName)}
-                style={{ width: 100 / visibleTabs.length + '%' }}
-              >
-                <TabContent
-                  value={tabData.count}
-                  name={tabName}
-                  isCurrency={isCurrency}
-                  title={title}
-                  isLoading={loading}
-                  error={tabData.error}
-                  percent={tabData.percent}
-                />
-              </Tab>
-            );
-          })}
-        </TabList>
+          return (
+            <Tab
+              key={index}
+              onClick={() => this.handleTabChange(tabName)}
+              style={{ width: 100 / visibleTabs.length + '%' }}
+            >
+              <TabContent
+                value={tabData.count}
+                name={tabName}
+                isCurrency={isCurrency}
+                title={title}
+                isLoading={loading}
+                error={tabData.error}
+                percent={tabData.percent}
+              />
+            </Tab>
+          );
+        })}
 
         {visibleTabs.map((tabName, index) => {
           const tabState = tabsState[tabName],
             { isCurrency } = tabsMeta[tabName];
 
           return (
-            <TabPanel key={index}>
+            <TabPane key={index}>
               <Panel
                 tabName={tabName}
                 selectedBreakdown={tabState.selectedBreakdown}
@@ -645,7 +642,7 @@ class KeyMetricsContainer extends Component {
                 showGrouping={showGrouping}
                 sectionTitle={sectionTitle}
               />
-            </TabPanel>
+            </TabPane>
           );
         })}
       </Tabs>

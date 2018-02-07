@@ -40,7 +40,6 @@
     "react-redux": "^5.0.6",
     "react-router-dom": "^4.2.2",
     "react-simple-dropdown": "^3.2.0",
-    "react-tabs": "^2.2.1",
     "react-tether": "^0.6.1",
     "react-time": "^4.3.0",
     "react-timeago": "^3.4.3",
