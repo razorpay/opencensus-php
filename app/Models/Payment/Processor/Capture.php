@@ -11,6 +11,7 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Models\Currency;
 use RZP\Models\Invoice;
 use RZP\Models\Merchant;
+use RZP\Models\Emi;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Plan\Subscription;
@@ -314,6 +315,18 @@ trait Capture
                     'capture_amount'    => $captureAmount,
                     'message'           => 'Adds fee to the amount because fee bearer is customer',
                 ]);
+        }
+
+        $autoCaptured = $payment->getAutoCaptured();
+
+        if (($payment->isEmiMerchantSubvented() === true) and
+            ($autoCaptured === false))
+        {
+            $emiPlan = $payment->emiPlan;
+
+            $merchantPayback = $emiPlan->getMerchantPayback();
+
+            $captureAmount = Emi\Calculator::calculateSubventedAmount($captureAmount, $merchantPayback);
         }
 
         if ($captureAmount !== $payment->getAmount())
