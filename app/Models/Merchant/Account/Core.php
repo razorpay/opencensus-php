@@ -112,7 +112,6 @@ class Core extends Merchant\Core
         $whitelistedBankAccountKeys = [
             Entity::IFSC_CODE,
             Entity::ACCOUNT_NUMBER,
-            Entity::ACCOUNT_TYPE,
             Entity::BENEFICIARY_NAME,
         ];
 
