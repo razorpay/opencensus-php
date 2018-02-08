@@ -88,13 +88,6 @@ export default ({ merchant_details: merchantDetails, title }) => (
         />
 
         <Field
-          label="Bank Account Type"
-          name="bank_account_type"
-          defaultValue={merchantDetails.bank_account_type}
-          disabled
-        />
-
-        <Field
           label="Branch IFSC Code"
           name="bank_branch_ifsc"
           defaultValue={merchantDetails.bank_branch_ifsc}
