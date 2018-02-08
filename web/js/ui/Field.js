@@ -16,10 +16,12 @@ function toggleChecked(e) {
 
 const setDay = (date, timeOfDay) => moment(date)[timeOfDay]('day');
 
+// helpMsg is same as infoMsg but with icon before the msg. (Names must be swapped)
 export default function Field({
   tag = 'input',
   label,
   infoMsg,
+  helpMsg,
   fieldClass = '',
   icon,
   ...props
@@ -36,9 +38,15 @@ export default function Field({
       </label>
       <Tag {...props} />
       {icon && <i class={`post-field-icon ${icon}`} />}
-      {infoMsg && (
+      {(infoMsg || helpMsg) && (
         <div class="info-block">
-          {typeof infoMsg === 'function' ? infoMsg() : infoMsg}
+          {helpMsg && <i class="i i-info-circle" />}
+          {
+            do {
+              var msg = infoMsg || helpMsg;
+              typeof msg === 'function' ? msg() : msg
+            }
+          }
         </div>
       )}
     </div>
