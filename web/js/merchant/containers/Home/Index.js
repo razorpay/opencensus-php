@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
 import moment from 'moment';
-import { Redirect } from 'react-router-dom';
+import { Redirect, Link } from 'react-router-dom';
 
 import Header from 'rzp/ui/Header';
 import {
@@ -10,7 +10,9 @@ import {
   fetchRefunds,
   fetchSettlements,
 } from 'rzp/modules/collection';
+import { fetchOpen as fetchOpenDisputes } from 'merchant/modules/disputes/details';
 import DateRangePickerField from 'rzp/ui/Forms/DateRangePickerField';
+import Banner from 'rzp/ui/Banner';
 
 import * as HomeActions from 'merchant/modules/home';
 import InfoCardList from 'merchant/components/Home/InfoCardList';
@@ -24,9 +26,9 @@ import LocalStorageService from 'rzp/utils/localStorage';
 import NewHome from './New';
 
 import {
-isMobileDevice 
+isMobileDevice
 } from 'merchant/components/Home/data';
-import { trackForceOldDashboard } from './ga'; 
+import { trackForceOldDashboard } from './ga';
 
 defaults.global.defaultFontColor = '#666';
 defaults.global.defaultFontFamily =
@@ -44,14 +46,14 @@ defaults.global.layout = {
 const analyticsGoTo = name => {
   window.rzpAnalytics({
     eventCategory: 'Dashboard - Home',
-    eventAction: `Go To - ${name}`
+    eventAction: `Go To - ${name}`,
   });
 };
 
 const analyticsOpenDetails = name => {
   window.rzpAnalytics({
     eventCategory: 'Dashboard - Home',
-    eventAction: `Open Details - ${name}`
+    eventAction: `Open Details - ${name}`,
   });
 };
 
@@ -69,6 +71,7 @@ const analyticsOpenDetails = name => {
       payments: state.payments,
       refunds: state.refunds,
       settlements: state.settlements,
+      openDisputes: state.dispute.openDisputes,
     };
   },
   {
@@ -76,9 +79,9 @@ const analyticsOpenDetails = name => {
     fetchPayments,
     fetchRefunds,
     fetchSettlements,
+    fetchOpenDisputes,
   }
 )
-
 class HomeContainer extends Component {
   componentWillMount() {
     this.props.fetchEntityTotals();
@@ -87,6 +90,7 @@ class HomeContainer extends Component {
     this.props.fetchPayments({ count: 5 });
     this.props.fetchRefunds({ count: 5 });
     this.props.fetchSettlements({ count: 5 });
+    this.props.fetchOpenDisputes();
   }
 
   render() {
@@ -116,6 +120,14 @@ class HomeContainer extends Component {
           </div>
         </Header>
 
+        {this.props.openDisputes > 0 && (
+          <Banner>
+            There are {this.props.openDisputes} open disputes against payments
+            that needs your attention. &nbsp;<Link to="/disputes">
+              Show Disputes
+            </Link>
+          </Banner>
+        )}
         <div
           class="Dashboard"
           style={{
@@ -195,7 +207,7 @@ class HomeContainer extends Component {
 
 @connect(state => {
   return {
-    user: state.session.user
+    user: state.session.user,
   };
 }, null)
 export default class HomeSwitcher extends Component {
@@ -204,9 +216,9 @@ export default class HomeSwitcher extends Component {
 
     // if the tag is enabled, force user to new dashboard
     if (this.props.user.isNewAnalyticsEnabled) {
-    
+
       if (isMobileDevice) {
-      
+
         trackForceOldDashboard();
         return <HomeContainer/>;
       }
