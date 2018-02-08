@@ -10,6 +10,8 @@ class BankCodes
     /**
      * IFSC to Fss Bank code mapping.
      *
+     * @see https://drive.google.com/drive/u/0/folders/17aQ_w9keiqtNCCMxqfQ-_M0PDoE6ZJXq
+     *
      * @var array
      */
     public static $bankCodes = [
