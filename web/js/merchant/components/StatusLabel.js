@@ -78,7 +78,7 @@ export const disputeStatusMap = {
   won: 'label-success',
   under_review: 'label-warning',
   closed: 'label-muted',
-  lost: 'label-danger',
+  lost: 'label-lost',
 };
 
 const entityMap = {
