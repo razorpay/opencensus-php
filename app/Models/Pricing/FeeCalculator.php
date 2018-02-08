@@ -300,7 +300,25 @@ class FeeCalculator
 
     protected function getRelevantPricingRuleForEmandate($rules)
     {
-        return $this->getRelevantPricingRuleForNBPayment($rules);
+        // All the rules for the current pricing plan will be put
+        // through various filters till the right pricing rule
+        // for the current case remains.
+
+        $payment = $this->entity;
+
+        $bank = $payment->getBank();
+
+        // Current Implementation
+        // * Filter based on AmountRange
+        // * Choose based on Amount
+
+        $filters = [
+            [Pricing\Entity::PAYMENT_NETWORK, $bank, true, null],
+        ];
+
+        $rules = $this->applyFiltersOnRules($rules, $filters);
+
+        return $this->applyAmountRangeFilterAndReturnOneRule($rules);
     }
 
     protected function getRelevantPricingRuleForUPI($rules)

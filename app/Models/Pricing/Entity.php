@@ -21,6 +21,7 @@ class Entity extends Base\PublicEntity
 
     // Humanized name of the payment network
     const PAYMENT_NETWORK_NAME = 'payment_network_name';
+    const PAYMENT_AUTH_TYPE    = 'payment_auth_type';
     const PAYMENT_ISSUER       = 'payment_issuer';
 
     const EMI_DURATION         = 'emi_duration';

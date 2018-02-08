@@ -322,7 +322,7 @@ class Core extends Base\Core
         $existingTokens = $this->repo->token->getByMethodAndCustomerId(
                                 $token->getMethod(), $token->customer);
 
-        $func = 'validateExistingToken' . $token->getMethod();
+        $func = 'validateExistingToken' . studly_case($token->getMethod());
 
         return $this->$func($existingTokens, $token);
     }
@@ -349,7 +349,7 @@ class Core extends Base\Core
     {
         foreach ($existingTokens as $token)
         {
-            if (($token->getWallet()  === $newToken->getWallet()) and
+            if (($token->getWallet() === $newToken->getWallet()) and
                 ($token->terminal() === $newToken->terminal()))
             {
                 return $token;

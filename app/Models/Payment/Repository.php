@@ -994,8 +994,6 @@ class Repository extends Base\Repository
 
     public function fetchPendingEMandateRegistration(string $gateway, int $from, int $to)
     {
-        // TODO: Change to emandate
-
         $tokenIdColumn = $this->repo->token->dbColumn(Token\Entity::ID);
 
         $tokenRecurringColumn = $this->repo->token->dbColumn(Token\Entity::RECURRING);
@@ -1020,7 +1018,7 @@ class Repository extends Base\Repository
                         })
                     ->where(Entity::RECURRING_TYPE, '=', RecurringType::INITIAL)
                     ->where($paymentRecurringColumn, '=', 1)
-                    ->where($paymentMethodColumn, '=', Method::NETBANKING)
+                    ->where($paymentMethodColumn, '=', Method::EMANDATE)
                     ->where(Entity::GATEWAY, '=', $gateway)
                     ->whereBetween($paymentCreatedAtColumn, [$from, $to])
                     ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::INITIATED)
@@ -1058,7 +1056,7 @@ class Repository extends Base\Repository
                     ->where(Entity::RECURRING_TYPE, '=', RecurringType::AUTO)
                     ->where(Entity::STATUS, '=', Status::CREATED)
                     ->where($paymentRecurringColumn, '=', 1)
-                    ->where($paymentMethodColumn, '=', Method::NETBANKING)
+                    ->where($paymentMethodColumn, '=', Method::EMANDATE)
                     ->where(Entity::GATEWAY, '=', $gateway)
                     ->whereBetween($paymentCreatedAtColumn, [$from, $to])
                     ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::CONFIRMED)

@@ -124,8 +124,10 @@ class Category
                 self::INSURANCE      => self::INSURANCE,
                 self::HOUSING        => self::HOUSING,
             ],
+        ],
+        Method::EMANDATE => [
+            self::DEFAULT => self::ECOMMERCE,
         ]
-        // TODO: Do we need to add for emandate here?
     ];
 
     public static function isMerchantCategoryValid($category)

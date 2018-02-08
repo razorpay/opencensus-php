@@ -248,11 +248,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AEPS);
     }
 
-    public function isEmandateEnabled()
-    {
-        return $this->getAttribute(self::EMANDATE);
-    }
-
     public function isWalletEnabled($wallet = null)
     {
         if ($wallet === null)
@@ -346,10 +341,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::EMI);
     }
 
-    // @todo: Fix this once we add emandate method in methods entity
-    public function isEMandateEnabled()
+    public function isEmandateEnabled()
     {
-        return false;
+        return $this->getAttribute(self::EMANDATE);
     }
 
     public function isTransferEnabled()

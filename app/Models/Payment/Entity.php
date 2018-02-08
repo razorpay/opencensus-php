@@ -493,8 +493,13 @@ class Entity extends Base\PublicEntity
             return;
         }
 
-        // TODO: move the bank methods to an array in payment\gateway class or somewhere
-        if (in_array($input['method'], [Method::NETBANKING, Method::AEPS, Method::EMANDATE], true) === false)
+        $bankMethods = [
+            Method::NETBANKING,
+            Method::AEPS,
+            Method::EMANDATE
+        ];
+
+        if (in_array($input['method'], $bankMethods, true) === false)
         {
             unset($input['bank']);
         }
@@ -534,9 +539,14 @@ class Entity extends Base\PublicEntity
 
     protected function modifyBank(& $input)
     {
-        // TODO: move the bank methods to an array in payment\gateway class or somewhere
+        $bankMethods = [
+            Method::NETBANKING,
+            Method::AEPS,
+            Method::EMANDATE
+        ];
+
         if ((isset($input['method'])) and
-            (in_array($input['method'], [Method::NETBANKING, Method::AEPS, Method::EMANDATE], true) === false))
+            (in_array($input['method'], $bankMethods, true) === false))
         {
             unset($input['bank']);
         }
@@ -879,19 +889,6 @@ class Entity extends Base\PublicEntity
 
 // ----------------------- Mutator ---------------------------------------------
 
-    //
-    // Temporary only. To be removed later.
-    //
-    protected function setMethodAttribute($method)
-    {
-        if ($method === Payment\Method::EMANDATE)
-        {
-            $method = Payment\Method::NETBANKING;
-        }
-
-        $this->attributes[self::METHOD] = $method;
-    }
-
     public function setAmountAttribute($amount)
     {
         $this->attributes[self::AMOUNT] = (int) $amount;
@@ -993,13 +990,8 @@ class Entity extends Base\PublicEntity
 
             case Method::EMANDATE:
 
-                // TODO: Will this be available for netbanking (both direct and npci?), aadhaar?
-                // TODO: What will reference1 be for debit requests? Where do we get this from?
-                // TODO: In debit request, auth_type will be null?
-
-                $acquirerData = [
-                    'bank_transaction_id' => $this->getAttribute(self::REFERENCE1)
-                ];
+                // @todo: Let's keep this empty for now.
+                $acquirerData = [];
                 break;
 
             case Method::WALLET:
@@ -1219,12 +1211,7 @@ class Entity extends Base\PublicEntity
 
     public function isEmandate()
     {
-        //
-        // TODO: Remove the second condition after we start
-        // storing `emandate` as method in the payment entity.
-        //
-        return (($this->getAttribute(self::METHOD) === Payment\Method::EMANDATE) or
-                (($this->isNetbanking() === true) and ($this->isRecurring() === true)));
+        return ($this->getAttribute(self::METHOD) === Payment\Method::EMANDATE);
     }
 
     public function isWallet()
@@ -1650,12 +1637,11 @@ class Entity extends Base\PublicEntity
         //
         // It's not an e-mandate payment if
         // - Token not set
-        // - Payment not netbanking
-        // - Payment not recurring
+        // - emandate method is false
         //
+        // @todo shouldn't we just use isEmandate()
         if (($token === null) or
-            ($this->isNetbanking() === false) or
-            ($this->isRecurring() === false))
+            ($this->isEmandate() === false))
         {
             return false;
         }
@@ -1817,7 +1803,7 @@ class Entity extends Base\PublicEntity
      */
     public function isFileBasedEmandateDebitPayment(): bool
     {
-        if (($this->isEmandatePayment() === true) and
+        if (($this->isEmandate() === true) and
             ($this->isRecurringTypeAuto() === true))
         {
             $gateway = $this->getGateway();

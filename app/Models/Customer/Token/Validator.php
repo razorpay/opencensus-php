@@ -14,10 +14,10 @@ class Validator extends Base\Validator
     const CREATE_DIRECT = 'create_direct';
 
     protected static $createRules = [
-        Entity::METHOD              => 'required|in:card,netbanking,wallet',
+        Entity::METHOD              => 'required|in:card,emandate,wallet',
         Entity::CARD_ID             => 'required_only_if:method,card|alpha_num|size:14',
-        Entity::BANK                => 'required_only_if:method,netbanking|custom',
-        Entity::MAX_AMOUNT          => 'required_only_if:method,netbanking|required_unless:method,card,wallet',
+        Entity::BANK                => 'required_only_if:method,emandate|custom',
+        Entity::MAX_AMOUNT          => 'required_only_if:method,emandate|required_unless:method,card,wallet',
         Entity::WALLET              => 'required_only_if:method,wallet|custom',
         Entity::RECURRING           => 'sometimes|boolean',
         Entity::GATEWAY_TOKEN       => 'sometimes|string',

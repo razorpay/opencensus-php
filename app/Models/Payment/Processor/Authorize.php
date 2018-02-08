@@ -1032,11 +1032,11 @@ trait Authorize
         //
         if ($payment->isRecurringTypeInitial() === true)
         {
-            $this->validateInitialRecurringForNetbanking($payment, $input);
+            $this->validateInitialRecurringForEmandate($payment, $input);
         }
         else if ($payment->isRecurringTypeAuto() === true)
         {
-            $this->validateAutoRecurringForNetbanking($payment, $input);
+            $this->validateAutoRecurringForEmandate($payment, $input);
         }
         else
         {
@@ -1086,7 +1086,7 @@ trait Authorize
         $this->validateTokenMaxAmount($token, $payment);
     }
 
-    protected function validateInitialRecurringForNetbanking(Payment\Entity $payment, array $input)
+    protected function validateInitialRecurringForEmandate(Payment\Entity $payment, array $input)
     {
         if ((Payment\Gateway::isZeroRupeeFlowSupported($payment->getBank()) === true) and
             ($payment->getAmount() !== 0))
@@ -1136,7 +1136,7 @@ trait Authorize
         }
     }
 
-    protected function validateAutoRecurringForNetbanking(Payment\Entity $payment, array $input)
+    protected function validateAutoRecurringForEmandate(Payment\Entity $payment, array $input)
     {
         if ($payment->getAmount() < 100)
         {

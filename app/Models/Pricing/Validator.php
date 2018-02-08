@@ -100,14 +100,16 @@ class Validator extends Base\Validator
     {
         if ($input[Entity::PAYMENT_METHOD] === Payment\Method::EMANDATE)
         {
-            $fields = array(
+            $fields = [
                 Entity::PAYMENT_METHOD_TYPE,
-                Entity::PAYMENT_ISSUER);
+                Entity::PAYMENT_AUTH_TYPE,
+                Entity::PAYMENT_ISSUER,
+            ];
 
             foreach ($fields as $field)
             {
-                if (isset($input[$field]) and
-                    $input[$field] !== null)
+                if ((isset($input[$field])) and
+                    ($input[$field] !== null))
                 {
                     throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_PRICING_FIELD_NOT_REQUIRED_FOR_EMANDATE,
