@@ -163,4 +163,19 @@ class BobGatewayTest extends TestCase
             $this->doAuthPayment();
         });
     }
+
+    protected function getDefaultPaymentArray()
+    {
+        $payment = $this->getDefaultPaymentArrayNeutral();
+
+        $payment['card'] = array(
+            'number'            => '4111465616335132',
+            'name'              => 'Praveen',
+            'expiry_month'      => '12',
+            'expiry_year'       => '2024',
+            'cvv'               => '566',
+        );
+
+        return $payment;
+    }
 }
