@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
-import TimeAgo from 'react-timeago';
 
 import Amount from 'rzp/ui/Amount';
+import Time from 'rzp/ui/Time';
 import {
   PaymentStatusLabel,
   SettlementStatusLabel,
@@ -28,7 +28,7 @@ const commonMeta = {
     },
     {
       recordKey: 'created_at',
-      transfomer: value => <TimeAgo date={value * 1000} />,
+      transfomer: value => <Time value={value} relative />,
     },
     {
       recordKey: 'status',
