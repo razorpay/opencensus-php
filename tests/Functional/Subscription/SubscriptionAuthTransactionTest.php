@@ -19,8 +19,6 @@ class SubscriptionAuthTransactionTest extends TestCase
 
     public function setUp()
     {
-        $this->markTestSkipped('Time mock issue');
-
         $this->testDataFilePath = __DIR__ . '/Helpers/SubscriptionTestData.php';
 
         parent::setUp();
@@ -34,6 +32,11 @@ class SubscriptionAuthTransactionTest extends TestCase
         $this->fixtures->create('terminal:shared_cybersource_hdfc_recurring_terminals');
 
         $this->mockTokenex();
+
+        // This is set to 10 Jan 2018
+        // Because in test cases subsription start date is set
+        // to 20 Jan 2018 and it should always be in future
+        Carbon::setTestNow("10-1-2018 3:00:00");
     }
 
     public function testSubscriptionAuthTxnNormalWithStartAt()

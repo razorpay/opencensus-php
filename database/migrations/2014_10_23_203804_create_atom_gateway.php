@@ -19,7 +19,8 @@ class CreateAtomGateway extends Migration
         {
             $table->engine = 'InnoDB';
 
-            $table->char('id', UniqueIdEntity::ID_LENGTH);
+            $table->char('id', UniqueIdEntity::ID_LENGTH)
+                  ->primary();
 
             $table->integer('gateway_payment_id');
 

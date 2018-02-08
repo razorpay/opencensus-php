@@ -4,6 +4,7 @@ namespace RZP\Models\Payment\Processor;
 
 use Mail;
 use RZP\Error;
+use Carbon\Carbon;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Card;
@@ -158,7 +159,7 @@ trait Callback
     {
         $this->trace->info(TraceCode::PAYMENT_CALLBACK_RETRY);
 
-        $diff = time() - $payment->getCreatedAt();
+        $diff = Carbon::now()->getTimestamp() - $payment->getCreatedAt();
 
         // If it was authorized recently then send back authorized again.
         if (($payment->hasBeenAuthorized() === true) and
@@ -300,7 +301,7 @@ trait Callback
     protected function checkForRecentFailedPayment($payment)
     {
         // Difference should be less than 30 minutes
-        $diff = time() - $payment->getCreatedAt();
+        $diff = Carbon::now()->getTimestamp() - $payment->getCreatedAt();
 
         if (($payment->isFailed()) and
             ($diff < self::CALLBACK_PROCESS_AGAIN_DURATION * 60))

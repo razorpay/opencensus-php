@@ -19,7 +19,8 @@ class Validator extends Base\Validator
         Entity::TRIVIA        => 'sometimes',
         Entity::ISSUER_NAME   => 'sometimes',
         Entity::EMI           => 'sometimes|integer|in:0,1',
-        Entity::ENABLED       => 'sometimes|integer|in:0,1'
+        Entity::ENABLED       => 'sometimes|integer|in:0,1',
+        Entity::FLOWS         => 'sometimes|array|custom',
     );
 
     protected static $editRules = array(
@@ -31,7 +32,8 @@ class Validator extends Base\Validator
         Entity::TRIVIA        => 'sometimes',
         Entity::ISSUER_NAME   => 'sometimes',
         Entity::EMI           => 'sometimes|integer|in:0,1',
-        Entity::ENABLED       => 'sometimes|integer|in:0,1'
+        Entity::ENABLED       => 'sometimes|integer|in:0,1',
+        Entity::FLOWS         => 'sometimes|array|filled|custom',
     );
 
     protected static $createValidators = array(
@@ -107,6 +109,20 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid bank name in input: '. $input[Entity::ISSUER]);
+        }
+    }
+
+    protected function validateFlows($attribute, $flows)
+    {
+        $validFlows = Flow::getValid();
+
+        foreach ($flows as $flow => $value)
+        {
+            if (in_array($flow, $validFlows) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Invalid flow in input: ' . $flow);
+            }
         }
     }
 }

@@ -28,8 +28,6 @@ class SubscriptionChargeTest extends TestCase
 
     public function setUp()
     {
-        $this->markTestSkipped('Time mock issue');
-
         $this->testDataFilePath = __DIR__ . '/Helpers/SubscriptionTestData.php';
 
         parent::setUp();
@@ -46,14 +44,10 @@ class SubscriptionChargeTest extends TestCase
 
         $this->setupMockDns();
 
-        Carbon::setTestNow();
-    }
-
-    public function tearDown()
-    {
-        parent::tearDown();
-
-        Carbon::setTestNow();
+        // This is set to 10 Jan 2018
+        // Because in test cases subsription start date is set
+        // to 20 Jan 2018 and it should always be in future
+        Carbon::setTestNow("10-1-2018 3:00:00");
     }
 
     public function testSubscriptionFirstCharge()
@@ -1658,6 +1652,7 @@ class SubscriptionChargeTest extends TestCase
         $this->assertNull($addon['invoice_id']);
 
         $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+
         $this->assertEquals(1, $result['invoices_created']);
 
         $subscription = $this->getLastEntity('subscription', true);

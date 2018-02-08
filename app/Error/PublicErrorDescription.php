@@ -476,12 +476,12 @@ class PublicErrorDescription
 
     const BAD_REQUEST_PAYMENT_TRANSFER_AMOUNT_GREATER_THAN_CAPTURED             = 'The sum of amount requested for transfer is greater than the captured amount';
     const BAD_REQUEST_PAYMENT_TRANSFER_AMOUNT_GREATER_THAN_UNTRANSFERRED        = 'The total transfer amount provided is greater than the amount not transferred';
-    const BAD_REQUEST_PAYMENT_TRANSFER_NOT_ENOUGH_BALANCE                       = 'Your account does not have enough balance to carry out the transfer operation. You can add funds to your account from your Razorpay dashboard or capture new payments.';
     const BAD_REQUEST_PAYMENT_TRANSFER_ENTITIES_NOT_SET                         = 'Payment transfer entities provided are invalid or not set';
     const BAD_REQUEST_PAYMENT_TRANSFER_MORE_THAN_ONE_CUSTOMER                   = 'Payment cannot be transferred to more than one customer';
     const BAD_REQUEST_PAYMENT_TRANSFER_MULTIPLE_ENTITY_TYPES_GIVEN              = 'Payment cannot be transferred to multiple types of entities';
     const BAD_REQUEST_PAYMENT_TRANSFER_CURRENCY_MISMATCH                        = 'Transfer request currency must be same as payment currency';
 
+    const BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE                             = 'Your account does not have enough balance to carry out the transfer operation. You can add funds to your account from your Razorpay dashboard or capture new payments.';
     const BAD_REQUEST_TRANSFER_INVALID_ACCOUNT_ID                               = 'Account ID provided for transfer is invalid';
     const BAD_REQUEST_TRANSFER_ACCOUNT_NOT_ACTIVATED                            = 'The account needs to be activated by Razorpay before you can make transfers in live mode';
     const BAD_REQUEST_TRANSFER_REVERSAL_AMOUNT_GREATER_THAN_TRANSFERRED         = 'The reversal amount provided is greater than amount transferred';

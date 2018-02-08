@@ -704,12 +704,11 @@ class Entity extends Base\PublicEntity
         return TpvType::isNonTpvAllowed($tpv);
     }
 
-    public function isValidEmiTerminal($gateway, $emiDuration, $subvention)
+    public function isValidEmiTerminal($gateway, $emiDuration)
     {
         if (($this->isEmiEnabled()) and
             ($this->getGateway() === $gateway) and
-            ($this->getEmiDuration() === $emiDuration) and
-            ($this->getEmiSubvention() === $subvention))
+            ($this->getEmiDuration() === $emiDuration))
         {
             return true;
         }
