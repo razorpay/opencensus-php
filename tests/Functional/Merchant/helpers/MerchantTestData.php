@@ -1274,7 +1274,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 30,
+                'count' => 29,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -1462,13 +1462,6 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'BARB_R',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
                             'issuer' => 'BARB_C',
                         ],
                     ],
@@ -1499,7 +1492,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 31,
+                'count' => 30,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -1688,13 +1681,6 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'TNSC',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'BARB_R',
                         ],
                     ],
                     [
@@ -1937,7 +1923,6 @@ return [
                                 'SYNB',
                                 'TMBL',
                                 'TNSC',
-                                'BARB_R',
                                 'BARB_C',
                                 'PUNB_C',
                                 'LAVB_C'
@@ -2136,6 +2121,37 @@ return [
         ],
         'response' => [
             'content' => [
+            ],
+        ],
+    ],
+
+    'testGetCheckoutRouteWithMerchantSubEmi' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'methods' => [
+                    'emi_options' => [
+                        'HDFC' => [
+                            [
+                                'duration'   => 9,
+                                'interest'   => 12,
+                                'subvention' => 'customer',
+                                'min_amount' => 500000
+                            ],
+                            [
+                                'duration'   => 9,
+                                'interest'   => 0,
+                                'subvention' => 'merchant',
+                                'min_amount' => 527315
+                            ]
+                        ]
+                    ]
+                ]
             ],
         ],
     ],

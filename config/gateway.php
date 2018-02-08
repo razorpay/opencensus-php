@@ -50,6 +50,7 @@ return [
         'wallet_sbibuddy',
         'wallet_openwallet',
         'wallet_mpesa',
+        'card_fss',
     ],
 
     'mock_amex'                   => env('AMEX_MOCK'),
@@ -90,6 +91,7 @@ return [
     'mock_aeps_icici'             => env('AEPS_ICICI_MOCK'),
     'mock_wallet_freecharge'      => env('FREECHARGE_MOCK'),
     'mock_wallet_mpesa'           => env('MPESA_MOCK'),
+    'mock_card_fss'               => env('FSS_MOCK'),
 
     'certificate_path'            => env('CERTIFICATE_DIR_PATH'),
 
@@ -193,6 +195,19 @@ return [
     'ebs' => [
         'test_merchant_id' => env('EBS_GATEWAY_TEST_MERCHANT_ID', 'random'),
         'test_hash_secret' => env('EBS_GATEWAY_TEST_HASH_SECRET', 'secret'),
+    ],
+
+    'card_fss' => [
+        'barb' => [
+            'test_hash_secret'  => env('FSS_BOB_GATEWAY_TEST_HASH_SECRET', 'secret'),
+            'terminal_id'       => env('FSS_BOB_GATEWAY_TERMINAL_ID', '123'),
+            'terminal_password' => env('FSS_BOB_GATEWAY_TERMINAL_PASSWORD', 'password'),
+        ],
+        'fss' => [
+            'terminal_id'      => env('FSS_GATEWAY_TERMINAL_ID', '144'),
+            'test_hash_secret' => env('FSS_GATEWAY_TEST_HASH_SECRET', 'secret'),
+            'bank_code'        => env('FSS_GATEWAY_BANK_CODE', '12345678'),
+        ]
     ],
 
     'mobikwik' => [

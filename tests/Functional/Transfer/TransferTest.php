@@ -194,11 +194,37 @@ class TransferTest extends TestCase
 
     public function testLiveModeTransferToNonActivatedAccount()
     {
-        $this->fixtures->merchant->edit('10000000000000', ['activated' => true]);
+        $this->fixtures->on('live')->merchant->edit('10000000000000', ['activated' => true]);
+
+        $this->fixtures->on('live')->merchant->editBalance(20000);
 
         $this->runRequestResponseFlow($this->testData[__FUNCTION__], function()
         {
             $this->createTransfer('account', [], 'live');
+        });
+    }
+
+    public function testTransferInsufficientBalance()
+    {
+        $this->fixtures->merchant->editBalance(100);
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__], function()
+        {
+            $this->createTransfer('account', []);
+        });
+    }
+
+    public function testTransferWithFeeInsufficientBalance()
+    {
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->editPricingPlanId(self::STANDARD_PRICING_PLAN_ID);
+
+        $this->fixtures->merchant->editBalance(1000);
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__], function()
+        {
+            $this->createTransfer('account', []);
         });
     }
 

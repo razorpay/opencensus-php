@@ -260,6 +260,8 @@ class Entity extends Base\PublicEntity
         if (isset($input[self::PAYEE_ACCOUNT]) === true)
         {
             $input[self::PAYEE_ACCOUNT] = str_replace(' ', '', $input[self::PAYEE_ACCOUNT]);
+
+            $input[self::PAYEE_ACCOUNT] = strtoupper($input[self::PAYEE_ACCOUNT]);
         }
     }
 

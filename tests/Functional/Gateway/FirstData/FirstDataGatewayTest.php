@@ -778,7 +778,7 @@ class FirstDataGatewayTest extends TestCase
 
     public function testInvalidApprovalCode()
     {
-        $invalidApprovalCode = '?:waiting RUPAY';
+        $invalidApprovalCode = 'Invalid code';
 
         $this->getOveriddenApprovalCode($invalidApprovalCode);
 
@@ -790,7 +790,24 @@ class FirstDataGatewayTest extends TestCase
             Exception\GatewayErrorException::class,
             // Any invalid code is mapped to General Error
             "Payment processing failed due to error at bank or wallet gateway" .
-            "\nGateway Error Code: ?:waiting RUPAY\nGateway Error Desc: General Error");
+            "\nGateway Error Code: Invalid code\nGateway Error Desc: General Error");
+    }
+
+    public function testWaitingRupayCode()
+    {
+        $ApprovalCode = '?:waiting RUPAY';
+
+        $this->getOveriddenApprovalCode($ApprovalCode);
+
+        $this->makeRequestAndCatchException(
+            function()
+            {
+                $this->doAuthPayment($this->payment);
+            },
+            Exception\GatewayErrorException::class,
+            // Any invalid code is mapped to General Error
+            "Payment was not completed on time." .
+            "\nGateway Error Code: ?:waiting RUPAY\nGateway Error Desc: Waiting for Rupay");
     }
 }
 
