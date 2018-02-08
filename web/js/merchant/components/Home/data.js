@@ -6,10 +6,12 @@ const API_ERROR = {
   },
   OLDEST_TXN_ERROR = {
     error: 'Unable to get your first transaction date'
-  };
+  },
+  isMobileDevice = window.outerWidth <= 768;
 
 export {
   API_ERROR,
   API_INVALID_RESP,
-  OLDEST_TXN_ERROR
+  OLDEST_TXN_ERROR,
+  isMobileDevice
 };

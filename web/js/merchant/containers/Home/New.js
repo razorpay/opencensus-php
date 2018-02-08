@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import * as HomeActions from 'merchant/modules/home';
 import moment from 'moment';
+import { Redirect } from 'react-router-dom';
 
 import Amount from 'rzp/ui/Amount';
 import Sticky from 'rzp/ui/Sticky';
@@ -28,6 +29,7 @@ import {
   OLDEST_TXN_ERROR,
   API_ERROR,
   API_INVALID_RESP,
+  isMobileDevice
 } from 'merchant/components/Home/data';
 import GenericPanel, { PanelBody } from 'merchant/components/Home/GenericPanel';
 
@@ -36,6 +38,7 @@ import {
   trackPresetChange,
   trackSettlementsClick,
   trackPlatformAnalyticsHidden,
+  trackForceOldDashboard
 } from './ga';
 
 const dateRangePresets = [
@@ -80,7 +83,7 @@ const keymetricsSectionTitle = 'Transactions Overview',
     showNotification,
   }
 )
-export default class HomeContainer extends Component {
+class HomeContainer extends Component {
   constructor(props) {
     super(props);
 
@@ -362,11 +365,6 @@ export default class HomeContainer extends Component {
         <div className="dashboard">
           <div className="row">
             <div className="col-md-12">
-              <p className="section-title keymetrics-title">
-                {keymetricsSectionTitle}
-              </p>
-            </div>
-            <div className="col-md-12">
               <KeyMetrics
                 startDate={startDate}
                 endDate={endDate}
@@ -447,3 +445,7 @@ export default class HomeContainer extends Component {
     );
   }
 }
+
+export default () => isMobileDevice
+                       ? (trackForceOldDashboard(), <Redirect to="/dashboard"/>)
+                       : <HomeContainer/>

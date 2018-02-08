@@ -18,7 +18,7 @@ import Legend from 'merchant/components/Home/Legend';
 import LastUpdated from 'merchant/components/Home/LastUpdated';
 import MoreOptionsButton from 'merchant/containers/Home/MoreOptionsButton';
 import { API_ERROR, API_INVALID_RESP } from 'merchant/components/Home/data';
-import { trackGoToLinks } from 'merchant/containers/Home/ga';
+import { trackGoToLinks, trackNoData } from 'merchant/containers/Home/ga';
 
 const chartOptions = {
     tooltips: {
@@ -67,6 +67,8 @@ class Traffic extends Component {
     startDate = startDate || this.props.startDate;
     endDate = endDate || this.props.endDate;
 
+    const { sectionTitle } = this.props;
+
     const { selectedGrouping, groupsState } = this.state,
       groupState = groupsState[selectedGrouping.value],
       meta = groupMeta[selectedGrouping.value],
@@ -113,6 +115,13 @@ class Traffic extends Component {
           isCurrency: meta.isCurrency,
           groupTitleMap: { Mobile: 'mWeb' },
         });
+
+        if (labels.length === 0) {
+          trackNoData(
+            `${sectionTitle} from ${startDate.format(csvDateFormat)
+             } to ${endDate.format(csvDateFormat)}`
+          );
+        }
 
         groupState.chartData = { labels, datasets };
         groupState.legendData = legendData;
@@ -220,7 +229,7 @@ class Traffic extends Component {
       { isCurrency } = groupMeta[selectedGrouping.value],
       { chartData, legendData } = groupState,
       hasNoData = !chartData || chartData.labels.length === 0,
-      { startDate, endDate, sectionTitle } = this.props;
+      { sectionTitle, startDate, endDate } = this.props;
 
     return (
       <GenericPanel
@@ -284,7 +293,7 @@ class Traffic extends Component {
               to={`/payments?from=${startDate.unix()}&to=${endDate.unix()}`}
               onClick={() => trackGoToLinks('Payments', sectionTitle)}
             >
-              View all Payments
+              View these Payments <i className="i i-chevron-right"></i>
             </Link>
           </div>
         </PanelFooter>

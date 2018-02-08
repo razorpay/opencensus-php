@@ -165,7 +165,7 @@ export default class RecentActivity extends Component {
                 onClick={() =>
                   trackGoToLinks(selectedTabTitle, this.props.sectionTitle)}
               >
-                View all {selectedTabTitle}
+                View all {selectedTabTitle} <i className="i i-chevron-right"></i>
               </Link>
             </div>
           </div>
