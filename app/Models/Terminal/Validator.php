@@ -352,6 +352,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes|string',
         Entity::GATEWAY_ACCESS_CODE         => 'sometimes',
         Entity::GATEWAY_MERCHANT_ID         => 'required',
+        Entity::GATEWAY_TERMINAL_ID         => 'sometimes',
     ];
 
     protected function validateGateway($input)
