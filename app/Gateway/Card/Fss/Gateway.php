@@ -16,6 +16,8 @@ use RZP\Gateway\Base\VerifyResult;
 
 class Gateway extends Base\Gateway
 {
+    use Base\AuthorizeFailed;
+
     protected $gateway = Payment\Gateway::CARD_FSS;
 
     /**
