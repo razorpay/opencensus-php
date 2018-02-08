@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<HEAD><title>CSB NetBanking Alert</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="css/style.css" type="text/css">
+    <link rel="stylesheet" href="css/repeatedStyle.css" type="text/css">
+    <script type="text/javascript" src="js/jquery-1.8.2.js"></script>
+    <script type="text/javascript" src="js/main.js"></script>
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="content-language" content="en">
+    <SCRIPT language="JavaScript" src="iNetScripts/inetatribchk.js" type="text/JavaScript"></SCRIPT>
+    <script type="text/javascript"> inetbkprsd.OnBack = function () {
+        window.location.replace('ErrHndlrIntf.aspx');
+    } </script>
+</HEAD>
+<body>
+<form method="post" action="./ErrPgwHdlr.aspx" id="Form2"><input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE"
+                                                                 value="/wEPDwUKLTUxMTcwNzgxMGRk8Pt3KSdblzN/RBxNzr/2+nfJypKinTSu6GgDJm568rM="/>
+    <input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="39A51E7F"/>
+    <!-- topBar started /-->
+    <div class="topBar">
+        <div class="wrapper">
+            <div class="logo"><A href="Home.aspx"><IMG title="Catholic Syrian Bank" alt="Catholic Syrian Bank"
+                                                       src="images/CsbLogo.png"></A></div>
+            <nav>
+                <ul class="topNav1">
+                    <li class="home"><a href="Home.aspx">Home</a></li>
+                    <li><a href="preLogInFaqs.aspx">FAQs</a></li>
+                    <li><a href="securityTips.aspx">Security Tips</a></li>
+                    <li><a href="contactUs.aspx">Contact Us</a></li>
+                </ul>
+            </nav>
+        </div>
+    </div> <!-- topBar end /--> <!-- fullBd started /-->
+    <div class="fullBd">
+        <div class="wrapper error"> <!-- miniWrap started /-->
+            <div class="miniWrap">
+                <div class="yelwBox">
+                    <div class="bigAlrtIc"></div>
+                    <div class="altTxt"><h2 class="hd24Nor">Alert</h2>
+                        <h1 class="hd30Nor">&nbsp; We apologize for the inconvenience. Unable to proceed.</h1></div>
+                    <div class="clear"></div>
+                </div>
+                <div class="boxCont">
+                    <div class="reasIc"></div>
+                    <div class="altTxt"><h2 class="hd18Nor">Reason</h2>
+                        <ul class="notice">
+                            <li> Invalid transaction request
+                            <LI> The requested service is not available in this context.
+                            <li> The server may be busy</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="boxCont">
+                    <div class="suggIc"></div>
+                    <div class="altTxt"><h2 class="hd18Nor">Suggestions</h2>
+                        <ul class="notice">
+                            <li> Please try after sometime
+                            <li> Call our 24-Hour support centre to resolve any other issues related to CSB NetBanking
+                                service
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div> <!-- miniWrap end /-->
+            <footer>
+                <div class="footCont">
+                    <div class="left">
+                        <ul class="footLis">
+                            <li>
+                                <a onClick='window.open("privacyStatment.aspx","_blank","toolbar=no, scrollbars=yes, resizable=no, width=504, height=450")'>Privacy
+                                    Statement</a></li>
+                            <li>
+                                <a onClick='window.open("disclaimer.aspx","_blank","toolbar=no, scrollbars=yes, resizable=no, width=504, height=450")'>Disclaimers</a>
+                            </li>
+                            <li>
+                                <a onClick='window.open("browserRequirtment.aspx","_blank","toolbar=no, scrollbars=yes, resizable=no, width=504, height=450")'>Browser
+                                    Requirement</a></li>
+                            <li>
+                                <a onClick='window.open("safeInternetBanking.aspx","_blank","toolbar=no, scrollbars=yes, resizable=no, width=504, height=450")'>Safe
+                                    Internet Banking</a></li>
+                        </ul>
+                        <p class="norTxt11"> &copy; The Catholic Syrian Bank Ltd</p></div>
+                    <div class="footCSBLogo"><a><img src="images/CsbFooterLogo.png" alt="" title=""></a></div>
+                    <div class="clear"></div>
+                </div>
+            </footer>
+        </div>
+    </div> <!-- fullBd end /--></form>
+</body>
+</HTML>

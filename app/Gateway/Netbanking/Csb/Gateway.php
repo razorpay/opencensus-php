@@ -123,10 +123,16 @@ class Gateway extends Base\Gateway
         }
         catch (\Exception $e)
         {
+            // We set apiSuccess and gatewaySuccess to false
+            $this->checkApiSuccess($verify);
+
+            $verify->gatewaySuccess = false;
+
+            // If we are unable to parse the verify response, we must move the payment to verify bucket 9
             throw new PaymentVerificationException(
                 $data,
                 $verify,
-                VerifyAction::RETRY,
+                VerifyAction::FINISH,
                 ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
                 $e);
         }

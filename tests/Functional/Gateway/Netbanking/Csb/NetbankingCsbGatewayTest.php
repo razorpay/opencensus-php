@@ -176,6 +176,30 @@ class NetbankingCsbGatewayTest extends TestCase
         $this->assertArraySelectiveEquals($testData, $netbanking);
     }
 
+    public function testPaymentVerifyHtmlResponse()
+    {
+        $payment = $this->testPaymentFailed();
+
+        $data = $this->testData['testVerifyMismatch'];
+
+        $this->mockPaymentVerifyHtmlPage();
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment[Payment\Entity::ID]);
+            });
+
+        $payment = $this->getLastEntity(ConstantsEntity::PAYMENT, true);
+
+        $this->assertEquals(Payment\Status::FAILED, $payment[Payment\Entity::STATUS]);
+
+        $netbanking = $this->getLastEntity(ConstantsEntity::NETBANKING, true);
+
+        $this->assertTestResponse($netbanking, 'testPaymentFailedNetbankingEntity');
+    }
+
     private function mockPaymentFailed()
     {
         $this->mockServerContentFunction(
@@ -194,6 +218,18 @@ class NetbankingCsbGatewayTest extends TestCase
                 if ($action === 'verify')
                 {
                     $content[ResponseFields::VERIFICATION] = Status::FAILURE;
+                }
+            });
+    }
+
+    private function mockPaymentVerifyHtmlPage()
+    {
+        $this->mockServerContentFunction(
+            function(& $content, $action = null)
+            {
+                if ($action === 'verify')
+                {
+                    $content = file_get_contents(__DIR__ . '/csbk.html');
                 }
             });
     }

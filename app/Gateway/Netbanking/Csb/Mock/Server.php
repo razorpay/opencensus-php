@@ -95,6 +95,14 @@ class Server extends Base\Mock\Server
 
         $this->content($response, $this->action);
 
+        if (is_array($response) === false)
+        {
+            //
+            // For the test case testPaymentVerifyHtmlResponse, we return response as html string
+            //
+            return $response;
+        }
+
         //
         // Simple XML Element takes the values of the associate array
         // as the XML elements. Therefore, we need to flip the array
