@@ -24,7 +24,8 @@ const type = {
 
 const respondIn = {
   title: 'Respond In',
-  value: item => daysLeftInExpiry(item.expires_on),
+  value: item =>
+    item.status === 'open' ? daysLeftInExpiry(item.expires_on) : '--',
 };
 
 const resolvedOn = {
@@ -55,7 +56,6 @@ export default class Dispute extends ListContainer {
             type,
             respondIn,
             createdAt,
-            resolvedOn,
             status,
           ]}
           count={this.state.count}

@@ -52,8 +52,14 @@ export default props => {
 
               {/* expiry date of dispute */}
               <EntityDetailRow label="Respond By">
-                <Time value={dispute.expires_on} format="LL" />
-                &nbsp;({daysLeftInExpiry(dispute.expires_on, 'In ')})
+                {dispute.status === 'open' ? (
+                  <React.Fragment>
+                    <Time value={dispute.expires_on} format="LL" />
+                    &nbsp;({daysLeftInExpiry(dispute.expires_on, 'In ')})
+                  </React.Fragment>
+                ) : (
+                  '--'
+                )}
               </EntityDetailRow>
 
               {/* phase of dispute */}
