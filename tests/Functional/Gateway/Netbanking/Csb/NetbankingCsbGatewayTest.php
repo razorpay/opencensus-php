@@ -2,12 +2,13 @@
 
 namespace RZP\Tests\Functional\Gateway\Netbanking\Csb;
 
-use RZP\Gateway\Netbanking\Csb\ResponseFields;
 use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 use RZP\Tests\Functional\TestCase;
+use RZP\Gateway\Netbanking\Csb\Mode;
 use RZP\Gateway\Netbanking\Csb\Status;
 use RZP\Constants\Entity as ConstantsEntity;
+use RZP\Gateway\Netbanking\Csb\ResponseFields;
 use RZP\Gateway\Netbanking\Base\Entity as Netbanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -81,6 +82,9 @@ class NetbankingCsbGatewayTest extends TestCase
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
         $verify = $this->verifyPayment($payment[Payment\Entity::ID]);
+
+        // Since BID is not null, we send V as the Mode for verify
+        $this->assertEquals(Mode::VERIFY, $verify['gateway']['verifyRequest'][7]);
 
         $this->assertEquals(true, $verify['gateway']['apiSuccess']);
         $this->assertEquals(true, $verify['gateway']['gatewaySuccess']);

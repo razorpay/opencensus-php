@@ -215,6 +215,9 @@ class Gateway extends Base\Gateway
             array_push($content, Mode::VERIFY_WO_TID);
         }
 
+        // Setting verify request property of $verify
+        $verify->verifyRequest = $content;
+
         $contentToEncode = $this->computeStringToEncode($content);
 
         $content = [RequestFields::POST_DATA => base64_encode($contentToEncode)];
