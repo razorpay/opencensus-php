@@ -11,13 +11,14 @@ use RZP\Error\ErrorCode;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::NAME            => 'filled|string|max:40',
-        Entity::DESCRIPTOR      => 'sometimes|nullable|alpha_num',
-        Entity::AMOUNT_EXPECTED => 'filled|integer|min:0',
-        Entity::DESCRIPTION     => 'sometimes|nullable|string|max:2048',
-        Entity::CUSTOMER_ID     => 'filled|public_id|size:19',
-        Entity::RECEIVERS       => 'required|array',
-        Entity::NOTES           => 'sometimes|notes',
+        Entity::NAME                            => 'filled|string|max:40',
+        Entity::DESCRIPTOR                      => 'sometimes|nullable|alpha_num',
+        Entity::AMOUNT_EXPECTED                 => 'filled|integer|min:0',
+        Entity::DESCRIPTION                     => 'sometimes|nullable|string|max:2048',
+        Entity::CUSTOMER_ID                     => 'filled|public_id|size:19',
+        Entity::RECEIVERS                       => 'required|array',
+        Entity::RECEIVERS . '.' . Entity::TYPES => 'present|array',
+        Entity::NOTES                           => 'sometimes|notes',
     ];
 
     protected static $editRules = [
@@ -64,12 +65,6 @@ class Validator extends Base\Validator
 
     protected function validateReceivers(array $input)
     {
-        if (isset($input[Entity::RECEIVERS][Entity::TYPES]) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'requests.types is required.');
-        }
-
         if (Receiver::areTypesValid($input[Entity::RECEIVERS][Entity::TYPES]) === false)
         {
             throw new Exception\BadRequestException(
