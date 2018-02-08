@@ -49,6 +49,16 @@ export default class BusinessDetailsForm extends Component {
     let props = this.props;
     let checkCounter = 0;
 
+    //If values are null, then don't verify
+    if (
+      !props.business_registered_address ||
+      !props.business_registered_city ||
+      !props.business_registered_pin ||
+      !props.business_registered_state
+    ) {
+      return;
+    }
+
     if (
       props.business_registered_address.trim() !==
         props.business_operation_address.trim() ||

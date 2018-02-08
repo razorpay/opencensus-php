@@ -124,11 +124,12 @@ const getFileDetails = data => {
 
 const autoPrefixUrls = url => {
   const regex = /^https?:\/\//i;
-  let tempUrl = url.toLowerCase();
-
-  if (url.length === 0 || !url) {
+  let tempUrl;
+  if (!url || url.length === 0) {
     return url;
   }
+
+  tempUrl = url.toLowerCase();
 
   if (!regex.test(tempUrl)) {
     tempUrl = 'http://' + tempUrl;
