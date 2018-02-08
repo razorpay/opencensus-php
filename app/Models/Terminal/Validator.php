@@ -350,7 +350,6 @@ class Validator extends Base\Validator
         Entity::GATEWAY                     => 'required|in:card_fss',
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes|string',
-        Entity::GATEWAY_TERMINAL_ID         => 'required',
         Entity::GATEWAY_ACCESS_CODE         => 'sometimes',
         Entity::GATEWAY_MERCHANT_ID         => 'required',
     ];
