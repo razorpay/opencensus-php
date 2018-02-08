@@ -193,26 +193,22 @@ class Gateway extends Base\Gateway
 
     private function getVerifyRequestData(Verify $verify): array
     {
-        $input = $verify->input;
-
-        $gatewayPayment = $verify->payment;
-
         $content = [
             Constants::CHNPGSYN,
             Constants::CHNPGCODE,
             $this->getMerchantId2(), // TODO: Check this
-            $input['payment']['id'],
-            $input['payment']['amount'] / 100,
-            $this->getCallbackUrl($input['payment']['id']),
+            $verify->input['payment']['id'],
+            $verify->input['payment']['amount'] / 100,
+            $this->getCallbackUrl($verify->input['payment']['id']),
         ];
 
-        if ($gatewayPayment->getBankPaymentId() !== "null")
+        if (empty($verify->payment->getBankPaymentId()) === false)
         {
-            $content = array_merge($content, [$gatewayPayment->getBankPaymentId(), Mode::VERIFY]);
+            $content = array_merge($content, [$verify->payment->getBankPaymentId(), Mode::VERIFY]);
         }
         else
         {
-            array_push($content, Mode::VERIFY_WO_TID);
+            $content = array_merge($content, ["", Mode::VERIFY_WO_TID]);
         }
 
         // Setting verify request property of $verify
@@ -252,7 +248,15 @@ class Gateway extends Base\Gateway
 
         $content = $verify->verifyResponseContent;
 
-        $status = trim($content[ResponseFields::VERIFICATION]);
+        if (array_key_exists(ResponseFields::VERIFICATION, $content) === false)
+        {
+            // When TID is null, they send verify status inside Status
+            $status = trim($content[ResponseFields::STATUS_UCFIRST]);
+        }
+        else
+        {
+            $status = trim($content[ResponseFields::VERIFICATION]);
+        }
 
         // content will contain status 100 or 101
         if ($status === Status::SUCCESS)
@@ -272,7 +276,8 @@ class Gateway extends Base\Gateway
         if ((empty($wallet[Base\Entity::STATUS]) === true) or
             ($wallet[Base\Entity::STATUS] !== Status::SUCCESS))
         {
-            $contentToSave[ResponseFields::STATUS] = $content[ResponseFields::VERIFICATION];
+            $contentToSave[ResponseFields::STATUS] = $content[ResponseFields::VERIFICATION] ??
+                                                     $content[ResponseFields::STATUS_UCFIRST];
         }
 
         $this->updateGatewayPaymentEntity($wallet, $contentToSave, false);
