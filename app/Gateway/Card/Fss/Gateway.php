@@ -16,6 +16,8 @@ use RZP\Gateway\Base\VerifyResult;
 
 class Gateway extends Base\Gateway
 {
+    use Base\AuthorizeFailed;
+
     protected $gateway = Payment\Gateway::CARD_FSS;
 
     /**
@@ -395,7 +397,7 @@ class Gateway extends Base\Gateway
         switch ($gatewayAquirer)
         {
             case Acquirer::FSS:
-                $crypto = new AESCrypto(AESCrypto::MODE_CBC, $secretKey, $secretKey);
+                $crypto = new AesCrypto(AesCrypto::MODE_CBC, $secretKey, $secretKey);
 
                 $decryptedString = $crypto->decryptString($str);
                 break;
