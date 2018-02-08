@@ -200,11 +200,11 @@ return [
     'card_fss' => [
         'barb' => [
             'test_hash_secret'  => env('FSS_BOB_GATEWAY_TEST_HASH_SECRET', 'secret'),
-            'terminal_id'       => env('FSS_BOB_GATEWAY_TERMINAL_ID', '123'),
+            'merchant_id'       => env('FSS_BOB_GATEWAY_MERCHANT_ID', '123'),
             'terminal_password' => env('FSS_BOB_GATEWAY_TERMINAL_PASSWORD', 'password'),
         ],
         'fss' => [
-            'terminal_id'      => env('FSS_GATEWAY_TERMINAL_ID', '144'),
+            'merchant_id'      => env('FSS_GATEWAY_MERCHANT_ID', '144'),
             'test_hash_secret' => env('FSS_GATEWAY_TEST_HASH_SECRET', 'secret'),
             'bank_code'        => env('FSS_GATEWAY_BANK_CODE', '12345678'),
         ]

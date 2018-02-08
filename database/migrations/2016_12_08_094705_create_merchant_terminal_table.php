@@ -35,6 +35,8 @@ class CreateMerchantTerminalTable extends Migration
                   ->references(Terminal::ID)
                   ->on(Table::TERMINAL)
                   ->onDelete('cascade');
+
+            $table->unique([self::MERCHANT_ID, self::TERMINAL_ID]);
         });
     }
 

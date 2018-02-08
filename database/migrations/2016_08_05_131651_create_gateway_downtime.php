@@ -19,7 +19,8 @@ class CreateGatewayDowntime extends Migration
         {
             $table->engine = 'InnoDB';
 
-            $table->char(Downtime::ID, Downtime::ID_LENGTH);
+            $table->char(Downtime::ID, Downtime::ID_LENGTH)
+                  ->primary();
 
             $table->string(Downtime::GATEWAY, 255)
                 ->default(Downtime::ALL);
