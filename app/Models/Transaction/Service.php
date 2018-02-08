@@ -65,4 +65,15 @@ class Service extends Base\Service
 
         return $txn->toArrayPublic();
     }
+
+    public function updateMultipleTransactions(array $input)
+    {
+        (new Validator())->validateInput('unsettled_txns_channel_update', $input);
+
+        $channel    = $input['channel'];
+
+        $merchantId = $input['merchant_id'];
+
+        return (new Transaction\BulkUpdate)->updateMultipleTransactions($merchantId, $channel);
+    }
 }
