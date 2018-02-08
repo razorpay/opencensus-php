@@ -10,7 +10,7 @@ class Reconciliate extends Base\Reconciliate
     const REFUND_RECON_FILE_NAME    = 'refund_report';
     const PAYMENT_RECON_FILE_NAME   = 'mis_report';
 
-    const SHEET0_NAME               = 'Recon MIS';
+    const SHEET_NAME                = 'Recon MIS';
 
     protected function getTypeName($fileName)
     {
@@ -34,7 +34,7 @@ class Reconciliate extends Base\Reconciliate
 
         if ($reconType === self::PAYMENT)
         {
-            return [self::SHEET0_NAME];
+            return [self::SHEET_NAME];
         }
 
         return [];

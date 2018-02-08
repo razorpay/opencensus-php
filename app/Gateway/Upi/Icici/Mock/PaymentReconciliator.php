@@ -85,25 +85,6 @@ class PaymentReconciliator extends Base\Mock\PaymentReconciliator
         return $data;
     }
 
-    protected function createFile(
-        array $content,
-        string $type = FileStore\Type::MOCK_RECONCILIATION_FILE,
-        string $store = FileStore\Store::S3)
-    {
-        $creator = new FileStore\Creator;
-
-        $creator->extension($this->fileExtension)
-                ->content($content)
-                ->name($this->fileToWriteName)
-                ->sheetName($this->sheetName)
-                ->store($store)
-                ->type($type)
-                ->headers($this->shouldAddHeaders)
-                ->save();
-
-        return $creator;
-    }
-
     /**
      * @override
      * @param array $data

@@ -143,6 +143,7 @@ class Creator extends Base\Core
 
     /**
      * The sheet name used when creating an excel file.
+     * Sheet 1 is the default name used to generate the excel sheet.
      *
      * @var string
      */
