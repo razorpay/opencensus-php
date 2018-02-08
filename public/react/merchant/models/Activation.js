@@ -126,7 +126,7 @@ const autoPrefixUrls = url => {
   const regex = /^https?:\/\//i;
   let tempUrl = url.toLowerCase();
 
-  if (url.length === 0) {
+  if (url.length === 0 || !url) {
     return url;
   }
 
