@@ -9,6 +9,7 @@ use RZP\Gateway\Netbanking\Csb\Mode;
 use RZP\Gateway\Netbanking\Csb\Status;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Gateway\Netbanking\Csb\ResponseFields;
+use RZP\Models\Payment\Verify\Status as VerifyStatus;
 use RZP\Gateway\Netbanking\Base\Entity as Netbanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -116,6 +117,7 @@ class NetbankingCsbGatewayTest extends TestCase
         $payment = $this->getLastEntity(ConstantsEntity::PAYMENT, true);
 
         $this->assertEquals(Payment\Status::FAILED, $payment[Payment\Entity::STATUS]);
+        $this->assertEquals(VerifyStatus::FAILED, $payment[Payment\Entity::VERIFIED]);
 
         $netbanking = $this->getLastEntity(ConstantsEntity::NETBANKING, true);
 
@@ -145,7 +147,7 @@ class NetbankingCsbGatewayTest extends TestCase
         $this->assertEquals(Status::FAILURE, $netbanking[Netbanking::STATUS]);
 
         $this->assertEquals($verify[ConstantsEntity::PAYMENT][Payment\Entity::ID], $payment[Payment\Entity::ID]);
-        $this->assertEquals(1, $payment[Payment\Entity::VERIFIED]);
+        $this->assertEquals(VerifyStatus::SUCCESS, $payment[Payment\Entity::VERIFIED]);
         $this->assertEquals(Payment\Status::FAILED, $payment[Payment\Entity::STATUS]);
     }
 
@@ -167,6 +169,7 @@ class NetbankingCsbGatewayTest extends TestCase
         $payment = $this->getLastEntity(ConstantsEntity::PAYMENT, true);
 
         $this->assertEquals(Payment\Status::CAPTURED, $payment[Payment\Entity::STATUS]);
+        $this->assertEquals(VerifyStatus::FAILED, $payment[Payment\Entity::VERIFIED]);
 
         $netbanking = $this->getLastEntity(ConstantsEntity::NETBANKING, true);
 
@@ -194,6 +197,7 @@ class NetbankingCsbGatewayTest extends TestCase
         $payment = $this->getLastEntity(ConstantsEntity::PAYMENT, true);
 
         $this->assertEquals(Payment\Status::FAILED, $payment[Payment\Entity::STATUS]);
+        $this->assertEquals(VerifyStatus::UNKNOWN, $payment[Payment\Entity::VERIFIED]);
 
         $netbanking = $this->getLastEntity(ConstantsEntity::NETBANKING, true);
 

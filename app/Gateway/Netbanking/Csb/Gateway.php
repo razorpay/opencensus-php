@@ -214,7 +214,7 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $content = array_merge($content, ["", Mode::VERIFY_WO_TID]);
+            $content = array_merge($content, ["", Mode::VERIFY]);
         }
 
         // Setting verify request property of $verify
