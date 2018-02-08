@@ -20,19 +20,54 @@ const selector = formValueSelector('activationBusinessDetails');
 @connect(state => {
   return {
     business_type: selector(state, 'business_type'),
-    or_same: selector(state, 'or_same'),
     business_registered_address: selector(state, 'business_registered_address'),
     business_registered_state: selector(state, 'business_registered_state'),
     business_registered_city: selector(state, 'business_registered_city'),
     business_registered_pin: selector(state, 'business_registered_pin'),
+    business_operation_address: selector(state, 'business_operation_address'),
+    business_operation_state: selector(state, 'business_operation_state'),
+    business_operation_city: selector(state, 'business_operation_city'),
+    business_operation_pin: selector(state, 'business_operation_pin'),
   };
 }, null)
 export default class BusinessDetailsForm extends Component {
+  state = {
+    or_same: true,
+  };
+
+  componentWillMount() {
+    this.verifySameAddress();
+  }
+
+  handleSameAddressCheck = e => {
+    this.setState({ or_same: e.target.checked }, () =>
+      this.updateOperationalAddress()
+    );
+  };
+
+  verifySameAddress = () => {
+    let props = this.props;
+    let checkCounter = 0;
+
+    if (
+      props.business_registered_address.trim() !==
+        props.business_operation_address.trim() ||
+      props.business_registered_pin.trim() !==
+        props.business_operation_pin.trim() ||
+      props.business_registered_state.trim() !==
+        props.business_operation_state.trim() ||
+      props.business_registered_city.trim() !==
+        props.business_operation_city.trim()
+    ) {
+      this.setState({ or_same: false }, () => this.updateOperationalAddress());
+    }
+  };
+
   updateOperationalAddress = () => {
     setTimeout(() => {
       // Allow the redux-form to update the store
       let props = this.props;
-      if (props.or_same) {
+      if (this.state.or_same) {
         this.props.change(
           'business_operation_address',
           props.business_registered_address
@@ -310,12 +345,12 @@ export default class BusinessDetailsForm extends Component {
                   </label>
                   <div class="col-md-9">
                     <div class="checkbox rzpCheckbox">
-                      <Field
+                      <input
                         name="or_same"
                         id="or_same"
-                        component="input"
                         type="checkbox"
-                        onChange={this.updateOperationalAddress}
+                        onChange={this.handleSameAddressCheck}
+                        checked={this.state.or_same}
                       />
                       <label htmlFor="or_same" />
                     </div>
@@ -330,7 +365,7 @@ export default class BusinessDetailsForm extends Component {
                 </div>
               ) : null}
 
-              {!this.props.or_same ? (
+              {!this.state.or_same ? (
                 <fieldset disabled={this.props.or_same}>
                   <div class="form-group">
                     <label class="col-md-3 control-label label-required">
