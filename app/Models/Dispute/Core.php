@@ -513,12 +513,16 @@ class Core extends Base\Core
         {
             $input[Entity::STATUS] = Status::LOST;
 
-            if (in_array($dispute->getPhase(), Phase::getNonTransactionalPhases()) === true)
+            if (in_array($dispute->getPhase(), Phase::getNonTransactionalPhases(), true) === true)
             {
                 $input[Entity::STATUS] = Status::CLOSED;
             }
 
             unset($input[Entity::ACCEPT_DISPUTE]);
+        }
+        else if ($input[Entity::SUBMIT] === true)
+        {
+            $input[Entity::STATUS] = Status::UNDER_REVIEW;
         }
 
         return $input;

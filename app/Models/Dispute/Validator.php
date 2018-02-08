@@ -44,6 +44,7 @@ class Validator extends Base\Validator
 
     protected static $merchantEditRules = [
         Entity::ACCEPT_DISPUTE         => 'sometimes|boolean',
+        Entity::SUBMIT                 => 'sometimes|boolean',
     ];
 
     protected function validatePhase(string $attribute, string $value)
@@ -60,7 +61,7 @@ class Validator extends Base\Validator
         if (Status::exists($value) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Not a valid dispute status');
+                'Not a valid dispute status: ' . $value);
         }
 
         if ($this->entity->isClosed() === true)
