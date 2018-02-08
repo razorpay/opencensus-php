@@ -171,11 +171,10 @@ export default class Activation extends Entity {
 
       let unfinishedSteps = requiredFields.reduce((prev, curr) => {
         let step = steps.find(step => stepMap[step].indexOf(curr) > -1);
-        prev.push(step);
+        if (step) prev.push(parseInt(step));
         return prev;
       }, []);
 
-      unfinishedSteps = new Set(unfinishedSteps).toJSON();
       if (unfinishedSteps.length) {
         data.steps_finished = arrayDiff(steps, unfinishedSteps);
       }
