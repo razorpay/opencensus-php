@@ -348,6 +348,23 @@ class Gateway extends Base\Gateway
             RequestFields::UCAF                => '',
         ];
 
+        if ($input['payment']['merchant_id'] === '6ZJzxyLFWrGs74')
+        {
+            $content = [
+                RequestFields::TRANSACTION_TYPE    => TransactionType::AUTH,
+                RequestFields::TRANSACTION_AMOUNT  => $this->getFormattedAmount($input['payment']['amount']),
+                RequestFields::TRANSACTION_TIME    => $time,
+                RequestFields::TRANSACTION_DATE    => $date,
+                RequestFields::MERCHANT_ID         => $this->getMerchantId(),
+                RequestFields::MERCHANT_REF_NUMBER => $input['payment']['id'],
+                RequestFields::AUTH_STATUS         => '',
+                RequestFields::ECI                 => '',
+                RequestFields::XID                 => '',
+                RequestFields::ALGORITHM           => '',
+                RequestFields::CAVV2               => '',
+                RequestFields::UCAF                => '',
+            ];
+        }
         return $content;
     }
 
