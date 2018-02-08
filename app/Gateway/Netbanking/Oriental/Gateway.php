@@ -78,7 +78,7 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
 
-        $this->updateGatewayPaymentEntity($gatewayPayment, $content, true);
+        $this->updateGatewayPaymentEntity($gatewayPayment, $content);
 
         $this->checkActionStatus($content);
 
