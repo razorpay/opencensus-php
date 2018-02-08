@@ -14,20 +14,20 @@ export default ({ merchant_details: merchantDetails, title }) => (
           label="Contact Name"
           name="contact_name"
           defaultValue={merchantDetails.contact_name}
-          required
+          disabled
         />
         <Field
           label="Contact Email"
           name="contact_email"
           type="email"
           defaultValue={merchantDetails.contact_email}
-          required
+          disabled
         />
         <Field
           label="Mobile"
           name="mobile"
           defaultValue={merchantDetails.contact_mobile}
-          required
+          disabled
         />
       </Form>
     )}
