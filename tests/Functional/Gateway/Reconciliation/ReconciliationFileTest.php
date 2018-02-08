@@ -11,6 +11,7 @@ use RZP\Gateway\Blade\Mock\CardNumber;
 use RZP\Reconciliator\FirstData\PaymentReconciliate as FDPaymentRecon;
 use RZP\Reconciliator\HDFC\PaymentReconciliate as HDFCPaymentRecon;
 use RZP\Reconciliator\Axis\PaymentReconciliate as AxisPaymentRecon;
+use RZP\Reconciliator\BillDesk\RefundReconciliate as BilldeskRefundRecon;
 use RZP\Reconciliator\Hitachi\PaymentReconciliate as HitachiPaymentRecon;
 use RZP\Reconciliator\Hitachi\RefundReconciliate as HitachiRefundRecon;
 
@@ -216,6 +217,39 @@ class ReconciliationFileTest extends TestCase
         $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_ARN[0]], "'" . $updatedRefund1['arn']);
 
     }
+    
+    //For success case of Bill desk reconciliation
+    public function testBillDeskReconRefundFileFailure()
+    {
+        $this->fixtures->create('terminal:shared_billdesk_terminal');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        // Recurring authorised payment
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $refund = $this->refundPayment($payment['id']);
+        $gatewayRefund = $this->getLastEntity('billdesk', true);
+        
+        $refundEntity = $this->getEntityById('refund', $gatewayRefund['refund_id'], true);
+        $transaction = $this->getEntityById('transaction', $refundEntity['transaction_id'], true);
+        
+        //Reconciled at should be null
+        $this->assertNull($transaction['reconciled_at']);
+
+        $entries[] = $this->overrideBilldeskRefund($gatewayRefund);
+
+        $file = $this->writeToCsvFile($entries, 'billdesk_refund');
+
+        $this->runForFiles([$file], 'BillDesk');
+        
+        $updatedRefund1 = $this->getEntityById('refund', $gatewayRefund['refund_id'], true);
+        $updatedTransaction = $this->getEntityById('transaction', $updatedRefund1['transaction_id'], true);
+        
+        //Reconciled at should not be null
+        $this->assertNotNull($updatedTransaction['reconciled_at']);
+    }
 
     /*
      * Helpers
@@ -315,6 +349,16 @@ class ReconciliationFileTest extends TestCase
         return $facade;
     }
     
+    private function overrideBilldeskRefund(array $refund)
+    {
+        $facade = $this->testData['facades']['billdesk'];
+
+        $facade[BilldeskRefundRecon::COLUMN_REFUND_ID]  = $refund['RefundId'];
+        $facade[BilldeskRefundRecon::COLUMN_PAYMENT_ID] = $refund['payment_id'];
+
+        return $facade;
+    }
+
     private function overrideHitachiPayment(array $payment, array $forceOverride = [])
     {
         $facade = $this->testData['facades']['hitachi'];
@@ -371,7 +415,7 @@ class ReconciliationFileTest extends TestCase
 
         return new UploadedFile(
             $url,
-            'file.xlsx',
+            basename($url),
             $mime,
             filesize($url),
             null,
