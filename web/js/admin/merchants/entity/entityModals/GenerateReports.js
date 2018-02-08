@@ -4,36 +4,101 @@ import BaseModal from 'ui/BaseModal';
 import { notifyError, notifySuccess } from 'common/modal';
 
 import Form from 'ui/Form';
-import { Field, RadioField, SelectField, DateField } from 'ui/Field';
+import { Field, RadioField, SelectField } from 'ui/Field';
 import fetch, { adminFetch } from 'common/fetch';
 import AsyncButton from 'ui/AsyncButton';
 import { PowerSelect, TypeAhead } from 'react-power-select';
 
-// import ReduxDatetime from 'rzp/ui/ReduxDatetime';
+import Calendar from 'rc-calendar';
+import DatePicker from 'rc-calendar/lib/Picker';
+import enUS from 'rc-calendar/lib/locale/en_US';
 
-// TODO: Restrict year selection from html dates also
-function validYear(current) {
-  const selectedDate = current.split('-'),
-    selectedYear = selectedDate[0],
-    selectedMonth = selectedDate[1],
-    selectedDay = selectedDate[2];
+const format = 'YYYY-MM-DD HH:mm:ss';
+const now = moment()
+  .subtract(1, 'day')
+  .locale('en-gb')
+  .utcOffset(5.5);
 
-  const today = new Date();
+function disabledDate(current) {
+  if (!current) {
+    // allow empty select
+    return false;
+  }
+  const date = moment();
+  date.hour(0);
+  date.minute(0);
+  date.second(0);
 
-  // Year check
-  let isBeforeToday = selectedYear <= today.getFullYear();
+  return current.year() < 2015 || current.valueOf() > date.valueOf(); // can not select days today onwards
+}
 
-  // Month check
-  if (isBeforeToday && selectedYear === today.getFullYear()) {
-    isBeforeToday = selectedMonth <= today.getMonth() + 1;
+function getFormat(format) {
+  return format ? format : 'DD/MM/YYYY';
+}
 
-    // Date check
-    if (isBeforeToday && selectedMonth === today.getMonth() + 1) {
-      isBeforeToday = selectedDay < today.getDate();
-    }
+class Demo extends React.Component {
+  static propTypes = {
+    defaultValue: PropTypes.object,
+    defaultCalendarValue: PropTypes.object,
+  };
+
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      disabled: false,
+      value: props.defaultValue,
+    };
   }
 
-  return selectedYear >= 2015 && isBeforeToday;
+  onChange = value => {
+    console.log('DatePicker change: ', value && value.format(format));
+    this.setState({
+      value,
+    });
+  };
+
+  render() {
+    const state = this.state;
+    const calendar = (
+      <Calendar
+        locale={enUS}
+        style={{ zIndex: 1000 }}
+        dateInputPlaceholder="Select Month?"
+        formatter={getFormat(false)}
+        disabledTime={null}
+        timePicker={null}
+        defaultValue={this.props.defaultCalendarValue}
+        showDateInput={true}
+        disabledDate={disabledDate}
+      />
+    );
+    return (
+      <DatePicker
+        animation="slide-up"
+        disabled={state.disabled}
+        calendar={calendar}
+        value={state.value}
+        onChange={this.onChange}
+      >
+        {({ value }) => {
+          return (
+            <span tabIndex="0">
+              <input
+                name={this.props.name}
+                placeholder="Select Month/Date"
+                disabled={state.disabled}
+                readOnly
+                tabIndex="-1"
+                className="ant-calendar-picker-input ant-input"
+                value={(value && value.format(getFormat())) || ''}
+              />
+            </span>
+          );
+        }}
+      </DatePicker>
+    );
+  }
 }
 
 export default class GenerateReports extends Component {
@@ -186,7 +251,7 @@ export default class GenerateReports extends Component {
     let { entity, type, date, invoiceDate } = body;
 
     if (date) {
-      date = date.split('-');
+      date = date.split('/');
     }
     if (invoiceDate) {
       invoiceDate = invoiceDate.split('-');
@@ -212,18 +277,18 @@ export default class GenerateReports extends Component {
 */
 
       let invoiceUrl = `/admin/${mode}/reports/invoice?year=${
-        invoiceDate[0]
+        invoiceDate[2]
       }&month=${invoiceDate[1]}&merchant_id=${this.props.merchantId}`;
       return Promise.resolve(window.open(invoiceUrl, '_blank'));
     }
 
     let data = {
       month: Number(date[1]),
-      year: date[0],
+      year: date[2],
     };
 
     if (type === 'daily') {
-      data.day = Number(date[2]);
+      data.day = Number(date[0]);
     }
 
     // let ajaxUrl__merchant_dash = '/reports/' + entity;
@@ -465,15 +530,9 @@ export default class GenerateReports extends Component {
               {type === 'daily' &&
                 entity !== 'invoice' && (
                   <span>
-                    <input
-                      type="date"
+                    <Demo
+                      defaultValue={now}
                       name={entity === 'invoice' ? 'invoiceDate' : 'date'}
-                      onChange={e => {
-                        // Check if date is valid
-                        if (!validYear(e.target.value)) {
-                          notifyError('Cannot select ' + e.target.value);
-                        }
-                      }}
                     />
                   </span>
                 )}
