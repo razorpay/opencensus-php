@@ -223,13 +223,17 @@ class Gateway extends Base\Gateway
             RequestFields::PAYEE_ID    => $this->getMerchantId(),
             RequestFields::PAY_REF_NUM => $verify->input['payment']['id'],
             RequestFields::ITEM_CODE   => strtoupper($verify->input['payment']['id']),
-            RequestFields::AMOUNT      => $verify->input['payment']['amount'] / 100,
-            RequestFields::CRN         => Currency::INR,
+            RequestFields::AMOUNT      => $this->formatAmount($verify->input['payment']['amount'] / 100),
             RequestFields::RETURN_URL  => $this->getCallbackUrl($verify->input['payment']['id']),
             RequestFields::BID         => $verify->payment['bank_payment_id']
         ];
 
         return $this->getStandardRequestArray($data);
+    }
+
+    private function formatAmount(float $amount)
+    {
+        return number_format($amount, 2, '.', '');
     }
 
     /**

@@ -56,6 +56,8 @@ class Server extends Mock\Server
     {
         $queryArray = $this->getQueryArray($input[RequestFields::QUERY_STRING]);
 
+        $this->validateActionInput($queryArray, $this->action . '_qs');
+
         $content = [
             ResponseFields::PAID            => Status::SUCCESS,
             ResponseFields::BANK_PAYMENT_ID => 9999999999,
@@ -83,7 +85,6 @@ class Server extends Mock\Server
             ResponseFields::PAY_REF_NUM     => $input[RequestFields::PAY_REF_NUM],
             ResponseFields::ITEM_CODE       => $input[RequestFields::ITEM_CODE],
             ResponseFields::AMOUNT          => $input[RequestFields::AMOUNT],
-            ResponseFields::CURRENCY        => $input[RequestFields::CRN],
             ResponseFields::BANK_PAYMENT_ID => $input[RequestFields::BID],
             ResponseFields::TXN_STATUS      => Status::VERIFY_SUCCESS,
         ];
