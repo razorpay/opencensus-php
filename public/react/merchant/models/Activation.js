@@ -122,6 +122,20 @@ const getFileDetails = data => {
   return fileDetails;
 };
 
+const autoPrefixUrls = url => {
+  const regex = /^https?:\/\//i;
+  let tempUrl = url.toLowerCase();
+
+  if (url.length === 0) {
+    return url;
+  }
+
+  if (!regex.test(tempUrl)) {
+    tempUrl = 'http://' + tempUrl;
+  }
+  return tempUrl;
+};
+
 export default class Activation extends Entity {
   resourceFields = activationFields;
 
@@ -204,6 +218,12 @@ export default class Activation extends Entity {
     if (this.accountId) {
       activationData.account_id = this.accountId;
     }
+
+    // Auto add 'http' if not filled by user
+
+    activationStepMap[3].forEach(key => {
+      activationData.body[key] = autoPrefixUrls(activationData.body[key]);
+    });
 
     return ajax({
       url: '/user/generic',
