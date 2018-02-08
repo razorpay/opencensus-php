@@ -17,7 +17,7 @@ class Validator extends Base\Validator
         Entity::MIN_AMOUNT              => 'sometimes|integer',
         Entity::ISSUER_PLAN_ID          => 'sometimes',
         Entity::SUBVENTION              => 'sometimes|in:customer,merchant',
-        Entity::MERCHANT_PAYBACK        => 'sometimes_if:subvention,merchant|integer',
+        Entity::MERCHANT_PAYBACK        => 'required|integer',
     );
 
     protected static $createValidators = array(

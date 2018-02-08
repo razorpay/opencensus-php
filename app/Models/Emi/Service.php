@@ -8,15 +8,12 @@ use RZP\Constants\Timezone;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
-use RZP\Models\Emi;
 
 class Service extends Base\Service
 {
     public function all()
     {
-        $subvention = $this->merchant->getEmiSubvention();
-
-        $emiPlans = $this->repo->emi_plan->fetchEmiPlans($subvention);
+        $emiPlans = $this->repo->emi_plan->fetchEmiPlans();
 
         $plans = [];
 
@@ -29,9 +26,51 @@ class Service extends Base\Service
             $amount = $plan->getMinAmount();
 
             // all plans of a bank will have same min amount
-            $plans[$issuer][Emi\Entity::MIN_AMOUNT] = $amount;
+            $plans[$issuer][Entity::MIN_AMOUNT] = $amount;
 
             $plans[$issuer]['plans'][$duration] = $plan->getRate() / 100;
+        }
+
+        return $plans;
+    }
+
+    public function getEmiOptions()
+    {
+        $emiPlans = $this->repo->emi_plan->fetchEmiPlans();
+
+        $merchantSubventedPlans = $this->repo->merchant_emi_plans->fetchByMerchant($this->merchant->getId());
+
+        $plans = [];
+
+        foreach ($emiPlans as $plan)
+        {
+            $issuer = $plan->getIssuer();
+
+            $duration = $plan->getDuration();
+
+            // min amount in paisa
+            $minAmount = $plan->getMinAmount();
+
+            if (in_array($plan->getId(), $merchantSubventedPlans) === true)
+            {
+                $minAmount = Calculator::calculateMinAmount($minAmount, $plan->getMerchantPayback());
+
+                $plans[$issuer][] = [
+                    'duration'   => $duration,
+                    'interest'   => 0,
+                    'subvention' => Subvention::MERCHANT,
+                    'min_amount' => $minAmount,
+                ];
+            }
+            else
+            {
+                $plans[$issuer][] = [
+                    'duration'   => $duration,
+                    'interest'   => $plan->getRate() / 100,
+                    'subvention' => Subvention::CUSTOMER,
+                    'min_amount' => $minAmount,
+                ];
+            }
         }
 
         return $plans;
@@ -90,7 +129,7 @@ class Service extends Base\Service
 
         foreach ($emiFileBanks as $bankIfsc)
         {
-            $bank = Emi\Issuer::$emiFileBanks[$bankIfsc];
+            $bank = Issuer::$emiFileBanks[$bankIfsc];
 
             $returnValue[$bankIfsc] = $this->generateEmiFileForBank($bankIfsc, $from, $to, $bank, $email);
         }

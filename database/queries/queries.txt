@@ -2891,3 +2891,22 @@ ALTER TABLE hitachi
 
 ALTER TABLE iins
     ADD COLUMN flows INTEGER UNSIGNED DEFAULT 1 AFTER otp_read;
+
+ALTER TABLE payments Change token emi_subvention varchar(14);
+
+ALTER TABLE atom
+    ADD PRIMARY KEY (id);
+
+ALTER TABLE gateway_downtimes
+    ADD PRIMARY KEY (id);
+
+ALTER TABLE merchant_terminal
+    ADD UNIQUE INDEX merchant_terminal_merchant_id_terminal_id_unique (merchant_id, terminal_id),
+    DROP INDEX merchant_terminal_merchant_id_foreign;
+
+ALTER TABLE workflow_permissions
+    ADD UNIQUE INDEX workflow_permissions_workflow_id_permission_id (workflow_id, permission_id),
+    DROP INDEX workflow_permissions_workflow_id_index;
+
+ALTER TABLE migrations
+    ADD UNIQUE INDEX migrations_migration_unique (migration);
