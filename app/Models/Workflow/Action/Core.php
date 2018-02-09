@@ -433,7 +433,14 @@ class Core extends Base\Core
                 State\Entity::NAME      => $state,
             ];
 
-            $this->updateState($action, $state);
+            if ($admin->isSuperAdmin() === true)
+            {
+                $this->updateStateAndStateChanger($action, $state, $admin, $admin->getSuperAdminRole());
+            }
+            else
+            {
+                $this->updateStateAndStateChanger($action, $state, $admin, null);
+            }
 
             (new State\Core)->createForWorkflowAction($stateData, $admin, $action);
 
@@ -451,12 +458,17 @@ class Core extends Base\Core
         return $this->edit($action, $input);
     }
 
-    public function updateStateAndExecutor(Entity $action, string $state, Admin\Entity $admin, Role\Entity $role)
+    public function updateStateAndStateChanger(
+        Entity $action,
+        string $state,
+        Admin\Entity $admin,
+        Role\Entity $role = null
+    )
     {
         $input = [
-            Entity::STATE            => $state,
-            Entity::EXECUTOR_ID      => $admin->getId(),
-            Entity::EXECUTOR_ROLE_ID => $role->getId()
+            Entity::STATE                 => $state,
+            Entity::STATE_CHANGER_ID      => $admin->getId(),
+            Entity::STATE_CHANGER_ROLE_ID => $role ? $role->getId() : null
         ];
 
         return $this->edit($action, $input);
@@ -544,7 +556,7 @@ class Core extends Base\Core
 
         // Update states
 
-        $this->updateStateAndExecutor($action, $state, $admin, $role);
+        $this->updateStateAndStateChanger($action, $state, $admin, $role);
 
         $stateCore->changeActionState($action, $state, $admin);
 

@@ -21,12 +21,12 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::TITLE            => 'sometimes|string',
-        Entity::DESCRIPTION      => 'sometimes|string',
-        Entity::APPROVED         => 'sometimes|boolean',
-        Entity::STATE            => 'sometimes|string|max:25',
-        Entity::EXECUTOR_ROLE_ID => 'sometimes|nullable|string|max:14',
-        Entity::EXECUTOR_ID      => 'sometimes|nullable|string|max:14',
+        Entity::TITLE                 => 'sometimes|string',
+        Entity::DESCRIPTION           => 'sometimes|string',
+        Entity::APPROVED              => 'sometimes|boolean',
+        Entity::STATE                 => 'sometimes|string|max:25',
+        Entity::STATE_CHANGER_ROLE_ID => 'sometimes|nullable|string|max:14',
+        Entity::STATE_CHANGER_ID      => 'sometimes|nullable|string|max:14',
     ];
 
     public function validateLiveActionsOnEntity(string $entityId, string $entity, string $permissionName)

@@ -8,6 +8,7 @@ use RZP\Models\State;
 use RZP\Error\ErrorCode;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Workflow\Action\Differ;
+use RZP\Models\Admin\Role\Entity as Role;
 use RZP\Models\Admin\Admin\Entity as Admin;
 
 class Core extends Base\Core
@@ -42,18 +43,21 @@ class Core extends Base\Core
         $workflowId = $action->workflow->getId();
 
         // In case its a superadmin, just execute the workflow
-        if ($admin->isSuperAdmin() === true) {
+        if ($admin->isSuperAdmin() === true)
+        {
 
             $this->repo->transactionOnLiveAndTest(function() use ($action, $admin, $input)
             {
                 // State change if checker rejected
                 if ($input[Entity::APPROVED] == 1)
                 {
-                    $this->applyActionRejectionStateChanges($action, $admin);
-
                     (new Action\Core)->approveActionForcefully($action, $admin);
 
                     (new Action\Service)->executeAction($action->getPublicId(), $admin->getSuperAdminRole());
+                }
+                else
+                {
+                    $this->applyActionRejectionStateChanges($action, $admin, $admin->getSuperAdminRole());
                 }
             });
 
@@ -127,14 +131,14 @@ class Core extends Base\Core
 
         $checker->build($input);
 
-        $this->repo->transactionOnLiveAndTest(function() use ($action, $checker, $admin)
+        $this->repo->transactionOnLiveAndTest(function() use ($action, $checker, $admin, $step)
         {
             $this->repo->saveOrFail($checker);
 
             // State change if checker rejected
             if ($checker->isApproved() === false)
             {
-                $this->applyActionRejectionStateChanges($action, $admin);
+                $this->applyActionRejectionStateChanges($action, $admin, $step->role);
             }
             else
             {
@@ -163,7 +167,7 @@ class Core extends Base\Core
     /*
         State changes on rejection
     */
-    protected function applyActionRejectionStateChanges($action, Admin $admin)
+    protected function applyActionRejectionStateChanges($action, Admin $admin, Role $role)
     {
         $state = State\Name::REJECTED;
 
@@ -171,7 +175,7 @@ class Core extends Base\Core
 
         (new State\Core)->changeActionState($action, $state, $admin);
 
-        (new Action\Core)->updateState($action, $state);
+        (new Action\Core)->updateStateAndStateChanger($action, $state, $admin, $role);
 
         (new Differ\Core)->updateStateInEs($actionId, $state);
     }

@@ -49,10 +49,10 @@ class CreateWorkflowAction extends Migration
 
             $table->char(Action::ORG_ID, Action::ID_LENGTH);
 
-            $table->char(Action::EXECUTOR_ID, Action::ID_LENGTH)
+            $table->char(Action::STATE_CHANGER_ID, Action::ID_LENGTH)
                   ->nullable();
 
-            $table->char(Action::EXECUTOR_ROLE_ID, Action::ID_LENGTH)
+            $table->char(Action::STATE_CHANGER_ROLE_ID, Action::ID_LENGTH)
                   ->nullable();
 
             $table->boolean(Action::APPROVED)
@@ -78,12 +78,12 @@ class CreateWorkflowAction extends Migration
                   ->on(Table::ADMIN)
                   ->on_delete('restrict');
 
-            $table->foreign(Action::EXECUTOR_ID)
+            $table->foreign(Action::STATE_CHANGER_ID)
                   ->references(Admin::ID)
                   ->on(Table::ADMIN)
                   ->on_delete('restrict');
 
-            $table->foreign(Action::EXECUTOR_ROLE_ID)
+            $table->foreign(Action::STATE_CHANGER_ROLE_ID)
                   ->references(Role::ID)
                   ->on(Table::ROLE)
                   ->on_delete('restrict');
@@ -116,9 +116,9 @@ class CreateWorkflowAction extends Migration
 
             $table->dropForeign(Table::WORKFLOW_ACTION . '_' . Action::ADMIN_ID . '_foreign');
 
-            $table->dropForeign(Table::WORKFLOW_ACTION . '_' . Action::EXECUTOR_ID . '_foreign');
+            $table->dropForeign(Table::WORKFLOW_ACTION . '_' . Action::STATE_CHANGER_ID . '_foreign');
 
-            $table->dropForeign(Table::WORKFLOW_ACTION . '_' . Action::EXECUTOR_ROLE_ID . '_foreign');
+            $table->dropForeign(Table::WORKFLOW_ACTION . '_' . Action::STATE_CHANGER_ROLE_ID . '_foreign');
 
             $table->dropForeign(Table::WORKFLOW_ACTION . '_' . Action::ORG_ID . '_foreign');
         });
