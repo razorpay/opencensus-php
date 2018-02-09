@@ -14,59 +14,59 @@ export default ({ merchant_details: merchantDetails }) => (
           label="Website Address"
           name="business_website"
           defaultValue={merchantDetails.business_website}
-          placeholder="http://www.website.com"
+          disabled
         />
 
         <Field
           label="About Us URL"
           name="website_about"
           defaultValue={merchantDetails.website_about}
-          placeholder="http://www.website.com/aboutus.html"
+          disabled
         />
 
         <Field
           label="Contact Us URL"
           name="website_contact"
           defaultValue={merchantDetails.website_contact}
-          placeholder="http://www.website.com/contact.html"
-          infoMsg="Must contain the operational address"
+          helpMsg="Must contain the operational address"
+          disabled
         />
 
         <Field
           label="Privacy Policy URL"
           name="website_privacy"
           defaultValue={merchantDetails.website_privacy}
-          placeholder="http://www.website.com/privacy.html"
+          disabled
         />
 
         <Field
           label="Terms & Conditions URL"
           name="website_terms"
           defaultValue={merchantDetails.website_terms}
-          placeholder="http://www.example.com/terms.html"
+          disabled
         />
 
         <Field
           label="Refund/Cancellation Policy URL"
           name="website_refund"
           defaultValue={merchantDetails.website_refund}
-          placeholder="http://www.example.com/refund.html"
+          disabled
         />
 
         <Field
           label="URL displaying Product Pricing"
           name="website_pricing"
           defaultValue={merchantDetails.website_pricing}
-          placeholder="http://www.example.com/pricing.html"
-          infoMsg="Any page with product prices. May display a range of prices if not actual price"
+          helpMsg="Any page with product prices. May display a range of prices if not actual price"
+          disabled
         />
 
         <Field
           label="Login Window URL"
           name="website_login"
           defaultValue={merchantDetails.website_login}
-          infoMsg="If no login required, give us a page where you ask for customer details"
-          placeholder="http://www.website.com/login.html"
+          helpMsg="If no login required, give us a page where you ask for customer details"
+          disabled
         />
       </Form>
     )}
