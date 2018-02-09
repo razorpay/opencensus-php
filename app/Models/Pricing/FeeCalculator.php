@@ -308,12 +308,20 @@ class FeeCalculator
 
         $bank = $payment->getBank();
 
+        $authType = $payment->getGlobalOrLocalTokenEntity()->getAuthType();
+
+        $recurringType = $payment->getRecurringType();
+
         // Current Implementation
         // * Filter based on AmountRange
         // * Choose based on Amount
+        // * Choose based on Authentication type
+        // * Choose based on Recurring type
 
         $filters = [
-            [Pricing\Entity::PAYMENT_NETWORK, $bank, true, null],
+            [Pricing\Entity::PAYMENT_NETWORK,     $bank,          true, null],
+            [Pricing\Entity::PAYMENT_METHOD_TYPE, $authType,      true, null],
+            [Pricing\Entity::PAYMENT_ISSUER,      $recurringType, true, null],
         ];
 
         $rules = $this->applyFiltersOnRules($rules, $filters);

@@ -19,6 +19,7 @@ class Validator extends Base\Validator
         Entity::BANK                => 'required_only_if:method,emandate|custom',
         Entity::MAX_AMOUNT          => 'required_only_if:method,emandate|required_unless:method,card,wallet',
         Entity::WALLET              => 'required_only_if:method,wallet|custom',
+        Entity::AUTH_TYPE           => 'sometimes_if:method,emandate|string|max:10|filled|in:netbanking,aadhaar',
         Entity::RECURRING           => 'sometimes|boolean',
         Entity::GATEWAY_TOKEN       => 'sometimes|string',
         Entity::GATEWAY_TOKEN2      => 'sometimes|string',

@@ -34,6 +34,7 @@ class Entity extends Base\PublicEntity
     const GATEWAY_TOKEN2            = 'gateway_token2';
     const RECURRING                 = 'recurring';
     const MAX_AMOUNT                = 'max_amount';
+    const AUTH_TYPE                 = 'auth_type';
     const RECURRING_STATUS          = 'recurring_status';
     const RECURRING_FAILURE_REASON  = 'recurring_failure_reason';
     const RECURRING_DETAILS         = 'recurring_details';
@@ -78,8 +79,9 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_TOKEN,
         self::GATEWAY_TOKEN2,
         self::RECURRING,
+        self::AUTH_TYPE,
+        self::MAX_AMOUNT,
         self::EXPIRED_AT,
-        self::MAX_AMOUNT
     ];
 
     protected $visible = [
@@ -103,6 +105,7 @@ class Entity extends Base\PublicEntity
         self::RECURRING_FAILURE_REASON,
         self::RECURRING_STATUS,
         self::MAX_AMOUNT,
+        self::AUTH_TYPE,
         self::USED_COUNT,
         self::USED_AT,
         self::EXPIRED_AT,
@@ -138,6 +141,7 @@ class Entity extends Base\PublicEntity
         self::RECURRING_FAILURE_REASON  => null,
         self::RECURRING_STATUS          => null,
         self::MAX_AMOUNT                => null,
+        self::AUTH_TYPE                 => null,
         self::USED_AT                   => null,
         self::USED_COUNT                => 0,
         self::EXPIRED_AT                => null,
@@ -270,6 +274,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MAX_AMOUNT);
     }
 
+    public function getAuthType()
+    {
+        return $this->getAttribute(self::AUTH_TYPE);
+    }
+
     public function getCardId()
     {
         return $this->getAttribute(self::CARD_ID);
@@ -310,6 +319,11 @@ class Entity extends Base\PublicEntity
         }
 
         return ($expiredAt <= time());
+    }
+
+    public function setAuthType($authType)
+    {
+        $this->setAttribute(self::AUTH_TYPE, $authType);
     }
 
     public function setRecurring($recurring)

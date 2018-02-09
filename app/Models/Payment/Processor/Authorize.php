@@ -2070,6 +2070,7 @@ trait Authorize
                 'customer_id'       => $customer->getId(),
                 'local'             => $customer->isLocal(),
                 'card_id'           => $savedCardId,
+                'auth_type'         => $payment->getAuthType(),
                 'account_number'    => $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::ACCOUNT_NUMBER] ?? null,
                 'beneficiary_name'  => $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::NAME] ?? null,
                 'ifsc'              => $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::IFSC] ?? null,
@@ -2087,8 +2088,9 @@ trait Authorize
         }
         else if ($payment->isEmandate() === true)
         {
-            // TODO: Should we keep netbanking also for backward compatibility?
             $saveMethodInput[Token\Entity::BANK] = $payment->getBank();
+
+            $saveMethodInput[Token\Entity::AUTH_TYPE] = $payment->getAuthType();
 
             // TODO: We need to get this from user input - hard coding for now
             $saveMethodInput[Token\Entity::MAX_AMOUNT] = Token\Entity::DEFAULT_MAX_AMOUNT;

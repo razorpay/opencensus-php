@@ -442,8 +442,8 @@ class PaymentCreateTest extends TestCase
     protected function setupEmandateAndGetPaymentRequest($bank = 'HDFC', $amount = 2000)
     {
         $this->mockTokenex();
-        $this->fixtures->create('terminal:shared_netbanking_icici_recurring_terminal');
-        $this->fixtures->create('terminal:shared_netbanking_axis_recurring_terminal');
+        $this->fixtures->create('terminal:shared_emandate_icici_terminal');
+        $this->fixtures->create('terminal:shared_emandate_axis_terminal');
         $this->fixtures->merchant->addFeatures(['e_mandate', 'charge_at_will']);
 
         $payment = $this->getEmandateNetbankingRecurringPaymentArray($bank, $amount);

@@ -1029,8 +1029,6 @@ class Repository extends Base\Repository
 
     public function fetchPendingEMandateDebit(string $gateway, $from, $to)
     {
-        // TODO: Change to emandate
-
         $tokenIdColumn = $this->repo->token->dbColumn(Token\Entity::ID);
 
         $tokenRecurringColumn = $this->repo->token->dbColumn(Token\Entity::RECURRING);
@@ -1068,8 +1066,6 @@ class Repository extends Base\Repository
     public function fetchDebitEmandatePaymentPendingAuth(
         string $gateway, string $paymentId, string $accountNo)
     {
-        // TODO: Change to emandate
-
         $tokenIdColumn = $this->repo->token->dbColumn(Token\Entity::ID);
 
         $paymentIdColumn = $this->repo->payment->dbColumn(Payment\Entity::ID);

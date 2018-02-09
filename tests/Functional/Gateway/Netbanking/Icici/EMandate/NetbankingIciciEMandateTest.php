@@ -12,6 +12,7 @@ use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Customer\Token\Entity as Token;
 use RZP\Models\Customer\Token\RecurringStatus;
 use RZP\Models\Payment\Status as PaymentStatus;
+use RZP\Models\Payment\Method as PaymentMethod;
 use RZP\Gateway\Netbanking\Base\Entity as Netbanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Customer\GatewayToken\Entity as GatewayToken;
@@ -27,7 +28,7 @@ class NetbankingIciciEMandateTest extends TestCase
     protected $payment;
 
     const ACCOUNT_NUMBER    = '914010009305862';
-    const IFSC              = 'UTIB0002766';
+    const IFSC              = 'ICIC0002766';
     const NAME              = 'Test account';
 
     // TODO: Test global customer / token flow
@@ -40,7 +41,7 @@ class NetbankingIciciEMandateTest extends TestCase
 
         $this->gateway = Gateway::NETBANKING_ICICI;
 
-        $this->fixtures->create('terminal:shared_netbanking_icici_recurring_terminal');
+        $this->fixtures->create('terminal:shared_emandate_icici_terminal');
 
         $this->fixtures->create(Entity::CUSTOMER);
 
@@ -644,7 +645,7 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->assertEquals($payment[Payment::TERMINAL_ID], $token[Token::TERMINAL_ID]);
         $this->assertEquals($payment[Payment::CUSTOMER_ID], 'cust_' . $token[Token::CUSTOMER_ID]);
         $this->assertEquals(IFSC::ICIC, $payment[Payment::BANK]);
-        $this->assertEquals(Entity::NETBANKING, $token[Token::METHOD]);
+        $this->assertEquals(Entity::EMANDATE, $token[Token::METHOD]);
         $this->assertEquals(IFSC::ICIC, $token[Token::BANK]);
 
         // Assert GatewayToken entity
@@ -714,7 +715,7 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->assertEquals($payment[Payment::TERMINAL_ID], $token[Token::TERMINAL_ID]);
         $this->assertEquals($payment[Payment::CUSTOMER_ID], 'cust_' . $token[Token::CUSTOMER_ID]);
         $this->assertEquals(IFSC::ICIC, $payment[Payment::BANK]);
-        $this->assertEquals(Entity::NETBANKING, $token[Token::METHOD]);
+        $this->assertEquals(Entity::EMANDATE, $token[Token::METHOD]);
         $this->assertEquals(IFSC::ICIC, $token[Token::BANK]);
     }
 

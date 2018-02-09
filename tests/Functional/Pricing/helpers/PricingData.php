@@ -438,7 +438,7 @@ return [
                     ],
                     [
                         'plan_name' => 'TestPlan2',
-                        'gateway' => NULL,
+                        'gateway' => null,
                         'payment_method' => 'card',
                         'payment_method_type' => 'credit',
                         'payment_network' => 'DICL',
@@ -472,7 +472,7 @@ return [
                         'rules' => [
                             [
                                 'plan_name' => 'TestPlan2',
-                                'gateway' => NULL,
+                                'gateway' => null,
                                 'payment_method' => 'card',
                                 'payment_method_type' => 'credit',
                                 'payment_network' => 'MC',
@@ -519,23 +519,23 @@ return [
                         'count' => 1,
                         'rules' => [
                             [
-                                'plan_name' =>  'TestPlan1',
-                                'gateway' => NULL,
-                                'payment_method' =>  'card',
+                                'plan_name' => 'TestPlan1',
+                                'gateway' => null,
+                                'payment_method' => 'card',
                                 'payment_method_type' => 'credit',
-                                'payment_network' =>  'DICL',
-                                'payment_issuer' =>  'HDFC',
-                                'percent_rate' =>  1000,
+                                'payment_network' => 'DICL',
+                                'payment_issuer' => 'HDFC',
+                                'percent_rate' => 1000,
                                 'international' => false,
-                                'fixed_rate' =>  0,
-                                'expired_at' => NULL
+                                'fixed_rate' => 0,
+                                'expired_at' => null
                             ]
                         ]
                     ],
                     [
                         'name' => 'testDefaultPlan',
                         'entity' => 'pricing',
-                        'count' => 13,
+                        'count' => 15,
                         'rules' => [
                             [],
                         ],
@@ -562,7 +562,7 @@ return [
                 ],
                 [
                     'plan_name'   => 'testDefaultPlan',
-                    'rules_count' => 13,
+                    'rules_count' => 15,
                 ],
             ],
         ],
@@ -592,7 +592,7 @@ return [
         ]
     ],
 
-    'testMerchantAssignPricingPlanWithInternational' =>[
+    'testMerchantAssignPricingPlanWithInternational' => [
         'request' => [
             'url' => '/merchants/10000000000000/pricing',
             'method' => 'POST'
@@ -611,7 +611,7 @@ return [
         ]
     ],
 
-    'testMerchantWithAmexEnabled' =>[
+    'testMerchantWithAmexEnabled' => [
         'request' => [
             'url' => '/merchants/10000000000000/pricing',
             'method' => 'POST'
@@ -630,7 +630,7 @@ return [
         ]
     ],
 
-    'testMerchantAssignPricingPlanMerchantDefault' =>[
+    'testMerchantAssignPricingPlanMerchantDefault' => [
         'request' => [
             'url' => '/merchants/10000000000000/pricing',
             'method' => 'POST'
@@ -998,7 +998,7 @@ return [
             ],
             'method' => 'POST'
         ],
-        'response'  =>  [
+        'response'  => [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,

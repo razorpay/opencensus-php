@@ -101,8 +101,8 @@ class Validator extends Base\Validator
         if ($input[Entity::PAYMENT_METHOD] === Payment\Method::EMANDATE)
         {
             $fields = [
+                Entity::PAYMENT_NETWORK,
                 Entity::PAYMENT_METHOD_TYPE,
-                Entity::PAYMENT_AUTH_TYPE,
                 Entity::PAYMENT_ISSUER,
             ];
 
