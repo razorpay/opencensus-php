@@ -8,7 +8,7 @@ class Service extends Base\Service
 {
     public function createBatch(array $input): array
     {
-        $batch = (new Core)->create($input, $this->merchant);
+        $batch = (new Core)->create($this->merchant, $input);
 
         return $batch->toArrayPublic();
     }
