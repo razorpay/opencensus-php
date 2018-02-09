@@ -9,6 +9,8 @@ use Illuminate\Support\Str;
 use ApiResponse;
 use RZP\Http\Route;
 use RZP\Http\OAuth;
+use RZP\Http\Throttle;
+use RZP\Models\Feature;
 use RZP\Http\BasicAuth\Type;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Base\PublicCollection;
@@ -212,7 +214,7 @@ class Authenticate
             return $authReturn;
         }
 
-        $featureCheck = $this->ba->verifyFeatureAccessByApplication($authReturn);
+        $featureCheck = (new Feature\Access)->verifyFeatureAccessByApplication($authReturn);
 
         return $featureCheck;
     }
@@ -232,7 +234,7 @@ class Authenticate
             return $authReturn;
         }
 
-        $featureCheck = $this->ba->verifyFeatureAccessByMerchant($authReturn);
+        $featureCheck = (new Feature\Access)->verifyFeatureAccessByMerchant();
 
         return $featureCheck;
     }
