@@ -9,12 +9,14 @@ use RZP\Models\FileStore;
 use RZP\Base\RuntimeManager;
 use RZP\Jobs\DispatchRouter;
 use RZP\Jobs\Batch as BatchJob;
+use RZP\Models\Batch\Header as BatchHeaders;
+use RZP\Models\Batch\Processor\Base as BaseProcessor;
 
 class Core extends Base\Core
 {
-    public function create(array $input, Merchant\Entity $merchant): Entity
+    public function create(Merchant\Entity $merchant, array $input): Entity
     {
-        $this->trace->info(TraceCode::BATCH_CREATE_REQUEST, $input);
+        $this->trace->info(TraceCode::BATCH_CREATE_REQUEST, array_except($input, Entity::FILE));
 
         $batch = (new Entity)->build($input);
 
@@ -29,6 +31,27 @@ class Core extends Base\Core
         $this->dispatchOnQueueForProcessingIfApplicable($batch, $input);
 
         return $batch;
+    }
+
+    public function storeAndValidateBatchFile(Merchant\Entity $merchant, array $input): array
+    {
+        $this->trace->info(TraceCode::BATCH_FILE_VALIDATE_REQUEST, array_except($input, Entity::FILE));
+
+        $entries = [];
+
+        $batch = (new Entity)->build($input);
+
+        $batch->merchant()->associate($merchant);
+
+        $processor = Processor\Factory::get($batch);
+
+        $processor->getStoredInputFileAndValidateBatchEntries($input, null, $entries);
+
+        $response = $processor->getValidatedEntriesStatsAndSampleData($entries);
+
+        $response += $processor->createSetOutputFileAndSave($entries, BatchHeaders::ERROR);
+
+        return $response;
     }
 
     /**
