@@ -91,7 +91,8 @@ export default class WizardItem extends Component {
             lastCompletedStep = parseInt(_step);
           }
         });
-        window.trackViz && window.trackViz({ act: lastCompletedStep });
+
+        window.trackViz && window.trackViz({ act: "" + lastCompletedStep })
 
         // For updating the accounts list view on success of activation
         if (step === this.finalStep && this.props.callback) {
