@@ -24,6 +24,16 @@ class Base extends BaseModel\Core
 {
     use FileHandlerTrait;
 
+    const PROCESSABLE_COUNT = 'processable_count';
+
+    const ERROR_COUNT       = 'error_count';
+
+    const PARSED_ENTRIES    = 'parsed_entries';
+
+    const FILE_ID           = 'file_id';
+
+    const SIGNED_URL        = 'signed_url';
+
     /**
      * Lock wait timeout for batch entity
      */
@@ -108,24 +118,55 @@ class Base extends BaseModel\Core
         // happens and then we create the batch entity and associated above
         // created file store entity with this batch and save both of them.
         //
+
+        $ufhFile = $this->getStoredInputFileAndValidateBatchEntries($input, $this->batch);
+
+        $this->repo->transaction(function () use ($ufhFile, $input)
+        {
+            $this->repo->saveOrFail($this->batch);
+
+            $this->saveSettings($input);
+        });
+    }
+
+    public function getStoredInputFileAndValidateBatchEntries(array $input, Batch\Entity $batch = null, array & $entries = [])
+    {
         $inputFile = $input[Batch\Entity::FILE];
 
         $ufh = $this->saveInputFile($inputFile);
 
         $ufhFile = $ufh->getFileInstance();
 
-        $this->validateInputFileAndUpdateBatch($ufh->getFullFilePath(), $input);
+        $this->inputFileLocalPath = $ufhFile->getFullFilePath();
 
-        $ufhFile->entity()->associate($this->batch);
+        $entries = $this->validateInputFileAndUpdateBatch($ufh->getFullFilePath(), $input);
 
-        $this->repo->transaction(function () use ($ufhFile, $input)
-        {
+        if ($batch != null){
+            $ufhFile->entity()->associate(batch);
+        }
+
+        $this->repo->transaction(function () use ($ufhFile) {
+
             $this->repo->saveOrFail($ufhFile);
-
-            $this->repo->saveOrFail($this->batch);
-
-            $this->saveSettings($input);
         });
+
+        return $ufhFile;
+    }
+
+    public function getValidatedEntriesStatsAndSampleData(array $entries): array
+    {
+        $correctEntries = array_filter($entries, function($entry) {
+
+            return (isset($entry[Batch\Header::ERROR_CODE]) === false);
+        });
+
+        $response = [
+            self::PROCESSABLE_COUNT     => count($correctEntries),
+            self::ERROR_COUNT           => count($entries) - count($correctEntries),
+            self::PARSED_ENTRIES        => array_slice($correctEntries, 0 , 3),
+        ];
+
+        return $response;
     }
 
     protected function saveSettings(array $input)
@@ -412,13 +453,13 @@ class Base extends BaseModel\Core
         $this->batch->setProcessing(false);
     }
 
-    protected function createSetOutputFileAndSave(array & $entries)
+    public function createSetOutputFileAndSave(array & $entries, string $headerType = null): array
     {
         try
         {
-            $this->createAndSetOutputFile($entries);
+            $this->createAndSetOutputFile($entries, $headerType);
 
-            $this->saveOutputFile();
+            return $this->saveOutputFile();
         }
         catch (\Throwable $e)
         {
@@ -428,6 +469,8 @@ class Base extends BaseModel\Core
                             TraceCode::BATCH_PROCESSING_ERROR,
                             $this->batch->toArrayPublic());
         }
+
+        return [];
     }
 
     /**
@@ -435,12 +478,19 @@ class Base extends BaseModel\Core
      *   entries.
      *
      * @param array $entries
+     * @param string $headerType
      */
-    protected function createAndSetOutputFile(array & $entries)
+    protected function createAndSetOutputFile(array & $entries, string $headerType = Batch\Header::OUTPUT)
     {
         $type = $this->batch->getType();
 
         $headers = Batch\Header::HEADER_MAP[$type][Batch\Header::OUTPUT];
+
+        if ((Batch\Header::isValidOutputFileHeaderType($headerType)) and
+            ($headerType != Batch\Header::OUTPUT)){
+
+            $headers = Batch\Header::HEADER_MAP[$type][$headerType];
+        }
 
         $fieldsCount = count($headers);
 
@@ -550,13 +600,15 @@ class Base extends BaseModel\Core
      * @param  string $filePath
      * @param  array  $input
      */
-    protected function validateInputFileAndUpdateBatch(string $filePath, array $input)
+    protected function validateInputFileAndUpdateBatch(string $filePath, array $input): array
     {
         $entries = $this->parseFile($filePath);
 
         $this->validateEntries($entries, $input);
 
         $this->fillBatchEntityWithInputFileDetails($entries);
+
+        return $entries;
     }
 
     /**
@@ -583,7 +635,7 @@ class Base extends BaseModel\Core
      * @param array $entries
      * @param array $input
      */
-    protected function validateEntries(array $entries, array $input)
+    protected function validateEntries(array & $entries, array $input)
     {
         $this->batch->getValidator()->validateEntries($entries, $input, $this->merchant);
     }
@@ -660,9 +712,14 @@ class Base extends BaseModel\Core
         return $ufh;
     }
 
-    protected function saveOutputFile()
+    protected function saveOutputFile(): array
     {
         $ufh = $this->saveFile($this->outputFileLocalPath, FileStore\Type::BATCH_OUTPUT);
+
+        return [
+            self::FILE_ID       => $ufh->getSignedUrl()['id'],
+            self::SIGNED_URL    => $ufh->getSignedUrl()['url'],
+        ];
     }
 
     /**
