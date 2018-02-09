@@ -63,7 +63,9 @@ export default class CalendarPicker extends Component {
           disabledTime={null}
           timePicker={null}
           defaultValue={this.props.defaultCalendarValue}
-          showDateInput={false}
+          showDateInput={true}
+          showToday={false}
+          showClear={true}
           disabledDate={disabledDate}
         />
       );
@@ -74,6 +76,7 @@ export default class CalendarPicker extends Component {
         disabled={state.disabled}
         calendar={calendar}
         value={state.value}
+        showClear={true}
         onChange={this.onChange}
       >
         {({ value }) => {
@@ -87,6 +90,7 @@ export default class CalendarPicker extends Component {
                 tabIndex="-1"
                 className="ant-calendar-picker-input ant-input"
                 value={(value && value.format(this.getFormat())) || ''}
+                required={this.props.required}
               />
             </span>
           );

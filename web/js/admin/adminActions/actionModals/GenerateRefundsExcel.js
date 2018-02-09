@@ -36,11 +36,12 @@ export default function GenerateRefundsExcel() {
       <DateField
         label="Date"
         name="on"
-        value={new Date()}
+        placeholder="YYYY-MM-DD"
+        defaultValue={moment()}
         format="YYYY-MM-DD"
       />
-      <FromField name="from" />
-      <ToField name="to" />
+      <FromField />
+      <ToField />
       <br />
       <SelectField label="Bank" name="bank">
         {Object.keys(options.bank).map((opt, idx) => (
@@ -63,6 +64,7 @@ export default function GenerateRefundsExcel() {
             method: 'netbanking',
           };
           if (data.to && data.from) {
+            // body.to = moment(data.to).unix();
             body.to = new Date(moment(data.to, 'DD-MM-YYYY')).getTime() / 1000;
             body.from =
               new Date(moment(data.from, 'DD-MM-YYYY')).getTime() / 1000;

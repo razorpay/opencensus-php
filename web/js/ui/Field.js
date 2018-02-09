@@ -58,36 +58,21 @@ export const SelectField = _ => <Field {..._} tag="select" />;
 export const TextAreaField = _ => <Field {..._} tag="textarea" />;
 export const FileField = _ => <Field {..._} type="file" />;
 
-const DateInput = ({
-  onDayChange,
-  dayPickerProps,
-  format = 'DD/MM/YYYY',
-  formatDate = (date, format) => moment(date).format(format),
-  parseDate = (input, format) => moment(input, format).toDate(),
-  hideOnDayClick,
-  value,
-  ...props
-}) => {
-  return (
-    <DayPickerInput
-      format={format}
-      formatDate={formatDate}
-      parseDate={parseDate}
-      onDayChange={onDayChange}
-      placeholder={format}
-      value={value}
-      inputProps={props}
-    />
-  );
-};
-
 export const TimeField = _ => <Field {..._} type="time" />;
 export const DataListField = _ => <Field {..._} tag="datalist" />;
 
-export const DateField = ({ label = '', fieldClass = '', ...props }) => (
+export const DateField = ({
+  label = '',
+  fieldClass = '',
+  onChange,
+  component,
+  ...props
+}) => (
   <div class={`field ${fieldClass}`}>
     {label && <label class={props.required ? 'required' : ''}>{label}</label>}
-    <CalendarPicker {...props} />
+    <CalendarPicker onDayChange={onChange} {...props} />
+    <i class="post-field-icon i-date" />
+    {component}
   </div>
 );
 

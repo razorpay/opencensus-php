@@ -1,3 +1,5 @@
+/* https://github.com/react-component/calendar */
+
 .rc-calendar {
   box-sizing: border-box;
 }
@@ -7,11 +9,17 @@
 .rc-calendar-hidden {
   display: none;
 }
-.rc-calendar-input-wrap {
-  display: none;
+.rc-calendar-range .rc-calendar-input-wrap {
+  height: 35px;
 }
+
+.rc-calendar-picker .rc-calendar-input-wrap {
+  text-align: right;
+  padding: 4px 12px 0;
+}
+
 .rc-calendar-date-input-wrap {
-  overflow: hidden;
+  display: none;
 }
 
 .rc-calendar-time-picker-panel .rc-time-picker-panel-input-wrap {
@@ -35,24 +43,20 @@
 }
 .rc-calendar-clear-btn {
   z-index: 9999;
-  position: absolute;
-  right: 6px;
   cursor: pointer;
   overflow: hidden;
-  width: 20px;
-  height: 20px;
+  padding: 2px
   text-align: center;
-  line-height: 20px;
-  top: 6px;
-  margin: 0;
+
+  &:hover {
+    background: #f6f6f6;
+  }
 }
 .rc-calendar-clear-btn:after {
-  content: "x";
-  font-size: 12px;
-  color: #aaa;
-  display: inline-block;
-  line-height: 1;
-  width: 20px;
+  content: "CLEAR";
+  font-size: 10px;
+  color: #f05283;
+  font-weight: 600;
   transition: color 0.15s ease;
 }
 .rc-calendar-clear-btn:hover:after {
@@ -431,7 +435,7 @@
 .rc-calendar-date:hover,
 .rc-calendar-year-panel-year:hover,
 .rc-calendar-decade-panel-decade:hover,
-.rc-calendar-month-panel-cell:not(.rc-calendar-month-panel-cell-disabled) .rc-calendar-month-panel-month:hover {
+.rc-calendar-month-panel-cell:not(.rc-calendar-month-panel-cell-disabled):not(.rc-calendar-month-panel-selected-cell) .rc-calendar-month-panel-month:hover {
   background: #b5c3fb;
   color: #fff;
   cursor: pointer;
@@ -483,7 +487,7 @@
   top: 0;
   bottom: 0;
   right: 0;
-  background: #ffffff;
+  background: #fff;
   z-index: 10;
   position: absolute;
   outline: none;
@@ -598,7 +602,7 @@
   top: 0;
   bottom: 0;
   right: 0;
-  background: #ffffff;
+  background: #fff;
   z-index: 10;
   position: absolute;
   outline: none;
@@ -704,7 +708,7 @@
   top: 0;
   bottom: 0;
   right: 0;
-  background: #ffffff;
+  background: #fff;
   z-index: 10;
   position: absolute;
   outline: none;

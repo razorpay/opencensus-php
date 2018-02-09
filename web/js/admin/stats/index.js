@@ -15,8 +15,9 @@ export default class MerchantStats extends Component {
     this.model.getData()[e.target.name] = e.target.value;
   };
 
-  updateDates = (name, day) => {
-    this.model.getData()[name] = day.getTime() / 1000;
+  updateDates = (name, val) => {
+    console.log('CHECK..', val);
+    this.model.getData()[name] = val.unix();
   };
 
   render() {
@@ -43,8 +44,8 @@ export default class MerchantStats extends Component {
               <option value="success_rate">Success Rate</option>
               <option value="summary">Summary</option>
             </SelectField>
-            <FromField onDayChange={day => this.updateDates('from', day)} />
-            <ToField onDayChange={day => this.updateDates('to', day)} />
+            <FromField onChange={val => this.updateDates('from', val)} />
+            <ToField onChange={val => this.updateDates('to', val)} />
             <SelectField
               name="interval"
               label="Interval"

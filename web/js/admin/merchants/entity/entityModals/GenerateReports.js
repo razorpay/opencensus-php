@@ -162,7 +162,7 @@ export default class GenerateReports extends Component {
       date = date.split('/');
     }
     if (invoiceDate) {
-      invoiceDate = invoiceDate.split('-');
+      invoiceDate = invoiceDate.split('/');
     }
 
     const mode = 'live';
@@ -185,14 +185,14 @@ export default class GenerateReports extends Component {
 */
 
       let invoiceUrl = `/admin/${mode}/reports/invoice?year=${
-        invoiceDate[2]
-      }&month=${invoiceDate[1]}&merchant_id=${this.props.merchantId}`;
+        invoiceDate[1]
+      }&month=${invoiceDate[0]}&merchant_id=${this.props.merchantId}`;
       return Promise.resolve(window.open(invoiceUrl, '_blank'));
     }
 
     let data = {
-      month: Number(date[1]),
-      year: date[2],
+      month: Number(date[0]),
+      year: date[1],
     };
 
     if (type === 'daily') {
@@ -420,10 +420,7 @@ export default class GenerateReports extends Component {
                     format="MM/YYYY"
                     name={entity === 'invoice' ? 'invoiceDate' : 'date'}
                     placeholder="Select Month"
-                    defaultValue={moment()
-                      .add(-1, 'month')
-                      .locale('en-gb')
-                      .utcOffset(5.5)}
+                    defaultValue={moment().add(-1, 'month')}
                     type="month"
                   />
                 </span>
@@ -436,10 +433,7 @@ export default class GenerateReports extends Component {
                       format="DD/MM/YYYY"
                       name={entity === 'invoice' ? 'invoiceDate' : 'date'}
                       placeholder="Select Date"
-                      defaultValue={moment()
-                        .subtract(1, 'day')
-                        .locale('en-gb')
-                        .utcOffset(5.5)}
+                      defaultValue={moment().subtract(1, 'day')}
                     />
                   </span>
                 )}
