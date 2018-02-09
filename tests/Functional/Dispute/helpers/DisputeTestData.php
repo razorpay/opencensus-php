@@ -539,7 +539,7 @@ return [
         'request'   => [
             'method'  => 'post',
             'content' => [
-                'status' => 'lost',
+                'accept_dispute' => true
             ],
         ],
         'response'  => [
@@ -547,6 +547,29 @@ return [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Disputes can only be modified when in open status',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testMerchantEditAcceptAndSubmit' => [
+        'request'   => [
+            'method'  => 'post',
+            'content' => [
+                'submit'         => true,
+                'accept_dispute' => true
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Only one of the fields `accept_dispute` and `submit` can be sent',
                 ],
             ],
             'status_code' => 400,

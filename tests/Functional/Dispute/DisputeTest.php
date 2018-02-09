@@ -304,6 +304,16 @@ class DisputeTest extends TestCase
         $this->runRequestResponseFlow($data);
     }
 
+    public function testMerchantEditAcceptAndSubmit()
+    {
+        $data = $this->updateEditTestData();
+
+        // Run as merchant
+        $this->ba->proxyAuth();
+
+        $this->runRequestResponseFlow($data);
+    }
+
     public function testDisputeEditDoNotDeductOnLostIfDeducted()
     {
         $data = $this->updateEditTestData(['deduct_at_onset' => 1]);
