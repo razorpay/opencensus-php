@@ -535,6 +535,28 @@ return [
         ],
     ],
 
+    'testMerchantEditWhenDisputeUnderReview' => [
+        'request'   => [
+            'method'  => 'post',
+            'content' => [
+                'status' => 'lost',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The dispute cannot be updated when in the under-review or closed state',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testDisputeEditDoNotDeductOnLostIfDeducted' => [
         'request' => [
             'method'  => 'post',

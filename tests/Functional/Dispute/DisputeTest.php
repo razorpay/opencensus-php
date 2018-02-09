@@ -290,6 +290,20 @@ class DisputeTest extends TestCase
         $this->assertEquals(0, $txn['credit']);
     }
 
+    public function testMerchantEditWhenDisputeUnderReview()
+    {
+        $attributes = [
+            'status' => 'under_review'
+        ];
+
+        $data = $this->updateEditTestData($attributes);
+
+        // Run as merchant
+        $this->ba->proxyAuth();
+
+        $this->runRequestResponseFlow($data);
+    }
+
     public function testDisputeEditDoNotDeductOnLostIfDeducted()
     {
         $data = $this->updateEditTestData(['deduct_at_onset' => 1]);
