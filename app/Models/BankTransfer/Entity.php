@@ -46,6 +46,9 @@ class Entity extends Base\PublicEntity
     // Bank reference number
     const UTR                = 'utr';
 
+    // Public alias for UTR
+    const BANK_REFERENCE     = 'bank_reference';
+
     // Time of transaction
     const TIME               = 'time';
 
@@ -88,9 +91,8 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::PAYMENT_ID,
-        // This can be added later, upon request
-        // self::MODE,
-        // self::UTR,
+        self::MODE,
+        self::BANK_REFERENCE,
         self::AMOUNT,
         self::PAYER_BANK_ACCOUNT,
         self::VIRTUAL_ACCOUNT_ID,
@@ -150,6 +152,7 @@ class Entity extends Base\PublicEntity
         self::VIRTUAL_ACCOUNT_ID,
         self::PAYMENT_ID,
         self::MODE,
+        self::BANK_REFERENCE,
     ];
 
     protected static $sign = 'bt';
@@ -215,6 +218,11 @@ class Entity extends Base\PublicEntity
     public function setPublicModeAttribute(array & $array)
     {
         $array[self::MODE] = strtoupper($array[self::MODE]);
+    }
+
+    public function setPublicBankReferenceAttribute(array & $array)
+    {
+        $array[self::BANK_REFERENCE] = $array[self::UTR];
     }
 
     // -------------------------- Mutators -------------------------------------

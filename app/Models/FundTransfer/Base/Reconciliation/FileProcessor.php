@@ -59,17 +59,16 @@ abstract class FileProcessor extends Base\Core
         $mutexResource = sprintf(self::MUTEX_RESOURCE, static::$channel);
 
         $data = $this->mutex->acquireAndRelease(
-
             $mutexResource,
-
             function () use ($input)
             {
                 return $this->processReconciliation($input);
             },
-
             self::MUTEX_LOCK_TIMEOUT,
-
-            ErrorCode::BAD_REQUEST_SETTLEMENT_RECONCILIATION_IN_PROGRESS);
+            ErrorCode::BAD_REQUEST_SETTLEMENT_RECONCILIATION_IN_PROGRESS,
+            50,
+            2000,
+            4000);
 
         return $data;
     }

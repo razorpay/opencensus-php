@@ -20,6 +20,11 @@ class Validator extends Base\Validator
         'old_settled_at.end'    => 'required_with:old_settled_at|epoch|date_format:U|after:old_settled_at.start',
     ];
 
+    protected static $unsettledTxnsChannelUpdateRules = [
+        Entity::CHANNEL         => 'required|string|max:32|custom',
+        'merchant_id'           => 'required|string'
+    ];
+
     protected function validateChannel($attribute, $value)
     {
         if (in_array($value, Channel::getChannels()) === false)

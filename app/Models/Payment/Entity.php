@@ -109,6 +109,9 @@ class Entity extends Base\PublicEntity
 
     const SUBSCRIPTION_ID       = 'subscription_id';
 
+    // Used by merchant dashboard to fetch payments based on utr
+    const BANK_REFERENCE        = 'bank_reference';
+
     const DEFAULT_CURRENCY      = 'INR';
 
     const ACQUIRER_DATA         = 'acquirer_data';

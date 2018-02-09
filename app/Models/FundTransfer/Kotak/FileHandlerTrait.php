@@ -673,9 +673,14 @@ trait FileHandlerTrait
 
     protected function parseTextRowWithHeadingMismatch($headings, $values, $ix)
     {
-        throw new Exception\RuntimeException(
+        throw new Exception\LogicException(
             'Count of array elements for combine not equal. Heading count: ' .
-            count($headings). ' Value count: ' . count($values) . ' Row: ' . $ix);
+            count($headings). ' Value count: ' . count($values) . ' Row',
+            null,
+            [
+                'line'      => $ix,
+                'content'   => $values
+            ]);
     }
 
     protected function parseExcelFile($filePath)
