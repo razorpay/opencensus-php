@@ -546,7 +546,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The dispute cannot be updated when in the under-review or closed state',
+                    'description' => 'Disputes can only be modified when in open status',
                 ],
             ],
             'status_code' => 400,
@@ -588,7 +588,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Not a valid dispute status',
+                    'description' => 'Not a valid dispute status: review',
                 ],
             ],
             'status_code' => 400,
