@@ -32,11 +32,6 @@ const FORM_COMPONENTS = {
     let { data, ...otherProps } = state.activation;
     let initialValues = { ...data };
 
-    if (session.org.custom_code === 'hdfc') {
-      initialValues.bank_account_type =
-        initialValues.bank_account_type || 'Current';
-    }
-
     return {
       initialValues: {
         ...initialValues,
@@ -89,16 +84,14 @@ export default class WizardItem extends Component {
   save = props => {
     return this._save(props)
       .then(response => {
-        let {
-          step,
-          steps
-        } = this.props;
+        let { step, steps } = this.props;
         let lastCompletedStep = 0;
         Object.keys(steps).forEach(_step => {
           if (steps[_step] === 'success') {
             lastCompletedStep = parseInt(_step);
           }
         });
+
         window.trackViz && window.trackViz({ act: "" + lastCompletedStep })
 
         // For updating the accounts list view on success of activation
@@ -186,9 +179,9 @@ export default class WizardItem extends Component {
         <div class="panel-body">
           <div class="row">
             <div
-              class={`${
-                this.props.accountId ? '' : 'col-lg-10'
-              } col-md-12 col-sm-12`}
+              class={`${this.props.accountId
+                ? ''
+                : 'col-lg-10'} col-md-12 col-sm-12`}
             >
               <div class="row">
                 <div class="col-md-offset-3 col-md-9">
