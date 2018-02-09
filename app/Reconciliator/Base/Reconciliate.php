@@ -156,13 +156,10 @@ class Reconciliate extends Base\Core
             $this->subReconciliator->startReconciliationV2($fileContents, $batch);
         }
 
-        $this->trace->info(
-            TraceCode::RECON_INFO_SUMMARY,
-            [
-                'total_count'   => $batch->getTotalCount(),
-                'success_count' => $batch->getSuccessCount(),
-                'failure_count' => $batch->getFailureCount(),
-            ]);
+        $summary = $this->getBatchProcessingSummary($batch);
+
+        // Raise recon info with the batch processing summary
+        $this->messenger->raiseReconInfo($summary);
     }
 
     /**
@@ -371,5 +368,27 @@ class Reconciliate extends Base\Core
             FileProcessor::LINES_FROM_TOP    => 0,
             FileProcessor::LINES_FROM_BOTTOM => 0
         ];
+    }
+
+    // Get recon batch processing summary
+    protected function getBatchProcessingSummary($batch)
+    {
+        $summary = [
+            'total_count'   => $batch->getTotalCount(),
+            'success_count' => $batch->getSuccessCount(),
+            'failure_count' => $batch->getFailureCount(),
+            'batch_id'      => $batch->getId(),
+            'gateway'       => $batch->getGateway()
+        ];
+
+        //Check if recon request was made through dashboard
+        $isDashboardRequest = $this->app['basicauth']->isDashboardApp();
+
+        if ($isDashboardRequest === true)
+        {
+            $summary['dashboard_user'] = $this->getInternalUsernameOrEmail();
+        }
+
+        return $summary;
     }
 }
