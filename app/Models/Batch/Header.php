@@ -11,6 +11,7 @@ class Header
 {
     const INPUT             = 'input';
     const OUTPUT            = 'output';
+    const ERROR             = 'error';
 
     //
     // Refund Headers
@@ -229,6 +230,19 @@ class Header
                 self::STATUS,
                 self::PAYMENT_LINK_ID,
                 self::SHORT_URL,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+
+            self::ERROR => [
+                self::INVOICE_NUMBER,
+                self::CUSTOMER_NAME,
+                self::CUSTOMER_EMAIL,
+                self::CUSTOMER_CONTACT,
+                self::AMOUNT,
+                self::DESCRIPTION,
+                self::EXPIRE_BY,
+                self::PARTIAL_PAYMENT,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
             ],
@@ -523,5 +537,10 @@ class Header
     public static function getOutputHeadersForType(string $type): array
     {
         return self::HEADER_MAP[$type][self::OUTPUT];
+    }
+
+    public static function isValidOutputFileHeaderType(string $headerType): bool
+    {
+        return in_array($headerType, [self::OUTPUT, self::ERROR]);
     }
 }
