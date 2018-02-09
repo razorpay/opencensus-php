@@ -37,8 +37,8 @@ class CreateWorkflowPermission extends Migration
                   ->on(Table::PERMISSION)
                   ->onDelete('cascade');
 
-            $table->index(self::WORKFLOW_ID);
             $table->index(self::PERMISSION_ID);
+            $table->unique([self::WORKFLOW_ID, self::PERMISSION_ID]);
         });
     }
 

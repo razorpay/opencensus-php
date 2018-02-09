@@ -670,11 +670,13 @@ class Core extends Base\Core
     {
         $txn = new Transaction\Entity;
 
+        $merchant = $transfer->merchant;
+
         $txn->generateId();
 
         $txn->sourceAssociate($transfer);
 
-        $txn->merchant()->associate($transfer->merchant);
+        $txn->merchant()->associate($merchant);
 
         $amount = $transfer->getAmount();
 
@@ -688,6 +690,15 @@ class Core extends Base\Core
         $txn->setTax($tax);
 
         $settledAt = time();
+
+        //
+        // We're checking for available balance here and not earlier because
+        // fees needs to be calculated first. Unlike payments, in the case of
+        // transfers, amount+fee is what will be debited from the merchant balance
+        //
+        $merchantBalance = $this->repo->balance->getMerchantBalance($merchant);
+
+        $transfer->getValidator()->validateMerchantBalanceForTransfer($merchantBalance);
 
         //
         // For transfers from a payment, if the source payment is not

@@ -91,6 +91,39 @@ class IciciGatewayTest extends TestCase
         $this->assertEquals($payment['vpa'], 'crims0n@icici');
     }
 
+    public function testIntentPaymentWithVpa()
+    {
+        $this->fixtures->merchant->addFeatures(['upi_intent']);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['vpa'] = 'dontencrypt@icici';
+
+        unset($this->payment['description']);
+
+        $payment['_']['flow'] = 'intent';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content['refId'] = 'ICICIRefId';
+            }
+            else
+            {
+                $content['PayerVA'] = 'crims0n@icici';
+            }
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPaymentViaAjaxRoute($payment);
+        });
+
+    }
+
     public function testPaymentWithExpiryPublicAuth()
     {
         $payment = $this->payment;

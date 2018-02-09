@@ -568,6 +568,30 @@ class AuthorizeTest extends TestCase
         $this->assertArrayHasKey('url', $content['request']);
     }
 
+    public function testIciciPaymentViaUpiS2S()
+    {
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_icici_terminal');
+
+        $this->fixtures->merchant->addFeatures(['s2supi', 'upi_intent']);
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $this->ba->privateAuth();
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content['refId'] = 'ICICIRefId';
+            }
+        }, 'upi_icici');
+
+        $content = $this->startTest();
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+        $this->assertArrayHasKey('link', $content);
+    }
+
     public function testMobikwikPaymentViaWalletS2S()
     {
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_mobikwik_terminal');

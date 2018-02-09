@@ -81,6 +81,7 @@ class Entity extends Base\PublicEntity
     const WALLET                = 'wallet';
     const EMI_PLAN_ID           = 'emi_plan_id';
     const EMI_DURATION          = 'emi_duration';
+    const EMI_SUBVENTION        = 'emi_subvention';
     const TRANSACTION_ID        = 'transaction_id';
     const AUTO_CAPTURED         = 'auto_captured';
     const AUTHORIZED_AT         = 'authorized_at';
@@ -107,6 +108,9 @@ class Entity extends Base\PublicEntity
     const AUTH_TYPE             = 'auth_type';
 
     const SUBSCRIPTION_ID       = 'subscription_id';
+
+    // Used by merchant dashboard to fetch payments based on utr
+    const BANK_REFERENCE        = 'bank_reference';
 
     const DEFAULT_CURRENCY      = 'INR';
 
@@ -200,6 +204,7 @@ class Entity extends Base\PublicEntity
         self::BANK,
         self::WALLET,
         self::EMI_PLAN_ID,
+        self::EMI_SUBVENTION,
         self::CUSTOMER_ID,
         self::GLOBAL_CUSTOMER_ID,
         self::APP_TOKEN,
@@ -852,6 +857,11 @@ class Entity extends Base\PublicEntity
         $this->decrement(self::AMOUNT_TRANSFERRED, $amount);
     }
 
+    public function setEmiSubvention(string $subvention)
+    {
+        $this->setAttribute(self::EMI_SUBVENTION, $subvention);
+    }
+
 // ----------------------- Setters Ends-----------------------------------------
 
 // ----------------------- Mutator ---------------------------------------------
@@ -869,7 +879,7 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::METHOD] = $method;
     }
 
-    protected function setAmountAttribute($amount)
+    public function setAmountAttribute($amount)
     {
         $this->attributes[self::AMOUNT] = (int) $amount;
     }
@@ -1602,6 +1612,11 @@ class Entity extends Base\PublicEntity
         // The token can now be used without 2FA.
         //
         return ($existingGatewayTokens->count() > 0);
+    }
+
+    public function isEmiMerchantSubvented()
+    {
+        return (Emi\Subvention::MERCHANT === $this->getAttribute(self::EMI_SUBVENTION));
     }
 
     public function isEmandatePayment()

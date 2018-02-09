@@ -5,6 +5,7 @@ namespace RZP\Gateway\Upi\Icici\Mock;
 use Carbon\Carbon;
 use RZP\Gateway\Base;
 use RZP\Models\Payment;
+use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Base\PublicCollection;
 
@@ -12,31 +13,17 @@ class PaymentReconciliator extends Base\Mock\PaymentReconciliator
 {
     protected $gateway = Payment\Gateway::UPI_ICICI;
 
-    private $headers = [
-        'accountNumber',
-        'merchantID',
-        'merchantName',
-        'subMerchantID',
-        'subMerchantName',
-        'merchantTranID',
-        'bankTranID',
-        'date',
-        'time',
-        'amount',
-        'payerVA',
-        'status',
-        'Commission',
-        'Service tax',
-        'Net amount'
-    ];
-
     /**
      * @override
      * @var string
      */
     protected $fileToWriteName = 'MIS_REPORT';
 
-    protected $shouldAddHeaders = false;
+    /**
+     * The name of the sheet to be processed is Refund MIS
+     * @var string
+     */
+    protected $sheetName = 'Recon MIS';
 
     /**
      * The parent class's method gets only successful payments,
@@ -73,33 +60,27 @@ class PaymentReconciliator extends Base\Mock\PaymentReconciliator
                 ->format('d-M-y H:i:s');
 
             $col = [
-                '000205025290',
-                '116798',
-                'RAZORPAY',
-                '116798',
-                'Razorpay SUB',
-                $row['payment']['id'],
-                '734122607521',
-                $date,
-                '10:39 PM',
-                $row['payment']['amount'] / 100,
-                '9619218329@ybl',
-                'SUCCESS',
-                '0',
-                '0',
-                '0',
+                'accountNumber'   => '000205025290',
+                'merchantID'      => '116798',
+                'merchantName'    => 'RAZORPAY',
+                'subMerchantID'   => '116798',
+                'subMerchantName' => 'Razorpay SUB',
+                'merchantTranID'  => $row['payment']['id'],
+                'bankTranID'      => '734122607521',
+                'date'            => $date,
+                'time'            => '10:39 PM',
+                'amount'          => $row['payment']['amount'] / 100,
+                'payerVA'         => '9619218329@ybl',
+                'status'          => 'SUCCESS',
+                'Commission'      => '0',
+                'Net amount'      => '0',
+                'Service tax'     => '0',
             ];
 
             $this->content($col, 'col_payment_icici_recon');
 
             $data[] = $col;
         }
-
-        $emptyRow = array_fill(0, sizeof($this->headers), ' ');
-
-        $headers = [$emptyRow, $this->headers];
-
-        $data = array_merge($headers, $data);
 
         return $data;
     }

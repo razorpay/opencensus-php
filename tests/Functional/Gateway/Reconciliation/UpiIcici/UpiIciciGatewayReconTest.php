@@ -84,7 +84,7 @@ class UpiIciciGatewayReconTest extends TestCase
                 if ($action === 'col_icici_recon')
                 {
                     // Setting random column value
-                    $content[9] = 13476475;
+                    $content['Refund Amount'] = 13476475;
                 }
             },
             $this->gateway,
@@ -225,7 +225,7 @@ class UpiIciciGatewayReconTest extends TestCase
             {
                 if ($action === 'col_payment_icici_recon')
                 {
-                    $content[5] = "";
+                    $content['merchantTranID'] = "";
                 }
             },
             $this->gateway,
@@ -250,7 +250,7 @@ class UpiIciciGatewayReconTest extends TestCase
             {
                 if ($action === 'col_payment_icici_recon')
                 {
-                    $content[11] = "failed";
+                    $content['status'] = "failed";
                 }
             },
             $this->gateway,
@@ -275,7 +275,7 @@ class UpiIciciGatewayReconTest extends TestCase
             {
                 if ($action === 'col_payment_icici_recon')
                 {
-                    $content[9] = 1840913;
+                    $content['amount'] = 1840913;
                 }
             },
             $this->gateway,

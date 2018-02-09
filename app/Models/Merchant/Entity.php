@@ -524,6 +524,11 @@ class Entity extends Base\PublicEntity
         return $this->hasMany('RZP\Models\Customer\Entity');
     }
 
+    public function emiPlans()
+    {
+        return $this->hasMany('RZP\Models\Merchant\EmiPlans\Entity');
+    }
+
     // Linked-accounts belonging to the Marketplace
     public function accounts()
     {
@@ -1107,7 +1112,7 @@ class Entity extends Base\PublicEntity
             return null;
         }
 
-        return $this->merchantDetail->getGstin() ?? $this->merchantDetail->getPGstin();
+        return $this->merchantDetail->getGstin() ?: $this->merchantDetail->getPGstin();
     }
 
     public function getBusinessRegisteredState()

@@ -1438,3 +1438,7 @@ UPDATE merchants
 SET max_payment_amount=1000000000,
     updated_at=UNIX_TIMESTAMP(NOW())
 WHERE parent_id='8ytYezIThlseJd';
+
+update emi_plans set deleted_at = now() where subvention = 'merchant';
+
+update emi_plans set merchant_payback = ROUND(10000 * (duration * rate/120000 * POWER(1 + rate/120000 , duration) - POWER(1 + rate/120000, duration) + 1)/ (duration * rate/120000 * POWER(1 + rate/120000, duration)));

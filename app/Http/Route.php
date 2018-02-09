@@ -291,6 +291,7 @@ final class Route
         'mock_sharp_payment_post'                 => ['post',     'gateway/mocksharp/payment',                      'MockGatewayController@getSharpPayment'                             ],
         'mock_sharp_payment_get'                  => ['get',      'gateway/mocksharp/payment',                      'MockGatewayController@getSharpPayment'                             ],
         'mock_amex_payment'                       => ['post',     'gateway/mockamex/payment',                       'MockGatewayController@postAmexPayment'                             ],
+        'mock_card_fss_payment'                   => ['get',      'gateway/mockfss/payment',                        'MockGatewayController@getFssPayment'                               ],
         'mock_sharp_payment_submit'               => ['post',     'gateway/mocksharp/payment/submit',               'MockGatewayController@postSharpPayment'                            ],
         'mock_netbanking_payment'                 => ['post',     'gateway/mock/netbanking/{bank}',                 'MockGatewayController@postNetbankingPayment'                       ],
         'mock_wallet_payment'                     => ['post',     'gateway/mock/wallet/{wallet}',                   'MockGatewayController@walletPayment'                               ],
@@ -334,6 +335,7 @@ final class Route
         'emi_plan_fetch_by_id'                    => ['get',      'emi/{id}',                                       'EmiController@fetchEmiPlanById'                                    ],
         'emi_plan_delete'                         => ['delete',   'emi/{id}',                                       'EmiController@deleteEmiPlan'                                       ],
         'emi_generate_excel'                      => ['post',     'emi/generate/excel',                             'EmiController@generateEmiExcel'                                    ],
+        'enable_emi_merchant_sub'                 => ['post',     'merchant/{id}/emi_plan/{emiPlanId}',             'MerchantController@enableEmiMerchantSubvention'                    ],
         'order_create'                            => ['post',     'orders',                                         'OrderController@createOrder'                                       ],
         'order_fetch'                             => ['get',      'orders',                                         'OrderController@getOrders'                                         ],
         'order_fetch_by_id'                       => ['get',      'orders/{id}',                                    'OrderController@fetchOrderById'                                    ],
@@ -749,6 +751,7 @@ final class Route
         'mock_paytm_payment',
         'mock_mobikwik_payment',
         'mock_netbanking_payment',
+        'mock_card_fss_payment',
         'mock_ebs_payment',
         'mock_sharp_payment_post',
         'mock_sharp_payment_get',
@@ -975,7 +978,6 @@ final class Route
         'setl_initiate',
         'payout_initiate',
         'setl_file_generate',
-        'setl_reconcile',
         'setl_reconcile_h2h',
         'setl_reconcile_generate',
         'setl_reconcile_test',
@@ -1026,6 +1028,7 @@ final class Route
         'emi_plan_add',
         'emi_plan_delete',
         'emi_plan_fetch_by_id',
+        'enable_emi_merchant_sub',
         'emi_generate_excel',
         'refund_verify',
         'payment_capture_verify',
@@ -1150,8 +1153,6 @@ final class Route
         'merchant_payout_mail',
         'geoip_update',
         'fund_transfer_attempt_reconcile',
-        'transaction_bulk_update',
-        'setl_update_channel_bulk',
         'merchant_tags_bulk',
     ];
 
@@ -1302,6 +1303,9 @@ final class Route
         'schedule_update',
         'schedule_assign',
         'schedule_fetch_multiple',
+        'setl_reconcile',
+        'transaction_bulk_update',
+        'setl_update_channel_bulk',
         'setl_fetch_schedule',
         'feature_delete',
         'admin_dummy_account_test',
@@ -1467,6 +1471,9 @@ final class Route
         'merchant_invoice_update_gstin'          => Permission::EDIT_MERCHANT_INVOICE_GSTIN,
         'merchant_details_fetch'                 => '*',
         'setl_retry'                             => Permission::RETRY_SETTLEMENT,
+        'setl_update_channel_bulk'               => Permission::SETTLEMENT_BULK_UPDATE,
+        'transaction_bulk_update'                => Permission::SETTLEMENT_BULK_UPDATE,
+        'setl_reconcile'                         => Permission::SETTLEMENT_BULK_UPDATE,
         'merchant_batches'                       => Permission::MERCHANT_BATCH_UPLOAD,
         'merchant_invoice_add_bulk'              => '*',
         'payment_dispute_create'                 => Permission::CREATE_DISPUTE,
@@ -1493,6 +1500,7 @@ final class Route
         'geoip_update'                           => '*',
         'batch_process_by_id'                    => Permission::RETRY_BATCH,
         'reports_refund_irctc'                   => '*',
+        'merchant_get_tags'                      => '*',
     ];
 
     public static $direct = [
@@ -1531,6 +1539,23 @@ final class Route
         'qr_code_download_live',
         'qr_code_download_test',
         'gateway_payment_callback_bharatqr',
+    ];
+
+    /**
+     * List of routes, requiring session changes
+     */
+    public static $session = [
+        'checkout',
+        'merchant_checkout_preferences',
+        'otp_verify',
+        'customer_get_saved_status',
+        'payment_create',
+        'payment_create_checkout',
+        'payment_create_jsonp',
+        'payment_create_ajax',
+        'app_fetch_payments',
+        'customer_logout_global',
+        'app_delete_token',
     ];
 
     public static $internalApps = [
@@ -2214,7 +2239,16 @@ final class Route
         $uri = $info[1];
         $action = $info[2];
 
-        $this->router->$method($uri, ['as' => $name, 'uses' => $action]);
+        $router = $this->router->$method($uri, ['as' => $name, 'uses' => $action]);
+
+        //
+        // We add the web middleware group, conditionally to routes
+        // which require cookie / session access
+        //
+        if (in_array($name, self::$session, true) === true)
+        {
+            $router->middleware('web');
+        }
     }
 
     public function defineAllExtraRoutes()

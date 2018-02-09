@@ -144,7 +144,7 @@ class PincodeSearch
             $response);
     }
 
-    public function fetchCityAndStateFromPincode(int $pincode): array
+    public function fetchCityAndStateFromPincode($pincode): array
     {
         if ($this->validate($pincode) === false)
         {
@@ -188,13 +188,14 @@ class PincodeSearch
 
     /**
      * Some basic checks around pincode
-     * @param int $pincode Input Pincode
+     * @param $pincode Input Pincode
      * @see https://en.wikipedia.org/wiki/Postal_Index_Number
      * @return boolean
      */
-    protected function validate(int $pincode)
+    protected function validate($pincode)
     {
         if ((strlen($pincode) !== 6) or
+            (ctype_digit($pincode) === false) or
             ($pincode > self::MAX_PINCODE) or
             ($pincode < self::MIN_PINCODE))
         {

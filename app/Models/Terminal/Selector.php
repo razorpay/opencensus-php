@@ -153,7 +153,9 @@ class Selector extends Base\Core
 
                 $sortedTerminals = [$terminal];
             }
-            else if (($payment->isCard() === true) and ($payment->card->isDiners() === true))
+            else if (($payment->isCard() === true) and
+                     (($payment->card->isDiners() === true) or
+                      ($payment->card->isNetworkUnknown() === true)))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);

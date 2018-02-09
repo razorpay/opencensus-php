@@ -81,7 +81,7 @@ class Service extends Base\Service
 
                 $invoicesCreated++;
             }
-            catch (\Exception $ex)
+            catch (\Throwable $ex)
             {
                 $failed++;
                 $failures[] = $subscription->getId();

@@ -6,7 +6,7 @@ use ApiResponse;
 
 class PincodeSearchController extends Controller
 {
-    public function get(int $id)
+    public function get($id)
     {
         $data = $this->app['pincodesearch']->fetchCityAndStateFromPincode($id);
 
