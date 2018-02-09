@@ -25,15 +25,33 @@ export default props => {
           <div class="SliderPanel__Body">
             <div class="alert alert-warning rzp-banner">
               <div class="rzp-banner-text">
-                Customer has raised a dispute for&nbsp;
-                <Amount
-                  value={dispute.amount}
-                  currency={dispute.currency}
-                />.&nbsp; To contest the dispute, upload all the supporting
-                documents. If you choose to accept this dispute, or you do not
-                respond by <Time value={dispute.expires_on} format="ll" /> you
-                will lose the dispute and the disputed amount will be deducted
-                from your account.
+                {dispute.phase === 'fraud' ? (
+                  <React.Fragment>
+                    The customer&#39;s bank has reported a possibly fraudulent
+                    transaction. &nbsp;We recommend that you respond to the
+                    email sent to you on your registered email address by &nbsp;<Time
+                      value={dispute.expires_on}
+                      format="ll"
+                    />{' '}
+                    failing which there might be a amount deduction from your
+                    account.
+                  </React.Fragment>
+                ) : (
+                  <React.Fragment>
+                    Customer has raised a dispute for&nbsp;
+                    <Amount
+                      value={dispute.amount}
+                      currency={dispute.currency}
+                    />.&nbsp; Kindly respond to the mail sent to you on your
+                    registered email address by
+                    <Time
+                      value={dispute.expires_on}
+                      format="ll"
+                    /> ({daysLeftInExpiry(dispute.expires_on, 'in ')}) failing
+                    which you will loose the dispute and the disputed amount
+                    will be deducted from your account.
+                  </React.Fragment>
+                )}
               </div>
             </div>
 
@@ -73,7 +91,7 @@ export default props => {
 
               {/* created_at of dispute */}
               <EntityDetailRow label="Disputed On">
-                <Time value={dispute.created_at} format="'LL|hh:mm A" />
+                <Time value={dispute.created_at} format="LL|hh:mm A" />
               </EntityDetailRow>
 
               {/* payment */}
