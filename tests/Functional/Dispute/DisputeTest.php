@@ -99,7 +99,7 @@ class DisputeTest extends TestCase
 
     public function testDisputeCreatedWebhook()
     {
-        $this->createWebhook(['events' => ['payment.disputed' => '1']]);
+        $this->createWebhook(['events' => ['payment.dispute.created' => '1']]);
 
         $payment = $this->doAuthAndCapturePayment();
 

@@ -106,7 +106,7 @@ class Event
         self::SUBSCRIPTION_CHARGED      => 13,
         self::SUBSCRIPTION_CANCELLED    => 14,
         self::SUBSCRIPTION_COMPLETED    => 15,
-         self::SUBSCRIPTION_EXPIRED      => 16,
+        // self::SUBSCRIPTION_EXPIRED      => 16,
         self::INVOICE_EXPIRED           => 17,
         self::INVOICE_PARTIALLY_PAID    => 18,
         self::TOKEN_CONFIRMED           => 19,

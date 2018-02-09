@@ -94,7 +94,7 @@ return [
 
     'testDisputeCreatedWebhookEventData' => [
         'entity'   => 'event',
-        'event'    => 'payment.disputed',
+        'event'    => 'payment.dispute.created',
         'contains' => [
             'payment',
             'dispute',

@@ -537,6 +537,8 @@ class Core extends Base\Core
             ]
         ];
 
-        $this->app['events']->fire('api.' . WebhookEvent::PAYMENT_DISPUTE_CREATED, $eventPayload);
+        $eventName = 'api.' . WebhookEvent::PAYMENT_DISPUTE_CREATED;
+
+        $this->app['events']->fire($eventName, $eventPayload);
     }
 }

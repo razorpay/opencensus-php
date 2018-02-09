@@ -2,9 +2,6 @@
 
 namespace RZP\Tests\Functional\Helpers;
 
-use Mockery;
-use Closure;
-
 use RZP\Jobs;
 use RZP\Models\Merchant\Webhook\Inferno;
 
