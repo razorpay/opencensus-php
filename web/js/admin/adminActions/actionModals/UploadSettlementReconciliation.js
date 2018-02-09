@@ -51,10 +51,13 @@ export default function UploadSettlementReconciliation() {
             file_name: 'file',
           };
 
-          return adminFormUpload(
-            form,
-            `/settlements/reconcile/${channel}`
-          ).then(response => {
+          return adminFormUpload({
+            route_name: 'setl_reconcile',
+            ...form,
+            url_params: JSON.stringify({
+              '{channel}': channel,
+            }),
+          }).then(response => {
             if (response.data.success) {
               notifySuccess('API Request successful');
               closeModal();
