@@ -33,6 +33,87 @@ class SharpGatewayTest extends TestCase
         $this->assertEquals($payment['status'], 'captured');
     }
 
+    public function testUpiPayment()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $response = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $paymentId = $response['payment_id'];
+
+        $this->assertEquals('async', $response['type']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($paymentId, $payment['id']);
+
+        $this->assertEquals($payment['status'], 'authorized');
+
+        $this->assertNotEmpty($payment['vpa']);
+    }
+
+    public function testIntentPayment()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $this->fixtures->merchant->addFeatures(['upi_intent']);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        unset($payment['description']);
+        unset($payment['vpa']);
+
+        $payment['_']['flow'] = 'intent';
+
+        $response = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $paymentId = $response['payment_id'];
+
+        // Co Proto must be working
+        $this->assertEquals('intent', $response['type']);
+        $this->assertArrayHasKey('intent_url', $response['data']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($paymentId, $payment['id']);
+
+        $this->assertEquals($payment['status'], 'authorized');
+
+        $this->assertNotEmpty($payment['vpa']);
+    }
+
+    public function testFailedIntentPayment()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $this->fixtures->merchant->addFeatures(['upi_intent']);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        unset($payment['description']);
+        unset($payment['vpa']);
+
+        $payment['_']['flow'] = 'intent';
+
+        $payment['amount'] = 5555;
+
+        $response = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $paymentId = $response['payment_id'];
+
+        // Co Proto must be working
+        $this->assertEquals('intent', $response['type']);
+        $this->assertArrayHasKey('intent_url', $response['data']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($paymentId, $payment['id']);
+
+        $this->assertEquals($payment['status'], 'failed');
+    }
+
     public function testRecurringPaymentAuthenticateCard()
     {
         $this->fixtures->merchant->addFeatures('charge_at_will');
