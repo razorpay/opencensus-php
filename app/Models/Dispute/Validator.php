@@ -43,8 +43,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $merchantEditRules = [
-        Entity::ACCEPT_DISPUTE         => 'sometimes|boolean',
-        Entity::SUBMIT                 => 'sometimes|boolean',
+        Entity::ACCEPT_DISPUTE         => 'required_without:' . Entity::SUBMIT . '|boolean',
+        Entity::SUBMIT                 => 'required_without:' . Entity::ACCEPT_DISPUTE . '|boolean',
     ];
 
     protected function validatePhase(string $attribute, string $value)

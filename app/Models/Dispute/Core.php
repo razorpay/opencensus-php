@@ -5,6 +5,7 @@ namespace RZP\Models\Dispute;
 use DB;
 use Mail;
 use Carbon\Carbon;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -140,14 +141,18 @@ class Core extends Base\Core
 
     /**
      * @param Entity $dispute
-     * @param array $input
+     * @param array  $input
+     *
      * @return array
+     * @throws BadRequestValidationFailureException
      */
     public function updateFilesAndInputForMerchant(Entity $dispute, array $input): array
     {
         $this->trace->info(
             TraceCode::DISPUTE_EDIT_REQUEST_FOR_MERCHANT,
             [Entity::ID => $dispute->getId()]);
+
+        $this->validateMerchantUpdateInput($dispute, $input);
 
         $files = [];
 
@@ -505,6 +510,15 @@ class Core extends Base\Core
         $length = $endDate->diffInDays(Carbon::now(Timezone::IST));
 
         return $length;
+    }
+
+    protected function validateMerchantUpdateInput(Entity $dispute, array $input)
+    {
+        if ($dispute->getStatus() !== Status::OPEN)
+        {
+            throw new BadRequestValidationFailureException(
+                'The dispute cannot be updated when in the under-review or closed state');
+        }
     }
 
     protected function generateInputForMerchantEdit(Entity $dispute, array $input): array
