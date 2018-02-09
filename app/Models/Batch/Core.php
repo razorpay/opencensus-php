@@ -10,7 +10,6 @@ use RZP\Base\RuntimeManager;
 use RZP\Jobs\DispatchRouter;
 use RZP\Jobs\Batch as BatchJob;
 use RZP\Models\Batch\Header as BatchHeaders;
-use RZP\Models\Batch\Processor\Base as BaseProcessor;
 
 class Core extends Base\Core
 {

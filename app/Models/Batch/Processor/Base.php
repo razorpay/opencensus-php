@@ -142,6 +142,7 @@ class Base extends BaseModel\Core
         $entries = $this->validateInputFileAndUpdateBatch($ufh->getFullFilePath(), $input);
 
         if ($batch != null){
+            
             $ufhFile->entity()->associate(batch);
         }
 
@@ -717,7 +718,7 @@ class Base extends BaseModel\Core
         $ufh = $this->saveFile($this->outputFileLocalPath, FileStore\Type::BATCH_OUTPUT);
 
         return [
-            self::FILE_ID       => $ufh->getSignedUrl()['id'],
+            self::FILE_ID       => FileStore\Entity::getSignedId($ufh->getSignedUrl()['id']),
             self::SIGNED_URL    => $ufh->getSignedUrl()['url'],
         ];
     }
