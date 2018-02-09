@@ -4,102 +4,10 @@ import BaseModal from 'ui/BaseModal';
 import { notifyError, notifySuccess } from 'common/modal';
 
 import Form from 'ui/Form';
-import { Field, RadioField, SelectField } from 'ui/Field';
+import { Field, RadioField, SelectField, DateField } from 'ui/Field';
 import fetch, { adminFetch } from 'common/fetch';
 import AsyncButton from 'ui/AsyncButton';
 import { PowerSelect, TypeAhead } from 'react-power-select';
-
-import Calendar from 'rc-calendar';
-import DatePicker from 'rc-calendar/lib/Picker';
-import enUS from 'rc-calendar/lib/locale/en_US';
-
-const format = 'YYYY-MM-DD HH:mm:ss';
-const now = moment()
-  .subtract(1, 'day')
-  .locale('en-gb')
-  .utcOffset(5.5);
-
-function disabledDate(current) {
-  if (!current) {
-    // allow empty select
-    return false;
-  }
-  const date = moment();
-  date.hour(0);
-  date.minute(0);
-  date.second(0);
-
-  return current.year() < 2015 || current.valueOf() > date.valueOf(); // can not select days today onwards
-}
-
-function getFormat(format) {
-  return format ? format : 'DD/MM/YYYY';
-}
-
-class Demo extends React.Component {
-  static propTypes = {
-    defaultValue: PropTypes.object,
-    defaultCalendarValue: PropTypes.object,
-  };
-
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      disabled: false,
-      value: props.defaultValue,
-    };
-  }
-
-  onChange = value => {
-    console.log('DatePicker change: ', value && value.format(format));
-    this.setState({
-      value,
-    });
-  };
-
-  render() {
-    const state = this.state;
-    const calendar = (
-      <Calendar
-        locale={enUS}
-        style={{ zIndex: 1000 }}
-        dateInputPlaceholder="Select Month?"
-        formatter={getFormat(false)}
-        disabledTime={null}
-        timePicker={null}
-        defaultValue={this.props.defaultCalendarValue}
-        showDateInput={true}
-        disabledDate={disabledDate}
-      />
-    );
-    return (
-      <DatePicker
-        animation="slide-up"
-        disabled={state.disabled}
-        calendar={calendar}
-        value={state.value}
-        onChange={this.onChange}
-      >
-        {({ value }) => {
-          return (
-            <span tabIndex="0">
-              <input
-                name={this.props.name}
-                placeholder="Select Month/Date"
-                disabled={state.disabled}
-                readOnly
-                tabIndex="-1"
-                className="ant-calendar-picker-input ant-input"
-                value={(value && value.format(getFormat())) || ''}
-              />
-            </span>
-          );
-        }}
-      </DatePicker>
-    );
-  }
-}
 
 export default class GenerateReports extends Component {
   state = {
@@ -339,10 +247,10 @@ export default class GenerateReports extends Component {
       this.props.props.merchant.details.tags.indexOf('Gst_Invoice_Disabled') !==
       -1;
 
-    const selectedDate = current.split('-');
+    const selectedDate = current.split('/');
 
-    const selectedMonth = selectedDate[1],
-      selectedYear = selectedDate[0];
+    const selectedMonth = selectedDate[0],
+      selectedYear = selectedDate[1];
 
     const currDate = new Date();
 
@@ -508,21 +416,15 @@ export default class GenerateReports extends Component {
 
               {(type === 'monthly' || entity === 'invoice') && (
                 <span>
-                  <input
-                    type="month"
+                  <DateField
+                    format="MM/YYYY"
                     name={entity === 'invoice' ? 'invoiceDate' : 'date'}
-                    onChange={e => {
-                      let validator;
-                      // Check if date is valid
-                      validator =
-                        entity === 'invoice'
-                          ? this.validateInvoiceMonthYear
-                          : validYear;
-
-                      if (!validator(e.target.value)) {
-                        notifyError('Cannot select ' + e.target.value);
-                      }
-                    }}
+                    placeholder="Select Month"
+                    defaultValue={moment()
+                      .add(-1, 'month')
+                      .locale('en-gb')
+                      .utcOffset(5.5)}
+                    type="month"
                   />
                 </span>
               )}
@@ -530,9 +432,14 @@ export default class GenerateReports extends Component {
               {type === 'daily' &&
                 entity !== 'invoice' && (
                   <span>
-                    <Demo
-                      defaultValue={now}
+                    <DateField
+                      format="DD/MM/YYYY"
                       name={entity === 'invoice' ? 'invoiceDate' : 'date'}
+                      placeholder="Select Date"
+                      defaultValue={moment()
+                        .subtract(1, 'day')
+                        .locale('en-gb')
+                        .utcOffset(5.5)}
                     />
                   </span>
                 )}

@@ -431,7 +431,7 @@
 .rc-calendar-date:hover,
 .rc-calendar-year-panel-year:hover,
 .rc-calendar-decade-panel-decade:hover,
-.rc-calendar-month-panel-cell .rc-calendar-month-panel-month:hover {
+.rc-calendar-month-panel-cell:not(.rc-calendar-month-panel-cell-disabled) .rc-calendar-month-panel-month:hover {
   background: #b5c3fb;
   color: #fff;
   cursor: pointer;
@@ -572,20 +572,22 @@
   text-align: center;
 }
 
-.rc-calendar-month-panel-cell-disabled .rc-calendar-month-panel-month {
-  color: #bfbfbf;
-}
-.rc-calendar-month-panel-cell-disabled .rc-calendar-month-panel-month:hover {
-  background: white;
-  cursor: not-allowed;
-}
 .rc-calendar-month-panel-selected-cell .rc-calendar-month-panel-month {
   background: #5272ef;
   color: #fff;
 }
+
 .rc-calendar-month-panel-selected-cell .rc-calendar-month-panel-month:hover {
   background: #5272ef;
-  color: #fff;
+}
+
+.rc-calendar-month-panel-cell-disabled .rc-calendar-month-panel-month {
+  background: #f3f3f3;
+  color: #bcbcbc;
+}
+.rc-calendar-month-panel-cell-disabled .rc-calendar-month-panel-month:hover {
+  background: #f3f3f3;
+  cursor: not-allowed;
 }
 .rc-calendar-month-header-wrap {
   position: relative;
@@ -688,10 +690,7 @@
   background: #5272ef;
   color: #fff;
 }
-.rc-calendar-year-panel-selected-cell .rc-calendar-year-panel-year:hover {
-  background: #5272ef;
-  color: #fff;
-}
+
 .rc-calendar-year-panel-last-decade-cell .rc-calendar-year-panel-year,
 .rc-calendar-year-panel-next-decade-cell .rc-calendar-year-panel-year {
   -moz-user-select: none;
