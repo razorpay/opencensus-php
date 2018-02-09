@@ -2,6 +2,7 @@
 
 namespace RZP\Http;
 
+use Illuminate;
 use ApiResponse;
 use Razorpay\OAuth\OAuthServer;
 use Razorpay\OAuth\Token\Entity as OAuthToken;
@@ -230,7 +231,14 @@ class OAuth
 
     protected function hasErrorOccurred($response)
     {
-        return (array_key_exists('error', $response) === true);
+        if (($response instanceof Illuminate\Http\JsonResponse) === true)
+        {
+            $response = $response->getData();
+
+            return (array_key_exists('error', $response) === true);
+        }
+
+        return false;
     }
 
     /**
