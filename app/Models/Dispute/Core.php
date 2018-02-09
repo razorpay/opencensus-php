@@ -523,7 +523,10 @@ class Core extends Base\Core
 
     protected function generateInputForMerchantEdit(Entity $dispute, array $input): array
     {
-        if (empty($input[Entity::ACCEPT_DISPUTE]) === false)
+        $submit        = (bool) ($input[Entity::SUBMIT] ?? false);
+        $acceptDispute = (bool) ($input[Entity::ACCEPT_DISPUTE] ?? false);
+
+        if ($acceptDispute === true)
         {
             $input[Entity::STATUS] = Status::LOST;
 
@@ -531,13 +534,13 @@ class Core extends Base\Core
             {
                 $input[Entity::STATUS] = Status::CLOSED;
             }
-
-            unset($input[Entity::ACCEPT_DISPUTE]);
         }
-        else if ($input[Entity::SUBMIT] === true)
+        else if ($submit === true)
         {
             $input[Entity::STATUS] = Status::UNDER_REVIEW;
         }
+
+        unset($input[Entity::ACCEPT_DISPUTE], $input[Entity::SUBMIT]);
 
         return $input;
     }

@@ -908,6 +908,66 @@ return [
         ],
     ],
 
+    'testEditDisputeFileUploadSaveForLater' => [
+        'request' => [
+            'content' => [
+                'upload_files'  =>  [
+                    [
+                        'name'      => 'myfile1.png',
+                        'category'  => 'explanation_letter',
+                    ],
+                    [
+                        'name'      => 'myfile2.pdf',
+                        'category'  => 'delivery_proof',
+                    ],
+                ],
+            ],
+            'method' => 'post',
+            'files' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity'        => 'dispute',
+                'amount'        => 1000000,
+                'currency'      => 'INR',
+                'reason_code'   => 'SOMETHING_BAD',
+                'status'        => 'open',
+                'phase'         => 'chargeback',
+                'files'         => [],
+            ],
+        ],
+    ],
+
+    'testEditDisputeFileUploadSaveForLaterAfterSave' => [
+        'request' => [
+            'content' => [
+                'upload_files'  =>  [
+                    [
+                        'name'      => 'myfile1.png',
+                        'category'  => 'instant_services',
+                    ],
+                    [
+                        'name'      => 'myfile2.pdf',
+                        'category'  => 'others',
+                    ],
+                ],
+            ],
+            'method' => 'post',
+            'files' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity'        => 'dispute',
+                'amount'        => 1000000,
+                'currency'      => 'INR',
+                'reason_code'   => 'SOMETHING_BAD',
+                'status'        => 'under_review',
+                'phase'         => 'chargeback',
+                'files'         => [],
+            ],
+        ],
+    ],
+
     'testEditDisputeMerchantAcceptDispute' => [
         'request' => [
             'content' => [
