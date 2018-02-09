@@ -5,6 +5,7 @@ namespace RZP\Gateway\Upi\Icici\Mock;
 use Carbon\Carbon;
 use RZP\Gateway\Base;
 use RZP\Models\Payment;
+use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Base\PublicCollection;
 
@@ -17,6 +18,12 @@ class PaymentReconciliator extends Base\Mock\PaymentReconciliator
      * @var string
      */
     protected $fileToWriteName = 'MIS_REPORT';
+
+    /**
+     * The name of the sheet to be processed is Refund MIS
+     * @var string
+     */
+    protected $sheetName = 'Recon MIS';
 
     /**
      * The parent class's method gets only successful payments,

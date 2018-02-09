@@ -348,6 +348,10 @@ class Gateway extends Base\Gateway
             RequestFields::UCAF                => '',
         ];
 
+        if ($input['payment']['merchant_id'] === '6ZJzxyLFWrGs74')
+        {
+            $content[RequestFields::TRANSACTION_AMOUNT] = $this->getFormattedAmount($input['payment']['amount']);
+        }
         return $content;
     }
 
