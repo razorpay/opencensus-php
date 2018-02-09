@@ -107,7 +107,7 @@ return [
                 "current_level"     => 2,
                 "checkers"          => [
                     [
-                        "admin_id"      => "admin_" . \RZP\Tests\Functional\Fixtures\Entity\Org::SUPER_ADMIN,
+                        "admin_id"      => "admin_" . \RZP\Tests\Functional\Fixtures\Entity\Org::CHECKER_ADMIN,
                         "approved"      => true,
                         "admin"         => [],
                     ]
@@ -176,7 +176,7 @@ return [
                 "checkers"      => [
                     [
                         "approved"  => false,
-                        "admin_id"  => 'admin_' . \RZP\Tests\Functional\Fixtures\Entity\Org::SUPER_ADMIN,
+                        "admin_id"  => 'admin_' . \RZP\Tests\Functional\Fixtures\Entity\Org::CHECKER_ADMIN,
                     ]
                 ]
             ],
@@ -196,7 +196,7 @@ return [
                 'checkers'  => [
                     [
                         'approved' => true,
-                        'admin_id' => 'admin_' . \RZP\Tests\Functional\Fixtures\Entity\Org::SUPER_ADMIN,
+                        'admin_id' => 'admin_' . \RZP\Tests\Functional\Fixtures\Entity\Org::CHECKER_ADMIN,
                     ],
                     [
                         'approved'  => true,

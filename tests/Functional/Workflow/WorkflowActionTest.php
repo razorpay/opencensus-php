@@ -172,9 +172,9 @@ class WorkflowActionTest extends TestCase
     {
         $defaultWorkflowActionId = 'w_action_' . WorkflowAction::DEFAULT_WORKFLOW_ACTION_ID;
 
-        $this->setDefaultActionIdInUrl(Org::DEFAULT_ADMIN_TOKEN);
+        $this->setDefaultActionIdInUrl(Org::CHECKER_ADMIN_TOKEN);
 
-        $this->testData[__FUNCTION__]['response']['content']['checkers'][0]['admin_id'] = Org::SUPER_ADMIN_SIGNED;
+        $this->testData[__FUNCTION__]['response']['content']['checkers'][0]['admin_id'] = Org::CHECKER_ADMIN_SIGNED;
 
         $this->testData[__FUNCTION__]['response']['content']['checkers'][0]['action_id'] = $defaultWorkflowActionId;
 
@@ -227,10 +227,12 @@ class WorkflowActionTest extends TestCase
     public function testWorkflowActionRejection()
     {
         // This will create a wf action in Mysql and ES, not using default workflow.
-        $workflow = $this->editAdmin('org_' . Org::RZP_ORG, Org::CHECKER_ADMIN_SIGNED);
+        $workflow = $this->editAdmin('org_' . Org::RZP_ORG, Org::SUPER_ADMIN_SIGNED);
 
         //ES is not so Real Time, so need to refresh manually.
         $this->esClient->indices()->refresh();
+
+        $this->ba->adminAuth('test', Org::CHECKER_ADMIN_TOKEN, Org::RZP_ORG_SIGNED);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
@@ -244,7 +246,7 @@ class WorkflowActionTest extends TestCase
     public function testWorkflowActionExecuteLastApproval()
     {
         // This will create a wf action in Mysql and ES, not using default workflow.
-        $workflow = $this->editAdmin(Org::RZP_ORG_SIGNED, Org::CHECKER_ADMIN_SIGNED);
+        $workflow = $this->editAdmin(Org::RZP_ORG_SIGNED, Org::SUPER_ADMIN_SIGNED);
 
         //ES is not so Real Time, so need to refresh manually.
         $this->esClient->indices()->refresh();
