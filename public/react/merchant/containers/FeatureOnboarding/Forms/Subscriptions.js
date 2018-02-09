@@ -4,7 +4,7 @@ import InputField from 'rzp/ui/Forms/InputField';
 import AutoResizeTextarea from 'rzp/ui/Forms/AutoResizeTextarea';
 import CheckboxField from 'rzp/ui/Forms/CheckboxField';
 import { required } from 'rzp/utils/validators';
-import { url } from 'rzp/utils/validators';
+import { url, lenientUrl } from 'rzp/utils/validators';
 
 const isWebsiteLengthValid = websiteDetail => {
   websiteDetail = websiteDetail || '';
@@ -77,7 +77,7 @@ export default class SubscriptionForm extends Component {
               component={InputField}
               class="form-control"
               placeholder="http://example.com/pricing"
-              validate={[isWebsiteLengthValid, url('Invalid url')]}
+              validate={[isWebsiteLengthValid, lenientUrl('Invalid url')]}
             />
           </div>
         )}

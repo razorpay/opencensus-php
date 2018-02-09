@@ -1,6 +1,6 @@
 import Entity from './Entity';
 import ajax from 'merchant/utils/ajax';
-import { normalizeBoolean, isBlank, arrayDiff } from 'rzp/utils/rzp-utils';
+import { normalizeBoolean, isBlank, arrayDiff, autoPrefixUrls } from 'rzp/utils/rzp-utils';
 
 // Used for Activation
 const activationStepMap = {
@@ -120,21 +120,6 @@ const getFileDetails = data => {
     }
   }
   return fileDetails;
-};
-
-const autoPrefixUrls = url => {
-  const regex = /^https?:\/\//i;
-  let tempUrl;
-  if (!url || url.length === 0) {
-    return url;
-  }
-
-  tempUrl = url.toLowerCase();
-
-  if (!regex.test(tempUrl)) {
-    tempUrl = 'http://' + tempUrl;
-  }
-  return tempUrl;
 };
 
 export default class Activation extends Entity {

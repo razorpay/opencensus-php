@@ -3,10 +3,11 @@ import { connect } from 'react-redux';
 import { Field, formValueSelector, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import { Link, withRouter } from 'react-router-dom';
-import { required, isUrl } from 'rzp/utils/validators';
+import { required, lenientUrl } from 'rzp/utils/validators';
 import InputField from 'rzp/ui/Forms/InputField';
 import TaggedInput from 'rzp/ui/Forms/TaggedInput';
 import Fieldset from 'rzp/ui/Forms/Fieldset';
+import { autoPrefixUrls } from 'rzp/utils/rzp-utils';
 import * as NotificationActions from 'rzp/modules/notifications';
 import * as ApplicationActions from 'merchant/modules/applications';
 
@@ -94,6 +95,11 @@ class NewApplicationForm extends Component {
 
   // save handler
   create = props => {
+
+    if(props.website) {
+      props.website = autoPrefixUrls(props.website);
+    }
+
     return this.props
       .createApplication(props, 'logo')
       .then(application => {
@@ -114,6 +120,19 @@ class NewApplicationForm extends Component {
   };
 
   update = props => {
+
+    if(props.website) {
+      props.website = autoPrefixUrls(props.website);
+    }
+
+    if(props.client_details.dev.redirect_url) {
+      props.client_details.dev.redirect_url = autoPrefixUrls(props.client_details.dev.redirect_url);
+    }
+
+    if(props.client_details.prod.redirect_url) {
+      props.props.client_details.prod.redirect_url = autoPrefixUrls(props.client_details.prod.redirect_url);
+    }
+
     const payload = {
       name: props.name,
       website: props.website,
@@ -193,7 +212,7 @@ class NewApplicationForm extends Component {
                   component={InputField}
                   class="form-control"
                   placeholder="http://test-app.com/"
-                  validate={[required()]}
+                  validate={[required(), lenientUrl('Please enter a valid URL')]}
                 />
               </div>
             </div>
@@ -279,7 +298,7 @@ class NewApplicationForm extends Component {
                       component={TaggedInput}
                       class="form-control tagged-input"
                       placeholder="http://test-app.com/"
-                      validator={isUrl}
+                      validator={[lenientUrl('Please enter a valid URL')]}
                     />
                   </div>
                   <div class="clearfix" />
@@ -333,7 +352,7 @@ class NewApplicationForm extends Component {
                       component={TaggedInput}
                       class="form-control tagged-input"
                       placeholder="http://test-app.com/"
-                      validator={isUrl}
+                      validator={[lenientUrl('Please enter a valid URL')]}
                     />
                   </div>
                   <div class="clearfix" />
