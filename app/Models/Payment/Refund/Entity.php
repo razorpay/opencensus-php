@@ -364,6 +364,7 @@ class Entity extends Base\PublicEntity
         // 'Mr Button', 'Zefo', 'Zefo',
         // 'Goomo', 'Goomo', 'IRCTC Services'
         // 'Irctc Web', 'IRCTC Mob', 'IRCTC ecatering'
+        // 'epaylater', 'Udacity'
         //
 
         $merchantIds = [
@@ -375,6 +376,7 @@ class Entity extends Base\PublicEntity
             '5PKFA3s9dpIwPn', '6RGC8wjp5U2K2e', '3fiAig3CaxCxM3',
             '8STmhcK1Gd1JVo', '7kBHljwok8Fsom', '8byazTDARv4Io0',
             '8ST00QgEPT14cE', '8YPFnW5UOM91H7', '90xVmQJTCEJ6GH',
+            '6uli25q6xe9PPv', '4sW8jQ22JR4Bfi'
         ];
 
         $currentMerchantId = $this->getMerchantId();
