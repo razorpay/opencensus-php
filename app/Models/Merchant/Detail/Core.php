@@ -45,6 +45,8 @@ class Core extends Base\Core
 
         return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantDetails, $merchant)
         {
+            $this->checkAndMarkHasKeyAccess($merchantDetails);
+
             $this->repo->saveOrFail($merchantDetails);
 
             $response = $this->createResponse($merchantDetails);
@@ -258,6 +260,24 @@ class Core extends Base\Core
         return (($response['can_submit'] === true) and
                 (isset($input[Entity::SUBMIT]) === true) and
                 ($input[Entity::SUBMIT] === '1'));
+    }
+
+    /**
+     * This function checks and save has_key_access if merchant has submitted
+     * wesbite details
+     *
+     * @param Entity $merchantDetails
+     */
+    protected function checkAndMarkHasKeyAccess(Entity $merchantDetails)
+    {
+        if (empty($merchantDetails->getWebsite()) === true)
+        {
+            return;
+        }
+
+        $merchantDetails->setHasKeyAccess(true);
+
+        $this->repo->saveOrFail($merchantDetails);
     }
 
     protected function markSubmitted(Entity $merchantDetails)
