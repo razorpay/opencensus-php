@@ -68,6 +68,16 @@ class Entity extends BaseModel\PublicEntity
         }
     }
 
+    public function setPublicExecutorIdAttribute(array &$attributes)
+    {
+        $adminId = $this->getAttribute(Action\Entity::EXECUTOR_ID);
+
+        if ($adminId !== null)
+        {
+            $attributes[Action\Entity::EXECUTOR_ID] = Admin\Entity::getSignedId($adminId);
+        }
+    }
+
     public function setPublicActionIdAttribute(array &$attributes)
     {
         $actionId = $this->getAttribute(Comment\Entity::ACTION_ID);

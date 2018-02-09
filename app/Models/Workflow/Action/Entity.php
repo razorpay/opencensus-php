@@ -9,23 +9,26 @@ use RZP\Models\Workflow\Base;
 
 class Entity extends Base\Entity
 {
-    const ID             = 'id';
-    const ENTITY_ID      = 'entity_id';
-    const ENTITY_NAME    = 'entity_name';
-    const TITLE          = 'title';
-    const DESCRIPTION    = 'description';
-    const WORKFLOW_ID    = 'workflow_id';
-    const PERMISSION_ID  = 'permission_id';
-    const ADMIN_ID       = 'admin_id';
-    const ORG_ID         = 'org_id';
-    const APPROVED       = 'approved';
-    const STATE          = 'state';
-    const CURRENT_LEVEL  = 'current_level';
-    const DIFFER         = 'differ';
+    const ID               = 'id';
+    const ENTITY_ID        = 'entity_id';
+    const ENTITY_NAME      = 'entity_name';
+    const TITLE            = 'title';
+    const DESCRIPTION      = 'description';
+    const WORKFLOW_ID      = 'workflow_id';
+    const PERMISSION_ID    = 'permission_id';
+    const ADMIN_ID         = 'admin_id';
+    const EXECUTOR_ID      = 'executor_id';
+    const EXECUTOR_ROLE_ID = 'executor_role_id';
+    const ORG_ID           = 'org_id';
+    const APPROVED         = 'approved';
+    const STATE            = 'state';
+    const CURRENT_LEVEL    = 'current_level';
+    const DIFFER           = 'differ';
 
     // Relations
     const WORKFLOW       = 'workflow';
     const ADMIN          = 'admin';
+    const EXECUTOR       = 'executor';
     const PERMISSION     = 'permission';
     const ACTION_ID      = 'action_id';
 
@@ -50,6 +53,8 @@ class Entity extends Base\Entity
         self::WORKFLOW_ID,
         self::PERMISSION_ID,
         self::STATE,
+        self::EXECUTOR_ID,
+        self::EXECUTOR_ROLE_ID
     ];
 
     protected $visible = [
@@ -65,6 +70,7 @@ class Entity extends Base\Entity
         self::STATE,
         self::ADMIN_ID,
         self::ADMIN,
+        self::EXECUTOR,
         self::ORG_ID,
         self::APPROVED,
         self::CURRENT_LEVEL,
@@ -72,6 +78,8 @@ class Entity extends Base\Entity
         self::UPDATED_AT,
         self::PERMISSION_NAME,
         self::PERMISSION_DESCRIPTION,
+        self::EXECUTOR_ID,
+        self::EXECUTOR_ROLE_ID
     ];
 
     protected $publicSetters = [
@@ -79,6 +87,7 @@ class Entity extends Base\Entity
         self::WORKFLOW_ID,
         self::PERMISSION_ID,
         self::ADMIN_ID,
+        self::EXECUTOR_ID,
         self::ORG_ID,
     ];
 
@@ -95,6 +104,7 @@ class Entity extends Base\Entity
         self::STATE,
         self::ADMIN_ID,
         self::ADMIN,
+        self::EXECUTOR,
         self::ORG_ID,
         self::APPROVED,
         self::CURRENT_LEVEL,
@@ -102,6 +112,8 @@ class Entity extends Base\Entity
         self::UPDATED_AT,
         self::PERMISSION_NAME,
         self::PERMISSION_DESCRIPTION,
+        self::EXECUTOR_ID,
+        self::EXECUTOR_ROLE_ID
     ];
 
     protected $defaults = [
@@ -133,6 +145,16 @@ class Entity extends Base\Entity
     public function admin()
     {
         return $this->belongsTo('RZP\Models\Admin\Admin\Entity');
+    }
+
+    public function executor()
+    {
+        return $this->belongsTo('RZP\Models\Admin\Admin\Entity');
+    }
+
+    public function executorRole()
+    {
+        return $this->belongsTo('RZP\Models\Admin\Role\Entity');
     }
 
     public function setCurrentLevel(int $level)

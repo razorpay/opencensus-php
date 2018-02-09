@@ -41,6 +41,25 @@ class Core extends Base\Core
 
         $workflowId = $action->workflow->getId();
 
+        // In case its a superadmin, just execute the workflow
+        if ($admin->isSuperAdmin() === true) {
+
+            $this->repo->transactionOnLiveAndTest(function() use ($action, $admin, $input)
+            {
+                // State change if checker rejected
+                if ($input[Entity::APPROVED] == 1)
+                {
+                    $this->applyActionRejectionStateChanges($action, $admin);
+
+                    (new Action\Core)->approveActionForcefully($action, $admin);
+
+                    (new Action\Service)->executeAction($action->getPublicId(), $admin->getSuperAdminRole());
+                }
+            });
+
+            return null;
+        }
+
         // In future if an admin can have multiple roles
         // we could get more than 1 step in this call.
         $steps = $this->repo->workflow_step
@@ -115,7 +134,7 @@ class Core extends Base\Core
             // State change if checker rejected
             if ($checker->isApproved() === false)
             {
-                $this->applyActionRejectionStateChanges($action, $checker, $admin);
+                $this->applyActionRejectionStateChanges($action, $admin);
             }
             else
             {
@@ -135,7 +154,7 @@ class Core extends Base\Core
         // Currently we can execute from both route and here, will remove route eventually.
         if ($action->getApproved() === true)
         {
-            (new Action\Service)->executeAction($action->getPublicId());
+            (new Action\Service)->executeAction($action->getPublicId(), $step->role);
         }
 
         return $checker;
@@ -144,7 +163,7 @@ class Core extends Base\Core
     /*
         State changes on rejection
     */
-    protected function applyActionRejectionStateChanges($action, $checker, Admin $admin)
+    protected function applyActionRejectionStateChanges($action, Admin $admin)
     {
         $state = State\Name::REJECTED;
 

@@ -6,6 +6,7 @@ use App;
 use Request;
 use RZP\Models\State;
 use RZP\Models\Admin\Org;
+use RZP\Models\Admin\Role;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Permission;
 
@@ -223,8 +224,6 @@ class Core extends Base\Core
             return true;
         }
 
-        $actionId = $action->getId();
-
         $workflowId = $action->getWorkflowId();
 
         $lastLevel = $this->repo->workflow_step
@@ -239,6 +238,18 @@ class Core extends Base\Core
         {
             $this->approveAction($action, $admin);
         }
+
+        return true;
+    }
+
+    public function approveActionForcefully(Entity $action, Admin\Entity $admin)
+    {
+        if ($action->getApproved() === true)
+        {
+            return true;
+        }
+
+        $this->approveAction($action, $admin);
 
         return true;
     }
@@ -440,6 +451,17 @@ class Core extends Base\Core
         return $this->edit($action, $input);
     }
 
+    public function updateStateAndExecutor(Entity $action, string $state, Admin\Entity $admin, Role\Entity $role)
+    {
+        $input = [
+            Entity::STATE            => $state,
+            Entity::EXECUTOR_ID      => $admin->getId(),
+            Entity::EXECUTOR_ROLE_ID => $role->getId()
+        ];
+
+        return $this->edit($action, $input);
+    }
+
     public function initAuthDetails(array $authDetails)
     {
         if (empty($authDetails['merchant_id']) === false)
@@ -474,7 +496,7 @@ class Core extends Base\Core
         return $actions;
     }
 
-    public function executeAction($action, Admin\Entity $admin)
+    public function executeAction($action, Admin\Entity $admin, Role\Entity $role)
     {
         list($stateCore, $differCore) = [
             new State\Core,
@@ -522,7 +544,7 @@ class Core extends Base\Core
 
         // Update states
 
-        $this->updateState($action, $state);
+        $this->updateStateAndExecutor($action, $state, $admin, $role);
 
         $stateCore->changeActionState($action, $state, $admin);
 
