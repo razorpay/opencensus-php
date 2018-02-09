@@ -462,6 +462,37 @@ class Core extends Base\Core
     }
 
     /**
+     * This function is used for updating merchant website details
+     * @param Entity $merchantDetails
+     * @param array $input
+     *
+     * @return Entity
+     */
+    public function updateWebsiteDetails(Entity $merchantDetails, array $input): Entity
+    {
+        $merchantDetails->getValidator()->validateInput('websiteDetails', $input);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_UPDATE_WEBSITE_DETAILS,
+            ['input' => $input]);
+
+        $merchantDetails->edit($input);
+
+        $this->repo->transactionOnLiveAndTest(function() use ($merchantDetails, $input)
+        {
+            $this->repo->saveOrFail($merchantDetails);
+
+            $merchant = $merchantDetails->merchant;
+
+            $merchant->setWebsiteAttribute($input[Entity::BUSINESS_WEBSITE]);
+
+            $this->repo->saveOrFail($merchant);
+        });
+
+        return $merchantDetails;
+    }
+
+    /**
      * Checks and auto activates the merchant if possible, after form submission
      *
      * @param Entity $merchantDetails
