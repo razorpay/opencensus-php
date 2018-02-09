@@ -173,6 +173,13 @@ class ApiEventSubscriber extends Base\Core
         $this->prepareAndDispatchWebhook($payload);
     }
 
+    protected function onPaymentDisputeCreated($payment)
+    {
+        $payload = $this->getPaymentPayloadWithDispute($payment);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
     protected function onOrderPaid($payment)
     {
         $payload = $this->getOrderPayload($payment);
@@ -316,13 +323,6 @@ class ApiEventSubscriber extends Base\Core
         $this->prepareAndDispatchWebhook($payload);
     }
 
-    protected function onPaymentDisputed($payment)
-    {
-        $payload = $this->getPaymentPayloadWithDispute($payment);
-
-        $this->prepareAndDispatchWebhook($payload);
-    }
-
     protected function getP2pPayload($p2p)
     {
         $source = $p2p->source;
@@ -457,9 +457,7 @@ class ApiEventSubscriber extends Base\Core
 
     protected function getPaymentPayloadWithDispute($payment)
     {
-        $partialPayload[Constants\Entity::PAYMENT] = [
-            'entity' => $payment->toArrayPublic()
-        ];
+        $partialPayload = $this->getPaymentPayload($payment);
 
         // Add dispute entity defined in `withPayload`
         $this->addExtraDataToPayload($partialPayload);
