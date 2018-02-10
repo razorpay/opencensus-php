@@ -7,6 +7,7 @@ use RZP\Models\FileStore;
 
 class Entity extends Base\PublicEntity
 {
+    const NAME                      = 'name';
     const STATUS                    = 'status';
     const PROCESSING                = 'processing';
     const TOTAL_COUNT               = 'total_count';
@@ -43,6 +44,7 @@ class Entity extends Base\PublicEntity
      * Additional constants
      */
     const FILE                      = 'file';
+    const FILE_ID                   = 'file_id';
     const FILES                     = 'files';
     const URL                       = 'url';
     const INPUT_FILE_PREFIX         = 'batch/upload/';
@@ -67,6 +69,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $fillable = [
+        self::NAME,
         self::TYPE,
         self::GATEWAY,
         self::SUB_TYPE,
@@ -75,6 +78,7 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ID,
         self::ENTITY,
+        self::NAME,
         self::TYPE,
         self::STATUS,
         self::TOTAL_COUNT,
@@ -99,6 +103,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY             => null,
         self::FAILURE_REASON      => null,
         self::SUB_TYPE            => null,
+        self::NAME                => null,
         self::COMMENT             => null,
         self::PROCESSED_AT        => null,
     ];
@@ -216,6 +221,11 @@ class Entity extends Base\PublicEntity
     }
 
     // ----------------------- Getters -------------------------------
+
+    public function getName()
+    {
+        return $this->getAttribute(self::NAME);
+    }
 
     public function getAmount()
     {
@@ -350,6 +360,10 @@ class Entity extends Base\PublicEntity
     // ----------------------- End  Getters --------------------------
 
     // ----------------------- Setters -------------------------------
+    public function setName($name)
+    {
+        $this->setAttribute(self::NAME, $name);
+    }
 
     public function setSuccessCount($count)
     {
