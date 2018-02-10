@@ -16,7 +16,6 @@ export default class MerchantStats extends Component {
   };
 
   updateDates = (name, val) => {
-    console.log('CHECK..', val);
     this.model.getData()[name] = val.unix();
   };
 

@@ -76,9 +76,9 @@ export const DateField = ({
   </div>
 );
 
-export const FromField = _ => <DateField name="from" label="From" {..._} />;
+export const FromField = _ => <DateField name="from" label="From" postSelectionValue={val => val.startOf('day')} {..._} />;
 
-export const ToField = _ => <DateField name="to" label="To" {..._} />;
+export const ToField = _ => <DateField name="to" label="To" postSelectionValue={val => val.endOf('day')} {..._} />;
 
 export function RadioField({ label, value, defaultValue, ...props }) {
   return (

@@ -35,8 +35,16 @@ export default class CalendarPicker extends Component {
     return format;
   }
 
+  // value is moment object
   onChange = value => {
+    // Custom function to execute component specific functionality.
     this.props.onDayChange && this.props.onDayChange(value);
+
+    // To modify the selected date from calendar, eg. endOf or startOf
+    if(this.props.postSelectionValue) {
+      value = this.props.postSelectionValue(value);
+    }
+
     this.setState({
       value,
     });
@@ -52,7 +60,7 @@ export default class CalendarPicker extends Component {
         <MonthCalendar
           locale={enUS}
           style={{ zIndex: 1000 }}
-          disabledDate={disabledDate}
+          disabledDate={this.props.disabledDate || disabledDate}
         />
       );
     } else {
@@ -66,7 +74,7 @@ export default class CalendarPicker extends Component {
           showDateInput={true}
           showToday={false}
           showClear={true}
-          disabledDate={disabledDate}
+          disabledDate={this.props.disabledDate || disabledDate}
         />
       );
     }

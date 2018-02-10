@@ -64,7 +64,6 @@ export default function GenerateRefundsExcel() {
             method: 'netbanking',
           };
           if (data.to && data.from) {
-            // body.to = moment(data.to).unix();
             body.to = new Date(moment(data.to, 'DD-MM-YYYY')).getTime() / 1000;
             body.from =
               new Date(moment(data.from, 'DD-MM-YYYY')).getTime() / 1000;
