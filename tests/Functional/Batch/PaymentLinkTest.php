@@ -178,6 +178,25 @@ class PaymentLinkTest extends TestCase
         $this->assertEquals('/app/storage/files/filestore/' . $file['location'], $response['signed_url']);
     }
 
+    public function testBatchCreateForUploadedFile()
+    {
+        $entries = $this->getDefaultPaymentLinkFileEntries();
+
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+
+        $responseFileUpload = $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+
+        $testdata = $this->testData[__FUNCTION__ . 'AfterFileUpload'];
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        $testdata['request']['content']['file_id'] = $responseFileUpload['file_id'];
+
+        $response = $this->runRequestResponseFlow($testdata);
+
+        $this->assertArraySelectiveEquals($testdata['response']['content'], $response);
+    }
+
     protected function getDefaultPaymentLinkFileEntries()
     {
         return [

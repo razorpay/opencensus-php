@@ -187,4 +187,84 @@ return [
             ],
         ],
     ],
+
+    'testBatchCreateForUploadedFile'    => [
+        'request' => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type' => 'payment_link',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'processable_count'         => 3,
+                'error_count'               => 0,
+                'parsed_entries'            => [
+                    [
+                        Header::INVOICE_NUMBER   => '#1',
+                        Header::CUSTOMER_NAME    => 'test',
+                        Header::CUSTOMER_EMAIL   => 'test@test.test',
+                        Header::CUSTOMER_CONTACT => '9999998888',
+                        Header::AMOUNT           => 100,
+                        Header::DESCRIPTION      => 'test payment link',
+                        Header::EXPIRE_BY        => null,
+                        Header::PARTIAL_PAYMENT  => null,
+                        Header::ERROR_CODE       => null,
+                        Header::ERROR_DESCRIPTION=> null,
+                    ],
+                    [
+                        Header::INVOICE_NUMBER   => '#1',
+                        Header::CUSTOMER_NAME    => 'test 2',
+                        Header::CUSTOMER_EMAIL   => 'test-2@test.test',
+                        Header::CUSTOMER_CONTACT => '9999997777',
+                        Header::AMOUNT           => 100,
+                        Header::DESCRIPTION      => 'test payment link - 2',
+                        Header::EXPIRE_BY        => null,
+                        Header::PARTIAL_PAYMENT  => 0,
+                        Header::ERROR_CODE       => null,
+                        Header::ERROR_DESCRIPTION=> null,
+                    ],
+                    [
+                        Header::INVOICE_NUMBER   => '#3',
+                        Header::CUSTOMER_NAME    => 'test 3',
+                        Header::CUSTOMER_EMAIL   => 'test-3@test.test',
+                        Header::CUSTOMER_CONTACT => '9999996666',
+                        Header::AMOUNT           => 100,
+                        Header::DESCRIPTION      => 'test payment link - 3',
+                        Header::EXPIRE_BY        => null,
+                        Header::PARTIAL_PAYMENT  => null,
+                        Header::ERROR_CODE       => null,
+                        Header::ERROR_DESCRIPTION=> null,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testBatchCreateForUploadedFileAfterFileUpload'    => [
+        'request' => [
+            'url'     => '/batches',
+            'method'  => 'post',
+            'content' => [
+                'type' => 'payment_link',
+                'name' => 'My batch entity',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'           => 'batch',
+                'name'             => 'My batch entity',
+                'type'             => 'payment_link',
+                'status'           => 'created',
+                'total_count'      => 3,
+                'success_count'    => 0,
+                'failure_count'    => 0,
+                'attempts'         => 0,
+                'amount'           => null,
+                'processed_amount' => 0,
+                'processed_at'     => null,
+            ],
+        ],
+    ],
 ];
