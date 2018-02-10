@@ -51,6 +51,12 @@ class Base extends BaseModel\Core
     protected $batch;
 
     /**
+     * The accessor used for fetching file from id
+     * @var FileStore\Accessor
+     */
+    protected $accessor;
+
+    /**
      * The merchant instance
      *
      * @var Merchant\Entity
@@ -86,6 +92,7 @@ class Base extends BaseModel\Core
         $this->mutex            = $this->app['api.mutex'];
         $this->batch            = $batch;
         $this->merchant         = $batch->merchant;
+        $this->accessor         = new FileStore\Accessor;
         $this->settingsAccessor = Settings\Accessor::for($this->batch, Settings\Module::BATCH);
     }
 
@@ -118,7 +125,6 @@ class Base extends BaseModel\Core
         // happens and then we create the batch entity and associated above
         // created file store entity with this batch and save both of them.
         //
-
         $ufhFile = $this->getStoredInputFileAndValidateBatchEntries($input, $this->batch);
 
         $this->repo->transaction(function () use ($ufhFile, $input)
@@ -129,22 +135,22 @@ class Base extends BaseModel\Core
         });
     }
 
-    public function getStoredInputFileAndValidateBatchEntries(array $input, Batch\Entity $batch = null, array & $entries = [])
+    public function getStoredInputFileAndValidateBatchEntries(array $input,
+                                                              Batch\Entity $batch = null,
+                                                              array & $entries = [])
     {
-        $inputFile = $input[Batch\Entity::FILE];
+        $ufhFile = $this->getStoredInputFileAndUpdateFileLocalPath($input);
 
-        $ufh = $this->saveInputFile($inputFile);
+        $entries = $this->validateInputFileAndUpdateBatch($this->inputFileLocalPath, $input);
 
-        $ufhFile = $ufh->getFileInstance();
+        $ufhFile->entity()->dissociate();
 
-        $this->inputFileLocalPath = $ufhFile->getFullFilePath();
-
-        $entries = $this->validateInputFileAndUpdateBatch($ufh->getFullFilePath(), $input);
-
-        if ($batch != null){
+        if ($batch !== null){
             
-            $ufhFile->entity()->associate(batch);
+            $ufhFile->entity()->associate($batch);
         }
+
+        // TODO : BUGFIX :: For dissociated case, while saving, the entity_id and type is getting saved
 
         $this->repo->transaction(function () use ($ufhFile) {
 
@@ -168,6 +174,30 @@ class Base extends BaseModel\Core
         ];
 
         return $response;
+    }
+
+    protected function getStoredInputFileAndUpdateFileLocalPath(array $input): FileStore\Entity
+    {
+        if (isset($input[Batch\Entity::FILE_ID]) === true)
+        {
+            $inputFileId = $input[Batch\Entity::FILE_ID];
+
+            $this->inputFileLocalPath = $this->accessor->id($inputFileId)
+                                                        ->merchantId($this->merchant->getId())
+                                                        ->getFile();
+
+            return  $this->accessor->get();
+        }
+
+        $inputFile = $input[Batch\Entity::FILE];
+
+        $ufh = $this->saveInputFile($inputFile);
+
+        $ufhFile = $ufh->getFileInstance();
+
+        $this->inputFileLocalPath = $ufhFile->getFullFilePath();
+
+        return $ufhFile;
     }
 
     protected function saveSettings(array $input)
@@ -605,11 +635,28 @@ class Base extends BaseModel\Core
     {
         $entries = $this->parseFile($filePath);
 
+        $this->processEntriesForErrorFile($entries);
+
         $this->validateEntries($entries, $input);
 
         $this->fillBatchEntityWithInputFileDetails($entries);
 
         return $entries;
+    }
+
+    protected function processEntriesForErrorFile(array & $entries)
+    {
+        $entries = array_map(function ($entry) {
+
+            if (array_key_exists(Batch\Header::ERROR_CODE, $entry)){
+
+                unset($entry[Batch\Header::ERROR_CODE]);
+                unset($entry[Batch\Header::ERROR_DESCRIPTION]);
+            }
+
+            return $entry;
+
+        }, $entries);
     }
 
     /**
