@@ -2,10 +2,27 @@
 
 namespace RZP\Models\Feature;
 
+use App;
 use ApiResponse;
+use Illuminate\Foundation\Application;
 
 class Access
 {
+    /**
+     * The application instance.
+     *
+     * @var Application
+     */
+    protected $app;
+
+    protected $merchant;
+
+    public function __construct()
+    {
+        $this->app = App::getFacadeRoot();
+
+        $this->merchant = $this->app['basicauth']->getMerchant();
+    }
 
     /**
      * Checks if the accessed route is a feature route, if yes
@@ -17,7 +34,7 @@ class Access
      */
     public function verifyFeatureAccessByApplication($authReturn)
     {
-        $routeFeatures = $this->getCurrentRouteFeatures();
+        $routeFeatures = $this->app['basicauth']->getCurrentRouteFeatures();
 
         if (empty($routeFeatures) === true)
         {
@@ -47,7 +64,7 @@ class Access
      */
     public function verifyFeatureAccessByMerchant()
     {
-        $routeFeatures = $this->getCurrentRouteFeatures();
+        $routeFeatures = $this->app['basicauth']->getCurrentRouteFeatures();
 
         if (empty($routeFeatures) === true)
         {
@@ -66,21 +83,6 @@ class Access
         }
 
         return ApiResponse::routeNotFound();
-    }
-
-    protected function getCurrentRouteFeatures()
-    {
-        $currentRoute = $this->route->getCurrentRouteName();
-
-        //
-        // A route can belong to multiple features
-        // This fetches an array of all features mapped to the route
-        //
-        // TODO: Fix this! BA calls Route and Route calls BA. Not a good design.
-        //
-        $routeFeatures = Route::getFeaturesForRoute($currentRoute);
-
-        return $routeFeatures;
     }
 
     protected function getRouteFeaturesAvailableWithMerc(array $routeFeatures)

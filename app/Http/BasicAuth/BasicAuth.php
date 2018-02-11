@@ -1535,4 +1535,19 @@ class BasicAuth
             $this->setUser($user);
         }
     }
+
+    public function getCurrentRouteFeatures()
+    {
+        $currentRoute = $this->route->getCurrentRouteName();
+
+        //
+        // A route can belong to multiple features
+        // This fetches an array of all features mapped to the route
+        //
+        // TODO: Fix this! BA calls Route and Route calls BA. Not a good design.
+        //
+        $routeFeatures = Route::getFeaturesForRoute($currentRoute);
+
+        return $routeFeatures;
+    }
 }
