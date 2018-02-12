@@ -125,11 +125,11 @@ class BankTransferTest extends TestCase
             'method'  => 'PATCH',
             'url'     => '/fund_transfer_attempts',
             'content' => [
-                'ids' => [
-                    $attempt['id']
-                ],
-                'status' => 'failed',
-                'remarks' => 'failed with reason'
+                $attempt['id'] => [
+                    'status'  => 'failed',
+                    'remarks' => 'failed with reason',
+                    'bank_status_code' => 'blahbal',
+                ]
             ],
         ];
 

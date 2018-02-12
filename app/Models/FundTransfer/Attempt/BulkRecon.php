@@ -245,6 +245,7 @@ class BulkRecon extends Base\Core
         $failureCount = count($failureEntityIds);
 
         $summary = [
+            'channel'                       => $this->channel,
             'total_count'                   => count($allEntityIds),
             'failures_count'                => $failureCount,
             'settlement_failure_amount'     => 0,
