@@ -3,6 +3,8 @@ import { titleCase } from 'rzp/utils/rzp-utils';
 import DetailRow from '../DetailRow';
 import CheckIcon from 'rzp/ui/CheckIcon';
 
+import { ActivationStatusLabel } from 'merchant/components/StatusLabel';
+
 export default ({ user }) => {
   return (
     <div class="list-group details-row-container">
@@ -20,11 +22,12 @@ export default ({ user }) => {
 
       <DetailRow
         label="Activation Status"
-        value={() => (
-          <span data-tip={user.isActivated ? 'Activated' : 'Not Activated'}>
-            <CheckIcon value={user.activated} />
-          </span>
-        )}
+        value={() =>
+          user.activation_status ? (
+            <ActivationStatusLabel status={user.activation_status} />
+          ) : (
+            '--'
+          )}
       />
 
       <DetailRow

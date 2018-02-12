@@ -3,7 +3,7 @@ import { Field } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import InputField from 'rzp/ui/Forms/InputField';
 import Fieldset from 'rzp/ui/Forms/Fieldset';
-import { required } from 'rzp/utils/validators';
+import { required, lenientUrl } from 'rzp/utils/validators';
 
 export default class WebsiteDetailsForm extends Component {
   render() {
@@ -29,7 +29,7 @@ export default class WebsiteDetailsForm extends Component {
                 component={InputField}
                 class="form-control"
                 autoFocus={true}
-                validate={[required()]}
+                validate={[required(), lenientUrl('Please enter a valid URL')]}
               />
             </div>
           </div>
@@ -47,7 +47,7 @@ export default class WebsiteDetailsForm extends Component {
                 name="website_about"
                 component={InputField}
                 class="form-control"
-                validate={[required()]}
+                validate={[required(), lenientUrl('Please enter a valid URL')]}
               />
             </div>
           </div>
@@ -65,7 +65,7 @@ export default class WebsiteDetailsForm extends Component {
                 name="website_contact"
                 component={InputField}
                 class="form-control"
-                validate={[required()]}
+                validate={[required(), lenientUrl('Please enter a valid URL')]}
               />
             </div>
           </div>
@@ -91,7 +91,7 @@ export default class WebsiteDetailsForm extends Component {
                 name="website_privacy"
                 component={InputField}
                 class="form-control"
-                validate={[required()]}
+                validate={[required(), lenientUrl('Please enter a valid URL')]}
               />
             </div>
           </div>
@@ -117,7 +117,7 @@ export default class WebsiteDetailsForm extends Component {
                 name="website_terms"
                 component={InputField}
                 class="form-control"
-                validate={[required()]}
+                validate={[required(), lenientUrl('Please enter a valid URL')]}
               />
             </div>
           </div>
@@ -143,7 +143,7 @@ export default class WebsiteDetailsForm extends Component {
                 name="website_refund"
                 component={InputField}
                 class="form-control"
-                validate={[required()]}
+                validate={[required(), lenientUrl('Please enter a valid URL')]}
               />
             </div>
           </div>
@@ -171,7 +171,7 @@ export default class WebsiteDetailsForm extends Component {
                 name="website_pricing"
                 component={InputField}
                 class="form-control"
-                validate={[required()]}
+                validate={[required(), lenientUrl('Please enter a valid URL')]}
               />
             </div>
           </div>
