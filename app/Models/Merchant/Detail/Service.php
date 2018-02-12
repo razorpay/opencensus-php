@@ -311,6 +311,24 @@ class Service extends Base\Service
         return $merchantDetails->toArrayPublic();
     }
 
+    /**
+     * This function is used for updating key access of a merchant
+     * @param string $merchantId
+     * @param array $input
+     *
+     * @return array
+     */
+    public function updateKeyAccess(string $merchantId, array $input): array
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        $merchantDetails = (new Core)->updateKeyAccess($merchantDetails, $input);
+
+        return $merchantDetails->toArrayPublic();
+    }
+
     public function getRejectionReasons()
     {
         return RejectionReasons::REJECTION_REASONS_MAPPING;

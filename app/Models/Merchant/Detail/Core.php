@@ -270,7 +270,8 @@ class Core extends Base\Core
      */
     protected function checkAndMarkHasKeyAccess(Entity $merchantDetails)
     {
-        if (empty($merchantDetails->getWebsite()) === true)
+        if (($merchantDetails->getWebsite() === null) or
+            ($merchantDetails->getHasKeyAccess() === true))
         {
             return;
         }
@@ -488,6 +489,32 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($merchant);
         });
+
+        return $merchantDetails;
+    }
+
+    /**
+     * This function is used for updating key access of a merchant
+     * @param Entity $merchantDetails
+     * @param array $input
+     *
+     * @return Entity
+     */
+    public function updateKeyAccess(Entity $merchantDetails, array $input): Entity
+    {
+        $merchantDetails->getValidator()->validateInput('keyAccess', $input);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_UPDATE_KEY_ACCESS,
+            ['input' => $input]);
+
+        $oldMerchantDetails = clone $merchantDetails;
+
+        $merchantDetails->setHasKeyAccess($input[Entity::HAS_KEY_ACCESS]);
+
+        $this->app['workflow']->handle($oldMerchantDetails, $merchantDetails);
+
+        $this->repo->saveOrFail($merchantDetails);
 
         return $merchantDetails;
     }

@@ -332,6 +332,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BUSINESS_WEBSITE);
     }
 
+    public function getHasKeyAccess()
+    {
+        return ($this->getAttribute(self::HAS_KEY_ACCESS) === true);
+    }
+
     public function setHasKeyAccess(bool $hasKeyAccess)
     {
         $this->setAttribute(self::HAS_KEY_ACCESS, $hasKeyAccess);
