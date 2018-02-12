@@ -145,7 +145,8 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
         self::RESOLVED_AT,
         self::RAISED_ON,
-        self::EXPIRES_ON
+        self::EXPIRES_ON,
+        self::RESPOND_BY,
     ];
 
     protected $defaults = [
@@ -206,7 +207,7 @@ class Entity extends Base\PublicEntity
 
     public function setPublicRespondByAttribute(array & $attributes)
     {
-        $attributes[self::RESPOND_BY] = $this->getExpiresOn();
+        $attributes[self::RESPOND_BY] = (int) $this->getExpiresOn();
     }
 
     public function setPublicReasonDescriptionAttribute(array & $attributes)

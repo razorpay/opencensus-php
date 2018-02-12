@@ -10,7 +10,7 @@
         $brand_color = '#6A75ED';
         $brand_text_color = '#FFFFFF';
 
-        $expiryDate = date('jS F Y', $dispute['expires_on']);
+        $expiryDate = date('jS F Y', $dispute['respond_by']);
 
         $amount = sprintf('%0.2f', ($dispute['amount'] / 100));
         $amount = floatval($amount);
@@ -25,7 +25,7 @@
         }
 
     @endphp
-  
+
   </p>
     <center style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121; width: 100%; min-width: 580px; background-color: #fafafa;">
 
@@ -113,6 +113,6 @@
             </tr>
 </tbody></table>
 </center>
-  
+
 </body>
 </html>

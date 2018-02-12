@@ -593,7 +593,7 @@ class DisputeTest extends TestCase
     {
         $this->ba->privateAuth();
 
-        $testData = $this->updateDetailsFetchTestData();
+        $testData = $this->updateDetailsFetchTestData(['expires_on' => 12345678]);
 
         $this->startTest($testData);
     }
