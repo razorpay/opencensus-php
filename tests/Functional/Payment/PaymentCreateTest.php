@@ -446,6 +446,8 @@ class PaymentCreateTest extends TestCase
         $this->fixtures->create('terminal:shared_emandate_axis_terminal');
         $this->fixtures->merchant->addFeatures(['e_mandate', 'charge_at_will']);
 
+        $this->fixtures->merchant->enableEmandate();
+
         $payment = $this->getEmandateNetbankingRecurringPaymentArray($bank, $amount);
 
         $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);

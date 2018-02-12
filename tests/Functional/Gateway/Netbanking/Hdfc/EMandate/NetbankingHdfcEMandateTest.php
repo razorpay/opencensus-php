@@ -27,11 +27,13 @@ class NetbankingHdfcEMandateTest extends TestCase
 
         parent::setUp();
 
-        $this->fixtures->create('terminal:shared_netbanking_hdfc_recurring_terminal');
+        $this->fixtures->create('terminal:shared_emandate_hdfc_terminal');
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $this->fixtures->merchant->addFeatures(['charge_at_will', 'e_mandate']);
+
+        $this->fixtures->merchant->enableEmandate();
 
         $this->payment = $this->getNetbankingHdfcEmandateArray();
 

@@ -47,6 +47,8 @@ class NetbankingIciciEMandateTest extends TestCase
 
         $this->fixtures->merchant->addFeatures([Constants::CHARGE_AT_WILL, Constants::E_MANDATE]);
 
+        $this->fixtures->merchant->enableEmandate();
+
         $this->payment = $this->getEmandateNetbankingRecurringPaymentArray(IFSC::ICIC);
 
         $this->payment['bank_account'] = [
