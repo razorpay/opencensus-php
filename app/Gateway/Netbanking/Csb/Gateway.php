@@ -76,7 +76,7 @@ class Gateway extends Base\Gateway
 
         $this->assertPaymentId($input['payment']['id'], $content[ResponseFields::BANK_REF_NUM]);
 
-        // TODO: Is there a checksum here? If not we should verify.
+        $this->assertAmount($input['payment']['amount'] / 100, $content[ResponseFields::AMOUNT]);
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
 
@@ -139,6 +139,10 @@ class Gateway extends Base\Gateway
 
     public function verifyPayment(Verify $verify)
     {
+        //
+        // we won't be setting amountMismatch here because verify response doesn't contain amount
+        //
+
         $verify->status = $this->getVerifyStatus($verify);
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
@@ -153,7 +157,7 @@ class Gateway extends Base\Gateway
      * @param $str
      * @return string
      */
-    public function getHashOfString($str): string
+    public final function getHashOfString($str): string
     {
         // TODO: Verify that this is the right way to generate the checksum
         return hash(HashAlgo::CRC32, $str);
@@ -166,12 +170,12 @@ class Gateway extends Base\Gateway
      * @param $actual
      * @param $generated
      */
-    public function compareHashes($actual, $generated)
+    public final function compareHashes($actual, $generated)
     {
         parent::compareHashes($actual, $generated);
     }
 
-    protected function updateGatewayPaymentEntity(
+    protected final function updateGatewayPaymentEntity(
         Entity $gatewayPayment,
         array $attributes,
         bool $mapped = true)
@@ -181,6 +185,21 @@ class Gateway extends Base\Gateway
         $attributes[Base\Entity::RECEIVED] = true;
 
         return parent::updateGatewayPaymentEntity($gatewayPayment, $attributes, false);
+    }
+
+    /**
+     * Asserting that payment amount is the same as the amount received in the callback / verify response.
+     *
+     * @override
+     * @param $expectedAmount
+     * @param $actualAmount
+     */
+    protected final function assertAmount($expectedAmount, $actualAmount)
+    {
+        $expectedAmount = $this->formatAmount($expectedAmount);
+        $actualAmount = $this->formatAmount($actualAmount);
+
+        parent::assertAmount($expectedAmount, $actualAmount);
     }
 
     private function checkResponseStatus(array $content)
@@ -314,6 +333,11 @@ class Gateway extends Base\Gateway
         $content = [RequestFields::POST_DATA => base64_encode($contentToEncode)];
 
         return $this->getStandardRequestArray($content);
+    }
+
+    private function formatAmount(float $amount): string
+    {
+        return number_format($amount / 100, 2, '.', '');
     }
 
     /**
