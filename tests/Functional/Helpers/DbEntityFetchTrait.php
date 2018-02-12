@@ -28,6 +28,13 @@ trait DbEntityFetchTrait
         return $lastEntity ? $lastEntity->toArray() : [];
     }
 
+    protected function getDbLastEntityPublic($entity, $mode = 'test')
+    {
+        $lastEntity = $this->getDbLastEntity($entity, $mode);
+
+        return $lastEntity ? $lastEntity->toArrayAdmin() : [];
+    }
+
     protected function getDbEntityById($entity, $id, $mode = 'test')
     {
         $entityClass = $this->getEntityObjectForMode($entity, $mode);

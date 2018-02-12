@@ -33,7 +33,8 @@ class Repository extends Base\Repository
                         $query->whereNull(Token\Entity::EXPIRED_AT)
                               ->orWhere(Token\Entity::EXPIRED_AT, '>', time());
                     })
-                    ->orderBy(Entity::ID, 'desc')
+                    ->orderBy(Token\Entity::CREATED_AT, 'desc')
+                    ->orderBy(Token\Entity::ID, 'desc')
                     ->get();
     }
 
@@ -101,6 +102,8 @@ class Repository extends Base\Repository
                     ->where(Entity::METHOD, '=', $method)
                     ->where(Entity::CUSTOMER_ID, '=', $customer->getId())
                     ->where(Entity::MERCHANT_ID, '=', $customer->merchant->getId())
+                    ->orderBy(Token\Entity::CREATED_AT, 'desc')
+                    ->orderBy(Token\Entity::ID, 'desc')
                     ->get();
     }
 
@@ -116,5 +119,11 @@ class Repository extends Base\Repository
     public function isMerchantIdRequiredForFetch()
     {
         return false;
+    }
+
+    protected function addQueryOrder($query)
+    {
+        $query->orderBy(Token\Entity::CREATED_AT, 'desc')
+              ->orderBy(Token\Entity::ID, 'desc');
     }
 }

@@ -3,17 +3,16 @@
 namespace RZP\Tests\Functional\Subscription;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
-use Mockery;
-
-use RZP\Error\ErrorCode;
-use RZP\Exception\BadRequestException;
 use RZP\Models\Item;
-use RZP\Models\Plan\Subscription\Addon;
+use RZP\Error\ErrorCode;
+use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\Helpers\Subscription\SubscriptionTrait;
+use RZP\Exception\BadRequestException;
+use RZP\Models\Plan\Subscription\Addon;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\Subscription\SubscriptionTrait;
 
 /**
  * @group dns-sensitive
@@ -23,6 +22,7 @@ class SubscriptionChargeTest extends TestCase
     use PaymentTrait;
     use MocksDnsTrait;
     use SubscriptionTrait;
+    use DbEntityFetchTrait;
 
     const MAX_AUTH_ATTEMPTS = 4;
 
@@ -82,7 +82,7 @@ class SubscriptionChargeTest extends TestCase
         $order = $this->getLastEntity('order', true);
         $chargedPayment = $this->getLastEntity('payment', true);
         $subscription = $this->getLastEntity('subscription', true);
-        $token = $this->getLastEntity('token', true);
+        $token = $this->getDbLastEntityPublic('token');
         $scheduleTask = $this->getLastEntity('schedule_task', true);
 
         $this->assertEquals($order['id'], $invoice['order_id']);

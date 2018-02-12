@@ -3,26 +3,29 @@
 namespace RZP\Tests\Functional\Subscription;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
-use Mockery;
-
 use RZP\Error\ErrorCode;
+use RZP\Constants\Timezone;
 use RZP\Error\PublicErrorCode;
-use RZP\Exception\BadRequestException;
-use RZP\Exception\BadRequestValidationFailureException;
-use RZP\Models\Item;
-use RZP\Models\Plan\Subscription\Addon;
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\Helpers\Subscription\SubscriptionTrait;
+use RZP\Exception\BadRequestException;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Tests\Functional\Helpers\Subscription\SubscriptionTrait;
 
 class SubscriptionCardsTest extends TestCase
 {
     use PaymentTrait;
     use SubscriptionTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
+        // This is set to 10 Jan 2018
+        // Because in test cases subsription start date is set
+        // to 20 Jan 2018 and it should always be in future
+        Carbon::setTestNow("10-1-2018 3:00:00");
+
         $this->testDataFilePath = __DIR__ . '/Helpers/SubscriptionTestData.php';
 
         parent::setUp();
@@ -36,11 +39,6 @@ class SubscriptionCardsTest extends TestCase
         $this->gateway = 'cybersource';
 
         $this->mockTokenex();
-
-        // This is set to 10 Jan 2018
-        // Because in test cases subsription start date is set
-        // to 20 Jan 2018 and it should always be in future
-        Carbon::setTestNow("10-1-2018 3:00:00");
     }
 
     // ----------------------- Preferences Start ----------------------------
@@ -206,7 +204,7 @@ class SubscriptionCardsTest extends TestCase
 
         $subscription = $this->getLastEntity('subscription', true);
 
-        $token = $this->getLastEntity('token', true);
+        $token = $this->getDbLastEntityPublic('token');
 
         $this->assertEquals($subscription['id'], $payment['subscription_id']);
         $this->assertNull($payment['global_token_id']);
@@ -281,7 +279,7 @@ class SubscriptionCardsTest extends TestCase
 
         $subscription = $this->getLastEntity('subscription', true);
 
-        $token = $this->getLastEntity('token', true);
+        $token = $this->getDbLastEntityPublic('token');
 
         // ------------
 
@@ -295,7 +293,7 @@ class SubscriptionCardsTest extends TestCase
 
         $subscription2 = $this->getLastEntity('subscription', true);
 
-        $token2 = $this->getLastEntity('token', true);
+        $token2 = $this->getDbLastEntityPublic('token');
 
         // ---------------
 
@@ -423,7 +421,7 @@ class SubscriptionCardsTest extends TestCase
 
         $subscription = $this->getLastEntity('subscription', true);
 
-        $token = $this->getLastEntity('token', true);
+        $token = $this->getDbLastEntityPublic('token');
 
         $customer = $this->getLastEntity('customer', true);
         $globalCust = $this->getEntityById('customer', '10000gcustomer', true);
@@ -456,7 +454,7 @@ class SubscriptionCardsTest extends TestCase
 
         $subscription = $this->getLastEntity('subscription', true);
 
-        $token = $this->getLastEntity('token', true);
+        $token = $this->getDbLastEntityPublic('token');
 
         // ------------
 
@@ -518,7 +516,7 @@ class SubscriptionCardsTest extends TestCase
 
         $subscription = $this->getLastEntity('subscription', true);
 
-        $token = $this->getLastEntity('token', true);
+        $token = $this->getDbLastEntityPublic('token');
 
         $customer = $this->getLastEntity('customer', true);
 
@@ -536,7 +534,7 @@ class SubscriptionCardsTest extends TestCase
 
         $subscription2 = $this->getLastEntity('subscription', true);
 
-        $token2 = $this->getLastEntity('token', true);
+        $token2 = $this->getDbLastEntityPublic('token');
 
         $customer2 = $this->getEntityById('customer', '10000gcustomer', true);
 
@@ -582,7 +580,7 @@ class SubscriptionCardsTest extends TestCase
 
         $subscription = $this->getLastEntity('subscription', true);
 
-        $token = $this->getLastEntity('token', true);
+        $token = $this->getDbLastEntityPublic('token');
 
         $customer = $this->getLastEntity('customer', true);
 
