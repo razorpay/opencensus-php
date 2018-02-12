@@ -12,12 +12,13 @@ class EntityProcessor extends BaseEntityProcessor
 {
     protected function getAttemptStatus(): array
     {
-        //TODO: Attempt status based on the status given by bank.
         $status = $this->fta->getStatus();
 
         $bankStatusCode = $this->fta->getBankStatusCode();
 
-        if(Status::SETTLED === $bankStatusCode)
+        $failureReason  = null;
+
+        if (in_array($bankStatusCode, [Status::SETTLED, Status::EXECUTED], true) === true)
         {
             $status = Attempt\Status::PROCESSED;
 
@@ -34,14 +35,14 @@ class EntityProcessor extends BaseEntityProcessor
                 $status = $this->fta->getStatus();
             }
         }
+        else if ($bankStatusCode === Status::REJECTED)
+        {
+            $status = Attempt\Status::FAILED;
 
-        return [$status, null];
-    }
+            $failureReason = 'Reconciliation';
+        }
 
-    protected function updateSourceEntity()
-    {
-//      TODO: call parent method to update the source status once the bank confirms the possible status of recon
-        return;
+        return [$status, $failureReason];
     }
 
     protected function isMerchantLevelError(): bool

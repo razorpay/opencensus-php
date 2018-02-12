@@ -41,7 +41,7 @@ class ReconciliationGenerator
 
         $txt = $this->generateText($reconData, ',');
 
-        $filename = 'NRPSS_' . str_random(10);
+        $filename = 'NRPSS_' . str_random(10). '.txt';
 
         $file = $this->createTxtFile($filename, $txt);
 
