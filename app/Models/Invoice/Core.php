@@ -13,6 +13,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\LineItem;
+use RZP\Models\Settings;
 use RZP\Models\FileStore;
 use RZP\Jobs\DispatchRouter;
 use RZP\Models\Plan\Subscription;
@@ -718,7 +719,23 @@ class Core extends Base\Core
 
     public function notifyIssuedInvoicesOfBatch(Batch\Entity $batch, array $input): array
     {
-        // TODO : Validate from settings that notification has not been sent already
+        (new Validator)->validateInput(Validator::NOTIFY_FOR_BATCH, $input);
+
+        $settingAccessor = Settings\Accessor::for($batch, Settings\Module::BATCH);
+
+        // Check if notification has already been sent
+        if ($this->hasNotificationBeenSentForBatch($settingAccessor) === true)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_LINK_BATCH_ISSUED_ALREADY,
+                Entity::BATCH_ID,
+                [
+                    Entity::BATCH_ID => $batch->getPublicId(),
+                ]);
+        }
+
+        // Save the new notification settings
+        $settingAccessor->upsert($input)->save();
 
         $job = new InvoiceBatchNotifyJob($this->mode, $batch->getId(), $input);
 
@@ -740,6 +757,19 @@ class Core extends Base\Core
                             $invoice->getId());
 
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
+    }
+
+    protected function hasNotificationBeenSentForBatch(Settings\Accessor $settingAccessor): bool
+    {
+        $smsNotified = $settingAccessor->get(Entity::SMS_NOTIFY);
+        $emailNotified = $settingAccessor->get(Entity::EMAIL_NOTIFY);
+
+        if (($smsNotified === true) or ($emailNotified === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /**

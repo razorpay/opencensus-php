@@ -32,6 +32,8 @@ class Validator extends Base\Validator
     const EDIT_ISSUED   = 'editIssued';
     const ISSUE_BATCH   = 'issueBatch';
 
+    const NOTIFY_FOR_BATCH = 'notify_for_batch';
+
     const MAX_ALLOWED_LINE_ITEMS = 20;
 
     /**
@@ -158,6 +160,11 @@ class Validator extends Base\Validator
         Entity::PARTIAL_PAYMENT     => 'filled|boolean|custom',
         Entity::CALLBACK_URL        => 'sometimes|url|nullable',
         Entity::CALLBACK_METHOD     => 'required_with:callback_url|sometimes|string|in:get|nullable',
+    ];
+
+    protected static $notifyForBatchRules = [
+        Entity::SMS_NOTIFY          => 'required|boolean',
+        Entity::EMAIL_NOTIFY        => 'required|boolean',
     ];
 
     /**

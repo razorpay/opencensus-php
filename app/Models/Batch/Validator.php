@@ -63,6 +63,7 @@ class Validator extends Base\Validator
         Invoice\Entity::DRAFT           => 'filled|in:0,1',
         Invoice\Entity::SMS_NOTIFY      => 'filled|in:0,1',
         Invoice\Entity::EMAIL_NOTIFY    => 'filled|in:0,1',
+        Entity::CONFIG                  => 'filled|array',
     ];
 
     protected static $reconciliationCreateRules = [
