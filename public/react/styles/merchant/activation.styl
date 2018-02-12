@@ -34,7 +34,22 @@
 
   .rzpCheckbox {
     label::before {
-      border-color: #4a3e8a !important
+      border-color: #5f73cf !important;
+    }
+    [type='checkbox']:checked + label::before {
+      border-color: #cfdadd !important;
+      background-color: #fff9e9 !important;
+    }
+
+    label::after {
+      color: #27c24c !important;
+    }
+
+    .left-label {
+      display: inline-block;
+      font-weight: bold;
+      position: absolute;
+      margin-left: 4px;
     }
   }
 }
