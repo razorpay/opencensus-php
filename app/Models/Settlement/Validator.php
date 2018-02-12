@@ -53,6 +53,10 @@ class Validator extends Base\Validator
         'ignore_time_limit' => 'sometimes',
     ];
 
+    protected static $canFetchBalanceRules = [
+        'balance_' . Entity::CHANNEL    => 'required|string|custom',
+    ];
+
     protected function validateGateway($attribute, $value)
     {
         Payment\Gateway::validateGateway($value);
@@ -61,6 +65,15 @@ class Validator extends Base\Validator
     protected function validateChannel($attribute, $value)
     {
         if (in_array($value, Channel::getChannels()) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid Channel: ' . $value);
+        }
+    }
+
+    protected function validateBalanceChannel($attribute, $value)
+    {
+        if (in_array($value, Channel::getChannelsWithFetchBalance()) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid Channel: ' . $value);
