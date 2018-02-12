@@ -95,11 +95,12 @@ class NewApplicationForm extends Component {
 
   // save handler
   create = props => {
+    let data = {...props}
 
-    props.website = autoPrefixUrls(props.website);
+    data.website = autoPrefixUrls(data.website);
 
     return this.props
-      .createApplication(props, 'logo')
+      .createApplication(data, 'logo')
       .then(application => {
         // this.setState({edit: true});
         this.initForm(application);
@@ -118,27 +119,28 @@ class NewApplicationForm extends Component {
   };
 
   update = props => {
+    let data = {...props};
 
-    props.website = autoPrefixUrls(props.website);
+    data.website = autoPrefixUrls(data.website);
     
-    props.client_details.dev.redirect_url = autoPrefixUrls(props.client_details.dev.redirect_url);
+    data.client_details.dev.redirect_url = autoPrefixUrls(data.client_details.dev.redirect_url);
 
-    props.client_details.prod.redirect_url = autoPrefixUrls(props.client_details.prod.redirect_url);
+    data.client_details.prod.redirect_url = autoPrefixUrls(data.client_details.prod.redirect_url);
 
     const payload = {
-      name: props.name,
-      website: props.website,
+      name: data.name,
+      website: data.website,
       client_details: [
         {
-          id: props.client_details.dev.id,
-          redirect_url: props.client_details.dev.redirect_url,
+          id: data.client_details.dev.id,
+          redirect_url: data.client_details.dev.redirect_url,
         },
         {
-          id: props.client_details.prod.id,
-          redirect_url: props.client_details.prod.redirect_url,
+          id: data.client_details.prod.id,
+          redirect_url: data.client_details.prod.redirect_url,
         },
       ],
-      file: props.file,
+      file: data.file,
     };
     return this.props
       .updateApplication(this.state.details.id, payload, 'logo')
@@ -244,7 +246,7 @@ class NewApplicationForm extends Component {
               </small>
             </div>
 
-            {this.state.edit && (
+            {true && (
               <div class="edit-details">
                 <div class="col-md-offset-2 col-md-10">
                   <h5 class="form-header text-left">Development</h5>
