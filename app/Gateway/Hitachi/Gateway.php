@@ -43,6 +43,11 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
+        if ($this->isSecondRecurringPaymentRequest($input) === true)
+        {
+            return $this->authorizeRecurring($input);
+        }
+
         $authResponse = $this->callAuthenticationGateway($input);
 
         if ($authResponse !== null)
@@ -159,6 +164,21 @@ class Gateway extends Base\Gateway
             $this->action,
             $input,
             $this->mode);
+    }
+
+    protected function authorizeRecurring(array $input)
+    {
+        $request = $this->getAuthorizeRequestArrayForRecurring($input);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->traceGatewayPaymentResponse($response, $input, TraceCode::GATEWAY_RECURRING_AUTH_RESPONSE);
+
+        $attributes = $this->getAttributesFromAuthResponse($response);
+
+        $this->createGatewayPaymentEntity($input, $attributes, Base\Action::AUTHORIZE);
+
+        $this->checkErrorsAndThrowException($response);
     }
 
     protected function authorizeNotEnrolled(array $input)
@@ -291,6 +311,42 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
+    protected function getAuthorizeRequestArrayForRecurring(array $input)
+    {
+        $content = $this->getDefaultAuthorizeRequestArray($input);
+
+        $content[RequestFields::TRANSACTION_TYPE] = 'SI';
+
+        $network = Network::getCode($input['card']['network']);
+
+        if ($network === Card\Network::VISA)
+        {
+            $content[RequestFields::ECI] = '02';
+        }
+        else
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_TYPE_INVALID);
+        }
+
+        $traceContent = $content;
+
+        $content += $this->getCardDataForAuthorizeRequestArray($input);
+
+        $request = $traceRequest = $this->getStandardRequestArray($content);
+
+        $traceRequest['content'] = $traceContent;
+
+        $this->trace->info(TraceCode::GATEWAY_RECURRING_AUTH_REQUEST,
+            [
+                'request'    => $traceRequest,
+                'gateway'    => 'hitachi',
+                'payment_id' => $input['payment']['id'],
+            ]);
+
+        return $request;
+    }
+
     protected function getAuthorizeRequestArrayForNotEnrolled(array $input)
     {
         $content = $this->getDefaultAuthorizeRequestArray($input);
@@ -357,11 +413,17 @@ class Gateway extends Base\Gateway
 
         $expiry = substr($card['expiry_year'], 2) . str_pad($card['expiry_month'], 2, '0', STR_PAD_LEFT);
 
-        return [
+        $data = [
             RequestFields::CARD_NUMBER         => $input['card']['number'],
-            RequestFields::CVV2                => $input['card']['cvv'],
             RequestFields::EXPIRY_DATE         => $expiry,
         ];
+
+        if ($this->isSecondRecurringPaymentRequest($input) === false)
+        {
+            $data[RequestFields::CVV2] = $input['card']['cvv'];
+        }
+
+        return $data;
     }
 
     protected function getCaptureRequestArray(array $input, Entity $gatewayPayment)
