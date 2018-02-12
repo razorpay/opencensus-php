@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { Field, formValueSelector, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import { Link, withRouter } from 'react-router-dom';
-import { required, lenientUrl } from 'rzp/utils/validators';
+import { required, lenientUrl, isUrlLenient } from 'rzp/utils/validators';
 import InputField from 'rzp/ui/Forms/InputField';
 import TaggedInput from 'rzp/ui/Forms/TaggedInput';
 import Fieldset from 'rzp/ui/Forms/Fieldset';
@@ -290,7 +290,7 @@ class NewApplicationForm extends Component {
                       component={TaggedInput}
                       class="form-control tagged-input"
                       placeholder="http://test-app.com/"
-                      validator={[lenientUrl('Please enter a valid URL')]}
+                      validator={isUrlLenient}
                     />
                   </div>
                   <div class="clearfix" />
@@ -344,7 +344,7 @@ class NewApplicationForm extends Component {
                       component={TaggedInput}
                       class="form-control tagged-input"
                       placeholder="http://test-app.com/"
-                      validator={[lenientUrl('Please enter a valid URL')]}
+                      validator={isUrlLenient}
                     />
                   </div>
                   <div class="clearfix" />
