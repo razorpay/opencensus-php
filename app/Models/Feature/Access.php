@@ -6,6 +6,8 @@ use App;
 use ApiResponse;
 use Illuminate\Foundation\Application;
 
+use RZP\Base\RepositoryManager;
+
 class Access
 {
     /**
@@ -15,11 +17,19 @@ class Access
      */
     protected $app;
 
+    /**
+     * Repository manager instance
+     * @var RepositoryManager
+     */
+    protected $repo;
+
     protected $merchant;
 
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
+
+        $this->repo = $this->app['repo'];
 
         $this->merchant = $this->app['basicauth']->getMerchant();
     }
