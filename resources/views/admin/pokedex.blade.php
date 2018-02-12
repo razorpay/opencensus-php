@@ -5,9 +5,12 @@
   <meta name="google" value="notranslate" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    .dashboard-home > .rzp-sticky > .sticky-content {
+    .sticky-content {
       top: 0 !important;
       width: 100% !important;
+    }
+    .sticky-content .pull-right, a[target=_blank] {
+      display: none;
     }
   </style>
   <script>
