@@ -21,6 +21,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Jobs\Invoice\BatchIssue as InvoiceBatchIssueJob;
+use RZP\Jobs\Invoice\BatchNotify as InvoiceBatchNotifyJob;
 
 class Core extends Base\Core
 {
@@ -713,6 +714,32 @@ class Core extends Base\Core
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
 
         return ['success' => true];
+    }
+
+    public function notifyIssuedInvoicesOfBatch(Batch\Entity $batch, array $input): array
+    {
+        // TODO : Validate from settings that notification has not been sent already
+
+        $job = new InvoiceBatchNotifyJob($this->mode, $batch->getId(), $input);
+
+        (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
+
+        return ['success' => true];
+    }
+
+    public function saveAndNotify(Entity $invoice, string $event)
+    {
+        $this->repo->transaction(function() use ($invoice)
+            {
+                $this->repo->saveOrFail($invoice);
+            });
+
+        $job = new InvoiceJob(
+                            $this->mode,
+                            $event,
+                            $invoice->getId());
+
+        (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
     }
 
     /**
