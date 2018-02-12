@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Netbanking\Csb;
 
-class Constants
+class Constant
 {
     /**
      * This Constants class developed as per API contract.

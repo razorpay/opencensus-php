@@ -11,7 +11,6 @@ use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\Entity;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Netbanking\Base;
-use RZP\Constants\Mode as RZPMode;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Payment\Gateway as PG;
 use RZP\Exception\GatewayErrorException;
@@ -120,7 +119,7 @@ class Gateway extends Base\Gateway
         {
             $verify->verifyResponseContent = $this->parseVerifyResponse($response->body);
         }
-        catch (\Exception $e)
+        catch (\ErrorException $e)
         {
             // We set apiSuccess and gatewaySuccess to false
             $this->checkApiSuccess($verify);
@@ -215,11 +214,18 @@ class Gateway extends Base\Gateway
         }
     }
 
+    /**
+     * This method gets the required verify request as per API contract.
+     * @see https://docs.google.com/document/d/153ypkOhWNIetN3kV153gevKz2EIBO4aGj4XjIguLB0Y/edit#
+     *
+     * @param Verify $verify
+     * @return array
+     */
     private function getVerifyRequestData(Verify $verify): array
     {
         $content = [
-            Constants::CHNPGSYN,
-            Constants::CHNPGCODE,
+            Constant::CHNPGSYN,
+            Constant::CHNPGCODE,
             $this->getMerchantId2(),
             $verify->input['payment']['id'],
             $verify->input['payment']['amount'] / 100,
@@ -317,8 +323,8 @@ class Gateway extends Base\Gateway
     private function getAuthorizeRequest(array $input): array
     {
         $content = [
-            RequestFields::CHNPGSYN     => Constants::CHNPGSYN, // TODO: These are terminal specific
-            RequestFields::CHNPGCODE    => Constants::CHNPGCODE, // TODO: These are terminal specific
+            RequestFields::CHNPGSYN     => Constant::CHNPGSYN, // TODO: These are terminal specific
+            RequestFields::CHNPGCODE    => Constant::CHNPGCODE, // TODO: These are terminal specific
             RequestFields::PAYEE_ID     => $this->getMerchantId2(),
             RequestFields::BANK_REF_NUM => $input['payment']['id'],
             RequestFields::AMOUNT       => $input['payment']['amount'] / 100,
@@ -378,24 +384,6 @@ class Gateway extends Base\Gateway
     private function getMerchantId2(): string
     {
         return $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2];
-    }
-
-    protected function getMerchantId(): string
-    {
-        $merchantId = $this->getLiveMerchantId();
-
-        if ($this->mode === RZPMode::TEST)
-        {
-            $merchantId = $this->getTestMerchantId();
-        }
-
-        return $merchantId;
-    }
-
-    protected function getTestMerchantId(): string
-    {
-        // TODO: Ensure this is right
-        return $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
     }
 
     /**

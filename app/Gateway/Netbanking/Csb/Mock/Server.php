@@ -6,7 +6,7 @@ use Carbon\Carbon;
 use RZP\Gateway\Base;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Netbanking\Csb\Status;
-use RZP\Gateway\Netbanking\Csb\Constants;
+use RZP\Gateway\Netbanking\Csb\Constant;
 use RZP\Gateway\Netbanking\Csb\RequestFields;
 use RZP\Gateway\Netbanking\Csb\ResponseFields;
 
@@ -76,7 +76,7 @@ class Server extends Base\Mock\Server
             ResponseFields::DATE_TIME    => $date,
             ResponseFields::TRAN_REF_NUM => 9999999999, // TODO: Check the diff b/w this and bankId
             ResponseFields::STATUS       => Status::SUCCESS,
-            ResponseFields::BANKID       => Constants::BANK_ID,
+            ResponseFields::BANKID       => Constant::BANK_ID,
             ResponseFields::CHNPGCODE    => $request[RequestFields::CHNPGCODE]
         ];
 
