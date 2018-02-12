@@ -543,6 +543,8 @@ class BasicAuth
 
                 $this->adminOrgId = $this->admin->getOrgId();
 
+                $this->setOrgId($this->adminOrgId);
+
                 return;
             }
 
@@ -1154,7 +1156,7 @@ class BasicAuth
     {
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-        $this->merchant = $merchant;
+        $this->setMerchant($merchant);
     }
 
     public function setAccessTokenId(string $tokenId)
@@ -1170,6 +1172,8 @@ class BasicAuth
     public function setMerchant($merchant)
     {
         $this->merchant = $merchant;
+
+        $this->setOrgId($this->merchant->getOrgId());
     }
 
     protected function setType($type)
@@ -1280,7 +1284,9 @@ class BasicAuth
     {
         $merchantId = $key->getMerchantId();
 
-        $this->merchant = $this->repo->merchant->findOrFail($merchantId);
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $this->setMerchant($merchant);
 
         $this->checkMerchantActivatedForLive();
 
@@ -1319,7 +1325,7 @@ class BasicAuth
             return $this->invalidAccountId($this->getAccountId());
         }
 
-        $this->merchant = $account;
+        $this->setMerchant($account);
     }
 
     public function checkMerchantActivatedForLive()

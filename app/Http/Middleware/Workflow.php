@@ -66,7 +66,9 @@ class Workflow
         // - It is mocked
         // - If the maker isn't one of Admin or Merchant
         if ($this->config->get('heimdall.workflows.mock') === true or
-            $maker === false)
+            $maker === false or
+            empty($this->ba->getOrgId()) == true
+        )
         {
             return $next($request);
         }
