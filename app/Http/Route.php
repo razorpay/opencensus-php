@@ -711,7 +711,7 @@ final class Route
         // Pincode Service
         'pincode_get'                             => ['get',      'pincodes/{id}',                                  'PincodeSearchController@get'                                       ],
 
-        // Deprecated feature route - maintaining for BC - Remove after dashboard changes
+        // Deprecated feature routes - maintaining for BC - Remove after dashboard changes
         'feature_add'                             => ['post',     'features',                                       'FeatureController@addFeatures'                                     ],
         'feature_get_multiple'                    => ['get',      'features/{entityId}',                            'FeatureController@getMerchantFeatures'                             ],
         'feature_delete'                          => ['delete',   'features/{entityId}/{featureName}',              'FeatureController@deleteFeature'                                   ],

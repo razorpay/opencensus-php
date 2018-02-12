@@ -1510,7 +1510,7 @@ class Service extends Base\Service
         foreach ($featureNames as $featureName)
         {
             $feature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail(
-                'merchant',
+                Feature\Constants::MERCHANT,
                 $entityId,
                 $featureName);
 
