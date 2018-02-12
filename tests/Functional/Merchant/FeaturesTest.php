@@ -1087,9 +1087,9 @@ class FeaturesTest extends TestCase
         string $entityType,
         string $entityId)
     {
-        $authMethod = 'appAuth' . studly_case($addToMode);
+            $proxyMethod = 'proxyAuth' . studly_case($addToMode);
 
-        $this->ba->$authMethod();
+        $this->ba->$proxyMethod();
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -1138,7 +1138,7 @@ class FeaturesTest extends TestCase
 
         $testData['request']['url'] = '/' . $entityType . 's/' . $entityId . '/features';
 
-        $authMethod = 'appAuth' . studly_case($mode);
+        $authMethod = 'proxyAuth' . studly_case($mode);
 
         $this->ba->$authMethod();
 
