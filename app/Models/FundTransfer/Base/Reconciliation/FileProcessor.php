@@ -199,7 +199,7 @@ abstract class FileProcessor extends Base\Core
         if ((isset($input['source']) === true) and
             ($input['source'] === 'lambda'))
         {
-            $key = $input['key'];
+            $key = urldecode($input['key']);
 
             $reconcileFile = $this->getH2HFileFromAws($key);
         }
