@@ -311,6 +311,13 @@ class Entity extends Base\PublicEntity
 
     public function isMobikwikEnabled()
     {
+        // Enable it only for test merchant
+        if (($this->getMerchantId() !== '6ZJzxyLFWrGs74') and
+            ($this->getMerchantId() !== '10000000000000'))
+        {
+            return false;
+        }
+
         return $this->getAttribute(self::MOBIKWIK);
     }
 
