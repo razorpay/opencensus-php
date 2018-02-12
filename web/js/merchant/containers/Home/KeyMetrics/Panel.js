@@ -274,7 +274,8 @@ class Panel extends Component {
                   sectionTitle + ' | ' + this.meta.title
                 )}
             >
-              {`View all ${titleCase(this.meta.index)}`}
+              {`View these ${titleCase(this.meta.index)} `}
+              <i className="i i-chevron-right"></i>
             </Link>
           </div>
         </PanelFooter>

@@ -103,6 +103,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::group(['middleware'  =>  ['admin', 'admin_access']], function()
     {
         Route::any('/admin/generic', 'GenericController@handle');
+        Route::any('/stats/{id}', 'AdminController@getMerchantStats');
         // Route::any('/admin/api/{mode}/{path}', 'GenericController@handleAny')->where(['path' => '.*'])->name('admin');
         Route::get('/admin/user', 'AdminController@getAdmin');
         Route::get('/admin/user/logout', 'AdminController@getLogout');
@@ -129,8 +130,7 @@ Route::group(['middleware' => ['web']], function () {
         // Creevey Related routes
         Route::put('/admin/merchant/{id}/screenshot', 'AdminController@captureMerchantScreenshot');
         Route::post('/admin/merchant/{id}/screenshot', 'AdminController@saveMerchantScreenshot');
-        // Reconcile settlements
-        Route::post('/settlements/reconcile', 'AdminController@postReconcileSettlement');
+       
         Route::post('/admin/{mode}/reconciliate', 'AdminController@postReconciliate');
 
         Route::post('/makeapicall/{path?}', 'AdminController@passThrough')->where('path', '.*$');

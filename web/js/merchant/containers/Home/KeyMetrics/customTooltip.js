@@ -56,16 +56,10 @@ const breakdownMap = {
   monthly: 'month',
 };
 
-const getDateFormat = (startDate, endDate, breakdown) => {
-  let format = '';
+const getDateFormat = (startDate, endDate) => {
+  let format = 'ddd, Do MMM';
 
   const isSameYear = startDate.isSame(moment(), 'year');
-
-  if (breakdown === 'daily' || breakdown === 'weekly') {
-    format = 'ddd, Do MMM';
-  } else if (breakdown === 'monthly') {
-    format = 'MMM';
-  }
 
   if (!isSameYear) {
     format += ' YYYY';
@@ -135,12 +129,12 @@ const customToolTip = function(tooltipModel) {
           graphEndDate
         )
       ),
-      dateFormat = getDateFormat(startDate, endDate, breakdown),
+      dateFormat = getDateFormat(startDate, endDate),
       url = `${externalUrl}?from=${startDate.unix()}&to=${endDate.unix()}`;
 
     let formattedDate = startDate.format(dateFormat);
 
-    if (breakdown === 'weekly') {
+    if (breakdown === 'weekly' || breakdown === 'monthly') {
       formattedDate += ' - ' + endDate.format(dateFormat);
     }
 

@@ -15,6 +15,10 @@ import { showNotification } from 'rzp/modules/notifications';
 import { groupBy } from 'rzp/utils/pokedex';
 
 import { fetch } from 'merchant/modules/pokedex';
+import { API_ERROR, API_INVALID_RESP } from 'merchant/components/Home/data';
+import { trackNoData } from 'merchant/containers/Home/ga';
+import Tooltip from 'merchant/components/Home/Tooltip';
+
 import {
   NUM_TRANSACTIONS,
   SAVED_CARDS,
@@ -24,15 +28,12 @@ import {
   breakdownVals,
   getTimelineData,
 } from './data';
-import { API_ERROR, API_INVALID_RESP } from 'merchant/components/Home/data';
-import Tooltip from 'merchant/components/Home/Tooltip';
-import Panel from './Panel';
-
 import {
   trackTabClick,
   trackBreakdownChange,
-  trackSavedCardsHidden,
+  trackSavedCardsHidden
 } from './ga';
+import Panel from './Panel';
 
 const csvDateFormat = 'DD-MM-YYYY';
 
@@ -174,7 +175,7 @@ class KeyMetricsContainer extends Component {
     const { tabsState, selectedTab } = this.state,
       tabState = tabsState[selectedTab],
       { selectedGrouping } = tabState,
-      { startDate, endDate, mode } = this.props;
+      { startDate, endDate, mode, sectionTitle } = this.props;
 
     const query = getQuery({
       tabName: fetchAllCounts ? 'all' : selectedTab,
@@ -258,19 +259,21 @@ class KeyMetricsContainer extends Component {
               isCurrency,
             });
 
+            // track in GA that no data found in this section for 
+            // given daterange
+            if (labels.length === 0) {
+              trackNoData(
+                `${tabMeta.title} in ${sectionTitle} from ${
+                 startDate.format(csvDateFormat)} to ${
+                 endDate.format(csvDateFormat)}`
+              );
+            }
+
             const downloadFileName = `${title}, ${startDate.format(
               csvDateFormat
             )} to ${endDate.format(csvDateFormat)}, ${titleCase(
               selectedBreakdown
             )}${selectedGrouping ? ' ' + selectedGrouping.text : ''}(Razorpay)`;
-
-            // display point only when there is only one point to plot
-            if (labels.length === 1) {
-              datasets.forEach(dataset => {
-                dataset.pointRadius = 3;
-                dataset.pointHoverRadius = 4;
-              });
-            }
 
             tabState.data.downloadFileName = downloadFileName;
             tabState.data.histogram = { labels, datasets };

@@ -48,7 +48,6 @@ const activationStepMap = {
   4: [
     'bank_branch_ifsc',
     'bank_account_number',
-    'bank_account_type',
     'bank_account_name',
     'bank_beneficiary_address1',
     'bank_beneficiary_address2',
@@ -71,23 +70,13 @@ const activationStepMap = {
 // Used for marketplace linked accounts
 const accountStepMap = {
   1: ['business_type', 'business_name'],
-  2: [
-    'bank_branch_ifsc',
-    'bank_account_number',
-    'bank_account_type',
-    'bank_account_name',
-  ],
+  2: ['bank_branch_ifsc', 'bank_account_number', 'bank_account_name'],
 };
 
 // Used for marketplace linked accounts that require KYC
 const accountStepMapWithKYC = {
   1: ['business_type', 'business_name', 'company_pan', 'promoter_pan'],
-  2: [
-    'bank_branch_ifsc',
-    'bank_account_number',
-    'bank_account_type',
-    'bank_account_name',
-  ],
+  2: ['bank_branch_ifsc', 'bank_account_number', 'bank_account_name'],
   3: ['address_proof_url', 'promoter_pan_url'],
 };
 
@@ -171,11 +160,10 @@ export default class Activation extends Entity {
 
       let unfinishedSteps = requiredFields.reduce((prev, curr) => {
         let step = steps.find(step => stepMap[step].indexOf(curr) > -1);
-        prev.push(step);
+        if (step) prev.push(parseInt(step));
         return prev;
       }, []);
 
-      unfinishedSteps = new Set(unfinishedSteps).toJSON();
       if (unfinishedSteps.length) {
         data.steps_finished = arrayDiff(steps, unfinishedSteps);
       }

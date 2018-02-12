@@ -53,4 +53,18 @@ export const trackPlatformAnalyticsHidden = percent => {
   });
 };
 
+export const trackForceOldDashboard = () => {
+  track({
+    eventAction: 'Force Old Dashboard on Mobile',
+    eventLabel: `Resolution - ${window.outerWidth}x${window.outerHeight}`
+  });
+};
+
+export const trackNoData = (description) => {
+  track({
+    eventAction: 'No Data Found',
+    eventLabel: description
+  });
+};
+
 export default track;

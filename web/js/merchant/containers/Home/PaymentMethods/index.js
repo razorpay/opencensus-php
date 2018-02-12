@@ -1,4 +1,4 @@
-import moment from 'moment';
+ import moment from 'moment';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
@@ -17,7 +17,7 @@ import GenericPanel, {
   PanelFooter,
 } from 'merchant/components/Home/GenericPanel';
 import { API_ERROR, API_INVALID_RESP } from 'merchant/components/Home/data';
-import { trackGoToLinks } from 'merchant/containers/Home/ga';
+import { trackGoToLinks, trackNoData } from 'merchant/containers/Home/ga';
 
 import { trackBreadcrumbClick } from './ga';
 import { getQuery, sampleData } from './data';
@@ -64,6 +64,8 @@ class PaymentMethods extends Component {
       error: '',
     });
 
+    const {sectionTitle} = this.props;
+
     const requestId = ++this.requestId;
 
     fetch(
@@ -88,6 +90,13 @@ class PaymentMethods extends Component {
         }
 
         const agg = resp.data.agg;
+
+        if (!agg.result || agg.result.length === 0) {
+          trackNoData(
+            `${sectionTitle} from ${startDate.format(csvDateFormat)
+             } to ${endDate.format(csvDateFormat)}`
+          );
+        }
 
         this.setState({
           data: agg.result,
@@ -233,7 +242,7 @@ class PaymentMethods extends Component {
               to={`/payments?from=${startDate.unix()}&to=${endDate.unix()}`}
               onClick={() => trackGoToLinks('Payments', sectionTitle)}
             >
-              View all Payments
+              View these Payments <i className="i i-chevron-right"></i>
             </Link>
           </div>
         </PanelFooter>

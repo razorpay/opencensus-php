@@ -23,6 +23,11 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import LocalStorageService from 'rzp/utils/localStorage';
 import NewHome from './New';
 
+import {
+isMobileDevice 
+} from 'merchant/components/Home/data';
+import { trackForceOldDashboard } from './ga'; 
+
 defaults.global.defaultFontColor = '#666';
 defaults.global.defaultFontFamily =
   '"Lato", "Helvetica Neue", Helvetica, Arial,sans-serif';
@@ -196,13 +201,19 @@ class HomeContainer extends Component {
 export default class HomeSwitcher extends Component {
 
   render () {
-  
-    return (
 
-      // if the tag is enabled, force user to new dashboard
-      this.props.user.isNewAnalyticsEnabled
-        ? <Redirect to="/dashboard_v2"/>
-        : <HomeContainer/>
-    );
+    // if the tag is enabled, force user to new dashboard
+    if (this.props.user.isNewAnalyticsEnabled) {
+    
+      if (isMobileDevice) {
+      
+        trackForceOldDashboard();
+        return <HomeContainer/>;
+      }
+
+      return <Redirect to="/dashboard_v2"/>;
+    }
+
+    return <HomeContainer/>;
   }
 }

@@ -101,6 +101,17 @@ class AdminController extends Controller
         ]);
     }
 
+    public function getMerchantStats()
+    {
+
+        $admin = $this->getAdmin()->getData(true);
+
+        return view('admin.pokedex', [
+            'cdn' => \Config::get('app.cdn_dashboard_url'),
+            'user'  => $admin['data'],
+        ]);
+    }
+
     protected function getGoogleOAuthUrl()
     {
         $googleService = OAuthFacade::consumer('Google');
@@ -339,14 +350,6 @@ class AdminController extends Controller
 
     public function passThrough($path = '')
     {
-        list($error, $response) = (new Admin\Service)->makeRawApiCall($path);
-
-        return AppResponse::jsonResponse($error, $response);
-    }
-
-    public function postReconcileSettlement()
-    {
-        $path = 'settlements/reconcile';
         list($error, $response) = (new Admin\Service)->makeRawApiCall($path);
 
         return AppResponse::jsonResponse($error, $response);

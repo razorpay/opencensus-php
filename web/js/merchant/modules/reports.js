@@ -72,7 +72,7 @@ export const generateReport = ajaxParams => {
 };
 
 const pollInterval = 2, // poll interval in SECONDS
-      timeout = 5 * 60 * 1000; // 5 minutes
+      timeout = 30 * 60 * 1000; // 30 minutes
 
 export const generateReportV2 = params => {
   const startTime = new Date();

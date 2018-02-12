@@ -29,6 +29,7 @@ class Tab extends Component {
       children,
       handleTabChange,
       isActive,
+      onClick,
       ...otherProps
     } = this.props;
 
@@ -157,12 +158,6 @@ class Tabs extends Component {
       return null;
     }
 
-    const selectedTabPane = tabPanes[selectedTabIndex],
-          { 
-            children:selectedTabPaneChildren,
-            ...selectedTabPaneProps
-          } = selectedTabPane.props;
-
     return (
       <div className="rzp-react-tabs" {...otherProps}>
         <ul className={`nav nav-tabs${justified ? " nav-justified" : ""}`}>
@@ -186,9 +181,27 @@ class Tabs extends Component {
           }
         </ul>
         <div className="tab-content">
-          <selectedTabPane.type {...selectedTabPaneProps}>
-            {selectedTabPaneChildren}
-          </selectedTabPane.type>
+          {tabPanes.map((tabPane, index) => {
+
+            const {
+              children:tabPaneChildren,
+              style={},
+              ...otherTabPaneProps
+            } = tabPane.props;
+
+            const isSelected = selectedTabIndex === index;
+
+            if (!isSelected) {
+            
+              style.display = "none";
+            }
+
+            otherTabPaneProps.style = style;
+
+            return (<tabPane.type key={index} {...otherTabPaneProps}>
+                      {isSelected && tabPaneChildren}
+                    </tabPane.type>);
+          })}
         </div>
       </div>
     );
