@@ -260,7 +260,7 @@ export default class BusinessDetailsForm extends Component {
                       type="checkbox"
                       disabled={locked}
                     />
-                    <label for="business_international" />
+                    <label for="business_international" class="icon i-check"/>
                     <span class="left-label label-required">
                       International Payments Required?
                     </span>
@@ -359,7 +359,7 @@ export default class BusinessDetailsForm extends Component {
                         onChange={this.handleSameAddressCheck}
                         checked={this.state.or_same}
                       />
-                      <label htmlFor="or_same" />
+                      <label htmlFor="or_same" class="icon i-check"/>
                       <span class="left-label">
                         Operational Address same as Registered Address
                       </span>
