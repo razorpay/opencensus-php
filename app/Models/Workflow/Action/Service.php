@@ -165,7 +165,7 @@ class Service extends Base\Service
         return $action->toArrayPublic();
     }
 
-    public function executeAction(string $id, Role\Entity $role)
+    public function executeAction(string $id, Role\Entity $role = null)
     {
         Entity::verifyIdAndStripSign($id);
 
@@ -184,6 +184,18 @@ class Service extends Base\Service
         }
 
         $admin = $this->app['basicauth']->getAdmin();
+
+        if (empty($role) === true)
+        {
+            if ($admin->isSuperAdmin() === false)
+            {
+                $role = $admin->getSuperAdminRole();
+            }
+            else
+            {
+                $role = null;
+            }
+        }
 
         return $this->core()->executeAction($action, $admin, $role);
     }

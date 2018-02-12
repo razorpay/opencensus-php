@@ -25,20 +25,6 @@ class Repository extends Base\Repository
         Constants::ACTIONS_CHECKED  => 'sometimes|boolean|in:0,1',
     ];
 
-    protected function getNewQueryWithPermissions()
-    {
-        $permission = Table::PERMISSION;
-
-        return $this->newQuery()
-                    ->select(
-                        Table::WORKFLOW_ACTION . '.*',
-                        'permissions.name AS permission_name',
-                        'permissions.description AS permission_description')
-                    ->join($permission, function ($join) {
-                        $join->on('permissions.id', '=', 'workflow_actions.permission_id');
-                    });
-    }
-
     public function addQueryParamPermission($query, $params)
     {
         $permission = Table::PERMISSION;

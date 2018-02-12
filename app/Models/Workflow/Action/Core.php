@@ -4,6 +4,8 @@ namespace RZP\Models\Workflow\Action;
 
 use App;
 use Request;
+use RZP\Exception;
+
 use RZP\Models\State;
 use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Role;
@@ -219,10 +221,14 @@ class Core extends Base\Core
      */
     public function checkAndMarkActionApproved(Entity $action, Admin\Entity $admin)
     {
+        // 1. If action is already approved then return
+        
         if ($action->getApproved() === true)
         {
             return true;
         }
+
+        // 2. If current level is not the last level then return
 
         $workflowId = $action->getWorkflowId();
 
@@ -233,6 +239,8 @@ class Core extends Base\Core
         {
             return false;
         }
+
+        // 3. If the current level is approved (and it is already the last level)
 
         if ($this->isCurrentLevelApproved($action) === true)
         {
@@ -292,10 +300,13 @@ class Core extends Base\Core
                       ->workflow_step
                       ->findByLevelAndWorkflowId($level, $workflowId);
 
+        // Get the op type (AND or OR)
         $opType = $steps[0]->getOpType();
 
+        // All the step IDs for the current action's current level
         $stepIds = [];
 
+        // Hashmap of all stepIds => required_review_count
         $stepReviewCountMap = [];
 
         foreach ($steps as $step)
@@ -312,6 +323,8 @@ class Core extends Base\Core
                                       ->action_checker
                                       ->fetchApprovedCountByActionIdAndStepIds(
                                           $action->getId(), $stepIds);
+        
+        // Hashmap of stepIds => total_approvals_received
         $stepCheckerMap = [];
 
         foreach ($totalCheckerApprovals as $approval)
@@ -321,6 +334,17 @@ class Core extends Base\Core
             $stepCheckerMap[$stepId] = $approval['total'];
         }
 
+        // So effectively now we have:
+        // - $stepReviewCountMap - stores stepIds => required_review_count for all steps
+        // in the current level.
+        // - $stepCheckerMap - stores stepIds => total_approvals_received for all steps
+        // in the current level
+
+        // We just need to create 1 more map that will store whether the total approval count
+        // for each step has reached or not.
+        //
+        // Hashmap of stepIds => true/false denoting whether any further approvals
+        // are required or not.
         $stepApprovedMap = [];
 
         foreach ($stepReviewCountMap as $stepId => $reviewCount)
@@ -330,23 +354,20 @@ class Core extends Base\Core
             $stepApprovedMap[$stepId] = ($approvalCount === $reviewCount);
         }
 
-        // If the reviewers in a single step approved
-        // Based on the op type, we do an AND or OR operation on approvals per
-        // step basis.
-        // If step1 or step2. one of the steps's approvals should match
-        // reviewer count without a single rejection by either side.
-        //
+        // Now all we need to do is for:
+        // AND op - None of the stepId is false. Means all the required === received is true.
+        // OR op - At least one stepId is true. Means at least one required === received is true.
 
         $levelApproved = false;
 
         if ($opType === Step\Entity::OP_TYPE_AND)
         {
-            // if any of the check fails, level is not approved.
+            // If any of the check fails, level is not approved.
             $levelApproved = (in_array(false, $stepApprovedMap, true) === false);
         }
         else if ($opType === Step\Entity::OP_TYPE_OR)
         {
-            // if any of the check passed, level is approved.
+            // If any of the check passed, level is approved.
             $levelApproved = in_array(true, $stepApprovedMap, true);
         }
 
@@ -369,6 +390,7 @@ class Core extends Base\Core
         }
 
         $level = $action->getCurrentLevel();
+
         $workflowId = $action->getWorkflowId();
 
         $levelApproved = $this->isCurrentLevelApproved($action);
