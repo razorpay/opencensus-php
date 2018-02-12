@@ -14,7 +14,7 @@ import {
   paymentId,
   amount,
   status,
-  createdAt,
+  createdAt as createdAtProperty,
 } from 'rzp/ui/item/pair';
 
 const type = {
@@ -31,6 +31,11 @@ const respondIn = {
 const resolvedOn = {
   title: 'Resolved On',
   value: getTime('resolved_on'),
+};
+
+const createdAt = {
+  title: createdAtProperty.title,
+  value: getTime('created_at', 'll'),
 };
 
 @connect(state => state.disputes, { fetchAll })

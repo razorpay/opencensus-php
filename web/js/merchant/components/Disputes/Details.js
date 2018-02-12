@@ -38,16 +38,16 @@ export default props => {
                   </React.Fragment>
                 ) : (
                   <React.Fragment>
-                    Customer has raised a dispute for&nbsp;
+                    A Customer has raised a dispute for&nbsp;
                     <Amount
                       value={dispute.amount}
                       currency={dispute.currency}
                     />.&nbsp; Kindly respond to the mail sent to you on your
-                    registered email address by
-                    <Time
+                    registered email address by &nbsp;<Time
                       value={dispute.expires_on}
                       format="ll"
-                    /> ({daysLeftInExpiry(dispute.expires_on, 'in ')}) failing
+                    />{' '}
+                    ({daysLeftInExpiry(dispute.expires_on, 'in ')}) failing
                     which you will loose the dispute and the disputed amount
                     will be deducted from your account.
                   </React.Fragment>
@@ -90,7 +90,7 @@ export default props => {
               />
 
               {/* created_at of dispute */}
-              <EntityDetailRow label="Disputed On">
+              <EntityDetailRow label="Created At">
                 <Time value={dispute.created_at} format="LL|hh:mm A" />
               </EntityDetailRow>
 
