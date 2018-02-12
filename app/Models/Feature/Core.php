@@ -42,7 +42,7 @@ class Core extends Base\Core
 
         $entityId = $feature->getEntityId();
 
-        $existingFeatures = $this->repo->feature->findByEntityTypeAndEntityId($entityType, $entityId);
+        $existingFeatures = $this->repo->feature->fetchByEntityTypeAndEntityId($entityType, $entityId);
 
         $assignedFeatureNames = $existingFeatures->pluck(Entity::NAME)->toArray();
 
@@ -563,7 +563,7 @@ class Core extends Base\Core
         Entity $feature,
         bool $shouldSync)
     {
-        if ($feature->getEntityType() !== Constants::MERCHANT)
+        if ($feature->isMerchantFeature() === false)
         {
             // Return if the feature is not for a merchant
             return;

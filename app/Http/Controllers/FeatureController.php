@@ -12,25 +12,25 @@ class FeatureController extends Controller
     /**
      * Assigns features to accounts
      *
-     * @param string|null $entityId
+     * @param string|null $accountId
      *
      * @return \Illuminate\Http\Response
      */
-    public function addAccountFeatures(string $entityId)
+    public function addAccountFeatures(string $accountId)
     {
-        return $this->addFeatures(Constants::MERCHANT, $entityId);
+        return $this->addFeatures(Constants::MERCHANT, $accountId);
     }
 
     /**
      * Assigns features to applications
      *
-     * @param string|null $entityId
+     * @param string|null $accountId
      *
      * @return \Illuminate\Http\Response
      */
-    public function addApplicationFeatures(string $entityId)
+    public function addApplicationFeatures(string $accountId)
     {
-        return $this->addFeatures(Constants::APPLICATION, $entityId);
+        return $this->addFeatures(Constants::APPLICATION, $accountId);
     }
 
     /**
@@ -74,6 +74,8 @@ class FeatureController extends Controller
     /**
      * Deletes the feature association with the merchant
      *
+     * @todo: Remove the function once the dashboard is migrated.
+     *
      * @deprecated Use deleteEntityFeature instead.
      * @param string $entityId
      * @param string $featureName
@@ -107,43 +109,44 @@ class FeatureController extends Controller
      * Returns the features assigned to the merchant
      *
      * @deprecated Use getAccountFeatures instead
-     * @param string|null $entityId
+     * @param string|null $merchantId
      *
      * @return \Illuminate\Http\Response
      */
-    public function getMerchantFeatures(string $entityId)
+    public function getMerchantFeatures(string $merchantId)
     {
-        return $this->getFeatures(Constants::MERCHANTS, $entityId);
+        return $this->getFeatures(Constants::MERCHANTS, $merchantId);
     }
 
     /**
      * Returns the features assigned to the account
      *
-     * @param string|null $entityId
+     * @param string|null $accountId
      *
      * @return \Illuminate\Http\Response
      */
-    public function getAccountFeatures(string $entityId)
+    public function getAccountFeatures(string $accountId)
     {
-        return $this->getFeatures(Constants::ACCOUNTS, $entityId);
+        return $this->getFeatures(Constants::ACCOUNTS, $accountId);
     }
 
     /**
      * Returns the features assigned to the application
      *
-     * @param string|null $entityId
+     * @param string|null $applicationId
      *
      * @return \Illuminate\Http\Response
      */
-    public function getApplicationFeatures(string $entityId)
+    public function getApplicationFeatures(string $applicationId)
     {
-        return $this->getFeatures(Constants::APPLICATIONS, $entityId);
+        return $this->getFeatures(Constants::APPLICATIONS, $applicationId);
     }
 
     /**
      * Returns the features assigned to the entity
      *
-     * @param string|null $entityId
+     * @param string $entityType
+     * @param string $entityId
      *
      * @return \Illuminate\Http\Response
      */

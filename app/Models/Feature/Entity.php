@@ -61,8 +61,8 @@ class Entity extends Base\PublicEntity
      */
     protected static $routeToEntityTypeMap = [
         Constants::MERCHANTS    => Constants::MERCHANT,
-        'accounts'     => Constants::MERCHANT,
-        'applications' => Constants::APPLICATION,
+        Constants::ACCOUNTS     => Constants::MERCHANT,
+        Constants::APPLICATIONS => Constants::APPLICATION,
     ];
 
     public function getName()
@@ -104,13 +104,23 @@ class Entity extends Base\PublicEntity
     }
 
     /**
+     * Returns true if the feature belongs to the merchant
+     *
+     * @return bool
+     */
+    public function isMerchantFeature(): bool
+    {
+        return ($this->getEntityType() === Constants::MERCHANT);
+    }
+
+    /**
      * Extracts entity type from route endpoint.
      * @param string $routeEndpoint
      *
      * @return string
      * @throws Exception\BadRequestException
      */
-    public static function getEntityTypeFromRouteEndpoint(string $routeEndpoint): string
+    public static function getEntityTypeFromRoute(string $routeEndpoint): string
     {
         if (key_exists($routeEndpoint, self::$routeToEntityTypeMap) === false)
         {

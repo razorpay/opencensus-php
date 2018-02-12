@@ -30,11 +30,13 @@ class Service extends Base\Service
 
     public function getFeatures(string $routeEndpoint, string $entityId)
     {
-        $entityType = Entity::getEntityTypeFromRouteEndpoint($routeEndpoint);
+        $entityType = Entity::getEntityTypeFromRoute($routeEndpoint);
 
         $response = new Base\Collection;
 
-        $response['assigned_features'] = $this->repo->feature->findByEntityTypeAndEntityId($entityType, $entityId);
+        $response['assigned_features'] = $this->repo->feature->fetchByEntityTypeAndEntityId(
+                                            $entityType,
+                                            $entityId);
 
         // all_features is a list of currently available features in the system
         $response['all_features'] = array_keys(Constants::$featureValueMap);
@@ -52,11 +54,18 @@ class Service extends Base\Service
      *
      * @return array
      */
-    public function deleteEntityFeature(string $routeEndpoint, string $entityId, string $featureName, array $input)
+    public function deleteEntityFeature(
+        string $routeEndpoint,
+        string $entityId,
+        string $featureName,
+        array $input): array
     {
-        $entityType = Entity::getEntityTypeFromRouteEndpoint($routeEndpoint);
+        $entityType = Entity::getEntityTypeFromRoute($routeEndpoint);
 
-        $feature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail($entityType, $entityId, $featureName);
+        $feature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail(
+                        $entityType,
+                        $entityId,
+                        $featureName);
 
         $shouldSync = (bool) ($input[Entity::SHOULD_SYNC] ?? false);
 

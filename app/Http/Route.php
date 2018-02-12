@@ -723,7 +723,7 @@ final class Route
         'feature_add_applications'                => ['post',     'applications/{entityId}/features',               'FeatureController@addApplicationFeatures'                          ],
         'feature_get_accounts'                    => ['get',      'accounts/{entityId}/features',                   'FeatureController@getAccountFeatures'                              ],
         'feature_get_applications'                => ['get',      'applications/{entityId}/features',               'FeatureController@getApplicationFeatures'                          ],
-        'feature_remove'                          => ['delete',   '{entityType}/{entityId}/features/{featureName}', 'FeatureController@deleteEntityFeature'                             ],
+        'feature_delete_entity'                   => ['delete',   '{entityType}/{entityId}/features/{featureName}', 'FeatureController@deleteEntityFeature'                             ],
     ];
 
     public static $public = [
@@ -1321,7 +1321,7 @@ final class Route
         'setl_update_channel_bulk',
         'setl_fetch_schedule',
         'feature_delete',
-        'feature_remove',
+        'feature_delete_entity',
         'admin_dummy_account_test',
         'admin_get_file',
         // workflows
@@ -1415,7 +1415,7 @@ final class Route
         'admin_lead_get_multiple'                => Permission::VIEW_MERCHANT_INVITE,
         'admin_dummy_account_test'               => Permission::VIEW_MERCHANT,
         'feature_delete'                         => Permission::DELETE_MERCHANT_FEATURES,
-        'feature_remove'                         => Permission::DELETE_MERCHANT_FEATURES,
+        'feature_delete_entity'                  => Permission::DELETE_MERCHANT_FEATURES,
         'workflow_create'                        => Permission::CREATE_WORKFLOW, // Fix permissions
         'workflow_get'                           => Permission::VIEW_WORKFLOW,
         'workflow_get_multiple'                  => Permission::VIEW_ALL_WORKFLOW,
