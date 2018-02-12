@@ -42,6 +42,13 @@ class RefundReconciliate extends Base\RefundReconciliate
         return Carbon::createFromFormat('d-m-Y h:i a', $refundSettledAt, Timezone::IST)->getTimestamp();
     }
 
+    /**
+     * This method is called when refundId is not found in our DB. Therefore,
+     * we would need to find it based on the UPI entity instead.
+     *
+     * @param array $row
+     * @return null
+     */
     protected function getPaymentId(array $row)
     {
         $rrn = $row[self::ORIGINAL_BANK_RRN] ?? null;
@@ -76,6 +83,23 @@ class RefundReconciliate extends Base\RefundReconciliate
 
             return false;
         }
+
+        return true;
+    }
+
+    protected function persistReconciliationData(array $rowDetails)
+    {
+        $retVal = parent::persistReconciliationData($rowDetails);
+
+        if ($retVal === false)
+        {
+            return $retVal;
+        }
+
+        // We mark the refund status as processed if retval is true
+        $this->refund->setStatusProcessed();
+
+        $this->repo->saveOrFail($this->refund);
 
         return true;
     }
