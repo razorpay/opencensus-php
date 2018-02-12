@@ -329,6 +329,14 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
+    public function findIssuedByBatchId(string $batchId): Base\PublicCollection
+    {
+        return $this->newQuery()
+            ->where(Entity::BATCH_ID, $batchId)
+            ->where(Entity::STATUS, Status::ISSUED)
+            ->get();
+    }
+
     public function findByBatchIdAndReceipts(
         string $batchId,
         array $receipts = []): Base\PublicCollection

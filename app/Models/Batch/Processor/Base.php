@@ -135,6 +135,15 @@ class Base extends BaseModel\Core
         });
     }
 
+    /**
+     * When $batch is null, the filestore entity $ufhFile is getting
+     * saved with `entity_type` and `entity_id` as NULL.
+     *
+     * @param array $input
+     * @param Batch\Entity|null $batch
+     * @param array $entries
+     * @return FileStore\Entity
+     */
     public function getStoredInputFileAndValidateBatchEntries(array $input,
                                                               Batch\Entity $batch = null,
                                                               array & $entries = [])
@@ -149,8 +158,6 @@ class Base extends BaseModel\Core
             
             $ufhFile->entity()->associate($batch);
         }
-
-        // TODO : BUGFIX :: For dissociated case, while saving, the entity_id and type is getting saved
 
         $this->repo->transaction(function () use ($ufhFile) {
 
@@ -211,7 +218,7 @@ class Base extends BaseModel\Core
     }
 
     /**
-     * Checks if the batch can be processed, if yes sets the processing flag
+     * Checks if the batch can be processed. If yes, sets the processing flag
      * and calls the main process method. In other case throws an exception.
      * We perform the entire operation inside a mutex lock, so that concurrent
      * process requests are handled successfully. We also validate after doing a
