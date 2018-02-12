@@ -1069,8 +1069,6 @@ final class Route
         'subscription_cancel_due',
         'billdesk_reconcile_cancelled',
         'feature_get_multiple',
-        'feature_get_accounts',
-        'feature_get_applications',
         'feature_add',
         'feature_bulk_assign',
         'feature_bulk_remove',
@@ -1165,8 +1163,6 @@ final class Route
         'geoip_update',
         'fund_transfer_attempt_reconcile',
         'merchant_tags_bulk',
-        'feature_add_accounts',
-        'feature_add_applications',
     ];
 
     public static $proxy = [
@@ -1263,6 +1259,10 @@ final class Route
         'ufh_get_file_signed_url',
         'pincode_get',
         'dispute_edit',
+        'feature_get_accounts',
+        'feature_get_applications',
+        'feature_add_accounts',
+        'feature_add_applications',
     ];
 
     // These will run on internal auth with the assurance
