@@ -71,8 +71,14 @@ export const generateReport = ajaxParams => {
   };
 };
 
+const pollInterval = 2, // poll interval in SECONDS
+      timeout = 30 * 60 * 1000; // 30 minutes
+
 export const generateReportV2 = params => {
   const startTime = new Date();
+
+  let numCallsMade = 0,
+      timeElapsed = 0;
 
   return createLog(params)
     .then(resp => {
@@ -85,19 +91,40 @@ export const generateReportV2 = params => {
       const logPoll = poll({
         fetchFunc: () => getLog(resp.data.id),
         validator: resp => {
+
+          numCallsMade++;
+          timeElapsed = new Date() - startTime;
+
           /* 
            * stop poll when
-           * 1) It takes more than 3 minutes to process log
+           * 1) If calls exceeded timeout time
            * 2) If the api throws an error
            * 3) If the log is processed/failed
            */
+
           return (
-            new Date() - startTime > 3 * 60 * 1000 ||
+            timeElapsed > timeout ||
             resp.error ||
             resp.data.status !== 'created'
           );
         },
-        minWaitTime: 2000,
+        getNextCallWaitime : () => {
+       
+          /*
+           * Decresing the poll frequency exponentially
+           * 2^1 , 2^2, 2^3 .....
+           */
+
+          let nextCallWaittime = (pollInterval ** (numCallsMade))*1000,
+              timeToBeElapsed = timeElapsed + nextCallWaittime;
+
+          if (timeToBeElapsed > timeout) {
+          
+            nextCallWaittime = timeout - timeElapsed;
+          }
+
+          return nextCallWaittime;
+        }
       });
 
       return logPoll.promise

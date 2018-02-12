@@ -23,6 +23,11 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import LocalStorageService from 'rzp/utils/localStorage';
 import NewHome from './New';
 
+import {
+isMobileDevice 
+} from 'merchant/components/Home/data';
+import { trackForceOldDashboard } from './ga'; 
+
 defaults.global.defaultFontColor = '#666';
 defaults.global.defaultFontFamily =
   '"Lato", "Helvetica Neue", Helvetica, Arial,sans-serif';
@@ -34,6 +39,20 @@ defaults.global.layout = {
     top: 5,
     right: 5,
   },
+};
+
+const analyticsGoTo = name => {
+  window.rzpAnalytics({
+    eventCategory: 'Dashboard - Home',
+    eventAction: `Go To - ${name}`
+  });
+};
+
+const analyticsOpenDetails = name => {
+  window.rzpAnalytics({
+    eventCategory: 'Dashboard - Home',
+    eventAction: `Open Details - ${name}`
+  });
 };
 
 // graph data
@@ -147,16 +166,22 @@ class HomeContainer extends Component {
 
           <div class="row RecentTxns">
             <RecentEntityTable
+              onSeeAll={() => analyticsGoTo('Payments')}
+              onOpenDetails={() => analyticsOpenDetails('Payments')}
               entity="payment"
               data={payments}
               loading={payments.loading}
             />
             <RecentEntityTable
+              onSeeAll={() => analyticsGoTo('Refunds')}
+              onOpenDetails={() => analyticsOpenDetails('Refunds')}
               entity="refund"
               data={refunds}
               loading={refunds.loading}
             />
             <RecentEntityTable
+              onSeeAll={() => analyticsGoTo('Settlements')}
+              onOpenDetails={() => analyticsOpenDetails('Settlements')}
               entity="settlement"
               data={settlements}
               loading={settlements.loading}
@@ -176,13 +201,19 @@ class HomeContainer extends Component {
 export default class HomeSwitcher extends Component {
 
   render () {
-  
-    return (
 
-      // if the tag is enabled, force user to new dashboard
-      this.props.user.isNewAnalyticsEnabled
-        ? <Redirect to="/dashboard_v2"/>
-        : <HomeContainer/>
-    );
+    // if the tag is enabled, force user to new dashboard
+    if (this.props.user.isNewAnalyticsEnabled) {
+    
+      if (isMobileDevice) {
+      
+        trackForceOldDashboard();
+        return <HomeContainer/>;
+      }
+
+      return <Redirect to="/dashboard_v2"/>;
+    }
+
+    return <HomeContainer/>;
   }
 }

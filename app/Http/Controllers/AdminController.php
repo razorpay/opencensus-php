@@ -344,14 +344,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $response);
     }
 
-    public function postReconcileSettlement()
-    {
-        $path = 'settlements/reconcile';
-        list($error, $response) = (new Admin\Service)->makeRawApiCall($path);
-
-        return AppResponse::jsonResponse($error, $response);
-    }
-
     public function addEntityFeatures($entityType, $entityId)
     {
         $input = Input::all();

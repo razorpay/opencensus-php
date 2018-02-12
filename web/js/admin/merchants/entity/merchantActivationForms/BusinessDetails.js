@@ -62,7 +62,7 @@ export default class BusinessDetails extends Component {
               label="Organisation Type"
               name="business_type"
               defaultValue={merchantDetails.business_type}
-              required
+              disabled
             >
               <option value="1">Proprietorship</option>
               <option value="2">Individual</option>
@@ -82,23 +82,22 @@ export default class BusinessDetails extends Component {
               label="Full Business Name"
               name="business_name"
               defaultValue={merchantDetails.business_name}
-              required
+              disabled
             />
 
             <Field
-              label="Doing Business As (If Different from Above)"
+              label={<span>Doing Business As<br/>(If Different from Above)</span>}
               name="business_dba"
-              placeholder="Doing Business As"
               type="email"
               defaultValue={merchantDetails.business_dba}
-              required
+              disabled
             />
 
             <SelectField
               label="International Payments Required?"
               name="business_international"
               defaultValue={merchantDetails.business_international ? '1' : '0'}
-              required
+              disabled
             >
               <option value="0">No</option>
               <option value="1">Yes</option>
@@ -108,100 +107,84 @@ export default class BusinessDetails extends Component {
               label="Payments Accepted for (Also mention B2b or B2C)"
               name="business_paymentdetails"
               defaultValue={merchantDetails.business_paymentdetails}
+              disabled
             />
 
             <TextAreaField
               label="Business Model"
               name="business_model"
-              infoMsg="Please give a brief explanation of your business model and future plans (Essential for startups)"
+              helpMsg="Please give a brief explanation of your business model and future plans (Essential for startups)"
               defaultValue={merchantDetails.business_model}
-              required
+              disabled
             />
 
             <Field
               label="Registered Address"
               name="business_registered_address"
               defaultValue={merchantDetails.business_registered_address}
-              required
+              disabled
             />
 
             <Field
               label="Registration Address State"
               name="business_registered_state"
               defaultValue={merchantDetails.business_registered_state}
-              required
+              disabled
             />
 
             <Field
               label="Registered Address City"
               name="business_registered_city"
               defaultValue={merchantDetails.business_registered_city}
-              required
+              disabled
             />
 
             <Field
               label="Registered Address Pincode"
               name="business_registered_pin"
               defaultValue={merchantDetails.business_registered_pin}
-              required
+              disabled
             />
 
             <Field
               label="Operation Address same as Registered Address"
               name="or_same"
               defaultValue={merchantDetails.or_same}
+              disabled
             />
 
-            {/*Check if the value is changed or not.. STORE or_same IN STATE..*/}
             <Field
               label="Operation Address"
               name="business_operation_address"
-              disabled={merchantDetails.business_operation_address}
               defaultValue={merchantDetails.business_operation_address}
-              required
+              disabled
             />
 
             <Field
               label="Operation Address State"
               name="business_operation_state"
               defaultValue={merchantDetails.business_operation_state}
-              required
+              disabled
             />
 
             <Field
               label="Operation Address City"
               name="business_operation_city"
               defaultValue={merchantDetails.business_operation_city}
-              required
+              disabled
             />
 
             <Field
               label="Operation Address Pincode"
               name="business_operation_pin"
               defaultValue={merchantDetails.business_operation_pin}
-              required
-            />
-
-            <Field
-              label="Date of Establishment"
-              name="business_doe"
-              placeholder="Date of Establishment (MM/DD/YYYY)"
-              defaultValue={merchantDetails.business_doe}
-              required
-            />
-
-            <Field
-              label="Date of Establishment"
-              name="business_doe"
-              placeholder="Date of Establishment (MM/DD/YYYY)"
-              defaultValue={merchantDetails.business_doe}
-              required
+              disabled
             />
 
             <Field
               label="Company CIN"
               name="company_cin"
-              infoMsg={() => (
+              helpMsg={() => (
                 <AsyncButton
                   onClick={this.getCompanyData}
                   class="link"
@@ -212,6 +195,7 @@ export default class BusinessDetails extends Component {
                 </AsyncButton>
               )}
               defaultValue={merchantDetails.company_cin}
+              disabled
             />
 
             {this.state.companyInfo && (
@@ -257,7 +241,7 @@ export default class BusinessDetails extends Component {
             <Field
               label="Company PAN"
               name="company_pan"
-              infoMsg={() => (
+              helpMsg={() => (
                 <a
                   class="link"
                   target="_blank"
@@ -267,56 +251,29 @@ export default class BusinessDetails extends Component {
                 </a>
               )}
               defaultValue={merchantDetails.company_pan}
+              disabled
             />
 
             <Field
-              label="Name on PAN Card"
+              label={<span>Name on PAN Card <br/>(as provided above)</span>}
               name="company_pan_name"
-              placeholder="Name on PAN (provided above)"
-              infoMsg="Mandatory for Companies"
+              helpMsg="Mandatory for Companies"
               defaultValue={merchantDetails.company_pan_name}
-            />
-
-            <SelectField
-              label="Expected annual transaction volume (INR)"
-              name="transaction_volume"
-              defaultValue={merchantDetails.transaction_volume}
-              required
-            >
-              <option value="1">{'< 1 Lakh'}</option>
-              <option value="2">1 to 10 lakh</option>
-              <option value="3">10 Lakh to 1 Crore</option>
-              <option value="4">> 1 Crore</option>
-            </SelectField>
-
-            <Field
-              label="Expected average transaction value"
-              name="transaction_value"
-              placeholder="E.g. Average price of the commodities you sell"
-              defaultValue={merchantDetails.transaction_value}
+              disabled
             />
 
             <Field
-              label="Expected average transaction value"
-              name="transaction_value"
-              placeholder="E.g. Average price of the commodities you sell"
-              defaultValue={merchantDetails.transaction_value}
-            />
-
-            <Field
-              label="EPAN of any 1 authorised signatory/promoter/director"
+              label={<span>EPAN of any 1 authorised signatory/promoter/director <br/>(as provided above)</span>}
               name="promoter_pan"
-              placeholder="PAN Number of Promoter"
               defaultValue={merchantDetails.promoter_pan}
-              required
+              disabled
             />
 
             <Field
-              label="Name on PAN Card"
+              label={<span>Name on PAN Card <br/>(as provided above)</span>}
               name="promoter_pan_name"
-              placeholder="Name on PAN Card"
               defaultValue={merchantDetails.promoter_pan_name}
-              required
+              disabled
             />
 
             <div class="field">

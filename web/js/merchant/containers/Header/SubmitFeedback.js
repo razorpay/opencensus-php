@@ -12,10 +12,10 @@ import { submitFeedback } from 'merchant/modules/session';
 @connect(state => state.session, {
   closeModal,
   showNotification,
-  submitFeedback,
+  submitFeedback
 })
 @reduxForm({
-  form: 'submitFeedback',
+  form: 'submitFeedback'
 })
 export default class SubmitFeedback extends Component {
   _submit = props => {
@@ -23,30 +23,39 @@ export default class SubmitFeedback extends Component {
       .submitFeedback({
         ...props,
         message: props.message || '',
-        email: this.props.user.user.email,
+        email: this.props.user.user.email
       })
       .then(() => {
         this.props.showNotification({
           type: 'success',
-          message: 'Submitted! Thanks for your feedback.',
+          message: 'Submitted! Thanks for your feedback.'
         });
       })
       .catch(({ errors }) => {
         this.props.showNotification({
           type: 'error',
-          message: errors,
+          message: errors
         });
       });
   };
 
   submit = props => {
+    this.props.analytics && this.props.analytics('Submit Form - Feedback')
     return this._submit({
       ...props,
-      subject: 'New Dashboard Feedback',
+      subject: 'New Dashboard Feedback'
     }).then(() => {
       this.props.closeModal();
     });
   };
+
+  componentDidMount() {
+    this.props.analytics && this.props.analytics('Open Form - Feedback');
+  }
+
+  componentWillUnmount() {
+    this.props.analytics && this.props.analytics('Close Form - Feedback');
+  }
 
   render() {
     const { handleSubmit } = this.props;

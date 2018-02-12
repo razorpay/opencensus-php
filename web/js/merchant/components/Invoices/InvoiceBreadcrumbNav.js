@@ -3,7 +3,7 @@ import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 export default ({ invoice, onBackNavClick }) => {
   let isNew = !invoice.id;
   return (
-    <ol class="custom-breadcrumb breadcrumb__backNav">
+    <ol class="custom-breadcrumb breadcrumb breadcrumb__backNav">
       <li>
         <a class="breadcrumb__backNav--link btn" onClick={onBackNavClick}>
           <i class="i i-arrow-back" />

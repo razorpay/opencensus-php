@@ -26,10 +26,11 @@ const typeToTargetMap = {
   refund_failed: [
     'upi_icici',
     'airtel_money',
-    //   'amex',
-    //   'first_data',
-    //   'cybersource',
-    //   'hdfc',
+    'icic_first_data',
+    'axis_migs',
+    'axis_cybersource',
+    'hdfc_cybersource',
+    'hdfc_fss',
   ],
 };
 

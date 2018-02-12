@@ -17,6 +17,7 @@ import SubmitFeedback from 'merchant/containers/Header/SubmitFeedback';
 )
 export default class ProfileDropdown extends Component {
   logout = () => {
+    this.props.analytics && this.props.analytics('Log Out');
     return this.props.logout().then(() => {
       window.location.reload();
     });
@@ -25,12 +26,24 @@ export default class ProfileDropdown extends Component {
   submitFeedback = () => {
     this.props.openModal({
       size: 'small',
-      component: <SubmitFeedback />,
+      component: <SubmitFeedback analytics={this.props.analytics} />,
     });
   };
 
+  showOrHideTour = show => {
+    let {
+      analytics = () => {},
+      showOrHideTour
+    } = this.props;
+    analytics('Show - Recent UI Changes');
+    return showOrHideTour(show);
+  }
+
   render() {
-    let user = this.props.user;
+    let {
+      user,
+      analytics = () => {}
+    } = this.props;
     let merchant = user.merchants[user.current];
     return (
       <Dropdown closeOnClick={false}>
@@ -54,7 +67,7 @@ export default class ProfileDropdown extends Component {
                   <div class="merchantname">{merchant.name}</div>
                   <div>
                     <small>{merchant.id}</small>
-                    <CustomClipboard value={merchant.id}>
+                    <CustomClipboard value={merchant.id} onCopy={() => analytics('Copy - Merchant ID')}>
                       <button
                         class="btn btn-default btn-xs"
                         style={{ marginLeft: '5px' }}
@@ -86,7 +99,7 @@ export default class ProfileDropdown extends Component {
 
             <div
               class="media media-action"
-              onClick={() => this.props.showOrHideTour(true)}
+              onClick={() => this.showOrHideTour(true)}
             >
               <div class="media-left">
                 <div class="media-object">

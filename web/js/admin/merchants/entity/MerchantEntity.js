@@ -428,6 +428,13 @@ const ActionsList = ({ model, merchantId, actions }) => {
             {isDetailsLoading && <div class="dot-loader">.</div>}
           </div>
         </ShowWhen>
+        <ShowWhen permission="edit_merchant_risk_threshold">
+          <div onClick={isDetailsLoading ? null : actions.EditFraudScore}>
+            Edit Fraud Score
+            <i class="pull-right i i-edit-form" />
+            {isDetailsLoading && <div class="dot-loader">.</div>}
+          </div>
+        </ShowWhen>
 
         <ShowWhen permission="edit_merchant_pricing">
           <div onClick={isDetailsLoading ? null : actions.AssignPricingPlan}>

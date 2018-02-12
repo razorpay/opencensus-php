@@ -21,7 +21,7 @@ const StatusLabel = ({ status, entity, children, ...otherProps }) => {
   );
 };
 
-export default ({ entity, data, loading }) => {
+export default ({ entity, data, loading, onSeeAll = () => {}, onOpenDetails = () => {} }) => {
   let items = data.items;
   return (
     <div class="col-md-4 col-sm-6 col-xs-12">
@@ -32,6 +32,7 @@ export default ({ entity, data, loading }) => {
               data-tip={`See All ${titleCase(entity)}s`}
               class="pull-right"
               to={`/${entity}s`}
+              onClick={onSeeAll}
             >
               <i class="i i-arrow-forward" />
             </Link>
@@ -51,7 +52,7 @@ export default ({ entity, data, loading }) => {
                           return (
                             <tr key={index}>
                               <td>
-                                <Link to={`/${entity}s/${item.id}`}>
+                                <Link to={`/${entity}s/${item.id}`} onClick={onOpenDetails}>
                                   <code>{item.id}</code>
                                   <div class="text-muted font-xs">
                                     {formatFromNow(item.created_at)}

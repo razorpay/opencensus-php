@@ -13,14 +13,25 @@ export default class EmailNotifications extends Component {
     this.props.initialize(this.props.config);
   }
 
+  onSave = e => {
+    this.analytics();
+    this.props.handleSubmit(this.props.onSave)(e);
+  }
+
+  analytics = () => {
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Settings',
+      eventAction: 'Change - Email Notifications Addresses'
+    });
+  }
+
   render() {
-    let { handleSubmit, onSave } = this.props;
     return (
       <div class="panel panel-default">
         <div class="panel-heading">Email Notifications</div>
 
         <div class="panel-body">
-          <form class="form-horizontal" onSubmit={handleSubmit(onSave)}>
+          <form class="form-horizontal" onSubmit={this.onSave}>
             <div class="help-block">
               Enter email addresses that will receive email notifications
               regarding payments, settlements, daily payment reports, webhooks,
@@ -44,7 +55,7 @@ export default class EmailNotifications extends Component {
                   class="btn btn-default pull-right"
                   text="Save Changes"
                   pendingText="Saving..."
-                  onClick={handleSubmit(onSave)}
+                  onClick={this.onSave}
                 />
               </div>
             </div>

@@ -4,6 +4,7 @@ namespace App\Admin;
 
 use Config;
 use Input;
+use Route;
 use Auth;
 
 use GuzzleHttp\Client as Guzzle;
@@ -26,102 +27,135 @@ class ApiRequestAny
     protected $client;
 
     const RAZORPAY_ACCOUNT_HEADER = 'X-Razorpay-Account';
+
     const CONTENT_TYPE_JSON = 'application/json';
+
     const CONTENT_TYPE_FORM = 'application/x-www-form-urlencoded';
+
     const CONTENT_TYPE_MULTIPART_PREFIX = 'multipart/form-data;';
 
     /**
      * Construct a RawApiRequest instance
-     * @param array $auth of auth (proxy|admin)
-     * @param string $path relative path of the request
+     *
+     * @param string $mode live|test
+     * @param string $base_url base url of dashboard
      */
-    function __construct()
+    function __construct($mode, $base_url = null)
     {
         // Increase the time limit
         set_time_limit(600);
 
-        $options = [
-            'base_url' => Config::get('api.url')
+        $this->options = [
+            'headers' => [
+                'X-Dashboard' => 'true',
+                'X-User-Agent' => Request::header('User-Agent'),
+                'X-IP-Address' => Request::ip()
+            ],
         ];
+
+        $this->processRoute($mode);
+
+        $this->processInput();
+
+        if ($base_url === null)
+        {
+            $base_url = Config::get('api.url');
+        }
 
         // Create the guzzle client
-        $this->client = new Guzzle($options);
+        $this->client = new Guzzle([
+            'base_url' => $base_url
+        ]);
     }
 
-    /**
-     * makes raw api calls with X-Admin-Token added to header
-     */
-    public function sendWithAdminToken($auth, $path)
-    {
-        $adminUser = Auth::guard('api')->user();
+    public function processRoute($mode) {
 
-        $options = [
-            'headers' => [
-                'X-Admin-Token' => $adminUser->token,
-                'X-Org-Id' => $adminUser->org_id
-            ]
-        ];
+        $routeName = Route::currentRouteName();
 
-        return $this->send($path, $options, $auth);
-    }
+        if (empty($routeName) === false) {
 
-    public function sendWithMerchantProxy($mode, $path)
-    {
-        $merchantUser = Auth::guard('user')->user();
+            if ($routeName === 'merchant')
+            {
 
-        $currentMerchant = $merchantUser->currentMerchant();
+                $currentMerchant = Auth::guard('user')->user()->currentMerchant();
 
+                $this->options['headers']['X-Dashboard-User-Role'] = $currentMerchant->role;
 
-        if (empty($currentMerchant) === false)
-        {
-            $merchantId = $currentMerchant->id;
+                $mode .= '_' . $currentMerchant->id;
 
-            $options = [
-                'headers' => [
-                    'X-Merchant-Role' => $currentMerchant->role
-                ]
-            ];
+            }
+            else if ($routeName === 'admin')
+            {
 
-            $user = $mode.'_'.$merchantId;
+                $adminUser = Auth::guard('api')->user();
 
-            return $this->send($path, $options, $user);
+                $this->options['headers']['X-Admin-Token'] = $adminUser->token;
+
+                $this->options['headers']['X-Org-Hostname'] = \Request::server('SERVER_NAME');
+
+            }
+            else if ($routeName === 'user')
+            {
+                $headers['X-Dashboard-User-Id'] = Auth::guard('user')->user()->id;
+
+                $mode = 'live';
+            }
         }
+
+        if (empty($mode) === false) {
+            $this->options['auth'] = [
+                'rzp_' . $mode,
+                Config::get('api.auth_pass')
+            ];
+        }
+
     }
 
-    /**
-     * makes raw api calls with X-Dashboard-User-Id added to header
-     */
-    public function sendWithUserId($path)
+    // process body according to content-type
+    public function processInput()
     {
-        $user = Auth::guard('user')->user();
 
-        $options = [
-            'headers' => [
-                'X-Dashboard-User-Id' => $user->id
-            ]
-        ];
+        $input = Request::all();
 
-        return $this->send($path, $options, 'live');
+        $contentType = Request::header('content-type', self::CONTENT_TYPE_JSON);
+
+        // auth check just for precaution, so that guests do not upload files
+        if (strpos($contentType, self::CONTENT_TYPE_MULTIPART_PREFIX) === 0)
+        {
+            foreach ($input as $key => $val)
+            {
+                if ($val instanceof \SplFileInfo)
+                {
+                    $input[$key] = fopen($val, 'r');
+                }
+            }
+        }
+
+        if ($contentType === self::CONTENT_TYPE_JSON)
+        {
+            $this->options['json'] = $input;
+        }
+        else
+        {
+            $this->options['body'] = $input;
+        }
     }
 
     /**
      * Fires the request to the API
      * @return array standard response
      */
-    public function send($path, $options = [], $auth = null)
+    public function send($path)
     {
         $exception = null;
         $errors = [];
         $response = null;
-
         $method = Request::method();
-
-        $options = $this->processOptions($auth, $options);
 
         try
         {
             $response = $this->client
-                             ->$method($path, $options)
+                             ->$method($path, $this->options)
                              ->json();
 
             return [null, $response];
@@ -168,57 +202,5 @@ class ApiRequestAny
         }
 
         return [$errors, null];
-    }
-
-    // set Content-Type header
-    // and process body according to content-type
-    public function processOptions($auth, $options)
-    {
-
-        if ($auth) {
-            $options['auth'] = [
-                'rzp_'.$auth,
-                Config::get('api.auth_pass')
-            ];
-        }
-
-        $input = Request::all();
-
-        $headers = $options['headers'] ?? [];
-
-        $contentType = Request::header('content-type', self::CONTENT_TYPE_JSON);
-
-        // auth check just for precaution, so that guests do not upload files
-        if ($auth && strpos($contentType, self::CONTENT_TYPE_MULTIPART_PREFIX) === 0)
-        {
-            foreach ($input as $key => $val)
-            {
-                if ($val instanceof \SplFileInfo)
-                {
-                    $input[$key] = fopen($val, 'r');
-                }
-            }
-        }
-
-        if ($contentType === self::CONTENT_TYPE_JSON)
-        {
-            $options['json'] = $input;
-        }
-        else
-        {
-            $options['body'] = $input;
-        }
-
-        $defaultHeaders = [
-            'X-Dashboard'   => 'true',
-            'X-User-Agent'  => Request::header('User-Agent'),
-            'X-IP-Address'  => Request::ip()
-        ];
-
-
-        $options['headers'] = $defaultHeaders + $headers;
-
-        return $options;
-
     }
 }

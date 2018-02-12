@@ -5,6 +5,11 @@ $muted = rgba(0, 0, 0, 0.27)
   max-width: 1110px;
   margin: auto;
 
+  .form-control[disabled] {
+
+    background-color: transparent;
+  }
+
   .breadcrumb__backNav--heading {
     margin-right: 5px;
     vertical-align: middle;
@@ -30,6 +35,11 @@ $muted = rgba(0, 0, 0, 0.27)
       text-align: center;
       font-size: 13px;
       padding: 8px;
+    }
+
+    .SingleDatePickerInput__disabled {
+
+      display: none;
     }
 
     .DateInput__display-text {

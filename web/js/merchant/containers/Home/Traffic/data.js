@@ -26,7 +26,7 @@ const groupMeta = {
     value: groupValues[0],
   },
   [groupValues[1]]: {
-    title: 'By No. of Transactions',
+    title: 'By Number of Transactions',
     aggType: 'count',
     groupBy: 'platform',
     value: groupValues[1],

@@ -1,15 +1,11 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import numeral from 'numeral';
-import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import moment from 'moment';
 
 import Amount from 'rzp/ui/Amount';
-import {
-  paiseToRupees,
-  titleCase,
-  getPercentage
-} from 'rzp/utils/rzp-utils';
+import Tabs, { Tab, TabPane } from 'rzp/ui/ReactTabs';
+import { paiseToRupees, titleCase, getPercentage } from 'rzp/utils/rzp-utils';
 import {
   humanReadableIndian,
   humanReadableIndianCurrency,
@@ -19,6 +15,10 @@ import { showNotification } from 'rzp/modules/notifications';
 import { groupBy } from 'rzp/utils/pokedex';
 
 import { fetch } from 'merchant/modules/pokedex';
+import { API_ERROR, API_INVALID_RESP } from 'merchant/components/Home/data';
+import { trackNoData } from 'merchant/containers/Home/ga';
+import Tooltip from 'merchant/components/Home/Tooltip';
+
 import {
   NUM_TRANSACTIONS,
   SAVED_CARDS,
@@ -28,28 +28,33 @@ import {
   breakdownVals,
   getTimelineData,
 } from './data';
-import { API_ERROR, API_INVALID_RESP } from 'merchant/components/Home/data';
-import Tooltip from 'merchant/components/Home/Tooltip';
+import {
+  trackTabClick,
+  trackBreakdownChange,
+  trackSavedCardsHidden
+} from './ga';
 import Panel from './Panel';
 
 const csvDateFormat = 'DD-MM-YYYY';
 
-const TabContent = ({ name, value, isCurrency, title, isLoading, error }) => {
+const TabContent = ({
+  name, value, percent,
+  isCurrency, title, isLoading,
+  error
+}) => {
   /*
    * Description:
    * Component responsible for rendering content in each Tab
    */
 
   let formattedValue = value;
-    
-  if (name !== SAVED_CARDS) {
 
+  if (name !== SAVED_CARDS) {
     formattedValue = isCurrency
-                       ? humanReadableIndianCurrency(paiseToRupees(value))
-                       : humanReadableIndian(value);
+      ? humanReadableIndianCurrency(paiseToRupees(value))
+      : humanReadableIndian(value);
   } else {
-  
-    formattedValue = formattedValue + "%";
+    formattedValue = percent + '%';
   }
 
   /*
@@ -58,27 +63,25 @@ const TabContent = ({ name, value, isCurrency, title, isLoading, error }) => {
    *
    */
   return (
-    <a>
-      <div>
-        <h1>
-          {!isLoading ? (
-            <span>
-              {error ? (
-                '--'
-              ) : (
-                <span>
-                  {formattedValue}
-                  <Tooltip value={value} isCurrency={isCurrency} />
-                </span>
-              )}
-            </span>
-          ) : (
-            <PlaceholderLoader />
-          )}
-        </h1>
-        <span>{!isLoading ? title : <PlaceholderLoader />}</span>
-      </div>
-    </a>
+    <div>
+      <h1>
+        {!isLoading ? (
+          <span>
+            {error ? (
+              '--'
+            ) : (
+              <span>
+                {formattedValue}
+                <Tooltip value={value} isCurrency={isCurrency} />
+              </span>
+            )}
+          </span>
+        ) : (
+          <PlaceholderLoader />
+        )}
+      </h1>
+      <span>{!isLoading ? title : <PlaceholderLoader />}</span>
+    </div>
   );
 };
 
@@ -119,7 +122,7 @@ class KeyMetricsContainer extends Component {
         tabState.selectedGrouping = grouping[0];
       }
 
-      tabState.selectedBreakdown = breakdownVals[0];
+      tabState.selectedBreakdown = breakdownVals[0].value;
 
       tabState.data = {
         loading: false,
@@ -148,6 +151,8 @@ class KeyMetricsContainer extends Component {
           error: '',
         },
 
+        showTab: true,
+
         error: '',
       };
     });
@@ -170,7 +175,7 @@ class KeyMetricsContainer extends Component {
     const { tabsState, selectedTab } = this.state,
       tabState = tabsState[selectedTab],
       { selectedGrouping } = tabState,
-      { startDate, endDate, mode } = this.props;
+      { startDate, endDate, mode, sectionTitle } = this.props;
 
     const query = getQuery({
       tabName: fetchAllCounts ? 'all' : selectedTab,
@@ -208,30 +213,35 @@ class KeyMetricsContainer extends Component {
           const mainStat = resp.data[tabName];
 
           if (mainStat) {
-
             if (tabName === SAVED_CARDS) {
-           
-              const data = groupBy(
-                mainStat.result,
-                tabMeta.groupByColumnName
-              ),
-              savedCardsValue = data["1"]
-                                  ? data["1"][0].value
-                                  : 0,
-              otherCardsValue = data["0"]
-                                  ? data["0"][0].value
-                                  : 0;
-                                
+              const data = groupBy(mainStat.result, tabMeta.groupByColumnName),
+                savedCardsValue = data['1'] ? data['1'][0].value : 0,
+                otherCardsValue = data['0'] ? data['0'][0].value : 0;
 
-              tabState.data.count = getPercentage(
+              tabState.data.count = savedCardsValue;
+
+              tabState.data.percent = getPercentage(
                 savedCardsValue + otherCardsValue,
                 savedCardsValue
               );
+
+              /*
+               * For Saved Card Txns tab
+               * 1) If number of saved cards is less than 15%
+               *    hide the tab for the merchant
+               * 2) Decide to show the tab or not only on initial load
+               */
+              if (isInitialLoad) {
+                tabState.data.showTab = tabState.data.percent > 15;
+
+                if (!tabState.data.showTab) {
+                  trackSavedCardsHidden(tabState.data.percent);
+                }
+              }
             } else {
-            
               tabState.data.count = mainStat.result[0]
-                                      ? mainStat.result[0].value
-                                      : 0;
+                ? mainStat.result[0].value
+                : 0;
             }
           }
 
@@ -249,19 +259,21 @@ class KeyMetricsContainer extends Component {
               isCurrency,
             });
 
+            // track in GA that no data found in this section for 
+            // given daterange
+            if (labels.length === 0) {
+              trackNoData(
+                `${tabMeta.title} in ${sectionTitle} from ${
+                 startDate.format(csvDateFormat)} to ${
+                 endDate.format(csvDateFormat)}`
+              );
+            }
+
             const downloadFileName = `${title}, ${startDate.format(
               csvDateFormat
             )} to ${endDate.format(csvDateFormat)}, ${titleCase(
               selectedBreakdown
             )}${selectedGrouping ? ' ' + selectedGrouping.text : ''}(Razorpay)`;
-
-            // display point only when there is only one point to plot
-            if (labels.length === 1) {
-              datasets.forEach(dataset => {
-                dataset.pointRadius = 3;
-                dataset.pointHoverRadius = 4;
-              });
-            }
 
             tabState.data.downloadFileName = downloadFileName;
             tabState.data.histogram = { labels, datasets };
@@ -420,11 +432,22 @@ class KeyMetricsContainer extends Component {
           fetchAllReq.then(() => {
             tabsOrder.forEach(tabName => {
               const tabState = tabsState[tabName],
-                { trend } = tabState.data,
-                previousCount = data[tabName].result[0]
-                  ? data[tabName].result[0].value
-                  : 0,
+                { trend } = tabState.data;
+
+              let previousCount = data[tabName].result[0]
+                    ? data[tabName].result[0].value
+                    : 0,
                 currentCount = tabState.data.count;
+
+              if (tabName === SAVED_CARDS) {
+              
+                const savedCardData = data[tabName]
+                                        .result
+                                        .filter(item => item.saved_card)[0];
+
+                previousCount = savedCardData
+                                  ? savedCardData.value : 0;
+              }
 
               trend.loading = false;
               trend.previousCount = previousCount;
@@ -482,6 +505,8 @@ class KeyMetricsContainer extends Component {
         return !data.loading && data.fetchData && this.fetchData();
       }
     );
+
+    trackTabClick(tabsMeta[tabName].title);
   }
 
   onGroupingChange(tabName, selectedGrouping) {
@@ -510,6 +535,8 @@ class KeyMetricsContainer extends Component {
     this.setState({ tabsState }, () => {
       this.fetchData();
     });
+
+    trackBreakdownChange(selectedBreakdown);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -519,11 +546,36 @@ class KeyMetricsContainer extends Component {
       startDate.toDate() - this.props.startDate.toDate() !== 0 ||
       endDate.toDate() - this.props.endDate.toDate() !== 0
     ) {
-      const { tabsState } = this.state;
+      const { tabsState, selectedTab } = this.state,
+        { selectedBreakdown } = tabsState[selectedTab];
 
       // when switched tabs, new data should be fetched as the global
       // daterange changed
       this.clearCache(tabsState);
+
+      // check the daterange and correct the breakdown in each tab
+      // if needed
+      tabsOrder.forEach((tabName) => {
+
+        const tabState = tabsState[tabName],
+              selectedBreakdown = tabState.selectedBreakdown;
+
+        if (selectedBreakdown !== 'daily') {
+
+          const showWeekly = !startDate.isSame(endDate, 'week'),
+                showMonthly = !startDate.isSame(endDate, 'month');
+
+          if (selectedBreakdown === 'weekly'  && !showWeekly  ||
+              selectedBreakdown === 'monthly' && !showMonthly   ) {
+
+            /*
+             * if the changed daterange doesn't fit for the
+             * selected breakdown switch to daily
+             */
+            tabState.selectedBreakdown = 'daily';
+          }
+        }
+      });
 
       this.setState({ tabsState }, () => {
         const fetchAllReq = this.fetchData(true);
@@ -539,44 +591,44 @@ class KeyMetricsContainer extends Component {
 
   render() {
     const { tabsState, loading } = this.state,
-      { startDate, endDate } = this.props;
+      { startDate, endDate, showGrouping, sectionTitle } = this.props,
+      visibleTabs = tabsOrder.filter(
+        tabName => tabsState[tabName].data.showTab
+      );
 
     return (
-      <Tabs className="keymetrics">
-        <TabList
-          className="nav nav-tabs nav-justified"
-          activeTabClassName="active"
-          disabledTabClassName="disabled"
-        >
-          {tabsOrder.map((tabName, index) => {
-            const tabData = tabsState[tabName].data,
-              { isCurrency, title } = tabsMeta[tabName];
+      <Tabs
+         className="keymetrics"
+         justified={true}>
+        {visibleTabs.map((tabName, index) => {
+          const tabData = tabsState[tabName].data,
+            { isCurrency, title } = tabsMeta[tabName];
 
-            return (
-              <Tab
-                key={index}
-                onClick={() => this.handleTabChange(tabName)}
-                style={{ width: 100 / tabsOrder.length + '%' }}
-              >
-                <TabContent
-                  value={tabData.count}
-                  name={tabName}
-                  isCurrency={isCurrency}
-                  title={title}
-                  isLoading={loading}
-                  error={tabData.error}
-                />
-              </Tab>
-            );
-          })}
-        </TabList>
+          return (
+            <Tab
+              key={index}
+              onClick={() => this.handleTabChange(tabName)}
+              style={{ width: 100 / visibleTabs.length + '%' }}
+            >
+              <TabContent
+                value={tabData.count}
+                name={tabName}
+                isCurrency={isCurrency}
+                title={title}
+                isLoading={loading}
+                error={tabData.error}
+                percent={tabData.percent}
+              />
+            </Tab>
+          );
+        })}
 
-        {tabsOrder.map((tabName, index) => {
+        {visibleTabs.map((tabName, index) => {
           const tabState = tabsState[tabName],
             { isCurrency } = tabsMeta[tabName];
 
           return (
-            <TabPanel key={index}>
+            <TabPane key={index}>
               <Panel
                 tabName={tabName}
                 selectedBreakdown={tabState.selectedBreakdown}
@@ -590,8 +642,10 @@ class KeyMetricsContainer extends Component {
                 isCurrency={isCurrency}
                 onScreenshot={this.onScreenshot}
                 externalUrl={`/#/app/${tabsMeta[tabName].index}`}
+                showGrouping={showGrouping}
+                sectionTitle={sectionTitle}
               />
-            </TabPanel>
+            </TabPane>
           );
         })}
       </Tabs>

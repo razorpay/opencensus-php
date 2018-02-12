@@ -9,6 +9,8 @@ import { default as chartColors } from 'rzp/utils/chart/colors';
 
 import { paymentMethodsColumns } from 'merchant/containers/Home/PaymentMethods/data';
 
+import { trackTreemapClick } from '../ga';
+
 var defaults = {
   margin: { top: 0, right: 0, bottom: 0, left: 0 },
   rootname: 'TOP',
@@ -236,6 +238,9 @@ function main(
         }
       })
       .on('click', function(d) {
+
+        trackTreemapClick(d);
+
         if (canBeZoomed(d) && typeof onTransition === 'function') {
           onTransition(d);
         }

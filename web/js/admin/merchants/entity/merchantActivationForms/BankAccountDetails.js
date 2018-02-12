@@ -16,23 +16,24 @@ export default ({ merchant_details: merchantDetails, title }) => (
           label="Name of Bank"
           name="bank_name"
           defaultValue={merchantDetails.bank_name}
-          infoMsg="Do not panic if this is empty or incorrect. We don't ask this field any more."
+          helpMsg="Do not panic if this is empty or incorrect. We don't ask this field any more."
+          disabled
         />
 
         <Field
           label="Bank Account Number"
           name="bank_account_number"
           defaultValue={merchantDetails.bank_account_number}
-          infoMsg="Do not panic if this is empty or incorrect. We don't ask this field any more."
-          required
+          helpMsg="Do not panic if this is empty or incorrect. We don't ask this field any more."
+          disabled
         />
 
         <Field
           label="Beneficiary Name"
           name="bank_account_name"
           defaultValue={merchantDetails.bank_account_name}
-          infoMsg="Should be same as business/individual name"
-          required
+          helpMsg="Should be same as business/individual name"
+          disabled
         />
 
         <Field
@@ -40,7 +41,7 @@ export default ({ merchant_details: merchantDetails, title }) => (
           name="bank_beneficiary_address1"
           type="textarea"
           defaultValue={merchantDetails.bank_beneficiary_address1}
-          required
+          disabled
         />
 
         <Field
@@ -48,6 +49,7 @@ export default ({ merchant_details: merchantDetails, title }) => (
           name="bank_beneficiary_address2"
           type="textarea"
           defaultValue={merchantDetails.bank_beneficiary_address2}
+          disabled
         />
 
         <Field
@@ -55,20 +57,21 @@ export default ({ merchant_details: merchantDetails, title }) => (
           name="bank_beneficiary_address3"
           type="textarea"
           defaultValue={merchantDetails.bank_beneficiary_address3}
+          disabled
         />
 
         <Field
           label="Beneficiary Address City"
           name="bank_beneficiary_city"
           defaultValue={merchantDetails.bank_beneficiary_city}
-          required
+          disabled
         />
 
         <SelectField
           label="Beneficiary State"
           name="bank_beneficiary_state"
           defaultValue={merchantDetails.bank_beneficiary_state}
-          required
+          disabled
         >
           {Object.keys(beneficiaryStateMap).map(key => (
             <option key={key} value={key}>
@@ -81,22 +84,15 @@ export default ({ merchant_details: merchantDetails, title }) => (
           label="Beneficiary Address Pincode"
           name="bank_beneficiary_pin"
           defaultValue={merchantDetails.bank_beneficiary_pin}
-          required
-        />
-
-        <Field
-          label="Bank Account Type"
-          name="bank_account_type"
-          defaultValue={merchantDetails.bank_account_type}
-          required
+          disabled
         />
 
         <Field
           label="Branch IFSC Code"
           name="bank_branch_ifsc"
           defaultValue={merchantDetails.bank_branch_ifsc}
-          placeholder="IFSC Code of the Bank Branch"
-          infoMsg="Do not panic if this is empty or incorrect. We don't ask this field any more."
+          helpMsg="Do not panic if this is empty or incorrect. We don't ask this field any more."
+          disabled
         />
       </Form>
     )}
