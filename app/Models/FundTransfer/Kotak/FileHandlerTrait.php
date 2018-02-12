@@ -151,11 +151,29 @@ trait FileHandlerTrait
         return $fullpath;
     }
 
+    protected function getFileExtension(string $key): string
+    {
+        $extension = pathinfo($key, PATHINFO_EXTENSION);
+
+        if(empty($extension) === false)
+        {
+            $extension = '.' . $extension;
+        }
+        else
+        {
+            $extension = '.txt';
+        }
+
+        return $extension;
+    }
+
     public function getH2HFileFromAws($key)
     {
         $bucket = 'h2h_bucket';
 
-        $name = $this->getFileToWriteName();
+        $extension = $this->getFileExtension($key);
+
+        $name = $this->getFileToWriteName($extension);
 
         $fullPath = $this->getFullFilePath($name);
 
