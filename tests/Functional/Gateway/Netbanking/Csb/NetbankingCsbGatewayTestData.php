@@ -43,7 +43,6 @@ return [
         'status'          => 'N',
         'reference1'      => 'RazorPay',
         'received'        => true,
-        'error_message'   => 'Payment failed'
     ],
 
     'testVerifyMismatch' => [

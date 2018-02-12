@@ -42,7 +42,6 @@ class Gateway extends Base\Gateway
          */
         ResponseFields::TRAN_REF_NUM => Base\Entity::BANK_PAYMENT_ID,
         ResponseFields::STATUS       => Base\Entity::STATUS,
-        ResponseFields::NARRATION    => Base\Entity::ERROR_MESSAGE, // TODO: Ensure this is correct
     ];
 
     /**
@@ -202,7 +201,7 @@ class Gateway extends Base\Gateway
         $content = [
             Constants::CHNPGSYN,
             Constants::CHNPGCODE,
-            $this->getMerchantId2(), // TODO: Check this
+            $this->getMerchantId2(),
             $verify->input['payment']['id'],
             $verify->input['payment']['amount'] / 100,
             $this->getCallbackUrl($verify->input['payment']['id']),
@@ -214,7 +213,7 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $content = array_merge($content, ["", Mode::VERIFY]);
+            $content = array_merge($content, ["", Mode::VERIFY_WO_TID]);
         }
 
         // Setting verify request property of $verify
