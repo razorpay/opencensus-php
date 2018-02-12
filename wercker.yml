@@ -47,6 +47,14 @@ build:
           name: Run artisan migrate
           code: APP_ENV=testing php artisan migrate --env=testing
 
+      - script:
+          name: create commit.txt
+          code: git rev-parse HEAD > public/commit.txt
+
+      - script:
+          name: remove heavy directories
+          code: rm --recursive --force web/node_modules
+
       # - script:
       #     name: run unit tests
       #     code: phpunit --stop-on-error --stop-on-failure --debug
@@ -73,11 +81,19 @@ build:
       - script:
           name: copy artisan server logs
           code: cp /tmp/rzp-dbd* $WERCKER_REPORT_ARTIFACTS_DIR/
-      - script:
-          name: create commit.txt
-          code: git rev-parse HEAD > public/commit.txt
 deploy:
     steps:
+      - script:
+          name: check currently deployed commit
+          code: |
+            status=`curl --write-out %{http_code} --remote-name "$APP_EXTERNAL_URL/commit.txt"`
+            if [ "$status" -eq "200" ] &&\
+              commit=`cat commit.txt` &&\
+              git merge-base --is-ancestor $commit HEAD &&\
+              [[ -z "`git diff --name-only $commit | grep -v '^web/'`" ]]; then
+              export SKIP_CODEDEPLOY=true
+            fi
+            echo SKIP_CODEDEPLOY $SKIP_CODEDEPLOY
       - script:
           name: Check if branch is master
           code: |
@@ -96,9 +112,6 @@ deploy:
       - script:
           name: S3 Sync
           code: ./s3sync.js
-      - script:
-          name: remove heavy directories
-          code: rm --recursive --force .git node_modules web/node_modules
       - razorpay/aws-code-deploy@0.0.32:
           key: $AWS_KEY
           secret: $AWS_SECRET
@@ -106,6 +119,7 @@ deploy:
           application-name: dashboard
           deployment-group-name: $WERCKER_DEPLOYTARGET_NAME
           s3-bucket: rzp-code-deploy
+          skip: $SKIP_CODEDEPLOY
 
     after-steps:
       - slack-notifier:
@@ -113,12 +127,3 @@ deploy:
           channel: tech_bots
           username: wercker
           icon_url: https://cdn.rawgit.com/wantedly/step-pretty-slack-notify/master/icons/$WERCKER_RESULT.jpg
-
-s3sync:
-    steps:
-      - script:
-          name: S3 Sync
-          code: ./s3sync.js
-      - script:
-          name: remove heavy directories
-          code: rm --recursive --force .git node_modules web/node_modules

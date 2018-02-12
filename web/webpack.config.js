@@ -6,7 +6,7 @@ let plugins = [];
 
 module.exports = {
   externals: [].reduce.call(
-    (process.env.externals || '').split(' '),
+    (process.env.externals || '').split(/\s+/),
     (prev, next, index, arr) => {
       if (index % 2) {
         prev[next.split('/')[0]] = arr[index - 1];
@@ -18,10 +18,11 @@ module.exports = {
 
   entry: {
     admin: './admin.js',
+    merchant: './js/merchant/index.js',
   },
 
   output: {
-    path: __dirname + '/../public/dist/admin',
+    path: __dirname + '/../public/dist',
     filename: '[name].js',
   },
 
@@ -48,20 +49,22 @@ module.exports = {
           loader: 'babel-loader',
           options: {
             presets: ['env', 'react', 'stage-0'],
-            plugins: ['transform-decorators-legacy', 'react-html-attrs'],
+            plugins: [
+              'transform-decorators-legacy',
+              'react-html-attrs',
+            ],
           },
         },
       },
     ],
   },
 
-  devtool: 'source-map',
+  devtool: isProd ? false : false,
 
   plugins,
 };
 
 if (isProd) {
-  module.exports.devtool = 'hidden-source-map';
   plugins.push(
     new UglifyJSPlugin({
       sourceMap: true,

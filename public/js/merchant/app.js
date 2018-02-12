@@ -14,7 +14,6 @@ var app = angular
     'app.services',
     'app.directives',
     'app.controllers',
-    'angularFileUpload',
     'ngIdle',
     'ngBusy',
     'noCAPTCHA',

@@ -3,13 +3,14 @@
   src: {{{ src }}};
 }
 
-{{ baseTag }}:before {
+i:not(.fa):before,
+.icon:after
+ {
   font-family: {{fontName}} !important;
   font-style: normal;
   font-weight: normal !important;
-  vertical-align: top;
 }
 
 {{# each codepoints }}
-.{{ ../classPrefix }}{{ @key }}:before{content: "\\{{ this }}";}
+i.i-{{ @key }}:before,.icon.i-{{ @key }}:after{content:"\\{{ this }}"}
 {{/ each }}
