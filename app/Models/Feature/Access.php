@@ -18,16 +18,27 @@ class Access
     protected $app;
 
     /**
-     * Repository manager instance
+     * The repository manager instance.
+     *
      * @var RepositoryManager
      */
     protected $repo;
 
+    /**
+     * The merchant instance.
+     *
+     * @var
+     */
     protected $merchant;
 
+    /**
+     * Access constructor.
+     */
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
+
+        $this->ba = $this->app['basicauth'];
 
         $this->repo = $this->app['repo'];
 
@@ -42,21 +53,22 @@ class Access
      *
      * @return null
      */
-    public function verifyFeatureAccessByApplication($authReturn)
+    public function verifyFeatureAccessByApplication(array $authReturn)
     {
-        $routeFeatures = $this->app['basicauth']->getCurrentRouteFeatures();
+        $routeFeatures = $this->ba->getCurrentRouteFeatures();
 
+        // The current route does not require any feature to be present. Allow access.
         if (empty($routeFeatures) === true)
         {
             return null;
         }
 
-        $routeFeaturesAvailableWithMerc = $this->getRouteFeaturesAvailableWithMerc($routeFeatures);
+        $routeFeaturesAvailableWithMerchant = $this->getRouteFeaturesAvailableWithMerchant($routeFeatures);
 
-        $allowAccess = $this->allowApplicationAccessToFeatureRoute(
-            $routeFeatures,
-            $routeFeaturesAvailableWithMerc,
-            $authReturn);
+        $allowAccess = $this->allowApplicationToAccessFeatureRoute(
+                            $routeFeatures,
+                            $routeFeaturesAvailableWithMerchant,
+                            $authReturn);
 
         if ($allowAccess === true)
         {
@@ -74,20 +86,21 @@ class Access
      */
     public function verifyFeatureAccessByMerchant()
     {
-        $routeFeatures = $this->app['basicauth']->getCurrentRouteFeatures();
+        $routeFeatures = $this->ba->getCurrentRouteFeatures();
 
+        // The current route does not require any feature to be present. Allow access.
         if (empty($routeFeatures) === true)
         {
             return null;
         }
 
-        $routeFeaturesAvailableWithMerc = $this->getRouteFeaturesAvailableWithMerc($routeFeatures);
+        $routeFeaturesAvailableWithMerchant = $this->getRouteFeaturesAvailableWithMerchant($routeFeatures);
 
         //
-        // If the merchant is directly accessing the resource, allow if the
-        // merchant has any of the route features required to access the resource.
+        // If the merchant is directly accessing the resource, allow if it
+        // has any of the route features required to access the resource.
         //
-        if (empty($routeFeaturesAvailableWithMerc) === false)
+        if (empty($routeFeaturesAvailableWithMerchant) === false)
         {
             return null;
         }
@@ -95,7 +108,15 @@ class Access
         return ApiResponse::routeNotFound();
     }
 
-    protected function getRouteFeaturesAvailableWithMerc(array $routeFeatures)
+    /**
+     * Returns an array of route features that are available with the
+     * merchant in the current mode.
+     *
+     * @param array $routeFeatures
+     *
+     * @return array
+     */
+    protected function getRouteFeaturesAvailableWithMerchant(array $routeFeatures): array
     {
         //
         // If the merchant has at least one of the features
@@ -106,27 +127,28 @@ class Access
         return array_intersect($routeFeatures, $merchantFeatures);
     }
 
-    protected function allowApplicationAccessToFeatureRoute(
+    /**
+     * Checks if the application requesting to access a feature-based
+     * route should be given the access. Returns a boolean.
+     *
+     * @param array $routeFeatures
+     * @param array $routeFeaturesAvailableWithMerchant
+     * @param array $authReturn
+     *
+     * @return bool
+     */
+    protected function allowApplicationToAccessFeatureRoute(
         array $routeFeatures,
-        array $routeFeaturesAvailableWithMerc,
-        $authReturn): bool
+        array $routeFeaturesAvailableWithMerchant,
+        array $authReturn): bool
     {
         //
         // 1. If the application has any of the route features required,
         //    allow the application to access the resource directly.
         //
 
-        $applicationId = $authReturn['application']['id'];
-
-        $application = Constants::APPLICATION;
-
-        //
-        // Fetch all the features of the application
-        // that is trying to access the resource
-        //
-        $applicationFeatures = $this->repo->feature->findByEntityTypeAndEntityId($application, $applicationId);
-
-        $applicationFeatures = $applicationFeatures->toArray();
+        // Fetch all the features of the application that is trying to access the resource
+        $applicationFeatures = $this->repo->feature->getApplicationFeatures($authReturn['application']['id']);
 
         $routeFeaturesAvailableWithApp = array_intersect($routeFeatures, $applicationFeatures);
 
@@ -143,11 +165,11 @@ class Access
 
         $oauthBlacklistedFeatures = Entity::$oauthBlacklistedFeatures;
 
-        $routeFeaturesAvailableWithMercWhitelisted = array_diff(
-            $routeFeaturesAvailableWithMerc,
-            $oauthBlacklistedFeatures);
+        $routeFeaturesAvailableWithMerchantWhitelisted = array_diff(
+                                                            $routeFeaturesAvailableWithMerchant,
+                                                            $oauthBlacklistedFeatures);
 
-        if (empty($routeFeaturesAvailableWithMercWhitelisted) === false)
+        if (empty($routeFeaturesAvailableWithMerchantWhitelisted) === false)
         {
             return true;
         }

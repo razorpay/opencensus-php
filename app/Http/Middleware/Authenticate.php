@@ -77,14 +77,15 @@ class Authenticate
         {
             $ret = $this->authenticateBearerAuth($route, $bearerToken);
 
-            // Post process after auth completes
+
+            // Post process after authentication completes for an application
             $ret = $this->postApplicationAuthenticationProcessing($ret);
         }
         else
         {
             $ret = $this->authenticateBasicAuth($route);
 
-            // Post process after auth completes
+            // Post process after authentication completes for a merchant
             $ret = $this->postMerchantAuthenticationProcessing($ret);
         }
 
@@ -99,6 +100,7 @@ class Authenticate
 
     /**
      * Authenticate the request with Basic auth
+     * non-null return value indicates a failure
      *
      * @param string $route
      *
@@ -203,12 +205,13 @@ class Authenticate
      * Post process after auth completes
      * Function returns non-null value for failure flow
      *
-     * @param      $authReturn
+     * @param $authReturn
      *
      * @return null
      */
     protected function postApplicationAuthenticationProcessing($authReturn)
     {
+        // Error flow - error object is returned
         if (is_array($authReturn) === false)
         {
             return $authReturn;
@@ -229,6 +232,7 @@ class Authenticate
      */
     protected function postMerchantAuthenticationProcessing($authReturn)
     {
+        // non-null value indicates failure flow
         if ($authReturn !== null)
         {
             return $authReturn;

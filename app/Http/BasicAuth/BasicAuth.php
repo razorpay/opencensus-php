@@ -11,7 +11,6 @@ use RZP\Http\Route;
 use RZP\Models\Key;
 use RZP\Models\Device;
 use RZP\Constants\Mode;
-use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
@@ -1536,7 +1535,13 @@ class BasicAuth
         }
     }
 
-    public function getCurrentRouteFeatures()
+    /**
+     * Returns the array of features, one of which is required to
+     * access the current route.
+     *
+     * @return array
+     */
+    public function getCurrentRouteFeatures(): array
     {
         $currentRoute = $this->route->getCurrentRouteName();
 
@@ -1546,8 +1551,6 @@ class BasicAuth
         //
         // TODO: Fix this! BA calls Route and Route calls BA. Not a good design.
         //
-        $routeFeatures = Route::getFeaturesForRoute($currentRoute);
-
-        return $routeFeatures;
+        return Route::getFeaturesForRoute($currentRoute);
     }
 }

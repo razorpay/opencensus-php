@@ -75,6 +75,19 @@ class Repository extends BaseRepository
         }
     }
 
+    public function getApplicationFeatures($applicationId): array
+    {
+        $application = Constants::APPLICATION;
+
+        //
+        // Fetch all the features of the application
+        // that is trying to access the resource
+        //
+        $applicationFeatures = $this->findByEntityTypeAndEntityId($application, $applicationId);
+
+        return $applicationFeatures->toArray();
+    }
+
     /**
      * Save feature with sync: Adds features to test and live
      * DB's if they don't already exist

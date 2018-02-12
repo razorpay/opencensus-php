@@ -182,6 +182,7 @@ class OAuth
 
         $response = $this->parseOAuthServerResponse($response);
 
+        // Return the error if there is any
         if ($this->hasErrorOccurred($response) === true)
         {
             return $response;
@@ -190,6 +191,15 @@ class OAuth
         return null;
     }
 
+    /**
+     * Parse the OAuth server response received.
+     * Returns an error object, if there is an error.
+     * Returns null otherwise.
+     *
+     * @param array $response
+     *
+     * @return array
+     */
     protected function parseOAuthServerResponse(array $response)
     {
         $tokenScopes = $response[OAuthToken::SCOPES];
@@ -229,6 +239,14 @@ class OAuth
         return $response;
     }
 
+    /**
+     * Returns true if $response is an object - instance of the
+     * class JsonResponse and has the key error in it.
+     *
+     * @param $response
+     *
+     * @return bool
+     */
     protected function hasErrorOccurred($response)
     {
         if (($response instanceof Illuminate\Http\JsonResponse) === true)
