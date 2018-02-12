@@ -123,9 +123,9 @@ class NewApplicationForm extends Component {
 
     data.website = autoPrefixUrls(data.website);
     
-    data.client_details.dev.redirect_url = autoPrefixUrls(data.client_details.dev.redirect_url);
-
-    data.client_details.prod.redirect_url = autoPrefixUrls(data.client_details.prod.redirect_url);
+    data.client_details.dev.redirect_url = data.client_details.dev.redirect_url.map(url => autoPrefixUrls(url));
+    
+    data.client_details.prod.redirect_url = data.client_details.prod.redirect_url.map(url => autoPrefixUrls(url));
 
     const payload = {
       name: data.name,
@@ -246,7 +246,7 @@ class NewApplicationForm extends Component {
               </small>
             </div>
 
-            {true && (
+            {this.state.edit && (
               <div class="edit-details">
                 <div class="col-md-offset-2 col-md-10">
                   <h5 class="form-header text-left">Development</h5>
