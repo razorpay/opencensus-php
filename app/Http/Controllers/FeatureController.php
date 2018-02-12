@@ -24,13 +24,13 @@ class FeatureController extends Controller
     /**
      * Assigns features to applications
      *
-     * @param string|null $accountId
+     * @param string|null $applicationId
      *
      * @return \Illuminate\Http\Response
      */
-    public function addApplicationFeatures(string $accountId)
+    public function addApplicationFeatures(string $applicationId)
     {
-        return $this->addFeatures(Constants::APPLICATION, $accountId);
+        return $this->addFeatures(Constants::APPLICATION, $applicationId);
     }
 
     /**
