@@ -126,6 +126,9 @@ return [
         // Retry Settlements
         'setl_retry'                        => 'settlements/retry',
 
+        // Reconcile Settlements
+        'setl_reconcile'                    => 'settlements/reconcile/{channel}',
+
         // Merchant Batches
         'merchant_batches'                  => 'merchant/{id}/batches',
 
