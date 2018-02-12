@@ -18,6 +18,7 @@ module.exports = {
 
   entry: {
     admin: './admin.js',
+    pokedex: './pokedex.js',
     merchant: './js/merchant/index.js',
   },
 

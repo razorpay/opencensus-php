@@ -101,6 +101,17 @@ class AdminController extends Controller
         ]);
     }
 
+    public function getMerchantStats()
+    {
+
+        $admin = $this->getAdmin()->getData(true);
+
+        return view('admin.pokedex', [
+            'cdn' => \Config::get('app.cdn_dashboard_url'),
+            'user'  => $admin['data'],
+        ]);
+    }
+
     protected function getGoogleOAuthUrl()
     {
         $googleService = OAuthFacade::consumer('Google');
