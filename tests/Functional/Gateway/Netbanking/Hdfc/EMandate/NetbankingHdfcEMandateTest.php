@@ -392,10 +392,10 @@ class NetbankingHdfcEMandateTest extends TestCase
         $payment = $this->getEmandateNetbankingRecurringPaymentArray('HDFC');
 
         $payment['bank_account'] = [
-                                        'account_number'    => '0123456789',
-                                        'ifsc'              => 'HDFC0000186',
-                                        'name'              => 'Test Account'
-                                   ];
+            'account_number'    => '0123456789',
+            'ifsc'              => 'HDFC0000186',
+            'name'              => 'Test Account'
+        ];
 
         return $payment;
     }
