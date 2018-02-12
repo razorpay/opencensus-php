@@ -4,7 +4,7 @@ import InputField from 'rzp/ui/Forms/InputField';
 import AutoResizeTextarea from 'rzp/ui/Forms/AutoResizeTextarea';
 import CheckboxField from 'rzp/ui/Forms/CheckboxField';
 import { required } from 'rzp/utils/validators';
-import { url, lenientUrl } from 'rzp/utils/validators';
+import { lenientUrl } from 'rzp/utils/validators';
 
 const isWebsiteLengthValid = websiteDetail => {
   websiteDetail = websiteDetail || '';

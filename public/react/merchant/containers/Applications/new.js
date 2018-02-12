@@ -96,9 +96,7 @@ class NewApplicationForm extends Component {
   // save handler
   create = props => {
 
-    if(props.website) {
-      props.website = autoPrefixUrls(props.website);
-    }
+    props.website = autoPrefixUrls(props.website);
 
     return this.props
       .createApplication(props, 'logo')
@@ -121,17 +119,11 @@ class NewApplicationForm extends Component {
 
   update = props => {
 
-    if(props.website) {
-      props.website = autoPrefixUrls(props.website);
-    }
+    props.website = autoPrefixUrls(props.website);
+    
+    props.client_details.dev.redirect_url = autoPrefixUrls(props.client_details.dev.redirect_url);
 
-    if(props.client_details.dev.redirect_url) {
-      props.client_details.dev.redirect_url = autoPrefixUrls(props.client_details.dev.redirect_url);
-    }
-
-    if(props.client_details.prod.redirect_url) {
-      props.props.client_details.prod.redirect_url = autoPrefixUrls(props.client_details.prod.redirect_url);
-    }
+    props.client_details.prod.redirect_url = autoPrefixUrls(props.client_details.prod.redirect_url);
 
     const payload = {
       name: props.name,

@@ -92,10 +92,8 @@ export default class OnBoarding extends Component {
         props = rest;
       }
       
-      if(props.website_details) {
-        props.website_details = autoPrefixUrls(props.website_details);
-      }
-
+      props.website_details = autoPrefixUrls(props.website_details);
+      
       return this.props
         .saveOnboarding(this.props.formType, props, file, fileName)
         .then(() => {
