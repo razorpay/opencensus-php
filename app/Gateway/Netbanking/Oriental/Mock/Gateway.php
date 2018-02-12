@@ -9,7 +9,7 @@ final class Gateway extends Oriental\Gateway
 {
     use GatewayTrait;
 
-    public function authorize(array $input)
+    public final function authorize(array $input)
     {
         $request = parent::authorize($input);
 

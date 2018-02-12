@@ -69,7 +69,7 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    public function callback(array $input)
+    public final function callback(array $input)
     {
         parent::callback($input);
 
@@ -91,13 +91,37 @@ class Gateway extends Base\Gateway
         return $this->getCallbackResponseData($input, $acquirerData);
     }
 
-    public function verify(array $input)
+    public final function verify(array $input)
     {
         parent::verify($input);
 
         $verify = new Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
+    }
+
+    /**
+     * This method encrypts and then encodes the input string
+     * @param string $stringToEncrypt
+     * @return string
+     */
+    public final function encrypt(string $stringToEncrypt)
+    {
+        $this->createCryptoIfNotCreated();
+
+        return $this->aesCrypto->encryptString($stringToEncrypt);
+    }
+
+    /**
+     * This method decodes the string and then decrypts it
+     * @param string $stringToDecrypt
+     * @return string
+     */
+    public final function decrypt(string $stringToDecrypt)
+    {
+        $this->createCryptoIfNotCreated();
+
+        return $this->aesCrypto->decryptString($stringToDecrypt);
     }
 
     protected final function sendPaymentVerifyRequest(Verify $verify)
@@ -136,6 +160,21 @@ class Gateway extends Base\Gateway
         $verify->amountMismatch = $this->setVerifyAmountMismatch($verify);
     }
 
+    /**
+     * Asserting that payment amount is the same as the amount received in the callback / verify response.
+     *
+     * @override
+     * @param $expectedAmount
+     * @param $actualAmount
+     */
+    protected final function assertAmount($expectedAmount, $actualAmount)
+    {
+        $expectedAmount = $this->formatAmount($expectedAmount);
+        $actualAmount = $this->formatAmount($actualAmount);
+
+        parent::assertAmount($expectedAmount, $actualAmount);
+    }
+
     private function setVerifyAmountMismatch(Verify $verify)
     {
         $mismatch = false;
@@ -156,21 +195,6 @@ class Gateway extends Base\Gateway
         return $mismatch;
     }
 
-    /**
-     * Asserting that payment amount is the same as the amount received in the callback / verify response.
-     *
-     * @override
-     * @param $expectedAmount
-     * @param $actualAmount
-     */
-    protected final function assertAmount($expectedAmount, $actualAmount)
-    {
-        $expectedAmount = number_format($expectedAmount, 2, '.', '');
-        $actualAmount = number_format($actualAmount, 2, '.', '');
-
-        parent::assertAmount($expectedAmount, $actualAmount);
-    }
-
     private function parseVerifyResponse(\Requests_Response $response)
     {
         // TODO: Check this
@@ -179,18 +203,16 @@ class Gateway extends Base\Gateway
 
     private function getVerifyMatchStatus(Verify $verify)
     {
-        $status = VerifyResult::STATUS_MATCH;
-
         $this->checkApiSuccess($verify);
 
         $this->checkGatewaySuccess($verify);
 
         if ($verify->gatewaySuccess !== $verify->apiSuccess)
         {
-            $status = VerifyResult::STATUS_MISMATCH;
+            return VerifyResult::STATUS_MISMATCH;
         }
 
-        return $status;
+        return VerifyResult::STATUS_MATCH;
     }
 
     private function checkGatewaySuccess(Verify $verify)
@@ -355,30 +377,6 @@ class Gateway extends Base\Gateway
             ));
 
         return $this->encrypt($queryStringToEncrypt);
-    }
-
-    /**
-     * This method encrypts and then encodes the input string
-     * @param string $stringToEncrypt
-     * @return string
-     */
-    public function encrypt(string $stringToEncrypt)
-    {
-        $this->createCryptoIfNotCreated();
-
-        return $this->aesCrypto->encryptString($stringToEncrypt);
-    }
-
-    /**
-     * This method decodes the string and then decrypts it
-     * @param string $stringToDecrypt
-     * @return string
-     */
-    public function decrypt(string $stringToDecrypt)
-    {
-        $this->createCryptoIfNotCreated();
-
-        return $this->aesCrypto->decryptString($stringToDecrypt);
     }
 
     private function createCryptoIfNotCreated()
