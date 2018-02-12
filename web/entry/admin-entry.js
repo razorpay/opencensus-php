@@ -8,8 +8,14 @@ function prefixCdn(url) {
   return prefix + '/dist/' + url;
 }
 
-document.write('<script src="' + prefixCdn('vendor.js') + '"></script>');
-document.write('<script src="' + prefixCdn('admin/admin.js') + '"></script>');
-document.write(
-  '<link href="' + prefixCdn('css/admin.css') + '" rel="stylesheet"></link>'
-);
+function appendLink(src) {
+  var link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = src;
+  document.documentElement.appendChild(link);
+}
+
+document.write('<script src="' + prefixCdn('vendor_a.js') + '"></script>');
+document.write('<script src="' + prefixCdn('admin.js') + '"></script>');
+
+appendLink(prefixCdn('css/admin.css'));

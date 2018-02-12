@@ -1,0 +1,118 @@
+.daterangepicker-container {
+  position: relative;
+
+  .i-date-range {
+    position: absolute;
+    top: 9px;
+    left: 8px;
+    z-index: 1;
+    font-size: 20px;
+    pointer-events: none;
+  }
+
+  .caret {
+    position: absolute;
+    top: 16px;
+    right: 10px;
+    border-top-color: #b3b3b3;
+    pointer-events: none;
+  }
+
+  .DateInput:first-child {
+    width: 140px;
+  }
+
+  .DateInput {
+    font-weight: 600;
+    width: 110px;
+  }
+
+  .DateRangePickerInput_arrow {
+    position: absolute;
+    top: 6px;
+    left: 52%;
+    margin-left: -5px;
+    pointer-events: none;
+
+
+    > svg {
+      display: none;
+    }
+
+    &::after {
+      content: 'to'
+      font-size: 12px;
+      color: #666;
+    }
+  }
+
+  .DateRangePickerInput >.DateInput:first-child input {
+    padding-left: 32px;
+  }
+
+  .DateRangePickerInput >.DateInput input {
+    font-size: 14px;
+    font-weight: 500;
+    padding: 4px 8px;
+  }
+
+  .DateRangePickerInput, .DateInput {
+    background-color: #fafafa;
+  }
+
+  .CalendarDay__selected_span {
+    background-color: #e9e6f8;
+    border-color: #cbcce0;
+    color: #706e77;
+
+    &:hover,
+    &:active {
+      background-color: #6a5ace;
+      border-color: #6a5ace;
+      color: #fff;
+    }
+  }
+
+  .CalendarDay__hovered_span, .CalendarDay__hovered_span:hover {
+    background: #e9e6f8;
+    border: 1px solid #cbcce0;
+    color: #706e77;
+  }
+
+  .DateInput_input__focused {
+    border-bottom: none;
+  }
+
+  .DateRangePicker_picker {
+    margin-top: -25px;
+  }
+
+  .DateInput_fang {
+    margin-top: -24px;
+  }
+
+  .CalendarDay__selected {
+    &,
+    &:active,
+    &:hover {
+      background-color: #6a5ace;
+      border-color: #6a5ace;
+      color: #fff;
+    }
+  }
+}
+
+
+.rzp-daterange-picker .DateRangePickerInput >.DateInput:first-child input {
+  padding-left: 10px;
+}
+
+.rzp-daterange-picker .DateRangePickerInput .DateRangePickerInput_arrow {
+  top: 0;
+  line-height: 38px;
+  left: 50%;
+}
+
+.rzp-daterange-picker .DateRangePickerInput .DateInput_input {
+  height: 38px;
+}

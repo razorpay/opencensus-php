@@ -28,11 +28,20 @@ export default function UploadSettlementReconciliation() {
         pendingClass="small spinner"
         onSubmit={data => {
           let file = document.querySelector('[name=file]').files[0];
+          //- pass 'channel' as url param
+          let channel = data.channel || '';
+
+          if (channel === '') {
+            notifyError('Please selec a channel.');
+            return;
+          }
 
           if (!file) {
             notifyError('Please select a file.');
             return;
           }
+
+          delete data.channel;
 
           let form = {
             ...data,
@@ -42,16 +51,20 @@ export default function UploadSettlementReconciliation() {
             file_name: 'file',
           };
 
-          return adminFormUpload(form, '/settlements/reconcile').then(
-            response => {
-              if (response.data.success) {
-                notifySuccess('API Request successful');
-                closeModal();
-              } else {
-                notifyError(response.data.errors[0]);
-              }
+          return adminFormUpload({
+            route_name: 'setl_reconcile',
+            ...form,
+            url_params: JSON.stringify({
+              '{channel}': channel,
+            }),
+          }).then(response => {
+            if (response.data.success) {
+              notifySuccess('API Request successful');
+              closeModal();
+            } else {
+              notifyError(response.data.errors[0]);
             }
-          );
+          });
         }}
       />
     </Form>
