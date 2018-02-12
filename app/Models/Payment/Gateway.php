@@ -39,7 +39,7 @@ class Gateway
     const NETBANKING_KOTAK       = 'netbanking_kotak';
     const NETBANKING_RBL         = 'netbanking_rbl';
     const NETBANKING_PNB         = 'netbanking_pnb';
-    const NETBANKING_ORIENTAL    = 'netbanking_oriental';
+    const NETBANKING_ORIENTAL    = 'netbanking_obc';
     const PAYTM                  = 'paytm';
     const SHARP                  = 'sharp';
     const UPI_MINDGATE           = 'upi_mindgate';
