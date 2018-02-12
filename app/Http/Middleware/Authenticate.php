@@ -207,7 +207,7 @@ class Authenticate
      *
      * @param $authReturn
      *
-     * @return null
+     * @return mixed
      */
     protected function postApplicationAuthenticationProcessing($authReturn)
     {
@@ -228,7 +228,7 @@ class Authenticate
      *
      * @param      $authReturn
      *
-     * @return null
+     * @return mixed
      */
     protected function postMerchantAuthenticationProcessing($authReturn)
     {
