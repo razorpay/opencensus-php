@@ -3,10 +3,11 @@ import { connect } from 'react-redux';
 import { Field, formValueSelector, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import { Link, withRouter } from 'react-router-dom';
-import { required, isUrl } from 'rzp/utils/validators';
+import { required, lenientUrl, isUrlLenient } from 'rzp/utils/validators';
 import InputField from 'rzp/ui/Forms/InputField';
 import TaggedInput from 'rzp/ui/Forms/TaggedInput';
 import Fieldset from 'rzp/ui/Forms/Fieldset';
+import { autoPrefixUrls } from 'rzp/utils/rzp-utils';
 import * as NotificationActions from 'rzp/modules/notifications';
 import * as ApplicationActions from 'merchant/modules/applications';
 
@@ -94,8 +95,12 @@ class NewApplicationForm extends Component {
 
   // save handler
   create = props => {
+    let data = {...props}
+
+    data.website = autoPrefixUrls(data.website);
+
     return this.props
-      .createApplication(props, 'logo')
+      .createApplication(data, 'logo')
       .then(application => {
         // this.setState({edit: true});
         this.initForm(application);
@@ -114,20 +119,28 @@ class NewApplicationForm extends Component {
   };
 
   update = props => {
+    let data = {...props};
+
+    data.website = autoPrefixUrls(data.website);
+    
+    data.client_details.dev.redirect_url = data.client_details.dev.redirect_url.map(url => autoPrefixUrls(url));
+    
+    data.client_details.prod.redirect_url = data.client_details.prod.redirect_url.map(url => autoPrefixUrls(url));
+
     const payload = {
-      name: props.name,
-      website: props.website,
+      name: data.name,
+      website: data.website,
       client_details: [
         {
-          id: props.client_details.dev.id,
-          redirect_url: props.client_details.dev.redirect_url,
+          id: data.client_details.dev.id,
+          redirect_url: data.client_details.dev.redirect_url,
         },
         {
-          id: props.client_details.prod.id,
-          redirect_url: props.client_details.prod.redirect_url,
+          id: data.client_details.prod.id,
+          redirect_url: data.client_details.prod.redirect_url,
         },
       ],
-      file: props.file,
+      file: data.file,
     };
     return this.props
       .updateApplication(this.state.details.id, payload, 'logo')
@@ -193,7 +206,7 @@ class NewApplicationForm extends Component {
                   component={InputField}
                   class="form-control"
                   placeholder="http://test-app.com/"
-                  validate={[required()]}
+                  validate={[required(), lenientUrl('Please enter a valid URL')]}
                 />
               </div>
             </div>
@@ -279,7 +292,7 @@ class NewApplicationForm extends Component {
                       component={TaggedInput}
                       class="form-control tagged-input"
                       placeholder="http://test-app.com/"
-                      validator={isUrl}
+                      validator={isUrlLenient}
                     />
                   </div>
                   <div class="clearfix" />
@@ -333,7 +346,7 @@ class NewApplicationForm extends Component {
                       component={TaggedInput}
                       class="form-control tagged-input"
                       placeholder="http://test-app.com/"
-                      validator={isUrl}
+                      validator={isUrlLenient}
                     />
                   </div>
                   <div class="clearfix" />

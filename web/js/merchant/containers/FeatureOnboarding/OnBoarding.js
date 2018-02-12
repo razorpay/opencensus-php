@@ -11,6 +11,8 @@ import { required } from 'rzp/utils/validators';
 import Spinner from 'rzp/ui/Spinner';
 import { showNotification } from 'rzp/modules/notifications';
 
+import { autoPrefixUrls } from 'rzp/utils/rzp-utils';
+
 import {
   saveOnboarding,
   getOnboardingResponse,
@@ -81,7 +83,9 @@ export default class OnBoarding extends Component {
         const { website_checkbox, ...rest } = props;
         props = rest;
       }
-
+      
+      props.website_details = autoPrefixUrls(props.website_details);
+      
       return this.props
         .saveOnboarding(this.props.formType, props, file, fileName)
         .then(() => {
