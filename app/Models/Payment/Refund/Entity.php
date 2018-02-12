@@ -419,6 +419,16 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::REFERENCE2, $value);
     }
 
+    /**
+     * @param $reason
+     *
+     * Called from fund transfer reconciliation
+     */
+    public function setFailureReason($reason)
+    {
+        ;
+    }
+
     public function setBatchFundTransferId($value)
     {
         $this->setAttribute(self::BATCH_FUND_TRANSFER_ID, $value);

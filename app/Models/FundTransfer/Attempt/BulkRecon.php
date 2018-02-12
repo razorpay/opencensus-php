@@ -144,15 +144,12 @@ class BulkRecon extends Base\Core
 
     protected function getTimestamps(): array
     {
+        list($from, $to) = [null, null];
+
         if ((isset($this->input['from']) === true) and (isset($this->input['to']) === true))
         {
             $from = $this->input['from'];
             $to = $this->input['to'];
-        }
-        else
-        {
-            $from = (Carbon::today(Timezone::IST))->timestamp;
-            $to = (Carbon::tomorrow(Timezone::IST))->timestamp;
         }
 
         return [$from, $to];
