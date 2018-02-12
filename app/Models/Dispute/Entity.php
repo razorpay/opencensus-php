@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Dispute;
 
+use App;
+
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -126,6 +128,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::PAYMENT_ID,
         self::RESPOND_BY,
+        self::REASON_DESCRIPTION,
     ];
 
     protected $casts = [
@@ -204,6 +207,22 @@ class Entity extends Base\PublicEntity
     public function setPublicRespondByAttribute(array & $attributes)
     {
         $attributes[self::RESPOND_BY] = $this->getExpiresOn();
+    }
+
+    public function setPublicReasonDescriptionAttribute(array & $attributes)
+    {
+        $app = App::getFacadeRoot();
+
+        $basicAuth = $app['basicauth'];
+
+        //
+        // Attr reason_description to be sent only for dashboard
+        // TODO: Remove after entity serializer
+        //
+        if ($basicAuth->isProxyOrPrivilegeAuth() === false)
+        {
+            unset($attributes[self::REASON_DESCRIPTION]);
+        }
     }
 
     // ----------------------- Setters Ends-------------------------------------
