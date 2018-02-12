@@ -405,4 +405,24 @@ export const arrayToCsvDataUrl = array => {
   return 'data:text/csv;utf-8,' + encodeURIComponent(arrayToCsv(array));
 };
 
+/**
+ * 
+ * @param {*} url
+ * Add 'http' to the URL is not available
+ */
+export const autoPrefixUrls = url => {
+  const regex = /^https?:\/\//i;
+  let tempUrl;
+  if (!url || url.length === 0) {
+    return url;
+  }
+
+  tempUrl = url.toLowerCase();
+
+  if (!regex.test(tempUrl)) {
+    tempUrl = 'http://' + tempUrl;
+  }
+  return tempUrl;
+};
+
 export { acronyms, shortenText };

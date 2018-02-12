@@ -1,6 +1,6 @@
 import Entity from './Entity';
 import ajax from 'merchant/utils/ajax';
-import { normalizeBoolean, isBlank, arrayDiff } from 'rzp/utils/rzp-utils';
+import { normalizeBoolean, isBlank, arrayDiff, autoPrefixUrls } from 'rzp/utils/rzp-utils';
 
 // Used for Activation
 const activationStepMap = {
@@ -192,6 +192,12 @@ export default class Activation extends Entity {
     if (this.accountId) {
       activationData.account_id = this.accountId;
     }
+
+    // Auto add 'http' if not filled by user
+
+    activationStepMap[3].forEach(key => {
+      activationData.body[key] = autoPrefixUrls(activationData.body[key]);
+    });
 
     return ajax({
       url: '/user/generic',
