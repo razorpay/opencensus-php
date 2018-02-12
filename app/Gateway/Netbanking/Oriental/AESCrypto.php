@@ -2,9 +2,9 @@
 
 namespace RZP\Gateway\Netbanking\Oriental;
 
-use RZP\Gateway\Base\AESCrypto;
+use RZP\Gateway\Base;
 
-class Crypto extends AESCrypto
+class AESCrypto extends Base\AESCrypto
 {
     public function __construct(int $mode, string $masterKey, string $initializationVector = '')
     {

@@ -73,7 +73,7 @@ class Server extends Mock\Server
 
         $queryStringToEncrypt = http_build_query($content);
 
-        $encryptedString = $this->getGatewayInstance()->encrypt($queryStringToEncrypt);
+        $encryptedString = $this->encrypt($queryStringToEncrypt);
 
         return [$encryptedString => ""];
     }

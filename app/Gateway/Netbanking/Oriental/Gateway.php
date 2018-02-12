@@ -3,8 +3,8 @@
 namespace RZP\Gateway\Netbanking\Oriental;
 
 use RZP\Constants\Mode;
+use RZP\Exception\LogicException;
 use RZP\Models\Payment;
-use phpseclib\Crypt\AES;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\HashAlgo;
@@ -14,6 +14,8 @@ use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Exception\GatewayErrorException;
+
+use phpseclib\Crypt\AES;
 
 /**
  * This gateway has been developed as per the API contract from oriental bank of commerce
@@ -76,6 +78,8 @@ class Gateway extends Base\Gateway
         $this->assertPaymentId($input['payment']['id'],
                                $content[RequestFields::PAY_REF_NUM]);
 
+        $this->assertAmount($input['payment']['amount'] / 100, $content[ResponseFields::AMOUNT]);
+
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
 
         $this->updateGatewayPaymentEntity($gatewayPayment, $content);
@@ -128,6 +132,43 @@ class Gateway extends Base\Gateway
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
 
         $verify->payment = $this->saveVerifyContent($verify);
+
+        $verify->amountMismatch = $this->setVerifyAmountMismatch($verify);
+    }
+
+    private function setVerifyAmountMismatch(Verify $verify)
+    {
+        $mismatch = false;
+
+        $input = $verify->input;
+
+        $content = $verify->verifyResponseContent;
+
+        try
+        {
+            $this->assertAmount($input['payment']['amount'] / 100, $content[ResponseFields::AMOUNT]);
+        }
+        catch (LogicException $e)
+        {
+            $mismatch = true;
+        }
+
+        return $mismatch;
+    }
+
+    /**
+     * Asserting that payment amount is the same as the amount received in the callback / verify response.
+     *
+     * @override
+     * @param $expectedAmount
+     * @param $actualAmount
+     */
+    protected final function assertAmount($expectedAmount, $actualAmount)
+    {
+        $expectedAmount = number_format($expectedAmount, 2, '.', '');
+        $actualAmount = number_format($actualAmount, 2, '.', '');
+
+        parent::assertAmount($expectedAmount, $actualAmount);
     }
 
     private function parseVerifyResponse(\Requests_Response $response)
@@ -197,10 +238,10 @@ class Gateway extends Base\Gateway
         return ($verifyStatus === Status::VERIFY_SUCCESS) ? Status::SUCCESS : Status::FAILED;
     }
 
-    private function checkActionStatus(array $content, $status = Status::SUCCESS)
+    private function checkActionStatus(array $content)
     {
         if ((empty($content[ResponseFields::PAID]) === false) and
-            ($content[ResponseFields::PAID] !== $status))
+            ($content[ResponseFields::PAID] !== Status::SUCCESS))
         {
             throw new GatewayErrorException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
         }
@@ -210,7 +251,7 @@ class Gateway extends Base\Gateway
     {
         $content = [
             RequestFields::RETURN_URL   => $this->encrypt($input['callbackUrl']),
-            RequestFields::CATEGORY_ID  => Constants::CATEGORY_ID,
+            RequestFields::CATEGORY_ID  => Constant::CATEGORY_ID,
             RequestFields::QUERY_STRING => $this->getQueryString($input)
         ];
 
@@ -307,7 +348,7 @@ class Gateway extends Base\Gateway
             array_map(
                 function($key, $value)
                 {
-                    return Constants::SHOPPING_MALL . $key . '~' . $value;
+                    return Constant::SHOPPING_MALL . $key . '~' . $value;
                 },
                 array_keys($queryArray),
                 array_values($queryArray)
@@ -323,7 +364,7 @@ class Gateway extends Base\Gateway
      */
     public function encrypt(string $stringToEncrypt)
     {
-        $this->getCreateOrGetCrypto();
+        $this->createCryptoIfNotCreated();
 
         return $this->aesCrypto->encryptString($stringToEncrypt);
     }
@@ -335,17 +376,16 @@ class Gateway extends Base\Gateway
      */
     public function decrypt(string $stringToDecrypt)
     {
-        $this->getCreateOrGetCrypto();
+        $this->createCryptoIfNotCreated();
 
         return $this->aesCrypto->decryptString($stringToDecrypt);
     }
 
-    private function getCreateOrGetCrypto()
+    private function createCryptoIfNotCreated()
     {
         if ($this->aesCrypto === null)
         {
-            // TODO: Ensure mode correctly set for AES
-            $this->aesCrypto = new Crypto(AES::MODE_ECB, $this->getSecret());
+            $this->aesCrypto = new AESCrypto(AES::MODE_ECB, $this->getSecret());
         }
     }
 
