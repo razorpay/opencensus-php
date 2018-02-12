@@ -149,6 +149,8 @@ return [
         'onboarding_features_get_submissions' => 'onboarding/features/submissions/fetch',
 
         'onboarding_features_update'        => 'onboarding/features/{feature}/update',
+
+        'setl_bulk'                         => 'settlements/channel/bulk',
     ],
 
     // auth
