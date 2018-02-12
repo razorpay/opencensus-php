@@ -78,7 +78,9 @@ export default class App extends Component {
           this.props.updateSession({ user, mode: currentMode });
 
           let $splash = document.getElementById('splash');
-          $splash.parentElement.removeChild($splash);
+          if ($splash) {
+            $splash.parentElement.removeChild($splash);
+          }
 
           this.setState({ isLoading: false });
         });
