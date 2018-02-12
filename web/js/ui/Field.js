@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { methods } from 'common/data';
 import { prevent } from 'common/util';
-import { Input as DayPickerInput } from 'react-day-picker';
 import moment from 'moment';
 import { TypeAhead } from 'react-power-select';
 import CalendarPicker from 'ui/Calendar';

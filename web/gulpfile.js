@@ -18,6 +18,7 @@ function createBaseDir() {
 function handleError(err) {
   console.log(err.toString());
   this.emit('end');
+  process.exit(1);
 }
 
 function compileCss(o) {
