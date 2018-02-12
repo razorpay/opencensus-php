@@ -41,7 +41,7 @@ export default class CalendarPicker extends Component {
     this.props.onDayChange && this.props.onDayChange(value);
 
     // To modify the selected date from calendar, eg. endOf or startOf
-    if(this.props.postSelectionValue) {
+    if(value && this.props.postSelectionValue) {
       value = this.props.postSelectionValue(value);
     }
 
@@ -86,6 +86,7 @@ export default class CalendarPicker extends Component {
         value={state.value}
         showClear={true}
         onChange={this.onChange}
+        onClear={this.onChange}
       >
         {({ value }) => {
           return (
