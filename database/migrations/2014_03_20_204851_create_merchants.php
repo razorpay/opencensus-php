@@ -126,6 +126,12 @@ class CreateMerchants extends Migration
 
             $table->text(Merchant::NOTES)
                   ->nullable();
+            
+            $table->string(Merchant::WHITELISTED_IPS_LIVE, 255)
+                  ->nullable();
+
+            $table->string(Merchant::WHITELISTED_IPS_TEST, 255)
+                  ->nullable();
 
             $table->integer(Merchant::CREATED_AT);
 

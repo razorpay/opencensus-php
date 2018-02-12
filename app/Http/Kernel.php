@@ -38,10 +38,11 @@ class Kernel extends HttpKernel
      * @var array
      */
     protected $routeMiddleware = [
-        'throttle'      => \RZP\Http\Middleware\Throttle::class,
-        'auth'          => \RZP\Http\Middleware\Authenticate::class,
-        'admin_access'  => \RZP\Http\Middleware\AdminAccess::class,
-        'workflow'      => \RZP\Http\Middleware\Workflow::class,
-        'event_tracker' => \RZP\Http\Middleware\EventTracker::class,
+        'throttle'           => \RZP\Http\Middleware\Throttle::class,
+        'auth'               => \RZP\Http\Middleware\Authenticate::class,
+        'admin_access'       => \RZP\Http\Middleware\AdminAccess::class,
+        'workflow'           => \RZP\Http\Middleware\Workflow::class,
+        'merchant_ip_filter' => \RZP\Http\Middleware\MerchantIpFilter::class,
+        'event_tracker'      => \RZP\Http\Middleware\EventTracker::class,
     ];
 }
