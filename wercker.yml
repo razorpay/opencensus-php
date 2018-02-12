@@ -1,4 +1,4 @@
-box: pronav/dash-test
+box: pronav/dash
 
 build:
     services:
