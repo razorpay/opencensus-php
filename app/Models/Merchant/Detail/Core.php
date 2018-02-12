@@ -25,6 +25,7 @@ use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
 use RZP\Mail\Merchant\NotifyActivationSubmission as NotifyMerchant;
+use RZP\Mail\Admin\NotifyWebsiteDetailSubmission as NotifyAdminWebsiteDetailSubmission;
 
 class Core extends Base\Core
 {
@@ -253,6 +254,19 @@ class Core extends Base\Core
         $notifyAdminMail = new NotifyAdmin($data);
 
         Mail::queue($notifyAdminMail);
+    }
+
+    /**
+     * This function is used to notify admins through email about merchant's website details update
+     * @param Entity $merchantDetails
+     */
+    protected function adminNotifyWebsiteDetailsUpdate(Entity $merchantDetails)
+    {
+        $data = $merchantDetails->toArray();
+
+        $notifyAdminWebsiteDetailSubmissionMail = new NotifyAdminWebsiteDetailSubmission($data);
+
+        Mail::queue($notifyAdminWebsiteDetailSubmissionMail);
     }
 
     protected function canSubmit($input, $response)
@@ -488,6 +502,8 @@ class Core extends Base\Core
             $merchant->setWebsiteAttribute($input[Entity::BUSINESS_WEBSITE]);
 
             $this->repo->saveOrFail($merchant);
+
+            $this->adminNotifyWebsiteDetailsUpdate($merchantDetails);
         });
 
         return $merchantDetails;
