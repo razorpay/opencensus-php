@@ -20,19 +20,64 @@ const selector = formValueSelector('activationBusinessDetails');
 @connect(state => {
   return {
     business_type: selector(state, 'business_type'),
-    or_same: selector(state, 'or_same'),
     business_registered_address: selector(state, 'business_registered_address'),
     business_registered_state: selector(state, 'business_registered_state'),
     business_registered_city: selector(state, 'business_registered_city'),
     business_registered_pin: selector(state, 'business_registered_pin'),
+    business_operation_address: selector(state, 'business_operation_address'),
+    business_operation_state: selector(state, 'business_operation_state'),
+    business_operation_city: selector(state, 'business_operation_city'),
+    business_operation_pin: selector(state, 'business_operation_pin'),
   };
 }, null)
 export default class BusinessDetailsForm extends Component {
+  state = {
+    or_same: true,
+  };
+
+  componentWillMount() {
+    this.verifySameAddress();
+  }
+
+  handleSameAddressCheck = e => {
+    this.setState({ or_same: e.target.checked }, () =>
+      this.updateOperationalAddress()
+    );
+  };
+
+  verifySameAddress = () => {
+    let props = this.props;
+    let checkCounter = 0;
+
+    //If values are null, then don't verify
+    if (
+      !props.business_registered_address ||
+      !props.business_registered_city ||
+      !props.business_registered_pin ||
+      !props.business_registered_state
+    ) {
+      return;
+    }
+
+    if (
+      props.business_registered_address.trim() !==
+        props.business_operation_address.trim() ||
+      props.business_registered_pin.trim() !==
+        props.business_operation_pin.trim() ||
+      props.business_registered_state.trim() !==
+        props.business_operation_state.trim() ||
+      props.business_registered_city.trim() !==
+        props.business_operation_city.trim()
+    ) {
+      this.setState({ or_same: false }, () => this.updateOperationalAddress());
+    }
+  };
+
   updateOperationalAddress = () => {
     setTimeout(() => {
       // Allow the redux-form to update the store
       let props = this.props;
-      if (props.or_same) {
+      if (this.state.or_same) {
         this.props.change(
           'business_operation_address',
           props.business_registered_address
@@ -162,29 +207,6 @@ export default class BusinessDetailsForm extends Component {
 
               <div class="form-group">
                 <label class="col-md-3 control-label label-required">
-                  International Payments Required?
-                </label>
-                <div class="col-md-9 checkbox">
-                  <label class="i-switch">
-                    <Field
-                      name="business_international"
-                      component={CheckboxField}
-                      disabled={locked}
-                    />
-                    <i />
-                  </label>
-                  <small class="help-block">
-                    <i class="i i-info-circle" />
-                    <span>
-                      Please note that applications for international
-                      transactions take longer time to process.
-                    </span>
-                  </small>
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label class="col-md-3 control-label label-required">
                   Payments Accepted for:
                 </label>
                 <div class="col-md-9">
@@ -223,6 +245,31 @@ export default class BusinessDetailsForm extends Component {
                     <span>
                       Please give a brief explanation of your business model and
                       future plans (Essential for startups)
+                    </span>
+                  </small>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <div class="col-md-offset-3 col-md-9">
+                  <div class="checkbox rzpCheckbox">
+                    <Field
+                      name="business_international"
+                      id="business_international"
+                      component="input"
+                      type="checkbox"
+                      disabled={locked}
+                    />
+                    <label for="business_international" class="icon i-check"/>
+                    <span class="left-label label-required">
+                      International Payments Required?
+                    </span>
+                  </div>
+                  <small class="help-block">
+                    <i class="icon icon-info-circle" />
+                    <span>
+                      Please note that applications for international
+                      transactions take longer time to process.
                     </span>
                   </small>
                 </div>
@@ -303,19 +350,20 @@ export default class BusinessDetailsForm extends Component {
 
               {!locked ? (
                 <div class="form-group">
-                  <label class="col-md-3 control-label">
-                    Operational Address same as Registered Address
-                  </label>
-                  <div class="col-md-9 checkbox">
-                    <label class="i-switch">
-                      <Field
+                  <div class="col-md-offset-3 col-md-9">
+                    <div class="checkbox rzpCheckbox">
+                      <input
                         name="or_same"
-                        component="input"
+                        id="or_same"
                         type="checkbox"
-                        onChange={this.updateOperationalAddress}
+                        onChange={this.handleSameAddressCheck}
+                        checked={this.state.or_same}
                       />
-                      <i />
-                    </label>
+                      <label htmlFor="or_same" class="icon i-check"/>
+                      <span class="left-label">
+                        Operational Address same as Registered Address
+                      </span>
+                    </div>
                     <small class="help-block">
                       <i class="i i-info-circle" />
                       <span>
@@ -327,77 +375,79 @@ export default class BusinessDetailsForm extends Component {
                 </div>
               ) : null}
 
-              <fieldset disabled={this.props.or_same}>
-                <div class="form-group">
-                  <label class="col-md-3 control-label label-required">
-                    Operational Address
-                  </label>
-                  <div class="col-md-9">
-                    <Field
-                      name="business_operation_address"
-                      component={InputField}
-                      tagName="textarea"
-                      class="form-control"
-                      placeholder="Operational Address"
-                      validate={[required()]}
-                    />
+              {!this.state.or_same ? (
+                <fieldset disabled={this.props.or_same}>
+                  <div class="form-group">
+                    <label class="col-md-3 control-label label-required">
+                      Operational Address
+                    </label>
+                    <div class="col-md-9">
+                      <Field
+                        name="business_operation_address"
+                        component={InputField}
+                        tagName="textarea"
+                        class="form-control"
+                        placeholder="Operational Address"
+                        validate={[required()]}
+                      />
+                    </div>
                   </div>
-                </div>
 
-                <div class="form-group">
-                  <label class="col-md-3 control-label label-required">
-                    Operational Address Pincode
-                  </label>
-                  <div class="col-md-9">
-                    <Field
-                      name="business_operation_pin"
-                      component={InputField}
-                      class="form-control"
-                      placeholder="Operational Address Pincode"
-                      validate={[required(), validatePincodeLength]}
-                      onChange={e => this.fetchPincodeDetails(e, 'operation')}
-                    />
+                  <div class="form-group">
+                    <label class="col-md-3 control-label label-required">
+                      Operational Address Pincode
+                    </label>
+                    <div class="col-md-9">
+                      <Field
+                        name="business_operation_pin"
+                        component={InputField}
+                        class="form-control"
+                        placeholder="Operational Address Pincode"
+                        validate={[required(), validatePincodeLength]}
+                        onChange={e => this.fetchPincodeDetails(e, 'operation')}
+                      />
+                    </div>
                   </div>
-                </div>
 
-                <div class="form-group">
-                  <label class="col-md-3 control-label label-required">
-                    Operational Address State
-                  </label>
-                  <div class="col-md-9">
-                    <Field
-                      name="business_operation_state"
-                      component={InputField}
-                      tagName="select"
-                      class="form-control"
-                      placeholder="Operational Address State"
-                      validate={[required()]}
-                    >
-                      <option />
-                      {Object.keys(states).map(stateCode => (
-                        <option value={stateCode} key={stateCode}>
-                          {states[stateCode]}
-                        </option>
-                      ))}
-                    </Field>
+                  <div class="form-group">
+                    <label class="col-md-3 control-label label-required">
+                      Operational Address State
+                    </label>
+                    <div class="col-md-9">
+                      <Field
+                        name="business_operation_state"
+                        component={InputField}
+                        tagName="select"
+                        class="form-control"
+                        placeholder="Operational Address State"
+                        validate={[required()]}
+                      >
+                        <option />
+                        {Object.keys(states).map(stateCode => (
+                          <option value={stateCode} key={stateCode}>
+                            {states[stateCode]}
+                          </option>
+                        ))}
+                      </Field>
+                    </div>
                   </div>
-                </div>
 
-                <div class="form-group">
-                  <label class="col-md-3 control-label label-required">
-                    Operational Address City
-                  </label>
-                  <div class="col-md-9">
-                    <Field
-                      name="business_operation_city"
-                      component={InputField}
-                      class="form-control"
-                      placeholder="Operational Address City"
-                      validate={[required()]}
-                    />
+                  <div class="form-group">
+                    <label class="col-md-3 control-label label-required">
+                      Operational Address City
+                    </label>
+                    <div class="col-md-9">
+                      <Field
+                        name="business_operation_city"
+                        component={InputField}
+                        class="form-control"
+                        placeholder="Operational Address City"
+                        validate={[required()]}
+                      />
+                    </div>
                   </div>
-                </div>
-              </fieldset>
+                </fieldset>
+              ) : null}
 
               <div class="form-group">
                 <label class="col-md-3 control-label">
