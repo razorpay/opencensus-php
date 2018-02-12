@@ -53,23 +53,6 @@ class EntityProcessor extends BaseEntityProcessor
         return [$status, $failureReason];
     }
 
-    protected function updateSourceEntity()
-    {
-        if ($this->source->getBatchFundTransferId() !== $this->fta->getBatchFundTransferId())
-        {
-            return;
-        }
-
-        $sourceStatus = $this->getSourceStatusFromReconEntityStatus();
-
-        $this->source->setStatus($sourceStatus);
-        $this->source->setUtr($this->fta->getUtr());
-        $this->source->setRemarks($this->fta->getRemarks());
-        $this->source->setFailureReason($this->fta->getFailureReason());
-
-        $this->repo->saveOrFail($this->source);
-    }
-
     protected function isMerchantLevelError(): bool
     {
         $remarks = $this->fta->getRemarks();
