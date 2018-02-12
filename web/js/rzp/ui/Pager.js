@@ -47,16 +47,20 @@ export default class Pager extends Component {
           <div class="btn-group pull-right">
             <button
               type="button"
-              class="btn btn-default btn-sm i i-chevron-left"
+              class="btn btn-default btn-sm i"
               disabled={prevDisabled}
               onClick={this.onPrev}
-            />
+            >
+              <i class="i i-chevron-left" />
+            </button>
             <button
               type="button"
-              class="btn btn-default btn-sm i i-chevron-right"
+              class="btn btn-default btn-sm i"
               disabled={nextDisabled}
               onClick={this.onNext}
-            />
+            >
+              <i class="i i-chevron-right" />
+            </button>
           </div>
         ) : null}
 
