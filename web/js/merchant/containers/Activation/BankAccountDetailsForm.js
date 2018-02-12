@@ -105,21 +105,6 @@ export default class BankDetailsForm extends Component {
 
           <div class="form-group">
             <label class="col-md-3 control-label label-required">
-              Bank Account Type
-            </label>
-            <div class="col-md-9">
-              <Field
-                name="bank_account_type"
-                component={InputField}
-                class="form-control"
-                placeholder="Bank Account Type e.g. Current"
-                validate={[required()]}
-              />
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="col-md-3 control-label label-required">
               Beneficiary Name
             </label>
             <div class="col-md-9">

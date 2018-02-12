@@ -22,6 +22,7 @@ const gateWayOptions = [
   'Hitachi',
   'SBI Buddy',
   'UpiSbi',
+  'UpiIcici',
   'Netbanking AXIS',
   'Netbanking ICICI',
   'Netbanking Corporation',
