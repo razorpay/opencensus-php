@@ -609,6 +609,8 @@ class MerchantTest extends TestCase
 
     public function testMerchantArchiveWithNoMerchantDetails()
     {
+        $merchant = $this->getLastEntity('merchant', true);
+
         $this->setAdminForInternalAuth();
 
         $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
