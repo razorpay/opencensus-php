@@ -2,23 +2,28 @@
 
 namespace RZP\Tests\Functional\Subscription;
 
-use RZP\Exception\BadRequestException;
-use RZP\Exception\LogicException;
-use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\Helpers\Subscription\SubscriptionTrait;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use Mockery;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\Plan\Subscription;
+use RZP\Tests\Functional\TestCase;
+use RZP\Exception\BadRequestException;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\Subscription\SubscriptionTrait;
 
 class SubscriptionAuthTransactionTest extends TestCase
 {
     use PaymentTrait;
     use SubscriptionTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
+        // This is set to 10 Jan 2018
+        // Because in test cases subsription start date is set
+        // to 20 Jan 2018 and it should always be in future
+        Carbon::setTestNow("10-1-2018 3:00:00");
+
         $this->testDataFilePath = __DIR__ . '/Helpers/SubscriptionTestData.php';
 
         parent::setUp();
@@ -32,11 +37,6 @@ class SubscriptionAuthTransactionTest extends TestCase
         $this->fixtures->create('terminal:shared_cybersource_hdfc_recurring_terminals');
 
         $this->mockTokenex();
-
-        // This is set to 10 Jan 2018
-        // Because in test cases subsription start date is set
-        // to 20 Jan 2018 and it should always be in future
-        Carbon::setTestNow("10-1-2018 3:00:00");
     }
 
     public function testSubscriptionAuthTxnNormalWithStartAt()
@@ -59,15 +59,15 @@ class SubscriptionAuthTransactionTest extends TestCase
 
         $this->assertEquals($exceptedSignature, $actualSignature);
 
-        $subscription = $this->getLastEntity('subscription', true);
-        $payment = $this->getLastEntity('payment', true);
-        $refund = $this->getLastEntity('refund', true);
-        $token = $this->getLastEntity('token', true);
-        $invoice = $this->getLastEntity('invoice', true);
-        $order = $this->getLastEntity('order', true);
+        $subscription = $this->getDbLastEntityPublic('subscription');
+        $payment = $this->getDbLastEntityPublic('payment');
+        $refund = $this->getDbLastEntityPublic('refund');
+        $token = $this->getDbLastEntityPublic('token');
+        $invoice = $this->getDbLastEntityPublic('invoice');
+        $order = $this->getDbLastEntityPublic('order');
 
-        $this->assertNull($invoice);
-        $this->assertNull($order);
+        $this->assertEmpty($invoice);
+        $this->assertEmpty($order);
 
         $this->assertEquals('authenticated', $subscription['status']);
         $this->assertEquals($token['id'], 'token_' . $subscription['token_id']);
@@ -84,19 +84,19 @@ class SubscriptionAuthTransactionTest extends TestCase
     {
         $subscription = $this->createSubscription(false);
 
-        $oldScheduleTask = $this->getLastEntity('schedule_task', true);
+        $oldScheduleTask = $this->getDbLastEntityPublic('schedule_task');
 
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription, 2000);
 
         $this->doAuthPayment($paymentRequest);
 
-        $invoice = $this->getLastEntity('invoice', true);
-        $order = $this->getLastEntity('order', true);
-        $subscription = $this->getLastEntity('subscription', true);
-        $token = $this->getLastEntity('token', true);
-        $payment = $this->getLastEntity('payment', true);
-        $refund = $this->getLastEntity('refund', true);
-        $newScheduleTask = $this->getLastEntity('schedule_task', true);
+        $invoice = $this->getDbLastEntityPublic('invoice');
+        $order = $this->getDbLastEntityPublic('order');
+        $subscription = $this->getDbLastEntityPublic('subscription');
+        $token = $this->getDbLastEntityPublic('token');
+        $payment = $this->getDbLastEntityPublic('payment');
+        $refund = $this->getDbLastEntityPublic('refund');
+        $newScheduleTask = $this->getDbLastEntityPublic('schedule_task');
 
         $this->assertEquals('paid', $invoice['status']);
         $this->assertEquals($subscription['id'], $invoice['subscription_id']);
@@ -131,11 +131,11 @@ class SubscriptionAuthTransactionTest extends TestCase
         $this->assertEquals(2000, $payment['amount']);
         $this->assertEquals($order['id'], $payment['order_id']);
         $this->assertEquals($invoice['id'], $payment['invoice_id']);
-        $this->assertEquals('cust_100000customer', $payment['customer_id']);
+        $this->assertEquals('cust_' . '100000customer', $payment['customer_id']);
         $this->assertTrue($payment['recurring']);
         $this->assertNull($payment['global_customer_id']);
 
-        $this->assertNull($refund);
+        $this->assertEmpty($refund);
 
         $this->assertEquals($oldScheduleTask['next_run_at'], $newScheduleTask['last_run_at']);
         $this->assertEquals($subscription['charge_at'], $newScheduleTask['next_run_at']);
@@ -152,12 +152,12 @@ class SubscriptionAuthTransactionTest extends TestCase
         $recurringPayment = $this->doAuthPayment($paymentRequest);
 
         $invoice = $this->getLastEntity('invoice', true);
-        $order = $this->getLastEntity('order', true);
-        $subscription = $this->getLastEntity('subscription', true);
-        $token = $this->getLastEntity('token', true);
-        $payment = $this->getLastEntity('payment', true);
-        $refund = $this->getLastEntity('refund', true);
-        $newScheduleTask = $this->getLastEntity('schedule_task', true);
+        $order = $this->getDbLastEntityPublic('order');
+        $subscription = $this->getDbLastEntityPublic('subscription');
+        $token = $this->getDbLastEntityPublic('token');
+        $payment = $this->getDbLastEntityPublic('payment');
+        $refund = $this->getDbLastEntityPublic('refund');
+        $newScheduleTask = $this->getDbLastEntityPublic('schedule_task');
 
         $this->assertEquals('paid', $invoice['status']);
         $this->assertEquals($subscription['id'], $invoice['subscription_id']);
@@ -200,7 +200,7 @@ class SubscriptionAuthTransactionTest extends TestCase
         $this->assertTrue($payment['recurring']);
         $this->assertNull($payment['global_customer_id']);
 
-        $this->assertNull($refund);
+        $this->assertEmpty($refund);
 
         $this->assertNull($newScheduleTask['last_run_at']);
         $this->assertEquals($subscription['charge_at'], $newScheduleTask['next_run_at']);
@@ -213,19 +213,19 @@ class SubscriptionAuthTransactionTest extends TestCase
     {
         $subscription = $this->createSubscription(false, [], [], true);
 
-        $oldScheduleTask = $this->getLastEntity('schedule_task', true);
+        $oldScheduleTask = $this->getDbLastEntityPublic('schedule_task');
 
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription, 2300);
 
         $this->doAuthPayment($paymentRequest);
 
         $invoice = $this->getLastEntity('invoice', true);
-        $order = $this->getLastEntity('order', true);
-        $subscription = $this->getLastEntity('subscription', true);
-        $token = $this->getLastEntity('token', true);
-        $payment = $this->getLastEntity('payment', true);
-        $refund = $this->getLastEntity('refund', true);
-        $newScheduleTask = $this->getLastEntity('schedule_task', true);
+        $order = $this->getDbLastEntityPublic('order');
+        $subscription = $this->getDbLastEntityPublic('subscription');
+        $token = $this->getDbLastEntityPublic('token');
+        $payment = $this->getDbLastEntityPublic('payment');
+        $refund = $this->getDbLastEntityPublic('refund');
+        $newScheduleTask = $this->getDbLastEntityPublic('schedule_task');
 
         $this->assertEquals('paid', $invoice['status']);
         $this->assertEquals($subscription['id'], $invoice['subscription_id']);
@@ -276,7 +276,7 @@ class SubscriptionAuthTransactionTest extends TestCase
         $this->assertNull($payment['global_customer_id']);
         $this->assertTrue($payment['auto_captured']);
 
-        $this->assertNull($refund);
+        $this->assertEmpty($refund);
 
         $this->assertEquals($oldScheduleTask['next_run_at'], $newScheduleTask['last_run_at']);
         $this->assertEquals($subscription['charge_at'], $newScheduleTask['next_run_at']);

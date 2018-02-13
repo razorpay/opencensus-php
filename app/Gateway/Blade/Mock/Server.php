@@ -71,7 +71,7 @@ class Server extends Base\Mock\Server
 
         $cardNo = CardNumber::getCardNumberFromAccId($acctId);
 
-        switch($cardNo)
+        switch ($cardNo)
         {
             case CardNumber::VALID_ENROLL_NUMBER:
                 $content['Message']['PARes'] = $responseClass->enrolledValidResponse($content);
@@ -102,6 +102,7 @@ class Server extends Base\Mock\Server
 
                 break;
             case CardNumber::VALID_NOT_ENROLL_NUMBER:
+            case CardNumber::VALID_VISA_NOT_ENROLLED:
                 $content['Message']['VERes'] =  $responseClass->notEnrolledValidResponse($paymentId, $cardNo);
 
                 break;

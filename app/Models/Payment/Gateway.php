@@ -478,6 +478,7 @@ class Gateway
         Gateway::FIRST_DATA,
         Gateway::AXIS_MIGS,
         Gateway::HDFC,
+        Gateway::HITACHI,
         Gateway::NETBANKING_ICICI,
         Gateway::NETBANKING_AXIS,
         Gateway::NETBANKING_HDFC,
