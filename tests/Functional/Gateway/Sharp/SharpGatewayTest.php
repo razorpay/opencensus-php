@@ -227,13 +227,13 @@ class SharpGatewayTest extends TestCase
 
     protected function otpCommonFlow($otp)
     {
-        $this->fixtures->merchant->enableWallet('10000000000000', 'payumoney');
+        $this->fixtures->merchant->enableWallet('10000000000000', 'olamoney');
 
         $this->ba->publicAuth();
 
         $this->setOtp($otp);
 
-        $payment = $this->getDefaultWalletPaymentArray('payumoney');
+        $payment = $this->getDefaultWalletPaymentArray('olamoney');
 
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
         $name = $trace[1]['function'];
