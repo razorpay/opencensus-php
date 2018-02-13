@@ -157,12 +157,12 @@ class Reconciliation extends Base
         return;
     }
 
-    protected function createSetOutputFileAndSave(array & $entries)
+    public function createSetOutputFileAndSave(array & $entries): array
     {
         //
         // For recon batch procesing we don't need to create any output file.
         //
-        return;
+        return [];
     }
 
     protected function shouldMarkProcessedOnFailures(): bool

@@ -140,9 +140,9 @@ class Base extends BaseProcessor
         throw new \BadMethodCallException();
     }
 
-    protected function createSetOutputFileAndSave(array & $entries)
+    public function createSetOutputFileAndSave(array & $entries): array
     {
-        return ;
+        return [];
     }
 
     protected function sendProcessedMail()
