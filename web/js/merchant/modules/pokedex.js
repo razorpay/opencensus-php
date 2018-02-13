@@ -10,14 +10,6 @@ export const fetch = (query, mode) => {
    * PQL - https://docs.google.com/document/d/1sa8Us-sDYkTFYcWUKjT02-qvL-j9GEejiZyAs0MiAhs/edit , makes ajax call
    */
 
-  Object.keys(query.aggregations).forEach((aggKey) => {
-  
-    const aggDetails = query.aggregations[aggKey]
-                            .details;
-
-    aggDetails.mode = aggDetails.mode || mode;
-  });
-
   let data = {
     route_name: 'merchant_analytics',
     body: query,
@@ -26,12 +18,20 @@ export const fetch = (query, mode) => {
   let url = '/user/generic';
 
   if (pokeConfig.merchantId) {
+    mode = 'live';
     data.merchant_id = pokeConfig.merchantId;
+    data.account_id = pokeConfig.merchantId;
     url = '/admin/generic';
-    try {
-      query.filters.default[0].merchant_id = pokeConfig.merchantId;
-    } catch(e) {}
   }
+
+  Object.keys(query.aggregations).forEach((aggKey) => {
+
+    const aggDetails = query.aggregations[aggKey]
+                            .details;
+
+    aggDetails.mode = aggDetails.mode || mode;
+  });
+
 
   return ajax(url, {
     appendModeInURL: false,
