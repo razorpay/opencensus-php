@@ -11,6 +11,7 @@ class CardNumber
     const INVALID_MEESAGE         = '4024007197911620';
     const BLANK_MEESAGE           = '4486705296247132';
     const INVALID_VERSION         = '5110731267079214';
+    const INTERNATIONAL_VISA      = '4264511038488895';
 
     public static function getAccId($cardNumber)
     {
