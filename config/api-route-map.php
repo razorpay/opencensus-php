@@ -151,6 +151,7 @@ return [
         'onboarding_features_update'        => 'onboarding/features/{feature}/update',
 
         'setl_bulk'                         => 'settlements/channel/bulk',
+        'bulk_transaction'                  => 'transactions/bulk',
     ],
 
     // auth
