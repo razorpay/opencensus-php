@@ -301,7 +301,6 @@ class Entity extends Base\PublicEntity
 
     public function isPayumoneyEnabled()
     {
-        // We are disabling payu money
         return false;
     }
 
