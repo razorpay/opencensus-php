@@ -152,9 +152,6 @@ class Gateway extends Base\Gateway
         {
             return true;
         }
-
-        sd($isInternational);
-
         throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
                 null,
