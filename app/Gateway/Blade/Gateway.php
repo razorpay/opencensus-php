@@ -151,14 +151,14 @@ class Gateway extends Base\Gateway
         }
 
         throw new Exception\GatewayErrorException(
-            ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
+            ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
             null,
             null,
             [
                 'eci'             => $eci,
                 'network'         => $network,
                 'isInternational' => $isInternational,
-             ]);
+            ]
         );
     }
 
@@ -274,6 +274,7 @@ class Gateway extends Base\Gateway
         $paresXml = $this->validateSignatureAndInflatePares($pares);
 
         $paresArray = $this->xmlToArray($paresXml);
+
 
         // Validate Payer Authentication Response
         $this->validatePARes($input, $paresArray);
