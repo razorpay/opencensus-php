@@ -83,6 +83,9 @@ export default ({
       </Definition>
     );
   } else if (paymentStatus === 'captured') {
+    const openDisputes = payment.disputes.items.filter(
+      ({ status }) => ['open', 'under_review'].indexOf(status) > -1
+    ).length;
     return (
       <div>
         <div className="m-b">
@@ -108,10 +111,22 @@ export default ({
         {
           <ShowWhen myRole="owner manager operations admin">
             <p>
-              <button className="btn btn-default" onClick={openRefundModal}>
+              <button
+                className="btn btn-default"
+                onClick={openRefundModal}
+                disabled={openDisputes}
+              >
                 {`Issue${refundStatus === 'partial' ? ' another' : ''} Refund`}
               </button>
             </p>
+            {openDisputes ? (
+              <span class="text-danger">
+                Refunds are disabled as there{' '}
+                {openDisputes > 1 ? 'are ' : 'is an '} open dispute{openDisputes >
+                  1 && 's'}{' '}
+                on this payment
+              </span>
+            ) : null}
           </ShowWhen>
         }
         {refundStatus === 'partial' && (
