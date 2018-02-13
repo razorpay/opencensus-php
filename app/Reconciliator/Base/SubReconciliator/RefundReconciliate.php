@@ -203,6 +203,11 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
         $this->persistGatewaySettledAt($this->refund, $rowDetails);
 
+        // We mark the refund status as processed if retval is true
+        $this->refund->setStatusProcessed();
+
+        $this->repo->saveOrFail($this->refund);
+
         return true;
     }
 

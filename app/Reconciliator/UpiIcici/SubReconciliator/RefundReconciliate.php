@@ -87,23 +87,6 @@ class RefundReconciliate extends Base\RefundReconciliate
         return true;
     }
 
-    protected function persistReconciliationData(array $rowDetails)
-    {
-        $retVal = parent::persistReconciliationData($rowDetails);
-
-        if ($retVal === false)
-        {
-            return $retVal;
-        }
-
-        // We mark the refund status as processed if retval is true
-        $this->refund->setStatusProcessed();
-
-        $this->repo->saveOrFail($this->refund);
-
-        return true;
-    }
-
     protected function getReconRefundAmount(array $row)
     {
         return Base\Helper::getIntegerFormattedAmount($row[self::COLUMN_REFUND_AMOUNT]);
