@@ -79,6 +79,9 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
 
+        // We verify the callback response
+        $this->verifyCallback($gatewayPayment, $input);
+
         $this->updateGatewayPaymentEntity($gatewayPayment, $content);
 
         $this->checkResponseStatus($content);
@@ -97,9 +100,9 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
-    public function sendPaymentVerifyRequest(Verify $verify)
+    public function sendPaymentVerifyRequest(Verify $verify, bool $verifyCallback = false)
     {
-        $request = $this->getVerifyRequestData($verify);
+        $request = $this->getVerifyRequestData($verify, $verifyCallback);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
@@ -174,6 +177,36 @@ class Gateway extends Base\Gateway
         parent::compareHashes($actual, $generated);
     }
 
+    /**
+     * Verifying the payment after callback response is saved to
+     * prevent user tampering with the data while making a payment.
+     *
+     * @param Base\Entity $gatewayPayment
+     * @param array $input
+     * @throws GatewayErrorException
+     */
+    protected function verifyCallback(Base\Entity $gatewayPayment, array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        $verify->payment = $gatewayPayment;
+
+        $this->sendPaymentVerifyRequest($verify, true);
+
+        $this->checkGatewaySuccess($verify);
+
+        //
+        // If verify returns false, we throw an error as
+        // authorize request / response has been tampered with
+        //
+        if ($verify->gatewaySuccess === false)
+        {
+            throw new GatewayErrorException(ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
+        }
+    }
+
     protected final function updateGatewayPaymentEntity(
         Entity $gatewayPayment,
         array $attributes,
@@ -219,9 +252,10 @@ class Gateway extends Base\Gateway
      * @see https://docs.google.com/document/d/153ypkOhWNIetN3kV153gevKz2EIBO4aGj4XjIguLB0Y/edit#
      *
      * @param Verify $verify
+     * @param bool $verifyCallback
      * @return array
      */
-    private function getVerifyRequestData(Verify $verify): array
+    private function getVerifyRequestData(Verify $verify, bool $verifyCallback = false): array
     {
         $content = [
             Constant::CHNPGSYN,
@@ -231,6 +265,17 @@ class Gateway extends Base\Gateway
             $verify->input['payment']['amount'] / 100,
             $this->getCallbackUrl($verify->input['payment']['id']),
         ];
+
+        //
+        // When we are verifying the callback, we want to send the
+        // callback response payee_id and amount in the verify request
+        //
+        if ($verifyCallback === true)
+        {
+            $content[3] = $verify->input['gateway'][ResponseFields::BANK_REF_NUM];
+            $content[4] = $verify->input['gateway'][ResponseFields::AMOUNT];
+            $content[5] = $this->getCallbackUrl($verify->input['gateway'][ResponseFields::BANK_REF_NUM]);
+        }
 
         if (empty($verify->payment->getBankPaymentId()) === false)
         {
