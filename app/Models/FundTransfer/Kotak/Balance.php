@@ -7,15 +7,20 @@ use Config;
 use Requests;
 
 use RZP\Exception;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\UniqueIdEntity;
 
 class Balance
 {
-    protected $config;
+    protected $app;
+
+    protected $mode;
 
     protected $trace;
+
+    protected $config;
 
     protected $referenceNumber;
 
@@ -71,11 +76,13 @@ class Balance
 
     public function __construct()
     {
-        $app = App::getFacadeRoot();
+        $this->app      = App::getFacadeRoot();
 
-        $this->config = Config::get('nodal.kotak');
+        $this->mode     = $this->app['rzp.mode'];
 
-        $this->trace = $app['trace'];
+        $this->trace    = $this->app['trace'];
+
+        $this->config   = Config::get('nodal.kotak');
     }
 
     /**
@@ -90,6 +97,13 @@ class Balance
      */
     public function getAccountBalance(): array
     {
+        if ($this->mode === Mode::TEST)
+        {
+            return [
+                986825162 => 1231222.25
+            ];
+        }
+
         try
         {
             $this->accountNumbers = (array) $this->config['account_number'];
