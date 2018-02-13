@@ -76,6 +76,41 @@ return [
         ],
     ],
 
+    'testBearerAuthAllowAppFeaturesRouteAccess' => [
+        'request'  => [
+            'url'     => '/dummy',
+            'method'  => 'GET',
+            'content' => [
+                'name' => 'dummy',
+                'role' => 'just chilling',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'name' => 'dummy',
+                'role' => 'just chilling',
+            ],
+        ],
+    ],
+
+    'testBearerAuthBlacklistedOAuthFeatureWithMerchant' => [
+        'request'  => [
+            'url'     => '/payments/create/redirect',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_URL_NOT_FOUND
+                ]
+            ],
+            'status_code' => 400
+        ],
+    ],
+
+
     'testBearerAuthWriteAccess' => [
         'request'  => [
             'url'     => '/webhooks',

@@ -3,10 +3,11 @@
 namespace RZP\Tests\Functional\OAuth;
 
 use Carbon\Carbon;
+use Razorpay\OAuth\Client;
 
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 /**
  * @group dns-sensitive
@@ -14,8 +15,8 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 class OAuthBearerAuthTest extends OAuthTestCase
 {
     use OAuthTrait;
+    use PaymentTrait;
     use MocksDnsTrait;
-    use RequestResponseFlowTrait;
 
     public function setUp()
     {
@@ -78,6 +79,70 @@ class OAuthBearerAuthTest extends OAuthTestCase
         $this->ba->oauthBearerAuth($accessToken);
 
         $this->startTest();
+    }
+
+    /**
+     * Tests that the route (feature route) is accessible if
+     *      the application hits the route on behalf of the merchant, and,
+     *      the app has the feature enabled
+     *      (and the feature is not an oauth application blacklisted feature)
+     */
+    public function testBearerAuthAllowAppFeaturesRouteAccess()
+    {
+        $client = factory(Client\Entity::class)->create();
+
+        $accessToken = $this->generateOAuthAccessToken(
+                            [
+                                'scopes' => ['dummy.read'],
+                                'client_id' => $client->getId()
+                            ]);
+
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_type' => 'application',
+                'entity_id'   => $client->application_id,
+                'name'        => 'dummy'
+            ]);
+
+        $this->ba->oauthBearerAuth($accessToken);
+
+        $this->startTest();
+    }
+
+    /**
+     * Tests that the route (feature route) is not accessible if
+     *      the application hits the route on behalf of the merchant, and,
+     *      the merchant has the feature enabled, and,
+     *      the feature is an oauth application blacklisted feature
+     */
+    public function testBearerAuthBlacklistedOAuthFeatureWithMerchant()
+    {
+        $client = factory(Client\Entity::class)->create();
+
+        $accessToken = $this->generateOAuthAccessToken(
+            [
+                'scopes' => ['read_write'],
+                'client_id' => $client->getId()
+            ]);
+
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000',
+                'name'        => 's2s'
+            ]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = $payment;
+
+        $this->ba->oauthBearerAuth($accessToken);
+
+        $this->startTest($testData);
     }
 
     public function testBearerAuthWriteAccess()
