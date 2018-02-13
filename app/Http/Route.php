@@ -1555,6 +1555,7 @@ final class Route
         'payment_create_checkout',
         'payment_create_jsonp',
         'payment_create_ajax',
+        'payment_create_fees',
         'app_fetch_payments',
         'customer_logout_global',
         'app_delete_token',
