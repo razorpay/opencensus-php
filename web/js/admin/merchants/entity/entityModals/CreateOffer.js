@@ -197,22 +197,26 @@ export default class CreateOffer extends Component {
           <DateField
             name="starts_at"
             label="Starts at"
-            fieldClass="multi"
+            fieldClass="multi create-offer"
             onChange={val => this.onDateChange('starts_at', val)}
             component={
               <input type="time" name="starts_at_time" defaultValue="00:00" />
             }
+            disablePastDates={true}
+            allowToday={true}
           />
 
           {/* Ends at */}
           <DateField
             name="ends_at"
             label="Ends at"
-            fieldClass="multi"
+            fieldClass="multi create-offer"
             onChange={val => this.onDateChange('ends_at', val)}
             component={
               <input type="time" name="ends_at_time" defaultValue="00:00" />
             }
+            disablePastDates={true}
+            allowToday={false}
             required
           />
 

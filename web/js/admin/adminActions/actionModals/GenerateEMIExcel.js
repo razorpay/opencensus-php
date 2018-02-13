@@ -37,8 +37,8 @@ export default function GenerateRefundsExcel() {
         defaultValue={moment()}
         format="YYYY-MM-DD"
       />
-      <FromField />
-      <ToField />
+      <FromField allowToday={true} />
+      <ToField allowToday={true} />
       <br />
       <SelectField label="Bank" name="bank">
         {Object.keys(options.bank).map((opt, idx) => (
@@ -63,9 +63,7 @@ export default function GenerateRefundsExcel() {
           if (data.to && data.from) {
             body.from =
               new Date(moment(data.from, 'DD-MM-YYYY')).getTime() / 1000;
-            body.to =
-              new Date(moment(data.to, 'DD-MM-YYYY')).getTime() / 1000;
-
+            body.to = new Date(moment(data.to, 'DD-MM-YYYY')).getTime() / 1000;
           } else {
             body.on = data.on;
           }

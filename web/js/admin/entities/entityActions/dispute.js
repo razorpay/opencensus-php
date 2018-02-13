@@ -175,17 +175,21 @@ export class DisputeForm extends Component {
           <DateField
             name="raised_on"
             label="Raised on"
+            fieldClass="dispute-form"
             defaultValue={raisedOn}
             required={!isEditMode}
             disabled={isEditMode}
+            allowToday={true}
           />
 
           {/* Expires on Date */}
           <DateField
             name="expires_on"
             label="Expires on"
+            fieldClass="dispute-form"
             defaultValue={expiresOn}
             required={!isEditMode}
+            allowAllDates={true}
           />
 
           {/* Status */}
