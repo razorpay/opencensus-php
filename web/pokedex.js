@@ -2,25 +2,21 @@ import { Component } from 'react';
 import 'react-dates/initialize';
 import { connect, Provider } from 'react-redux';
 import { render } from 'react-dom';
-import { HashRouter as Router } from 'react-router-dom';
+import { MemoryRouter as Router } from 'react-router-dom';
 
 import 'rzp/utils/polyfills';
 import store from 'merchant/store';
 
-import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationActions from 'rzp/modules/notifications';
 import * as SessionActions from 'merchant/modules/session';
 import User, { setFeatures } from 'merchant/models/User';
 import { pokeConfig } from 'merchant/modules/pokedex';
-
-import ConfirmModalProvider from 'rzp/ui/ConfirmModal/ConfirmModalProvider';
 
 import HomeNew from 'merchant/containers/Home/New';
 
 pokeConfig.merchantId = window.rzp_user.id;
 
 @connect(state => state.session, {
-  ...ModalActions,
   ...SessionActions,
   ...NotificationActions,
 })
@@ -73,11 +69,9 @@ class App extends Component {
 
 render(
   <Provider store={store}>
-    <ConfirmModalProvider>
-      <Router basename="/app">
-        <App />
-      </Router>
-    </ConfirmModalProvider>
+    <Router>
+      <App />
+    </Router>
   </Provider>,
   document.getElementById('react-root')
 );

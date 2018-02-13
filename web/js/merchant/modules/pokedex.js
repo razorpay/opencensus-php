@@ -24,7 +24,7 @@ export const fetch = (query, mode) => {
   }
 
   if (pokeConfig.merchantId) {
-    data.merchant_id = pokeConfig.merchantId;
+    query.merchant_id = pokeConfig.merchantId;
   }
 
   return ajax('/user/generic', {

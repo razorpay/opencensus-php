@@ -1,28 +1,13 @@
 {
     "createdBy": "Redirector v3.1.0",
-    "createdAt": "2018-01-31T12:46:08.673Z",
+    "createdAt": "2018-02-12T12:32:14.909Z",
     "redirects": [
         {
             "description": "",
-            "exampleUrl": "https://cdn.razorpay.com/dashboard/js/generated/merchant_c6ce333c08908f00fec0.css",
-            "exampleResult": "http://dashboard.razorpay.in/dist/css/merchant.css",
-            "error": null,
-            "includePattern": "https://cdn.razorpay.com/dashboard/js/generated/merchant_*.css",
-            "excludePattern": "",
-            "redirectUrl": "http://dashboard.razorpay.in/dist/css/merchant.css",
-            "patternType": "W",
-            "processMatches": "noProcessing",
-            "disabled": false,
-            "appliesTo": [
-                "stylesheet"
-            ]
-        },
-        {
-            "description": "",
-            "exampleUrl": "https://cdn.razorpay.com/dashboard/dist/admin/admin.9f9d08175fc7b1dab670178b1fcddba3.js",
+            "exampleUrl": "https://cdn.razorpay.com/dashboard/dist/admin.b3372f5a019ff481.js",
             "exampleResult": "http://dashboard.razorpay.in/dist/admin.js",
             "error": null,
-            "includePattern": "https://cdn.razorpay.com/dashboard/dist/admin/admin.*.js",
+            "includePattern": "https://cdn.razorpay.com/dashboard/dist/admin.*.js",
             "excludePattern": "",
             "redirectUrl": "http://dashboard.razorpay.in/dist/admin.js",
             "patternType": "W",
@@ -34,10 +19,10 @@
         },
         {
             "description": "",
-            "exampleUrl": "https://cdn.razorpay.com/dashboard/dist/vendor.123.js",
+            "exampleUrl": "https://cdn.razorpay.com/dashboard/dist/vendor_a.8b6318e88d979ec3.js",
             "exampleResult": "http://dashboard.razorpay.in/dist/vendor_a.js",
             "error": null,
-            "includePattern": "https://cdn.razorpay.com/dashboard/dist/vendor*.*.js",
+            "includePattern": "https://cdn.razorpay.com/dashboard/dist/vendor_a.*.js",
             "excludePattern": "",
             "redirectUrl": "http://dashboard.razorpay.in/dist/vendor_a.js",
             "patternType": "W",
@@ -49,10 +34,40 @@
         },
         {
             "description": "",
-            "exampleUrl": "https://cdn.razorpay.com/dashboard/js/generated/merchant_c6ce333c08908f00fec0.js",
+            "exampleUrl": "https://cdn.razorpay.com/dashboard/dist/css/admin.b7c5885d34de4104.css",
+            "exampleResult": "http://dashboard.razorpay.in/dist/css/admin.css",
+            "error": null,
+            "includePattern": "https://cdn.razorpay.com/dashboard/dist/css/admin.*.css",
+            "excludePattern": "",
+            "redirectUrl": "http://dashboard.razorpay.in/dist/css/admin.css",
+            "patternType": "W",
+            "processMatches": "noProcessing",
+            "disabled": false,
+            "appliesTo": [
+                "stylesheet"
+            ]
+        },
+        {
+            "description": "",
+            "exampleUrl": "https://cdn.razorpay.com/dashboard/dist/css/merchant.aae4a6ee9a46b7ce.css",
+            "exampleResult": "http://dashboard.razorpay.in/dist/css/merchant.css",
+            "error": null,
+            "includePattern": "https://cdn.razorpay.com/dashboard/dist/css/merchant.*.css",
+            "excludePattern": "",
+            "redirectUrl": "http://dashboard.razorpay.in/dist/css/merchant.css",
+            "patternType": "W",
+            "processMatches": "noProcessing",
+            "disabled": false,
+            "appliesTo": [
+                "stylesheet"
+            ]
+        },
+        {
+            "description": "",
+            "exampleUrl": "https://cdn.razorpay.com/dashboard/dist/merchant.e04b70042cb2ed3a.js",
             "exampleResult": "http://dashboard.razorpay.in/dist/merchant.js",
             "error": null,
-            "includePattern": "https://cdn.razorpay.com/dashboard/js/generated/merchant_*.js",
+            "includePattern": "https://cdn.razorpay.com/dashboard/dist/merchant.*.js",
             "excludePattern": "",
             "redirectUrl": "http://dashboard.razorpay.in/dist/merchant.js",
             "patternType": "W",
@@ -64,10 +79,25 @@
         },
         {
             "description": "",
-            "exampleUrl": "https://cdn.razorpay.com/dashboard/js/generated/vendor_e15ba99a9176ef2ef8c4.js",
+            "exampleUrl": "https://cdn.razorpay.com/dashboard/dist/pokedex.e04b70042cb2ed3a.js",
+            "exampleResult": "http://dashboard.razorpay.in/dist/pokedex.js",
+            "error": null,
+            "includePattern": "https://cdn.razorpay.com/dashboard/dist/pokedex.*.js",
+            "excludePattern": "",
+            "redirectUrl": "http://dashboard.razorpay.in/dist/pokedex.js",
+            "patternType": "W",
+            "processMatches": "noProcessing",
+            "disabled": false,
+            "appliesTo": [
+                "script"
+            ]
+        },
+        {
+            "description": "",
+            "exampleUrl": "https://cdn.razorpay.com/dashboard/dist/vendor_m.7c30e87e79273069.js",
             "exampleResult": "http://dashboard.razorpay.in/dist/vendor_m.js",
             "error": null,
-            "includePattern": "https://cdn.razorpay.com/dashboard/js/generated/vendor_*.js",
+            "includePattern": "https://cdn.razorpay.com/dashboard/dist/vendor_m.*.js",
             "excludePattern": "",
             "redirectUrl": "http://dashboard.razorpay.in/dist/vendor_m.js",
             "patternType": "W",

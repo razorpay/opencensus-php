@@ -214,12 +214,10 @@ const statusPillClasses = {
   closed: 'label-danger',
 };
 
-export const statusPill = status => {
+export const statusPill = (status, emptyValue = '--') => {
   return status ? (
     <span class={`pill ${statusPillClasses[status] || 'label-semi-muted'}`}>
       {snakeToTitleCase(status)}
     </span>
-  ) : (
-    '--'
-  );
+  ) : emptyValue
 };
