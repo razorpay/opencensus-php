@@ -145,6 +145,43 @@ class OAuthBearerAuthTest extends OAuthTestCase
         $this->startTest($testData);
     }
 
+    /**
+     * Tests that the route (feature route) is accessible if
+     *      the application hits the route on behalf of the merchant, and,
+     *      the app has the feature enabled, and,
+     *      the feature is an oauth application blacklisted feature
+     */
+    public function testBearerAuthBlacklistedOAuthFeatureWithApp()
+    {
+        $client = factory(Client\Entity::class)->create();
+
+        $accessToken = $this->generateOAuthAccessToken(
+            [
+                'scopes' => ['read_write'],
+                'client_id' => $client->getId()
+            ]);
+
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_type' => 'application',
+                'entity_id'   => $client->application_id,
+                'name'        => 's2s'
+            ]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = $payment;
+
+        $this->ba->oauthBearerAuth($accessToken);
+
+        $response = $this->startTest($testData);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+    }
+
     public function testBearerAuthWriteAccess()
     {
         $accessToken = $this->generateOAuthAccessToken(['scopes' => ['read_write']]);

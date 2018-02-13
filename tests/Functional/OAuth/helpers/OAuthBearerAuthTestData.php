@@ -110,6 +110,17 @@ return [
         ],
     ],
 
+    'testBearerAuthBlacklistedOAuthFeatureWithApp' => [
+        'request'  => [
+            'url'     => '/payments/create/redirect',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200
+        ],
+    ],
 
     'testBearerAuthWriteAccess' => [
         'request'  => [
