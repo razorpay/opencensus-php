@@ -128,19 +128,6 @@ class Gateway extends Base\Gateway
 
         $txnStatus = $PARes[PARes::TX][PARes::STATUS];
 
-        $authenticateStatus = ParesStatus::getAuthenticationStatus($txnStatus);
-
-        if ($authenticateStatus !== AuthenticationStatus::Y)
-        {
-            // Throw GatewayErrorException with authentication failed error code
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
-                null,
-                null,
-                [
-                    'auth_status' => $authenticateStatus
-                ]);
-        }
 
         // Blade callback response field is being used by Hitachi
         // These fields are already set in gatewayPayment entity
