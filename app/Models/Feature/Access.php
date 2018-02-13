@@ -148,7 +148,12 @@ class Access
         //
 
         // Fetch all the features of the application that is trying to access the resource
-        $applicationFeatures = $this->repo->feature->getApplicationFeatures($authReturn['application']['id']);
+        $applicationFeatures = $this->repo
+                                    ->feature
+                                    ->getApplicationFeatures($authReturn['application']['id']);
+
+        // Get an array of features
+        $applicationFeatures = array_pluck($applicationFeatures, 'name');
 
         $routeFeaturesAvailableWithApp = array_intersect($routeFeatures, $applicationFeatures);
 
