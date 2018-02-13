@@ -2,9 +2,11 @@
 
 namespace RZP\Base;
 
+use RZP\Constants;
 use RZP\Constants\Es;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Models\Customer;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\EsRepository;
 use RZP\Models\Base\PublicEntity;
@@ -778,8 +780,7 @@ trait RepositoryFetch
 
     protected function addQueryOrder($query)
     {
-        $query->orderBy(Common::CREATED_AT, 'desc')
-              ->orderBy(Common::ID, 'desc');
+        $query->orderBy(Common::ID, 'desc');
     }
 
     protected function addForceIndexForNestaway($query)

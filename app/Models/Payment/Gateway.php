@@ -161,6 +161,8 @@ class Gateway
         Payment\Gateway::CARD_FSS,
         Payment\Gateway::WALLET_PAYUMONEY,
         Payment\Gateway::WALLET_FREECHARGE,
+        Payment\Gateway::UPI_MINDGATE,
+        Payment\Gateway::HITACHI,
     ];
 
     public static $channels = [
