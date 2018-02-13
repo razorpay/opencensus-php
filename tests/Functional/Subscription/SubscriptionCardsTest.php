@@ -388,7 +388,7 @@ class SubscriptionCardsTest extends TestCase
 
         $globalToken = $this->getEntityById('token', 'token_10000custgcard', true);
 
-        $customer = $this->getDbLastEntityPublic('customer');
+        $customer = $this->getLastEntity('customer', true);
         $globalCust = $this->getEntityById('customer', '10000gcustomer', true);
 
         $this->assertEquals($subscription['id'], $payment['subscription_id']);
@@ -423,7 +423,7 @@ class SubscriptionCardsTest extends TestCase
 
         $token = $this->getDbLastEntityPublic('token');
 
-        $customer = $this->getDbLastEntityPublic('customer');
+        $customer = $this->getLastEntity('customer', true);
         $globalCust = $this->getEntityById('customer', '10000gcustomer', true);
 
         $this->assertEquals($subscription['id'], $payment['subscription_id']);
@@ -473,7 +473,7 @@ class SubscriptionCardsTest extends TestCase
 
         $token2 = $this->getEntityById('token', 'token_10000custgcard', true);
 
-        $customer = $this->getDbLastEntityPublic('customer');
+        $customer = $this->getLastEntity('customer', true);
         $globalCust = $this->getEntityById('customer', '10000gcustomer', true);
 
         // ---------------
@@ -518,7 +518,7 @@ class SubscriptionCardsTest extends TestCase
 
         $token = $this->getDbLastEntityPublic('token');
 
-        $customer = $this->getDbLastEntityPublic('customer');
+        $customer = $this->getLastEntity('customer', true);
 
         // ------------
 
@@ -582,7 +582,7 @@ class SubscriptionCardsTest extends TestCase
 
         $token = $this->getDbLastEntityPublic('token');
 
-        $customer = $this->getDbLastEntityPublic('customer');
+        $customer = $this->getLastEntity('customer', true);
 
         $this->assertEquals($token['id'], 'token_' . $payment['global_token_id']);
         $this->assertEquals(true, $token['recurring']);

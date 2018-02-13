@@ -3,9 +3,9 @@
 namespace RZP\Models\Customer\Token;
 
 use RZP\Models\Base;
-use RZP\Models\Customer;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Method;
+use RZP\Models\Customer;
 
 class Repository extends Base\Repository
 {
@@ -119,5 +119,11 @@ class Repository extends Base\Repository
     public function isMerchantIdRequiredForFetch()
     {
         return false;
+    }
+
+    protected function addQueryOrder($query)
+    {
+        $query->orderBy(Token\Entity::CREATED_AT, 'desc')
+              ->orderBy(Token\Entity::ID, 'desc');
     }
 }
