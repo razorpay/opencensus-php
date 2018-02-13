@@ -3,11 +3,12 @@
 namespace RZP\Models\Batch\Processor\Emandate\Debit;
 
 use RZP\Exception;
-use RZP\Gateway\Base\Action as GatewayAction;
-use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
-use RZP\Models\Batch\Processor\Base as BaseProcessor;
+use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Processor\Processor;
+use RZP\Gateway\Base\Action as GatewayAction;
+use RZP\Models\Batch\Processor\Base as BaseProcessor;
+use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
 
 class Base extends BaseProcessor
 {
@@ -140,7 +141,7 @@ class Base extends BaseProcessor
         throw new \BadMethodCallException();
     }
 
-    public function createSetOutputFileAndSave(array & $entries): array
+    public function createSetOutputFileAndSave(array & $entries, string $headerType = Batch\Header::OUTPUT): array
     {
         return [];
     }

@@ -136,6 +136,7 @@ return [
                         Header::ERROR_CODE       => null,
                         Header::ERROR_DESCRIPTION=> null,
                     ],
+                    // Duplicate receipt number will not get detected in the validation api
                     [
                         Header::INVOICE_NUMBER   => '#1',
                         Header::CUSTOMER_NAME    => 'test 2',
@@ -190,6 +191,7 @@ return [
                         Header::ERROR_CODE       => null,
                         Header::ERROR_DESCRIPTION=> null,
                     ],
+                    // Duplicate receipt number will not get detected in the validation api
                     [
                         Header::INVOICE_NUMBER   => '#1',
                         Header::CUSTOMER_NAME    => 'test 2',
