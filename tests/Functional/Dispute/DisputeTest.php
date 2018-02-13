@@ -62,7 +62,25 @@ class DisputeTest extends TestCase
 
         $this->startTest($testData);
 
-        Mail::assertSent(DisputeCreationMail::class);
+        Mail::assertSent(DisputeCreationMail::class, function ($mail) use ($testData)
+        {
+            $this->stringContains(
+                $testData['response']['content']['payment_id'],
+                $mail->subject
+            );
+
+            $this->stringContains(
+                $testData['response']['content']['payment_id'],
+                $mail->viewData
+            );
+
+            $this->assertArrayHasKey('dispute', $mail->viewData);
+
+            $this->assertArrayHasKey('merchant', $mail->viewData);
+
+            return ($mail->hasFrom('disputes@razorpay.com') and
+                ($mail->hasTo('test@razorpay.com')));
+        });
     }
 
     public function testDisputeCreateWithoutMerchantEmail()
