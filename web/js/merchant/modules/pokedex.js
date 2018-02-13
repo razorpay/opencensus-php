@@ -23,11 +23,17 @@ export const fetch = (query, mode) => {
     body: query,
   }
 
+  let url = '/user/generic';
+
   if (pokeConfig.merchantId) {
-    query.merchant_id = pokeConfig.merchantId;
+    data.merchant_id = pokeConfig.merchantId;
+    url = '/admin/generic';
+    try {
+      query.filters.default[0].merchant_id = pokeConfig.merchantId;
+    } catch(e) {}
   }
 
-  return ajax('/user/generic', {
+  return ajax(url, {
     appendModeInURL: false,
     method: 'post',
     headers: {
