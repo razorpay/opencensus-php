@@ -5,6 +5,7 @@ namespace RZP\Models\Batch\Processor;
 use Mail;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\File\File;
 
 use RZP\Models\Batch;
@@ -627,13 +628,14 @@ class Base extends BaseModel\Core
      * Post validation, we fill the batch entity with total_count and other metadata
      *
      * @param  string $filePath
-     * @param  array  $input
+     * @param  array $input
+     * @return array
      */
     protected function validateInputFileAndUpdateBatch(string $filePath, array $input): array
     {
         $entries = $this->parseFile($filePath);
 
-        $this->processEntriesForErrorFile($entries);
+        $this->cleanupEntriesForErrorFile($entries);
 
         $this->validateEntries($entries, $input);
 
@@ -642,12 +644,20 @@ class Base extends BaseModel\Core
         return $entries;
     }
 
-    protected function processEntriesForErrorFile(array & $entries)
+    /**
+     * The output file that is given to merchants in the `batches/validate` api
+     * has two extra columns named `Error Code` and `Error Description`.
+     * For batch create, if the merchant passes a `file_id`, the downloaded file
+     * has these two columns, whose entries are removed in this method.
+     *
+     * @param array $entries
+     */
+    protected function cleanupEntriesForErrorFile(array & $entries)
     {
-        $entries = array_map(function ($entry) {
-
-            if (array_key_exists(Batch\Header::ERROR_CODE, $entry)){
-
+        $entries = array_map(function ($entry)
+        {
+            if (array_key_exists(Batch\Header::ERROR_CODE, $entry) === true)
+            {
                 unset($entry[Batch\Header::ERROR_CODE]);
                 unset($entry[Batch\Header::ERROR_DESCRIPTION]);
             }
@@ -762,9 +772,17 @@ class Base extends BaseModel\Core
     {
         $ufh = $this->saveFile($this->outputFileLocalPath, FileStore\Type::BATCH_OUTPUT);
 
+        $ufhSignedUrl = $ufh->getSignedUrl();
+
+        if ($ufhSignedUrl === null)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_BATCH_UNABLE_TO_SAVE_OUTPUT_FILE);
+        }
+
         return [
-            self::FILE_ID       => FileStore\Entity::getSignedId($ufh->getSignedUrl()['id']),
-            self::SIGNED_URL    => $ufh->getSignedUrl()['url'],
+            self::FILE_ID       => FileStore\Entity::getSignedId($ufhSignedUrl['id']),
+            self::SIGNED_URL    => $ufhSignedUrl['url'],
         ];
     }
 

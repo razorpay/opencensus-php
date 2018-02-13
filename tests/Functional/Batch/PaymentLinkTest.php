@@ -158,7 +158,7 @@ class PaymentLinkTest extends TestCase
 
         $this->assertEquals($file['id'], $response['file_id']);
 
-        $this->assertEquals('/app/storage/files/filestore/' . $file['location'], $response['signed_url']);
+        $this->assertEquals(storage_path('files/filestore/') . $file['location'], $response['signed_url']);
     }
 
     public function testBatchCreateForUploadedFile()
