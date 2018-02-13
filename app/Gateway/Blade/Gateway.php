@@ -133,19 +133,11 @@ class Gateway extends Base\Gateway
 
     protected function validateAuthResponse($eci, $network, $isInternational)
     {
-        if (($network === Card\Network::VISA) and ($eci === '05'))
+        if (($network === Card\Network::VISA) and ($eci === '05' or ($eci == '06' and $isInternational === true)))
         {
             return true;
         }
-        if (($network === Card\Network::MC) and ($eci === '02'))
-        {
-            return true;
-        }
-        if (($network === Card\Network::VISA) and ($eci === '06') and ($isInternational === true))
-        {
-            return true;
-        }
-        if (($network === Card\Network::MC) and ($eci === '01') and ($isInternational === true))
+        if (($network === Card\Network::MC) and ($eci === '02' or ($eci == '01' and $isInternational ===true)))
         {
             return true;
         }
