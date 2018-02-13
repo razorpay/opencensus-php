@@ -400,7 +400,8 @@ class Core extends Base\Core
         // In case of internal auth/ crons,
         // there will not be any app_token.
         // Also, in case of subscriptions, we have a charge route (in test mode)
-        // (which is generally used by our crons)
+        // (which is generally used by our crons) and also
+        // manual invoice charge route (for subscriptions)
         // which is hit from the dashboard. We do not expect to
         // have app_token here just like how we don't expect in
         // privilege (cron) auth.
