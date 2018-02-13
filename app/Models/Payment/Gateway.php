@@ -867,6 +867,20 @@ class Gateway
         IFSC::HSBC => Gateway::FIRST_DATA,
     ];
 
+    public static $debitPinGateways = [
+        Gateway::CARD_FSS => [
+            Acquirer::ACQUIRER_FSS => [
+                IFSC::UTIB,
+                IFSC::IOBA,
+                IFSC::ANDB,
+                IFSC::SYNB,
+                IFSC::SURY,
+                IFSC::UCBA,
+                IFSC::ICIC,
+            ]
+        ],
+    ];
+
     public static $subscriptionOverOneYearGateways = [
         Gateway::AXIS_MIGS
     ];

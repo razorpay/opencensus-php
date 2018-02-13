@@ -11,6 +11,7 @@ use RZP\Models\Terminal;
 use RZP\Models\Payment;
 use RZP\Models\Card\Network;
 use RZP\Models\Payment\Method;
+use RZP\Models\Card\IIN\Flows;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Terminal\Category;
@@ -35,6 +36,7 @@ class TransactionFilter extends Terminal\Filter
         'pharma',
         'corporate',
         'mcc',
+        'auth_type',
     ];
 
     public function methodFilter($terminal)
@@ -487,6 +489,30 @@ class TransactionFilter extends Terminal\Filter
                             $applicableTerminals,
                             $merchantMcc) === true);
             }
+        }
+
+        return true;
+    }
+
+    public function authTypeFilter(Terminal\Entity $terminal)
+    {
+        $payment = $this->input['payment'];
+
+        if (($payment->getAuthType() === null) or
+            ($payment->isMethodCardOrEmi() === false))
+        {
+            return true;
+        }
+
+        if (($payment->getAuthType() === 'debit_pin') and
+            (in_array($terminal->getGateway(), Gateway::$debitPinGateways, true) === true))
+        {
+            if ($payment->card->iin->supports(Flows::DEBIT_PIN) === true)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         return true;

@@ -47,8 +47,8 @@ class Validator extends Base\Validator
     protected static $editTerminalGateways = [
         Payment\Gateway::HDFC,
         Payment\Gateway::HITACHI,
-        Payment\Gateway::CARD_FSS,
         Payment\Gateway::BILLDESK,
+        Payment\Gateway::CARD_FSS,
         Payment\Gateway::AXIS_MIGS,
         Payment\Gateway::UPI_ICICI,
         Payment\Gateway::ENACH_RBL,
@@ -368,17 +368,21 @@ class Validator extends Base\Validator
 
     protected static $cardFssTerminalRules = [
         Entity::GATEWAY                     => 'required|in:card_fss',
-        Entity::GATEWAY_SECURE_SECRET       => 'required|string',
-        Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes|string',
-        Entity::GATEWAY_ACCESS_CODE         => 'sometimes',
         Entity::GATEWAY_MERCHANT_ID         => 'required',
+        Entity::GATEWAY_SECURE_SECRET       => 'required|string',
         Entity::GATEWAY_TERMINAL_ID         => 'sometimes',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes|string',
         Entity::TYPE                        => 'sometimes|array',
+        Entity::MODE                        => 'sometimes|integer|in:2,3',
     ];
 
     protected static $cardFssEditTerminalRules = [
         Entity::GATEWAY                     => 'sometimes|in:card_fss',
+        Entity::GATEWAY_MERCHANT_ID         => 'sometimes',
+        Entity::GATEWAY_TERMINAL_ID         => 'sometimes',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes|string',
         Entity::TYPE                        => 'sometimes|array',
+        Entity::MODE                        => 'sometimes|integer|in:2,3',
     ];
 
     protected static $enachRblTerminalRules = [
