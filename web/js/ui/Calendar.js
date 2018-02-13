@@ -39,14 +39,23 @@ export default class CalendarPicker extends Component {
     });
   };
 
+  disabledInvalidDates = current => {
+    if (!current) {
+      return false; // allow empty select
+    }
+
+    const isBefore2015 = current.year() < 2015;
+    return isBefore2015; // can not select future dates
+  };
+
   disabledFutureDates = current => {
     if (!current) {
       return false; // allow empty select
     }
+    current.endOf('day');
+
     const date = moment();
-    date.hour(23);
-    date.minute(59);
-    date.second(59);
+    date.endOf('day');
 
     const isBefore2015 = current.year() < 2015;
     let isFuture;
@@ -63,11 +72,10 @@ export default class CalendarPicker extends Component {
     if (!current) {
       return false; // allow empty select
     }
-    const date = moment();
+    current.startOf('day');
 
-    date.hour(0);
-    date.minute(0);
-    date.second(0);
+    const date = moment();
+    date.startOf('day');
 
     let isPast;
     if (this.props.allowToday) {
@@ -92,7 +100,7 @@ export default class CalendarPicker extends Component {
           style={{ zIndex: 1000 }}
           disabledDate={
             this.props.allowAllDates
-              ? null
+              ? this.disabledInvalidDates
               : this.props.disablePastDates
                 ? this.disabledPastDates
                 : this.disabledFutureDates
@@ -112,7 +120,7 @@ export default class CalendarPicker extends Component {
           showClear={true}
           disabledDate={
             this.props.allowAllDates
-              ? null
+              ? this.disabledInvalidDates
               : this.props.disablePastDates
                 ? this.disabledPastDates
                 : this.disabledFutureDates
