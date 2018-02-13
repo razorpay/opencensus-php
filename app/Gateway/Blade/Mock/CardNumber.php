@@ -13,6 +13,7 @@ class CardNumber
     const INVALID_VERSION         = '5110731267079214';
     const INTERNATIONAL_VISA      = '4264511038488895';
     const INTERNATIONAL_MASTER    = '5101281038487891';
+    const INVALID_ECI             = '5200000000000031';
 
     public static function getAccId($cardNumber)
     {

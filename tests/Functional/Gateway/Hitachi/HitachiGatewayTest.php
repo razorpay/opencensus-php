@@ -254,6 +254,26 @@ class HitachiGatewayTest extends TestCase
 
     }
 
+    public function testInvalidEci()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card'] = [
+                'number'       => CardNumber::INVALID_ECI,
+                'expiry_month' => '02',
+                'expiry_year'  => '21',
+                'cvv'          => 123,
+                'name'         => 'Test Card'
+        ];
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
     public function testPaymentVerify()
     {
         $this->doAuthPayment($this->payment);

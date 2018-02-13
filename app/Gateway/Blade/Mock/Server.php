@@ -82,6 +82,9 @@ class Server extends Base\Mock\Server
             case CardNumber::INTERNATIONAL_MASTER:
                 $content['Message']['PARes'] = $responseClass->internationalMasterResponse($content);
                 break;
+            case CardNumber::INVALID_ECI:
+                $content['Message']['PARes'] = $responseClass->invalidEci($content);
+                break;
         }
         unset($content['Message']['PAReq']);
 
@@ -105,6 +108,7 @@ class Server extends Base\Mock\Server
             case CardNumber::INTERNATIONAL_VISA:
             case CardNumber::VALID_ENROLL_NUMBER:
             case CardNumber::INTERNATIONAL_MASTER;
+            case CardNumber::INVALID_ECI:
                 $content['Message']['VERes'] = $responseClass->enrolledValidResponse($paymentId, $cardNo);
 
                 break;

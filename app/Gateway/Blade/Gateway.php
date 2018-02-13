@@ -126,9 +126,6 @@ class Gateway extends Base\Gateway
 
         $this->validateAuthResponse($eci, $network, $isInternational);
 
-        $txnStatus = $PARes[PARes::TX][PARes::STATUS];
-
-
         // Blade callback response field is being used by Hitachi
         // These fields are already set in gatewayPayment entity
         return $gatewayPayment->toArray();
@@ -152,16 +149,17 @@ class Gateway extends Base\Gateway
         {
             return true;
         }
-        throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
-                null,
-                null,
-                [
-                    'eci'             => $eci,
-                    'network'         => $network,
-                    'isInternational' => $isInternational,
-                ]);
 
+        throw new Exception\GatewayErrorException(
+            ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
+            null,
+            null,
+            [
+                'eci'             => $eci,
+                'network'         => $network,
+                'isInternational' => $isInternational,
+             ]);
+        );
     }
 
     protected function getVeresAttributesToSave(array $response, array $input)
