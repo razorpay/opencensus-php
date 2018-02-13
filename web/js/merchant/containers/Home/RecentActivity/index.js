@@ -43,7 +43,7 @@ const Row = ({ record, tabName, tabTitle, sectionTitle }) => {
           );
         }
 
-        return <td key={index}>{value}</td>;
+        return <td key={tabName + '-' + index}>{value}</td>;
       })}
     </tr>
   );
@@ -163,9 +163,10 @@ export default class RecentActivity extends Component {
                 target="_blank"
                 to={`/${selectedTab}`}
                 onClick={() =>
-                  trackGoToLinks(selectedTabTitle, this.props.sectionTitle)}
+                  trackGoToLinks(selectedTabTitle, this.props.sectionTitle)
+                }
               >
-                View all {selectedTabTitle} <i className="i i-chevron-right"></i>
+                View all {selectedTabTitle} <i className="i i-chevron-right" />
               </Link>
             </div>
           </div>
