@@ -19,6 +19,7 @@ import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import PaymentMethod from 'merchant/components/Payments/PaymentMethod';
 import PaymentRefund from 'merchant/components/Payments/PaymentRefund';
 import PaymentTransfers from 'merchant/components/Payments/PaymentTransfers.js';
+import PaymentDisputes from './PaymentDisputes';
 
 export default props => {
   let {
@@ -134,6 +135,14 @@ export default props => {
 
                 <EntityDetailRow label="Description">
                   {payment.description}
+                </EntityDetailRow>
+
+                <EntityDetailRow label="Disputes">
+                  {payment.disputes.count ? (
+                    <PaymentDisputes disputes={payment.disputes.items} />
+                  ) : (
+                    '--'
+                  )}
                 </EntityDetailRow>
 
                 <EntityDetailRow label="Customer">
