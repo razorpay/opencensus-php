@@ -58,7 +58,7 @@ class Core extends Base\Core
                 }
                 else
                 {
-                    $this->applyActionRejectionStateChanges($action, $admin, $admin->getSuperAdminRole());
+                    (new Action\Core)->applyActionRejectionStateChanges($action, $admin, $admin->getSuperAdminRole());
                 }
             });
 
@@ -155,7 +155,7 @@ class Core extends Base\Core
             // State change if checker rejected
             if ($checker->isApproved() === false)
             {
-                $this->applyActionRejectionStateChanges($action, $admin, $step->role);
+                (new Action\Core)->applyActionRejectionStateChanges($action, $admin, $step->role);
             }
             else
             {
@@ -179,22 +179,9 @@ class Core extends Base\Core
     protected function executeAction(Action\Entity $action, Role $role)
     {
         // Currently we can execute from both route and here, will remove route eventually.
-        (new Action\Service)->executeAction($action->getPublicId(), $role);
-    }
-
-    /*
-        State changes on rejection
-    */
-    protected function applyActionRejectionStateChanges($action, Admin $admin, Role $role)
-    {
-        $state = State\Name::REJECTED;
-
-        $actionId = $action->getId();
-
-        (new State\Core)->changeActionState($action, $state, $admin);
-
-        (new Action\Core)->updateStateAndStateChanger($action, $state, $admin, $role);
-
-        (new Differ\Core)->updateStateInEs($actionId, $state);
+        if ($action->getApproved() === true)
+        {
+            (new Action\Service)->executeAction($action->getPublicId(), $role);
+        }
     }
 }

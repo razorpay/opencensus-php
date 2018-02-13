@@ -222,7 +222,7 @@ class Core extends Base\Core
     public function checkAndMarkActionApproved(Entity $action, Admin\Entity $admin)
     {
         // 1. If action is already approved then return
-        
+
         if ($action->getApproved() === true)
         {
             return true;
@@ -323,7 +323,7 @@ class Core extends Base\Core
                                       ->action_checker
                                       ->fetchApprovedCountByActionIdAndStepIds(
                                           $action->getId(), $stepIds);
-        
+
         // Hashmap of stepIds => total_approvals_received
         $stepCheckerMap = [];
 
@@ -469,6 +469,22 @@ class Core extends Base\Core
             (new Differ\Core)->updateStateInEs(
                 $action->getId(), $stateData[State\Entity::NAME]);
         });
+    }
+
+    /*
+        State changes on rejection
+    */
+    public function applyActionRejectionStateChanges($action, Admin\Entity $admin, Role\Entity $role)
+    {
+        $state = State\Name::REJECTED;
+
+        $actionId = $action->getId();
+
+        (new State\Core)->changeActionState($action, $state, $admin);
+
+        $this->updateStateAndStateChanger($action, $state, $admin, $role);
+
+        (new Differ\Core)->updateStateInEs($actionId, $state);
     }
 
     public function updateState(Entity $action, string $state)
