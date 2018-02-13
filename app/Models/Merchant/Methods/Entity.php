@@ -301,7 +301,8 @@ class Entity extends Base\PublicEntity
 
     public function isPayumoneyEnabled()
     {
-        return $this->getAttribute(self::PAYUMONEY);
+        // We are disabling payu money
+        return false;
     }
 
     public function isFreechargeEnabled()
