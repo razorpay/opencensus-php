@@ -102,20 +102,16 @@ const fields = [
   [
     'Activation Progress',
     item => (
-      <span
+      statusPill(item.merchant_detail.activation_status, '') || <span
         class={`pill ${
           item.merchant_detail.activation_progress < 100
             ? 'label-danger'
-            : 'label-success'
+            : 'label-info'
         }`}
       >
         {item.merchant_detail.activation_progress}%
       </span>
     ),
-  ],
-  [
-    'Activation Status',
-    item => statusPill(item.merchant_detail.activation_status),
   ],
   ['Registered At', item => formatDate(item.created_at)],
   [
@@ -134,4 +130,14 @@ const fields = [
         </span>
       )),
   ],
+  [
+    'Action',
+    item => item.activated && <a onClick={openLink} href={'/admin/stats/' + item.id} class="btn" target="_blank">View Stats</a>
+  ]
 ];
+
+const openLink = function(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  window.open(e.target.href, e.target.target);
+}
