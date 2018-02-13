@@ -58,6 +58,7 @@ class Entity extends Base\PublicEntity
     const EXPIRE_BY                = 'expire_by';
     const EMAIL_STATUS             = 'email_status';
     const SMS_STATUS               = 'sms_status';
+    const MERCHANT_LABEL           = 'merchant_label';
     const DESCRIPTION              = 'description';
     const TERMS                    = 'terms';
     const NOTES                    = 'notes';
@@ -290,6 +291,7 @@ class Entity extends Base\PublicEntity
         self::EMAIL_STATUS,
         self::MERCHANT_ID,
         self::DATE,
+        self::MERCHANT_LABEL,
         self::DESCRIPTION,
         self::TERMS,
         self::NOTES,
@@ -558,6 +560,11 @@ class Entity extends Base\PublicEntity
     public function getUserId()
     {
         return $this->getAttribute(self::USER_ID);
+    }
+
+    public function getMerchantLabel()
+    {
+        return $this->getAttribute(self::MERCHANT_LABEL);
     }
 
     public function getDescription()
@@ -892,6 +899,11 @@ class Entity extends Base\PublicEntity
     public function setUserId(string $userId)
     {
         $this->setAttribute(self::USER_ID, $userId);
+    }
+
+    public function setMerchantLabel(string $merchantLabel)
+    {
+        $this->setAttribute(self::MERCHANT_LABEL, $merchantLabel);
     }
 
     /**
