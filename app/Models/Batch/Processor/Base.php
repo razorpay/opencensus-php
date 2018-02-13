@@ -150,8 +150,6 @@ class Base extends BaseModel\Core
             $ufhFile->entity()->associate($batch);
         }
 
-        // TODO : BUGFIX :: For dissociated case, while saving, the entity_id and type is getting saved
-
         $this->repo->transaction(function () use ($ufhFile) {
 
             $this->repo->saveOrFail($ufhFile);
@@ -484,7 +482,7 @@ class Base extends BaseModel\Core
         $this->batch->setProcessing(false);
     }
 
-    public function createSetOutputFileAndSave(array & $entries, string $headerType = null): array
+    public function createSetOutputFileAndSave(array & $entries, string $headerType = Batch\Header::OUTPUT): array
     {
         try
         {

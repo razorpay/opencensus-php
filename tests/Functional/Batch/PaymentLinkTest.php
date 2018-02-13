@@ -54,10 +54,10 @@ class PaymentLinkTest extends TestCase
         $response = $this->startTest();
 
         // Gets last entity (Post queue processing) and asserts attributes
-        $entities = $this->getLastEntity('batch', true);
+        $entity = $this->getLastEntity('batch', true);
 
-        $this->assertEquals(2, $entities['success_count']);
-        $this->assertEquals(1, $entities['failure_count']);
+        $this->assertEquals(2, $entity['success_count']);
+        $this->assertEquals(1, $entity['failure_count']);
 
         // Processing should have happened immediately in tests as
         // queue are sync basically.
@@ -66,9 +66,6 @@ class PaymentLinkTest extends TestCase
         $this->assertOutputFileExistsForBatch($response[Entity::ID]);
 
         Mail::assertSent(BatchPaymentLinkFileMail::class);
-
-        // TODO:
-        // - Open and verify output file contents with expectations
     }
 
     /**
@@ -109,20 +106,6 @@ class PaymentLinkTest extends TestCase
     public function testCreateBatchOfPaymentLinkTypeWithInvalidFile2()
     {
         $entries = [];
-
-        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
-
-        $this->startTest();
-    }
-
-    /**
-     * Few of the file rows has validation errors
-     */
-    public function testCreateBatchOfPaymentLinkTypeWithInvalidFile3()
-    {
-        $entries = $this->getDefaultPaymentLinkFileEntries();
-
-        $entries[1][Header::AMOUNT] = 0;
 
         $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
 
