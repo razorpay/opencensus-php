@@ -491,7 +491,7 @@ class Base extends BaseModel\Core
         $this->batch->setProcessing(false);
     }
 
-    public function createSetOutputFileAndSave(array & $entries, string $headerType = null): array
+    public function createSetOutputFileAndSave(array & $entries, string $headerType = Batch\Header::OUTPUT): array
     {
         try
         {
