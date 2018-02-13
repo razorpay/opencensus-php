@@ -193,13 +193,13 @@ class Entity extends Base\PublicEntity
         self::WHITELISTED_IPS_TEST,
     ];
 
-    // Requires PHP 5.6
     const CONFIG_LIST = [
         self::ID,
         self::BRAND_COLOR,
         self::HANDLE,
         self::TRANSACTION_REPORT_EMAIL,
         self::LOGO_URL,
+        self::INVOICE_NAME_FIELD,
         self::AUTO_CAPTURE_LATE_AUTH,
     ];
 
