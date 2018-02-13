@@ -40,8 +40,8 @@ export default function GenerateRefundsExcel() {
         defaultValue={moment()}
         format="YYYY-MM-DD"
       />
-      <FromField />
-      <ToField />
+      <FromField allowToday={true} />
+      <ToField allowToday={true} />
       <br />
       <SelectField label="Bank" name="bank">
         {Object.keys(options.bank).map((opt, idx) => (

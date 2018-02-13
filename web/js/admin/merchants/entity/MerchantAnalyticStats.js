@@ -255,6 +255,8 @@ export default class MerchantAnalyticStats extends Component {
               placeholder="DD/MM/YYYY"
               onChange={val => this.onDateChange('fromDate', val)}
               defaultValue={moment().subtract(7, 'days')}
+              allowToday={true}
+            />
             />
             <ToField
               label="To"
@@ -262,8 +264,9 @@ export default class MerchantAnalyticStats extends Component {
               placeholder="DD/MM/YYYY"
               onChange={val => this.onDateChange('toDate', val)}
               defaultValue={moment()}
+              allowToday={true}
             />
-
+            />
             <AsyncButton
               text="Fetch Stats"
               class="btn"
