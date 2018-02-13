@@ -215,6 +215,8 @@ class OAuth
         //
         $this->ba->setMerchantById($response[OAuthToken::MERCHANT_ID]);
 
+        $this->ba->setPublicKey($response[OAuthToken::PUBLIC_TOKEN]);
+
         $mode = $response[OAuthToken::MODE];
 
         // Sets the mode for the request, and database connection
