@@ -232,18 +232,6 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
-    protected function validateEci(string $eci = null, string $networkCode)
-    {
-        if ((($networkCode === Card\Network::VISA) and ($eci === '07')) or
-            (($networkCode === Card\Network::MC) and ($eci === '00')))
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
-                $eci,
-                'Invalid Eci value for network ' . $networkCode);
-        }
-    }
-
     protected function getCallbackResponseAttributes($response)
     {
         $attributes = [
