@@ -12,6 +12,9 @@
     .sticky-content .pull-right, a[target=_blank] {
       display: none;
     }
+    .dashboard > .row:nth-child(n+3) {
+      display: none;
+    }
   </style>
   <script>
     window.rzpAnalytics = function(){}
