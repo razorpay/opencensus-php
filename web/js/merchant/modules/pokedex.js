@@ -1,5 +1,9 @@
 import ajax from 'merchant/utils/ajax';
 
+export var pokeConfig = {
+  merchantId: ''
+}
+
 export const fetch = (query, mode) => {
   /*
    * given query according to
@@ -14,6 +18,15 @@ export const fetch = (query, mode) => {
     aggDetails.mode = aggDetails.mode || mode;
   });
 
+  let data = {
+    route_name: 'merchant_analytics',
+    body: query,
+  }
+
+  if (pokeConfig.merchantId) {
+    query.merchant_id = pokeConfig.merchantId;
+  }
+
   return ajax('/user/generic', {
     appendModeInURL: false,
     method: 'post',
@@ -21,9 +34,6 @@ export const fetch = (query, mode) => {
       'Content-Type': "application/json"
     },
     contentType: 'application/json',
-    data: JSON.stringify({
-      route_name: 'merchant_analytics',
-      body: query,
-    }),
+    data: JSON.stringify(data),
   });
 };

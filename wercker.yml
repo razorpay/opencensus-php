@@ -42,7 +42,12 @@ build:
       - script:
           name: build
           code: npm run build
-
+      - script:
+          name: set browser
+          code: export CHROME_BIN=/usr/bin/chromium
+      - script:
+          name: run test
+          code: npm test
       - script:
           name: Run artisan migrate
           code: APP_ENV=testing php artisan migrate --env=testing

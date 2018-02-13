@@ -36,6 +36,8 @@ import Configuration from 'merchant/containers/Configuration';
 import ApiKeys from 'merchant/containers/Keys/List';
 import Webhooks from 'merchant/containers/Webhooks/List';
 
+import ErrorBoundary from 'common/ErrorBoundary';
+
 import {
   setBaseLocation,
   setActiveEntity,
@@ -73,7 +75,8 @@ const RefundsTabbedContainer = () => {
             to="/refunds/batchuploads"
             isActive={(match, { pathname }) =>
               pathname === '/refunds/batchupload' ||
-              pathname === '/refunds/batchuploads'}
+              pathname === '/refunds/batchuploads'
+            }
           >
             Batch Refunds
           </NavLink>
@@ -127,7 +130,7 @@ export default class Content extends Component {
 
   getBaseView = () => {
     return (
-      <div>
+      <ErrorBoundary resetOnProps location={this.baseLocation}>
         <Switch location={this.baseLocation}>
           <Route path="/dashboard" component={Home} />
           <Redirect from="/" exact to="/dashboard" />
@@ -178,7 +181,7 @@ export default class Content extends Component {
 
           <Redirect to="/dashboard" />
         </Switch>;
-      </div>
+      </ErrorBoundary>
     );
   };
 

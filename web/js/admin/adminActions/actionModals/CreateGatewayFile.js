@@ -2,8 +2,7 @@ import React, { Component } from 'react';
 import Form from 'ui/Form';
 import Field, {
   SelectField,
-  FromField,
-  ToField,
+  DateField,
   TextAreaField,
   CheckField,
   SelectMode,
@@ -141,13 +140,20 @@ export default class CreateGatewayFile extends Component {
           onChange={this.handleChangeIn('dateIsRange', 'checked')}
         />
 
-        <FromField
+        <DateField
           name="begin"
+          fieldClass="create-gateway-file"
           label={!dateIsRange ? 'Date' : 'From'}
           required
         />
 
-        {dateIsRange && <ToField name="end" required />}
+        {dateIsRange && (
+          <DateField
+            name="end"
+            fieldClass="create-gateway-file"
+            label={'To'}
+            required />
+        )}
 
         <Field
           label="Sender Email"

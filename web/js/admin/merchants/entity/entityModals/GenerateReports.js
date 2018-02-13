@@ -9,33 +9,6 @@ import fetch, { adminFetch } from 'common/fetch';
 import AsyncButton from 'ui/AsyncButton';
 import { PowerSelect, TypeAhead } from 'react-power-select';
 
-// import ReduxDatetime from 'rzp/ui/ReduxDatetime';
-
-// TODO: Restrict year selection from html dates also
-function validYear(current) {
-  const selectedDate = current.split('-'),
-    selectedYear = selectedDate[0],
-    selectedMonth = selectedDate[1],
-    selectedDay = selectedDate[2];
-
-  const today = new Date();
-
-  // Year check
-  let isBeforeToday = selectedYear <= today.getFullYear();
-
-  // Month check
-  if (isBeforeToday && selectedYear === today.getFullYear()) {
-    isBeforeToday = selectedMonth <= today.getMonth() + 1;
-
-    // Date check
-    if (isBeforeToday && selectedMonth === today.getMonth() + 1) {
-      isBeforeToday = selectedDay < today.getDate();
-    }
-  }
-
-  return selectedYear >= 2015 && isBeforeToday;
-}
-
 export default class GenerateReports extends Component {
   state = {
     merchantAccounts: [],
@@ -186,10 +159,10 @@ export default class GenerateReports extends Component {
     let { entity, type, date, invoiceDate } = body;
 
     if (date) {
-      date = date.split('-');
+      date = date.split('/');
     }
     if (invoiceDate) {
-      invoiceDate = invoiceDate.split('-');
+      invoiceDate = invoiceDate.split('/');
     }
 
     const mode = 'live';
@@ -212,18 +185,18 @@ export default class GenerateReports extends Component {
 */
 
       let invoiceUrl = `/admin/${mode}/reports/invoice?year=${
-        invoiceDate[0]
-      }&month=${invoiceDate[1]}&merchant_id=${this.props.merchantId}`;
+        invoiceDate[1]
+      }&month=${invoiceDate[0]}&merchant_id=${this.props.merchantId}`;
       return Promise.resolve(window.open(invoiceUrl, '_blank'));
     }
 
     let data = {
-      month: Number(date[1]),
-      year: date[0],
+      month: Number(date[0]),
+      year: date[1],
     };
 
     if (type === 'daily') {
-      data.day = Number(date[2]);
+      data.day = Number(date[0]);
     }
 
     // let ajaxUrl__merchant_dash = '/reports/' + entity;
@@ -274,10 +247,10 @@ export default class GenerateReports extends Component {
       this.props.props.merchant.details.tags.indexOf('Gst_Invoice_Disabled') !==
       -1;
 
-    const selectedDate = current.split('-');
+    const selectedDate = current.split('/');
 
-    const selectedMonth = selectedDate[1],
-      selectedYear = selectedDate[0];
+    const selectedMonth = selectedDate[0],
+      selectedYear = selectedDate[1];
 
     const currDate = new Date();
 
@@ -443,21 +416,12 @@ export default class GenerateReports extends Component {
 
               {(type === 'monthly' || entity === 'invoice') && (
                 <span>
-                  <input
-                    type="month"
+                  <DateField
+                    format="MM/YYYY"
                     name={entity === 'invoice' ? 'invoiceDate' : 'date'}
-                    onChange={e => {
-                      let validator;
-                      // Check if date is valid
-                      validator =
-                        entity === 'invoice'
-                          ? this.validateInvoiceMonthYear
-                          : validYear;
-
-                      if (!validator(e.target.value)) {
-                        notifyError('Cannot select ' + e.target.value);
-                      }
-                    }}
+                    placeholder="Select Month"
+                    defaultValue={moment().add(-1, 'month')}
+                    type="month"
                   />
                 </span>
               )}
@@ -465,15 +429,11 @@ export default class GenerateReports extends Component {
               {type === 'daily' &&
                 entity !== 'invoice' && (
                   <span>
-                    <input
-                      type="date"
+                    <DateField
+                      format="DD/MM/YYYY"
                       name={entity === 'invoice' ? 'invoiceDate' : 'date'}
-                      onChange={e => {
-                        // Check if date is valid
-                        if (!validYear(e.target.value)) {
-                          notifyError('Cannot select ' + e.target.value);
-                        }
-                      }}
+                      placeholder="Select Date"
+                      defaultValue={moment().subtract(1, 'day')}
                     />
                   </span>
                 )}
