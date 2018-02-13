@@ -175,6 +175,8 @@ class FirstDataGatewayTest extends TestCase
 
         $this->clearMockFunction();
 
+        $this->getFailureInVerifyRefund($refundId);
+
         $response = $this->retryFailedRefunds();
 
         $actualRefund = $this->getEntityById('refund', $refundId, true);
@@ -182,7 +184,6 @@ class FirstDataGatewayTest extends TestCase
         $this->assertEquals($refund['amount'], $actualRefund['amount']);
         $this->assertEquals('processed', $actualRefund['status']);
         $this->assertEquals(1, $actualRefund['attempts']);
-        $this->assertEquals(true, $actualRefund['gateway_refunded']);
 
         $firstData = $this->getLastEntity('first_data', true);
 
@@ -213,7 +214,7 @@ class FirstDataGatewayTest extends TestCase
 
         $refundId = explode('_', $refund['id'], 2)[1];
 
-        $this->getFailureInVerifyRefund();
+        $this->getFailureInVerifyRefund($refund['id']);
 
         $response = $this->retryFailedRefunds();
 
@@ -261,7 +262,7 @@ class FirstDataGatewayTest extends TestCase
 
         $this->assertEquals($refund['amount'], $actualRefund['amount']);
         $this->assertEquals('processed', $actualRefund['status']);
-        $this->assertEquals(1, $actualRefund['attempts']);
+        $this->assertEquals(2, $actualRefund['attempts']);
         $this->assertEquals(true, $actualRefund['gateway_refunded']);
 
         $firstData = $this->getLastEntity('first_data', true);

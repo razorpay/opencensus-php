@@ -54,6 +54,18 @@ class Channel
         ];
     }
 
+    /**
+     * Channels for which balance API is available
+     *
+     * @return array
+     */
+    public static function getChannelsWithFetchBalance(): array
+    {
+        return [
+            self::KOTAK,
+        ];
+    }
+
     public static function getGateways($channel)
     {
         return self::$gateways[$channel];

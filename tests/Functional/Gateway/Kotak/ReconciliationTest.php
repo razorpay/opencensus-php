@@ -261,6 +261,8 @@ class ReconciliationTest extends TestCase
         $this->assertTestResponse($settlementAttempt, 'matchSettlementAttemptForReconSuccess');
         $this->assertNotNull($settlementAttempt['utr']);
 
+        $this->assertEquals($settlementAttempt['utr'], $settlement['utr']);
+
         // Validate settlement-transaction entity
         $txn = $this->getLastEntity('transaction', true);
         $this->assertEquals('settlement', $txn['type']);

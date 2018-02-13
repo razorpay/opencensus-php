@@ -293,6 +293,7 @@ trait Authorize
      * @param Payment\Entity $payment
      *
      * @return array
+     * @throws Exception\RuntimeException
      */
     protected function processCreated(Payment\Entity $payment): array
     {
@@ -380,7 +381,8 @@ trait Authorize
         // we have manually skipped/by-passed the 2FA.
 
         if (($payment->terminal !== null) and
-            ($payment->terminal->isNon3DSRecurring() === true))
+            ($payment->terminal->isNon3DSRecurring() === true) and
+            ($payment->isRecurring() === true))
         {
             $payment->setTwoFactorAuth(TwoFactorAuth::SKIPPED);
         }
@@ -3092,6 +3094,7 @@ trait Authorize
      * in case of the payment is authorized
      * @param  Payment\Entity $payment
      * @return array
+     * @throws Exception\LogicException
      */
     protected function processAuthorizeResponse(Payment\Entity $payment): array
     {
@@ -3132,8 +3135,17 @@ trait Authorize
             }
             else if ($payment->hasOrder() === true)
             {
+                //
+                // In case of async emandate registration payment, though
+                // payment_capture would be set in the order, we wouldn't
+                // have actually captured it if the registration is async.
+                // We would capture it later once the token is confirmed as recurring.
+                // In case of async emandate debit payment, the flow would
+                // never reach here, since the payment would be in created
+                // state and a different function is called for that.
+                //
                 if (($payment->order->getPaymentCapture() === true) and
-                    ($this->isAsyncEmandatePayment($payment) === false))
+                    ($payment->isFileBasedEmandateRegistrationPayment() === false))
                 {
                     assertTrue($payment->hasBeenCaptured() === true);
                 }

@@ -23,7 +23,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchCountByStep($actionId, $stepId)
+    public function fetchCountByStep($stepId)
     {
         return $this->newQuery()
                     ->where(Entity::STEP_ID, '=', $stepId)

@@ -7,8 +7,6 @@ use Eloquent;
 use RZP\Models;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
-use RZP\Models\Merchant;
-use RZP\Tests\TestDummy\Factory;
 
 final class FactoryData
 {
@@ -363,9 +361,9 @@ final class FactoryData
             'date'                     => null,
             'issued_at'                => null,
             'expired_at'               => null,
-            'due_by'                   => $faker->timestamp('+2 day'),
+            'due_by'                   => $faker->timestamp(2),
             'scheduled_at'             => $faker->timestamp,
-            'expire_by'                => $faker->timestamp('+2 day'),
+            'expire_by'                => $faker->timestamp(2),
             'amount'                   => 100000,
             'currency'                 => 'INR',
         ]);

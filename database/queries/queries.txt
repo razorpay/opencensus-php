@@ -2881,6 +2881,11 @@ ALTER TABLE webhooks
 ALTER TABLE webhooks
     ADD UNIQUE INDEX webhooks_merchant_id_entity_id_unique (merchant_id,entity_id);
 
+
+ALTER TABLE merchants
+   ADD COLUMN whitelisted_ips_live VARCHAR(255) DEFAULT NULL AFTER category,
+   ADD COLUMN whitelisted_ips_test VARCHAR(255) DEFAULT NULL AFTER whitelisted_ips_live;
+
 ALTER TABLE qr_code
     ADD COLUMN short_url varchar(255) NOT NULL after qr_string;
 
@@ -2891,6 +2896,7 @@ ALTER TABLE hitachi
 
 ALTER TABLE iins
     ADD COLUMN flows INTEGER UNSIGNED DEFAULT 1 AFTER otp_read;
+
 
 ALTER TABLE payments Change token emi_subvention varchar(14);
 

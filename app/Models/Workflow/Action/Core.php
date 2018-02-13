@@ -480,6 +480,14 @@ class Core extends Base\Core
         return $this->edit($action, $input);
     }
 
+    /**
+     * This function will now be used instead of updateState so as to
+     * store the information about the person(admin_id, and role_id) who
+     * was responsible of actually executing the workflow. In case it is a
+     * superadmin, then we allow to skip any steps and execute the workflow
+     * forcefully. Hence the information about StateChanger. StateChanger
+     * information will also be stored in case the workflow was closed or rejected.
+     */
     public function updateStateAndStateChanger(
         Entity $action,
         string $state,
