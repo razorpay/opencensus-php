@@ -84,6 +84,7 @@ class Validator extends Base\Validator
         Entity::BRAND_COLOR                 => 'sometimes|regex:(^[0-9a-fA-F]{6}$)',
         Entity::TRANSACTION_REPORT_EMAIL    => 'sometimes|array',
         Entity::LOGO_URL                    => 'sometimes|max:2000',
+        Entity::INVOICE_NAME_FIELD          => 'sometimes|filled|string|in:name,billing_label',
         Entity::AUTO_CAPTURE_LATE_AUTH      => 'sometimes|boolean',
         Entity::HANDLE                      => 'sometimes|nullable|min:3|max:4|custom|unique:merchants,handle,null',
         MerchantDetail::GSTIN               => 'sometimes|nullable|string|size:15',

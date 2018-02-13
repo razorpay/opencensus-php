@@ -3268,3 +3268,7 @@ ALTER TABLE `merchant_details`
 
 ALTER TABLE orders
     ADD COLUMN discount TINYINT(4) NOT NULL DEFAULT 0 AFTER offer_id;
+
+# Invoice GST changes
+ALTER TABLE merchants
+    ADD COLUMN invoice_name_field varchar(50) DEFAULT NULL after logo_url;
