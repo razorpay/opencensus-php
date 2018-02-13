@@ -28,6 +28,12 @@ class Method
         self::EMANDATE      => 'E-Mandate',
     ];
 
+    public static $bankMethods = [
+        self::NETBANKING,
+        self::AEPS,
+        self::EMANDATE
+    ];
+
     protected static $asynchronous = [
         self::UPI,
     ];

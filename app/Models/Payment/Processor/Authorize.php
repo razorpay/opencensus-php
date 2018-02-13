@@ -2009,7 +2009,6 @@ trait Authorize
         }
         else if ($payment->isEmandate() === true)
         {
-            // TODO: Keep netbanking also for backward compatibility?
             // save emandate bank locally for local customer
             $token = $this->savePaymentMethod($customer, $payment, null, $input);
         }
@@ -2047,7 +2046,6 @@ trait Authorize
         }
         else if ($payment->isEmandate() === true)
         {
-            // TODO: Keep netbanking check too for backward compatibility?
             // save emandate bank token globally for global customer
             $token = $this->savePaymentMethod($customer, $payment, null, $input);
         }
@@ -2460,7 +2458,6 @@ trait Authorize
         }
         else if ($payment->isEmandate() === true)
         {
-            // TODO: Keep netbanking too for backward compatibility? Check in other places too in this function.
             $this->updateTokenOnAuthorizedForEmandateRecurring($token, $data, $payment);
         }
 

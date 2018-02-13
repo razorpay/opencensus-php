@@ -415,7 +415,7 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_PAYMENT_BANK_NOT_PROVIDED);
         }
 
-        // @todo: add bank validation for emandate
+        // TODO: add bank validation for emandate
         if (Payment\Processor\Netbanking::isSupportedBank($input['bank']) === false)
         {
             throw new Exception\BadRequestException(

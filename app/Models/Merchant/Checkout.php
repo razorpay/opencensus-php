@@ -266,7 +266,6 @@ class Checkout
             // We do not handle the flow where a customer can use an existing token
             // to subscribe to another product.
             //
-            // TODO: Ensure that all tokens are migrated to emandate from netbanking!
             $savedTokens = $tokenCore->removeEmandateRecurringTokens($savedTokens);
 
             $custData =  [
@@ -397,10 +396,9 @@ class Checkout
                         $tokens = $response['tokens'];
 
                         // TODO: Needs to be fixed later when we allow first recurring on old recurring nb token.
-                        // TODO: Ensure that all tokens are migrated to emandate from netbanking!
-                        $tokensWithoutNB = (new Customer\Token\Core)->removeEmandateRecurringTokens($tokens);
+                        $tokensWithoutEmandate = (new Customer\Token\Core)->removeEmandateRecurringTokens($tokens);
 
-                        $data['customer']['tokens'] = $tokensWithoutNB;
+                        $data['customer']['tokens'] = $tokensWithoutEmandate;
                     }
                 }
             }

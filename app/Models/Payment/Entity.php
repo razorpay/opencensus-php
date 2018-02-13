@@ -493,13 +493,7 @@ class Entity extends Base\PublicEntity
             return;
         }
 
-        $bankMethods = [
-            Method::NETBANKING,
-            Method::AEPS,
-            Method::EMANDATE
-        ];
-
-        if (in_array($input['method'], $bankMethods, true) === false)
+        if (in_array($input['method'], Method::$bankMethods, true) === false)
         {
             unset($input['bank']);
         }
@@ -539,14 +533,8 @@ class Entity extends Base\PublicEntity
 
     protected function modifyBank(& $input)
     {
-        $bankMethods = [
-            Method::NETBANKING,
-            Method::AEPS,
-            Method::EMANDATE
-        ];
-
         if ((isset($input['method'])) and
-            (in_array($input['method'], $bankMethods, true) === false))
+            (in_array($input['method'], Method::$bankMethods, true) === false))
         {
             unset($input['bank']);
         }
@@ -990,7 +978,7 @@ class Entity extends Base\PublicEntity
 
             case Method::EMANDATE:
 
-                // @todo: Let's keep this empty for now.
+                // TODO: Let's keep this empty for now.
                 $acquirerData = [];
                 break;
 
