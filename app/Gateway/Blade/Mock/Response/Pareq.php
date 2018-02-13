@@ -34,7 +34,7 @@ class Pareq
                 'time'          => Carbon::createFromTimestamp(time(), Timezone::IST)->format('Ymd H:m:s'),
                 'status'        => 'Y',
                 'cavv'          => 'AAABBJg0VhI0VniQEjRWAAAAAAA=',
-                'eci'           => '05',
+                'eci'           => '02',
                 'cavvAlgorithm' => '2',
             ]
         ];

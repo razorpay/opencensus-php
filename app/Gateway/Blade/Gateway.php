@@ -120,9 +120,11 @@ class Gateway extends Base\Gateway
 
         $eci = $gatewayPayment->getEci();
 
-        $network = strtoupper($input['card']['network']);
+        $network = Card\Network::getCode($input['card']['network']);
 
-        $this->validateEci($eci, $network);
+        $isInternational = $input['card']['international'];
+
+        $this->validateAuthResponse($eci, $network, $isInternational);
 
         $txnStatus = $PARes[PARes::TX][PARes::STATUS];
 
@@ -143,6 +145,37 @@ class Gateway extends Base\Gateway
         // Blade callback response field is being used by Hitachi
         // These fields are already set in gatewayPayment entity
         return $gatewayPayment->toArray();
+    }
+
+    protected function validateAuthResponse($eci, $network, $isInternational)
+    {
+        if (($network === Card\Network::VISA) and ($eci === "05"))
+        {
+            return true;
+        }
+        if (($network === Card\Network::MC) and ($eci === "02"))
+        {
+            return true;
+        }
+        if (($network === Card\Network::VISA) and ($eci === "06") and ($isInternational === true))
+        {
+            return true;
+        }
+        if (($network === Card\Network::MC) and ($eci === "01") and ($isInternational === true))
+        {
+            return true;
+        }
+
+        throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
+                null,
+                null,
+                [
+                    'eci'             => $eci,
+                    'network'         => $network,
+                    'isInternational' => $isInternational,
+                ]);
+
     }
 
     protected function getVeresAttributesToSave(array $response, array $input)
