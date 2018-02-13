@@ -60,4 +60,31 @@ return [
             'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
         ],
     ],
+
+    // When verify callback failure happens, the gateway entity is not updated
+    'testVerifyCallbackFailureEntity' => [
+        'amount'          => 500,
+        'action'          => 'authorize',
+        'bank'            => 'CSBK',
+        'bank_payment_id' => null,
+        'status'          => null,
+        'reference1'      => 'RazorPay',
+        'received'        => false,
+    ],
+
+    'testVerifyCallbackFailure' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::GATEWAY_ERROR,
+                    'description'   => PublicErrorDescription::GATEWAY_ERROR,
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class'                 => GatewayErrorException::class,
+            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,
+        ],
+    ],
 ];

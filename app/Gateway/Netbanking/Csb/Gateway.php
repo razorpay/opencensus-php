@@ -79,7 +79,10 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
 
-        // We verify the callback response
+        //
+        // We verify the callback response before doing anything else with the response,
+        // this is so that we ensure the response is for the right payment id and amount
+        //
         $this->verifyCallback($gatewayPayment, $input);
 
         $this->updateGatewayPaymentEntity($gatewayPayment, $content);
