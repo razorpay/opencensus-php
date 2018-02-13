@@ -206,6 +206,22 @@ return [
             ],
         ],
     ],
+    'testWorkflowActionSuperAdminApprove' => [
+        'request' => [
+            'method'    => 'POST',
+            'url'       => '/w-actions/%s/checkers',
+            'content'   => [
+                'approved'  => 1,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'state'     => 'executed',
+                'checkers'  => [
+                ]
+            ],
+        ],
+    ],
     'testWorkflowCloseAction' => [
         'request' => [
             'method'    => 'PUT',

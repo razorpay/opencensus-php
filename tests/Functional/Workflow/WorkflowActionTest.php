@@ -264,6 +264,25 @@ class WorkflowActionTest extends TestCase
         $this->startTest();
     }
 
+    public function testWorkflowActionSuperAdminApprove()
+    {
+        // This will create a wf action in Mysql and ES, not using default workflow.
+        $workflow = $this->editAdmin(Org::RZP_ORG_SIGNED, Org::CHECKER_ADMIN_SIGNED);
+
+        //ES is not so Real Time, so need to refresh manually.
+        $this->esClient->indices()->refresh();
+
+        $this->ba->adminAuth('test', Org::DEFAULT_ADMIN_TOKEN, Org::RZP_ORG_SIGNED);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $workflow['id']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
     public function testWorkflowCloseAction()
     {
         // This will create a wf action in Mysql and ES, not using default workflow.
