@@ -345,7 +345,7 @@ class NewApplicationForm extends Component {
                       name="client_details.prod.redirect_url"
                       component={TaggedInput}
                       class="form-control tagged-input"
-                      placeholder="http://test-app.com/"
+                      placeholder="https://test-app.com/"
                       validator={isUrlLenient}
                     />
                   </div>
