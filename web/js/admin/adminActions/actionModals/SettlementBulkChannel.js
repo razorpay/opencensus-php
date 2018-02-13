@@ -2,7 +2,7 @@ import React from 'react';
 import AsyncButton from 'ui/AsyncButton';
 import { SelectField, TextAreaField } from 'ui/Field';
 import Form from 'ui/Form';
-import { notifySuccess, notifyError, closeModal } from 'common/modal';
+import { notifySuccess, closeModal } from 'common/modal';
 import { adminPut } from 'common/fetch';
 
 SettlementBulkChannel.permission = 'settlement_bulk_update';
@@ -36,6 +36,7 @@ export default function SettlementBulkChannel() {
             if(data) {
               notifySuccess('Updated successfully.');
             }
+            closeModal();
           })
         }}
       />
