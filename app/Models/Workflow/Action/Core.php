@@ -554,7 +554,7 @@ class Core extends Base\Core
         return $actions;
     }
 
-    public function executeAction($action, Admin\Entity $admin, Role\Entity $role)
+    public function executeAction($action, Admin\Entity $admin, Role\Entity $role = null)
     {
         list($stateCore, $differCore) = [
             new State\Core,
