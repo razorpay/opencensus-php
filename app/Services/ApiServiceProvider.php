@@ -8,7 +8,6 @@ use Http\Mock\Client as MockHttplug;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 
-use RZP\Models\Key;
 use RZP\Models\Batch;
 use RZP\Models\Payout;
 use RZP\Models\Dispute;
@@ -29,6 +28,7 @@ use RZP\Models\Workflow\Action;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Plan\Subscription\Addon;
 use RZP\Models\Gateway\File as GatewayFile;
+use RZP\Models\Merchant\Request as MerchantRequest;
 
 class ApiServiceProvider extends BaseServiceProvider
 {
@@ -350,6 +350,8 @@ class ApiServiceProvider extends BaseServiceProvider
             'dispute'         => Dispute\Entity::class,
 
             'workflow_action' => Action\Entity::class,
+
+            'merchant_request' => MerchantRequest\Entity::class,
         ]);
     }
 

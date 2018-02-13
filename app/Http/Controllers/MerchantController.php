@@ -944,4 +944,65 @@ class MerchantController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function fetchAllMerchantRequests()
+    {
+        $input = Request::all();
+
+        $data = $this->service(E::MERCHANT_REQUEST)->fetch($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getMerchantRequestDetails(string $id)
+    {
+        $data = $this->service(E::MERCHANT_REQUEST)->getMerchantRequestDetails($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getMerchantRequests()
+    {
+        $input = Request::all();
+
+        $data = $this->service(E::MERCHANT_REQUEST)->fetchMerchantRequests($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function updateMerchantRequestStatus(string $id)
+    {
+        $input = Request::all();
+
+        $data = $this->service(E::MERCHANT_REQUEST)->updateMerchantRequestStatus($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getMerchantRequestStatusLog(string $id)
+    {
+        $input = Request::all();
+
+        $data = $this->service(E::MERCHANT_REQUEST)->getMerchantRequestStatusLog($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function createMerchantRequest()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_REQUEST)->createMerchantRequest($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function updateMerchantRequest(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_REQUEST)->updateMerchantRequest($id, $input);
+
+        return ApiResponse::json($response);
+    }
 }

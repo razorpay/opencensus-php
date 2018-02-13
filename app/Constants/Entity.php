@@ -82,6 +82,7 @@ class Entity
     const VIRTUAL_ACCOUNT       = 'virtual_account';
     const MERCHANT_DETAIL       = 'merchant_detail';
     const TERMINAL_ACTION       = 'terminal_action';
+    const MERCHANT_REQUEST      = 'merchant_request';
     const CUSTOMER_BALANCE      = 'customer_balance';
     const GATEWAY_DOWNTIME      = 'gateway_downtime';
     const PAYMENT_ANALYTICS     = 'payment_analytics';
@@ -236,6 +237,7 @@ class Entity
         self::DISPUTE_REASON        => \RZP\Models\Dispute\Reason::class,
         self::MERCHANT_DETAIL       => \RZP\Models\Merchant\Detail::class,
         self::TERMINAL_ACTION       => \RZP\Models\Terminal\Action::class,
+        self::MERCHANT_REQUEST      => \RZP\Models\Merchant\Request::class,
         self::CUSTOMER_BALANCE      => \RZP\Models\Customer\Balance::class,
         self::GATEWAY_DOWNTIME      => \RZP\Models\Gateway\Downtime::class,
         self::GATEWAY_RULE          => \RZP\Models\Gateway\Rule::class,

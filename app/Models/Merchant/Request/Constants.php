@@ -1,0 +1,30 @@
+<?php
+
+namespace RZP\Models\Merchant\Request;
+
+use Elasticsearch\Endpoints\Cluster\State;
+use RZP\Models\Merchant\Detail as MerchantDetail;
+use RZP\Models\Admin\Permission\Name as Permission;
+use RZP\Models\Feature\Constants as FeatureConstants;
+
+class Constants
+{
+    const EXPAND   = 'expand';
+    const MERCHANT = 'merchant';
+
+    const ONBOARDING_REQUEST_MAP = [
+        MerchantDetail\Entity::PENDING => Status::UNDER_REVIEW,
+        MerchantDetail\Entity::APPROVED => Status::ACTIVATED,
+        MerchantDetail\Entity::REJECTED => Status::REJECTED
+    ];
+
+    public static function mapOnboardingStatusToRequestStatus(string $onboardingStatus)
+    {
+        if (isset(self::ONBOARDING_REQUEST_MAP[$onboardingStatus]) === true)
+        {
+            return self::ONBOARDING_REQUEST_MAP[$onboardingStatus];
+        }
+
+        return null;
+    }
+}

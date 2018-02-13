@@ -7,6 +7,12 @@ use RZP\Models\Admin\Admin;
 use RZP\Models\Workflow\Action\Entity as Action;
 use RZP\Models\Base\PublicEntity as PublicEntity;
 
+
+use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Merchant\Detail\Entity as MerchantDetailEntity;
+use RZP\Models\Merchant\Request\Entity as MerchantRequestEntity;
+
+
 class Core extends Base\Core
 {
     /**

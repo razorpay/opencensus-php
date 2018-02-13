@@ -15,6 +15,7 @@ use RZP\Models\FileStore;
 use RZP\Exception\LogicException;
 use RZP\Models\Settings\Accessor;
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\Merchant\Request as MerchantRequest;
 use RZP\Mail\Merchant\FeatureEnabled;
 use RZP\Models\Merchant\SlackActions;
 use RZP\Models\Merchant\Notify as NotifyTrait;
@@ -66,7 +67,7 @@ class Core extends Base\Core
 
         $merchantId = $input['entity_id'];
 
-        $this->notifyMerchantIfApplicable($merchantId, $feature, $shouldSync);
+        $this->notifyMerchantOfFeatureActivationIfApplicable($merchantId, $feature, $shouldSync);
 
         return $feature;
     }
@@ -108,7 +109,7 @@ class Core extends Base\Core
      * @param Entity $feature
      * @param bool   $shouldSync
      */
-    public function notifyMerchantIfApplicable(
+    public function notifyMerchantOfFeatureActivationIfApplicable(
         string $merchantId,
         Entity $feature,
         bool $shouldSync)
@@ -311,6 +312,12 @@ class Core extends Base\Core
             $featureName,
             $status
         );
+
+        (new MerchantRequest\Core)->addRequestForcefullyIfApplicable(
+            $merchant,
+            $featureName,
+            MerchantRequest\Type::PRODUCT,
+            $status);
 
         $merchantDetail = $merchant->merchantDetail;
 
@@ -744,5 +751,22 @@ class Core extends Base\Core
 
             $this->logActionToSlack($merchant, SlackActions::PRODUCT_ACTIVATION, $data);
         }
+    }
+
+    public function getOnboardingQuestions(array $features): array
+    {
+        $response = [];
+
+        foreach ($features as $feature)
+        {
+            $questionMap = Constants::getFeatureQuestions($feature);
+
+            if (count($questionMap) > 0)
+            {
+                $response[$feature] = $questionMap;
+            }
+        }
+
+        return $response;
     }
 }

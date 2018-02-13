@@ -688,6 +688,13 @@ final class Route
 
         'merchant_analytics'                      => ['post',     'merchant/analytics',                             'MerchantController@postAnalytics'                                  ],
 
+        // Merchant Requests Routes
+        'merchant_requests_fetch_details'         => ['get',      'merchant/requests/{id}',                         'MerchantController@getMerchantRequestDetails'                      ],
+        'merchant_requests_fetch_all'             => ['get',      'merchant/requests/fetch',                        'MerchantController@fetchAllMerchantRequests'                       ],
+        'merchant_requests_create'                => ['post',     'merchant/requests',                              'MerchantController@createMerchantRequest'                            ],
+        'merchant_requests_status_log'            => ['get',      'merchant/requests/{id}/status_log',              'MerchantController@getMerchantRequestStatusLog'                    ],
+        'merchant_requests_update'                => ['post',     'merchant/requests/{id}/update',                  'FeatureController@updateMerchantRequest'                           ],
+
         'onboarding_features_fetch_details'       => ['get',      'onboarding/features',                            'FeatureController@getOnboardingDetails'                            ],
         'onboarding_features_fetch_submission'    => ['get',      'onboarding/features/{feature}',                  'FeatureController@getOnboardingSubmissions'                        ],
         'onboarding_features_create'              => ['post',     'onboarding/features/{feature}',                  'FeatureController@postOnboardingSubmissions'                       ],
@@ -1170,6 +1177,7 @@ final class Route
         'merchant_get_tags',
         'account_fetch',
         'merchant_add_bank_account',
+        'merchant_requests_create',
     ];
 
     // These will run on internal auth with the assurance
@@ -1430,6 +1438,10 @@ final class Route
         'shield_rules_evaluate',
 
         'user_fetch_admin',
+        'merchant_requests_fetch_all',
+        'merchant_requests_fetch_details',
+        'merchant_requests_update',
+        'merchant_requests_status_log'
     ];
 
     public static $routePermission = [
@@ -1725,6 +1737,10 @@ final class Route
         'reporting_schedule_create'              => '*',
         'reporting_schedule_delete'              => '*',
         'ufh_get_file_signed_url'                => '*',
+        'merchant_requests_fetch_all'            => Permission::VIEW_MERCHANT_REQUESTS,
+        'merchant_requests_fetch_details'        => Permission::VIEW_MERCHANT_REQUESTS,
+        'merchant_requests_update'               => Permission::EDIT_MERCHANT_REQUESTS,
+        'merchant_requests_status_log'           => Permission::VIEW_MERCHANT_REQUESTS,
     ];
 
     public static $direct = [
