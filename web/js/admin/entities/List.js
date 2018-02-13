@@ -284,8 +284,8 @@ export default class EntityList extends Component {
               step="10"
               defaultValue="20"
             />
-            <FromField format="X" />
-            <ToField format="X" />
+            <FromField format="X" allowToday={true} />
+            <ToField format="X" allowToday={true} />
             <Field
               label="Search Entity Id"
               onChange={this.selectId}
