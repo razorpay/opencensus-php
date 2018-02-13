@@ -6,7 +6,7 @@ import { notifySuccess, closeModal } from 'common/modal';
 import { adminPut } from 'common/fetch';
 
 SettlementBulkChannel.permission = 'settlement_bulk_update';
-SettlementBulkChannel.title = 'Settlement Bulk Channel Update';
+SettlementBulkChannel.title = 'Update Settlement Bulk Channel';
 
 export default function SettlementBulkChannel() {
   return(
@@ -30,7 +30,7 @@ export default function SettlementBulkChannel() {
           body.settlement_ids = body.settlement_ids ? body.settlement_ids.split(',') : [];
 
           return adminPut({
-              route_name: 'setl_bulk',
+              route_name: 'setl_update_channel_bulk',
               body,
           }).then(data => {
             if(data) {

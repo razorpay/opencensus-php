@@ -6,7 +6,7 @@ import { notifySuccess, closeModal } from 'common/modal';
 import { adminPut } from 'common/fetch';
 
 BulkTransaction.permissions = 'settlement_bulk_update';
-BulkTransaction.title = 'Bulk Transaction Update';
+BulkTransaction.title = 'Update Bulk Transaction';
 
 export default function BulkTransaction() {
   return(
@@ -28,7 +28,7 @@ export default function BulkTransaction() {
         onSubmit={body => {
 
           return adminPut({
-              route_name: 'bulk_transaction',
+              route_name: 'transaction_bulk_update',
               body,
           }).then(data => {
             if(data) {
