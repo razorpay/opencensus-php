@@ -12,7 +12,7 @@ export const isEmail = email => {
 export const isUrlLenient = url => {
   url = url || '';
 
-  let urlRegExp = /^(https?:\/\/)?(\w|\-)+(\.{1}(\w|\-)+)*\.[a-z]{2,}(:[0-9]{1,5})?(\/.*)?/;
+  let urlRegExp = /^(https?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/
   return urlRegExp.test(url);
 }
 
