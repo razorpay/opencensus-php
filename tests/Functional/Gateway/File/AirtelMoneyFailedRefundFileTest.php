@@ -52,7 +52,7 @@ class AirtelMoneyFailedRefundFileTest extends TestCase
             $this->fixtures->edit('refund', $refund['id'], ['status' => 'failed']);
         }
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $data = $this->startTest();
 
