@@ -10,13 +10,12 @@ export const saveOnboarding = (feature, fields, file, fileName) => {
   let formData = new FormData();
 
   if (file) {
-    formData.append('file', file);
-    formData.append('file_name', fileName);
+    formData.append(fileName, file);
   }
 
   for (let key in fields) {
     if (fields.hasOwnProperty(key)) {
-      formData.append(`body[${key}]`, fields[key]);
+      formData.append(key, fields[key]);
     }
   }
 
