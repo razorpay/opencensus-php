@@ -15,7 +15,7 @@
         $amount = sprintf('%0.2f', ($dispute['amount'] / 100));
         $amount = floatval($amount);
 
-        $paymentLink = 'https://dashboard.razorpay.com/#/app/payments/pay_' . $dispute['payment_id'];
+        $paymentLink = 'https://dashboard.razorpay.com/#/app/payments/' . $dispute['payment_id'];
 
         $noteResult = 'failing which the case will be lost and the corresponding amount will be debited from the current balance. ';
 
@@ -47,7 +47,7 @@
         <table class="table" border="0" cellpadding="0" cellspacing="0" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121; border-spacing: 0; border-collapse: collapse; padding: 0; vertical-align: top; text-align: left; width: 100%; background-color: #fafafa; margin-top: -100px !important; height: 100%; wdith: 80%; max-width: 600px; margin: 0 auto; font-size: 12px;"><tbody style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
 <tr style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121; padding: 0; vertical-align: top; text-align: left;">
 <td class="content" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; margin: 0; text-align: left; font-size: 14px; line-height: 19px; padding: 24px 4%; background-color: #fff; border-left: 1px solid #f2f2f2; border-right: 1px solid #f2f2f2; color: #000000; padding-bottom: 24px;">
-                    <strong class="text-uppercase lh-26" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; color: #8A8A8A; font-size: 12px; text-transform: uppercase; line-height: 26px;">Payment ID</strong> <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><a href="{{ $paymentLink }}" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; text-decoration: none; color: #39ACE5;"> pay_{{ $dispute['payment_id'] }} </a>
+                    <strong class="text-uppercase lh-26" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; color: #8A8A8A; font-size: 12px; text-transform: uppercase; line-height: 26px;">Payment ID</strong> <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><a href="{{ $paymentLink }}" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; text-decoration: none; color: #39ACE5;"> {{ $dispute['payment_id'] }} </a>
                 </td>
             </tr>
 <tr style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121; padding: 0; vertical-align: top; text-align: left;">
@@ -84,7 +84,7 @@
                         <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
                         Hi,
                         <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
-                        We have received a dispute for Rs. {{ $amount }} on pay_{{ $dispute['payment_id'] }} against {{ $merchant['name'] }}. Please share all proofs like invoices, proof of delivery of product/service and any relevant screenshots pertaining to the transaction in a consolidated ZIP archive named as the Payment ID.
+                        We have received a dispute for Rs. {{ $amount }} on {{ $dispute['payment_id'] }} against {{ $merchant['name'] }}. Please share all proofs like invoices, proof of delivery of product/service and any relevant screenshots pertaining to the transaction in a consolidated ZIP archive named as the Payment ID.
                         <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
                         Note: Kindly <b style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"> reply to this email </b> with the requested documents in the required format by the deadline, {{ $noteResult }}
                         <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">

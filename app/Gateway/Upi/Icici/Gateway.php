@@ -254,12 +254,7 @@ class Gateway extends Base\Gateway
     {
         return number_format($amount / 100, 2, '.', '');
     }
-
-    /**
-     * The Merchant ID doesn't change for different
-     * merchants since this is the master merchant Id
-     * @return string (numeric merchant id)
-     */
+    
     protected function getMerchantId(): string
     {
         if ($this->mode === Mode::TEST)
@@ -267,7 +262,7 @@ class Gateway extends Base\Gateway
             return $this->config['test_merchant_id'];
         }
 
-        return $this->config['live_merchant_id'];
+        return $this->input['terminal']['gateway_merchant_id'];
     }
 
     /**
