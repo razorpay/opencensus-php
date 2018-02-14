@@ -1141,15 +1141,6 @@ final class Route
     ];
 
     public static $proxy = [
-        // Routes that were on INTERNAL
-        // And are now on PROXY
-        // None of the PROXY routes should accept
-        // a merchant ID parameter
-
-        // Check
-        'gateway_file_create',
-
-        // Proxy
         'merchant_fetch_users',
         'transaction_monthly_report',
         'transaction_fetch_by_id',
@@ -1362,6 +1353,7 @@ final class Route
         'merchant_tag_delete',
         'refund_verify_failed',
         'merchant_edit_email',
+        'gateway_file_create',
     ];
 
     public static $routePermission = [
