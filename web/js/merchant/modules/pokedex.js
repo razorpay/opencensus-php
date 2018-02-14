@@ -1,5 +1,5 @@
 import ajax from 'merchant/utils/ajax';
-import merchantFetch from 'rzp/utils/ajax';
+import { merchantFetch } from 'rzp/utils/ajax';
 
 export var pokeConfig = {
   merchantId: '',
@@ -41,10 +41,11 @@ export const fetch = (query, mode) => {
   };
 
   if (url === '/user/generic') {
-    delete data.route_name;
+    commonOptions.data = data.body;
 
     return merchantFetch({
       url: 'merchant/analytics',
+      mode: 'live',
       ...commonOptions,
     });
   }
