@@ -125,8 +125,8 @@ class Authorization
         }
 
         $this->proxyHeaders = [
-            'X-Dashboard-User-Id'       => $user,
-            'X-Dashboard-Merchant-Role' => $userRole,
+            'X-Dashboard-User-Id'   => $user,
+            'X-Dashboard-User-Role' => $userRole,
         ];
     }
 
