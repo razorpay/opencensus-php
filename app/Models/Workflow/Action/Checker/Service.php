@@ -15,6 +15,11 @@ class Service extends Base\Service
 
         $checker = $this->core()->create($input);
 
+        if (empty($checker))
+        {
+            return [];
+        }
+
         return $checker->toArrayPublic();
     }
 }
