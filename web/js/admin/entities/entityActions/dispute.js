@@ -91,9 +91,8 @@ export class DisputeForm extends Component {
   }
 
   cleanFields(body) {
-    body.raised_on = moment(body.raised_on).unix();
-    body.expires_on = moment(body.expires_on).unix();
-
+    body.raised_on = moment(body.raised_on, 'DD/MM/YYYY').unix();
+    body.expires_on = moment(body.expires_on, 'DD/MM/YYYY').unix();
     if (body.merchant_emails) {
       body.merchant_emails = body.merchant_emails
         .replace(/,*$/, '')
@@ -130,9 +129,9 @@ export class DisputeForm extends Component {
     const { isEditMode, handleSubmit, entity } = this.props;
 
     const raisedOn =
-      isEditMode && entity.raised_on ? moment(entity.raised_on) : '';
+      isEditMode && entity.raised_on ? moment.unix(entity.raised_on) : '';
     const expiresOn =
-      isEditMode && entity.expires_on ? moment(entity.expires_on) : '';
+      isEditMode && entity.expires_on ? moment.unix(entity.expires_on) : '';
     return (
       <BaseModal header={`${isEditMode ? 'Edit' : 'Create'} Dispute`}>
         <Form class="full-span full-elements">
@@ -176,7 +175,7 @@ export class DisputeForm extends Component {
             name="raised_on"
             label="Raised on"
             fieldClass="dispute-form"
-            defaultValue={raisedOn}
+            defaultValue={raisedOn ? raisedOn : undefined}
             required={!isEditMode}
             disabled={isEditMode}
             allowToday={true}
@@ -187,7 +186,7 @@ export class DisputeForm extends Component {
             name="expires_on"
             label="Expires on"
             fieldClass="dispute-form"
-            defaultValue={expiresOn}
+            defaultValue={expiresOn ? expiresOn : undefined}
             required={!isEditMode}
             allowAllDates={true}
           />
