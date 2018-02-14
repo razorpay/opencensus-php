@@ -187,24 +187,20 @@ export default class Activation extends Entity {
   }
 
   saveActivation(data) {
-    let activationData = {
-      body: data,
-    };
-
     if (this.accountId) {
-      activationData.account_id = this.accountId;
+      data.account_id = this.accountId;
     }
 
     // Auto add 'http' if not filled by user
 
     activationStepMap[3].forEach(key => {
-      activationData.body[key] = autoPrefixUrls(activationData.body[key]);
+      data[key] = autoPrefixUrls(data[key]);
     });
 
     return merchantFetch({
       url: 'merchant/activation',
       method: 'post',
-      data: activationData,
+      data
     });
   }
 
