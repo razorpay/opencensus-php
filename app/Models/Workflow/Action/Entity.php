@@ -9,28 +9,25 @@ use RZP\Models\Workflow\Base;
 
 class Entity extends Base\Entity
 {
-    const ID                    = 'id';
-    const ENTITY_ID             = 'entity_id';
-    const ENTITY_NAME           = 'entity_name';
-    const TITLE                 = 'title';
-    const DESCRIPTION           = 'description';
-    const WORKFLOW_ID           = 'workflow_id';
-    const PERMISSION_ID         = 'permission_id';
-    const ADMIN_ID              = 'admin_id';
-    const STATE_CHANGER_ID      = 'state_changer_id';
-    const STATE_CHANGER_ROLE_ID = 'state_changer_role_id';
-    const ORG_ID                = 'org_id';
-    const APPROVED              = 'approved';
-    const STATE                 = 'state';
-    const CURRENT_LEVEL         = 'current_level';
-    const DIFFER                = 'differ';
+    const ID             = 'id';
+    const ENTITY_ID      = 'entity_id';
+    const ENTITY_NAME    = 'entity_name';
+    const TITLE          = 'title';
+    const DESCRIPTION    = 'description';
+    const WORKFLOW_ID    = 'workflow_id';
+    const PERMISSION_ID  = 'permission_id';
+    const ADMIN_ID       = 'admin_id';
+    const ORG_ID         = 'org_id';
+    const APPROVED       = 'approved';
+    const STATE          = 'state';
+    const CURRENT_LEVEL  = 'current_level';
+    const DIFFER         = 'differ';
 
     // Relations
-    const WORKFLOW      = 'workflow';
-    const ADMIN         = 'admin';
-    const STATE_CHANGER = 'state_changer';
-    const PERMISSION    = 'permission';
-    const ACTION_ID     = 'action_id';
+    const WORKFLOW       = 'workflow';
+    const ADMIN          = 'admin';
+    const PERMISSION     = 'permission';
+    const ACTION_ID      = 'action_id';
 
     // Public fields from relations
     const PERMISSION_NAME           = 'permission_name';
@@ -53,8 +50,6 @@ class Entity extends Base\Entity
         self::WORKFLOW_ID,
         self::PERMISSION_ID,
         self::STATE,
-        self::STATE_CHANGER_ID,
-        self::STATE_CHANGER_ROLE_ID
     ];
 
     protected $visible = [
@@ -70,7 +65,6 @@ class Entity extends Base\Entity
         self::STATE,
         self::ADMIN_ID,
         self::ADMIN,
-        self::STATE_CHANGER,
         self::ORG_ID,
         self::APPROVED,
         self::CURRENT_LEVEL,
@@ -78,8 +72,6 @@ class Entity extends Base\Entity
         self::UPDATED_AT,
         self::PERMISSION_NAME,
         self::PERMISSION_DESCRIPTION,
-        self::STATE_CHANGER_ID,
-        self::STATE_CHANGER_ROLE_ID
     ];
 
     protected $publicSetters = [
@@ -87,7 +79,6 @@ class Entity extends Base\Entity
         self::WORKFLOW_ID,
         self::PERMISSION_ID,
         self::ADMIN_ID,
-        self::STATE_CHANGER_ID,
         self::ORG_ID,
     ];
 
@@ -104,7 +95,6 @@ class Entity extends Base\Entity
         self::STATE,
         self::ADMIN_ID,
         self::ADMIN,
-        self::STATE_CHANGER,
         self::ORG_ID,
         self::APPROVED,
         self::CURRENT_LEVEL,
@@ -112,8 +102,6 @@ class Entity extends Base\Entity
         self::UPDATED_AT,
         self::PERMISSION_NAME,
         self::PERMISSION_DESCRIPTION,
-        self::STATE_CHANGER_ID,
-        self::STATE_CHANGER_ROLE_ID
     ];
 
     protected $defaults = [
@@ -145,16 +133,6 @@ class Entity extends Base\Entity
     public function admin()
     {
         return $this->belongsTo('RZP\Models\Admin\Admin\Entity');
-    }
-
-    public function stateChanger()
-    {
-        return $this->belongsTo('RZP\Models\Admin\Admin\Entity');
-    }
-
-    public function stateChangerRole()
-    {
-        return $this->belongsTo('RZP\Models\Admin\Role\Entity');
     }
 
     public function setCurrentLevel(int $level)
