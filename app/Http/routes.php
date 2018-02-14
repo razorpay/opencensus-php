@@ -18,7 +18,7 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/status', 'AdminController@getStatus');
 
     // User (guest auth route)
-    Route::any('/user/api/{path?}', 'GenericController@handleAny')
+    Route::any('/user/api/{mode}/{path?}', 'GenericController@handleAny')
         ->where(['path' => '.*'])
         ->name('user');
 
@@ -129,7 +129,7 @@ Route::group(['middleware' => ['web']], function () {
         // Creevey Related routes
         Route::put('/admin/merchant/{id}/screenshot', 'AdminController@captureMerchantScreenshot');
         Route::post('/admin/merchant/{id}/screenshot', 'AdminController@saveMerchantScreenshot');
-       
+
         Route::post('/admin/{mode}/reconciliate', 'AdminController@postReconciliate');
 
         Route::post('/makeapicall/{path?}', 'AdminController@passThrough')->where('path', '.*$');
