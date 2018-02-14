@@ -261,7 +261,7 @@ class BasicAuthTest extends TestCase
 
     public function testFailedMerchantUserRouteValidation()
     {
-        $this->ba->proxyAuth();
+        $this->ba->proxyAuth('rzp_test_10000000000000', null, 'owner1');
 
         $this->startTest();
     }

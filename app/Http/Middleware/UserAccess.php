@@ -77,6 +77,13 @@ class UserAccess
         return $next($request);
     }
 
+    /**
+     * Ensures that if a route needs user entity then this will check userwhitelist and validates.
+     *
+     * @param $route
+     *
+     * @return mixed
+     */
     private function validateUserRoutePolicy($route)
     {
         $user = $this->ba->getUser();

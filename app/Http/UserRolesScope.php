@@ -87,13 +87,13 @@ class UserRolesScope
             'transfer_fetch_multiple' => Role::READER_ROLES,
 
             // oauth
-            'oauth_application_create'         => Role::OWNER,
-            'oauth_application_delete'         => Role::OWNER,
-            'oauth_application_fetch'          => Role::OWNER,
-            'oauth_application_fetch_multiple' => Role::OWNER,
-            'oauth_application_update'         => Role::OWNER,
-            'oauth_token_fetch_multiple'       => Role::OWNER,
-            'oauth_token_revoke'               => Role::OWNER,
+            'oauth_application_create'         => [Role::OWNER],
+            'oauth_application_delete'         => [Role::OWNER],
+            'oauth_application_fetch'          => [Role::OWNER],
+            'oauth_application_fetch_multiple' => [Role::OWNER],
+            'oauth_application_update'         => [Role::OWNER],
+            'oauth_token_fetch_multiple'       => [Role::OWNER],
+            'oauth_token_revoke'               => [Role::OWNER],
 
             // va
             'virtual_account_create'         => Role::WRITER_ROLES,
