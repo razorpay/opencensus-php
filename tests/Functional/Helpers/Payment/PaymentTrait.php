@@ -703,7 +703,7 @@ trait PaymentTrait
             'url'    => '/payments/'.$id.'/authorize_failed',
             'method' => 'POST');
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 
@@ -1115,7 +1115,7 @@ trait PaymentTrait
 
     protected function generateRefundsExcelForNb($bank)
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $request = array(
             'url'     => '/refunds/excel',
