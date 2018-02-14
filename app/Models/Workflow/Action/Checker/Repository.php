@@ -23,10 +23,12 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchCountByStep($stepId)
+    public function fetchCountByActionIdForStep($actionId, $stepId)
     {
         return $this->newQuery()
+                    ->where(Entity::ACTION_ID, '=', $actionId)
                     ->where(Entity::STEP_ID, '=', $stepId)
+                    // ->whereNotNull(Entity::APPROVED)
                     ->count();
     }
 
