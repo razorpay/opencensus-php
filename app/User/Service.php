@@ -63,14 +63,9 @@ class Service extends Base\Service
      */
     public function register($input)
     {
-        $registerUser = [
-            'route_name' => 'user_register',
-            'body'       => $input
-        ];
+        $request = new \App\Admin\ApiRequestAny('live', 'user');
 
-        $genericService = new Generic\Service;
-
-        list($error, $data) = $genericService->call('POST', $registerUser);
+        list($error, $data) = $request->processInput($input)->send('users/register' 'POST');
 
         if (empty($error) === false)
         {
@@ -166,16 +161,11 @@ class Service extends Base\Service
             'user_id'       =>  $authUser->id,
         ];
 
-        $upgradeUserToMerchant = [
-            'route_name'    => 'user_merchant_upgrade',
-            'body'          => $data,
-        ];
+        $request = new \App\Admin\ApiRequestAny('live', 'user');
 
-        $genericService = new Generic\Service;
+        list($error, $data) = $request->processInput($data)->send('users/upgrade-merchant', 'POST');
 
         $genericUser = null;
-
-        list($error, $data) = $genericService->call('POST', $upgradeUserToMerchant);
 
         if (empty($error) === true)
         {
@@ -202,17 +192,9 @@ class Service extends Base\Service
             $passwordData['old_password'] = $data['old_password'];
         }
 
-        $updatePasswordOnApi = [
-            'route_name' => 'user_change_password',
-            'url_params' => [
-                '{id}'     => $userId,
-            ],
-            'body'       => $passwordData
-        ];
+        $request = new \App\Admin\ApiRequestAny('live', 'user');
 
-        $genericService = new Generic\Service;
-
-        list($error, $data) = $genericService->call('PUT', $updatePasswordOnApi);
+        list($error, $data) = $request->processInput($passwordData)->send("users/$userId/password", 'PUT');
 
         if (empty($error) === false)
         {
