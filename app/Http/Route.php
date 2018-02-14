@@ -149,7 +149,7 @@ final class Route
         'merchant_tag_add'                        => ['post',     'merchants/{id}/tags',                            'MerchantController@addTags'                                        ],
         'merchant_tag_delete'                     => ['delete',   'merchants/{id}/tags/{tagName}',                  'MerchantController@deleteTag'                                      ],
         'merchant_edit_free_credits'              => ['post',     'merchants/{id}/credits',                         'MerchantController@postAmountCredits',                             ],
-        'merchant_fetch_users'                    => ['get',      'merchants/{id}/users',                           'MerchantController@getUsers',                                      ],
+        'merchant_fetch_users'                    => ['get',      'merchants/users',                                'MerchantController@getUsers',                                      ],
         'merchant_patch_beneficiary_code'         => ['patch',    'merchants/beneficiary/code',                     'MerchantController@patchMerchantBeneficiaryCode'                   ],
         'merchant_beneficiary_file'               => ['get',      'merchants/beneficiary/file/{channel}',           'MerchantController@getMerchantBeneficiaryFile'                     ],
         'merchant_post_beneficiary_file'          => ['post',     'merchants/beneficiary/file/bank/{channel}',      'MerchantController@postMerchantBeneficiaryFile'                    ],
@@ -922,7 +922,7 @@ final class Route
     ];
 
     public static $internal = [
-        // None of the routes in this array should be accessible by
+        // None of the routes in this array will be accessible by
         // the merchant. Talk to @razorpay/security if there
         // is an exception
         'dummy_route',
@@ -1505,6 +1505,29 @@ final class Route
         'reports_refund_irctc'                   => '*',
         'merchant_get_tags'                      => '*',
         'merchant_tags_bulk'                     => '*',
+        'pricing_get_merchant_plans'             => '*',
+        'pricing_supported_networks'             => '*',
+        'pricing_add_plan_rule'                  => '*',
+        'pricing_get_plan'                       => '*',
+        'pricing_delete_plan_rule'               => '*',
+        'payment_verify'                         => '*',
+        'payment_authorize_failed'               => '*',
+        'refund_generate_excel'                  => '*',
+        'bank_transfer_process'                  => '*',
+        'iin_add'                                => '*',
+        'emi_plan_add'                           => '*',
+        'emi_generate_excel'                     => '*',
+        'dummy_critical_error'                   => '*',
+        'admin_get_app_auth'                     => '*',
+        'admin_authentication'                   => '*',
+        'admin_oauth_authenticate'               => '*',
+        'admin_lead_verify'                      => '*',
+        'admin_edit_app_auth'                    => '*',
+        'merchant_tag_add'                       => '*',
+        'merchant_tag_delete'                    => '*',
+        'refund_verify_failed'                   => '*',
+        'merchant_edit_email'                    => '*',
+        'gateway_file_create'                    => '*',
     ];
 
     public static $direct = [
@@ -1569,6 +1592,24 @@ final class Route
             'mock_hdfc_enroll',
             'mock_hdfc_auth_enrolled',
             'mock_hdfc_payment',
+        ],
+
+        // These are the only internal routes
+        // that can be hit by merchant dashboard
+        'dashboard_guest' => [
+            'user_login',
+            'user_register',
+            'org_get_by_hostname',
+            'user_reset_password_create',
+            'user_merchant_upgrade',
+            'user_change_password',
+            'user_fetch',
+            'invitation_action',
+            'user_fetch_email',
+            'merchant_admin_lead_put',
+            'invitation_fetch_by_token',
+            'user_resend_verification',
+            'user_reset_password_token',
         ],
 
         'cron' => [
