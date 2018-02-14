@@ -120,17 +120,17 @@ export default class Activation extends Entity {
   resourceFields = activationFields;
 
   fetch() {
-    let activationData;
-
-    if (this.accountId) {
-      activationData = {};
-      activationData.account_id = this.accountId;
+    let params = {
+      url: 'merchant/activation'
     }
 
-    return merchantFetch({
-      url: 'merchant/activation',
-      data: activationData,
-    }).then(response => {
+    if (this.accountId) {
+      params.data = {
+        account_id: this.accountId
+      };
+    }
+
+    return merchantFetch(params).then(response => {
       response.data = this.getActivation(response.data);
       return new Activation(response.data);
     });

@@ -1,9 +1,6 @@
 import GenericEntity from './GenericEntity';
 
 export default class Subscription extends GenericEntity {
-  // listRouteName = 'subscription_fetch_multiple';
-  // detailsRouteName = 'subscription_account_fetch';
-  // deleteRouteName = 'subscription_delete';
   resourceUrl = 'subscriptions';
 
   resourceFields = ['plan_id', 'customer_id'];

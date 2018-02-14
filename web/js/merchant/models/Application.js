@@ -5,9 +5,7 @@ const editFields = ['id', 'delay_roll'];
 const newFields = ['name', 'website'];
 
 export default class Application extends GenericEntity {
-  listRouteName = 'oauth_application_fetch_multiple';
-  deleteRouteName = 'oauth_application_delete';
-  detailsRouteName = 'oauth_application_fetch';
+  resourceUrl = 'oauth/applications';
 
   getResourceMethod() {
     return 'post';
