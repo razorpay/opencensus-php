@@ -107,6 +107,14 @@ class ApiRequestAny
             {
                 $adminUser = Auth::guard('api')->user();
 
+                if (empty($adminUser) === true)
+                {
+                    throw new \Razorpay\Api\Errors\BadRequestError(
+                        'Invalid admin request.',
+                        \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                        400);
+                }
+
                 $this->options['headers']['X-Admin-Token'] = $adminUser->token;
 
                 $pass = Config::get('api.auth_pass');

@@ -58,6 +58,7 @@ class Service extends Base\Service
             $routeName = 'item_fetch_multiple';
         }
 
+        // @todo
         $genericService = new Generic\Service;
 
         for ($i = 0; $i < 5; $i++)

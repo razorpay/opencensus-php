@@ -66,14 +66,10 @@ class Service extends Base\Service
         try
         {
             // This is password based login
-            $requestConfig = [
-                'route_name'    => 'admin_authentication',
-                'body'          => $input,
-            ];
 
-            $genericService = new Generic\Service;
+            $request = new \App\Admin\ApiRequestAny('live', 'user');
 
-            list($error, $data) = $genericService->call('POST', $requestConfig);
+            list($error, $data) = $request->processInput($input)->send('admin/authenticate', 'POST');
 
             Session::put(config('auth.guards.api.session_key'), $data);
         }
@@ -414,17 +410,9 @@ class Service extends Base\Service
     {
         $input[Merchant\Entity::EMAIL] = strtolower($input[Merchant\Entity::EMAIL]);
 
-        $editMerchantEmail = [
-            'route_name' => 'merchant_edit_email',
-            'url_params' => [
-                '{id}' => $id,
-            ],
-            'body'       => $input,
-        ];
+        $request = new \App\Admin\ApiRequestAny('live', 'admin');
 
-        $genericService = new Generic\Service;
-
-        list($error, $data) = $genericService->call('PUT', $editMerchantEmail);
+        list($error, $data) = $request->processInput($input)->send("merchants/$id/email", 'PUT');
 
         if (empty($error) === true)
         {
@@ -684,6 +672,7 @@ class Service extends Base\Service
             return [['id' => 'Merchant id cannot be null'], []];
         }
 
+        // @todo
         $requestConfig = [
             'route_name'    => 'merchant_details_fetch',
             'account_id'    => $id,
@@ -693,6 +682,10 @@ class Service extends Base\Service
         $genericService = new Generic\Service;
 
         list($error, $response) = $genericService->call('GET', $requestConfig);
+
+        // $request = new \App\Admin\ApiRequestAny('live', 'admin');
+
+        // list($error, $response) = $request->send('merchants/details', 'GET');
 
         if (empty($error) === false)
         {
@@ -1244,13 +1237,9 @@ class Service extends Base\Service
 
         try
         {
-            $requestConfig = [
-                'route_name' => 'admin_logout',
-            ];
+            $request = new \App\Admin\ApiRequestAny('live', 'admin');
 
-            $genericService = new Generic\Service;
-
-            list($error, $data) = $genericService->call('POST', $requestConfig);
+            list($error, $data) = $request->send('admin/logout', 'POST');
 
             // Dashboard logout
             Auth::guard('api')->logout();
