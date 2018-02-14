@@ -934,7 +934,6 @@ final class Route
         'merchant_activation_upload_file_admin',
         'merchant_secret',
         'merchant_create',
-        'merchant_edit',
         'merchant_fetch',
         'merchant_fetch_multiple',
         'merchant_add_bank_account',
@@ -1355,6 +1354,7 @@ final class Route
         'merchant_tags_bulk',
         'refund_verify',
         'refund_retry_failed',
+        'merchant_edit',
     ];
 
     public static $routePermission = [

@@ -92,7 +92,7 @@ class MerchantTest extends TestCase
 
         $this->createUserMerchantMapping($user2['id'], $merchant['id'], 'manager');
 
-        $this->ba->appAuth();
+        $this->ba->proxyAuth('rzp_test_' . $user1['id']);
 
         $testData = & $this->testData[__FUNCTION__];
 
@@ -241,6 +241,8 @@ class MerchantTest extends TestCase
 
         $this->testData[__FUNCTION__]['request'] = $request;
 
+        $this->ba->adminAuth();
+
         $response = $this->startTest();
 
         // list of created group ids
@@ -286,12 +288,16 @@ class MerchantTest extends TestCase
     {
         $this->createMerchant();
 
+        $this->ba->adminAuth();
+
         $this->startTest();
     }
 
     public function testEditTransactionEmailWithError()
     {
         $this->createMerchant();
+
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
@@ -352,12 +358,16 @@ class MerchantTest extends TestCase
     {
         $this->createMerchant();
 
+        $this->ba->adminAuth();
+
         $this->startTest();
     }
 
     public function testEditMerchantInvalidDurationAutoRefundDelay()
     {
         $this->createMerchant();
+
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
@@ -366,11 +376,15 @@ class MerchantTest extends TestCase
     {
         $this->createMerchant();
 
+        $this->ba->adminAuth();
+
         $this->startTest();
     }
 
     public function testAddCategory2()
     {
+        $this->ba->adminAuth();
+
         $this->createMerchant();
 
         $this->startTest();
@@ -379,6 +393,8 @@ class MerchantTest extends TestCase
     public function testAddInvalidCategory2()
     {
         $this->createMerchant();
+
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
@@ -1746,7 +1762,11 @@ class MerchantTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
+        $this->ba->adminAuth();
+
         $this->merchantAssignPricingPlan('1hDYlICobzOCYt', $id);
+
+        $this->ba->appAuth();
 
         $this->assertArraySelectiveEquals($merchant, $content);
 
@@ -2003,7 +2023,11 @@ class MerchantTest extends TestCase
         $merchant->reTag(["ref-10000000000000"]);
         $merchant->saveOrFail();
 
-        $this->ba->adminAuth();
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach($merchant);
+
+        $this->ba->adminAuth('test');
 
         $this->startTest();
     }
