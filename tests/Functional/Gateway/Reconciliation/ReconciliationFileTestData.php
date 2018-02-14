@@ -48,7 +48,7 @@ return [
             'custom_data'          => null,
             'se_no'                => null,
         ],
-
+        
         'hdfc' => [
             'merchant_code'    => 'T69801',
             'terminal_number'  => 70011863,
@@ -120,6 +120,27 @@ return [
             'order_info'           => null,
             'curr_exp'             => '2',
             'arn'                  => '75105177297000905183277',
+        ],
+        
+
+        'billdesk' => [
+            'Refund ID'                 => 'uibpgthqndxmwcf',
+            'Ref. 1'                    => '9LRjiRNokiZ3Ww',
+            'Refund Amount (Rs. Ps.)'   => 500
+        ],
+
+        'hitachi' => [
+            'terminal_id'           => '38R00001',
+            'amount'                => 500,
+            'retr_ref_nr'           => 736022780722,
+            'auth_id'               => 108418,
+            'interchange_type'      => 'VISA',
+            'fee_amount'            => 0.00,
+            'credit_debit'          => 'C',
+            'cardcountry'           => 'IN',
+            'arn'                   => 74110757361008597807228,
+            'issettled'             => 'S',
+            'message_type'          => '0200'
         ]
     ],
 

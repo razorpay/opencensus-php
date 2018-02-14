@@ -8,13 +8,16 @@ use Symfony\Component\HttpFoundation\HeaderBag as Headers;
 
 class Preferences
 {
-    const MID_SOCH         = '6QGdVzDAIpBniU';
-    const MID_ZOMATO       = '6H7N6hlcv29OMG';
-    const MID_IPAY         = '6VS1z0fmis8fn6';
-    const MID_DSPBLACKROCK = '7thBRSDflu7NHL';
-    const MID_GOALWISE_1   = '7BfRNg10LH7N6T';
-    const MID_GOALWISE_2   = '8ytYezIThlseJd';
-    const MID_WEALTHAPP    = '9LYKZiz2kpFFtY';
+    const MID_SOCH             = '6QGdVzDAIpBniU';
+    const MID_ZOMATO           = '6H7N6hlcv29OMG';
+    const MID_IPAY             = '6VS1z0fmis8fn6';
+    const MID_DSPBLACKROCK     = '7thBRSDflu7NHL';
+    const MID_GOALWISE_TPV     = '7BfRNg10LH7N6T';
+    const MID_GOALWISE_NON_TPV = '8ytYezIThlseJd';
+    const MID_WEALTHAPP        = '9LYKZiz2kpFFtY';
+    const MID_MONEYVIEW        = '8hXTLsmoM3F6PH';
+    const MID_WEALTHY          = '8lv4idBRY4C9c0';
+    const MID_PIGGY            = '9IjdEkLQb0j2ro';
 
     /**
      * This needs to go in DB, for hotfix we are keeping it here

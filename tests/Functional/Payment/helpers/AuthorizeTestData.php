@@ -797,6 +797,30 @@ return [
         ]
     ],
 
+    'testIciciPaymentViaUpiS2S' => [
+        'request' => [
+            'url' => '/payments/create/upi',
+            'method' => 'POST',
+            'content' => [
+                'amount'        => 10000,
+                'currency'      => 'INR',
+                'contact'       => '9999999999',
+                'email'         => 'a@b.com',
+                'description'   => 'description',
+                'notes'         => [
+                    'key'   => 'value'
+                ],
+                'flow'          => 'intent'
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
     'testMobikwikPaymentViaWalletS2S' => [
         'request' => [
             'url' => '/payments/create/wallet',

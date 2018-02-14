@@ -12,6 +12,7 @@ final class Constants
     const TIMESTAMP                               = 'timestamp';
     const REF                                     = 'ref';
     const DATE                                    = 'date';
+    const SIGNUP_DATE                             = 'signup_date';
 
     /**
      * Step Map gives information on attributes filled by merchant Step wise.
@@ -23,7 +24,6 @@ final class Constants
         Detail\Entity::CONTACT_EMAIL               => 1,
         Detail\Entity::TRANSACTION_REPORT_EMAIL    => 1,
         Detail\Entity::CONTACT_MOBILE              => 1,
-        Detail\Entity::CONTACT_LANDLINE            => 1,
 
         Detail\Entity::BUSINESS_TYPE               => 2,
         Detail\Entity::BUSINESS_NAME               => 2,
@@ -39,9 +39,6 @@ final class Constants
         Detail\Entity::BUSINESS_OPERATION_STATE    => 2,
         Detail\Entity::BUSINESS_OPERATION_CITY     => 2,
         Detail\Entity::BUSINESS_OPERATION_PIN      => 2,
-        Detail\Entity::BUSINESS_DOE                => 2,
-        Detail\Entity::TRANSACTION_VOLUME          => 2,
-        Detail\Entity::TRANSACTION_VALUE           => 2,
         Detail\Entity::GSTIN                       => 2,
         Detail\Entity::P_GSTIN                     => 2,
         Detail\Entity::PROMOTER_PAN                => 2,
@@ -57,7 +54,6 @@ final class Constants
 
         Detail\Entity::BANK_BRANCH_IFSC            => 4,
         Detail\Entity::BANK_ACCOUNT_NUMBER         => 4,
-        Detail\Entity::BANK_ACCOUNT_TYPE           => 4,
         Detail\Entity::BANK_ACCOUNT_NAME           => 4,
         Detail\Entity::BANK_BENEFICIARY_ADDRESS1   => 4,
         Detail\Entity::BANK_BENEFICIARY_ADDRESS2   => 4,
@@ -82,7 +78,6 @@ final class Constants
 
         Detail\Entity::BANK_BRANCH_IFSC            => 2,
         Detail\Entity::BANK_ACCOUNT_NUMBER         => 2,
-        Detail\Entity::BANK_ACCOUNT_TYPE           => 2,
         Detail\Entity::BANK_ACCOUNT_NAME           => 2,
 
         Detail\Entity::ADDRESS_PROOF_URL           => 3,

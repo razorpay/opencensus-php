@@ -45,7 +45,6 @@ class Netbanking
         IFSC::ICIC,
         IFSC::HDFC,
         IFSC::CORP,
-        IFSC::BARB,
         IFSC::UTIB,
         IFSC::KKBK,
         IFSC::AIRP,
@@ -54,7 +53,7 @@ class Netbanking
         IFSC::INDB,
         IFSC::PUNB,
         IFSC::CSBK,
-        // self::BARB_R,
+        self::BARB_R,
     ];
 
     protected static $selfCorp = [

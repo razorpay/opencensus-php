@@ -36,7 +36,7 @@ class IciciReconciliationTest extends TestCase
         $this->fixtures->merchant->edit('10000000000000', ['channel' => $this->channel]);
     }
 
-    public function testReconFileProcess()
+    public function createReconFileProcess()
     {
         // Create payments and refunds with timestamps two days back
         $this->createPaymentAndRefundEntities(2);
@@ -49,7 +49,9 @@ class IciciReconciliationTest extends TestCase
         $setlFile = $this->initiateSettlementsAndAssertSuccess($this->channel);
 
         // Generate settlement reconciliation file
-        $setlReconciliationFile = $this->generateSetlReconciliationFile($setlFile, $this->channel);
+        $setlReconciliationFile = $this->generateSetlReconciliationFile(
+            $setlFile,
+            $this->channel);
 
         // Reconcile settlements
         $data = $this->reconcileSettlements($setlReconciliationFile, $this->channel);
@@ -71,7 +73,7 @@ class IciciReconciliationTest extends TestCase
     {
         Mail::fake();
 
-        $this->testReconFileProcess();
+        $this->createReconFileProcess();
 
         $this->ba->appAuth();
 
@@ -106,7 +108,7 @@ class IciciReconciliationTest extends TestCase
         Mail::assertSent(ReconciliationMail::class);
     }
 
-    public function testReconFailureFileProcess()
+    public function createReconFailureFileProcess($internalFailure = false)
     {
         // Create payments and refunds with timestamps two days back
         $this->createPaymentAndRefundEntities(2);
@@ -122,7 +124,9 @@ class IciciReconciliationTest extends TestCase
         $setlReconciliationFile = $this->generateSetlReconciliationFile(
             $setlFile,
             $this->channel,
-            true);
+            true,
+            null,
+            $internalFailure);
 
         // Reconcile settlements
         $data = $this->reconcileSettlements($setlReconciliationFile, $this->channel);
@@ -138,7 +142,7 @@ class IciciReconciliationTest extends TestCase
 
     public function testReconEntityFailure()
     {
-        $this->testReconFailureFileProcess();
+        $this->createReconFailureFileProcess();
 
         $this->ba->appAuth();
 
@@ -177,6 +181,59 @@ class IciciReconciliationTest extends TestCase
         $txn = $this->getLastEntity('transaction', true);
         $this->assertEquals('settlement', $txn['type']);
         $this->assertNotNull($txn['reconciled_at']);
+
+        $merchant = $this->getEntityById('merchant', $txn['merchant_id'], true);
+
+        $this->assertTrue($merchant['hold_funds']);
+
+        return $settlement;
+    }
+
+    public function testReconEntityInternalFailure()
+    {
+        $this->createReconFailureFileProcess(true);
+
+        $this->ba->appAuth();
+
+        $request = [
+            'url'       => '/fund_transfer_attempts/' . $this->channel,
+            'method'    => 'POST',
+            'content'   => [],
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertTestResponse($content, 'matchSummaryForReconFailure');
+
+        // Validate batch settlement entity
+        $batchFundTransfer = $this->fetchAndMatchBatchData('settlement');
+
+        //Validate settlement entity
+        $settlement = $this->getLastEntity('settlement', true);
+        $this->assertTestResponse($settlement, 'fetchAndMatchSettlementsForReconFailure');
+        $this->assertEquals(
+            $batchFundTransfer['id'], $settlement[Settlement\Entity::BATCH_FUND_TRANSFER_ID]);
+
+        $this->assertNotNull($settlement[Settlement\Entity::UTR]);
+
+        // Validate settlement attempt entity
+        $settlementAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertTestResponse($settlementAttempt, 'matchSettlementAttemptForReconEntityFailure');
+
+        // Validate batch fund transfer entity
+        $batch = $this->getLastEntity('batch_fund_transfer', true);
+
+        $this->assertEquals(0, $batch['processed_count']);
+        $this->assertEquals(0, $batch['processed_amount']);
+
+        // Validate settlement-transaction entity
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertEquals('settlement', $txn['type']);
+        $this->assertNotNull($txn['reconciled_at']);
+
+        $merchant = $this->getEntityById('merchant', $txn['merchant_id'], true);
+
+        $this->assertFalse($merchant['hold_funds']);
 
         return $settlement;
     }

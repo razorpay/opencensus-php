@@ -91,21 +91,9 @@ class Receiver extends Base\Core
 
     public function buildQrCode(Entity $virtualAccount): QrCode\Entity
     {
-        $qrCode = new QrCode\Entity;
-
         $input = $this->getQrCodeEntityParams($virtualAccount);
 
-        $qrCode = $qrCode->build($input);
-
-        $qrCode->generateId();
-
-        $qrCode->merchant()->associate($this->merchant);
-
-        $qrCode->source()->associate($virtualAccount);
-
-        $qrCode = $qrCode->generateQrString();
-
-        $this->repo->saveOrFail($qrCode);
+        $qrCode = (new QrCode\Generator($this->merchant))->generate($input, $virtualAccount);
 
         return $qrCode;
     }

@@ -94,7 +94,7 @@ class ApiEventSubscriber extends Base\Core
         }
         else
         {
-            $this->mainEntity = $params[self::MAIN];
+            $this->mainEntity  = $params[self::MAIN];
             $this->withPayload = $params[self::WITH] ?? [];
         }
 
@@ -169,6 +169,13 @@ class ApiEventSubscriber extends Base\Core
     protected function onPaymentCaptured($payment)
     {
         $payload = $this->getPaymentPayload($payment);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onPaymentDisputeCreated($payment)
+    {
+        $payload = $this->getPaymentPayloadWithDispute($payment);
 
         $this->prepareAndDispatchWebhook($payload);
     }
@@ -446,6 +453,16 @@ class ApiEventSubscriber extends Base\Core
         ];
 
         return $payload;
+    }
+
+    protected function getPaymentPayloadWithDispute($payment)
+    {
+        $partialPayload = $this->getPaymentPayload($payment);
+
+        // Add dispute entity defined in `withPayload`
+        $this->addExtraDataToPayload($partialPayload);
+
+        return $partialPayload;
     }
 
     protected function prepareAndDispatchWebhook(array $payload)

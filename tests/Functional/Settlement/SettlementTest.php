@@ -12,6 +12,7 @@ use RZP\Mail\Settlement\KotakSettlement as KotakSettlementMail;
 use RZP\Mail\Settlement\KotakPayout as KotakPayoutMail;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\Settlement\Entity as SettlementEntity;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -490,7 +491,9 @@ class SettlementTest extends TestCase
 
         $this->ba->adminAuth();
 
-        $this->fixtures->merchant->edit('10000000000000', ['channel' => 'axis']);
+        $channel = Channel::AXIS;
+
+        $this->fixtures->merchant->edit('10000000000000', ['channel' => $channel]);
 
         $payments = $this->createPaymentEntities();
 
@@ -512,9 +515,9 @@ class SettlementTest extends TestCase
 
         $setlResponse = $this->makeRequestAndGetContent($request);
 
-        $this->assertNotNull($setlResponse['axis']);
-        $this->assertNotNull($setlResponse['axis']['settlement_text_file']);
-        $this->assertNotNull($setlResponse['axis']['settlement_excel_file']);
+        $this->assertNotNull($setlResponse[$channel]);
+        $this->assertNotNull($setlResponse[$channel]['settlement_text_file']);
+        $this->assertNotNull($setlResponse[$channel]['settlement_excel_file']);
 
         $setl = $this->getLastEntity('settlement', true);
         $this->assertTestResponse($setl, 'fetchAndMatchSettlementAxis');

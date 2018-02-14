@@ -5,22 +5,25 @@ namespace RZP\Models\Dispute;
 use DB;
 use Mail;
 use Carbon\Carbon;
+
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
-use RZP\Constants\Table;
 use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;
-use RZP\Constants\Timezone;
 use RZP\Models\Admin\Action;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Listeners\ApiEventSubscriber;
 use RZP\Mail\Dispute as DisputeMailer;
+use RZP\Constants\{Entity as E, Timezone, Table};
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
+use RZP\Models\Dispute\File\Entity as DisputeFileEntity;
 
 class Core extends Base\Core
 {
     use FileHandlerTrait;
-  
+
     const DEBIT_ADJUSTMENT_DESCRIPTION = 'Debit disputed amount';
     const CREDIT_ADJUSTMENT_DESCRIPTION = 'Credit to reverse a previous dispute debit';
 
@@ -91,6 +94,8 @@ class Core extends Base\Core
 
                 $this->sendDisputeMailToMerchant($dispute, $merchant, $input);
 
+                $this->firePaymentDisputedEvent($payment, $dispute);
+
                 return $dispute;
 
             });
@@ -135,6 +140,70 @@ class Core extends Base\Core
                     return $dispute;
                 });
             });
+    }
+
+    /**
+     * @param Entity $dispute
+     * @param array $input
+     * @return array
+     */
+    public function updateFilesAndInputForMerchant(Entity $dispute, array $input): array
+    {
+        $this->trace->info(
+            TraceCode::DISPUTE_EDIT_REQUEST_FOR_MERCHANT,
+            [Entity::ID => $dispute->getId()]);
+
+        $files = [];
+
+        $fileCore = new File\Core;
+
+        if (array_key_exists(DisputeFileEntity::FILES, $input) === true)
+        {
+            $files = $input[DisputeFileEntity::FILES];
+
+            $files = $fileCore->checkFilesInput($files);
+
+            unset($input[DisputeFileEntity::FILES]);
+        }
+
+        $response = $this->repo->transaction(function() use ($dispute, $fileCore, $files, $input)
+        {
+            if (empty($input) === false)
+            {
+                $dispute = $this->updateForMerchant($dispute, $input);
+            }
+
+            $response = $dispute->toArrayPublic();
+
+            if (empty($files) === false )
+            {
+                $response['files'] = $fileCore->uploadFiles($dispute, $files);
+            }
+
+            return $response;
+        });
+
+        return $response;
+    }
+
+    /**
+     * @param Entity $dispute
+     * @param array  $input
+     *
+     * @return Entity
+     */
+    public function updateForMerchant(Entity $dispute, array $input): Entity
+    {
+        $this->trace->info(
+            TraceCode::DISPUTE_EDIT_REQUEST_FOR_MERCHANT,
+            array_merge($input, [Entity::ID => $dispute->getId()])
+        );
+
+        (new Validator)->validateInput(Validator::OPERATION_MERCHANT_EDIT, $input);
+
+        $input = $this->generateInputForMerchantEdit($dispute, $input);
+
+        return $this->update($dispute, $input);
     }
 
     /**
@@ -195,7 +264,7 @@ class Core extends Base\Core
                         ->where(Adjustment\Entity::ID, $adjustment[Adjustment\Entity::ID])
                         ->update(
                             [
-                                Adjustment\Entity::ENTITY_TYPE => \RZP\Constants\Entity::DISPUTE,
+                                Adjustment\Entity::ENTITY_TYPE => E::DISPUTE,
                                 Adjustment\Entity::ENTITY_ID   => $id,
                             ]
                         );
@@ -440,5 +509,43 @@ class Core extends Base\Core
         $length = $endDate->diffInDays(Carbon::now(Timezone::IST));
 
         return $length;
+    }
+
+    protected function generateInputForMerchantEdit(Entity $dispute, array $input): array
+    {
+        if (empty($input[Entity::ACCEPT_DISPUTE]) === false)
+        {
+            $input[Entity::STATUS] = Status::LOST;
+
+            if (in_array($dispute->getPhase(), Phase::getNonTransactionalPhases()) === true)
+            {
+                $input[Entity::STATUS] = Status::CLOSED;
+            }
+
+            unset($input[Entity::ACCEPT_DISPUTE]);
+        }
+
+        return $input;
+    }
+
+    protected function firePaymentDisputedEvent(Payment\Entity $payment, Entity $dispute)
+    {
+        //
+        // `reason_description` should not be exposed on API or webhook responses.
+        // However, since the dispute is created via admin dashboard, the publicSetter
+        // used to under reason_description will not work in this flow
+        //
+        $dispute->makeHidden(Entity::REASON_DESCRIPTION);
+
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $payment,
+            ApiEventSubscriber::WITH => [
+                E::DISPUTE => $dispute,
+            ],
+        ];
+
+        $eventName = 'api.' . WebhookEvent::PAYMENT_DISPUTE_CREATED;
+
+        $this->app['events']->fire($eventName, $eventPayload);
     }
 }

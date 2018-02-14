@@ -375,6 +375,14 @@ class Core extends Base\Core
                 (new Merchant\Activate)->activate($merchantDetails->merchant, true);
             }
 
+            if ($input[Entity::ACTIVATION_STATUS] === Status::REJECTED)
+            {
+                $this->triggerWorkflowForRejectionActivationStatusChange(
+                    $oldMerchantDetails,
+                    $newMerchantDetails,
+                    $rejectionReasons);
+            }
+
             $this->repo->saveOrFail($merchantDetails);
 
             $stateData = [
@@ -400,6 +408,37 @@ class Core extends Base\Core
         $bankData = $bankCore->buildBankAccountArrayFromMerchantDetail($merchantDetails);
 
         $bankCore->createOrChangeBankAccount($bankData, $merchantDetails->merchant);
+    }
+
+    /**
+     * Triggers workflow when activation status is changed to rejected
+     * @param Entity $oldMerchantDetails
+     * @param Entity $newMerchantDetails
+     * @param array $rejectionReasons
+     */
+    protected function triggerWorkflowForRejectionActivationStatusChange(
+        Entity $oldMerchantDetails,
+        Entity $newMerchantDetails,
+        array $rejectionReasons)
+    {
+        $oldMerchantDetailsArray = $oldMerchantDetails->toArray();
+
+        $newMerchantDetailsArray = $newMerchantDetails->toArray();
+
+        $rejectionReasonDescriptions = [];
+
+        foreach ($rejectionReasons as $rejectionReason)
+        {
+            $rejectionReasonCode = $rejectionReason[Reason\Entity::REASON_CODE] ?? "";
+
+            $rejectionReasonDescriptions[] = RejectionReasons::getReasonDescriptionByReasonCode($rejectionReasonCode);
+        }
+
+        $newMerchantDetailsArray[Entity::REJECTION_REASONS] = $rejectionReasonDescriptions;
+
+        $workflow = $this->app['workflow']
+                         ->setEntity($newMerchantDetails->getEntity())
+                         ->handle($oldMerchantDetailsArray, $newMerchantDetailsArray);
     }
 
     /**
@@ -453,6 +492,13 @@ class Core extends Base\Core
         $requiredFields = [];
 
         $validationFields = ValidationFields::DASHBOARD_FIELDS;
+
+        if ($merchantDetails->getBusinessType() === BusinessType::NGO)
+        {
+            $ngoValidationFields = ValidationFields::NGO_MERCHANT_FIELDS;
+
+            $validationFields = array_merge($validationFields, $ngoValidationFields);
+        }
 
         $merchant = $merchantDetails->merchant;
 

@@ -5,13 +5,21 @@ namespace RZP\Tests\Functional\Dispute;
 use Mail;
 use RZP\Models\Dispute\Phase;
 use RZP\Models\Dispute\Entity;
+use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Tests\Functional\Helpers\WebhookTrait;
+use RZP\Models\Dispute\Entity as DisputeEntity;
+use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Mail\Dispute\Creation as DisputeCreationMail;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Models\Dispute\File\Entity as DisputeFileEntity;
 
 class DisputeTest extends TestCase
 {
-    use RequestResponseFlowTrait;
+    use WebhookTrait;
+    use PaymentTrait;
 
     protected $payment = null;
 
@@ -23,7 +31,7 @@ class DisputeTest extends TestCase
 
         parent::setUp();
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
     }
 
     public function testDisputeCreate()
@@ -57,7 +65,25 @@ class DisputeTest extends TestCase
 
         $this->startTest($testData);
 
-        Mail::assertSent(DisputeCreationMail::class);
+        Mail::assertSent(DisputeCreationMail::class, function ($mail) use ($testData)
+        {
+            $this->stringContains(
+                $testData['response']['content']['payment_id'],
+                $mail->subject
+            );
+
+            $this->stringContains(
+                $testData['response']['content']['payment_id'],
+                $mail->viewData
+            );
+
+            $this->assertArrayHasKey('dispute', $mail->viewData);
+
+            $this->assertArrayHasKey('merchant', $mail->viewData);
+
+            return ($mail->hasFrom('disputes@razorpay.com') and
+                ($mail->hasTo('test@razorpay.com')));
+        });
     }
 
     public function testDisputeCreateWithoutMerchantEmail()
@@ -69,6 +95,27 @@ class DisputeTest extends TestCase
         $this->startTest($testData);
 
         Mail::assertNotSent(DisputeCreationMail::class);
+    }
+
+    public function testDisputeCreatedWebhook()
+    {
+        $this->createWebhook(['events' => ['payment.dispute.created' => '1']]);
+
+        $payment = $this->doAuthAndCapturePayment();
+
+        $paymentId = $payment['id'];
+
+        $testData = $this->updateCreateTestData($paymentId);
+
+        $eventTestDataKey = 'testDisputeCreatedWebhookEventData';
+
+        $this->setInfernoExpectations([$eventTestDataKey]);
+
+        $this->testData[$eventTestDataKey]['payload']['dispute']['entity']['payment_id'] = $paymentId;
+
+        $this->ba->appAuth();
+
+        $this->startTest($testData);
     }
 
     public function testDisputeCreateWithDeduct()
@@ -266,6 +313,8 @@ class DisputeTest extends TestCase
 
         $this->assertEquals('payment', $txn['type']);
 
+        $this->ba->adminProxyAuth();
+
         $this->runRequestResponseFlow($data);
 
         $payment = $this->getLastEntity('payment', true);
@@ -296,6 +345,8 @@ class DisputeTest extends TestCase
         $this->assertEquals(1000000, $txn['debit']);
 
         $this->assertEquals(0, $txn['credit']);
+
+        $this->ba->adminProxyAuth();
 
         $this->runRequestResponseFlow($data);
 
@@ -344,6 +395,8 @@ class DisputeTest extends TestCase
         $testdata = $this->updateEditTestData($input);
 
         $oldMerchantBalance = $this->getEntityById('balance', $this->merchant['id'], true)['balance'];
+
+        $this->ba->adminProxyAuth();
 
         $content = $this->runRequestResponseFlow($testdata);
 
@@ -582,9 +635,87 @@ class DisputeTest extends TestCase
     {
         $this->ba->privateAuth();
 
-        $testData = $this->updateDetailsFetchTestData();
+        $testData = $this->updateDetailsFetchTestData(['expires_on' => 12345678]);
 
         $this->startTest($testData);
+    }
+
+    public function testEditDisputeMerchantDocumentUploadByProxy()
+    {
+        $this->ba->proxyAuth();
+
+        $testData = $this->updateUploadDocumentData();
+
+        $content = $this->runRequestResponseFlow($testData);
+
+        $this->checkUploadedFilesArray($content);
+    }
+
+    public function testEditDisputeMerchantAcceptDispute()
+    {
+        // Input params while creating
+        $input = [
+            'amount'                => 10100,
+            'deduct_at_onset'       => 0,
+        ];
+
+        $testdata = $this->updateEditTestData($input);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest($testdata);
+
+        $dispute = $this->getLastEntity('dispute', true);
+
+        $this->assertEquals(10100, $dispute['amount_deducted']);
+        $this->assertEquals(0, $dispute['amount_reversed']);
+        $this->assertEquals(0, $dispute['deduct_at_onset']);
+    }
+
+    public function testEditDisputeMerchantAcceptDisputeForNonTransactional()
+    {
+        // Input params while creating
+        $input = [
+            'amount'                => 10100,
+            'deduct_at_onset'       => 0,
+            'phase'                 => 'fraud',
+        ];
+
+        $testdata = $this->updateEditTestData($input);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest($testdata);
+
+        $dispute = $this->getLastEntity('dispute', true);
+
+        $this->assertEquals(0, $dispute['amount_deducted']);
+        $this->assertEquals(0, $dispute['amount_reversed']);
+        $this->assertEquals(0, $dispute['deduct_at_onset']);
+    }
+
+    protected function checkUploadedFilesArray(array $content)
+    {
+        $dispute = $this->getLastEntity('dispute', true);
+
+        $files = $this->getEntities('dispute_file', [], true);
+
+        $dispute['id'] = DisputeEntity::stripDefaultSign($dispute['id']);
+
+        $expected = [
+            'files' => [
+                [
+                    'dispute_id'    => $dispute['id'],
+                    'file_id'       => $files['items'][1]['file_id'],
+                ],
+                [
+                    'dispute_id'    => $dispute['id'],
+                    'file_id'       => $files['items'][0]['file_id'],
+                ]
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($expected, $content);
     }
 
     // ---------------------------- helper methods-------------------------------
@@ -615,6 +746,10 @@ class DisputeTest extends TestCase
 
     protected function updateEditTestData(array $attributes = []): array
     {
+        $this->ba->adminProxyAuth();
+
+        $this->fixtures->edit(AdminEntity::ADMIN, Org::SUPER_ADMIN, [AdminEntity::ALLOW_ALL_MERCHANTS => 1]);
+
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
 
         $name = $trace[1]['function'];
@@ -663,5 +798,55 @@ class DisputeTest extends TestCase
         $this->assertEquals($content['id'], $disputes['items'][0]['id']);
         $this->assertEquals($content['parent_id'], $disputes['items'][0]['parent_id']);
         $this->assertEquals($content['payment_id'], $disputes['items'][0]['payment_id']);
+    }
+
+    protected function updateUploadDocumentData(array $attributes = []): array
+    {
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+
+        $name = $trace[1]['function'];
+
+        $dispute = $this->fixtures->create('dispute', $attributes);
+
+        $this->merchant = $dispute->merchant;
+
+        $testData = &$this->testData[$name];
+
+        $testData['request']['url'] = '/disputes/' . $dispute->getPublicId();
+
+        $testData['request']['content'][DisputeFileEntity::FILES][0][DisputeFileEntity::FILE] = $this->getTestFile(0);
+        $testData['request']['content'][DisputeFileEntity::FILES][1][DisputeFileEntity::FILE] = $this->getTestFile(1);
+
+        return $testData;
+    }
+
+    protected function createUploadedFile(string $filePath, string $mimeType = null, int $fileSize = -1)
+    {
+        $this->assertFileExists($filePath);
+
+        $mimeType = $mimeType ?: 'image/png';
+
+        $fileSize = ($fileSize === -1) ? filesize($filePath) : $fileSize;
+
+        $uploadedFile = new UploadedFile(
+                                        $filePath,
+                                        $filePath,
+                                        $mimeType,
+                                        $fileSize,
+                                        null,
+                                        true);
+
+        return $uploadedFile;
+    }
+
+    protected function getTestFile(int $num)
+    {
+        $name = 'a' . $num . '.png';
+
+        $originalFile = $this->createUploadedFile('tests/Functional/Storage/a.png');
+
+        copy($originalFile, 'tests/Functional/Storage/' . $name);
+
+        return $this->createUploadedFile('tests/Functional/Storage/' . $name);
     }
 }

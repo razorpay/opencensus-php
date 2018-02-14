@@ -219,6 +219,11 @@ class Gateway extends Base\Gateway
 
         assertTrue($content[ResponseFields::UPI_TXN_ID] === $gatewayPayment->getGatewayPaymentId());
 
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $actualAmount   = number_format($content[ResponseFields::AMOUNT], 2, '.', '');
+
+        $this->assertAmount($expectedAmount, $actualAmount);
+
         $this->checkResponseStatus($content[ResponseFields::STATUS]);
 
         // Authorization was successful
@@ -595,6 +600,21 @@ class Gateway extends Base\Gateway
         $content[Entity::RECEIVED] = 1;
 
         $this->updateGatewayPaymentEntity($verify->payment, $content);
+    }
+
+    public function verifyRefund(array $input)
+    {
+        if ($this->isUnprocessedRefund($input) === true)
+        {
+            return false;
+        }
+
+        if ($this->isProcessedRefund($input) === true)
+        {
+            return true;
+        }
+
+        parent::verifyRefund($input);
     }
 
     private function checkGatewaySuccess(Verify $verify)

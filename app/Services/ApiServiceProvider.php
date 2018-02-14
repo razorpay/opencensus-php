@@ -128,6 +128,18 @@ class ApiServiceProvider extends BaseServiceProvider
             return new HarvesterClient($app);
         });
 
+        $this->app->singleton('ufh.service', function ($app)
+        {
+            $ufhServiceMock = $app['config']->get('applications.ufh.mock');
+
+            if ($ufhServiceMock === true)
+            {
+                return new Mock\UfhService($app);
+            }
+
+            return new UfhService($app);
+        });
+
         $this->app->singleton('gateway_file', function($app)
         {
             return new GatewayFileManager($app);
@@ -158,6 +170,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerHttplugMockClient();
 
         $this->registerGeolocation();
+
+        $this->registerPincodeSearch();
     }
 
     /**
@@ -189,6 +203,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'workflow',
             'authservice',
             'sns',
+            'pincodesearch',
         ];
     }
 
@@ -400,5 +415,17 @@ class ApiServiceProvider extends BaseServiceProvider
         $apiProcessor = new RZP\Trace\ApiTraceProcessor($this->app);
 
         $this->app['trace']->pushProcessor($apiProcessor);
+    }
+
+    protected function registerPincodeSearch()
+    {
+        $this->app->singleton('pincodesearch', function($app)
+        {
+            $mock = $app['config']->get('applications.pincodesearch.mock');
+
+            $implementation = $mock ? Mock\PincodeSearch::class : PincodeSearch::class;
+
+            return new $implementation($app);
+        });
     }
 }
