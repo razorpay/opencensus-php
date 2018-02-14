@@ -102,29 +102,20 @@ class Validator extends Base\Validator
     {
         if ($input[Entity::PAYMENT_METHOD] === Payment\Method::EMANDATE)
         {
-            $fields = [
-                Entity::PAYMENT_NETWORK,
-                Entity::PAYMENT_METHOD_TYPE,
-                Entity::PAYMENT_ISSUER,
-            ];
-
-            foreach ($fields as $field)
-            {
-                if ((isset($input[$field])) and
-                    ($input[$field] !== null))
-                {
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_PRICING_FIELD_NOT_REQUIRED_FOR_EMANDATE,
-                        $field);
-                }
-            }
-
-            Payment\RecurringType::validateRecurringType($input[Entity::PAYMENT_ISSUER]);
-
-            if (isset($input[Entity::PERCENT_RATE]) === true)
+            if (empty($input[Entity::PERCENT_RATE]) === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Percentage rate pricing is not allowed for eMandate');
+            }
+
+            if (isset($input[Entity::PAYMENT_METHOD_TYPE]) === true)
+            {
+                Payment\AuthType::validateAuthType($input[Entity::PAYMENT_METHOD_TYPE]);
+            }
+
+            if (isset($input[Entity::PAYMENT_ISSUER]) === true)
+            {
+                Payment\RecurringType::validateRecurringType($input[Entity::PAYMENT_ISSUER]);
             }
         }
     }
