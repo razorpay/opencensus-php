@@ -1121,6 +1121,23 @@ final class Route
         'transaction_bulk_update',
         'setl_update_channel_bulk',
         'merchant_tags_bulk',
+
+        // Guest Routes
+        'user_change_password',
+        'user_reset_password_token',
+        'user_merchant_upgrade',
+        'org_get_by_hostname',
+        'user_register',
+
+        // Guest
+        'user_fetch',
+        'user_login',
+        'user_reset_password_create',
+        'merchant_admin_lead_put',
+        'invitation_fetch_by_token',
+        'invitation_action',
+        'user_resend_verification',
+        'user_fetch_email',
     ];
 
     public static $proxy = [
@@ -1128,43 +1145,12 @@ final class Route
         // And are now on PROXY
         // None of the PROXY routes should accept
         // a merchant ID parameter
-        'pricing_get_merchant_plans',
-        'pricing_supported_networks',
-        'pricing_add_plan_rule',
-        'pricing_get_plan',
-        'pricing_delete_plan_rule',
-        'payment_verify',
-        'payment_authorize_failed',
-        'refund_generate_excel',
-        'bank_transfer_process',
-        'iin_add',
-        'emi_plan_add',
-        'emi_generate_excel',
-        'dummy_critical_error',
-        'admin_get_app_auth',
-        'admin_authentication',
-        'admin_oauth_authenticate',
-        'org_get_by_hostname',
-        'admin_lead_verify',
-        'admin_edit_app_auth',
-        'user_register',
-        'user_fetch',
-        'user_login',
-        'user_change_password',
-        'merchant_admin_lead_put',
-        'merchant_tag_add',
-        'merchant_tag_delete',
-        'refund_verify_failed',
-        'merchant_fetch_users',
-        'invitation_fetch_by_token',
-        'invitation_action',
+
+        // Check
         'gateway_file_create',
-        'user_merchant_upgrade',
-        'user_resend_verification',
-        'user_fetch_email',
-        'user_reset_password_create',
-        'user_reset_password_token',
-        'merchant_edit_email',
+
+        // Proxy
+        'merchant_fetch_users',
         'transaction_monthly_report',
         'transaction_fetch_by_id',
         'transaction_fetch_multiple',
@@ -1354,6 +1340,28 @@ final class Route
         'onboarding_features_fetch_status',
         'onboarding_features_bulk_update_status',
         'onboarding_features_update',
+        'pricing_get_merchant_plans',
+        'pricing_supported_networks',
+        'pricing_add_plan_rule',
+        'pricing_get_plan',
+        'pricing_delete_plan_rule',
+        'payment_verify',
+        'payment_authorize_failed',
+        'refund_generate_excel',
+        'bank_transfer_process',
+        'iin_add',
+        'emi_plan_add',
+        'emi_generate_excel',
+        'dummy_critical_error',
+        'admin_get_app_auth',
+        'admin_authentication',
+        'admin_oauth_authenticate',
+        'admin_lead_verify',
+        'admin_edit_app_auth',
+        'merchant_tag_add',
+        'merchant_tag_delete',
+        'refund_verify_failed',
+        'merchant_edit_email',
     ];
 
     public static $routePermission = [
