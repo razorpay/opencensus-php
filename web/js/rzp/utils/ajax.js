@@ -8,7 +8,7 @@ export function merchantFetch(params) {
     }
   }
 
-  params.url = getMode() + '/' + params.url;
+  params.url = `/merchant/api/${getMode()}/${params.url}`;
 
   return ajax(params);
 }
