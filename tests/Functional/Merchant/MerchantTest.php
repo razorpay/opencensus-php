@@ -378,9 +378,9 @@ class MerchantTest extends TestCase
 
     public function testAddCategory2()
     {
-        $this->ba->adminAuth();
-
         $this->createMerchant();
+
+        $this->ba->adminAuth();
 
         $this->startTest();
     }

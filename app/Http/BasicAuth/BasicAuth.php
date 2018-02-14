@@ -1332,8 +1332,6 @@ class BasicAuth
 
     protected function invalidApiKey()
     {
-        sd(\Request::header());
-        // debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 7);
         $this->trace->info(
             TraceCode::BAD_REQUEST_INVALID_API_KEY, ['key_id' => $this->getKey()]);
 
