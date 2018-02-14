@@ -20,6 +20,8 @@ class EmiTest extends TestCase
 
     public function testAddEmiPlans()
     {
+        $this->ba->adminAuth();
+
         $this->startTest();
     }
 
