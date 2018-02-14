@@ -1118,6 +1118,7 @@ final class Route
         'transaction_bulk_update',
         'setl_update_channel_bulk',
         'merchant_tags_bulk',
+        'refund_generate_excel',
         'bank_transfer_process',
 
         // Guest Routes (no login required)
@@ -1338,7 +1339,6 @@ final class Route
         'pricing_delete_plan_rule',
         'payment_verify',
         'payment_authorize_failed',
-        'refund_generate_excel',
         'iin_add',
         'emi_plan_add',
         'emi_generate_excel',
@@ -1512,7 +1512,6 @@ final class Route
         'pricing_delete_plan_rule'               => '*',
         'payment_verify'                         => '*',
         'payment_authorize_failed'               => '*',
-        'refund_generate_excel'                  => '*',
         'bank_transfer_process'                  => '*',
         'iin_add'                                => '*',
         'emi_plan_add'                           => '*',

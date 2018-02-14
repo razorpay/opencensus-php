@@ -79,7 +79,7 @@ class FileStoreTest extends TestCase
 
     protected function generateRefundsExcelForKkbkNB()
     {
-        $this->ba->adminAuth();
+        $this->ba->appAuth();
 
         $request = array(
             'url' => '/refunds/excel',

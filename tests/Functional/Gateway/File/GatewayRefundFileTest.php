@@ -326,7 +326,7 @@ class GatewayRefundFileTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = '/gateway/files/' . $gatewayFile['id'] . '/retry';
 
-        $this->ba->adminAuth();
+        $this->ba->appAuth();
 
         $this->startTest();
     }

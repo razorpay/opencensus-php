@@ -461,7 +461,7 @@ class UpiSbiGatewayTest extends TestCase
 
     protected function generateRefundsExcelForSbiUpi($date = false)
     {
-        $this->ba->adminAuth();
+        $this->ba->appAuth();
 
         $request = [
             'url' => '/refunds/excel',

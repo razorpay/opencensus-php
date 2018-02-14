@@ -1115,7 +1115,7 @@ trait PaymentTrait
 
     protected function generateRefundsExcelForNb($bank)
     {
-        $this->ba->adminAuth();
+        $this->ba->appAuth();
 
         $request = array(
             'url'     => '/refunds/excel',
