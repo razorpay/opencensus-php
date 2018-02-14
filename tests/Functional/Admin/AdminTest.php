@@ -96,6 +96,8 @@ class AdminTest extends TestCase
             Admin\Entity::EMAIL   => 'xyz@rzp.com',
         ]);
 
+        $this->ba->adminAuth();
+
         $this->startTest();
     }
 
@@ -268,7 +270,7 @@ class AdminTest extends TestCase
             'admin_id'  => $admin->getId(),
         ]);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $result = $this->startTest();
 
@@ -408,7 +410,7 @@ class AdminTest extends TestCase
 
     public function testLoginUserDoesNotExist()
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
@@ -422,7 +424,7 @@ class AdminTest extends TestCase
             'oauth_provider_id'  => 'test oauth provider id',
         ]);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
@@ -436,7 +438,7 @@ class AdminTest extends TestCase
             'oauth_provider_id'  => 'test oauth provider id',
         ]);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $this->startTest();
 
