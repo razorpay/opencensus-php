@@ -76,9 +76,7 @@ class Core extends Base\Core
     {
         (new Validator)->validateInput($channel . '_add_beneficiary', $input);
 
-        $nodalClass = 'RZP\Models\FundTransfer\\' . ucwords($channel) . '\NodalAccount';
-
-        return (new $nodalClass())->addBeneficiary($input);
+        return $this->getNodalAccount($channel)->addBeneficiary($input);
     }
 
     public function updateChannel(array $input): array
@@ -149,6 +147,11 @@ class Core extends Base\Core
         return $response;
     }
 
+    public function getAccountBalance(string $channel): array
+    {
+        return $this->getNodalAccount($channel)->getAccountBalance();
+    }
+
     protected function getAmountFromPaymentsForLastDay(string $gateway) : int
     {
         $from = Carbon::yesterday(Timezone::IST)->getTimestamp();
@@ -167,9 +170,9 @@ class Core extends Base\Core
         // Transfer 99% of the derived amount
         $amount = 0.99 * $amount;
 
-        return (int)$amount;
+        return (int) $amount;
     }
-  
+
     /**
      * Sends a webhook to the merchant for successfully settled payments
      *
@@ -214,5 +217,19 @@ class Core extends Base\Core
         }
 
         return true;
+    }
+
+    /**
+     * Creates the nodalAccount object for given channel
+     *
+     * @param string $channel channel name
+     *
+     * @return Object Nodal Account Object
+     */
+    public function getNodalAccount(string $channel)
+    {
+        $nodalClass = 'RZP\Models\FundTransfer\\' . ucwords($channel) . '\NodalAccount';
+
+        return new $nodalClass();
     }
 }

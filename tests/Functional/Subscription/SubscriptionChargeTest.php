@@ -3,17 +3,16 @@
 namespace RZP\Tests\Functional\Subscription;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
-use Mockery;
-
-use RZP\Error\ErrorCode;
-use RZP\Exception\BadRequestException;
 use RZP\Models\Item;
-use RZP\Models\Plan\Subscription\Addon;
+use RZP\Error\ErrorCode;
+use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\Helpers\Subscription\SubscriptionTrait;
+use RZP\Exception\BadRequestException;
+use RZP\Models\Plan\Subscription\Addon;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\Subscription\SubscriptionTrait;
 
 /**
  * @group dns-sensitive
@@ -23,6 +22,7 @@ class SubscriptionChargeTest extends TestCase
     use PaymentTrait;
     use MocksDnsTrait;
     use SubscriptionTrait;
+    use DbEntityFetchTrait;
 
     const MAX_AUTH_ATTEMPTS = 4;
 
@@ -82,8 +82,8 @@ class SubscriptionChargeTest extends TestCase
         $order = $this->getLastEntity('order', true);
         $chargedPayment = $this->getLastEntity('payment', true);
         $subscription = $this->getLastEntity('subscription', true);
-        $token = $this->getLastEntity('token', true);
-        $scheduleTask = $this->getLastEntity('schedule_task', true);
+        $token = $this->getDbLastEntityPublic('token');
+        $scheduleTask = $this->getDbLastEntityPublic('schedule_task');
 
         $this->assertEquals($order['id'], $invoice['order_id']);
         $this->assertEquals('cust_100000customer', $invoice['customer_id']);
@@ -345,7 +345,7 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals('pending', $subscription['status']);
         $this->assertEquals(1, $subscription['auth_attempts']);
 
-        $task = $this->getLastEntity('schedule_task', true);
+        $task = $this->getDbLastEntityPublic('schedule_task');
         // First success, then fail
         $expectedNextRun = Carbon::createFromTimestamp($subscription['start_at'], Timezone::IST)
                                  ->addMonthsNoOverflow(2)
@@ -533,7 +533,7 @@ class SubscriptionChargeTest extends TestCase
 
         $this->assertEquals($expectedChargeAt, $subscription['charge_at']);
 
-        $task = $this->getLastEntity('schedule_task', true);
+        $task = $this->getDbLastEntityPublic('schedule_task');
 
         $this->assertEquals($expectedChargeAt, $task['next_run_at']);
 
@@ -815,7 +815,7 @@ class SubscriptionChargeTest extends TestCase
                                   ->getTimestamp();
         $this->assertEquals($expectedChargeAt, $subscription['charge_at']);
 
-        $task = $this->getLastEntity('schedule_task', true);
+        $task = $this->getDbLastEntityPublic('schedule_task');
 
         // In manual flow, the task's next_run should not change
         $this->assertEquals($expectedChargeAt, $task['next_run_at']);
@@ -1194,7 +1194,7 @@ class SubscriptionChargeTest extends TestCase
         // Retries exhausted, subscription marked as halted
         $this->assertEquals('halted', $subscription['status']);
 
-        $task = $this->getLastEntity('schedule_task', true);
+        $task = $this->getDbLastEntityPublic('schedule_task');
         Carbon::setTestNow(Carbon::createFromTimestamp($task['next_run_at'] + 1));
 
         $subscription = $this->getLastEntity('subscription', true);
@@ -1272,7 +1272,7 @@ class SubscriptionChargeTest extends TestCase
 
         $this->clearMock();
 
-        $task = $this->getLastEntity('schedule_task', true);
+        $task = $this->getDbLastEntityPublic('schedule_task');
         $firstRunAt = $task['next_run_at'];
         Carbon::setTestNow(Carbon::createFromTimestamp($firstRunAt + 1));
 
@@ -1286,7 +1286,7 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals('halted', $invoice['subscription_status']);
 
         $subscription = $this->getLastEntity('subscription', true);
-        $task = $this->getLastEntity('schedule_task', true);
+        $task = $this->getDbLastEntityPublic('schedule_task');
         $secondRunAt = $task['next_run_at'];
         // second run should be at least 50 days from first run (2 months ahead)
         $this->assertGreaterThan($firstRunAt + 4320000, $secondRunAt);
@@ -1300,7 +1300,7 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals('issued', $invoice['status']);
         $this->assertEquals('halted', $invoice['subscription_status']);
 
-        $task = $this->getLastEntity('schedule_task', true);
+        $task = $this->getDbLastEntityPublic('schedule_task');
         $thirdRunAt = $task['next_run_at'];
         // third run should be at least 50 days from second run (2 months ahead)
         $this->assertGreaterThan($secondRunAt + 4320000, $thirdRunAt);

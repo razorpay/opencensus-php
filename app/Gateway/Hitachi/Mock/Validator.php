@@ -8,13 +8,13 @@ use RZP\Gateway\Hitachi\RequestFields;
 class Validator extends Base\Validator
 {
     protected static $authRules = [
-        RequestFields::TRANSACTION_TYPE    => 'required|string',
+        RequestFields::TRANSACTION_TYPE    => 'required|in:00,SI|string',
         RequestFields::TRANSACTION_AMOUNT  => 'required|numeric',
         RequestFields::TRANSACTION_TIME    => 'required|string|date_format:His',
         RequestFields::TRANSACTION_DATE    => 'required|string|date_format:md',
         RequestFields::CARD_NUMBER         => 'required|numeric',
         RequestFields::EXPIRY_DATE         => 'required|numeric',
-        RequestFields::CVV2                => 'required|numeric',
+        RequestFields::CVV2                => 'required_if:transaction_type,00|numeric',
         RequestFields::MERCHANT_ID         => 'required|string',
         RequestFields::MERCHANT_REF_NUMBER => 'required|alpha_num|size:14',
         RequestFields::AUTH_STATUS         => 'sometimes|string',

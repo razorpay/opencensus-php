@@ -317,6 +317,215 @@ return [
         ],
     ],
 
+    'testMerchantWhitelistedIpsLive' => [
+        'request' => [
+            'url'     => '/payments',
+            'method'  => 'get',
+            'server' => [
+                'HTTP_X-Forwarded-For' => '1.1.1.1',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 0,
+                'items' => []
+            ]
+        ]
+    ],
+
+    'testMerchantFailedWhitelistedIpsLive' => [
+        'request'   => [
+            'url'    => '/payments',
+            'method' => 'get',
+            'server' => [
+                'HTTP_X-Forwarded-For' => '4.3.2.1',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Access Denied',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testMerchantWhitelistedIpsTest' => [
+        'request' => [
+            'url'     => '/payments',
+            'method'  => 'get',
+            'server' => [
+                'HTTP_X-Forwarded-For' => '1.1.1.1',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 0,
+                'items' => []
+            ]
+        ]
+    ],
+
+    'testMerchantFailedWhitelistedIpsTest' => [
+        'request'   => [
+            'url'    => '/payments',
+            'method' => 'get',
+            'server' => [
+                'HTTP_X-Forwarded-For' => '4.3.2.1',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Access Denied',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testEditMerchantWhitelistedIpsLive' => [
+        'request'  => [
+            'content' => [
+                'whitelisted_ips_live' => [
+                    '1.1.1.1',
+                    '2.2.2.2'
+                ],
+            ],
+            'url'     => '/merchants/1X4hRFHFx4UiXt',
+            'method'  => 'put',
+            'server'  => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'             => '1X4hRFHFx4UiXt',
+                'entity'         => 'merchant',
+                'whitelisted_ips_live' => [
+                    '1.1.1.1',
+                    '2.2.2.2'
+                ],
+            ]
+        ]
+    ],
+
+    'testEditMerchantInvalidWhitelistedIpsLive' => [
+        'request'   => [
+            'content' => [
+                'whitelisted_ips_live' => [
+                    'abc.def.ghi.ekl',
+                    '1.1.1.1'
+                ],
+            ],
+            'url'     => '/merchants/1X4hRFHFx4UiXt',
+            'method'  => 'put',
+            'server'  => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'One or more IPs in the input are invalid',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testEditMerchantWhitelistedIpsTest' => [
+        'request'  => [
+            'content' => [
+                'whitelisted_ips_test' => [
+                    '1.1.1.1',
+                    '2.2.2.2'
+                ],
+            ],
+            'url'     => '/merchants/1X4hRFHFx4UiXt',
+            'method'  => 'put',
+            'server'  => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'             => '1X4hRFHFx4UiXt',
+                'entity'         => 'merchant',
+                'whitelisted_ips_test' => [
+                    '1.1.1.1',
+                    '2.2.2.2'
+                ],
+            ]
+        ]
+    ],
+
+    'testEditMerchantInvalidWhitelistedIpsTest' => [
+        'request'  => [
+            'content' => [
+                'whitelisted_ips_test' => [
+                    'abc.def.ghi.ekl',
+                    '1.1.1.1'
+                ],
+            ],
+            'url'     => '/merchants/1X4hRFHFx4UiXt',
+            'method'  => 'put',
+            'server'  => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'One or more IPs in the input are invalid',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testMerchantWhitelistedIpsMode' => [
+        'request'   => [
+            'url'    => '/payments',
+            'method' => 'get',
+            'server' => [
+                'HTTP_X-Forwarded-For' => '4.3.2.1',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Access Denied',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
     'testEditMerchantEmail' => [
         'request' => [
             'content' => [
