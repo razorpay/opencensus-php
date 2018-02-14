@@ -767,9 +767,15 @@ class Core extends Base\Core
                                           $batch->getPublicId());
         }
 
-        $response[Entity::ENTITIES_PROCESSED] = $batch->getSuccessCount();
+        $stats[Entity::ENTITIES_PROCESSED] = $batch->getSuccessCount();
 
-        $response += $this->repo->invoice->getInvoiceStatsForBatch($batch);
+        $stats += $this->repo->invoice->getInvoiceStatsForBatch($batch);
+
+        $response = [
+            Entity::TYPE      => $batch->getType(),
+            Entity::ID        => $batch->getPublicId(),
+            Entity::STATS     => $stats,
+        ];
 
         return $response;
     }
