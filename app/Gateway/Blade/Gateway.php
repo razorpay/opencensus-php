@@ -159,12 +159,16 @@ class Gateway extends Base\Gateway
     protected function validateAuthResponse($eci, $networkCode, $isInternational)
     {
         if (($networkCode === Card\Network::VISA) and
-            (($eci === '05')  or ($eci === '06' and $isInternational === true)))
+            (($eci === '05') or
+             (($eci === '06') and
+              ($isInternational === true))))
         {
             return true;
         }
-        if ((in_array($networkCode, [card\Network::MC,Card\Network::MAES], true)) and
-            (($eci === '02') or ($eci === '01' and $isInternational === true)))
+        if ((in_array($networkCode, [Card\Network::MC, Card\Network::MAES], true)) and
+            (($eci === '02') or
+             (($eci === '01') and
+              ($isInternational === true))))
         {
             return true;
         }
@@ -305,7 +309,6 @@ class Gateway extends Base\Gateway
         $paresXml = $this->validateSignatureAndInflatePares($pares);
 
         $paresArray = $this->xmlToArray($paresXml);
-
 
         // Validate Payer Authentication Response
         $this->validatePARes($input, $paresArray);
@@ -761,7 +764,7 @@ class Gateway extends Base\Gateway
 
         if ($this->mode === Mode::TEST)
         {
-            $merchantId = $this->config['test_merchant_id'];;
+            $merchantId = $this->config['test_merchant_id'];
         }
 
         return $merchantId;
