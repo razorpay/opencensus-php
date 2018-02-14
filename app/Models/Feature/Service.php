@@ -11,9 +11,16 @@ class Service extends Base\Service
 {
     public function addFeatures(
         array $input,
-        string $entityType = null,
+        string $routeEndpoint = null,
         string $entityId = null): array
     {
+        $entityType = null;
+
+        if ($routeEndpoint !== null)
+        {
+            $entityType = Entity::getEntityTypeFromRoute($routeEndpoint);
+        }
+
         $featureParams = $this->buildFeatureParams($input, $entityType, $entityId);
 
         $shouldSync = (bool) ($input[Entity::SHOULD_SYNC] ?? false);

@@ -719,8 +719,7 @@ final class Route
         // Features
         'feature_bulk_assign'                     => ['post',     'features/assign',                                'FeatureController@multiAssignFeature'                              ],
         'feature_bulk_remove'                     => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
-        'feature_add_accounts'                    => ['post',     'accounts/{entityId}/features',                   'FeatureController@addAccountFeatures'                              ],
-        'feature_add_applications'                => ['post',     'applications/{entityId}/features',               'FeatureController@addApplicationFeatures'                          ],
+        'feature_add_entity'                      => ['post',     '{entityType}/{entityId}/features',               'FeatureController@addFeatures'                                     ],
         'feature_get_accounts'                    => ['get',      'accounts/{entityId}/features',                   'FeatureController@getAccountFeatures'                              ],
         'feature_get_applications'                => ['get',      'applications/{entityId}/features',               'FeatureController@getApplicationFeatures'                          ],
         'feature_delete_entity'                   => ['delete',   '{entityType}/{entityId}/features/{featureName}', 'FeatureController@deleteEntityFeature'                             ],
@@ -1261,8 +1260,7 @@ final class Route
         'dispute_edit',
         'feature_get_accounts',
         'feature_get_applications',
-        'feature_add_accounts',
-        'feature_add_applications',
+        'feature_add_entity',
     ];
 
     // These will run on internal auth with the assurance

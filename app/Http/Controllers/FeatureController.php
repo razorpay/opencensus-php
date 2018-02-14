@@ -39,16 +39,16 @@ class FeatureController extends Controller
      * @todo: Remove the default null values once the feature_add route is
      *        removed and change the access modifier to protected.
      *
-     * @param string|null $entityType
+     * @param string|null $routeName
      * @param string|null $entityId
      *
      * @return \Illuminate\Http\Response
      */
-    public function addFeatures(string $entityType = null, string $entityId = null)
+    public function addFeatures(string $routeName = null, string $entityId = null)
     {
         $input = Request::all();
 
-        $data = $this->service()->addFeatures($input, $entityType, $entityId);
+        $data = $this->service()->addFeatures($input, $routeName, $entityId);
 
         return ApiResponse::json($data);
     }
