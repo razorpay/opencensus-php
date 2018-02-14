@@ -16,8 +16,6 @@ class ShieldTest extends TestCase
 
     public function testCreateRule()
     {
-        $client = $this->getClient();
-
         $input = [
             'expression' => 'amount > 10000'
         ];
