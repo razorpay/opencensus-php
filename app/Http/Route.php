@@ -922,7 +922,7 @@ final class Route
     ];
 
     public static $internal = [
-        // None of the routes in this array should be accessible by
+        // None of the routes in this array will be accessible by
         // the merchant. Talk to @razorpay/security if there
         // is an exception
         'dummy_route',
@@ -1503,6 +1503,30 @@ final class Route
         'batch_process_by_id'                    => Permission::RETRY_BATCH,
         'reports_refund_irctc'                   => '*',
         'merchant_get_tags'                      => '*',
+        'pricing_get_merchant_plans',            => '*',
+        'pricing_supported_networks',            => '*',
+        'pricing_add_plan_rule',                 => '*',
+        'pricing_get_plan',                      => '*',
+        'pricing_delete_plan_rule',              => '*',
+        'payment_verify',                        => '*',
+        'payment_authorize_failed',              => '*',
+        'refund_generate_excel',                 => '*',
+        'bank_transfer_process',                 => '*',
+        'iin_add',                               => '*',
+        'emi_plan_add',                          => '*',
+        'emi_generate_excel',                    => '*',
+        'dummy_critical_error',                  => '*',
+        'admin_get_app_auth',                    => '*',
+        'admin_authentication',                  => '*',
+        'admin_oauth_authenticate',              => '*',
+        'admin_lead_verify',                     => '*',
+        'admin_edit_app_auth',                   => '*',
+        'merchant_tag_add',                      => '*',
+        'merchant_tag_delete',                   => '*',
+        'refund_verify_failed',                  => '*',
+        'merchant_edit_email',                   => '*',
+        'gateway_file_create',                   => '*',
+
     ];
 
     public static $direct = [
