@@ -397,6 +397,7 @@ trait SettlementTrait
             Preferences::MID_GOALWISE_TPV,
             Preferences::MID_MONEYVIEW,
             Preferences::MID_WEALTHY,
+            Preferences::MID_PIGGY,
         ];
 
         if (in_array($merchant->getId(), $skipMerchantIds, true) === true)

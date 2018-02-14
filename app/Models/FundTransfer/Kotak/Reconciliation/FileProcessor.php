@@ -71,7 +71,12 @@ class FileProcessor extends BaseProcessor
         if (($count < 54) or ($count > 55))
         {
             throw new Exception\LogicException(
-                'Invalid count: ' . $count . ' Should be either 54 or 55. Row: ', null, $ix);
+                'Invalid count: ' . $count . ' Should be either 54 or 55. Row',
+                null,
+                [
+                    'line'      => $ix,
+                    'content'   => $values
+                ]);
         }
 
         $headings = array_slice($headings, 0, $count);

@@ -229,6 +229,10 @@ return [
             Permission::VIEW_MERCHANT_PRICING  => 'View Mercant Pricing Plan',
         ],
 
+        PermissionCategory::SETTLEMENT  => [
+            Permission::SETTLEMENT_BULK_UPDATE  => '',
+        ],
+
         PermissionCategory::DISPUTE => [
             Permission::CREATE_DISPUTE        => [
                 'description' => 'Create Dispute Permission',

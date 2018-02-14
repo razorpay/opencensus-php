@@ -53,7 +53,7 @@ class TransactionController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Transaction\BulkUpdate)->updateMultipleTransactions($input);
+        $data = $this->service()->updateMultipleTransactions($input);
 
         return ApiResponse::json($data);
     }

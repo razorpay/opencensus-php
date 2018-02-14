@@ -22,4 +22,5 @@ class Category
     const DISPUTE         = 'dispute';
     const BATCH           = 'batch';
     const SHIELD          = 'shield';
+    const SETTLEMENT      = 'settlement';
 }

@@ -144,6 +144,19 @@ class NodalAccount extends NodalBase\NodalAccount
         return $urlText;
     }
 
+    /**
+     * Fetched the Nodal Account balance
+     *
+     * @return array
+     * [
+     *  {account_number} => {account_balance}
+     * ]
+     */
+    public function getAccountBalance(): array
+    {
+        return (new Balance())->getAccountBalance();
+    }
+
     protected function getSettlementRow(Attempt\Entity $entity) : array
     {
         list($version, $paymentRefNo, $source) = $this->getPaymentRefNoAndVersion($entity);

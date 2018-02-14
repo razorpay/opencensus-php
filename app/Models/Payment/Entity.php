@@ -4,6 +4,7 @@ namespace RZP\Models\Payment;
 
 use Carbon\Carbon;
 use Lib\PhoneBook;
+use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
@@ -108,6 +109,9 @@ class Entity extends Base\PublicEntity
     const AUTH_TYPE             = 'auth_type';
 
     const SUBSCRIPTION_ID       = 'subscription_id';
+
+    // Used by merchant dashboard to fetch payments based on utr
+    const BANK_REFERENCE        = 'bank_reference';
 
     const DEFAULT_CURRENCY      = 'INR';
 
@@ -1788,7 +1792,7 @@ class Entity extends Base\PublicEntity
      */
     public function isFileBasedEmandateDebitPayment(): bool
     {
-        if (($this->isEmandatePayment() === true) and
+        if (($this->isEmandate() === true) and
             ($this->isRecurringTypeAuto() === true))
         {
             $gateway = $this->getGateway();
@@ -1817,6 +1821,37 @@ class Entity extends Base\PublicEntity
         }
 
         return false;
+    }
+
+    public function isFileBasedEmandateRegistrationPayment()
+    {
+        if (($this->isEmandate() === true) and
+            ($this->isRecurringTypeInitial() === true))
+        {
+            $gateway = $this->getGateway();
+
+            if ($gateway === null)
+            {
+                throw new Exception\LogicException(
+                    'This function should not have been called when gateway is not set!',
+                    ErrorCode::SERVER_ERROR_GATEWAY_NOT_SET,
+                    [
+                        'payment_id'        => $this->getId(),
+                        'recurring_type'    => $this->getRecurringType(),
+                        'method'            => $this->getMethod(),
+                    ]);
+            }
+
+            return (Payment\Gateway::isFileBasedEMandateRegistrationGateway($gateway) === true);
+        }
+
+        return false;
+    }
+
+    public function isAsyncEmandatePayment()
+    {
+        return (($this->isFileBasedEmandateDebitPayment() === true) or
+                ($this->isFileBasedEmandateRegistrationPayment() === true));
     }
 
     public function getReferenceForGatewayToken()

@@ -141,10 +141,10 @@ class PaymentCreateTest extends TestCase
 
     public function testWalletPostFormViaPaymentCreate()
     {
-        $this->fixtures->merchant->enableWallet('10000000000000', 'payumoney');
+        $this->fixtures->merchant->enableWallet('10000000000000', 'airtelmoney');
         $this->fixtures->merchant->addFeatures(['email_optional', 'contact_optional']);
 
-        $payment = $this->getDefaultWalletPaymentArray('payumoney');
+        $payment = $this->getDefaultWalletPaymentArray('airtelmoney');
 
         unset($payment['email'], $payment['contact'], $payment['notes']);
 
