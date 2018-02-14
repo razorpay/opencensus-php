@@ -720,8 +720,7 @@ final class Route
         'feature_bulk_assign'                     => ['post',     'features/assign',                                'FeatureController@multiAssignFeature'                              ],
         'feature_bulk_remove'                     => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
         'feature_add_entity'                      => ['post',     '{entityType}/{entityId}/features',               'FeatureController@addFeatures'                                     ],
-        'feature_get_accounts'                    => ['get',      'accounts/{entityId}/features',                   'FeatureController@getAccountFeatures'                              ],
-        'feature_get_applications'                => ['get',      'applications/{entityId}/features',               'FeatureController@getApplicationFeatures'                          ],
+        'feature_get_entity'                      => ['get',      '{entityType}/{entityId}/features',               'FeatureController@getFeatures'                                     ],
         'feature_delete_entity'                   => ['delete',   '{entityType}/{entityId}/features/{featureName}', 'FeatureController@deleteEntityFeature'                             ],
     ];
 
@@ -1258,8 +1257,7 @@ final class Route
         'ufh_get_file_signed_url',
         'pincode_get',
         'dispute_edit',
-        'feature_get_accounts',
-        'feature_get_applications',
+        'feature_get_entity',
         'feature_add_entity',
     ];
 
