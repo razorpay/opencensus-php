@@ -2917,3 +2917,10 @@ ALTER TABLE workflow_permissions
 ALTER TABLE migrations
     ADD UNIQUE INDEX migrations_migration_unique (migration);
 
+ALTER TABLE transactions
+    DROP INDEX transactions_settled_index,
+    ADD INDEX transactions_settled_channel_on_hold_index (settled, channel, on_hold);
+
+ALTER TABLE payments
+    ADD INDEX payments_merchant_id_status_created_at_index (merchant_id, status, created_at),
+    ADD INDEX payments_merchant_id_index (merchant_id);

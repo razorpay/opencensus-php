@@ -7,12 +7,12 @@
         $brand_color = '#6A75ED';
         $brand_text_color = '#FFFFFF';
 
-        $expiryDate = date('jS F Y', $dispute['expires_on']);
+        $expiryDate = date('jS F Y', $dispute['respond_by']);
 
         $amount = sprintf('%0.2f', ($dispute['amount'] / 100));
         $amount = floatval($amount);
 
-        $paymentLink = 'https://dashboard.razorpay.com/#/app/payments/pay_' . $dispute['payment_id'];
+        $paymentLink = 'https://dashboard.razorpay.com/#/app/payments/' . $dispute['payment_id'];
 
         $noteResult = 'failing which the case will be lost and the corresponding amount will be debited from the current balance. ';
 
@@ -53,7 +53,7 @@
 
                 <td class="content" style="
                     padding-bottom: 24px;">
-                    <strong class="text-uppercase lh-26">Payment ID</strong> <br> <a href="{{ $paymentLink }}"> pay_{{ $dispute['payment_id'] }} </a>
+                    <strong class="text-uppercase lh-26">Payment ID</strong> <br> <a href="{{ $paymentLink }}"> {{ $dispute['payment_id'] }} </a>
                 </td>
             </tr>
 
@@ -98,7 +98,7 @@
                         <br>
                         Hi,
                         <br><br>
-                        We have received a dispute for Rs. {{ $amount }} on pay_{{ $dispute['payment_id'] }} against {{ $merchant['name'] }}. Please share all proofs like invoices, proof of delivery of product/service and any relevant screenshots pertaining to the transaction in a consolidated ZIP archive named as the Payment ID.
+                        We have received a dispute for Rs. {{ $amount }} on {{ $dispute['payment_id'] }} against {{ $merchant['name'] }}. Please share all proofs like invoices, proof of delivery of product/service and any relevant screenshots pertaining to the transaction in a consolidated ZIP archive named as the Payment ID.
                         <br><br>
                         Note: Kindly <b> reply to this email </b> with the requested documents in the required format by the deadline, {{ $noteResult }}
                         <br><br>

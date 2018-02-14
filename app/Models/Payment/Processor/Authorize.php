@@ -381,7 +381,8 @@ trait Authorize
         // we have manually skipped/by-passed the 2FA.
 
         if (($payment->terminal !== null) and
-            ($payment->terminal->isNon3DSRecurring() === true))
+            ($payment->terminal->isNon3DSRecurring() === true) and
+            ($payment->isRecurring() === true))
         {
             $payment->setTwoFactorAuth(TwoFactorAuth::SKIPPED);
         }
