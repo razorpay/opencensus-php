@@ -96,7 +96,8 @@ class Gateway extends Base\Gateway
             // When a user cancels the payment, they seem to be sending the data
             // via URL params and without adding the '?' separator
             RequestFields::CALLBACK_URL     => $input['callbackUrl'] . '?',
-            RequestFields::PAYMENT_ID       => $payment[Payment::ID]
+            RequestFields::PAYMENT_ID       => $payment[Payment::ID],
+            RequestFields::CUSTOMER_TYPE    => Constants::CUSTOMER_TYPE_RETAIL,
         ];
 
         $encryptedData = $this->getEncryptor()->encryptData($content);

@@ -8,6 +8,9 @@ class Constants
 
     const BILLER_NAME = 'Razorpay';
 
+    const CUSTOMER_TYPE_RETAIL = 'retail';
+    const CUSTOMER_TYPE_CORPORATE = 'corporate';
+
     const VERIFY_PAIR_SEPARATOR = '|';
     const VERIFY_KEY_VALUE_SEPARATOR = '=';
 
