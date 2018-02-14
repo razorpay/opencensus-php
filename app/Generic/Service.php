@@ -82,7 +82,7 @@ class Service extends Base\Service
         if (empty($routeName) === true)
         {
             throw new \Razorpay\Api\Errors\BadRequestError(
-                'Route mapping not found',
+                'Route name is missing',
                 \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
                 400
             );

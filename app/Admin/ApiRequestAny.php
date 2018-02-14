@@ -26,6 +26,14 @@ class ApiRequestAny
      */
     protected $client;
 
+    protected $mode;
+
+    protected $path;
+
+    protected $routeMap;
+
+    protected $shouldProcessInput = true;
+
     const RAZORPAY_ACCOUNT_HEADER = 'X-Razorpay-Account';
 
     const CONTENT_TYPE_JSON = 'application/json';
@@ -40,82 +48,102 @@ class ApiRequestAny
      * @param string $mode live|test
      * @param string $base_url base url of dashboard
      */
-    function __construct($mode, $base_url = null)
+    function __construct($mode, $routeName = null, $shouldProcessInput = true)
     {
         // Increase the time limit
         set_time_limit(600);
 
+        $this->mode = $mode;
+
+        $this->routeName = $routeName;
+
+        $domain = \Request::server('SERVER_NAME');
+
         $this->options = [
             'headers' => [
-                'X-Dashboard' => 'true',
-                'X-User-Agent' => Request::header('User-Agent'),
-                'X-IP-Address' => Request::ip()
+                'X-Dashboard'       => 'true',
+                'X-User-Agent'      => Request::header('User-Agent'),
+                'X-IP-Address'      => Request::ip(),
+                'X-Org-Hostname'    => $domain,
             ],
         ];
 
         $this->processRoute($mode);
 
-        $this->processInput();
+        $this->shouldProcessInput = $shouldProcessInput;
 
-        if ($base_url === null)
+        if ($this->shouldProcessInput === true)
         {
-            $base_url = Config::get('api.url');
+            $this->processInput();
         }
+
+        $base_url = Config::get('api.url');
 
         // Create the guzzle client
         $this->client = new Guzzle([
             'base_url' => $base_url
         ]);
+
+        $this->routeMap = Config::get('api-route-map');
     }
 
     public function processRoute($mode) {
 
-        $routeName = Route::currentRouteName();
+        $routeName = $this->routeName ?? Route::currentRouteName();
 
         if (empty($routeName) === false) {
 
             if ($routeName === 'merchant')
             {
-
                 $currentMerchant = Auth::guard('user')->user()->currentMerchant();
 
                 $this->options['headers']['X-Dashboard-User-Role'] = $currentMerchant->role;
 
                 $mode .= '_' . $currentMerchant->id;
 
+                $pass = Config::get('api.auth_pass');
             }
             else if ($routeName === 'admin')
             {
-
                 $adminUser = Auth::guard('api')->user();
 
                 $this->options['headers']['X-Admin-Token'] = $adminUser->token;
 
-                $this->options['headers']['X-Org-Hostname'] = \Request::server('SERVER_NAME');
-
+                $pass = Config::get('api.auth_pass');
             }
             else if ($routeName === 'user')
             {
-                $headers['X-Dashboard-User-Id'] = Auth::guard('user')->user()->id;
+                // NOTE: Merchant will be able to access the user/guest routes
 
+                $user = Auth::guard('user')->user();
+
+                if (empty($user) === false)
+                {
+                    $headers['X-Dashboard-User-Id'] = $user->id;
+                }
+
+                // NOTE: We should NEVER hit this as Dashboard internal.
                 $mode = 'live';
+
+                $pass = Config::get('api.auth_pass');
             }
         }
 
+        // If we have a mode, set BasicAuth creds
         if (empty($mode) === false) {
             $this->options['auth'] = [
                 'rzp_' . $mode,
-                Config::get('api.auth_pass')
+                $pass
             ];
         }
 
+        return $this;
     }
 
     // process body according to content-type
-    public function processInput()
+    public function processInput($data = null)
     {
-
-        $input = Request::all();
+        $input = $data ?? Request::all();
 
         $contentType = Request::header('content-type', self::CONTENT_TYPE_JSON);
 
@@ -151,18 +179,20 @@ class ApiRequestAny
         {
             $this->options['body'] = $input;
         }
+
+        return $this;
     }
 
     /**
      * Fires the request to the API
      * @return array standard response
      */
-    public function send($path)
+    public function send($path, $method = null)
     {
         $exception = null;
         $errors = [];
         $response = null;
-        $method = Request::method();
+        $method = $method ?? Request::method();
 
         try
         {

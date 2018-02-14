@@ -89,15 +89,13 @@ class Service extends Base\Service
     {
         $error = $data = null;
 
+        $input = http_build_query($input);
+
         // This is oAuth based login
-        $requestConfig = [
-            'route_name'   => 'admin_oauth_authenticate',
-            'query_params' => $input,
-        ];
 
-        $genericService = new Generic\Service;
+        $request = new Admin\ApiRequestAny('live', 'user');
 
-        list($error, $data) = $genericService->call('POST', $requestConfig);
+        list($error, $data) = $request->send("admin/oauth_login?$input", 'POST');
 
         return $data;
     }
@@ -127,24 +125,15 @@ class Service extends Base\Service
 
         if ($admin)
         {
-            $updateData = [
+            $updateData = http_build_query([
                 'oauth_access_token'    => $token->getAccessToken(),
                 'oauth_provider_id'     => $result->id
-            ];
+            ]);
 
             // 1. Save the data (oauth token and provider) to API
+            $request = new Admin\ApiRequestAny('live', 'user', false);
 
-            $requestConfig = [
-                'route_name'   => 'admin_edit_app_auth',
-                'query_params' => $updateData,
-                'url_params'   => [
-                    '{id}'  => $admin['id'],
-                ],
-            ];
-
-            $genericService = new Generic\Service;
-
-            list($error, $updatedAdmin) = $genericService->call('PUT', $requestConfig);
+            list($error, $updatedAdmin) = $request->send("admin-app-auth/{$admin['id']}?$updateData", 'PUT');
 
             // 2. Login the user to dashboard. Have to make an API call
             // to login the user and get an admin_token
@@ -1147,17 +1136,9 @@ class Service extends Base\Service
 
     public function getOrg($domain)
     {
-        $requestConfig = [
-            'route_name' => 'org_get_by_hostname',
+        $request = new Admin\ApiRequestAny('live', 'user');
 
-            'url_params' => [
-                '{hostname}' => $domain
-            ]
-        ];
-
-        $genericService = new Generic\Service;
-
-        list($error, $data) = $genericService->call('GET', $requestConfig);
+        list($error, $data) = $request->send("orgs/hostname/$domain");
 
         if (empty($error))
         {
@@ -1185,19 +1166,13 @@ class Service extends Base\Service
 
         try
         {
-            $params = [
+            $body = [
                 'token' => $admin->token
             ];
 
-            $requestConfig = [
-                'route_name' => 'admin_get_app_auth',
-                'body'       => $params,
-                'mode'       => 'live',
-            ];
+            $request = new Admin\ApiRequestAny('live', 'user');
 
-            $genericService = new Generic\Service;
-
-            list($error, $data) = $genericService->call('POST', $requestConfig);
+            list($error, $data) = $request->processInput($body)->send('current_admin', 'POST');
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {

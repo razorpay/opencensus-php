@@ -17,6 +17,11 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/', 'UserController@getIndex')->name('dashboard');
     Route::get('/status', 'AdminController@getStatus');
 
+    // User (guest auth route)
+    Route::any('/user/api/{path?}', 'GenericController@handleAny')
+        ->where(['path' => '.*'])
+        ->name('user');
+
     // This is for enabling CORS support on contact form submissions
     Route::options('/contact', 'MerchantController@optionsContact');
     Route::post('/contact', 'MerchantController@postContact');
@@ -35,7 +40,6 @@ Route::group(['middleware' => ['web']], function () {
         // Adding the following here since auth:user middleware should be after cors
         Route::options('/session', 'UserController@getSessionData')->middleware(['cors', 'auth:user']);
         Route::get('/session', 'UserController@getSessionData')->middleware(['cors', 'auth:user']);
-        // Route::any('/api/{path}', 'GenericController@handlePath')->where(['path' => '.*'])->name('user');
     });
 
     Route::group(['middleware' => 'auth:user', 'prefix' => 'user'], function()
@@ -49,16 +53,12 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/details', 'UserController@getUserDetailsV2');
     });
 
-    // Generic guest route with no authentication
-    Route::group(['middleware' => ['guest.generic']], function()
-    {
-        Route::any('/guest/generic', 'GenericController@handle');
-    });
-    Route::any('/api/{path?}', 'GenericController@handlePath')->where(['path' => '.*']);
-
     Route::group(['middleware'  =>  ['auth:user', 'verified']], function()
     {
-        Route::any('/merchant/api/{mode}/{path}', 'GenericController@handleAny')->where(['path' => '.*'])->name('merchant');
+        Route::any('/merchant/api/{mode}/{path}', 'GenericController@handleAny')
+            ->where(['path' => '.*'])
+            ->name('merchant');
+
         // Account Routes
         Route::get('/{mode}/accounts', 'MerchantController@getAccounts')->name('get_accounts');
 
