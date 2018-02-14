@@ -4,6 +4,7 @@ import { makeActionCollectionReducer, fetchAll } from 'rzp/modules/collection';
 import { makeEntityReducer, updateEntity } from 'rzp/modules/entity';
 import { set } from 'rzp/utils/immutable';
 import { formatFields } from 'merchant/resources/addons';
+import { merchantFetch } from 'rzp/utils/ajax';
 
 export const ADDONS_CREATE = 'ADDONS_CREATE';
 export const ADDONS_EDIT = 'ADDONS_EDIT';
@@ -21,38 +22,22 @@ export const saveAddOn = (params, isNew = true) => {
 
   return {
     type: isNew ? ADDONS_CREATE : ADDONS_EDIT,
-    payload: ajax({
-      url: '/user/generic',
+    payload: merchantFetch({
       method: 'post',
-      appendModeInURL: false,
-      appendModeInQueryParam: true,
-      data: {
-        route_name: 'subscription_create_addon',
-        url_params: JSON.stringify({
-          '{subscription_id}': params.subscription_id,
-        }),
-        body: {
-          ...data,
-        },
-      },
+      url: `subscriptions/${params.subscription_id}/addons`,
+      data,
     }),
   };
 };
 
 // Fetch entire addon list
 export const fetchAddOns = params => {
-  const data = {
-    route_name: 'addon_fetch_multiple',
-  };
-
   if (params) {
     data.query_params = JSON.stringify(params);
   }
 
-  return ajax({
-    url: 'user/generic',
-    appendModeInURL: false,
-    appendModeInQueryParam: true,
+  return merchantFetch({
+    url: 'addons',
     data,
   });
 };
@@ -68,17 +53,9 @@ export const fetchSubscriptionAddOns = subscriptionId => {
 
 // Delete addons
 export const deleteAddOn = addon_id => {
-  return ajax({
+  return merchantFetch({
+    url: `addons/${addon_id}`,
     method: 'delete',
-    url: 'user/generic',
-    appendModeInURL: false,
-    appendModeInQueryParam: true,
-    data: {
-      route_name: 'addon_delete',
-      url_params: JSON.stringify({
-        '{addon_id}': addon_id,
-      }),
-    },
   });
 };
 

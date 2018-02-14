@@ -1,6 +1,11 @@
 import Entity from './Entity';
-import ajax from 'merchant/utils/ajax';
-import { normalizeBoolean, isBlank, arrayDiff, autoPrefixUrls } from 'rzp/utils/rzp-utils';
+import { merchantFetch } from 'rzp/utils/ajax';
+import {
+  normalizeBoolean,
+  isBlank,
+  arrayDiff,
+  autoPrefixUrls,
+} from 'rzp/utils/rzp-utils';
 
 // Used for Activation
 const activationStepMap = {
@@ -115,17 +120,15 @@ export default class Activation extends Entity {
   resourceFields = activationFields;
 
   fetch() {
-    let activationData = {
-      route_name: 'merchant_activation_details',
-    };
+    let activationData;
 
     if (this.accountId) {
+      activationData = {};
       activationData.account_id = this.accountId;
     }
 
-    return ajax({
-      url: '/user/generic',
-      appendModeInURL: false,
+    return merchantFetch({
+      url: 'merchant/activation',
       data: activationData,
     }).then(response => {
       response.data = this.getActivation(response.data);
@@ -185,7 +188,6 @@ export default class Activation extends Entity {
 
   saveActivation(data) {
     let activationData = {
-      route_name: 'merchant_activation_save',
       body: data,
     };
 
@@ -199,10 +201,9 @@ export default class Activation extends Entity {
       activationData.body[key] = autoPrefixUrls(activationData.body[key]);
     });
 
-    return ajax({
-      url: '/user/generic',
+    return merchantFetch({
+      url: 'merchant/activation',
       method: 'post',
-      appendModeInURL: false,
       data: activationData,
     });
   }
