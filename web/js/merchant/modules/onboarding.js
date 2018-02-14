@@ -32,5 +32,5 @@ export const saveOnboarding = (feature, fields, file, fileName) => {
 
 // Get responses
 export const getOnboardingResponse = feature => {
-  return merchantFetch(`feature/onboarding/${feature}/responses`);
+  return () => merchantFetch(`feature/onboarding/${feature}/responses`);
 };
