@@ -698,23 +698,25 @@ return [
     ],
 
     'testEditMerchantConfig' => [
-        'request' => [
+        'request'  => [
             'content' => [
-                'brand_color' => '00bcd4',
-                'handle'      => 'LOLO',
+                'brand_color'        => '00bcd4',
+                'handle'             => 'LOLO',
+                'invoice_name_field' => 'name',
             ],
-            'url' => '/account/config',
-            'method' => 'put',
-            'server' => [
+            'url'     => '/account/config',
+            'method'  => 'put',
+            'server'  => [
                 'HTTP_X-Dashboard'            => 'true',
                 'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
             ],
         ],
         'response' => [
             'content' => [
-                'id'          => '10000000000000',
-                'brand_color' => '#00BCD4',
-                'handle'      => 'LOLO',
+                'id'                 => '10000000000000',
+                'brand_color'        => '#00BCD4',
+                'handle'             => 'LOLO',
+                'invoice_name_field' => 'name',
             ]
         ]
     ],
