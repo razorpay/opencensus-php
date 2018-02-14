@@ -67,7 +67,7 @@
   left: -9999px;
   top: -9999px;
   z-index: 1000;
-  margin-top: 30px;
+  pointer-events: none;
 }
 .rc-calendar-picker-hidden {
   display: none;
@@ -288,7 +288,32 @@
   background-clip: padding-box;
   border: 1px solid #ccc;
   line-height: 1.5;
+
+  pointer-events: all;
+  margin-top: 30px;
 }
+
+.rc-calendar:after, .rc-calendar:before {
+  content: '';
+  display: block;
+  position: absolute;
+}
+.rc-calendar:before {
+  left: 6px;
+  top: -11px;
+  border-right: 6px solid transparent;
+  border-bottom: 11px solid #ccc;
+  border-left: 5px solid transparent;
+}
+.rc-calendar:after {
+  left: 7px;
+  top: -9px;
+  border-right: 5px solid transparent;
+  border-bottom: 10px solid #fff;
+  border-left: 4px solid transparent;
+}
+
+
 .rc-calendar-date-panel,
 .rc-calendar-panel {
   position: relative;

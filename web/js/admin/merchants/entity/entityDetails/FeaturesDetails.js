@@ -19,7 +19,6 @@ export default class Features extends Component {
       />
     );
 
-    console.log(this.props.features['live'].assigned_features);
     liveModeFeatures = this.props.features['live'] && (
       <Table
         items={toJS(this.props.features['live'].assigned_features)}
