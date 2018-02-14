@@ -120,6 +120,12 @@ class Validator extends Base\Validator
             }
 
             Payment\RecurringType::validateRecurringType($input[Entity::PAYMENT_ISSUER]);
+
+            if (isset($input[Entity::PERCENT_RATE]) === true)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Percentage rate pricing is not allowed for eMandate');
+            }
         }
     }
 
