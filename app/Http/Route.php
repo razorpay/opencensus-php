@@ -1357,6 +1357,7 @@ final class Route
         'user_resend_verification',
         'user_fetch',
         'user_change_password',
+        'user_merchant_upgrade',
     ];
 
     public static $routePermission = [

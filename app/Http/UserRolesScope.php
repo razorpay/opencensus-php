@@ -66,9 +66,9 @@ class UserRolesScope
             'setl_fetch_by_id'    => Role::READER_ROLES,
 
             // invoice routes
-            'invoice_create'         => array_merge(Role::WRITER_ROLES, Role::SELLERAPP),
-            'invoice_delete'         => array_merge(Role::WRITER_ROLES, Role::SELLERAPP),
-            'invoice_edit'           => array_merge(Role::WRITER_ROLES, Role::SELLERAPP),
+            'invoice_create'         => array_merge(Role::WRITER_ROLES, [Role::SELLERAPP]),
+            'invoice_delete'         => array_merge(Role::WRITER_ROLES, [Role::SELLERAPP]),
+            'invoice_edit'           => array_merge(Role::WRITER_ROLES, [Role::SELLERAPP]),
             'invoice_fetch'          => Role::ALL_ROLES,
             'invoice_fetch_multiple' => Role::ALL_ROLES,
             'invoice_issue_by_batch' => Role::WRITER_ROLES,
@@ -97,9 +97,9 @@ class UserRolesScope
 
             // va
             'virtual_account_create'         => Role::WRITER_ROLES,
-            'virtual_account_fetch'          => array_merge(Role::READER_ROLES, ROLE::SUPPORT),
-            'virtual_account_fetch_multiple' => array_merge(Role::READER_ROLES, ROLE::SUPPORT),
-            'virtual_account_fetch_payments' => array_merge(Role::READER_ROLES, ROLE::SUPPORT),
+            'virtual_account_fetch'          => array_merge(Role::READER_ROLES, [ROLE::SUPPORT]),
+            'virtual_account_fetch_multiple' => array_merge(Role::READER_ROLES, [ROLE::SUPPORT]),
+            'virtual_account_fetch_payments' => array_merge(Role::READER_ROLES, [ROLE::SUPPORT]),
             'virtual_account_update'         => Role::WRITER_ROLES,
 
             // subscriptions
