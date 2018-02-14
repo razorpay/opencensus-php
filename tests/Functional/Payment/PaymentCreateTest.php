@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\Payment;
 
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use Mockery;
@@ -213,6 +215,73 @@ class PaymentCreateTest extends TestCase
         $response = $this->doS2SRecurringPayment($payment);
 
         $this->assertArrayHasKey('razorpay_payment_id', $response);
+    }
+
+    public function testRecurringTokenForEmandate()
+    {
+        $payment = $this->setupEmandateAndGetPaymentRequest('UTIB', 0);
+
+        $payment['bank_account'] = [
+            'account_number'    => '123123123',
+            'name'              => 'test name',
+            'ifsc'              => 'UTIB0002766'
+        ];
+
+        $expireBy = Carbon::now(Timezone::IST)->addDays(10)->getTimestamp();
+
+        $payment['recurring_token'] = [
+            'max_amount' => 2000,
+            'expire_by' => $expireBy,
+        ];
+
+        $this->doAuthPayment($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $token = $this->getEntityById('token', $paymentEntity['token_id'], true);
+
+        $this->assertEquals(2000, $token['max_amount']);
+        $this->assertEquals($expireBy, $token['expired_at']);
+    }
+
+    public function testRecurringTokenForSecondRecurringForEmandate()
+    {
+        $payment = $this->setupEmandateAndGetPaymentRequest('UTIB', 0);
+
+        $payment['bank_account'] = [
+            'account_number'    => '123123123',
+            'name'              => 'test name',
+            'ifsc'              => 'UTIB0002766'
+        ];
+
+        $expireBy = Carbon::now(Timezone::IST)->addDays(10)->getTimestamp();
+
+        $payment['recurring_token'] = [
+            'max_amount' => 2000,
+            'expire_by' => $expireBy,
+        ];
+
+        $this->doAuthPayment($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $payment['token'] = $paymentEntity['token_id'];
+        unset($payment['bank_account'], $payment['auth_type']);
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 2000]);
+        $payment['amount'] = 2000;
+        $payment['order_id'] = $order->getPublicId();
+        $payment['recurring_token']['max_amount'] = 1000;
+
+        //
+        // Second auth payment for the recurring product
+        //
+        $this->doS2SRecurringPayment($payment);
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $token = $this->getEntityById('token', $paymentEntity['token_id'], true);
+
+        $this->assertEquals(2000, $token['max_amount']);
     }
 
     public function testSecondRecurringWithMissingBankAccountDetailsAndAuthType()
