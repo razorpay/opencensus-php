@@ -116,6 +116,8 @@ class Entity extends Base\PublicEntity
         self::ISSUER,
         self::INTERNATIONAL,
         self::EMI,
+        self::EXPIRY_MONTH,
+        self::EXPIRY_YEAR,
     ];
 
     protected $appends = [self::NETWORK_CODE];
@@ -124,6 +126,8 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::IIN,
+        self::EXPIRY_YEAR,
+        self::EXPIRY_MONTH,
     ];
 
     protected $defaults = [
@@ -449,6 +453,47 @@ class Entity extends Base\PublicEntity
             (in_array($cardMerchant, $allowedMerchantIds, true) === false))
         {
             unset($array[self::IIN]);
+        }
+    }
+
+    public function setPublicExpiryMonthAttribute(array & $array)
+    {
+        //endurance
+        $allowedMerchantIds = [
+            '9YAQd3b47mdIQY',
+            '9ZO8jNaR0OORNH',
+        ];
+
+        $cardMerchant = $this->getMerchantId();
+
+        // Allowing for Admin and App Auth(Priviledge)
+        $app = \App::getFacadeRoot();
+        $auth = $app['basicauth'];
+
+        if (($auth->isPrivilegeAuth() === false) and
+            (in_array($cardMerchant, $allowedMerchantIds, true) === false))
+        {
+            unset($array[self::EXPIRY_MONTH]);
+        }
+    }
+
+    public function setPublicExpiryYearAttribute(array & $array)
+    {
+         $allowedMerchantIds = [
+            '9YAQd3b47mdIQY',
+            '9ZO8jNaR0OORNH',
+        ];
+
+        $cardMerchant = $this->getMerchantId();
+
+        // Allowing for Admin and App Auth(Priviledge)
+        $app = \App::getFacadeRoot();
+        $auth = $app['basicauth'];
+
+        if (($auth->isPrivilegeAuth() === false) and
+            (in_array($cardMerchant, $allowedMerchantIds, true) === false))
+        {
+            unset($array[self::EXPIRY_YEAR]);
         }
     }
 
