@@ -195,7 +195,7 @@ class NetbankingHdfcEMandateTest extends TestCase
 
         $debitPayment = $this->getLastEntity('payment', true);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         Mail::fake();
 

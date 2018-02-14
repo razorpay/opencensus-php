@@ -370,11 +370,15 @@ class PricingTest extends TestCase
 
     public function testDeletePricingPlanRule()
     {
+        $this->ba->adminAuth();
+
         $content = $this->startTest();
     }
 
     public function testDeletePricingPlanRuleForce()
     {
+        $this->ba->adminAuth();
+
         $content = $this->startTest();
     }
 
@@ -400,6 +404,8 @@ class PricingTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] =
                 '/pricing/'.$pricing['plan_id'].'/rule/'.$ruleId;
+
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
@@ -565,6 +571,8 @@ class PricingTest extends TestCase
 
     public function testAddPricingPlanRuleWithFeature()
     {
+        $this->ba->adminAuth();
+
         $content = $this->createPricingPlan();
 
         $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
