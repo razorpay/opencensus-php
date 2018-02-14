@@ -1019,7 +1019,6 @@ final class Route
         'send_newsletter',
         'emi_plan_delete',
         'emi_plan_fetch_by_id',
-        'refund_verify',
         'payment_capture_verify',
         'es_debug_get',
         'es_aliases_post',
@@ -1355,6 +1354,7 @@ final class Route
         'gateway_file_create',
         'dispute_reason_create',
         'merchant_tags_bulk',
+        'refund_verify',
     ];
 
     public static $routePermission = [
@@ -1527,6 +1527,7 @@ final class Route
         'refund_verify_failed'                   => '*',
         'merchant_edit_email'                    => '*',
         'gateway_file_create'                    => '*',
+        'refund_verify'                          => '*',
     ];
 
     public static $direct = [

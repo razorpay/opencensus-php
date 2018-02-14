@@ -804,7 +804,7 @@ trait PaymentTrait
 
     protected function verifyRefund($id)
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = [];
 
@@ -820,7 +820,7 @@ trait PaymentTrait
 
     protected function retryFailedRefunds($gateway = [])
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = [];
 
@@ -837,7 +837,7 @@ trait PaymentTrait
 
     protected function retryFailedRefund($id, $content = [])
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $request = array(
             'method'  => 'POST',
