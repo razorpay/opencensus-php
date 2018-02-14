@@ -76,52 +76,7 @@ build:
               mkdir -p /opt/razorpay/certs/first_data
       - script:
           name: Run unit tests
-          code: php -d memory_limit=512M vendor/phpunit/phpunit/phpunit --debug --verbose --filter PricingTest || true
-      - script:
-          name: Run unit tests
-          code: php -d memory_limit=512M vendor/phpunit/phpunit/phpunit --debug --verbose --filter EMIPaymentTest || true
-      - script:
-          name: Run unit tests
-          code: php -d memory_limit=512M vendor/phpunit/phpunit/phpunit --debug --verbose --filter CaptureTest || true
-      - script:
-          name: Run unit tests
-          code: php -d memory_limit=512M vendor/phpunit/phpunit/phpunit --debug --verbose --filter AuthorizeTest || true
-      - script:
-          name: Run unit tests
-          code: php -d memory_limit=512M vendor/phpunit/phpunit/phpunit --debug --verbose --filter MerchantTest || true
-      - script:
-          name: Run unit tests
-          code: php -d memory_limit=512M vendor/phpunit/phpunit/phpunit --debug --verbose --filter EntityReportTest || true
-      - script:
-          name: Run unit tests
-          code: php -d memory_limit=512M vendor/phpunit/phpunit/phpunit --debug --verbose --filter InvoiceTest || true
-      - script:
-          name: Run unit tests
-          code: php -d memory_limit=512M vendor/phpunit/phpunit/phpunit --debug --verbose --filter UpiSbiGatewayTest || true
-      - script:
-          name: Run unit tests
-          code: php -d memory_limit=512M vendor/phpunit/phpunit/phpunit --debug --verbose --filter GatewayEmiFileTest || true
-      - script:
-          name: Run unit tests
-          code: php -d memory_limit=512M vendor/phpunit/phpunit/phpunit --debug --verbose --filter AdminLeadTest || true
-      - script:
-          name: Run unit tests
-          code: php -d memory_limit=512M vendor/phpunit/phpunit/phpunit --debug --verbose --filter AdminTest || true
-      - script:
-          name: Run unit tests
-          code: php -d memory_limit=512M vendor/phpunit/phpunit/phpunit --debug --verbose --filter AuthPolicyTest || true
-      - script:
-          name: Run unit tests
-          code: php -d memory_limit=512M vendor/phpunit/phpunit/phpunit --debug --verbose --filter DisputeReasonTest || true
-      - script:
-          name: Run unit tests
-          code: php -d memory_limit=512M vendor/phpunit/phpunit/phpunit --debug --verbose --filter IinTest || true
-      - script:
-          name: Run unit tests
-          code: php -d memory_limit=512M vendor/phpunit/phpunit/phpunit --debug --verbose --filter EmiTest || true
-      - script:
-          name: Run unit tests
-          code: php -d memory_limit=512M vendor/phpunit/phpunit/phpunit --debug --verbose --filter AxisGatewayTest || false
+          code: php -d memory_limit=512M vendor/phpunit/phpunit/phpunit --debug --verbose
       - script:
           name: List directory
           code: ls -lah

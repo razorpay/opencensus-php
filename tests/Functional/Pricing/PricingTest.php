@@ -300,6 +300,8 @@ class PricingTest extends TestCase
 
         $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
 
+        $this->ba->adminAuth();
+
         return $this->startTest($testData);
     }
 
@@ -308,6 +310,8 @@ class PricingTest extends TestCase
         $content = $this->createPricingPlan();
 
         $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->ba->adminAuth();
 
         return $this->startTest($testData);
     }
@@ -318,6 +322,8 @@ class PricingTest extends TestCase
 
         $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
 
+        $this->ba->adminAuth();
+
         return $this->startTest($testData);
     }
 
@@ -326,6 +332,8 @@ class PricingTest extends TestCase
         $content = $this->createAmountRangePricingPlan();
 
         $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->ba->adminAuth();
 
         $this->startTest($testData);
     }
@@ -336,6 +344,8 @@ class PricingTest extends TestCase
 
         $testData['request']['url'] = '/pricing/'. $content['plan_id'] . '/rule';
 
+        $this->ba->adminAuth();
+
         $this->startTest($testData);
 
         $this->startTest($testData);
@@ -343,15 +353,21 @@ class PricingTest extends TestCase
 
     public function testAddInternationalPricingPlanRuleForNonCardMethod()
     {
+        $this->ba->adminAuth();
+
         $content = $this->createPricingPlan();
 
         $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->ba->adminAuth();
 
         return $this->startTest($testData);
     }
 
     public function testAddInternationalPricingPlanRuleWithExtraFields()
     {
+        $this->ba->adminAuth();
+
         $content = $this->createPricingPlan();
 
         $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
