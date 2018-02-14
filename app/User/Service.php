@@ -432,16 +432,11 @@ class Service extends Base\Service
 
     public function loginOnApi(array $input)
     {
-        $loginOnApi = [
-            'route_name' => 'user_login',
-            'body' => $input
-        ];
+        $request = new \App\Admin\ApiRequestAny('live', 'user');
 
-        $genericService = new Generic\Service;
+        list($error, $data) = $request->processInput($input)->send('users/login', 'POST');
 
         $genericUser = null;
-
-        list($error, $data) = $genericService->call('POST', $loginOnApi);
 
         if (empty($error) === true)
         {
@@ -453,18 +448,11 @@ class Service extends Base\Service
 
     public function getUserFromApi($userId)
     {
-        $getUser = [
-            'route_name' => 'user_fetch',
-            'url_params' => [
-                '{id}' => $userId,
-            ],
-        ];
+        $request = new \App\Admin\ApiRequestAny('live', 'user');
 
-        $genericService = new Generic\Service;
+        list($error, $data) = $request->send("users/$userId");
 
         $genericUser = null;
-
-        list($error, $data) = $genericService->call('GET', $getUser);
 
         if (empty($error) === true)
         {
