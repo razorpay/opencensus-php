@@ -137,7 +137,7 @@ class Gateway extends Base\Gateway
         {
             return true;
         }
-        if (($network === Card\Network::MC) and ($eci === '02' or ($eci == '01' and $isInternational ===true)))
+        if (($network === Card\Network::MC or  Card\Network::MAES) and ($eci === '02' or ($eci == '01' and $isInternational ===true)))
         {
             return true;
         }
