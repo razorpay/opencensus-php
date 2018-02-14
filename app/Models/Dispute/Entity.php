@@ -47,8 +47,9 @@ class Entity extends Base\PublicEntity
      */
     const ACCEPTED_AMOUNT         = 'accepted_amount';
 
-    // Key for accepting dispute by merchant
+    // Input keys
     const ACCEPT_DISPUTE          = 'accept_dispute';
+    const SUBMIT                  = 'submit';
 
     // Output attributes
     const FILES                   = 'files';

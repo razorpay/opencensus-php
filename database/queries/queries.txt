@@ -2917,6 +2917,12 @@ ALTER TABLE workflow_permissions
 ALTER TABLE migrations
     ADD UNIQUE INDEX migrations_migration_unique (migration);
 
+ALTER TABLE workflow_actions
+    ADD COLUMN `state_changer_id` char(14) COLLATE utf8_bin  NULL AFTER `admin_id`,
+    ADD COLUMN `state_changer_role_id` char(14) COLLATE utf8_bin  NULL AFTER `admin_id`,
+    ADD CONSTRAINT `workflow_actions_state_changer_id_foreign` FOREIGN KEY (`state_changer_id`) REFERENCES `admins` (`id`),
+    ADD CONSTRAINT `workflow_actions_state_changer_role_id_foreign` FOREIGN KEY (`state_changer_role_id`) REFERENCES `roles` (`id`);
+
 ALTER TABLE transactions
     DROP INDEX transactions_settled_index,
     ADD INDEX transactions_settled_channel_on_hold_index (settled, channel, on_hold);

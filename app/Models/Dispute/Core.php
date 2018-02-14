@@ -162,6 +162,8 @@ class Core extends Base\Core
             TraceCode::DISPUTE_EDIT_REQUEST_FOR_MERCHANT,
             [Entity::ID => $dispute->getId()]);
 
+        $dispute->getValidator()->validateForMerchantUpdate($input);
+
         $files = [];
 
         $fileCore = new File\Core;
@@ -525,17 +527,24 @@ class Core extends Base\Core
 
     protected function generateInputForMerchantEdit(Entity $dispute, array $input): array
     {
-        if (empty($input[Entity::ACCEPT_DISPUTE]) === false)
+        $submit        = (bool) ($input[Entity::SUBMIT] ?? false);
+        $acceptDispute = (bool) ($input[Entity::ACCEPT_DISPUTE] ?? false);
+
+        if ($acceptDispute === true)
         {
             $input[Entity::STATUS] = Status::LOST;
 
-            if (in_array($dispute->getPhase(), Phase::getNonTransactionalPhases()) === true)
+            if (in_array($dispute->getPhase(), Phase::getNonTransactionalPhases(), true) === true)
             {
                 $input[Entity::STATUS] = Status::CLOSED;
             }
-
-            unset($input[Entity::ACCEPT_DISPUTE]);
         }
+        else if ($submit === true)
+        {
+            $input[Entity::STATUS] = Status::UNDER_REVIEW;
+        }
+
+        unset($input[Entity::ACCEPT_DISPUTE], $input[Entity::SUBMIT]);
 
         return $input;
     }

@@ -332,6 +332,30 @@ class DisputeTest extends TestCase
         $this->assertEquals(0, $txn['credit']);
     }
 
+    public function testMerchantEditWhenDisputeUnderReview()
+    {
+        $attributes = [
+            'status' => 'under_review'
+        ];
+
+        $data = $this->updateEditTestData($attributes);
+
+        // Run as merchant
+        $this->ba->proxyAuth();
+
+        $this->runRequestResponseFlow($data);
+    }
+
+    public function testMerchantEditAcceptAndSubmit()
+    {
+        $data = $this->updateEditTestData();
+
+        // Run as merchant
+        $this->ba->proxyAuth();
+
+        $this->runRequestResponseFlow($data);
+    }
+
     public function testDisputeEditDoNotDeductOnLostIfDeducted()
     {
         $data = $this->updateEditTestData(['deduct_at_onset' => 1]);
@@ -658,6 +682,21 @@ class DisputeTest extends TestCase
         $this->runRequestResponseFlow($fetchData);
     }
 
+    public function testEditDisputeFileUploadSaveForLater()
+    {
+        $this->ba->proxyAuth();
+
+        $testData = $this->updateUploadDocumentData();
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->updateUploadDocumentData([], 'testEditDisputeFileUploadSaveForLaterAfterSave');
+
+        $testData['request']['content'][DisputeEntity::SUBMIT] = true;
+
+        $this->runRequestResponseFlow($testData);
+}
+
     public function testEditDisputeMerchantAcceptDispute()
     {
         // Input params while creating
@@ -809,11 +848,11 @@ class DisputeTest extends TestCase
         $this->assertEquals($content['payment_id'], $disputes['items'][0]['payment_id']);
     }
 
-    protected function updateUploadDocumentData(array $attributes = []): array
+    protected function updateUploadDocumentData(array $attributes = [], string $testDataKey = null): array
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
 
-        $name = $trace[1]['function'];
+        $name = $testDataKey ?? $trace[1]['function'];
 
         $dispute = $this->fixtures->create('dispute', $attributes);
 
