@@ -65,7 +65,7 @@ class Service extends Base\Service
     {
         $request = new \App\Admin\ApiRequestAny('live', 'user');
 
-        list($error, $data) = $request->processInput($input)->send('users/register' 'POST');
+        list($error, $data) = $request->processInput($input)->send('users/register', 'POST');
 
         if (empty($error) === false)
         {
