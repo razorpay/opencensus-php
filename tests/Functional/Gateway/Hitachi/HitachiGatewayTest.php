@@ -121,206 +121,205 @@ class HitachiGatewayTest extends TestCase
         $this->assertEquals('100HitachiTmnl', $paymentEntity['terminal_id']);
     }
 
-    public function testNotEnrolledCard()
-    {
-        $payment = $this->defaultAuthPayment([
-            'card' => [
-                'number'       => CardNumber::VALID_NOT_ENROLL_NUMBER,
-                'expiry_month' => '02',
-                'expiry_year'  => '21',
-                'cvv'          => 123,
-                'name'         => 'Test Card'
-            ]
-        ]);
-        $txn = $this->getEntities('transaction', [], true);
-        $this->assertEquals(0, $txn['count']);
+    // public function testNotEnrolledCard()
+    // {
+    //     $payment = $this->defaultAuthPayment([
+    //         'card' => [
+    //             'number'       => CardNumber::VALID_NOT_ENROLL_NUMBER,
+    //             'expiry_month' => '02',
+    //             'expiry_year'  => '21',
+    //             'cvv'          => 123,
+    //             'name'         => 'Test Card'
+    //         ]
+    //     ]);
+    //     $txn = $this->getEntities('transaction', [], true);
+    //     $this->assertEquals(0, $txn['count']);
 
-        $payment = $this->getLastEntity('payment', true);
-        $this->assertNull($payment['transaction_id']);
-        $this->assertEquals('100HitachiTmnl', $payment['terminal_id']);
+    //     $payment = $this->getLastEntity('payment', true);
+    //     $this->assertNull($payment['transaction_id']);
+    //     $this->assertEquals('100HitachiTmnl', $payment['terminal_id']);
 
-        $gatewayPayment = $this->getLastEntity('hitachi', true);
+    //     $gatewayPayment = $this->getLastEntity('hitachi', true);
 
-        $this->assertArraySelectiveEquals(
-            $this->testData['testHitachiAuthEntity'], $gatewayPayment);
+    //     $this->assertArraySelectiveEquals(
+    //         $this->testData['testHitachiAuthEntity'], $gatewayPayment);
 
-        $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
+    //     $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
 
-        $txn = $this->getLastTransaction(true);
-        $this->assertArraySelectiveEquals(
-            $this->testData['testTransactionAfterCapture'], $txn);
+    //     $txn = $this->getLastTransaction(true);
+    //     $this->assertArraySelectiveEquals(
+    //         $this->testData['testTransactionAfterCapture'], $txn);
 
-        $payment = $this->getLastEntity('payment', true);
+    //     $payment = $this->getLastEntity('payment', true);
 
-        $this->assertTestResponse($payment);
+    //     $this->assertTestResponse($payment);
 
-        $gatewayPayment = $this->getLastEntity('hitachi', true);
+    //     $gatewayPayment = $this->getLastEntity('hitachi', true);
 
-        $this->assertArraySelectiveEquals(
-            $this->testData['testHitachiCaptureEntity'], $gatewayPayment);
-    }
+    //     $this->assertArraySelectiveEquals(
+    //         $this->testData['testHitachiCaptureEntity'], $gatewayPayment);
+    // }
 
-    public function testInternationalVisa()
-    {
-        $this->fixtures->iin->create([
-            'iin'     => '426451',
-            'country' => 'US',
-            'network' => 'Visa',
-        ]);
-        $payment = $this->defaultAuthPayment([
-            'card' => [
-                'number'       => CardNumber::INTERNATIONAL_VISA,
-                'expiry_month' => '02',
-                'expiry_year'  => '21',
-                'cvv'          => 123,
-                'name'         => 'Test Card'
-            ]
-        ]);
+    // public function testInternationalVisa()
+    // {
+    //     $this->fixtures->iin->create([
+    //         'iin'     => '426451',
+    //         'country' => 'US',
+    //         'network' => 'Visa',
+    //     ]);
+    //     $payment = $this->defaultAuthPayment([
+    //         'card' => [
+    //             'number'       => CardNumber::INTERNATIONAL_VISA,
+    //             'expiry_month' => '02',
+    //             'expiry_year'  => '21',
+    //             'cvv'          => 123,
+    //             'name'         => 'Test Card'
+    //         ]
+    //     ]);
 
-        $txn = $this->getEntities('transaction', [], true);
-        $this->assertEquals(0, $txn['count']);
+    //     $txn = $this->getEntities('transaction', [], true);
+    //     $this->assertEquals(0, $txn['count']);
 
-        $payment = $this->getLastEntity('payment', true);
-        $this->assertNull($payment['transaction_id']);
+    //     $payment = $this->getLastEntity('payment', true);
+    //     $this->assertNull($payment['transaction_id']);
 
-        $gatewayPayment = $this->getLastEntity('hitachi', true);
+    //     $gatewayPayment = $this->getLastEntity('hitachi', true);
 
-        $this->assertArraySelectiveEquals(
-            $this->testData['testHitachiAuthEntity'], $gatewayPayment);
+    //     $this->assertArraySelectiveEquals(
+    //         $this->testData['testHitachiAuthEntity'], $gatewayPayment);
 
-        $this->assertEquals('100HitachiTmnl', $payment['terminal_id']);
+    //     $this->assertEquals('100HitachiTmnl', $payment['terminal_id']);
 
-        $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
+    //     $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
 
-        $txn = $this->getLastTransaction(true);
-        $this->assertArraySelectiveEquals(
-            $this->testData['testTransactionAfterCapture'], $txn);
+    //     $txn = $this->getLastTransaction(true);
+    //     $this->assertArraySelectiveEquals(
+    //         $this->testData['testTransactionAfterCapture'], $txn);
 
-        $payment = $this->getLastEntity('payment', true);
+    //     $payment = $this->getLastEntity('payment', true);
 
-        $this->assertTestResponse($payment);
+    //     $this->assertTestResponse($payment);
 
-        $gatewayPayment = $this->getLastEntity('hitachi', true);
+    //     $gatewayPayment = $this->getLastEntity('hitachi', true);
 
-        $this->assertArraySelectiveEquals(
-            $this->testData['testHitachiCaptureEntity'], $gatewayPayment);
+    //     $this->assertArraySelectiveEquals(
+    //         $this->testData['testHitachiCaptureEntity'], $gatewayPayment);
 
-    }
+    // }
 
-    public function testInternationalMaster()
-    {
-        $this->fixtures->iin->create([
-            'iin'     => '510128',
-            'country' => 'US',
-            'network' => 'Master',
-        ]);
-        $payment = $this->defaultAuthPayment([
-            'card' => [
-                'number'       => CardNumber::INTERNATIONAL_MASTER,
-                'expiry_month' => '02',
-                'expiry_year'  => '21',
-                'cvv'          => 123,
-                'name'         => 'Test Card'
-            ]
-        ]);
+    // public function testInternationalMaster()
+    // {
+    //     $this->fixtures->iin->create([
+    //         'iin'     => '510128',
+    //         'country' => 'US',
+    //         'network' => 'Master',
+    //     ]);
+    //     $payment = $this->defaultAuthPayment([
+    //         'card' => [
+    //             'number'       => CardNumber::INTERNATIONAL_MASTER,
+    //             'expiry_month' => '02',
+    //             'expiry_year'  => '21',
+    //             'cvv'          => 123,
+    //             'name'         => 'Test Card'
+    //         ]
+    //     ]);
 
-        $txn = $this->getEntities('transaction', [], true);
-        $this->assertEquals(0, $txn['count']);
+    //     $txn = $this->getEntities('transaction', [], true);
+    //     $this->assertEquals(0, $txn['count']);
 
-        $payment = $this->getLastEntity('payment', true);
-        $this->assertNull($payment['transaction_id']);
+    //     $payment = $this->getLastEntity('payment', true);
+    //     $this->assertNull($payment['transaction_id']);
 
-        $gatewayPayment = $this->getLastEntity('hitachi', true);
+    //     $gatewayPayment = $this->getLastEntity('hitachi', true);
 
-        $this->assertArraySelectiveEquals(
-            $this->testData['testHitachiAuthEntity'], $gatewayPayment);
+    //     $this->assertArraySelectiveEquals(
+    //         $this->testData['testHitachiAuthEntity'], $gatewayPayment);
 
-        $this->assertEquals('100HitachiTmnl', $payment['terminal_id']);
+    //     $this->assertEquals('100HitachiTmnl', $payment['terminal_id']);
 
-        $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
+    //     $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
 
-        $txn = $this->getLastTransaction(true);
-        $this->assertArraySelectiveEquals(
-            $this->testData['testTransactionAfterCapture'], $txn);
+    //     $txn = $this->getLastTransaction(true);
+    //     $this->assertArraySelectiveEquals(
+    //         $this->testData['testTransactionAfterCapture'], $txn);
 
-        $payment = $this->getLastEntity('payment', true);
+    //     $payment = $this->getLastEntity('payment', true);
 
-        $this->assertTestResponse($payment);
+    //     $this->assertTestResponse($payment);
 
-        $gatewayPayment = $this->getLastEntity('hitachi', true);
+    //     $gatewayPayment = $this->getLastEntity('hitachi', true);
 
-        $this->assertArraySelectiveEquals(
-            $this->testData['testHitachiCaptureEntity'], $gatewayPayment);
+    //     $this->assertArraySelectiveEquals(
+    //         $this->testData['testHitachiCaptureEntity'], $gatewayPayment);
 
-    }
+    // }
 
-    public function testInternationalMaestro()
-    {
-         $this->fixtures->iin->create([
-            'iin'     => '589316',
-            'country' => 'US',
-            'network' => 'Maestro',
-        ]);
-        $payment = $this->defaultAuthPayment([
-            'card' => [
-                'number'       => CardNumber::INTERNATIONAL_MAESTRO,
-                'expiry_month' => '02',
-                'expiry_year'  => '21',
-                'cvv'          => 123,
-                'name'         => 'Test Card'
-            ]
-        ]);
+    // public function testInternationalMaestro()
+    // {
+    //      $this->fixtures->iin->create([
+    //         'iin'     => '589316',
+    //         'country' => 'US',
+    //         'network' => 'Maestro',
+    //     ]);
+    //     $payment = $this->defaultAuthPayment([
+    //         'card' => [
+    //             'number'       => CardNumber::INTERNATIONAL_MAESTRO,
+    //             'expiry_month' => '02',
+    //             'expiry_year'  => '21',
+    //             'cvv'          => 123,
+    //             'name'         => 'Test Card'
+    //         ]
+    //     ]);
 
-        $txn = $this->getEntities('transaction', [], true);
-        $this->assertEquals(0, $txn['count']);
+    //     $txn = $this->getEntities('transaction', [], true);
+    //     $this->assertEquals(0, $txn['count']);
 
-        $payment = $this->getLastEntity('payment', true);
-        $this->assertNull($payment['transaction_id']);
+    //     $payment = $this->getLastEntity('payment', true);
+    //     $this->assertNull($payment['transaction_id']);
 
-        $gatewayPayment = $this->getLastEntity('hitachi', true);
+    //     $gatewayPayment = $this->getLastEntity('hitachi', true);
 
-        $this->assertArraySelectiveEquals(
-            $this->testData['testHitachiAuthEntity'], $gatewayPayment);
+    //     $this->assertArraySelectiveEquals(
+    //         $this->testData['testHitachiAuthEntity'], $gatewayPayment);
 
-        $this->assertEquals('100HitachiTmnl', $payment['terminal_id']);
+    //     $this->assertEquals('100HitachiTmnl', $payment['terminal_id']);
 
-        $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
+    //     $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
 
-        $txn = $this->getLastTransaction(true);
-        $this->assertArraySelectiveEquals(
-            $this->testData['testTransactionAfterCapture'], $txn);
+    //     $txn = $this->getLastTransaction(true);
+    //     $this->assertArraySelectiveEquals(
+    //         $this->testData['testTransactionAfterCapture'], $txn);
 
-        $payment = $this->getLastEntity('payment', true);
+    //     $payment = $this->getLastEntity('payment', true);
 
-        $this->assertTestResponse($payment);
+    //     $this->assertTestResponse($payment);
 
-        $gatewayPayment = $this->getLastEntity('hitachi', true);
+    //     $gatewayPayment = $this->getLastEntity('hitachi', true);
 
-        $this->assertArraySelectiveEquals(
-            $this->testData['testHitachiCaptureEntity'], $gatewayPayment);
+    //     $this->assertArraySelectiveEquals(
+    //         $this->testData['testHitachiCaptureEntity'], $gatewayPayment);
 
-    }
+    // }
 
+    // public function testInvalidEci()
+    // {
+    //     $payment = $this->getDefaultPaymentArray();
 
-    public function testInvalidEci()
-    {
-        $payment = $this->getDefaultPaymentArray();
+    //     $payment['card'] = [
+    //             'number'       => CardNumber::INVALID_ECI,
+    //             'expiry_month' => '02',
+    //             'expiry_year'  => '21',
+    //             'cvv'          => 123,
+    //             'name'         => 'Test Card'
+    //     ];
 
-        $payment['card'] = [
-                'number'       => CardNumber::INVALID_ECI,
-                'expiry_month' => '02',
-                'expiry_year'  => '21',
-                'cvv'          => 123,
-                'name'         => 'Test Card'
-        ];
+    //     $data = $this->testData[__FUNCTION__];
 
-        $data = $this->testData[__FUNCTION__];
-
-        $this->runRequestResponseFlow($data, function() use ($payment)
-        {
-            $this->doAuthPayment($payment);
-        });
-    }
+    //     $this->runRequestResponseFlow($data, function() use ($payment)
+    //     {
+    //         $this->doAuthPayment($payment);
+    //     });
+    // }
 
     public function testPaymentVerify()
     {

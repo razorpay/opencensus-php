@@ -120,11 +120,36 @@ class Gateway extends Base\Gateway
 
         $eci = $gatewayPayment->getEci();
 
-        $network = Card\Network::getCode($input['card']['network']);
+        if ($input['merchant']['id'] === '6ZJzxyLFWrGs74')
+        {
+            $network = Card\Network::getCode($input['card']['network']);
 
-        $isInternational = $input['card']['international'];
+            $isInternational = $input['card']['international'];
 
-        $this->validateAuthResponse($eci, $network, $isInternational);
+            $this->validateAuthResponse($eci, $network, $isInternational);
+        }
+        else
+        {
+            $network = strtoupper($input['card']['network']);
+
+            $this->validateEci($eci, $network);
+
+            $txnStatus = $PARes[PARes::TX][PARes::STATUS];
+
+            $authenticateStatus = ParesStatus::getAuthenticationStatus($txnStatus);
+
+            if ($authenticateStatus !== AuthenticationStatus::Y)
+            {
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
+                    null,
+                    null,
+                    [
+                        'auth_status' => $authenticateStatus
+                    ]);
+            }
+
+        }
 
         // Blade callback response field is being used by Hitachi
         // These fields are already set in gatewayPayment entity
@@ -206,6 +231,18 @@ class Gateway extends Base\Gateway
         $this->repo->saveOrFail($gatewayPayment);
 
         return $gatewayPayment;
+    }
+
+    protected function validateEci(string $eci = null, string $networkCode)
+    {
+        if ((($networkCode === Card\Network::VISA) and ($eci === '07')) or
+            (($networkCode === Card\Network::MC) and ($eci === '00')))
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
+                $eci,
+                'Invalid Eci value for network ' . $networkCode);
+        }
     }
 
     protected function getCallbackResponseAttributes($response)
