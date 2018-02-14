@@ -253,8 +253,6 @@ class Validator extends Base\Validator
 
     protected function validateOrderTpvChecks(Payment\Entity $payment = null)
     {
-        // TODO: Handle TPV related stuff for emandate method + authentication type netbanking/aadhaar?
-
         $order = $this->entity;
 
         // TPV - Third Party Validation

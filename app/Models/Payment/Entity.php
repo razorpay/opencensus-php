@@ -988,7 +988,6 @@ class Entity extends Base\PublicEntity
 
             case Method::EMANDATE:
 
-                // TODO: Let's keep this empty for now.
                 $acquirerData = [];
                 break;
 

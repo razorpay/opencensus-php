@@ -808,7 +808,7 @@ class Gateway
     {
         $emandateBanks = [];
 
-        foreach (self::$emandateBanks as $type => $banks)
+        foreach (self::$emandateBanks as $authType => $banks)
         {
             $emandateBanks = array_merge($emandateBanks, $banks);
         }

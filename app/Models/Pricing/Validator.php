@@ -19,8 +19,8 @@ class Validator extends Base\Validator
 {
     protected static $addPlanRuleRules = [
         Entity::FEATURE             => 'sometimes|alpha',
-        Entity::GATEWAY             => 'sometimes|',
-        Entity::PLAN_NAME           => 'sometimes|',
+        Entity::GATEWAY             => 'sometimes',
+        Entity::PLAN_NAME           => 'sometimes',
         Entity::PAYMENT_METHOD      => 'required|string',
         Entity::PAYMENT_METHOD_TYPE => 'sometimes_if:payment_method,card,emandate|nullable',
         Entity::PAYMENT_NETWORK     => 'sometimes|nullable|alpha',
@@ -105,7 +105,7 @@ class Validator extends Base\Validator
             if (empty($input[Entity::PERCENT_RATE]) === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    'Percentage rate pricing is not allowed for eMandate');
+                    'Percentage rate pricing is not allowed for E-mandate');
             }
 
             if (isset($input[Entity::PAYMENT_METHOD_TYPE]) === true)

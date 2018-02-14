@@ -406,7 +406,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Percentage rate pricing is not allowed for eMandate',
+                    'description' => 'Percentage rate pricing is not allowed for E-mandate',
                 ],
             ],
             'status_code' => 400,
