@@ -303,6 +303,87 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testEditMerchantWhitelistedIpsLive()
+    {
+        $this->createMerchant();
+
+        $this->startTest();
+    }
+
+    public function testEditMerchantInvalidWhitelistedIpsLive()
+    {
+        $this->createMerchant();
+
+        $this->startTest();
+    }
+
+    public function testEditMerchantWhitelistedIpsTest()
+    {
+        $this->createMerchant();
+
+        $this->startTest();
+    }
+
+    public function testEditMerchantInvalidWhitelistedIpsTest()
+    {
+        $this->createMerchant();
+
+        $this->startTest();
+    }
+
+    public function testMerchantWhitelistedIpsLive()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['live' => true, 'activated' => 1]);
+
+        $this->fixtures->merchant->editWhitelistedIpsLive('10000000000000', ['1.1.1.1','2.2.2.2']);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+    }
+
+    public function testMerchantFailedWhitelistedIpsLive()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['live' => true, 'activated' => 1]);
+
+        $this->fixtures->merchant->editWhitelistedIpsLive('10000000000000', ['1.1.1.1','2.2.2.2']);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+    }
+
+    public function testMerchantWhitelistedIpsTest()
+    {
+        $this->fixtures->merchant->editWhitelistedIpsTest('10000000000000', ['1.1.1.1','2.2.2.2']);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testMerchantFailedWhitelistedIpsTest()
+    {
+        $this->fixtures->merchant->editWhitelistedIpsTest('10000000000000', ['1.1.1.1','2.2.2.2']);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testMerchantWhitelistedIpsMode()
+    {
+        $this->fixtures->merchant->editWhitelistedIpsTest('10000000000000', ['3.3.3.3','4.4.4.4']);
+
+        $this->fixtures->merchant->editWhitelistedIpsLive('10000000000000', ['1.1.1.1','2.2.2.2']);
+
+        $this->fixtures->merchant->edit('10000000000000', ['live' => true, 'activated' => 1]);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+    }
+
     public function testEditMerchantUppercaseEmail()
     {
         $this->createMerchant();
@@ -1369,6 +1450,25 @@ class MerchantTest extends TestCase
         $this->fixtures->merchant->activate('10000000000000');
 
         $this->fixtures->merchant->enableEmi();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($response['methods']['emi'], true);
+    }
+
+    public function testGetCheckoutRouteWithMerchantSubEmi()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->enableEmi();
+
+        $emiPlan = $this->fixtures->create('emi_plan');
+
+        $emiPlan = $this->fixtures->create('emi_plan', ['id' => '10101010101011']);
+
+        $emiPlanId = $emiPlan['id'];
+
+        $this->fixtures->create('merchant_emi_plans', ['emi_plan_id' => $emiPlanId]);
 
         $response = $this->startTest();
 

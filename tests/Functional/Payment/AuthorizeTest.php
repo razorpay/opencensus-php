@@ -555,6 +555,8 @@ class AuthorizeTest extends TestCase
 
     public function testPayumoneyPaymentViaWalletS2S()
     {
+        $this->markTestSkipped();
+
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_payumoney_terminal');
 
         $this->fixtures->merchant->addFeatures(['s2swallet']);

@@ -141,6 +141,14 @@ class Creator extends Base\Core
      */
     protected $shouldDeleteLocalFile = false;
 
+    /**
+     * The sheet name used when creating an excel file.
+     * Sheet 1 is the default name used to generate the excel sheet.
+     *
+     * @var string
+     */
+    protected $sheetName = 'Sheet 1';
+
     const DEFAULT_STORE    = 's3';
 
     const COMMAND_FOR_ZIPPING = 'zip --junk-paths --move';
@@ -172,6 +180,19 @@ class Creator extends Base\Core
     public function name(string $name)
     {
         $this->file->setName($name);
+
+        return $this;
+    }
+
+    /**
+     * Set the name of the sheet of the excel file to be created.
+     *
+     * @param string $sheetName
+     * @return $this
+     */
+    public function sheetName(string $sheetName)
+    {
+        $this->sheetName = $sheetName;
 
         return $this;
     }
@@ -786,7 +807,8 @@ class Creator extends Base\Core
             $this->columnFormat,
             $this->headers,
             $this->file->getExtension(),
-            $this->getStorageDir());
+            $this->getStorageDir(),
+            $this->sheetName);
 
         $this->createUploadedFile($fileMetadata['full'], $fileMetadata['file']);
     }

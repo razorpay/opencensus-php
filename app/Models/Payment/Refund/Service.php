@@ -249,6 +249,7 @@ class Service extends Base\Service
                 $dt = Carbon::createFromFormat('Y-m-d', $input['on'], Timezone::IST);
 
                 $from = $dt->startOfMonth()->getTimestamp();
+
                 $to   = $dt->endOfMonth()->addDay()->getTimestamp() - 1;
             }
             else

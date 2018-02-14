@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Dispute;
 
+use App;
+
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -48,8 +50,9 @@ class Entity extends Base\PublicEntity
     // Key for accepting dispute by merchant
     const ACCEPT_DISPUTE          = 'accept_dispute';
 
-    // Output keys
+    // Output attributes
     const FILES                   = 'files';
+    const RESPOND_BY              = 'respond_by';
 
     protected static $sign = 'disp';
 
@@ -107,16 +110,13 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ID,
         self::ENTITY,
-        self::MERCHANT_ID,
         self::PAYMENT_ID,
-        self::PARENT_ID,
         self::AMOUNT,
         self::CURRENCY,
         self::GATEWAY_DISPUTE_ID,
         self::REASON_CODE,
         self::REASON_DESCRIPTION,
-        self::RAISED_ON,
-        self::EXPIRES_ON,
+        self::RESPOND_BY,
         self::STATUS,
         self::PHASE,
         self::COMMENTS,
@@ -128,6 +128,8 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::PAYMENT_ID,
+        self::RESPOND_BY,
+        self::REASON_DESCRIPTION,
     ];
 
     protected $casts = [
@@ -144,7 +146,8 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
         self::RESOLVED_AT,
         self::RAISED_ON,
-        self::EXPIRES_ON
+        self::EXPIRES_ON,
+        self::RESPOND_BY,
     ];
 
     protected $defaults = [
@@ -205,6 +208,27 @@ class Entity extends Base\PublicEntity
     {
         $attributes[self::PAYMENT_ID] =
             Payment\Entity::getSignedId($this->getAttribute(self::PAYMENT_ID));
+    }
+
+    public function setPublicRespondByAttribute(array & $attributes)
+    {
+        $attributes[self::RESPOND_BY] = (int) $this->getExpiresOn();
+    }
+
+    public function setPublicReasonDescriptionAttribute(array & $attributes)
+    {
+        $app = App::getFacadeRoot();
+
+        $basicAuth = $app['basicauth'];
+
+        //
+        // Attr reason_description to be sent only for dashboard
+        // TODO: Remove after entity serializer
+        //
+        if ($basicAuth->isProxyOrPrivilegeAuth() === false)
+        {
+            unset($attributes[self::REASON_DESCRIPTION]);
+        }
     }
 
     // ----------------------- Setters Ends-------------------------------------

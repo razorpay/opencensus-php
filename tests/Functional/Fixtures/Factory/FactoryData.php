@@ -7,8 +7,6 @@ use Eloquent;
 use RZP\Models;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
-use RZP\Models\Merchant;
-use RZP\Tests\TestDummy\Factory;
 
 final class FactoryData
 {
@@ -297,12 +295,21 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Emi\Entity::class, [
-            'id'         => '10101010101010',
-            'duration'   => 9,
-            'rate'       => 1200,
-            'bank'       => 'HDFC',
-            'methods'    => 'card',
-            'min_amount' => 500000,
+            'id'               => '10101010101010',
+            'duration'         => 9,
+            'rate'             => 1200,
+            'bank'             => 'HDFC',
+            'methods'          => 'card',
+            'min_amount'       => 500000,
+            'merchant_payback' => 518
+        ]);
+
+        $factory(\RZP\Models\Merchant\EmiPlans\Entity::class, [
+            'id'               => $faker->uniqueid,
+            'merchant_id'      => '10000000000000',
+            'emi_plan_id'      => '10101010101010',
+            'created_at'       => $faker->timestamp,
+            'updated_at'       => $faker->timestamp,
         ]);
 
         $factory(\RZP\Models\Order\Entity::class, [
@@ -354,9 +361,9 @@ final class FactoryData
             'date'                     => null,
             'issued_at'                => null,
             'expired_at'               => null,
-            'due_by'                   => $faker->timestamp('+2 day'),
+            'due_by'                   => $faker->timestamp(2),
             'scheduled_at'             => $faker->timestamp,
-            'expire_by'                => $faker->timestamp('+2 day'),
+            'expire_by'                => $faker->timestamp(2),
             'amount'                   => 100000,
             'currency'                 => 'INR',
         ]);

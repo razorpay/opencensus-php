@@ -9,10 +9,13 @@ use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Gateway\Upi\Base as UpiBase;
 use RZP\Models\Customer\Token;
 
 class Gateway extends Base\Gateway
 {
+    const DEFAULT_PAYEE_VPA = 'upi@razopay';
+
     protected $gateway = 'sharp';
 
     public function authorize(array $input)
@@ -84,10 +87,33 @@ class Gateway extends Base\Gateway
         {
             $this->processTestUpiPayment($input['payment']);
 
+            if ((isset($input['upi']['flow']) === true) and
+                ($input['upi']['flow'] === 'intent'))
+            {
+                return $this->getIntentRequest($input);
+            }
+
             $request = true;
         }
 
         return $request;
+    }
+
+    protected function getIntentRequest($input)
+    {
+        $content = [
+            UpiBase\IntentParams::PAYEE_ADDRESS => self::DEFAULT_PAYEE_VPA,
+            UpiBase\IntentParams::PAYEE_NAME    => preg_replace('/\s+/', '', $input['merchant']->getFilteredDba()),
+            UpiBase\IntentParams::TXN_REF_ID    => str_random(15),
+            UpiBase\IntentParams::TXN_NOTE      => 'razorpay',
+            UpiBase\IntentParams::TXN_AMOUNT    => $input['payment']['amount'] / 100,
+            UpiBase\IntentParams::TXN_CURRENCY  => 'INR',
+            UpiBase\IntentParams::MCC           => '5411',
+        ];
+
+        $query = str_replace(' ', '', urldecode(http_build_query($content)));
+
+        return ['data' => ['intent_url' => 'upi://pay?' . $query]];
     }
 
     protected function processTestUpiPayment($payment)
@@ -207,6 +233,14 @@ class Gateway extends Base\Gateway
         {
             $acquirer = [
                 'reference1' => (string) random_integer(7)
+            ];
+        }
+
+        if (($input['payment']['method'] === Payment\Method::UPI) and
+            (isset($input['gateway']['vpa']) === true))
+        {
+            $acquirer = [
+                Payment\Entity::VPA => $input['gateway']['vpa']
             ];
         }
 

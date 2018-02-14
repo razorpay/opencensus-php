@@ -18,7 +18,14 @@ class HitachiGatewayTest extends TestCase
 
         parent::setUp();
 
-        $this->fixtures->create('terminal:shared_hitachi_terminal');
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' =>
+                [
+                    'non_recurring' => '1',
+                    'recurring_3ds' => '1',
+                    'recurring_non_3ds' => '1'
+                ]
+            ]);
 
         //
         // Hitachi is a lower priority card gateway than hdfc in
@@ -27,6 +34,8 @@ class HitachiGatewayTest extends TestCase
         // to run via the shared Hitachi terminal.
         //
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->merchant->addFeatures('charge_at_will');
 
         $this->gateway = 'hitachi';
 
@@ -76,6 +85,40 @@ class HitachiGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             $this->testData['testHitachiCaptureEntity'], $gatewayPayment);
+    }
+
+    public function testRecurringPayment()
+    {
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $payment['card']['number'] = CardNumber::VALID_VISA_NOT_ENROLLED;
+
+        $response = $this->doAuthPayment($payment);
+        $paymentId = $response['razorpay_payment_id'];
+
+        $paymentEntity = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertNotNull($paymentEntity['token_id']);
+        $this->assertEquals('100HitachiTmnl', $paymentEntity['terminal_id']);
+
+        $token = $paymentEntity['token_id'];
+
+        unset($payment['card']);
+
+        // Set payment for subsequent recurring payment
+        $payment['token'] = $token;
+
+        // Switch to private auth for subsequent recurring payment
+        $this->ba->privateAuth();
+
+        $response = $this->doS2sRecurringPayment($payment);
+
+        $paymentId = $response['razorpay_payment_id'];
+
+        $paymentEntity = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertEquals($token, $paymentEntity['token_id']);
+        $this->assertEquals('100HitachiTmnl', $paymentEntity['terminal_id']);
     }
 
     public function testNotEnrolledCard()

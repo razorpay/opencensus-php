@@ -186,4 +186,27 @@ class Service extends Base\Service
 
         return $response;
     }
+
+    /**
+     * Gets account balance of Nodal Account
+     *
+     * @param string $channel channel for which the balance has to be fetched
+     *
+     * @return array
+     * [
+     *  account_number => account_balance,
+     * ]
+     */
+    public function getAccountBalance(string $channel): array
+    {
+        $channelAttributeKey = 'balance_' . Entity::CHANNEL;
+
+        (new Validator)->validateInput('canFetchBalance', [
+            $channelAttributeKey => $channel
+        ]);
+
+        $response = (new Core)->getAccountBalance($channel);
+
+        return $response;
+    }
 }

@@ -252,7 +252,6 @@ class Core extends Base\Core
             Detail\Entity::BANK_BENEFICIARY_CITY     => $input[Entity::BENEFICIARY_CITY],
             Detail\Entity::BANK_BENEFICIARY_STATE    => $input[Entity::BENEFICIARY_STATE],
             Detail\Entity::BANK_BENEFICIARY_PIN      => $input[Entity::BENEFICIARY_PIN],
-            Detail\Entity::BANK_ACCOUNT_TYPE         => 'current',
         ];
 
         return $detail;

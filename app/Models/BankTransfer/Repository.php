@@ -66,6 +66,8 @@ class Repository extends Base\Repository
 
     public function findByUtrAndPayeeAccount(string $utr, string $payeeAccount)
     {
+        $payeeAccount = strtoupper(str_replace(' ', '', $payeeAccount));
+
         return $this->newQuery()
                     ->where(Entity::UTR, '=', $utr)
                     ->where(Entity::PAYEE_ACCOUNT, '=', $payeeAccount)

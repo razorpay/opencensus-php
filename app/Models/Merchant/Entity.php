@@ -28,43 +28,45 @@ class Entity extends Base\PublicEntity
     use Taggable;
     use NotesTrait;
 
-    const ID                        = 'id';
-    const ORG_ID                    = 'org_id';
-    const NAME                      = 'name';
-    const EMAIL                     = 'email';
-    const PARENT_ID                 = 'parent_id';
-    const ACTIVATED                 = 'activated';
-    const ACTIVATED_AT              = 'activated_at';
-    const LIVE                      = 'live';
-    const HOLD_FUNDS                = 'hold_funds';
-    const PRICING_PLAN_ID           = 'pricing_plan_id';
-    const INTERNATIONAL             = 'international';
-    const BILLING_LABEL             = 'billing_label';
-    const TRANSACTION_REPORT_EMAIL  = 'transaction_report_email';
-    const RECEIPT_EMAIL_ENABLED     = 'receipt_email_enabled';
-    const CHANNEL                   = 'channel';
-    const WEBSITE                   = 'website';
-    const CATEGORY                  = 'category';
-    const CATEGORY2                 = 'category2';
-    const INVOICE_CODE              = 'invoice_code';
-    const SCOPE                     = 'scope';
-    const FEE_BEARER                = 'fee_bearer';
-    const FEE_MODEL                 = 'fee_model';
-    const REFUND_SOURCE             = 'refund_source';
-    const LINKED_ACCOUNT_KYC        = 'linked_account_kyc';
-    const BRAND_COLOR               = 'brand_color';
-    const HANDLE                    = 'handle';
-    const RISK_RATING               = 'risk_rating';
-    const RISK_THRESHOLD            = 'risk_threshold';
-    const LOGO_URL                  = 'logo_url';
-    const AWS_LOGO_URL              = 'aws_logo_url';
-    const MAX_PAYMENT_AMOUNT        = 'max_payment_amount';
-    const AUTO_REFUND_DELAY         = 'auto_refund_delay';
-    const AUTO_CAPTURE_LATE_AUTH    = 'auto_capture_late_auth';
-    const CONVERT_CURRENCY          = 'convert_currency';
-    const ARCHIVED_AT               = 'archived_at';
-    const SUSPENDED_AT              = 'suspended_at';
-    const NOTES                     = 'notes';
+    const ID                       = 'id';
+    const ORG_ID                   = 'org_id';
+    const NAME                     = 'name';
+    const EMAIL                    = 'email';
+    const PARENT_ID                = 'parent_id';
+    const ACTIVATED                = 'activated';
+    const ACTIVATED_AT             = 'activated_at';
+    const LIVE                     = 'live';
+    const HOLD_FUNDS               = 'hold_funds';
+    const PRICING_PLAN_ID          = 'pricing_plan_id';
+    const INTERNATIONAL            = 'international';
+    const BILLING_LABEL            = 'billing_label';
+    const TRANSACTION_REPORT_EMAIL = 'transaction_report_email';
+    const RECEIPT_EMAIL_ENABLED    = 'receipt_email_enabled';
+    const CHANNEL                  = 'channel';
+    const WEBSITE                  = 'website';
+    const CATEGORY                 = 'category';
+    const CATEGORY2                = 'category2';
+    const INVOICE_CODE             = 'invoice_code';
+    const SCOPE                    = 'scope';
+    const FEE_BEARER               = 'fee_bearer';
+    const FEE_MODEL                = 'fee_model';
+    const REFUND_SOURCE            = 'refund_source';
+    const LINKED_ACCOUNT_KYC       = 'linked_account_kyc';
+    const BRAND_COLOR              = 'brand_color';
+    const HANDLE                   = 'handle';
+    const RISK_RATING              = 'risk_rating';
+    const RISK_THRESHOLD           = 'risk_threshold';
+    const LOGO_URL                 = 'logo_url';
+    const AWS_LOGO_URL             = 'aws_logo_url';
+    const MAX_PAYMENT_AMOUNT       = 'max_payment_amount';
+    const AUTO_REFUND_DELAY        = 'auto_refund_delay';
+    const AUTO_CAPTURE_LATE_AUTH   = 'auto_capture_late_auth';
+    const CONVERT_CURRENCY         = 'convert_currency';
+    const ARCHIVED_AT              = 'archived_at';
+    const SUSPENDED_AT             = 'suspended_at';
+    const NOTES                    = 'notes';
+    const WHITELISTED_IPS_LIVE     = 'whitelisted_ips_live';
+    const WHITELISTED_IPS_TEST     = 'whitelisted_ips_test';
 
     // Coupon Related Data for display only
     const COUPON_CODE               = 'coupon_code';
@@ -180,6 +182,8 @@ class Entity extends Base\PublicEntity
         self::AUTO_CAPTURE_LATE_AUTH,
         self::TRANSACTION_REPORT_EMAIL,
         self::NOTES,
+        self::WHITELISTED_IPS_LIVE,
+        self::WHITELISTED_IPS_TEST,
     ];
 
     // Requires PHP 5.6
@@ -233,6 +237,8 @@ class Entity extends Base\PublicEntity
         self::GROUPS,
         self::ADMINS,
         self::NOTES,
+        self::WHITELISTED_IPS_LIVE,
+        self::WHITELISTED_IPS_TEST,
      ];
 
     protected $defaults = [
@@ -261,6 +267,8 @@ class Entity extends Base\PublicEntity
         self::ARCHIVED_AT            => null,
         self::SUSPENDED_AT           => null,
         self::NOTES                  => [],
+        self::WHITELISTED_IPS_LIVE   => [],
+        self::WHITELISTED_IPS_TEST   => [],
     ];
 
     protected $publicSetters = [
@@ -270,16 +278,18 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::ACTIVATED                 => 'bool',
-        self::LIVE                      => 'bool',
-        self::INTERNATIONAL             => 'bool',
-        self::RECEIPT_EMAIL_ENABLED     => 'bool',
-        self::HOLD_FUNDS                => 'bool',
-        self::LINKED_ACCOUNT_KYC        => 'bool',
-        self::CATEGORY                  => 'int',
-        self::RISK_THRESHOLD            => 'int',
-        self::CONVERT_CURRENCY          => 'bool',
-        self::AUTO_CAPTURE_LATE_AUTH    => 'bool',
+        self::ACTIVATED              => 'bool',
+        self::LIVE                   => 'bool',
+        self::INTERNATIONAL          => 'bool',
+        self::RECEIPT_EMAIL_ENABLED  => 'bool',
+        self::HOLD_FUNDS             => 'bool',
+        self::LINKED_ACCOUNT_KYC     => 'bool',
+        self::CATEGORY               => 'int',
+        self::RISK_THRESHOLD         => 'int',
+        self::CONVERT_CURRENCY       => 'bool',
+        self::AUTO_CAPTURE_LATE_AUTH => 'bool',
+        self::WHITELISTED_IPS_LIVE   => 'array',
+        self::WHITELISTED_IPS_TEST   => 'array',
     ];
 
     protected $eventFields = [
@@ -524,6 +534,11 @@ class Entity extends Base\PublicEntity
         return $this->hasMany('RZP\Models\Customer\Entity');
     }
 
+    public function emiPlans()
+    {
+        return $this->hasMany('RZP\Models\Merchant\EmiPlans\Entity');
+    }
+
     // Linked-accounts belonging to the Marketplace
     public function accounts()
     {
@@ -627,7 +642,7 @@ class Entity extends Base\PublicEntity
     {
         return $this->setAttribute(self::CATEGORY2, $category);
     }
-
+    
     public function getCategory2()
     {
         return $this->getAttribute(self::CATEGORY2);
@@ -776,6 +791,16 @@ class Entity extends Base\PublicEntity
     public function getTransactionReportEmail()
     {
         return $this->getAttribute(self::TRANSACTION_REPORT_EMAIL);
+    }
+
+    public function getWhitelistedIpsLive()
+    {
+        return $this->getAttribute(self::WHITELISTED_IPS_LIVE);
+    }
+
+    public function getWhitelistedIpsTest()
+    {
+        return $this->getAttribute(self::WHITELISTED_IPS_TEST);
     }
 
     public function getOrgId()
@@ -930,7 +955,7 @@ class Entity extends Base\PublicEntity
     {
         $this->attributes[self::WEBSITE] = mb_strtolower($website);
     }
-
+    
     protected function setTransactionReportEmailAttribute($emails)
     {
         if (is_array($emails) === false)
@@ -1107,7 +1132,7 @@ class Entity extends Base\PublicEntity
             return null;
         }
 
-        return $this->merchantDetail->getGstin() ?? $this->merchantDetail->getPGstin();
+        return $this->merchantDetail->getGstin() ?: $this->merchantDetail->getPGstin();
     }
 
     public function getBusinessRegisteredState()

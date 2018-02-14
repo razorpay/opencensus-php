@@ -13,6 +13,8 @@ class ReconciliationGenerator
 {
     use FileHandlerTrait;
 
+    const INTERNAL_FAILURE_REMARK = 'Rejected by RTGS Gateway (Some string goes here)';
+
     protected static $fileToReadName = 'Icici_Settlement';
 
     protected static $fileToWriteName = 'Icici_Settlement_Reconciliation';
@@ -29,24 +31,17 @@ class ReconciliationGenerator
 
         $data = $this->getDecryptedFile($setlFile);
 
-        $generateFailedReconciliations = false;
-
-        if (isset($input['failed_recons']) === true)
-        {
-            $generateFailedReconciliations = ($input['failed_recons'] === '1');
-        }
-
         $reconData = [];
         foreach ($data as $row)
         {
-            $newRow = $this->generateReconciliationFields($row, $generateFailedReconciliations);
+            $newRow = $this->generateReconciliationFields($row, $input);
 
             $reconData[] = $newRow;
         }
 
         $txt = $this->generateText($reconData, ',');
 
-        $filename = 'NRPSS_' . str_random(10);
+        $filename = 'NRPSS_' . str_random(10). '.txt';
 
         $file = $this->createTxtFile($filename, $txt);
 
@@ -77,8 +72,14 @@ class ReconciliationGenerator
         return Headings::getRequestFileHeadings();
     }
 
-    protected function generateReconciliationFields($row, bool $generateFailedReconciliations)
+    protected function generateReconciliationFields($row, array $params)
     {
+        $remark = (isset($params['internal_failure']) and $params['internal_failure'] === '1') ?
+            self::INTERNAL_FAILURE_REMARK : random_integer(7);
+
+        $generateFailedReconciliations = (isset($params['failed_recons'])) ?
+            ((bool) $params['failed_recons']) : false;
+
         $data = [
             Headings::FILE_REF_NO               => '000205025290',
             Headings::PAYMENT_MODE              => $this->getReconModeFromTransactionMode($row[Headings::PAYMENT_MODE]),
@@ -87,7 +88,7 @@ class ReconciliationGenerator
             Headings::BENEFICIARY_IFSC          => $row[Headings::BENEFICIARY_IFSC],
             Headings::AMOUNT                    => $row[Headings::AMOUNT],
             Headings::PAYMENT_DATE              => $row[Headings::PAYMENT_DATE],
-            Headings::REMARKS                   => random_integer(7),
+            Headings::REMARKS                   => $remark,
             Headings::CMS_REF_NO                => 'CMS' . random_integer(9),
             Headings::PAYMENT_REF_NO            => $row[Headings::INSTRUMENT_REFERENCE],
             Headings::STATUS                    => Status::PAID,

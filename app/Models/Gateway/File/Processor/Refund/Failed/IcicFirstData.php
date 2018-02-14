@@ -10,6 +10,8 @@ class IcicFirstData extends Base
 {
     const GATEWAY          = Payment\Gateway::FIRST_DATA;
     const EXTENSION        = FileStore\Format::XLSX;
+    const ACQUIRER         =  Payment\Gateway::ACQUIRER_ICIC;
+
     const FILE_NAME        = 'Icic_FirstData_Failed_Refunds';
     const FILE_TYPE        = FileStore\Type::ICIC_FIRST_DATA_FAILED_REFUND;
 
@@ -22,7 +24,8 @@ class IcicFirstData extends Base
     const REFUND_AMOUNT           = 'Refund Amount';
     const PAYMENT_AMOUNT          = 'Payment Amount';
     const STORE_ID                = 'Store ID';
-    const ACQUIRER                =  Payment\Gateway::ACQUIRER_ICIC;
+    const AUTH_CODE               = 'Auth Code';
+    const LAST_FOUR_CARD_NUM      = 'Card Number Last Four';
 
     const CARD_GATEWAY_API_REFUND_SPAN = 15552000;
 
@@ -58,7 +61,9 @@ class IcicFirstData extends Base
                 self::ORDER_ID                => $row['payment']['id'],
                 self::PAYMENT_AMOUNT          => $this->getFormattedAmount($row['payment']['amount']),
                 self::REFUND_AMOUNT           => $this->getFormattedAmount($row['refund']['amount']),
-                self::STORE_ID                => $row['terminal']['gateway_merchant_id']
+                self::STORE_ID                => $row['terminal']['gateway_merchant_id'],
+                self::AUTH_CODE               => $row['gateway']['auth_code'],
+                self::LAST_FOUR_CARD_NUM      => $row['card']['last4'],
             ];
         }
 
