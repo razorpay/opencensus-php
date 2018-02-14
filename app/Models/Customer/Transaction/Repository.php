@@ -31,7 +31,7 @@ class Repository extends Base\Repository
                             ->where(Entity::DEBIT, $amount)
                             ->where(Entity::STATUS, 'complete')
                             ->merchantId($merchantId)
-                            ->get();
+                            ->first();
 
         return $customerTxn;
     }

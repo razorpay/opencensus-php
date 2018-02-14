@@ -95,12 +95,12 @@ class Gateway extends Base\Gateway
     {
         $payment = $input['payment'];
 
-        $customerTxn = $this->repo
+        $customerTxn = $this->app['repo']
                             ->customer_transaction
                             ->findByPaymentIdAndAmountForVerify($payment['id'],
                                                                 $payment['base_amount'],
                                                                 $payment['merchant_id']);
 
-        return ($customerTxn !== null) ? true : false;
+        return ($customerTxn !== null);
     }
 }
