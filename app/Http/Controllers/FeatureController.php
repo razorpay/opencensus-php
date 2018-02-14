@@ -10,30 +10,6 @@ use RZP\Models\Feature\Constants;
 class FeatureController extends Controller
 {
     /**
-     * Assigns features to accounts
-     *
-     * @param string|null $accountId
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function addAccountFeatures(string $accountId)
-    {
-        return $this->addFeatures(Constants::MERCHANT, $accountId);
-    }
-
-    /**
-     * Assigns features to applications
-     *
-     * @param string|null $applicationId
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function addApplicationFeatures(string $applicationId)
-    {
-        return $this->addFeatures(Constants::APPLICATION, $applicationId);
-    }
-
-    /**
      * Adds features to entities
      *
      * @todo: Remove the default null values once the feature_add route is
@@ -116,30 +92,6 @@ class FeatureController extends Controller
     public function getMerchantFeatures(string $merchantId)
     {
         return $this->getFeatures(Constants::MERCHANTS, $merchantId);
-    }
-
-    /**
-     * Returns the features assigned to the account
-     *
-     * @param string|null $accountId
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function getAccountFeatures(string $accountId)
-    {
-        return $this->getFeatures(Constants::ACCOUNTS, $accountId);
-    }
-
-    /**
-     * Returns the features assigned to the application
-     *
-     * @param string|null $applicationId
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function getApplicationFeatures(string $applicationId)
-    {
-        return $this->getFeatures(Constants::APPLICATIONS, $applicationId);
     }
 
     /**
