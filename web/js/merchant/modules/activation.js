@@ -42,11 +42,7 @@ export const saveFile = ({ step, file, fieldName, accountId = '' }) => {
     ngo_12a_proof: 'form_12a_url',
     ngo_80g_proof: 'form_80g_url',
   };
-  formData.append('file', file);
-  formData.append('file_name', fieldNameMapping[fieldName]);
-  if (accountId) {
-    formData.append('account_id', accountId);
-  }
+  formData.append(fieldNameMapping[fieldName], file);
 
   return {
     type: ACTIVATION_SAVE_FILE,
@@ -54,6 +50,7 @@ export const saveFile = ({ step, file, fieldName, accountId = '' }) => {
       url: 'merchant/activation/upload',
       method: 'post',
       data: formData,
+      accountId
     }),
     fileName: file.name,
     fieldName,

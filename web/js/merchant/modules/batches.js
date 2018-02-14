@@ -20,14 +20,10 @@ const fetchBatchAjax = id => {
 };
 
 const fetchBatchesAjax = (params, type) => {
+  params.type = type;
   return merchantFetch({
     url: 'batches',
-    data: {
-      query_params: JSON.stringify({
-        ...params,
-        type: type,
-      }),
-    },
+    params: params
   });
 };
 
@@ -45,12 +41,10 @@ export const fetchIssuableBatchList = batchIdList => {
     type: ISSUABLE_BATCHES,
     payload: merchantFetch({
       url: 'invoices/batches/issuable',
-      data: {
-        query_params: JSON.stringify({
-          batch_ids: batchIdList,
-        }),
-      },
-    }),
+      params: {
+        batch_ids: batchIdList,
+      }
+    })
   };
 };
 
@@ -86,12 +80,11 @@ export const fetchPaymentLinkBatches = params => {
 const uploadBatch = (actionType, batchType) => (file, mode, extraFields) => {
   let formData = new FormData();
   formData.append('file', file);
-  formData.append('file_name', 'file');
-  formData.append('body[type]', batchType);
+  formData.append('type', batchType);
 
   for (let key in extraFields) {
     if (extraFields.hasOwnProperty(key)) {
-      formData.append(`body[${key}]`, extraFields[key]);
+      formData.append(key, extraFields[key]);
     }
   }
 

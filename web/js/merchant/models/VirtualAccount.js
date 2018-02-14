@@ -36,7 +36,7 @@ export default class VirtualAccount extends GenericEntity {
 
   createTestPayment(data) {
     return merchantFetch({
-      url: `ecollect/validate`,
+      url: 'ecollect/validate',
       method: 'post',
       data,
     });

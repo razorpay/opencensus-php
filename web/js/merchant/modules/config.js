@@ -13,7 +13,14 @@ export const fetchConfigAjax = () => {
 };
 
 export const fetchFeaturesAjax = (currentUserId, mode) => {
-  return merchantFetch(`merchants/${currentUserId}/features`);
+  let params = {
+    url: `merchants/${currentUserId}/features`
+  }
+
+  if (mode) {
+    params.mode = mode;
+  }
+  return merchantFetch(params);
 };
 
 export const fetchConfig = () => {
@@ -60,16 +67,8 @@ export const updateConfig = data => {
 };
 
 export const uploadLogo = (file, fieldName) => {
-  let params = {
-    file_name: fieldName,
-    file: file,
-  };
-
   let formData = new FormData();
-  for (let field in params) {
-    let value = params[field];
-    formData.append(field, value);
-  }
+  formData.append(fieldName, file);
 
   return {
     type: MERCHANT_LOGO_UPLOADED,
