@@ -92,16 +92,11 @@ class MerchantTest extends TestCase
 
         $this->createUserMerchantMapping($user2['id'], $merchant['id'], 'manager');
 
-        $this->ba->proxyAuth('rzp_test_' . $user1['id']);
+        $this->ba->proxyAuth('rzp_live_' . $merchant['id']);
 
         $testData = & $this->testData[__FUNCTION__];
 
-        $content = [
-            'role'        => 'owner1',
-            'merchant_id' => $merchant['id']
-        ];
-
-        $testData['request']['url'] = '/merchants/' . $merchant['id'] . '/users';
+        $testData['request']['url'] = '/merchants/users';
 
         $response = $this->makeRequestAndGetContent($testData['request']);
 
