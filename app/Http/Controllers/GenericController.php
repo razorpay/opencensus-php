@@ -37,7 +37,9 @@ class GenericController extends Controller
 
     public function handleAny($mode, $path)
     {
-        $request = new App\Admin\ApiRequestAny($mode);
+        $request = new App\Admin\ApiRequestAny([
+            'mode' => $mode
+        ]);
 
         list($error, $data) = $request->send($path);
 

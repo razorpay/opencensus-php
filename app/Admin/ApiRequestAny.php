@@ -48,52 +48,88 @@ class ApiRequestAny
      * @param string $mode live|test
      * @param string $base_url base url of dashboard
      */
-    function __construct($mode, $routeName = null, $shouldProcessInput = true)
+    function __construct(array $options = [])
     {
         // Increase the time limit
         set_time_limit(600);
 
-        $this->mode = $mode;
+        // === Mode
 
-        $this->routeName = $routeName;
+        $this->mode = $options['mode'] ?? 'live';
+
+        // === Client Type
+
+        if (empty($options['client_type']) === true)
+        {
+            $routeName = Route::currentRouteName();
+
+            if (in_array($routeName, ['merchant', 'admin'], true) === false)
+            {
+                // Default
+                $this->clientType = 'user';
+            }
+        }
+        else
+        {
+            $this->clientType = $options['client_type'];
+        }
+
+        // === Headers
 
         $domain = \Request::server('SERVER_NAME');
 
-        $this->options = [
-            'headers' => [
-                'X-Dashboard'       => 'true',
-                'X-User-Agent'      => Request::header('User-Agent'),
-                'X-IP-Address'      => Request::ip(),
-                'X-Org-Hostname'    => $domain,
-            ],
+        $defaultHeaders = [
+            'X-Dashboard'       => 'true',
+            'X-User-Agent'      => Request::header('User-Agent'),
+            'X-IP-Address'      => Request::ip(),
+            'X-Org-Hostname'    => $domain,
         ];
 
-        $this->processRoute($mode);
+        $headers = $options['headers'] ?? [];
+        
+        $headers = array_merge($defaultHeaders, $headers);
 
-        $this->shouldProcessInput = $shouldProcessInput;
+        // === Request options
 
-        if ($this->shouldProcessInput === true)
-        {
-            $this->processInput();
-        }
+        $this->options = [
+            'headers' => $headers,
+        ];
 
         $base_url = Config::get('api.url');
 
-        // Create the guzzle client
+        // === Guzzle client
+
         $this->client = new Guzzle([
             'base_url' => $base_url
         ]);
 
+        // === Get API Route map config
+
         $this->routeMap = Config::get('api-route-map');
+
+        // === Process client specific headers
+
+        $this->processAuthHeaders();
+
+        // === Auto process input
+
+        $processInput = $options['process_input'] ?? true;
+
+        if ($processInput === true)
+        {
+            $this->processInput();
+        }
     }
 
-    public function processRoute($mode) {
+    public function processAuthHeaders() {
 
-        $routeName = $this->routeName ?? Route::currentRouteName();
+        $clientType = $this->clientType;
 
-        if (empty($routeName) === false) {
+        $baUser = null;
 
-            if ($routeName === 'merchant')
+        if (empty($clientType) === false) {
+
+            if ($clientType === 'merchant')
             {
                 $user = Auth::guard('user')->user();
 
@@ -115,11 +151,11 @@ class ApiRequestAny
                     $this->options['headers'][self::RAZORPAY_ACCOUNT_HEADER] = $accountId;
                 }
 
-                $mode .= '_' . $currentMerchant->id;
+                $baUser = $this->mode . '_' . $currentMerchant->id;
 
                 $pass = Config::get('api.auth_pass');
             }
-            else if ($routeName === 'admin')
+            else if ($clientType === 'admin')
             {
                 $adminUser = Auth::guard('api')->user();
 
@@ -141,9 +177,11 @@ class ApiRequestAny
 
                 $this->options['headers']['X-Admin-Token'] = $adminUser->token;
 
+                $baUser = $this->mode;
+
                 $pass = Config::get('api.auth_pass');
             }
-            else if ($routeName === 'user')
+            else if ($clientType === 'user')
             {
                 // NOTE: Merchant will be able to access the user/guest routes
 
@@ -159,16 +197,17 @@ class ApiRequestAny
                 }
 
                 // NOTE: We should NEVER hit this as Dashboard internal.
-                $mode = 'live';
+                $baUser = 'live';
 
                 $pass = Config::get('api.auth_pass');
             }
         }
 
-        // If we have a mode, set BasicAuth creds
-        if (empty($mode) === false) {
+        // Set BasicAuth creds
+        if (empty($baUser) === false)
+        {
             $this->options['auth'] = [
-                'rzp_' . $mode,
+                'rzp_' . $baUser,
                 $pass
             ];
         }

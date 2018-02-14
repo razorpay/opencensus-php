@@ -67,7 +67,7 @@ class Service extends Base\Service
         {
             // This is password based login
 
-            $request = new \App\Admin\ApiRequestAny('live', 'user');
+            $request = new \App\Admin\ApiRequestAny();
 
             list($error, $data) = $request->processInput($input)->send('admin/authenticate', 'POST');
 
@@ -89,7 +89,7 @@ class Service extends Base\Service
 
         // This is oAuth based login
 
-        $request = new Admin\ApiRequestAny('live', 'user');
+        $request = new Admin\ApiRequestAny();
 
         list($error, $data) = $request->send("admin/oauth_login?$input", 'POST');
 
@@ -127,7 +127,7 @@ class Service extends Base\Service
             ]);
 
             // 1. Save the data (oauth token and provider) to API
-            $request = new Admin\ApiRequestAny('live', 'user', false);
+            $request = new Admin\ApiRequestAny(['process_input' => false]);
 
             list($error, $updatedAdmin) = $request->send("admin-app-auth/{$admin['id']}?$updateData", 'PUT');
 
@@ -410,7 +410,7 @@ class Service extends Base\Service
     {
         $input[Merchant\Entity::EMAIL] = strtolower($input[Merchant\Entity::EMAIL]);
 
-        $request = new \App\Admin\ApiRequestAny('live', 'admin');
+        $request = new \App\Admin\ApiRequestAny(['client_type' => 'admin']);
 
         list($error, $data) = $request->processInput($input)->send("merchants/$id/email", 'PUT');
 
@@ -672,20 +672,15 @@ class Service extends Base\Service
             return [['id' => 'Merchant id cannot be null'], []];
         }
 
-        // @todo
-        $requestConfig = [
-            'route_name'    => 'merchant_details_fetch',
-            'account_id'    => $id,
-            'merchant_id'   => $id,
-        ];
+        $request = new \App\Admin\ApiRequestAny([
+            'client_type' => 'admin',
+            'headers' => [
+                'X-Razorpay-Account' => $id,
+                'X-Merchant-Id'      => $id
+            ]
+        ]);
 
-        $genericService = new Generic\Service;
-
-        list($error, $response) = $genericService->call('GET', $requestConfig);
-
-        // $request = new \App\Admin\ApiRequestAny('live', 'admin');
-
-        // list($error, $response) = $request->send('merchants/details', 'GET');
+        list($error, $response) = $request->send('merchants/details', 'GET');
 
         if (empty($error) === false)
         {
@@ -1129,7 +1124,7 @@ class Service extends Base\Service
 
     public function getOrg($domain)
     {
-        $request = new Admin\ApiRequestAny('live', 'user');
+        $request = new Admin\ApiRequestAny();
 
         list($error, $data) = $request->send("orgs/hostname/$domain");
 
@@ -1163,7 +1158,7 @@ class Service extends Base\Service
                 'token' => $admin->token
             ];
 
-            $request = new Admin\ApiRequestAny('live', 'user');
+            $request = new Admin\ApiRequestAny();
 
             list($error, $data) = $request->processInput($body)->send('current_admin', 'POST');
         }
@@ -1237,7 +1232,7 @@ class Service extends Base\Service
 
         try
         {
-            $request = new \App\Admin\ApiRequestAny('live', 'admin');
+            $request = new \App\Admin\ApiRequestAny(['client_type' => 'admin']);
 
             list($error, $data) = $request->send('admin/logout', 'POST');
 

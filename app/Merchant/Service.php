@@ -83,7 +83,7 @@ class Service extends Base\Service
 
     public function resendConfirmation()
     {
-        $request = new \App\Admin\ApiRequestAny('live', 'user');
+        $request = new \App\Admin\ApiRequestAny();
 
         list($error, $data) = $request->send('users/resend-verification', 'POST');
 
@@ -232,7 +232,7 @@ class Service extends Base\Service
             unset($input['bank_account_number_confirmation']);
         }
 
-        $request = new \App\Admin\ApiRequestAny('live', 'merchant');
+        $request = new \App\Admin\ApiRequestAny(['client_type' => 'merchant']);
 
         list($error, $data) = $request->processInput($input)->send('merchant/activation', 'POST');
 
@@ -262,15 +262,7 @@ class Service extends Base\Service
 
         $field = self::UPLOAD_KEYS[key($input)];
 
-        // @todo
-        
-        $saveActivationFilesData = [
-            'route_name' => 'merchant_activation_upload_file',
-            'file_name' => $field,
-            'file' => current($input)
-        ];
-
-        $request = new \App\Admin\ApiRequestAny('live', 'merchant');
+        $request = new \App\Admin\ApiRequestAny(['client_type' => 'merchant']);
 
         list($error, $data) = $request->send('merchant/activation/upload', 'POST');
 
@@ -327,7 +319,7 @@ class Service extends Base\Service
 
     public function savePreSignupDetails($input)
     {
-        $request = new \App\Admin\ApiRequestAny('live', 'merchant');
+        $request = new \App\Admin\ApiRequestAny(['client_type' => 'merchant']);
 
         list($error, $data) = $request->processInput($input)->send('pre_signup', 'PUT');
 
@@ -382,7 +374,7 @@ class Service extends Base\Service
 
     public function getMerchantUsers($merchantId)
     {
-        $request = new \App\Admin\ApiRequestAny('live', 'user');
+        $request = new \App\Admin\ApiRequestAny();
 
         list($error, $data) = $request->send("merchants/$merchantId/users", 'GET');
 
@@ -400,7 +392,7 @@ class Service extends Base\Service
 
     public function getMerchantTags($merchantId)
     {
-        $request = new \App\Admin\ApiRequestAny('live', 'user');
+        $request = new \App\Admin\ApiRequestAny();
 
         list($error, $data) = $request->send("merchants/$merchantId/tags", 'GET');
 
@@ -422,7 +414,7 @@ class Service extends Base\Service
             'tags' => $tags
         ];
 
-        $request = new \App\Admin\ApiRequestAny('live', 'user');
+        $request = new \App\Admin\ApiRequestAny();
 
         list($error, $data) = $request->processInput($body)->send("merchants/$merchantId/tags", 'POST');
     }

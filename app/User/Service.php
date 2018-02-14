@@ -63,7 +63,7 @@ class Service extends Base\Service
      */
     public function register($input)
     {
-        $request = new \App\Admin\ApiRequestAny('live', 'user');
+        $request = new \App\Admin\ApiRequestAny();
 
         list($error, $data) = $request->processInput($input)->send('users/register', 'POST');
 
@@ -161,7 +161,7 @@ class Service extends Base\Service
             'user_id'       =>  $authUser->id,
         ];
 
-        $request = new \App\Admin\ApiRequestAny('live', 'user');
+        $request = new \App\Admin\ApiRequestAny();
 
         list($error, $data) = $request->processInput($data)->send('users/upgrade-merchant', 'POST');
 
@@ -192,7 +192,7 @@ class Service extends Base\Service
             $passwordData['old_password'] = $data['old_password'];
         }
 
-        $request = new \App\Admin\ApiRequestAny('live', 'user');
+        $request = new \App\Admin\ApiRequestAny();
 
         list($error, $data) = $request->processInput($passwordData)->send("users/$userId/password", 'PUT');
 
@@ -414,7 +414,7 @@ class Service extends Base\Service
 
     public function loginOnApi(array $input)
     {
-        $request = new \App\Admin\ApiRequestAny('live', 'user');
+        $request = new \App\Admin\ApiRequestAny();
 
         list($error, $data) = $request->processInput($input)->send('users/login', 'POST');
 
@@ -430,7 +430,7 @@ class Service extends Base\Service
 
     public function getUserFromApi($userId)
     {
-        $request = new \App\Admin\ApiRequestAny('live', 'user');
+        $request = new \App\Admin\ApiRequestAny();
 
         list($error, $data) = $request->send("users/$userId");
 

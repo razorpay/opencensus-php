@@ -33,7 +33,7 @@ class Service extends Base\Service
             'user_id' => $user->id
         ];
 
-        $request = new \App\Admin\ApiRequestAny('live', 'user');
+        $request = new \App\Admin\ApiRequestAny();
 
         list($error, $data) = $request->processInput($body)->send("invitations/$inviteId/accept", 'POST');
 
