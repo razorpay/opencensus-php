@@ -98,6 +98,10 @@ class BharatQrPaymentTest extends TestCase
 
         $request['content']['merchantTranId'] = $qrCodeId;
 
+        $content = $this->getMockServer('upi_icici')->getAsyncCallbackContentForBharatQr($request['content']);
+
+        $request['raw'] = $content;
+
         $response = $this->makeRequestAndGetContent($request);
 
         $xmlResponse = $response['original'];

@@ -160,7 +160,7 @@ class Entity extends Base\PublicEntity
 
     public function getVpa()
     {
-        return $this->getAttribute(self::CARD_LAST4);
+        return $this->getAttribute(self::VPA);
     }
 
     public function isExpected()

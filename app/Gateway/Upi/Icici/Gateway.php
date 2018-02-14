@@ -284,7 +284,7 @@ class Gateway extends Base\Gateway
      */
     protected function getPublicKey(): string
     {
-        $key = $this->config['live_public_key'];
+        $key = $this->config['live_private_key'];
 
         if ($this->mode === Mode::TEST)
         {
@@ -873,7 +873,7 @@ class Gateway extends Base\Gateway
             BharatQr\Entity::VPA                   => $input[Fields::PAYER_VA],
             BharatQr\Entity::METHOD                => Payment\Method::UPI,
             BharatQr\Entity::MERCHANT_REFERENCE    => $input[Fields::MERCHANT_TRAN_ID],
-            BharatQr\Entity::PROVIDER_REFERENCE_ID => $input[Fields::BANK_RRN],
+            BharatQr\Entity::PROVIDER_REFERENCE_ID => (string) $input[Fields::BANK_RRN],
         ];
 
         return $qrData;

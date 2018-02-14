@@ -295,6 +295,15 @@ class Server extends Base\Mock\Server
         return base64_encode($encrypted);
     }
 
+    public function getAsyncCallbackContentForBharatQr(array $content)
+    {
+        $json = json_encode($content, JSON_PRETTY_PRINT);
+
+        $encrypted = $this->encrypt($json);
+
+        return base64_encode($encrypted);
+    }
+
     protected function S2SRequestContent(array $upiEntity, array $payment)
     {
         // Format is 20160830152240
