@@ -210,6 +210,35 @@ return [
         ],
     ],
 
+    'testCreateInvoiceWithDefinedDisplayName' => [
+        'request'  => [
+            'url'     => '/invoices',
+            'method'  => 'post',
+            'content' => [
+                'customer_id' => 'cust_100000customer',
+                'line_items'  => [
+                    [
+                        'name'        => 'Some item name',
+                        'description' => 'Some item description',
+                        'amount'      => 100000,
+                    ]
+                ],
+                'currency'    => 'INR',
+                'date'        => 1480666664,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status'           => 'issued',
+                'sms_status'       => 'pending',
+                'email_status'     => 'pending',
+                'date'             => 1480666664,
+                'view_less'        => true,
+                'amount'           => 100000
+            ],
+        ],
+    ],
+
     'testCreateLinkWithSource' => [
         'request' => [
             'url' => '/invoices',

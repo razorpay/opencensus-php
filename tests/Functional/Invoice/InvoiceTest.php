@@ -89,6 +89,25 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateInvoiceWithDefinedDisplayName()
+    {
+        $merchanLabel = 'Awesome and Co';
+
+        $merchantAttrs = [
+            'name'               => 'ASD Enterprise',
+            'billing_label'      => $merchanLabel,
+            'invoice_name_field' => 'billing_label',
+        ];
+
+        $this->fixtures->merchant->edit('10000000000000', $merchantAttrs);
+
+        $this->startTest();
+
+        $invoice = $this->getLastEntity('invoice', true);
+
+        $this->assertEquals($merchanLabel, $invoice['merchant_label']);
+    }
+
     public function testCreateInvoiceAndPay()
     {
         Mail::fake();
