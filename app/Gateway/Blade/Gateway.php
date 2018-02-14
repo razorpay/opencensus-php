@@ -120,7 +120,7 @@ class Gateway extends Base\Gateway
 
         $eci = $gatewayPayment->getEci();
 
-        if (in_array($input['merchant']['id'], ['6ZJzxyLFWrGs74','10000000000000'], true))
+        if (in_array($input['merchant']['id'], ['6ZJzxyLFWrGs74','10000000000000'], true) === true)
         {
             $networkCode = Card\Network::getCode($input['card']['network']);
 
@@ -164,7 +164,7 @@ class Gateway extends Base\Gateway
             return true;
         }
         if ((in_array($networkCode, [card\Network::MC,Card\Network::MAES], true)) and
-            (($eci === '02') or ($eci === '01' and $isInternational ===true)))
+            (($eci === '02') or ($eci === '01' and $isInternational === true)))
         {
             return true;
         }
