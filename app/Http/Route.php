@@ -1098,7 +1098,6 @@ final class Route
         'payment_dispute_create',
         'dispute_migrate_adjustments',
         'adjustments_split_for_dispute',
-        'dispute_reason_create',
         'gratis_postpaid_transactions',
         'virtual_account_refund_excess',
         'risk_create',
@@ -1354,6 +1353,8 @@ final class Route
         'refund_verify_failed',
         'merchant_edit_email',
         'gateway_file_create',
+        'dispute_reason_create',
+        'merchant_tags_bulk',
     ];
 
     public static $routePermission = [
@@ -1503,6 +1504,7 @@ final class Route
         'batch_process_by_id'                    => Permission::RETRY_BATCH,
         'reports_refund_irctc'                   => '*',
         'merchant_get_tags'                      => '*',
+        'merchant_tags_bulk'                     => '*',
     ];
 
     public static $direct = [
