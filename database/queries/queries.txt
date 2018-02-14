@@ -2784,12 +2784,6 @@ ALTER TABLE virtual_accounts
 ALTER TABLE `merchants`
     ADD COLUMN `channel` VARCHAR(32) DEFAULT 'kotak' AFTER `billing_label`;
 
-ALTER TABLE merchant_banks
-    ADD COLUMN emandate TINYINT(1) DEFAULT 0 NOT NULL AFTER upi;
-
-ALTER TABLE terminals
-    ADD COLUMN emandate TINYINT(1) DEFAULT 0 NOT NULL AFTER upi;
-
 ALTER TABLE payments
     CHANGE COLUMN `global_token` `auth_type` VARCHAR(14) DEFAULT NULL;
 
@@ -2916,3 +2910,15 @@ ALTER TABLE workflow_permissions
 
 ALTER TABLE migrations
     ADD UNIQUE INDEX migrations_migration_unique (migration);
+
+ALTER TABLE terminals
+    ADD COLUMN emandate TINYINT(1) DEFAULT 0 NOT NULL AFTER upi;
+
+ALTER TABLE tokens
+    ADD COLUMN `auth_type` VARCHAR(14) DEFAULT NULL after gateway_token2;
+
+ALTER TABLE merchant_banks
+    ADD COLUMN emandate TINYINT(1) DEFAULT 0 NOT NULL AFTER upi;
+
+ALTER TABLE terminals
+    ADD COLUMN emandate TINYINT(1) DEFAULT 0 NOT NULL AFTER upi;
