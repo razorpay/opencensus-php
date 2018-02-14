@@ -300,12 +300,16 @@ class MerchantTest extends TestCase
     {
         $this->createMerchant();
 
+        $this->ba->adminAuth();
+
         $this->startTest();
     }
 
     public function testEditMerchantUppercaseEmail()
     {
         $this->createMerchant();
+
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
@@ -314,11 +318,15 @@ class MerchantTest extends TestCase
     {
         $this->createMerchant();
 
+        $this->ba->adminAuth();
+
         $this->startTest();
     }
 
     public function testEditTestAccountMerchantEmail()
     {
+        $this->ba->adminAuth();
+
         $this->startTest();
     }
 
@@ -1995,7 +2003,7 @@ class MerchantTest extends TestCase
         $merchant->reTag(["ref-10000000000000"]);
         $merchant->saveOrFail();
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $this->startTest();
     }

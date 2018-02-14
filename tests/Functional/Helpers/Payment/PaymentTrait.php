@@ -897,7 +897,7 @@ trait PaymentTrait
             'url'    => '/payments/'.$id.'/authorize_failed',
             'method' => 'post');
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 

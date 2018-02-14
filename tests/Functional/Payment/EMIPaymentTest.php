@@ -97,7 +97,7 @@ class EMIPaymentTest extends TestCase
             'url' => '/emi/generate/excel',
             'content' => []);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 

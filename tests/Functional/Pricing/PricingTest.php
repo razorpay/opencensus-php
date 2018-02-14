@@ -26,6 +26,8 @@ class PricingTest extends TestCase
 
         $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
 
+        $this->ba->adminAuth();
+
         $this->startTest($testData);
     }
 
@@ -71,6 +73,8 @@ class PricingTest extends TestCase
 
         $testData['request']['url'] = '/pricing/'.$content['id'] . '/rule';
 
+        $this->ba->adminAuth();
+
         $this->startTest($testData);
     }
 
@@ -79,6 +83,8 @@ class PricingTest extends TestCase
         $content = $this->createPricingPlan();
 
         $testData['request']['url'] = '/pricing/'.$content['id'] . '/rule';
+
+        $this->ba->adminAuth();
 
         $this->startTest($testData);
     }
@@ -89,6 +95,8 @@ class PricingTest extends TestCase
 
         $testData['request']['url'] = '/pricing/'.$content['id'] . '/rule';
 
+        $this->ba->adminAuth();
+
         $this->startTest($testData);
     }
 
@@ -98,6 +106,8 @@ class PricingTest extends TestCase
 
         $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
 
+        $this->ba->adminAuth();
+
         $this->startTest($testData);
     }
 
@@ -106,6 +116,8 @@ class PricingTest extends TestCase
         $content = $this->createPricingPlan();
 
         $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->ba->adminAuth();
 
         $this->startTest($testData);
     }
@@ -117,16 +129,16 @@ class PricingTest extends TestCase
         $testData['request']['url'] = '/pricing/'.$id;
         $testData['request']['method'] = 'GET';
 
-        $this->ba->appAuth('rzp_test');
+        $this->ba->adminAuth('test');
         $this->startTest($testData);
 
-        $this->ba->appAuth('rzp_live');
+        $this->ba->adminAuth('live');
         $this->startTest($testData);
     }
 
     public function testGetPricingNetworks()
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $response = $this->startTest();
 
@@ -145,24 +157,26 @@ class PricingTest extends TestCase
         $this->createPricingPlan();
         $this->createPricingPlan2();
 
-        $this->ba->appAuth('rzp_test');
+        $this->ba->adminAuth('test');
         $this->startTest();
 
-        $this->ba->appAuth('rzp_live');
+        $this->ba->adminAuth('live');
         $this->startTest();
     }
 
     public function testGetPricingPlansGrouping()
     {
+        $this->ba->adminAuth();
+
         $content = $this->createPricingPlan();
         $this->createPricingPlan2();
 
         $this->addPricingPlanRule($content['id']);
 
-        $this->ba->appAuth('rzp_test');
+        $this->ba->adminAuth('test');
         $this->startTest();
 
-        $this->ba->appAuth('rzp_live');
+        $this->ba->adminAuth('live');
         $this->startTest();
     }
 
@@ -348,6 +362,8 @@ class PricingTest extends TestCase
     public function testAddDuplicateWalletPricingRule()
     {
         $testData['request']['url'] = '/pricing/'. '1hDYlICobzOCYt' . '/rule';
+
+        $this->ba->adminAuth();
 
         $this->startTest($testData);
     }
