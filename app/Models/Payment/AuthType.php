@@ -11,19 +11,28 @@ class AuthType
     const DEBIT_PIN     = 'debit_pin';
 
     public static $types = [
-        self::NETBANKING,
-        self::AADHAAR,
-        self::DEBIT_PIN,
+        Method::EMANDATE => [
+            self::NETBANKING,
+            self::AADHAAR,
+        ],
+        Method::CARD    => [
+            self::DEBIT_PIN,
+        ],
     ];
 
-    public static function isAuthTypeValid($type): bool
+    public static function isAuthTypeValid($type, $method): bool
     {
-        return (in_array($type, self::$types, true) === true);
+        if (isset(self::$types[$method]) === false)
+        {
+            return false;
+        }
+
+        return (in_array($type, self::$types[$method], true) === true);
     }
 
-    public static function validateAuthType($type)
+    public static function validateAuthType($type, $method)
     {
-        if (self::isAuthTypeValid($type) === false)
+        if (self::isAuthTypeValid($type, $method) === false)
         {
             throw new InvalidArgumentException(
                 'Invalid auth type',

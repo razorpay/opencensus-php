@@ -504,9 +504,19 @@ class TransactionFilter extends Terminal\Filter
             return true;
         }
 
-        if ($payment->getAuthType() === Payment\AuthType::DEBIT_PIN)
+        if (($payment->getAuthType() === Payment\AuthType::DEBIT_PIN) and
+            ($terminal->isDebitPin() === true))
         {
-            if ((in_array($terminal->getGateway(), Gateway::$debitPinGateways, true) === true) and
+            $debitPinGateways = Gateway::$debitPinGateways;
+
+            $gateway = $terminal->getGateway();
+            $acquirer = $terminal->getAcquirer();
+
+            $iin = $payment->card->iin;
+
+            if ((isset($debitPinGateways[$gateway]) === true) and
+                (isset($debitPinGateways[$gateway][$acquirer]) === true) and
+                (in_array($iin->getIssuer(), $debitPinGateways[$gateway][$acquirer], true) === true) and
                 ($payment->card->iin->supports(Flows::DEBIT_PIN) === true))
             {
                 return true;

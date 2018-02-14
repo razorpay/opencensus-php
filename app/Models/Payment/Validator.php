@@ -139,6 +139,7 @@ class Validator extends Base\Validator
         // due to dot notation, we cannot use it.
         'token_max_amount',
         'token_expire_by',
+        'auth_type',
     ];
 
     protected function validateIfsc(array $input)
@@ -197,6 +198,16 @@ class Validator extends Base\Validator
                     'payment_id'        => $this->entity->getId(),
                 ]);
         }
+    }
+
+    protected function validateAuthType(array $input)
+    {
+        if (isset($input[Entity::AUTH_TYPE]) === false)
+        {
+            return;
+        }
+
+        AuthType::validateAuthType($input[Entity::AUTH_TYPE], $input[Entity::METHOD]);
     }
 
     protected function validateUpiExpiryTime(array $input)
