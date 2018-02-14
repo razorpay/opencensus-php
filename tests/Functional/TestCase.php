@@ -7,9 +7,10 @@
 
 namespace RZP\Tests\Functional;
 
-use Carbon\Carbon;
-use Redis;
 use Artisan;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Redis;
+
 use RZP\Services\EsClient;
 use RZP\Tests\TestCase as ParentTestCase;
 

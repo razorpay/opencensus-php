@@ -7,6 +7,7 @@ use Mail;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
+use RZP\Services\Mutex;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -24,8 +25,13 @@ class Core extends Base\Core
 {
     use FileHandlerTrait;
 
-    const DEBIT_ADJUSTMENT_DESCRIPTION = 'Debit disputed amount';
+    const DEBIT_ADJUSTMENT_DESCRIPTION  = 'Debit disputed amount';
     const CREDIT_ADJUSTMENT_DESCRIPTION = 'Credit to reverse a previous dispute debit';
+
+    /**
+     * @var Mutex
+     */
+    protected $mutex;
 
     public function __construct()
     {
@@ -40,6 +46,7 @@ class Core extends Base\Core
      * @param array          $input
      *
      * @return Entity
+     * @throws \RZP\Exception\BadRequestException
      */
     public function create(
         Payment\Entity $payment,
@@ -106,6 +113,7 @@ class Core extends Base\Core
      * @param array  $input
      *
      * @return Entity
+     * @throws \RZP\Exception\BadRequestException
      */
     public function update(Entity $dispute, array $input): Entity
     {
@@ -144,14 +152,17 @@ class Core extends Base\Core
 
     /**
      * @param Entity $dispute
-     * @param array $input
-     * @return array
+     * @param array  $input
+     *
+     * @return Entity
      */
-    public function updateFilesAndInputForMerchant(Entity $dispute, array $input): array
+    public function updateFilesAndInputForMerchant(Entity $dispute, array $input): Entity
     {
         $this->trace->info(
             TraceCode::DISPUTE_EDIT_REQUEST_FOR_MERCHANT,
             [Entity::ID => $dispute->getId()]);
+
+        $dispute->getValidator()->validateForMerchantUpdate($input);
 
         $files = [];
 
@@ -166,24 +177,26 @@ class Core extends Base\Core
             unset($input[DisputeFileEntity::FILES]);
         }
 
-        $response = $this->repo->transaction(function() use ($dispute, $fileCore, $files, $input)
+        $dispute = $this->repo->transaction(function() use ($dispute, $fileCore, $files, $input)
         {
             if (empty($input) === false)
             {
                 $dispute = $this->updateForMerchant($dispute, $input);
             }
 
-            $response = $dispute->toArrayPublic();
-
-            if (empty($files) === false )
+            if (empty($files) === false)
             {
-                $response['files'] = $fileCore->uploadFiles($dispute, $files);
+                $fileCore->uploadFiles($dispute, $files);
             }
 
-            return $response;
+            return $dispute;
         });
 
-        return $response;
+        //
+        // Load the 'files' relation on the dispute entity
+        // before return
+        //
+        return $dispute->load(Entity::FILES);
     }
 
     /**
@@ -191,6 +204,7 @@ class Core extends Base\Core
      * @param array  $input
      *
      * @return Entity
+     * @throws \RZP\Exception\BadRequestException
      */
     public function updateForMerchant(Entity $dispute, array $input): Entity
     {
@@ -513,17 +527,24 @@ class Core extends Base\Core
 
     protected function generateInputForMerchantEdit(Entity $dispute, array $input): array
     {
-        if (empty($input[Entity::ACCEPT_DISPUTE]) === false)
+        $submit        = (bool) ($input[Entity::SUBMIT] ?? false);
+        $acceptDispute = (bool) ($input[Entity::ACCEPT_DISPUTE] ?? false);
+
+        if ($acceptDispute === true)
         {
             $input[Entity::STATUS] = Status::LOST;
 
-            if (in_array($dispute->getPhase(), Phase::getNonTransactionalPhases()) === true)
+            if (in_array($dispute->getPhase(), Phase::getNonTransactionalPhases(), true) === true)
             {
                 $input[Entity::STATUS] = Status::CLOSED;
             }
-
-            unset($input[Entity::ACCEPT_DISPUTE]);
         }
+        else if ($submit === true)
+        {
+            $input[Entity::STATUS] = Status::UNDER_REVIEW;
+        }
+
+        unset($input[Entity::ACCEPT_DISPUTE], $input[Entity::SUBMIT]);
 
         return $input;
     }
