@@ -96,8 +96,6 @@ class AdminTest extends TestCase
             Admin\Entity::EMAIL   => 'xyz@rzp.com',
         ]);
 
-        $this->ba->adminAuth();
-
         $this->startTest();
     }
 
