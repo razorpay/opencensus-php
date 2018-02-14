@@ -1593,6 +1593,24 @@ final class Route
             'mock_hdfc_payment',
         ],
 
+        // These are the only internal routes
+        // that can be hit by merchant dashboard
+        'dashboard_guest'   =>  [
+            'user_login',
+            'user_register',
+            'org_get_by_hostname',
+            'user_reset_password_create',
+            'user_merchant_upgrade',
+            'user_change_password',
+            'user_fetch',
+            'invitation_action',
+            'user_fetch_email',
+            'merchant_admin_lead_put',
+            'invitation_fetch_by_token',
+            'user_resend_verification',
+            'user_reset_password_token',
+        ],
+
         'cron' => [
             'entity_tax_update',
             'setl_initiate',
