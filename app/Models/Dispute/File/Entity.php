@@ -47,8 +47,8 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $public = [
-        self::DISPUTE_ID,
         self::FILE_ID,
+        self::DISPUTE_ID,
         self::NAME,
         self::CATEGORY,
         self::CREATED_AT,
@@ -57,6 +57,11 @@ class Entity extends Base\PublicEntity
     protected $dates = [
         self::CREATED_AT,
         self::UPDATED_AT,
+    ];
+
+    protected $publicSetters = [
+        self::ENTITY,
+        self::DISPUTE_ID,
     ];
 
     protected $guarded = [self::ID];
@@ -75,6 +80,11 @@ class Entity extends Base\PublicEntity
     {
         return $this->belongsTo(Dispute\Entity::class);
     }
+
+    public function setPublicDisputeIdAttribute(array & $array)
+    {
+        $disputeId = $this->getAttribute(self::DISPUTE_ID);
+
+        $array[self::DISPUTE_ID] = Dispute\Entity::getSignedIdOrNull($disputeId);
+    }
 }
-
-

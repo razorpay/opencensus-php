@@ -84,7 +84,7 @@ class SubscriptionAuthTransactionTest extends TestCase
     {
         $subscription = $this->createSubscription(false);
 
-        $oldScheduleTask = $this->getLastEntity('schedule_task', true);
+        $oldScheduleTask = $this->getDbLastEntityPublic('schedule_task');
 
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription, 2000);
 
@@ -213,7 +213,7 @@ class SubscriptionAuthTransactionTest extends TestCase
     {
         $subscription = $this->createSubscription(false, [], [], true);
 
-        $oldScheduleTask = $this->getLastEntity('schedule_task', true);
+        $oldScheduleTask = $this->getDbLastEntityPublic('schedule_task');
 
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription, 2300);
 
