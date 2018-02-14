@@ -530,6 +530,13 @@ class Core extends Base\Core
 
     protected function firePaymentDisputedEvent(Payment\Entity $payment, Entity $dispute)
     {
+        //
+        // `reason_description` should not be exposed on API or webhook responses.
+        // However, since the dispute is created via admin dashboard, the publicSetter
+        // used to under reason_description will not work in this flow
+        //
+        $dispute->makeHidden(Entity::REASON_DESCRIPTION);
+
         $eventPayload = [
             ApiEventSubscriber::MAIN => $payment,
             ApiEventSubscriber::WITH => [
