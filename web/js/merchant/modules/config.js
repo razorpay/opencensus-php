@@ -9,7 +9,7 @@ const CONFIG_SAVE = 'CONFIG_SAVE';
 const FEATURES_SAVE = 'FEATURES_SAVE';
 
 export const fetchConfigAjax = () => {
-  return merchantFetch('get_config');
+  return merchantFetch('account/config');
 };
 
 export const fetchFeaturesAjax = (currentUserId, mode) => {
