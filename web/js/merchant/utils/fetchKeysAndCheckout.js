@@ -1,19 +1,8 @@
-import ajax from 'merchant/utils/ajax';
+import { merchantFetch } from 'rzp/utils/ajax';
 import loadScript from 'rzp/utils/loadScript';
 
 export const fetchKeys = currentUser => {
-  let params = {
-    route_name: 'merchant_fetch_keys',
-    url_params: {
-      '{id}': currentUser,
-    },
-  };
-
-  return ajax({
-    url: '/user/generic',
-    data: params,
-    appendModeInQueryParam: true,
-  }).then(response => {
+  return merchantFetch('keys').then(response => {
     if (response.data.count) {
       return response.data.items[0].id;
     }
