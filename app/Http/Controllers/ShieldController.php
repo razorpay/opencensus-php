@@ -14,14 +14,14 @@ class ShieldController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function get($id)
+    public function get(string $id)
     {
         $response = $this->app['shield']->getRuleById($id);
 
         return ApiResponse::json($response);
     }
 
-    public function update($id)
+    public function update(string $id)
     {
         $input = Request::all();
 
@@ -30,7 +30,7 @@ class ShieldController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function delete($id)
+    public function delete(string $id)
     {
         $response = $this->app['shield']->deleteRuleById($id);
 

@@ -647,12 +647,12 @@ final class Route
         'risk_get'                                => ['get',      'risk/{id}',                                      'RiskController@get'                                                ],
 
         // Shield Routes
-        'rules_get_multiple'                      => ['get',       'shield/rules',                                  'ShieldController@list'                                             ],
-        'rules_get'                               => ['get',       'shield/rules/{id}',                             'ShieldController@get'                                              ],
-        'rules_update'                            => ['put',       'shield/rules/{id}',                             'ShieldController@update'                                           ],
-        'rules_delete'                            => ['delete',    'shield/rules/{id}',                             'ShieldController@delete'                                           ],
-        'rules_create'                            => ['post',      'shield/rules',                                  'ShieldController@create'                                           ],
-        'rules_evaluate'                          => ['post',      'shield/rules/evaluate',                         'ShieldController@evaluate'                                         ],
+        'shield_rules_get_multiple'               => ['get',       'shield/rules',                                  'ShieldController@list'                                             ],
+        'shield_rules_get'                        => ['get',       'shield/rules/{id}',                             'ShieldController@get'                                              ],
+        'shield_rules_update'                     => ['put',       'shield/rules/{id}',                             'ShieldController@update'                                           ],
+        'shield_rules_delete'                     => ['delete',    'shield/rules/{id}',                             'ShieldController@delete'                                           ],
+        'shield_rules_create'                     => ['post',      'shield/rules',                                  'ShieldController@create'                                           ],
+        'shield_rules_evaluate'                   => ['post',      'shield/rules/evaluate',                         'ShieldController@evaluate'                                         ],
 
         // Dispute routes
         'payment_dispute_create'                  => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
@@ -1165,12 +1165,6 @@ final class Route
         'transaction_bulk_update',
         'setl_update_channel_bulk',
         'merchant_tags_bulk',
-        'rules_get_multiple',
-        'rules_get',
-        'rules_create',
-        'rules_update',
-        'rules_delete',
-        'rules_evaluate',
     ];
 
     public static $proxy = [
@@ -1363,6 +1357,12 @@ final class Route
         'onboarding_features_fetch_status',
         'onboarding_features_bulk_update_status',
         'onboarding_features_update',
+        'shield_rules_get_multiple',
+        'shield_rules_get',
+        'shield_rules_create',
+        'shield_rules_update',
+        'shield_rules_delete',
+        'shield_rules_evaluate',
     ];
 
     public static $routePermission = [
@@ -1512,6 +1512,12 @@ final class Route
         'batch_process_by_id'                    => Permission::RETRY_BATCH,
         'reports_refund_irctc'                   => '*',
         'merchant_get_tags'                      => '*',
+        'shield_rules_get_multiple'              => Permission::VIEW_SHIELD_RULES,
+        'shield_rules_get'                       => Permission::VIEW_SHIELD_RULES,
+        'shield_rules_create'                    => Permission::CREATE_SHIELD_RULES,
+        'shield_rules_update'                    => Permission::EDIT_SHIELD_RULES,
+        'shield_rules_delete'                    => Permission::DELETE_SHIELD_RULES,
+        'shield_rules_evaluate'                  => Permission::EVALUATE_SHIELD_RULES,
     ];
 
     public static $direct = [

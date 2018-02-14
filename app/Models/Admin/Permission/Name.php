@@ -162,6 +162,11 @@ class Name
     const MANAGE_ONBOARDING_SUBMISSIONS       = 'manage_onboarding_submissions';
     const EDIT_MERCHANT_RISK_THRESHOLD        = 'edit_merchant_risk_threshold';
     const RETRY_BATCH                         = 'retry_batch';
+    const VIEW_SHIELD_RULES                   = 'view_shield_rules';
+    const CREATE_SHIELD_RULES                 = 'create_shield_rules';
+    const EDIT_SHIELD_RULES                   = 'edit_shield_rules';
+    const DELETE_SHIELD_RULES                 = 'delete_shield_rules';
+    const EVALUATE_SHIELD_RULES               = 'evaluate_shield_rules';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                => self::EDIT_MERCHANT_ARCHIVE,

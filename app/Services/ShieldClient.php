@@ -10,7 +10,7 @@ class ShieldClient
 {
     const RULES = '/rules/';
 
-    const EVALUATE = "/rules/evaluate";
+    const EVALUATE = '/rules/evaluate';
 
     const X_RULESET = 'x-ruleset';
 
@@ -70,7 +70,7 @@ class ShieldClient
     {
         $headers = $this->getShieldHeaders();
         $options = [
-            "auth" => $this->getAuthHeaders()
+            'auth' => $this->getAuthHeaders()
         ];
 
         $content = '';
@@ -94,11 +94,11 @@ class ShieldClient
         catch(\Requests_Exception $e)
         {
             $data = [
-                "exception"     => $e->getMessage(),
-                "url"           => $url,
-                "input"         => $data,
-                "response_code" => $response->status_code,
-                "response_body" => $response->body
+                'exception'     => $e->getMessage(),
+                'url'           => $url,
+                'input'         => $data,
+                'response_code' => $response->status_code,
+                'response_body' => $response->body
             ];
 
             $this->trace->error(TraceCode::SHIELD_INTEGRATION_ERROR, $data);
@@ -119,8 +119,7 @@ class ShieldClient
     {
         return [
             self::X_RULESET    => $this->ruleset,
-            self::CONTENT_TYPE => "application/json",
+            self::CONTENT_TYPE => 'application/json',
         ];
     }
-
 }

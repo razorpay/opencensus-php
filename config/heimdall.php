@@ -498,7 +498,30 @@ return [
                 'description' => 'Retry batch processing',
                 'assignable'  => true,
             ]
-        ]
+        ],
+
+        PermissionCategory::SHIELD => [
+            Permission::VIEW_SHIELD_RULES  => [
+                'description' => 'View shield rules',
+                'assignable'  => false
+            ],
+            Permission::CREATE_SHIELD_RULES => [
+                'description' => 'Create shield rules',
+                'assignable'  => false
+            ],
+            Permission::EDIT_SHIELD_RULES   => [
+                'description' => 'Edit shield rules',
+                'assignable'  => false
+            ],
+            Permission::DELETE_SHIELD_RULES => [
+                'description' => 'Delete shield rules',
+                'assignable'  => false
+            ],
+            Permission::EVALUATE_SHIELD_RULES => [
+                'description' => 'Evaluate shield rules',
+                'assignable'  => false,
+            ],
+        ],
     ],
 
     'workflows' => [
