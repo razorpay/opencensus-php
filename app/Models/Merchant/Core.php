@@ -16,6 +16,7 @@ use RZP\Models\Admin\Action;
 use RZP\Models\Admin\AdminLead;
 use RZP\Models\Admin\Permission;
 use RZP\Models\BankAccount;
+use RZP\Models\Emi;
 use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Models\Merchant;
@@ -454,9 +455,7 @@ class Core extends Base\Core
         }
     }
 
-    public function validateInputFiltersAndAddMerchantId(
-        string $merchantId,
-        array $input): array
+    public function processMerchantAnalyticsQuery(string $merchantId, array $input): array
     {
         if (isset($input[Entity::FILTERS]) === false)
         {
@@ -465,14 +464,11 @@ class Core extends Base\Core
             return $input;
         }
 
-        $validator = new AnalyticsValidator();
-
-        /**
-         * Iterates through input filters and
-         * - If one filter is empty, adds one sub filter with merchant id clause
-         * - If there are sub filters, adds merchant id clause in each of them
-         */
-
+        //
+        // Iterates through input filters and
+        // - If one filter is empty, adds one sub filter with merchant id clause
+        // - If there are sub filters, adds merchant id clause in each of them
+        //
         $filters = & $input[Entity::FILTERS];
 
         foreach ($filters as & $filter)
@@ -485,8 +481,6 @@ class Core extends Base\Core
             {
                 foreach ($filter as & $subFilter)
                 {
-                    $validator->validateAnalyticsInputFilter($subFilter);
-
                     $subFilter[Entity::KEY_MERCHANT_ID] = $merchantId;
                 }
             }
@@ -709,5 +703,20 @@ class Core extends Base\Core
 
             (new User\Core)->edit($selfUser, $userData);
         }
+    }
+
+    public function enableEmiMerchantSubvention(Entity $merchant, Emi\Entity $emiPlan, array $input)
+    {
+        $emiMerchantSub = (new EmiPlans\Entity)->build($input);
+
+        $emiMerchantSub->merchant()->associate($merchant);
+
+        $emiMerchantSub->emiPlan()->associate($emiPlan);
+
+        $emiMerchantSub->generateId();
+
+        $this->repo->saveOrFail($emiMerchantSub);
+
+        return $emiMerchantSub->toArray();
     }
 }

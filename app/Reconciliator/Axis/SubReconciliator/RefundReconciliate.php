@@ -8,6 +8,9 @@ use RZP\Reconciliator\Base;
 use RZP\Gateway\Cybersource;
 use RZP\Models\Base\PublicEntity;
 
+use RZP\Trace\TraceCode;
+use Razorpay\Spine\Exception\DbQueryException;
+
 class RefundReconciliate extends Base\RefundReconciliate
 {
     /*******************
@@ -53,9 +56,31 @@ class RefundReconciliate extends Base\RefundReconciliate
         {
             return null;
         }
+        
+        $refundId = null;
 
-        $refundId = $this->repo->axis_migs->findByRrn($rrn)->getRefundId();
-
+        try
+        {
+            $refundId = $this->repo->axis_migs->findByRrn($rrn)->getRefundId();
+        }
+        catch (DbQueryException $ex)
+        {
+            /**
+             * Finding refund id based on RRN, if RRN is missing
+             * in DB, catches the exception and raises alert.
+             */
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'      => TraceCode::RECON_MISMATCH,
+                    'info_code'       => 'REFUND_ABSENT',
+                    'message'         => 'Refund not found. Skipping.',
+                    'row'             => $row,
+                    'gateway'         => get_class()
+                ]);
+            
+            $this->setFailUnprocessedRow(true);
+        }
+        
         return $refundId;
     }
 

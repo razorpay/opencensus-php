@@ -12,6 +12,7 @@ use RZP\Mail\Settlement\KotakSettlement as KotakSettlementMail;
 use RZP\Mail\Settlement\KotakPayout as KotakPayoutMail;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\Settlement\Entity as SettlementEntity;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -114,10 +115,15 @@ class SettlementTest extends TestCase
         $this->assertSame($content['count'], 0);
     }
 
-    protected function createPaymentEntities(int $count = 5, $merchantId = null)
+    protected function createPaymentEntities(int $count = 5, $merchantId = null, $dt = null)
     {
-        $createdAt = Carbon::today(Timezone::IST)->subDays(50)->timestamp + 5;
-        $capturedAt = Carbon::today(Timezone::IST)->subDays(50)->timestamp + 10;
+        if ($dt === null)
+        {
+            $dt = Carbon::today(Timezone::IST)->subDays(50);
+        }
+
+        $createdAt = $dt->timestamp + 5;
+        $capturedAt = $dt->timestamp + 10;
 
         $attrs = [
             'captured_at' => $capturedAt,
@@ -485,7 +491,9 @@ class SettlementTest extends TestCase
 
         $this->ba->adminAuth();
 
-        $this->fixtures->merchant->edit('10000000000000', ['channel' => 'axis']);
+        $channel = Channel::AXIS;
+
+        $this->fixtures->merchant->edit('10000000000000', ['channel' => $channel]);
 
         $payments = $this->createPaymentEntities();
 
@@ -507,9 +515,9 @@ class SettlementTest extends TestCase
 
         $setlResponse = $this->makeRequestAndGetContent($request);
 
-        $this->assertNotNull($setlResponse['axis']);
-        $this->assertNotNull($setlResponse['axis']['settlement_text_file']);
-        $this->assertNotNull($setlResponse['axis']['settlement_excel_file']);
+        $this->assertNotNull($setlResponse[$channel]);
+        $this->assertNotNull($setlResponse[$channel]['settlement_text_file']);
+        $this->assertNotNull($setlResponse[$channel]['settlement_excel_file']);
 
         $setl = $this->getLastEntity('settlement', true);
         $this->assertTestResponse($setl, 'fetchAndMatchSettlementAxis');
@@ -752,7 +760,9 @@ class SettlementTest extends TestCase
 
         $this->fixtures->merchant->createAccount('7thBRSDflu7NHL');
 
-        $payments = $this->createPaymentEntities(5, '7thBRSDflu7NHL');
+        $dt = Carbon::create(2017, 12, 12, 16, 0, 0, 'Asia/Kolkata')->subDays(5);
+
+        $payments = $this->createPaymentEntities(5, '7thBRSDflu7NHL', $dt);
 
         foreach ($payments as $payment)
         {

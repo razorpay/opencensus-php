@@ -297,8 +297,10 @@ class EbsGatewayTest extends TestCase
         $refund = $this->refundPayment($payment['id']);
 
         $refund = $this->getLastEntity('ebs', true);
-        $this->assertEquals($refund['error_code'], '29');
-        $this->assertEquals($refund['error_description'], 'Insufficient balance');
+        $this->assertEquals('refund', $refund['action']);
+        $this->assertNotEquals(null, $refund['refund_id']);
+        $this->assertEquals('29', $refund['error_code']);
+        $this->assertEquals('Insufficient balance', $refund['error_description']);
     }
 
     public function testPaymentVerify()

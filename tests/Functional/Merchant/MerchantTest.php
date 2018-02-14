@@ -303,6 +303,87 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testEditMerchantWhitelistedIpsLive()
+    {
+        $this->createMerchant();
+
+        $this->startTest();
+    }
+
+    public function testEditMerchantInvalidWhitelistedIpsLive()
+    {
+        $this->createMerchant();
+
+        $this->startTest();
+    }
+
+    public function testEditMerchantWhitelistedIpsTest()
+    {
+        $this->createMerchant();
+
+        $this->startTest();
+    }
+
+    public function testEditMerchantInvalidWhitelistedIpsTest()
+    {
+        $this->createMerchant();
+
+        $this->startTest();
+    }
+
+    public function testMerchantWhitelistedIpsLive()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['live' => true, 'activated' => 1]);
+
+        $this->fixtures->merchant->editWhitelistedIpsLive('10000000000000', ['1.1.1.1','2.2.2.2']);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+    }
+
+    public function testMerchantFailedWhitelistedIpsLive()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['live' => true, 'activated' => 1]);
+
+        $this->fixtures->merchant->editWhitelistedIpsLive('10000000000000', ['1.1.1.1','2.2.2.2']);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+    }
+
+    public function testMerchantWhitelistedIpsTest()
+    {
+        $this->fixtures->merchant->editWhitelistedIpsTest('10000000000000', ['1.1.1.1','2.2.2.2']);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testMerchantFailedWhitelistedIpsTest()
+    {
+        $this->fixtures->merchant->editWhitelistedIpsTest('10000000000000', ['1.1.1.1','2.2.2.2']);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testMerchantWhitelistedIpsMode()
+    {
+        $this->fixtures->merchant->editWhitelistedIpsTest('10000000000000', ['3.3.3.3','4.4.4.4']);
+
+        $this->fixtures->merchant->editWhitelistedIpsLive('10000000000000', ['1.1.1.1','2.2.2.2']);
+
+        $this->fixtures->merchant->edit('10000000000000', ['live' => true, 'activated' => 1]);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+    }
+
     public function testEditMerchantUppercaseEmail()
     {
         $this->createMerchant();
@@ -893,9 +974,29 @@ class MerchantTest extends TestCase
         $this->fixtures->merchant->disableTPV();
     }
 
+    public function testGetCheckoutPreferencesForMagicEnabledMerchant()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures(['magic']);
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesForMagicDisabledMerchant()
+    {
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
     public function testGetCheckoutPreferencesWithAllCardGeatewayDowntime()
     {
         $this->ba->publicAuth();
+
+        $dt = Carbon::createFromTimestamp(1517077800, Timezone::IST);
+
+        Carbon::setTestNow($dt);
 
         $this->fixtures->create('gateway_downtime:card', [
             'gateway' => 'ALL',
@@ -909,6 +1010,10 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
+        $dt = Carbon::createFromTimestamp(1517077800, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
         $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway' => 'netbanking_hdfc',
             'issuer'  => 'ALL']);
@@ -919,6 +1024,10 @@ class MerchantTest extends TestCase
     public function testGetNetbankingDowntimeInfoWithSharedNetbankingGateway()
     {
         $this->ba->publicAuth();
+
+        $dt = Carbon::createFromTimestamp(1517077800, Timezone::IST);
+
+        Carbon::setTestNow($dt);
 
         $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway' => 'billdesk',
@@ -931,9 +1040,17 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
+        $dt = Carbon::createFromTimestamp(1517077800, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
         $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway' => 'billdesk',
             'issuer'  => 'ALL']);
+
+        $dt = Carbon::createFromTimestamp(1517077800, Timezone::IST);
+
+        Carbon::setTestNow($dt);
 
         $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway' => 'netbanking_hdfc',
@@ -946,6 +1063,10 @@ class MerchantTest extends TestCase
     {
          $this->ba->publicAuth();
 
+         $dt = Carbon::createFromTimestamp(1517077800, Timezone::IST);
+
+         Carbon::setTestNow($dt);
+
          $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway' => 'ebs',
             'issuer'  => 'ALL']);
@@ -956,6 +1077,10 @@ class MerchantTest extends TestCase
     public function testGetNetbankingDowntimeInfoWithIssuerExclusiveToGateway()
     {
         $this->ba->publicAuth();
+
+        $dt = Carbon::createFromTimestamp(1517077800, Timezone::IST);
+
+        Carbon::setTestNow($dt);
 
         $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway' => 'billdesk',
@@ -968,6 +1093,10 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
+        $dt = Carbon::createFromTimestamp(1517077800, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
         $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway' => 'billdesk',
             'issuer'  => 'NA']);
@@ -978,6 +1107,10 @@ class MerchantTest extends TestCase
     public function testGetNetbankingDowntimeInfoWithGatewayAll()
     {
         $this->ba->publicAuth();
+
+        $dt = Carbon::createFromTimestamp(1517077800, Timezone::IST);
+
+        Carbon::setTestNow($dt);
 
         $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway' => 'ALL',
@@ -990,10 +1123,18 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
+        $dt = Carbon::createFromTimestamp(1517077800, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
         $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway'     => 'netbanking_hdfc',
             'issuer'      => 'HDFC',
             'reason_code' => 'ISSUER_DOWN']);
+
+        $dt = Carbon::createFromTimestamp(1517077800, Timezone::IST);
+
+        Carbon::setTestNow($dt);
 
         $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway'     => 'billdesk',
@@ -1006,6 +1147,10 @@ class MerchantTest extends TestCase
     public function testGetCheckoutPreferencesWithCardDowntimeWithIssuerOrNetworkUnknown()
     {
         $this->ba->publicAuth();
+
+        $dt = Carbon::createFromTimestamp(1517077800, Timezone::IST);
+
+        Carbon::setTestNow($dt);
 
         $this->fixtures->create('gateway_downtime:card', [
             'gateway' => 'first_data',
@@ -1021,6 +1166,10 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
+        $dt = Carbon::createFromTimestamp(1517077800, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
         $this->fixtures->create('gateway_downtime:card', [
             'gateway' => 'hdfc',
             'issuer'  => 'ALL',
@@ -1032,6 +1181,10 @@ class MerchantTest extends TestCase
     public function testGetCheckoutPreferencesWithCardDowntimeWithGatewayExclusiveNetworkDown()
     {
         $this->ba->publicAuth();
+
+        $dt = Carbon::createFromTimestamp(1517077800, Timezone::IST);
+
+        Carbon::setTestNow($dt);
 
         $this->fixtures->create('gateway_downtime:card', [
             'gateway' => 'hdfc',
@@ -1045,6 +1198,10 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
+        $dt = Carbon::createFromTimestamp(1517077800, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
         $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway' => 'ALL',
             'issuer'  => 'HDFC',]);
@@ -1055,6 +1212,10 @@ class MerchantTest extends TestCase
     public function testGetCheckoutPreferencesWithNetbankingDowntimeWithSharedNetbankingGateway()
     {
         $this->ba->publicAuth();
+
+        $dt = Carbon::createFromTimestamp(1517077800, Timezone::IST);
+
+        Carbon::setTestNow($dt);
 
         $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway' => 'billdesk',
@@ -1067,6 +1228,10 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
+         $dt = Carbon::createFromTimestamp(1517077800, Timezone::IST);
+
+         Carbon::setTestNow($dt);
+
          $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway' => 'billdesk',
             'issuer'  => 'ALLA',]);
@@ -1078,6 +1243,10 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
+        $dt = Carbon::createFromTimestamp(1517077800, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
         $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway'     => 'netbanking_hdfc',
             'issuer'      => 'ALL',]);
@@ -1088,6 +1257,10 @@ class MerchantTest extends TestCase
     public function testGetCheckoutPreferencesWithWalletDowntime()
     {
         $this->ba->publicAuth();
+
+        $dt = Carbon::createFromTimestamp(1517077800, Timezone::IST);
+
+        Carbon::setTestNow($dt);
 
         $this->fixtures->create('gateway_downtime:wallet', [
             'gateway' => 'wallet_olamoney',
@@ -1283,6 +1456,25 @@ class MerchantTest extends TestCase
         $this->assertEquals($response['methods']['emi'], true);
     }
 
+    public function testGetCheckoutRouteWithMerchantSubEmi()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->enableEmi();
+
+        $emiPlan = $this->fixtures->create('emi_plan');
+
+        $emiPlan = $this->fixtures->create('emi_plan', ['id' => '10101010101011']);
+
+        $emiPlanId = $emiPlan['id'];
+
+        $this->fixtures->create('merchant_emi_plans', ['emi_plan_id' => $emiPlanId]);
+
+        $response = $this->startTest();
+
+        $this->assertEquals($response['methods']['emi'], true);
+    }
+
     public function testGetCheckoutRouteWithSavedGlobal()
     {
         $this->ba->publicAuth();
@@ -1344,6 +1536,8 @@ class MerchantTest extends TestCase
 
     public function testQueryCacheHitForKey()
     {
+        config(['app.query_cache.mock' => false]);
+
         Event::fake();
 
         $payment = $this->getDefaultPaymentArray();
@@ -1409,6 +1603,8 @@ class MerchantTest extends TestCase
 
     public function testQueryCacheFlushForKey()
     {
+        config(['app.query_cache.mock' => false]);
+
         Event::fake();
 
         $this->ba->proxyAuthTest();

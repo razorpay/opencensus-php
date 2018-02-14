@@ -317,6 +317,215 @@ return [
         ],
     ],
 
+    'testMerchantWhitelistedIpsLive' => [
+        'request' => [
+            'url'     => '/payments',
+            'method'  => 'get',
+            'server' => [
+                'HTTP_X-Forwarded-For' => '1.1.1.1',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 0,
+                'items' => []
+            ]
+        ]
+    ],
+
+    'testMerchantFailedWhitelistedIpsLive' => [
+        'request'   => [
+            'url'    => '/payments',
+            'method' => 'get',
+            'server' => [
+                'HTTP_X-Forwarded-For' => '4.3.2.1',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Access Denied',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testMerchantWhitelistedIpsTest' => [
+        'request' => [
+            'url'     => '/payments',
+            'method'  => 'get',
+            'server' => [
+                'HTTP_X-Forwarded-For' => '1.1.1.1',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 0,
+                'items' => []
+            ]
+        ]
+    ],
+
+    'testMerchantFailedWhitelistedIpsTest' => [
+        'request'   => [
+            'url'    => '/payments',
+            'method' => 'get',
+            'server' => [
+                'HTTP_X-Forwarded-For' => '4.3.2.1',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Access Denied',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testEditMerchantWhitelistedIpsLive' => [
+        'request'  => [
+            'content' => [
+                'whitelisted_ips_live' => [
+                    '1.1.1.1',
+                    '2.2.2.2'
+                ],
+            ],
+            'url'     => '/merchants/1X4hRFHFx4UiXt',
+            'method'  => 'put',
+            'server'  => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'             => '1X4hRFHFx4UiXt',
+                'entity'         => 'merchant',
+                'whitelisted_ips_live' => [
+                    '1.1.1.1',
+                    '2.2.2.2'
+                ],
+            ]
+        ]
+    ],
+
+    'testEditMerchantInvalidWhitelistedIpsLive' => [
+        'request'   => [
+            'content' => [
+                'whitelisted_ips_live' => [
+                    'abc.def.ghi.ekl',
+                    '1.1.1.1'
+                ],
+            ],
+            'url'     => '/merchants/1X4hRFHFx4UiXt',
+            'method'  => 'put',
+            'server'  => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'One or more IPs in the input are invalid',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testEditMerchantWhitelistedIpsTest' => [
+        'request'  => [
+            'content' => [
+                'whitelisted_ips_test' => [
+                    '1.1.1.1',
+                    '2.2.2.2'
+                ],
+            ],
+            'url'     => '/merchants/1X4hRFHFx4UiXt',
+            'method'  => 'put',
+            'server'  => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'             => '1X4hRFHFx4UiXt',
+                'entity'         => 'merchant',
+                'whitelisted_ips_test' => [
+                    '1.1.1.1',
+                    '2.2.2.2'
+                ],
+            ]
+        ]
+    ],
+
+    'testEditMerchantInvalidWhitelistedIpsTest' => [
+        'request'  => [
+            'content' => [
+                'whitelisted_ips_test' => [
+                    'abc.def.ghi.ekl',
+                    '1.1.1.1'
+                ],
+            ],
+            'url'     => '/merchants/1X4hRFHFx4UiXt',
+            'method'  => 'put',
+            'server'  => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'One or more IPs in the input are invalid',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testMerchantWhitelistedIpsMode' => [
+        'request'   => [
+            'url'    => '/payments',
+            'method' => 'get',
+            'server' => [
+                'HTTP_X-Forwarded-For' => '4.3.2.1',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Access Denied',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
     'testEditMerchantEmail' => [
         'request' => [
             'content' => [
@@ -1012,6 +1221,30 @@ return [
         ],
     ],
 
+    'testGetCheckoutPreferencesForMagicEnabledMerchant' => [
+        'request'  => [
+            'url'    => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'magic' => true,
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesForMagicDisabledMerchant' => [
+        'request'  => [
+            'url'    => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'magic' => false,
+            ],
+        ],
+    ],
+
     'testGetCheckoutPreferencesWithNonOrderRelatedOffer' => [
         'request' => [
             'url'    => '/preferences',
@@ -1250,7 +1483,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 30,
+                'count' => 29,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -1438,13 +1671,6 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'BARB_R',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
                             'issuer' => 'BARB_C',
                         ],
                     ],
@@ -1475,7 +1701,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 31,
+                'count' => 30,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -1664,13 +1890,6 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'TNSC',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'BARB_R',
                         ],
                     ],
                     [
@@ -1913,7 +2132,6 @@ return [
                                 'SYNB',
                                 'TMBL',
                                 'TNSC',
-                                'BARB_R',
                                 'BARB_C',
                                 'PUNB_C',
                                 'LAVB_C'
@@ -2112,6 +2330,37 @@ return [
         ],
         'response' => [
             'content' => [
+            ],
+        ],
+    ],
+
+    'testGetCheckoutRouteWithMerchantSubEmi' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'methods' => [
+                    'emi_options' => [
+                        'HDFC' => [
+                            [
+                                'duration'   => 9,
+                                'interest'   => 12,
+                                'subvention' => 'customer',
+                                'min_amount' => 500000
+                            ],
+                            [
+                                'duration'   => 9,
+                                'interest'   => 0,
+                                'subvention' => 'merchant',
+                                'min_amount' => 527315
+                            ]
+                        ]
+                    ]
+                ]
             ],
         ],
     ],

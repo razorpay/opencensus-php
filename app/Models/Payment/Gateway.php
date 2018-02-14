@@ -46,6 +46,8 @@ class Gateway
     const UPI_ICICI              = 'upi_icici';
     const AEPS_ICICI             = 'aeps_icici';
 
+    const CARD_FSS               = 'card_fss';
+
     const WALLET_AIRTELMONEY = 'wallet_airtelmoney';
     const WALLET_FREECHARGE  = 'wallet_freecharge';
     const WALLET_JIOMONEY    = 'wallet_jiomoney';
@@ -60,6 +62,7 @@ class Gateway
     const ACQUIRER_ICIC      = 'icic';
     const ACQUIRER_AXIS      = 'axis';
     const ACQUIRER_AMEX      = 'amex';
+    const ACQUIRER_FSS       = 'fss';
     const ACQUIRER_RATN      = 'ratn';
 
     const NOT_SUPPORTED      = 'not_supported';
@@ -72,6 +75,7 @@ class Gateway
         self::FIRST_DATA  => [self::ACQUIRER_ICIC],
         self::AMEX        => [self::ACQUIRER_AMEX],
         self::AEPS_ICICI  => [self::ACQUIRER_ICIC],
+        self::CARD_FSS    => [self::ACQUIRER_FSS],
         self::HITACHI     => [self::ACQUIRER_RATN],
     ];
 
@@ -154,6 +158,11 @@ class Gateway
         Payment\Gateway::UPI_ICICI,
         Payment\Gateway::WALLET_PAYZAPP,
         Payment\Gateway::WALLET_MPESA,
+        Payment\Gateway::CARD_FSS,
+        Payment\Gateway::WALLET_PAYUMONEY,
+        Payment\Gateway::WALLET_FREECHARGE,
+        Payment\Gateway::UPI_MINDGATE,
+        Payment\Gateway::HITACHI,
     ];
 
     public static $channels = [
@@ -211,6 +220,7 @@ class Gateway
             self::FIRST_DATA,
             self::BLADE,
             self::HITACHI,
+            self::CARD_FSS,
         ],
 
         Method::NETBANKING => [
@@ -385,6 +395,10 @@ class Gateway
             Network::MAES,
             Network::RUPAY,
         ],
+        self::CARD_FSS => [
+            Network::MC,
+            Network::VISA,
+        ],
     ];
 
     public static $walletToGatewayMap = [
@@ -466,6 +480,7 @@ class Gateway
         Gateway::FIRST_DATA,
         Gateway::AXIS_MIGS,
         Gateway::HDFC,
+        Gateway::HITACHI,
         Gateway::NETBANKING_ICICI,
         Gateway::NETBANKING_AXIS,
         Gateway::NETBANKING_HDFC,
@@ -609,11 +624,11 @@ class Gateway
         //corp banks
         Netbanking::ICIC_C => Gateway::NETBANKING_ICICI,
         Netbanking::UTIB_C => Gateway::NETBANKING_AXIS,
+        Netbanking::BARB_R => Gateway::NETBANKING_BOB,
 
         // retail banks
         IFSC::ICIC => Gateway::NETBANKING_ICICI,
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
-        IFSC::BARB => Gateway::NETBANKING_BOB,
         IFSC::CORP => Gateway::NETBANKING_CORPORATION,
         IFSC::AIRP => Gateway::NETBANKING_AIRTEL,
         IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
@@ -637,10 +652,11 @@ class Gateway
         IFSC::KKBK => Gateway::NETBANKING_KOTAK,
         IFSC::UTIB => Gateway::NETBANKING_AXIS,
         IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
-        IFSC::BARB => Gateway::NETBANKING_BOB,
         IFSC::RATN => Gateway::NETBANKING_RBL,
         IFSC::INDB => Gateway::NETBANKING_INDUSIND,
         IFSC::PUNB => Gateway::NETBANKING_PNB,
+
+        Netbanking::BARB_R => Gateway::NETBANKING_BOB,
     ];
 
     /**
@@ -686,6 +702,10 @@ class Gateway
         Gateway::AXIS_MIGS
     ];
 
+    public static $upiIntentGateways = [
+        Gateway::UPI_ICICI
+    ];
+
     public static function getAcquirerName(string $acquirer)
     {
         $code = self::$acquirerToCodeMap[$acquirer];
@@ -720,6 +740,11 @@ class Gateway
     public static function isZeroRupeeFlowSupported($bank): bool
     {
         return in_array($bank, self::$zeroRupeeEmandateBanks, true);
+    }
+
+    public static function isUpiIntentFlowSupported($gateway): bool
+    {
+        return in_array($gateway, self::$upiIntentGateways, true);
     }
 
     /**

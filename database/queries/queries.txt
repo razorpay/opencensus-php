@@ -2801,7 +2801,7 @@ ALTER TABLE settings
     MODIFY COLUMN updated_at INT(11) NOT NULL;
 
 ALTER TABLE fund_transfer_attempts
-    ADD COLUMN purpose VARCHAR(32) AFTER merchant_id;A
+    ADD COLUMN purpose VARCHAR(32) AFTER merchant_id;
 
 # Makes customer id nullable in payouts
 ALTER TABLE payouts
@@ -2869,3 +2869,58 @@ ALTER TABLE balance
 
 ALTER TABLE merchants
     ADD COLUMN refund_source TINYINT(1) DEFAULT 0 after fee_model;
+
+ALTER TABLE `merchant_details`
+    ADD COLUMN `form_12a_url` VARCHAR(255) DEFAULT NULL AFTER `promoter_address_url`,
+    ADD COLUMN `form_80g_url` VARCHAR(255) DEFAULT NULL AFTER `form_12a_url`;
+
+ALTER TABLE webhooks
+    ADD COLUMN entity_type VARCHAR(100) DEFAULT NULL AFTER events,
+    ADD COLUMN entity_id VARCHAR(14) DEFAULT NULL AFTER entity_type;
+
+ALTER TABLE webhooks
+    ADD UNIQUE INDEX webhooks_merchant_id_entity_id_unique (merchant_id,entity_id);
+
+
+ALTER TABLE merchants
+   ADD COLUMN whitelisted_ips_live VARCHAR(255) DEFAULT NULL AFTER category,
+   ADD COLUMN whitelisted_ips_test VARCHAR(255) DEFAULT NULL AFTER whitelisted_ips_live;
+
+ALTER TABLE qr_code
+    ADD COLUMN short_url varchar(255) NOT NULL after qr_string;
+
+ALTER TABLE hitachi
+    ADD INDEX `hitachi_prequestid_index`(`pRequestId`),
+    ADD INDEX `hitachi_prrn_index`(`pRRN`),
+    ADD INDEX `hitachi_action_index`(`action`);
+
+ALTER TABLE iins
+    ADD COLUMN flows INTEGER UNSIGNED DEFAULT 1 AFTER otp_read;
+
+
+ALTER TABLE payments Change token emi_subvention varchar(14);
+
+ALTER TABLE atom
+    ADD PRIMARY KEY (id);
+
+ALTER TABLE gateway_downtimes
+    ADD PRIMARY KEY (id);
+
+ALTER TABLE merchant_terminal
+    ADD UNIQUE INDEX merchant_terminal_merchant_id_terminal_id_unique (merchant_id, terminal_id),
+    DROP INDEX merchant_terminal_merchant_id_foreign;
+
+ALTER TABLE workflow_permissions
+    ADD UNIQUE INDEX workflow_permissions_workflow_id_permission_id (workflow_id, permission_id),
+    DROP INDEX workflow_permissions_workflow_id_index;
+
+ALTER TABLE migrations
+    ADD UNIQUE INDEX migrations_migration_unique (migration);
+
+ALTER TABLE transactions
+    DROP INDEX transactions_settled_index,
+    ADD INDEX transactions_settled_channel_on_hold_index (settled, channel, on_hold);
+
+ALTER TABLE payments
+    ADD INDEX payments_merchant_id_status_created_at_index (merchant_id, status, created_at),
+    ADD INDEX payments_merchant_id_index (merchant_id);

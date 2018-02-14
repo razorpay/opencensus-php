@@ -2,8 +2,9 @@
 
 namespace RZP\Models\Dispute;
 
+use Request;
+
 use RZP\Models\Base;
-use RZP\Models\Base\PublicCollection;
 
 class Service extends Base\Service
 {
@@ -22,11 +23,21 @@ class Service extends Base\Service
 
     public function update(string $id, array $input): array
     {
-        $dispute = $this->repo->dispute->findByPublicId($id);
+        $dispute = $this->repo->dispute->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $dispute = $this->core()->update($dispute, $input);
+        if ($this->auth->isAdminAuth() === true)
+        {
+            $dispute = $this->core()->update($dispute, $input);
 
-        return $dispute->toArrayPublic();
+            return $dispute->toArrayAdmin();
+        }
+        else if (($this->auth->isPrivateAuth() === true) or
+                 ($this->auth->isProxyAuth() === true))
+        {
+            $dispute = $this->core()->updateFilesAndInputForMerchant($dispute, $input);
+
+            return $dispute->toArrayPublic();
+        }
     }
 
     public function fetchMultiple(array $input): array

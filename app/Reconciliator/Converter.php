@@ -9,11 +9,11 @@ use Box\Spout\Common\Type;
 use Box\Spout\Reader\ReaderFactory;
 
 use RZP\Exception;
+use RZP\Models\Base;
 use RZP\Trace\TraceCode;
-use RZP\Reconciliator\Base;
 use RZP\Models\FileStore\Format;
 
-class Converter
+class Converter extends Base\Core
 {
     const DEFAULT_DELIMITER = ',';
 
@@ -34,7 +34,7 @@ class Converter
     ];
 
     const MAX_SHEETS_ALLOWED = 3;
-    const ROW_CHUNK_SIZE = 500;
+    const ROW_CHUNK_SIZE = 3000;
 
     protected $dataArray;
 
@@ -102,6 +102,15 @@ class Converter
 
     public function getRowsFromExcelSheetsOptimized($fileDetails, $sheetNames = [], $startRow = 1)
     {
+        $timeStarted = microtime(true);
+
+        $this->trace->debug(
+            TraceCode::RECON_INFO, [
+                'info_code' => 'GET_EXCEL_ROWS_BEGIN',
+                'file_details' => $fileDetails,
+                'gateway' => get_called_class(),
+        ]);
+
         //
         // For the current implementation to work the way it is expected to,
         // force_sheets_collection MUST be set to false. We are loading sheet
@@ -112,12 +121,27 @@ class Converter
 
         Config::set('excel.import.startRow', $startRow);
 
+        $allSheetsContent = [];
+
         if (empty($sheetNames) === false)
         {
-            return $this->getRowsFromExcelSheetsOptimizedWithSheetNames($fileDetails, $sheetNames);
+            $allSheetsContent = $this->getRowsFromExcelSheetsOptimizedWithSheetNames($fileDetails, $sheetNames);
+        }
+        else
+        {
+            $allSheetsContent = $this->getRowsFromExcelSheetsOptimizedWithSheetIndices($fileDetails);
         }
 
-        return $this->getRowsFromExcelSheetsOptimizedWithSheetIndices($fileDetails);
+        $this->trace->debug(
+            TraceCode::RECON_INFO,
+                [
+                    'info_code'         => 'GET_EXCEL_ROWS_END',
+                    'file_details'      => $fileDetails,
+                    'gateway'           => get_called_class(),
+                    'time_taken'        => (microtime(true) - $timeStarted)
+                ]);
+
+        return $allSheetsContent;
     }
 
     /**
@@ -249,6 +273,17 @@ class Converter
             $randomSheetName = 'sheet' . $index;
             $allSheetsContent[$randomSheetName] = [];
 
+            $timeStarted = microtime(true);
+
+            $this->trace->debug(
+                TraceCode::RECON_INFO,
+                    [
+                        'info_code'     => 'PROCESS_EXCEL_SHEET_BEGIN',
+                        'file_details'  => $fileDetails,
+                        'sheet_details' => $randomSheetName,
+                        'gateway'       => get_called_class()
+                    ]);
+
             Excel::filter('chunk')->selectSheetsByIndex($index)->load($filePath)->chunk(
                 self::ROW_CHUNK_SIZE,
                 function ($results) use ($randomSheetName, & $allSheetsContent)
@@ -264,6 +299,16 @@ class Converter
                 },
                 false
             );
+
+            $this->trace->debug(
+                TraceCode::RECON_INFO,
+                    [
+                        'info_code'         => 'PROCESS_EXCEL_SHEET_END',
+                        'file_details'      => $fileDetails,
+                        'sheet_details'     => $randomSheetName,
+                        'gateway'           => get_called_class(),
+                        'time_taken'        => (microtime(true) - $timeStarted)
+                    ]);
         }
 
         return $allSheetsContent;
@@ -278,6 +323,17 @@ class Converter
         foreach ($sheetNames as $sheetName)
         {
             $allSheetsContent[$sheetName] = [];
+
+            $timeStarted = microtime(true);
+
+            $this->trace->debug(
+            TraceCode::RECON_INFO,
+                [
+                    'info_code'     => 'PROCESS_EXCEL_SHEET_BEGIN',
+                    'file_details'  => $fileDetails,
+                    'sheet_details' => $sheetName,
+                    'gateway'       => get_called_class()
+                ]);
 
             try
             {
@@ -313,6 +369,16 @@ class Converter
 
                 throw $ex;
             }
+
+            $this->trace->debug(
+            TraceCode::RECON_INFO,
+                [
+                    'info_code'     => 'PROCESS_EXCEL_SHEET_END',
+                    'file_details'  => $fileDetails,
+                    'sheet_details' => $sheetName,
+                    'gateway'       => get_called_class(),
+                    'time_taken'    => (microtime(true) - $timeStarted)
+                ]);
         }
 
         return $allSheetsContent;
@@ -392,12 +458,13 @@ class Converter
                 // breaking case when header count is not same as row.
                 else
                 {
-                    (new Messenger)->raiseReconAlert(
-                        [
-                            'trace_code'   => TraceCode::RECON_ALERT,
-                            'message'      => 'The number of columns in the row does not match the column headers count',
-                            'file_details' => ['column_headers' => $sheetHeaders, 'row' => $row],
-                        ]);
+                    $this->trace->debug(
+                        TraceCode::RECON_ALERT,
+                            [
+                                'message'       => 'The number of columns in the row does not match the column headers count',
+                                'file_details'  => ['column_headers' => $sheetHeaders, 'row' => $row],
+                                'info_code'     => 'COLUMN_HEADER_MISMATCH'
+                            ]);
 
                     continue;
                 }

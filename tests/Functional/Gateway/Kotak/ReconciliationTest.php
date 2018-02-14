@@ -72,6 +72,8 @@ class ReconciliationTest extends TestCase
 
     public function testReconEntityForKotak()
     {
+        $this->markTestSkipped();
+
         Mail::fake();
 
         $this->testReconFileProcessForKotak();
@@ -111,9 +113,6 @@ class ReconciliationTest extends TestCase
     {
         Mail::fake();
 
-        // Mocking time to 22:30 for settlements to get processed
-        Carbon::setTestNow(Carbon::create(2016, 11, 15, 23, 0, 0, Timezone::IST));
-
         // Create payments and refunds with timestamps two days back
         $prEntities = $this->createPaymentAndRefundEntities();
 
@@ -140,9 +139,6 @@ class ReconciliationTest extends TestCase
         $this->assertTestResponse($data, 'matchSummaryForReconFile');
 
         Mail::assertSent(ReconciliationMail::class);
-
-        // Resetting time
-        Carbon::setTestNow();
     }
 
     public function testReconEntiyFailureForKotak()
@@ -264,6 +260,8 @@ class ReconciliationTest extends TestCase
         $settlementAttempt = $this->getLastEntity('fund_transfer_attempt', true);
         $this->assertTestResponse($settlementAttempt, 'matchSettlementAttemptForReconSuccess');
         $this->assertNotNull($settlementAttempt['utr']);
+
+        $this->assertEquals($settlementAttempt['utr'], $settlement['utr']);
 
         // Validate settlement-transaction entity
         $txn = $this->getLastEntity('transaction', true);

@@ -20,11 +20,25 @@ return [
         ],
         'response' => [
             'content' => [
-                'bank'       => 'HDFC',
-                'duration'   => 3,
-                'rate'       => 1045,
-                'methods'    => 'card',
-                'min_amount' => 400000,
+                'bank'             => 'HDFC',
+                'duration'         => 3,
+                'rate'             => 1045,
+                'methods'          => 'card',
+                'min_amount'       => 400000,
+                'merchant_payback' => 172
+            ],
+        ],
+    ],
+
+    'testEnableMerchantSubvention' => [
+        'request' => [
+            'content' => [
+            ],
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'      => '10000000000000',
             ],
         ],
     ],
@@ -65,7 +79,7 @@ return [
                 'min_amount'       => 500000,
                 'issuer_plan_id'   => null,
                 'subvention'       => 'customer',
-                'merchant_payback' => 0,
+                'merchant_payback' => 518,
                 'issuer_name'      => 'HDFC Bank',
                 'entity'           => 'emi_plan',
                 'admin'            => true,
@@ -90,7 +104,7 @@ return [
                 'min_amount'       => 500000,
                 'issuer_plan_id'   => null,
                 'subvention'       => 'customer',
-                'merchant_payback' => 0,
+                'merchant_payback' => 518,
                 'issuer_name'      => 'American Express',
                 'entity'           => 'emi_plan',
                 'admin'            => true,

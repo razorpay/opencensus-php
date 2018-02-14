@@ -69,6 +69,7 @@ class Entity
     const GATEWAY_FILE          = 'gateway_file';
     const BANK_ACCOUNT          = 'bank_account';
     const FILE_HANDLER          = 'file_handler';
+    const DISPUTE_FILE          = 'dispute_file';
     const SUBSCRIPTION          = 'subscription';
     const GATEWAY_TOKEN         = 'gateway_token';
     const BANK_TRANSFER         = 'bank_transfer';
@@ -85,6 +86,7 @@ class Entity
     const MERCHANT_PROMOTION    = 'merchant_promotion';
     const CREDIT_TRANSACTION    = 'credit_transaction';
     const MERCHANT_INVOICE      = 'merchant_invoice';
+    const MERCHANT_EMI_PLANS    = 'merchant_emi_plans';
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
     const BATCH_FUND_TRANSFER   = 'batch_fund_transfer';
     const CUSTOMER_TRANSACTION  = 'customer_transaction';
@@ -134,6 +136,7 @@ class Entity
     const UPI_NPCI               = 'upi_npci';
     const AXIS_MIGS              = 'axis_migs';
     const FIRST_DATA             = 'first_data';
+    const CARD_FSS               = 'card_fss';
     const AXIS_GENIUS            = 'axis_genius';
     const NETBANKING             = 'netbanking';
     const CYBERSOURCE            = 'cybersource';
@@ -203,6 +206,7 @@ class Entity
         self::FEE_BREAKUP           => \RZP\Models\Transaction\FeeBreakup::class,
         self::BANK_ACCOUNT          => \RZP\Models\BankAccount::class,
         self::SUBSCRIPTION          => \RZP\Models\Plan\Subscription::class,
+        self::DISPUTE_FILE          => \RZP\Models\Dispute\File::class,
         self::GATEWAY_TOKEN         => \RZP\Models\Customer\GatewayToken::class,
         self::SCHEDULE_TASK         => \RZP\Models\Schedule\Task::class,
         self::DISPUTE_REASON        => \RZP\Models\Dispute\Reason::class,
@@ -216,6 +220,7 @@ class Entity
         self::CREDIT_TRANSACTION    => \RZP\Models\Merchant\Credits\Transaction::class,
         self::MERCHANT_PROMOTION    => \RZP\Models\Merchant\Promotion::class,
         self::MERCHANT_INVOICE      => \RZP\Models\Merchant\Invoice::class,
+        self::MERCHANT_EMI_PLANS    => \RZP\Models\Merchant\EmiPlans::class,
         self::SETTLEMENT_DETAILS    => \RZP\Models\Settlement\Details::class,
         self::TERMINAL_ANALYTICS    => \RZP\Models\Payment\TerminalAnalytics::class,
         self::BATCH_FUND_TRANSFER   => \RZP\Models\FundTransfer\Batch::class,
@@ -244,6 +249,7 @@ class Entity
         self::NETBANKING             => \RZP\Gateway\Netbanking\Base::class,
         self::AXIS_GENIUS            => \RZP\Gateway\AxisGenius::class,
         self::CYBERSOURCE            => \RZP\Gateway\Cybersource::class,
+        self::CARD_FSS               => \RZP\Gateway\Card\Fss::class,
         self::WALLET_PAYZAPP         => \RZP\Gateway\Wallet\Payzapp::class,
         self::WALLET_OLAMONEY        => \RZP\Gateway\Wallet\Olamoney::class,
         self::WALLET_JIOMONEY        => \RZP\Gateway\Wallet\Jiomoney::class,

@@ -6,7 +6,8 @@ use Illuminate\Database\Migrations\Migration;
 use RZP\Constants\Table;
 use RZP\Models\Card\IIN;
 
-class CreateIins extends Migration {
+class CreateIins extends Migration
+{
 
     /**
      * Run the migrations.
@@ -46,6 +47,10 @@ class CreateIins extends Migration {
 
             $table->tinyInteger(IIN\Entity::OTP_READ)
                   ->default(0);
+
+            $table->integer(IIN\Entity::FLOWS)
+                  ->unsigned()
+                  ->default(1);
 
             $table->string(IIN\Entity::TRIVIA)
                   ->nullable();

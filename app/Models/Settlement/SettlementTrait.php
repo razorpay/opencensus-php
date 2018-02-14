@@ -114,9 +114,10 @@ trait SettlementTrait
 
         // Mutual Fund Marketplace Merchant ids
         $mfMids = [
-            Preferences::MID_GOALWISE_1,
-            Preferences::MID_GOALWISE_2,
+            Preferences::MID_GOALWISE_TPV,
+            Preferences::MID_GOALWISE_NON_TPV,
             Preferences::MID_WEALTHAPP,
+            Preferences::MID_WEALTHY,
         ];
 
         if (($txn->isTypePayment() === true) and
@@ -132,9 +133,21 @@ trait SettlementTrait
 
             $onePm = Carbon::today(Timezone::IST)->hour(13)->getTimestamp();
 
+            $oneThirtyPm = Carbon::today(Timezone::IST)->hour(13)->minute(30)->getTimestamp();
+
             $twoPm = Carbon::today(Timezone::IST)->hour(14)->getTimestamp();
 
             $twoTenPm = Carbon::today(Timezone::IST)->hour(14)->minute(10)->getTimestamp();
+
+            //
+            // Wealthy does not want any settlements to happen outside their given window,
+            // i.e. after 1pm. TODO: Better way to implement this.
+            //
+            if (($txn->merchant->getParentId() === Preferences::MID_WEALTHY) and
+                ($now > $oneThirtyPm))
+            {
+                return true;
+            }
 
             //
             // Settle transaction which needed to be settled before 2 pm today
@@ -380,10 +393,11 @@ trait SettlementTrait
         // is merged
         //
         $skipMerchantIds = [
-            '8ytYezIThlseJd', // Goalwise Non-TPV
-            '7BfRNg10LH7N6T', // Goalwise TPV
-            '8hXTLsmoM3F6PH', // Moneyview
-            '8lv4idBRY4C9c0', // Wealthy
+            Preferences::MID_GOALWISE_NON_TPV,
+            Preferences::MID_GOALWISE_TPV,
+            Preferences::MID_MONEYVIEW,
+            Preferences::MID_WEALTHY,
+            Preferences::MID_PIGGY,
         ];
 
         if (in_array($merchant->getId(), $skipMerchantIds, true) === true)

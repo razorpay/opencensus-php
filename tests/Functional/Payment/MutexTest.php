@@ -42,16 +42,6 @@ class MutexTest extends TestCase
     {
         $payment = $this->defaultAuthPayment();
 
-        $redis = Redis::getFacadeRoot();
-
-        Redis::shouldReceive('connection')
-            ->with('query_cache_test')
-            ->andReturn($redis);
-
-        Redis::shouldReceive('connection')
-            ->with('query_cache_live')
-            ->andReturn($redis);
-
         Redis::shouldReceive('set')
             ->once()
             ->andReturn(null);
@@ -77,16 +67,6 @@ class MutexTest extends TestCase
 
     public function testMutexAcquiredRefundRequest()
     {
-        $redis = Redis::getFacadeRoot();
-
-        Redis::shouldReceive('connection')
-            ->with('query_cache_test')
-            ->andReturn($redis);
-
-        Redis::shouldReceive('connection')
-            ->with('query_cache_live')
-            ->andReturn($redis);
-
         Redis::shouldReceive('set')
                 ->once()
                 ->andReturn(null);
@@ -123,16 +103,6 @@ class MutexTest extends TestCase
     {
         $payment = $this->defaultAuthPayment();
 
-        $redis = Redis::getFacadeRoot();
-
-        Redis::shouldReceive('connection')
-            ->with('query_cache_test')
-            ->andReturn($redis);
-
-        Redis::shouldReceive('connection')
-            ->with('query_cache_live')
-            ->andReturn($redis);
-
         Redis::shouldReceive('set')
                 ->once()
                 ->andReturnUsing(function()
@@ -153,16 +123,6 @@ class MutexTest extends TestCase
     public function testMutexCaptureRequestWithDiffRedisResponse()
     {
         $payment = $this->defaultAuthPayment();
-
-        $redis = Redis::getFacadeRoot();
-
-        Redis::shouldReceive('connection')
-            ->with('query_cache_test')
-            ->andReturn($redis);
-
-        Redis::shouldReceive('connection')
-            ->with('query_cache_live')
-            ->andReturn($redis);
 
         Redis::shouldReceive('set')
                 ->once()
