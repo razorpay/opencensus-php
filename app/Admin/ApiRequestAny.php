@@ -68,6 +68,10 @@ class ApiRequestAny
                 // Default
                 $this->clientType = 'user';
             }
+            else
+            {
+                $this->clientType = $routeName;
+            }
         }
         else
         {
