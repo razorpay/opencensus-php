@@ -100,6 +100,17 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function fetchStatsOfBatch(string $batchId): array
+    {
+        $batch = $this->repo->batch->findByPublicIdAndMerchant(
+            $batchId,
+            $this->merchant);
+
+        $response = $this->core->fetchStatsOfBatch($batch);
+
+        return $response;
+    }
+
     public function delete(string $id): array
     {
         $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUser(

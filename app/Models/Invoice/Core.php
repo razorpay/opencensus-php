@@ -759,6 +759,21 @@ class Core extends Base\Core
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
     }
 
+    public function fetchStatsOfBatch(Batch\Entity $batch)
+    {
+        if ($batch->isProcessing() === true)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_BATCH_IS_PROCESSING,
+                                          $batch->getPublicId());
+        }
+
+        $response[Entity::ENTITIES_PROCESSED] = $batch->getSuccessCount();
+
+        $response += $this->repo->invoice->getInvoiceStatsForBatch($batch);
+
+        return $response;
+    }
+
     protected function hasNotificationBeenSentForBatch(Settings\Accessor $settingAccessor): bool
     {
         $smsNotified = $settingAccessor->get(Entity::SMS_NOTIFY);
