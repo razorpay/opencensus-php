@@ -1084,7 +1084,6 @@ final class Route
         'gateway_delete_rule',
         'merchant_actions',
         'merchant_get_tags',
-        'refund_retry_failed',
         'merchants_update_bank_account',
         'schedule_process_tasks',
         'promotion_create',
@@ -1355,6 +1354,7 @@ final class Route
         'dispute_reason_create',
         'merchant_tags_bulk',
         'refund_verify',
+        'refund_retry_failed',
     ];
 
     public static $routePermission = [
@@ -1528,6 +1528,7 @@ final class Route
         'merchant_edit_email'                    => '*',
         'gateway_file_create'                    => '*',
         'refund_verify'                          => '*',
+        'refund_retry_failed'                    => '*',
     ];
 
     public static $direct = [
