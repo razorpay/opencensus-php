@@ -690,7 +690,7 @@ trait PaymentTrait
             'url'    => '/payments/'.$id.'/verify',
             'method' => 'GET');
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 
