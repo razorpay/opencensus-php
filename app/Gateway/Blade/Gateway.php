@@ -165,7 +165,7 @@ class Gateway extends Base\Gateway
         {
             return true;
         }
-        if ((in_array($networkCode, [Card\Network::MC, Card\Network::MAES], true)) and
+        if ((in_array($networkCode, [Card\Network::MC, Card\Network::MAES], true) === true) and
             (($eci === '02') or
              (($eci === '01') and
               ($isInternational === true))))
