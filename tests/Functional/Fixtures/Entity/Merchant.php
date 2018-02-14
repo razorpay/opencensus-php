@@ -418,6 +418,16 @@ class Merchant extends Base
         return $this->edit($id, ['fee_bearer' => 'platform']);
     }
 
+    public function editWhitelistedIpsLive($id = '10000000000000', $ips = [])
+    {
+        return $this->edit($id, ['whitelisted_ips_live' => $ips]);
+    }
+
+    public function editWhitelistedIpsTest($id = '10000000000000', $ips = [])
+    {
+        return $this->edit($id, ['whitelisted_ips_test' => $ips]);
+    }
+
     public function enableInternational($id = '10000000000000')
     {
         return $this->edit($id, ['international' => '1']);

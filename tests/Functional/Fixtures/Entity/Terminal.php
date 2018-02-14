@@ -643,7 +643,7 @@ class Terminal extends Base
     {
         $terminalId = \RZP\Models\Terminal\Shared::HITACHI_TERMINAL;
 
-        $attributes = [
+        $defaultValues = [
             'id'                        => $terminalId,
             'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'hitachi',
@@ -655,6 +655,8 @@ class Terminal extends Base
             'gateway_terminal_password' => 'hitachi',
             'gateway_secure_secret'     => 'secret',
         ];
+
+        $attributes = array_merge($defaultValues, $attributes);
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }

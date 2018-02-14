@@ -458,12 +458,13 @@ class Converter extends Base\Core
                 // breaking case when header count is not same as row.
                 else
                 {
-                    (new Messenger)->raiseReconAlert(
-                        [
-                            'trace_code'   => TraceCode::RECON_ALERT,
-                            'message'      => 'The number of columns in the row does not match the column headers count',
-                            'file_details' => ['column_headers' => $sheetHeaders, 'row' => $row],
-                        ]);
+                    $this->trace->debug(
+                        TraceCode::RECON_ALERT,
+                            [
+                                'message'       => 'The number of columns in the row does not match the column headers count',
+                                'file_details'  => ['column_headers' => $sheetHeaders, 'row' => $row],
+                                'info_code'     => 'COLUMN_HEADER_MISMATCH'
+                            ]);
 
                     continue;
                 }

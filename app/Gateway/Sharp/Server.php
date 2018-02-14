@@ -150,10 +150,23 @@ class Server extends Base\Mock\Server
             'status' => 'authorized',
         ];
 
-        if (($payment['method'] === Payment\Method::UPI) and
-            ($payment['vpa'] === Vpa::FAILURE))
+        if ($payment['method'] === Payment\Method::UPI)
         {
-            $response['status'] = 'failed';
+            if (isset($payment['vpa']) === false)
+            {
+                $response['vpa'] = Vpa::SUCCESS;
+                if (($payment['amount'] === 5555))
+                {
+                    $response['status'] = 'failed';
+                    $response['vpa'] = Vpa::FAILURE;
+                }
+            }
+
+            if ((isset($payment['vpa']) === true) and
+                ($payment['vpa'] === Vpa::FAILURE))
+            {
+                $response['status'] = 'failed';
+            }
         }
 
         return $response;

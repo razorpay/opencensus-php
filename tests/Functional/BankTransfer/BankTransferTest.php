@@ -2,9 +2,6 @@
 
 namespace RZP\Tests\Functional\BankTransfer;
 
-use Redis;
-use Mockery;
-use Closure;
 use RZP\Models\Payment\Refund;
 use RZP\Models\BankTransfer\Entity as E;
 use RZP\Tests\Functional\TestCase;
@@ -128,11 +125,11 @@ class BankTransferTest extends TestCase
             'method'  => 'PATCH',
             'url'     => '/fund_transfer_attempts',
             'content' => [
-                'ids' => [
-                    $attempt['id']
-                ],
-                'status' => 'failed',
-                'remarks' => 'failed with reason'
+                $attempt['id'] => [
+                    'status'  => 'failed',
+                    'remarks' => 'failed with reason',
+                    'bank_status_code' => 'blahbal',
+                ]
             ],
         ];
 
@@ -796,6 +793,8 @@ class BankTransferTest extends TestCase
         $this->assertEquals(5000000, $payment['amount']);
         $this->assertEquals('captured', $payment['status']);
 
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+
         $request = [
             'method'  => 'GET',
             'url'     => '/payments/'.$payment['id'].'/bank_transfer',
@@ -809,6 +808,8 @@ class BankTransferTest extends TestCase
             'payment_id'         => $payment['id'],
             'virtual_account_id' => $virtualAccount['id'],
             'amount'             => 5000000,
+            'bank_reference'     => $bankTransfer[E::BANK_REFERENCE],
+            'mode'               => $bankTransfer[E::MODE],
             'payer_bank_account' => [
                 'entity'         => 'bank_account',
                 'account_number' => '9876543210123456789',
@@ -828,10 +829,36 @@ class BankTransferTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedResponse, $response);
+    }
 
-        // Mode and UTR are currently not public, uncomment this when they are.
-        // $this->assertEquals('NEFT', $response['mode']);
-        // $this->assertNotNull($response['utr']);
+    public function testPaymentFetchOnBanfReference()
+    {
+        $accountNumber = $this->bankAccount['account_number'];
+        $ifsc = $this->bankAccount['ifsc'];
+
+        // Process API always returns true
+        $this->processBankTransfer($accountNumber, $ifsc);
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+
+        $payment = $this->getLastPayment();
+
+        $this->ba->privateAuth();
+
+        $request = [
+            'url'     => '/payments',
+            'method'  => 'get',
+            'content' => [
+                'bank_reference' => $bankTransfer[E::BANK_REFERENCE],
+            ],
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($payment['id'], $response['items'][0]['id']);
+        $this->assertEquals('NEFT payment of 50,000 rupees', $response['items'][0]['description']);
+        $this->assertEquals('bank_transfer', $response['items'][0]['method']);
+        $this->assertEquals('captured',$response['items'][0]['status']);
     }
 
     public function testBankTransferProcessDuplicateUtr()

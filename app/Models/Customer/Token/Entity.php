@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Customer\Token;
 
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Payment;
@@ -60,6 +62,14 @@ class Entity extends Base\PublicEntity
      * By default, we have chosen 10000000 paise
      */
     const DEFAULT_MAX_AMOUNT    = 10000000;
+
+    /**
+     * We use this to set the number of years after which the
+     * emandate token will get expired and cannot be used
+     * anymore. Ideally, the merchant sends the expiry time.
+     * In case he does not, we add 10 years to the current time.
+     */
+    const DEFAULT_EXPIRY_YEARS  = 10;
 
     protected static $sign      = 'token';
 
@@ -166,7 +176,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected static $generators = [
-        self::TOKEN
+        self::TOKEN,
     ];
 
     public function customer()
@@ -366,6 +376,49 @@ class Entity extends Base\PublicEntity
         {
             $this->attributes[self::USED_AT] = $time;
         }
+    }
+
+    /**
+     * Cannot use generators here because we can receive
+     * null in max_amount which will get overridden
+     * by  fillable. Hence, no use of generator.
+     * It needs to be in fillable because
+     * merchant can send its value too.
+     *
+     * @param $maxAmount
+     */
+    protected function setMaxAmountAttribute($maxAmount)
+    {
+        if ((empty($maxAmount) === true) and
+            ($this->getMethod() === Payment\Method::EMANDATE))
+        {
+            $maxAmount = self::DEFAULT_MAX_AMOUNT;
+
+        }
+
+        $this->attributes[self::MAX_AMOUNT] = $maxAmount;
+    }
+
+    /**
+     * Cannot use generators here because we can receive
+     * null in expired_at which will get overridden
+     * by fillable. Hence, no use of generator.
+     * It needs to be in fillable because
+     * merchant can send its value too.
+     *
+     * @param $expiredAt
+     */
+    protected function setExpiredAtAttribute($expiredAt)
+    {
+        if ((empty($expiredAt) === true) and
+            ($this->getMethod() === Payment\Method::EMANDATE))
+        {
+            $expiredAt = Carbon::now(Timezone::IST)
+                               ->addYears(self::DEFAULT_EXPIRY_YEARS)
+                               ->getTimestamp();
+        }
+
+        $this->attributes[self::EXPIRED_AT] = $expiredAt;
     }
 
     protected function setPublicCardAttribute(array & $array)
