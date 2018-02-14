@@ -141,11 +141,19 @@ export default class CalendarPicker extends Component {
         {({ value }) => {
           let inpEle = document.getElementById(this.props.name + '-date-input');
           if (inpEle) {
-            inpEle.value = value
-              ? typeof value === 'object'
-                ? value.format(this.getFormat())
-                : value
-              : '';
+            if (value) {
+              if (typeof value === 'object') {
+                inpEle.value = value.format(this.getFormat());
+              } else {
+                inpEle.value = value;
+                if (value.toString().length == 10) {
+                  this.props.onDayChange &&
+                    this.props.onDayChange(moment(value * 1000)); // Manual input
+                }
+              }
+            } else {
+              inpEle.value = '';
+            }
           }
           return (
             <span tabIndex="0">
