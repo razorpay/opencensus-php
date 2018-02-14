@@ -120,19 +120,19 @@ class Gateway extends Base\Gateway
 
         $eci = $gatewayPayment->getEci();
 
-        if ($input['merchant']['id'] === '6ZJzxyLFWrGs74')
+        if (in_array($input['merchant']['id'], ['6ZJzxyLFWrGs74','10000000000000'], true))
         {
-            $network = Card\Network::getCode($input['card']['network']);
+            $networkCode = Card\Network::getCode($input['card']['network']);
 
             $isInternational = $input['card']['international'];
 
-            $this->validateAuthResponse($eci, $network, $isInternational);
+            $this->validateAuthResponse($eci, $networkCode, $isInternational);
         }
         else
         {
-            $network = strtoupper($input['card']['network']);
+            $networkCode = strtoupper($input['card']['network']);
 
-            $this->validateEci($eci, $network);
+            $this->validateEci($eci, $networkCode);
 
             $txnStatus = $PARes[PARes::TX][PARes::STATUS];
 
@@ -156,13 +156,15 @@ class Gateway extends Base\Gateway
         return $gatewayPayment->toArray();
     }
 
-    protected function validateAuthResponse($eci, $network, $isInternational)
+    protected function validateAuthResponse($eci, $networkCode, $isInternational)
     {
-        if (($network === Card\Network::VISA) and ($eci === '05' or ($eci == '06' and $isInternational === true)))
+        if (($networkCode === Card\Network::VISA) and
+            (($eci === '05')  or ($eci === '06' and $isInternational === true)))
         {
             return true;
         }
-        if ((in_array($network,[card\Network::MC,Card\Network::MAES])) and ($eci === '02' or ($eci == '01' and $isInternational ===true)))
+        if ((in_array($networkCode, [card\Network::MC,Card\Network::MAES], true)) and
+            (($eci === '02') or ($eci === '01' and $isInternational ===true)))
         {
             return true;
         }
@@ -173,7 +175,7 @@ class Gateway extends Base\Gateway
             null,
             [
                 'eci'             => $eci,
-                'network'         => $network,
+                'network'         => $networkCode,
                 'isInternational' => $isInternational,
             ]
         );
