@@ -398,7 +398,7 @@ class Authorization
 
     public function isProxyAuth()
     {
-        return ($this->type === 'proxy');
+        return ($this->proxy === true);
     }
 
     public function isPrivateAuth()
