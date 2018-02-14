@@ -95,9 +95,25 @@ class ApiRequestAny
 
             if ($routeName === 'merchant')
             {
-                $currentMerchant = Auth::guard('user')->user()->currentMerchant();
+                $user = Auth::guard('user')->user();
 
-                $this->options['headers']['X-Dashboard-User-Role'] = $currentMerchant->role;
+                if (empty($user) === false)
+                {
+                    $currentMerchant = $user->currentMerchant();
+
+                    $this->options['headers']['X-Dashboard-User-Role'] = $currentMerchant->role;
+
+                    $this->options['headers']['X-Dashboard-User-Id'] = $user->id;
+
+                    $this->options['headers']['X-Dashboard-User-Email'] = $user->email;
+                }
+
+                $accountId = Request::header(self::RAZORPAY_ACCOUNT_HEADER);
+                
+                if ($accountId)
+                {
+                    $this->options['headers'][self::RAZORPAY_ACCOUNT_HEADER] = $accountId;
+                }
 
                 $mode .= '_' . $currentMerchant->id;
 
@@ -115,6 +131,14 @@ class ApiRequestAny
                         400);
                 }
 
+                $adminUsername = $adminUser->username ?? null;
+
+                $this->options['headers']['X-Dashboard-Admin-Username'] = $adminUsername;
+
+                $adminEmail = $adminUser->email ?? null;
+
+                $this->options['headers']['X-Dashboard-Admin-Email'] = $adminEmail;
+
                 $this->options['headers']['X-Admin-Token'] = $adminUser->token;
 
                 $pass = Config::get('api.auth_pass');
@@ -127,7 +151,11 @@ class ApiRequestAny
 
                 if (empty($user) === false)
                 {
-                    $headers['X-Dashboard-User-Id'] = $user->id;
+                    $this->options['headers']['X-Dashboard-User-Id'] = $user->id;
+
+                    $this->options['headers']['X-Dashboard-User-Id'] = $user->id;
+
+                    $this->options['headers']['X-Dashboard-User-Email'] = $user->email;
                 }
 
                 // NOTE: We should NEVER hit this as Dashboard internal.
