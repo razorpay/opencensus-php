@@ -57,7 +57,6 @@ class Gateway extends Base\Gateway
             'recurring'         => 0,
         ];
 
-
         if (isset($input['payment']['auth_type']) === true)
         {
             $content['auth_type'] = $input['payment']['auth_type'];

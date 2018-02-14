@@ -1618,25 +1618,6 @@ class Entity extends Base\PublicEntity
         return (Emi\Subvention::MERCHANT === $this->getAttribute(self::EMI_SUBVENTION));
     }
 
-    public function isEmandatePayment()
-    {
-        $token = $this->getGlobalOrLocalTokenEntity();
-
-        //
-        // It's not an e-mandate payment if
-        // - Token not set
-        // - emandate method is false
-        //
-        // @todo shouldn't we just use isEmandate()
-        if (($token === null) or
-            ($this->isEmandate() === false))
-        {
-            return false;
-        }
-
-        return true;
-    }
-
     public function getConvertCurrency()
     {
         return $this->getAttribute(self::CONVERT_CURRENCY);
