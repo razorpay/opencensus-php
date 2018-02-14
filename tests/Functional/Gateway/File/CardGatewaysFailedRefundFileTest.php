@@ -37,7 +37,7 @@ class CardGatewaysFailedRefundFileTest extends TestCase
 
         $this->createFailedRefundsforOldpayments();
 
-        $this->ba->adminAuth();
+        $this->ba->appAuth();
 
         $data = $this->startTest();
 
@@ -89,7 +89,7 @@ class CardGatewaysFailedRefundFileTest extends TestCase
 
         $this->createFailedRefundsforOldpayments();
 
-        $this->ba->adminAuth();
+        $this->ba->appAuth();
 
         $data = $this->startTest();
 
@@ -141,7 +141,7 @@ class CardGatewaysFailedRefundFileTest extends TestCase
 
         $this->createFailedRefundsforOldpayments();
 
-        $this->ba->adminAuth();
+        $this->ba->appAuth();
 
         $data = $this->startTest();
 
@@ -197,7 +197,7 @@ class CardGatewaysFailedRefundFileTest extends TestCase
 
         $this->createFailedRefundsforOldpayments();
 
-        $this->ba->adminAuth();
+        $this->ba->appAuth();
 
         $data = $this->startTest();
 
@@ -247,7 +247,7 @@ class CardGatewaysFailedRefundFileTest extends TestCase
 
         $this->createFailedRefundsforOldpayments();
 
-        $this->ba->adminAuth();
+        $this->ba->appAuth();
 
         $data = $this->startTest();
 

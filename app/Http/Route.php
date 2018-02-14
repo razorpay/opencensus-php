@@ -1532,6 +1532,7 @@ final class Route
         'pricing_get_gateway_plans'              => '*',
         'pricing_get_plan_rule'                  => '*',
         'pricing_delete_plan_rule_force'         => '*',
+        'gateway_file_create'                    => '*',
     ];
 
     public static $direct = [
