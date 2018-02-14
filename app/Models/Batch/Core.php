@@ -48,6 +48,10 @@ class Core extends Base\Core
 
         $response = $processor->getValidatedEntriesStatsAndSampleData($entries);
 
+        // The error file to be created and saved is supposed to be used in batch create api.
+        // Hence it must be saved as an input file and to be saved inside batch/upload folder
+        // This error file_store instance has no entity associated with it as any input file
+        // and should have the type as `batch_input`. For backward compatibility.
         $response += $processor->createSetOutputFileAndSave($entries, BatchHeaders::ERROR);
 
         return $response;
