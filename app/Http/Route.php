@@ -1120,12 +1120,14 @@ final class Route
         'transaction_bulk_update',
         'setl_update_channel_bulk',
         'merchant_tags_bulk',
+        'bank_transfer_process',
 
         // Guest Routes (no login required)
         'user_login',
         'user_register',
         'org_get_by_hostname',
         'user_reset_password_create',
+        'admin_edit_app_auth',
 
         // User Routes
         'user_merchant_upgrade',
@@ -1338,7 +1340,6 @@ final class Route
         'payment_verify',
         'payment_authorize_failed',
         'refund_generate_excel',
-        'bank_transfer_process',
         'iin_add',
         'emi_plan_add',
         'emi_generate_excel',
@@ -1347,7 +1348,6 @@ final class Route
         'admin_authentication',
         'admin_oauth_authenticate',
         'admin_lead_verify',
-        'admin_edit_app_auth',
         'merchant_tag_add',
         'merchant_tag_delete',
         'refund_verify_failed',
@@ -1522,7 +1522,6 @@ final class Route
         'admin_authentication'                   => '*',
         'admin_oauth_authenticate'               => '*',
         'admin_lead_verify'                      => '*',
-        'admin_edit_app_auth'                    => '*',
         'merchant_tag_add'                       => '*',
         'merchant_tag_delete'                    => '*',
         'refund_verify_failed'                   => '*',
@@ -1610,6 +1609,8 @@ final class Route
             'invitation_fetch_by_token',
             'user_resend_verification',
             'user_reset_password_token',
+            // Called during signup flow
+            'admin_edit_app_auth',
         ],
 
         'cron' => [
