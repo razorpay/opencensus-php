@@ -2,10 +2,8 @@
 
 namespace RZP\Models\Merchant\Webhook;
 
-use RZP\Constants\Entity;
-use RZP\Exception;
-use RZP\Models\Base;
 use RZP\Models\Feature;
+use RZP\Constants\Entity;
 
 /**
  * The events whether they are enabled or disabled are store in bit format.
@@ -17,6 +15,7 @@ class Event
     const PAYMENT_AUTHORIZED        = 'payment.authorized';
     const PAYMENT_FAILED            = 'payment.failed';
     const PAYMENT_CAPTURED          = 'payment.captured';
+    const PAYMENT_DISPUTE_CREATED   = 'payment.dispute.created';
     const ORDER_PAID                = 'order.paid';
     const INVOICE_PAID              = 'invoice.paid';
     const INVOICE_PARTIALLY_PAID    = 'invoice.partially_paid';
@@ -40,6 +39,7 @@ class Event
         self::PAYMENT_AUTHORIZED,
         self::PAYMENT_FAILED,
         self::PAYMENT_CAPTURED,
+        self::PAYMENT_DISPUTE_CREATED,
         self::ORDER_PAID,
         self::INVOICE_PARTIALLY_PAID,
         self::INVOICE_PAID,
@@ -69,6 +69,7 @@ class Event
         self::PAYMENT_AUTHORIZED,
         self::PAYMENT_FAILED,
         self::PAYMENT_CAPTURED,
+        self::PAYMENT_DISPUTE_CREATED,
         self::ORDER_PAID,
         self::INVOICE_PARTIALLY_PAID,
         self::INVOICE_PAID,
@@ -111,6 +112,7 @@ class Event
         self::TOKEN_CONFIRMED           => 19,
         self::TOKEN_REJECTED            => 20,
         self::SETTLEMENT_PROCESSED      => 21,
+        self::PAYMENT_DISPUTE_CREATED   => 22,
     ];
 
     /**
@@ -122,6 +124,7 @@ class Event
         self::PAYMENT_AUTHORIZED,
         self::PAYMENT_FAILED,
         self::PAYMENT_CAPTURED,
+        self::PAYMENT_DISPUTE_CREATED,
         self::ORDER_PAID,
         self::INVOICE_PAID,
         self::INVOICE_PARTIALLY_PAID,
@@ -143,7 +146,7 @@ class Event
     ];
 
     /**
-     * Defines the mapping to entity for respective event and also
+     * Defines the mapping to main entity for respective event and also
      * the field description to be set in mail content for webhook related mails
      *
      * @var array
@@ -152,6 +155,7 @@ class Event
         self::PAYMENT_AUTHORIZED        => Entity::PAYMENT,
         self::PAYMENT_CAPTURED          => Entity::PAYMENT,
         self::PAYMENT_FAILED            => Entity::PAYMENT,
+        self::PAYMENT_DISPUTE_CREATED   => Entity::PAYMENT,
         self::INVOICE_PAID              => Entity::INVOICE,
         self::INVOICE_PARTIALLY_PAID    => Entity::INVOICE,
         self::INVOICE_EXPIRED           => Entity::INVOICE,

@@ -19,7 +19,6 @@ return [
         ],
         'response' => [
             'content' => [
-                'merchant_id'        => '10000000000000',
                 'amount'             => 100,
                 'currency'           => 'INR',
                 'phase'              => 'chargeback',
@@ -43,7 +42,6 @@ return [
         ],
         'response' => [
             'content' => [
-                'merchant_id'        => '10000000000000',
                 'amount'             => 100,
                 'currency'           => 'INR',
                 'phase'              => 'chargeback',
@@ -68,12 +66,59 @@ return [
         ],
         'response' => [
             'content' => [
-                'merchant_id'        => '10000000000000',
                 'amount'             => 100,
                 'currency'           => 'INR',
                 'phase'              => 'chargeback',
                 'status'             => 'open',
                 'reason_code'        => 'KFRER_R',
+            ],
+        ],
+    ],
+
+    'testDisputeCreatedWebhook' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'gateway_dispute_id' => '4342frf34r',
+                'raised_on'          => '946684800',
+                'expires_on'         => 946684801,
+                'amount'             => 50000,
+                'deduct_at_onset'    => 0,
+                'phase'              => 'chargeback',
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testDisputeCreatedWebhookEventData' => [
+        'entity'   => 'event',
+        'event'    => 'payment.dispute.created',
+        'contains' => [
+            'payment',
+            'dispute',
+        ],
+        'payload' => [
+            'payment' => [
+                'entity' => [
+                    'entity'     => 'payment',
+                    'amount'     => 50000,
+                    'currency'   => 'INR',
+                    'status'     => 'captured',
+                    'captured'   => true,
+                ],
+            ],
+            'dispute' => [
+                'entity' => [
+                    'entity'             => 'dispute',
+                    'amount'             => 50000,
+                    'currency'           => 'INR',
+                    'gateway_dispute_id' => '4342frf34r',
+                    'respond_by'         => 946684801,
+                    'status'             => 'open',
+                    'reason_code'        => 'KFRER_R',
+                ],
             ],
         ],
     ],
@@ -92,7 +137,6 @@ return [
         ],
         'response' => [
             'content' => [
-                'merchant_id'        => '10000000000000',
                 'amount'             => 100,
                 'currency'           => 'INR',
                 'phase'              => 'chargeback',
@@ -309,7 +353,6 @@ return [
         ],
         'response' => [
             'content' => [
-                'merchant_id'        => '10000000000000',
                 'amount'             => 100,
                 'currency'           => 'INR',
                 'phase'              => 'chargeback',
@@ -468,7 +511,6 @@ return [
         ],
         'response' => [
             'content' => [
-                'merchant_id' => '10000000000000',
                 'amount'      => 1000000,
                 'currency'    => 'INR',
                 'phase'       => 'chargeback',
@@ -488,7 +530,6 @@ return [
         ],
         'response' => [
             'content' => [
-                'merchant_id' => '10000000000000',
                 'amount'      => 1000000,
                 'currency'    => 'INR',
                 'phase'       => 'chargeback',
@@ -508,7 +549,6 @@ return [
         ],
         'response' => [
             'content' => [
-                'merchant_id' => '10000000000000',
                 'amount'      => 1000000,
                 'currency'    => 'INR',
                 'phase'       => 'chargeback',
@@ -526,7 +566,6 @@ return [
         ],
         'response' => [
             'content' => [
-                'merchant_id' => '10000000000000',
                 'amount'      => 1000000,
                 'currency'    => 'INR',
                 'phase'       => 'chargeback',
@@ -544,7 +583,6 @@ return [
         ],
         'response' => [
             'content' => [
-                'merchant_id' => '10000000000000',
                 'amount'      => 1000000,
                 'currency'    => 'INR',
                 'phase'       => 'chargeback',
@@ -807,7 +845,6 @@ return [
                 'count'         => 2,
                 'items'         => [
                     [
-                        'merchant_id'       => '10000000000000',
                         'amount'            => 1000000,
                         'currency'          => 'INR',
                         'reason_code'       => 'SOMETHING_BAD',
@@ -815,7 +852,6 @@ return [
                         'phase'             => 'chargeback',
                     ],
                     [
-                        'merchant_id'       => '10000000000000',
                         'amount'            => 1000000,
                         'currency'          => 'INR',
                         'reason_code'       => 'SOMETHING_BAD',
@@ -833,7 +869,6 @@ return [
         ],
         'response' => [
             'content' => [
-                'merchant_id'   => '10000000000000',
                 'amount'        => 1000000,
                 'currency'      => 'INR',
                 'reason_code'   => 'SOMETHING_BAD',
