@@ -112,7 +112,7 @@ class Core extends Base\Core
 
             $reviewsDone = $this->repo
                                 ->action_checker
-                                ->fetchCountByStep($step->getId());
+                                ->fetchCountByActionIdForStep($admin->getId(), $step->getId());
 
             if ($reviewsDone >= $requiredReviews)
             {
