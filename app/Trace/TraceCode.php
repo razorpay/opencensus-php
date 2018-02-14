@@ -695,6 +695,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const HARVESTER_RETRY                           = 'HARVESTER_RETRY';
     const HARVESTER_FAILURE                         = 'HARVESTER_FAILURE';
 
+    const SHIELD_INTEGRATION_ERROR                  = 'SHIELD_INTEGRATION_ERROR';
+
     // ES related trace codes
     const ES_DEBUG_RESPONSE                         = 'ES_DEBUG_RESPONSE';
     const ES_DEBUG_FAILED                           = 'ES_DEBUG_FAILED';

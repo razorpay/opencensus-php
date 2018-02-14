@@ -646,6 +646,14 @@ final class Route
         'risk_fetch_multiple'                     => ['get',      'risk',                                           'RiskController@list'                                               ],
         'risk_get'                                => ['get',      'risk/{id}',                                      'RiskController@get'                                                ],
 
+        // Shield Routes
+        'rules_get_multiple'                      => ['get',       'shield/rules',                                  'ShieldController@list'                                             ],
+        'rules_get'                               => ['get',       'shield/rules/{id}',                             'ShieldController@get'                                              ],
+        'rules_update'                            => ['put',       'shield/rules/{id}',                             'ShieldController@update'                                           ],
+        'rules_delete'                            => ['delete',    'shield/rules/{id}',                             'ShieldController@delete'                                           ],
+        'rules_create'                            => ['post',      'shield/rules',                                  'ShieldController@create'                                           ],
+        'rules_evaluate'                          => ['post',      'shield/rules/evaluate',                         'ShieldController@evaluate'                                         ],
+
         // Dispute routes
         'payment_dispute_create'                  => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
         'dispute_edit'                            => ['post',     'disputes/{id}',                                  'DisputeController@update'                                          ],
@@ -1157,6 +1165,12 @@ final class Route
         'transaction_bulk_update',
         'setl_update_channel_bulk',
         'merchant_tags_bulk',
+        'rules_get_multiple',
+        'rules_get',
+        'rules_create',
+        'rules_update',
+        'rules_delete',
+        'rules_evaluate',
     ];
 
     public static $proxy = [
