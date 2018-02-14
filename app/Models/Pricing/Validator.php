@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Card\Network;
+use RZP\Models\Card\Type as CardType;
 use RZP\Models\Payment;
 use RZP\Models\Payout;
 use RZP\Models\Transfer;
@@ -21,7 +22,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY             => 'sometimes|',
         Entity::PLAN_NAME           => 'sometimes|',
         Entity::PAYMENT_METHOD      => 'required|string',
-        Entity::PAYMENT_METHOD_TYPE => 'sometimes_if:payment_method,card,emandate|nullable|in:debit,credit,netbanking,aadhaar',
+        Entity::PAYMENT_METHOD_TYPE => 'sometimes_if:payment_method,card,emandate|nullable',
         Entity::PAYMENT_NETWORK     => 'sometimes|nullable|alpha',
         Entity::PAYMENT_ISSUER      => 'sometimes_if:payment_method,card,emi,emandate|nullable|alpha|max:10',
         Entity::EMI_DURATION        => 'sometimes|nullable|integer|in:3,6,9,12,18,24',
@@ -37,6 +38,7 @@ class Validator extends Base\Validator
 
     protected static $addPlanRuleValidators = [
         'addPlanRuleRate',
+        'addPlanRuleCard',
         'addPlanRuleNB',
         'addPlanRuleEmandate',
         'addPlanRulePaymentNetwork',
@@ -138,6 +140,28 @@ class Validator extends Base\Validator
                     throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_PRICING_FIELD_NOT_REQUIRED_FOR_NB,
                         $field);
+                }
+            }
+        }
+    }
+
+    protected function addPlanRuleCard($input)
+    {
+        if ($input[Entity::PAYMENT_METHOD] === Payment\Method::CARD)
+        {
+            if (isset($input[Entity::PAYMENT_METHOD_TYPE]) === true)
+            {
+                $cardType = $input[Entity::PAYMENT_METHOD_TYPE];
+
+                $validCardTypes = [
+                    CardType::DEBIT,
+                    CardType::CREDIT,
+                ];
+
+                if (in_array($cardType, $validCardTypes, true) === false)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Payment method type for card should be debit / credit');
                 }
             }
         }
