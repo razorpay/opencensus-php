@@ -8,7 +8,21 @@ export function merchantFetch(params) {
     }
   }
 
-  params.url = `/merchant/api/${getMode()}/${params.url}`;
+  let mode = params.mode;
+  if (mode) {
+    delete params.mode;
+  } else {
+    mode = getMode();
+  }
+
+  if (params.accountId) {
+    params.headers = {
+      'X-Razorpay-Account': params.accountId
+    }
+  }
+  delete params.accountId;
+
+  params.url = `/merchant/api/${mode}/${params.url}`;
 
   return ajax(params);
 }

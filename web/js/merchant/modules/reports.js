@@ -16,15 +16,13 @@ const handleError = e => {
 
 const createLog = data => {
   return merchantFetch({
-    url: `reporting/logs`,
+    url: 'reporting/logs',
     method: 'post',
     data,
   });
 };
 
-const getLog = logId => {
-  return merchantFetch(`reporting/logs/${logId}`);
-};
+const getLog = logId => merchantFetch(`reporting/logs/${logId}`);
 
 const getFile = fileId => {
   return ajax({

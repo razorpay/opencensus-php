@@ -1,4 +1,4 @@
-import ajax from 'merchant/utils/ajax';
+import { merchantFetch } from 'rzp/utils/ajax';
 import Activation from 'merchant/models/Activation';
 import { set, merge, push } from 'rzp/utils/immutable';
 import store from 'merchant/store';
@@ -42,11 +42,7 @@ export const saveFile = ({ step, file, fieldName, accountId = '' }) => {
     ngo_12a_proof: 'form_12a_url',
     ngo_80g_proof: 'form_80g_url',
   };
-  formData.append('file', file);
-  formData.append('file_name', fieldNameMapping[fieldName]);
-  if (accountId) {
-    formData.append('account_id', accountId);
-  }
+  formData.append(fieldNameMapping[fieldName], file);
 
   return {
     type: ACTIVATION_SAVE_FILE,
@@ -54,6 +50,7 @@ export const saveFile = ({ step, file, fieldName, accountId = '' }) => {
       url: 'merchant/activation/upload',
       method: 'post',
       data: formData,
+      accountId
     }),
     fileName: file.name,
     fieldName,
@@ -176,17 +173,13 @@ export const getPincodeDetails = (pincode, changeFunc) => {
   const mode = store.getState().session.mode;
 
   if (pincode.length === 6) {
-    ajax({
-      url: `/merchant/api/${mode}/pincodes/${pincode}`,
-      method: 'get',
-      appendModeInURL: false,
+    merchantFetch(`pincodes/${pincode}`)
+    .then(response => {
+      if (response.data) {
+        changeFunc(response.data.city, response.data.state_code);
+      }
     })
-      .then(response => {
-        if (response.data) {
-          changeFunc(response.data.city, response.data.state_code);
-        }
-      })
-      .catch(e => changeFunc()); //- send empty values if error
+    .catch(e => changeFunc()); //- send empty values if error
   } else {
     //- send empty values if length less or greater than 6
     changeFunc();

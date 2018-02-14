@@ -4,13 +4,8 @@ import { merchantFetch } from 'rzp/utils/ajax';
 
 const FETCH_BALANCE_AND_CREDITS = 'FETCH_BALANCE_AND_CREDITS';
 
-const getCreditsData = () => {
-  return merchantFetch(`credits`);
-};
-
-const fetchBalance = () => {
-  return merchantFetch('balance');
-};
+const getCreditsData = _ => merchantFetch('credits')
+const fetchBalance = _ => merchantFetch('balance');
 
 export const fetchCreditBalance = () => {
   return {

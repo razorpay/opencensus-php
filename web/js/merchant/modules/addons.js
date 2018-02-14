@@ -32,13 +32,9 @@ export const saveAddOn = (params, isNew = true) => {
 
 // Fetch entire addon list
 export const fetchAddOns = params => {
-  if (params) {
-    data.query_params = JSON.stringify(params);
-  }
-
   return merchantFetch({
     url: 'addons',
-    data,
+    params,
   });
 };
 

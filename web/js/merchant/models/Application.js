@@ -46,11 +46,10 @@ export default class Application extends GenericEntity {
   create(params = {}, fileName) {
     let formData = new FormData();
     for (let key in params) {
-      formData.append(`body[${key}]`, params[key]);
+      formData.append(key, params[key]);
     }
 
-    formData.append('file', params.file);
-    formData.append('file_name', fileName);
+    formData.append(fileName, params.file);
 
     return merchantFetch({
       url: 'oauth/applications',
