@@ -1,6 +1,19 @@
 import { getCookie } from './cookies';
+import { getMode } from 'merchant/store';
 
-export default (params = {}) => {
+export function merchantFetch(params) {
+  if (typeof params === 'string') {
+    params = {
+      url: params
+    }
+  }
+
+  params.url = getMode() + '/' + params.url;
+
+  return ajax(params);
+}
+
+export default function ajax(params = {}) {
   return new Promise((resolve, reject) => {
     let { headers = {} } = params;
     headers['X-XSRF-TOKEN'] = getCookie('XSRF-TOKEN');
