@@ -143,6 +143,8 @@ class NetbankingHdfcEMandateTest extends TestCase
 
         $this->testEMandateInitialPayment();
 
+        $this->ba->adminAuth();
+
         $content = $this->startTest();
 
         $content = $content['items'][0];
