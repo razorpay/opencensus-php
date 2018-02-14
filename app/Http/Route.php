@@ -1122,22 +1122,22 @@ final class Route
         'setl_update_channel_bulk',
         'merchant_tags_bulk',
 
-        // Guest Routes
-        'user_change_password',
-        'user_reset_password_token',
-        'user_merchant_upgrade',
-        'org_get_by_hostname',
-        'user_register',
-
-        // Guest
-        'user_fetch',
+        // Guest Routes (no login required)
         'user_login',
+        'user_register',
+        'org_get_by_hostname',
         'user_reset_password_create',
+
+        // User Routes
+        'user_merchant_upgrade',
+        'user_change_password',
+        'user_fetch',
+        'invitation_action',
+        'user_fetch_email',
         'merchant_admin_lead_put',
         'invitation_fetch_by_token',
-        'invitation_action',
         'user_resend_verification',
-        'user_fetch_email',
+        'user_reset_password_token',
     ];
 
     public static $proxy = [
