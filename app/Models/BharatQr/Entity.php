@@ -13,6 +13,8 @@ class Entity extends Base\PublicEntity
     const EXPECTED              = 'expected';
     const VIRTUAL_ACCOUNT_ID    = 'virtual_account_id';
     const GATEWAY               = 'gateway';
+    const CARD_FIRST6           = 'card_first6';
+    const CARD_LAST4            = 'card_last4';
     const GATEWAY_MERCHANT_ID   = 'gateway_merchant_id';
     //card or upi
     const METHOD                = 'method';
@@ -42,21 +44,12 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::AMOUNT,
         self::GATEWAY,
-        self::GATEWAY_MERCHANT_ID,
         self::METHOD,
         self::VPA,
-        self::CARD_NUMBER,
-        self::CARD_NETWORK,
+        self::CARD_FIRST6,
+        self::CARD_LAST4,
         self::PROVIDER_REFERENCE_ID,
         self::MERCHANT_REFERENCE,
-        self::TRACE_NUMBER,
-        self::RRN,
-        self::TRANSACTION_TIME,
-        self::TRANSACTION_DATE,
-        self::GATEWAY_TERMINAL_ID,
-        self::GATEWAY_TERMINAL_DESC,
-        self::CUSTOMER_NAME,
-        self::STATUS_CODE,
     ];
 
     protected $visible = [
@@ -66,18 +59,12 @@ class Entity extends Base\PublicEntity
         self::GATEWAY,
         self::PAYMENT_ID,
         self::VIRTUAL_ACCOUNT_ID,
-        self::GATEWAY_MERCHANT_ID,
         self::METHOD,
         self::VPA,
-        self::RRN,
-        self::CARD_NUMBER,
-        self::CARD_NETWORK,
-        self::TRANSACTION_TIME,
-        self::TRANSACTION_DATE,
+        self::CARD_FIRST6,
+        self::CARD_LAST4,
         self::PROVIDER_REFERENCE_ID,
         self::MERCHANT_REFERENCE,
-        self::RRN,
-        self::STATUS_CODE,
     ];
 
     protected $casts = [
@@ -161,14 +148,19 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AMOUNT);
     }
 
-    public function getCardNumber()
+    public function getCardFirstSix()
     {
-        return $this->getAttribute(self::CARD_NUMBER);
+        return $this->getAttribute(self::CARD_FIRST6);
+    }
+
+    public function getCardLastFour()
+    {
+        return $this->getAttribute(self::CARD_LAST4);
     }
 
     public function getVpa()
     {
-        return $this->getAttribute(self::VPA);
+        return $this->getAttribute(self::CARD_LAST4);
     }
 
     public function isExpected()

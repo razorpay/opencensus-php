@@ -25,7 +25,7 @@ class Service extends Base\Service
         $this->core = new Core;
     }
 
-    public function processPayment(array $input, string $gateway)
+    public function processPayment($input, string $gateway)
     {
         $this->trace->info(
             TraceCode::BHARAT_QR_PAYMENT_PROCESS_REQUEST,
@@ -38,6 +38,8 @@ class Service extends Base\Service
         $gateway = $this->gatewayMapping[$gateway];
 
         $gatewayClass = $this->app['gateway']->gateway($gateway);
+
+        $input = $gatewayClass->preProcessServerCallback($input);
 
         $qrCodeId = $gatewayClass->getMerchantReferenceForQr($input);
 
@@ -93,7 +95,7 @@ class Service extends Base\Service
 
         if ($mode === null)
         {
-            $mode = Mode::LIVE;
+            $mode = Mode::TEST;
         }
 
         $this->app['basicauth']->setModeAndDbConnection($mode);

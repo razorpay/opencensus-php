@@ -37,9 +37,6 @@ class CreateBharatQrTable extends Migration
             $table->string(BharatQr::GATEWAY)
                   ->nullable();
 
-            $table->string(BharatQr::GATEWAY_MERCHANT_ID)
-                  ->nullable();
-
             $table->char(BharatQr::METHOD);
 
             $table->integer(BharatQr::AMOUNT)
@@ -48,40 +45,16 @@ class CreateBharatQrTable extends Migration
             $table->string(BharatQr::VPA)
                   ->nullable();
 
-            $table->string(BharatQr::CARD_NUMBER)
+            $table->char(BharatQr::CARD_FIRST6, 6)
                   ->nullable();
 
-            $table->string(BharatQr::CARD_NETWORK)
+            $table->char(BharatQr::CARD_LAST4, 4)
                   ->nullable();
 
             $table->string(BharatQr::PROVIDER_REFERENCE_ID)
                   -> nullable();
 
             $table->string(BharatQr::MERCHANT_REFERENCE);
-
-            $table->string(BharatQr::TRACE_NUMBER)
-                  ->nullable();
-
-            $table->string(BharatQr::RRN)
-                  ->nullable();
-
-            $table->string(BharatQr::TRANSACTION_TIME)
-                  ->nullable();
-
-            $table->string(BharatQr::TRANSACTION_DATE)
-                  ->nullable();
-
-            $table->string(BharatQr::GATEWAY_TERMINAL_ID)
-                  ->nullable();
-
-            $table->string(BharatQr::GATEWAY_TERMINAL_DESC)
-                  ->nullable();
-
-            $table->string(BharatQr::CUSTOMER_NAME)
-                  ->nullable();
-
-            $table->string(BharatQr::STATUS_CODE)
-                  ->nullable();
 
             $table->integer(BharatQr::CREATED_AT);
 

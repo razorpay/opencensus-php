@@ -255,7 +255,7 @@ class Provider
             $rupayCardTlv,
             $this->getBharatQrUpiTlv(),
             // This tag is not supported by UPI ICICI
-            // $this->getBharatQrDynamicUpiTlv($qrCode),
+            $this->getBharatQrDynamicUpiTlv($qrCode),
             Tags::MERCHANT_CATEGORY .$this->getLengthAndValue(Constants::MERCHANT_CATEGORY),
             Tags::CURRENCY_CODE . $this->getLengthAndValue(Constants::CURRENCY_CODE),
             $this->getBharatQrAmountTlv($qrCode),
@@ -291,7 +291,7 @@ class Provider
     protected function getBharatQrDynamicUpiTlv(QrCode\Entity $qrCode)
     {
         $rupayRidTlv = Tags::UPI_VPA_RUPAY_RID . $this->getLengthAndValue(Constants::RUPAY_RID);
-        $transactionReferenceTlv = Tags::UPI_VPA_REFERENCE_TR . $this->getLengthAndValue($qrCode->getId());
+        $transactionReferenceTlv = Tags::UPI_VPA_REFERENCE_TR . $this->getLengthAndValue("PIL" . $qrCode->getId());
 
         $upiString = $rupayRidTlv . $transactionReferenceTlv;
 
@@ -338,6 +338,11 @@ class Provider
         $identifierPadding = Config::get('gateway.bharat_qr.identifier_padding');
 
         $identifier = $acquirerCode . '0' . str_pad(strlen($identifierPadding), 8, '0', STR_PAD_LEFT);
+
+        if ($network === NetworkName::MC)
+        {
+            return $identifier;
+        }
 
         return $identifier . Luhn::computeCheckDigit($identifier);
     }

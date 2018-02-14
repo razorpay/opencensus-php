@@ -183,11 +183,9 @@ class Processor extends VirtualAccount\Processor
      */
     protected function getLuhnValidCardNumberFromBharatQr(Entity $bharatQr)
     {
-        $maskedCardNumber = $bharatQr->getCardNumber();
+        $firstSix = $bharatQr->getCardFirstSix();
 
-        $firstSix = substr($maskedCardNumber, 0, 6);
-
-        $lastFour = substr($maskedCardNumber, 12, 4);
+        $lastFour = $bharatQr->getCardLastFour();
 
         $part1 = $firstSix . self::RANDOM_CARD_PADDING;
 
