@@ -1126,6 +1126,7 @@ final class Route
         'org_get_by_hostname',
         'user_reset_password_create',
         'admin_edit_app_auth',
+        'admin_authentication',
 
         // User Routes
         'user_merchant_upgrade',
@@ -1343,7 +1344,6 @@ final class Route
         'emi_generate_excel',
         'dummy_critical_error',
         'admin_get_app_auth',
-        'admin_authentication',
         'admin_oauth_authenticate',
         'admin_lead_verify',
         'merchant_tag_add',
@@ -1613,6 +1613,7 @@ final class Route
             'user_reset_password_token',
             // Called during signup flow
             'admin_edit_app_auth',
+            'admin_authentication',
         ],
 
         'cron' => [
