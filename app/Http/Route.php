@@ -1113,6 +1113,7 @@ final class Route
         'setl_update_channel_bulk',
         'merchant_tags_bulk',
         'refund_generate_excel',
+        'gateway_file_create',
         'bank_transfer_process',
 
         // Guest Routes (no login required)
@@ -1229,7 +1230,6 @@ final class Route
         'reporting_log_create',
         'ufh_get_file_signed_url',
         'pincode_get',
-        'gateway_file_create',
         'dispute_edit',
     ];
 
@@ -1350,7 +1350,6 @@ final class Route
         'merchant_tag_delete',
         'refund_verify_failed',
         'merchant_edit_email',
-        'gateway_file_create',
         'dispute_reason_create',
         'merchant_tags_bulk',
         'refund_verify',
@@ -1526,7 +1525,6 @@ final class Route
         'merchant_tag_delete'                    => '*',
         'refund_verify_failed'                   => '*',
         'merchant_edit_email'                    => '*',
-        'gateway_file_create'                    => '*',
         'refund_verify'                          => '*',
         'refund_retry_failed'                    => '*',
         'merchant_assign_pricing'                => '*',
@@ -1592,7 +1590,9 @@ final class Route
     ];
 
     public static $internalApps = [
-        'dashboard' => ['*'],
+        'dashboard' => [
+            '*'
+        ],
 
         'mock_gateways' => [
             'mock_hdfc_enroll',
