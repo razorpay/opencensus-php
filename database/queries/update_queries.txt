@@ -1443,7 +1443,9 @@ update settlements join fund_transfer_attempts
 on settlements.id = fund_transfer_attempts.source_id
 set settlements.utr = fund_transfer_attempts.utr
 where settlements.channel = 'icici'
-and settlements.`batch_fund_transfer_id` = fund_transfer_attempts.`batch_fund_transfer_id`;
+and settlements.`batch_fund_transfer_id` = fund_transfer_attempts.`batch_fund_transfer_id`
+and settlements.utr is null
+and fund_transfer_attempts.utr is not null;
 
 update emi_plans set deleted_at = now() where subvention = 'merchant';
 
