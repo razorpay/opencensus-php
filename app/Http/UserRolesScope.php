@@ -22,9 +22,21 @@ class UserRolesScope
     public function setRouteUserRoleMap()
     {
         $this->routeUserRoleMap = [
-            'team_users_list'      => [Role::OWNER],
-            'batch_fetch_multiple' => Role::READER_ROLES,
-            'batch_fetch_by_id'    => Role::READER_ROLES,
+            'team_users_list'             => [Role::OWNER],
+            'webhook_edit'                => [Role::OWNER, Role::MANAGER, Role::ADMIN],
+            'batch_fetch_multiple'        => Role::READER_ROLES,
+            'batch_fetch_by_id'           => Role::READER_ROLES,
+            'batch_download_file'         => Role::READER_ROLES,
+            'batch_create'                => Role::READER_ROLES,
+            'payment_fetch_by_id'         => Role::allExceptSellerRole(),
+            'merchant_activation_details' => [Role::OWNER, Role::MANAGER, Role::ADMIN],
+            'merchant_fetch_config'       => Role::allExceptSellerRole(),
+            'webhook_fetch_multiple'      => [Role::OWNER, Role::MANAGER, Role::ADMIN],
+            'payment_fetch_multiple'      => Role::allExceptSellerRole(),
+            'order_fetch'                 => Role::allExceptSellerRole(),
+            'order_fetch_by_id'           => Role::allExceptSellerRole(),
+            'order_payments'              => Role::allExceptSellerRole(),
+            'invitation_resend'           => [Role::OWNER],
         ];
     }
 
