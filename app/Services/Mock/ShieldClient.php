@@ -10,8 +10,8 @@ class ShieldClient
             'id'         => '12345678',
             'expression' => $input['expression'],
             'is_active'  => true,
-            'updated_at' => 1518608813,
             'created_at' => 1518608813,
+            'updated_at' => 1518608813,
         ];
     }
 }
