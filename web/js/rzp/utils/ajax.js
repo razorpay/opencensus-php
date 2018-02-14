@@ -15,6 +15,13 @@ export function merchantFetch(params) {
     mode = getMode();
   }
 
+  if (params.accountId) {
+    params.headers = {
+      'X-Razorpay-Account': params.accountId
+    }
+  }
+  delete params.accountId;
+
   params.url = `/merchant/api/${mode}/${params.url}`;
 
   return ajax(params);

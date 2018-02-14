@@ -121,13 +121,8 @@ export default class Activation extends Entity {
 
   fetch() {
     let params = {
-      url: 'merchant/activation'
-    }
-
-    if (this.accountId) {
-      params.data = {
-        account_id: this.accountId
-      };
+      url: 'merchant/activation',
+      accountId: this.accountId
     }
 
     return merchantFetch(params).then(response => {
@@ -187,10 +182,6 @@ export default class Activation extends Entity {
   }
 
   saveActivation(data) {
-    if (this.accountId) {
-      data.account_id = this.accountId;
-    }
-
     // Auto add 'http' if not filled by user
 
     activationStepMap[3].forEach(key => {
@@ -200,7 +191,8 @@ export default class Activation extends Entity {
     return merchantFetch({
       url: 'merchant/activation',
       method: 'post',
-      data
+      data,
+      accountId: this.accountId
     });
   }
 
