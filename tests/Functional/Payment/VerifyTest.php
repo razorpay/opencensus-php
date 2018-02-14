@@ -3,18 +3,17 @@
 namespace RZP\Tests\Functional\Payment;
 
 use DB;
-use Mockery;
 use Redis;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
-use RZP\Models\Payment\Entity as PaymentEntity;
-use RZP\Models\Batch\Status;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class VerifyTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     protected $payment = null;
 
@@ -167,7 +166,7 @@ class VerifyTest extends TestCase
 
         Carbon::setTestNow($time);
 
-        $payment = $this->getLastEntity('payment', true);
+        $payment = $this->getDbLastEntityPublic('payment');
 
         $request = [
             'url'     => '/payments/verify/'. $filter,
