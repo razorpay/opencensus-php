@@ -139,16 +139,22 @@ export default class CalendarPicker extends Component {
         onClear={this.onChange}
       >
         {({ value }) => {
+          let inpEle = document.getElementById(this.props.name + '-date-input');
+          if (inpEle) {
+            inpEle.value = value
+              ? typeof value === 'object'
+                ? value.format(this.getFormat())
+                : value
+              : '';
+          }
           return (
             <span tabIndex="0">
               <input
+                id={this.props.name + '-date-input'}
                 name={this.props.name}
                 placeholder={this.props.placeholder}
                 disabled={state.disabled}
-                readOnly
-                tabIndex="-1"
                 className="ant-calendar-picker-input ant-input"
-                value={(value && value.format(this.getFormat())) || ''}
                 required={this.props.required}
               />
             </span>
