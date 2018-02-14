@@ -254,6 +254,54 @@ class HitachiGatewayTest extends TestCase
 
     }
 
+    public function testInternationalMaestro()
+    {
+         $this->fixtures->iin->create([
+            'iin'     => '589316',
+            'country' => 'US',
+            'network' => 'Maestro',
+        ]);
+        $payment = $this->defaultAuthPayment([
+            'card' => [
+                'number'       => CardNumber::INTERNATIONAL_MAESTRO,
+                'expiry_month' => '02',
+                'expiry_year'  => '21',
+                'cvv'          => 123,
+                'name'         => 'Test Card'
+            ]
+        ]);
+
+        $txn = $this->getEntities('transaction', [], true);
+        $this->assertEquals(0, $txn['count']);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertNull($payment['transaction_id']);
+
+        $gatewayPayment = $this->getLastEntity('hitachi', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testHitachiAuthEntity'], $gatewayPayment);
+
+        $this->assertEquals('100HitachiTmnl', $payment['terminal_id']);
+
+        $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
+
+        $txn = $this->getLastTransaction(true);
+        $this->assertArraySelectiveEquals(
+            $this->testData['testTransactionAfterCapture'], $txn);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertTestResponse($payment);
+
+        $gatewayPayment = $this->getLastEntity('hitachi', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testHitachiCaptureEntity'], $gatewayPayment);
+
+    }
+
+
     public function testInvalidEci()
     {
         $payment = $this->getDefaultPaymentArray();
