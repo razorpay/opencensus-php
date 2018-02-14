@@ -712,10 +712,6 @@ return [
         'request'  => [
             'url'     => '/applications/1000000DemoApp/features',
             'method'  => 'post',
-            'server'  => [
-                'HTTP_X-Dashboard'            => 'true',
-                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
-            ],
             'content' => [
                 'names'       => ['dummy'],
             ]
@@ -735,10 +731,6 @@ return [
         'request'  => [
             'url'     => "/accounts/100DemoAccount/features/dummy",
             'method'  => 'delete',
-            'server'  => [
-                'HTTP_X-Dashboard'            => 'true',
-                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
-            ],
             'content' => [ ]
         ],
         'response' => [
@@ -750,10 +742,6 @@ return [
         'request'  => [
             'url'    => '/accounts/100DemoAccount/features',
             'method' => 'get',
-            'server' => [
-                'HTTP_X-Dashboard'            => 'true',
-                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
-            ],
         ],
         'response' => [
             'content' => []
