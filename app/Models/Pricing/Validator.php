@@ -145,7 +145,7 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function addPlanRuleCard($input)
+    protected function validateaddPlanRuleCard($input)
     {
         if ($input[Entity::PAYMENT_METHOD] === Payment\Method::CARD)
         {
