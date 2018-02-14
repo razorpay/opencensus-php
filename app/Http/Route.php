@@ -1123,6 +1123,7 @@ final class Route
         'user_reset_password_create',
         'admin_edit_app_auth',
         'admin_authentication',
+        'admin_oauth_authenticate',
 
         // User Routes
         'user_merchant_upgrade',
@@ -1620,6 +1621,7 @@ final class Route
             // Called during signup flow
             'admin_edit_app_auth',
             'admin_authentication',
+            'admin_oauth_authenticate',
         ],
 
         'cron' => [
