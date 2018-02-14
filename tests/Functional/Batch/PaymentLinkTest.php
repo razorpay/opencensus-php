@@ -154,11 +154,25 @@ class PaymentLinkTest extends TestCase
 
         $response = $this->startTest();
 
-        $file = $this->getLastEntity('file_store', true);
+        $files = $this->getEntities('file_store', [], true);
 
-        $this->assertEquals($file['id'], $response['file_id']);
+        $errorFile = $files['items'][0];
 
-        $this->assertEquals(storage_path('files/filestore/') . $file['location'], $response['signed_url']);
+        $inputFile = $files['items'][1];
+
+        $this->assertEquals(null, $inputFile['entity_type']);
+        $this->assertEquals(null, $inputFile['entity_id']);
+        $this->assertEquals('batch_input', $inputFile['type']);
+
+        $this->assertEquals(null, $errorFile['entity_type']);
+        $this->assertEquals(null, $errorFile['entity_id']);
+        $this->assertEquals('batch_input', $errorFile['type']);
+
+        $this->assertEquals($errorFile['id'], $response['file_id']);
+
+        // The error file is supposed to be inside batch/upload folder
+        $this->assertEquals(storage_path('files/filestore/') . $errorFile['location'],
+                            $response['signed_url']);
     }
 
     public function testBatchCreateForUploadedFile()

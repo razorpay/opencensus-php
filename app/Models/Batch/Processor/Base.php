@@ -126,6 +126,9 @@ class Base extends BaseModel\Core
         // happens and then we create the batch entity and associated above
         // created file store entity with this batch and save both of them.
         //
+
+        // For new flow, the file_store entity referenced by
+        // `file_id` in input gets associated with this batch
         $ufhFile = $this->getStoredInputFileAndValidateBatchEntries($input, $this->batch);
 
         $this->repo->transaction(function () use ($ufhFile, $input)
@@ -140,14 +143,18 @@ class Base extends BaseModel\Core
                                                               Batch\Entity $batch = null,
                                                               array & $entries = [])
     {
+        // Here $ufhFile is the input file_store instance upload by merchant.
+        // $ufhFile has no entity associated with it and has type = `batch_input`
         $ufhFile = $this->getStoredInputFileAndUpdateFileLocalPath($input);
 
+        // $entries here has the extra error_code and error_description headers
         $entries = $this->validateInputFileAndUpdateBatch($this->inputFileLocalPath, $input);
 
         $ufhFile->entity()->dissociate();
 
-        if ($batch !== null){
-            
+        if ($batch !== null)
+        {
+            // This association happens only during batch create api call
             $ufhFile->entity()->associate($batch);
         }
 
@@ -190,6 +197,8 @@ class Base extends BaseModel\Core
 
         $inputFile = $input[Batch\Entity::FILE];
 
+        // Saves the merchant uploaded input file with file type
+        // as `batch_input` and no entity associated with it
         $ufh = $this->saveInputFile($inputFile);
 
         $ufhFile = $ufh->getFileInstance();
@@ -487,7 +496,16 @@ class Base extends BaseModel\Core
     {
         try
         {
+            // Creates an output file in `batch/download` folder with
+            // same name as `$this->batch->getId . <desired_extension>`.
+            // <desired_extension> is XLSX by default.
+            // The output file path is saved in $this->outputFileLocalPath.
             $this->createAndSetOutputFile($entries, $headerType);
+
+            if ($headerType === Batch\Header::ERROR)
+            {
+                return $this->saveErrorFile();
+            }
 
             return $this->saveOutputFile();
         }
@@ -635,6 +653,8 @@ class Base extends BaseModel\Core
     {
         $entries = $this->parseFile($filePath);
 
+        // This cleanup is required because when we validate
+        // the entries, we check the headers in the entries
         $this->cleanupEntriesForErrorFile($entries);
 
         $this->validateEntries($entries, $input);
@@ -778,6 +798,24 @@ class Base extends BaseModel\Core
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_BATCH_UNABLE_TO_SAVE_OUTPUT_FILE);
+        }
+
+        return [
+            self::FILE_ID       => FileStore\Entity::getSignedId($ufhSignedUrl['id']),
+            self::SIGNED_URL    => $ufhSignedUrl['url'],
+        ];
+    }
+
+    protected function saveErrorFile(): array
+    {
+        $ufh = $this->saveFile($this->outputFileLocalPath, FileStore\Type::BATCH_INPUT, false);
+
+        $ufhSignedUrl = $ufh->getSignedUrl();
+
+        if ($ufhSignedUrl === null)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_BATCH_UNABLE_TO_SAVE_ERROR_FILE);
         }
 
         return [
