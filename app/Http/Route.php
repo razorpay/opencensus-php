@@ -149,7 +149,7 @@ final class Route
         'merchant_tag_add'                        => ['post',     'merchants/{id}/tags',                            'MerchantController@addTags'                                        ],
         'merchant_tag_delete'                     => ['delete',   'merchants/{id}/tags/{tagName}',                  'MerchantController@deleteTag'                                      ],
         'merchant_edit_free_credits'              => ['post',     'merchants/{id}/credits',                         'MerchantController@postAmountCredits',                             ],
-        'merchant_fetch_users'                    => ['get',      'merchants/{id}/users',                           'MerchantController@getUsers',                                      ],
+        'merchant_fetch_users'                    => ['get',      'merchants/users',                                'MerchantController@getUsers',                                      ],
         'merchant_patch_beneficiary_code'         => ['patch',    'merchants/beneficiary/code',                     'MerchantController@patchMerchantBeneficiaryCode'                   ],
         'merchant_beneficiary_file'               => ['get',      'merchants/beneficiary/file/{channel}',           'MerchantController@getMerchantBeneficiaryFile'                     ],
         'merchant_post_beneficiary_file'          => ['post',     'merchants/beneficiary/file/bank/{channel}',      'MerchantController@postMerchantBeneficiaryFile'                    ],
