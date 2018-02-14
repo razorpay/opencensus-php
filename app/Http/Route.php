@@ -1229,6 +1229,7 @@ final class Route
         'reporting_log_create',
         'ufh_get_file_signed_url',
         'pincode_get',
+        'gateway_file_create',
         'dispute_edit',
     ];
 
