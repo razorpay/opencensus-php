@@ -30,7 +30,7 @@ export default props => {
                     The customer&#39;s bank has reported a possibly fraudulent
                     transaction. &nbsp;We recommend that you respond to the
                     email sent to you on your registered email address by &nbsp;<Time
-                      value={dispute.expires_on}
+                      value={dispute.respond_by}
                       format="ll"
                     />{' '}
                     failing which there might be a amount deduction from your
@@ -44,10 +44,10 @@ export default props => {
                       currency={dispute.currency}
                     />.&nbsp; Kindly respond to the mail sent to you on your
                     registered email address by &nbsp;<Time
-                      value={dispute.expires_on}
+                      value={dispute.respond_by}
                       format="ll"
                     />{' '}
-                    ({daysLeftInExpiry(dispute.expires_on, 'in ')}) failing
+                    ({daysLeftInExpiry(dispute.respond_by, 'in ')}) failing
                     which you will loose the dispute and the disputed amount
                     will be deducted from your account.
                   </React.Fragment>
@@ -72,8 +72,8 @@ export default props => {
               <EntityDetailRow label="Respond By">
                 {dispute.status === 'open' ? (
                   <React.Fragment>
-                    <Time value={dispute.expires_on} format="LL" />
-                    &nbsp;({daysLeftInExpiry(dispute.expires_on, 'In ')})
+                    <Time value={dispute.respond_by} format="LL" />
+                    &nbsp;({daysLeftInExpiry(dispute.respond_by, 'In ')})
                   </React.Fragment>
                 ) : (
                   '--'

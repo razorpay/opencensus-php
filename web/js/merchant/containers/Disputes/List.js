@@ -25,7 +25,7 @@ const type = {
 const respondIn = {
   title: 'Respond In',
   value: item =>
-    item.status === 'open' ? daysLeftInExpiry(item.expires_on) : '--',
+    item.status === 'open' ? daysLeftInExpiry(item.respond_by) : '--',
 };
 
 const resolvedOn = {
