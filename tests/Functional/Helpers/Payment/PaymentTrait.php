@@ -690,7 +690,7 @@ trait PaymentTrait
             'url'    => '/payments/'.$id.'/verify',
             'method' => 'GET');
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 
@@ -703,7 +703,7 @@ trait PaymentTrait
             'url'    => '/payments/'.$id.'/authorize_failed',
             'method' => 'POST');
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 
@@ -804,7 +804,7 @@ trait PaymentTrait
 
     protected function verifyRefund($id)
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = [];
 
@@ -820,7 +820,7 @@ trait PaymentTrait
 
     protected function retryFailedRefunds($gateway = [])
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = [];
 
@@ -837,7 +837,7 @@ trait PaymentTrait
 
     protected function retryFailedRefund($id, $content = [])
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $request = array(
             'method'  => 'POST',
@@ -897,7 +897,7 @@ trait PaymentTrait
             'url'    => '/payments/'.$id.'/authorize_failed',
             'method' => 'post');
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 

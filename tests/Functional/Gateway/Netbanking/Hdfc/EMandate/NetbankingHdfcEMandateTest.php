@@ -143,6 +143,8 @@ class NetbankingHdfcEMandateTest extends TestCase
 
         $this->testEMandateInitialPayment();
 
+        $this->ba->adminAuth();
+
         $content = $this->startTest();
 
         $content = $content['items'][0];
@@ -195,7 +197,7 @@ class NetbankingHdfcEMandateTest extends TestCase
 
         $debitPayment = $this->getLastEntity('payment', true);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         Mail::fake();
 

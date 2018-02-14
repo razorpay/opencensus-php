@@ -92,16 +92,11 @@ class MerchantTest extends TestCase
 
         $this->createUserMerchantMapping($user2['id'], $merchant['id'], 'manager');
 
-        $this->ba->appAuth();
+        $this->ba->proxyAuth('rzp_live_' . $merchant['id']);
 
         $testData = & $this->testData[__FUNCTION__];
 
-        $content = [
-            'role'        => 'owner1',
-            'merchant_id' => $merchant['id']
-        ];
-
-        $testData['request']['url'] = '/merchants/' . $merchant['id'] . '/users';
+        $testData['request']['url'] = '/merchants/users';
 
         $response = $this->makeRequestAndGetContent($testData['request']);
 
@@ -241,6 +236,8 @@ class MerchantTest extends TestCase
 
         $this->testData[__FUNCTION__]['request'] = $request;
 
+        $this->ba->adminAuth();
+
         $response = $this->startTest();
 
         // list of created group ids
@@ -286,6 +283,8 @@ class MerchantTest extends TestCase
     {
         $this->createMerchant();
 
+        $this->ba->adminAuth();
+
         $this->startTest();
     }
 
@@ -293,12 +292,16 @@ class MerchantTest extends TestCase
     {
         $this->createMerchant();
 
+        $this->ba->adminAuth();
+
         $this->startTest();
     }
 
     public function testEditMerchantEmail()
     {
         $this->createMerchant();
+
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
@@ -388,6 +391,8 @@ class MerchantTest extends TestCase
     {
         $this->createMerchant();
 
+        $this->ba->adminAuth();
+
         $this->startTest();
     }
 
@@ -395,11 +400,15 @@ class MerchantTest extends TestCase
     {
         $this->createMerchant();
 
+        $this->ba->adminAuth();
+
         $this->startTest();
     }
 
     public function testEditTestAccountMerchantEmail()
     {
+        $this->ba->adminAuth();
+
         $this->startTest();
     }
 
@@ -425,12 +434,16 @@ class MerchantTest extends TestCase
     {
         $this->createMerchant();
 
+        $this->ba->adminAuth();
+
         $this->startTest();
     }
 
     public function testEditMerchantInvalidDurationAutoRefundDelay()
     {
         $this->createMerchant();
+
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
@@ -439,6 +452,8 @@ class MerchantTest extends TestCase
     {
         $this->createMerchant();
 
+        $this->ba->adminAuth();
+
         $this->startTest();
     }
 
@@ -446,12 +461,16 @@ class MerchantTest extends TestCase
     {
         $this->createMerchant();
 
+        $this->ba->adminAuth();
+
         $this->startTest();
     }
 
     public function testAddInvalidCategory2()
     {
         $this->createMerchant();
+
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
@@ -1868,7 +1887,11 @@ class MerchantTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
+        $this->ba->adminAuth();
+
         $this->merchantAssignPricingPlan('1hDYlICobzOCYt', $id);
+
+        $this->ba->appAuth();
 
         $this->assertArraySelectiveEquals($merchant, $content);
 
@@ -2125,7 +2148,11 @@ class MerchantTest extends TestCase
         $merchant->reTag(["ref-10000000000000"]);
         $merchant->saveOrFail();
 
-        $this->ba->appAuth();
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach($merchant);
+
+        $this->ba->adminAuth('test');
 
         $this->startTest();
     }

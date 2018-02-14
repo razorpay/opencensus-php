@@ -1315,8 +1315,10 @@ class Service extends Base\Service
         $this->repo->saveOrFail($merchant);
     }
 
-    public function getUsers(string $merchantId)
+    public function getUsers()
     {
+        $merchantId = $this->merchant->getId();
+
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
         $users = (new Merchant\Core)->getUsers($merchant);

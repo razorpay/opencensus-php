@@ -435,6 +435,8 @@ class ScheduleTest extends TestCase
             'method' => 'post',
         ];
 
+        $this->ba->adminAuth();
+
         $this->merchantAssignPricingPlan('1hDYlICobzOCYt', $merchantId);
 
         $response = $this->makeRequestAndGetContent($activationRequest);

@@ -706,9 +706,9 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function getUsers($id)
+    public function getUsers()
     {
-        $data = $this->service()->getUsers($id);
+        $data = $this->service()->getUsers();
 
         return ApiResponse::json($data);
     }
