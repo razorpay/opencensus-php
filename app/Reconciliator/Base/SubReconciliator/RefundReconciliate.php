@@ -206,6 +206,10 @@ class RefundReconciliate extends Foundation\SubReconciliate
         // We mark the refund status as processed if retval is true
         $this->refund->setStatusProcessed();
 
+        //
+        // We are calling save multiple time in this flow, but since laravel does a
+        // dirty check before updating the DB, no extra DB write call happens.
+        //
         $this->repo->saveOrFail($this->refund);
 
         return true;
