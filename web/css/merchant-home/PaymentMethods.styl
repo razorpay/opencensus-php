@@ -5,8 +5,14 @@
     width: 180px;
   }
 
-  .rzp-breadcrumb {
+  ol.rzp-breadcrumb {
 
     margin-bottom: 0;
+
+    li+li:before {
+
+      content: "\f10c";
+      font-family: merchant-icons !important;
+    }  
   }
 }
