@@ -346,6 +346,11 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET       => 'required|alpha_num|max:32',
     ];
 
+    protected static $netbankingCsbTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:netbanking_csb',
+        Entity::GATEWAY_MERCHANT_ID2        => 'required|string',
+    ];
+
     protected function validateGateway($input)
     {
         Payment\Gateway::validateGateway($input['gateway']);

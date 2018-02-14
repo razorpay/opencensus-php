@@ -470,4 +470,14 @@ class Gateway extends Base\Gateway
 
         return hash_hmac(HashAlgo::SHA1, $string, $secret);
     }
+
+    /**
+     * Getting live secret from the config
+     * @override
+     * @return mixed
+     */
+    protected function getLiveSecret()
+    {
+        return $this->config['live_hash_secret'];
+    }
 }
