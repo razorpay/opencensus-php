@@ -743,6 +743,29 @@ return [
         ],
     ],
 
+    'testEditMerchantInvalidInvoiceNameField' => [
+        'request'   => [
+            'content' => [
+                'invoice_name_field' => 'random',
+            ],
+            'url'     => '/account/config',
+            'method'  => 'put',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The selected invoice name field is invalid.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testEditMerchantInvalidAutoRefundDelay' => [
         'request' => [
             'content' => [

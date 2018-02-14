@@ -528,6 +528,15 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testEditMerchantInvalidInvoiceNameField()
+    {
+        $this->createMerchant();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testEditMerchantInvalidAutoRefundDelay()
     {
         $this->createMerchant();
