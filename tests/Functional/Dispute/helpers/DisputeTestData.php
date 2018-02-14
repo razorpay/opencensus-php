@@ -81,7 +81,7 @@ return [
             'content' => [
                 'gateway_dispute_id' => '4342frf34r',
                 'raised_on'          => '946684800',
-                'expires_on'         => '1912162918',
+                'expires_on'         => 946684801,
                 'amount'             => 50000,
                 'deduct_at_onset'    => 0,
                 'phase'              => 'chargeback',
@@ -102,11 +102,11 @@ return [
         'payload' => [
             'payment' => [
                 'entity' => [
-                    'entity'   => 'payment',
-                    'amount'   => 50000,
-                    'currency' => 'INR',
-                    'status'   => 'captured',
-                    'captured' => true,
+                    'entity'     => 'payment',
+                    'amount'     => 50000,
+                    'currency'   => 'INR',
+                    'status'     => 'captured',
+                    'captured'   => true,
                 ],
             ],
             'dispute' => [
@@ -115,7 +115,9 @@ return [
                     'amount'             => 50000,
                     'currency'           => 'INR',
                     'gateway_dispute_id' => '4342frf34r',
+                    'respond_by'         => 946684801,
                     'status'             => 'open',
+                    'reason_code'        => 'KFRER_R',
                 ],
             ],
         ],

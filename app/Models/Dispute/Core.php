@@ -23,7 +23,7 @@ use RZP\Models\Dispute\File\Entity as DisputeFileEntity;
 class Core extends Base\Core
 {
     use FileHandlerTrait;
-  
+
     const DEBIT_ADJUSTMENT_DESCRIPTION = 'Debit disputed amount';
     const CREDIT_ADJUSTMENT_DESCRIPTION = 'Credit to reverse a previous dispute debit';
 
@@ -179,7 +179,7 @@ class Core extends Base\Core
             {
                 $response['files'] = $fileCore->uploadFiles($dispute, $files);
             }
-            
+
             return $response;
         });
 
@@ -534,7 +534,7 @@ class Core extends Base\Core
             ApiEventSubscriber::MAIN => $payment,
             ApiEventSubscriber::WITH => [
                 E::DISPUTE => $dispute,
-            ]
+            ],
         ];
 
         $eventName = 'api.' . WebhookEvent::PAYMENT_DISPUTE_CREATED;
