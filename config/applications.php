@@ -187,7 +187,7 @@ return [
         'ruleset' => env('SHIELD_RULESET'),
         'auth' => [
             'username' => 'api',
-            'password' => env('SHIELD_PASSWORD'),
+            'password' => env('SHIELD_SECRET'),
         ],
     ],
 ];
