@@ -1,5 +1,6 @@
 import Entity from './Entity';
 import ajax from 'merchant/utils/ajax';
+import { merchantFetch } from 'rzp/utils/ajax';
 
 /*
   Abstract class for most CRUD entities. The base Entity has methods like

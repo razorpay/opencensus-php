@@ -1,6 +1,7 @@
 import ajax from 'merchant/utils/ajax';
 import { set, merge } from 'rzp/utils/immutable';
 import { createLineData } from 'rzp/utils/chart/index.js';
+import { merchantFetch } from 'rzp/utils/ajax';
 
 // graph data
 // fetched everytime date is changed
@@ -97,12 +98,7 @@ export const fetchPaymentBreakup = () => {
 export const fetchCurrentBalance = () => {
   return {
     type: CURRENT_BALANCE_FETCH,
-    payload: ajax('/user/generic', {
-      appendModeInQueryParam: true,
-      data: {
-        route_name: 'balance_fetch',
-      },
-    }),
+    payload: merchantFetch('balance'),
   };
 };
 

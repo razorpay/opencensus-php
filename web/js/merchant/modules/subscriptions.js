@@ -10,6 +10,7 @@ import { makeEntityReducer, updateEntity } from 'rzp/modules/entity';
 
 import { PLAN_FETCH } from 'merchant/modules/plans';
 import { CUSTOMER_FETCH } from 'merchant/modules/customers';
+import { merchantFetch } from 'rzp/utils/ajax';
 
 const SUBSCRIPTIONS_FETCH = 'SUBSCRIPTIONS_FETCH';
 const SUBSCRIPTION_CREATE = 'SUBSCRIPTION_CREATE';
@@ -68,38 +69,18 @@ export const cancelSubscription = ({ id, cancel_at_cycle_end }) => {
 };
 
 export const testChargeSubscription = (subscriptionId, success) => {
-  return ajax({
+  return merchantFetch({
+    url: `subscriptions/{subscriptionId}/charge`,
     method: 'post',
-    url: 'user/generic',
-    appendModeInURL: false,
-    appendModeInQueryParam: true,
     data: {
-      route_name: 'subscription_test_charge',
-      body: {
-        success,
-      },
-      url_params: JSON.stringify({
-        '{id}': subscriptionId,
-      }),
+      success,
     },
   });
 };
 
 // Manual Attempt for pending invoice payment
-export const paymentManualAttempt = invoiceId => {
-  return ajax({
-    method: 'post',
-    url: 'user/generic',
-    appendModeInURL: false,
-    appendModeInQueryParam: true,
-    data: {
-      route_name: 'subscription_manual_retry',
-      url_params: JSON.stringify({
-        '{invoice_id}': invoiceId,
-      }),
-    },
-  });
-};
+export const paymentManualAttempt = invoiceId =>
+  merchantFetch({ url: `invoices/${invoiceId}/charge`, method: 'post' });
 
 // List Reducer
 export const subscriptionsReducer = makeActionCollectionReducer(

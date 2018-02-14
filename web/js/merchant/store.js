@@ -2,4 +2,10 @@ import { createStore, applyMiddleware } from 'redux';
 import apiAsyncMiddleware from 'rzp/middlewares/apiAsyncMiddleware';
 import reducers from './reducers';
 
-export default createStore(reducers, applyMiddleware(apiAsyncMiddleware));
+const store = createStore(reducers, applyMiddleware(apiAsyncMiddleware));
+
+export default store;
+
+export function getMode() {
+  return store.getState().session.mode;
+}

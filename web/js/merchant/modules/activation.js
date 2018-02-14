@@ -42,7 +42,6 @@ export const saveFile = ({ step, file, fieldName, accountId = '' }) => {
     ngo_12a_proof: 'form_12a_url',
     ngo_80g_proof: 'form_80g_url',
   };
-  formData.append('route_name', 'merchant_activation_upload_file');
   formData.append('file', file);
   formData.append('file_name', fieldNameMapping[fieldName]);
   if (accountId) {
@@ -51,13 +50,10 @@ export const saveFile = ({ step, file, fieldName, accountId = '' }) => {
 
   return {
     type: ACTIVATION_SAVE_FILE,
-    payload: ajax({
-      url: '/user/generic',
+    payload: merchantFetch({
+      url: 'merchant/activation/upload',
       method: 'post',
       data: formData,
-      processData: false,
-      contentType: false,
-      appendModeInURL: false,
     }),
     fileName: file.name,
     fieldName,
@@ -175,7 +171,7 @@ export default function(state = initialState, action) {
 
 /**
  * Fetch city and state based on pincode provided
-*/
+ */
 export const getPincodeDetails = (pincode, changeFunc) => {
   const mode = store.getState().session.mode;
 
