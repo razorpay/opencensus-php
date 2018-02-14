@@ -104,8 +104,6 @@ class Entity extends Base\PublicEntity
     }
 
     /**
-     * Returns true if the feature belongs to the merchant
-     *
      * @return bool
      */
     public function isMerchantFeature(): bool
@@ -122,7 +120,7 @@ class Entity extends Base\PublicEntity
      */
     public static function getEntityTypeFromRoute(string $routeEndpoint): string
     {
-        if (key_exists($routeEndpoint, self::$routeToEntityTypeMap) === false)
+        if (array_key_exists($routeEndpoint, self::$routeToEntityTypeMap) === false)
         {
             throw new Exception\BadRequestException(
                 'Entity type is invalid',

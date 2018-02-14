@@ -34,9 +34,9 @@ class Service extends Base\Service
 
         $response = new Base\Collection;
 
-        $response['assigned_features'] = $this->repo->feature->fetchByEntityTypeAndEntityId(
-                                            $entityType,
-                                            $entityId);
+        $response['assigned_features'] = $this->repo
+                                              ->feature
+                                              ->fetchByEntityTypeAndEntityId($entityType, $entityId);
 
         // all_features is a list of currently available features in the system
         $response['all_features'] = array_keys(Constants::$featureValueMap);
@@ -62,10 +62,12 @@ class Service extends Base\Service
     {
         $entityType = Entity::getEntityTypeFromRoute($routeEndpoint);
 
-        $feature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail(
-                        $entityType,
-                        $entityId,
-                        $featureName);
+        $feature = $this->repo
+                        ->feature
+                        ->findByEntityTypeEntityIdAndNameOrFail(
+                            $entityType,
+                            $entityId,
+                            $featureName);
 
         $shouldSync = (bool) ($input[Entity::SHOULD_SYNC] ?? false);
 
