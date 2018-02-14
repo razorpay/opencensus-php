@@ -36,11 +36,12 @@ export default function GenerateRefundsExcel() {
       <DateField
         label="Date"
         name="on"
-        value={new Date()}
+        placeholder="YYYY-MM-DD"
+        defaultValue={moment()}
         format="YYYY-MM-DD"
       />
-      <FromField name="from" />
-      <ToField name="to" />
+      <FromField allowToday={true} />
+      <ToField allowToday={true} />
       <br />
       <SelectField label="Bank" name="bank">
         {Object.keys(options.bank).map((opt, idx) => (

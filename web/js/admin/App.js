@@ -17,7 +17,6 @@ import user, { org } from 'admin/user';
 import Profile from 'admin/profile';
 
 import MerchantList from 'admin/merchants/MerchantList';
-import Stats from 'admin/stats';
 import PlanList from 'admin/plans/List';
 import GatewayRulesList from 'admin/gatewayrules/List';
 import Entities from 'admin/entities/List';
@@ -94,7 +93,6 @@ export default class App extends Component {
               />
               <Route path="/merchants/:id" component={MerchantEntity} />
               <Route path="/merchants" component={MerchantList} />
-              <Route path="/stats" component={Stats} />
               <Route path="/pricing-plans" component={PlanList} />
               <Route path="/gateway-rules" component={GatewayRulesList} />
               <Route
@@ -183,7 +181,6 @@ const links = [
   [
     // title, url, permission, icon
     ['Merchants', '/merchants', 'view_all_merchants', 'user-manager'],
-    ['Stats', '/stats', 'view_merchant_stats', 'chart-bar'],
     ['Pricing Plans', '/pricing-plans', 'view_pricing_list', 'rupee'],
     ['Gateway Rules', '/gateway-rules', 'view_gateway_rule'],
     ['Entities', '/entities', 'view_all_entity'],

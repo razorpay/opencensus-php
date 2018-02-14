@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import { methods } from 'common/data';
 import { prevent } from 'common/util';
-import { Input as DayPickerInput } from 'react-day-picker';
 import moment from 'moment';
 import { TypeAhead } from 'react-power-select';
+import CalendarPicker from 'ui/Calendar';
 
 function focusInput(e) {
   e.target.nextElementSibling.focus();
@@ -57,55 +57,27 @@ export const SelectField = _ => <Field {..._} tag="select" />;
 export const TextAreaField = _ => <Field {..._} tag="textarea" />;
 export const FileField = _ => <Field {..._} type="file" />;
 
-const DateInput = ({
-  onDayChange,
-  dayPickerProps,
-  format = 'DD/MM/YYYY',
-  formatDate = (date, format) => moment(date).format(format),
-  parseDate = (input, format) => moment(input, format).toDate(),
-  hideOnDayClick,
-  value,
-  ...props
-}) => {
-  return (
-    <DayPickerInput
-      format={format}
-      formatDate={formatDate}
-      parseDate={parseDate}
-      onDayChange={onDayChange}
-      placeholder={format}
-      value={value}
-      inputProps={props}
-    />
-  );
-};
-export const DateField = _ => (
-  <Field type="text" {..._} tag={DateInput} icon={'i-date'} />
-);
 export const TimeField = _ => <Field {..._} type="time" />;
 export const DataListField = _ => <Field {..._} tag="datalist" />;
 
-export const FromField = ({ onDayChange = () => {}, ..._ }) => (
-  <DateField
-    name="from"
-    label="From"
-    placeholder=""
-    formatDate={(date, format) => setDay(date, 'startOf').format(format)}
-    onDayChange={day => onDayChange(setDay(day, 'startOf').toDate())}
-    {..._}
-  />
+export const DateField = ({
+  label = '',
+  fieldClass = '',
+  onChange,
+  component,
+  ...props
+}) => (
+  <div class={`field ${fieldClass}`}>
+    {label && <label class={props.required ? 'required' : ''}>{label}</label>}
+    <CalendarPicker onDayChange={onChange} {...props} />
+    <i class="post-field-icon i-date" />
+    {component}
+  </div>
 );
 
-export const ToField = ({ onDayChange = () => {}, ..._ }) => (
-  <DateField
-    name="to"
-    label="To"
-    placeholder=""
-    formatDate={(date, format) => setDay(date, 'endOf').format(format)}
-    onDayChange={day => onDayChange(setDay(day, 'endOf').toDate())}
-    {..._}
-  />
-);
+export const FromField = _ => <DateField name="from" label="From" postSelectionValue={val => val.startOf('day')} {..._} />;
+
+export const ToField = _ => <DateField name="to" label="To" postSelectionValue={val => val.endOf('day')} {..._} />;
 
 export function RadioField({ label, value, defaultValue, ...props }) {
   return (

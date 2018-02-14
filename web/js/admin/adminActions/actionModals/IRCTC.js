@@ -13,7 +13,8 @@ export default function IRCTC() {
       <DateField
         label="Date"
         name="on"
-        value={new Date()}
+        placeholder="YYYY-MM-DD"
+        defaultValue={moment()}
         format="YYYY-MM-DD"
       />
       <Field label="Merchant ID" name="merchant_id" />

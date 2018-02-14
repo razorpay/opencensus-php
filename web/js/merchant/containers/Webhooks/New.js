@@ -132,6 +132,7 @@ export default class AddWebhook extends Component {
                 <WebhookEventCheckbox eventName="payment.authorized" />
                 <WebhookEventCheckbox eventName="payment.captured" />
                 <WebhookEventCheckbox eventName="payment.failed" />
+                <WebhookEventCheckbox eventName="payment.dispute.created" />
                 <WebhookEventCheckbox eventName="invoice.paid" />
                 <WebhookEventCheckbox eventName="invoice.expired" />
                 <WebhookEventCheckbox eventName="order.paid" />

@@ -8,12 +8,13 @@ export const isEmail = email => {
   return emailRegExp.test(email);
 };
 
-export const isUrl = url => {
+//- validates url without http/https/www
+export const isUrlLenient = url => {
   url = url || '';
 
-  let urlRegExp = /^(https?:\/\/)(\w|\-)+(\.{1}(\w|\-)+)*\.[a-z]{2,}(:[0-9]{1,5})?(\/.*)?/;
+  let urlRegExp = /^(https?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/
   return urlRegExp.test(url);
-};
+}
 
 export const isDeepLink = url => {
   url = url || '';
@@ -88,6 +89,6 @@ const makeValidator = (truthyFn, defaultMessage) => (
 export const required = makeValidator(isPresent, 'Required');
 export const email = makeValidator(isEmail, 'Invalid Email');
 export const phone = makeValidator(isPhone, 'Invalid Contact');
-export const url = makeValidator(isUrl, 'Invalid Url');
+export const lenientUrl = makeValidator(isUrlLenient, 'Invalid Url');
 export const deepLink = makeValidator(isDeepLink, 'Invalid Link');
 export const amount = makeValidator(isAmount, 'Invalid amount');

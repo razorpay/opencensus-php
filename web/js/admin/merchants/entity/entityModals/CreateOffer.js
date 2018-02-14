@@ -60,14 +60,10 @@ export default class CreateOffer extends Component {
     offsetEnd = offsetEnd[0] * 60 * 60 + offsetEnd[1] * 60;
 
     if (offer.starts_at) {
-      offer.starts_at =
-        new Date(moment(offer.starts_at, 'DD/MM/YYYY')).getTime() / 1000 +
-        offsetStart;
+      offer.starts_at = this.starts_at.startOf('day').unix() + offsetStart;
     }
     if (offer.ends_at) {
-      offer.ends_at =
-        new Date(moment(offer.ends_at, 'DD/MM/YYYY')).getTime() / 1000 +
-        offsetEnd;
+      offer.ends_at = this.ends_at.startOf('day').unix() + offsetEnd;
     }
 
     delete offer.starts_at_time;
@@ -106,6 +102,10 @@ export default class CreateOffer extends Component {
         notifyError(JSON.stringify(err.response));
       });
   };
+
+  onDateChange(name, val) {
+    this[name] = val; // Sets this.starts_at and this.ends_at
+  }
 
   render() {
     return (
@@ -194,12 +194,31 @@ export default class CreateOffer extends Component {
           />
 
           {/* Starts at */}
-          <DateField name="starts_at" label="Starts at" />
-          <TimeField name="starts_at_time" defaultValue="00:00" />
+          <DateField
+            name="starts_at"
+            label="Starts at"
+            fieldClass="multi create-offer"
+            onChange={val => this.onDateChange('starts_at', val)}
+            component={
+              <input type="time" name="starts_at_time" defaultValue="00:00" />
+            }
+            disablePastDates={true}
+            allowToday={true}
+          />
 
           {/* Ends at */}
-          <DateField name="ends_at" label="Ends at" required />
-          <TimeField name="ends_at_time" defaultValue="00:00" />
+          <DateField
+            name="ends_at"
+            label="Ends at"
+            fieldClass="multi create-offer"
+            onChange={val => this.onDateChange('ends_at', val)}
+            component={
+              <input type="time" name="ends_at_time" defaultValue="00:00" />
+            }
+            disablePastDates={true}
+            allowToday={false}
+            required
+          />
 
           <SwitchField
             name="type"

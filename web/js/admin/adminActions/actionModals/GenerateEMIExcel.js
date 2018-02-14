@@ -33,11 +33,12 @@ export default function GenerateRefundsExcel() {
       <DateField
         label="Date"
         name="on"
-        value={new Date()}
+        placeholder="YYYY-MM-DD"
+        defaultValue={moment()}
         format="YYYY-MM-DD"
       />
-      <FromField name="from" />
-      <ToField name="to" />
+      <FromField allowToday={true} />
+      <ToField allowToday={true} />
       <br />
       <SelectField label="Bank" name="bank">
         {Object.keys(options.bank).map((opt, idx) => (
@@ -54,26 +55,15 @@ export default function GenerateRefundsExcel() {
         class="btn"
         pendingClass="small spinner"
         onSubmit={data => {
-          const tzGMTToIST = 19800;
-
           let body = {
             bank: data.bank,
             mode: data.mode,
           };
 
           if (data.to && data.from) {
-            // Date from the date api is in GMT
-            let fromInGMT =
+            body.from =
               new Date(moment(data.from, 'DD-MM-YYYY')).getTime() / 1000;
-            let toInGMT =
-              new Date(moment(data.to, 'DD-MM-YYYY')).getTime() / 1000;
-
-            // Subtract 19800 from GMT to convert timestamps to IST
-            let fromInIST = fromInGMT - tzGMTToIST;
-            let toInIST = toInGMT - tzGMTToIST;
-
-            body.to = toInIST;
-            body.from = fromInIST;
+            body.to = new Date(moment(data.to, 'DD-MM-YYYY')).getTime() / 1000;
           } else {
             body.on = data.on;
           }

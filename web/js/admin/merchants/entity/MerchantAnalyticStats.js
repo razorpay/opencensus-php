@@ -18,8 +18,8 @@ import Duplex from 'ui/Duplex';
 @observer
 export default class MerchantAnalyticStats extends Component {
   state = {};
-  fromDate = new Date(new Date().setDate(new Date().getDate() - 7));
-  toDate = new Date();
+  fromDate = moment().subtract(7, 'days');
+  toDate = moment();
 
   constructor(props) {
     super();
@@ -86,21 +86,22 @@ export default class MerchantAnalyticStats extends Component {
     });
   }
 
+  onDateChange(name, val) {
+    this[name] = val; // Sets this.fromDate and this.toDate
+  }
+
   handleSearch = body => {
     if (!(body.from && body.to)) {
       notifyError('Please enter valid dates');
-
       return;
     }
-    this.fromDate = new Date(body.from);
-    this.toDate = new Date(body.to);
 
     this.fetchDetails();
   };
 
   fetchDetails = () => {
-    const from_timestamp = Math.round(this.fromDate.getTime() / 1000);
-    const to_timestamp = Math.round(this.toDate.getTime() / 1000);
+    const from_timestamp = Math.round(this.fromDate.unix());
+    const to_timestamp = Math.round(this.toDate.unix());
 
     if (from_timestamp > to_timestamp) {
       notifyError('From date cannot be after To date');
@@ -250,17 +251,22 @@ export default class MerchantAnalyticStats extends Component {
           <Form>
             <FromField
               label="From"
-              format="YYYY-MM-DD"
-              placeholder="YYYY-MM-DD"
-              value={new Date(new Date().setDate(new Date().getDate() - 7))}
+              format="DD/MM/YYYY"
+              placeholder="DD/MM/YYYY"
+              onChange={val => this.onDateChange('fromDate', val)}
+              defaultValue={moment().subtract(7, 'days')}
+              allowToday={true}
+            />
             />
             <ToField
               label="To"
-              format="YYYY-MM-DD"
-              placeholder="YYYY-MM-DD"
-              value={new Date()}
+              format="DD/MM/YYYY"
+              placeholder="DD/MM/YYYY"
+              onChange={val => this.onDateChange('toDate', val)}
+              defaultValue={moment()}
+              allowToday={true}
             />
-
+            />
             <AsyncButton
               text="Fetch Stats"
               class="btn"
