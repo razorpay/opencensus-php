@@ -5,60 +5,7 @@ import { getFixedINRAmount, isBlank } from 'rzp/utils/rzp-utils';
 const rollKeyFields = ['id', 'delay_roll'];
 
 export default class Key extends GenericEntity {
-  listRouteName = 'merchant_fetch_keys';
-
-  fetchAll(params = {}) {
-    const Klass = this.constructor;
-    let id = params.id;
-
-    let data = {
-      url_params: {
-        '{id}': id,
-      },
-    };
-
-    data.route_name = this.listRouteName;
-    if (params.mode) {
-      data.mode = params.mode;
-    }
-
-    return this.makeGenericAjaxCall({ data }).then(response => {
-      response.data.items = response.data.items.map(item => new Klass(item));
-      return response;
-    });
-  }
-
-  save() {
-    const Klass = this.constructor;
-    let params = this.serialize();
-    let url = this.resourceUrl;
-    let method = this.getResourceMethod();
-
-    let data = {
-      route_name: this.getRouteName(),
-    };
-    if (!this.isNew) {
-      data.url_params = JSON.stringify({
-        '{id}': params.id,
-      });
-      data.body = params;
-    }
-
-    return this.makeGenericAjaxCall({
-      method,
-      data,
-    }).then(response => {
-      if (this.isNew) {
-        return new Klass(response.data);
-      } else {
-        return {
-          new: new Klass(response.data.new),
-          old: new Klass(response.data.old),
-          delayRoll: +params.delay_roll,
-        };
-      }
-    });
-  }
+  resourceUrl = 'keys';
 
   getRouteName() {
     return this.isNew ? 'merchant_create_key' : 'merchant_replace_key';

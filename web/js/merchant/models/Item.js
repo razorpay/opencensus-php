@@ -3,10 +3,9 @@ import ajax from 'merchant/utils/ajax';
 import { getFixedINRAmount, rupeesToPaise } from 'rzp/utils/rzp-utils';
 
 export default class Item extends GenericEntity {
-  listRouteName = 'item_fetch_multiple';
-  deleteRouteName = 'item_delete';
   resourceFields = ['id', 'name', 'amount', 'currency', 'description'];
   currency = 'INR';
+  resourceUrl = 'items';
 
   getRouteName() {
     return this.isNew ? 'item_create' : 'item_update';

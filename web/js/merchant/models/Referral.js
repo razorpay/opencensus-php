@@ -1,25 +1,19 @@
-import Entity from './Entity';
+import Entity from './GenericEntity';
 import ajax from 'merchant/utils/ajax';
 import { getFixedINRAmount, isBlank } from 'rzp/utils/rzp-utils';
 
 export default class Referral extends Entity {
-  fetchAll(params = {}) {
-    let {
-      id,
-      appendModeInURL = false,
-      appendModeInQueryParam,
-      ...data
-    } = params;
-    data.route_name = 'merchant_fetch_referrals';
-
-    return ajax('/user/generic', {
-      appendModeInURL,
-      appendModeInQueryParam,
-      data,
+  resourceUrl = 'referrals';
+  fetchAll(data = {}) {
+    return this.makeGenericAjaxCall({
+      data: {
+        ...data,
+        mode: 'live',
+      },
     }).then(response => {
       /* `fetchAll` for referrals send `response.data` instead of
-       * `response.data.items`
-       */
+      * `response.data.items`
+      */
       response.data = response.data.map(item => new Referral(item));
       return response;
     });
@@ -41,18 +35,18 @@ export default class Referral extends Entity {
       password_confirmation: params.password_confirmation,
     };
 
-    return ajax({
-      url: '/user/generic',
-      method: 'POST',
-      appendModeInURL: false,
-      data: {
-        route_name: 'create_submerchant_user',
-        url_params: JSON.stringify({
-          '{id}': params.id,
-        }),
-        body: data,
+    return ajax(
+      {
+        url: `/submerchant/user/${params.id}`,
+        method: 'POST',
+        data: {
+          ...data,
+          mode: 'live',
+        },
       },
-    }).then(response => new Referral(response.data));
+      {},
+      '/merchant/api'
+    ).then(response => new Referral(response.data));
   }
 
   createMerchant() {

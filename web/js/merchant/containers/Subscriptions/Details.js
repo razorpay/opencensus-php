@@ -214,7 +214,7 @@ export default class SubscriptionDetailsContainer extends Component {
       .then(subscription => {
         return Promise.all([
           fetchPlan(subscription.plan_id),
-          fetchCustomer(subscription.customer_id),
+          subscription.customer_id && fetchCustomer(subscription.customer_id),
           this.fetchAddOns(subscription.id),
         ]).then(response => {
           this.setState({ isLoading: false });

@@ -16,9 +16,9 @@ export default class GenericEntity extends Entity {
   fetchAll(params = {}) {
     const Klass = this.constructor;
     let { id, ...queryParams } = params;
-    let data = {
-      query_params: JSON.stringify(queryParams),
-    };
+    let data = this.listRouteName
+      ? { query_params: JSON.stringify(queryParams) }
+      : { ...queryParams };
 
     if (id) {
       return this.fetch(id, data).then(response => {
@@ -41,12 +41,10 @@ export default class GenericEntity extends Entity {
 
   fetch(id, data = {}, queryParams = {}) {
     const Klass = this.constructor;
-    data.url_params = JSON.stringify({
-      '{id}': id,
-    });
-    data.query_params = JSON.stringify(queryParams);
-    data.route_name = this.detailsRouteName;
-    return this.makeGenericAjaxCall({ data }).then(response => {
+    const url = `${this.resourceUrl}/${id}`;
+    data = { ...data, ...queryParams };
+
+    return this.makeGenericAjaxCall({ data, url }).then(response => {
       return new Klass(response.data).deserialize();
     });
   }
@@ -54,21 +52,13 @@ export default class GenericEntity extends Entity {
   save(params = null) {
     const Klass = this.constructor;
     params = params || this.serialize();
-    let url = this.resourceUrl;
     let method = this.getResourceMethod();
     let { id = this.id, ...bodyParams } = params;
-    let data = {
-      body: bodyParams,
-      route_name: this.getRouteName(),
-    };
-
-    if (id) {
-      data.url_params = JSON.stringify({
-        '{id}': id,
-      });
-    }
+    let url = `${this.resourceUrl}/${id || ''}`;
+    let data = { ...bodyParams };
 
     return this.makeGenericAjaxCall({
+      url,
       method,
       data,
     }).then(response => {
@@ -79,27 +69,29 @@ export default class GenericEntity extends Entity {
   delete() {
     return this.makeGenericAjaxCall({
       method: 'delete',
-      data: {
-        route_name: this.deleteRouteName,
-        url_params: JSON.stringify({
-          '{id}': this.id,
-        }),
-      },
+      url: `${this.resourceUrl}/${this.id}`,
     });
   }
 
   makeGenericAjaxCall({
-    data,
+    url = this.resourceUrl,
+    data = {},
+    params,
     method = 'get',
-    appendModeInURL = false,
-    appendModeInQueryParam = true,
+    appendModeInURL = !Boolean(data.route_name),
+    appendModeInQueryParam = Boolean(data.route_name),
   }) {
-    return ajax({
-      url: this.resourceUrl,
-      method,
-      data,
-      appendModeInQueryParam,
-      appendModeInURL,
-    });
+    return ajax(
+      {
+        url,
+        method,
+        data,
+        params,
+        appendModeInQueryParam,
+        appendModeInURL,
+      },
+      {},
+      data.route_name ? '' : '/merchant/api'
+    );
   }
 }

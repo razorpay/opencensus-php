@@ -9,6 +9,7 @@ const PAYMENT_FETCH_BANK_TRANSFER = 'PAYMENT_FETCH_BANK_TRANSFER';
 const PAYMENT_CAPTURE = 'PAYMENT_CAPTURE';
 const PAYMENT_REFUND = 'PAYMENT_REFUND';
 const PAYMENT_RESET = 'PAYMENT_RESET';
+const PAYMENT_TRANSFER = 'PAYMENT_TRANSFER';
 
 export const fetchItem = id => {
   let payment = new Payment();
@@ -58,6 +59,14 @@ export const refundPayment = (payment, data) => {
   return {
     type: PAYMENT_REFUND,
     payload: payment.refund(data),
+  };
+};
+
+export const createTransfer = ({ id, ...data }) => {
+  const payment = new Payment({ id });
+  return {
+    type: PAYMENT_TRANSFER,
+    payload: payment.transfer(data),
   };
 };
 

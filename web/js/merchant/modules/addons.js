@@ -59,17 +59,11 @@ export const fetchAddOns = params => {
 
 // Fetch addon list for subscription id
 export const fetchSubscriptionAddOns = subscriptionId => {
-  return ajax({
-    url: '/user/generic',
-    appendModeInURL: false,
-    appendModeInQueryParam: true,
-    data: {
-      route_name: 'addons_fetch_due',
-      url_params: JSON.stringify({
-        '{subscription_id}': subscriptionId,
-      }),
-    },
-  });
+  return ajax(
+    `/subscriptions/${subscriptionId}/addons/due`,
+    {},
+    '/merchant/api'
+  );
 };
 
 // Delete addons

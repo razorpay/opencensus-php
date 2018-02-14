@@ -35,10 +35,8 @@ const editableFieldsInIssuedState = [
 ];
 
 export default class Invoice extends GenericEntity {
-  listRouteName = 'invoice_fetch_multiple';
-  detailsRouteName = 'invoice_fetch';
-  deleteRouteName = 'invoice_delete';
   currency = 'INR';
+  resourceUrl = 'invoices';
 
   getRouteName() {
     return this.isNew ? 'invoice_create' : 'invoice_update';
@@ -63,13 +61,8 @@ export default class Invoice extends GenericEntity {
 
   markAsIssued() {
     return this.makeGenericAjaxCall({
+      url: `/${this.resourceUrl}/${this.id}/issue`,
       method: 'post',
-      data: {
-        route_name: 'invoice_issue',
-        url_params: JSON.stringify({
-          '{id}': this.id,
-        }),
-      },
     }).then(response => {
       return new Invoice(response.data).deserialize();
     });
@@ -77,13 +70,8 @@ export default class Invoice extends GenericEntity {
 
   cancel() {
     return this.makeGenericAjaxCall({
+      url: `${this.resourceUrl}/${this.id}/cancel`,
       method: 'post',
-      data: {
-        route_name: 'invoice_cancel',
-        url_params: JSON.stringify({
-          '{id}': this.id,
-        }),
-      },
     }).then(response => {
       return new Invoice(response.data).deserialize();
     });

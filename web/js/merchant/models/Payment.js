@@ -4,16 +4,13 @@ import { getFixedINRAmount } from 'rzp/utils/rzp-utils';
 import ajax from 'merchant/utils/ajax';
 
 export default class Payment extends GenericEntity {
-  listRouteName = 'payment_fetch_multiple';
-  detailsRouteName = 'payment_fetch_by_id';
+  // listRouteName = 'payment_fetch_multiple';
+  // detailsRouteName = 'payment_fetch_by_id';
+  resourceUrl = 'payments';
 
   fetchRefunds() {
-    let data = {};
-    data.url_params = JSON.stringify({
-      '{id}': this.id,
-    });
-    data.route_name = 'payment_fetch_refunds';
-    return this.makeGenericAjaxCall({ data }).then(response => {
+    const url = `${this.resourceUrl}/${this.id}/refunds`;
+    return this.makeGenericAjaxCall({ url }).then(response => {
       response.data.items = response.data.items.map(item =>
         new Refund(item).deserialize()
       );
@@ -22,30 +19,23 @@ export default class Payment extends GenericEntity {
   }
 
   capture() {
-    let data = {};
     const method = 'post';
     const Klass = this.constructor;
-
-    data.body = {
+    const url = `${this.resourceUrl}/${this.id}/capture`;
+    const data = {
       amount: this.capturableAmount,
       currency: this.currency,
     };
 
-    data.url_params = JSON.stringify({
-      '{id}': this.id,
-    });
-
-    data.route_name = 'payment_capture';
-    return this.makeGenericAjaxCall({ method, data }).then(response => {
+    return this.makeGenericAjaxCall({ method, data, url }).then(response => {
       return new Klass(response.data);
     });
   }
 
   refund(params) {
-    let data = {};
     const method = 'post';
-
-    data.body = {
+    const url = `${this.resourceUrl}/${this.id}/refund`;
+    const data = {
       amount: params.amount,
       reverse_all: params.reverse_all,
       notes: {
@@ -53,43 +43,31 @@ export default class Payment extends GenericEntity {
       },
     };
 
-    data.url_params = JSON.stringify({
-      '{id}': this.id,
-    });
+    return this.makeGenericAjaxCall({ method, data, url });
+  }
 
-    data.route_name = 'payment_refund';
-    return this.makeGenericAjaxCall({ method, data });
+  transfer(data) {
+    const method = 'post';
+    const url = `${this.resourceUrl}/${this.id}/transfers`;
+    return this.makeGenericAjaxCall({ method, data, url });
   }
 
   fetchCardDetails() {
-    let data = {};
-    data.url_params = JSON.stringify({
-      '{id}': this.id,
+    return this.makeGenericAjaxCall({
+      url: `${this.resourceUrl}/${this.id}/card`,
     });
-    data.route_name = 'payment_fetch_card_details';
-    return this.makeGenericAjaxCall({ data });
   }
 
   fetchTransfers() {
-    const data = {};
-    data.url_params = JSON.stringify({
-      '{id}': this.id,
+    return this.makeGenericAjaxCall({
+      url: `${this.resourceUrl}/${this.id}/transfers`,
     });
-
-    data.route_name = 'payment_fetch_transfers';
-    return this.makeGenericAjaxCall({ data });
   }
 
   fetchBankTransfer() {
-    const data = {};
-
-    data.url_params = JSON.stringify({
-      '{id}': this.id,
+    return this.makeGenericAjaxCall({
+      url: `${this.resourceUrl}/${this.id}/bank_transfer`,
     });
-
-    data.route_name = 'payment_bank_transfer_fetch';
-
-    return this.makeGenericAjaxCall({ data });
   }
 
   didDeserialize() {

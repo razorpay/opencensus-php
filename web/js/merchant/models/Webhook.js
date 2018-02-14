@@ -2,7 +2,7 @@ import GenericEntity from './GenericEntity';
 import { normalizeBoolean } from 'rzp/utils/rzp-utils';
 
 export default class Webhook extends GenericEntity {
-  listRouteName = 'webhook_fetch_multiple';
+  resourceUrl = 'webhooks';
   resourceFields = ['url', 'secret', 'events', 'active'];
 
   getRouteName() {
