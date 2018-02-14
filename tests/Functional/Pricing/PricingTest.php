@@ -377,7 +377,7 @@ class PricingTest extends TestCase
 
     public function testDeletePricingPlanRuleForce()
     {
-        $this->ba->adminAuth();
+        $this->ba->appAuth();
 
         $content = $this->startTest();
     }
