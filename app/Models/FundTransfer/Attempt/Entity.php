@@ -274,13 +274,16 @@ class Entity extends Base\PublicEntity
     /**
      * One attempt has one source
      * One source has many attempts, created incrementally
+     *
      * @return boolean
      */
-    public function isLatest()
+    public function isBatchSameAsSource(): bool
     {
-        $attempts = $this->source->fundTransferAttempts;
+        $ftaBatchId = $this->getBatchFundTransferId();
 
-        if ($attempts->last()->getId() === $this->getId())
+        $sourceBatchId  = $this->source->getBatchFundTransferId();
+
+        if ($ftaBatchId === $sourceBatchId)
         {
             return true;
         }

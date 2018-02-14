@@ -227,6 +227,15 @@ return [
             ],
             Permission::ASSIGN_MERCHANT_HANDLE => 'Assign merchant handle',
             Permission::VIEW_MERCHANT_PRICING  => 'View Mercant Pricing Plan',
+            Permission::VIEW_MERCHANT_ANALYTICS => [
+                'description' => 'View Merchant Analytics',
+                'assignable'  => true,
+                'workflow'    => false
+            ],
+        ],
+
+        PermissionCategory::SETTLEMENT  => [
+            Permission::SETTLEMENT_BULK_UPDATE  => '',
         ],
 
         PermissionCategory::DISPUTE => [

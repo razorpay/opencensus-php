@@ -249,6 +249,23 @@ class BasicAuthTest extends TestCase
         $this->startTest();
     }
 
+    /**
+     * Testing the user authentication on user resend verification route.
+     */
+    public function testUserWhiteListAuthenticate()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testFailedMerchantUserRouteValidation()
+    {
+        $this->ba->proxyAuth('rzp_test_10000000000000', null, 'owner1');
+
+        $this->startTest();
+    }
+
     public function startTest($testDataToReplace = array())
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);

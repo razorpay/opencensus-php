@@ -1685,4 +1685,13 @@ class Service extends Base\Service
             User\Entity::CAPTCHA_DISABLE       => User\Validator::DISABLE_CAPTCHA_SECRET,
         ];
     }
+
+    public function enableEmiMerchantSubvention(string $id, string $emiPlanId, array $input)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        $emiPlan = $this->repo->emi_plan->findOrFailPublic($emiPlanId);
+
+        return $this->core()->enableEmiMerchantSubvention($merchant, $emiPlan, $input);
+    }
 }

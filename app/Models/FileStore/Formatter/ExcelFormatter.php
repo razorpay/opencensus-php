@@ -12,6 +12,7 @@ class ExcelFormatter
      * @param array  $data         Contents of Excel File
      * @param string $name         Name of Excel File
      * @param array  $columnFormat Column Format
+     * @param bool   $headers      Whether excel should contain headers
      * @param string $sheetName    Sheet Name
      *
      * @return Excel excel object
@@ -57,12 +58,13 @@ class ExcelFormatter
      * @param array  $columnFormat Column format of file
      * @param string $extension    Extension of file to be saved as
      * @param string $path         Path of file to be stored as
+     * @param string $sheetName    Name of the sheet in the excel file
      *
      * @return array containg full file path of excel file stored
      */
-    public static function writeToExcelFile($content, $name, $columnFormat, $headers, $extension, $path)
+    public static function writeToExcelFile($content, $name, $columnFormat, $headers, $extension, $path, $sheetName)
     {
-        $excel = self::createExcelObject($content, $name, $columnFormat, $headers);
+        $excel = self::createExcelObject($content, $name, $columnFormat, $headers, $sheetName);
 
         $fileMetadata = $excel->store($extension, $path, true);
 

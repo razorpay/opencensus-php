@@ -25,6 +25,17 @@ class EmiTest extends TestCase
         $this->startTest();
     }
 
+    public function testEnableMerchantSubvention()
+    {
+        $emiPlan = $this->fixtures->create('emi_plan');
+
+        $emiPlanId = $emiPlan['id'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/merchant/10000000000000/emi_plan/' . $emiPlanId;
+
+        $this->startTest();
+    }
+
     /**
      * By default all tests are run on app auth. On public auth
      * there is one route where we return massaged data in different format

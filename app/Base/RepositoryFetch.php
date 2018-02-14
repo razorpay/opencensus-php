@@ -2,18 +2,16 @@
 
 namespace RZP\Base;
 
-use RZP\Constants;
 use RZP\Constants\Es;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
-use RZP\Models\Customer;
 use RZP\Constants\Entity as E;
-use RZP\Models\Base\EsRepository;
-use RZP\Models\Base\PublicEntity;
-use RZP\Models\Base\PublicCollection;
-use RZP\Exception\InvalidArgumentException;
-use RZP\Models\Base\Traits\Es\Hydrator as EsHydrator;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Exception\InvalidArgumentException;
+use RZP\Models\Base\EsRepository;
+use RZP\Models\Base\PublicCollection;
+use RZP\Models\Base\PublicEntity;
+use RZP\Models\Base\Traits\Es\Hydrator as EsHydrator;
 
 /**
  * Trait RepositoryFetch
@@ -780,7 +778,8 @@ trait RepositoryFetch
 
     protected function addQueryOrder($query)
     {
-        $query->orderBy(Common::ID, 'desc');
+        $query->orderBy(Common::CREATED_AT, 'desc')
+              ->orderBy(Common::ID, 'desc');
     }
 
     protected function addForceIndexForNestaway($query)

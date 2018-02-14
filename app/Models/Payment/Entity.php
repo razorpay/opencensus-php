@@ -4,6 +4,7 @@ namespace RZP\Models\Payment;
 
 use Carbon\Carbon;
 use Lib\PhoneBook;
+use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
@@ -81,6 +82,7 @@ class Entity extends Base\PublicEntity
     const WALLET                = 'wallet';
     const EMI_PLAN_ID           = 'emi_plan_id';
     const EMI_DURATION          = 'emi_duration';
+    const EMI_SUBVENTION        = 'emi_subvention';
     const TRANSACTION_ID        = 'transaction_id';
     const AUTO_CAPTURED         = 'auto_captured';
     const AUTHORIZED_AT         = 'authorized_at';
@@ -106,7 +108,14 @@ class Entity extends Base\PublicEntity
     const CONVERT_CURRENCY      = 'convert_currency';
     const AUTH_TYPE             = 'auth_type';
 
+    const MAX_AMOUNT            = 'max_amount';
+    const EXPIRE_BY             = 'expire_by';
+    const RECURRING_TOKEN       = 'recurring_token';
+
     const SUBSCRIPTION_ID       = 'subscription_id';
+
+    // Used by merchant dashboard to fetch payments based on utr
+    const BANK_REFERENCE        = 'bank_reference';
 
     const DEFAULT_CURRENCY      = 'INR';
 
@@ -200,6 +209,7 @@ class Entity extends Base\PublicEntity
         self::BANK,
         self::WALLET,
         self::EMI_PLAN_ID,
+        self::EMI_SUBVENTION,
         self::CUSTOMER_ID,
         self::GLOBAL_CUSTOMER_ID,
         self::APP_TOKEN,
@@ -416,7 +426,7 @@ class Entity extends Base\PublicEntity
 
     const DUMMY_PHONE = '+919999999999';
 
-// --------------------- Modifiers ---------------------------------------------
+    // --------------------- Modifiers ---------------------------------------------
 
     protected function modifyEmail(& $input)
     {
@@ -546,9 +556,9 @@ class Entity extends Base\PublicEntity
         }
     }
 
-// --------------------- Modifiers Ends ----------------------------------------
+    // --------------------- Modifiers Ends ----------------------------------------
 
-// --------------------- Generators Ends ---------------------------------------
+    // --------------------- Generators Ends ---------------------------------------
 
     protected function generateMetadata(&$input)
     {
@@ -568,9 +578,9 @@ class Entity extends Base\PublicEntity
         }
     }
 
-// --------------------- Generators Ends ---------------------------------------
+    // --------------------- Generators Ends ---------------------------------------
 
-// ----------------------- Setters ---------------------------------------------
+    // ----------------------- Setters ---------------------------------------------
 
     public function setInternational()
     {
@@ -680,9 +690,11 @@ class Entity extends Base\PublicEntity
     }
 
     /**
-     * Recurring Type is null by default, and will be set to initial or auto based on use case
+     * Recurring Type is null by default, and will
+     * be set to initial or auto based on use case
      *
      * @param $type
+     * @throws Exception\InvalidArgumentException
      */
     public function setRecurringType($type)
     {
@@ -852,9 +864,14 @@ class Entity extends Base\PublicEntity
         $this->decrement(self::AMOUNT_TRANSFERRED, $amount);
     }
 
-// ----------------------- Setters Ends-----------------------------------------
+    public function setEmiSubvention(string $subvention)
+    {
+        $this->setAttribute(self::EMI_SUBVENTION, $subvention);
+    }
 
-// ----------------------- Mutator ---------------------------------------------
+    // ----------------------- Setters Ends-----------------------------------------
+
+    // ----------------------- Mutator ---------------------------------------------
 
     //
     // Temporary only. To be removed later.
@@ -869,7 +886,7 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::METHOD] = $method;
     }
 
-    protected function setAmountAttribute($amount)
+    public function setAmountAttribute($amount)
     {
         $this->attributes[self::AMOUNT] = (int) $amount;
     }
@@ -1604,6 +1621,11 @@ class Entity extends Base\PublicEntity
         return ($existingGatewayTokens->count() > 0);
     }
 
+    public function isEmiMerchantSubvented()
+    {
+        return (Emi\Subvention::MERCHANT === $this->getAttribute(self::EMI_SUBVENTION));
+    }
+
     public function isEmandatePayment()
     {
         $token = $this->getGlobalOrLocalTokenEntity();
@@ -1776,7 +1798,7 @@ class Entity extends Base\PublicEntity
      */
     public function isFileBasedEmandateDebitPayment(): bool
     {
-        if (($this->isEmandatePayment() === true) and
+        if (($this->isEmandate() === true) and
             ($this->isRecurringTypeAuto() === true))
         {
             $gateway = $this->getGateway();
@@ -1805,6 +1827,37 @@ class Entity extends Base\PublicEntity
         }
 
         return false;
+    }
+
+    public function isFileBasedEmandateRegistrationPayment()
+    {
+        if (($this->isEmandate() === true) and
+            ($this->isRecurringTypeInitial() === true))
+        {
+            $gateway = $this->getGateway();
+
+            if ($gateway === null)
+            {
+                throw new Exception\LogicException(
+                    'This function should not have been called when gateway is not set!',
+                    ErrorCode::SERVER_ERROR_GATEWAY_NOT_SET,
+                    [
+                        'payment_id'        => $this->getId(),
+                        'recurring_type'    => $this->getRecurringType(),
+                        'method'            => $this->getMethod(),
+                    ]);
+            }
+
+            return (Payment\Gateway::isFileBasedEMandateRegistrationGateway($gateway) === true);
+        }
+
+        return false;
+    }
+
+    public function isAsyncEmandatePayment()
+    {
+        return (($this->isFileBasedEmandateDebitPayment() === true) or
+                ($this->isFileBasedEmandateRegistrationPayment() === true));
     }
 
     public function getReferenceForGatewayToken()

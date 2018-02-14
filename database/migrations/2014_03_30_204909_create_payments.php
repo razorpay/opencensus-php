@@ -109,6 +109,9 @@ class CreatePayments extends Migration
             $table->char(Payment::EMI_PLAN_ID, 14)
                   ->nullable();
 
+            $table->string(Payment::EMI_SUBVENTION, 10)
+                  ->nullable();
+
             $table->string(Payment::ERROR_CODE, 100)
                   ->nullable();
 
@@ -256,7 +259,9 @@ class CreatePayments extends Migration
             $table->index(Payment::DISPUTED);
             $table->index(Payment::UPDATED_AT);
             $table->index(Payment::CAPTURED_AT);
+            $table->index(Payment::MERCHANT_ID);
             $table->index([Payment::MERCHANT_ID, Payment::CREATED_AT]);
+            $table->index([Payment::MERCHANT_ID, Payment::STATUS, Payment::CREATED_AT]);
 
             $table->foreign(Payment::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)

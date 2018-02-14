@@ -33,7 +33,7 @@ class RefundReconciliate extends Base\RefundReconciliate
                     'gateway'   => get_called_class()
                 ]);
 
-            $this->setFailUnprocessedRow(true);
+            $this->setFailUnprocessedRow(false);
         }
         else
         {
@@ -91,6 +91,18 @@ class RefundReconciliate extends Base\RefundReconciliate
         return $row[self::COLUMN_ARN];
     }
 
+    protected function getReconRefundAmount(array $row)
+    {
+        if (isset($row[static::COLUMN_REFUND_AMOUNT]) === false)
+        {
+            return null;
+        }
+
+        $refundAmount = Base\Helper::getIntegerFormattedAmount($row[self::COLUMN_REFUND_AMOUNT]);
+
+        return abs($refundAmount);
+    }
+
     /**
      * Checks if refund amount is equal to amount from row
      * raises alert in case of mismatch
@@ -114,7 +126,6 @@ class RefundReconciliate extends Base\RefundReconciliate
 
             return false;
         }
-
         return true;
     }
 }

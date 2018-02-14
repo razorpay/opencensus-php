@@ -7,8 +7,10 @@
 
 namespace RZP\Tests\Functional;
 
-use Redis;
 use Artisan;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Redis;
+
 use RZP\Services\EsClient;
 use RZP\Tests\TestCase as ParentTestCase;
 
@@ -88,6 +90,8 @@ class TestCase extends ParentTestCase
         {
             $this->db->tearDown();
         }
+
+        Carbon::setTestNow();
 
         parent::tearDown();
     }

@@ -15,7 +15,7 @@ class Creation extends Base
         $amount = (float) ($this->data['dispute']['amount'] / 100);
 
         $subject = 'Dispute raised for Rs. ' . $amount . ' on '
-            . Payment::getSignedId($this->data['dispute']['payment_id'])
+            . $this->data['dispute']['payment_id']
             . ' against ' . $merchantName;
 
         $this->subject($subject);

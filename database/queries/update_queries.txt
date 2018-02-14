@@ -1438,3 +1438,42 @@ UPDATE merchants
 SET max_payment_amount=1000000000,
     updated_at=UNIX_TIMESTAMP(NOW())
 WHERE parent_id='8ytYezIThlseJd';
+
+update settlements join fund_transfer_attempts
+on settlements.id = fund_transfer_attempts.source_id
+set settlements.utr = fund_transfer_attempts.utr
+where settlements.channel = 'icici'
+and settlements.`batch_fund_transfer_id` = fund_transfer_attempts.`batch_fund_transfer_id`
+and settlements.utr is null
+and fund_transfer_attempts.utr is not null;
+
+update emi_plans set deleted_at = now() where subvention = 'merchant';
+
+update emi_plans set merchant_payback = ROUND(10000 * (duration * rate/120000 * POWER(1 + rate/120000 , duration) - POWER(1 + rate/120000, duration) + 1)/ (duration * rate/120000 * POWER(1 + rate/120000, duration)));
+
+// setting it to max int (jan 19 2038)
+// between nov 1st 2017 and feb 5th 2018
+UPDATE tokens SET expired_at = 2147483647 WHERE method='netbanking' AND recurring_status IS NOT NULL AND created_at > 1506796200 AND created_at <= 1517853630;
+
+// after feb 5th 2018, 23:30
+UPDATE tokens SET expired_at = (UNIX_TIMESTAMP((DATE_ADD(FROM_UNIXTIME(created_at), INTERVAL 10 YEAR)))) WHERE method='netbanking' AND recurring_status IS NOT NULL AND created_at > 1517853630;
+
+update merchant_invoice join merchant_details
+on merchant_invoice.merchant_id = merchant_details.merchant_id
+set merchant_invoice.gstin = merchant_details.p_gstin
+where merchant_invoice.gstin = ''
+and merchant_details.gstin = ''
+and merchant_details.p_gstin != ''
+and merchant_details.p_gstin is not null
+and merchant_invoice.year = 2017
+and merchant_invoice.month = 12;
+
+update merchant_invoice join merchant_details
+on merchant_invoice.merchant_id = merchant_details.merchant_id
+set merchant_invoice.gstin = merchant_details.p_gstin
+where merchant_invoice.gstin = ''
+and merchant_details.gstin = ''
+and merchant_details.p_gstin != ''
+and merchant_details.p_gstin is not null
+and merchant_invoice.year = 2018
+and merchant_invoice.month = 1;

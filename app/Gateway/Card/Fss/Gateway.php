@@ -16,6 +16,8 @@ use RZP\Gateway\Base\VerifyResult;
 
 class Gateway extends Base\Gateway
 {
+    use Base\AuthorizeFailed;
+
     protected $gateway = Payment\Gateway::CARD_FSS;
 
     /**
@@ -247,7 +249,7 @@ class Gateway extends Base\Gateway
             Fields::TRACK_ID      => $input[E::PAYMENT][Payment\Entity::ID],
             Fields::ERROR_URL     => $input['callbackUrl'],
             Fields::RESPONSE_URL  => $input['callbackUrl'],
-            Fields::ID            => $input[E::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_ID],
+            Fields::ID            => $input[E::TERMINAL][Terminal\Entity::GATEWAY_MERCHANT_ID],
             Fields::LANGUAGE_ID   => Constants::LANGUAGE_USA,
         ];
 
@@ -272,15 +274,14 @@ class Gateway extends Base\Gateway
         switch ($gatewayAquirer)
         {
             case Acquirer::FSS:
-                $requestContent[Fields::BANK_CODE] = $input[E::TERMINAL][Terminal\Entity::GATEWAY_ACCESS_CODE];
+                $requestContent[Fields::UDF3]      = $input[E::TERMINAL][Terminal\Entity::GATEWAY_MERCHANT_ID];
                 $requestContent[Fields::UDF5]      = strtolower(Constants::TRACK_ID);
-                $requestContent[Fields::UDF3]      = $input[E::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_ID];
+                $requestContent[Fields::BANK_CODE] = BankCodes::getBankCodeByIfsc($input[E::CARD][Card\Entity::ISSUER]);
 
                 if ($this->mode === Mode::TEST)
                 {
-                    $requestContent[Fields::ID]         = $this->config['fss']['terminal_id'];
-                    $requestContent[Fields::BANK_CODE]  = $this->config['fss']['bank_code'];
-                    $requestContent[Fields::UDF3]       = $this->config['fss']['terminal_id'];
+                    $requestContent[Fields::ID]         = $this->config['fss']['merchant_id'];
+                    $requestContent[Fields::UDF3]       = $this->config['fss']['merchant_id'];
                 }
 
                 break;
@@ -290,7 +291,7 @@ class Gateway extends Base\Gateway
 
                 if ($this->mode === Mode::TEST)
                 {
-                    $requestContent[Fields::ID]       = $this->config['barb']['terminal_id'];
+                    $requestContent[Fields::ID]       = $this->config['barb']['merchant_id'];
                     $requestContent[Fields::PASSWORD] = $this->config['barb']['terminal_password'];
                 }
 
@@ -316,7 +317,7 @@ class Gateway extends Base\Gateway
             Fields::TRAN_DATA     => $tranData,
             Fields::ERROR_URL     => $input['callbackUrl'],
             Fields::RESPONSE_URL  => $input['callbackUrl'],
-            Fields::TRANPORTAL_ID => $input[E::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_ID],
+            Fields::TRANPORTAL_ID => $input[E::TERMINAL][Terminal\Entity::GATEWAY_MERCHANT_ID],
         ];
 
         return $content;
@@ -396,7 +397,7 @@ class Gateway extends Base\Gateway
         switch ($gatewayAquirer)
         {
             case Acquirer::FSS:
-                $crypto = new AESCrypto(AESCrypto::MODE_CBC, $secretKey, $secretKey);
+                $crypto = new AesCrypto(AesCrypto::MODE_CBC, $secretKey, $secretKey);
 
                 $decryptedString = $crypto->decryptString($str);
                 break;
@@ -723,7 +724,7 @@ class Gateway extends Base\Gateway
             Fields::CURRENCY_CODE  => Currency::getIsoCode(Currency::INR),
             Fields::TYPE           => $this->getCardType($input[E::CARD][Card\Entity::TYPE]),
             Fields::LANGUAGE_ID    => Constants::LANGUAGE_USA,
-            Fields::ID             => $input[E::TERMINAL][Terminal\Entity::GATEWAY_TERMINAL_ID],
+            Fields::ID             => $input[E::TERMINAL][Terminal\Entity::GATEWAY_MERCHANT_ID],
         ];
 
         switch ($this->action)

@@ -152,6 +152,7 @@ class ErrorCode
     const BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY                                  = 'BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY';
     const BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET                               = 'BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET';
     const BAD_REQUEST_UNAUTHORIZED_INVALID_ACCOUNT_ID                               = 'BAD_REQUEST_UNAUTHORIZED_INVALID_ACCOUNT_ID';
+    const BAD_REQUEST_UNAUTHORIZED_USER_ROLE_MISSING                                = 'BAD_REQUEST_UNAUTHORIZED_USER_ROLE_MISSING';
     const BAD_REQUEST_UNAUTHORIZED_INVALID_HASH                                     = 'BAD_REQUEST_UNAUTHORIZED_INVALID_HASH';
     const BAD_REQUEST_UNABLE_TO_AUTHORIZE_PAYMENT                                   = 'BAD_REQUEST_UNABLE_TO_AUTHORIZE_PAYMENT';
     const BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED                              = 'BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED';
@@ -538,6 +539,7 @@ class ErrorCode
     const BAD_REQUEST_INVALID_DEVICE                                                = 'BAD_REQUEST_INVALID_DEVICE';
     const BAD_REQUEST_INVALID_INTEGRATION                                           = 'BAD_REQUEST_INVALID_INTEGRATION';
 
+    const SERVER_ERROR_GATEWAY_NOT_SET                                              = 'SERVER_ERROR_GATEWAY_NOT_SET';
     const SERVER_ERROR_INVALID_ARGUMENT                                             = 'SERVER_ERROR_INVALID_ARGUMENT';
     const SERVER_ERROR_DB_QUERY_FAILED                                              = 'SERVER_ERROR_DB_QUERY_FAILED';
     const SERVER_ERROR_LOGICAL_ERROR                                                = 'SERVER_ERROR_LOGICAL_ERROR';
