@@ -348,7 +348,7 @@ class Validator extends Base\Validator
 
     protected static $netbankingCsbTerminalRules = [
         Entity::GATEWAY                     => 'required|in:netbanking_csb',
-        Entity::GATEWAY_MERCHANT_ID2        => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
     ];
 
     protected function validateGateway($input)

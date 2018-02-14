@@ -263,7 +263,7 @@ class Gateway extends Base\Gateway
         $content = [
             Constant::CHNPGSYN,
             Constant::CHNPGCODE,
-            $this->getMerchantId2(),
+            $this->getMerchantId(),
             $verify->input['payment']['id'],
             $verify->input['payment']['amount'] / 100,
             $this->getCallbackUrl($verify->input['payment']['id']),
@@ -373,7 +373,7 @@ class Gateway extends Base\Gateway
         $content = [
             RequestFields::CHNPGSYN     => Constant::CHNPGSYN, // TODO: These are terminal specific
             RequestFields::CHNPGCODE    => Constant::CHNPGCODE, // TODO: These are terminal specific
-            RequestFields::PAYEE_ID     => $this->getMerchantId2(),
+            RequestFields::PAYEE_ID     => $this->getMerchantId(),
             RequestFields::BANK_REF_NUM => $input['payment']['id'],
             RequestFields::AMOUNT       => $input['payment']['amount'] / 100,
             RequestFields::RETURN_URL   => $input['callbackUrl'],
@@ -429,9 +429,9 @@ class Gateway extends Base\Gateway
         return (string) hexdec($this->getHashOfString($contentToHash));
     }
 
-    private function getMerchantId2(): string
+    private function getMerchantId(): string
     {
-        return $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2];
+        return $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
     }
 
     /**
