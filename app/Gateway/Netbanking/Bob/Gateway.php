@@ -89,8 +89,8 @@ class Gateway extends Base\Gateway
         $payment = $input['payment'];
 
         $content = [
-            RequestFields::BANK_ID          => $this->getMerchantId(),
-            RequestFields::BANK_FIXED_VALUE => Constants::BANK_FIXED_VALUE,
+            RequestFields::BANK_ID          => Constants::BANK_ID,
+            RequestFields::BANK_FIXED_VALUE => $this->getMerchantId(),
             RequestFields::BILLER_NAME      => Constants::BILLER_NAME,
             RequestFields::AMOUNT           => $this->formatAmount($payment[Payment::AMOUNT]),
             // When a user cancels the payment, they seem to be sending the data

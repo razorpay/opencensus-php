@@ -4,7 +4,7 @@ namespace RZP\Gateway\Netbanking\Bob;
 
 class Constants
 {
-    const BANK_FIXED_VALUE = '000000000745';
+    const BANK_ID = '012';
 
     const BILLER_NAME = 'Razorpay';
 
