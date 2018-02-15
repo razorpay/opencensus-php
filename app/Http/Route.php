@@ -1520,7 +1520,6 @@ final class Route
         'pricing_delete_plan_rule'               => '*',
         'payment_verify'                         => '*',
         'payment_authorize_failed'               => '*',
-        'bank_transfer_process'                  => '*',
         'iin_add'                                => '*',
         'emi_plan_add'                           => '*',
         'emi_generate_excel'                     => '*',
