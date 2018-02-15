@@ -941,7 +941,6 @@ final class Route
         'entity_tax_update',
         'fund_transfer_attempt_reconcile',
         'gateway_file_create',
-        'gateway_payment_callback_bharatqr',
         'gateway_validate_unknown_refund',
         'geoip_update',
         'invitation_action',
@@ -979,8 +978,6 @@ final class Route
         'refund_gateway_refunded_txns',
         'refund_generate_excel',
         'refund_retry_failed',
-        'reports_refund_irctc',
-        'reports_transaction_dsp',
         'schedule_migration',
         'schedule_process_tasks',
         'scorecard',
@@ -1168,6 +1165,7 @@ final class Route
         'setl_fetch_schedule',
         'feature_delete',
         'admin_dummy_account_test',
+        'reports_transaction_dsp',
         'admin_get_file',
         // workflows
         'workflow_create',
@@ -1629,6 +1627,8 @@ final class Route
         'user_create'                            => '*',
         'user_edit'                              => '*',
         'admin_get_app_auth'                     => '*',
+        'reports_transaction_dsp'                => Permission::VIEW_SPECIAL_MERCHANT_REPORT,
+        'reports_refund_irctc'                   => Permission::VIEW_SPECIAL_MERCHANT_REPORT,
     ];
 
     public static $direct = [
@@ -1786,9 +1786,13 @@ final class Route
             'bank_transfer_notify',
         ],
 
-        'bharatqr' => [
-            'gateway_payment_callback_bharatqr',
-        ],
+        // BharatQR routes are not authenticated
+        // currently, so this is not in internal
+        // auth
+
+        // 'bharatqr' => [
+        //     'gateway_payment_callback_bharatqr',
+        // ],
 
         'mailgun' => [
             'reconciliate',
