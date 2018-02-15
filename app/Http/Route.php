@@ -1003,7 +1003,7 @@ final class Route
         'user_register',
         'user_resend_verification',
         'user_reset_password_create',
-        'user_reset_password_token'
+        'user_reset_password_token',
         'virtual_account_refund_excess',
     ];
 
