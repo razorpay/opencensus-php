@@ -1004,6 +1004,9 @@ final class Route
         'user_reset_password_token',
         'virtual_account_refund_excess',
         'admin_lock_old_accounts',
+        'admin_forgot_password',
+        'admin_reset_password',
+        'admin_get_by_attr',
     ];
 
     public static $userWhitelist = [
@@ -1236,9 +1239,6 @@ final class Route
         'admin_fetch_entity_by_id',
         'admin_fetch_entity_multiple',
         'admin_fetch_terminal_by_id',
-        'admin_forgot_password',
-        'admin_get_by_attr',
-        'admin_reset_password',
         'bank_transfer_edit_payer_account',
         'bank_transfer_insert',
         'bank_transfer_strip_payer_accounts',
@@ -1540,9 +1540,6 @@ final class Route
         'adj_add_bulk'                           => '*',
         'adj_add_reverse'                        => '*',
         'adjustments_split_for_dispute'          => '*',
-        'admin_forgot_password'                  => '*',
-        'admin_get_by_attr'                      => '*',
-        'admin_reset_password'                   => '*',
         'bank_transfer_edit_payer_account'       => '*',
         'bank_transfer_insert'                   => '*',
         'bank_transfer_strip_payer_accounts'     => '*',
@@ -1721,6 +1718,9 @@ final class Route
             'admin_edit_app_auth',
             'admin_authentication',
             'admin_oauth_authenticate',
+            'admin_forgot_password',
+            'admin_reset_password',
+            'admin_get_by_attr',
         ],
 
         'cron' => [

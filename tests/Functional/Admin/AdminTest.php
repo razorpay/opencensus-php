@@ -408,7 +408,7 @@ class AdminTest extends TestCase
 
     public function testLoginUserDoesNotExist()
     {
-        $this->ba->adminAuth();
+        $this->ba->appAuth();
 
         $this->startTest();
     }
@@ -422,7 +422,7 @@ class AdminTest extends TestCase
             'oauth_provider_id'  => 'test oauth provider id',
         ]);
 
-        $this->ba->adminAuth();
+        $this->ba->appAuth();
 
         $this->startTest();
     }
@@ -436,7 +436,7 @@ class AdminTest extends TestCase
             'oauth_provider_id'  => 'test oauth provider id',
         ]);
 
-        $this->ba->adminAuth();
+        $this->ba->appAuth();
 
         $this->startTest();
 
@@ -875,7 +875,7 @@ class AdminTest extends TestCase
 
     public function testConfigKeys()
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $request = $this->testData['testConfigKeysSet']['request'];
 
