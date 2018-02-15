@@ -1498,7 +1498,7 @@ final class Route
         'settings_fetch_defined'                 => Permission::VIEW_WALLET_CONFIG,
         'settings_upsert'                        => Permission::EDIT_WALLET_CONFIG,
         'settings_delete'                        => Permission::EDIT_WALLET_CONFIG,
-        'merchant_analytics'                     => '*',
+        'merchant_analytics'                     => Permission::VIEW_MERCHANT_ANALYTICS,
         'merchant_activation_files'              => '*',
         'merchant_activation_archive'            => '*', // permission handled in code
         'merchant_activation_status'             => Permission::EDIT_ACTIVATE_MERCHANT,
