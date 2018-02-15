@@ -204,25 +204,7 @@ class AdminAccess
 
     private function policyChecker($routeName, $admin, $merchant = null)
     {
-        // We allow internal routes that are not yet added to admin array
-        try
-        {
-            $permission = $this->getRoutePermission($routeName);
-        }
-        catch(Exception\BadRequestException $e)
-        {
-            // If route doesn't have a permission
-            // see if the route is in internal array
-            if(array_key_exists($routeName, Route::$internal))
-            {
-                // We allow this to go ahead
-                return true;
-            }
-            else
-            {
-                throw $e;
-            }
-        }
+        $permission = $this->getRoutePermission($routeName);
 
         // We have the following:
         // - permission
@@ -298,13 +280,7 @@ class AdminAccess
         // there's a hierarchy (or actually a graph)
         $nodes = $this->getAllNodes($admin);
 
-        // $nodes['groups'], $nodes['admins']
-
-        // dd($nodes);
-
         $merchantIds = $this->getMerchantIdsOfNodes($nodes);
-
-        // dd($merchantIds);
 
         if (in_array($merchant->id, $merchantIds))
         {
