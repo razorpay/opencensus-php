@@ -1111,6 +1111,7 @@ final class Route
         'ufh_get_file_signed_url',
         'pincode_get',
         'dispute_edit',
+        'merchant_get_tags',
     ];
 
     // These will run on internal auth with the assurance
@@ -1300,7 +1301,6 @@ final class Route
         'merchant_fetch_webhooks',
         'merchant_generate_test_bank_acnt',
         'merchant_get_banks',
-        'merchant_get_tags',
         'merchant_live_disable',
         'merchant_live_enable',
         'merchant_put_payment_methods',
