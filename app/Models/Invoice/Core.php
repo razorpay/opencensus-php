@@ -741,7 +741,7 @@ class Core extends Base\Core
 
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
 
-        return ['success' => true];
+        return [];
     }
 
     public function saveAndNotify(Entity $invoice, string $event)

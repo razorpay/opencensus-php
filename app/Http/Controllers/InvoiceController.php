@@ -13,36 +13,28 @@ class InvoiceController extends Controller
 {
     public function createInvoice()
     {
-        $input = Request::all();
-
-        $invoice = $this->service()->create($input);
+        $invoice = $this->service()->create($this->input);
 
         return ApiResponse::json($invoice);
     }
 
     public function getInvoice(string $id)
     {
-        $input = Request::all();
-
-        $invoice = $this->service()->fetch($id, $input);
+        $invoice = $this->service()->fetch($id, $this->input);
 
         return ApiResponse::json($invoice);
     }
 
     public function getInvoices()
     {
-        $input = Request::all();
-
-        $invoices = $this->service()->fetchMultiple($input);
+        $invoices = $this->service()->fetchMultiple($this->input);
 
         return ApiResponse::json($invoices);
     }
 
     public function updateInvoice(string $id)
     {
-        $input = Request::all();
-
-        $invoice = $this->service()->update($id, $input);
+        $invoice = $this->service()->update($id, $this->input);
 
         return ApiResponse::json($invoice);
     }
@@ -56,9 +48,7 @@ class InvoiceController extends Controller
 
     public function notifyInvoicesOfBatch(string $batchId)
     {
-        $input = Request::all();
-
-        $response = $this->service()->notifyInvoicesOfBatch($batchId, $input);
+        $response = $this->service()->notifyInvoicesOfBatch($batchId, $this->input);
 
         return ApiResponse::json($response);
     }
@@ -74,18 +64,14 @@ class InvoiceController extends Controller
 
     public function addLineItems(string $id)
     {
-        $input = Request::all();
-
-        $invoice = $this->service()->addLineItems($id, $input);
+        $invoice = $this->service()->addLineItems($id, $this->input);
 
         return ApiResponse::json($invoice);
     }
 
     public function updateLineItem(string $id, string $lineItemId)
     {
-        $input = Request::all();
-
-        $invoice = $this->service()->updateLineItem($id, $lineItemId, $input);
+        $invoice = $this->service()->updateLineItem($id, $lineItemId, $this->input);
 
         return ApiResponse::json($invoice);
     }
@@ -99,9 +85,7 @@ class InvoiceController extends Controller
 
     public function removeManyLineItems(string $id)
     {
-        $input = Request::all();
-
-        $invoice = $this->service()->removeManyLineItems($id, $input);
+        $invoice = $this->service()->removeManyLineItems($id, $this->input);
 
         return ApiResponse::json($invoice);
     }
@@ -225,9 +209,7 @@ class InvoiceController extends Controller
 
     public function issueInvoicesOfBatch(string $batchId)
     {
-        $input = Request::all();
-
-        $response = $this->service()->issueInvoicesOfBatch($batchId, $input);
+        $response = $this->service()->issueInvoicesOfBatch($batchId, $this->input);
 
         return ApiResponse::json($response);
     }
@@ -242,9 +224,7 @@ class InvoiceController extends Controller
      */
     public function getIssuableByBatchIds()
     {
-        $input = Request::all();
-
-        $response = $this->service()->getIssuableByBatchIds($input);
+        $response = $this->service()->getIssuableByBatchIds($this->input);
 
         return ApiResponse::json($response);
     }

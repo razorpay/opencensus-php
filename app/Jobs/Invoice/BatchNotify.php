@@ -23,7 +23,6 @@ class BatchNotify extends BaseJob implements ShouldQueue
     use InteractsWithQueue;
 
     const INPUT              = 'input';
-    const MUTEX_LOCK_TIMEOUT = 3600;    // In seconds
 
     /**
      * Batch entity id.
@@ -65,20 +64,6 @@ class BatchNotify extends BaseJob implements ShouldQueue
     {
         parent::handle();
 
-        $this->mutex = App::getFacadeRoot()['api.mutex'];
-
-        $this->mutex->acquireAndRelease(
-            $this->batchId,
-            function ()
-            {
-                $this->handleBatchNotify();
-            },
-            static::MUTEX_LOCK_TIMEOUT,
-            ErrorCode::BAD_REQUEST_BATCH_ANOTHER_OPERATION_IN_PROGRESS);
-    }
-
-    protected function handleBatchNotify()
-    {
         $this->trace->debug(
             TraceCode::INVOICE_BATCH_NOTIFY_JOB_RECEIVED,
             [
@@ -155,7 +140,7 @@ class BatchNotify extends BaseJob implements ShouldQueue
             $this->trace->traceException(
                 $e,
                 null,
-                TraceCode::INVOICE_BATCH_ISSUE_JOB_ERROR,
+                TraceCode::INVOICE_BATCH_NOTIFY_JOB_ERROR,
                 [
                     'batch_id'   => $this->batchId,
                     'invoice_id' => $invoice->getId(),
