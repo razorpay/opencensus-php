@@ -607,7 +607,7 @@ class BankTransferTest extends TestCase
             ],
         ];
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -924,6 +924,8 @@ class BankTransferTest extends TestCase
 
         $this->fixtures->merchant->edit('10000000000000', ['category2' => 'cryptocurrency']);
 
+        $this->ba->adminAuth();
+
         $this->makeRequestAndGetContent([
             'method'  => 'PUT',
             'url'     => '/config/keys',
@@ -934,6 +936,7 @@ class BankTransferTest extends TestCase
 
         // Process API always returns true
         $response = $this->processBankTransfer($accountNumber, $ifsc);
+
         $this->assertEquals(true, $response['valid']);
         $this->assertNull($response['message']);
 
@@ -945,6 +948,7 @@ class BankTransferTest extends TestCase
 
         // Created bank transfer is an unexpected one
         $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+
         $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
         $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
         $this->assertEquals($bankAccount['id'], 'ba_'.$bankTransfer['payer_bank_account_id']);
@@ -1226,6 +1230,8 @@ class BankTransferTest extends TestCase
             'content'   => [],
         ];
 
+        $this->ba->cronAuth();
+
         $this->makeRequestAndGetContent($request);
 
         $attempt = $this->getLastEntity('fund_transfer_attempt', true);
@@ -1253,6 +1259,8 @@ class BankTransferTest extends TestCase
         $request['content']['payee_account'] = $accountNumber;
 
         $request['content']['payee_ifsc'] = $ifsc;
+
+        $this->ba->adminAuth();
 
         $response = $this->makeRequestAndGetContent($request);
 
