@@ -103,19 +103,18 @@ trait MessageFormats
         return $this->messageBag;
     }
 
+    // TODO: Comment what this half-way flatten does
     protected function setFirstPair()
     {
         $array = $this->messageArray;
 
         if ($array !== null)
         {
-            $pair = each($array);
+            [$key, $value] = [array_keys($array)[0], array_values($array)[0]];
 
-            $firstKey = $pair['key'];
+            $firstValue = (is_array($value)) ? $value[0] : $value;
 
-            $firstValue = (is_array($pair['value'])) ? $pair['value'][0] : $pair['value'];
-
-            $this->first = array($firstKey => $firstValue);
+            $this->first = array($key => $firstValue);
         }
     }
 
@@ -138,9 +137,7 @@ trait MessageFormats
 
     protected function getFirstPair()
     {
-        $pair = each($this->first);
-
-        return array($pair['key'], $pair['value']);
+        return [array_keys($this->first)[0], array_values($this->first)[0]];
     }
 
     protected function constructError($code, $message, $field = null)
