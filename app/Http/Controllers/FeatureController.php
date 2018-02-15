@@ -12,8 +12,17 @@ class FeatureController extends Controller
     /**
      * Adds features to entities
      *
-     * @todo: Remove the default null values once the feature_add route is
-     *        removed and change the access modifier to protected.
+     * @param string|null $accountId
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function addAccountFeatures(string $accountId = null)
+    {
+        return $this->addFeatures(Constants::ACCOUNTS, $accountId);
+    }
+
+    /**
+     * Adds features to entities
      *
      * @param string|null $routeName
      * @param string|null $entityId
@@ -92,6 +101,19 @@ class FeatureController extends Controller
     public function getMerchantFeatures(string $merchantId)
     {
         return $this->getFeatures(Constants::MERCHANTS, $merchantId);
+    }
+
+    /**
+     * Returns the features assigned to the merchant
+     *
+     * @deprecated Use getAccountFeatures instead
+     * @param string|null $accountId
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function getAccountFeatures(string $accountId)
+    {
+        return $this->getFeatures(Constants::MERCHANTS, $accountId);
     }
 
     /**

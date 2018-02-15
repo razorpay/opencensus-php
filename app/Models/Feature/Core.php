@@ -573,7 +573,7 @@ class Core extends Base\Core
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $featureName     = $feature->getName();
+        $featureName = $feature->getName();
 
         $isLiveMode = $this->isLiveMode();
 

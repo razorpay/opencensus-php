@@ -712,15 +712,16 @@ final class Route
         'pincode_get'                             => ['get',      'pincodes/{id}',                                  'PincodeSearchController@get'                                       ],
 
         // Deprecated feature routes - maintaining for BC - Remove after dashboard changes
-        'feature_add'                             => ['post',     'features',                                       'FeatureController@addFeatures'                                     ],
         'feature_get_multiple'                    => ['get',      'features/{entityId}',                            'FeatureController@getMerchantFeatures'                             ],
         'feature_delete'                          => ['delete',   'features/{entityId}/{featureName}',              'FeatureController@deleteFeature'                                   ],
 
         // Features
+        'feature_add'                             => ['post',     'features',                                       'FeatureController@addFeatures'                                     ],
+        'feature_get'                             => ['get',      '{entityType}/{entityId}/features',               'FeatureController@getFeatures'                                     ],
+        'feature_add_accounts'                    => ['post',     'accounts/{entityId}/features',                   'FeatureController@addAccountFeatures'                              ],
+        'feature_get_accounts'                    => ['get',      'accounts/{entityId}/features',                   'FeatureController@getAccountFeatures'                              ],
         'feature_bulk_assign'                     => ['post',     'features/assign',                                'FeatureController@multiAssignFeature'                              ],
         'feature_bulk_remove'                     => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
-        'feature_add_entity'                      => ['post',     '{entityType}/{entityId}/features',               'FeatureController@addFeatures'                                     ],
-        'feature_get_entity'                      => ['get',      '{entityType}/{entityId}/features',               'FeatureController@getFeatures'                                     ],
         'feature_delete_entity'                   => ['delete',   '{entityType}/{entityId}/features/{featureName}', 'FeatureController@deleteEntityFeature'                             ],
     ];
 
@@ -927,6 +928,8 @@ final class Route
         'beta_account_post_bank_account',
         'beta_account_fetch_setl_destinations',
         'dispute_fetch',
+        'feature_add_accounts',
+        'feature_get_accounts',
     ];
 
     public static $internal = [
@@ -1257,8 +1260,6 @@ final class Route
         'ufh_get_file_signed_url',
         'pincode_get',
         'dispute_edit',
-        'feature_get_entity',
-        'feature_add_entity',
     ];
 
     // These will run on internal auth with the assurance
@@ -1431,8 +1432,7 @@ final class Route
         'merchant_put_payment_methods'           => Permission::EDIT_MERCHANT_METHODS,
         'balance_fetch'                          => Permission::VIEW_MERCHANT_BALANCE,
         'feature_get_multiple'                   => Permission::VIEW_MERCHANT_FEATURES,
-        'feature_get_accounts'                   => Permission::VIEW_MERCHANT_FEATURES,
-        'feature_get_applications'               => Permission::VIEW_MERCHANT_FEATURES,
+        'feature_get'                            => Permission::VIEW_MERCHANT_FEATURES,
         'merchant_actions'                       => '*',
         'merchant_live_enable'                   => Permission::EDIT_MERCHANT_ENABLE_LIVE,
         'merchant_live_disable'                  => Permission::EDIT_MERCHANT_DISABLE_LIVE,
