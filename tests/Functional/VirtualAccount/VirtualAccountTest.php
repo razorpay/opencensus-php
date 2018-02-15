@@ -83,7 +83,7 @@ class VirtualAccountTest extends TestCase
 
         $visaValue = $tlvArray['02'];
 
-        $this->assertEquals(16, strlen($masterCardValue));
+        $this->assertEquals(15, strlen($masterCardValue));
 
         $this->assertEquals(16, strlen($visaValue));
 

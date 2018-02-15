@@ -284,7 +284,7 @@ class Gateway extends Base\Gateway
      */
     protected function getPublicKey(): string
     {
-        $key = $this->config['live_private_key'];
+        $key = $this->config['live_public_key'];
 
         if ($this->mode === Mode::TEST)
         {
@@ -303,7 +303,7 @@ class Gateway extends Base\Gateway
      */
     protected function getPrivateKey(): string
     {
-        $key = $this->config['live_public_key'];
+        $key = $this->config['live_private_key'];
 
         if ($this->mode === Mode::TEST)
         {
