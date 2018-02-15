@@ -10,6 +10,8 @@ use RZP\Models\Invoice;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Constants\Entity as E;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 
 /**
  * Purpose: A merchant should be able to use invoice, orders, subscriptions from
@@ -23,14 +25,10 @@ use RZP\Constants\Entity as E;
  * or in request input, so we can use that to set BasicAuth's merchant instance
  * and continue with the code flow as in case of normal public auth routes.
  *
- * As for mode we ask for it as part of request header or query parameter
- * and default to live mode.
+ * As for mode we try with live mode first and then try test mode.
  */
 final class KeylessPublicAuth
 {
-    const MODE_QUERY_KEY  = 'rzp_mode';
-    const MODE_HEADER_KEY = 'X-Razorpay-Mode';
-
     /**
      * Map of input parameter and respective entity.
      * Ref: retrieveMerchantByDefaultLogic() for usage.
@@ -51,38 +49,26 @@ final class KeylessPublicAuth
 
         $this->request = $app['request'];
         $this->route   = $app['api.route'];
-    }
-
-    public function retrieveMode(): string
-    {
-        if ($this->request->has(self::MODE_QUERY_KEY) === true)
-        {
-            $mode = $this->request->get(self::MODE_QUERY_KEY);
-
-            $this->request->query->remove(self::MODE_QUERY_KEY);
-            $this->request->request->remove(self::MODE_QUERY_KEY);
-        }
-        else
-        {
-            $mode = $this->request->headers->get(self::MODE_HEADER_KEY, Mode::LIVE);
-        }
-
-        return $mode;
+        $this->ba      = $app['basicauth'];
     }
 
     /**
-     * Retrieves merchant entity to be set in BasicAuth for the request context.
+     * Sets mode and retrieves merchant entity to be set in BasicAuth for the request context.
      *
      * Approach:
      * - We check if there is a handler defined for the route, we call that.
      * - Else, we call a method with some default logic to find the merchant
      *
+     * @param $mode string
+     *
      * @return Merchant\Entity|null
      *
      * @throws \RZP\Exception\BadRequestException
      */
-    public function retrieveMerchant()
+    public function setModeAndRetrieveMerchant(string $mode)
     {
+        $this->ba->setModeAndDbConnection($mode);
+
         $route = $this->route->getCurrentRouteName();
 
         $handler = 'retrieveMerchantFor' . studly_case($route);
@@ -156,12 +142,28 @@ final class KeylessPublicAuth
 
         $entityClass::verifyIdAndSilentlyStripSign($id);
 
-        $entity = $repo->findOrFailPublic($id);
-
-        if (($entity->relationLoaded(E::MERCHANT) == true) or
-            (method_exists($entity, E::MERCHANT) === true))
+        try
         {
-            return $entity->merchant;
+            $entity = $repo->findOrFailPublic($id);
+
+            if (($entity->relationLoaded(E::MERCHANT) == true) or
+                (method_exists($entity, E::MERCHANT) === true))
+            {
+                return $entity->merchant;
+            }
+        }
+        catch (BadRequestException $ex)
+        {
+            /**
+             * As we will be querying in the LIVE mode first and then in the TEST mode,
+             * catch exception for bad request invalid id incase of LIVE mode and
+             * throw same exception incase of TEST mode or any other exception.
+             */
+            if (($ex->getCode() !== ErrorCode::BAD_REQUEST_INVALID_ID) or
+                ($this->ba->getMode() === Mode::TEST))
+            {
+                throw $ex;
+            }
         }
     }
 }

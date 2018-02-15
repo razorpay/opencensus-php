@@ -451,31 +451,25 @@ class BasicAuth
      * identifier in request input with which we can set merchant
      * instance variable.
      *
-     * Also mode is expected in header or query parameter else defaults to live.
+     * Also we try to detect mode from identifiers by querying both databases
      *
      * If we're not able to retrieve merchant then we just throw 401 which
      * would have happened otherwise.
      */
     public function keylessPublicAuth()
     {
-        //
-        // TODOs (To discuss):
-        // - If we should have a group $publicKeyless which is subset
-        //   of $public in Route and do the check here OR just let the flow be
-        //   for all $public routes?
-        // - If we should try to detect mode as fallback from identifiers by
-        //   querying both databases or just fallback on live mode if same not
-        //   provided in query parameter or header?
-        //
-
         $handler = new KeylessPublicAuth;
 
-        $mode = $handler->retrieveMode();
+        // Try to retrieve merchant using LIVE mode
+        $merchant = $handler->setModeAndRetrieveMerchant(Mode::LIVE);
 
-        $this->setModeAndDbConnection($mode);
+        // If we fail to retrieve merchant, try using TEST mode
+        if (is_null($merchant) === true)
+        {
+            $merchant = $handler->setModeAndRetrieveMerchant(Mode::TEST);
+        }
 
-        $merchant = $handler->retrieveMerchant();
-
+        // If we still fail to retrive merchant, return http auth expected exception
         if (is_null($merchant) === true)
         {
             return ApiResponse::httpAuthExpected();
