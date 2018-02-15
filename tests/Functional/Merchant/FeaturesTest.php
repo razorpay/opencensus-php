@@ -44,20 +44,18 @@ class FeaturesTest extends TestCase
         $this->startTest();
     }
 
-//    public function testApplicationFeatures()
-//    {
-//        $appId = '1000000DemoApp';
-//
-//        $dummy = 'dummy';
-//
-//        $testData = $this->addFeatures(
-//            Mode::TEST,
-//            true,
-//            [$dummy],
-//            Constants::APPLICATION,
-//            $appId);
-//
-//        $this->startTest($testData);
+    public function testApplicationFeatures()
+    {
+        $appId = '1000000DemoApp';
+
+        $dummy = 'dummy';
+
+        $this->addFeatures(
+            Mode::TEST,
+            true,
+            [$dummy],
+            Constants::APPLICATION,
+            $appId);
 //
 //        $this->verifyFeaturePresenceForEntity(Mode::TEST, Constants::APPLICATION, $appId, [$dummy]);
 //
@@ -66,7 +64,7 @@ class FeaturesTest extends TestCase
 //            $dummy,
 //            Constants::APPLICATION,
 //            $appId);
-//    }
+    }
 
     public function testAccountFeatures()
     {
@@ -409,7 +407,12 @@ class FeaturesTest extends TestCase
     {
         $merchantId = $this->createMerchantDetails(self::ONBOARDING_MERCHANT_ID);
 
-        $this->addFeatures(Mode::LIVE, true, ['subscriptions'], $merchantId);
+        $this->addFeatures(
+            Mode::LIVE,
+            true,
+            ['subscriptions'],
+            'merchant',
+            $merchantId);
 
         $this->verifyFeaturePresence(Mode::TEST, ['subscriptions'], self::ONBOARDING_MERCHANT_ID);
 
@@ -631,7 +634,12 @@ class FeaturesTest extends TestCase
         // Test update status API
         $this->updateMarketplaceOnboardingResponseStatus($merchantId, 'rejected');
 
-        $this->addFeatures(Mode::LIVE, false, [Constants::MARKETPLACE], $merchantId);
+        $this->addFeatures(
+            Mode::LIVE,
+            false,
+            [Constants::MARKETPLACE],
+            Constants::MERCHANT,
+            $merchantId);
 
         $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
 
@@ -667,7 +675,12 @@ class FeaturesTest extends TestCase
 
         $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
 
-        $this->addFeatures(Mode::TEST, false, [Constants::MARKETPLACE], $merchantId);
+        $this->addFeatures(
+            Mode::TEST,
+            false,
+            [Constants::MARKETPLACE],
+            Constants::MERCHANT,
+            $merchantId);
 
         $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
 
@@ -832,13 +845,15 @@ class FeaturesTest extends TestCase
      * @param string      $addToMode
      * @param bool        $shouldSync
      * @param array       $featureNames
-     * @param string|null $merchantId
+     * @param string|null $entityType
+     * @param string|null $entityId
      */
     protected function addFeatures(
         string $addToMode,
         bool $shouldSync = false,
         array $featureNames = ['dummy'],
-        string $merchantId = null)
+        string $entityType = 'merchant',
+        string $entityId = null)
     {
         $authMethod = 'appAuth' . studly_case($addToMode);
 
@@ -856,9 +871,11 @@ class FeaturesTest extends TestCase
             $testData['request']['content']['should_sync'] = 1;
         }
 
-        if ($merchantId !== null)
+        $testData['request']['content']['entity_type'] = $entityType;
+
+        if ($entityId !== null)
         {
-            $testData['request']['content']['entity_id'] = $merchantId;
+            $testData['request']['content']['entity_id'] = $entityId;
         }
 
         $this->startTest($testData);
