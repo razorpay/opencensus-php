@@ -15,7 +15,7 @@ class Core extends Base\Core
 {
     public function create(Merchant\Entity $merchant, array $input): Entity
     {
-        $this->trace->info(TraceCode::BATCH_CREATE_REQUEST, array_except($input, Entity::FILE));
+        $this->trace->info(TraceCode::BATCH_CREATE_REQUEST, $input);
 
         $batch = (new Entity)->build($input);
 

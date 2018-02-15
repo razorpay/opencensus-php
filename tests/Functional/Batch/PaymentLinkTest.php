@@ -66,6 +66,23 @@ class PaymentLinkTest extends TestCase
         $this->assertOutputFileExistsForBatch($response[Entity::ID]);
 
         Mail::assertSent(BatchPaymentLinkFileMail::class);
+
+        // TODO:
+        // - Open and verify output file contents with expectations
+    }
+
+    /**
+     * Few of the file rows has validation errors
+     */
+    public function testCreateBatchOfPaymentLinkTypeWithInvalidFile3()
+    {
+        $entries = $this->getDefaultPaymentLinkFileEntries();
+
+        $entries[1][Header::AMOUNT] = 0;
+
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+
+        $this->startTest();
     }
 
     /**

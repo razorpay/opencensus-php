@@ -2885,4 +2885,4 @@ ALTER TABLE qr_code
     ADD COLUMN short_url varchar(255) NOT NULL after qr_string;
 
 ALTER TABLE batches
-ADD COLUMN name varchar(255) AFTER merchant_id;
+ADD COLUMN name varchar(255) AFTER sub_type;

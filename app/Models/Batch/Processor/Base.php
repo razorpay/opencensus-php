@@ -76,6 +76,8 @@ class Base extends BaseModel\Core
      */
     protected $settingsAccessor;
 
+    protected $createByFileUpload;
+
     /**
      * Holds local file path of input and output file respectively.
      * They are re-used in the flow.
@@ -176,7 +178,7 @@ class Base extends BaseModel\Core
         });
 
         $response = [
-            self::PROCESSABLE_COUNT     => count($correctEntries),
+            self::PROCESSABLE_COUNT     => $this->batch->getTotalCount(),
             self::ERROR_COUNT           => count($entries) - count($correctEntries),
             self::PARSED_ENTRIES        => array_slice($correctEntries, 0 , 3),
         ];
@@ -193,6 +195,8 @@ class Base extends BaseModel\Core
             $this->inputFileLocalPath = $this->accessor->id($inputFileId)
                                                         ->merchantId($this->merchant->getId())
                                                         ->getFile();
+
+            $this->batch->setCreatedByFileId(true);
 
             return  $this->accessor->get();
         }
@@ -506,10 +510,14 @@ class Base extends BaseModel\Core
 
             if ($headerType === Batch\Header::ERROR)
             {
-                return $this->saveErrorFile();
+                $ufh = $this->saveErrorFile();
+            }
+            else
+            {
+                $ufh = $this->saveOutputFile();
             }
 
-            return $this->saveOutputFile();
+            return $this->getFileIdAndSignedUrl($ufh);
         }
         catch (\Throwable $e)
         {
@@ -732,7 +740,6 @@ class Base extends BaseModel\Core
         $this->batch->getValidator()->validateEntries($entries, $input, $this->merchant);
     }
 
-
     /**
      * Parses given file and returns the entries array
      *
@@ -804,34 +811,24 @@ class Base extends BaseModel\Core
         return $ufh;
     }
 
-    protected function saveOutputFile(): array
+    protected function saveOutputFile(): FileStore\Creator
     {
-        $ufh = $this->saveFile($this->outputFileLocalPath, FileStore\Type::BATCH_OUTPUT);
-
-        $ufhSignedUrl = $ufh->getSignedUrl();
-
-        if ($ufhSignedUrl === null)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_BATCH_UNABLE_TO_SAVE_OUTPUT_FILE);
-        }
-
-        return [
-            self::FILE_ID       => FileStore\Entity::getSignedId($ufhSignedUrl['id']),
-            self::SIGNED_URL    => $ufhSignedUrl['url'],
-        ];
+        return $this->saveFile($this->outputFileLocalPath, FileStore\Type::BATCH_OUTPUT);
     }
 
-    protected function saveErrorFile(): array
+    protected function saveErrorFile(): FileStore\Creator
     {
-        $ufh = $this->saveFile($this->outputFileLocalPath, FileStore\Type::BATCH_INPUT, false);
+        return $this->saveFile($this->outputFileLocalPath, FileStore\Type::BATCH_INPUT, false);
+    }
 
+    protected function getFileIdAndSignedUrl(FileStore\Creator $ufh): array
+    {
         $ufhSignedUrl = $ufh->getSignedUrl();
 
-        if ($ufhSignedUrl === null)
+        if ($ufhSignedUrl['id'] === null)
         {
             throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_BATCH_UNABLE_TO_SAVE_ERROR_FILE);
+                ErrorCode::BAD_REQUEST_BATCH_UNABLE_TO_SAVE_FILE);
         }
 
         return [
@@ -1038,5 +1035,15 @@ class Base extends BaseModel\Core
     protected function increaseAllowedSystemLimits()
     {
         return;
+    }
+
+    protected function getTimeStampedName(string $fileKey, string $ext = FileStore\Format::XLSX): string
+    {
+        return $fileKey . '_' . $this->getTimestamp() . '.' . $ext;
+    }
+
+    protected function getTimestamp()
+    {
+        return Carbon::now(Timezone::IST)->getTimestamp();
     }
 }
