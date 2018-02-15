@@ -264,6 +264,7 @@ final class Route
         'setl_post_details_old'                   => ['post',     'settlements/details',                            'SettlementController@postSettlementDetailsForOldTxns'              ],
         'setl_combined_report'                    => ['get',      'settlements/report/combined',                    'SettlementController@getSettlementCombinedReport'                  ],
         'setl_update_channel_bulk'                => ['put',      'settlements/channel/bulk',                       'SettlementController@updateChannelForMultipleSettlements'          ],
+        'nodal_get_account_balance'               => ['get',      'nodal/balance/{channel}',                        'SettlementController@getAccountBalance'                            ],
         'nodal_initiate_transfer'                 => ['post',     'nodal/transfer',                                 'SettlementController@postInitiateTransfer'                         ],
         'nodal_add_beneficiary'                   => ['post',     'nodal/beneficiary/{channel}',                    'SettlementController@addBeneficiary'                               ],
         'adj_fetch_by_id'                         => ['get',      'adjustments/{id}',                               'AdjustmentController@getAdjustment'                                ],
@@ -335,6 +336,7 @@ final class Route
         'emi_plan_fetch_by_id'                    => ['get',      'emi/{id}',                                       'EmiController@fetchEmiPlanById'                                    ],
         'emi_plan_delete'                         => ['delete',   'emi/{id}',                                       'EmiController@deleteEmiPlan'                                       ],
         'emi_generate_excel'                      => ['post',     'emi/generate/excel',                             'EmiController@generateEmiExcel'                                    ],
+        'enable_emi_merchant_sub'                 => ['post',     'merchant/{id}/emi_plan/{emiPlanId}',             'MerchantController@enableEmiMerchantSubvention'                    ],
         'order_create'                            => ['post',     'orders',                                         'OrderController@createOrder'                                       ],
         'order_fetch'                             => ['get',      'orders',                                         'OrderController@getOrders'                                         ],
         'order_fetch_by_id'                       => ['get',      'orders/{id}',                                    'OrderController@fetchOrderById'                                    ],
@@ -643,6 +645,14 @@ final class Route
         'risk_update'                             => ['patch',    'risk/{id}',                                      'RiskController@update'                                             ],
         'risk_fetch_multiple'                     => ['get',      'risk',                                           'RiskController@list'                                               ],
         'risk_get'                                => ['get',      'risk/{id}',                                      'RiskController@get'                                                ],
+
+        // Shield Routes
+        'shield_rules_get_multiple'               => ['get',       'shield/rules',                                  'ShieldController@list'                                             ],
+        'shield_rules_get'                        => ['get',       'shield/rules/{id}',                             'ShieldController@get'                                              ],
+        'shield_rules_update'                     => ['put',       'shield/rules/{id}',                             'ShieldController@update'                                           ],
+        'shield_rules_delete'                     => ['delete',    'shield/rules/{id}',                             'ShieldController@delete'                                           ],
+        'shield_rules_create'                     => ['post',      'shield/rules',                                  'ShieldController@create'                                           ],
+        'shield_rules_evaluate'                   => ['post',      'shield/rules/evaluate',                         'ShieldController@evaluate'                                         ],
 
         // Dispute routes
         'payment_dispute_create'                  => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
@@ -1359,6 +1369,16 @@ final class Route
         'user_confirm',
         'user_create',
         'admin_get_app_auth',
+        'nodal_get_account_balance',
+        'enable_emi_merchant_sub',
+
+        // Shield Routes
+        'shield_rules_get_multiple',
+        'shield_rules_get',
+        'shield_rules_create',
+        'shield_rules_update',
+        'shield_rules_delete',
+        'shield_rules_evaluate',
     ];
 
     public static $routePermission = [
@@ -1626,6 +1646,14 @@ final class Route
         'admin_get_app_auth'                     => '*',
         'reports_transaction_dsp'                => Permission::VIEW_SPECIAL_MERCHANT_REPORT,
         'reports_refund_irctc'                   => Permission::VIEW_SPECIAL_MERCHANT_REPORT,
+        'nodal_get_account_balance'              => '*',
+        'enable_emi_merchant_sub'                => '*',
+        'shield_rules_get_multiple'              => Permission::VIEW_SHIELD_RULES,
+        'shield_rules_get'                       => Permission::VIEW_SHIELD_RULES,
+        'shield_rules_create'                    => Permission::CREATE_SHIELD_RULES,
+        'shield_rules_update'                    => Permission::EDIT_SHIELD_RULES,
+        'shield_rules_delete'                    => Permission::DELETE_SHIELD_RULES,
+        'shield_rules_evaluate'                  => Permission::EVALUATE_SHIELD_RULES,
     ];
 
     public static $direct = [
