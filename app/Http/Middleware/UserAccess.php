@@ -64,7 +64,7 @@ class UserAccess
         /**
          * User Role to route validation will happen only in proxy auth.
          */
-        if ($this->ba->isProxyAuth() === true)
+        if ($this->ba->isProxyAuth() === true and $this->ba->isAdminAuth() === false)
         {
             $routeUserRolePolicy = $this->validateRouteUserRolesPolicy($route);
 
