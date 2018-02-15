@@ -3,8 +3,7 @@ import { getFixedINRAmount } from 'rzp/utils/rzp-utils';
 import ajax from 'merchant/utils/ajax';
 
 export default class Refund extends GenericEntity {
-  listRouteName = 'refund_fetch';
-  detailsRouteName = 'refund_fetch_by_id';
+  resourceUrl = 'refunds';
 
   deserializeProperty(prop, value) {
     if (prop === 'amount') {

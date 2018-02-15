@@ -1,6 +1,33 @@
 import { getCookie } from './cookies';
+import { getMode } from 'merchant/store';
 
-export default (params = {}) => {
+export function merchantFetch(params) {
+  if (typeof params === 'string') {
+    params = {
+      url: params
+    }
+  }
+
+  let mode = params.mode;
+  if (mode) {
+    delete params.mode;
+  } else {
+    mode = getMode();
+  }
+
+  if (params.accountId) {
+    params.headers = {
+      'X-Razorpay-Account': params.accountId
+    }
+  }
+  delete params.accountId;
+
+  params.url = `/merchant/api/${mode}/${params.url}`;
+
+  return ajax(params);
+}
+
+export default function ajax(params = {}) {
   return new Promise((resolve, reject) => {
     let { headers = {} } = params;
     headers['X-XSRF-TOKEN'] = getCookie('XSRF-TOKEN');

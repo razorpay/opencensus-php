@@ -1,15 +1,11 @@
 import GenericEntity from './GenericEntity';
-import ajax from 'merchant/utils/ajax';
+import { merchantFetch } from 'rzp/utils/ajax';
 
 const editFields = ['id', 'delay_roll'];
 const newFields = ['name', 'website'];
 
 export default class Application extends GenericEntity {
-  listRouteName = 'oauth_application_fetch_multiple';
-  connectedListRouteName = 'oauth_token_fetch_multiple';
-  deleteRouteName = 'oauth_application_delete';
-  revokeRouteName = 'oauth_token_revoke';
-  detailsRouteName = 'oauth_application_fetch';
+  resourceUrl = 'oauth/applications';
 
   getResourceMethod() {
     return 'post';
@@ -18,10 +14,7 @@ export default class Application extends GenericEntity {
   fetchConnected(params = {}) {
     let id = params.id;
 
-    let data = {};
-
-    data.route_name = this.connectedListRouteName;
-    return this.makeGenericAjaxCall({ data }).then(response => {
+    return merchantFetch('oauth/tokens/').then(response => {
       response.data.items = response.data.items.map(item => {
         item.application.logo_url = this.formatLogoUrl(
           item.application.logo_url
@@ -52,21 +45,16 @@ export default class Application extends GenericEntity {
 
   create(params = {}, fileName) {
     let formData = new FormData();
-    formData.append('route_name', 'oauth_application_create');
     for (let key in params) {
-      formData.append(`body[${key}]`, params[key]);
+      formData.append(key, params[key]);
     }
 
-    formData.append('file', params.file);
-    formData.append('file_name', fileName);
+    formData.append(fileName, params.file);
 
-    return ajax({
-      url: '/user/generic',
+    return merchantFetch({
+      url: 'oauth/applications',
       method: 'post',
       data: formData,
-      appendModeInURL: false,
-      processData: false,
-      contentType: false,
     })
       .then(response => {
         response.data.logo_url = this.formatLogoUrl(response.data.logo_url);
@@ -89,17 +77,12 @@ export default class Application extends GenericEntity {
       }
     }
 
-    formData.append('route_name', 'oauth_application_update');
     formData.append('file_name', fileName);
-    formData.append('url_params', JSON.stringify({ '{id}': this.id }));
 
-    return ajax({
-      url: '/user/generic',
+    return merchantFetch({
+      url: `oauth/applications/${this.id}`,
       method: 'post',
       data: formData,
-      appendModeInURL: false,
-      processData: false,
-      contentType: false,
     })
       .then(response => {
         response.data.logo_url = this.formatLogoUrl(response.data.logo_url);
@@ -158,14 +141,9 @@ export default class Application extends GenericEntity {
 
   revokeToken(params) {
     var id = this.id;
-    return this.makeGenericAjaxCall({
+    return merchantFetch({
+      url: `oauth/tokens/${this.id}/revoke`,
       method: 'put',
-      data: {
-        route_name: this.revokeRouteName,
-        url_params: JSON.stringify({
-          '{id}': this.id,
-        }),
-      },
     }).then(data => {
       return { id, ...data };
     });

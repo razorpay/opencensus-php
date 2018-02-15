@@ -21,9 +21,7 @@ import NewKey from './NewKey';
 )
 export default class KeysListContainer extends ListContainer {
   fetchEntityList(params) {
-    return this.props.fetchKeys({
-      id: this.props.session.user.id,
-    });
+    return this.props.fetchKeys();
   }
 
   showRollKeyModal = (params = null) => {

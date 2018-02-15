@@ -1,9 +1,7 @@
 import GenericEntity from './GenericEntity';
 
 export default class Subscription extends GenericEntity {
-  listRouteName = 'subscription_fetch_multiple';
-  detailsRouteName = 'subscription_account_fetch';
-  deleteRouteName = 'subscription_delete';
+  resourceUrl = 'subscriptions';
 
   resourceFields = ['plan_id', 'customer_id'];
 
@@ -14,13 +12,8 @@ export default class Subscription extends GenericEntity {
   cancel(cancelAtCycleEnd) {
     return this.makeGenericAjaxCall({
       method: 'post',
-      data: {
-        route_name: 'subscription_cancel',
-        url_params: JSON.stringify({
-          '{id}': this.id,
-          '{cancel_at_cycle_end}': cancelAtCycleEnd,
-        }),
-      },
+      url: `${this.resourceUrl}/${this.id}/cancel`,
+      data: { cancel_at_cycle_end: cancelAtCycleEnd },
     }).then(response => {
       return new Subscription(response.data);
     });
@@ -28,13 +21,10 @@ export default class Subscription extends GenericEntity {
 
   fetchInvoices(subs_id) {
     return this.makeGenericAjaxCall({
-      method: 'get',
+      url: 'invoices',
       data: {
-        route_name: 'invoice_fetch_multiple',
-        query_params: JSON.stringify({
-          subscription_id: subs_id,
-          count: 100, // Fetch limited will cause bugs in FE calculations like recurring count, etc.
-        }),
+        subscription_id: subs_id,
+        count: 100, // Fetch limited will cause bugs in FE calculations like recurring count, etc.
       },
     });
   }

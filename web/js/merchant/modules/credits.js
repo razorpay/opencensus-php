@@ -1,31 +1,11 @@
 import ajax from 'merchant/utils/ajax';
 import { set, merge } from 'rzp/utils/immutable';
+import { merchantFetch } from 'rzp/utils/ajax';
 
 const FETCH_BALANCE_AND_CREDITS = 'FETCH_BALANCE_AND_CREDITS';
 
-const getCreditsData = () => {
-  var params = {
-    route_name: 'credits_fetch_multiple',
-  };
-
-  return ajax({
-    url: '/user/generic',
-    data: params,
-    appendModeInQueryParam: true,
-  });
-};
-
-const fetchBalance = () => {
-  var params = {
-    route_name: 'balance_fetch',
-  };
-
-  return ajax({
-    url: '/user/generic',
-    data: params,
-    appendModeInQueryParam: true,
-  });
-};
+const getCreditsData = _ => merchantFetch('credits')
+const fetchBalance = _ => merchantFetch('balance');
 
 export const fetchCreditBalance = () => {
   return {

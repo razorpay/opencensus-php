@@ -422,6 +422,7 @@ export default class GenerateReports extends Component {
                     placeholder="Select Month"
                     defaultValue={moment().add(-1, 'month')}
                     type="month"
+                    allowToday={true}
                   />
                 </span>
               )}
@@ -434,6 +435,7 @@ export default class GenerateReports extends Component {
                       name={entity === 'invoice' ? 'invoiceDate' : 'date'}
                       placeholder="Select Date"
                       defaultValue={moment().subtract(1, 'day')}
+                      allowToday={true}
                     />
                   </span>
                 )}

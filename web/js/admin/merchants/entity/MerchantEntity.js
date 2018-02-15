@@ -231,7 +231,6 @@ const ActionsList = ({ model, merchantId, actions }) => {
 
     return adminPut(data)
       .then(data => {
-        console.log('RECEIPT EMAIL', data);
         if (data && (typeof data.success === 'undefined' || data.success)) {
           // In some cases, data is not data.data, but {success, data, error}
           if (isWorkflow(data)) {
@@ -528,38 +527,33 @@ const ActionsList = ({ model, merchantId, actions }) => {
         </ShowWhen>
 
         {/* Hold or Release funds */}
-        {
-          do {
-            if (
-              merchant.details.activated == 1 &&
-              !merchant.details.hold_funds
-            ) {
-              <ShowWhen permission="edit_merchant_hold_funds">
-                <AsyncButton
-                  onClick={toggleFundsHoldOrRelease}
-                  pendingClass="btn-pending"
-                  confirm="Are you sure you want to hold funds for this merchant?"
-                >
-                  Hold Merchant Funds
-                  <span class="spin-btn" />
-                  <i class="pull-right i i-hand-stop" />
-                </AsyncButton>
-              </ShowWhen>;
-            } else if (merchant.details.hold_funds == 1) {
-              <ShowWhen permission="edit_merchant_release_funds">
-                <AsyncButton
-                  onClick={toggleFundsHoldOrRelease}
-                  pendingClass="btn-pending"
-                  confirm="Are you sure you want to release funds for this merchant?"
-                >
-                  Release Merchant Funds
-                  <span class="spin-btn" />
-                  <i class="pull-right i i-thumps-up" />
-                </AsyncButton>
-              </ShowWhen>;
-            }
+        {do {
+          if (merchant.details.activated == 1 && !merchant.details.hold_funds) {
+            <ShowWhen permission="edit_merchant_hold_funds">
+              <AsyncButton
+                onClick={toggleFundsHoldOrRelease}
+                pendingClass="btn-pending"
+                confirm="Are you sure you want to hold funds for this merchant?"
+              >
+                Hold Merchant Funds
+                <span class="spin-btn" />
+                <i class="pull-right i i-hand-stop" />
+              </AsyncButton>
+            </ShowWhen>;
+          } else if (merchant.details.hold_funds == 1) {
+            <ShowWhen permission="edit_merchant_release_funds">
+              <AsyncButton
+                onClick={toggleFundsHoldOrRelease}
+                pendingClass="btn-pending"
+                confirm="Are you sure you want to release funds for this merchant?"
+              >
+                Release Merchant Funds
+                <span class="spin-btn" />
+                <i class="pull-right i i-thumps-up" />
+              </AsyncButton>
+            </ShowWhen>;
           }
-        }
+        }}
 
         {/* Toggle disbale or enable receipt email */}
         <ShowWhen permission="edit_merchant_enable_receipt">

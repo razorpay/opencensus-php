@@ -1,8 +1,9 @@
 import ajax from 'merchant/utils/ajax';
+import { merchantFetch } from 'rzp/utils/ajax';
 
 export var pokeConfig = {
-  merchantId: ''
-}
+  merchantId: '',
+};
 
 export const fetch = (query, mode) => {
   /*
@@ -10,36 +11,47 @@ export const fetch = (query, mode) => {
    * PQL - https://docs.google.com/document/d/1sa8Us-sDYkTFYcWUKjT02-qvL-j9GEejiZyAs0MiAhs/edit , makes ajax call
    */
 
-  Object.keys(query.aggregations).forEach((aggKey) => {
-  
-    const aggDetails = query.aggregations[aggKey]
-                            .details;
-
-    aggDetails.mode = aggDetails.mode || mode;
-  });
-
   let data = {
     route_name: 'merchant_analytics',
     body: query,
-  }
+  };
 
   let url = '/user/generic';
 
   if (pokeConfig.merchantId) {
+    mode = 'live';
     data.merchant_id = pokeConfig.merchantId;
+    data.account_id = pokeConfig.merchantId;
     url = '/admin/generic';
-    try {
-      query.filters.default[0].merchant_id = pokeConfig.merchantId;
-    } catch(e) {}
+  }
+
+  Object.keys(query.aggregations).forEach(aggKey => {
+    const aggDetails = query.aggregations[aggKey].details;
+
+    aggDetails.mode = aggDetails.mode || mode;
+  });
+
+  let commonOptions = {
+    method: 'post',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    contentType: 'application/json',
+    data: JSON.stringify(data),
+  };
+
+  if (url === '/user/generic') {
+    commonOptions.data = data.body;
+
+    return merchantFetch({
+      url: 'merchant/analytics',
+      mode: 'live',
+      ...commonOptions,
+    });
   }
 
   return ajax(url, {
     appendModeInURL: false,
-    method: 'post',
-    headers: {
-      'Content-Type': "application/json"
-    },
-    contentType: 'application/json',
-    data: JSON.stringify(data),
+    ...commonOptions,
   });
 };

@@ -1,4 +1,5 @@
 import ajax from 'merchant/utils/ajax';
+import { merchantFetch } from 'rzp/utils/ajax';
 import { set } from 'rzp/utils/immutable';
 
 const BANK_ACCOUNT_FETCH = 'BANK_ACCOUNT_FETCH';
@@ -8,13 +9,7 @@ const GST_SAVE = 'GST_SAVE';
 export const fetchBankAccount = () => {
   return {
     type: BANK_ACCOUNT_FETCH,
-    payload: ajax({
-      url: '/user/generic',
-      data: {
-        route_name: 'bank_account_fetch',
-      },
-      appendModeInURL: false,
-    }),
+    payload: merchantFetch('account/bank_account'),
   };
 };
 
@@ -32,20 +27,12 @@ export const acceptInvitation = inviteId => {
 // To reject invitation
 export const rejectInvitation = (inviteId, userId) => {
   return () => {
-    return ajax({
-      url: '/user/generic',
+    return merchantFetch({
+      url: `invitation_action/${id}/${action}`,
       method: 'post',
-      appendModeInURL: false,
       data: {
-        route_name: 'invitation_action',
-        url_params: JSON.stringify({
-          '{id}': inviteId,
-          '{action}': 'reject',
-        }),
-        body: {
-          user_id: userId,
-        },
-      },
+        user_id: userId
+      }
     });
   };
 };
@@ -75,30 +62,18 @@ export const updatePassword = data => {
 export const fetchGST = () => {
   return {
     type: GST_FETCH,
-    payload: ajax({
-      url: '/user/generic',
-      data: {
-        route_name: 'merchant_gst_fetch',
-      },
-      appendModeInURL: false,
-    }),
+    payload: merchantFetch('merchant/gst'),
   };
 };
 
 export const saveGST = data => {
-  let body = {
-    route_name: 'merchant_gst_edit',
-    body: data,
-  };
-
   return {
     type: GST_SAVE,
-    payload: ajax({
-      url: '/user/generic',
-      method: 'PATCH',
-      appendModeInURL: false,
-      data: body,
-    }),
+    payload: merchantFetch({
+      url: 'merchant/gst',
+      method: 'patch',
+      data
+    })
   };
 };
 

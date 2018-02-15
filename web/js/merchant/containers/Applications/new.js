@@ -97,7 +97,9 @@ class NewApplicationForm extends Component {
   create = props => {
     let data = {...props}
 
-    data.website = autoPrefixUrls(data.website);
+    if(data.website) {
+      data.website = autoPrefixUrls(data.website);
+    }
 
     return this.props
       .createApplication(data, 'logo')
@@ -121,11 +123,17 @@ class NewApplicationForm extends Component {
   update = props => {
     let data = {...props};
 
-    data.website = autoPrefixUrls(data.website);
+    if(data.website) {
+      data.website = autoPrefixUrls(data.website);
+    }
     
-    data.client_details.dev.redirect_url = data.client_details.dev.redirect_url.map(url => autoPrefixUrls(url));
+    if(data.client_details.dev.redirect_url) {
+      data.client_details.dev.redirect_url = data.client_details.dev.redirect_url.map(url => autoPrefixUrls(url));
+    }
     
-    data.client_details.prod.redirect_url = data.client_details.prod.redirect_url.map(url => autoPrefixUrls(url));
+    if(data.client_details.prod.redirect_url) {
+      data.client_details.prod.redirect_url = data.client_details.prod.redirect_url.map(url => autoPrefixUrls(url));
+    }
 
     const payload = {
       name: data.name,
@@ -345,7 +353,7 @@ class NewApplicationForm extends Component {
                       name="client_details.prod.redirect_url"
                       component={TaggedInput}
                       class="form-control tagged-input"
-                      placeholder="http://test-app.com/"
+                      placeholder="https://test-app.com/"
                       validator={isUrlLenient}
                     />
                   </div>

@@ -13,8 +13,8 @@ export default class TaggedInput extends Component {
 
         this.props.input.onChange(data);
 
-        select.search('');
-        select.focus();
+        select.actions.search('');
+        select.actions.focus();
       }
     }
   };
