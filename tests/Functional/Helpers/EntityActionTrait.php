@@ -263,7 +263,7 @@ trait EntityActionTrait
 
     protected function setPaymentMethods($methods, $merchantId = '10000000000000')
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $request = [
             'url' => '/merchants/'.$merchantId.'/methods',
