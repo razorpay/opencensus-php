@@ -44,7 +44,7 @@ class Core extends Base\Core
 
         $processor = Processor\Factory::get($batch);
 
-        $processor->getStoredInputFileAndValidateBatchEntries($input, null, $entries);
+        $processor->getInputFileAndValidateEntries($input, false, $entries);
 
         $response = $processor->getValidatedEntriesStatsAndSampleData($entries);
 
@@ -71,7 +71,7 @@ class Core extends Base\Core
      */
     public function retryBatchOutputFile(Entity $batch): Entity
     {
-        Processor\Factory::get($batch)->retryBatchOutputFile();
+        Processor\Factory::get($batch)->retryOutputFile();
 
         return $batch;
     }

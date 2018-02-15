@@ -40,7 +40,7 @@ class PaymentLink extends Base
      *
      * @param array $entries
      */
-    protected function fillBatchEntityWithInputFileDetails(array $entries)
+    protected function updateBatchPostValidation(array $entries, array $input)
     {
         $totalCount  = count($entries);
 
