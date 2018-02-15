@@ -506,10 +506,14 @@ class Base extends BaseModel\Core
 
             if ($headerType === Batch\Header::ERROR)
             {
-                return $this->saveErrorFile();
+                $ufh = $this->saveErrorFile();
+            }
+            else
+            {
+                $ufh = $this->saveOutputFile();
             }
 
-            return $this->saveOutputFile();
+            return $this->getFileIdAndSignedUrl($ufh);
         }
         catch (\Throwable $e)
         {
@@ -804,34 +808,24 @@ class Base extends BaseModel\Core
         return $ufh;
     }
 
-    protected function saveOutputFile(): array
+    protected function saveOutputFile(): FileStore\Creator
     {
-        $ufh = $this->saveFile($this->outputFileLocalPath, FileStore\Type::BATCH_OUTPUT);
-
-        $ufhSignedUrl = $ufh->getSignedUrl();
-
-        if ($ufhSignedUrl === null)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_BATCH_UNABLE_TO_SAVE_OUTPUT_FILE);
-        }
-
-        return [
-            self::FILE_ID       => FileStore\Entity::getSignedId($ufhSignedUrl['id']),
-            self::SIGNED_URL    => $ufhSignedUrl['url'],
-        ];
+        return $this->saveFile($this->outputFileLocalPath, FileStore\Type::BATCH_OUTPUT);
     }
 
-    protected function saveErrorFile(): array
+    protected function saveErrorFile(): FileStore\Creator
     {
-        $ufh = $this->saveFile($this->outputFileLocalPath, FileStore\Type::BATCH_INPUT, false);
+        return $this->saveFile($this->outputFileLocalPath, FileStore\Type::BATCH_INPUT, false);
+    }
 
+    protected function getFileIdAndSignedUrl(FileStore\Creator $ufh): array
+    {
         $ufhSignedUrl = $ufh->getSignedUrl();
 
-        if ($ufhSignedUrl === null)
+        if ($ufhSignedUrl['id'] === null)
         {
             throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_BATCH_UNABLE_TO_SAVE_ERROR_FILE);
+                ErrorCode::BAD_REQUEST_BATCH_UNABLE_TO_SAVE_FILE);
         }
 
         return [
@@ -1038,5 +1032,15 @@ class Base extends BaseModel\Core
     protected function increaseAllowedSystemLimits()
     {
         return;
+    }
+
+    protected function getTimeStampedName(string $fileKey, string $ext = FileStore\Format::XLSX): string
+    {
+        return $fileKey . '_' . $this->getTimestamp() . '.' . $ext;
+    }
+
+    protected function getTimestamp()
+    {
+        return Carbon::now(Timezone::IST)->getTimestamp();
     }
 }
