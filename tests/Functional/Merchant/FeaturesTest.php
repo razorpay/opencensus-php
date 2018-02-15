@@ -44,27 +44,29 @@ class FeaturesTest extends TestCase
         $this->startTest();
     }
 
-    public function testApplicationFeatures()
-    {
-        $appId = '1000000DemoApp';
-
-        $dummy = 'dummy';
-
-        $this->addFeaturesToEntity(
-            Mode::TEST,
-            true,
-            [$dummy],
-            Constants::APPLICATION,
-            $appId);
-
-        $this->verifyFeaturePresenceForEntity(Mode::TEST, Constants::APPLICATION, $appId, [$dummy]);
-
-        $this->deleteFeaturesFromEntity(Mode::TEST,
-            true,
-            $dummy,
-            Constants::APPLICATION,
-            $appId);
-    }
+//    public function testApplicationFeatures()
+//    {
+//        $appId = '1000000DemoApp';
+//
+//        $dummy = 'dummy';
+//
+//        $testData = $this->addFeatures(
+//            Mode::TEST,
+//            true,
+//            [$dummy],
+//            Constants::APPLICATION,
+//            $appId);
+//
+//        $this->startTest($testData);
+//
+//        $this->verifyFeaturePresenceForEntity(Mode::TEST, Constants::APPLICATION, $appId, [$dummy]);
+//
+//        $this->getDataToDeleteFeaturesFromEntity(Mode::TEST,
+//            true,
+//            $dummy,
+//            Constants::APPLICATION,
+//            $appId);
+//    }
 
     public function testAccountFeatures()
     {
@@ -74,15 +76,16 @@ class FeaturesTest extends TestCase
 
         $this->fixtures->create('merchant', ['id' => $accountId]);
 
-        $this->addFeaturesToEntity(Mode::TEST,
+        $testData = $this->getDataToAddAccountFeatures(Mode::TEST,
             true,
             [$dummy],
-            'account',
             $accountId);
 
-        $this->verifyFeaturePresenceForEntity(Mode::TEST, Constants::ACCOUNT, $accountId, [$dummy]);
+        $this->startTest($testData);
 
-        $this->deleteFeaturesFromEntity(Mode::TEST,
+        $this->verifyFeaturePresenceForAccounts(Mode::TEST, $accountId, [$dummy]);
+
+        $this->getDataToDeleteFeaturesFromEntity(Mode::TEST,
             true,
             $dummy,
             Constants::ACCOUNT,
@@ -1079,38 +1082,39 @@ class FeaturesTest extends TestCase
      * @param string      $addToMode
      * @param bool        $shouldSync
      * @param array       $featureNames
+     * @param string      $entityId
      */
-    protected function addFeaturesToEntity(
+    protected function getDataToAddAccountFeatures(
         string $addToMode,
         bool $shouldSync,
         array $featureNames,
-        string $entityType,
         string $entityId)
     {
-            $proxyMethod = 'proxyAuth' . studly_case($addToMode);
-
-        $this->ba->$proxyMethod();
+        if ($addToMode === Mode::LIVE)
+        {
+            $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+        }
+        else
+        {
+            $this->ba->privateAuth();
+        }
 
         $testData = $this->testData[__FUNCTION__];
 
         $testData['request']['content']['names'] = $featureNames;
 
-        $testData['request']['content']['should_sync'] = (int) $shouldSync;
+        $testData['request']['content']['should_sync'] = (int)$shouldSync;
 
-        $testData['request']['url'] = '/' . $entityType . 's/' . $entityId . '/features';
-
-        // For merchants and accounts as entity_type, only merchants will be stored in the db
-        if (($entityType === Constants::MERCHANT) or ($entityType === Constants::ACCOUNT))
-        {
-            $testData['response']['content'][0]['entity_type'] = Constants::MERCHANT;
-        }
+        $testData['request']['url'] = '/accounts/' . $entityId . '/features';
 
         $testData['response']['content'][0]['entity_id'] = $entityId;
 
-        $this->startTest($testData);
+        $testData['response']['content'][0]['entity_type'] = Constants::MERCHANT;
+
+        return $testData;
     }
 
-    protected function deleteFeaturesFromEntity(
+    protected function getDataToDeleteFeaturesFromEntity(
         string $deleteFromMode,
         bool $shouldSync,
         string $featureName,
@@ -1128,19 +1132,23 @@ class FeaturesTest extends TestCase
         $this->startTest($testData);
     }
 
-    public function verifyFeaturePresenceForEntity(
+    public function verifyFeaturePresenceForAccounts(
         string $mode,
-        string $entityType,
         string $entityId,
         array $featureNames)
     {
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = '/' . $entityType . 's/' . $entityId . '/features';
+        $testData['request']['url'] = '/accounts/' . $entityId . '/features';
 
-        $authMethod = 'proxyAuth' . studly_case($mode);
-
-        $this->ba->$authMethod();
+        if ($mode === Mode::LIVE)
+        {
+            $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+        }
+        else
+        {
+            $this->ba->privateAuth();
+        }
 
         $response = $this->startTest($testData);
 

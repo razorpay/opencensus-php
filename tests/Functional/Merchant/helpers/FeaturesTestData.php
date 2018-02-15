@@ -708,7 +708,7 @@ return [
         ]
     ],
 
-    'addFeaturesToEntity' => [
+    'getDataToAddAccountFeatures' => [
         'request'  => [
             'url'     => '/applications/1000000DemoApp/features',
             'method'  => 'post',
@@ -727,7 +727,7 @@ return [
         ]
     ],
 
-    'deleteFeaturesFromEntity' => [
+    'getDataToDeleteFeaturesFromEntity' => [
         'request'  => [
             'url'     => "/accounts/100DemoAccount/features/dummy",
             'method'  => 'delete',
@@ -738,7 +738,7 @@ return [
         ]
     ],
 
-    'verifyFeaturePresenceForEntity' => [
+    'verifyFeaturePresenceForAccounts' => [
         'request'  => [
             'url'    => '/accounts/100DemoAccount/features',
             'method' => 'get',
