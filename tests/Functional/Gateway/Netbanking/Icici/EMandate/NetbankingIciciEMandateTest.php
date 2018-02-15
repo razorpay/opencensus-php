@@ -83,6 +83,9 @@ class NetbankingIciciEMandateTest extends TestCase
 
         $paymentEntity = $this->getLastEntity(Entity::PAYMENT, true);
 
+        $this->assertEquals(1180, $paymentEntity[Payment::FEE]);
+        $this->assertEquals(180, $paymentEntity[Payment::TAX]);
+
         $payment[Payment::TOKEN] = $paymentEntity[Payment::TOKEN_ID];
         $payment['amount'] = 4000;
 
@@ -95,6 +98,11 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->doS2SRecurringPayment($payment);
 
         $this->assertEMandateEntities(false);
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+
+        $this->assertEquals(2360, $payment[Payment::FEE]);
+        $this->assertEquals(360, $payment[Payment::TAX]);
     }
 
     public function testEMandateScheduledPaymentWithoutMethod()
