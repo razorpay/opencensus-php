@@ -1158,7 +1158,7 @@ class Service extends Base\Service
                 'token' => $admin->token
             ];
 
-            $request = new Admin\ApiRequestAny();
+            $request = new Admin\ApiRequestAny(['client_type' => 'admin']);
 
             list($error, $data) = $request->processInput($body)->send('current_admin', 'POST');
         }
