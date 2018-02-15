@@ -2,6 +2,7 @@ import React, { Component, Fragment } from 'react';
 
 // TODO: temporary file upload till the file upload component is built
 import FileUploadInputButton from 'rzp/ui/FileUpload/InputButton';
+
 import ModalHeader from 'rzp/ui/ModalHeader';
 import { titleCase } from 'rzp/utils/rzp-utils';
 
@@ -12,20 +13,22 @@ export default function UploadModal({
   batchType,
   loadMore,
   onLoadMore,
+  onFileChange,
 }) {
   return (
     <div class="batch-upload-modal">
       <ModalHeader title="Batch Upload" onCloseClick={closeModal} />
       <div class="modal-body">
         <h4 class="modal-heading">Upload File</h4>
-        <FileUploadInputButton
-          accept="xlsx,csv"
-          uploadedFileName="Upload File here"
-          maxSize="1000000"
-          onChange={event => {
-            console.log(event);
-          }}
-        />
+        <div class="modal-file">
+          <FileUploadInputButton
+            accept="xlsx,csv"
+            uploadedFileName="Upload File here"
+            maxSize="1000000"
+            onChange={onFileChange}
+          />
+          <div class="file-info" />
+        </div>
         <div class="modal-info">
           <h5>
             Getting Started with Batch Uploads?{' '}
