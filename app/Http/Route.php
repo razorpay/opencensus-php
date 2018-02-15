@@ -1005,6 +1005,13 @@ final class Route
         'virtual_account_refund_excess',
     ];
 
+    public static $userWhitelist = [
+        'user_resend_verification',
+        'user_fetch',
+        'user_change_password',
+        'user_merchant_upgrade',
+    ];
+
     public static $proxy = [
         'merchant_fetch_users',
         'transaction_monthly_report',
