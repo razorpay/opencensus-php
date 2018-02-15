@@ -366,6 +366,16 @@ class Gateway extends Base\Gateway
     {
         $content = $this->getDefaultAuthorizeRequestArray($input);
 
+        $networkCode  = Network::getCode($input['card']['network']);
+
+        $eciValues = array(
+            Card\Network::VISA => '07',
+            Card\Network::MAES => '00',
+            Card\Network::MC   => '00',
+        );
+
+        $content[ RequestFields::ECI] = $eciValues[$networkCode];
+
         $traceContent = $content;
 
         $content += $this->getCardDataForAuthorizeRequestArray($input);
