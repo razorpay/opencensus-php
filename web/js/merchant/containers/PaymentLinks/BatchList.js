@@ -1,7 +1,7 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import ListContainer from 'merchant/containers/ListContainer';
-import BatchList from 'merchant/containers/Batch/List';
+import BatchList from 'merchant/containers/BatchNew/List';
 import IssueAllLinks from './IssueAllLinks';
 import { openModal } from 'rzp/modules/modals';
 import {
@@ -42,6 +42,7 @@ export default class BatchListContainer extends ListContainer {
         onSubmit={this.search}
         docUrl="https://docs.razorpay.com/v1/page/payment-links-batch-import"
         uploadUrl="/paymentlinks/batchuploads/new"
+        sampleUrl="https://dashboard.razorpay.com/files/sample_batch_payment_links.xlsx"
         issueAll={this.issueAll}
         issuableIdList={issuableIdList}
         {...this.props}
