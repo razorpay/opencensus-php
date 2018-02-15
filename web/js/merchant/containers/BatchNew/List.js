@@ -7,6 +7,9 @@ import BatchListFilter from 'merchant/components/BatchNew/ListFilter';
 import { batchId, totalCount, status } from 'rzp/ui/item/pair';
 import { batchDownload } from 'merchant/modules/batches';
 import * as NotificationsActions from 'rzp/modules/notifications';
+import { openModal, closeModal } from 'rzp/modules/modals';
+
+import BatchUpload from './Upload';
 
 function batchActions({
   mode,
@@ -62,6 +65,8 @@ function batchActions({
 
 @connect(null, {
   batchDownload,
+  openModal,
+  closeModal,
   ...NotificationsActions,
 })
 export default class BatchList extends Component {
@@ -79,6 +84,13 @@ export default class BatchList extends Component {
           message: errors,
         });
       });
+  };
+
+  openUploadModal = () => {
+    this.props.openModal({
+      size: 'large',
+      component: <BatchUpload {...this.props} />,
+    });
   };
 
   render() {
@@ -110,9 +122,12 @@ export default class BatchList extends Component {
               </a>
             )}
 
-            <Link class="btn btn-primary pull-right" to={uploadUrl}>
+            <button
+              class="btn btn-primary pull-right"
+              onClick={this.openUploadModal}
+            >
               Click here to upload
-            </Link>
+            </button>
           </div>
         </HeaderAction>
 
@@ -138,7 +153,11 @@ export default class BatchList extends Component {
           count={count}
           skip={skip}
           paginate={paginate}
-          EmptyComponent={EmptyComponent.bind(this, uploadUrl)}
+          EmptyComponent={EmptyComponent.bind(
+            this,
+            uploadUrl,
+            this.openUploadModal
+          )}
           {...this.props}
         />
       </div>
@@ -149,7 +168,7 @@ export default class BatchList extends Component {
 /**
  * Render this component when there are not batch row.
  */
-const EmptyComponent = uploadUrl => {
+const EmptyComponent = (uploadUrl, openModalFunc) => {
   return (
     <div class="empty-table-message">
       <h3>No Batch Files Found</h3>
@@ -158,9 +177,9 @@ const EmptyComponent = uploadUrl => {
         bulk. Simply upload a file containing all the information and accept
         payments instantly.
       </h5>
-      <Link class="btn btn-default" to={uploadUrl}>
+      <button class="btn btn-default" onClick={openModalFunc}>
         Start Uploading
-      </Link>
+      </button>
     </div>
   );
 };
