@@ -392,7 +392,7 @@ class Service extends Base\Service
 
     public function getMerchantTags($merchantId)
     {
-        $request = new \App\Admin\ApiRequestAny();
+        $request = new \App\Admin\ApiRequestAny(['client_type' => 'merchant']);
 
         list($error, $data) = $request->send("merchants/$merchantId/tags", 'GET');
 
