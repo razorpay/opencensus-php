@@ -5,11 +5,12 @@ import AsyncButton from 'react-async-button';
 import InputField from 'rzp/ui/Forms/InputField';
 import Alert from 'rzp/ui/Forms/Alert';
 import ModalHeader from 'rzp/ui/ModalHeader';
-import { required } from 'rzp/utils/validators';
+import { required, lenientUrl } from 'rzp/utils/validators';
 import { saveWebhook } from 'merchant/modules/webhooks';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import ShowWhen from 'merchant/components/ShowWhen';
+import { autoPrefixUrls } from 'rzp/utils/rzp-utils';
 
 const WebhookEventCheckbox = ({ eventName }) => {
   return (
@@ -42,8 +43,12 @@ export default class AddWebhook extends Component {
   }
 
   save = props => {
+    let data = { ...props };
+
+    data.url = autoPrefixUrls(data.url);
+
     return this.props
-      .saveWebhook(props)
+      .saveWebhook(data)
       .then(webhook => {
         this.props.onSave(webhook);
         this.props.showNotification({
@@ -83,7 +88,10 @@ export default class AddWebhook extends Component {
                   component={InputField}
                   class="form-control"
                   autoFocus={true}
-                  validate={required()}
+                  validate={[
+                    required(),
+                    lenientUrl('Please enter a valid URL'),
+                  ]}
                 />
               </div>
             </div>
