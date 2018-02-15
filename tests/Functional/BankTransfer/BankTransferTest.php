@@ -1230,6 +1230,8 @@ class BankTransferTest extends TestCase
             'content'   => [],
         ];
 
+        $this->ba->cronAuth();
+
         $this->makeRequestAndGetContent($request);
 
         $attempt = $this->getLastEntity('fund_transfer_attempt', true);
@@ -1257,6 +1259,8 @@ class BankTransferTest extends TestCase
         $request['content']['payee_account'] = $accountNumber;
 
         $request['content']['payee_ifsc'] = $ifsc;
+
+        $this->ba->adminAuth();
 
         $response = $this->makeRequestAndGetContent($request);
 
