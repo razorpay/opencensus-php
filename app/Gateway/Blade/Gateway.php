@@ -120,36 +120,11 @@ class Gateway extends Base\Gateway
 
         $eci = $gatewayPayment->getEci();
 
-        if (in_array($input['merchant']['id'], ['6ZJzxyLFWrGs74','10000000000000'], true) === true)
-        {
-            $networkCode = Card\Network::getCode($input['card']['network']);
+        $networkCode = Card\Network::getCode($input['card']['network']);
 
-            $isInternational = $input['card']['international'];
+        $isInternational = $input['card']['international'];
 
-            $this->validateAuthResponse($eci, $networkCode, $isInternational);
-        }
-        else
-        {
-            $networkCode = strtoupper($input['card']['network']);
-
-            $this->validateEci($eci, $networkCode);
-
-            $txnStatus = $PARes[PARes::TX][PARes::STATUS];
-
-            $authenticateStatus = ParesStatus::getAuthenticationStatus($txnStatus);
-
-            if ($authenticateStatus !== AuthenticationStatus::Y)
-            {
-                throw new Exception\GatewayErrorException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
-                    null,
-                    null,
-                    [
-                        'auth_status' => $authenticateStatus
-                    ]);
-            }
-
-        }
+        $this->validateAuthResponse($eci, $networkCode, $isInternational);
 
         // Blade callback response field is being used by Hitachi
         // These fields are already set in gatewayPayment entity
@@ -237,18 +212,6 @@ class Gateway extends Base\Gateway
         $this->repo->saveOrFail($gatewayPayment);
 
         return $gatewayPayment;
-    }
-
-    protected function validateEci(string $eci = null, string $networkCode)
-    {
-        if ((($networkCode === Card\Network::VISA) and ($eci === '07')) or
-            (($networkCode === Card\Network::MC) and ($eci === '00')))
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
-                $eci,
-                'Invalid Eci value for network ' . $networkCode);
-        }
     }
 
     protected function getCallbackResponseAttributes($response)
