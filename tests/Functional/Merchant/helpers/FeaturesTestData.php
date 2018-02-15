@@ -747,4 +747,18 @@ return [
             'content' => []
         ]
     ],
+
+    'verifyFeaturePresenceForEntity' => [
+        'request'  => [
+            'url'    => '/features/10000000000000',
+            'method' => 'get',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
 ];

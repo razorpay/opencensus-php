@@ -56,14 +56,14 @@ class FeaturesTest extends TestCase
             [$dummy],
             Constants::APPLICATION,
             $appId);
-//
-//        $this->verifyFeaturePresenceForEntity(Mode::TEST, Constants::APPLICATION, $appId, [$dummy]);
-//
-//        $this->getDataToDeleteFeaturesFromEntity(Mode::TEST,
-//            true,
-//            $dummy,
-//            Constants::APPLICATION,
-//            $appId);
+
+        $this->verifyFeaturePresenceForEntity(Mode::TEST, Constants::APPLICATION, $appId, [$dummy]);
+
+        $this->getDataToDeleteFeaturesFromEntity(Mode::TEST,
+            true,
+            $dummy,
+            Constants::APPLICATION,
+            $appId);
     }
 
     public function testAccountFeatures()
@@ -1147,6 +1147,33 @@ class FeaturesTest extends TestCase
         $testData['request']['content']['should_sync'] = (int) $shouldSync;
 
         $this->startTest($testData);
+    }
+
+    public function verifyFeaturePresenceForEntity(
+        string $mode,
+        string $entityType,
+        string $entityId,
+        array $featureNames)
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/features/'. $entityType . 's/' . $entityId;
+
+        $authMethod = 'appAuth' . studly_case($mode);
+
+        $this->ba->$authMethod();
+
+        $response = $this->startTest($testData);
+
+        $assignedFeatures = array_map(function ($feature)
+        {
+            return $feature["name"];
+        }, $response["assigned_features"]);
+
+        $assignedFeaturesInResponse = array_intersect($assignedFeatures, $featureNames);
+
+        // Check if all the featureNames requested, are present in the assignedFeatures array
+        $this->assertEquals(count($featureNames), count($assignedFeaturesInResponse));
     }
 
     public function verifyFeaturePresenceForAccounts(
