@@ -178,7 +178,7 @@ class Base extends BaseModel\Core
         });
 
         $response = [
-            self::PROCESSABLE_COUNT     => count($correctEntries),
+            self::PROCESSABLE_COUNT     => $this->batch->getTotalCount(),
             self::ERROR_COUNT           => count($entries) - count($correctEntries),
             self::PARSED_ENTRIES        => array_slice($correctEntries, 0 , 3),
         ];
