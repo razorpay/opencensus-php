@@ -209,6 +209,8 @@ class NetbankingReconciliationTest extends TestCase
 
     protected function reconcile($gateway, $uploadedFile)
     {
+        $this->ba->appAuth();
+
         $input = [
             'manual'           => true,
             'gateway'          => $gateway,
@@ -296,6 +298,8 @@ class NetbankingReconciliationTest extends TestCase
             'content' => $input,
             'method'  => 'POST'
         ];
+
+        $this->ba->adminAuth();
 
         $response = $this->makeRequestAndGetContent($request);
 
