@@ -97,7 +97,6 @@ export default class App extends Component {
   fetchUser() {
     let user = new User(window.rzp_user);
     if (user) {
-      delete window.rzp_user;
       this.props.updateSession({ user });
       let currentMode = LocalStorageService.getItem('rzp_mode');
       if (!currentMode) {
