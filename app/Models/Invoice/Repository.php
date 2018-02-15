@@ -329,7 +329,7 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
-    public function findByBatchIdAndReceipts(
+    public function findByIdAndReceipts(
         string $batchId,
         array $receipts = []): Base\PublicCollection
     {

@@ -129,7 +129,7 @@ class Base extends BaseModel\Core
 
         // For new flow, the file_store entity referenced by
         // `file_id` in input gets associated with this batch
-        $ufhFile = $this->getStoredInputFileAndValidateBatchEntries($input, $this->batch);
+        $ufhFile = $this->getInputFileAndValidateEntries($input, true);
 
         $this->repo->transaction(function () use ($ufhFile, $input)
         {
@@ -139,23 +139,25 @@ class Base extends BaseModel\Core
         });
     }
 
-    public function getStoredInputFileAndValidateBatchEntries(array $input,
-                                                              Batch\Entity $batch = null,
-                                                              array & $entries = [])
+    public function getInputFileAndValidateEntries(array $input,
+                                                   bool $associateBatch = false,
+                                                   array & $entries = [])
     {
         // Here $ufhFile is the input file_store instance upload by merchant.
         // $ufhFile has no entity associated with it and has type = `batch_input`
-        $ufhFile = $this->getStoredInputFileAndUpdateFileLocalPath($input);
+        $ufhFile = $this->getInputFileAndUpdateFileLocalPath($input);
 
         // $entries here has the extra error_code and error_description headers
-        $entries = $this->validateInputFileAndUpdateBatch($this->inputFileLocalPath, $input);
+        $entries = $this->validateInputFile($this->inputFileLocalPath, $input);
+
+        $this->updateBatchPostValidation($entries, $input);
 
         $ufhFile->entity()->dissociate();
 
-        if ($batch !== null)
+        if ($associateBatch === true)
         {
             // This association happens only during batch create api call
-            $ufhFile->entity()->associate($batch);
+            $ufhFile->entity()->associate($this->batch);
         }
 
         $this->repo->transaction(function () use ($ufhFile) {
@@ -182,7 +184,7 @@ class Base extends BaseModel\Core
         return $response;
     }
 
-    protected function getStoredInputFileAndUpdateFileLocalPath(array $input): FileStore\Entity
+    protected function getInputFileAndUpdateFileLocalPath(array $input): FileStore\Entity
     {
         if (isset($input[Batch\Entity::FILE_ID]) === true)
         {
@@ -255,11 +257,11 @@ class Base extends BaseModel\Core
 
             $this->performPreProcessingActions();
 
-            $this->parseAndProcessBatchEntries();
+            $this->parseAndProcessEntries();
         }
         catch (\Throwable $ex)
         {
-            $this->handleBatchProcessingException($ex);
+            $this->handleProcessingException($ex);
         }
         finally
         {
@@ -278,7 +280,7 @@ class Base extends BaseModel\Core
         $this->downloadAndSetInputFile();
     }
 
-    protected function parseAndProcessBatchEntries()
+    protected function parseAndProcessEntries()
     {
         $entries = $this->parseFile($this->inputFileLocalPath);
 
@@ -414,7 +416,7 @@ class Base extends BaseModel\Core
      */
     protected function postProcess()
     {
-        $this->updateBatchStatusPostProcess();
+        $this->updateStatusPostProcess();
 
         //
         // We need to save this here only because we send a processed mail.
@@ -438,7 +440,7 @@ class Base extends BaseModel\Core
     /**
      * Updates the status of the batch as per the processing
      */
-    protected function updateBatchStatusPostProcess()
+    protected function updateStatusPostProcess()
     {
         //
         // Sets processed_at. We override this attribute whether it finally
@@ -534,8 +536,8 @@ class Base extends BaseModel\Core
 
         $headers = Batch\Header::HEADER_MAP[$type][Batch\Header::OUTPUT];
 
-        if ((Batch\Header::isValidOutputFileHeaderType($headerType)) and
-            ($headerType != Batch\Header::OUTPUT)){
+        if ((Batch\Header::isValidOutputFileHeaderType($headerType) === true) and
+            ($headerType !== Batch\Header::OUTPUT)){
 
             $headers = Batch\Header::HEADER_MAP[$type][$headerType];
         }
@@ -649,7 +651,7 @@ class Base extends BaseModel\Core
      * @param  array $input
      * @return array
      */
-    protected function validateInputFileAndUpdateBatch(string $filePath, array $input): array
+    protected function validateInputFile(string $filePath, array $input): array
     {
         $entries = $this->parseFile($filePath);
 
@@ -659,9 +661,23 @@ class Base extends BaseModel\Core
 
         $this->validateEntries($entries, $input);
 
-        $this->fillBatchEntityWithInputFileDetails($entries);
-
         return $entries;
+    }
+
+
+    /**
+     * Updates batch with details extracted from the input file
+     *
+     * @param array $entries
+     * @param array $input
+     */
+    protected function updateBatchPostValidation(array $entries, array $input)
+    {
+        $totalAmount = array_sum(array_column($entries, Batch\Header::AMOUNT));
+        $totalCount  = count($entries);
+
+        $this->batch->setAmount($totalAmount);
+        $this->batch->setTotalCount($totalCount);
     }
 
     /**
@@ -838,11 +854,11 @@ class Base extends BaseModel\Core
         string $type,
         bool $associateBatch = true): FileStore\Creator
     {
-        $batchFilePrefix = ($type === FileStore\Type::BATCH_INPUT) ?
+        $filePrefix = ($type === FileStore\Type::BATCH_INPUT) ?
                                 Batch\Entity::INPUT_FILE_PREFIX :
                                 Batch\Entity::OUTPUT_FILE_PREFIX;
 
-        $name = $batchFilePrefix . $this->batch->getFileKey();
+        $name = $filePrefix . $this->batch->getFileKey();
 
         $ext = pathinfo($filePath, PATHINFO_EXTENSION);
 
@@ -894,11 +910,11 @@ class Base extends BaseModel\Core
      *
      * Ref: Batch/Core::retryBatchOutputFile
      */
-    public function retryBatchOutputFile()
+    public function retryOutputFile()
     {
         $this->trace->info(TraceCode::BATCH_RETRY_OUTPUT_FILE, $this->batch->toArrayPublic());
 
-        $this->validateRetryBatchOutputFileOperationAllowed();
+        $this->validateRetryOutputFileOperationAllowed();
 
         $this->downloadAndSetInputFile();
 
@@ -910,7 +926,7 @@ class Base extends BaseModel\Core
         //
         $receipts = array_pluck($entries, Batch\Header::INVOICE_NUMBER);
 
-        $invoices = $this->repo->invoice->findByBatchIdAndReceipts($this->batch->getId(), $receipts);
+        $invoices = $this->repo->invoice->findByIdAndReceipts($this->batch->getId(), $receipts);
 
         //
         // Makes 'receipt' the key of collection for easy access and check later
@@ -954,7 +970,7 @@ class Base extends BaseModel\Core
      * Above operation is only allowed for payment link type and for batches
      * not already having output file created.
      */
-    protected function validateRetryBatchOutputFileOperationAllowed()
+    protected function validateRetryOutputFileOperationAllowed()
     {
         if ($this->batch->isPaymentLinkType() === false)
         {
@@ -976,7 +992,7 @@ class Base extends BaseModel\Core
      *
      * @param \Throwable $ex
      */
-    protected function handleBatchProcessingException(\Throwable $ex)
+    protected function handleProcessingException(\Throwable $ex)
     {
         $this->trace->traceException(
             $ex,
