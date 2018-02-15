@@ -45,21 +45,21 @@ class IinTest extends TestCase
 
     public function testGetIin()
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
 
     public function testGetIins()
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
 
     public function testImportIin()
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $file = $this->getUploadedIinFile();
 
@@ -74,7 +74,7 @@ class IinTest extends TestCase
 
     public function testImportIinWithIssuer()
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $file = $this->getUploadedIinFile(true);
 
@@ -89,7 +89,7 @@ class IinTest extends TestCase
 
     public function testIinRangeUploadWithType()
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $this->startTest();
 
