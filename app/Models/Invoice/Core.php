@@ -719,23 +719,15 @@ class Core extends Base\Core
 
     public function notifyIssuedInvoicesOfBatch(Batch\Entity $batch, array $input): array
     {
-        (new Validator)->validateInput(Validator::NOTIFY_FOR_BATCH, $input);
 
-        $settingAccessor = Settings\Accessor::for($batch, Settings\Module::BATCH);
+        $settingAcc = Settings\Accessor::for($batch, Settings\Module::BATCH);
 
-        // Check if notification has already been sent
-        if ($this->hasNotificationBeenSentForBatch($settingAccessor) === true)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_LINK_BATCH_ISSUED_ALREADY,
-                Entity::BATCH_ID,
-                [
-                    Entity::BATCH_ID => $batch->getPublicId(),
-                ]);
-        }
+        (new Validator)->validateNotificationForIssuedInvoices( $this->isNotifSent($settingAcc),
+                                                                $batch->getPublicId(),
+                                                                $input);
 
         // Save the new notification settings
-        $settingAccessor->upsert($input)->save();
+        $settingAcc->upsert($input)->save();
 
         $job = new InvoiceBatchNotifyJob($this->mode, $batch->getId(), $input);
 
@@ -759,7 +751,7 @@ class Core extends Base\Core
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
     }
 
-    protected function hasNotificationBeenSentForBatch(Settings\Accessor $settingAccessor): bool
+    protected function isNotifSent(Settings\Accessor $settingAccessor): bool
     {
         $smsNotified = $settingAccessor->get(Entity::SMS_NOTIFY);
         $emailNotified = $settingAccessor->get(Entity::EMAIL_NOTIFY);

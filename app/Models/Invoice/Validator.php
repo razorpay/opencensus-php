@@ -6,10 +6,12 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
 use RZP\Base;
+use RZP\Models\Batch;
 use RZP\Models\Feature;
 use RZP\Models\Customer;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\Settings;
 use RZP\Exception\LogicException;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -659,6 +661,24 @@ class Validator extends Base\Validator
                             'actual_line_items_count' => $count,
                         ]);
         }
+    }
+
+    public function validateNotificationForIssuedInvoices(bool $isNotificationAlreadySent,
+                                                          string $batchId,
+                                                          array $input)
+    {
+        // Check if notification has already been sent
+        if ($isNotificationAlreadySent === true)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_BATCH_NOTIFICATION_SENT_ALREADY,
+                Entity::BATCH_ID,
+                [
+                    Entity::BATCH_ID => $batchId,
+                ]);
+        }
+
+        $this->validateInput(Validator::NOTIFY_FOR_BATCH, $input);
     }
 
     protected function validateInvoiceIssueForInvoiceType(Entity $invoice)
