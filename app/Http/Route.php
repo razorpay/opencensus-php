@@ -1003,6 +1003,7 @@ final class Route
         'user_reset_password_create',
         'user_reset_password_token',
         'virtual_account_refund_excess',
+        'admin_lock_old_accounts',
     ];
 
     public static $userWhitelist = [
@@ -1237,7 +1238,6 @@ final class Route
         'admin_fetch_terminal_by_id',
         'admin_forgot_password',
         'admin_get_by_attr',
-        'admin_lock_old_accounts',
         'admin_reset_password',
         'bank_transfer_edit_payer_account',
         'bank_transfer_insert',
@@ -1362,6 +1362,7 @@ final class Route
         'user_confirm_by_data',
         'user_create',
         'user_edit',
+        'admin_get_app_auth',
     ];
 
     public static $routePermission = [
@@ -1541,7 +1542,6 @@ final class Route
         'adjustments_split_for_dispute'          => '*',
         'admin_forgot_password'                  => '*',
         'admin_get_by_attr'                      => '*',
-        'admin_lock_old_accounts'                => '*',
         'admin_reset_password'                   => '*',
         'bank_transfer_edit_payer_account'       => '*',
         'bank_transfer_insert'                   => '*',
@@ -1632,6 +1632,7 @@ final class Route
         'user_confirm'                           => '*',
         'user_create'                            => '*',
         'user_edit'                              => '*',
+        'admin_get_app_auth'                     => '*',
     ];
 
     public static $direct = [
@@ -1719,7 +1720,6 @@ final class Route
             // Called during signup flow
             'admin_edit_app_auth',
             'admin_authentication',
-            'admin_get_app_auth',
             'admin_oauth_authenticate',
         ],
 
@@ -1774,6 +1774,7 @@ final class Route
             'merchant_payout_mail',
             'geoip_update',
             'fund_transfer_attempt_reconcile',
+            'admin_lock_old_accounts',
         ],
 
         'kotak' => [
