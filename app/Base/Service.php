@@ -18,6 +18,21 @@ class Service
         ApiRequest::addHeader('X-Dashboard', 'true');
         ApiRequest::addHeader('X-User-Agent', \Request::header('User-Agent'));
         ApiRequest::addHeader('X-IP-Address', \Request::ip());
+
+        $user = Auth::guard('user')->user();
+
+        if ($user)
+        {
+            ApiRequest::addHeader('X-Dashboard-User-Id', $user->id);
+            ApiRequest::addHeader('X-Dashboard-User-Email', $user->email);
+
+            $currentMerchant = $user->currentMerchant();
+
+            if ($currentMerchant !== null)
+            {
+                ApiRequest::addHeader('X-Dashboard-User-Role', $currentMerchant->role);
+            }
+        }
     }
 
     public function setAdminCredentials($mode = 'live')
