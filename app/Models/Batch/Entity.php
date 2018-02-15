@@ -360,7 +360,7 @@ class Entity extends Base\PublicEntity
     // ----------------------- End  Getters --------------------------
 
     // ----------------------- Setters -------------------------------
-    public function setName($name)
+    public function setName(string $name)
     {
         $this->setAttribute(self::NAME, $name);
     }
