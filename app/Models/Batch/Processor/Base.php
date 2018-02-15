@@ -76,6 +76,8 @@ class Base extends BaseModel\Core
      */
     protected $settingsAccessor;
 
+    protected $createByFileUpload;
+
     /**
      * Holds local file path of input and output file respectively.
      * They are re-used in the flow.
@@ -193,6 +195,8 @@ class Base extends BaseModel\Core
             $this->inputFileLocalPath = $this->accessor->id($inputFileId)
                                                         ->merchantId($this->merchant->getId())
                                                         ->getFile();
+
+            $this->batch->setCreatedByFileId(true);
 
             return  $this->accessor->get();
         }
@@ -735,7 +739,6 @@ class Base extends BaseModel\Core
     {
         $this->batch->getValidator()->validateEntries($entries, $input, $this->merchant);
     }
-
 
     /**
      * Parses given file and returns the entries array

@@ -44,6 +44,29 @@ return [
         ],
     ],
 
+    'testCreateBatchOfPaymentLinkTypeWithInvalidFile3' => [
+        'request' => [
+            'url'     => '/batches',
+            'method'  => 'post',
+            'content' => [
+                'type' => 'payment_link',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The uploaded batch payment link file does not contain proper values',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_BATCH_PAYMENT_LINK_FILE_ERRORS,
+        ],
+    ],
+
     'testCreateBatchOfPaymentLinkTypeWithInvalidFile1' => [
         'request' => [
             'url'     => '/batches',

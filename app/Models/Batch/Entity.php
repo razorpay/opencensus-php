@@ -57,6 +57,11 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = true;
 
+    /*
+     * Temporary entity property for backward compatibility of payment links
+     */
+    protected $createByFileId = false;
+
     /**
      * Generators
      * - Id generation is required before save as it gets
@@ -357,6 +362,11 @@ class Entity extends Base\PublicEntity
         return $this->getLocalSaveDir($prefix) . $this->getFileKeyWithExt();
     }
 
+    public function isCreatedByFileId(): bool
+    {
+        return $this->createByFileId;
+    }
+
     // ----------------------- End  Getters --------------------------
 
     // ----------------------- Setters -------------------------------
@@ -435,6 +445,11 @@ class Entity extends Base\PublicEntity
     public function setSubType(string $subType)
     {
         $this->setAttribute(self::SUB_TYPE, $subType);
+    }
+
+    public function setCreatedByFileId($createByFileId)
+    {
+        $this->createByFileId = $createByFileId;
     }
 
     // ----------------------- End Setters ---------------------------
