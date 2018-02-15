@@ -458,22 +458,6 @@ class Entity extends Base\Entity
         return false;
     }
 
-    public function getSuperAdminRole()
-    {
-        $roles = $this->roles;
-
-        foreach ($roles as $role)
-        {
-            // default role is SuperAdmin
-            if ($role->isSuperAdminRole() === true)
-            {
-                return $role;
-            }
-        }
-
-        return null;
-    }
-
     public function isLocked()
     {
         return $this->getAttribute(self::LOCKED);

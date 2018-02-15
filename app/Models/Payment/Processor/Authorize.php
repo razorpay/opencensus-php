@@ -500,7 +500,7 @@ trait Authorize
                                         $payment->getGateway());
         }
 
-        if ($payment->hasCard())
+        if ($payment->hasCard() === true)
         {
             $card = $this->repo->card->fetchForPayment($payment);
         }
@@ -2073,6 +2073,8 @@ trait Authorize
                 'account_number'    => $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::ACCOUNT_NUMBER] ?? null,
                 'beneficiary_name'  => $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::NAME] ?? null,
                 'ifsc'              => $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::IFSC] ?? null,
+                'max_amount'        => $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::MAX_AMOUNT] ?? null,
+                'expire_by'         => $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::EXPIRE_BY] ?? null
             ]);
 
         $saveMethodInput = [
@@ -2089,8 +2091,8 @@ trait Authorize
         {
             $saveMethodInput[Token\Entity::BANK] = $payment->getBank();
 
-            // TODO: We need to get this from user input - hard coding for now
-            $saveMethodInput[Token\Entity::MAX_AMOUNT] = Token\Entity::DEFAULT_MAX_AMOUNT;
+            $saveMethodInput[Token\Entity::MAX_AMOUNT] =
+                    $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::MAX_AMOUNT] ?? null;
 
             $saveMethodInput[Token\Entity::ACCOUNT_NUMBER] =
                     $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::ACCOUNT_NUMBER] ?? null;
@@ -2100,6 +2102,9 @@ trait Authorize
 
             $saveMethodInput[Token\Entity::IFSC] =
                     $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::IFSC] ?? null;
+
+            $saveMethodInput[Token\Entity::EXPIRED_AT] =
+                    $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::EXPIRE_BY] ?? null;
         }
         else if ($payment->isMethod(Payment\Method::WALLET))
         {
