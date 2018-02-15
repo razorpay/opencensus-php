@@ -95,6 +95,7 @@ class SettlementTest extends TestCase
             $request = ['url' => $url];
 
             $response = $this->sendRequest($request);
+
             $response->assertStatus(200);
         }
     }
@@ -322,10 +323,13 @@ class SettlementTest extends TestCase
         $input = array('count' => 10);
         $txns = $this->getEntities('transaction', $input, true);
 
+
         $request = array(
             'url' => '/settlements/initiate/kotak',
             'method' => 'POST'
         );
+
+        $this->ba->cronAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 
@@ -422,6 +426,8 @@ class SettlementTest extends TestCase
             'method' => 'POST'
         ];
 
+        $this->ba->cronAuth();
+
         $setlResponse = $this->makeRequestAndGetContent($request);
 
         $this->assertNotNull($setlResponse['yesbank']);
@@ -513,6 +519,8 @@ class SettlementTest extends TestCase
             'method' => 'POST'
         ];
 
+        $this->ba->cronAuth();
+
         $setlResponse = $this->makeRequestAndGetContent($request);
 
         $this->assertNotNull($setlResponse[$channel]);
@@ -602,6 +610,8 @@ class SettlementTest extends TestCase
             'method' => 'POST'
         ];
 
+        $this->ba->cronAuth();
+
         $setlResponse = $this->makeRequestAndGetContent($request);
 
         $this->assertNotNull($setlResponse['icici']);
@@ -688,6 +698,8 @@ class SettlementTest extends TestCase
             'url' => '/settlements/initiate/kotak',
             'method' => 'POST'
         ];
+
+        $this->ba->cronAuth();
 
         $setlResponse = $this->makeRequestAndGetContent($request);
 
@@ -781,9 +793,12 @@ class SettlementTest extends TestCase
             'method' => 'POST'
         ];
 
+
         $dt = Carbon::create(2017, 12, 12, 16, 0, 0, 'Asia/Kolkata');
 
         Carbon::setTestNow($dt);
+
+        $this->ba->cronAuth();
 
         $setlResponse = $this->makeRequestAndGetContent($request);
 
@@ -981,6 +996,8 @@ class SettlementTest extends TestCase
             ]
         ];
 
+        $this->ba->cronAuth();
+
         $content = $this->makeRequestAndGetContent($request);
 
         $this->assertNotEquals(null, $content);
@@ -1002,7 +1019,7 @@ class SettlementTest extends TestCase
     {
         Mail::fake();
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $request = [
             'url'     => '/nodal/transfer',

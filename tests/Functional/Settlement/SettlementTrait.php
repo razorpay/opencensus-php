@@ -54,7 +54,7 @@ trait SettlementTrait
             '/settlements/file/reconcile',
         ];
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         // Delete setl files first in case they already exist
         foreach ($deleteUrls as $deleteUrl)
