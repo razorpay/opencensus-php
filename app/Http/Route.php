@@ -1213,8 +1213,6 @@ final class Route
         'iin_add',
         'emi_plan_add',
         'dummy_critical_error',
-        'admin_get_app_auth',
-        'admin_oauth_authenticate',
         'admin_lead_verify',
         'merchant_tag_add',
         'merchant_tag_delete',
@@ -1521,9 +1519,6 @@ final class Route
         'emi_plan_add'                           => '*',
         'emi_generate_excel'                     => '*',
         'dummy_critical_error'                   => '*',
-        'admin_get_app_auth'                     => '*',
-        'admin_authentication'                   => '*',
-        'admin_oauth_authenticate'               => '*',
         'admin_lead_verify'                      => '*',
         'merchant_tag_add'                       => '*',
         'merchant_tag_delete'                    => '*',
@@ -1719,6 +1714,7 @@ final class Route
             // Called during signup flow
             'admin_edit_app_auth',
             'admin_authentication',
+            'admin_get_app_auth',
             'admin_oauth_authenticate',
         ],
 
