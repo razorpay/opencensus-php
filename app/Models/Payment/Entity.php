@@ -108,6 +108,10 @@ class Entity extends Base\PublicEntity
     const CONVERT_CURRENCY      = 'convert_currency';
     const AUTH_TYPE             = 'auth_type';
 
+    const MAX_AMOUNT            = 'max_amount';
+    const EXPIRE_BY             = 'expire_by';
+    const RECURRING_TOKEN       = 'recurring_token';
+
     const SUBSCRIPTION_ID       = 'subscription_id';
 
     // Used by merchant dashboard to fetch payments based on utr
@@ -422,7 +426,7 @@ class Entity extends Base\PublicEntity
 
     const DUMMY_PHONE = '+919999999999';
 
-// --------------------- Modifiers ---------------------------------------------
+    // --------------------- Modifiers ---------------------------------------------
 
     protected function modifyEmail(& $input)
     {
@@ -552,9 +556,9 @@ class Entity extends Base\PublicEntity
         }
     }
 
-// --------------------- Modifiers Ends ----------------------------------------
+    // --------------------- Modifiers Ends ----------------------------------------
 
-// --------------------- Generators Ends ---------------------------------------
+    // --------------------- Generators Ends ---------------------------------------
 
     protected function generateMetadata(&$input)
     {
@@ -574,9 +578,9 @@ class Entity extends Base\PublicEntity
         }
     }
 
-// --------------------- Generators Ends ---------------------------------------
+    // --------------------- Generators Ends ---------------------------------------
 
-// ----------------------- Setters ---------------------------------------------
+    // ----------------------- Setters ---------------------------------------------
 
     public function setInternational()
     {
@@ -686,9 +690,11 @@ class Entity extends Base\PublicEntity
     }
 
     /**
-     * Recurring Type is null by default, and will be set to initial or auto based on use case
+     * Recurring Type is null by default, and will
+     * be set to initial or auto based on use case
      *
      * @param $type
+     * @throws Exception\InvalidArgumentException
      */
     public function setRecurringType($type)
     {
@@ -863,9 +869,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::EMI_SUBVENTION, $subvention);
     }
 
-// ----------------------- Setters Ends-----------------------------------------
+    // ----------------------- Setters Ends-----------------------------------------
 
-// ----------------------- Mutator ---------------------------------------------
+    // ----------------------- Mutator ---------------------------------------------
 
     //
     // Temporary only. To be removed later.

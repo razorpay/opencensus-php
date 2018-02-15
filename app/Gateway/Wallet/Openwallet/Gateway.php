@@ -85,4 +85,22 @@ class Gateway extends Base\Gateway
 
         $this->refund($input);
     }
+
+    /**
+     * @param array $input
+     *
+     * @return bool
+     */
+    public function forceAuthorizeFailed(array $input)
+    {
+        $payment = $input['payment'];
+
+        $customerTxn = $this->app['repo']
+                            ->customer_transaction
+                            ->findByPaymentIdAndAmountForVerify($payment['id'],
+                                                                $payment['base_amount'],
+                                                                $payment['merchant_id']);
+
+        return ($customerTxn !== null);
+    }
 }

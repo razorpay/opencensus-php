@@ -59,10 +59,6 @@ class Fields
 
         $customerName = $token->customer->getName();
 
-        $endDate = Carbon::now(Timezone::IST)
-                         ->addYears(Netbanking\Entity::MAX_RECURRING_END_YEARS)
-                         ->getTimestamp();
-
         return [
             EMandateRegisterFileHeadings::MERCHANT_UNIQUE_REFERENCE_NO  => $tokenId,
             EMandateRegisterFileHeadings::CUSTOMER_NAME                 => $customerName,
@@ -74,7 +70,7 @@ class Fields
             EMandateRegisterFileHeadings::AMOUNT_TYPE                   => self::AMOUNT_TYPE,
             EMandateRegisterFileHeadings::CLIENT_NAME                   => self::CLIENT_NAME,
             self::START_TIMESTAMP                                       => $token->getCreatedAt(),
-            self::END_TIMESTAMP                                         => $endDate
+            self::END_TIMESTAMP                                         => $token->getExpiredAt(),
         ];
     }
 }

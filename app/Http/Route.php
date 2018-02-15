@@ -647,6 +647,14 @@ final class Route
         'risk_fetch_multiple'                     => ['get',      'risk',                                           'RiskController@list'                                               ],
         'risk_get'                                => ['get',      'risk/{id}',                                      'RiskController@get'                                                ],
 
+        // Shield Routes
+        'shield_rules_get_multiple'               => ['get',       'shield/rules',                                  'ShieldController@list'                                             ],
+        'shield_rules_get'                        => ['get',       'shield/rules/{id}',                             'ShieldController@get'                                              ],
+        'shield_rules_update'                     => ['put',       'shield/rules/{id}',                             'ShieldController@update'                                           ],
+        'shield_rules_delete'                     => ['delete',    'shield/rules/{id}',                             'ShieldController@delete'                                           ],
+        'shield_rules_create'                     => ['post',      'shield/rules',                                  'ShieldController@create'                                           ],
+        'shield_rules_evaluate'                   => ['post',      'shield/rules/evaluate',                         'ShieldController@evaluate'                                         ],
+
         // Dispute routes
         'payment_dispute_create'                  => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
         'dispute_edit'                            => ['post',     'disputes/{id}',                                  'DisputeController@update'                                          ],
@@ -1351,6 +1359,12 @@ final class Route
         'onboarding_features_fetch_status',
         'onboarding_features_bulk_update_status',
         'onboarding_features_update',
+        'shield_rules_get_multiple',
+        'shield_rules_get',
+        'shield_rules_create',
+        'shield_rules_update',
+        'shield_rules_delete',
+        'shield_rules_evaluate',
     ];
 
     public static $routePermission = [
@@ -1484,7 +1498,7 @@ final class Route
         'settings_fetch_defined'                 => Permission::VIEW_WALLET_CONFIG,
         'settings_upsert'                        => Permission::EDIT_WALLET_CONFIG,
         'settings_delete'                        => Permission::EDIT_WALLET_CONFIG,
-        'merchant_analytics'                     => '*',
+        'merchant_analytics'                     => Permission::VIEW_MERCHANT_ANALYTICS,
         'merchant_activation_files'              => '*',
         'merchant_activation_archive'            => '*', // permission handled in code
         'merchant_activation_status'             => Permission::EDIT_ACTIVATE_MERCHANT,
@@ -1503,6 +1517,12 @@ final class Route
         'batch_process_by_id'                    => Permission::RETRY_BATCH,
         'reports_refund_irctc'                   => '*',
         'merchant_get_tags'                      => '*',
+        'shield_rules_get_multiple'              => Permission::VIEW_SHIELD_RULES,
+        'shield_rules_get'                       => Permission::VIEW_SHIELD_RULES,
+        'shield_rules_create'                    => Permission::CREATE_SHIELD_RULES,
+        'shield_rules_update'                    => Permission::EDIT_SHIELD_RULES,
+        'shield_rules_delete'                    => Permission::DELETE_SHIELD_RULES,
+        'shield_rules_evaluate'                  => Permission::EVALUATE_SHIELD_RULES,
     ];
 
     public static $direct = [

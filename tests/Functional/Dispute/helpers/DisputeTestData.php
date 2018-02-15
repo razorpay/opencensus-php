@@ -574,6 +574,51 @@ return [
         ],
     ],
 
+    'testMerchantEditWhenDisputeUnderReview' => [
+        'request'   => [
+            'method'  => 'post',
+            'content' => [
+                'accept_dispute' => true
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Disputes can only be modified when in open status',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testMerchantEditAcceptAndSubmit' => [
+        'request'   => [
+            'method'  => 'post',
+            'content' => [
+                'submit'         => true,
+                'accept_dispute' => true
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Only one of the fields `accept_dispute` and `submit` can be sent',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testDisputeEditDoNotDeductOnLostIfDeducted' => [
         'request' => [
             'method'  => 'post',
@@ -604,7 +649,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Not a valid dispute status',
+                    'description' => 'Not a valid dispute status: review',
                 ],
             ],
             'status_code' => 400,
@@ -899,25 +944,125 @@ return [
         ],
         'response' => [
             'content' => [
+                'entity'      => 'dispute',
+                'amount'      => 1000000,
+                'currency'    => 'INR',
+                'reason_code' => 'SOMETHING_BAD',
+                'status'      => 'open',
+                'phase'       => 'chargeback',
+                'files'       => [
+                    'entity' => 'collection',
+                    'count'  => 2,
+                    'items'  => [
+                        [
+                            'file_id'  => 'rzp_file_mock_id_1000000_explanation_letter',
+                            'name'     => 'myfile1.png',
+                            'category' => 'explanation_letter',
+                        ],
+                        [
+                            'file_id'  => 'rzp_file_mock_id_1000000_delivery_proof',
+                            'name'     => 'myfile2.pdf',
+                            'category' => 'delivery_proof',
+                        ],
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testDisputeFetchWithFiles' => [
+        'request'   => [
+            'method'        => 'get',
+            'url'           => '/disputes',
+        ],
+        'response'  => [
+            'content' => [
+                'count' => 1,
+                'items' => [
+                    [
+                        'amount'      => 1000000,
+                        'currency'    => 'INR',
+                        'reason_code' => 'SOMETHING_BAD',
+                        'status'      => 'open',
+                        'phase'       => 'chargeback',
+                        'files'       => [
+                            'entity' => 'collection',
+                            'count'  => 2,
+                            'items'  => [
+                                [
+                                    'file_id'  => 'rzp_file_mock_id_1000000_explanation_letter',
+                                    'name'     => 'myfile1.png',
+                                    'category' => 'explanation_letter',
+                                ],
+                                [
+                                    'file_id'  => 'rzp_file_mock_id_1000000_delivery_proof',
+                                    'name'     => 'myfile2.pdf',
+                                    'category' => 'delivery_proof',
+                                ],
+                            ]
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testEditDisputeFileUploadSaveForLater' => [
+        'request' => [
+            'content' => [
+                'upload_files'  =>  [
+                    [
+                        'name'      => 'myfile1.png',
+                        'category'  => 'explanation_letter',
+                    ],
+                    [
+                        'name'      => 'myfile2.pdf',
+                        'category'  => 'delivery_proof',
+                    ],
+                ],
+            ],
+            'method' => 'post',
+            'files' => [],
+        ],
+        'response' => [
+            'content' => [
                 'entity'        => 'dispute',
                 'amount'        => 1000000,
                 'currency'      => 'INR',
                 'reason_code'   => 'SOMETHING_BAD',
-                'reason_description' => 'Something went wrong',
                 'status'        => 'open',
                 'phase'         => 'chargeback',
-                'files'         => [
+                'files'         => [],
+            ],
+        ],
+    ],
+
+    'testEditDisputeFileUploadSaveForLaterAfterSave' => [
+        'request' => [
+            'content' => [
+                'upload_files'  =>  [
                     [
-                        'file_id'       => 'rzp_file_mock_id_1000000_explanation_letter',
-                        'name'          => 'myfile1.png',
-                        'category'      => 'explanation_letter',
+                        'name'      => 'myfile1.png',
+                        'category'  => 'instant_services',
                     ],
                     [
-                        'file_id'       => 'rzp_file_mock_id_1000000_delivery_proof',
-                        'name'          => 'myfile2.pdf',
-                        'category'      => 'delivery_proof',
+                        'name'      => 'myfile2.pdf',
+                        'category'  => 'others',
                     ],
                 ],
+            ],
+            'method' => 'post',
+            'files' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity'        => 'dispute',
+                'amount'        => 1000000,
+                'currency'      => 'INR',
+                'reason_code'   => 'SOMETHING_BAD',
+                'status'        => 'under_review',
+                'phase'         => 'chargeback',
+                'files'         => [],
             ],
         ],
     ],
