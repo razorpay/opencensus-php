@@ -235,6 +235,8 @@ class Provider
 
     protected function getBharatQrCode($qrCode)
     {
+        $pointOfInitiation = $this->getPointOfInitiation($qrCode);
+
         $visaIdentifier = $this->generateBharatQrMerchantIdentifier(NetworkName::VISA);
 
         $masterCardIdentifier =  $this->generateBharatQrMerchantIdentifier(NetworkName::MC);
@@ -249,7 +251,7 @@ class Provider
 
         $tagArray = [
             Tags::VERSION . $this->getLengthAndValue(Constants::VERSION),
-            Tags::POINT_OF_INITIATION . $this->getLengthAndValue(Constants::POINT_OF_INITIATION),
+            Tags::POINT_OF_INITIATION . $this->getLengthAndValue($pointOfInitiation),
             $visaTlv,
             $masterCardTlv,
             $rupayCardTlv,
@@ -276,6 +278,17 @@ class Provider
         $qrString .= $crc;
 
         return $qrString;
+    }
+
+    protected function getPointOfInitiation($qrCode)
+    {
+        if (empty($qrCode->getAmount()) === true)
+        {
+            return Constants::STATIC_POI;
+        }
+
+        // Dynamic code always have amount tag
+        return Constants::DYNAMIC_POI;
     }
 
     protected function getBharatQrUpiTlv()
