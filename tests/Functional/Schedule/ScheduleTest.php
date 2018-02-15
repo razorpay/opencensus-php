@@ -130,7 +130,7 @@ class ScheduleTest extends TestCase
     {
         $schedule = $this->createSchedule();
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $response = $this->fetchSchedule($schedule['id']);
 
@@ -192,7 +192,7 @@ class ScheduleTest extends TestCase
         $res = $this->editSchedule($schedule['id'], ['hour' => 12]);
 
         // Update all next_run_at values
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
         $request = $this->testData[__FUNCTION__];
         $res = $this->makeRequestAndGetContent($request);
 
@@ -226,9 +226,9 @@ class ScheduleTest extends TestCase
 
     public function testExpireCredits()
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
-       $promotionAttributes = [
+        $promotionAttributes = [
             'credit_amount' => '1000',
         ];
 
@@ -254,6 +254,8 @@ class ScheduleTest extends TestCase
 
         Carbon::setTestNow($time);
 
+        $this->ba->cronAuth();
+
         $response = $this->makeRequestAndGetContent($request);
 
         $credits = $this->getLastEntity('credits', true);
@@ -265,7 +267,7 @@ class ScheduleTest extends TestCase
 
     public function testExpireAndAssignCredits()
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $promotionAttributes = [
             'credit_amount' => '1000',
@@ -285,6 +287,8 @@ class ScheduleTest extends TestCase
         $this->fixtures->merchant->activate('10000000000000');
 
         $this->applyCouponOnMerchant($coupon['code']);
+
+        $this->ba->cronAuth();
 
         $request = $this->testData['testExpireCredits'];
 
@@ -308,6 +312,8 @@ class ScheduleTest extends TestCase
 
         Carbon::setTestNow($time);
 
+        $this->ba->cronAuth();
+
         $response = $this->makeRequestAndGetContent($request);
 
         $credits = $this->getEntities('credits', [], true);
@@ -319,7 +325,7 @@ class ScheduleTest extends TestCase
 
     public function testExpireUsedCredits()
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $promotionAttributes = [
             'credit_amount' => '1000',
@@ -355,7 +361,7 @@ class ScheduleTest extends TestCase
 
         $payment = $this->doAuthAndCapturePayment();
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $request = $this->testData['testExpireCredits'];
 
