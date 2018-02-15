@@ -604,7 +604,6 @@ final class Route
         'user_login'                              => ['post',     'users/login',                                    'UserController@loginUser'                                          ],
         'user_confirm_by_data'                    => ['put',      'users/confirm_user_by_data',                     'UserController@confirmUserByData'                                  ],
         'user_fetch_email'                        => ['get',      'users/email/{email}',                            'UserController@getUserByEmail'                                     ],
-        'user_edit'                               => ['put',      'users/{id}',                                     'UserController@editUser'                                           ],
         'user_fetch'                              => ['get',      'users/{id}',                                     'UserController@getUser'                                            ],
         // The order of the following routes is important. The one with action should be last
         'user_confirm'                            => ['put',      'users/{id}/confirm',                             'UserController@confirmUser'                                        ],
@@ -1004,6 +1003,7 @@ final class Route
         'admin_forgot_password',
         'admin_reset_password',
         'admin_get_by_attr',
+        'user_confirm_by_data',
     ];
 
     public static $userWhitelist = [
@@ -1357,9 +1357,7 @@ final class Route
         'upi_psp_allow',
         'upi_psp_disallow',
         'user_confirm',
-        'user_confirm_by_data',
         'user_create',
-        'user_edit',
         'admin_get_app_auth',
     ];
 
@@ -1625,7 +1623,6 @@ final class Route
         'upi_psp_disallow'                       => '*',
         'user_confirm'                           => '*',
         'user_create'                            => '*',
-        'user_edit'                              => '*',
         'admin_get_app_auth'                     => '*',
         'reports_transaction_dsp'                => Permission::VIEW_SPECIAL_MERCHANT_REPORT,
         'reports_refund_irctc'                   => Permission::VIEW_SPECIAL_MERCHANT_REPORT,
@@ -1720,6 +1717,7 @@ final class Route
             'admin_forgot_password',
             'admin_reset_password',
             'admin_get_by_attr',
+            'user_confirm_by_data',
         ],
 
         'cron' => [
