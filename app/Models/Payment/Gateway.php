@@ -64,6 +64,7 @@ class Gateway
     const ACQUIRER_AMEX      = 'amex';
     const ACQUIRER_FSS       = 'fss';
     const ACQUIRER_RATN      = 'ratn';
+    const ACQUIRER_BARB      = 'barb';
 
     const NOT_SUPPORTED      = 'not_supported';
     const SUPPORTED          = 'supported';
@@ -75,7 +76,7 @@ class Gateway
         self::FIRST_DATA  => [self::ACQUIRER_ICIC],
         self::AMEX        => [self::ACQUIRER_AMEX],
         self::AEPS_ICICI  => [self::ACQUIRER_ICIC],
-        self::CARD_FSS    => [self::ACQUIRER_FSS],
+        self::CARD_FSS    => [self::ACQUIRER_FSS, self::ACQUIRER_BARB],
         self::HITACHI     => [self::ACQUIRER_RATN],
     ];
 
