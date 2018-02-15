@@ -717,7 +717,7 @@ final class Route
 
         // Features
         'feature_add'                             => ['post',     'features',                                       'FeatureController@addFeatures'                                     ],
-        'feature_get'                             => ['get',      '{entityType}/{entityId}/features',               'FeatureController@getFeatures'                                     ],
+        'feature_get'                             => ['get',      'features/{entityType}/{entityId}',               'FeatureController@getFeatures'                                     ],
         'feature_add_accounts'                    => ['post',     'accounts/{entityId}/features',                   'FeatureController@addAccountFeatures'                              ],
         'feature_get_accounts'                    => ['get',      'accounts/{entityId}/features',                   'FeatureController@getAccountFeatures'                              ],
         'feature_bulk_assign'                     => ['post',     'features/assign',                                'FeatureController@multiAssignFeature'                              ],
@@ -1070,6 +1070,7 @@ final class Route
         'subscription_cancel_due',
         'billdesk_reconcile_cancelled',
         'feature_get_multiple',
+        'feature_get',
         'feature_add',
         'feature_bulk_assign',
         'feature_bulk_remove',
@@ -1816,6 +1817,7 @@ final class Route
         // 'addon_fetch',
         'addon_fetch_multiple',
         // 'feature_get_multiple',
+        // 'feature_get',
         'offer_fetch_multiple',
         // 'offer_fetch_by_id',
         // 'currency_fetch_rates',
