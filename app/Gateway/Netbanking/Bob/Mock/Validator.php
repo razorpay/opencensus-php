@@ -14,6 +14,7 @@ class Validator extends Base\Validator
         RequestFields::AMOUNT           => 'required|numeric',
         RequestFields::CALLBACK_URL     => 'required|url',
         RequestFields::PAYMENT_ID       => 'required|alpha_num|size:14',
+        RequestFields::CUSTOMER_TYPE    => 'required|string',
     );
 
     protected static $verifyRules = [
