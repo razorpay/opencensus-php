@@ -215,11 +215,20 @@ class BasicAuthTest extends TestCase
 
     public function testAppAuthWithAccount()
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
-        $this->ba->addAccountAuth('10000000000000');
+        $admin = $this->ba->getAdmin();
 
-        $this->startTest();
+        $merchant = $this->fixtures->create(
+            'merchant', ['org_id' => Org::RZP_ORG]);
+
+        $admin->merchants()->attach($merchant);
+
+        $this->ba->addAccountAuth($merchant->getId());
+
+        $result = $this->startTest();
+
+        $this->assertEquals($merchant->getId(), $result['id']);
     }
 
     public function testAdminAuthWithAccount()

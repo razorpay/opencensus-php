@@ -324,9 +324,7 @@ return [
             'url' => '/dummy/internal'
         ],
         'response' => [
-            'content' => [
-                'id' => '10000000000000'
-            ],
+            'content' => [],
             'status_code' => 200,
         ],
     ],
