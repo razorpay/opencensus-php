@@ -16,6 +16,75 @@ import HomeNew from 'merchant/containers/Home/New';
 
 pokeConfig.merchantId = window.rzp_user.id;
 
+const RETRIES = "retries",
+      SUCCESS_RATE = 'successRate';
+
+const successRateMeta = {
+  name: SUCCESS_RATE,
+  title: 'Success Rate',
+  grouping: [],
+  isPercent: true,
+  filters: [{
+    name: RETRIES,
+    values: [
+      {
+        text: "Without Retries",
+        value: 0
+      }, {
+        text: "With Retries",
+        value: 1
+      }
+    ]
+  }],
+  index: 'payments',
+  groupByColumnName: "Success Rate",
+  noGrouping: true,
+  valueKey: 'success_rate',
+  getCountQuery: function () {
+    return {
+      [this.name]: {
+        agg_type: 'success_rate',
+        details: {
+          index: this.index
+        }
+      }
+    }
+  },
+  getHistogramQuery: function (grouping, breakdown, filters={}) {
+
+    let agg_type = 'success_rate';
+
+    const aggDetails = {
+      index: this.index,
+      group_by: [`histogram_${breakdown}`]
+    };
+
+    Object.keys(filters, function (filterName) {
+    
+      const filterVal = filters[filterName];
+
+      // if retries need to be included, change the index name
+      if (filterName === RETRIES && !filterVal.value) {
+
+        agg_type += "_with_retry";
+      }
+    });
+
+    return {
+      [`${this.name}Histogram`]: {
+        agg_type,
+        details: {
+          index: this.index,
+          group_by: [`histogram_${breakdown}`]
+        }
+      }
+    };
+  }
+};
+
+const tabsOrderMixin = tabsOrder => tabsOrder.push(SUCCESS_RATE),
+      tabsMetaMixin = tabsMeta => tabsMeta[SUCCESS_RATE] = successRateMeta;
+
 @connect(state => state.session, {
   ...SessionActions,
   ...NotificationActions,
@@ -30,7 +99,10 @@ class App extends Component {
     if (this.state.isLoading) {
       return null;
     }
-    return <HomeNew />
+
+    return <HomeNew tabsOrderMixin={tabsOrderMixin}
+                    tabsMetaMixin={tabsMetaMixin}
+                    isAdmin={true}/>
   }
 
   componentWillMount() {

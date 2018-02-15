@@ -61,7 +61,8 @@ export const breakdownVals = [
 const TRANSACTION_VOLUME = 'transactionVolume',
   NUM_TRANSACTIONS = 'numTransactions',
   REFUNDS = 'refunds',
-  SAVED_CARDS = 'savedCards';
+  SAVED_CARDS = 'savedCards',
+  SUCCESS_RATE = 'successRate';
 
 export { TRANSACTION_VOLUME, NUM_TRANSACTIONS, SAVED_CARDS, REFUNDS };
 
@@ -183,6 +184,7 @@ export const tabsMeta = {
     options: [],
     index: 'payments',
     groupByColumnName: 'saved_card',
+    isPercent: true,
     groupTitleMap: {
       '0': 'Other Card Payments',
       '1': 'Saved Card Payments',
@@ -287,9 +289,11 @@ export const getTimelineData = ({
   groupByColumnName,
   startTime,
   endTime,
+  noGrouping,
+  valueKey = 'value',
   breakdown = 'daily',
   groupTitleMap = {},
-  isCurrency = false,
+  isCurrency = false
 }) => {
   /*
    * Pokedex data will be completely denormalized without any grouping
@@ -311,10 +315,11 @@ export const getTimelineData = ({
    */
 
   // grouping by column, ex. group by payment method (card, netbanking)
-  const groupedData =
-      groupByColumnName === 'platform'
-        ? groupByPlatform(data)
-        : groupBy(data, groupByColumnName),
+  const groupedData = !noGrouping
+                        ? (groupByColumnName === 'platform'
+                             ? groupByPlatform(data)
+                             : groupBy(data, groupByColumnName))
+                        : {[groupByColumnName]: data},
     groups = Object.keys(groupedData).sort(),
     /* `timelineGroupMap` is like
          * {
@@ -354,7 +359,7 @@ export const getTimelineData = ({
     csvFooter = ['', 'Total'],
     csvGrandTotal = 0;
 
-  if (groups.length === 0) {
+  if (data.length === 0 || groups.length === 0) {
     csvData = csvData.concat([csvHeader, csvFooter.concat([0])]);
 
     return {
@@ -403,7 +408,7 @@ export const getTimelineData = ({
         groupMap =
           timelineGroupMap[timestamp] || (timelineGroupMap[timestamp] = {});
 
-      groupMap[groupName] = item.value;
+      groupMap[groupName] = item[valueKey];
 
       otherGroups.forEach(groupName => {
         groupMap[groupName] = groupMap[groupName] || 0;

@@ -22,6 +22,7 @@ import Tooltip from 'merchant/components/Home/Tooltip';
 import {
   NUM_TRANSACTIONS,
   SAVED_CARDS,
+  SUCCESS_RATE,
   tabsOrder,
   tabsMeta,
   getQuery,
@@ -49,7 +50,7 @@ const TabContent = ({
 
   let formattedValue = value;
 
-  if (name !== SAVED_CARDS) {
+  if (typeof percent === "undefined") {
     formattedValue = isCurrency
       ? humanReadableIndianCurrency(paiseToRupees(value))
       : humanReadableIndian(value);
@@ -107,6 +108,18 @@ class KeyMetricsContainer extends Component {
       // this will be false after initial fetch
       loading: true,
     };
+
+    const {tabsOrderMixin, tabsMetaMixin} = props;
+
+    if (tabsOrderMixin) {
+
+      tabsOrderMixin(tabsOrder);
+    }
+
+    if (tabsMetaMixin) {
+    
+      tabsMetaMixin(tabsMeta);
+    }
 
     this.requestId = this.trendRequestID = 0;
 
@@ -175,7 +188,7 @@ class KeyMetricsContainer extends Component {
     const { tabsState, selectedTab } = this.state,
       tabState = tabsState[selectedTab],
       { selectedGrouping } = tabState,
-      { startDate, endDate, mode, sectionTitle } = this.props;
+      { startDate, endDate, mode, sectionTitle, isAdmin } = this.props;
 
     const query = getQuery({
       tabName: fetchAllCounts ? 'all' : selectedTab,
@@ -207,7 +220,13 @@ class KeyMetricsContainer extends Component {
           const tabState = tabsState[tabName],
             { selectedBreakdown } = tabState,
             tabMeta = tabsMeta[tabName],
-            { isCurrency, title } = tabMeta;
+            {
+              isCurrency,
+              isPercent,
+              title,
+              noGrouping,
+              valueKey="value"
+            } = tabMeta;
 
           // Main stat showin in the taib
           const mainStat = resp.data[tabName];
@@ -227,11 +246,12 @@ class KeyMetricsContainer extends Component {
 
               /*
                * For Saved Card Txns tab
-               * 1) If number of saved cards is less than 15%
+               * 1) If not Admin
+               * 2) If number of saved cards is less than 15%
                *    hide the tab for the merchant
-               * 2) Decide to show the tab or not only on initial load
+               * 3) Decide to show the tab or not only on initial load
                */
-              if (isInitialLoad) {
+              if (!isAdmin && isInitialLoad) {
                 tabState.data.showTab = tabState.data.percent > 15;
 
                 if (!tabState.data.showTab) {
@@ -239,9 +259,16 @@ class KeyMetricsContainer extends Component {
                 }
               }
             } else {
-              tabState.data.count = mainStat.result[0]
-                ? mainStat.result[0].value
+              const value = mainStat.result[0]
+                ? mainStat.result[0][tabMeta.valueKey || "value"]
                 : 0;
+
+              tabState.data.count = value;
+
+              if (isPercent) {
+              
+                tabState.data.percent = value;
+              }
             }
           }
 
@@ -251,12 +278,16 @@ class KeyMetricsContainer extends Component {
             const { labels, datasets, aggregates, csv } = getTimelineData({
               data: histogram.result,
               groupByColumnName:
-                tabMeta.groupByColumnName || selectedGrouping.value,
+                typeof tabMeta.groupByColumnName === "undefined"
+                  ? selectedGrouping.value
+                  : tabMeta.groupByColumnName,
               startTime: startDate.unix(),
               endTime: endDate.unix(),
               breakdown: tabState.selectedBreakdown,
               groupTitleMap: tabMeta.groupTitleMap || { Mobile: 'mWeb' },
               isCurrency,
+              valueKey,
+              noGrouping
             });
 
             // track in GA that no data found in this section for 

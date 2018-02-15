@@ -119,7 +119,8 @@ class HomeContainer extends Component {
     // need to figureout whether we should show group by platform
     // or not
 
-    const { startDate, endDate } = this.state;
+    const { startDate, endDate } = this.state,
+          { isAdmin } = this.props;
 
     const query = {
       filters: {
@@ -163,39 +164,42 @@ class HomeContainer extends Component {
           });
         }
 
-        const platforms = Object.keys(data);
+        if (!isAdmin) {
 
-        // if we do not get platforms for given daterange
-        // do not show grouping
-        if (platforms.length === 0) {
-          return;
-        }
+          const platforms = Object.keys(data);
 
-        let grandTotal = 0;
+          // if we do not get platforms for given daterange
+          // do not show grouping
+          if (platforms.length === 0) {
+            return;
+          }
 
-        const totalByPlatform = platforms.reduce((group, platform) => {
-          group[platform] = data[platform].reduce((sum, entry) => {
-            return sum + entry.value;
-          }, 0);
+          let grandTotal = 0;
 
-          grandTotal += group[platform];
+          const totalByPlatform = platforms.reduce((group, platform) => {
+            group[platform] = data[platform].reduce((sum, entry) => {
+              return sum + entry.value;
+            }, 0);
 
-          return group;
-        }, {});
+            grandTotal += group[platform];
 
-        // if the txn count of platforms for given daterange
-        // do not show grouping
-        if (grandTotal === 0) {
-          return;
-        }
+            return group;
+          }, {});
 
-        const ratio = (totalByPlatform[OTHERS] || 0) / grandTotal;
+          // if the txn count of platforms for given daterange
+          // do not show grouping
+          if (grandTotal === 0) {
+            return;
+          }
 
-        // if `Others` platform count is greater than 30%
-        // do not show grouping
-        if (ratio > 0.3) {
-          trackPlatformAnalyticsHidden(ratio * 100);
-          return;
+          const ratio = (totalByPlatform[OTHERS] || 0) / grandTotal;
+
+          // if `Others` platform count is greater than 30%
+          // do not show grouping
+          if (ratio > 0.3) {
+            trackPlatformAnalyticsHidden(ratio * 100);
+            return;
+          }
         }
 
         // this will show group by platform dropdowns and also
@@ -315,7 +319,13 @@ class HomeContainer extends Component {
   }
 
   render() {
-    let { mode, current_balance } = this.props;
+    let {
+      mode,
+      current_balance,
+      tabsOrderMixin,
+      tabsMetaMixin,
+      isAdmin
+    } = this.props;
 
     const {
       startDate,
@@ -372,6 +382,9 @@ class HomeContainer extends Component {
                 mode={mode}
                 showGrouping={showGrouping}
                 sectionTitle={keymetricsSectionTitle}
+                tabsOrderMixin={tabsOrderMixin}
+                tabsMetaMixin={tabsMetaMixin}
+                isAdmin={isAdmin}
               />
             </div>
           </div>
@@ -390,37 +403,39 @@ class HomeContainer extends Component {
             </div>
           </div>
 
-          <div className="row">
-            <div
-              className={`col-md-12 traffic-activity-row clearfix${showGrouping
-                ? ''
-                : ' traffic-hidden'}`}
-            >
-              {showGrouping && (
-                <div className="traffic-container">
+          {!isAdmin && (
+            <div className="row">
+              <div
+                className={`col-md-12 traffic-activity-row clearfix${showGrouping
+                  ? ''
+                  : ' traffic-hidden'}`}
+              >
+                {showGrouping && (
+                  <div className="traffic-container">
+                    <p className="content-title section-title">
+                      {trafficSectionTitle}
+                    </p>
+                    <div className="content">
+                      <Traffic
+                        startDate={startDate}
+                        endDate={endDate}
+                        mode={mode}
+                        sectionTitle={trafficSectionTitle}
+                      />
+                    </div>
+                  </div>
+                )}
+                <div className="activity-container">
                   <p className="content-title section-title">
-                    {trafficSectionTitle}
+                    {recentActivityTitle}
                   </p>
                   <div className="content">
-                    <Traffic
-                      startDate={startDate}
-                      endDate={endDate}
-                      mode={mode}
-                      sectionTitle={trafficSectionTitle}
-                    />
+                    <RecentActivity sectionTitle={recentActivityTitle} />
                   </div>
-                </div>
-              )}
-              <div className="activity-container">
-                <p className="content-title section-title">
-                  {recentActivityTitle}
-                </p>
-                <div className="content">
-                  <RecentActivity sectionTitle={recentActivityTitle} />
                 </div>
               </div>
             </div>
-          </div>
+          )}
           <div className="row home-credits-section">
             <div className="col-md-12">
               <GenericPanel>
@@ -446,6 +461,6 @@ class HomeContainer extends Component {
   }
 }
 
-export default () => isMobileDevice
+export default (props) => isMobileDevice
                        ? (trackForceOldDashboard(), <Redirect to="/dashboard"/>)
-                       : <HomeContainer/>
+                       : <HomeContainer {...props}/>

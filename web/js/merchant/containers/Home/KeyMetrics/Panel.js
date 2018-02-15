@@ -250,7 +250,7 @@ class Panel extends Component {
                   <Line options={chartOptions} data={data.histogram} />
                 )}
             </div>
-            {!data.loading &&
+            {!this.meta.noGrouping && !data.loading &&
               data.legendData && (
                 <div>
                   <Legend data={data.legendData} isCurrency={isCurrency} />
