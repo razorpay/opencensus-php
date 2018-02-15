@@ -157,7 +157,7 @@ return [
         // Batch actions
         'batch_process_by_id'               => 'batches/{id}/process',
 
-                'org_create'                        => 'orgs',
+        'org_create'                        => 'orgs',
         'org_get_multiple'                  => 'orgs',
         // this should not be {orgId}
         'org_get'                           => 'orgs/{id}',
@@ -288,5 +288,8 @@ return [
         'onboarding_features_get_submissions' => 'onboarding/features/submissions/fetch',
 
         'onboarding_features_update'        => 'onboarding/features/{feature}/update',
+
+        // Confirm User
+        'user_confirm_by_data'              => 'users/confirm_user_by_data',
     ],
 ];
