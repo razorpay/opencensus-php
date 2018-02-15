@@ -28,7 +28,7 @@ class FeaturesTest extends TestCase
 
         parent::setUp();
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
     }
 
     public function testAddInvalidFeatureToMerchant()
@@ -791,9 +791,7 @@ class FeaturesTest extends TestCase
         array $featureNames = ['dummy'],
         string $merchant_id = null)
     {
-        $authMethod = 'appAuth' . studly_case($addToMode);
-
-        $this->ba->$authMethod();
+        $this->ba->adminAuth();
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -920,9 +918,7 @@ class FeaturesTest extends TestCase
 
         $testData['request']['url'] = '/features/' . $merchantId;
 
-        $authMethod = 'appAuth' . studly_case($mode);
-
-        $this->ba->$authMethod();
+        $this->ba->adminAuth();
 
         $response = $this->startTest($testData);
 
@@ -948,9 +944,7 @@ class FeaturesTest extends TestCase
         string $mode,
         array $featureNames = ['dummy'])
     {
-        $authMethod = 'appAuth' . studly_case($mode);
-
-        $this->ba->$authMethod();
+        $this->ba->adminAuth();
 
         $response = $this->startTest();
 
@@ -1023,6 +1017,8 @@ class FeaturesTest extends TestCase
             'failed'        => 0,
             'failed_ids'    => []
         ];
+
+        $this->ba->adminAuth();
 
         $this->startTest($testData);
     }
