@@ -1159,9 +1159,7 @@ class FeaturesTest extends TestCase
 
         $testData['request']['url'] = '/features/'. $entityType . 's/' . $entityId;
 
-        $authMethod = 'appAuth' . studly_case($mode);
-
-        $this->ba->$authMethod();
+        $this->ba->adminAuth($mode, null, 'org_100000razorpay');
 
         $response = $this->startTest($testData);
 
