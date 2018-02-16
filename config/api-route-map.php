@@ -40,6 +40,9 @@ return [
         'invitation_fetch'                  => 'invitations',
         'reports_refund_irctc'              => 'reports/refund/irctc',
         'dispute_edit'                      => 'disputes/{id}',
+
+        // Get Merchant Users
+        'merchant_fetch_users'              => 'merchants/users',
     ],
 
     // auth
@@ -75,8 +78,6 @@ return [
         'merchant_tag_add'                  => 'merchants/{id}/tags',
         'merchant_tag_delete'               => 'merchants/{id}/tags/{tagName}',
 
-        // Get Merchant Users
-        'merchant_fetch_users'              => 'merchants/{id}/users',
         // Edit Merchant Email
         'merchant_edit_email'               => 'merchants/{id}/email',
 

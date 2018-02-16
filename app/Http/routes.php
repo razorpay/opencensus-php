@@ -146,6 +146,10 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/admin/{mode}/reports/broking', 'TransactionController@getTransactionBrokingReport')->name('reports_broking');
         Route::get('/admin/{mode}/reports/invoice', 'TransactionController@getInvoiceReport')->name('reports_invoice');
         Route::get('/admin/{mode}/reports/{entity}', 'TransactionController@getResourceReport')->name('reports_entity');
+
+        Route::any('/admin/api/{mode}/{path}', 'GenericController@handleAny')
+            ->where(['path' => '.*'])
+            ->name('admin');
     });
 
     Route::get('admin/{all}', 'AdminController@getIndex')->name('admin_catchall')->where(['all' => '.*']);
