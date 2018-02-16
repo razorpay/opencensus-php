@@ -122,8 +122,8 @@ export default class Activation extends Entity {
   fetch() {
     let params = {
       url: 'merchant/activation',
-      accountId: this.accountId
-    }
+      accountId: this.accountId,
+    };
 
     return merchantFetch(params).then(response => {
       response.data = this.getActivation(response.data);
@@ -162,6 +162,9 @@ export default class Activation extends Entity {
         return prev;
       }, []);
 
+      //unique items needed & convert set to array.
+      unfinishedSteps = [...new Set(unfinishedSteps)];
+
       if (unfinishedSteps.length) {
         data.steps_finished = arrayDiff(steps, unfinishedSteps);
       }
@@ -192,7 +195,7 @@ export default class Activation extends Entity {
       url: 'merchant/activation',
       method: 'post',
       data,
-      accountId: this.accountId
+      accountId: this.accountId,
     });
   }
 

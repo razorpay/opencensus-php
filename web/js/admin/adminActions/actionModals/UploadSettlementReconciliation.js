@@ -6,7 +6,7 @@ import { notifySuccess, notifyError, closeModal } from 'common/modal';
 
 import { adminFormUpload } from 'common/fetch';
 
-UploadSettlementReconciliation.permission = 'add_settlement_reconciliation';
+UploadSettlementReconciliation.permission = 'settlement_bulk_update';
 UploadSettlementReconciliation.title = 'Upload Settlement Reconciliation (UTR)';
 export default function UploadSettlementReconciliation() {
   return (
