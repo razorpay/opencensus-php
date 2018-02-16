@@ -1126,7 +1126,7 @@ class Service extends Base\Service
     {
         $request = new Admin\ApiRequestAny();
 
-        list($error, $data) = $request->send("orgs/hostname/$domain");
+        list($error, $data) = $request->send("orgs/hostname/$domain", "GET");
 
         if (empty($error))
         {

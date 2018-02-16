@@ -432,7 +432,7 @@ class Service extends Base\Service
     {
         $request = new \App\Admin\ApiRequestAny();
 
-        list($error, $data) = $request->send("users/$userId");
+        list($error, $data) = $request->send("users/$userId", "GET");
 
         $genericUser = null;
 
