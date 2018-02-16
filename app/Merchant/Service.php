@@ -374,9 +374,22 @@ class Service extends Base\Service
 
     public function getMerchantUsers($merchantId)
     {
-        $request = new \App\Admin\ApiRequestAny();
+        $adminUser = Auth::guard('api')->user();
 
-        list($error, $data) = $request->send("merchants/$merchantId/users", 'GET');
+        if (empty($adminUser) === false)
+        {
+            $request = new \App\Admin\ApiRequestAny([
+                'client_type' => 'admin',
+                'mode'        => "live_$merchantId"
+            ]);    
+        }
+        else
+        {
+            $request = new \App\Admin\ApiRequestAny();
+        }
+        
+
+        list($error, $data) = $request->send("merchants/users", 'GET');
 
         if (empty($error) === false)
         {
