@@ -7,8 +7,10 @@ use Carbon\Carbon;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
 use RZP\Models\Settlement\Holidays;
+use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\FundTransfer\Batch\BatchFundTransferTrait;
 
 class Core extends Base\Core
@@ -123,6 +125,8 @@ class Core extends Base\Core
 
         $data = ['channel' => $channel, 'count' => $count];
 
+        $slackData = $data;
+
         if ($count === 0)
         {
             $data['message'] = 'No Attempts to process';
@@ -164,6 +168,10 @@ class Core extends Base\Core
         $this->saveEntitiesToDb($attempts);
 
         $data['file'] = $fileDetails;
+
+        $this->trace->info(TraceCode::SETTLEMENT_INITIATED, $slackData);
+
+        (new SlackNotification)->success('setl_initiate', $slackData);
 
         return $data;
     }
