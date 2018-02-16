@@ -6,6 +6,7 @@ use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
@@ -44,6 +45,7 @@ class Validator extends Base\Validator
 
     protected static $merchantEditRules = [
         Entity::ACCEPT_DISPUTE         => 'sometimes|boolean',
+        Entity::SUBMIT                 => 'sometimes|boolean',
     ];
 
     protected function validatePhase(string $attribute, string $value)
@@ -60,7 +62,7 @@ class Validator extends Base\Validator
         if (Status::exists($value) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Not a valid dispute status');
+                'Not a valid dispute status: ' . $value);
         }
 
         if ($this->entity->isClosed() === true)
@@ -78,6 +80,16 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_UNDER_DISPUTE,
                 null,
                 ['input' => $input, 'payment_id' => $payment->getId()]);
+        }
+
+        //
+        // This function is called before the build validator
+        // Hence, if amount is not set, return from here and let
+        // the build validator take care of it
+        //
+        if (isset($input[Entity::AMOUNT]) === false)
+        {
+            return;
         }
 
         if ($payment->getAmount() < $input[Entity::AMOUNT])
@@ -126,6 +138,22 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'The parent dispute is linked to another dispute entity.',
                 Entity::PARENT_ID);
+        }
+    }
+
+    public function validateForMerchantUpdate(array $input)
+    {
+        if ($this->entity->getStatus() !== Status::OPEN)
+        {
+            throw new BadRequestValidationFailureException(
+                'Disputes can only be modified when in open status');
+        }
+
+        if ((isset($input[Entity::ACCEPT_DISPUTE]) === true) and
+            (isset($input[Entity::SUBMIT]) === true))
+        {
+            throw new BadRequestValidationFailureException(
+                'Only one of the fields `accept_dispute` and `submit` can be sent');
         }
     }
 

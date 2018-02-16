@@ -15,12 +15,9 @@ use RZP\Models\Schedule\Task\Type as ScheduleTaskType;
 use RZP\Models\Settlement;
 use RZP\Models\Settlement\Details as SetlDetails;
 use RZP\Models\Settlement\Details\Component as SetlComponent;
-use RZP\Models\FundTransfer\Batch\BatchFundTransferTrait;
 
 class Merchant
 {
-    use BatchFundTransferTrait;
-
     protected $merchant;
     protected $amount;
     protected $apiFee;
@@ -62,11 +59,11 @@ class Merchant
 
         $this->txns = $this->setl->setlTransactions;
 
-        // Update Settlement Entity
         $this->updateSettlementEntity();
 
-        // Increment attempts in settlements
         $this->setl->incrementAttempts();
+
+        $this->repo->saveOrFail($this->setl);
 
         // Create Settlement attempt entity
         $this->createSettlementAttemptEntity();
@@ -322,6 +319,7 @@ class Merchant
         $setl->setFailureReason(null);
         $setl->setUtr(null);
         $setl->setRemarks(null);
+        $setl->batchFundTransfer()->dissociate();
 
         $this->setl = $setl;
     }
@@ -333,7 +331,7 @@ class Merchant
         $values = [
             FundTransferAttempt\Entity::CHANNEL         => $this->channel,
             FundTransferAttempt\Entity::VERSION         => FundTransferAttempt\Version::V3,
-            FundTransferAttempt\Entity::STATUS          => FundTransferAttempt\Status::INITIATED,
+            FundTransferAttempt\Entity::STATUS          => FundTransferAttempt\Status::CREATED,
             FundTransferAttempt\Entity::PURPOSE         => FundTransferAttempt\Purpose::SETTLEMENT,
         ];
 

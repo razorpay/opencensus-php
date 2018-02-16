@@ -11,7 +11,6 @@ use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Models\Dispute\Entity as DisputeEntity;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Mail\Dispute\Creation as DisputeCreationMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Dispute\File\Entity as DisputeFileEntity;
@@ -332,6 +331,30 @@ class DisputeTest extends TestCase
         $this->assertEquals(0, $txn['credit']);
     }
 
+    public function testMerchantEditWhenDisputeUnderReview()
+    {
+        $attributes = [
+            'status' => 'under_review'
+        ];
+
+        $data = $this->updateEditTestData($attributes);
+
+        // Run as merchant
+        $this->ba->proxyAuth();
+
+        $this->runRequestResponseFlow($data);
+    }
+
+    public function testMerchantEditAcceptAndSubmit()
+    {
+        $data = $this->updateEditTestData();
+
+        // Run as merchant
+        $this->ba->proxyAuth();
+
+        $this->runRequestResponseFlow($data);
+    }
+
     public function testDisputeEditDoNotDeductOnLostIfDeducted()
     {
         $data = $this->updateEditTestData(['deduct_at_onset' => 1]);
@@ -649,7 +672,29 @@ class DisputeTest extends TestCase
         $content = $this->runRequestResponseFlow($testData);
 
         $this->checkUploadedFilesArray($content);
+
+        // Check dispute fetch for embedded files attribute
+        $this->ba->proxyAuth();
+
+        $fetchData = $this->testData['testDisputeFetchWithFiles'];
+
+        $this->runRequestResponseFlow($fetchData);
     }
+
+    public function testEditDisputeFileUploadSaveForLater()
+    {
+        $this->ba->proxyAuth();
+
+        $testData = $this->updateUploadDocumentData();
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->updateUploadDocumentData([], 'testEditDisputeFileUploadSaveForLaterAfterSave');
+
+        $testData['request']['content'][DisputeEntity::SUBMIT] = true;
+
+        $this->runRequestResponseFlow($testData);
+}
 
     public function testEditDisputeMerchantAcceptDispute()
     {
@@ -700,17 +745,19 @@ class DisputeTest extends TestCase
 
         $files = $this->getEntities('dispute_file', [], true);
 
-        $dispute['id'] = DisputeEntity::stripDefaultSign($dispute['id']);
-
         $expected = [
             'files' => [
-                [
-                    'dispute_id'    => $dispute['id'],
-                    'file_id'       => $files['items'][1]['file_id'],
-                ],
-                [
-                    'dispute_id'    => $dispute['id'],
-                    'file_id'       => $files['items'][0]['file_id'],
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        'dispute_id' => $dispute['id'],
+                        'file_id'    => $files['items'][1]['file_id'],
+                    ],
+                    [
+                        'dispute_id' => $dispute['id'],
+                        'file_id'    => $files['items'][0]['file_id'],
+                    ]
                 ]
             ]
         ];
@@ -800,11 +847,11 @@ class DisputeTest extends TestCase
         $this->assertEquals($content['payment_id'], $disputes['items'][0]['payment_id']);
     }
 
-    protected function updateUploadDocumentData(array $attributes = []): array
+    protected function updateUploadDocumentData(array $attributes = [], string $testDataKey = null): array
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
 
-        $name = $trace[1]['function'];
+        $name = $testDataKey ?? $trace[1]['function'];
 
         $dispute = $this->fixtures->create('dispute', $attributes);
 
