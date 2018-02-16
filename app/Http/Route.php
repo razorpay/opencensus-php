@@ -1070,7 +1070,6 @@ final class Route
         'subscription_cancel_due',
         'billdesk_reconcile_cancelled',
         'feature_get_multiple',
-        'feature_get',
         'feature_add',
         'feature_bulk_assign',
         'feature_bulk_remove',
@@ -1320,6 +1319,7 @@ final class Route
         'setl_fetch_schedule',
         'feature_delete',
         'feature_delete_entity',
+        'feature_get',
         'admin_dummy_account_test',
         'admin_get_file',
         // workflows
@@ -1414,6 +1414,7 @@ final class Route
         'admin_dummy_account_test'               => Permission::VIEW_MERCHANT,
         'feature_delete'                         => Permission::DELETE_MERCHANT_FEATURES,
         'feature_delete_entity'                  => Permission::DELETE_MERCHANT_FEATURES,
+        'feature_get'                            => Permission::VIEW_MERCHANT_FEATURES,
         'workflow_create'                        => Permission::CREATE_WORKFLOW, // Fix permissions
         'workflow_get'                           => Permission::VIEW_WORKFLOW,
         'workflow_get_multiple'                  => Permission::VIEW_ALL_WORKFLOW,
@@ -1433,7 +1434,6 @@ final class Route
         'merchant_put_payment_methods'           => Permission::EDIT_MERCHANT_METHODS,
         'balance_fetch'                          => Permission::VIEW_MERCHANT_BALANCE,
         'feature_get_multiple'                   => Permission::VIEW_MERCHANT_FEATURES,
-        'feature_get'                            => Permission::VIEW_MERCHANT_FEATURES,
         'merchant_actions'                       => '*',
         'merchant_live_enable'                   => Permission::EDIT_MERCHANT_ENABLE_LIVE,
         'merchant_live_disable'                  => Permission::EDIT_MERCHANT_DISABLE_LIVE,
