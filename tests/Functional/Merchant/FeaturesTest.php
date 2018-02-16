@@ -59,11 +59,13 @@ class FeaturesTest extends TestCase
 
         $this->verifyFeaturePresenceForEntity(Mode::TEST, Constants::APPLICATION, $appId, [$dummy]);
 
-        $this->getDataToDeleteFeaturesFromEntity(Mode::TEST,
+        $testData = $this->getDataToDeleteFeaturesFromEntity(Mode::TEST,
             true,
             $dummy,
             Constants::APPLICATION,
             $appId);
+
+        $this->startTest($testData);
     }
 
     public function testAccountFeatures()
@@ -83,11 +85,13 @@ class FeaturesTest extends TestCase
 
         $this->verifyFeaturePresenceForAccounts(Mode::TEST, $accountId, [$dummy]);
 
-        $this->getDataToDeleteFeaturesFromEntity(Mode::TEST,
+        $testData = $this->getDataToDeleteFeaturesFromEntity(Mode::TEST,
             true,
             $dummy,
             Constants::ACCOUNT,
             $accountId);
+
+        $this->startTest($testData);
     }
 
     public function testDeleteNonExistentFeatureFromMerchant()
@@ -839,79 +843,6 @@ class FeaturesTest extends TestCase
     }
 
     /**
-     * Adds a feature as an admin based on
-     * the params received
-     *
-     * @param string      $addToMode
-     * @param bool        $shouldSync
-     * @param array       $featureNames
-     * @param string|null $entityType
-     * @param string|null $entityId
-     */
-    protected function addFeatures(
-        string $addToMode,
-        bool $shouldSync = false,
-        array $featureNames = ['dummy'],
-        string $entityType = 'merchant',
-        string $entityId = null)
-    {
-        $authMethod = 'appAuth' . studly_case($addToMode);
-
-        $this->ba->$authMethod();
-
-        $testData = $this->testData[__FUNCTION__];
-
-        if (empty($featureNames) === false)
-        {
-            $testData['request']['content']['names'] = $featureNames;
-        }
-
-        if ($shouldSync !== false)
-        {
-            $testData['request']['content']['should_sync'] = 1;
-        }
-
-        $testData['request']['content']['entity_type'] = $entityType;
-
-        if ($entityId !== null)
-        {
-            $testData['request']['content']['entity_id'] = $entityId;
-        }
-
-        $this->startTest($testData);
-    }
-
-    /**
-     * Deletes a feature as an admin based on
-     * the params received
-     *
-     * @param string $deleteFromMode
-     * @param bool   $shouldSync
-     * @param string $featureName
-     */
-    protected function deleteFeature(
-        string $deleteFromMode,
-        bool $shouldSync = false,
-        string $featureName = 'dummy')
-    {
-        $this->ba->adminAuth($deleteFromMode, null, 'org_100000razorpay');
-
-        $testData = $this->testData[__FUNCTION__];
-
-        if ($featureName === null)
-        {
-            $testData['request']['url'] = '/features/' . self::DEFAULT_MERCHANT_ID . '/' . $featureName;
-        }
-
-        if ($shouldSync === true)
-        {
-            $testData['request']['content']['should_sync'] = 1;
-        }
-
-        $this->startTest($testData);
-    }
-
-    /**
      * Simulates merchant behavior based on the
      * params received
      *
@@ -967,67 +898,6 @@ class FeaturesTest extends TestCase
         }
 
         $this->startTest($testData);
-    }
-
-    /**
-     * Performs a GET request based on the mode received and verifies the
-     * presence of the features received as arguments
-     *
-     * @param string $mode
-     * @param array  $featureNames
-     * @param string $merchantId
-     */
-    protected function verifyFeaturePresence(
-        string $mode,
-        array $featureNames = ['dummy'],
-        string $merchantId = self::DEFAULT_MERCHANT_ID)
-    {
-        $testData = $this->testData[__FUNCTION__];
-
-        $testData['request']['url'] = '/features/' . $merchantId;
-
-        $authMethod = 'appAuth' . studly_case($mode);
-
-        $this->ba->$authMethod();
-
-        $response = $this->startTest($testData);
-
-        $assignedFeatures = array_map(function ($feature)
-        {
-            return $feature["name"];
-        }, $response["assigned_features"]);
-
-        $assignedFeaturesInResponse = array_intersect($assignedFeatures, $featureNames);
-
-        // Check if all the featureNames requested, are present in the assignedFeatures array
-        $this->assertEquals(count($featureNames), count($assignedFeaturesInResponse));
-    }
-
-    /**
-     * Performs a GET request based on the mode received and verifies the
-     * absence of the features received as arguments
-     *
-     * @param string $mode
-     * @param array  $featureNames
-     */
-    protected function verifyFeatureAbsence(
-        string $mode,
-        array $featureNames = ['dummy'])
-    {
-        $authMethod = 'appAuth' . studly_case($mode);
-
-        $this->ba->$authMethod();
-
-        $response = $this->startTest();
-
-        $assignedFeatures = array_map(function ($feature)
-        {
-            return $feature["name"];
-        }, $response["assigned_features"]);
-
-        $assignedFeaturesInResponse = array_intersect($assignedFeatures, $featureNames);
-
-        $this->assertEquals(0, count($assignedFeaturesInResponse));
     }
 
     protected function createMerchantDetails(string $merchantId)
@@ -1094,7 +964,51 @@ class FeaturesTest extends TestCase
     }
 
     /**
-     * Adds a feature to an entity
+     * Adds a feature as an admin [admin auth].
+     * This function tests the route POST /features
+     *
+     * @param string      $addToMode
+     * @param bool        $shouldSync
+     * @param array       $featureNames
+     * @param string|null $entityType
+     * @param string|null $entityId
+     */
+    protected function addFeatures(
+        string $addToMode,
+        bool $shouldSync = false,
+        array $featureNames = ['dummy'],
+        string $entityType = 'merchant',
+        string $entityId = null)
+    {
+        $authMethod = 'appAuth' . studly_case($addToMode);
+
+        $this->ba->$authMethod();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        if (empty($featureNames) === false)
+        {
+            $testData['request']['content']['names'] = $featureNames;
+        }
+
+        if ($shouldSync !== false)
+        {
+            $testData['request']['content']['should_sync'] = 1;
+        }
+
+        $testData['request']['content']['entity_type'] = $entityType;
+
+        if ($entityId !== null)
+        {
+            $testData['request']['content']['entity_id'] = $entityId;
+        }
+
+        $this->startTest($testData);
+    }
+
+    /**
+     * Adds a feature to an account as a merchant/application [private auth]
+     * This function tests the route: POST /accounts/id/features
      *
      * @param string      $addToMode
      * @param bool        $shouldSync
@@ -1131,25 +1045,82 @@ class FeaturesTest extends TestCase
         return $testData;
     }
 
-    protected function getDataToDeleteFeaturesFromEntity(
-        string $deleteFromMode,
-        bool $shouldSync,
-        string $featureName,
-        string $entityType,
-        string $entityId)
+    /**
+     * This function tests fetching features through the route:
+     * GET /features/entity_id which has been deprecated by GET /features/entity_type/id
+     *
+     * This function ensures Backward compatibility is maintained
+     *
+     * @param string $mode
+     * @param array  $featureNames
+     * @param string $merchantId
+     * @deprecated by verifyFeaturePresenceForEntity
+     */
+    protected function verifyFeaturePresence(
+        string $mode,
+        array $featureNames = ['dummy'],
+        string $merchantId = self::DEFAULT_MERCHANT_ID)
     {
-        $this->ba->adminAuth($deleteFromMode, null, 'org_100000razorpay');
-
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = '/' . $entityType . 's/' . $entityId . '/features/' . $featureName;
+        $testData['request']['url'] = '/features/' . $merchantId;
 
-        $testData['request']['content']['should_sync'] = (int) $shouldSync;
+        $authMethod = 'appAuth' . studly_case($mode);
 
-        $this->startTest($testData);
+        $this->ba->$authMethod();
+
+        $response = $this->startTest($testData);
+
+        $assignedFeatures = array_map(function ($feature)
+        {
+            return $feature["name"];
+        }, $response["assigned_features"]);
+
+        $assignedFeaturesInResponse = array_intersect($assignedFeatures, $featureNames);
+
+        // Check if all the featureNames requested, are present in the assignedFeatures array
+        $this->assertEquals(count($featureNames), count($assignedFeaturesInResponse));
     }
 
-    public function verifyFeaturePresenceForEntity(
+    /**
+     * Performs a GET request based on the mode received and verifies the
+     * absence of the features received as arguments
+     *
+     * @todo: Update the route to the new route. Ref: verifyFeaturePresenceForEntity()
+     *
+     * @param string $mode
+     * @param array  $featureNames
+     */
+    protected function verifyFeatureAbsence(
+        string $mode,
+        array $featureNames = ['dummy'])
+    {
+        $authMethod = 'appAuth' . studly_case($mode);
+
+        $this->ba->$authMethod();
+
+        $response = $this->startTest();
+
+        $assignedFeatures = array_map(function ($feature)
+        {
+            return $feature["name"];
+        }, $response["assigned_features"]);
+
+        $assignedFeaturesInResponse = array_intersect($assignedFeatures, $featureNames);
+
+        $this->assertEquals(0, count($assignedFeaturesInResponse));
+    }
+
+    /**
+     * This function tests fetching features through the route:
+     * GET /features/entity_type/id which can be used only by the admins [admin auth]
+     *
+     * @param string $mode
+     * @param string $entityType
+     * @param string $entityId
+     * @param array  $featureNames
+     */
+    protected function verifyFeaturePresenceForEntity(
         string $mode,
         string $entityType,
         string $entityId,
@@ -1174,7 +1145,16 @@ class FeaturesTest extends TestCase
         $this->assertEquals(count($featureNames), count($assignedFeaturesInResponse));
     }
 
-    public function verifyFeaturePresenceForAccounts(
+    /**
+     * This function specifically tests fetching features through
+     * the route: GET /accounts/id/features which can be used by
+     * accounts/applications [private auth]
+     *
+     * @param string $mode
+     * @param string $entityId
+     * @param array  $featureNames
+     */
+    protected function verifyFeaturePresenceForAccounts(
         string $mode,
         string $entityId,
         array $featureNames)
@@ -1203,5 +1183,54 @@ class FeaturesTest extends TestCase
 
         // Check if all the featureNames requested, are present in the assignedFeatures array
         $this->assertEquals(count($featureNames), count($assignedFeaturesInResponse));
+    }
+
+    /**
+     * Deletes a feature as an admin based on
+     * the params received
+     *
+     * @param string $deleteFromMode
+     * @param bool   $shouldSync
+     * @param string $featureName
+     * @deprecated by getDataToDeleteFeaturesFromEntity
+     */
+    protected function deleteFeature(
+        string $deleteFromMode,
+        bool $shouldSync = false,
+        string $featureName = 'dummy')
+    {
+        $this->ba->adminAuth($deleteFromMode, null, 'org_100000razorpay');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        if ($featureName === null)
+        {
+            $testData['request']['url'] = '/features/' . self::DEFAULT_MERCHANT_ID . '/' . $featureName;
+        }
+
+        if ($shouldSync === true)
+        {
+            $testData['request']['content']['should_sync'] = 1;
+        }
+
+        $this->startTest($testData);
+    }
+
+    protected function getDataToDeleteFeaturesFromEntity(
+        string $deleteFromMode,
+        bool $shouldSync,
+        string $featureName,
+        string $entityType,
+        string $entityId): array
+    {
+        $this->ba->adminAuth($deleteFromMode, null, 'org_100000razorpay');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/' . $entityType . 's/' . $entityId . '/features/' . $featureName;
+
+        $testData['request']['content']['should_sync'] = (int) $shouldSync;
+
+        return $testData;
     }
 }

@@ -6,40 +6,6 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Models\Feature\Constants;
 
 return [
-    'addFeatures' => [
-        'request'  => [
-            'url'     => '/features',
-            'method'  => 'post',
-            'server'  => [
-                'HTTP_X-Dashboard'            => 'true',
-                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
-            ],
-            'content' => [
-                'names'       => ['dummy'],
-                'entity_type' => 'merchant',
-                'entity_id'   => '10000000000000'
-            ]
-        ],
-        'response' => [
-            'content' => [ ]
-        ]
-    ],
-
-    'deleteFeature' => [
-        'request'  => [
-            'url'     => "/features/10000000000000/dummy",
-            'method'  => 'delete',
-            'server'  => [
-                'HTTP_X-Dashboard'            => 'true',
-                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
-            ],
-            'content' => [ ]
-        ],
-        'response' => [
-            'content' => [ ]
-        ]
-    ],
-
     'updateFeatureAsMerchant' => [
         'request' => [
             'content' => [
@@ -54,34 +20,6 @@ return [
         ],
         'response' => [
             'content' => [ ]
-        ]
-    ],
-
-    'verifyFeatureAbsence' => [
-        'request' => [
-            'url'    => '/features/10000000000000',
-            'method' => 'get',
-            'server' => [
-                'HTTP_X-Dashboard'            => 'true',
-                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
-            ],
-        ],
-        'response' => [
-            'content' => [ ]
-        ]
-    ],
-
-    'verifyFeaturePresence' => [
-        'request'  => [
-            'url'    => '/features/10000000000000',
-            'method' => 'get',
-            'server' => [
-                'HTTP_X-Dashboard'            => 'true',
-                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
-            ],
-        ],
-        'response' => [
-            'content' => []
         ]
     ],
 
@@ -708,6 +646,21 @@ return [
         ]
     ],
 
+    'addFeatures' => [
+        'request'  => [
+            'url'     => '/features',
+            'method'  => 'post',
+            'content' => [
+                'names'       => ['dummy'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000'
+            ]
+        ],
+        'response' => [
+            'content' => [ ]
+        ]
+    ],
+
     'getDataToAddAccountFeatures' => [
         'request'  => [
             'url'     => '/applications/1000000DemoApp/features',
@@ -727,14 +680,23 @@ return [
         ]
     ],
 
-    'getDataToDeleteFeaturesFromEntity' => [
-        'request'  => [
-            'url'     => "/accounts/100DemoAccount/features/dummy",
-            'method'  => 'delete',
-            'content' => [ ]
+    'verifyFeatureAbsence' => [
+        'request' => [
+            'url'    => '/features/10000000000000',
+            'method' => 'get',
         ],
         'response' => [
             'content' => [ ]
+        ]
+    ],
+
+    'verifyFeaturePresence' => [
+        'request'  => [
+            'url'    => '/features/10000000000000',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => []
         ]
     ],
 
@@ -752,13 +714,31 @@ return [
         'request'  => [
             'url'    => '/features/10000000000000',
             'method' => 'get',
-            'server' => [
-                'HTTP_X-Dashboard'            => 'true',
-                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
-            ],
         ],
         'response' => [
             'content' => []
+        ]
+    ],
+
+    'deleteFeature' => [
+        'request'  => [
+            'url'     => "/features/10000000000000/dummy",
+            'method'  => 'delete',
+            'content' => [ ]
+        ],
+        'response' => [
+            'content' => [ ]
+        ]
+    ],
+
+    'getDataToDeleteFeaturesFromEntity' => [
+        'request'  => [
+            'url'     => "/accounts/100DemoAccount/features/dummy",
+            'method'  => 'delete',
+            'content' => [ ]
+        ],
+        'response' => [
+            'content' => [ ]
         ]
     ],
 ];
