@@ -21,6 +21,28 @@ class AttemptTest extends TestCase
     {
         $this->createDataAndAssertInitiateTransferSuccess(
             Channel::ICICI, 1, Attempt\Type::SETTLEMENT);
+
+        $this->verifySettlementFileGeneration();
+    }
+
+    public function verifySettlementFileGeneration()
+    {
+        $batch = $this->getLastEntity('batch_fund_transfer', true);
+
+        $request = [
+            'url'       => '/settlements/file/generate',
+            'method'    => 'POST',
+            'content'   => [
+                'h2h'                    => 1,
+                'batch_fund_transfer_id' => $batch['id'],
+            ],
+        ];
+
+        $this->ba->appAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotNull($content['local_file_path']);
     }
 
     public function testSettlementFileCreationKotak()
@@ -33,6 +55,8 @@ class AttemptTest extends TestCase
     {
         $this->createDataAndAssertInitiateTransferSuccess(
             Channel::AXIS, 1, Attempt\Type::SETTLEMENT);
+
+        $this->verifySettlementFileGeneration();
     }
 
     public function testPayoutFileCreationAxis()

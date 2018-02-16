@@ -41,7 +41,7 @@ class Core extends Base\Core
         // not doing that, and we're stopping this till they do.
         if (($this->mode !== Constants\Mode::TEST) and
             ($this->env !== 'testing') and
-            (Holidays::isWorkingDay(Carbon::today(Timezone::IST)) === false))
+            (Holidays::isWorkingDay(Carbon::today(Constants\Timezone::IST)) === false))
         {
             return Holidays::HOLIDAY_MESSAGE;
         }
