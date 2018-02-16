@@ -351,17 +351,17 @@ return [
     ],
 
     'testPayoutAttemptSuccess' => [
-        'channel' => 'kotak',
+        'channel' => 'axis',
         'version' => 'V3',
-        'status' => FundTransferAttemptStatus::INITIATED,
+        'status' => FundTransferAttemptStatus::CREATED,
         'utr' => NULL,
         'remarks' => NULL,
         'failure_reason' => NULL,
     ],
 
-    'testPayoutInitiateSuccess' => [
-        'channel' => 'kotak',
-        'status' => PayoutStatus::INITIATED,
+    'testPayoutEntitySuccess' => [
+        'channel' => 'axis',
+        'status' => PayoutStatus::CREATED,
         'utr' => NULL,
         'remarks' => NULL,
         'failure_reason' => NULL,
@@ -370,7 +370,7 @@ return [
     ],
 
     'testPayoutAttemptReconSuccess' => [
-        'channel' => 'kotak',
+        'channel' => 'axis',
         'version' => 'V3',
         'bank_status_code'  => 'P',
         'status'  => FundTransferAttemptStatus::INITIATED,

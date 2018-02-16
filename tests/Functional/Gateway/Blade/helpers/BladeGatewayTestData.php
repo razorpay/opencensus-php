@@ -22,7 +22,7 @@ return [
         'gratis' => false,
         'fee_credits' => 0,
         'escrow_balance' => 0,
-        'channel' => "kotak",
+        'channel' => 'axis',
         'admin' => true,
     ],
 
