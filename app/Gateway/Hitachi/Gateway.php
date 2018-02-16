@@ -374,7 +374,7 @@ class Gateway extends Base\Gateway
             Card\Network::MC   => '00',
         ];
 
-        $content[ RequestFields::ECI] = $eciValues[$networkCode];
+        $content[RequestFields::ECI] = $eciValues[$networkCode];
 
         $traceContent = $content;
 
