@@ -46,7 +46,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
      */
     protected $gateway;
 
-    public function __construct(string $gateway = "")
+    public function __construct()
     {
         parent::__construct();
 
@@ -211,7 +211,6 @@ class RefundReconciliate extends Foundation\SubReconciliate
             $this->refund->reload()->transaction->reload();
         }
 
-        // Sets the reconciled_at in the transactions entity, on a successful reconciliation.
         $this->persistReconciledAt($this->refund);
 
         $this->persistGatewaySettledAt($this->refund, $rowDetails);
