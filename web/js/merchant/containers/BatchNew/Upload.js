@@ -8,7 +8,7 @@ import { uploadPaymentLinkBatch as uploadBatch } from 'merchant/modules/batches'
 @connect(state => state.session, { uploadBatch })
 export default class BatchUpload extends Component {
   state = {
-    loadMore: false,
+    shouldLoadMore: false,
     notification: null,
     //TODO: remove after file component is added
     file: null,
@@ -16,31 +16,39 @@ export default class BatchUpload extends Component {
 
   //TODO: remove after file component is added
   handleFileChange = e => {
-    console.log(e.target.files[0]);
     this.setState({ file: e.target.files[0] }, this.handleFileUpload);
   };
 
   handleFileUpload = () => {
+    this.handleNotification('upload');
     this.props
       .uploadBatch(this.state.file, this.props.mode)
       .then(response => {
+        this.handleNotification('success');
         console.log('Response: ', response);
       })
       .catch(({ errors }) => {
+        this.handleNotification('error', errors[0]);
         console.log('Errors: ', errors);
       });
   };
 
   handleLoadMore = () => {
     this.setState({
-      loadMore: !this.state.loadMore,
+      shouldLoadMore: !this.state.loadMore,
     });
+  };
+
+  handleNotification = (status = null, error) => {
+    const msg = (error ? `${error}. ` : '') + notificationMsgs[status];
+    const notification = status ? { status: status, msg: msg } : null;
+    this.setState({ notification: notification });
   };
 
   render() {
     return (
       <BatchUploadModal
-        loadMore={this.state.loadMore}
+        shouldLoadMore={this.state.shouldLoadMore}
         notification={this.state.notification}
         onLoadMore={this.handleLoadMore}
         onFileChange={this.handleFileChange}
@@ -49,3 +57,11 @@ export default class BatchUpload extends Component {
     );
   }
 }
+
+const notificationMsgs = {
+  upload:
+    'The batch file is being processed. Please wait as this may take some time.',
+  success: 'The batch file has been processed successfully.',
+  error: 'Please upload the file again.',
+  retry: 'Please upload file again.',
+};
