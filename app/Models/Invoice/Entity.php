@@ -769,12 +769,14 @@ class Entity extends Base\PublicEntity
         $this->setCustomerContact($customer->getContact());
         $this->setCustomerEmail($customer->getEmail());
 
-        // Retrieves primary billing address and associates the same with invoice
+        // Retrieves primary billing and shipping addresses and associates the same with invoice
         $repo = App::getFacadeRoot()['repo'];
 
         $billingAddress = $repo->address->fetchPrimaryAddressOfEntityOfType($customer, Address\Type::BILLING_ADDRESS);
-
         $this->customerBillingAddress()->associate($billingAddress);
+
+        $shippingAddr = $repo->address->fetchPrimaryAddressOfEntityOfType($customer, Address\Type::SHIPPING_ADDRESS);
+        $this->customerShippingAddress()->associate($shippingAddr);
     }
 
     public function associateAndSetCustomerDetails(Customer\Entity $customer)

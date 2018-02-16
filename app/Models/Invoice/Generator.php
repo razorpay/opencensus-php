@@ -368,6 +368,7 @@ class Generator extends Base\Core
      * Consumes customer related attributes of $input. Gets called in both create/
      * update flow. Works as follows:
      * - If customer_id is passed, use that and update invoice's copy of attributes
+     *   ELSE
      * - If customer is passed, override invoice copy of attributes with those details
      *
      * @param array $input
@@ -378,8 +379,7 @@ class Generator extends Base\Core
         {
             $this->associateCustomerWithInvoiceById($input[Entity::CUSTOMER_ID]);
         }
-
-        if (array_key_exists(Entity::CUSTOMER, $input) === true)
+        else if (array_key_exists(Entity::CUSTOMER, $input) === true)
         {
             $this->associateCustomerWithInvoiceByDetails($input[Entity::CUSTOMER]);
         }

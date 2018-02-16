@@ -130,6 +130,7 @@ class Core extends Base\Core
      * @param array  $input
      *
      * @return null
+     * @throws Exception\BadRequestValidationFailureException
      */
     protected function createCustomerAddressesIfValuesSetInInput(Entity $customer, array $input)
     {
