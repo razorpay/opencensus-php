@@ -392,7 +392,16 @@ class Service extends Base\Service
 
     public function getMerchantTags($merchantId)
     {
-        $request = new \App\Admin\ApiRequestAny(['client_type' => 'merchant']);
+        $adminUser = Auth::guard('api')->user();
+
+        if (empty($adminUser) === false)
+        {
+            $request = new \App\Admin\ApiRequestAny(['client_type' => 'admin', 'mode' => "live_$merchantId"]);
+        }
+        else
+        {
+            $request = new \App\Admin\ApiRequestAny(['client_type' => 'merchant']);
+        }
 
         list($error, $data) = $request->send("merchants/$merchantId/tags", 'GET');
 
