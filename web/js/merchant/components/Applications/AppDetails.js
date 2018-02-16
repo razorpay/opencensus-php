@@ -34,10 +34,21 @@ export default function AppDetails(props) {
               e.preventDefault();
               props.onBtnClick(data);
             }}
-            class="btn btn-default"
+            class={`btn btn-default ${!isConnected ? 'delete-btn' : ''}`}
           >
-            <span>{isConnected ? 'Revoke Access' : 'Delete Application'}</span>
+            {isConnected ? 'Revoke Access' : 'Delete Application'}
           </button>
+          {props.showWebhookModal && (
+            <button
+              onClick={e => {
+                e.preventDefault();
+                props.showWebhookModal(data);
+              }}
+              class="btn-link webhook-btn"
+            >
+              Manage Webhook
+            </button>
+          )}
         </div>
         <div
           class={`application-details ${isConnected ? 'connected-app' : ''}`}

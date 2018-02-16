@@ -1,12 +1,51 @@
 import { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import AppDetails from 'merchant/components/Applications/AppDetails';
+import Spinner from 'rzp/ui/Spinner';
+import WebhookCreation from 'merchant/containers/Webhooks/New';
+import AppDetails, {
+  AppDetailsLoader,
+} from 'merchant/components/Applications/AppDetails';
 import NewAppLink from 'merchant/components/Applications/NewAppLink';
-import NoConnectedApps from 'merchant/components/Applications/NoConnectedApps';
+import {
+  NoConnectedApps,
+  LoadingConnectedApps,
+} from 'merchant/components/Applications/NoConnectedApps';
 import * as ApplicationActions from 'merchant/modules/applications';
 import * as NotificationActions from 'rzp/modules/notifications';
 import * as ModalActions from 'rzp/modules/modals';
+
+class AppWebhook extends Component {
+  state = {};
+
+  componentWillMount() {
+    // Fetch call getting app's webhook
+    ApplicationActions.fetchWebhook('9cY1wnipoWiCuS').then(data => {
+      console.log(data);
+      this.setState({ webhook: data.data });
+    });
+  }
+
+  render() {
+    let component;
+
+    if (this.state.webhook) {
+      // Edit WebhookCreation won't send appId when it's edit webhook for this application
+      return (
+        <WebhookCreation
+          webhook={this.state.webhook}
+          appId={this.props.appId}
+        />
+      );
+    } else {
+      return (
+        <div class="page-spinner-container">
+          <Spinner />
+        </div>
+      );
+    }
+  }
+}
 
 @connect(
   state => {
@@ -50,6 +89,19 @@ export default class ApplicationContainer extends Component {
     });
   };
 
+  showWebhookModal = application => {
+    console.log('application...', application);
+    this.props.openModal({
+      component: (
+        <AppWebhook
+          webhook={application.webhook || undefined}
+          appId={application.id}
+          isApplication={true}
+        />
+      ),
+    });
+  };
+
   revokeAccess = token => {
     this.context.confirm({
       message: `Are you sure you want to revoke access to ${
@@ -78,6 +130,8 @@ export default class ApplicationContainer extends Component {
   render() {
     // let { config, features, loading } = this.props.configState;
     let createdApps = this.props.applications.items;
+    let isCreatedAppsLoading = this.props.applications.createdAppsloading;
+    let isConnectedAppsLoading = this.props.applications.connectedAppsloading;
     let tokens = this.props.applications.tokens;
 
     return (
@@ -86,7 +140,9 @@ export default class ApplicationContainer extends Component {
           <div class="content-header">
             <strong>Connected Applications</strong>
           </div>
-          {tokens.length ? (
+          {isConnectedAppsLoading ? (
+            <LoadingConnectedApps />
+          ) : tokens.length ? (
             tokens.map(data => (
               <AppDetails
                 data={data}
@@ -111,8 +167,10 @@ export default class ApplicationContainer extends Component {
                 data={data}
                 key={data.id}
                 onBtnClick={this.deleteApp}
+                showWebhookModal={this.showWebhookModal}
               />
             ))}
+            {isCreatedAppsLoading && <AppDetailsLoader />}
             <div class="clearfix" />
           </div>
         </div>
