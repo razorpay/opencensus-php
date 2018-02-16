@@ -577,6 +577,15 @@ class Entity extends Base\PublicEntity
 
     // ---------------------- END SCOPES ----------------------
 
+    /**
+     * This function won't work in cases where a single gateway
+     * supports multiple methods. Example: Netbanking HDFC,
+     * Netbanking ICICI. They both support emandate and netbanking.
+     *
+     * It'll end up setting both netbanking and emandate as 1.
+     *
+     * @param $input
+     */
     public function generateMethod($input)
     {
         $gateway = $input[self::GATEWAY];
