@@ -110,7 +110,7 @@ trait MessageFormats
 
         if ($array !== null)
         {
-            [$key, $value] = [array_keys($array)[0], array_values($array)[0]];
+            list($key, $value) = [array_keys($array)[0], array_values($array)[0]];
 
             $firstValue = (is_array($value)) ? $value[0] : $value;
 
