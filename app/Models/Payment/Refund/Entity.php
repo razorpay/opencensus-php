@@ -296,6 +296,14 @@ class Entity extends Base\PublicEntity
         return (new Dictionary($acquirerData));
     }
 
+    /**
+     * Used by FTA reconciliation
+     */
+    public function setFailureReason()
+    {
+        return;
+    }
+
     public function setGatewayRefunded($gatewayRefunded)
     {
         $this->setAttribute(self::GATEWAY_REFUNDED, $gatewayRefunded);
@@ -417,16 +425,6 @@ class Entity extends Base\PublicEntity
     public function setRemarks(string $value)
     {
         $this->setAttribute(self::REFERENCE2, $value);
-    }
-
-    /**
-     * @param $reason
-     *
-     * Called from fund transfer reconciliation
-     */
-    public function setFailureReason($reason)
-    {
-        ;
     }
 
     public function setBatchFundTransferId($value)

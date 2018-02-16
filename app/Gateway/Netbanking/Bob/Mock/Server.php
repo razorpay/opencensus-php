@@ -23,6 +23,7 @@ class Server extends Base\Mock\Server
         $encryptor = $this->getGatewayInstance()->getEncryptor();
 
         $content = $encryptor->decryptData($input[RequestFields::ENCRYPTED_DATA]);
+
         $this->validateAuthorizeInput($content);
 
         $authResponseContent = $this->getAuthResponseContent($content);
