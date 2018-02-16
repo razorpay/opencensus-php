@@ -1,0 +1,48 @@
+<?php
+
+namespace RZP\Models\Offer;
+
+use RZP\Models\Base;
+
+class Calculator extends Base\Core
+{
+    public function __construct(Entity $offer)
+    {
+        parent::__construct();
+
+        $this->offer = $offer;
+    }
+
+    public function calculateDiscountedAmount(int $amount)
+    {
+        if (($this->offer->getMinAmount() !== null) and
+            ($amount < $this->offer->getMinAmount()))
+        {
+            return $amount;
+        }
+
+        $rawDiscount = $this->getRawDiscount($amount);
+
+        $discount = min($this->offer->getMaxCashback(), $rawDiscountedAmount);
+
+        return max(0, ($amount - $discount));
+    }
+
+    protected function getRawDiscount(int $amount)
+    {
+        $discount = 0;
+
+        if ($this->offer->getFlatCashback() !== null)
+        {
+            $discount = $this->offer->getFlatCashback();
+        }
+        else if ($this->offer->getPercentRate() !== null)
+        {
+            $percentDiscount = $this->offer->getPercentRate()/100;
+
+            $discount = $percentDiscount * $amount;
+        }
+
+        return $discount;
+    }
+}

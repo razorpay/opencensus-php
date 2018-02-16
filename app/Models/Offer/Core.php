@@ -120,15 +120,6 @@ class Core extends Base\Core
             ]);
     }
 
-    public function fetchForOrder(string $orderId, Merchant\Entity $merchant)
-    {
-        $order = $this->repo->order->findByPublicIdAndMerchant($orderId, $merchant);
-
-        $offer = $order->getOfferIfExists();
-
-        return $offer;
-    }
-
     public function fetchMerchantOffersForCheckout(Merchant\Entity $merchant)
     {
         $merchantId = $merchant->getId();
@@ -266,5 +257,12 @@ class Core extends Base\Core
                     'non_existing_iins' => array_values($nonExistingIins),
                 ]);
         }
+    }
+
+    public function getDiscountedAmount(Entity $offer, int $amount)
+    {
+        $calculator = new Calculator($offer);
+
+        return $calculator->calculateDiscountedAmount($amount);
     }
 }

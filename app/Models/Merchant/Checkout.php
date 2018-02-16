@@ -47,6 +47,11 @@ class Checkout
      */
     protected $subscription;
 
+    /**
+     * @var Order\Entity
+     */
+    protected $order;
+
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -97,11 +102,11 @@ class Checkout
 
         $orderId = $input[Payment\Entity::ORDER_ID];
 
-        $order = $this->repo->order->findByPublicIdAndMerchant($orderId, $merchant);
+        $this->order = $this->repo->order->findByPublicIdAndMerchant($orderId, $merchant);
 
-        $data['order'] = (new Order\Core)->getFormattedDataForCheckout($order, $merchant);
+        $data['order'] = (new Order\Core)->getFormattedDataForCheckout($this->order, $merchant);
 
-        $this->resetMethodsIfValidBanksPresent($data, $order);
+        $this->resetMethodsIfValidBanksPresent($data, $this->order);
     }
 
     protected function resetMethodsIfValidBanksPresent(
@@ -546,29 +551,44 @@ class Checkout
 
     public function checkAndFillOfferDetails(Merchant\Entity $merchant, array $input, array & $data)
     {
-        $offerCore = new Offer\Core;
+        $order = $this->order;
 
-        $orderId = $input[Payment\Entity::ORDER_ID] ?? null;
-
-        if ($orderId !== null)
+        if ($order !== null)
         {
-            $orderOffer = $offerCore->fetchForOrder($orderId, $merchant);
-
-            if ($orderOffer !== null)
+            if ($order->offer !== null)
             {
-                // For offer applied on a particular order only enable methods eligible for the
-                // offer. Customer won't be able to select other payment methods
-                $this->updateMethodsToEnableOnCheckout($orderOffer, $data);
+                //
+                // If offer is applicable then amount is to be discounted by us
+                //
+                if ($order->isOfferApplicable() === true)
+                {
+                    $this->applyOfferOnOrderAmount($order, $data);
+                }
+
+                $this->updateMethodsToEnableOnCheckout($order->offer, $data);
 
                 $data['offers'] = [
-                    $orderOffer->toArrayCheckout()
+                    $order->offer->toArrayCheckout()
                 ];
-
-                return;
             }
         }
+        else
+        {
+            $this->checkAndFillNonOrderOffers($merchant, $data);
+        }
+    }
 
-        $this->checkAndFillNonOrderOffers($merchant, $data);
+    protected function applyOfferOnOrderAmount(Order\Entity $order, array & $data)
+    {
+        $offerCore = new Offer\Core;
+
+        $originalAmount = $order->getAmount();
+
+        $offer = $order->offer;
+
+        $data['original_amount'] = $originalAmount;
+
+        $data['amount'] = $offerCore->getDiscountedAmount($offer, $originalAmount);
     }
 
     protected function checkAndFillNonOrderOffers(Merchant\Entity $merchant, array & $data)

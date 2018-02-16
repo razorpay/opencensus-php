@@ -31,6 +31,7 @@ class Validator extends Base\Validator
         Entity::BANK,
         'method_fee_bearer',
         Entity::CURRENCY,
+        Entity::OFFER,
     ];
 
     protected function validateAmount($input)
@@ -381,6 +382,21 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_METHOD_DOES_NOT_MATCH_ORDER_METHOD);
+        }
+    }
+
+    protected function validateOffer($input)
+    {
+        if (isset($input[Entity::OFFER]) === false)
+        {
+            return;
+        }
+
+        if (($input[Entity::OFFER] === true) and
+            (isset($input[Entity::OFFER_ID]) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                    'Offer without offer_id is currently not supported');
         }
     }
 }
