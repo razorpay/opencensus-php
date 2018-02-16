@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 import { toJS } from 'mobx';
 
-import { adminFetch, adminPatch } from 'common/fetch';
+import fetch, { adminFetch, adminPatch } from 'common/fetch';
 import { closeModal, confirm, notifySuccess } from 'common/modal';
 import { isWorkflow } from 'common/util';
 
@@ -46,12 +46,7 @@ export default class MerchantActivationForm extends Component {
       });
     });
 
-    adminFetch({
-      route_name: 'merchant_fetch_users',
-      url_params: {
-        id: this.merchantId,
-      },
-    }).then(data => {
+    fetch(`/admin/api/live_${this.merchantId}/merchants/users`).then(data => {
       this.setState({
         users: data,
       });

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 import BaseModal from 'ui/BaseModal';
 
-import { adminFetch } from 'common/fetch';
+import fetch, { adminFetch } from 'common/fetch';
 
 import Table from 'ui/Table';
 
@@ -20,11 +20,8 @@ export default class TeamDetails extends Component {
       });
     });
 
-    adminFetch({
-      route_name: 'merchant_fetch_users',
-      url_params: {
-        id: this.props.merchantId,
-      },
+    return fetch({
+      url: `/admin/api/live_${this.props.merchantId}/merchants/users`,
     }).then(data => {
       this.setState({
         users: data,
@@ -34,7 +31,7 @@ export default class TeamDetails extends Component {
 
   render() {
     return (
-      <BaseModal header={`Team Details for merchant ${this.propsmerchantId}`}>
+      <BaseModal header={`Team Details for merchant ${this.props.merchantId}`}>
         <div class="container">
           <div class="heading">Users</div>
           {!this.state.users ? (
