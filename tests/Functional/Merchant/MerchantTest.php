@@ -303,6 +303,87 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testEditMerchantWhitelistedIpsLive()
+    {
+        $this->createMerchant();
+
+        $this->startTest();
+    }
+
+    public function testEditMerchantInvalidWhitelistedIpsLive()
+    {
+        $this->createMerchant();
+
+        $this->startTest();
+    }
+
+    public function testEditMerchantWhitelistedIpsTest()
+    {
+        $this->createMerchant();
+
+        $this->startTest();
+    }
+
+    public function testEditMerchantInvalidWhitelistedIpsTest()
+    {
+        $this->createMerchant();
+
+        $this->startTest();
+    }
+
+    public function testMerchantWhitelistedIpsLive()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['live' => true, 'activated' => 1]);
+
+        $this->fixtures->merchant->editWhitelistedIpsLive('10000000000000', ['1.1.1.1','2.2.2.2']);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+    }
+
+    public function testMerchantFailedWhitelistedIpsLive()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['live' => true, 'activated' => 1]);
+
+        $this->fixtures->merchant->editWhitelistedIpsLive('10000000000000', ['1.1.1.1','2.2.2.2']);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+    }
+
+    public function testMerchantWhitelistedIpsTest()
+    {
+        $this->fixtures->merchant->editWhitelistedIpsTest('10000000000000', ['1.1.1.1','2.2.2.2']);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testMerchantFailedWhitelistedIpsTest()
+    {
+        $this->fixtures->merchant->editWhitelistedIpsTest('10000000000000', ['1.1.1.1','2.2.2.2']);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testMerchantWhitelistedIpsMode()
+    {
+        $this->fixtures->merchant->editWhitelistedIpsTest('10000000000000', ['3.3.3.3','4.4.4.4']);
+
+        $this->fixtures->merchant->editWhitelistedIpsLive('10000000000000', ['1.1.1.1','2.2.2.2']);
+
+        $this->fixtures->merchant->edit('10000000000000', ['live' => true, 'activated' => 1]);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+    }
+
     public function testEditMerchantUppercaseEmail()
     {
         $this->createMerchant();
@@ -515,6 +596,10 @@ class MerchantTest extends TestCase
 
         $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
 
+        $url = sprintf($this->testData[__FUNCTION__]['request']['url'], $merchant['id']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
         $this->startTest();
 
         $merchant = $this->getEntityById('merchant', $merchant['id'], true);
@@ -524,9 +609,15 @@ class MerchantTest extends TestCase
 
     public function testMerchantArchiveWithNoMerchantDetails()
     {
+        $merchant = $this->getLastEntity('merchant', true);
+
         $this->setAdminForInternalAuth();
 
         $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
+
+        $url = sprintf($this->testData[__FUNCTION__]['request']['url'], $merchant['id']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->startTest();
     }
@@ -541,6 +632,10 @@ class MerchantTest extends TestCase
 
         $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
 
+        $url = sprintf($this->testData[__FUNCTION__]['request']['url'], $merchant['id']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
         $this->startTest();
     }
 
@@ -553,6 +648,10 @@ class MerchantTest extends TestCase
         $this->setAdminForInternalAuth();
 
         $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
+
+        $url = sprintf($this->testData[__FUNCTION__]['request']['url'], $merchant['id']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->startTest();
 
@@ -582,6 +681,10 @@ class MerchantTest extends TestCase
 
         $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
 
+        $url = sprintf($this->testData[__FUNCTION__]['request']['url'], $merchant['id']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
         $this->startTest();
 
         $merchant = $this->getEntityById('merchant', $merchant['id'], true);
@@ -599,6 +702,10 @@ class MerchantTest extends TestCase
 
         $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
 
+        $url = sprintf($this->testData[__FUNCTION__]['request']['url'], $merchant['id']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
         $this->startTest();
     }
 
@@ -611,6 +718,10 @@ class MerchantTest extends TestCase
         $this->setAdminForInternalAuth();
 
         $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
+
+        $url = sprintf($this->testData[__FUNCTION__]['request']['url'], $merchant['id']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->startTest();
 
@@ -761,7 +872,7 @@ class MerchantTest extends TestCase
 
         $settleAtTimestamp = (new Transaction\Core)->calculateSettledAtTimestamp($capturedAt, 3) + 1;
 
-        $this->initiateSettlements('kotak', $settleAtTimestamp);
+        $this->initiateSettlements('axis', $settleAtTimestamp);
 
         $testData = & $this->testData['testChangeBankAccount'];
         $this->runRequestResponseFlow($testData);

@@ -93,14 +93,19 @@ class Repository extends Base\Repository
      * Fetches all attempts pending reconciliation between given timestamps (both including)
      */
     public function getAttemptsBetweenTimestampsWithStatus(
-        $from, $to, string $status, string $channel)
+        $from = null, $to = null, string $status, string $channel)
     {
-        return $this->newQuery()
-                    ->select([Entity::ID, Entity::BATCH_FUND_TRANSFER_ID])
-                    ->whereBetween(Entity::CREATED_AT, [$from, $to])
-                    ->where(Entity::STATUS, $status)
-                    ->where(Entity::CHANNEL, $channel)
-                    ->whereNotNull(Entity::BANK_STATUS_CODE)
-                    ->get();
+        $query = $this->newQuery()
+                      ->select([Entity::ID, Entity::BATCH_FUND_TRANSFER_ID])
+                      ->where(Entity::STATUS, $status)
+                      ->where(Entity::CHANNEL, $channel)
+                      ->whereNotNull(Entity::BANK_STATUS_CODE);
+
+        if (($from !== null) and ($to !== null))
+        {
+            $query = $query->whereBetween(Entity::CREATED_AT, [$from, $to]);
+        }
+
+        return $query->get();
     }
 }

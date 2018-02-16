@@ -31,6 +31,8 @@ class PayumoneyGatewayTest extends TestCase
 
     public function testPayment()
     {
+        $this->markTestSkipped();
+
         $payment = $this->getDefaultWalletPaymentArray('payumoney');
 
         $authPayment = $this->doAuthPayment($payment);
@@ -50,6 +52,8 @@ class PayumoneyGatewayTest extends TestCase
 
     public function testPaymentWithRedirection()
     {
+        $this->markTestSkipped();
+
         $payment = $this->getDefaultWalletPaymentArray('payumoney');
 
         $authPayment = $this->doAuthPayment($payment);
@@ -65,6 +69,8 @@ class PayumoneyGatewayTest extends TestCase
 
     public function testPaymentWithCheckBalanceFailure()
     {
+        $this->markTestSkipped();
+
         $payment = $this->getDefaultWalletPaymentArray('payumoney');
 
         $this->mockServerContentFunction(function(& $content, $action = null)
@@ -93,6 +99,8 @@ class PayumoneyGatewayTest extends TestCase
 
     public function testDebitFailed()
     {
+        $this->markTestSkipped();
+
         $payment = $this->getDefaultWalletPaymentArray('payumoney');
 
         $this->mockServerContentFunction(function(& $content, $action = null)
@@ -122,6 +130,8 @@ class PayumoneyGatewayTest extends TestCase
 
     public function testOtpGenerateFailure()
     {
+        $this->markTestSkipped();
+
         $payment = $this->getDefaultWalletPaymentArray('payumoney');
 
         $this->mockServerContentFunction(function(& $content, $action = null)
@@ -152,6 +162,8 @@ class PayumoneyGatewayTest extends TestCase
 
     public function testFailedPaymentWithRedirection()
     {
+        $this->markTestSkipped();
+
         $this->config['app.throw_exception_in_testing'] = false;
         $this->config['app.debug'] = false;
 
@@ -179,6 +191,8 @@ class PayumoneyGatewayTest extends TestCase
 
     public function testOtpRetryPayment()
     {
+        $this->markTestSkipped();
+
         $payment = $this->getDefaultWalletPaymentArray('payumoney');
 
         $data = $this->testData[__FUNCTION__];
@@ -199,6 +213,8 @@ class PayumoneyGatewayTest extends TestCase
 
     public function testOtpRetrySuccessPayment()
     {
+        $this->markTestSkipped();
+
         $payment = $this->getDefaultWalletPaymentArray('payumoney');
 
         $data = $this->testData[__FUNCTION__];
@@ -235,6 +251,8 @@ class PayumoneyGatewayTest extends TestCase
 
     public function testOtpRetryExceededPayment()
     {
+        $this->markTestSkipped();
+
         $this->ba->publicAuth();
 
         $payment = $this->fixtures->create('payment', [
@@ -256,6 +274,8 @@ class PayumoneyGatewayTest extends TestCase
 
     public function testOtpResendPayment()
     {
+        $this->markTestSkipped();
+
         $this->ba->publicAuth();
 
         $payment = $this->fixtures->create('payment', [
@@ -284,6 +304,8 @@ class PayumoneyGatewayTest extends TestCase
 
     public function testOtpResendOnAuthorizedPayment()
     {
+        $this->markTestSkipped();
+
         $payment = $this->getDefaultWalletPaymentArray('payumoney');
 
         $response = $this->doAuthPayment($payment);
@@ -299,6 +321,8 @@ class PayumoneyGatewayTest extends TestCase
 
     public function testInsufficientBalancePayment()
     {
+        $this->markTestSkipped();
+
         $payment = $this->getDefaultWalletPaymentArray('payumoney');
         $payment['amount'] = 100000;
 
@@ -316,6 +340,8 @@ class PayumoneyGatewayTest extends TestCase
 
     public function testWalletLimitExceededPayment()
     {
+        $this->markTestSkipped();
+
         $payment = $this->getDefaultWalletPaymentArray('payumoney');
 
         $data = $this->testData[__FUNCTION__];
@@ -338,6 +364,8 @@ class PayumoneyGatewayTest extends TestCase
 
     public function testTopupPayment()
     {
+        $this->markTestSkipped();
+
         // Get Innsufficient balance response
         $this->testInsufficientBalancePayment();
 
@@ -357,6 +385,8 @@ class PayumoneyGatewayTest extends TestCase
 
     public function testTopupWithFailedStatus()
     {
+        $this->markTestSkipped();
+
         // Get Innsufficient balance response
         $this->testInsufficientBalancePayment();
 
@@ -382,6 +412,8 @@ class PayumoneyGatewayTest extends TestCase
 
     public function testTopupWithoutStatus()
     {
+        $this->markTestSkipped();
+
         // Get Innsufficient balance response
         $this->testInsufficientBalancePayment();
 
@@ -407,6 +439,8 @@ class PayumoneyGatewayTest extends TestCase
 
     public function testTopupPaymentViaRedirectionFlow()
     {
+        $this->markTestSkipped();
+
         // Get Innsufficient balance response
         $this->testInsufficientBalancePayment();
 
@@ -423,6 +457,8 @@ class PayumoneyGatewayTest extends TestCase
 
     public function testTopupAlreadyProcessedPayment()
     {
+        $this->markTestSkipped();
+
         $response = $this->testTopupPayment();
 
         $this->ba->publicAuth();
@@ -438,6 +474,8 @@ class PayumoneyGatewayTest extends TestCase
 
     public function testTopupCapturePayment()
     {
+        $this->markTestSkipped();
+
         $response = $this->testTopupPayment();
 
         $capturePayment = $this->capturePayment($response['razorpay_payment_id'], 100000);
@@ -455,6 +493,8 @@ class PayumoneyGatewayTest extends TestCase
 
     public function testTopupFailedPayment()
     {
+        $this->markTestSkipped();
+
         $this->ba->publicAuth();
 
         $payment = $this->fixtures->create('payment:failed', [
@@ -480,6 +520,8 @@ class PayumoneyGatewayTest extends TestCase
 
     public function testVerifyPayment()
     {
+        $this->markTestSkipped();
+
         $payment = $this->getDefaultWalletPaymentArray('payumoney');
 
         $authPayment = $this->doAuthPayment($payment);
@@ -491,6 +533,8 @@ class PayumoneyGatewayTest extends TestCase
 
     public function testVerifyPaymentMismatch()
     {
+        $this->markTestSkipped();
+
         $payment = $this->getDefaultWalletPaymentArray('payumoney');
 
         $response = $this->doAuthPayment($payment);
@@ -510,6 +554,8 @@ class PayumoneyGatewayTest extends TestCase
 
     public function testVerifyFailedPayment()
     {
+        $this->markTestSkipped();
+
         $this->ba->publicAuth();
 
         $data = $this->testData[__FUNCTION__];
@@ -539,6 +585,8 @@ class PayumoneyGatewayTest extends TestCase
 
     public function testRefundPayment()
     {
+        $this->markTestSkipped();
+
         $payment = $this->getDefaultWalletPaymentArray('payumoney');
 
         $authPayment = $this->doAuthPayment($payment);
@@ -554,6 +602,8 @@ class PayumoneyGatewayTest extends TestCase
 
     public function testPartialRefundPayment()
     {
+        $this->markTestSkipped();
+
         $payment = $this->getDefaultWalletPaymentArray('payumoney');
 
         $authPayment = $this->doAuthPayment($payment);
@@ -588,6 +638,8 @@ class PayumoneyGatewayTest extends TestCase
 
     public function testRefundPayment2()
     {
+        $this->markTestSkipped();
+
         $payment = $this->getDefaultWalletPaymentArray('payumoney');
 
         $capturePayment = $this->doAuthAndCapturePayment($payment);
@@ -599,6 +651,8 @@ class PayumoneyGatewayTest extends TestCase
 
     public function testRefundExcelFile()
     {
+        $this->markTestSkipped();
+
         $defaultPayment = $this->getDefaultWalletPaymentArray('payumoney');
 
         $payment = $this->doAuthAndCapturePayment($defaultPayment);
@@ -632,6 +686,8 @@ class PayumoneyGatewayTest extends TestCase
 
     public function testRefundExcelFileForAParticularMonth()
     {
+        $this->markTestSkipped();
+
         $knownDate = Carbon::create(2016, 5, 21);
         Carbon::setTestNow($knownDate);
 

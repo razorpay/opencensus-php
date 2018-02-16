@@ -296,6 +296,14 @@ class Entity extends Base\PublicEntity
         return (new Dictionary($acquirerData));
     }
 
+    /**
+     * Used by FTA reconciliation
+     */
+    public function setFailureReason()
+    {
+        return;
+    }
+
     public function setGatewayRefunded($gatewayRefunded)
     {
         $this->setAttribute(self::GATEWAY_REFUNDED, $gatewayRefunded);

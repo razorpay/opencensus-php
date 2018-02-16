@@ -86,6 +86,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY                    => 'required|in:hitachi',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string|max:15',
         Entity::GATEWAY_TERMINAL_ID        => 'required|string|max:8',
+        Entity::TYPE                       => 'sometimes|array',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
         Entity::CURRENCY                   => 'sometimes|alpha|size:3'
     ];
@@ -192,6 +193,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY                    => 'required|in:hitachi',
         Entity::GATEWAY_TERMINAL_ID        => 'sometimes|string|max:8',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
+        Entity::TYPE                       => 'sometimes|array',
     ];
 
     protected static $firstDataEditTerminalRules = [

@@ -12,7 +12,6 @@ use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
-use RZP\Models\Merchant\Balance;
 
 class Repository extends Base\Repository
 {

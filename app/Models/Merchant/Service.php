@@ -21,7 +21,6 @@ use RZP\Models\BankAccount;
 use RZP\Models\Base;
 use RZP\Models\Coupon;
 use RZP\Models\Feature;
-use RZP\Models\Key;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 use RZP\Models\Merchant\Webhook;
@@ -36,10 +35,8 @@ class Service extends Base\Service
 {
     use Notify;
 
-    const COUPON_RESPONSE   = 'apply_coupon';
-    const OAUTH_MAIL        = 'oauth_mail';
-    const APPLICATION       = 'application';
-
+    const COUPON_RESPONSE               = 'apply_coupon';
+    const OAUTH_MAIL                    = 'oauth_mail';
 
     /**
      * Creates a merchant and saves in database
@@ -786,7 +783,7 @@ class Service extends Base\Service
 
     public function createOAuthAppWebhook(string $appId, array $input): array
     {
-        $input[Webhook\Entity::ENTITY_TYPE] = self::APPLICATION;
+        $input[Webhook\Entity::ENTITY_TYPE] = AccessMap\Entity::APPLICATION;
 
         $input[Webhook\Entity::ENTITY_ID] = $appId;
 
@@ -1386,7 +1383,6 @@ class Service extends Base\Service
         );
 
         return $response;
-
     }
 
     /**
@@ -1585,13 +1581,19 @@ class Service extends Base\Service
      */
     public function sendOAuthMail(array $input, string $type): array
     {
-        $this->trace->info(TraceCode::SEND_OAUTH_MAIL_REQUEST, ['type' => $type, 'input' => $input]);
+        $this->trace->info(
+            TraceCode::SEND_OAUTH_MAIL_REQUEST,
+            [
+                'type' => $type,
+                'input' => $input
+            ]);
 
-        (new Merchant\Validator)->validateInput(self::OAUTH_MAIL, $input);
+        (new Validator)->validateInput(self::OAUTH_MAIL, $input);
 
         $merchant = $this->repo->merchant->findOrFail($input[Entity::MERCHANT_ID]);
         $user     = $this->repo->user->findOrFail($input[User\Entity::USER_ID]);
-        $client   = (new OAuthClient\Repository)->findOrFail($input[OAuthToken\Entity::CLIENT_ID]);
+        $client   = (new OAuthClient\Repository)->findOrFail(
+                                                    $input[OAuthToken\Entity::CLIENT_ID]);
 
         $mailer = $this->getOAuthMailerClassByType($type);
 

@@ -538,6 +538,7 @@ class ErrorCode
     const BAD_REQUEST_INVALID_DEVICE                                                = 'BAD_REQUEST_INVALID_DEVICE';
     const BAD_REQUEST_INVALID_INTEGRATION                                           = 'BAD_REQUEST_INVALID_INTEGRATION';
 
+    const SERVER_ERROR_GATEWAY_NOT_SET                                              = 'SERVER_ERROR_GATEWAY_NOT_SET';
     const SERVER_ERROR_INVALID_ARGUMENT                                             = 'SERVER_ERROR_INVALID_ARGUMENT';
     const SERVER_ERROR_DB_QUERY_FAILED                                              = 'SERVER_ERROR_DB_QUERY_FAILED';
     const SERVER_ERROR_LOGICAL_ERROR                                                = 'SERVER_ERROR_LOGICAL_ERROR';
@@ -619,7 +620,7 @@ class ErrorCode
 
     const BAD_REQUEST_INVALID_MERCHANT_INVOICE_NUMBER                               = 'BAD_REQUEST_INVALID_MERCHANT_INVOICE_NUMBER';
 
-    const BAD_REQUEST_PAYOUT_ANOTHER_OPERATION_IN_PROGRESS                          = 'BAD_REQUEST_PAYOUT_ANOTHER_OPERATION_IN_PROGRESS';
+    const BAD_REQUEST_FUND_TRANSFER_ANOTHER_OPERATION_IN_PROGRESS                          = 'BAD_REQUEST_FUND_TRANSFER_ANOTHER_OPERATION_IN_PROGRESS';
 
     const BAD_REQUEST_INVALID_MAILGUN_WEBHOOK_TYPE                                  = 'BAD_REQUEST_INVALID_MAILGUN_WEBHOOK_TYPE';
     const BAD_REQUEST_INVALID_MAILGUN_SIGNATURE                                     = 'BAD_REQUEST_INVALID_MAILGUN_SIGNATURE';

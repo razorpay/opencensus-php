@@ -3,11 +3,11 @@
 namespace RZP\Models\FundTransfer\Attempt;
 
 use RZP\Base;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
-    protected static $bulkUpdateRules = [
-        'ids'                    => 'required|array',
+    protected static $editRules = [
         Entity::STATUS           => 'sometimes|string|custom',
         Entity::FAILURE_REASON   => 'sometimes|string|max:100',
         Entity::REMARKS          => 'sometimes|string|max:100',
@@ -28,7 +28,7 @@ class Validator extends Base\Validator
     {
         if (Status::isValidForBulkUpdate($value) === false)
         {
-            throw new Exception\BadRequestValidationFailureException(
+            throw new BadRequestValidationFailureException(
                 'Invalid status',
                 $attribute,
                 $value);

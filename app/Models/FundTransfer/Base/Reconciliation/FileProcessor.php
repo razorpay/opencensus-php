@@ -11,6 +11,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Exception\LogicException;
 use RZP\Models\FundTransfer\Kotak;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
@@ -97,6 +98,13 @@ abstract class FileProcessor extends Base\Core
     protected function processReconciliation($input)
     {
         $reconcileFile = $this->getReconcilationFile($input);
+
+        $this->trace->info(
+            TraceCode::MISC_TRACE_CODE,
+            [
+                'recon_filename' => $reconcileFile,
+                'input'          => $input
+            ]);
 
         if ($reconcileFile === null)
         {
@@ -191,7 +199,7 @@ abstract class FileProcessor extends Base\Core
         if ((isset($input['source']) === true) and
             ($input['source'] === 'lambda'))
         {
-            $key = $input['key'];
+            $key = urldecode($input['key']);
 
             $reconcileFile = $this->getH2HFileFromAws($key);
         }

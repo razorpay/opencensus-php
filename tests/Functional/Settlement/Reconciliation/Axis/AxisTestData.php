@@ -2,26 +2,26 @@
 
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Settlement\Status as SettlementStatus;
-use RZP\Models\FundTransfer\Icici\Reconciliation\Status;
+use RZP\Models\FundTransfer\Axis\Reconciliation\Status;
 use RZP\Models\FundTransfer\Attempt\Status as AttemptStatus;
 
 return [
 
     'matchSummaryForReconFile' => [
-        'channel'               => Channel::ICICI,
+        'channel'               => Channel::AXIS,
         'total_count'           => 1,
         'unprocessed_count'     => 0,
     ],
 
     'matchSettlementAttemptForReconSuccess' => [
-        'channel'           => Channel::ICICI,
+        'channel'           => Channel::AXIS,
         'version'           => 'V3',
-        'bank_status_code'  => Status::PAID,
+        'bank_status_code'  => Status::SETTLED,
         'status'            => AttemptStatus::INITIATED,
     ],
 
     'fetchAndMatchSettlementsForReconSuccess' => [
-        'channel'           => Channel::ICICI,
+        'channel'           => Channel::AXIS,
         'merchant_id'       => '10000000000000',
         'amount'            => 1752800,
         'fees'              => 47200,
@@ -32,9 +32,9 @@ return [
     ],
 
     'matchSettlementAttemptForReconFileFailure' => [
-        'channel'           => Channel::ICICI,
+        'channel'           => Channel::AXIS,
         'version'           => 'V3',
-        'bank_status_code'  => Status::CANCELLED,
+        'bank_status_code'  => Status::REJECTED,
         'status'            => AttemptStatus::INITIATED,
     ],
 
@@ -47,7 +47,7 @@ return [
     ],
 
     'fetchAndMatchSettlementsForReconFailure' => [
-        'channel'           => Channel::ICICI,
+        'channel'           => Channel::AXIS,
         'merchant_id'       => '10000000000000',
         'amount'            => 1752800,
         'fees'              => 47200,
@@ -58,15 +58,15 @@ return [
     ],
 
     'matchSettlementAttemptForReconEntityFailure' => [
-        'channel'          => Channel::ICICI,
+        'channel'          => Channel::AXIS,
         'version'          => 'V3',
-        'bank_status_code' => Status::CANCELLED,
+        'bank_status_code' => Status::REJECTED,
         'status'           => AttemptStatus::FAILED,
         'failure_reason'   => 'Reconciliation',
     ],
 
     'fetchAndMatchBatchDataSettlement' => [
-        'channel'           => Channel::ICICI,
+        'channel'           => Channel::AXIS,
         'amount'            => 1752800,
         'fees'              => 47200,
         'tax'               => 7200,
@@ -77,9 +77,9 @@ return [
     ],
 
     'matchSettlementAttemptForReconEntitySuccess' => [
-        'channel'          => Channel::ICICI,
+        'channel'          => Channel::AXIS,
         'version'          => 'V3',
-        'bank_status_code' => Status::PAID,
+        'bank_status_code' => Status::SETTLED,
         'status'           => AttemptStatus::PROCESSED,
         'failure_reason'   => null,
     ],
