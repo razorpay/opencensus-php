@@ -21,7 +21,8 @@ class Validator extends Base\Validator
         Entity::METHOD          => 'sometimes|in:netbanking,emandate',
         Entity::BANK            => 'sometimes|filled',
         Entity::ACCOUNT_NUMBER  => 'sometimes|filled|string|max:50|min:5',
-        Entity::OFFER_ID        => 'sometimes|string|size:20'
+        Entity::OFFER           => 'sometimes|boolean',
+        Entity::OFFER_ID        => 'sometimes|string|size:20',
     );
 
     protected static $createValidators = [

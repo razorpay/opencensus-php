@@ -502,10 +502,32 @@ return [
                 'amount'        => 1100,
                 'currency'      => 'INR',
                 'receipt'       => 'rcptid42',
-                'offer_id'      => null
+                'offer_id'      => null,
             ],
         ],
     ],
+
+    'testCreateOrderWithOfferAndDiscounting' => [
+        'request' => [
+            'content' => [
+                'amount'        => 1100,
+                'currency'      => 'INR',
+                'offer_id'      => null,
+                'offer'         => true,
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'        => 1100,
+                'currency'      => 'INR',
+                'offer_id'      => null,
+                'offer'         => true,
+            ],
+        ],
+    ],
+
     'testPaymentWithIncorrectBankFromOrderBank' => [
         'response' => [
             'content' => [

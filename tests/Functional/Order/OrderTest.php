@@ -481,6 +481,17 @@ class OrderTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateOrderWithOfferAndDiscounting()
+    {
+        $offer = $this->fixtures->create('offer:live_card', ['iins' => ["401200"]]);
+
+        $this->testData[__FUNCTION__]['request']['content']['offer_id'] = $offer->getPublicId();
+
+        $this->testData[__FUNCTION__]['response']['content']['offer_id'] = $offer->getPublicId();
+
+        $this->startTest();
+    }
+
     public function testCreateOrderWithNotApplicableOffer()
     {
         $offer = $this->fixtures->create('offer:card', [

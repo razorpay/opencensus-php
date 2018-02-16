@@ -14,6 +14,7 @@ class Entity extends Base\PublicEntity
     const ID              = 'id';
     const MERCHANT_ID     = 'merchant_id';
     const OFFER_ID        = 'offer_id';
+    const OFFER           = 'offer';
 
     /**
      * If set to true, partial payments are allowed on this order amount.
@@ -59,6 +60,7 @@ class Entity extends Base\PublicEntity
     const PAYMENT_CAPTURE = 'payment_capture';
 
     protected $fillable = [
+        self::OFFER,
         self::AMOUNT,
         self::CURRENCY,
         self::RECEIPT,
@@ -72,6 +74,7 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $defaults = [
+        self::OFFER           => false,
         self::PARTIAL_PAYMENT => false,
         self::RECEIPT         => null,
         self::ATTEMPTS        => 0,
@@ -93,6 +96,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_DUE,
         self::CURRENCY,
         self::RECEIPT,
+        self::OFFER,
         self::OFFER_ID,
         self::STATUS,
         self::ATTEMPTS,
@@ -101,6 +105,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
+        self::OFFER           => 'bool',
         self::PARTIAL_PAYMENT => 'bool',
         self::AMOUNT          => 'int',
         self::AMOUNT_PAID     => 'int',
@@ -124,6 +129,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::OFFER_ID,
+        self::OFFER,
     ];
 
     protected $dates = [
@@ -319,6 +325,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::STATUS) === Status::PAID);
     }
 
+    public function isOfferApplicable()
+    {
+        return $this->getAttribute(self::OFFER);
+    }
+
     public function hasOffer()
     {
         return $this->isAttributeNotNull(self::OFFER_ID);
@@ -339,5 +350,13 @@ class Entity extends Base\PublicEntity
         $offerId = $this->getAttribute(self::OFFER_ID);
 
         $array[self::OFFER_ID] = Offer\Entity::getSignedIdOrNull($offerId);
+    }
+
+    protected function setPublicOfferAttribute(array & $array)
+    {
+        if ($this->getAttribute(self::OFFER) === true)
+        {
+            $array[self::OFFER] = true;
+        }
     }
 }
