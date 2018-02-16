@@ -64,7 +64,10 @@ class Service extends Base\Service
             'user_id' => $this->currentUser->id
         ], $input);
 
-        $request = new \App\Admin\ApiRequestAny($mode, 'merchant');
+        $request = new \App\Admin\ApiRequestAny([
+            'mode' => $mode,
+            'client_type' => 'merchant'
+        ]);
 
         list($error, $data) = $request->processInput($data)->send('submerchants', 'POST');
 
@@ -381,13 +384,12 @@ class Service extends Base\Service
             $request = new \App\Admin\ApiRequestAny([
                 'client_type' => 'admin',
                 'mode'        => "live_$merchantId"
-            ]);    
+            ]);
         }
         else
         {
             $request = new \App\Admin\ApiRequestAny();
         }
-        
 
         list($error, $data) = $request->send("merchants/users", 'GET');
 
