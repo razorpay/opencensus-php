@@ -23,37 +23,39 @@ export default props => {
           <div class="panel-heading">{dispute.id}</div>
           <Alert type="error" message={error} />
           <div class="SliderPanel__Body">
-            <div class="alert alert-warning rzp-banner">
-              <div class="rzp-banner-text">
-                {dispute.phase === 'fraud' ? (
-                  <React.Fragment>
-                    The customer&#39;s bank has reported a possibly fraudulent
-                    transaction. &nbsp;We recommend that you respond to the
-                    email sent to you on your registered email address by &nbsp;<Time
-                      value={dispute.respond_by}
-                      format="ll"
-                    />{' '}
-                    failing which there might be a amount deduction from your
-                    account.
-                  </React.Fragment>
-                ) : (
-                  <React.Fragment>
-                    A Customer has raised a dispute for&nbsp;
-                    <Amount
-                      value={dispute.amount}
-                      currency={dispute.currency}
-                    />.&nbsp; Kindly respond to the mail sent to you on your
-                    registered email address by &nbsp;<Time
-                      value={dispute.respond_by}
-                      format="ll"
-                    />{' '}
-                    ({daysLeftInExpiry(dispute.respond_by, 'in ')}) failing
-                    which you will loose the dispute and the disputed amount
-                    will be deducted from your account.
-                  </React.Fragment>
-                )}
+            {dispute.status === 'open' && (
+              <div class="alert alert-warning rzp-banner">
+                <div class="rzp-banner-text">
+                  <p>
+                    {dispute.phase === 'fraud' ? (
+                      "The customer's bank has reported a possibly fraudulent transaction. We recommend that you respond to the email sent to you by "
+                    ) : (
+                      <React.Fragment>
+                        A customer has raised a dispute for&nbsp;
+                        <Amount
+                          value={dispute.amount}
+                          currency={dispute.currency}
+                        />&nbsp; Kindly respond to the mail sent to you by
+                        &nbsp;
+                      </React.Fragment>
+                    )}
+                    <Time value={dispute.respond_by} format="ll" />&nbsp; ({daysLeftInExpiry(
+                      dispute.respond_by,
+                      'in '
+                    )}).
+                  </p>
+
+                  <p>
+                    Failing to do so,{' '}
+                    {dispute.phase !== 'fraud' &&
+                      'you will loose the dispute and '}
+                    the disputed amount{' '}
+                    {dispute.phase === 'fraud' ? 'might' : 'will'} be deducted
+                    from your account.
+                  </p>
+                </div>
               </div>
-            </div>
+            )}
 
             <div class="panel-body">
               <div class="list-group details-row-container">
