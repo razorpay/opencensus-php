@@ -62,7 +62,10 @@ class Gateway extends Base\Gateway
         // Freeing memory occupied by this instance variable
         $this->gatewayAttributes = [];
 
-        $this->traceGatewayPaymentRequest($request, $input);
+        $this->traceGatewayPaymentRequest($request,
+                                          $input,
+                                          $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST,
+                                          ['encrypted' => true]);
 
         return $request;
     }
@@ -109,7 +112,7 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
-            $request);
+            array_merge($request, ['encrypted' => true]));
 
         $response = $this->sendGatewayRequest($request);
 
@@ -289,6 +292,10 @@ class Gateway extends Base\Gateway
             $content = array_merge($content, ["", Mode::VERIFY_WO_TID]);
         }
 
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            array_merge($content, ['not yet encrypted']));
+
         // Setting verify request property of $verify
         $verify->verifyRequest = $content;
 
@@ -379,6 +386,12 @@ class Gateway extends Base\Gateway
             RequestFields::RETURN_URL   => $input['callbackUrl'],
             RequestFields::MODE         => Mode::PAY,
         ];
+
+        $this->traceGatewayPaymentRequest(
+            $content,
+            $input,
+            $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST,
+            ['encrypted' => false]);
 
         $this->gatewayAttributes = $content;
 
