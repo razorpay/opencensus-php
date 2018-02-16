@@ -330,6 +330,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::OFFER);
     }
 
+    public function getOfferId()
+    {
+        return $this->getAttribute(self::OFFER_ID);
+    }
+
     public function hasOffer()
     {
         return $this->isAttributeNotNull(self::OFFER_ID);

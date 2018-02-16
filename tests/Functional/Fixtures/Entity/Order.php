@@ -38,6 +38,20 @@ class Order extends Base
         return parent::create($attributes);
     }
 
+    public function createWithUndiscountedOfferApplied(array $attributes = [])
+    {
+        $defaultValues = [
+            'merchant_id'               => '10000000000000',
+            'receipt'                   => 'test_tpv_receipt',
+            'currency'                  => 'INR',
+            'amount'                    => 100000,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return parent::create($attributes);
+    }
+
     public function createWithOfferApplied(array $attributes = [])
     {
         $defaultValues = [
@@ -45,6 +59,7 @@ class Order extends Base
             'receipt'                   => 'test_tpv_receipt',
             'currency'                  => 'INR',
             'amount'                    => 100000,
+            'offer'                     => 1,
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

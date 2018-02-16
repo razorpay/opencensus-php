@@ -647,7 +647,9 @@ class OrderTest extends TestCase
 
         $offer = $this->fixtures->create('offer:card', ['error_message' => 'Custom error message']);
 
-        $order = $this->fixtures->create('order:with_offer_applied', ['offer_id' => $offer->getId()]);
+        $order = $this->fixtures->create('order:with_undiscounted_offer_applied', [
+            'offer_id' => $offer->getId()
+        ]);
 
         $payment = $this->getDefaultWalletPaymentArray();
 
@@ -667,7 +669,9 @@ class OrderTest extends TestCase
     {
         $offer = $this->fixtures->create('offer:card', ['block' => false]);
 
-        $order = $this->fixtures->create('order:with_offer_applied', ['offer_id' => $offer->getId()]);
+        $order = $this->fixtures->create('order:with_undiscounted_offer_applied', [
+            'offer_id' => $offer->getId()
+        ]);
 
         $this->fixtures->merchant->enableMobikwik();
 
@@ -1059,7 +1063,7 @@ class OrderTest extends TestCase
 
     protected function createOrderWithOfferAppliedAndGetPaymentArray($offer, array $additionalPaymentAttributes = [])
     {
-        $order = $this->fixtures->create('order:with_offer_applied', [
+        $order = $this->fixtures->create('order:with_undiscounted_offer_applied', [
             'offer_id' => $offer->getId(),
         ]);
 

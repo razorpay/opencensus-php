@@ -1421,7 +1421,7 @@ return [
         ],
     ],
 
-    'testGetCheckoutPreferencesWithOrderRelatedOffer' => [
+    'testGetCheckoutPreferencesWithOrderRelatedUndiscountedOffer' => [
         'request' => [
             'url'    => null,
             'method' => 'get',

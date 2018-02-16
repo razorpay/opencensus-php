@@ -393,7 +393,7 @@ class Validator extends Base\Validator
         }
 
         if (($input[Entity::OFFER] === true) and
-            (isset($input[Entity::OFFER_ID]) === false)
+            (isset($input[Entity::OFFER_ID]) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                     'Offer without offer_id is currently not supported');

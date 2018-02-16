@@ -27,7 +27,7 @@ class CreateOrders extends Migration
 
             $table->char(Order::MERCHANT_ID, Order::ID_LENGTH);
 
-            $table->tinyInteger(Order::OFFER, Order::ID_LENGTH)
+            $table->tinyInteger(Order::OFFER)
                   ->default(false);
 
             $table->char(Order::OFFER_ID, Order::ID_LENGTH)
