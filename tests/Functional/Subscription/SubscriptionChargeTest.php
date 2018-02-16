@@ -1554,6 +1554,26 @@ class SubscriptionChargeTest extends TestCase
         // Carbon::setTestNow();
     }
 
+    public function testSubscriptionChargeForDaily()
+    {
+        $planAttributes = [
+            'period'   => 'daily',
+            'interval' => 1
+        ];
+
+        $this->doAuthTxnForNewSubscription(false, $planAttributes);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $plan = $this->getLastEntity('plan', true);
+
+        s($plan);
+        s($subscription);
+        $this->assertEquals('active', $subscription['status']);
+
+        s($subscription);
+    }
+
     public function testSubscriptionChargeWithDueAddon()
     {
         $this->doAuthTxnForNewSubscription(false);

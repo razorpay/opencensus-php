@@ -114,6 +114,39 @@ return [
         ],
     ],
 
+    'testCreateDailyPlan' => [
+        'request' => [
+            'url' => '/plans',
+            'method' => 'post',
+            'content' => [
+                'period'    => 'daily',
+                'interval'  => 1,
+                'item'      => [
+                    'name'     => 'test plan',
+                    'amount'   => 20000,
+                    'currency' => 'INR',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'   => 'plan',
+                'interval' => 1,
+                'period'   => 'daily',
+                'notes'    => [],
+                'item'     => [
+                    'active'      => true,
+                    'name'        => 'test plan',
+                    'description' => null,
+                    'amount'      => 20000,
+                    'currency'    => 'INR',
+                    'type'        => 'plan',
+                ]
+            ],
+        ],
+    ],
+
+
     'testCreatePlanWithBadMonthlyIntervalPeriod' => [
         'request' => [
             'url'     => '/plans',
