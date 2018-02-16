@@ -221,7 +221,7 @@ class NewApplicationForm extends Component {
 
             <div class="form-group">
               <div class="col-md-offset-2 upload-container col-md-1">
-                <div class="upload-inner" style={{ padding: '0' }}>
+                <div class="upload-inner">
                   <label htmlFor="logo-upload">
                     {this.state.details.logo_url === null ||
                     typeof this.state.details.logo_url === 'undefined' ? (
