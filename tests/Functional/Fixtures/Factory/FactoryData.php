@@ -853,5 +853,13 @@ final class FactoryData
         $factory(\RZP\Models\GeoIP\Entity::class, [
             'ip'         => $faker->ipv4
         ]);
+
+        $factory(\RZP\Models\Merchant\AccessMap\Entity::class, [
+            'merchant_id' => '10000000000000',
+            'entity_type' => 'application',
+            'entity_id'   => '10000000000App',
+            'created_at'  => Carbon::now()->getTimestamp(),
+            'updated_at'  => Carbon::now()->getTimestamp(),
+        ]);
     }
 }
