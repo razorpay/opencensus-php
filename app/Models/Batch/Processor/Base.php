@@ -129,6 +129,12 @@ class Base extends BaseModel\Core
         // created file store entity with this batch and save both of them.
         //
 
+        // Temporary code for backward compatibility. To be removed.
+        if (isset($input[Batch\Entity::FILE]) === true)
+        {
+            $this->batch->setCreatedByFileUpload(true);
+        }
+
         // For new flow, the file_store entity referenced by
         // `file_id` in input gets associated with this batch
         $ufhFile = $this->getInputFileAndValidateEntries($input, true);
@@ -178,7 +184,7 @@ class Base extends BaseModel\Core
         });
 
         $response = [
-            self::PROCESSABLE_COUNT     => $this->batch->getTotalCount(),
+            self::PROCESSABLE_COUNT     => count($correctEntries),
             self::ERROR_COUNT           => count($entries) - count($correctEntries),
             self::PARSED_ENTRIES        => array_slice($correctEntries, 0 , 3),
         ];
@@ -195,8 +201,6 @@ class Base extends BaseModel\Core
             $this->inputFileLocalPath = $this->accessor->id($inputFileId)
                                                         ->merchantId($this->merchant->getId())
                                                         ->getFile();
-
-            $this->batch->setCreatedByFileId(true);
 
             return  $this->accessor->get();
         }

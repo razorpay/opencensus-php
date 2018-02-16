@@ -60,7 +60,7 @@ class Entity extends Base\PublicEntity
     /*
      * Temporary entity property for backward compatibility of payment links
      */
-    protected $createByFileId = false;
+    protected $createdByFileUpload = false;
 
     /**
      * Generators
@@ -362,9 +362,9 @@ class Entity extends Base\PublicEntity
         return $this->getLocalSaveDir($prefix) . $this->getFileKeyWithExt();
     }
 
-    public function isCreatedByFileId(): bool
+    public function isCreatedByFileUpload(): bool
     {
-        return $this->createByFileId;
+        return $this->createdByFileUpload;
     }
 
     // ----------------------- End  Getters --------------------------
@@ -447,9 +447,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SUB_TYPE, $subType);
     }
 
-    public function setCreatedByFileId($createByFileId)
+    public function setCreatedByFileUpload($createdByFileUpload)
     {
-        $this->createByFileId = $createByFileId;
+        $this->createdByFileUpload = $createdByFileUpload;
     }
 
     // ----------------------- End Setters ---------------------------

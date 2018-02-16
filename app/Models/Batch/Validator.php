@@ -313,7 +313,7 @@ class Validator extends Base\Validator
                 unset($invoice);
             }
 
-            if (($errorCount > 0) and ($this->entity->isCreatedByFileId() === false))
+            if (($errorCount > 0) and ($this->entity->isCreatedByFileUpload() === true))
             {
                 throw new BadRequestException(
                     ErrorCode::BAD_REQUEST_BATCH_PAYMENT_LINK_FILE_ERRORS,
