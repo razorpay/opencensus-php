@@ -458,12 +458,6 @@ class Entity extends Base\PublicEntity
 
     public function setPublicExpiryMonthAttribute(array & $array)
     {
-        //endurance
-        $allowedMerchantIds = [
-            '9YAQd3b47mdIQY',
-            '9ZO8jNaR0OORNH',
-        ];
-
         $cardMerchant = $this->getMerchantId();
 
         // Allowing for Admin and App Auth(Priviledge)
@@ -471,7 +465,7 @@ class Entity extends Base\PublicEntity
         $auth = $app['basicauth'];
 
         if (($auth->isPrivilegeAuth() === false) and
-            (in_array($cardMerchant, $allowedMerchantIds, true) === false))
+            (in_array($cardMerchant, Merchant\Preferences::MID_ENDURANCE, true) === false))
         {
             unset($array[self::EXPIRY_MONTH]);
         }
@@ -479,11 +473,6 @@ class Entity extends Base\PublicEntity
 
     public function setPublicExpiryYearAttribute(array & $array)
     {
-         $allowedMerchantIds = [
-            '9YAQd3b47mdIQY',
-            '9ZO8jNaR0OORNH',
-        ];
-
         $cardMerchant = $this->getMerchantId();
 
         // Allowing for Admin and App Auth(Priviledge)
@@ -491,7 +480,7 @@ class Entity extends Base\PublicEntity
         $auth = $app['basicauth'];
 
         if (($auth->isPrivilegeAuth() === false) and
-            (in_array($cardMerchant, $allowedMerchantIds, true) === false))
+            (in_array($cardMerchant, Merchant\Preferences::MID_ENDURANCE, true) === false))
         {
             unset($array[self::EXPIRY_YEAR]);
         }
