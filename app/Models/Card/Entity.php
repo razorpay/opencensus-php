@@ -495,13 +495,10 @@ class Entity extends Base\PublicEntity
 
         $auth = $app['basicauth'];
 
-        if (($auth->isPrivilegeAuth() === false) and
-            (in_array($cardMerchant, Merchant\Preferences::MID_ENDURANCE, true) === false))
-        {
-            return false;
-        }
+        $allowed = (($auth->isPrivilegeAuth() === false) and
+                    (in_array($cardMerchant, Merchant\Preferences::MID_ENDURANCE, true) === false));
 
-        return true;
+        return $allowed;
     }
 
     protected function getInternationalAttribute()
