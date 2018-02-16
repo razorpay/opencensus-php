@@ -35,13 +35,13 @@ class Service
         }
     }
 
-    public function setAdminCredentials($mode = 'live')
+    public function setAdminCredentials($merchant_id = null, $mode = 'live')
     {
         $token = Auth::guard('api')->user()->token;
 
         ApiRequest::addHeader('X-Admin-Token', $token);
 
-        $this->setApiCredentials(null, $mode);
+        $this->setApiCredentials($merchant_id, $mode);
     }
 
     public function setApiCredentials($merchant_id = null, $mode = 'live')
