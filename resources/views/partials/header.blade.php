@@ -60,47 +60,44 @@
         var origOpen = XMLHttpRequest.prototype.open;
         var origSend = XMLHttpRequest.prototype.send;
         XMLHttpRequest.prototype.open = function (a, b, c, d, e) {
-            this.hj = false;
-            if (b.indexOf('hotjar')) {
-                this.hj = true;
+            if (b.indexOf('hotjar') >= 0) {
+                this.send = function (s) {
+                    try {
+                        let x = JSON.parse(s);
+                        if (x['action'] && (x['action'] === 'create_poll_response' || x['action'] === 'update_poll_response')) {
+                            if (x['response_content']) {
+                                if (typeof x['response_content'] === 'string') {
+                                    try {
+                                        var rc = JSON.parse(x['response_content']);
+                                        if (rc['answers'] && rc['answers'].length) {
+                                            var d = {
+                                                mid: window.rzp_user.current,
+                                                feedback: null,
+                                                rating: null
+                                            };
+                                            var a = rc['answers'][0];
+                                            if (a['question'] === 'How would you rate the new dashboard home page?') {
+                                                d.rating = parseInt(a.answer);
+                                            }
+                                            if (rc['answers'].length > 1) {
+                                                a = rc['answers'][1];
+                                                if (a['question'] === 'Please suggest how we can make it better.') {
+                                                d.feedback = a.answer;
+                                                }
+                                            }
+                                            var xhr = new XMLHttpRequest();
+                                            xhr.open('POST', 'https://hooks.zapier.com/hooks/catch/1088429/zk9ygu/', true);
+                                            xhr.send(JSON.stringify(d));
+                                        }
+                                    } catch (e) {}
+                                }
+                            }
+                        }
+                    } catch (e) {}
+                    origSend.apply(this, [s]);
+                }
             }
             origOpen.apply(this, [a, b, c, d, e]);
         }
-        XMLHttpRequest.prototype.send = function (s) {
-            if (this.hj) {
-                try {
-                let x = JSON.parse(s);
-                if (x['action'] && (x['action'] === 'create_poll_response' || x['action'] === 'update_poll_response')) {
-                    if (x['response_content']) {
-                    if (typeof x['response_content'] === 'string') {
-                        try {
-                        var rc = JSON.parse(x['response_content']);
-                        if (rc['answers'] && rc['answers'].length) {
-                            var d = {
-                            mid: window.rzp_user.current,
-                            feedback: null,
-                            rating: null
-                            };
-                            var a = rc['answers'][0];
-                            if (a['question'] === 'How would you rate the new dashboard home page?') {
-                            d.rating = parseInt(a.answer);
-                            }
-                            if (rc['answers'].length > 1) {
-                            a = rc['answers'][1];
-                            if (a['question'] === 'Please suggest how we can make it better.') {
-                                d.feedback = a.answer;
-                            }
-                            }
-                            var xhr = new XMLHttpRequest();
-                            xhr.open('POST', 'https://hooks.zapier.com/hooks/catch/1088429/zk9ygu/', true);
-                            xhr.send(JSON.stringify(d));
-                        }
-                        } catch (e) {}
-                    }
-                    }
-                }
-                } catch (e) {}
-            }
-            origSend.apply(this, [s]);
-        }
+
     </script>
