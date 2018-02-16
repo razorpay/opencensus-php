@@ -188,7 +188,8 @@ final class Route
         'bank_transfer_strip_payer_accounts'      => ['put',      'bank_transfers/payer_bank_account/strip',        'BankTransferController@stripPayerBankAccounts'                     ],
         'bank_transfer_insert'                    => ['post',     'bank_transfers/{provider}',                      'BankTransferController@insertBankTransfer'                         ],
         'fund_transfer_attempt_bulk_update'       => ['patch',    'fund_transfer_attempts',                         'FundTransferAttemptController@bulkUpdate'                          ],
-        'fund_transfer_attempt_reconcile'         => ['post',     'fund_transfer_attempts/{channel}',               'FundTransferAttemptController@bulkReconcile',                      ],
+        'fund_transfer_attempt_reconcile'         => ['post',     'fund_transfer_attempts/reconcile/{channel}',     'FundTransferAttemptController@reconcileFundTransfers',             ],
+        'fund_transfer_attempt_process'           => ['post',     'fund_transfer_attempts/initiate/{channel}',      'FundTransferAttemptController@initiateFundTransfers',              ],
         'gateway_payment_callback_bharatqr'       => ['post',     'payment/callback/bharatqr',                      'BharatQrController@processBharatQrPayment'                         ],
         'qr_code_download_live'                   => ['get',      'l/qrcode/{id}',                                  'QrCodeController@fetchLiveQrCode'                                  ],
         'qr_code_download_test'                   => ['get',      't/qrcode/{id}',                                  'QrCodeController@fetchTestQrCode'                                  ],
@@ -582,7 +583,6 @@ final class Route
         'payout_fetch_by_id'                      => ['get',      'payouts/{id}',                                   'PayoutController@getPayout'                                        ],
         'payout_fetch_multiple'                   => ['get',      'payouts',                                        'PayoutController@getPayouts'                                       ],
         'payout_create'                           => ['post',     'payouts',                                        'PayoutController@postPayout'                                       ],
-        'payout_initiate'                         => ['post',     'payouts/initiate/{channel?}',                    'PayoutController@postPayoutInitiate'                               ],
         'transfer_fetch'                          => ['get',      'transfers/{id}',                                 'TransferController@getTransfer'                                    ],
         'transfer_fetch_multiple'                 => ['get',      'transfers/',                                     'TransferController@getTransfers'                                   ],
         'transfer_edit'                           => ['patch',    'transfers/{id}',                                 'TransferController@patchTransfer'                                  ],
@@ -985,7 +985,6 @@ final class Route
         'pricing_delete_plan_rule',
         'pricing_delete_plan_rule_force',
         'setl_initiate',
-        'payout_initiate',
         'setl_file_generate',
         'setl_reconcile_h2h',
         'setl_reconcile_generate',
@@ -1024,6 +1023,8 @@ final class Route
         'bank_transfer_edit_payer_account',
         'bank_transfer_strip_payer_accounts',
         'fund_transfer_attempt_bulk_update',
+        'fund_transfer_attempt_process',
+        'fund_transfer_attempt_reconcile',
         'bank_transfer_insert',
         'iin_fetch_by_iin',
         'card_update_saved',
@@ -1162,7 +1163,6 @@ final class Route
         'user_reset_password_token',
         'merchant_payout_mail',
         'geoip_update',
-        'fund_transfer_attempt_reconcile',
         'merchant_tags_bulk',
     ];
 
@@ -1593,7 +1593,6 @@ final class Route
         'cron' => [
             'entity_tax_update',
             'setl_initiate',
-            'payout_initiate',
             'setl_reconcile_generate',
             'setl_reconcile_test',
             'nodal_initiate_transfer',
@@ -1643,6 +1642,7 @@ final class Route
             'merchant_payout_mail',
             'geoip_update',
             'fund_transfer_attempt_reconcile',
+            'fund_transfer_attempt_process',
         ],
 
         'kotak' => [

@@ -25,13 +25,12 @@ class Repository extends Base\Repository
         Entity::UTR                    => 'sometimes|alpha_num',
     ];
 
-    public function getFailedSettlementsForRetry(array $setlIds, string $channel)
+    public function getFailedSettlementsForRetry(array $setlIds)
     {
         $merchantId = $this->repo->merchant->dbColumn(M\Entity::ID);
 
         $settlementId = $this->dbColumn(Entity::ID);
         $settlementMerchantId = $this->dbColumn(Entity::MERCHANT_ID);
-        $settlementChannel = $this->dbColumn(Entity::CHANNEL);
 
         $cols = $this->dbColumn('*');
 
@@ -41,7 +40,6 @@ class Repository extends Base\Repository
                       ->where(Entity::STATUS, '=', Status::FAILED)
                       ->whereIn($settlementId, $setlIds)
                       ->where(M\Entity::HOLD_FUNDS, '=', 0)
-                      ->where($settlementChannel, '=', $channel)
                       ->with('merchant', 'merchant.bankAccount', 'setlTransactions')
                       ->get();
 

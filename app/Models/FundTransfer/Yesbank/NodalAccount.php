@@ -76,7 +76,7 @@ class NodalAccount extends NodalBase\NodalAccount
         return Headings::getRequestFileHeadings();
     }
 
-    public function generateSettlementFile($entities, $h2h = true): array
+    public function generateFundTransferFile($entities, $h2h = true): array
     {
         $h2h = false;
 

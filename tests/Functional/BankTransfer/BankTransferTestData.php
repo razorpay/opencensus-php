@@ -368,4 +368,14 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testFileCreationRefund' => [
+        'amount'            => 4000000,
+        'fees'              => 0,
+        'tax'               => 0,
+        'processed_amount'  => 0,
+        'processed_count'   => 0,
+        'total_count'       => 1,
+        'type'              => 'refund',
+    ],
 ];

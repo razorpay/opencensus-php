@@ -18,7 +18,7 @@ return [
         'balance'           => 1049000,
         'gateway_fee'       => 0,
         'api_fee'           => 0,
-        'channel'           => 'kotak',
+        'channel'           => 'axis',
         'settled'           => false,
         'settlement_id'     => null,
         'reconciled_at'     => null,
