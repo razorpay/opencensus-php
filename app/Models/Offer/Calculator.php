@@ -2,8 +2,8 @@
 
 namespace RZP\Models\Offer;
 
-use RZP\Models\Base;
 use RZP\Exception;
+use RZP\Models\Base;
 
 class Calculator extends Base\Core
 {

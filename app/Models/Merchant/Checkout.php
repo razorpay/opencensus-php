@@ -104,9 +104,9 @@ class Checkout
 
         $order = $this->setOrGetOrder($orderId, $merchant);
 
-        $data['order'] = (new Order\Core)->getFormattedDataForCheckout($order, $merchant);
+        $data['order'] = (new Order\Core)->getFormattedDataForCheckout($this->order, $merchant);
 
-        $this->resetMethodsIfValidBanksPresent($data, $order);
+        $this->resetMethodsIfValidBanksPresent($data, $this->order);
     }
 
     protected function setOrGetOrder(string $orderId, Merchant\Entity $merchant)
@@ -556,6 +556,7 @@ class Checkout
 
     public function checkAndFillOfferDetails(Merchant\Entity $merchant, array $input, array & $data)
     {
+<<<<<<< HEAD
         $order = null;
 
         if (isset($input[Payment\Entity::ORDER_ID]) === true)
@@ -578,6 +579,46 @@ class Checkout
         {
             $this->checkAndFillNonOrderOffers($merchant, $data);
         }
+=======
+        $order = $this->order;
+
+        if ($order !== null)
+        {
+            if ($order->offer !== null)
+            {
+                //
+                // If offer is applicable then amount is to be discounted by us
+                //
+                if ($order->isOfferApplicable() === true)
+                {
+                    $this->applyOfferOnOrderAmount($order, $data);
+                }
+
+                $this->updateMethodsToEnableOnCheckout($order->offer, $data);
+
+                $data['offers'] = [
+                    $order->offer->toArrayCheckout()
+                ];
+            }
+        }
+        else
+        {
+            $this->checkAndFillNonOrderOffers($merchant, $data);
+        }
+    }
+
+    protected function applyOfferOnOrderAmount(Order\Entity $order, array & $data)
+    {
+        $offerCore = new Offer\Core;
+
+        $originalAmount = $order->getAmount();
+
+        $offer = $order->offer;
+
+        $data['original_amount'] = $originalAmount;
+
+        $data['amount'] = $offerCore->getDiscountedAmount($offer, $originalAmount);
+>>>>>>> [offers] Adds discounted amount to preferences response
     }
 
     protected function checkAndFillNonOrderOffers(Merchant\Entity $merchant, array & $data)
