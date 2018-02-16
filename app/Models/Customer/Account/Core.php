@@ -25,6 +25,7 @@ class Core extends Base\Core
      *
      * @return Entity
      * @throws Exception\LogicException
+     * @throws Exception\BadRequestException
      */
     public function createLocalCustomer(array $input, Merchant\Entity $merchant, $failOnDuplicate = true)
     {
@@ -37,6 +38,7 @@ class Core extends Base\Core
      *
      * @return Entity
      * @throws Exception\LogicException
+     * @throws Exception\BadRequestException
      */
     public function createGlobalCustomer($input, $failOnDuplicate = true)
     {

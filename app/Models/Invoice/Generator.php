@@ -140,8 +140,6 @@ class Generator extends Base\Core
      * - Creates and associates line items
      *
      * @param array $input
-     *
-     * @throws BadRequestValidationFailureException
      */
     protected function preProcessGeneration(array $input)
     {
@@ -425,12 +423,7 @@ class Generator extends Base\Core
     {
         $this->invoice->getValidator()->validateInput('editCustomerDetails', $details);
 
-        if (isset($details[Customer\Entity::BILLING_ADDRESS_ID]))
-        {
-            $billingAddressId = array_pull($details, Customer\Entity::BILLING_ADDRESS_ID);
-
-            $this->associateCustomerBillingAddressById($billingAddressId);
-        }
+        $this->processCustomerAddressDetails($details);
 
         foreach ($details as $attribute => $value)
         {
@@ -440,22 +433,39 @@ class Generator extends Base\Core
         }
     }
 
-    protected function associateCustomerBillingAddressById(string $id = null)
+    protected function processCustomerAddressDetails(array & $details)
     {
+        if (isset($details[Customer\Entity::BILLING_ADDRESS_ID]) === true)
+        {
+            $billingAddressId = array_pull($details, Customer\Entity::BILLING_ADDRESS_ID);
+
+            $this->associateCustomerAddressById(Address\Type::BILLING_ADDRESS, $billingAddressId);
+        }
+
+        if (isset($details[Customer\Entity::SHIPPING_ADDRESS_ID]) === true)
+        {
+            $shippingAddressId = array_pull($details, Customer\Entity::SHIPPING_ADDRESS_ID);
+
+            $this->associateCustomerAddressById(Address\Type::SHIPPING_ADDRESS, $shippingAddressId);
+        }
+    }
+
+    protected function associateCustomerAddressById(string $type, string $id = null)
+    {
+        // customerBillingAddress() or customerShippingAddress()
+        $relation = camel_case('customer_' . $type);
+
         if ($id === null)
         {
-            $this->invoice->customerBillingAddress()->dissociate();
+            $this->invoice->$relation()->dissociate();
 
             return;
         }
 
         $address = $this->repo
                         ->address
-                        ->findByPublicIdEntityAndTypeOrFail(
-                            $id,
-                            $this->invoice->customer,
-                            Address\Type::BILLING_ADDRESS);
+                        ->findByPublicIdEntityAndTypeOrFail($id, $this->invoice->customer, $type);
 
-        $this->invoice->customerBillingAddress()->associate($address);
+        $this->invoice->$relation()->associate($address);
     }
 }
