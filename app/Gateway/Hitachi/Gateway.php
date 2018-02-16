@@ -368,11 +368,11 @@ class Gateway extends Base\Gateway
 
         $networkCode  = Network::getCode($input['card']['network']);
 
-        $eciValues = array(
+        $eciValues = [
             Card\Network::VISA => '07',
             Card\Network::MAES => '00',
             Card\Network::MC   => '00',
-        );
+        ];
 
         $content[ RequestFields::ECI] = $eciValues[$networkCode];
 
