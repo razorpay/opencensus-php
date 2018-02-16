@@ -17,6 +17,7 @@ class Entity extends Base\PublicEntity
     const ID              = 'id';
     const MERCHANT_ID     = 'merchant_id';
     const OFFER_ID        = 'offer_id';
+    const OFFER           = 'offer';
 
     /**
      * If set to true, we discount the amount for the payment

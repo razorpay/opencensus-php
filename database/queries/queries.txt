@@ -3265,3 +3265,6 @@ ALTER TABLE line_items
 
 ALTER TABLE orders
     ADD COLUMN discount TINYINT(4) NOT NULL DEFAULT 0 AFTER offer_id;
+
+ALTER TABLE orders
+    ADD COLUMN offer TINYINT(4) NOT NULL DEFAULT 0 AFTER merchant_id,

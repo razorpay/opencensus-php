@@ -514,6 +514,7 @@ return [
                 'currency'      => 'INR',
                 'offer_id'      => null,
                 // 'discount'      => true,
+                'offer'         => true,
             ],
             'method'    => 'POST',
             'url'       => '/orders',
