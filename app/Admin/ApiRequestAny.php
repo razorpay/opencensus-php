@@ -124,9 +124,21 @@ class ApiRequestAny
         {
             foreach ($input as $key => $val)
             {
+                if (is_array($val))
+                {
+                    $input = $this->flatten($input, $val, $key);
+
+                    unset($input[$key]);
+                }
+            }
+
+            foreach ($input as $key => $val)
+            {
                 if ($val instanceof \SplFileInfo)
                 {
-                    $input[$key] = fopen($val, 'r');
+                    $fileName = $val->getClientOriginalName();
+
+                    $input[$key] = new PostFile($key, fopen($val, 'r'), $fileName);
                 }
             }
         }
@@ -202,5 +214,22 @@ class ApiRequestAny
         }
 
         return [$errors, null];
+    }
+
+    protected function flatten($parent, $array, $prefix)
+    {
+
+        foreach ($array as $key => $value) {
+            if (is_array($value))
+            {
+                $parent = $this->flatten($parent, $value, $prefix.'['.$key.']');
+            }
+            else
+            {
+                $parent[$prefix.'['.$key.']'] = $value;
+            }
+        }
+
+        return $parent;
     }
 }

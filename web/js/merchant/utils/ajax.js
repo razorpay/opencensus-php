@@ -1,5 +1,5 @@
 import ajax from 'rzp/utils/ajax';
-import store from '../store';
+import { getMode } from 'merchant/store';
 
 export default (url, params = {}, baseUrl = '') => {
   if (typeof url === 'object') {
@@ -13,7 +13,7 @@ export default (url, params = {}, baseUrl = '') => {
     appendModeInQueryParam,
     ...ajaxParams
   } = params;
-  let mode = (params.data && params.data.mode) || store.getState().session.mode;
+  let mode = (params.data && params.data.mode) || getMode();
   ajaxParams.url = normalizeUrl(params.url);
   if (appendModeInQueryParam) {
     ajaxParams.data.mode = mode;

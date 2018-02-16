@@ -1,5 +1,6 @@
 import ajax from 'merchant/utils/ajax';
 import { set, merge } from 'rzp/utils/immutable';
+import { merchantFetch } from 'rzp/utils/ajax';
 
 const CONFIG_FETCH = 'CONFIG_FETCH';
 const FEATURES_FETCH = 'FEATURES_FETCH';
@@ -8,34 +9,18 @@ const CONFIG_SAVE = 'CONFIG_SAVE';
 const FEATURES_SAVE = 'FEATURES_SAVE';
 
 export const fetchConfigAjax = () => {
-  return ajax({
-    url: '/user/generic',
-    appendModeInQueryParam: true,
-    data: {
-      route_name: 'merchant_fetch_config',
-    },
-  });
+  return merchantFetch('account/config');
 };
 
 export const fetchFeaturesAjax = (currentUserId, mode) => {
   let params = {
-    route_name: 'merchant_get_features',
-    url_params: {
-      '{id}': currentUserId,
-    },
-  };
-
-  const ajaxQuery = {
-    url: '/user/generic',
-    data: params,
-    appendModeInQueryParam: true,
-  };
-
-  if (mode) {
-    ajaxQuery.data.mode = mode;
+    url: `merchants/${currentUserId}/features`
   }
 
-  return ajax(ajaxQuery);
+  if (mode) {
+    params.mode = mode;
+  }
+  return merchantFetch(params);
 };
 
 export const fetchConfig = () => {
@@ -56,21 +41,12 @@ export const fetchFeatures = currentUserId => {
 };
 
 export const updateFeatures = (data, currentUserId) => {
-  let params = {
-    route_name: 'merchant_update_features',
-    body: data,
-    url_params: {
-      '{id}': currentUserId,
-    },
-  };
-
   return {
     type: FEATURES_SAVE,
-    payload: ajax({
-      url: '/user/generic',
+    payload: merchantFetch({
+      url: `merchants/${currentUserId}/features`,
       method: 'post',
-      data: params,
-      appendModeInQueryParam: true,
+      data: data,
     }),
   };
 };
@@ -82,38 +58,25 @@ export const updateConfig = data => {
   };
   return {
     type: CONFIG_SAVE,
-    payload: ajax({
-      url: '/user/generic',
+    payload: merchantFetch({
+      url: 'account/config',
       method: 'put',
-      data: params,
-      appendModeInQueryParam: true,
+      data: data,
     }),
   };
 };
 
 export const uploadLogo = (file, fieldName) => {
-  let params = {
-    route_name: 'merchant_edit_config_logo',
-    file_name: fieldName,
-    file: file,
-  };
-
   let formData = new FormData();
-  for (let field in params) {
-    let value = params[field];
-    formData.append(field, value);
-  }
+  formData.append(fieldName, file);
 
   return {
     type: MERCHANT_LOGO_UPLOADED,
-    payload: ajax({
-      url: '/user/generic',
-      file: file,
-      data: formData,
+    payload: merchantFetch({
+      url: 'account/config/logo',
       method: 'post',
-      processData: false,
-      contentType: false,
-      appendModeInQueryParam: true,
+      file,
+      data: formData,
     }),
   };
 };

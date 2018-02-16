@@ -1,6 +1,7 @@
 import ajax from 'merchant/utils/ajax';
 import { set } from 'rzp/utils/immutable';
 import poll from 'rzp/utils/poll/longPoll';
+import { merchantFetch } from 'rzp/utils/ajax';
 
 const GENERATE_REPORT = 'GENERATE_REPORT';
 
@@ -13,35 +14,15 @@ const handleError = e => {
   return reportErrorMsg;
 };
 
-const commonOptions = {
-  url: '/user/generic',
-  method: 'get',
-  appendModeInURL: false,
-  appendModeInQueryParam: true,
-};
-
-const createLog = body => {
-  return ajax({
-    ...commonOptions,
+const createLog = data => {
+  return merchantFetch({
+    url: 'reporting/logs',
     method: 'post',
-    data: {
-      route_name: 'reporting_log_create',
-      body,
-    },
+    data,
   });
 };
 
-const getLog = logId => {
-  return ajax({
-    ...commonOptions,
-    data: {
-      route_name: 'reporting_log_get',
-      url_params: JSON.stringify({
-        '{id}': logId,
-      }),
-    },
-  });
-};
+const getLog = logId => merchantFetch(`reporting/logs/${logId}`);
 
 const getFile = fileId => {
   return ajax({
@@ -72,13 +53,13 @@ export const generateReport = ajaxParams => {
 };
 
 const pollInterval = 2, // poll interval in SECONDS
-      timeout = 30 * 60 * 1000; // 30 minutes
+  timeout = 30 * 60 * 1000; // 30 minutes
 
 export const generateReportV2 = params => {
   const startTime = new Date();
 
   let numCallsMade = 0,
-      timeElapsed = 0;
+    timeElapsed = 0;
 
   return createLog(params)
     .then(resp => {
@@ -91,11 +72,10 @@ export const generateReportV2 = params => {
       const logPoll = poll({
         fetchFunc: () => getLog(resp.data.id),
         validator: resp => {
-
           numCallsMade++;
           timeElapsed = new Date() - startTime;
 
-          /* 
+          /*
            * stop poll when
            * 1) If calls exceeded timeout time
            * 2) If the api throws an error
@@ -108,23 +88,21 @@ export const generateReportV2 = params => {
             resp.data.status !== 'created'
           );
         },
-        getNextCallWaitime : () => {
-       
+        getNextCallWaitime: () => {
           /*
            * Decresing the poll frequency exponentially
            * 2^1 , 2^2, 2^3 .....
            */
 
-          let nextCallWaittime = (pollInterval ** (numCallsMade))*1000,
-              timeToBeElapsed = timeElapsed + nextCallWaittime;
+          let nextCallWaittime = pollInterval ** numCallsMade * 1000,
+            timeToBeElapsed = timeElapsed + nextCallWaittime;
 
           if (timeToBeElapsed > timeout) {
-          
             nextCallWaittime = timeout - timeElapsed;
           }
 
           return nextCallWaittime;
-        }
+        },
       });
 
       return logPoll.promise

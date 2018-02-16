@@ -22,3 +22,7 @@ export MakeAPICall from './MakeAPICall';
 export RetryRefund from './RetryRefund';
 
 export CreateGatewayFile from './CreateGatewayFile';
+
+export SettlementBulkChannel from './SettlementBulkChannel';
+
+export BulkTransaction from './BulkTransaction';

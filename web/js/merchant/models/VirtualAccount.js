@@ -1,5 +1,6 @@
 import GenericEntity from './GenericEntity';
 import Payment from './Payment';
+import { merchantFetch } from 'rzp/utils/ajax';
 
 const fields = [
   'id',
@@ -33,13 +34,9 @@ export default class VirtualAccount extends GenericEntity {
     });
   }
 
-  createTestPayment(body) {
-    let data = {
-      body,
-      route_name: 'bank_transfer_process',
-    };
-    return this.makeGenericAjaxCall({
-      url: '/user/generic',
+  createTestPayment(data) {
+    return merchantFetch({
+      url: 'ecollect/validate',
       method: 'post',
       data,
     });

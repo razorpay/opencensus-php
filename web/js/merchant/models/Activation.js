@@ -1,6 +1,11 @@
 import Entity from './Entity';
-import ajax from 'merchant/utils/ajax';
-import { normalizeBoolean, isBlank, arrayDiff, autoPrefixUrls } from 'rzp/utils/rzp-utils';
+import { merchantFetch } from 'rzp/utils/ajax';
+import {
+  normalizeBoolean,
+  isBlank,
+  arrayDiff,
+  autoPrefixUrls,
+} from 'rzp/utils/rzp-utils';
 
 // Used for Activation
 const activationStepMap = {
@@ -115,19 +120,12 @@ export default class Activation extends Entity {
   resourceFields = activationFields;
 
   fetch() {
-    let activationData = {
-      route_name: 'merchant_activation_details',
+    let params = {
+      url: 'merchant/activation',
+      accountId: this.accountId,
     };
 
-    if (this.accountId) {
-      activationData.account_id = this.accountId;
-    }
-
-    return ajax({
-      url: '/user/generic',
-      appendModeInURL: false,
-      data: activationData,
-    }).then(response => {
+    return merchantFetch(params).then(response => {
       response.data = this.getActivation(response.data);
       return new Activation(response.data);
     });
@@ -164,6 +162,9 @@ export default class Activation extends Entity {
         return prev;
       }, []);
 
+      //unique items needed & convert set to array.
+      unfinishedSteps = [...new Set(unfinishedSteps)];
+
       if (unfinishedSteps.length) {
         data.steps_finished = arrayDiff(steps, unfinishedSteps);
       }
@@ -184,26 +185,17 @@ export default class Activation extends Entity {
   }
 
   saveActivation(data) {
-    let activationData = {
-      route_name: 'merchant_activation_save',
-      body: data,
-    };
-
-    if (this.accountId) {
-      activationData.account_id = this.accountId;
-    }
-
     // Auto add 'http' if not filled by user
 
     activationStepMap[3].forEach(key => {
-      activationData.body[key] = autoPrefixUrls(activationData.body[key]);
+      data[key] = autoPrefixUrls(data[key]);
     });
 
-    return ajax({
-      url: '/user/generic',
+    return merchantFetch({
+      url: 'merchant/activation',
       method: 'post',
-      appendModeInURL: false,
-      data: activationData,
+      data,
+      accountId: this.accountId,
     });
   }
 

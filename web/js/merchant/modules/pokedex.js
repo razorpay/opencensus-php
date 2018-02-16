@@ -1,8 +1,9 @@
 import ajax from 'merchant/utils/ajax';
+import { merchantFetch } from 'rzp/utils/ajax';
 
 export var pokeConfig = {
-  merchantId: ''
-}
+  merchantId: '',
+};
 
 export const fetch = (query, mode) => {
   /*
@@ -13,7 +14,7 @@ export const fetch = (query, mode) => {
   let data = {
     route_name: 'merchant_analytics',
     body: query,
-  }
+  };
 
   let url = '/user/generic';
 
@@ -24,22 +25,33 @@ export const fetch = (query, mode) => {
     url = '/admin/generic';
   }
 
-  Object.keys(query.aggregations).forEach((aggKey) => {
-
-    const aggDetails = query.aggregations[aggKey]
-                            .details;
+  Object.keys(query.aggregations).forEach(aggKey => {
+    const aggDetails = query.aggregations[aggKey].details;
 
     aggDetails.mode = aggDetails.mode || mode;
   });
 
-
-  return ajax(url, {
-    appendModeInURL: false,
+  let commonOptions = {
     method: 'post',
     headers: {
-      'Content-Type': "application/json"
+      'Content-Type': 'application/json',
     },
     contentType: 'application/json',
     data: JSON.stringify(data),
+  };
+
+  if (url === '/user/generic') {
+    commonOptions.data = data.body;
+
+    return merchantFetch({
+      url: 'merchant/analytics',
+      mode: 'live',
+      ...commonOptions,
+    });
+  }
+
+  return ajax(url, {
+    appendModeInURL: false,
+    ...commonOptions,
   });
 };
