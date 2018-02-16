@@ -158,6 +158,8 @@ final class Route
         'merchant_create_invoice_entities'        => ['post',     'merchants/invoice/create',                       'MerchantInvoiceController@postCreateInvoiceEntities'               ],
         'merchant_details_fetch'                  => ['get',      'merchants/details',                              'MerchantController@getMerchantDetails'                             ],
         'merchant_invoice_add_bulk'               => ['post',     'merchants/invoice/bulk',                         'MerchantInvoiceController@postMultipleEntities'                    ],
+        'merchant_create_app_access_mapping'      => ['post',     'merchants/{id}/applications',                    'MerchantController@postMapOAuthApplication'                        ],
+        'merchant_delete_app_access_mapping'      => ['delete',   'merchants/{id}/applications/{appId}',            'MerchantController@deleteMapOAuthApplication'                      ],
         'merchant_tags_bulk'                      => ['post',     'merchants/tags/bulk',                            'MerchantController@bulkTagMerchants'                               ],
         'create_submerchant_user'                 => ['post',     'submerchant/user/{id}',                          'MerchantController@postSubMerchantUser'                            ],
         'balance_fetch'                           => ['get',      'balance',                                        'MerchantController@getAccountBalance'                              ],
@@ -1163,6 +1165,8 @@ final class Route
         'user_reset_password_token',
         'merchant_payout_mail',
         'geoip_update',
+        'merchant_create_app_access_mapping',
+        'merchant_delete_app_access_mapping',
         'merchant_tags_bulk',
     ];
 
@@ -1678,6 +1682,8 @@ final class Route
 
         'auth_service' => [
             'oauth_merchant_notify',
+            'merchant_create_app_access_mapping',
+            'merchant_delete_app_access_mapping',
         ],
     ];
 

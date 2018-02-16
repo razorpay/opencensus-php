@@ -13,6 +13,7 @@ use RZP\Constants\Entity;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Credits;
+use RZP\Models\Merchant\AccessMap;
 
 class MerchantController extends Controller
 {
@@ -892,6 +893,24 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function postMapOAuthApplication(string $merchantId)
+    {
+        $input = Request::all();
+
+        $response = (new AccessMap\Service)
+                        ->mapOAuthApplication($merchantId, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function deleteMapOAuthApplication(string $merchantId, string $appId)
+    {
+        $response = (new AccessMap\Service)
+                        ->deleteMapOAuthApplication($merchantId, $appId);
+
+        return ApiResponse::json($response);
+    }
+
     public function enableEmiMerchantSubvention(string $id, string $emiPlanId)
     {
         $input = Request::all();
@@ -900,5 +919,4 @@ class MerchantController extends Controller
 
         return ApiResponse::json($data);
     }
-
 }
