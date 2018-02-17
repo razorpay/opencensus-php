@@ -64,7 +64,7 @@ class GSTIN
         // state code is valid as per list in `$stateCodes`
         //
         return (($valid === 1) and
-                (array_key_exists($stateCode, static::$stateCodes) === true))l
+                (array_key_exists($stateCode, static::$stateCodes) === true));
     }
 
     /**

@@ -1,13 +1,14 @@
 <?php
 
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
-use RZP\Models\Customer\Entity as Customer;
 use RZP\Models\Order\Entity as Order;
 use RZP\Models\Payment\Entity as Payment;
+use RZP\Models\Customer\Entity as Customer;
 
 class CreateCustomers extends Migration {
 
@@ -34,6 +35,9 @@ class CreateCustomers extends Migration {
                   ->nullable();
 
             $table->string(Customer::EMAIL, 255)
+                  ->nullable();
+
+            $table->string(Customer::GSTIN, 20)
                   ->nullable();
 
             $table->text(Customer::NOTES);

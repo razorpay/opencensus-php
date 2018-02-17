@@ -33,6 +33,7 @@ return [
                 'name'    => 'testc',             // Replaced with different valid names in tests
                 'email'   => 'test@razorpay.com',
                 'contact' => '1234567899',
+                'gstin'   => '29ABCDE1234L1Z1',
             ],
         ],
         'response' => [
@@ -41,6 +42,7 @@ return [
                 'name'    => 'testc',
                 'email'   => 'test@razorpay.com',
                 'contact' => '1234567899',
+                'gstin'   => '29ABCDE1234L1Z1',
             ],
         ],
     ],

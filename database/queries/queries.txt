@@ -3248,3 +3248,7 @@ delete from tagging_tags
 where name = 'Ref-9aHC1hl4PNU3sn';
 
 # Airtel aggregator accounts breakup -- end
+
+# Customer GSTIN - Invoices
+ALTER TABLE customers
+    ADD COLUMN gstin VARCHAR(20) DEFAULT NULL AFTER email;
