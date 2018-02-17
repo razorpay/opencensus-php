@@ -262,6 +262,32 @@ return [
         ],
     ],
 
+    'testCreateCustomerInvalidGstin' => [
+        'request' => [
+            'url'     => '/customers',
+            'method'  => 'post',
+            'content' => [
+                'name'    => 'testc',             // Replaced with different invalid names in tests
+                'email'   => 'test@razorpay.com',
+                'contact' => '1234567899',
+                'gstin'   => '00ABCDE1234L1Z1',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The GSTIN is invalid',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testUpdateCustomerName' => [
         'request' => [
             'url' => '/customers/cust_100000customer',
