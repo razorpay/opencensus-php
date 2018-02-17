@@ -78,7 +78,10 @@ class GSTIN
     {
         if (static::isValid($gstin) === false)
         {
-            throw new BadRequestValidationFailureException('Invalid GSTIN', null, ['gstin' => $gstin]);
+            throw new BadRequestValidationFailureException(
+                'The GSTIN is invalid',
+                null,
+                ['gstin' => $gstin]);
         }
     }
 }

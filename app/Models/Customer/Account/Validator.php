@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Customer;
 
+use Lib\GSTIN;
 use Lib\PhoneBook;
 use libphonenumber\PhoneNumberFormat;
 
@@ -24,6 +25,7 @@ class Validator extends Base\Validator
         Entity::CONTACT             => 'sometimes|nullable|contact_syntax',
         Entity::NAME                => 'sometimes|string|max:50|nullable|custom',
         Entity::EMAIL               => 'sometimes|nullable|email',
+        Entity::GSTIN               => 'sometimes|string|filled|custom',
         Entity::NOTES               => 'sometimes|notes',
         Entity::SHIPPING_ADDRESS    => 'sometimes',
         Entity::BILLING_ADDRESS     => 'sometimes',
@@ -90,6 +92,11 @@ class Validator extends Base\Validator
         }
     }
 
+    protected function validateGstin($attribute, $value)
+    {
+        GSTIN::validate($value);
+    }
+
     /**
      * - Validates given contact string using contact rules
      * - Parses and returns standard format(E164) string value
@@ -138,6 +145,7 @@ class Validator extends Base\Validator
      * @param null $number
      *
      * @throws Exception\BadRequestException
+     * @throws \libphonenumber\NumberParseException
      */
     public function validateIndianContact($number = null)
     {
