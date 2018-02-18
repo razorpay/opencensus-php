@@ -306,6 +306,25 @@ a.breadcrumb__backNav--link {
   [type='checkbox']:disabled + label {
     cursor: not-allowed;
   }
+
+// New custom checkbox style, replace it with above when needed across dashboard.
+  &.next > label::before {
+    border-color: #5f73cf !important;
+  }
+  &.next > [type='checkbox']:checked + label::before {
+    border-color: #cfdadd !important;
+    background-color: #fff9e9 !important;
+  }
+
+  &.next > label::after {
+    color: #27c24c !important;
+  }
+
+  &.next > .left-label {
+    display: inline-block;
+    position: absolute;
+    margin-left: 4px;
+  }
 }
 
 @keyframes luminate {
