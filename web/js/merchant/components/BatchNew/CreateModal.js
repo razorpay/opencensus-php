@@ -16,7 +16,13 @@ import { titleCase } from 'rzp/utils/rzp-utils';
 })
 export default class BatchCreateModal extends Component {
   render() {
-    const { closeModal, parsedEntries, batchType, onCreateBatch } = this.props;
+    const {
+      closeModal,
+      parsedEntries,
+      batchType,
+      onCreateBatch,
+      handleSubmit,
+    } = this.props;
 
     return (
       <div class="modal-body">
@@ -29,7 +35,7 @@ export default class BatchCreateModal extends Component {
           limit={3}
         />
         <div class="modal-info stretch create">
-          <form handleSubmit={onCreateBatch}>
+          <form onSubmit={handleSubmit(onCreateBatch)}>
             <h5>
               <strong>
                 CREATE BATCH FILE NAME <i class="i i-info-circle m-l" />
@@ -84,7 +90,7 @@ export default class BatchCreateModal extends Component {
               class="btn btn-primary"
               text="Create & Send Payment Links"
               pendingText="Creating..."
-              onClick={this.props.handleSubmit(onCreateBatch)}
+              onClick={handleSubmit(onCreateBatch)}
             />
           </form>
         </div>

@@ -6,8 +6,8 @@ import HeaderAction from 'rzp/ui/HeaderAction';
 import BatchListFilter from 'merchant/components/BatchNew/ListFilter';
 import { batchId, totalCount, status } from 'rzp/ui/item/pair';
 import { batchDownload } from 'merchant/modules/batches';
-import * as NotificationsActions from 'rzp/modules/notifications';
 import { openModal } from 'rzp/modules/modals';
+import { luminateRow } from 'merchant/modules/app';
 
 import BatchUpload from './Upload';
 
@@ -17,6 +17,7 @@ function batchActions({
   issueAll,
   onDownloadClick,
   issuableIdList,
+  luminateRow,
 }) {
   return {
     viewAll,
@@ -88,6 +89,9 @@ export default class BatchList extends Component {
     this.props.openModal({
       size: 'large',
       component: <BatchUpload {...this.props} />,
+      onSave: batch => {
+        this.props.luminateRow(batch);
+      },
     });
   };
 
