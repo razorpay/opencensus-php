@@ -3,9 +3,9 @@ import { connect } from 'react-redux';
 
 import BatchUploadModal from 'merchant/components/BatchNew/UploadModal';
 
-import { uploadPaymentLinkBatch as uploadBatch } from 'merchant/modules/batches';
+import { validatePaymentLinkBatch as validateBatch } from 'merchant/modules/batches';
 
-@connect(state => state.session, { uploadBatch })
+@connect(state => state.session, { validateBatch })
 export default class BatchUpload extends Component {
   state = {
     shouldLoadMore: false,
@@ -16,13 +16,13 @@ export default class BatchUpload extends Component {
 
   //TODO: remove after file component is added
   handleFileChange = e => {
-    this.setState({ file: e.target.files[0] }, this.handleFileUpload);
+    this.setState({ file: e.target.files[0] }, this.handleBatchValidation);
   };
 
-  handleFileUpload = () => {
+  handleBatchValidation = () => {
     this.handleNotification('upload');
     this.props
-      .uploadBatch(this.state.file, this.props.mode)
+      .validateBatch(this.state.file, this.props.mode)
       .then(response => {
         this.handleNotification('success');
         console.log('Response: ', response);
