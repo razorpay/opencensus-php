@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import { Component, Fragment } from 'react';
 
 // TODO: temporary file upload till the file upload component is built
 import FileUploadInputButton from 'rzp/ui/FileUpload/InputButton';
@@ -6,15 +6,18 @@ import FileUploadInputButton from 'rzp/ui/FileUpload/InputButton';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import { titleCase } from 'rzp/utils/rzp-utils';
 
-export default function UploadModal({
-  closeModal,
+export default function BatchValidateModal({
+  status,
+  fileUrl,
+  notifyMsg,
+  shouldLoadMore,
   sampleUrl,
   docUrl,
   batchType,
-  shouldLoadMore,
-  notification,
+  batchState,
   onLoadMore,
   onFileChange,
+  closeModal,
 }) {
   return (
     <div class="batch-upload-modal">
@@ -28,16 +31,16 @@ export default function UploadModal({
             maxSize="1000000"
             onChange={onFileChange}
           />
-          {notification && (
-            <h5 class={`notification ${notification.status}`}>
+          {notifyMsg && (
+            <h5 class={`notification ${status}`}>
               <i class="i i-info-circle m-r" />
-              {notification.msg}
+              {notifyMsg}
             </h5>
           )}
         </div>
 
         {/* Show batch upload modal info when no file uploaded */}
-        {!notification && (
+        {!status && (
           <div class="modal-info">
             <h5>
               Getting Started with Batch Uploads?{' '}
@@ -59,7 +62,7 @@ export default function UploadModal({
                 <ul>
                   <li>1. The Amount mentioned should be in Paise.</li>
                   <li>
-                    2. The receipt id for all {titleCase(batchType)} should be
+                    2. The receipt id for all {titleCase(batchType)}s should be
                     unique.
                   </li>
                   <li>3. The number of rows should not exceed 5000.</li>
@@ -76,8 +79,8 @@ export default function UploadModal({
         )}
 
         {/* Show batch modal error-info when file upload */}
-        {notification && notification.status === 'error' ? (
-          <div class="modal-error-info">
+        {fileUrl ? (
+          <div class="modal-info error">
             <h4 class="m-b">How to fix an error?</h4>
             <div class="row m-t">
               <div class="col-sm-9">
@@ -89,10 +92,10 @@ export default function UploadModal({
                 </p>
               </div>
               <div class="col-sm-3">
-                <button class="btn btn-primary">
+                <a class="btn btn-primary" href={fileUrl}>
                   {' '}
                   <i class="i i-download m-r" /> Download File
-                </button>
+                </a>
               </div>
             </div>
           </div>

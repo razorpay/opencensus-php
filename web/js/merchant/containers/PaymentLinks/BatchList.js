@@ -45,7 +45,7 @@ export default class BatchListContainer extends ListContainer {
         sampleUrl="https://dashboard.razorpay.com/files/sample_batch_payment_links.xlsx"
         issueAll={this.issueAll}
         issuableIdList={issuableIdList}
-        batchType="payment_links"
+        batchType="payment_link"
         {...this.props}
       />
     );
