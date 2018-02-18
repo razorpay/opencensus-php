@@ -90,7 +90,7 @@ export default class BatchList extends Component {
       size: 'large',
       component: <BatchUpload {...this.props} />,
       onSave: batch => {
-        this.props.luminateRow(batch);
+        this.props.luminateRow(batch.id);
       },
     });
   };
