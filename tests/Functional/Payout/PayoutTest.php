@@ -5,18 +5,12 @@ namespace RZP\Tests\Functional\Payout;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
-use RZP\Models\Payout;
-use RZP\Models\Settlement\Channel;
-use RZP\Models\FundTransfer\Attempt;
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\Payout\PayoutTrait;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class PayoutTest extends TestCase
 {
-    use PayoutTrait;
     use PaymentTrait;
     use SettlementTrait;
 
@@ -216,7 +210,7 @@ class PayoutTest extends TestCase
         $request['url'] = '/payments/'. $payment->getPublicId() . '/payouts';
     }
 
-    public function testInitiatePayoutSuccess(): array
+    public function testCreatePayoutAttemptSuccess()
     {
         $this->ba->privateAuth();
         $p1 = $this->testCreatePayout();
@@ -230,12 +224,6 @@ class PayoutTest extends TestCase
 
         $this->ba->adminAuth();
 
-        $content = $this->initiatePayouts();
-
-        $this->assertNotNull($content['kotak']['payout_text_file']);
-
-        $this->assertEquals(2, $content['kotak']['count']);
-
         // Verify attempts
         $attempts = $this->getEntities('fund_transfer_attempt', [], true);
 
@@ -243,14 +231,11 @@ class PayoutTest extends TestCase
 
         $attempts = $attempts['items'];
 
-        // Verfiy batch fund transfer
-        $bft = $this->getLastEntity('batch_fund_transfer', true);
-
         foreach ($attempts as $attempt)
         {
             $this->assertTestResponse($attempt, 'testPayoutAttemptSuccess');
 
-            $this->assertEquals($bft['id'], $attempt['batch_fund_transfer_id']);
+            $this->assertNull($attempt['batch_fund_transfer_id']);
         }
 
         // Verify payouts
@@ -261,61 +246,11 @@ class PayoutTest extends TestCase
         $payouts = $payouts['items'];
         foreach ($payouts as $payout)
         {
-            $this->assertTestResponse($payout, 'testPayoutInitiateSuccess');
+            $this->assertTestResponse($payout, 'testPayoutEntitySuccess');
 
-            $this->assertEquals($bft['id'], $payout['batch_fund_transfer_id']);
+            $this->assertNull($payout['batch_fund_transfer_id']);
         }
 
         Carbon::setTestNow();
-
-        return $content;
-    }
-
-    public function testPayoutReconciliation()
-    {
-        $payoutFiles = ($this->testInitiatePayoutSuccess())['kotak']['payout_text_file'];
-
-        // Generate reconciliation file, settlement and payout have common implementation
-        $payoutReconciliationFile = $this->generateSetlReconciliationFile($payoutFiles, Channel::KOTAK);
-
-        // Reconcile settlements, same route is being used as both are h2h
-        $content = $this->reconcileSettlements($payoutReconciliationFile);
-
-        $this->assertEquals(2, $content['total_count']);
-
-        // Verify attempts
-        $attempts = $this->getEntities('fund_transfer_attempt', [], true);
-        $attempts = $attempts['items'];
-
-        foreach ($attempts as $attempt)
-        {
-            $this->assertTestResponse($attempt, 'testPayoutAttemptReconSuccess');
-            $this->assertNotNull($attempt[Attempt\Entity::UTR]);
-        }
-
-        // Verify payouts
-        $payout = $this->getLastEntity('payout', true);
-        $this->assertEquals(Payout\Status::INITIATED, $payout[Payout\Entity::STATUS]);
-
-        // Verfiy batch fund transfer
-        $bft = $this->getLastEntity('batch_fund_transfer', true);
-        $this->assertEquals(0, $bft['processed_count']);
-
-        // Verify status after entities are processed
-        $request = [
-            'url'       => '/fund_transfer_attempts/' . Channel::KOTAK,
-            'method'    => 'POST',
-            'content'   => [],
-        ];
-
-        $this->makeRequestAndGetContent($request);
-
-        $bft = $this->getLastEntity('batch_fund_transfer', true);
-        $this->assertEquals(2, $bft['processed_count']);
-
-        // Verify payouts
-        $payout = $this->getLastEntity('payout', true);
-        $this->assertNotNull($payout[Payout\Entity::UTR]);
-        $this->assertEquals(Payout\Status::PROCESSED, $payout[Payout\Entity::STATUS]);
     }
 }
