@@ -14,7 +14,6 @@ export default function BatchValidateModal({
   sampleUrl,
   docUrl,
   batchType,
-  batchState,
   onLoadMore,
   onFileChange,
   closeModal,

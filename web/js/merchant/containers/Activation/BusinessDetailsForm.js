@@ -252,7 +252,7 @@ export default class BusinessDetailsForm extends Component {
 
               <div class="form-group">
                 <div class="col-md-offset-3 col-md-9">
-                  <div class="checkbox rzpCheckbox">
+                  <div class="checkbox rzpCheckbox next">
                     <Field
                       name="business_international"
                       id="business_international"
@@ -260,7 +260,7 @@ export default class BusinessDetailsForm extends Component {
                       type="checkbox"
                       disabled={locked}
                     />
-                    <label for="business_international" class="icon i-check"/>
+                    <label for="business_international" class="icon i-check" />
                     <span class="left-label label-required">
                       International Payments Required?
                     </span>
@@ -351,7 +351,7 @@ export default class BusinessDetailsForm extends Component {
               {!locked ? (
                 <div class="form-group">
                   <div class="col-md-offset-3 col-md-9">
-                    <div class="checkbox rzpCheckbox">
+                    <div class="checkbox rzpCheckbox next">
                       <input
                         name="or_same"
                         id="or_same"
@@ -359,7 +359,7 @@ export default class BusinessDetailsForm extends Component {
                         onChange={this.handleSameAddressCheck}
                         checked={this.state.or_same}
                       />
-                      <label htmlFor="or_same" class="icon i-check"/>
+                      <label htmlFor="or_same" class="icon i-check" />
                       <span class="left-label">
                         Operational Address same as Registered Address
                       </span>
