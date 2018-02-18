@@ -80,7 +80,7 @@ export default function BatchValidateModal({
 
         {/* Show batch modal error-info when file upload */}
         {fileUrl ? (
-          <div class="modal-info error">
+          <div class="modal-info error stretch">
             <h4 class="m-b">How to fix an error?</h4>
             <div class="row m-t">
               <div class="col-sm-9">

@@ -9,6 +9,7 @@ const BATCH_DOWNLOAD = 'BATCH_DOWNLOAD';
 const ISSUABLE_BATCHES = 'ISSUABLE_BATCHES';
 const EDIT_ISSUABLE_BATCHES = 'EDIT_ISSUABLE_BATCHES';
 const BATCH_VALIDATE = 'BATCH_VALIDATE';
+const BATCH_CREATE = 'BATCH_CREATE';
 
 const fetchBatchAjax = id => {
   return merchantFetch(`batches/${id}`).then(response => {
@@ -93,6 +94,24 @@ const validateBatch = (actionType, batchType) => file => {
   };
 };
 
+const createBatch = (actionType, batchType) => data => {
+  return {
+    type: actionType,
+    payload: merchantFetch({
+      url: 'batches',
+      method: 'post',
+      data: {
+        type: batchType,
+        ...data,
+        config: {
+          sms_notify: data.sms_notify,
+          email_notify: data.email_notify,
+        },
+      },
+    }),
+  };
+};
+
 const uploadBatch = (actionType, batchType) => (file, mode, extraFields) => {
   let formData = new FormData();
   formData.append('file', file);
@@ -136,6 +155,8 @@ export const validatePaymentLinkBatch = validateBatch(
   BATCH_VALIDATE,
   'payment_link'
 );
+
+export const createPaymentLinkBatch = createBatch(BATCH_CREATE, 'payment_link');
 
 export const uploadRefundBatch = uploadBatch(REFUND, 'refund');
 export const uploadPaymentLinkBatch = uploadBatch(PAYMENT_LINK, 'payment_link');

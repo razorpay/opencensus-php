@@ -7,7 +7,7 @@ import BatchListFilter from 'merchant/components/BatchNew/ListFilter';
 import { batchId, totalCount, status } from 'rzp/ui/item/pair';
 import { batchDownload } from 'merchant/modules/batches';
 import * as NotificationsActions from 'rzp/modules/notifications';
-import { openModal, closeModal } from 'rzp/modules/modals';
+import { openModal } from 'rzp/modules/modals';
 
 import BatchUpload from './Upload';
 
@@ -66,8 +66,6 @@ function batchActions({
 @connect(null, {
   batchDownload,
   openModal,
-  closeModal,
-  ...NotificationsActions,
 })
 export default class BatchList extends Component {
   dowload = id => {
