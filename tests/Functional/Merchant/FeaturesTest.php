@@ -692,6 +692,8 @@ class FeaturesTest extends TestCase
 
     public function updateMarketplaceOnboardingResponse()
     {
+        $this->ba->adminAuth();
+
         $testData = $this->testData[__FUNCTION__];
 
         $request = $testData['request'];
@@ -706,6 +708,8 @@ class FeaturesTest extends TestCase
      */
     protected function postOnboardingResponses()
     {
+        $this->ba->proxyAuth();
+
         $url = storage_path("files/" . Constants::ONBOARDING .  "/" . Constants::VENDOR_AGREEMENT . ".pdf");
 
         $uploadedFile = $this->createUploadedFile($url);
@@ -791,7 +795,7 @@ class FeaturesTest extends TestCase
         array $featureNames = ['dummy'],
         string $merchant_id = null)
     {
-        $this->ba->adminAuth();
+        $this->ba->adminAuth($addToMode);
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -918,7 +922,7 @@ class FeaturesTest extends TestCase
 
         $testData['request']['url'] = '/features/' . $merchantId;
 
-        $this->ba->adminAuth();
+        $this->ba->adminAuth($mode);
 
         $response = $this->startTest($testData);
 
@@ -944,7 +948,7 @@ class FeaturesTest extends TestCase
         string $mode,
         array $featureNames = ['dummy'])
     {
-        $this->ba->adminAuth();
+        $this->ba->adminAuth($mode);
 
         $response = $this->startTest();
 
