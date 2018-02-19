@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use RZP\Mail\Payment\FailedToAuthorized as FailedToAuthorizedMail;
 use RZP\Models\Payment;
 use RZP\Tests\Functional\Fixtures;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment\Entity;
@@ -19,6 +20,7 @@ use RZP\Error\PublicErrorCode;
 class AxisGatewayTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -453,12 +455,12 @@ class AxisGatewayTest extends TestCase
     public function testForceAuthorizePayment()
     {
         $payment = $this->doAuthPayment();
-        $migs = $this->getLastEntity('axis_migs', true);
+        $migs = $this->getDbLastEntityPublic('axis_migs');
         $txnNo = (int) $migs['vpc_TransactionNo'] - 1;
 
         $this->failAuthorizePayment();
 
-        $payment = $this->getLastEntity('axis_migs', true);
+        $payment = $this->getDbLastEntityPublic('axis_migs');
         $pid1 = 'pay_'.$payment['payment_id'];
         $txnNoNew = $payment['vpc_TransactionNo'];
 
@@ -468,10 +470,11 @@ class AxisGatewayTest extends TestCase
 
         $this->forceAuthorizeFailedPayment($pid1, ['vpc_TransactionNo' => $txnNo]);
 
-        $payment = $this->getLastEntity('payment', true);
+        $payment = $this->getDbLastEntityPublic('payment');
+
         $this->assertEquals($payment['status'], 'authorized');
 
-        $payment = $this->getLastEntity('axis_migs', true);
+        $payment = $this->getDbLastEntityPublic('axis_migs');
 
         $this->assertEquals($payment['vpc_TransactionNo'], $txnNoNew);
     }

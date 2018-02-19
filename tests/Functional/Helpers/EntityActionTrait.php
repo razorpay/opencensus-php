@@ -265,6 +265,10 @@ trait EntityActionTrait
     {
         $this->ba->adminAuth();
 
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach($merchantId);
+
         $request = [
             'url' => '/merchants/'.$merchantId.'/methods',
             'method' => 'put',

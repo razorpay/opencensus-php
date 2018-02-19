@@ -135,6 +135,9 @@ class UserTest extends TestCase
 
     public function testEdit()
     {
+        // will enable it when we use user edit functionality.
+        $this->markTestSkipped();
+
         $user = $this->fixtures->create('user');
 
         $testData = & $this->testData[__FUNCTION__];
