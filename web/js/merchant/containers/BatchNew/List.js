@@ -1,5 +1,7 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
+import { NavLink } from 'react-router-dom';
+
 import DataTable from 'rzp/ui/Table/DataTable';
 import { Link } from 'react-router-dom';
 import HeaderAction from 'rzp/ui/HeaderAction';
@@ -141,7 +143,7 @@ export default class BatchList extends Component {
         <DataTable
           title="Batch Uploads"
           columns={[
-            batchId,
+            batchIdLink,
             batchName,
             totalCount,
             status,
@@ -167,6 +169,15 @@ export default class BatchList extends Component {
     );
   }
 }
+
+const batchIdLink = {
+  title: 'Batch ID',
+  value: batch => (
+    <NavLink to={`/${batch.type.split('_').join('')}s/batch/${batch.id}`}>
+      <code>{batch.id}</code>
+    </NavLink>
+  ),
+};
 
 /**
  * Render this component when there are not batch row.

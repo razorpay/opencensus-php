@@ -8,8 +8,10 @@ const PAYMENT_LINK = 'PAYMENT_LINK_BATCHES';
 const BATCH_DOWNLOAD = 'BATCH_DOWNLOAD';
 const ISSUABLE_BATCHES = 'ISSUABLE_BATCHES';
 const EDIT_ISSUABLE_BATCHES = 'EDIT_ISSUABLE_BATCHES';
-const BATCH_VALIDATE = 'BATCH_VALIDATE';
-const BATCH_CREATE = 'BATCH_CREATE';
+const VALIDATE_BATCH = 'VALIDATE_BATCH';
+const CREATE_BATCH = 'CREATE_BATCH';
+const FETCH_BATCH = 'FETCH_BATCH';
+const FETCH_BATCH_STATS = 'FETCH_BATCH_STATS';
 
 const fetchBatchAjax = id => {
   return merchantFetch(`batches/${id}`).then(response => {
@@ -151,12 +153,40 @@ export const batchDownload = batchId => {
   };
 };
 
+export const fetchBatch = batchId => {
+  return {
+    type: FETCH_BATCH,
+    payload: merchantFetch(`batches/${batchId}`),
+  };
+};
+
 export const validatePaymentLinkBatch = validateBatch(
-  BATCH_VALIDATE,
+  VALIDATE_BATCH,
   'payment_link'
 );
 
-export const createPaymentLinkBatch = createBatch(BATCH_CREATE, 'payment_link');
+export const fetchBatchStats = batchId => {
+  //TODO: remove fake data.
+  return {
+    type: FETCH_BATCH_STATS,
+    payload: Promise.resolve({
+      success: true,
+      data: {
+        entity: 'batch',
+        type: 'payment_link',
+        id: 'batch_1234',
+        stats: {
+          entities_processed: 3000,
+          payment_links_sent: 2990,
+          paid: 1550,
+          expired: 10,
+        },
+      },
+    }),
+  };
+};
+
+export const createPaymentLinkBatch = createBatch(CREATE_BATCH, 'payment_link');
 
 export const uploadRefundBatch = uploadBatch(REFUND, 'refund');
 export const uploadPaymentLinkBatch = uploadBatch(PAYMENT_LINK, 'payment_link');

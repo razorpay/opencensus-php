@@ -27,6 +27,10 @@ export default class PaymentLinksContainer extends Component {
         <content>
           <Switch>
             <Route path="/paymentlinks/batchuploads" component={BatchList} />
+            <Route
+              path="/paymentlinks/batchuploads/{id}"
+              component={BatchList}
+            />
             <Route path="/paymentlinks" component={LinkList} />
           </Switch>
         </content>
