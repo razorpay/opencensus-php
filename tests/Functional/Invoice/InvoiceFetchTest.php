@@ -118,9 +118,9 @@ class InvoiceFetchTest extends TestCase
         $this->startTest($testData);
     }
 
-    public function testFetchForSoftDeletedInvoiceForAppAuth()
+    public function testFetchForSoftDeletedInvoiceForAdminAuth()
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $this->createDraftInvoice(['deleted_at' => time()]);
 
@@ -151,9 +151,9 @@ class InvoiceFetchTest extends TestCase
             'The selected deleted is invalid.');
     }
 
-    public function testFindByIdForSoftDeletedInvoiceForAppAuth()
+    public function testFindByIdForSoftDeletedInvoiceForAdminAuth()
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $invoice = $this->createDraftInvoice(['deleted_at' => time()]);
 
