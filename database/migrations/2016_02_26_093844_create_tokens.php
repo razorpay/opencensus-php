@@ -11,7 +11,8 @@ use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Terminal\Entity as Terminal;
 use RZP\Models\Customer\Token\Entity as Token;
 
-class CreateTokens extends Migration {
+class CreateTokens extends Migration
+{
 
     /**
      * Run the migrations.
@@ -64,6 +65,9 @@ class CreateTokens extends Migration {
                   ->nullable();
 
             $table->text(Token::GATEWAY_TOKEN2)
+                  ->nullable();
+
+            $table->char(Token::AUTH_TYPE, 14)
                   ->nullable();
 
             $table->boolean(Token::RECURRING)
@@ -145,7 +149,6 @@ class CreateTokens extends Migration {
 
             $table->dropForeign(Table::PAYMENT.'_'.Payment::GLOBAL_TOKEN_ID.'_foreign');
         });
-
 
         Schema::table(Table::TOKEN, function($table)
         {
