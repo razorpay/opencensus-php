@@ -42,4 +42,13 @@ class AccountController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function listLinkedAccounts()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->listLinkedAccounts($input);
+
+        return ApiResponse::json($response);
+    }
 }

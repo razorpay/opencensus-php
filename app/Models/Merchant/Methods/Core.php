@@ -14,6 +14,7 @@ use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Card\Network;
+use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Payment\Processor\Netbanking;
@@ -103,19 +104,19 @@ class Core extends Base\Core
     public function getFormattedMethods(Merchant\Entity $merchant)
     {
         $data = [
-            'entity'        => 'methods',
-            'card'          => true,
-            'amex'          => false,
-            'netbanking'    => [],
-            'wallet'        => [],
-            'emi'           => false,
-            'upi'           => false,
+            'entity'                      => E::METHODS,
+            Payment\Method::CARD          => true,
+            Payment\Gateway::AMEX         => false,
+            Payment\Method::NETBANKING    => [],
+            Payment\Method::WALLET        => [],
+            Payment\Method::EMI           => false,
+            Payment\Method::UPI           => false,
         ];
 
         $methods = $this->getMethods($merchant);
 
-        $data['card'] = $methods->isCardEnabled();
-        $data['amex'] = $methods->isAmexEnabled();
+        $data[Payment\Method::CARD] = $methods->isCardEnabled();
+        $data[Payment\Gateway::AMEX] = $methods->isAmexEnabled();
         $netbankingEnabled = $methods->isNetbankingEnabled();
 
         if ($netbankingEnabled === true)
@@ -124,16 +125,16 @@ class Core extends Base\Core
 
             $allSupportedBanks = Netbanking::removeDefaultDisableBanks($banks);
 
-            $data['netbanking'] = $this->getBankNames($allSupportedBanks);
+            $data[Payment\Method::NETBANKING] = $this->getBankNames($allSupportedBanks);
         }
 
-        $data['wallet'] = $methods->getEnabledWallets();
-        $data['upi'] = $methods->isUpiEnabled();
+        $data[Payment\Method::WALLET] = $methods->getEnabledWallets();
+        $data[Payment\Method::UPI] = $methods->isUpiEnabled();
         $emi = $methods->isEmiEnabled();
 
         if ($emi === true)
         {
-            $data['emi'] = $emi;
+            $data[Payment\Method::EMI] = $emi;
 
             $data['emi_subvention'] = $merchant->getEmiSubvention();
 

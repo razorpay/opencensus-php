@@ -29,6 +29,22 @@ return [
         'entity' => 'payment',
     ],
 
+    'testUpiAmountCap' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Maximum amount for UPI payment can be Rs 20000',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+    
     'testFailedVpaValidation' => [
         'response'  => [
             'content'     => [

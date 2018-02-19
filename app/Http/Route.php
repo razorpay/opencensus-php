@@ -726,6 +726,8 @@ final class Route
         'beta_account_post_bank_account'          => ['post',     'beta/accounts/{id}/bank_accounts',               'AccountController@createOrChangeBankAccount'                       ],
         'beta_account_fetch_setl_destinations'    => ['get',      'beta/accounts/{id}/settlement_destinations',     'AccountController@fetchSettlementDestinations'                     ],
 
+        'account_fetch'                           => ['get',      'accounts',                                       'AccountController@listLinkedAccounts'                              ],
+
         // Pincode Service
         'pincode_get'                             => ['get',      'pincodes/{id}',                                  'PincodeSearchController@get'                                       ],
     ];
@@ -1268,6 +1270,7 @@ final class Route
         'ufh_get_file_signed_url',
         'pincode_get',
         'dispute_edit',
+        'account_fetch',
     ];
 
     // These will run on internal auth with the assurance
@@ -2002,6 +2005,7 @@ final class Route
         'beta_account_fetch_multiple'          => [Feature::MARKETPLACE],
         'beta_account_post_bank_account'       => [Feature::MARKETPLACE],
         'beta_account_fetch_setl_destinations' => [Feature::MARKETPLACE],
+        'account_fetch'                        => [Feature::MARKETPLACE],
     ];
 
     /*
