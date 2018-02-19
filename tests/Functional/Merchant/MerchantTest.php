@@ -67,10 +67,10 @@ class MerchantTest extends TestCase
     {
         $this->createMerchant();
 
-        $this->ba->appAuthTest();
+        $this->ba->adminAuth();
         $this->startTest();
 
-        $this->ba->appAuthLive();
+        $this->ba->adminAuth('live');
         $result = $this->startTest();
 
         $methods = $result['methods'];
@@ -92,7 +92,7 @@ class MerchantTest extends TestCase
 
         $this->createUserMerchantMapping($user2['id'], $merchant['id'], 'manager');
 
-        $this->ba->proxyAuth('rzp_live_' . $merchant['id']);
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id']);
 
         $testData = & $this->testData[__FUNCTION__];
 
@@ -310,12 +310,16 @@ class MerchantTest extends TestCase
     {
         $this->createMerchant();
 
+        $this->ba->adminAuth();
+
         $this->startTest();
     }
 
     public function testEditMerchantInvalidWhitelistedIpsLive()
     {
         $this->createMerchant();
+
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
@@ -324,12 +328,16 @@ class MerchantTest extends TestCase
     {
         $this->createMerchant();
 
+        $this->ba->adminAuth();
+
         $this->startTest();
     }
 
     public function testEditMerchantInvalidWhitelistedIpsTest()
     {
         $this->createMerchant();
+
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
@@ -493,7 +501,7 @@ class MerchantTest extends TestCase
 
     public function testActivateMerchantWithoutBankAccount()
     {
-        $this->ba->appAuthLive();
+        $this->ba->adminAuth();
 
         $this->fixtures->on('live')->create('merchant_detail', [
             'merchant_id' => '1cXSLlUU8V9sXl',
@@ -508,7 +516,7 @@ class MerchantTest extends TestCase
     {
         Mail::fake();
 
-        $this->ba->appAuthLive();
+        $this->ba->adminAuth('live');
 
         $ba = $this->fixtures
                    ->on('live')
@@ -580,13 +588,20 @@ class MerchantTest extends TestCase
 
     public function testMerchantEnableLive()
     {
+        $this->ba->adminAuth('live');
+
         $this->testMerchantDisableLive();
+
         $this->startTest();
     }
 
     public function testMerchantDisableLive()
     {
+        $this->ba->adminAuth('live');
+
         $this->testActivateMerchant();
+
+        $this->ba->adminAuth('live');
 
         $this->startTest();
     }
@@ -764,6 +779,8 @@ class MerchantTest extends TestCase
 
     public function testMerchantUndefinedAction()
     {
+        $this->ba->adminAuth();
+        
         $this->startTest();
     }
 
@@ -1871,6 +1888,8 @@ class MerchantTest extends TestCase
 
     protected function createMerchant()
     {
+        $this->ba->adminAuth();
+
         $id = '1X4hRFHFx4UiXt';
 
         $merchant = [
@@ -1886,8 +1905,6 @@ class MerchantTest extends TestCase
         ];
 
         $content = $this->makeRequestAndGetContent($request);
-
-        $this->ba->adminAuth();
 
         $this->merchantAssignPricingPlan('1hDYlICobzOCYt', $id);
 
