@@ -96,7 +96,7 @@ class MerchantTest extends TestCase
 
         $testData = & $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = '/merchants/users';
+        $testData['request']['url'] = '/merchants-users';
 
         $response = $this->makeRequestAndGetContent($testData['request']);
 
