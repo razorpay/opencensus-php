@@ -84,6 +84,8 @@ export const options = {
   },
   payment_method: {
     ...methods,
+    emandate: 'e-Mandate',
+    aeps: 'AEPS',
     transfer: 'Transfer',
     bank_transfer: 'Bank Transfer',
     fund_transfer: 'Payout: Fund Transfer',
