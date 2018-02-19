@@ -101,9 +101,7 @@ Route::group(['middleware' => ['web']], function () {
 
     Route::group(['middleware'  =>  ['admin', 'admin_access']], function()
     {
-        Route::any('/admin/generic', 'GenericController@handle');
         Route::any('/admin/stats/{id}', 'AdminController@getMerchantStats');
-        // Route::any('/admin/api/{mode}/{path}', 'GenericController@handleAny')->where(['path' => '.*'])->name('admin');
         Route::get('/admin/user', 'AdminController@getAdmin');
         Route::get('/admin/user/logout', 'AdminController@getLogout');
         Route::get('/admin/user/keepalive', 'AdminController@getKeepAlive');
