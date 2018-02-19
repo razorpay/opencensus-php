@@ -117,6 +117,16 @@ trait PaymentTrait
         return $this->getAndMatchPayment($id, $paymentResponse);
     }
 
+    public function createRefundFromPayments($payments)
+    {
+        foreach ($payments as $payment)
+        {
+            $attrs = ['payment' => $payment, 'amount'  => '100'];
+            $refund = $this->fixtures->create('refund:from_payment', $attrs);
+            $refunds[] = $refund;
+        }
+    }
+
     protected function createAndGetFeesForPayment($payment = null)
     {
         if ($payment === null)

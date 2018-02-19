@@ -908,7 +908,7 @@ class MerchantTest extends TestCase
 
         $settleAtTimestamp = (new Transaction\Core)->calculateSettledAtTimestamp($capturedAt, 3) + 1;
 
-        $this->initiateSettlements('kotak', $settleAtTimestamp);
+        $this->initiateSettlements('axis', $settleAtTimestamp);
 
         $testData = & $this->testData['testChangeBankAccount'];
         $this->runRequestResponseFlow($testData);

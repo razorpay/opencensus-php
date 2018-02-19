@@ -500,7 +500,7 @@ trait Authorize
                                         $payment->getGateway());
         }
 
-        if ($payment->hasCard())
+        if ($payment->hasCard() === true)
         {
             $card = $this->repo->card->fetchForPayment($payment);
         }

@@ -67,11 +67,12 @@ return [
         ],
         'response' => [
             'content' => [
-                'url' => 'http://example.com',
-                'events' => [
+                'url'            => 'http://example.com',
+                'events'         => [
                     'payment.authorized' => true,
                 ],
-                'active' => true,
+                'active'         => true,
+                'application_id' => '10000000000App'
             ]
         ],
     ],
