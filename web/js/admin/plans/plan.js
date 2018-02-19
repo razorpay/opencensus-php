@@ -96,10 +96,6 @@ export const options = {
     '': 'All',
     ...cardTypes,
   },
-  emandate_type: {
-    'aadhar': 'Aadhar',
-    'netbanking': 'Netbanking'
-  },
   payment_network: {
     '': 'All',
   },
@@ -288,16 +284,19 @@ class Rule extends CollectionItem {
   }
 
   paymentMethodTypeField() {
-    var fieldName;
-
+    var data;
     if (this.payment_method === 'card') {
-      fieldName = 'payment_method_type';
+      data = options.payment_method_type;
     } else if (this.payment_method === 'emandate') {
-      fieldName = 'emandate_type';
+      data = {
+        '': 'All',
+        'aadhar': 'Aadhar',
+        'netbanking': 'Netbanking'
+      }
     }
 
-    if (fieldName) {
-      var field = this.selectField(fieldName);
+    if (data) {
+      var field = this.selectField('payment_method_type', data);
       if (field) {
         return <div>Type {field}</div>;
       }
