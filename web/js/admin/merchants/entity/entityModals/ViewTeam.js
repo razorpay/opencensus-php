@@ -11,10 +11,7 @@ export default class TeamDetails extends Component {
   state = {};
 
   componentWillMount() {
-    adminFetch({
-      route_name: 'invitation_fetch',
-      merchant_id: this.props.merchantId,
-    }).then(data => {
+    adminFetch(`live_${this.props.merchantId}/invitations`).then(data => {
       this.setState({
         pendingInvites: data,
       });

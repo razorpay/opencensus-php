@@ -71,9 +71,8 @@ export default function GenerateRefundsExcel() {
             body.email = user.email;
           }
           return adminPost({
-            route_name: 'emi_generate_excel',
-            body,
-            mode: data.mode,
+            url: `${data.mode}/emi/generate/excel`,
+            data: body,
           }).then(response => {
             if (response) {
               notifySuccess(

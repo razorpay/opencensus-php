@@ -15,11 +15,8 @@ export default ({ props, merchantId }) => {
     tags.push('ref-' + body.referral);
 
     return adminPost({
-      route_name: 'merchant_tag_add',
-      url_params: {
-        id: merchantId,
-      },
-      body: {
+      url: `live/merchants/${merchantId}/tags`,
+      data: {
         tags: tags,
       },
     })

@@ -113,9 +113,7 @@ export default class EditMerchant extends Component {
   };
 
   fetchGroups() {
-    adminFetch({
-      route_name: 'group_get_multiple',
-    })
+    adminFetch('groups')
       .then(data => {
         data.items.forEach(group => this.allGroups.set(group.id, group));
       })

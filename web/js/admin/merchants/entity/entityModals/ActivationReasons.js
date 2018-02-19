@@ -21,9 +21,7 @@ export class RejectActivation extends Component {
 
   componentWillMount() {
     this.selectedStatus = this.props.status;
-    adminFetch({
-      route_name: 'merchant_get_rejection_reasons',
-    }).then(response => {
+    adminFetch('merchant/activation/rejection_reasons').then(response => {
       if (response) {
         this.allReasons = response;
         this.setState({

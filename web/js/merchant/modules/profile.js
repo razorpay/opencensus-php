@@ -28,7 +28,7 @@ export const acceptInvitation = inviteId => {
 export const rejectInvitation = (inviteId, userId) => {
   return () => {
     return merchantFetch({
-      url: `invitations/${inviteId}/${action}`,
+      url: `invitations/${invideId}/reject`,
       method: 'post',
       data: {
         user_id: userId,

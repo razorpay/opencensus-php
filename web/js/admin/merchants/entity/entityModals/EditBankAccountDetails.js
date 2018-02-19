@@ -28,11 +28,8 @@ export default class EditBankAccountDetails extends Component {
     }
 
     return adminPost({
-      route_name: 'merchant_add_bank_account',
-      url_params: {
-        id: this.props.merchantId,
-      },
-      body,
+      url: `merchants/${this.props.merchantId}/bank_account`,
+      data: body,
     })
       .then(response => {
         if (response) {
@@ -50,12 +47,7 @@ export default class EditBankAccountDetails extends Component {
   };
 
   componentWillMount() {
-    adminFetch({
-      route_name: 'merchant_fetch_bank_account',
-      url_params: {
-        id: this.props.merchantId,
-      },
-    })
+    adminFetch(`merchants/${this.props.merchantId}/bank_account`)
       .then(data => {
         if (data) {
           this.setState({ bankAccount: data });

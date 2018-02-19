@@ -6,6 +6,7 @@ import { notifySuccess, closeModal } from 'common/modal';
 
 import { adminFetch } from 'common/fetch';
 
+// TODO: TEST mode to be sent in query params or just url?
 IRCTC.title = 'IRCTC';
 export default function IRCTC() {
   return (
@@ -26,12 +27,10 @@ export default function IRCTC() {
         pendingClass="small spinner"
         onSubmit={data => {
           return adminFetch({
-            route_name: 'reports_refund_irctc',
-            merchant_id: data.merchant_id,
-            query_params: {
+            url: `${data.mode}_${data.merchant_id}/reports/refund/irctc`,
+            params: {
               email: data.email,
               on: data.on,
-              mode: data.mode,
             },
           }).then(response => {
             if (response) {

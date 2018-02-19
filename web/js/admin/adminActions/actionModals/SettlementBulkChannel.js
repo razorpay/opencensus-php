@@ -9,9 +9,13 @@ SettlementBulkChannel.permission = 'settlement_bulk_update';
 SettlementBulkChannel.title = 'Update Settlement Bulk Channel';
 
 export default function SettlementBulkChannel() {
-  return(
+  return (
     <Form class="full-span full-elements" style={{ width: '400px' }}>
-      <TextAreaField label="Settlement ID's" name="settlement_ids" placeholder="Please enter comma(,) seperated settlement id's"/>
+      <TextAreaField
+        label="Settlement ID's"
+        name="settlement_ids"
+        placeholder="Please enter comma(,) seperated settlement id's"
+      />
       <SelectField name="channel" label="Channel">
         <option value="">Select</option>
         <option value="kotak">kotak</option>
@@ -26,18 +30,19 @@ export default function SettlementBulkChannel() {
         class="btn"
         pendingClass="small spinner"
         onSubmit={body => {
-          
-          body.settlement_ids = body.settlement_ids ? body.settlement_ids.split(',') : [];
+          body.settlement_ids = body.settlement_ids
+            ? body.settlement_ids.split(',')
+            : [];
 
           return adminPut({
-              route_name: 'setl_update_channel_bulk',
-              body,
+            url: 'settlements/channel/bulk',
+            data: body,
           }).then(data => {
-            if(data) {
+            if (data) {
               notifySuccess('Updated successfully.');
             }
             closeModal();
-          })
+          });
         }}
       />
     </Form>

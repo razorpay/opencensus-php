@@ -19,13 +19,14 @@ export default class EditFeatures extends Component {
       notifyError('No features selected');
       return;
     }
+
+    let mode = body.mode;
     const requestData = {
       features: selectedFeatures,
-      mode: body.mode,
     };
 
     if (body.shouldSync == 1) {
-      requestData['mode'] = 'live';
+      mode = 'live';
       requestData['should_sync'] = 1;
     } else {
       requestData['should_sync'] = 0;
@@ -35,7 +36,7 @@ export default class EditFeatures extends Component {
 
     return adminPost(
       requestData,
-      '/admin/features/merchant/' + props.merchantId
+      `/${mode}/admin/features/merchant/${props.merchantId}`
     )
       .then(response => {
         if (response) {

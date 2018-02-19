@@ -26,9 +26,7 @@ class EditRole extends Component {
     let selectedPerms = {},
       allPerms = [];
 
-    adminFetch({
-      route_name: 'permission_get_multiple',
-    }).then(response => {
+    adminFetch('live/permissions-multiple').then(response => {
       if (response) {
         allPerms = response.items;
         if (model) {
@@ -51,25 +49,17 @@ class EditRole extends Component {
     let { selectedPerms } = this.state;
 
     if (model) {
-      let data = { body };
-      data.body.permissions = [];
+      body.permissions = [];
 
       for (let sPerm in selectedPerms) {
-        if (selectedPerms.hasOwnProperty(sPerm))
-          data.body.permissions.push(sPerm);
+        if (selectedPerms.hasOwnProperty(sPerm)) body.permissions.push(sPerm);
       }
 
       //customer request
       fetch({
-        url: '/admin/generic',
+        url: `roles/${mode.id}`,
         method: 'put',
-        params: {
-          route_name: 'role_edit',
-          url_params: {
-            '{roleId}': model.id,
-          },
-        },
-        data,
+        data: body,
       }).then(data => {
         if (data) {
           if (!isWorkflow(data)) {
@@ -87,8 +77,8 @@ class EditRole extends Component {
       }
 
       return adminPost({
-        route_name: 'role_create',
-        body,
+        url: 'live/roles',
+        data: body,
       }).then(data => {
         if (data) {
           if (!isWorkflow(data)) {
@@ -144,13 +134,8 @@ export function showEntity(collection) {
 
 export function removeEntity(e) {
   prevent(e);
-  let params = {
-    route_name: 'role_delete',
-    url_params: {
-      roleId: this.id,
-    },
-  };
-  return adminDelete(params).then(response => {
+
+  return adminDelete(`roles/${this.id}`).then(response => {
     if (response) {
       this.collection.items.remove(this);
       notifyDone();

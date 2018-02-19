@@ -11,14 +11,7 @@ export default class EditFieldMaps extends Component {
   save = data => {
     let id = data.id || null;
     let { org_id } = this.props.model;
-    let adminFn = id ? adminPut : adminPost;
-
-    let url_params = {
-      orgId: org_id,
-      ...(id ? { id: id } : null),
-    };
-
-    let route_name = id ? 'org_fieldmap_edit' : 'org_fieldmap_create';
+    let requestFn = id ? adminPut : adminPost;
 
     if (data.fields) {
       data.fields = data.fields.replace(/\s/g, '').split(',');
@@ -27,10 +20,9 @@ export default class EditFieldMaps extends Component {
 
     if (id) delete data.id;
 
-    return adminFn({
-      body: data,
-      route_name: route_name,
-      url_params: url_params,
+    return requestFn({
+      url: id ? `orgs/${org_id}/field-map/{id}` : `orgs/${org_id}/field-map`,
+      data,
     }).then(response => {
       if (response) {
         notifySuccess(
@@ -51,13 +43,7 @@ export default class EditFieldMaps extends Component {
 
 export function removeEntity(e) {
   prevent(e);
-  adminDelete({
-    route_name: 'org_fieldmap_delete',
-    url_params: {
-      orgId: this.org_id,
-      id: this.id,
-    },
-  }).then(response => {
+  adminDelete(`orgs/${this.org_id}/field-map/${this.id}`).then(response => {
     notifySuccess('Field Map deleted.' + JSON.stringify(response));
     this.collection.items.remove(this);
   });

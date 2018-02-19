@@ -24,13 +24,10 @@ export default class GatewayRuleList extends Component {
   state = {
     selectedType: '',
   };
+  // TODO: TEST check what mode to pass
   collection = new Collection({
     data: {
-      route_name: 'admin_fetch_entity_multiple',
-      url_params: {
-        type: 'gateway_rule',
-      },
-      mode: 'test',
+      url: 'test/admin/gateway_rule',
     },
     model: Model,
     filters: defaultFilters,
@@ -44,7 +41,7 @@ export default class GatewayRuleList extends Component {
   };
 
   onSubmit = filters => {
-    this.collection.data.mode = filters.mode;
+    this.collection.mode = filters.mode;
     delete filters.mode;
     this.collection.applyFilters(filters);
   };

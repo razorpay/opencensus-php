@@ -26,7 +26,7 @@ export default function FieldMapForm({
         <TextAreaField
           label="Fields (Seperated by comma's)"
           name="fields"
-          defaultValue={fields.join(',')}
+          defaultValue={fields.join(', ')}
           required
         />
         <AsyncButton

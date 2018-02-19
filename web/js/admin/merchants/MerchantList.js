@@ -21,7 +21,7 @@ export default class MerchantList extends Component {
   };
   collection = new Collection({
     data: {
-      route_name: 'admin_fetch_merchants_new',
+      url: 'live/admins/merchants',
     },
     fetchFn: adminFetch,
     filters: defaultFilters,

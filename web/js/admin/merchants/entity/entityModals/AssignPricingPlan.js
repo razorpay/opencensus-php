@@ -13,9 +13,7 @@ export default class PricingPlanModal extends Component {
   state = { pricingPlans: {}, pending: true };
 
   componentWillMount() {
-    adminFetch({
-      route_name: 'pricing_get_merchant_plans',
-    }).then(data => {
+    adminFetch('pricing/merchants').then(data => {
       const pricingPlans = {};
 
       for (let key in data) {
@@ -38,11 +36,8 @@ export default class PricingPlanModal extends Component {
       };
 
       return adminPost({
-        route_name: 'merchant_assign_pricing',
-        url_params: {
-          id: this.props.merchantId,
-        },
-        body: pricingData,
+        url: `merchants/${this.props.merchantId}/pricing`,
+        data: pricingData,
       })
         .then(data => {
           if (data) {

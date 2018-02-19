@@ -16,12 +16,7 @@ export default class RoleModal extends Component {
   }
 
   componentWillMount() {
-    adminFetch({
-      route_name: 'permission_get_roles',
-      url_params: {
-        id: this.props.model.id,
-      },
-    }).then(response => {
+    adminFetch(`permissions/${this.props.model.id}/roles`).then(response => {
       this.setState({
         items: response.items,
         pending: false,

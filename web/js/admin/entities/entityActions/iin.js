@@ -29,13 +29,7 @@ export default ({ entity, updateEntity }) => {
       }
     }
 
-    return adminPut({
-      route_name: 'iin_edit',
-      url_params: {
-        id: body.iin,
-      },
-      body: iin,
-    })
+    return adminPut(`iins/${body.iin}`)
       .then(data => {
         if (data) {
           notifySuccess('IIN is updated successfully');

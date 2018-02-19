@@ -42,30 +42,19 @@ export default class GenericEntity extends Component {
   fetchEntity(mode, suppressDefaultError) {
     let { type, id } = this.params;
 
-    fetch(
-      {
-        url: '/admin/generic',
-        params: {
-          mode,
-          route_name: 'admin_fetch_entity_by_id',
-          url_params: {
-            '{id}': id,
-            '{type}': type,
-          },
-        },
-      },
-      suppressDefaultError
-    ).then(data => {
-      if (!data.errors && data) {
-        if (data.mode) {
-          data[`${type} mode`] = data.mode;
+    fetch({ url: `${mode}/admin/${type}/${id}` }, suppressDefaultError).then(
+      data => {
+        if (!data.errors && data) {
+          if (data.mode) {
+            data[`${type} mode`] = data.mode;
+          }
+          data.mode = mode;
+          this.setState({ data, title: this.getTitle(mode) });
         }
-        data.mode = mode;
-        this.setState({ data, title: this.getTitle(mode) });
-      }
 
-      return data;
-    });
+        return data;
+      }
+    );
   }
 
   render() {
@@ -227,24 +216,11 @@ function updateEntity(data) {
   });
 }
 
-function deleteEmiPlan() {
-  return adminDelete({
-    route_name: 'emi_plan_delete',
-    url_params: {
-      id: this.id,
-    },
-  });
-}
+const deleteEmiPlan = _ => adminDelete(`emi/${this.id}`);
 
 function downloadFile() {
   var windowRef = window.open('', '_blank');
-  adminFetch({
-    route_name: 'admin_get_file',
-    url_params: {
-      fileId: this.id,
-    },
-    mode: this.mode,
-  }).then(data => {
+  adminFetch(`${this.mode}/files/${this.id}/signed-url`).then(data => {
     if (data) {
       windowRef.location.href = data.url;
     } else {
@@ -255,15 +231,7 @@ function downloadFile() {
 }
 
 function retryBatch(updateEntity) {
-  const params = {
-    route_name: 'batch_process_by_id',
-    url_params: {
-      id: this.id,
-    },
-    mode: this.mode,
-  };
-
-  return adminPost(params).then(response => {
+  return adminPost(`${this.mode}/batches/${this.id}/process`).then(response => {
     if (response) {
       updateEntity();
       notifySuccess(`Batch: ${response.id} retried successfully.`);

@@ -59,8 +59,8 @@ export default function AddIINRule() {
         onSubmit={body => {
           body.emi = body.emi ? 1 : 0;
           return adminPost({
-            route_name: 'iin_add',
-            body,
+            url: 'iins',
+            data: body,
           }).then(response => {
             if (response) {
               notifySuccess('IIN added successfully.');

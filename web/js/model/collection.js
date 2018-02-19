@@ -59,13 +59,16 @@ export default class Collection extends BaseModel {
       filters,
       items,
       model,
+      extraFields = {},
       noPagination,
-      deleteRouteName,
+      deleteUrl,
     } = props;
     Object.assign(this, { data, fetchFn, model });
 
-    this.deleteRouteName = deleteRouteName;
+    this.deleteUrl = deleteUrl;
     this.noPagination = noPagination;
+
+    this.extraFields = extraFields;
 
     this.setFilters(filters);
 
@@ -86,7 +89,7 @@ export default class Collection extends BaseModel {
       'fetch',
       this.fetchFn({
         ...this.data,
-        query_params: this.filters,
+        params: this.filters,
       })
     ).then(data => {
       if (data) {
@@ -109,10 +112,7 @@ export default class Collection extends BaseModel {
 
   delete = item => {
     const data = {
-      route_name: this.deleteRouteName,
-      url_params: {
-        id: item.id,
-      },
+      url: this.deleteUrl.replace('{id}', item.id),
     };
 
     return adminDelete(data)

@@ -18,10 +18,10 @@ export default function ConfirmUser() {
         pendingClass="small spinner"
         type="submit"
         onSubmit={body => {
-          let data = { body };
-          data.route_name = 'user_confirm_by_data';
-
-          return adminPut(data).then(response => {
+          return adminPut({
+            url: 'users/confirm_user_by_data',
+            data: body,
+          }).then(response => {
             if (response) {
               notifySuccess('User confirmed successfully.');
               closeModal();

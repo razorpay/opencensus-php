@@ -20,12 +20,12 @@ export default class EditOrg extends Component {
       orgId = null;
     }
     let requests = [
-      this._fetchFn('permission_get_by_type', { type: 'all' }),
+      this._fetchFn('live/permissions/get/all'),
       ...(orgId
-        ? [this._fetchFn('org_get', { id: orgId })]
+        ? [this._fetchFn(`orgs/${orgId}`)]
         : [
             null, //Fake request as org_get is not needed for Add
-            this._fetchFn('permission_get_by_type', { type: 'assignable' }),
+            this._fetchFn('live/permissions/get/assignable'),
           ]),
     ];
     Promise.all(requests).then(([allPerms, org, assignablePerms]) => {
@@ -113,54 +113,43 @@ export default class EditOrg extends Component {
   };
 
   handleSave = body => {
-    let data = { body };
     let { selectedPerms, workflowPerms } = this.state;
 
-    data.body.permissions = [];
-    data.body.workflow_permissions = [];
+    body.permissions = [];
+    body.workflow_permissions = [];
     for (let sPerm in selectedPerms) {
       if (selectedPerms.hasOwnProperty(sPerm)) {
-        data.body.permissions.push(sPerm);
+        body.permissions.push(sPerm);
       }
     }
 
-    data.body.workflow_permissions = data.body.permissions.filter(
+    body.workflow_permissions = body.permissions.filter(
       id => !!workflowPerms[id]
     );
-    if (data.body.id) {
-      data['content_type'] = 'application/json';
-      data['route_name'] = 'org_edit';
-      data['url_params'] = {
-        id: this.org.id,
-      };
-
-      delete data.body.id;
-      delete data.body.created_at;
-      delete data.body.admin;
-      delete data.body.entity;
-
-      return adminPut(data).then(response => {
+    if (body.id) {
+      return adminPut({
+        url: `orgs/${this.org.id}`,
+        content_type: 'application/json',
+      }).then(response => {
         if (response) notifySuccess('Org successfully added!');
       });
     } else {
       //Add admin props into body
-      for (let prop in data.body) {
-        if (data.body.hasOwnProperty(prop) && prop.indexOf('admin.') > -1) {
+      for (let prop in body) {
+        if (body.hasOwnProperty(prop) && prop.indexOf('admin.') > -1) {
           let adminProp = prop.split('.')[1];
-          if (!data.body.admin) {
+          if (!body.admin) {
             data.body.admin = {};
           }
-          data.body.admin[adminProp] = data.body[prop];
-          delete data.body[prop];
+          body.admin[adminProp] = body[prop];
+          delete body[prop];
         }
       }
 
-      data.route_name = 'org_create';
-
       return fetch({
-        url: '/admin/generic',
+        url: 'live/orgs',
         method: 'post',
-        data,
+        data: body,
       }).then(data => {
         if (data) {
           notifySuccess('Org successfully added!');
@@ -169,12 +158,7 @@ export default class EditOrg extends Component {
     }
   };
 
-  _fetchFn = (route, params) => {
-    return adminFetch({
-      route_name: route,
-      url_params: params,
-    });
-  };
+  _fetchFn = url => adminFetch(url);
 
   render() {
     if (this.state.pending) {
@@ -196,14 +180,7 @@ export default class EditOrg extends Component {
 }
 
 export function removeEntity() {
-  let params = {
-    route_name: 'org_delete',
-    url_params: {
-      id: this.id,
-    },
-  };
-
-  return adminDelete(params).then(response => {
+  return adminDelete(`orgs/${this.id}`).then(response => {
     notifyDone();
     this.collection.items.remove(this);
 

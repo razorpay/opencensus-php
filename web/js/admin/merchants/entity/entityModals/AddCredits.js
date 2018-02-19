@@ -15,12 +15,8 @@ export default ({ merchantId }) => {
     delete body.mode;
 
     return adminPost({
-      route_name: 'credits_create',
-      mode,
-      url_params: {
-        id: merchantId,
-      },
-      body,
+      url: `${mode}/merchants/${merchantId}/credits_log`,
+      data: body,
     })
       .then(response => {
         if (response) {

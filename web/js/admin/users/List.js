@@ -26,7 +26,7 @@ export default class UserList extends Component {
   collection = new Collection({
     fetchFn: adminFetch,
     data: {
-      route_name: 'admin_get_multiple',
+      url: 'live/admins',
     },
     model: CollectionItem,
   });

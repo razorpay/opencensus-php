@@ -52,9 +52,8 @@ export default class CreateGatewayFile extends Component {
 
   handleSubmit = ({ mode, ...body }) => {
     return adminPost({
-      route_name: 'gateway_file_create',
-      mode,
-      body: {
+      url: `${mode}/gateway/files`,
+      data: {
         type: body.type,
         begin: Number(
           moment(body.begin, 'DD/MM/YYYY')
@@ -152,7 +151,8 @@ export default class CreateGatewayFile extends Component {
             name="end"
             fieldClass="create-gateway-file"
             label={'To'}
-            required />
+            required
+          />
         )}
 
         <Field

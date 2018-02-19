@@ -52,11 +52,8 @@ export default function UploadSettlementReconciliation() {
           };
 
           return adminFormUpload({
-            route_name: 'setl_reconcile',
+            url: `settlements/reconcile/${channel}`,
             ...form,
-            url_params: JSON.stringify({
-              '{channel}': channel,
-            }),
           }).then(response => {
             if (response.data.success) {
               notifySuccess('API Request successful');

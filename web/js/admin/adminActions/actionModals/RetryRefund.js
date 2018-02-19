@@ -33,17 +33,13 @@ export default function RetryRefund() {
         type="submit"
         onSubmit={body => {
           adminPost({
-            route_name: 'refund_verify_failed',
-            mode: body.mode,
-            body: {
+            url: `${body.mode}/refunds/${body.id}/retry`,
+            data: {
               bank_account: {
                 account_number: body.account_number,
                 ifsc_code: body.ifsc_code,
                 beneficiary_name: body.beneficiary_name,
               },
-            },
-            url_params: {
-              id: body.id,
             },
           }).then(response => {
             if (response) {

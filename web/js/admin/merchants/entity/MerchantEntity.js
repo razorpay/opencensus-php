@@ -163,11 +163,8 @@ const ActionsList = ({ model, merchantId, actions }) => {
   function toggleLockOnActivationForm() {
     const isCurrentlyLocked = merchant.details.merchant_details.locked;
     return adminPut({
-      route_name: 'merchant_activation_update',
-      url_params: {
-        id: merchantId,
-      },
-      body: {
+      url: `live/merchant/activation/${merchantId}/update`,
+      data: {
         locked: isCurrentlyLocked ? 0 : 1, // If already locked then send opposite
       },
     })
@@ -186,22 +183,17 @@ const ActionsList = ({ model, merchantId, actions }) => {
 
   // Enable / Disable live transactions
   function toggleLiveTransactions() {
-    let routeName, successMsg;
+    let url, successMsg;
 
     if (merchant.details.activated == 1 && merchant.details.live == 0) {
       successMsg = 'Live transactions enabeld successfully.';
-      routeName = 'merchant_live_enable';
+      url = `merchants/${merchantId}/live/enable`;
     } else if (merchant.details.live == 1) {
-      routeName = 'merchant_live_disable';
+      url = `merchants/${merchantId}/live/disable`;
       successMsg = 'Live transactions disabled successfully.';
     }
 
-    return adminPost({
-      route_name: routeName,
-      url_params: {
-        id: merchantId,
-      },
-    })
+    return adminPost(url)
       .then(response => {
         if (response) {
           closeModal();
@@ -222,11 +214,8 @@ const ActionsList = ({ model, merchantId, actions }) => {
 
   function merchantAction(action, successMsg) {
     const data = {
-      route_name: 'merchant_action',
-      url_params: {
-        id: merchantId,
-      },
-      body: { action },
+      url: `live/merchants/${merchantId}/action`,
+      data: { action },
     };
 
     return adminPut(data)

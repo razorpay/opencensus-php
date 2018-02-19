@@ -36,11 +36,9 @@ export default class MerchantActivationForm extends Component {
     });
   }
 
+  // TODO: TEST live mode to be sent here?
   componentWillMount() {
-    adminFetch({
-      route_name: 'invitation_fetch',
-      merchant_id: this.merchantId,
-    }).then(data => {
+    adminFetch(`live_${this.merchantId}/invitations`).then(data => {
       this.setState({
         pendingInvites: data,
       });
@@ -62,11 +60,8 @@ export default class MerchantActivationForm extends Component {
       } this form?`
     ).then(() => {
       adminPatch({
-        route_name: 'merchant_activation_archive',
-        url_params: {
-          id: details.id,
-        },
-        body: {
+        url: `live/merchant/activation/${details.id}/archive`,
+        data: {
           archive: details.merchant_details.archived ? 0 : 1,
         },
       }).then(response => {

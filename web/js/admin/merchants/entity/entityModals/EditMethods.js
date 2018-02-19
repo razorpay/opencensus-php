@@ -68,11 +68,8 @@ export default ({ props, merchantId }) => {
     }
 
     return adminPut({
-      route_name: 'merchant_put_payment_methods',
-      url_params: {
-        mid: merchantId,
-      },
-      body,
+      url: `merchants/${merchantId}/methods`,
+      data: body,
     })
       .then(data => {
         if (data) {

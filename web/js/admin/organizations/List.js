@@ -14,7 +14,7 @@ const fields = [
   ['Business Name', item => item.business_name],
   ['Display Name', item => item.display_name],
   ['Email', item => item.email],
-  ['Email Domain', item => item.email_domains.join(',')],
+  ['Email Domain', item => item.email_domains.join(', ')],
   ['Actions', item => <Actions item={item} />],
 ];
 
@@ -45,7 +45,7 @@ const Actions = ({ item }) => (
 class OrganizationsList extends Component {
   collection = new Collection({
     data: {
-      route_name: 'org_get_multiple',
+      url: 'live/orgs',
     },
     fetchFn: adminFetch,
   });

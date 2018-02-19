@@ -23,27 +23,60 @@ export default function fetch(options, suppressError) {
     .catch(e => notifyError(e));
 }
 
-export function adminFetch(params, customUrl) {
+// customUrl must start with '/'
+export function adminFetch(data, customUrl) {
+  let url = '/admin/api/';
+
+  if (typeof data === 'string') {
+    // If only url is passed
+    url += data;
+  } else {
+    url += data.url;
+    delete data.url;
+
+    if (data.params) {
+      url += '?' + constructQueryString(data.params);
+    }
+  }
+
   return fetch({
-    url: customUrl ? customUrl : '/admin/generic',
-    params:
-      typeof params === 'string' ? { route_name: params } : parseParams(params),
+    url: customUrl ? customUrl : url,
   });
 }
 
 export function adminPost(data, customUrl) {
-  data = parseParams(data);
+  let url = '/admin/api/';
+
+  if (typeof data === 'string') {
+    // If only url is passed
+    url += data;
+  } else {
+    data = parseParams(data);
+    url += data.url;
+    delete data.url;
+  }
+
   return fetch({
-    url: customUrl ? customUrl : '/admin/generic',
+    url: customUrl ? customUrl : url,
     method: 'post',
     data,
   });
 }
 
 export function adminPut(data, customUrl) {
-  data = parseParams(data);
+  let url = '/admin/api/';
+
+  if (typeof data === 'string') {
+    // If only url is passed
+    url += data;
+  } else {
+    data = parseParams(data);
+    url += data.url;
+    delete data.url;
+  }
+
   return fetch({
-    url: customUrl ? customUrl : '/admin/generic',
+    url: customUrl ? customUrl : url,
     method: 'put',
     data,
   });
@@ -90,13 +123,6 @@ function parseParams(origParams) {
     params.query_params = JSON.stringify(origParams.query_params);
   }
 
-  if (origParams.url_params) {
-    let curlyParams = {};
-    for (let i in origParams.url_params) {
-      curlyParams[`{${i}}`] = origParams.url_params[i];
-    }
-    params.url_params = JSON.stringify(curlyParams);
-  }
   return params;
 }
 
@@ -122,4 +148,23 @@ const createFormData2 = (form = {}) => {
     }
   });
   return formData;
+};
+
+const constructQueryString = params => {
+  let query = [];
+
+  for (const k in params) {
+    if (params.hasOwnProperty(k)) {
+      let val = params[k];
+      if (typeof val === 'object') {
+        Object.keys(val).map(idx => query.push(`${k}[${idx}]=${val[idx]}`));
+      } else {
+        query.push(k + '=' + val);
+      }
+    }
+  }
+
+  query = query.join('&');
+
+  return query;
 };

@@ -15,7 +15,7 @@ export default class GroupList extends Component {
   collection = new Collection({
     fetchFn: adminFetch,
     data: {
-      route_name: 'group_get_multiple',
+      url: 'live/groups',
     },
     model: CollectionItem,
   });

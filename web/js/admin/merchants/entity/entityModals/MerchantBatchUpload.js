@@ -30,12 +30,8 @@ export default ({ merchantId }) => {
     }
 
     return adminFormUpload({
-      route_name: 'merchant_batches',
-      'body[type]': 'irctc',
-
-      url_params: JSON.stringify({
-        '{id}': merchantId,
-      }),
+      url: `merchant/${merchantId}/batches`,
+      'data[type]': 'irctc',
       ...requestData,
     })
       .then(response => {

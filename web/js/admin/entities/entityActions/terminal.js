@@ -34,12 +34,8 @@ export default ({ entity, mode, updateEntity }) => {
     }
 
     return adminPut({
-      route_name: 'terminal_edit',
-      url_params: {
-        id: entity.id,
-      },
-      mode: mode,
-      body,
+      url: `${terminal_edit}/terminals/${entity.id}`,
+      data: body,
     })
       .then(data => {
         if (data && (typeof data.success === 'undefined' || data.success)) {
@@ -82,14 +78,9 @@ export default ({ entity, mode, updateEntity }) => {
   }
 
   function updateSubmerchants(body) {
-    return adminPut({
-      route_name: 'terminal_add_merchant',
-      url_params: {
-        id: entity.id,
-        mid: body.merchant_id,
-      },
-      mode: mode,
-    })
+    return adminPut(
+      `${mode}/terminals/${entity.id}/merchants/${body.merchant_id}`
+    )
       .then(data => {
         if (data) {
           notifySuccess('Submerchant is successfully added');
@@ -101,14 +92,7 @@ export default ({ entity, mode, updateEntity }) => {
   }
 
   function deleteSubmerchant(submerchantId) {
-    adminDelete({
-      route_name: 'terminal_remove_merchant',
-      url_params: {
-        id: entity.id,
-        mid: submerchantId,
-      },
-      mode: mode,
-    })
+    adminDelete(`${mode}/terminals/${entity.id}/merchants/${submerchantId}`)
       .then(response => {
         notifySuccess('Sub merchant unassigned from the terminal successfully');
         closeModal();
@@ -120,14 +104,10 @@ export default ({ entity, mode, updateEntity }) => {
 
   function updatePrimaryMerchant(body) {
     return adminPut({
-      route_name: 'terminal_reassign_merchant',
-      url_params: {
-        id: entity.id,
-      },
-      body: {
+      url: `${mode}/terminals/{entity.id}/reassign`,
+      data: {
         merchant_id: body.merchant_id,
       },
-      mode: mode,
     })
       .then(data => {
         if (data) {
@@ -139,15 +119,8 @@ export default ({ entity, mode, updateEntity }) => {
 
   function deleteTerminal() {
     return fetch({
+      url: `${mode}/terminals/${entity.id}`,
       method: 'delete',
-      url: '/admin/generic/',
-      params: {
-        route_name: 'terminal_delete',
-        url_params: {
-          '{id}': entity.id,
-        },
-        mode: mode,
-      },
     })
       .then(data => {
         if (data) {
@@ -167,12 +140,8 @@ export default ({ entity, mode, updateEntity }) => {
     let isEnabled = entity.enabled;
 
     return adminPut({
-      route_name: 'terminal_toggle',
-      url_params: {
-        id: entity.id,
-      },
-      mode: mode,
-      body: { toggle: isEnabled ? 0 : 1 },
+      url: `${mode}/terminals/${entity.id}/toggle`,
+      data: { toggle: isEnabled ? 0 : 1 },
     });
   }
 

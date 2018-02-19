@@ -21,8 +21,8 @@ import {
 class PasswordResetModal extends Component {
   submit(body) {
     return adminPost({
-      body,
-      route_name: 'admin_change_password',
+      url: 'admin/change_password',
+      data: body,
     })
       .then(response => {
         if (!response) {

@@ -22,15 +22,11 @@ export default function EditBankTransferAccount() {
         type="submit"
         onSubmit={body => {
           return adminPut({
-            route_name: 'bank_transfers_edit_payer_account',
-            mode: body.mode,
-            body: {
+            url: `${body.mode}/bank_transfers/${body.id}/payer_bank_account`,
+            data: {
               beneficiary_name: body.beneficiary_name || undefined,
               account_number: body.account_number || undefined,
               ifsc_code: body.ifsc_code || undefined,
-            },
-            url_params: {
-              id: body.id,
             },
           }).then(response => {
             if (response) {

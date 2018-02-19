@@ -9,12 +9,12 @@ import { notifyError, notifySuccess, closeModal } from 'common/modal';
 import { adminPut } from 'common/fetch';
 
 export default ({ merchantId }) => {
+  // TODO: TEST if live needs to be sent here. earlier not sent
   /* Submit button action */
   function onSubmit(body) {
     return adminPut({
-      route_name: 'merchant_edit_config',
-      merchant_id: merchantId,
-      body: {
+      url: `live_${merchantId}/account/config`,
+      data: {
         handle: body.handle,
       },
     })

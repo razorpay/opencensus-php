@@ -38,8 +38,8 @@ export default function CreateSchedule() {
         pendingClass="small spinner"
         onSubmit={body => {
           return adminPost({
-            body,
-            route_name: 'schedule_create',
+            url: 'schedules',
+            data: body,
           }).then(response => {
             if (response) {
               notifySuccess('Schedule added successfully');

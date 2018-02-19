@@ -30,21 +30,16 @@ export default class EditWorkflow extends Component {
     let { id } = props.match.params;
 
     let requests = [
-      adminFetch({ route_name: 'role_get_multiple' }),
+      adminFetch('live/roles'),
       adminFetch({
+        url: 'live/permissions-multiple',
+        params: { type: 'workflow' },
         count: 1000,
-        query_params: { type: 'workflow' },
-        route_name: 'permission_get_multiple',
       }),
     ];
 
     if (id !== 'new') {
-      requests.push(
-        adminFetch({
-          route_name: 'workflow_get',
-          url_params: { id },
-        })
-      );
+      requests.push(adminFetch(`live/workflows/${id}`));
     }
 
     Promise.all(requests).then(
@@ -100,20 +95,18 @@ export default class EditWorkflow extends Component {
 
   save = body => {
     let { id } = this.props.match.params;
-    let data = { body };
 
-    data.body.permissions = this.permissions.map(p => p.id);
+    body.permissions = this.permissions.map(p => p.id);
+    body.levels = toJS(this.levels);
 
-    data.body.levels = toJS(this.levels);
-
-    if (!data.body.levels.length) {
+    if (!body.levels.length) {
       notifyError('Add atleast one Step');
 
       return;
     }
 
     let isRoleMissing;
-    data.body.levels.forEach((l, index) => {
+    body.levels.forEach((l, index) => {
       if (!l.steps.length) {
         notify({
           message: `Select atleast one Role in "Step ${index +
@@ -135,21 +128,21 @@ export default class EditWorkflow extends Component {
       return;
     }
 
-    let requestFn;
+    let requestFn, url;
 
     if (id === 'new') {
       requestFn = adminPost;
-      data.route_name = 'workflow_create';
-      data.body.org_id = user.org_id;
+      url = 'workflows';
+      body.org_id = user.org_id;
     } else {
       requestFn = adminPut;
-      data.route_name = 'workflow_update';
-      data.url_params = {
-        id,
-      };
+      url = `live/workflows/${id}`;
     }
 
-    return requestFn(data).then(data => {
+    return requestFn({
+      url,
+      data: body,
+    }).then(data => {
       if (data) {
         notifySuccess('Workflow successfully created');
         setTimeout(() => {

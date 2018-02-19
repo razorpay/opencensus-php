@@ -28,8 +28,8 @@ export default function RetryFailedSettlements() {
                 : [],
             };
             return adminPost({
-              body,
-              route_name: 'setl_retry',
+              url: 'settlements/retry',
+              data: body,
             }).then(response => {
               console.log('retry settlement', response);
               if (response) {

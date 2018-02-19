@@ -16,7 +16,7 @@ export default function TriggerDummyError() {
         class="btn"
         pendingClass="small spinner"
         onSubmit={() => {
-          return adminFetch('dummy_critical_error').then(response => {
+          return adminFetch('trigger/error').then(response => {
             if (response) {
               notifySuccess('Error triggerred successfully');
               closeModal();

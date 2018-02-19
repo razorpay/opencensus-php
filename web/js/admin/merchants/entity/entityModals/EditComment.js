@@ -10,17 +10,12 @@ import { adminPut } from 'common/fetch';
 
 export default ({ props, merchantId }) => {
   function onSubmit(body) {
-    const data = {
-      route_name: 'merchant_activation_update',
-      url_params: {
-        id: merchantId,
-      },
-      body: {
+    return adminPut({
+      url: `live/merchant/activation/${merchantId}/update`,
+      data: {
         comment: body.comment,
       },
-    };
-
-    return adminPut(data)
+    })
       .then(response => {
         if (response) {
           notifySuccess('Comment updated successfully.');

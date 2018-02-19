@@ -21,13 +21,7 @@ export default function VerifyPayment() {
         pendingClass="small spinner"
         type="submit"
         onSubmit={({ id, mode }) =>
-          adminFetch({
-            route_name: 'payment_verify',
-            mode,
-            url_params: {
-              id,
-            },
-          }).then(response => {
+          adminFetch(`${mode}/payments/${id}/verify`).then(response => {
             if (response) {
               notifySuccess('Payment Verified successfully');
               closeModal();

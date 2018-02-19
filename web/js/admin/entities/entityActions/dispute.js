@@ -15,19 +15,9 @@ export default ({ entity, mode, updateEntity }) => {
   function editDispute(body) {
     // Edit Dispute
     return fetch({
-      url: '/admin/generic',
+      url: `${mode}_${entity.merchant_id}/disputes/${entity.id}`,
       method: 'post',
-      params: {
-        route_name: 'dispute_edit',
-        url_params: {
-          '{id}': entity.id,
-        },
-        merchant_id: entity.merchant_id,
-        mode: mode,
-      },
-      data: {
-        body,
-      },
+      data: body,
     })
       .then(data => {
         if (data) {
@@ -77,13 +67,7 @@ export class DisputeForm extends Component {
   state = {};
 
   componentWillMount() {
-    adminFetch({
-      route_name: 'admin_fetch_entity_multiple',
-      url_params: {
-        type: 'dispute_reason',
-      },
-      mode: this.props.mode,
-    })
+    adminFetch(`${this.props.mode}/admin/dispute_reason`)
       .then(data => {
         this.setState({ reasonIds: data.items });
       })
