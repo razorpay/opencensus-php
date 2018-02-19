@@ -780,7 +780,7 @@ class MerchantTest extends TestCase
     public function testMerchantUndefinedAction()
     {
         $this->ba->adminAuth();
-        
+
         $this->startTest();
     }
 
@@ -798,6 +798,8 @@ class MerchantTest extends TestCase
 
     public function testAddBankAccount()
     {
+        $this->ba->adminAuth();
+
         Mail::fake();
 
         $this->startTest();
@@ -814,6 +816,8 @@ class MerchantTest extends TestCase
 
     public function testAddBankAccountWithMerchantDetail()
     {
+        $this->ba->adminAuth();
+
         Mail::fake();
 
         $this->fixtures->create('merchant_detail',
@@ -848,6 +852,8 @@ class MerchantTest extends TestCase
 
     public function testAddBankAccountWithInvalidIFSC()
     {
+        $this->ba->adminAuth();
+
         $this->startTest();
     }
 
@@ -923,14 +929,14 @@ class MerchantTest extends TestCase
 
     public function testSetBanks()
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
 
     public function testSetEmptyBanks()
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->startTest();
 
@@ -950,11 +956,11 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
-    public function testGetBanksByAppAuth()
+    public function testGetBanksByAdminAuth()
     {
         $this->testSetBanks();
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
@@ -1579,7 +1585,11 @@ class MerchantTest extends TestCase
         $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
         $this->fixtures->merchant->disableInternational();
 
-        $this->ba->appAuth();
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
@@ -1588,9 +1598,13 @@ class MerchantTest extends TestCase
     {
         $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
 
-        $this->ba->appAuth();
+        $admin = $this->ba->getAdmin();
 
-        $content = $this->startTest();
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
     }
 
     public function testGetKeySecret()
@@ -1727,7 +1741,7 @@ class MerchantTest extends TestCase
     {
         Mail::fake();
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $request = [
             'url'       => '/merchants/beneficiary/file/kotak',
@@ -1786,7 +1800,7 @@ class MerchantTest extends TestCase
     {
         Mail::fake();
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $request = [
             'url'       => '/merchants/beneficiary/file/axis',
@@ -1805,7 +1819,7 @@ class MerchantTest extends TestCase
     {
         Mail::fake();
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $request = [
             'url'       => '/merchants/beneficiary/file/icici',
