@@ -127,6 +127,7 @@ function _getForceFields() {
     'emi',
     'amex',
     'netbanking',
+    'emandate',
     'debit_card',
     'credit_card',
     'jiomoney',

@@ -5,7 +5,12 @@ import moment from 'moment';
 
 import Amount from 'rzp/ui/Amount';
 import Tabs, { Tab, TabPane } from 'rzp/ui/ReactTabs';
-import { paiseToRupees, titleCase, getPercentage } from 'rzp/utils/rzp-utils';
+import {
+  paiseToRupees,
+  titleCase,
+  getPercentage,
+  getFixedNumber
+} from 'rzp/utils/rzp-utils';
 import {
   humanReadableIndian,
   humanReadableIndianCurrency,
@@ -22,6 +27,7 @@ import Tooltip from 'merchant/components/Home/Tooltip';
 import {
   NUM_TRANSACTIONS,
   SAVED_CARDS,
+  SUCCESS_RATE,
   tabsOrder,
   tabsMeta,
   getQuery,
@@ -49,12 +55,12 @@ const TabContent = ({
 
   let formattedValue = value;
 
-  if (name !== SAVED_CARDS) {
+  if (typeof percent === "undefined") {
     formattedValue = isCurrency
       ? humanReadableIndianCurrency(paiseToRupees(value))
       : humanReadableIndian(value);
   } else {
-    formattedValue = percent + '%';
+    formattedValue = getFixedNumber(percent) + '%';
   }
 
   /*
@@ -112,7 +118,7 @@ class KeyMetricsContainer extends Component {
 
     // Populating default value
     tabsOrder.forEach(tabName => {
-      const grouping = tabsMeta[tabName].grouping,
+      const {grouping, filters} = tabsMeta[tabName],
         // assigment on R.H.S is intentional, puts value and declares
         // variable at the same time
         tabState = (this.state.tabsState[tabName] = {});
@@ -120,6 +126,19 @@ class KeyMetricsContainer extends Component {
       if (grouping.length > 0) {
         // default grouping selected in each tab
         tabState.selectedGrouping = grouping[0];
+      }
+
+      if (filters && filters.length > 0) {
+      
+        tabState.selectedFilters = filters.reduce((result, filter) => {
+        
+          const filterName = filter.name,
+                firstFilter = filter.values[0];
+
+          result[filterName] = firstFilter;
+
+          return result;
+        }, {});
       }
 
       tabState.selectedBreakdown = breakdownVals[0].value;
@@ -158,6 +177,7 @@ class KeyMetricsContainer extends Component {
     });
 
     this.onGroupingChange = ::this.onGroupingChange;
+    this.onFilterChange = ::this.onFilterChange;
     this.onBreakdownChange = ::this.onBreakdownChange;
     this.handleTabChange = ::this.handleTabChange;
     this.onScreenshot = ::this.onScreenshot;
@@ -174,8 +194,21 @@ class KeyMetricsContainer extends Component {
 
     const { tabsState, selectedTab } = this.state,
       tabState = tabsState[selectedTab],
-      { selectedGrouping } = tabState,
-      { startDate, endDate, mode, sectionTitle } = this.props;
+      { selectedGrouping, selectedFilters } = tabState,
+      { startDate, endDate, mode, sectionTitle, isAdmin } = this.props;
+
+    let filterBy = null;
+
+    if (selectedFilters) {
+    
+      filterBy = Object.keys(selectedFilters)
+                              .reduce((result, filterName) => {
+      
+        result[filterName] = selectedFilters[filterName].value;
+
+        return result;
+      }, {});
+    }
 
     const query = getQuery({
       tabName: fetchAllCounts ? 'all' : selectedTab,
@@ -184,6 +217,7 @@ class KeyMetricsContainer extends Component {
       endTime: endDate.unix(),
       groupBy: selectedGrouping ? selectedGrouping.value : '',
       fetchHistogramForTab: selectedTab,
+      filterBy 
     });
 
     tabState.data.loading = true;
@@ -207,7 +241,13 @@ class KeyMetricsContainer extends Component {
           const tabState = tabsState[tabName],
             { selectedBreakdown } = tabState,
             tabMeta = tabsMeta[tabName],
-            { isCurrency, title } = tabMeta;
+            {
+              isCurrency,
+              isPercent,
+              title,
+              noGrouping,
+              valueKey="value"
+            } = tabMeta;
 
           // Main stat showin in the taib
           const mainStat = resp.data[tabName];
@@ -227,11 +267,12 @@ class KeyMetricsContainer extends Component {
 
               /*
                * For Saved Card Txns tab
-               * 1) If number of saved cards is less than 15%
+               * 1) If not Admin
+               * 2) If number of saved cards is less than 15%
                *    hide the tab for the merchant
-               * 2) Decide to show the tab or not only on initial load
+               * 3) Decide to show the tab or not only on initial load
                */
-              if (isInitialLoad) {
+              if (!isAdmin && isInitialLoad) {
                 tabState.data.showTab = tabState.data.percent > 15;
 
                 if (!tabState.data.showTab) {
@@ -239,9 +280,16 @@ class KeyMetricsContainer extends Component {
                 }
               }
             } else {
-              tabState.data.count = mainStat.result[0]
-                ? mainStat.result[0].value
+              const value = mainStat.result[0]
+                ? mainStat.result[0][tabMeta.valueKey || "value"]
                 : 0;
+
+              tabState.data.count = value;
+
+              if (isPercent) {
+              
+                tabState.data.percent = value;
+              }
             }
           }
 
@@ -251,12 +299,16 @@ class KeyMetricsContainer extends Component {
             const { labels, datasets, aggregates, csv } = getTimelineData({
               data: histogram.result,
               groupByColumnName:
-                tabMeta.groupByColumnName || selectedGrouping.value,
+                typeof tabMeta.groupByColumnName === "undefined"
+                  ? selectedGrouping.value
+                  : tabMeta.groupByColumnName,
               startTime: startDate.unix(),
               endTime: endDate.unix(),
               breakdown: tabState.selectedBreakdown,
               groupTitleMap: tabMeta.groupTitleMap || { Mobile: 'mWeb' },
               isCurrency,
+              valueKey,
+              noGrouping
             });
 
             // track in GA that no data found in this section for 
@@ -509,6 +561,35 @@ class KeyMetricsContainer extends Component {
     trackTabClick(tabsMeta[tabName].title);
   }
 
+  onFilterChange(tabName, selectedFilter) {
+    const { tabsState } = this.state,
+          { onFilterChange } = this.props,
+          tabState = tabsState[tabName];
+
+    tabState.selectedFilters = {
+    
+      ...tabState.selectedFilters,
+      [selectedFilter.filterName]: selectedFilter
+    };
+
+    // Hardcoding, can not import these values as the code will
+    // not be present in merchant dashboard
+    if (selectedFilter.filterName === "paymentMethods") {
+    
+      tabState.selectedFilters.sources = {
+        filterName: "sources",
+        text: "All Sources",
+        value: "all"
+      };
+    }
+
+    this.setState({ tabsState }, () => {
+      this.fetchData();
+    });
+
+    return onFilterChange && onFilterChange(selectedFilter);
+  }
+
   onGroupingChange(tabName, selectedGrouping) {
     const { tabsState } = this.state,
       tabState = tabsState[tabName];
@@ -634,7 +715,9 @@ class KeyMetricsContainer extends Component {
                 selectedBreakdown={tabState.selectedBreakdown}
                 onBreakdownChange={this.onBreakdownChange}
                 selectedGrouping={tabState.selectedGrouping}
+                selectedFilters={tabState.selectedFilters}
                 onGroupingChange={this.onGroupingChange}
+                onFilterChange={this.onFilterChange}
                 data={tabsState[tabName].data}
                 startDate={startDate}
                 endDate={endDate}
