@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 
+import user from 'admin/user';
 import { statusPill } from 'common/data';
 import { formatDate } from 'common/util';
 import { adminFetch } from 'common/fetch';
@@ -25,6 +26,28 @@ export default class MerchantList extends Component {
     fetchFn: adminFetch,
     filters: defaultFilters,
   });
+
+  componentWillMount() {
+    const permission = 'view_merchant_stats';
+    const permissions = user.permissions;
+
+    if (!permissions || permissions.find(perm => permission === perm)) {
+      fields.push([
+        'Action',
+        item =>
+          item.activated && (
+            <a
+              onClick={openLink}
+              href={'/admin/stats/' + item.id}
+              class="btn"
+              target="_blank"
+            >
+              View Stats
+            </a>
+          ),
+      ]);
+    }
+  }
 
   onSubmit = filters => {
     if (filters['sub_accounts'] == 0) {
@@ -101,17 +124,18 @@ const fields = [
   ['Email', item => item.email],
   [
     'Activation Progress',
-    item => (
-      statusPill(item.merchant_detail.activation_status, '') || <span
-        class={`pill ${
-          item.merchant_detail.activation_progress < 100
-            ? 'label-danger'
-            : 'label-info'
-        }`}
-      >
-        {item.merchant_detail.activation_progress}%
-      </span>
-    ),
+    item =>
+      statusPill(item.merchant_detail.activation_status, '') || (
+        <span
+          class={`pill ${
+            item.merchant_detail.activation_progress < 100
+              ? 'label-danger'
+              : 'label-info'
+          }`}
+        >
+          {item.merchant_detail.activation_progress}%
+        </span>
+      ),
   ],
   ['Registered At', item => formatDate(item.created_at)],
   [
@@ -130,14 +154,10 @@ const fields = [
         </span>
       )),
   ],
-  [
-    'Action',
-    item => item.activated && <a onClick={openLink} href={'/admin/stats/' + item.id} class="btn" target="_blank">View Stats</a>
-  ]
 ];
 
 const openLink = function(e) {
   e.preventDefault();
   e.stopPropagation();
   window.open(e.target.href, e.target.target);
-}
+};

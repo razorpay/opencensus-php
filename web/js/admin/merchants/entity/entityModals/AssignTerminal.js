@@ -225,6 +225,16 @@ export default class TerminalForm extends Component {
             <option value="0">No</option>
           </SelectField>
 
+          <SelectField
+            name="emandate"
+            label="Emandate Allowed"
+            defaultValue=""
+          >
+            <option value="" />
+            <option value="1">Yes</option>
+            <option value="0">No</option>
+          </SelectField>
+
           <SelectField name="tpv" label="TPV" defaultValue="">
             <option value="" />
             <option value="1">Yes</option>

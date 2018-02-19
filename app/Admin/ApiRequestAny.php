@@ -77,9 +77,22 @@ class ApiRequestAny
             if ($routeName === 'merchant')
             {
 
-                $currentMerchant = Auth::guard('user')->user()->currentMerchant();
+                $user = Auth::guard('user')->user();
+
+                $currentMerchant = $user->currentMerchant();
 
                 $this->options['headers']['X-Dashboard-User-Role'] = $currentMerchant->role;
+
+                $this->options['headers']['X-Dashboard-User-Id'] = $user->id;
+
+                $this->options['headers']['X-Dashboard-User-Email'] = $user->email;
+
+                $accountId = Request::header(self::RAZORPAY_ACCOUNT_HEADER);
+
+                if ($accountId)
+                {
+                    $this->options['headers'][self::RAZORPAY_ACCOUNT_HEADER] = $accountId;
+                }
 
                 $mode .= '_' . $currentMerchant->id;
 
