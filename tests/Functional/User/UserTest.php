@@ -22,7 +22,7 @@ class UserTest extends TestCase
 
     public function testCreate()
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
