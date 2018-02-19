@@ -1565,13 +1565,34 @@ class SubscriptionChargeTest extends TestCase
 
         $subscription = $this->getLastEntity('subscription', true);
 
-        $plan = $this->getLastEntity('plan', true);
+        $expectedPaidCount = 1;
 
-        s($plan);
-        s($subscription);
-        $this->assertEquals('active', $subscription['status']);
+        while ($expectedPaidCount < $subscription['total_count'])
+        {
+            $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
 
-        s($subscription);
+            // Subscription got charged
+            $this->assertEquals(1, $result['total']);
+
+            $expectedPaidCount++;
+
+            $subscription = $this->getLastEntity('subscription', true);
+            $this->assertEquals($expectedPaidCount, $subscription['paid_count']);
+
+            $expectedStatus = 'active';
+
+            // After large charge, subscription is marked completed
+            if ($expectedPaidCount === $subscription['total_count'])
+            {
+                $expectedStatus = 'completed';
+            }
+
+            $this->assertEquals($expectedStatus, $subscription['status']);
+        }
+
+        $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+
+        $this->assertEquals(0, $result['invoices_created']);
     }
 
     public function testSubscriptionChargeWithDueAddon()

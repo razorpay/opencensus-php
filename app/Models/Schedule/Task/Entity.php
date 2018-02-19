@@ -266,7 +266,7 @@ class Entity extends Base\PublicEntity
             // In case of auth transaction (immediate), charge_at would be null.
             // In that case, we can use actual current time as the reference time.
             //
-            $referenceTime = $this->getNextRunAt() ?? Carbon::now()->getTimestamp();
+            $referenceTime = $this->getNextRunAt() + 1 ?? Carbon::now()->getTimestamp() + 1;
 
             $referenceTime = Carbon::createFromTimestamp($referenceTime, Timezone::IST);
         }

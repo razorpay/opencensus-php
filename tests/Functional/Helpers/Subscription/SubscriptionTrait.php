@@ -220,11 +220,7 @@ trait SubscriptionTrait
 
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription, $authAmount);
 
-        s($paymentRequest);
-
         $recurringPayment = $this->doAuthPayment($paymentRequest);
-
-        s($recurringPayment);
 
         return [
             'subscription_id'   => $subscription['id'],

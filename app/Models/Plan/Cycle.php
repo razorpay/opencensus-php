@@ -136,9 +136,16 @@ class Cycle
         $schedule = $subscription->schedule;
 
         $start = $subscription->getStartAt();
+
+        // reference time + 1 because reference should be greater than last run in case of
+        // unanchored to calculate the next time
+        $reference = $start + 1;
+
         $totalCount = $subscription->getTotalCount();
 
         $start = Carbon::createFromTimestamp($start, Timezone::IST);
+
+        $reference = Carbon::createFromTimestamp($reference, Timezone::IST);
 
         //
         // We are subtracting one because we would be
@@ -148,9 +155,11 @@ class Cycle
         //
         foreach (range(1, $totalCount - 1) as $i)
         {
-            $nextRun = Library::computeFutureRun($schedule, $start, $start, false);
+            $nextRun = Library::computeFutureRun($schedule, $reference, $start, false);
 
-            $start = $nextRun;
+            $start = clone $reference;
+
+            $reference = clone $nextRun;
         }
 
         $end = $start->getTimestamp();
