@@ -889,7 +889,7 @@ trait PaymentTrait
 
     protected function refundOldAuthorizedPayments()
     {
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $request = array(
             'method'  => 'POST',
