@@ -834,10 +834,12 @@ class SettlementTest extends TestCase
 
     public function testSettlementForReversalOfDirectTransfer()
     {
+        $channel = Channel::AXIS;
+
         $this->createPaymentEntities(2);
 
         // Get a timestamp of 2 days ago
-        $createdAt = Carbon::today(Timezone::IST)->subDays(2)->getTimestamp() + 5;
+        $createdAt = Carbon::today(Timezone::IST)->subDays(5)->getTimestamp() + 5;
 
         // Create a linked account
         $account = $this->fixtures->create('merchant:marketplace_account', ['balance' => 250000]);
@@ -867,7 +869,7 @@ class SettlementTest extends TestCase
             ]);
 
         // Initiate immediate settlement, Reversal should not be settled
-        $content = $this->initiateSettlements(Channel::AXIS);
+        $content = $this->initiateSettlements($channel, Carbon::tomorrow(Timezone::IST)->getTimestamp());
 
         //
         // Total 7. Following transactions should have settled:
@@ -876,7 +878,8 @@ class SettlementTest extends TestCase
         // 2 transfer payment (linked account)
         // 1 reversal refund  (linked account)
         //
-        $this->assertEquals(7, $content['kotak']['transaction_count']);
+        $this->assertEquals(7, $content[$channel]['txnCount']);
+
 
         $lastSetl = $this->getLastEntity('settlement', true);
 
@@ -891,12 +894,12 @@ class SettlementTest extends TestCase
         $this->assertEquals(1500, $lastSetl['amount']);
 
         // Set time to 3 working days from now and initiate settlements
-        $settlementAfterT3 = Carbon::createFromTimestamp($createdAt, Timezone::IST);
+        $settlementAfterT3 = Carbon::createFromTimestamp($createdAt, Timezone::IST)->addDays(3);
         $nextWorkingDay = Holidays::getNthWorkingDayFrom($settlementAfterT3, 3);
         Carbon::setTestNow($nextWorkingDay->setTime(8, 0));
 
-        $content = $this->initiateSettlements();
-        $this->assertEquals(1, $content[Channel::AXIS]['transaction_count']);
+        $content = $this->initiateSettlements($channel);
+        $this->assertEquals(1, $content[Channel::AXIS]['txnCount']);
 
         // Assert master account settlement
         $lastSetl = $this->getLastEntity('settlement', true);
@@ -911,6 +914,8 @@ class SettlementTest extends TestCase
 
     public function testSettlementForReversalOfPaymentTransfer()
     {
+        $channel = Channel::AXIS;
+
         $createdAt = Carbon::today(Timezone::IST)->getTimestamp() + 5;
 
         $payment = $this->fixtures->create(
@@ -934,12 +939,12 @@ class SettlementTest extends TestCase
                 'source_type' => 'payment',
                 'amount'      => 5000,
                 'currency'    => 'INR',
-                'on_hold'     => '1',
                 'created_at'  => $createdAt,
                 'updated_at'  => $createdAt + 10
             ]);
 
-        // Create one reversal, same day
+        // Create one reversal, 5 days later.
+        Carbon::setTestNow(Carbon::today(Timezone::IST)->addDays(5));
         $this->fixtures->create(
             'reversal',
             [
@@ -950,32 +955,31 @@ class SettlementTest extends TestCase
                 'updated_at'  => $createdAt + 20
             ]);
 
+        Carbon::setTestNow();
+
+        //sd($this->getEntities('transaction', ['settled' => 0], true));
         // Initiate immediate settlement, none should settle on the same day
-
-        s($this->getEntities('transaction', ['settled' => '0'], true));
-
-        $content = $this->initiateSettlements();
-        $this->assertEquals(0, $content['kotak']['transaction_count']);
-
-        return;
+        $content = $this->initiateSettlements($channel);
+        $this->assertEquals(0, $content[$channel]['txnCount']);
 
         // Set time to 3 working days from now and initiate settlements
-        $settlementAfterT3 = Carbon::createFromTimestamp($createdAt, Timezone::IST);
-        $nextWorkingDay = Holidays::getNthWorkingDayFrom($settlementAfterT3, 20);
+        $settlementAfterT3 = Carbon::today(Timezone::IST);
+        $nextWorkingDay = Holidays::getNthWorkingDayFrom($settlementAfterT3, 3);
         Carbon::setTestNow($nextWorkingDay->setTime(8, 0));
 
-        s($this->getEntities('transaction', ['settled' => '0'], true));
+        //
+        // Try settlement after 3 days:
+        // Total expected 3 =>
+        // 1 payment, 1 transfer
+        // 1 transfer payment (linked account)
+        // 1 reversal refund (linked account)
+        //
+        $content = $this->initiateSettlements($channel);
+        $this->assertEquals(4, $content[$channel]['txnCount']);
 
-        // Initiate immediate settlement, none should settle on the same day
-        $content = $this->initiateSettlements();
-        $this->assertEquals(5, $content['kotak']['transaction_count']);
-
-        // The txn for the transfer payment to the merchant should not settled
-        $trfPayment = $this->getEntities('payment', ['transfer_id' => $transfer->getId()], true)['items'][0];
-        $txn = $this->getEntityById('transaction', $trfPayment['transaction_id'], true);
-        $this->assertEquals('payment', $txn['type']);
-        $this->assertEquals($transfer->toArrayAdmin()['recipient'], 'acc_' . $txn['merchant_id']);
-        $this->assertFalse($txn['settled']);
+        Carbon::setTestNow($nextWorkingDay->addDays(3));
+        $content = $this->initiateSettlements($channel);
+        $this->assertEquals(1, $content[$channel]['txnCount']);
 
         // Reset carbon time
         Carbon::setTestNow();

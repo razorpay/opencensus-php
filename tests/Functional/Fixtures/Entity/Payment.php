@@ -315,8 +315,6 @@ class Payment extends Base
 
         list($txn, $feesSplit) = $this->createTransactionOnPaymentMethodTransfer($payment);
 
-        $txn->setAttribute(Transaction\Entity::SETTLED_AT, $payment->getCreatedAt());
-
         $txn->saveOrFail();
 
         $payment->saveOrFail();
