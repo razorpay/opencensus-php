@@ -787,7 +787,7 @@ trait PaymentTrait
 
     protected function disputePayment(Payment\Entity $payment, int $deduct = 0): array
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $reason = $this->fixtures->create('dispute_reason');
 
