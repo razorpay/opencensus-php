@@ -311,7 +311,7 @@ class AuthorizeTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = '/payments/fix_authorized_at';
         $this->testData[__FUNCTION__]['request']['content']['payment_ids'] = [$payment->getPublicId()];
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
