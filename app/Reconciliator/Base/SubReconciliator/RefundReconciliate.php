@@ -40,7 +40,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
      */
     protected $refund;
 
-    public function __construct(string $gateway)
+    public function __construct(string $gateway = null)
     {
         parent::__construct($gateway);
 
@@ -214,9 +214,14 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
     protected function setRefundProcessedWithoutArn()
     {
-        // If refund is not processed and if gateway refund recon file is sent without arn
+        //
+        // We check if refund is marked as processed already.
+        // If it's not, only then we check whether we allow
+        // it to be marked as processed without the ARN. If ARN
+        // was present, we would have already marked it as processed.
+        //
         if (($this->refund->isProcessed() === false) and
-            in_array($this->gateway, self::GATEWAYS_PROCESSED_WO_ARN, true))
+            (in_array($this->gateway, self::GATEWAYS_PROCESSED_WO_ARN, true) === true))
         {
             $this->refund->setStatusProcessed();
 

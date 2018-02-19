@@ -76,10 +76,10 @@ class Reconciliate extends Base\Core
     protected $messenger;
     protected $app;
     protected $repo;
-    
+
     protected $gateway;
 
-    public function __construct(string $gateway= "")
+    public function __construct(string $gateway = null)
     {
         parent::__construct();
 
