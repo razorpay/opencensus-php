@@ -4,7 +4,7 @@ import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import InputField from 'rzp/ui/Forms/InputField';
-import { required } from 'rzp/utils/validators';
+import { amount } from 'rzp/utils/validators';
 import { showNotification } from 'rzp/modules/notifications';
 import { closeModal } from 'rzp/modules/modals';
 import { createTestPayment } from 'merchant/modules/virtualaccounts';
@@ -109,7 +109,7 @@ export default class CreateTestPayment extends Component {
                 component={InputField}
                 placeholder="Amount in INR"
                 autoFocus={true}
-                validate={required()}
+                validate={amount()}
               />
             </div>
 
@@ -118,6 +118,7 @@ export default class CreateTestPayment extends Component {
               <Field name="mode" component="select" class="form-control">
                 <option value="neft">NEFT</option>
                 <option value="rtgs">RTGS</option>
+                <option value="imps">IMPS</option>
               </Field>
             </div>
 
