@@ -570,7 +570,9 @@ dl.rzp-definition {
 .staged-file {
   width: 100%;
   height: 70px;
-  border-bottom: 1px solid #CCC;
+  border: 1px solid #DBDBDB;
+  border-bottom: none;
+  position: relative;
 
   .file-icon,
   .file-details {
@@ -590,6 +592,20 @@ dl.rzp-definition {
     & > div {
       display: table-cell;
       vertical-align: middle;
+    }
+  }
+
+  /* progress-bar styling */
+  .upload-status-bar {
+    position: absolute;
+    background-color: #DBDBDB;
+    width: 100%;
+    height: 2px;
+    bottom: 0;
+
+    .status {
+      background-color: #1DC155;
+      height: 100%;
     }
   }
 }

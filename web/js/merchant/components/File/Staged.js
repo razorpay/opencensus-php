@@ -6,7 +6,7 @@ const readableFileSize = bytes => {
 };
 
 export default props => {
-  const { file } = props;
+  const { file, progress = 0 } = props;
   return (
     <div class="staged-file" key={`${file.name}`}>
       <div class="file-icon pull-left" />
@@ -18,6 +18,9 @@ export default props => {
         </div>
       </div>
       {props.children}
+      <div class="upload-status-bar">
+        <div class="status" style={{ width: `${progress}%` }} />
+      </div>
     </div>
   );
 };
