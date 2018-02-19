@@ -27,14 +27,14 @@ class MerchantCreateTest extends TestCase
 
     public function testCreateMerchantWithDuplicateEmail()
     {
-        $this->ba->appAuthTest();
+        $this->ba->adminAuth(Mode::TEST);
 
         $this->startTest();
     }
 
     public function testCreateMerchantWithDuplicateId()
     {
-        $this->ba->appAuthTest();
+        $this->ba->adminAuth(Mode::TEST);
 
         $this->startTest();
     }
