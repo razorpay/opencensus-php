@@ -921,7 +921,7 @@ trait PaymentTrait
             'method'  => 'post',
             'content' => $content);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 

@@ -467,7 +467,7 @@ class AxisGatewayTest extends TestCase
 
         $this->resetMockServer();
 
-        $this->forceAuthorizeFailedPayment($pid1, ['vpc_TransactionNo' => $txnNo]);
+        $content = $this->forceAuthorizeFailedPayment($pid1, ['vpc_TransactionNo' => $txnNo]);
 
         $payment = $this->getDbLastEntityPublic('payment');
 
