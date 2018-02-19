@@ -15,7 +15,7 @@ const emailFetch = ({ query_params }) => {
   }
   query_params.ascending = 'no';
   return fetch({
-    url: '/admin/emaillogs',
+    url: 'live/admin/emaillogs',
     params: query_params,
   });
 };

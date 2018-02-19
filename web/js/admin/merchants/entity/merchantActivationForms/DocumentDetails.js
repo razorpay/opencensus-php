@@ -10,7 +10,7 @@ export default class DocumentDetails extends Component {
 
   componentWillMount() {
     adminFetch({
-      url: `merchant/activation/${this.props.merchantId}/files`,
+      url: `live/merchant/activation/${this.props.merchantId}/files`,
       account_id: this.props.merchantId,
     })
       .then(data => {

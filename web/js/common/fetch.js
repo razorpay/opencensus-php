@@ -108,7 +108,7 @@ function _baseFetchWithParams(data, customUrl) {
 
 export function adminFormUpload(form, customUrl) {
   //Let axios decide which "Content-Type" to send
-  let url = customUrl ? customUrl : '/admin/generic';
+  let url = customUrl ? customUrl : '/admin/admin';
   let fData = createFormData(form);
 
   return axios.post(url, fData);
@@ -117,7 +117,7 @@ export function adminFormUpload(form, customUrl) {
 //TODO: [CRITICAL] Merchant batch upload broke due to change in createFormData supporting array
 export function adminFormUpload2(form, customUrl) {
   //Let axios decide which "Content-Type" to send
-  let url = customUrl ? customUrl : '/admin/generic';
+  let url = customUrl ? customUrl : '/admin/admin';
   let fData = createFormData2(form);
 
   return axios.post(url, fData);

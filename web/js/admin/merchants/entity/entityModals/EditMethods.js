@@ -68,7 +68,7 @@ export default ({ props, merchantId }) => {
     }
 
     return adminPut({
-      url: `merchants/${merchantId}/methods`,
+      url: `live/merchants/${merchantId}/methods`,
       data: body,
     })
       .then(data => {

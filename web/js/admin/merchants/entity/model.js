@@ -315,7 +315,7 @@ export default class Model extends BaseModel {
     return this.request(
       'fetchMerchantScheduleTasks',
       this.fetchFn({
-        url: 'admin/schedule_task',
+        url: 'live/admin/schedule_task',
         params: {
           merchant_id: this.merchantId,
           type: 'settlement',

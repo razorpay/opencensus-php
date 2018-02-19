@@ -28,7 +28,7 @@ export default function RetryFailedSettlements() {
                 : [],
             };
             return adminPost({
-              url: 'settlements/retry',
+              url: 'live/settlements/retry',
               data: body,
             }).then(response => {
               console.log('retry settlement', response);

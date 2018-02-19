@@ -7,10 +7,10 @@ import AsyncButton from 'ui/AsyncButton';
 export default class RequestActions extends Component {
   //route config based on request actions i.e {<action>: [<action_url>, <action_http_func>]}
   actionRoutes = {
-    approve: ['w-actions/{id}/checkers', adminPost],
-    reject: ['w-actions/{id}/checkers', adminPost],
-    close: ['w-actions/close/{id}', adminPut],
-    execute: ['w-actions/{id}/execute', adminPost],
+    approve: ['live/w-actions/{id}/checkers', adminPost],
+    reject: ['live/w-actions/{id}/checkers', adminPost],
+    close: ['live/w-actions/close/{id}', adminPut],
+    execute: ['live/w-actions/{id}/execute', adminPost],
   };
 
   handleSubmit = action => {

@@ -60,7 +60,7 @@ export default class ScheduleModal extends Component {
     };
 
     return adminPost({
-      url: `merchants/${this.props.merchantId}/schedules`,
+      url: `live/merchants/${this.props.merchantId}/schedules`,
       data: schedulePlanData,
     })
       .then(response => {

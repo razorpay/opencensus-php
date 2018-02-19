@@ -30,7 +30,7 @@ export default ({ merchantId }) => {
     }
 
     return adminFormUpload({
-      url: `merchant/${merchantId}/batches`,
+      url: `live/merchant/${merchantId}/batches`,
       'data[type]': 'irctc',
       ...requestData,
     })

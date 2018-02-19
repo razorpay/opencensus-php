@@ -38,7 +38,7 @@ export default function CreateSchedule() {
         pendingClass="small spinner"
         onSubmit={body => {
           return adminPost({
-            url: 'schedules',
+            url: 'live/schedules',
             data: body,
           }).then(response => {
             if (response) {

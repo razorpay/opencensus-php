@@ -29,6 +29,9 @@ export default class GatewayRuleList extends Component {
     data: {
       url: 'test/admin/gateway_rule',
     },
+    extraFields: {
+      mode: 'test',
+    },
     model: Model,
     filters: defaultFilters,
     fetchFn: adminFetch,
@@ -41,7 +44,7 @@ export default class GatewayRuleList extends Component {
   };
 
   onSubmit = filters => {
-    this.collection.mode = filters.mode;
+    this.collection.extraFields.mode = filters.mode;
     delete filters.mode;
     this.collection.applyFilters(filters);
   };

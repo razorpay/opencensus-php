@@ -21,7 +21,7 @@ import {
 class PasswordResetModal extends Component {
   submit(body) {
     return adminPost({
-      url: 'admin/change_password',
+      url: 'live/admin/change_password',
       data: body,
     })
       .then(response => {
@@ -90,7 +90,7 @@ class ActivityLogModal extends Component {
   deleteOtherSessions() {
     return fetch({
       method: 'delete',
-      url: '/admin/activity/',
+      url: 'live/admin/activity/',
     })
       .then(response => {
         notifySuccess('Sessions deleted successfully');
@@ -108,7 +108,7 @@ class ActivityLogModal extends Component {
 
   deleteSession(activity) {
     fetch({
-      url: '/admin/activity/' + activity.id,
+      url: 'live/admin/activity/' + activity.id,
       method: 'delete',
     })
       .then(response => {
@@ -179,7 +179,7 @@ class ActivityLogModal extends Component {
 export default class Profile extends Component {
   showActivityLog() {
     return fetch({
-      url: '/admin/activity',
+      url: 'live/admin/activity',
     }).then(log => {
       openModal(<ActivityLogModal log={log} />);
     });
