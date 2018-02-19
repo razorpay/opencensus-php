@@ -39,7 +39,7 @@ export default class Model extends BaseModel {
     return this.request(
       'fetchMerchantDetails',
       this.fetchFn({
-        url: 'merchants/details',
+        url: 'live/merchants/details',
         account_id: this.merchantId,
         merchant_id: this.merchantId,
       })

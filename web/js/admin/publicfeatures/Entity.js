@@ -89,7 +89,7 @@ export default class EditPublicFeatures extends Component {
       });
     } else {
       return adminPost({
-        url: `onboarding/features/${akaFeature}/update`,
+        url: `live/onboarding/features/${akaFeature}/update`,
         data: body,
       }).then(response => {
         if (response) {

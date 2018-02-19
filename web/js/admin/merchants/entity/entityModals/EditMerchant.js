@@ -113,7 +113,7 @@ export default class EditMerchant extends Component {
   };
 
   fetchGroups() {
-    adminFetch('groups')
+    adminFetch('live/groups')
       .then(data => {
         data.items.forEach(group => this.allGroups.set(group.id, group));
       })

@@ -21,7 +21,9 @@ export default class EditFieldMaps extends Component {
     if (id) delete data.id;
 
     return requestFn({
-      url: id ? `orgs/${org_id}/field-map/{id}` : `orgs/${org_id}/field-map`,
+      url: id
+        ? `live/orgs/${org_id}/field-map/{id}`
+        : `live/orgs/${org_id}/field-map`,
       data,
     }).then(response => {
       if (response) {

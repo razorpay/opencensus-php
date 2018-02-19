@@ -12,9 +12,7 @@ export default ({ props, merchantId }) => {
   function onSubmit(body) {
     return adminPut({
       url: `live/merchant/activation/${merchantId}/update`,
-      data: {
-        comment: body.comment,
-      },
+      comment: body.comment,
     })
       .then(response => {
         if (response) {

@@ -23,24 +23,12 @@ export default function fetch(options, suppressError) {
     .catch(e => notifyError(e));
 }
 
-// customUrl must start with '/'
+// customUrl must start with '/'. In general, it starts with /admin/api
 export function adminFetch(data, customUrl) {
-  let url = '/admin/api/';
-
-  if (typeof data === 'string') {
-    // If only url is passed
-    url += data;
-  } else {
-    url += data.url;
-    delete data.url;
-
-    if (data.params) {
-      url += '?' + constructQueryString(data.params);
-    }
-  }
+  let url = _baseFetchWithParams(data, customUrl);
 
   return fetch({
-    url: customUrl ? customUrl : url,
+    url,
   });
 }
 
@@ -48,8 +36,7 @@ export function adminPost(data, customUrl) {
   let url = '/admin/api/';
 
   if (typeof data === 'string') {
-    // If only url is passed
-    url += data;
+    url += data; // If only url is passed
   } else {
     data = parseParams(data);
     url += data.url;
@@ -82,6 +69,43 @@ export function adminPut(data, customUrl) {
   });
 }
 
+// customUrl must start with '/'. In general, it starts with /admin/api
+export function adminDelete(data, customUrl) {
+  let url = _baseFetchWithParams(data, customUrl);
+
+  return fetch({
+    url,
+    method: 'delete',
+  });
+}
+// customUrl must start with '/'. In general, it starts with /admin/api
+export function adminPatch(data, customUrl) {
+  let url = _baseFetchWithParams(data, customUrl);
+  return fetch({
+    url,
+    method: 'patch',
+  });
+}
+
+function _baseFetchWithParams(data, customUrl) {
+  let url = customUrl ? customUrl : '/admin/api/';
+
+  if (typeof data === 'string') {
+    url += data; // If only url is passed
+  } else {
+    if (!customUrl && data.url) {
+      url += data.url;
+      delete data.url;
+    }
+
+    if (data.params) {
+      url += '?' + constructQueryString(data.params); // Appends query params to url or customUrl, whatever is present
+    }
+  }
+
+  return url;
+}
+
 export function adminFormUpload(form, customUrl) {
   //Let axios decide which "Content-Type" to send
   let url = customUrl ? customUrl : '/admin/generic';
@@ -97,23 +121,6 @@ export function adminFormUpload2(form, customUrl) {
   let fData = createFormData2(form);
 
   return axios.post(url, fData);
-}
-
-export function adminDelete(params) {
-  return fetch({
-    url: '/admin/generic',
-    method: 'delete',
-    params: parseParams(params),
-  });
-}
-
-export function adminPatch(params) {
-  const data = parseParams(params);
-  return fetch({
-    url: '/admin/generic',
-    method: 'patch',
-    data,
-  });
 }
 
 function parseParams(origParams) {

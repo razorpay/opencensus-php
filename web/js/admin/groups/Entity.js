@@ -28,22 +28,22 @@ class EditGroup extends Component {
 
     let url;
     if (model) {
-      url = `groups/${self.props.model.id}`;
+      url = `live/groups/${self.props.model.id}`;
       request = adminPut;
     } else {
-      url = 'groups';
+      url = 'live/groups';
       request = adminPost;
     }
 
     return request({
       url,
-      data: body,
+      ...body,
     }).then(response => {
       if (response) {
         if (!model) {
           self.addItem(response);
         }
-        notifySuccess('Success!');
+        notifySuccess('Group is created successfully!');
       }
       closeModal();
     });
@@ -68,7 +68,7 @@ class EditGroup extends Component {
         });
       });
     } else {
-      adminFetch('groups').then(response => {
+      adminFetch('live/groups').then(response => {
         if (response) {
           this.setState({ potentialParents: response.items, pending: false });
         }
@@ -118,7 +118,7 @@ export function showEntity(collection) {
 export function removeEntity(e) {
   prevent(e);
 
-  return adminDelete(`groups/${this.id}`).then(response => {
+  return adminDelete(`live/groups/${this.id}`).then(response => {
     notifyDone();
     this.collection.items.remove(this);
   });

@@ -22,7 +22,7 @@ export default class EditOrg extends Component {
     let requests = [
       this._fetchFn('live/permissions/get/all'),
       ...(orgId
-        ? [this._fetchFn(`orgs/${orgId}`)]
+        ? [this._fetchFn(`live/orgs/${orgId}`)]
         : [
             null, //Fake request as org_get is not needed for Add
             this._fetchFn('live/permissions/get/assignable'),

@@ -52,11 +52,12 @@ export default class GroupForm extends Component {
               <option value="" disabled>
                 --Select a Parent Group--
               </option>
-              {potentialParents.map(p => (
-                <option value={p.id} key={p.id}>
-                  {p.name}
-                </option>
-              ))}
+              {potentialParents &&
+                potentialParents.map(p => (
+                  <option value={p.id} key={p.id}>
+                    {p.name}
+                  </option>
+                ))}
             </SelectField>
             <button>Save</button>
             {parents.length
