@@ -64,7 +64,9 @@ export default class CreateTestPayment extends Component {
       payee_ifsc: bankAccount.ifsc,
       payer_account: '765432123456789',
       payer_ifsc: 'RAZR0000001',
-      transaction_id: +new Date(),
+      transaction_id: Math.floor(
+        (+new Date() + (Math.random() * 90 + 10)) / 10
+      ),
       time: +new Date(),
     };
     return this.props
