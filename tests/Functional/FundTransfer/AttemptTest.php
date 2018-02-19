@@ -38,7 +38,7 @@ class AttemptTest extends TestCase
             ],
         ];
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 
