@@ -972,7 +972,6 @@ final class Route
         'merchant_create_invoice_entities',
         'merchant_daily_report',
         'merchant_delete_app_access_mapping',
-        'merchant_migrate_features',
         'merchant_notify_holiday',
         'merchant_patch_beneficiary_code',
         'merchant_payout',
@@ -999,7 +998,6 @@ final class Route
         'refund_create_gateway_record',
         'refund_gateway_refunded_txns',
         'refund_generate_excel',
-        'refund_netbanking_generate_excel',
         'refund_retry_failed',
         'reports_refund_irctc',
         'reports_transaction_dsp',
@@ -1028,6 +1026,9 @@ final class Route
         'virtual_account_refund_excess',
     ];
 
+    // The below routes needs X-Dashboard-User-Id
+    // User context is taken from the provided header.
+    // Below rotues deal only with user entity without context of merchant.
     public static $userWhitelist = [
         'user_resend_verification',
         'user_fetch',
@@ -1782,7 +1783,6 @@ final class Route
             'merchant_notify_holiday',
             'payment_auto_capture',
             'payment_verify_multiple',
-            'refund_netbanking_generate_excel',
             'refund_generate_excel',
             'payment_refund_authorized',
             'payment_capture_reminder',
@@ -1799,7 +1799,6 @@ final class Route
             'subscription_cancel_due',
             'refund_create_gateway_record',
             'gateway_validate_unknown_refund',
-            'merchant_migrate_features',
             'currency_update_rates',
             'refund_gateway_refunded_txns',
             'merchant_activation_migrate',
