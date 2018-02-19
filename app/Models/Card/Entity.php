@@ -496,7 +496,7 @@ class Entity extends Base\PublicEntity
         $auth = $app['basicauth'];
 
         $allowed = (($auth->isPrivilegeAuth() === false) and
-                    (in_array($cardMerchant, Merchant\Preferences::MID_ENDURANCE, true) === false));
+                    (in_array($cardMerchant, Merchant\Preferences::MID_ENDURANCE, true) === true));
 
         return $allowed;
     }
