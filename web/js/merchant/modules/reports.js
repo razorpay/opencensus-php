@@ -26,7 +26,6 @@ const getLog = logId => merchantFetch(`reporting/logs/${logId}`);
 
 const getFile = fileId => {
   return ajax({
-    ...commonOptions,
     data: {
       route_name: 'ufh_get_file_signed_url',
       url_params: JSON.stringify({
@@ -38,7 +37,6 @@ const getFile = fileId => {
 
 export const getConfigs = () => {
   return ajax({
-    ...commonOptions,
     data: {
       route_name: 'reporting_config_list',
     },
