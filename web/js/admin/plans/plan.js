@@ -96,11 +96,6 @@ export const options = {
     '': 'All',
     ...cardTypes,
   },
-  emandate_type: {
-    '': 'All',
-    'aadhar': 'Aadhar',
-    'netbanking': 'Netbanking'
-  },
   payment_network: {
     '': 'All',
   },
@@ -293,7 +288,11 @@ class Rule extends CollectionItem {
     if (this.payment_method === 'card') {
       data = options.payment_method_type;
     } else if (this.payment_method === 'emandate') {
-      data = options.emandate_type;
+      data = {
+        '': 'All',
+        'aadhar': 'Aadhar',
+        'netbanking': 'Netbanking'
+      }
     }
 
     if (data) {
