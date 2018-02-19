@@ -7,6 +7,7 @@ use Eloquent;
 use RZP\Models;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
+use RZP\Models\Settlement\Channel;
 
 final class FactoryData
 {
@@ -27,7 +28,7 @@ final class FactoryData
             'category'                 => 1100,
             'transaction_report_email' => ['test@razorpay.com'],
             'receipt_email_enabled'    => true,
-            'channel'                  => 'kotak',
+            'channel'                  => Channel::AXIS,
             'fee_bearer'               => \RZP\Models\Merchant\FeeBearer::PLATFORM,
             'risk_rating'              => 3,
             'invoice_code'             => '123456789011',
@@ -178,7 +179,7 @@ final class FactoryData
             'gateway_fee' => null,
             'on_hold'   => 0,
             'gratis' => false,
-            'channel' => 'kotak',
+            'channel' => Channel::AXIS,
             'settled' => 0,
         ]);
 
@@ -189,7 +190,7 @@ final class FactoryData
             'status' => 'created',
             // 'transaction_id' => 'factory:\RZP\Models\Transaction\Entity',
             'fees' => $faker->randomNumber(2),
-            'channel' => 'kotak',
+            'channel' => Channel::AXIS,
             'failure_reason' => null,
             'return_utr' => null,
         ]);
@@ -205,7 +206,7 @@ final class FactoryData
         $factory(\RZP\Models\FundTransfer\Batch\Entity::class, [
             'id' => $faker->uniqueid,
             'date' => Carbon::today(Timezone::IST)->timestamp,
-            'channel' => 'kotak',
+            'channel' => Channel::AXIS,
             'amount' => $faker->randomNumber(4),
             'processed_amount' => 0,
             'processed_count' => 0,
@@ -221,7 +222,7 @@ final class FactoryData
             'merchant_id' => 'factory:RZP\Models\Merchant\Entity',
             'amount' => $faker->randomNumber,
             'currency' => 'INR',
-            'channel' => 'kotak',
+            'channel' => Channel::AXIS,
             'description' => $faker->text,
             'transaction_id' => 'factory:RZP\Models\Transaction\Entity',
             'settlement_id' => 'factory:RZP\Models\Settlement\Entity'
@@ -660,7 +661,7 @@ final class FactoryData
             'currency'           => 'INR',
             'merchant_id'        => '10000000000000',
             'status'             => 'created',
-            'channel'            => 'kotak',
+            'channel'            => Channel::AXIS,
             'created_at'         => $faker->timestamp,
             'updated_at'         => $faker->timestamp,
         ]);
@@ -851,6 +852,14 @@ final class FactoryData
 
         $factory(\RZP\Models\GeoIP\Entity::class, [
             'ip'         => $faker->ipv4
+        ]);
+
+        $factory(\RZP\Models\Merchant\AccessMap\Entity::class, [
+            'merchant_id' => '10000000000000',
+            'entity_type' => 'application',
+            'entity_id'   => '10000000000App',
+            'created_at'  => Carbon::now()->getTimestamp(),
+            'updated_at'  => Carbon::now()->getTimestamp(),
         ]);
     }
 }

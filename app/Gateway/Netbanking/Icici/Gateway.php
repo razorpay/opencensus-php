@@ -503,8 +503,7 @@ class Gateway extends Base\Gateway
         // For registration-only auth request, we need to set the payment date to any date in the future
         $date = Carbon::now(Timezone::IST)->addDay()->format('Y-m-d');
 
-        $endDate = Carbon::now(Timezone::IST)
-                         ->addYears(Base\Entity::MAX_RECURRING_END_YEARS)
+        $endDate = Carbon::createFromTimestamp($input['token']->getExpiredAt(), Timezone::IST)
                          ->format('Y-m-d');
 
         $data = [

@@ -19,6 +19,7 @@ class Validator extends Base\Validator
 
     protected static $batchFetchRules = [
         Entity::BATCH_FUND_TRANSFER_ID => 'required|alpha_num|size:14',
+        'h2h'                          => 'required|in:0,1',
     ];
 
     protected static $nodalTransferRules = [

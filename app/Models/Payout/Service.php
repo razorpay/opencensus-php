@@ -35,13 +35,6 @@ class Service extends Base\Service
         return $payout->toArrayPublic();
     }
 
-    public function initiatePayouts(array $input, $channel = null)
-    {
-        $data = (new Payout\Core)->initiatePayouts($input, $channel);
-
-        return $data;
-    }
-
     public function merchantPayout(array $input)
     {
         (new Validator)->validateInput('merchant', $input);

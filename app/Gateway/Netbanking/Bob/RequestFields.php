@@ -11,6 +11,7 @@ class RequestFields
     const AMOUNT           = 'AMT';
     const CALLBACK_URL     = 'RU';
     const PAYMENT_ID       = 'PRN';
+    const CUSTOMER_TYPE    = 'CRT';
 
     const ENCRYPTED_DATA   = 'encdata';
 }

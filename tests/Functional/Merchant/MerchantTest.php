@@ -596,6 +596,10 @@ class MerchantTest extends TestCase
 
         $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
 
+        $url = sprintf($this->testData[__FUNCTION__]['request']['url'], $merchant['id']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
         $this->startTest();
 
         $merchant = $this->getEntityById('merchant', $merchant['id'], true);
@@ -605,9 +609,15 @@ class MerchantTest extends TestCase
 
     public function testMerchantArchiveWithNoMerchantDetails()
     {
+        $merchant = $this->getLastEntity('merchant', true);
+
         $this->setAdminForInternalAuth();
 
         $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
+
+        $url = sprintf($this->testData[__FUNCTION__]['request']['url'], $merchant['id']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->startTest();
     }
@@ -622,6 +632,10 @@ class MerchantTest extends TestCase
 
         $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
 
+        $url = sprintf($this->testData[__FUNCTION__]['request']['url'], $merchant['id']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
         $this->startTest();
     }
 
@@ -634,6 +648,10 @@ class MerchantTest extends TestCase
         $this->setAdminForInternalAuth();
 
         $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
+
+        $url = sprintf($this->testData[__FUNCTION__]['request']['url'], $merchant['id']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->startTest();
 
@@ -663,6 +681,10 @@ class MerchantTest extends TestCase
 
         $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
 
+        $url = sprintf($this->testData[__FUNCTION__]['request']['url'], $merchant['id']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
         $this->startTest();
 
         $merchant = $this->getEntityById('merchant', $merchant['id'], true);
@@ -680,6 +702,10 @@ class MerchantTest extends TestCase
 
         $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
 
+        $url = sprintf($this->testData[__FUNCTION__]['request']['url'], $merchant['id']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
         $this->startTest();
     }
 
@@ -692,6 +718,10 @@ class MerchantTest extends TestCase
         $this->setAdminForInternalAuth();
 
         $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
+
+        $url = sprintf($this->testData[__FUNCTION__]['request']['url'], $merchant['id']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->startTest();
 
@@ -842,7 +872,7 @@ class MerchantTest extends TestCase
 
         $settleAtTimestamp = (new Transaction\Core)->calculateSettledAtTimestamp($capturedAt, 3) + 1;
 
-        $this->initiateSettlements('kotak', $settleAtTimestamp);
+        $this->initiateSettlements('axis', $settleAtTimestamp);
 
         $testData = & $this->testData['testChangeBankAccount'];
         $this->runRequestResponseFlow($testData);

@@ -288,7 +288,7 @@ class WorkflowActionTest extends TestCase
         // This will create a wf action in Mysql and ES, not using default workflow.
         $workflow = $this->editAdmin(Org::RZP_ORG_SIGNED, Org::CHECKER_ADMIN_SIGNED);
 
-        sleep(1);
+        $this->esClient->indices()->refresh();
 
         $url = sprintf($this->testData[__FUNCTION__]['request']['url'], $workflow['id']);
 
@@ -302,7 +302,7 @@ class WorkflowActionTest extends TestCase
         // This will create a wf action in Mysql and ES, not using default workflow.
         $workflow = $this->editAdmin(Org::RZP_ORG_SIGNED, Org::CHECKER_ADMIN_SIGNED);
 
-        sleep(1);
+        $this->esClient->indices()->refresh();
 
         // Try to close as a different user
         $this->ba->adminAuth('test', Org::MAKER_ADMIN_TOKEN, Org::RZP_ORG_SIGNED);
