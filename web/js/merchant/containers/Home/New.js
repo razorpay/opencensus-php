@@ -413,28 +413,28 @@ class HomeContainer extends Component {
             </div>
           </div>
 
-          {!isAdmin && (
-            <div className="row">
-              <div
-                className={`col-md-12 traffic-activity-row clearfix${showGrouping
-                  ? ''
-                  : ' traffic-hidden'}`}
-              >
-                {showGrouping && (
-                  <div className="traffic-container">
-                    <p className="content-title section-title">
-                      {trafficSectionTitle}
-                    </p>
-                    <div className="content">
-                      <Traffic
-                        startDate={startDate}
-                        endDate={endDate}
-                        mode={mode}
-                        sectionTitle={trafficSectionTitle}
-                      />
-                    </div>
+          <div className="row">
+            <div
+              className={`col-md-12 traffic-activity-row clearfix${showGrouping
+                ? ''
+                : ' traffic-hidden'}`}
+            >
+              {showGrouping && (
+                <div className="traffic-container">
+                  <p className="content-title section-title">
+                    {trafficSectionTitle}
+                  </p>
+                  <div className="content">
+                    <Traffic
+                      startDate={startDate}
+                      endDate={endDate}
+                      mode={mode}
+                      sectionTitle={trafficSectionTitle}
+                    />
                   </div>
-                )}
+                </div>
+              )}
+              {!isAdmin && (
                 <div className="activity-container">
                   <p className="content-title section-title">
                     {recentActivityTitle}
@@ -443,9 +443,10 @@ class HomeContainer extends Component {
                     <RecentActivity sectionTitle={recentActivityTitle} />
                   </div>
                 </div>
-              </div>
+              )}
             </div>
-          )}
+          </div>
+
           <div className="row home-credits-section">
             <div className="col-md-12">
               <GenericPanel>
