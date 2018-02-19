@@ -360,7 +360,7 @@ class Gateway extends Base\Gateway
     protected function addRecurringDataIfApplicable(array $input, array & $acquirerData)
     {
         if (($input['payment']['recurring'] === true) and
-            ($input['payment']['method'] === 'netbanking'))
+            ($input['payment']['method'] === Payment\Method::EMANDATE))
         {
             $recurringData = $this->getRecurringData($input['gateway']);
 

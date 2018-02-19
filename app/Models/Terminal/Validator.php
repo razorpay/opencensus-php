@@ -28,6 +28,7 @@ class Validator extends Base\Validator
         Entity::CATEGORY                    => 'sometimes|integer|digits:4',
         Entity::CARD                        => 'sometimes|boolean',
         Entity::NETBANKING                  => 'sometimes|boolean',
+        Entity::EMANDATE                    => 'sometimes|boolean',
         Entity::EMI                         => 'sometimes|boolean',
         Entity::UPI                         => 'sometimes|boolean',
         Entity::AEPS                        => 'sometimes|boolean',
@@ -369,6 +370,7 @@ class Validator extends Base\Validator
             $input[Entity::CATEGORY],
             $input[Entity::CORPORATE],
             $input[Entity::NETBANKING],
+            $input[Entity::EMANDATE],
             $input[Entity::MERCHANT_ID],
             $input[Entity::NETWORK_CATEGORY],
             $input[Entity::GATEWAY_ACQUIRER],
@@ -625,6 +627,15 @@ class Validator extends Base\Validator
             return Method::CARD;
         }
 
+        //
+        // This is kept before netbanking on purpose to avoid
+        // manual errors where both emandate and netbanking is set.
+        //
+        if (empty($input[Entity::EMANDATE]) === false)
+        {
+            return Method::EMANDATE;
+        }
+
         if (empty($input[Entity::NETBANKING]) === false)
         {
             return Method::NETBANKING;
@@ -633,11 +644,6 @@ class Validator extends Base\Validator
         if (empty($input[Entity::EMI]) === false)
         {
             return Method::EMI;
-        }
-
-        if (empty($input[Entity::EMANDATE]) === false)
-        {
-            return Method::EMANDATE;
         }
 
         return null;

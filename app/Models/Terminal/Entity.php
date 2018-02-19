@@ -594,7 +594,6 @@ class Entity extends Base\PublicEntity
             self::NETBANKING,
             self::UPI,
             self::AEPS,
-            self::EMANDATE,
         ];
 
         foreach ($methods as $method)

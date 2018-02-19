@@ -2383,7 +2383,8 @@ trait Authorize
             [
                 'payment_id'      => $payment->getId(),
                 'token_id'        => $payment->getTokenId(),
-                'global_token_id' => $payment->getGlobalTokenId()
+                'global_token_id' => $payment->getGlobalTokenId(),
+                'gateway_data'    => $data,
             ]);
 
         //

@@ -113,11 +113,11 @@ class Checkout
             $bankCode = $order->getBank();
 
             // Order bank should be present in the list of netbanking banks.
-            if (isset($data['methods']['netbanking'][$bankCode]) === true)
+            if (isset($data['methods'][Payment\Method::NETBANKING][$bankCode]) === true)
             {
-                $bankName = $data['methods']['netbanking'][$bankCode];
+                $bankName = $data['methods'][Payment\Method::NETBANKING][$bankCode];
 
-                $data['methods']['netbanking'] = [
+                $data['methods'][Payment\Method::NETBANKING] = [
                     $bankCode => $bankName,
                 ];
             }
@@ -591,9 +591,9 @@ class Checkout
             return ;
         }
 
-        $enabledBanks = $data['methods']['netbanking'];
+        $enabledBanks = $data['methods'][Payment\Method::NETBANKING];
 
-        $enabledWallets = $data['methods']['wallet'];
+        $enabledWallets = $data['methods'][Payment\Method::WALLET];
 
         $data['methods'] = [
             'entity' => 'methods'
@@ -612,7 +612,7 @@ class Checkout
             case Payment\Method::NETBANKING:
 
                 // Only allow payments through supported banks
-                $data['methods']['netbanking'] = $enabledBanks;
+                $data['methods'][Payment\Method::NETBANKING] = $enabledBanks;
 
                 // Only allow payment through specific bank if network is specified
                 if ($offer->getIssuer() !== null)
@@ -621,7 +621,7 @@ class Checkout
 
                     $bankName = Netbanking::getName($bankCode);
 
-                    $data['methods']['netbanking'] = [
+                    $data['methods'][Payment\Method::NETBANKING] = [
                         $bankCode => $bankName
                     ];
                 }
@@ -631,7 +631,7 @@ class Checkout
             case Payment\Method::WALLET:
 
                 // Only allow payments through supported wallets
-                $data['methods']['wallet'] = $enabledWallets;
+                $data['methods'][Payment\Method::WALLET] = $enabledWallets;
 
                 // For wallet offers if network is specified, lock method to only that wallet
                 if ($offer->getIssuer() !== null)
