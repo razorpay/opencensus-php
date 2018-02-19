@@ -34,8 +34,6 @@ class Validator extends Base\Validator
     const EDIT_ISSUED   = 'editIssued';
     const ISSUE_BATCH   = 'issueBatch';
 
-    const NOTIFY_FOR_BATCH = 'notify_for_batch';
-
     const MAX_ALLOWED_LINE_ITEMS = 20;
 
     /**
@@ -43,6 +41,12 @@ class Validator extends Base\Validator
      * issue and expired by timestamps.
      */
     const MIN_EXPIRY_SECS = 900;
+
+    /**
+     * With this constant there is validation rule for
+     * "notify invoices of batch" request.
+     */
+    const NOTIFY_INVOICES_OF_BATCH = 'notify_invoices_of_batch';
 
     protected static $createRules = [
         Entity::SMS_NOTIFY          => 'sometimes|boolean',
@@ -164,7 +168,7 @@ class Validator extends Base\Validator
         Entity::CALLBACK_METHOD     => 'required_with:callback_url|sometimes|string|in:get|nullable',
     ];
 
-    protected static $notifyForBatchRules = [
+    protected static $notifyInvoicesOfBatchRules = [
         Entity::SMS_NOTIFY          => 'required|boolean',
         Entity::EMAIL_NOTIFY        => 'required|boolean',
     ];
@@ -663,22 +667,28 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateNotificationForIssuedInvoices(bool $isNotificationAlreadySent,
-                                                          string $batchId,
-                                                          array $input)
+    public function validateNotifyInvoicesOfBatch(
+        Settings\Accessor $settingsAccessor,
+        Batch\Entity $batch,
+        array $input)
     {
-        // Check if notification has already been sent
-        if ($isNotificationAlreadySent === true)
+        // 1. Validates the input
+        $this->validateInput(Validator::NOTIFY_INVOICES_OF_BATCH, $input);
+
+        // 2. Validates that batch notification request was already sent or not
+        $smsNotified      = $settingsAccessor->get(Entity::SMS_NOTIFY);
+        $emailNotified    = $settingsAccessor->get(Entity::EMAIL_NOTIFY);
+
+        if (($smsNotified === true) or ($emailNotified === true))
         {
             throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_BATCH_NOTIFICATION_SENT_ALREADY,
+                ErrorCode::BAD_REQUEST_BATCH_NOTIFICATIONS_SENT_ALREADY,
                 Entity::BATCH_ID,
                 [
-                    Entity::BATCH_ID => $batchId,
+                    Entity::BATCH_ID => $batch->getId(),
+                    'input'          => $input,
                 ]);
         }
-
-        $this->validateInput(Validator::NOTIFY_FOR_BATCH, $input);
     }
 
     protected function validateInvoiceIssueForInvoiceType(Entity $invoice)

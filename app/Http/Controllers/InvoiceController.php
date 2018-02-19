@@ -48,9 +48,9 @@ class InvoiceController extends Controller
 
     public function notifyInvoicesOfBatch(string $batchId)
     {
-        $response = $this->service()->notifyInvoicesOfBatch($batchId, $this->input);
+        $this->service()->notifyInvoicesOfBatch($batchId, $this->input);
 
-        return ApiResponse::json($response);
+        return ApiResponse::json([]);
     }
 
     public function deleteInvoice(string $id)

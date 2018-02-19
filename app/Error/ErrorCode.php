@@ -415,6 +415,7 @@ class ErrorCode
     const BAD_REQUEST_BATCH_FILE_UNDER_PROCESSING                                   = 'BAD_REQUEST_BATCH_FILE_UNDER_PROCESSING';
     const BAD_REQUEST_BATCH_ANOTHER_OPERATION_IN_PROGRESS                           = 'BAD_REQUEST_BATCH_ANOTHER_OPERATION_IN_PROGRESS';
     const BAD_REQUEST_BATCH_UNABLE_TO_SAVE_FILE                                     = 'BAD_REQUEST_BATCH_UNABLE_TO_SAVE_FILE';
+    const BAD_REQUEST_BATCH_NOTIFICATIONS_SENT_ALREADY                              = 'BAD_REQUEST_BATCH_NOTIFICATIONS_SENT_ALREADY';
 
     const BAD_REQUEST_URL_NOT_FOUND                                                 = 'BAD_REQUEST_URL_NOT_FOUND';
     const BAD_REQUEST_ROUTE_DISABLED                                                = 'BAD_REQUEST_ROUTE_DISABLED';
@@ -620,7 +621,6 @@ class ErrorCode
     const BAD_REQUEST_API_KEY_NOT_PRESENT                                           = 'BAD_REQUEST_API_KEY_NOT_PRESENT';
     const BAD_REQUEST_INVOICE_FEE_BEARER_CUSTOMER                                   = 'BAD_REQUEST_INVOICE_FEE_BEARER_CUSTOMER';
     const BAD_REQUEST_PAYMENT_LINK_BATCH_ISSUED_ALREADY                             = 'BAD_REQUEST_PAYMENT_LINK_BATCH_ISSUED_ALREADY';
-    const BAD_REQUEST_BATCH_NOTIFICATION_SENT_ALREADY                               = 'BAD_REQUEST_BATCH_NOTIFICATION_SENT_ALREADY';
 
     const BAD_REQUEST_ITEM_INACTIVE                                                 = 'BAD_REQUEST_ITEM_INACTIVE';
     const BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED                                         = 'BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED';

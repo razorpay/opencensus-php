@@ -717,51 +717,28 @@ class Core extends Base\Core
         return ['success' => true];
     }
 
-    public function notifyIssuedInvoicesOfBatch(Batch\Entity $batch, array $input): array
+    /**
+     * Sends notifications for all the invoices of a given batch, if not
+     * already sent.
+     *
+     * @param  Batch\Entity $batch
+     * @param  array        $input
+     */
+    public function notifyInvoicesOfBatch(Batch\Entity $batch, array $input): array
     {
+        //
+        // Settings module captures whether notification for this batch has
+        // been already sent or not.
+        //
+        $settingsAccessor = Settings\Accessor::for($batch, Settings\Module::BATCH);
 
-        $settingAcc = Settings\Accessor::for($batch, Settings\Module::BATCH);
+        (new Validator)->validateNotifyInvoicesOfBatch($settingsAccessor, $batch, $input);
 
-        (new Validator)->validateNotificationForIssuedInvoices( $this->isNotifSent($settingAcc),
-                                                                $batch->getPublicId(),
-                                                                $input);
-
-        // Save the new notification settings
-        $settingAcc->upsert($input)->save();
+        $settingsAccessor->upsert($input)->save();
 
         $job = new InvoiceBatchNotifyJob($this->mode, $batch->getId(), $input);
 
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
-
-        return [];
-    }
-
-    public function saveAndNotify(Entity $invoice, string $event)
-    {
-        $this->repo->transaction(function() use ($invoice)
-            {
-                $this->repo->saveOrFail($invoice);
-            });
-
-        $job = new InvoiceJob(
-                            $this->mode,
-                            $event,
-                            $invoice->getId());
-
-        (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
-    }
-
-    protected function isNotifSent(Settings\Accessor $settingAccessor): bool
-    {
-        $smsNotified = $settingAccessor->get(Entity::SMS_NOTIFY);
-        $emailNotified = $settingAccessor->get(Entity::EMAIL_NOTIFY);
-
-        if (($smsNotified === true) or ($emailNotified === true))
-        {
-            return true;
-        }
-
-        return false;
     }
 
     /**
