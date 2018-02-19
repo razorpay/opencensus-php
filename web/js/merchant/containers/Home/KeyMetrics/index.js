@@ -114,18 +114,6 @@ class KeyMetricsContainer extends Component {
       loading: true,
     };
 
-    const {tabsOrderMixin, tabsMetaMixin} = props;
-
-    if (tabsOrderMixin) {
-
-      tabsOrderMixin(tabsOrder);
-    }
-
-    if (tabsMetaMixin) {
-    
-      tabsMetaMixin(tabsMeta);
-    }
-
     this.requestId = this.trendRequestID = 0;
 
     // Populating default value
