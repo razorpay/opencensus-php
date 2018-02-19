@@ -28,11 +28,11 @@ export const acceptInvitation = inviteId => {
 export const rejectInvitation = (inviteId, userId) => {
   return () => {
     return merchantFetch({
-      url: `invitation_action/${id}/${action}`,
+      url: `invitations/${inviteId}/${action}`,
       method: 'post',
       data: {
-        user_id: userId
-      }
+        user_id: userId,
+      },
     });
   };
 };
@@ -72,8 +72,8 @@ export const saveGST = data => {
     payload: merchantFetch({
       url: 'merchant/gst',
       method: 'patch',
-      data
-    })
+      data,
+    }),
   };
 };
 
