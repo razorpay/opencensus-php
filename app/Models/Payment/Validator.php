@@ -113,6 +113,10 @@ class Validator extends Base\Validator
         'transfers.*.on_hold_until'  => 'sometimes|epoch',
     ];
 
+    protected static $pspAmountLimit = [
+        'upi'       => 2000000,
+    ];
+
     protected static $createValidators = [
         'card_key',
         'amount',
@@ -387,6 +391,32 @@ class Validator extends Base\Validator
         if ($input['method'] === Payment\Method::BANK_TRANSFER)
         {
             return;
+        }
+
+        if ($input['method'] === Payment\Method::UPI)
+        {
+            if ($amount > 10000000)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Amount for UPI payment cannot be greater than 100000000');
+            }
+
+            if ((isset($input['_']['flow']) === true) and
+                ($input['_']['flow'] === 'intent'))
+            {
+                return;
+            }
+
+            $vpa = $input['vpa'];
+
+            $handle = substr($vpa, strpos($vpa, '@') + 1);
+
+            if ((isset(self::$pspAmountLimit[$handle]) === true) and
+                ($amount > self::$pspAmountLimit[$handle]))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Maximum amount for UPI payment can be Rs ' . (self::$pspAmountLimit[$handle] / 100));
+            }
         }
 
         $maxAmountAllowed = $this->entity->merchant->getMaxPaymentAmount();
