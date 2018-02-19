@@ -145,6 +145,8 @@ class ApiServiceProvider extends BaseServiceProvider
             return new GatewayFileManager($app);
         });
 
+        $this->registerShield();
+
         $this->registerApiMutex();
 
         $this->registerMaxMind();
@@ -424,6 +426,18 @@ class ApiServiceProvider extends BaseServiceProvider
             $mock = $app['config']->get('applications.pincodesearch.mock');
 
             $implementation = $mock ? Mock\PincodeSearch::class : PincodeSearch::class;
+
+            return new $implementation($app);
+        });
+    }
+
+    protected function registerShield()
+    {
+        $this->app->singleton('shield', function($app)
+        {
+            $mock = $app['config']->get('applications.shield.mock');
+
+            $implementation = $mock ? Mock\ShieldClient::class : ShieldClient::class;
 
             return new $implementation($app);
         });

@@ -291,11 +291,6 @@ class Entity extends Base\PublicEntity
 
     public function isMpesaEnabled()
     {
-        if ($this->getMerchantId() !== '2aTeFCKTYWwfrF')
-        {
-            return false;
-        }
-
         return $this->getAttribute(self::MPESA);
     }
 
