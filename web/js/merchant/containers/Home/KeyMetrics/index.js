@@ -5,7 +5,12 @@ import moment from 'moment';
 
 import Amount from 'rzp/ui/Amount';
 import Tabs, { Tab, TabPane } from 'rzp/ui/ReactTabs';
-import { paiseToRupees, titleCase, getPercentage } from 'rzp/utils/rzp-utils';
+import {
+  paiseToRupees,
+  titleCase,
+  getPercentage,
+  getFixedNumber
+} from 'rzp/utils/rzp-utils';
 import {
   humanReadableIndian,
   humanReadableIndianCurrency,
@@ -55,7 +60,7 @@ const TabContent = ({
       ? humanReadableIndianCurrency(paiseToRupees(value))
       : humanReadableIndian(value);
   } else {
-    formattedValue = percent + '%';
+    formattedValue = getFixedNumber(percent) + '%';
   }
 
   /*
@@ -125,7 +130,7 @@ class KeyMetricsContainer extends Component {
 
     // Populating default value
     tabsOrder.forEach(tabName => {
-      const grouping = tabsMeta[tabName].grouping,
+      const {grouping, filters} = tabsMeta[tabName],
         // assigment on R.H.S is intentional, puts value and declares
         // variable at the same time
         tabState = (this.state.tabsState[tabName] = {});
@@ -133,6 +138,19 @@ class KeyMetricsContainer extends Component {
       if (grouping.length > 0) {
         // default grouping selected in each tab
         tabState.selectedGrouping = grouping[0];
+      }
+
+      if (filters && filters.length > 0) {
+      
+        tabState.selectedFilters = filters.reduce((result, filter) => {
+        
+          const filterName = filter.name,
+                firstFilter = filter.values[0];
+
+          result[filterName] = firstFilter;
+
+          return result;
+        }, {});
       }
 
       tabState.selectedBreakdown = breakdownVals[0].value;
@@ -171,6 +189,7 @@ class KeyMetricsContainer extends Component {
     });
 
     this.onGroupingChange = ::this.onGroupingChange;
+    this.onFilterChange = ::this.onFilterChange;
     this.onBreakdownChange = ::this.onBreakdownChange;
     this.handleTabChange = ::this.handleTabChange;
     this.onScreenshot = ::this.onScreenshot;
@@ -187,8 +206,21 @@ class KeyMetricsContainer extends Component {
 
     const { tabsState, selectedTab } = this.state,
       tabState = tabsState[selectedTab],
-      { selectedGrouping } = tabState,
+      { selectedGrouping, selectedFilters } = tabState,
       { startDate, endDate, mode, sectionTitle, isAdmin } = this.props;
+
+    let filterBy = null;
+
+    if (selectedFilters) {
+    
+      filterBy = Object.keys(selectedFilters)
+                              .reduce((result, filterName) => {
+      
+        result[filterName] = selectedFilters[filterName].value;
+
+        return result;
+      }, {});
+    }
 
     const query = getQuery({
       tabName: fetchAllCounts ? 'all' : selectedTab,
@@ -197,6 +229,7 @@ class KeyMetricsContainer extends Component {
       endTime: endDate.unix(),
       groupBy: selectedGrouping ? selectedGrouping.value : '',
       fetchHistogramForTab: selectedTab,
+      filterBy 
     });
 
     tabState.data.loading = true;
@@ -540,6 +573,35 @@ class KeyMetricsContainer extends Component {
     trackTabClick(tabsMeta[tabName].title);
   }
 
+  onFilterChange(tabName, selectedFilter) {
+    const { tabsState } = this.state,
+          { onFilterChange } = this.props,
+          tabState = tabsState[tabName];
+
+    tabState.selectedFilters = {
+    
+      ...tabState.selectedFilters,
+      [selectedFilter.filterName]: selectedFilter
+    };
+
+    // Hardcoding, can not import these values as the code will
+    // not be present in merchant dashboard
+    if (selectedFilter.filterName === "paymentMethods") {
+    
+      tabState.selectedFilters.sources = {
+        filterName: "sources",
+        text: "All Sources",
+        value: "all"
+      };
+    }
+
+    this.setState({ tabsState }, () => {
+      this.fetchData();
+    });
+
+    return onFilterChange && onFilterChange(selectedFilter);
+  }
+
   onGroupingChange(tabName, selectedGrouping) {
     const { tabsState } = this.state,
       tabState = tabsState[tabName];
@@ -665,7 +727,9 @@ class KeyMetricsContainer extends Component {
                 selectedBreakdown={tabState.selectedBreakdown}
                 onBreakdownChange={this.onBreakdownChange}
                 selectedGrouping={tabState.selectedGrouping}
+                selectedFilters={tabState.selectedFilters}
                 onGroupingChange={this.onGroupingChange}
+                onFilterChange={this.onFilterChange}
                 data={tabsState[tabName].data}
                 startDate={startDate}
                 endDate={endDate}

@@ -213,6 +213,8 @@ class HomeContainer extends Component {
   fetchOldestTransactionDate() {
     let { oldestTransactionDate, dateRangePresets } = this.state;
 
+    const { onFirstTxnDate } = this.props;
+
     var oldestTxnReqId = ++this.oldestTxnReqId;
 
     oldestTransactionDate = { ...oldestTransactionDate };
@@ -249,19 +251,25 @@ class HomeContainer extends Component {
         return OLDEST_TXN_ERROR;
       })
       .then(data => {
-        if (!data) {
-          return;
-        }
 
         oldestTransactionDate.loading = false;
 
-        if (data.error) {
-          oldestTransactionDate.error = data.error;
+        if (!data || data.error) {
 
-          return this.props.showNotification({
-            type: 'error',
-            message: data.error,
+          if (data.error) {
+            oldestTransactionDate.error = data.error;
+
+            this.props.showNotification({
+              type: 'error',
+              message: data.error,
+            });
+          }
+
+          this.setState({
+            oldestTransactionDate
           });
+
+          return onFirstTxnDate && onFirstTxnDate();
         }
 
         const presetsLastIndex = dateRangePresets.length - 1,
@@ -283,6 +291,8 @@ class HomeContainer extends Component {
           },
           dateRangePresets,
         });
+
+        return onFirstTxnDate && onFirstTxnDate(data.value);
       });
   }
 
@@ -322,9 +332,9 @@ class HomeContainer extends Component {
     let {
       mode,
       current_balance,
-      tabsOrderMixin,
-      tabsMetaMixin,
-      isAdmin
+      tabsMeta,
+      isAdmin,
+      onFilterChange
     } = this.props;
 
     const {
@@ -382,9 +392,9 @@ class HomeContainer extends Component {
                 mode={mode}
                 showGrouping={showGrouping}
                 sectionTitle={keymetricsSectionTitle}
-                tabsOrderMixin={tabsOrderMixin}
-                tabsMetaMixin={tabsMetaMixin}
+                tabsMeta={tabsMeta}
                 isAdmin={isAdmin}
+                onFilterChange={onFilterChange}
               />
             </div>
           </div>

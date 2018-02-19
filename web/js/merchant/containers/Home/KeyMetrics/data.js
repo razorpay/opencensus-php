@@ -94,8 +94,8 @@ export const tabsMeta = {
         },
       };
     },
-    getHistogramQuery: function(grouping, breakdown) {
-      grouping = this.getGroupQuery(grouping);
+    getHistogramQuery: function({groupBy, breakdown}) {
+      groupBy = this.getGroupQuery(groupBy);
 
       return {
         [`${this.name}Histogram`]: {
@@ -103,7 +103,7 @@ export const tabsMeta = {
           details: {
             index: this.index,
             column: 'base_amount',
-            group_by: [...grouping, `histogram_${breakdown}`],
+            group_by: [...groupBy, `histogram_${breakdown}`],
           },
         },
       };
@@ -127,15 +127,15 @@ export const tabsMeta = {
         },
       };
     },
-    getHistogramQuery: function(grouping, breakdown) {
-      grouping = this.getGroupQuery(grouping);
+    getHistogramQuery: function({groupBy, breakdown}) {
+      groupBy = this.getGroupQuery(groupBy);
 
       return {
         [`${this.name}Histogram`]: {
           agg_type: 'count',
           details: {
             index: this.index,
-            group_by: [...grouping, `histogram_${breakdown}`],
+            group_by: [...groupBy, `histogram_${breakdown}`],
           },
         },
       };
@@ -159,7 +159,7 @@ export const tabsMeta = {
         },
       };
     },
-    getHistogramQuery: function(grouping, breakdown) {
+    getHistogramQuery: function({breakdown}) {
       return {
         [`${this.name}Histogram`]: {
           agg_type: 'count',
@@ -201,7 +201,7 @@ export const tabsMeta = {
         },
       };
     },
-    getHistogramQuery: function(grouping, breakdown) {
+    getHistogramQuery: function({breakdown}) {
       return {
         [`${this.name}Histogram`]: {
           agg_type: 'count',
@@ -234,6 +234,7 @@ export const getQuery = options => {
       endTime,
       tabName,
       groupBy,
+      filterBy,
       breakdown,
       countsOnly,
       fetchHistogramForTab,
@@ -245,13 +246,18 @@ export const getQuery = options => {
 
     return {
       filters: tabMeta.getFilterQuery
-        ? tabMeta.getFilterQuery(startTime, endTime)
+        ? tabMeta.getFilterQuery(startTime, endTime, filterBy)
         : {
             default: [getDefaultPaymentFilter(startTime, endTime)],
           },
       aggregations: {
-        ...tabMeta.getCountQuery(),
-        ...(!countsOnly && tabMeta.getHistogramQuery(groupBy, breakdown)),
+        ...tabMeta.getCountQuery(filterBy),
+        ...(!countsOnly && tabMeta.getHistogramQuery({
+                             groupBy,
+                             breakdown,
+                             filterBy
+                           })
+           ),
       },
     };
   }

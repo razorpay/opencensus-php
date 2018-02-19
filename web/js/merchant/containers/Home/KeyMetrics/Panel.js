@@ -19,6 +19,7 @@ import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
 
 import { tabsMeta, breakdownVals } from './data';
 import GroupingDropdown from 'merchant/containers/Home/GroupingDropdown';
+import FilteringDropdown from 'merchant/components/Home/FilteringDropdown';
 import Legend from 'merchant/components/Home/Legend';
 import LastUpdated from 'merchant/components/Home/LastUpdated';
 import MoreOptionsButton from 'merchant/containers/Home/MoreOptionsButton';
@@ -67,12 +68,19 @@ class Panel extends Component {
     this.handleGroupingChange = ::this.handleGroupingChange;
     this.handleBreakdownChange = ::this.handleBreakdownChange;
     this.handleImageExportClick = ::this.handleImageExportClick;
+    this.handleFilterChange = ::this.handleFilterChange;
   }
 
   handleGroupingChange({ option }) {
     const { tabName, onGroupingChange } = this.props;
 
     return onGroupingChange && onGroupingChange(tabName, option);
+  }
+
+  handleFilterChange (option) {
+    const { tabName, onFilterChange } = this.props;
+
+    return onFilterChange && onFilterChange(tabName, option);
   }
 
   handleBreakdownChange(value) {
@@ -101,6 +109,7 @@ class Panel extends Component {
   render() {
     const {
         selectedGrouping,
+        selectedFilters,
         data,
         startDate,
         endDate,
@@ -113,7 +122,7 @@ class Panel extends Component {
         sectionTitle,
       } = this.props,
       dateFormat = 'DD MMM YYYY',
-      { grouping, options } = this.meta,
+      { grouping, options, filters } = this.meta,
       { loading, histogram, trend } = data;
 
     const hasNoData = !histogram || histogram.datasets.length === 0;
@@ -227,6 +236,17 @@ class Panel extends Component {
                   />
                 </div>
               )}
+            {filters &&
+               filters.length > 0 && (
+            
+                 <div className="panel-action-item">
+                   <FilteringDropdown
+                     onFilterChange={this.handleFilterChange}
+                     filters={filters}
+                     selectedFilters={selectedFilters} />
+                 </div>
+               )
+            }
             <div className="panel-action-item">
               <MoreOptionsButton
                 csvData={data.csv}
