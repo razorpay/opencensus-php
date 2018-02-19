@@ -101,10 +101,10 @@ class RouteServiceProvider extends ServiceProvider
                 $this->route->addRouteGroups(['public',
                                               'publicCallback',
                                               'direct',
+                                              'admin',
                                               'internal',
                                               'private',
                                               'proxy',
-                                              'admin',
                                               'device']);
             }
         );
