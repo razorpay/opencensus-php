@@ -1024,6 +1024,7 @@ final class Route
         'user_reset_password_create',
         'user_reset_password_token',
         'virtual_account_refund_excess',
+        'fund_transfer_attempt_process',
     ];
 
     // The below routes needs X-Dashboard-User-Id
@@ -1820,6 +1821,7 @@ final class Route
             'geoip_update',
             'fund_transfer_attempt_reconcile',
             'admin_lock_old_accounts',
+            'fund_transfer_attempt_process',
         ],
 
         'kotak' => [
