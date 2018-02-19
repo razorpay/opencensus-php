@@ -2092,6 +2092,8 @@ class MerchantTest extends TestCase
             'method'  => 'POST'
         ];
 
+        $this->ba->adminAuth();
+
         $content = $this->makeRequestAndGetContent($request);
 
         $row = DB::table('merchant_map')

@@ -171,7 +171,7 @@ trait EntityActionTrait
             'method' => 'post',
             'content' => ['credits' => $credits]);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         return $this->makeRequestAndGetContent($request);
     }
