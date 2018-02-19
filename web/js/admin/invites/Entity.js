@@ -25,7 +25,7 @@ class AddInvites extends Component {
 
   handleInvite = body => {
     return adminPost({
-      url: 'admin-lead',
+      url: 'live/admin-lead',
       data: body,
     }).then(response => {
       if (response) {

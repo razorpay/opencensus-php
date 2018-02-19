@@ -35,7 +35,7 @@ export default function SettlementBulkChannel() {
             : [];
 
           return adminPut({
-            url: 'settlements/channel/bulk',
+            url: 'live/settlements/channel/bulk',
             data: body,
           }).then(data => {
             if (data) {

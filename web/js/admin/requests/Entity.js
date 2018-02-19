@@ -66,7 +66,7 @@ export default class RequestEntity extends Component {
     }
 
     return adminPut({
-      url: `w-actions/${id}`,
+      url: `live/w-actions/${id}`,
       data: body,
     }).then(response => {
       if (response) {

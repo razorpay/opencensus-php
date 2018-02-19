@@ -59,7 +59,7 @@ export default function AddIINRule() {
         onSubmit={body => {
           body.emi = body.emi ? 1 : 0;
           return adminPost({
-            url: 'iins',
+            url: 'live/iins',
             data: body,
           }).then(response => {
             if (response) {

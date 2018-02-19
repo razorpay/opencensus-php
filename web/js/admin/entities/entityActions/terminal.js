@@ -34,7 +34,7 @@ export default ({ entity, mode, updateEntity }) => {
     }
 
     return adminPut({
-      url: `${terminal_edit}/terminals/${entity.id}`,
+      url: `${mode}/terminals/${entity.id}`,
       data: body,
     })
       .then(data => {

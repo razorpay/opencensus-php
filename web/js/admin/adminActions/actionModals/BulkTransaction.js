@@ -27,7 +27,7 @@ export default function BulkTransaction() {
         pendingClass="small spinner"
         onSubmit={body => {
           return adminPut({
-            url: 'transactions/bulk',
+            url: 'live/transactions/bulk',
             data: body,
           }).then(data => {
             if (data) {

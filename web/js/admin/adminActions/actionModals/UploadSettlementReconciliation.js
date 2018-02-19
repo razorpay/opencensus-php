@@ -52,7 +52,7 @@ export default function UploadSettlementReconciliation() {
           };
 
           return adminFormUpload({
-            url: `settlements/reconcile/${channel}`,
+            url: `live/settlements/reconcile/${channel}`,
             ...form,
           }).then(response => {
             if (response.data.success) {

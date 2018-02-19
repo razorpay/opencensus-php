@@ -177,7 +177,7 @@ class Rule extends CollectionItem {
         'save',
         adminPost({
           data: this.serialize(),
-          url: `pricing/${this.collection.props.id}/rule`,
+          url: `live/pricing/${this.collection.props.id}/rule`,
         })
       ).then(data => {
         if (data) {

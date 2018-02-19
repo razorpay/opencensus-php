@@ -28,7 +28,7 @@ export default class EditBankAccountDetails extends Component {
     }
 
     return adminPost({
-      url: `merchants/${this.props.merchantId}/bank_account`,
+      url: `live/merchants/${this.props.merchantId}/bank_account`,
       data: body,
     })
       .then(response => {

@@ -36,7 +36,7 @@ export default class PricingPlanModal extends Component {
       };
 
       return adminPost({
-        url: `merchants/${this.props.merchantId}/pricing`,
+        url: `live/merchants/${this.props.merchantId}/pricing`,
         data: pricingData,
       })
         .then(data => {

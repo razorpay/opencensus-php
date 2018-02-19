@@ -19,7 +19,7 @@ export default function ConfirmUser() {
         type="submit"
         onSubmit={body => {
           return adminPut({
-            url: 'users/confirm_user_by_data',
+            url: 'live/users/confirm_user_by_data',
             data: body,
           }).then(response => {
             if (response) {

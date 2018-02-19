@@ -45,7 +45,7 @@ export default function AddDisputeReason() {
         pendingClass="small spinner"
         onSubmit={body => {
           return adminPost({
-            url: 'disputes/reasons',
+            url: 'live/disputes/reasons',
             data: body,
           }).then(response => {
             if (response) {

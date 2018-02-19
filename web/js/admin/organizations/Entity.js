@@ -128,7 +128,7 @@ export default class EditOrg extends Component {
     );
     if (body.id) {
       return adminPut({
-        url: `orgs/${this.org.id}`,
+        url: `live/orgs/${this.org.id}`,
         content_type: 'application/json',
       }).then(response => {
         if (response) notifySuccess('Org successfully added!');

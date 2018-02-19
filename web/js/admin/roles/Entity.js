@@ -57,7 +57,7 @@ class EditRole extends Component {
 
       //customer request
       fetch({
-        url: `roles/${mode.id}`,
+        url: `live/roles/${mode.id}`,
         method: 'put',
         data: body,
       }).then(data => {

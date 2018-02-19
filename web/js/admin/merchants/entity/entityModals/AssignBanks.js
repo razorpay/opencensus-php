@@ -61,7 +61,7 @@ export default class PricingPlanModal extends Component {
         banks: Object.keys(body).filter(bank => body[bank] == '1'),
       };
       return adminPost({
-        url: `merchants/${this.props.merchantId}/banks`,
+        url: `live/merchants/${this.props.merchantId}/banks`,
         data: banksData,
       })
         .then(response => {

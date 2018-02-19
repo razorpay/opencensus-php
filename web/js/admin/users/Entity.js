@@ -17,11 +17,11 @@ export default class EditUser extends Component {
 
   // TODO: TEST Check what's orgId. 'org_fieldmap_get_by_entity' in api-route-map
   fetchFieldMapsParams = {
-    url: `orgs/{orgId}/field-map/entity/admin`,
+    url: `live/orgs/{orgId}/field-map/entity/admin`,
   };
 
   fetchUserParams = {
-    url: `admin/${this.props.match.params.id}/fetch`,
+    url: `live/admin/${this.props.match.params.id}/fetch`,
   };
 
   componentWillMount() {
