@@ -31,7 +31,7 @@ function batchActions({
           class="btn btn-xs btn-default"
           onClick={() => onDownloadClick(item.id)}
         >
-          Download
+          <i class="i i-download" /> Download
         </button>
         {do {
           if (item.type === 'payment_link') {
@@ -56,7 +56,11 @@ function batchActions({
                 class="btn btn-default btn-xs"
                 onClick={_ => issueAll(item)}
               >
-                Issue all links
+                Send all links
+              </button>;
+            } else {
+              <button class="btn btn-default btn-xs" disabled={true}>
+                All Links Sent
               </button>;
             }
           }
