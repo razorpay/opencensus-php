@@ -62,7 +62,7 @@ export default class EntityList extends Component {
         return;
       }
 
-      this.collection.data.url = `live/admin/${
+      this.collection.data.url = `${this.collection.extraFields.mode}/admin/${
         this.collection.extraFields.type
       }`;
 
