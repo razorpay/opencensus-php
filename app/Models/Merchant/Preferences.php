@@ -18,7 +18,7 @@ class Preferences
     const MID_MONEYVIEW        = '8hXTLsmoM3F6PH';
     const MID_WEALTHY          = '8lv4idBRY4C9c0';
     const MID_PIGGY            = '9IjdEkLQb0j2ro';
-    const MID_ENDURANCE        = ['9YAQd3b47mdIQY', '9ZO8jNaR0OORNH', '10000000000000'];
+    const MID_ENDURANCE        = ['9YAQd3b47mdIQY', '9ZO8jNaR0OORNH',];
 
     /**
      * This needs to go in DB, for hotfix we are keeping it here
