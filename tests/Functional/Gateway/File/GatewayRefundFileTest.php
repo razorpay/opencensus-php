@@ -259,7 +259,7 @@ class GatewayRefundFileTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = '/gateway/files/' . $gatewayFile->getId() . '/retry';
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->startTest();
 
@@ -292,7 +292,7 @@ class GatewayRefundFileTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = '/gateway/files/' . $gatewayFile['id'] . '/retry';
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->startTest();
 
@@ -326,7 +326,7 @@ class GatewayRefundFileTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = '/gateway/files/' . $gatewayFile['id'] . '/retry';
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
@@ -339,7 +339,7 @@ class GatewayRefundFileTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = '/gateway/files/' . $gatewayFile['id'] . '/acknowledge';
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->startTest();
 
@@ -354,7 +354,7 @@ class GatewayRefundFileTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = '/gateway/files/' . $gatewayFile['id'] . '/retry';
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
@@ -367,7 +367,7 @@ class GatewayRefundFileTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = '/gateway/files/' . $gatewayFile['id'] . '/acknowledge';
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->startTest();
 
