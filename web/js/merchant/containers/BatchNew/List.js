@@ -4,7 +4,7 @@ import DataTable from 'rzp/ui/Table/DataTable';
 import { Link } from 'react-router-dom';
 import HeaderAction from 'rzp/ui/HeaderAction';
 import BatchListFilter from 'merchant/components/BatchNew/ListFilter';
-import { batchId, totalCount, status } from 'rzp/ui/item/pair';
+import { batchId, totalCount, status, batchName } from 'rzp/ui/item/pair';
 import { batchDownload } from 'merchant/modules/batches';
 import { openModal } from 'rzp/modules/modals';
 import { luminateRow } from 'merchant/modules/app';
@@ -142,6 +142,7 @@ export default class BatchList extends Component {
           title="Batch Uploads"
           columns={[
             batchId,
+            batchName,
             totalCount,
             status,
             batchActions({

@@ -116,3 +116,10 @@ export const planBillingCycle = {
   title: 'Billing Cycle',
   value: item => getIntervalCycle(item.interval, item.period),
 };
+
+//Batch
+
+export const batchName = {
+  title: 'Batch Name',
+  value: item => item.name,
+};
