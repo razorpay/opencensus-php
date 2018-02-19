@@ -207,7 +207,7 @@ trait PaymentTrait
 
     protected function sendAutoCaptureEmails()
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $request = [
             'url'    => '/payments/autocapture/email',
