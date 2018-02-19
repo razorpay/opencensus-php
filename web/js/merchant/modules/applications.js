@@ -10,13 +10,18 @@ const UPDATE_APPLICATION = 'UPDATE_APPLICATION';
 const DELETE_APPLICATION = 'DELETE_APPLICATION';
 const REVOKE_ACCESS_TOKEN = 'REVOKE_ACCESS_TOKEN';
 
-export const fetchWebhook = id => {
-  console.log(id);
-  return merchantFetch(`webhooks/${id}`);
+export const fetchAppWebhooks = appId => {
+  return merchantFetch({
+    url: 'webhooks',
+    params: {
+      application_id: appId,
+    },
+  });
 };
 
-export const createAppWebhook = (appId, data) => {
-  let keepKeys = ['url', 'secret', 'events']; // Send only these fields in EDIT mode
+const _makeWebhookPayload = data => {
+  let keepKeys = ['url', 'secret', 'events'];
+
   const payload = {
     url: data.url,
     secret: data.secret,
@@ -28,6 +33,13 @@ export const createAppWebhook = (appId, data) => {
       payload.events[k] = data.events[k] ? 1 : 0;
     }
   }
+
+  return payload;
+};
+
+export const createAppWebhook = (appId, data) => {
+  let payload = _makeWebhookPayload(data);
+
   return merchantFetch({
     url: `oauth/applications/${appId}/webhooks`,
     method: 'post',
@@ -35,12 +47,14 @@ export const createAppWebhook = (appId, data) => {
   });
 };
 
-export const editAppWebhook = params => {
-  console.log(params);
+export const editAppWebhook = data => {
+  let payload = _makeWebhookPayload(data);
+  payload.active = data.active ? 1 : 0; // Send active field also in edit mode
+
   return merchantFetch({
-    url: `webhooks/${params.id}`,
-    method: 'post',
-    data,
+    url: `webhooks/${data.id}`,
+    method: 'put',
+    data: payload,
   });
 };
 

@@ -20,12 +20,10 @@ class AppWebhook extends Component {
 
   componentWillMount() {
     // Fetch call getting app's webhook
-    ApplicationActions.fetchWebhook('9cY1wnipoWiCuS').then(data => {
-      console.log(data);
-      this.setState({ webhook: data.data });
+    ApplicationActions.fetchAppWebhooks(this.props.appId).then(data => {
+      this.setState({ webhook: data.data.items });
     });
   }
-
   render() {
     let component;
 
@@ -33,8 +31,9 @@ class AppWebhook extends Component {
       // Edit WebhookCreation won't send appId when it's edit webhook for this application
       return (
         <WebhookCreation
-          webhook={this.state.webhook}
+          webhook={this.state.webhook.length && this.state.webhook[0]}
           appId={this.props.appId}
+          onSave={this.props.onSave}
         />
       );
     } else {
@@ -89,14 +88,19 @@ export default class ApplicationContainer extends Component {
     });
   };
 
+  onWebhookSave = webhook => {
+    console.log('check..');
+    this.props.closeModal();
+  };
+
   showWebhookModal = application => {
-    console.log('application...', application);
     this.props.openModal({
       component: (
         <AppWebhook
           webhook={application.webhook || undefined}
           appId={application.id}
           isApplication={true}
+          onSave={this.onWebhookSave}
         />
       ),
     });

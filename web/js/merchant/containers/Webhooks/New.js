@@ -7,7 +7,10 @@ import Alert from 'rzp/ui/Forms/Alert';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import { required, lenientUrl } from 'rzp/utils/validators';
 import { saveWebhook } from 'merchant/modules/webhooks';
-import { createAppWebhook } from 'merchant/modules/applications';
+import {
+  createAppWebhook,
+  editAppWebhook,
+} from 'merchant/modules/applications';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import ShowWhen from 'merchant/components/ShowWhen';
@@ -49,14 +52,16 @@ export default class AddWebhook extends Component {
 
     let saveWebhook;
     if (this.props.appId) {
-      saveWebhook = createAppWebhook(this.props.appId, data);
+      saveWebhook = this.props.webhook
+        ? editAppWebhook(data)
+        : createAppWebhook(this.props.appId, data);
     } else {
       saveWebhook = this.props.saveWebhook(data);
     }
 
     return saveWebhook
       .then(webhook => {
-        this.props.onSave && this.props.onSave(webhook);
+        this.props.onSave(webhook);
         this.props.showNotification({
           type: 'success',
           message: 'Webhook saved successfully',
