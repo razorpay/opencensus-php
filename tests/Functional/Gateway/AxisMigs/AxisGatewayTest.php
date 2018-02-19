@@ -61,7 +61,7 @@ class AxisGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals($this->testData['testTransactionAfterCapture'], $txn);
 
-        $payment = $this->getDbLastEntityPublic('payment');
+        $payment = $this->getLastEntity('payment', true);
 
         $this->assertTestResponse($payment);
 

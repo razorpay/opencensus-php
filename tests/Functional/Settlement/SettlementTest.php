@@ -548,6 +548,8 @@ class SettlementTest extends TestCase
             ]
         ];
 
+        $this->ba->cronAuth();
+
         $content = $this->makeRequestAndGetContent($request);
 
         $this->assertNotEquals(null, $content);
