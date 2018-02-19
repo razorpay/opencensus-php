@@ -127,7 +127,7 @@ export default class ReversalModal extends Component {
         action: () => {
           let transfer = this.props.transfer;
 
-          let data = null;
+          let data = {};
           if (isPartialTransfer(this.props)) {
             data = {
               amount: rupeesToPaise(props.amount),
