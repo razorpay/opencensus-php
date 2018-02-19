@@ -101,6 +101,7 @@ class HomeContainer extends Component {
       payments,
       refunds,
       settlements,
+      openDisputes,
     } = this.props;
     let mode = this.props.mode;
     let graphData = this.props.analytics;
@@ -120,9 +121,11 @@ class HomeContainer extends Component {
           </div>
         </Header>
 
-        {this.props.openDisputes > 0 && (
+        {openDisputes > 0 && (
           <Banner>
-            There are {this.props.openDisputes} open disputes against payments
+            There {openDisputes > 1 ? 'are' : 'is'} {openDisputes} open dispute{openDisputes >
+              1 && 's'}{' '}
+            against {openDisputes < 2 && 'a'} payment{openDisputes > 1 && 's'}&nbsp;
             that needs your attention. &nbsp;<Link to="/disputes">
               Show Disputes
             </Link>
