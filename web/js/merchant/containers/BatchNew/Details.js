@@ -3,13 +3,18 @@ import { connect } from 'react-redux';
 
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationsActions from 'rzp/modules/notifications';
-import { fetchBatch, fetchBatchStats } from 'merchant/modules/batches';
+import {
+  fetchBatch,
+  fetchBatchStats,
+  fetchBatchInvoices,
+} from 'merchant/modules/batches';
 
 import BatchDetails from 'merchant/components/BatchNew/BatchDetails';
 
 @connect(null, {
   fetchBatch,
   fetchBatchStats,
+  fetchBatchInvoices,
   ...ModalActions,
   ...NotificationsActions,
 })
@@ -21,13 +26,18 @@ export default class BatchDetailsContainer extends Component {
   };
 
   componentWillMount() {
-    let { fetchBatch, fetchBatchStats, id } = this.props;
-    let requests = [fetchBatch(id), fetchBatchStats(id)];
+    let { fetchBatch, fetchBatchStats, fetchBatchInvoices, id } = this.props;
+    let requests = [
+      fetchBatch(id),
+      fetchBatchStats(id),
+      fetchBatchInvoices(id),
+    ];
 
     Promise.all(requests)
-      .then(([batch, stats]) => {
+      .then(([batch, stats, invoices]) => {
         this.setState({
           batch: batch.data,
+          invoices: invoices.data.items,
           stats: stats.data.stats,
           isLoading: false,
         });
@@ -40,7 +50,6 @@ export default class BatchDetailsContainer extends Component {
       });
   }
   render() {
-    let { batch, stats, isLoading } = this.state;
-    return <BatchDetails batch={batch} stats={stats} isLoading={isLoading} />;
+    return <BatchDetails {...this.state} />;
   }
 }

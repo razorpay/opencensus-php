@@ -12,6 +12,7 @@ const VALIDATE_BATCH = 'VALIDATE_BATCH';
 const CREATE_BATCH = 'CREATE_BATCH';
 const FETCH_BATCH = 'FETCH_BATCH';
 const FETCH_BATCH_STATS = 'FETCH_BATCH_STATS';
+const FETCH_BATCH_INVOICES = 'FETCH_BATCH_INVOICES';
 
 const fetchBatchAjax = id => {
   return merchantFetch(`batches/${id}`).then(response => {
@@ -183,6 +184,13 @@ export const fetchBatchStats = batchId => {
         },
       },
     }),
+  };
+};
+
+export const fetchBatchInvoices = batchId => {
+  return {
+    type: FETCH_BATCH_INVOICES,
+    payload: merchantFetch(`invoices?batch_id=${batchId}`),
   };
 };
 
