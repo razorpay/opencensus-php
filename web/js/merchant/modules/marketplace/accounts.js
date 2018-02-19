@@ -5,10 +5,14 @@ const ACCOUNTS_FETCH = 'ACCOUNTS_FETCH';
 const ACCOUNT_CREATE = 'ACCOUNT_CREATE';
 
 export const fetchAccountsApi = params => {
-  return ajax({
-    url: '/accounts',
-    data: params,
-  });
+  return ajax(
+    {
+      url: '/accounts',
+      data: params,
+    },
+    {},
+    '/merchant/api'
+  );
 };
 
 export const fetchAccounts = params => {
