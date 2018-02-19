@@ -25,6 +25,12 @@ class Entity extends Base\PublicEntity
     const SECRET             = 'secret';
     const LAST_SUCCESSFUL_AT = 'last_successful_at';
 
+    // public response const
+    const APPLICATION_ID     = 'application_id';
+
+    // for oauth flow checks
+    const APPLICATION        = 'application';
+
     protected $entity       = 'webhook';
 
     const MAX_FAILURE_COUNT = 3;
@@ -61,7 +67,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::SECRET,
-        self::LAST_SUCCESSFUL_AT
+        self::LAST_SUCCESSFUL_AT,
     ];
 
     protected $public = [
@@ -72,13 +78,15 @@ class Entity extends Base\PublicEntity
         self::ACTIVE,
         self::CREATED_AT,
         self::UPDATED_AT,
-        self::LAST_SUCCESSFUL_AT
+        self::LAST_SUCCESSFUL_AT,
+        self::APPLICATION_ID,
     ];
 
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
         self::EVENTS,
+        self::APPLICATION_ID,
     ];
 
     public function edit(array $input = array(), $operation = 'edit')
@@ -220,6 +228,14 @@ class Entity extends Base\PublicEntity
             {
                 unset($array[self::EVENTS][$event]);
             }
+        }
+    }
+
+    public function setPublicApplicationIdAttribute(array & $array)
+    {
+        if ($this->getEntityType() === self::APPLICATION)
+        {
+            $array[self::APPLICATION_ID] = $this->getEntityId();
         }
     }
 

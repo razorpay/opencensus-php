@@ -39,12 +39,6 @@ class ValidationFields
             Entity::PROMOTER_ADDRESS_URL,
             Entity::PROMOTER_PAN_NAME,
             Entity::TRANSACTION_REPORT_EMAIL,
-            Entity::WEBSITE_ABOUT,
-            Entity::WEBSITE_CONTACT,
-            Entity::WEBSITE_PRICING,
-            Entity::WEBSITE_PRIVACY,
-            Entity::WEBSITE_REFUND,
-            Entity::WEBSITE_TERMS,
     ];
 
     /**
