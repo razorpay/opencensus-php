@@ -54,9 +54,10 @@ class Reconciliate extends Base\Reconciliate
      * Some excel files have sheets that should not be considered for
      * reconciliation.
      *
+     * @param array $fileDetails
      * @return array
      */
-    public function getSheetNames()
+    public function getSheetNames(array $fileDetails = [])
     {
         return self::ACCEPTED_SHEET_NAMES;
     }

@@ -12,9 +12,7 @@ class UfhController extends Controller
     {
         $response = $this->ufhClient()->getSignedUrl($fileId, []);
 
-        $data = json_decode($response->getBody(), true);
-
-        return ApiResponse::json($data);
+        return ApiResponse::json($response);
     }
 
     /**
@@ -28,9 +26,11 @@ class UfhController extends Controller
             'base_uri'      => $this->config['applications.ufh.url'],
             'username'      => $this->config['applications.ufh.auth.username'],
             'password'      => $this->config['applications.ufh.auth.password'],
-            'X-Merchant-Id' => $this->ba->getMerchantId(),
+            'headers'       => [
+                'X-Merchant-Id' => $this->ba->getMerchantId(),
+            ]
         ];
 
-        return (new UfhClient)->setConfig($ufhConfig);
+        return new UfhClient($ufhConfig);
     }
 }

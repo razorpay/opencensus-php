@@ -130,9 +130,9 @@ class Selector extends Base\Core
 
                 //
                 // We want to give 40 % load to FSS terminal 94RNvZoogX4kOB, and
-                // equal 10% load to other Firstdata terminals, hence the below
-                // array  structure
-                // courtsey : Sunny sir _/\_
+                // equal 10% load to other FirstData terminals, hence the below
+                // array structure
+                // courtesy : Sunny sir _/\_
                 //
                 $rupayTerminalSet = [
                     '94RNvZoogX4kOB',
@@ -152,10 +152,10 @@ class Selector extends Base\Core
                 $terminal = $this->repo->terminal->find($selectedTerminalId);
 
                 $sortedTerminals = [$terminal];
-
-                $sortedTerminals;
             }
-            else if (($payment->isCard() === true) and ($payment->card->isDiners() === true))
+            else if (($payment->isCard() === true) and
+                     (($payment->card->isDiners() === true) or
+                      ($payment->card->isNetworkUnknown() === true)))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);

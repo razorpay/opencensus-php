@@ -16,11 +16,13 @@ use RZP\Reconciliator\RequestProcessor;
 class Service extends Base\Service
 {
     /**
-     * List og gateways where we are doing recon processing via batch.
+     * List of gateways where we are doing recon processing via batch.
      */
     const BATCH_RECON_GATEWAYS = [
         RequestProcessor\Base::JIOMONEY,
         RequestProcessor\Base::FIRST_DATA,
+        RequestProcessor\Base::HITACHI,
+        RequestProcessor\Base::VIRTUAL_ACC_KOTAK,
     ];
 
     public function initiateReconciliationProcess(array $input)

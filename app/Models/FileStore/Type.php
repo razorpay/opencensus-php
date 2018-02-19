@@ -46,9 +46,25 @@ class Type
 
     const SBI_UPI_REFUND                    = 'sbi_upi_refund';
 
+    const UPI_ICICI_FAILED_REFUND           = 'upi_icici_failed_refund';
+
+    const AIRTELMONEY_WALLET_FAILED_REFUND  = 'airtelmoney_wallet_failed_refund';
+
+    const AXIS_MIGS_FAILED_REFUND           = 'axis_migs_failed_refund';
+
+    const ICIC_FIRST_DATA_FAILED_REFUND     = 'icic_first_data_failed_refund';
+
+    const HDFC_CYBERSOURCE_FAILED_REFUND    = 'hdfc_cybersource_failed_refund';
+
+    const AXIS_CYBERSOURCE_FAILED_REFUND    = 'axis_cybersource_failed_refund';
+
+    const HDFC_FSS_FAILED_REFUND            = 'hdfc_fss_failed_refund';
+
     const PNB_NETBANKING_REFUND             = 'pnb_netbanking_refund';
 
     const PNB_NETBANKING_CLAIMS             = 'pnb_netbanking_claims';
+
+    const GATEWAY_FAILED_REFUNDS            = 'gateway_failed_refunds';
 
     const BATCH_INPUT                       = 'batch_input';
     const BATCH_OUTPUT                      = 'batch_output';
@@ -57,6 +73,8 @@ class Type
     const BLANK                             = 'blank';
 
     const INVOICE_PDF                       = 'invoice_pdf';
+
+    const QR_CODE_IMAGE                     = 'qr_code_image';
 
     const REPORT                            = 'report';
 
@@ -82,6 +100,8 @@ class Type
     const MERCHANT_PROMOTER_PROOF_URL           = 'promoter_proof_url';
     const MERCHANT_PROMOTER_PAN_URL             = 'promoter_pan_url';
     const MERCHANT_PROMOTER_ADDRESS_URL         = 'promoter_address_url';
+    const MERCHANT_FORM_12A_URL                 = 'form_12a_url';
+    const MERCHANT_FORM_80G_URL                 = 'form_80g_url';
 
     const SETTLEMENT_BUCKET_CONFIG              = 'settlement_bucket_config';
     const TEST_BUCKET_CONFIG                    = 'test_bucket_config';
@@ -90,6 +110,7 @@ class Type
     const H2H_BUCKET_CONFIG                     = 'h2h_bucket_config';
     const RECON_BUCKET_CONFIG                   = 'recon_bucket_config';
     const MOCK_RECONCILIATION_FILE              = 'mock_reconciliation_file';
+    const CUSTOMER_BUCKET_CONFIG                = 'customer_bucket_config';
 
     // File contants required for merchant feature onboarding
     const FEATURE_ONBOARDING                = FeatureConstants::ONBOARDING;
@@ -135,7 +156,15 @@ class Type
             self::ICICI_EMI_FILE_SFTP,
             self::PNB_NETBANKING_REFUND,
             self::PNB_NETBANKING_CLAIMS,
+            self::UPI_ICICI_FAILED_REFUND,
+            self::AIRTELMONEY_WALLET_FAILED_REFUND,
+            self::AXIS_MIGS_FAILED_REFUND,
+            self::ICIC_FIRST_DATA_FAILED_REFUND,
+            self::HDFC_CYBERSOURCE_FAILED_REFUND,
+            self::AXIS_CYBERSOURCE_FAILED_REFUND,
+            self::HDFC_FSS_FAILED_REFUND,
             self::MOCK_RECONCILIATION_FILE,
+            self::GATEWAY_FAILED_REFUNDS,
         ],
 
         Constants\Entity::BATCH => [
@@ -152,10 +181,16 @@ class Type
             self::MERCHANT_PROMOTER_PROOF_URL,
             self::MERCHANT_PROMOTER_PAN_URL,
             self::MERCHANT_PROMOTER_ADDRESS_URL,
+            self::MERCHANT_FORM_12A_URL,
+            self::MERCHANT_FORM_80G_URL,
         ],
 
         Constants\Entity::INVOICE => [
             self::INVOICE_PDF,
+        ],
+
+        Constants\Entity::QR_CODE => [
+            self::QR_CODE_IMAGE,
         ],
 
         Constants\Entity::BATCH_FUND_TRANSFER => [
@@ -208,7 +243,15 @@ class Type
         self::FUND_TRANSFER_H2H,
         self::PNB_NETBANKING_REFUND,
         self::PNB_NETBANKING_CLAIMS,
-        self::MOCK_RECONCILIATION_FILE
+        self::UPI_ICICI_FAILED_REFUND,
+        self::AIRTELMONEY_WALLET_FAILED_REFUND,
+        self::AXIS_MIGS_FAILED_REFUND,
+        self::ICIC_FIRST_DATA_FAILED_REFUND,
+        self::HDFC_CYBERSOURCE_FAILED_REFUND,
+        self::HDFC_FSS_FAILED_REFUND,
+        self::AXIS_CYBERSOURCE_FAILED_REFUND,
+        self::MOCK_RECONCILIATION_FILE,
+        self::GATEWAY_FAILED_REFUNDS,
     ];
 
     /**
@@ -241,10 +284,21 @@ class Type
             self::BATCH_OUTPUT,
             self::PNB_NETBANKING_REFUND,
             self::PNB_NETBANKING_CLAIMS,
+            self::UPI_ICICI_FAILED_REFUND,
+            self::AIRTELMONEY_WALLET_FAILED_REFUND,
+            self::AXIS_MIGS_FAILED_REFUND,
+            self::ICIC_FIRST_DATA_FAILED_REFUND,
+            self::HDFC_CYBERSOURCE_FAILED_REFUND,
+            self::AXIS_CYBERSOURCE_FAILED_REFUND,
+            self::HDFC_FSS_FAILED_REFUND,
         ],
 
         self::INVOICE_BUCKET_CONFIG => [
-            self::INVOICE_PDF
+            self::INVOICE_PDF,
+        ],
+
+        self::CUSTOMER_BUCKET_CONFIG => [
+            self::QR_CODE_IMAGE,
         ],
 
         self::ACTIVATION_BUCKET_CONFIG => [
@@ -255,6 +309,8 @@ class Type
             self::MERCHANT_PROMOTER_PROOF_URL,
             self::MERCHANT_PROMOTER_PAN_URL,
             self::MERCHANT_PROMOTER_ADDRESS_URL,
+            self::MERCHANT_FORM_12A_URL,
+            self::MERCHANT_FORM_80G_URL,
         ],
 
         self::H2H_BUCKET_CONFIG => [

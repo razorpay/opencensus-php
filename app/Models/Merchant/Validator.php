@@ -8,8 +8,8 @@ use RZP\Exception;
 use RZP\Models\Feature;
 use RZP\Constants\Mode;
 use RZP\Models\Terminal;
-use RZP\Models\Settlement;
 use RZP\Error\ErrorCode;
+use RZP\Models\Settlement;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 
 class Validator extends Base\Validator
@@ -49,6 +49,7 @@ class Validator extends Base\Validator
         Entity::RISK_THRESHOLD              => 'sometimes|integer|min:0|max:20',
         Entity::FEE_BEARER                  => 'sometimes|in:customer,platform',
         Entity::FEE_MODEL                   => 'sometimes|in:prepaid,postpaid',
+        Entity::REFUND_SOURCE               => 'sometimes|string|max:32|in:balance,credits',
         Entity::MAX_PAYMENT_AMOUNT          => 'sometimes|integer',
         // max: 5 days (don't change max value without consult), min:60 minutes
         Entity::AUTO_REFUND_DELAY           => 'sometimes|string|custom',
@@ -57,6 +58,10 @@ class Validator extends Base\Validator
         Entity::ORG_ID                      => 'sometimes|alpha_num|size:14',
         Entity::GROUPS                      => 'sometimes|array',
         Entity::ADMINS                      => 'sometimes|array',
+        Entity::WHITELISTED_IPS_LIVE        => 'sometimes|array|max:5',
+        Entity::WHITELISTED_IPS_LIVE . '.*' => 'required_with:' . Entity::WHITELISTED_IPS_LIVE . '|ipv4',
+        Entity::WHITELISTED_IPS_TEST        => 'sometimes|array|max:5',
+        Entity::WHITELISTED_IPS_TEST . '.*' => 'required_with:' . Entity::WHITELISTED_IPS_TEST . '|ipv4',
     ];
 
     protected static $uniqueEmailRules = [
@@ -87,6 +92,13 @@ class Validator extends Base\Validator
 
     protected static $actionRules = [
         Entity::ACTION                      => 'required|custom'
+    ];
+
+    protected static $bulkTagRules = [
+        'action'         => 'required|string|filled|max:10|in:insert,delete',
+        'name'           => 'required|string|filled',
+        'merchant_ids'   => 'required|array',
+        'merchant_ids.*' => 'required|string|filled|max:14'
     ];
 
     protected static $oauthMailRules = [

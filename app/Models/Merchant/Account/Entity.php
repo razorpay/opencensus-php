@@ -99,7 +99,6 @@ class Entity extends Merchant\Entity
     public static $bankAccountToDetailAttributesMap = [
         Entity::IFSC_CODE            => MerchantDetail\Entity::BANK_BRANCH_IFSC,
         Entity::ACCOUNT_NUMBER       => MerchantDetail\Entity::BANK_ACCOUNT_NUMBER,
-        Entity::ACCOUNT_TYPE         => MerchantDetail\Entity::BANK_ACCOUNT_TYPE,
         Entity::BENEFICIARY_NAME     => MerchantDetail\Entity::BANK_ACCOUNT_NAME,
     ];
 

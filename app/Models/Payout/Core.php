@@ -20,16 +20,11 @@ use RZP\Models\Currency\Currency;
 use RZP\Models\FundTransfer\Kotak;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Feature\Constants as Features;
-use RZP\Models\FundTransfer\Batch\BatchFundTransferTrait;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 
 
 class Core extends Base\Core
 {
-    use BatchFundTransferTrait;
-
-    const MUTEX_RESOURCE        = 'PAYOUT_PROCESSING';
-    const MUTEX_LOCK_TIMEOUT    = 900;
     const MAX_PAYOUT_AMOUNT     = 500000000; // 50 Lakhs
 
     /**
@@ -84,35 +79,6 @@ class Core extends Base\Core
         $this->repo->saveOrFail($payout);
 
         return $payout;
-    }
-
-    /**
-     * Initiate bank transfers for payouts
-     *
-     * @param  array  $input
-     * @param  string $channel
-     * @return array
-     */
-    public function initiatePayouts(array $input, string $channel): array
-    {
-        // Temporary. Kotak should ideally be processing at least
-        // IMPS payments on holidays as well, but they're currently
-        // not doing that, and we're stopping this till they do.
-        if (($this->mode !== Mode::TEST) and
-            ($this->env !== 'testing') and
-            (Holidays::isWorkingDay(Carbon::today(Timezone::IST)) === false))
-        {
-            return Holidays::HOLIDAY_MESSAGE;
-        }
-
-        return $this->mutex->acquireAndRelease(
-            self::MUTEX_RESOURCE,
-            function() use($input, $channel)
-            {
-                return $this->processBankPayouts($input, $channel);
-            },
-            self::MUTEX_LOCK_TIMEOUT,
-            ErrorCode::BAD_REQUEST_PAYOUT_ANOTHER_OPERATION_IN_PROGRESS);
     }
 
     /**
@@ -173,89 +139,9 @@ class Core extends Base\Core
         return $payout;
     }
 
-    protected function processBankPayouts(array $input, string $channel): array
-    {
-        return $this->repo->transaction(function() use ($input, $channel)
-        {
-            (new FundTransferAttempt\Validator)->validateInput('initiate_fund_transfer', $input);
-
-            $timestamp = Carbon::now()->getTimestamp();
-
-            $purpose = $input[FundTransferAttempt\Entity::PURPOSE];
-
-            $sourceType = $input[FundTransferAttempt\Entity::SOURCE_TYPE] ?? null;
-
-            $attempts = $this->repo
-                             ->fund_transfer_attempt
-                             ->getCreatedAttemptsBeforeTimestamp(
-                                $timestamp,
-                                $purpose,
-                                $sourceType,
-                                $channel,
-                                ['source']);
-
-            $method = 'processBankPayoutsFor' . ucfirst($channel);
-
-            // Calls $this->processBankPayoutsForKotak()
-            $data[$channel] = $this->$method($attempts);
-
-            return $data;
-        });
-    }
-
-    protected function processBankPayoutsForKotak(Base\PublicCollection $payoutAttempts): array
-    {
-        $count = $payoutAttempts->count();
-
-        $data = ['channel' => 'kotak', 'count' => $count];
-
-        if ($count === 0)
-        {
-            $data['message'] = 'No payouts to process';
-
-            return $data;
-        }
-
-        foreach ($payoutAttempts as $attempt)
-        {
-            // $attempt->source is payout entity
-            $this->createOrUpdateBatchFundTransferForEntity($attempt->source, 1);
-
-            $attempt->batchFundTransfer()->associate($this->batchFundTransfer);
-
-            $attempt->setStatus(FundTransferAttempt\Status::INITIATED);
-
-            $attempt->source->batchFundTransfer()->associate($this->batchFundTransfer);
-
-            $attempt->source->setStatus(Status::INITIATED);
-        }
-
-        $urlText = (new Kotak\NodalAccount)->generatePayoutsFile($payoutAttempts);
-
-        $urls = ['kotak_payout_txt'   => $urlText];
-
-        $this->updateFileDetailsInBatchFundTransferEntity(['urls' => $urls]);
-
-        $this->saveEntitiesToDb($payoutAttempts);
-
-        $data['payout_text_file'] = $urlText;
-
-        return $data;
-    }
-
     protected function updatePayoutStatus(Base\PublicCollection $payouts, string $status)
     {
         $this->repo->payout->updateStatus($payouts, $status);
-    }
-
-    protected function saveEntitiesToDb(Base\PublicCollection $payoutAttempts)
-    {
-        foreach ($payoutAttempts as $attempt)
-        {
-            $this->repo->saveOrFail($attempt);
-
-            $this->repo->saveOrFail($attempt->source);
-        }
     }
 
     protected function createCustomerPayoutEntity(array $input, Merchant\Entity $merchant): Entity

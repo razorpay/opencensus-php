@@ -70,6 +70,8 @@ class Entity extends Base\PublicEntity
     const PROMOTER_PROOF_URL                 = 'promoter_proof_url';
     const PROMOTER_PAN_URL                   = 'promoter_pan_url';
     const PROMOTER_ADDRESS_URL               = 'promoter_address_url';
+    const FORM_12A_URL                       = 'form_12a_url';
+    const FORM_80G_URL                       = 'form_80g_url';
     const TRANSACTION_REPORT_EMAIL           = 'transaction_report_email';
     const COMMENT                            = 'comment';
     const ROLE                               = 'role';
@@ -167,6 +169,8 @@ class Entity extends Base\PublicEntity
         self::PROMOTER_PROOF_URL,
         self::PROMOTER_PAN_URL,
         self::PROMOTER_ADDRESS_URL,
+        self::FORM_12A_URL,
+        self::FORM_80G_URL,
         self::TRANSACTION_REPORT_EMAIL,
         self::ROLE,
         self::DEPARTMENT,
@@ -250,6 +254,8 @@ class Entity extends Base\PublicEntity
         self::ADDRESS_PROOF_URL,
         self::PROMOTER_ADDRESS_URL,
         self::PROMOTER_PAN_URL,
+        self::FORM_12A_URL,
+        self::FORM_80G_URL,
         self::ROLE,
         self::DEPARTMENT,
         self::CREATED_AT,

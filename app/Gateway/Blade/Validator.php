@@ -24,7 +24,7 @@ class Validator extends JitValidator
         'Message.VERes.protocol'                        => 'required_if:Message.VERes.CH.enrolled,Y|min:0|max:12|in:ThreeDSecure',
         'Message.VERes.Extension'                       => 'sometimes',
         'Message.VERes.Extension.@attributes.id'        => 'required_with:Message.VERes.Extension',
-        'Message.VERes.Extension.@attributes.critical'  => 'sometimes|critical'
+        'Message.VERes.Extension.@attributes.critical'  => 'sometimes'
     ];
 
     public static $paresRules = [
@@ -54,7 +54,7 @@ class Validator extends JitValidator
         'Message.PARes.pan'                                                             => 'required|digits_between:13,19',
         'Message.PARes.Extension'                                                       => 'sometimes',
         'Message.PARes.Extension.@attributes.id'                                        => 'required_with:Message.PARes.Extension',
-        'Message.PARes.Extension.@attributes.critical'                                  => 'sometimes|critical',
+        'Message.PARes.Extension.@attributes.critical'                                  => 'sometimes',
         'Message.Signature'                                                             => 'sometimes|array',
         'Message.Signature.SignedInfo'                                                  => 'sometimes|array',
         'Message.Signature.SignedInfo.@attributes.xmlns'                                => 'sometimes',

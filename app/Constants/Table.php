@@ -62,6 +62,7 @@ class Table
     const APP_TOKEN             = 'customer_apps';
     const BANK_ACCOUNT          = 'bank_accounts';
     const SUBSCRIPTION          = 'subscriptions';
+    const DISPUTE_FILE          = 'dispute_files';
     const METHODS               = 'merchant_banks';
     const BANK_TRANSFER         = 'bank_transfers';
     const GATEWAY_TOKEN         = 'gateway_tokens';
@@ -78,7 +79,9 @@ class Table
     const MERCHANT_INVOICE      = 'merchant_invoice';
     const CREDIT_TRANSACTION    = 'credit_transaction';
     const SETTLEMENT_DETAILS    = 'settlement_details';
+    const MERCHANT_EMI_PLANS    = 'merchant_emi_plans';
     const BATCH_FUND_TRANSFER   = 'daily_settlements';
+    const MERCHANT_ACCESS_MAP   = 'merchant_access_map';
     const CUSTOMER_TRANSACTION  = 'customer_transactions';
     const FUND_TRANSFER_ATTEMPT = 'fund_transfer_attempts';
 
@@ -136,6 +139,7 @@ class Table
     const NETBANKING            = 'netbanking';
     const FIRST_DATA            = 'first_data';
     const CYBERSOURCE           = 'cybersource';
+    const CARD_FSS              = 'card_fss';
 
     // Sessions table
     const SESSION               = 'sessions';

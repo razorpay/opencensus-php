@@ -12,7 +12,7 @@ return [
                 'amount'      => 100,
                 'description' => 'random desc',
                 'currency'    => 'INR',
-                'channel'     => 'kotak',
+                'channel'     => 'axis',
             ],
             'url' => '/adjustments',
             'method' => 'POST'
@@ -21,7 +21,7 @@ return [
             'content' => [
                 'amount'      => 100,
                 'description' => 'random desc',
-                'channel'     => 'kotak',
+                'channel'     => 'axis',
                 'currency'    => 'INR',
             ],
         ],
@@ -56,7 +56,7 @@ return [
         'balance'         => 1000100,
         'merchant_id'     => '10000000000000',
         'pricing_rule_id' => null,
-        'channel'         => 'kotak',
+        'channel'         => 'axis',
     ],
 
     'txnDataAfterAddingAdjWithNoEscrowUpdate' => [
@@ -73,7 +73,7 @@ return [
         'balance'         => 1000100,
         'merchant_id'     => '10000000000000',
         'pricing_rule_id' => null,
-        'channel'         => 'kotak',
+        'channel'         => 'axis',
     ],
 
     'testGetAdjustment' => [
@@ -104,7 +104,7 @@ return [
         'balance'         => 1049000,
         'merchant_id'     => '10000000000000',
         'pricing_rule_id' => null,
-        'channel'         => 'kotak',
+        'channel'         => 'axis',
     ],
 
     'testTransactionCreateForOldPayment' => [
@@ -120,7 +120,7 @@ return [
         'api_fee'         => 0,
         'merchant_id'     => '10000000000000',
         'pricing_rule_id' => '1ZeroPricingR1',
-        'channel'         => 'kotak',
+        'channel'         => 'axis',
     ],
 
     'txnDataAfterRefundingPayment' => [
@@ -138,7 +138,7 @@ return [
         'balance'         => 999000,
         'merchant_id'     => '10000000000000',
         'pricing_rule_id' => null,
-        'channel'         => 'kotak',
+        'channel'         => 'axis',
     ],
 
     'txnDataAfterDisputingPayment' => [
@@ -155,7 +155,7 @@ return [
         'balance'         => 976400,
         'merchant_id'     => '10000000000000',
         'pricing_rule_id' => null,
-        'channel'         => 'kotak',
+        'channel'         => 'axis',
     ],
 
     'txnDataAfterDisputingPaymentWithoutDeduct' => [
@@ -172,6 +172,22 @@ return [
         'balance'         => 1976400,
         'merchant_id'     => '10000000000000',
         'pricing_rule_id' => null,
-        'channel'         => 'kotak',
+        'channel'         => 'axis',
+    ],
+
+    'testRefundWithPartialCredits' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Your account does not have enough credits to carry out the refund operation.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_CREDITS,
+        ],
     ],
 ];

@@ -34,6 +34,7 @@ trait PaymentTrait
     use PaymentFirstDataTrait;
     use PaymentEbsTrait;
     use PaymentCreationTrait;
+    use PaymentFssTrait;
     use PaymentWalletAirtelMoneyTrait;
 
     use RequestResponseFlowTrait
@@ -114,6 +115,16 @@ trait PaymentTrait
         $func = $trace[1]['function'];
 
         return $this->getAndMatchPayment($id, $paymentResponse);
+    }
+
+    public function createRefundFromPayments($payments)
+    {
+        foreach ($payments as $payment)
+        {
+            $attrs = ['payment' => $payment, 'amount'  => '100'];
+            $refund = $this->fixtures->create('refund:from_payment', $attrs);
+            $refunds[] = $refund;
+        }
     }
 
     protected function createAndGetFeesForPayment($payment = null)

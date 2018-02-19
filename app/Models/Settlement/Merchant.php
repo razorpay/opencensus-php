@@ -15,12 +15,9 @@ use RZP\Models\Schedule\Task\Type as ScheduleTaskType;
 use RZP\Models\Settlement;
 use RZP\Models\Settlement\Details as SetlDetails;
 use RZP\Models\Settlement\Details\Component as SetlComponent;
-use RZP\Models\FundTransfer\Batch\BatchFundTransferTrait;
 
 class Merchant
 {
-    use BatchFundTransferTrait;
-
     protected $merchant;
     protected $amount;
     protected $apiFee;
@@ -62,11 +59,11 @@ class Merchant
 
         $this->txns = $this->setl->setlTransactions;
 
-        // Update Settlement Entity
         $this->updateSettlementEntity();
 
-        // Increment attempts in settlements
         $this->setl->incrementAttempts();
+
+        $this->repo->saveOrFail($this->setl);
 
         // Create Settlement attempt entity
         $this->createSettlementAttemptEntity();
@@ -211,8 +208,11 @@ class Merchant
 
             $details[SetlComponent::FEE]['amount'] += ($txn->getFee() - $txn->getTax());
 
-            // FeeCredits is either zero or equal to fees.
-            $details[SetlComponent::FEE_CREDITS]['amount'] += $txn->getFeeCredits();
+            // Add credits if txn is of type fee credits.
+            $details[SetlComponent::FEE_CREDITS]['amount'] += ($txn->isFeeCredits() ? $txn->getCredits() : 0);
+
+            // Add credits if txn is of type refund credits.
+            $details[SetlComponent::REFUND_CREDITS]['amount'] += ($txn->isRefundCredits() ? $txn->getCredits() : 0);
         }
 
         return $details;
@@ -236,6 +236,7 @@ class Merchant
                     break;
 
                 case SetlDetails\Component::FEE_CREDITS:
+                case SetlDetails\Component::REFUND_CREDITS:
                     if ($detail['amount'] > 0)
                     {
                         $this->createSetlDetailsEntity(
@@ -318,6 +319,7 @@ class Merchant
         $setl->setFailureReason(null);
         $setl->setUtr(null);
         $setl->setRemarks(null);
+        $setl->batchFundTransfer()->dissociate();
 
         $this->setl = $setl;
     }
@@ -329,7 +331,7 @@ class Merchant
         $values = [
             FundTransferAttempt\Entity::CHANNEL         => $this->channel,
             FundTransferAttempt\Entity::VERSION         => FundTransferAttempt\Version::V3,
-            FundTransferAttempt\Entity::STATUS          => FundTransferAttempt\Status::INITIATED,
+            FundTransferAttempt\Entity::STATUS          => FundTransferAttempt\Status::CREATED,
             FundTransferAttempt\Entity::PURPOSE         => FundTransferAttempt\Purpose::SETTLEMENT,
         ];
 

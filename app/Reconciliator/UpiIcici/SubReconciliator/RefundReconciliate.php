@@ -17,7 +17,12 @@ class RefundReconciliate extends Base\RefundReconciliate
 
     protected function getRefundId(array $row)
     {
-        return $row[self::REFUND_ID] ?? null;
+        if (empty($row[self::REFUND_ID]) === false)
+        {
+            return substr($row[self::REFUND_ID], 0, 14);
+        }
+
+        return null;
     }
 
     protected function getGatewaySettledAt(array $row)

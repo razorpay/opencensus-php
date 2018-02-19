@@ -432,6 +432,9 @@ class Entity extends Base\PublicEntity
             '8ST00QgEPT14cE', // IRCTC WEB
             '8YPFnW5UOM91H7', // IRCTC Mobile
             '8byazTDARv4Io0', // IRCTC Air Ticketing
+            // Email Subject: Re: Managing NEFT transfers with Razorpay Virtual Accounts
+            '9YAQd3b47mdIQY', // Endurance
+            '9ZO8jNaR0OORNH', // Endurance
             Merchant\Account::TEST_ACCOUNT,
             Merchant\Account::SHARED_ACCOUNT,
         ];
@@ -486,6 +489,11 @@ class Entity extends Base\PublicEntity
         $network = Card\Network::getCode($this->getNetwork());
 
         return (Card\Network::isUnsupportedNetwork($network));
+    }
+
+    public function isNetworkUnknown(): bool
+    {
+        return ($this->getNetworkCode() === Card\Network::UNKNOWN);
     }
 
     public function isInternational()

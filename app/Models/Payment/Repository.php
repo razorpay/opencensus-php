@@ -6,6 +6,7 @@ use DB;
 use Carbon\Carbon;
 
 use RZP\Exception;
+use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Order;
@@ -38,12 +39,13 @@ class Repository extends Base\Repository
 
     // These are proxy allowed params to search on.
     protected $proxyFetchParamRules = [
-        Entity::EMAIL              => 'sometimes',
-        Entity::STATUS             => 'sometimes|string',
-        Entity::NOTES              => 'sometimes|string|max:500',
-        Entity::INVOICE_ID         => 'sometimes|string|min:14|max:18',
-        Entity::SUBSCRIPTION_ID    => 'sometimes|string|min:14|max:18',
-        self::EXPAND . '.*'        => 'filled|string|in:card,emi_plan,disputes',
+        Entity::EMAIL           => 'sometimes',
+        Entity::STATUS          => 'sometimes|string',
+        Entity::NOTES           => 'sometimes|string|max:500',
+        Entity::INVOICE_ID      => 'sometimes|string|min:14|max:18',
+        Entity::SUBSCRIPTION_ID => 'sometimes|string|min:14|max:18',
+        Entity::BANK_REFERENCE  => 'sometimes|alpha_num|max:22',
+        self::EXPAND . '.*'     => 'filled|string|in:card,emi_plan,disputes',
     ];
 
     // These are admin allowed params to search on.
@@ -1108,5 +1110,38 @@ class Repository extends Base\Repository
                     ->where(Entity::GATEWAY, $gateway)
                     ->with('merchant')
                     ->firstOrFail();
+    }
+
+    protected function addQueryParamBankReference($query, $params)
+    {
+        $this->joinQueryBankTransfer($query);
+
+        $bankReference = $this->repo->bank_transfer->dbColumn(BankTransfer\Entity::UTR);
+
+        $query->where($bankReference, '=', $params[BankTransfer\Entity::BANK_REFERENCE]);
+
+        $query->select($this->getTableName() . '.*');
+    }
+
+    protected function joinQueryBankTransfer($query)
+    {
+        $joins = $query->getQuery()->joins;
+
+        $joins = $joins ?: [];
+
+        $bankTransferTable = Table::getTableNameForEntity(Constants\Entity::BANK_TRANSFER);
+
+        foreach ($joins as $join)
+        {
+            if ($join->table === $bankTransferTable)
+            {
+                return;
+            }
+        }
+
+        $paymentId = $this->dbColumn(Entity::ID);
+        $bankTransferPaymentId = $this->repo->bank_transfer->dbColumn(BankTransfer\Entity::PAYMENT_ID);
+
+        $query->join($bankTransferTable, $paymentId, '=', $bankTransferPaymentId);
     }
 }

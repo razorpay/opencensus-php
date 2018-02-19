@@ -5,45 +5,13 @@ namespace RZP\Tests\Functional\Gateway\Kotak;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
-use RZP\Models\Payout\Status as PayoutStatus;
-use RZP\Models\FundTransfer\Attempt\Status as AttemptStatus;
 use RZP\Models\FundTransfer\Kotak;
 use RZP\Models\FileStore\Creator;
 use RZP\Models\Settlement\Channel;
+use RZP\Models\FundTransfer\Attempt\Status as AttemptStatus;
 
 trait ReconciliationTrait
 {
-    protected function createPaymentAndRefundEntities(int $count = 5)
-    {
-        $prEntities = [];
-
-        $r = range(1, $count);
-
-        $createdAt = Carbon::today(Timezone::IST)->subDays(20)->timestamp + 5;
-        $capturedAt = Carbon::today(Timezone::IST)->subDays(20)->timestamp + 10;
-
-        foreach ($r as $i)
-        {
-            $payment = $this->fixtures->create('payment:captured',
-                ['captured_at' => $capturedAt,
-                 'created_at' => $createdAt,
-                 'updated_at' => $createdAt + 10]);
-
-            $attrs = [
-                'payment' => $payment,
-                'amount' => '100000',
-                'created_at' => $createdAt + 20,
-                'updated_at' => $createdAt + 20];
-
-            $refund = $this->fixtures->create('refund:from_payment', $attrs);
-
-            array_push($prEntities, $payment);
-            array_push($prEntities, $refund);
-        }
-
-        return $prEntities;
-    }
-
     protected function createPayoutEntities()
     {
         $prEntities = array();
@@ -106,35 +74,6 @@ trait ReconciliationTrait
         $content = $this->runRequestResponseFlow($testData);
 
         return $content;
-    }
-
-    protected function initiateSettlementsAndAssertSuccess(string $channel)
-    {
-        $content = $this->initiateSettlements($channel);
-
-        $this->assertArrayHasKey($channel, $content);
-        $this->assertArrayHasKey('settlement_text_file', $content[$channel]);
-        $this->assertArrayHasKey('settlement_excel_file', $content[$channel]);
-
-        return $content[$channel]['settlement_text_file']['local_file_path'];
-    }
-
-    // Fetches and matches batch data for given entity
-    protected function fetchAndMatchBatchData(string $entityName)
-    {
-        $batchFundTransfer = $this->getLastEntity('batch_fund_transfer', true);
-
-        $expectedData = 'fetchAndMatchBatchData' . ucfirst($entityName);
-
-        $this->assertTestResponse($batchFundTransfer, $expectedData);
-
-        $time = time();
-
-        $this->assertGreaterThanOrEqual($batchFundTransfer['initiated_at'], $time);
-        $this->assertGreaterThanOrEqual($batchFundTransfer['reconciled_at'], $time);
-        $this->assertGreaterThanOrEqual($batchFundTransfer['returned_at'], $time);
-
-        return $batchFundTransfer;
     }
 
     protected function createSettlementsAndSettlementFile(
@@ -213,25 +152,4 @@ trait ReconciliationTrait
 
         return $textFile;
     }
-
-    protected function checkAdjustmentCreated()
-    {
-        $setl = $this->getLastEntity('settlement', true);
-        $settlementSign = 'setl_';
-        $setlId = substr($setl['id'], strlen($settlementSign));
-
-        $data = [
-            'merchant_id' => "10000000000000",
-            'amount' => 4385000,
-            'currency' => "INR",
-            'channel' => "kotak",
-            'description' => "Adjustment for failed settlement",
-            'settlement_id' => $setlId
-        ];
-
-        $content = $this->getLastEntity('adjustment', true);
-
-        $this->assertArraySelectiveEquals($data, $content);
-    }
-
 }

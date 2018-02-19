@@ -22,15 +22,6 @@ class NodalAccount extends NodalBase\NodalAccount
 {
     const SIGNED_URL_DURATION = '1440';
 
-    const HEADINGS = [
-        'Record Identifier',
-        'Reference Number',
-        'Debit Account',
-        'Amount',
-        'Transaction',
-        'Cr Date',
-    ];
-
     const MODE_MAPPING = [
         Mode::NEFT    => 'N',
         Mode::RTGS    => 'R',
@@ -63,9 +54,9 @@ class NodalAccount extends NodalBase\NodalAccount
         $this->iv = base64_decode(Config::get('nodal.axis.iv'));
     }
 
-    public function generateSettlementFile($entities, $h2h = true): array
+    public function generateFundTransferFile($entities, $h2h = true): FileStore\Creator
     {
-        $rows = $this->getSettlementRows($entities);
+        $rows = $this->getRows($entities);
 
         list($excelFile, $rzpFile) = $this->createFile($rows);
 
@@ -73,7 +64,7 @@ class NodalAccount extends NodalBase\NodalAccount
 
         $this->sendAxisTransferMail($fileData);
 
-        return [$rzpFile, $excelFile];
+        return $excelFile;
     }
 
     protected function createFile(array $values): array
@@ -153,7 +144,7 @@ class NodalAccount extends NodalBase\NodalAccount
         ];
     }
 
-    protected function getSettlementRows($entities): array
+    protected function getRows($entities): array
     {
         $totalAmount = 0;
 
@@ -176,7 +167,7 @@ class NodalAccount extends NodalBase\NodalAccount
                 $beneCode = 'RZRNAXISCARD';
             }
 
-            $rows[] = $this->getTrasactionRow($amount, $beneCode, $ba);
+            $rows[] = $this->getTrasactionRow($amount, $beneCode, $ba, $entity);
         }
 
         $count = count($entities);
@@ -185,20 +176,26 @@ class NodalAccount extends NodalBase\NodalAccount
 
         $headerValues = $this->getHeaderRow($formattedAmount, $count);
 
-        $values = [self::HEADINGS, $headerValues];
+        $headings     = Headings::getRequestFileHeadings();
+
+        $values = [$headings, $headerValues];
 
         $values = array_merge($values, $rows);
 
         return $values;
     }
 
-    protected function getTrasactionRow($amount, $accountId, BankAccount\Entity $ba): array
+    protected function getTrasactionRow($amount, $accountId, BankAccount\Entity $ba, Base\Entity $entity): array
     {
         $mode = $this->getPaymentType($amount, $ba);
 
         $mode = self::MODE_MAPPING[$mode];
 
         $formattedAmount = (float) sprintf('%0.2f', $amount);
+
+        $settlementId = $entity->source->getId();
+
+        $attemptId    = $entity->getId();
 
         // Mode is set as I for Axis bank always in non-header rows
         $excelDate = PHPExcel_Shared_Date::PHPToExcel(strtotime($this->date));
@@ -210,6 +207,8 @@ class NodalAccount extends NodalBase\NodalAccount
             $formattedAmount,
             $excelDate,
             $excelDate,
+            $attemptId,
+            $settlementId
         ];
 
         return $transactionValues;

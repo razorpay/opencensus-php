@@ -38,13 +38,14 @@
         "schuppo/password-strength": "~1.5",
         "razorpay/slack-laravel": "1.3.10",
         "laravel/tinker": "1.0.1",
-        "graham-campbell/throttle": "^5.3",
+        "graham-campbell/throttle": "dev-master",
         "rtconner/laravel-tagging": "~2.2",
         "razorpay/trace": "2.0.6",
         "anlutro/l4-settings": "0.5.3",
         "razorpay/oauth": "dev-master",
         "drewm/mailchimp-api": "^2.1",
         "razorpay/ufh-sdk-php": "dev-master",
+        "bacon/bacon-qr-code": "1.0.3",
         "watson/rememberable": "^2.0"
     },
     "repositories": [
@@ -70,7 +71,12 @@
         },
         {
             "type": "vcs",
+            "no-api": true,
             "url": "git@github.com:razorpay/ufh-sdk-php.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@github.com:jitendra-1217/Laravel-Throttle.git"
         }
     ],
     "require-dev": {

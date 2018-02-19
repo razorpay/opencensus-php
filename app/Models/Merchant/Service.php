@@ -21,7 +21,6 @@ use RZP\Models\BankAccount;
 use RZP\Models\Base;
 use RZP\Models\Coupon;
 use RZP\Models\Feature;
-use RZP\Models\Key;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 use RZP\Models\Merchant\Webhook;
@@ -36,8 +35,8 @@ class Service extends Base\Service
 {
     use Notify;
 
-    const COUPON_RESPONSE = 'apply_coupon';
-    const OAUTH_MAIL      = 'oauth_mail';
+    const COUPON_RESPONSE               = 'apply_coupon';
+    const OAUTH_MAIL                    = 'oauth_mail';
 
     /**
      * Creates a merchant and saves in database
@@ -782,6 +781,17 @@ class Service extends Base\Service
         return $webhooks->toArrayPublic();
     }
 
+    public function createOAuthAppWebhook(string $appId, array $input): array
+    {
+        $input[Webhook\Entity::ENTITY_TYPE] = AccessMap\Entity::APPLICATION;
+
+        $input[Webhook\Entity::ENTITY_ID] = $appId;
+
+        $webhook = (new Webhook\Core)->createWebhook($this->merchant, $input);
+
+        return $webhook->toArrayPublic();
+    }
+
     public function patchMerchantBeneficiaryCode()
     {
         $data = (new BankAccount\Core)->updateBeneficiaryCodes();
@@ -1114,6 +1124,64 @@ class Service extends Base\Service
     }
 
     /**
+     * Bulk add or remove tags from a list of merchant_ids
+     *
+     * Input:
+     *
+     * name = Tag_Name
+     * action = insert/delete
+     * merchant_ids = [array, of, ids]
+     *
+     * @param array $input
+     *
+     * @return array
+     */
+    public function bulkTag(array $input): array
+    {
+        $this->trace->info(TraceCode::MERCHANT_TAGS_BULK_REQUEST, $input);
+
+        (new Validator)->validateInput('bulk_tag', $input);
+
+        $merchantIds = $input['merchant_ids'];
+        // Action: 'insert' or 'delete'
+        $action      = $input['action'];
+        $tagName     = $input['name'];
+
+        $tagFunction = $action . 'Tag';
+
+        $failedIds = [];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            try
+            {
+                //
+                // Calls either:
+                // $this->insertTag() or $this->deleteTag()
+                //
+                $this->{$tagFunction}($merchantId, $tagName);
+            }
+            catch (\Throwable $t)
+            {
+                $this->trace->error(
+                    TraceCode::MERCHANT_TAGS_BULK_EXCEPTION,
+                    [
+                        'merchant_id' => $merchantId,
+                        'tag_name'    => $tagName
+                    ]);
+
+                $failedIds[] = $merchantId;
+            }
+        }
+
+        return [
+            'total_count'  => count($merchantIds),
+            'failed_count' => count($failedIds),
+            'failed_ids'   => $failedIds
+        ];
+    }
+
+    /**
      * used for getting tags of the merchant
      * @param string $id
      */
@@ -1126,9 +1194,14 @@ class Service extends Base\Service
 
     /**
      * used for adding tags to merchant
+     * This function uses retag(), which overwrites all previous tags
+     * with the ones passed in the $input array
+     *
      * @param string $id
-     * @param array $input which contains the tags of the merchant
-     * @param bool $slackNotify
+     * @param array  $input which contains the tags of the merchant
+     * @param bool   $slackNotify
+     *
+     * @return
      */
     public function addTags($id, $input, $slackNotify = false)
     {
@@ -1162,6 +1235,25 @@ class Service extends Base\Service
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         $merchant->untag($tagName);
+
+        $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
+
+        return $merchant->tagNames();
+    }
+
+    /**
+     * Tag a merchant for a single tag
+     *
+     * @param string $merchantId
+     * @param string $tagName
+     *
+     * @return mixed
+     */
+    public function insertTag(string $merchantId, string $tagName)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $merchant->tag($tagName);
 
         $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
 
@@ -1295,7 +1387,6 @@ class Service extends Base\Service
         );
 
         return $response;
-
     }
 
     /**
@@ -1493,13 +1584,19 @@ class Service extends Base\Service
      */
     public function sendOAuthMail(array $input, string $type): array
     {
-        $this->trace->info(TraceCode::SEND_OAUTH_MAIL_REQUEST, ['type' => $type, 'input' => $input]);
+        $this->trace->info(
+            TraceCode::SEND_OAUTH_MAIL_REQUEST,
+            [
+                'type' => $type,
+                'input' => $input
+            ]);
 
-        (new Merchant\Validator)->validateInput(self::OAUTH_MAIL, $input);
+        (new Validator)->validateInput(self::OAUTH_MAIL, $input);
 
         $merchant = $this->repo->merchant->findOrFail($input[Entity::MERCHANT_ID]);
         $user     = $this->repo->user->findOrFail($input[User\Entity::USER_ID]);
-        $client   = (new OAuthClient\Repository)->findOrFail($input[OAuthToken\Entity::CLIENT_ID]);
+        $client   = (new OAuthClient\Repository)->findOrFail(
+                                                    $input[OAuthToken\Entity::CLIENT_ID]);
 
         $mailer = $this->getOAuthMailerClassByType($type);
 
@@ -1543,7 +1640,7 @@ class Service extends Base\Service
 
     public function fetchAnalytics(array $input): array
     {
-        $input = (new Core())->validateInputFiltersAndAddMerchantId($this->merchant->getId(), $input);
+        $input = (new Core())->processMerchantAnalyticsQuery($this->merchant->getId(), $input);
 
         return $this->app['eventManager']->query($input);
     }
@@ -1587,5 +1684,14 @@ class Service extends Base\Service
             User\Entity::PASSWORD_CONFIRMATION => $input['password_confirmation'],
             User\Entity::CAPTCHA_DISABLE       => User\Validator::DISABLE_CAPTCHA_SECRET,
         ];
+    }
+
+    public function enableEmiMerchantSubvention(string $id, string $emiPlanId, array $input)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        $emiPlan = $this->repo->emi_plan->findOrFailPublic($emiPlanId);
+
+        return $this->core()->enableEmiMerchantSubvention($merchant, $emiPlan, $input);
     }
 }

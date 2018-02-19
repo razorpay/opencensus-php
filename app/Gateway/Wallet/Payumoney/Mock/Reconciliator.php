@@ -42,7 +42,7 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
                 'Amount'                  => $row['payment']['amount'] / 100,
                 'AddedOn Date'            => $date,
                 'SucceededOn Date'        => $date,
-                'Merchant Transaction ID' => $row['payment']['id'],
+                'Merchant Transaction ID' => "'" . $row['payment']['id'],
                 'Customer Name'           => 'sadhvidhawan',
                 'Customer Email'          => 'sadhvi_dhawan@hotmail.com',
                 'Customer Phone'          => '9899510818',

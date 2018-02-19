@@ -58,6 +58,9 @@ class Constants
     const REPORT_V2                     = 'report_v2';
     const UPI_INTENT                    = 'upi_intent';
     const CORPORATE_BANKS               = 'corporate_banks';
+    const ORDER_ID_MANDATORY            = 'order_id_mandatory';
+    const MAGIC                         = 'magic';
+    const NEW_ANALYTICS                 = 'new_analytics';
 
     // Different actions for feature activation flow
     const CREATE           = 'create';
@@ -119,6 +122,9 @@ class Constants
         self::REPORT_V2                     => true,
         self::UPI_INTENT                    => true,
         self::CORPORATE_BANKS               => true,
+        self::ORDER_ID_MANDATORY            => true,
+        self::MAGIC                         => true,
+        self::NEW_ANALYTICS                 => true,
     ];
 
     // Keys used in the feature on-boarding workflow

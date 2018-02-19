@@ -297,4 +297,7 @@ return array(
         'nocaptcha_secret' => env('NOCAPTCHA_SECRET', ''),
     ],
 
+    'query_cache' => [
+        'mock' => env('QUERY_CACHE_MOCK', false),
+    ],
 );

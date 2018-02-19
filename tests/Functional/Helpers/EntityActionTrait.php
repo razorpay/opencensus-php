@@ -116,6 +116,18 @@ trait EntityActionTrait
         return $this->makeRequestAndGetContent($request);
     }
 
+    protected function addCredits(array $input = array(), $mid = Account::TEST_ACCOUNT)
+    {
+        $request = array(
+            'url' => '/merchants/'.$mid.'/credits_log',
+            'method' => 'POST',
+            'content' => $input);
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function editCredits($creditsId, array $input = array(), $mid = '10000000000000')
     {
         $request = array(

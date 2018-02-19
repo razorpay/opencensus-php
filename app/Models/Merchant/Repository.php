@@ -12,7 +12,6 @@ use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
-use RZP\Models\Merchant\Balance;
 
 class Repository extends Base\Repository
 {
@@ -360,7 +359,7 @@ class Repository extends Base\Repository
         Entity $parent,
         bool $fail = false)
     {
-        AccountEntity::verifyIdAndStripSign($accountId);
+        Account\Entity::verifyIdAndStripSign($accountId);
 
         $query   = $this->newQuery()->where(Entity::PARENT_ID, $parent->getId());
         $account = $fail ? $query->findOrFailPublic($accountId) : $query->find($accountId);

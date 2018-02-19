@@ -513,6 +513,9 @@ class Checkout
 
         $data['version'] = 1;
 
+        // Magic checkout is displayed for the merchant based on true or false
+        $data['magic'] = $merchant->isFeatureEnabled(Feature\Constants::MAGIC);
+
         $optionalInputConfig = $merchant->getOptionalInputConfig();
 
         if (empty($optionalInputConfig) === false)
@@ -528,8 +531,7 @@ class Checkout
         $isEmailOrContactOptional = (($merchant->isFeatureEnabled(Feature\Constants::EMAIL_OPTIONAL) === true) or
                                      ($merchant->isFeatureEnabled(Feature\Constants::CONTACT_OPTIONAL) === true));
 
-        $rememberCustomer = (($merchant->isFeatureEnabled(Feature\Constants::NOFLASHCHECKOUT) === false) and
-                            ($isEmailOrContactOptional === false));
+        $rememberCustomer = ($merchant->isFeatureEnabled(Feature\Constants::NOFLASHCHECKOUT) === false);
 
         // if card saving is enabled, create a session and set a key
         if ($rememberCustomer === true)

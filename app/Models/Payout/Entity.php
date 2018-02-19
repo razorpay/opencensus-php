@@ -160,6 +160,11 @@ class Entity extends Base\PublicEntity
         return $this->morphTo();
     }
 
+    public function fundTransferAttempts()
+    {
+        return $this->morphMany('RZP\Models\FundTransfer\Attempt\Entity', 'source');
+    }
+
     public function customer()
     {
         return $this->belongsTo('RZP\Models\Customer\Entity');
