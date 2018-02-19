@@ -28,9 +28,9 @@ class CombinedReconciliate extends Foundation\SubReconciliate
      */
     protected $subReconciliatorObjects = [];
 
-    public function __construct()
+    public function __construct(string $gateway)
     {
-        parent::__construct();
+        parent::__construct($gateway);
 
         $this->messenger = new Messenger();
     }

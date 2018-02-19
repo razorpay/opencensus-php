@@ -137,7 +137,7 @@ class Base extends Core
         $gatewayReconciliatorClassName = 'RZP\\Reconciliator' . '\\' .
             $this->gateway . '\\' . 'Reconciliate';
 
-        $this->gatewayReconciliator = new $gatewayReconciliatorClassName;
+        $this->gatewayReconciliator = new $gatewayReconciliatorClassName($this->gateway);
     }
 
     /**

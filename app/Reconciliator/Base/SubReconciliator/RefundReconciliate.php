@@ -40,19 +40,11 @@ class RefundReconciliate extends Foundation\SubReconciliate
      */
     protected $refund;
 
-    /**
-     * The gateway for which we are performing a refund reconciliation process
-     * @var string
-     */
-    protected $gateway;
-
-    public function __construct()
+    public function __construct(string $gateway)
     {
-        parent::__construct();
+        parent::__construct($gateway);
 
         $this->messenger = new Messenger();
-
-        $this->gateway = explode("\\", get_called_class())[2];
     }
 
     public function runReconciliate($row)
@@ -222,15 +214,12 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
     protected function setRefundProcessedWithoutArn()
     {
-        if (in_array($this->gateway, self::GATEWAYS_PROCESSED_WO_ARN, true))
+        // If refund is not processed and if gateway refund recon file is sent without arn
+        if (($this->refund->isProcessed() === false) and
+            in_array($this->gateway, self::GATEWAYS_PROCESSED_WO_ARN, true))
         {
-            // We mark the refund status as processed if retval is true
             $this->refund->setStatusProcessed();
 
-            //
-            // We are calling save multiple time in this flow, but since laravel does a
-            // dirty check before updating the DB, no extra DB write call happens.
-            //
             $this->repo->saveOrFail($this->refund);
         }
     }

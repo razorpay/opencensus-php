@@ -49,6 +49,15 @@ class SubReconciliate extends Base\Core
      * @var boolean
      */
     protected $failUnprocessedRow = true;
+    
+    protected $gateway;
+
+    public function __construct(string $gateway)
+    {
+        $this->gateway = $gateway;
+
+        parent::__construct();
+    }
 
     public function getTotal(): array
     {

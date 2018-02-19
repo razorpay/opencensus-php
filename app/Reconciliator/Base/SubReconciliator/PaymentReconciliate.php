@@ -53,9 +53,9 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
     protected $messenger;
 
-    public function __construct()
+    public function __construct(string $gateway)
     {
-        parent::__construct();
+        parent::__construct($gateway);
 
         $this->messenger = new Messenger;
 
