@@ -13,11 +13,13 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Mail\Merchant\FeatureEnabled as FeatureEnabledEmail;
 
 class FeaturesTest extends TestCase
 {
     use RequestResponseFlowTrait;
+    use DbEntityFetchTrait;
 
     const DEFAULT_MERCHANT_ID    = '10000000000000';
     const ONBOARDING_MERCHANT_ID = '10000000001017';
@@ -543,6 +545,8 @@ class FeaturesTest extends TestCase
     {
         $merchantId = $this->createMerchantDetails(self::ONBOARDING_MERCHANT_ID);
 
+        $this->ba->proxyAuth('rzp_live_' . $merchantId);
+
         $filestoreEntityId = $this->postOnboardingResponses();
 
         $this->ba->adminAuth('test', null, 'org_100000razorpay');
@@ -685,7 +689,9 @@ class FeaturesTest extends TestCase
 
     public function testPostOnboardingResponses()
     {
-        $this->createMerchantDetails(self::ONBOARDING_MERCHANT_ID);
+        $merchantId = $this->createMerchantDetails(self::ONBOARDING_MERCHANT_ID);
+
+        $this->ba->proxyAuth('rzp_live_' . $merchantId);
 
         $this->postOnboardingResponses();
     }
@@ -708,8 +714,6 @@ class FeaturesTest extends TestCase
      */
     protected function postOnboardingResponses()
     {
-        $this->ba->proxyAuth();
-
         $url = storage_path("files/" . Constants::ONBOARDING .  "/" . Constants::VENDOR_AGREEMENT . ".pdf");
 
         $uploadedFile = $this->createUploadedFile($url);
@@ -733,8 +737,8 @@ class FeaturesTest extends TestCase
         $response = $this->makeRequestAndGetContent($request);
 
         $this->assertArraySelectiveEquals($expectedResponse, $response);
-
-        $fileStoreData = $this->getLastEntity('file_store', true, MODE::LIVE);
+        
+        $fileStoreData = $this->getDbLastEntityPublic('file_store',MODE::LIVE);
 
         $testData = $this->testData['testFileStoreData'];
 
