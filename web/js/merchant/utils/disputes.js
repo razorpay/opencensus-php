@@ -2,11 +2,11 @@ import { daysFromToday } from 'rzp/utils/rzp-utils';
 
 export const daysLeftInExpiry = (expiresOn, prefixForDays = '') => {
   const daysLeft = daysFromToday(expiresOn);
-  return daysLeft < 0 ? (
-    <span class="text-muted">Passed</span>
-  ) : daysLeft === 0 ? (
-    <strong class="text-danger">Today</strong>
-  ) : (
-    `${prefixForDays}${daysLeft} day${daysLeft > 1 ? 's' : ''}`
-  );
+  if (daysLeft < 0) {
+    return <span class="text-muted">Passed</span>;
+  } else if (daysLeft === 0) {
+    return <strong class="text-danger">Today</strong>;
+  } else {
+    return `${prefixForDays}${daysLeft} day${daysLeft > 1 ? 's' : ''}`;
+  }
 };
