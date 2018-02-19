@@ -45,28 +45,27 @@ class AxisGatewayTest extends TestCase
         $txn = $this->getLastEntity('transaction', true);
         $this->assertNull($txn);
 
-        $payment = $this->getLastEntity('payment', true);
+        $payment = $this->getDbLastEntityPublic('payment');
 
         $this->assertNull($payment['transaction_id']);
         $this->assertEquals(TwoFactorAuth::PASSED, $payment[Entity::TWO_FACTOR_AUTH]);
 
-        $migs = $this->getLastEntity('axis_migs', true);
+        $migs = $this->getDbLastEntityPublic('axis_migs');
 
         $this->assertArraySelectiveEquals(
             $this->testData['testPaymentAxisMigsEntity'], $migs);
 
         $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
 
-        $txn = $this->getLastEntity('transaction', true);
+        $txn = $this->getDbLastEntityPublic('transaction');
 
-        $this->assertArraySelectiveEquals(
-            $this->testData['testTransactionAfterCapture'], $txn);
+        $this->assertArraySelectiveEquals($this->testData['testTransactionAfterCapture'], $txn);
 
-        $payment = $this->getLastEntity('payment', true);
+        $payment = $this->getDbLastEntityPublic('payment');
 
         $this->assertTestResponse($payment);
 
-        $migs = $this->getLastEntity('axis_migs', true);
+        $migs = $this->getDbLastEntityPublic('axis_migs');
 
         $this->assertArraySelectiveEquals(
             $this->testData['testPaymentAxisMigsCaptureEntity'], $migs);
