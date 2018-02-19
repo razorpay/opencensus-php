@@ -658,6 +658,7 @@ final class Route
         'shield_rules_delete'                     => ['delete',    'shield/rules/{id}',                             'ShieldController@delete'                                           ],
         'shield_rules_create'                     => ['post',      'shield/rules',                                  'ShieldController@create'                                           ],
         'shield_rules_evaluate'                   => ['post',      'shield/rules/evaluate',                         'ShieldController@evaluate'                                         ],
+
         // Dispute routes
         'payment_dispute_create'                  => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
         'dispute_edit'                            => ['post',     'disputes/{id}',                                  'DisputeController@update'                                          ],
@@ -1030,19 +1031,8 @@ final class Route
     public static $userWhitelist = [
         'user_resend_verification',
         'user_fetch',
-        'user_confirm',
-        'user_login',
         'user_change_password',
         'user_merchant_upgrade',
-        'user_resend_verification',
-        'user_fetch_email',
-        'emandate_debit_reconcile',
-        'user_reset_password_create',
-        'user_reset_password_token',
-        'merchant_payout_mail',
-        'geoip_update',
-        'fund_transfer_attempt_reconcile',
-        'merchant_tags_bulk',
     ];
 
     public static $proxy = [
