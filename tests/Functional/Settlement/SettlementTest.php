@@ -774,7 +774,7 @@ class SettlementTest extends TestCase
     {
         $payment = $this->createPaymentEntities(1);
 
-        $createdAt = Carbon::today(Timezone::IST)->subDays(10)->timestamp + 5;
+        $createdAt = Carbon::today(Timezone::IST)->subDays(20)->getTimestamp() + 5;
 
         $account = $this->fixtures->create('merchant:marketplace_account', ['balance' => 250000]);
 
@@ -792,14 +792,16 @@ class SettlementTest extends TestCase
 
         $channel = Channel::AXIS;
 
-        $reversal = $this->fixtures->create(
+        $reversalCreatedAt = Carbon::today(Timezone::IST)->getTimestamp();
+
+        $this->fixtures->create(
             'reversal',
             [
                 'entity_type'   => 'transfer',
                 'entity_id'     => $transfer[1]->getId(),
-                'amount'        => 90,
-                'created_at'    => $createdAt + 10,
-                'updated_at'    => $createdAt + 20
+                'amount'        => 190,
+                'created_at'    => $reversalCreatedAt + 10,
+                'updated_at'    => $reversalCreatedAt + 20
             ]);
 
         $content = $this->initiateSettlements($channel);
@@ -811,17 +813,23 @@ class SettlementTest extends TestCase
 
         //
         // transfer 1 -> credit 1000 + transfer 2 -> credit 1000
-        // reverse transfer 1 -> debit 90
+        // reverse transfer 1 -> debit 190
         // total => 1910
         //
-        $this->assertEquals(1910, $lastSetl['amount']);
+        $this->assertEquals(1810, $lastSetl['amount']);
 
         //
         // (1 payment txn +
         //  2 transfer txn + 2 transfer payment txn +
-        //  1 transfer payment refund txn + 1 reversal txn)
+        //  1 transfer payment refund txn)
         //
-        $this->assertEquals(7, $content[$channel]['txnCount']);
+        $this->assertEquals(6, $content[$channel]['txnCount']);
+
+        // Check if the `reversal` txn gets settled after, say, a week
+        $nextWeek = Carbon::today(Timezone::IST)->addWeek()->getTimestamp();
+        $content = $this->initiateSettlements($channel, $nextWeek);
+
+        $this->assertEquals(1, $content[$channel]['txnCount']);
     }
 
     public function testSettlementForReversalOfDirectTransfer()
@@ -859,7 +867,7 @@ class SettlementTest extends TestCase
             ]);
 
         // Initiate immediate settlement, Reversal should not be settled
-        $content = $this->initiateSettlements();
+        $content = $this->initiateSettlements(Channel::AXIS);
 
         //
         // Total 7. Following transactions should have settled:
@@ -888,7 +896,7 @@ class SettlementTest extends TestCase
         Carbon::setTestNow($nextWorkingDay->setTime(8, 0));
 
         $content = $this->initiateSettlements();
-        $this->assertEquals(1, $content['kotak']['transaction_count']);
+        $this->assertEquals(1, $content[Channel::AXIS]['transaction_count']);
 
         // Assert master account settlement
         $lastSetl = $this->getLastEntity('settlement', true);

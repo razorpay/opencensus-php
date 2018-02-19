@@ -1295,14 +1295,6 @@ class Core extends Base\Core
     {
         $scheduleTaskCore = new ScheduleTask\Core;
 
-        $defaultScheduleTask = $scheduleTaskCore->getMerchantSettlementSchedule($reversal->merchant, null);
-
-        //
-        // Get the next_run_at for the merchant's default schedule_task
-        // (where method = null)
-        //
-        // TODO: Need to fix this - pick the next_run_at starting tomorrow
-        //
         $nextSettlementTime = Carbon::tomorrow(Timezone::IST)->getTimestamp();
 
         //
