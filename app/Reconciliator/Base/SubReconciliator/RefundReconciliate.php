@@ -23,7 +23,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
     // This will need to be overridden in each gateway's refund recon.
     const COLUMN_REFUND_AMOUNT = '';
 
-    // List of gateway's whose refund status must be set to processed without ARN
+    // List of gateways whose refund status must be set to processed without ARN
     const GATEWAYS_PROCESSED_WO_ARN = [
         RequestProcessor\Base::UPI_ICICI
     ];
@@ -560,6 +560,8 @@ class RefundReconciliate extends Foundation\SubReconciliate
         $refund->setReference1($reconArn);
         $refund->setStatusProcessed();
 
+        // This needs to be present here and not in the calling function,
+        // to ensure that if any failure happens, arn still gets saved.
         $this->repo->saveOrFail($refund);
     }
 
