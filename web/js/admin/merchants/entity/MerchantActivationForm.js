@@ -44,7 +44,7 @@ export default class MerchantActivationForm extends Component {
       });
     });
 
-    fetch(`/admin/api/live_${this.merchantId}/merchants/users`).then(data => {
+    fetch(`/admin/api/live_${this.merchantId}/merchants-users`).then(data => {
       this.setState({
         users: data,
       });

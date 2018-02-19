@@ -12,7 +12,7 @@ export const USER_REMOVE = 'USER_REMOVE';
 
 const fetchInvitations = _ => merchantFetch('invitations');
 
-const fetchUsers = _ => merchantFetch(`merchants/users`);
+const fetchUsers = _ => merchantFetch(`merchants-users`);
 
 export const fetchTeamDetails = params => {
   return {

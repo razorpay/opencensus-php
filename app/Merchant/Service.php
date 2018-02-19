@@ -391,7 +391,7 @@ class Service extends Base\Service
             $request = new \App\Admin\ApiRequestAny();
         }
 
-        list($error, $data) = $request->send("merchants/users", 'GET');
+        list($error, $data) = $request->send("merchants-users", 'GET');
 
         if (empty($error) === false)
         {

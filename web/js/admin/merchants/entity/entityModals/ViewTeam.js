@@ -18,7 +18,7 @@ export default class TeamDetails extends Component {
     });
 
     return fetch({
-      url: `/admin/api/live_${this.props.merchantId}/merchants/users`,
+      url: `/admin/api/live_${this.props.merchantId}/merchants-users`,
     }).then(data => {
       this.setState({
         users: data,
