@@ -1,6 +1,18 @@
 import ListFilter from '../ListFilter';
 import { Field } from 'redux-form';
 
+import { snakeToTitleCase as titleCase } from 'common/util';
+
+const phases = [
+  'retrieval',
+  'chargeback',
+  'pre_arbitration',
+  'arbitration',
+  'fraud',
+];
+
+const statues = ['open', 'under_review', 'lost', 'won', 'closed'];
+
 export default ({ type, ...otherProps }) => {
   return (
     <ListFilter {...otherProps}>
@@ -18,11 +30,11 @@ export default ({ type, ...otherProps }) => {
         <label>Dispute Type</label>
         <Field name="phase" component="select" class="form-control input-sm">
           <option value=""> </option>
-          <option value="retrieval">Retrieval</option>
-          <option value="chargeback">Chargeback</option>
-          <option value="pre_arbitration">Pre Arbitration</option>
-          <option value="arbitration">Arbitration</option>
-          <option value="fraud">Fraud</option>
+          {phases.map(phase => (
+            <option key={phase} value={phase}>
+              {titleCase(phase)}
+            </option>
+          ))}
         </Field>
       </div>
 
@@ -30,11 +42,11 @@ export default ({ type, ...otherProps }) => {
         <label>Dsipute State</label>
         <Field name="status" component="select" class="form-control input-sm">
           <option value=""> </option>
-          <option value="open">Open</option>
-          <option value="under_review">Under Review</option>
-          <option value="lost">Lost</option>
-          <option value="won">Won</option>
-          <option value="closed">Closed</option>
+          {statues.map(status => (
+            <option key={status} value={status}>
+              {titleCase(status)}
+            </option>
+          ))}
         </Field>
       </div>
     </ListFilter>
