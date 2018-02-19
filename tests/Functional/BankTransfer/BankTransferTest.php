@@ -1209,15 +1209,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals(Attempt\Status::INITIATED, $attempt[Attempt\Entity::STATUS]);
 
         // Process entities
-        $request = [
-            'url'       => '/fund_transfer_attempts/' . Channel::KOTAK,
-            'method'    => 'POST',
-            'content'   => [],
-        ];
-
-        $this->ba->cronAuth();
-
-        $this->makeRequestAndGetContent($request);
+        $this->reconcileEntitiesForChannel($channel);
 
         $attempt = $this->getLastEntity('fund_transfer_attempt', true);
         $this->assertEquals(Attempt\Status::PROCESSED, $attempt['status']);
