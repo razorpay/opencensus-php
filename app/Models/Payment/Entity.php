@@ -338,6 +338,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected static $generators = [
+        'recurring',
         self::METADATA,
     ];
 
@@ -500,7 +501,7 @@ class Entity extends Base\PublicEntity
             return;
         }
 
-        if (in_array($input['method'], [Method::NETBANKING, Method::AEPS, Method::EMANDATE], true) === false)
+        if (in_array($input['method'], Method::$bankMethods, true) === false)
         {
             unset($input['bank']);
         }
@@ -541,7 +542,7 @@ class Entity extends Base\PublicEntity
     protected function modifyBank(& $input)
     {
         if ((isset($input['method'])) and
-            (in_array($input['method'], [Method::NETBANKING, Method::AEPS, Method::EMANDATE], true) === false))
+            (in_array($input['method'], Method::$bankMethods, true) === false))
         {
             unset($input['bank']);
         }
@@ -575,6 +576,14 @@ class Entity extends Base\PublicEntity
             (isset($this->metadata['referer']) === false))
         {
             $this->metadata['referer'] = $input['referer'];
+        }
+    }
+
+    protected function generateRecurring($input)
+    {
+        if ($input[Entity::METHOD] === Method::EMANDATE)
+        {
+            $this->setAttribute(self::RECURRING, 1);
         }
     }
 
@@ -824,6 +833,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CONVERT_CURRENCY, $convert);
     }
 
+    public function setAuthType(string $authType)
+    {
+        $this->setAttribute(self::AUTH_TYPE, $authType);
+    }
+
     public function setMetadataKey($key, $value)
     {
         $this->metadata[$key] = $value;
@@ -872,19 +886,6 @@ class Entity extends Base\PublicEntity
     // ----------------------- Setters Ends-----------------------------------------
 
     // ----------------------- Mutator ---------------------------------------------
-
-    //
-    // Temporary only. To be removed later.
-    //
-    protected function setMethodAttribute($method)
-    {
-        if ($method === Payment\Method::EMANDATE)
-        {
-            $method = Payment\Method::NETBANKING;
-        }
-
-        $this->attributes[self::METHOD] = $method;
-    }
 
     public function setAmountAttribute($amount)
     {
@@ -983,6 +984,11 @@ class Entity extends Base\PublicEntity
                 $acquirerData = [
                     'bank_transaction_id' => $this->getAttribute(self::REFERENCE1)
                 ];
+                break;
+
+            case Method::EMANDATE:
+
+                $acquirerData = [];
                 break;
 
             case Method::WALLET:
@@ -1202,12 +1208,7 @@ class Entity extends Base\PublicEntity
 
     public function isEmandate()
     {
-        //
-        // TODO: Remove the second condition after we start
-        // storing `emandate` as method in the payment entity.
-        //
-        return (($this->getAttribute(self::METHOD) === Payment\Method::EMANDATE) or
-                (($this->isNetbanking() === true) and ($this->isRecurring() === true)));
+        return ($this->getAttribute(self::METHOD) === Payment\Method::EMANDATE);
     }
 
     public function isWallet()
@@ -1626,26 +1627,6 @@ class Entity extends Base\PublicEntity
         return (Emi\Subvention::MERCHANT === $this->getAttribute(self::EMI_SUBVENTION));
     }
 
-    public function isEmandatePayment()
-    {
-        $token = $this->getGlobalOrLocalTokenEntity();
-
-        //
-        // It's not an e-mandate payment if
-        // - Token not set
-        // - Payment not netbanking
-        // - Payment not recurring
-        //
-        if (($token === null) or
-            ($this->isNetbanking() === false) or
-            ($this->isRecurring() === false))
-        {
-            return false;
-        }
-
-        return true;
-    }
-
     public function getConvertCurrency()
     {
         return $this->getAttribute(self::CONVERT_CURRENCY);
@@ -1704,6 +1685,8 @@ class Entity extends Base\PublicEntity
                 return [$method, ''];
             case Method::BANK_TRANSFER:
                 return [$method, ''];
+            case Method::EMANDATE:
+                return [$method, $this->getBankName()];
         }
     }
 
