@@ -6,6 +6,7 @@ import Table from 'rzp/ui/Table/Index';
 import AsyncButton from 'react-async-button';
 
 import { titleCase } from 'rzp/utils/rzp-utils';
+import { required } from 'rzp/utils/validators';
 
 @reduxForm({
   form: 'createBatch',
@@ -48,6 +49,7 @@ export default class BatchCreateModal extends Component {
                 component={InputField}
                 class="form-control"
                 autoFocus={true}
+                validate={[required()]}
               />
             </div>
             <h5>
