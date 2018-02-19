@@ -85,6 +85,7 @@ const fields = [
         {item.paymentMethodTypeField()}
         {item.internationalField()}
         {item.emiDurationField()}
+        {item.selectField('payment_issuer') || 'Any'}
       </div>
     ),
   ],
@@ -96,7 +97,6 @@ const fields = [
         ...sharedNetworks.get()[item.payment_method],
       }) || 'Any',
   ],
-  ['Issuer', item => item.selectField('payment_issuer') || 'Any'],
   ['Amount Range', item => item.selectField('amount_range') || 'None'],
   [
     'Rate (%)',
