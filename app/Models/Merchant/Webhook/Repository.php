@@ -28,14 +28,16 @@ class Repository extends Base\Repository
     public function findMultipleByMerchant($merchant)
     {
         return $this->newQuery()
-                    ->where(Entity::MERCHANT_ID, '=', $merchant->getId())
+                    ->merchantId($merchant->getId())
+                    ->whereNull(Entity::ENTITY_TYPE)
+                    ->whereNull(Entity::ENTITY_ID)
                     ->get();
     }
 
     public function findByMerchant($merchant)
     {
         $webhook = $this->newQuery()
-                        ->where(Entity::MERCHANT_ID, '=', $merchant->getId())
+                        ->merchantId($merchant->getId())
                         ->first();
 
         if ($webhook !== null)
@@ -53,8 +55,8 @@ class Repository extends Base\Repository
         string $entityId = null)
     {
         return $this->newQuery()
-                    ->where(Entity::MERCHANT_ID, '=', $merchant->getId())
-                    ->where(Entity::ENTITY_ID, '=', $entityId)
+                    ->merchantId($merchant->getId())
+                    ->where(Entity::ENTITY_ID, $entityId)
                     ->get();
     }
 
@@ -67,7 +69,7 @@ class Repository extends Base\Repository
     public function findByMerchantId($merchantId)
     {
         return $this->newQuery()
-                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->merchantId($merchantId)
                     ->first();
     }
 
