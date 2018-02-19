@@ -89,7 +89,7 @@ class Core extends Base\Core
         //
         // We let the checker proceed irrespective of the $opType (OR or AND) because
         // after every check `updateCurrentLevelIfNeeded` (below) goes through
-        // the $opType logic, etc. and updates the current level anyway.
+        // the $opType logic, etc. and updates the current level (to next one) anyway.
         //
         // Let's take an example of 2 steps (same level, same workflow_id) where
         // R1 and R2 are required to commit 1 and 2 checks respectively with $opType = or.
@@ -112,7 +112,7 @@ class Core extends Base\Core
 
             $reviewsDone = $this->repo
                                 ->action_checker
-                                ->fetchCountByActionIdForStep($admin->getId(), $step->getId());
+                                ->fetchCountByActionIdForStep($action->getId(), $step->getId());
 
             if ($reviewsDone >= $requiredReviews)
             {
