@@ -119,7 +119,8 @@ class HomeContainer extends Component {
     // need to figureout whether we should show group by platform
     // or not
 
-    const { startDate, endDate } = this.state;
+    const { startDate, endDate } = this.state,
+          { isAdmin } = this.props;
 
     const query = {
       filters: {
@@ -163,39 +164,42 @@ class HomeContainer extends Component {
           });
         }
 
-        const platforms = Object.keys(data);
+        if (!isAdmin) {
 
-        // if we do not get platforms for given daterange
-        // do not show grouping
-        if (platforms.length === 0) {
-          return;
-        }
+          const platforms = Object.keys(data);
 
-        let grandTotal = 0;
+          // if we do not get platforms for given daterange
+          // do not show grouping
+          if (platforms.length === 0) {
+            return;
+          }
 
-        const totalByPlatform = platforms.reduce((group, platform) => {
-          group[platform] = data[platform].reduce((sum, entry) => {
-            return sum + entry.value;
-          }, 0);
+          let grandTotal = 0;
 
-          grandTotal += group[platform];
+          const totalByPlatform = platforms.reduce((group, platform) => {
+            group[platform] = data[platform].reduce((sum, entry) => {
+              return sum + entry.value;
+            }, 0);
 
-          return group;
-        }, {});
+            grandTotal += group[platform];
 
-        // if the txn count of platforms for given daterange
-        // do not show grouping
-        if (grandTotal === 0) {
-          return;
-        }
+            return group;
+          }, {});
 
-        const ratio = (totalByPlatform[OTHERS] || 0) / grandTotal;
+          // if the txn count of platforms for given daterange
+          // do not show grouping
+          if (grandTotal === 0) {
+            return;
+          }
 
-        // if `Others` platform count is greater than 30%
-        // do not show grouping
-        if (ratio > 0.3) {
-          trackPlatformAnalyticsHidden(ratio * 100);
-          return;
+          const ratio = (totalByPlatform[OTHERS] || 0) / grandTotal;
+
+          // if `Others` platform count is greater than 30%
+          // do not show grouping
+          if (ratio > 0.3) {
+            trackPlatformAnalyticsHidden(ratio * 100);
+            return;
+          }
         }
 
         // this will show group by platform dropdowns and also
@@ -208,6 +212,8 @@ class HomeContainer extends Component {
 
   fetchOldestTransactionDate() {
     let { oldestTransactionDate, dateRangePresets } = this.state;
+
+    const { onFirstTxnDate } = this.props;
 
     var oldestTxnReqId = ++this.oldestTxnReqId;
 
@@ -245,19 +251,25 @@ class HomeContainer extends Component {
         return OLDEST_TXN_ERROR;
       })
       .then(data => {
-        if (!data) {
-          return;
-        }
 
         oldestTransactionDate.loading = false;
 
-        if (data.error) {
-          oldestTransactionDate.error = data.error;
+        if (!data || data.error) {
 
-          return this.props.showNotification({
-            type: 'error',
-            message: data.error,
+          if (data.error) {
+            oldestTransactionDate.error = data.error;
+
+            this.props.showNotification({
+              type: 'error',
+              message: data.error,
+            });
+          }
+
+          this.setState({
+            oldestTransactionDate
           });
+
+          return onFirstTxnDate && onFirstTxnDate();
         }
 
         const presetsLastIndex = dateRangePresets.length - 1,
@@ -279,6 +291,8 @@ class HomeContainer extends Component {
           },
           dateRangePresets,
         });
+
+        return onFirstTxnDate && onFirstTxnDate(data.value);
       });
   }
 
@@ -315,7 +329,13 @@ class HomeContainer extends Component {
   }
 
   render() {
-    let { mode, current_balance } = this.props;
+    let {
+      mode,
+      current_balance,
+      tabsMeta,
+      isAdmin,
+      onFilterChange
+    } = this.props;
 
     const {
       startDate,
@@ -372,6 +392,9 @@ class HomeContainer extends Component {
                 mode={mode}
                 showGrouping={showGrouping}
                 sectionTitle={keymetricsSectionTitle}
+                tabsMeta={tabsMeta}
+                isAdmin={isAdmin}
+                onFilterChange={onFilterChange}
               />
             </div>
           </div>
@@ -411,16 +434,19 @@ class HomeContainer extends Component {
                   </div>
                 </div>
               )}
-              <div className="activity-container">
-                <p className="content-title section-title">
-                  {recentActivityTitle}
-                </p>
-                <div className="content">
-                  <RecentActivity sectionTitle={recentActivityTitle} />
+              {!isAdmin && (
+                <div className="activity-container">
+                  <p className="content-title section-title">
+                    {recentActivityTitle}
+                  </p>
+                  <div className="content">
+                    <RecentActivity sectionTitle={recentActivityTitle} />
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
+
           <div className="row home-credits-section">
             <div className="col-md-12">
               <GenericPanel>
@@ -446,6 +472,6 @@ class HomeContainer extends Component {
   }
 }
 
-export default () => isMobileDevice
+export default (props) => isMobileDevice
                        ? (trackForceOldDashboard(), <Redirect to="/dashboard"/>)
-                       : <HomeContainer/>
+                       : <HomeContainer {...props}/>
