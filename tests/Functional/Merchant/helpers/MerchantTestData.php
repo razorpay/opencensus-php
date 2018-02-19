@@ -1148,7 +1148,7 @@ return [
         'jsonp' => true
     ],
 
-    'testGetBanksByAppAuth' => [
+    'testGetBanksByAdminAuth' => [
         'request' => [
             'url' => '/merchants/10000000000000/banks',
             'method' => 'GET',
