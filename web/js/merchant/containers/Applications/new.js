@@ -95,9 +95,9 @@ class NewApplicationForm extends Component {
 
   // save handler
   create = props => {
-    let data = {...props}
+    let data = { ...props };
 
-    if(data.website) {
+    if (data.website) {
       data.website = autoPrefixUrls(data.website);
     }
 
@@ -121,18 +121,22 @@ class NewApplicationForm extends Component {
   };
 
   update = props => {
-    let data = {...props};
+    let data = { ...props };
 
-    if(data.website) {
+    if (data.website) {
       data.website = autoPrefixUrls(data.website);
     }
-    
-    if(data.client_details.dev.redirect_url) {
-      data.client_details.dev.redirect_url = data.client_details.dev.redirect_url.map(url => autoPrefixUrls(url));
+
+    if (data.client_details.dev.redirect_url) {
+      data.client_details.dev.redirect_url = data.client_details.dev.redirect_url.map(
+        url => autoPrefixUrls(url)
+      );
     }
-    
-    if(data.client_details.prod.redirect_url) {
-      data.client_details.prod.redirect_url = data.client_details.prod.redirect_url.map(url => autoPrefixUrls(url));
+
+    if (data.client_details.prod.redirect_url) {
+      data.client_details.prod.redirect_url = data.client_details.prod.redirect_url.map(
+        url => autoPrefixUrls(url)
+      );
     }
 
     const payload = {
@@ -148,8 +152,11 @@ class NewApplicationForm extends Component {
           redirect_url: data.client_details.prod.redirect_url,
         },
       ],
-      file: data.file,
     };
+
+    if (data.file) {
+      payload.file = data.file;
+    }
     return this.props
       .updateApplication(this.state.details.id, payload, 'logo')
       .then(application => {
@@ -214,7 +221,10 @@ class NewApplicationForm extends Component {
                   component={InputField}
                   class="form-control"
                   placeholder="http://test-app.com/"
-                  validate={[required(), lenientUrl('Please enter a valid URL')]}
+                  validate={[
+                    required(),
+                    lenientUrl('Please enter a valid URL'),
+                  ]}
                 />
               </div>
             </div>
