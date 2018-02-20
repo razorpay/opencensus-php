@@ -998,8 +998,6 @@ final class Route
         'refund_gateway_refunded_txns',
         'refund_generate_excel',
         'refund_retry_failed',
-        'reports_transaction_dsp',
-        'reports_refund_irctc',
         'schedule_migration',
         'schedule_process_tasks',
         'scorecard',

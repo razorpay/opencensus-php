@@ -96,7 +96,17 @@ class RoutesTest extends TestCase
         }
 
         // Verify that diffing both ways returns 0 elements
-        $this->assertEquals(['*'], array_values(array_diff($internalAppRoutes, Route::$internal)));
+        $knownExceptions = [
+            '*',
+            // The following are proxy routes called from CRON
+            // and as such are not in $internal
+            // When we get rid of $internal entirely, this will
+            // get fixed, and we can use [] instead of knownExceptions
+            'reports_transaction_dsp',
+            'reports_refund_irctc',
+        ];
+
+        $this->assertEquals($knownExceptions, array_values(array_diff($internalAppRoutes, Route::$internal)));
         $this->assertEquals([], array_diff(Route::$internal, $internalAppRoutes));
     }
 
