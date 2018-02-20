@@ -120,7 +120,7 @@ class Reconciliation extends Base
         parent::performPreProcessingActions();
 
         //
-        // We need the gateway reconciliatoe object to get some gateway specific
+        // We need the gateway reconciliator object to get some gateway specific
         // details like sheet names etc which are required during parsing of the file
         //
         $this->setGatewayReconciliatorObject();
@@ -132,7 +132,7 @@ class Reconciliation extends Base
 
         $gatewayReconciliatorClassName = 'RZP\\Reconciliator' . '\\' . $gateway . '\\' . 'Reconciliate';
 
-        $this->gatewayReconciliator = new $gatewayReconciliatorClassName;
+        $this->gatewayReconciliator = new $gatewayReconciliatorClassName($gateway);
     }
 
     /**
