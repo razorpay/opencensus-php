@@ -62,7 +62,6 @@ export default class EditPerm extends Component {
     let promise;
     if (this.props.model) {
       data.url = `live/permissions/${this.props.model.id}`;
-      data.content_type = 'application/json';
       promise = adminPut(data);
     } else {
       data.url = 'live/permissions';
