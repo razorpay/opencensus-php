@@ -101,7 +101,7 @@ export default class Model extends BaseModel {
     const request = mode => {
       return this.request(
         'fetchMerchantBalance',
-        this.fetchFn(`${mode}_${this.merchantId}/balance_get`)
+        this.fetchFn(`${mode}_${this.merchantId}/balance`)
       ).then(data => {
         if (data) {
           this.merchant.balanceDetails[mode] = data;
@@ -117,7 +117,7 @@ export default class Model extends BaseModel {
   fetchPricingPlans() {
     return this.request(
       'fetchMerchantPricingPlans',
-      this.fetchFn(`merchants/${this.merchantId}/pricing`)
+      this.fetchFn(`live/merchants/${this.merchantId}/pricing`)
     ).then(data => {
       if (data) {
         this.merchant.pricingPlans = data;
@@ -172,7 +172,7 @@ export default class Model extends BaseModel {
 
   @action
   fetchAdmins() {
-    return this.request('fetchAdmins', this.fetchFn('admin')).then(data => {
+    return this.request('fetchAdmins', this.fetchFn('admins')).then(data => {
       const adminsMap = {};
 
       data.items.map(admin => {

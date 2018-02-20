@@ -157,7 +157,7 @@ const createFormData2 = (form = {}) => {
   return formData;
 };
 
-const constructQueryString = params => {
+export const constructQueryString = params => {
   let query = [];
 
   for (const k in params) {
