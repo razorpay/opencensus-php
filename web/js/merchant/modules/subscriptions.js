@@ -70,7 +70,7 @@ export const cancelSubscription = ({ id, cancel_at_cycle_end }) => {
 
 export const testChargeSubscription = (subscriptionId, success) => {
   return merchantFetch({
-    url: `subscriptions/{subscriptionId}/charge`,
+    url: `subscriptions/${subscriptionId}/charge`,
     method: 'post',
     data: {
       success,
