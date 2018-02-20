@@ -13,7 +13,7 @@ export default class PricingPlanModal extends Component {
   state = { pricingPlans: {}, pending: true };
 
   componentWillMount() {
-    adminFetch('pricing/merchants').then(data => {
+    adminFetch('live/pricing/merchants').then(data => {
       const pricingPlans = {};
 
       for (let key in data) {

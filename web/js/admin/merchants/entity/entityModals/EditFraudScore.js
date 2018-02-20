@@ -9,11 +9,11 @@ import AsyncButton from 'ui/AsyncButton';
 import fetch, { adminFetch, adminPost } from 'common/fetch';
 
 @observer
-export default class EditMerchant extends Component {
+export default class EditFraudScore extends Component {
   handleConfirm = body => {
     return fetch({
-      url: '/admin/merchant/' + this.props.merchantId + '/edit',
-      method: 'post',
+      url: '/admin/api/live/merchants/' + this.props.merchantId,
+      method: 'put',
       data: body,
     })
       .then(data => {

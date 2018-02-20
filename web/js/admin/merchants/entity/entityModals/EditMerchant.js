@@ -85,10 +85,6 @@ export default class EditMerchant extends Component {
 
     this.dropUnchangedFields(body);
 
-    if (body.transaction_report_email) {
-      body.transaction_report_email = body.transaction_report_email.join(',');
-    }
-
     delete body.auto_refund_delay_type;
     delete body.auto_refund_delay_val;
 
@@ -98,8 +94,8 @@ export default class EditMerchant extends Component {
     }
 
     return fetch({
-      url: '/admin/merchant/' + this.props.merchantId + '/edit',
-      method: 'post',
+      url: '/admin/api/live/merchants/' + this.props.merchantId,
+      method: 'put',
       data: body,
     })
       .then(data => {

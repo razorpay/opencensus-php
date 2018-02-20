@@ -278,9 +278,9 @@ class Rule extends CollectionItem {
     } else if (this.payment_method === 'emandate') {
       data = {
         '': 'All',
-        'aadhar': 'Aadhar',
-        'netbanking': 'Netbanking'
-      }
+        aadhar: 'Aadhar',
+        netbanking: 'Netbanking',
+      };
     }
 
     if (data) {
