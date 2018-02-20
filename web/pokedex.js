@@ -1,18 +1,35 @@
 import { Component } from 'react';
+import moment from 'moment';
 import 'react-dates/initialize';
 import { connect, Provider } from 'react-redux';
 import { render } from 'react-dom';
 import { MemoryRouter as Router } from 'react-router-dom';
-
-import 'rzp/utils/polyfills';
 import store from 'merchant/store';
 
+import 'rzp/utils/polyfills';
 import * as NotificationActions from 'rzp/modules/notifications';
+
 import * as SessionActions from 'merchant/modules/session';
 import User, { setFeatures } from 'merchant/models/User';
 import { pokeConfig } from 'merchant/modules/pokedex';
-
+import { fetch } from 'merchant/modules/pokedex';
+import {
+ tabsOrder, tabsMeta
+} from 'merchant/containers/Home/KeyMetrics/data';
+import {
+  getQuery as getPaymentMethodsQuery
+} from 'merchant/containers/Home/PaymentMethods/data'; 
 import HomeNew from 'merchant/containers/Home/New';
+
+import {
+  SUCCESS_RATE,
+  PAYMENT_METHODS,
+  successRateMeta,
+  populatePaymentMethods,
+  populateSourceFilters,
+  paymentMethodFilterVals,
+  sourceFilterVals
+} from './pokedexData';
 
 pokeConfig.merchantId = window.rzp_user.id;
 
@@ -21,16 +38,79 @@ pokeConfig.merchantId = window.rzp_user.id;
   ...NotificationActions,
 })
 class App extends Component {
-  state = {
-    isLoading: false
+
+  constructor (props) {
+
+    super(props);
+
+    this.state = {
+      isLoading: false,
+      tabsMeta: {...tabsMeta, [SUCCESS_RATE]: successRateMeta},
+      selectedPaymentMethod: paymentMethodFilterVals[0],
+      selectedSource: sourceFilterVals[0]
+    };
+
+    this.onFirstTxnDate = this.onFirstTxnDate.bind(this);
+    this.onFilterChange = this.onFilterChange.bind(this);
   }
+
+  onFirstTxnDate (firstTxnDate) {
+  
+    firstTxnDate = firstTxnDate || 0;
+
+    const query = getPaymentMethodsQuery({
+      startTime: firstTxnDate,
+      endTime: moment().unix()
+    });
+
+    delete query.filters.default[0].authorized_at;
+
+    fetch(query).then((resp) => {
+   
+      if (!resp.data || !resp.data.agg) {
+      
+        return;
+      }
+
+      populatePaymentMethods(resp.data.agg.result);
+
+      this.setState({
+        tabsMeta: {...this.state.tabsMeta}
+      });
+    }).catch((e) => {
+    
+      console.error("Unable to populate payment methods and sources", e);
+    });
+  }
+
+  onFilterChange (selectedFilter) {
+ 
+    if (selectedFilter.filterName !== PAYMENT_METHODS) {
+    
+      return;
+    }
+
+    populateSourceFilters(selectedFilter);
+
+    this.setState({
+      tabsMeta: {...this.state.tabsMeta}
+    });
+  }
+
   render() {
     let { user } = this.props;
+
+    const { tabsOrder, tabsMeta } = this.state;
 
     if (this.state.isLoading) {
       return null;
     }
-    return <HomeNew />
+
+    return <HomeNew tabsOrder={tabsOrder}
+                    tabsMeta={tabsMeta}
+                    onFirstTxnDate={this.onFirstTxnDate}
+                    onFilterChange={this.onFilterChange}
+                    isAdmin={true}/>
   }
 
   componentWillMount() {

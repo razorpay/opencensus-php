@@ -42,6 +42,7 @@ export const sendInvitation = data => {
     payload: merchantFetch({
       url: 'invitations',
       method: 'post',
+      mode: 'live',
       data,
     }),
   };

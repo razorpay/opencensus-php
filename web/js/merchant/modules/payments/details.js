@@ -68,10 +68,7 @@ export const refundPayment = (payment, data) => {
 
 export const createTransfer = ({ id, ...data }) => {
   const payment = new Payment({ id });
-  return {
-    type: PAYMENT_TRANSFER,
-    payload: payment.transfer(data),
-  };
+  return payment.transfer(data);
 };
 
 export const resetPayment = () => {
