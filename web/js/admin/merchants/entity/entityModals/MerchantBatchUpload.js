@@ -12,7 +12,7 @@ export default ({ merchantId }) => {
   function handleSubmit(body) {
     let requestData = {};
 
-    requestData.mode = body.mode;
+    let mode = body.mode;
     delete body.mode;
 
     if (!Object.keys(body).length) {
@@ -22,22 +22,20 @@ export default ({ merchantId }) => {
     }
 
     if (body.refund) {
-      requestData['file[data][refund]'] = body.refund[0];
+      requestData['data[refund]'] = body.refund[0];
     }
 
     if (body.settlement) {
-      requestData['file[data][settlement]'] = body.settlement[0];
+      requestData['data[settlement]'] = body.settlement[0];
     }
 
-    return adminFormUpload({
-      route_name: 'merchant_batches',
-      'body[type]': 'irctc',
-
-      url_params: JSON.stringify({
-        '{id}': merchantId,
-      }),
-      ...requestData,
-    })
+    return adminFormUpload(
+      {
+        'data[type]': 'irctc',
+        ...requestData,
+      },
+      `/admin/api/${mode}/merchant/${merchantId}/batches`
+    )
       .then(response => {
         if (response.data.success) {
           notifySuccess('Uploaded successfully.');

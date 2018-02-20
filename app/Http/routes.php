@@ -17,6 +17,11 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/', 'UserController@getIndex')->name('dashboard');
     Route::get('/status', 'AdminController@getStatus');
 
+    // User (guest auth route)
+    Route::any('/user/api/{mode}/{path?}', 'GenericController@handleAny')
+        ->where(['path' => '.*'])
+        ->name('user');
+
     // This is for enabling CORS support on contact form submissions
     Route::options('/contact', 'MerchantController@optionsContact');
     Route::post('/contact', 'MerchantController@postContact');
@@ -35,7 +40,6 @@ Route::group(['middleware' => ['web']], function () {
         // Adding the following here since auth:user middleware should be after cors
         Route::options('/session', 'UserController@getSessionData')->middleware(['cors', 'auth:user']);
         Route::get('/session', 'UserController@getSessionData')->middleware(['cors', 'auth:user']);
-        // Route::any('/api/{path}', 'GenericController@handlePath')->where(['path' => '.*'])->name('user');
     });
 
     Route::group(['middleware' => 'auth:user', 'prefix' => 'user'], function()
@@ -49,17 +53,12 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/details', 'UserController@getUserDetailsV2');
     });
 
-    // Generic guest route with no authentication
-    Route::group(['middleware' => ['guest.generic']], function()
-    {
-        Route::any('/guest/generic', 'GenericController@handle');
-    });
-    Route::any('/api/{path?}', 'GenericController@handlePath')->where(['path' => '.*']);
-
     Route::group(['middleware'  =>  ['auth:user', 'verified']], function()
     {
-        Route::any('/user/generic', 'GenericController@handle');
-        Route::any('/merchant/api/{mode}/{path}', 'GenericController@handleAny')->where(['path' => '.*'])->name('merchant');
+        Route::any('/merchant/api/{mode}/{path}', 'GenericController@handleAny')
+            ->where(['path' => '.*'])
+            ->name('merchant');
+
         // Account Routes
         Route::get('/{mode}/accounts', 'MerchantController@getAccounts')->name('get_accounts');
 
@@ -102,9 +101,7 @@ Route::group(['middleware' => ['web']], function () {
 
     Route::group(['middleware'  =>  ['admin', 'admin_access']], function()
     {
-        Route::any('/admin/generic', 'GenericController@handle');
         Route::any('/admin/stats/{id}', 'AdminController@getMerchantStats');
-        // Route::any('/admin/api/{mode}/{path}', 'GenericController@handleAny')->where(['path' => '.*'])->name('admin');
         Route::get('/admin/user', 'AdminController@getAdmin');
         Route::get('/admin/user/logout', 'AdminController@getLogout');
         Route::get('/admin/user/keepalive', 'AdminController@getKeepAlive');
@@ -130,7 +127,7 @@ Route::group(['middleware' => ['web']], function () {
         // Creevey Related routes
         Route::put('/admin/merchant/{id}/screenshot', 'AdminController@captureMerchantScreenshot');
         Route::post('/admin/merchant/{id}/screenshot', 'AdminController@saveMerchantScreenshot');
-       
+
         Route::post('/admin/{mode}/reconciliate', 'AdminController@postReconciliate');
 
         Route::post('/makeapicall/{path?}', 'AdminController@passThrough')->where('path', '.*$');
@@ -147,6 +144,10 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/admin/{mode}/reports/broking', 'TransactionController@getTransactionBrokingReport')->name('reports_broking');
         Route::get('/admin/{mode}/reports/invoice', 'TransactionController@getInvoiceReport')->name('reports_invoice');
         Route::get('/admin/{mode}/reports/{entity}', 'TransactionController@getResourceReport')->name('reports_entity');
+
+        Route::any('/admin/api/{mode}/{path}', 'GenericController@handleAny')
+            ->where(['path' => '.*'])
+            ->name('admin');
     });
 
     Route::get('admin/{all}', 'AdminController@getIndex')->name('admin_catchall')->where(['all' => '.*']);

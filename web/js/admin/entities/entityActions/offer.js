@@ -46,19 +46,9 @@ export default ({ entity, mode, updateEntity }) => {
     }
 
     return fetch({
-      url: '/admin/generic',
+      url: `${mode}_${entity.merchant_id}/offers/${entity.id}`,
       method: 'patch',
-      params: {
-        route_name: 'offer_update',
-        mode: mode,
-        url_params: {
-          '{id}': entity.id,
-        },
-      },
-      data: {
-        merchant_id: entity.merchant_id,
-        body,
-      },
+      data: body,
     })
       .then(data => {
         if (data) {

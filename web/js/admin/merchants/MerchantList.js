@@ -21,33 +21,11 @@ export default class MerchantList extends Component {
   };
   collection = new Collection({
     data: {
-      route_name: 'admin_fetch_merchants_new',
+      url: 'live/admins/merchants',
     },
     fetchFn: adminFetch,
     filters: defaultFilters,
   });
-
-  componentWillMount() {
-    const permission = 'view_merchant_stats';
-    const permissions = user.permissions;
-
-    if (!permissions || permissions.find(perm => permission === perm)) {
-      fields.push([
-        'Action',
-        item =>
-          item.activated && (
-            <a
-              onClick={openLink}
-              href={'/admin/stats/' + item.id}
-              class="btn"
-              target="_blank"
-            >
-              View Stats
-            </a>
-          ),
-      ]);
-    }
-  }
 
   onSubmit = filters => {
     if (filters['sub_accounts'] == 0) {
@@ -155,6 +133,23 @@ const fields = [
       )),
   ],
 ];
+
+if (user.permissions.find(perm => perm === 'view_merchant_stats')) {
+  fields.push([
+    'Action',
+    item =>
+      item.activated && (
+        <a
+          onClick={openLink}
+          href={'/admin/stats/' + item.id}
+          class="btn"
+          target="_blank"
+        >
+          View Stats
+        </a>
+      ),
+  ])
+}
 
 const openLink = function(e) {
   e.preventDefault();

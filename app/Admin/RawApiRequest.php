@@ -101,6 +101,15 @@ class RawApiRequest
         if (empty($adminUser) === false)
         {
             $adminToken = $adminUser->token;
+
+            $this->params['headers']['X-Admin-Token'] = $adminToken;
+        }
+        else
+        {
+            throw new \Razorpay\Api\Errors\BadRequestError(
+                'Admin token not set.',
+                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                400);
         }
 
         $merchantId = $this->resolveMerchantId($input, $adminToken);
@@ -112,7 +121,8 @@ class RawApiRequest
              */
             $accountId = $input['account_id'] ?? null;
 
-            if (empty($accountId) === false) {
+            if (empty($accountId) === false)
+            {
                 $this->params['headers'][self::RAZORPAY_ACCOUNT_HEADER] = $accountId;
             }
         }
@@ -124,29 +134,15 @@ class RawApiRequest
                 $this->setApiCredentials($input['mode'], $merchantId);
                 break;
 
-            case 'admin_proxy':
-                if (isset($adminToken) === true)
-                {
-                    $this->params['headers']['X-Admin-Token'] = $adminToken;
-                }
+            case 'internal':
+                $this->setApiCredentials($input['mode']);
 
-                $this->setApiCredentials($input['mode'], $merchantId);
+                // Admin should be able to hit any internal route
+                // which means we have to skip sending admin token
+                unset($this->params['headers']['X-Admin-Token']);
                 break;
 
             case 'admin':
-                $this->setAdminCredentials($adminToken, $input['mode'], $merchantId);
-                break;
-
-            case 'internal':
-                $this->setApiCredentials($input['mode']);
-                break;
-
-            case 'admin_internal':
-                if (isset($adminToken) === true)
-                {
-                    $this->params['headers']['X-Admin-Token'] = $adminToken;
-                }
-
                 $this->setApiCredentials($input['mode']);
                 break;
         }
@@ -165,27 +161,6 @@ class RawApiRequest
             $cookie = str_replace('+', '%2B', $cookie);
 
             $this->params['headers']['Cookie'] = 'rzp_utm=' . $cookie;
-        }
-    }
-
-    protected function setAdminCredentials($token, $mode = 'live', $merchantId = null)
-    {
-        $this->setApiCredentials($mode);
-
-        if (empty($token) === true)
-        {
-            throw new \Razorpay\Api\Errors\BadRequestError(
-                'Admin token invalid.',
-                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
-                400
-            );
-        }
-
-        $this->params['headers']['X-Admin-Token'] = $token;
-
-        if (empty($merchantId) === false) {
-
-            $this->params['headers'][self::RAZORPAY_ACCOUNT_HEADER] = $merchantId;
         }
     }
 

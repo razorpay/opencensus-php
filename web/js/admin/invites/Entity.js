@@ -12,13 +12,9 @@ class AddInvites extends Component {
     pending: true,
   };
 
+  // TODO: TEST whether orgId to be sent or not. Check 'org_fieldmap_get_by_entity' in api-route-map
   componentWillMount() {
-    adminFetch({
-      route_name: 'org_fieldmap_get_by_entity',
-      url_params: {
-        entity: 'admin_lead',
-      },
-    }).then(response => {
+    adminFetch(`live/field-map/entity/admin_lead`).then(response => {
       if (response) {
         this.fields = response.fields;
       }
@@ -29,8 +25,8 @@ class AddInvites extends Component {
 
   handleInvite = body => {
     return adminPost({
-      route_name: 'admin_lead_create',
-      body,
+      url: 'live/admin-lead',
+      data: body,
     }).then(response => {
       if (response) {
         this.props.collection.items.push(response);

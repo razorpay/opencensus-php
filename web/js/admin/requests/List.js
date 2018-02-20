@@ -17,7 +17,7 @@ export default class RequestList extends Component {
   collection = new Collection({
     fetchFn: adminFetch,
     data: {
-      route_name: 'workflow_action_get_multiple',
+      url: 'live/w-actions',
     },
     filters: {
       duty: 'checker',

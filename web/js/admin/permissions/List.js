@@ -15,7 +15,7 @@ export default class PermissionsList extends Component {
   collection = new Collection({
     fetchFn: adminFetch,
     data: {
-      route_name: 'permission_get_multiple',
+      url: `live/permissions-multiple`,
       count: 1000,
     },
     model: CollectionItem,

@@ -23,12 +23,12 @@ export default class EditPublicFeatures extends Component {
 
   selectedStatus = this.props.model.collection.filters.status;
 
+  // TODO: TEST Sending mode as live, not sent earlier
   featureParams = {
-    merchant_id: this.props.model.merchant_id,
-    query_params: {
+    url: `live_${this.props.model.merchant_id}/onboarding/features`,
+    params: {
       features: [this.akaFeature],
     },
-    route_name: 'onboarding_features_fetch_details',
   };
 
   componentWillMount() {
@@ -52,20 +52,18 @@ export default class EditPublicFeatures extends Component {
   save = body => {
     let { akaFeature, selectedStatus } = this;
 
+    // TODO: TEST to send merchant id in data? Also, hard coded the mode as live, not sent earlier
     body.merchant_id = this.props.model.merchant_id;
     //send request if status changed
     if (selectedStatus !== body.status) {
-      let data = {
-        route_name: 'onboarding_features_update_status',
-        body: {
+      adminPut({
+        url: `live_${
+          body.merchant_id
+        }/onboarding/features/${akaFeature}/status`,
+        data: {
           status: body.status,
-          merchant_id: body.merchant_id,
         },
-        url_params: {
-          feature: akaFeature,
-        },
-      };
-      adminPut(data).then(response => {
+      }).then(response => {
         if (response) {
           notifySuccess('Status updated!');
         }
@@ -79,10 +77,10 @@ export default class EditPublicFeatures extends Component {
 
       Object.keys(body).forEach(key => (form[`body[${key}]`] = body[key]));
 
-      form['url_params[{feature}]'] = akaFeature;
-      form['route_name'] = 'onboarding_features_update';
-
-      return adminFormUpload(form).then(response => {
+      return adminFormUpload(
+        form,
+        `/admin/api/live/onboarding/features/${akaFeature}/update`
+      ).then(response => {
         if (response.data.success) {
           notifySuccess('Submission edited successfully.');
           closeModal();
@@ -91,14 +89,10 @@ export default class EditPublicFeatures extends Component {
         }
       });
     } else {
-      let data = { body };
-
-      data.route_name = 'onboarding_features_update';
-      data.url_params = {
-        feature: akaFeature,
-      };
-
-      return adminPost(data).then(response => {
+      return adminPost({
+        url: `live/onboarding/features/${akaFeature}/update`,
+        data: body,
+      }).then(response => {
         if (response) {
           notifySuccess('Submission edited successfully.');
           closeModal();

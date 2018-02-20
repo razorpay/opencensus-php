@@ -72,13 +72,11 @@ export default class Application extends GenericEntity {
       if (key === 'client_details') {
         formData = this.formatClientDetails(formData, key, params);
       } else if (key === 'file') {
-        formData.append(key, params[key]);
+        formData.append(fileName, params[key]);
       } else {
-        formData.append(`body[${key}]`, params[key]);
+        formData.append(`${key}`, params[key]);
       }
     }
-
-    formData.append('file_name', fileName);
 
     return merchantFetch({
       url: `oauth/applications/${this.id}`,
@@ -112,23 +110,23 @@ export default class Application extends GenericEntity {
   }
 
   formatClientDetails(formData, key, params) {
-    formData.append(`body[${key}][0][id]`, params[key][0]['id']);
+    formData.append(`${key}[0][id]`, params[key][0]['id']);
 
     let urls = params[key][0]['redirect_url'];
 
     if (urls instanceof Array) {
       urls.forEach(function(e) {
-        formData.append(`body[${key}][0][redirect_url][]`, e);
+        formData.append(`${key}[0][redirect_url][]`, e);
       });
     }
 
-    formData.append(`body[${key}][1][id]`, params[key][1]['id']);
+    formData.append(`${key}[1][id]`, params[key][1]['id']);
 
     urls = params[key][1]['redirect_url'];
 
     if (urls instanceof Array) {
       urls.forEach(function(e) {
-        formData.append(`body[${key}][1][redirect_url][]`, e);
+        formData.append(`${key}[1][redirect_url][]`, e);
       });
     }
 

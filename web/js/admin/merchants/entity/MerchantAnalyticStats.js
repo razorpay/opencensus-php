@@ -225,10 +225,10 @@ export default class MerchantAnalyticStats extends Component {
       },
     };
 
+    // TODO: TEST if live mode needs to be sent as earlier we never sent
     adminPost({
-      route_name: 'merchant_analytics',
-      merchant_id: this.merchantId,
-      body: requestData,
+      url: `live_${this.merchantId}/merchant/analytics`,
+      data: requestData,
     })
       .then(response => {
         this.setState({ merchant_analytics: response || {} });

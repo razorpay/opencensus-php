@@ -10,13 +10,9 @@ export default class ActivationStatusLogs extends Component {
   state = { logs: [] };
 
   componentWillMount() {
-    const data = {
-      route_name: 'merchant_activation_status_change_log',
-      url_params: {
-        id: this.props.merchantId,
-      },
-    };
-    return adminFetch(data).then(response => {
+    return adminFetch(
+      `live/merchant/activation/${this.props.merchantId}/status_change_log`
+    ).then(response => {
       if (response) {
         this.setState({
           logs: response.items,

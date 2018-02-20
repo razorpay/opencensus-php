@@ -51,14 +51,18 @@ class Service extends Base\Service
 
         if ($entity === 'customer')
         {
-            $routeName = 'customer_fetch_multiple';
+            $path = 'customers';
         }
         else if ($entity === 'item')
         {
-            $routeName = 'item_fetch_multiple';
+            $path = 'items';
         }
 
-        $genericService = new Generic\Service;
+        // Only proxy auth
+        $request = new \App\Admin\ApiRequestAny([
+            'client_type'   => 'merchant',
+            'mode'          => $mode
+        ]);
 
         for ($i = 0; $i < 5; $i++)
         {
@@ -67,13 +71,9 @@ class Service extends Base\Service
                 'count' => $count,
             ];
 
-            $requestParams = [
-                'route_name'   => $routeName,
-                'mode'         => $mode,
-                'query_params' => array_merge($params, $offsets),
-            ];
+            $query_params = array_merge($params, $offsets);
 
-            list($error, $list) = $genericService->call('GET', $requestParams);
+            list($error, $list) = $request->send($path . '?' . http_build_query($query_params), 'GET');
 
             if (!empty($error))
             {

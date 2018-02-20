@@ -5,12 +5,12 @@ import { notifyDone } from '../../common/modal';
 import AsyncButton from 'ui/AsyncButton';
 
 export default class RequestActions extends Component {
-  //route config based on request actions i.e {<action>: [<action_route_name>, <action_http_func>]}
+  //route config based on request actions i.e {<action>: [<action_url>, <action_http_func>]}
   actionRoutes = {
-    approve: ['action_checker_create', adminPost],
-    reject: ['action_checker_create', adminPost],
-    close: ['workflow_action_close', adminPut],
-    execute: ['action_request_execute', adminPost],
+    approve: ['live/w-actions/{id}/checkers', adminPost],
+    reject: ['live/w-actions/{id}/checkers', adminPost],
+    close: ['live/w-actions/close/{id}', adminPut],
+    execute: ['live/w-actions/{id}/execute', adminPost],
   };
 
   handleSubmit = action => {
@@ -19,15 +19,14 @@ export default class RequestActions extends Component {
       requestFn = routes[action][1]; //default http func based on routes
 
     const params = {
-      route_name: routes[action][0],
-      url_params: { id },
+      url: routes[action][0].replace('{id}', id),
     };
 
     //Add approved flag in body
     switch (action) {
       case 'approve':
       case 'reject':
-        params.body = { approved: action === 'approve' ? 1 : 0 };
+        params.data = { approved: action === 'approve' ? 1 : 0 };
         break;
       default:
         break;

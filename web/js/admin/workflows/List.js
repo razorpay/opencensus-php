@@ -11,9 +11,9 @@ import AsyncButton from 'ui/AsyncButton';
 export default class WorkflowList extends Component {
   collection = new Collection({
     fetchFn: adminFetch,
-    deleteRouteName: 'workflow_delete',
+    deleteUrl: id => `live/workflows/${id}`,
     data: {
-      route_name: 'workflow_get_multiple',
+      url: 'live/workflows',
     },
   });
 

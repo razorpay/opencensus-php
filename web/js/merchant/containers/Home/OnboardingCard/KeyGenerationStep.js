@@ -12,9 +12,7 @@ export default class KeyGenerationStep extends Component {
 
   componentWillMount() {
     let user = this.props.user;
-    let params = {
-      id: user.id,
-    };
+    let params = {};
     params.mode = user.isActivated ? 'live' : 'test';
 
     this.props.fetchKeys(params).then(({ data }) => {

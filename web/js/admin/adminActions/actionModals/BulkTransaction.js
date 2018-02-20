@@ -9,9 +9,9 @@ BulkTransaction.permissions = 'settlement_bulk_update';
 BulkTransaction.title = 'Update Bulk Transaction';
 
 export default function BulkTransaction() {
-  return(
+  return (
     <Form>
-      <Field label="Merchand ID" name="merchant_id"/>
+      <Field label="Merchand ID" name="merchant_id" />
       <SelectField name="channel" label="Channel">
         <option value="">Select</option>
         <option value="kotak">kotak</option>
@@ -26,16 +26,15 @@ export default function BulkTransaction() {
         class="btn"
         pendingClass="small spinner"
         onSubmit={body => {
-
           return adminPut({
-              route_name: 'transaction_bulk_update',
-              body,
+            url: 'live/transactions/bulk',
+            data: body,
           }).then(data => {
-            if(data) {
+            if (data) {
               notifySuccess('Updated successfully.');
             }
             closeModal();
-          })
+          });
         }}
       />
     </Form>

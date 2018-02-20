@@ -10,7 +10,6 @@ use Requests;
 use App\Base;
 use App\User;
 use App\Admin;
-use App\Generic;
 use App\Merchant;
 use App\Invitation;
 use App\User\Helper;
@@ -65,15 +64,12 @@ class Service extends Base\Service
             'user_id' => $this->currentUser->id
         ], $input);
 
-        $registerSubMerchant = [
-            'route_name' => 'merchant_sub_create',
-            'body'       => $data,
-            'mode'       => $mode,
-        ];
+        $request = new \App\Admin\ApiRequestAny([
+            'mode' => $mode,
+            'client_type' => 'merchant'
+        ]);
 
-        $genericService = new Generic\Service;
-
-        list($error, $data) = $genericService->call('POST', $registerSubMerchant);
+        list($error, $data) = $request->processInput($data)->send('submerchants', 'POST');
 
         if (($isLinkedAccount === false) and (empty($error) === true))
         {
@@ -90,13 +86,9 @@ class Service extends Base\Service
 
     public function resendConfirmation()
     {
-        $resendConfirmation = [
-            'route_name' => 'user_resend_verification',
-        ];
+        $request = new \App\Admin\ApiRequestAny();
 
-        $genericService = new Generic\Service;
-
-        list($error, $data) = $genericService->call('POST', $resendConfirmation);
+        list($error, $data) = $request->send('users/resend-verification', 'POST');
 
         if (empty($error) === false)
         {
@@ -146,14 +138,9 @@ class Service extends Base\Service
 
     public function fetchKeysFromApi($merchantId, $mode)
     {
-        $getData = [
-            'route_name' => 'merchant_fetch_keys',
-            'mode' => $mode
-        ];
+        $request = new \App\Admin\ApiRequestAny($mode, 'merchant');
 
-        $genericService = new Generic\Service;
-
-        list($error, $data) = $genericService->call('GET', $getData);
+        list($error, $data) = $request->send('keys', 'GET');
 
         if (empty($error) === false)
         {
@@ -169,14 +156,9 @@ class Service extends Base\Service
 
     public function fetchInvoices($mode)
     {
-        $getData = [
-            'route_name' => 'invoice_fetch_multiple',
-            'mode' => $mode,
-        ];
+        $request = new \App\Admin\ApiRequestAny($mode, 'merchant');
 
-        $genericService = new Generic\Service;
-
-        list($error, $data) = $genericService->call('GET', $getData);
+        list($error, $data) = $request->send('invoices', 'GET');
 
         if (empty($error) === false)
         {
@@ -192,14 +174,9 @@ class Service extends Base\Service
 
     public function createKey($merchantId, $mode)
     {
-        $createKey = [
-            'route_name' => 'merchant_create_key',
-            'mode' => $mode
-        ];
+        $request = new \App\Admin\ApiRequestAny($mode, 'merchant');
 
-        $genericService = new Generic\Service;
-
-        list($error, $data) = $genericService->call('POST', $createKey);
+        list($error, $data) = $request->send('keys', 'POST');
 
         if (empty($error) === false)
         {
@@ -235,15 +212,9 @@ class Service extends Base\Service
 
     public function createInvoice($mode, $input)
     {
-        $createInvoice = [
-            'route_name' => 'invoice_create',
-            'mode' => $mode,
-            'body' => $input
-        ];
+        $request = new \App\Admin\ApiRequestAny($mode, 'merchant');
 
-        $genericService = new Generic\Service;
-
-        list($error, $data) = $genericService->call('POST', $createInvoice);
+        list($error, $data) = $request->processInput($input)->send('invoices', 'POST');
 
         if (empty($error) === false)
         {
@@ -264,14 +235,9 @@ class Service extends Base\Service
             unset($input['bank_account_number_confirmation']);
         }
 
-        $saveActivationData = [
-            'route_name' => 'merchant_activation_save',
-            'body' => $input
-        ];
+        $request = new \App\Admin\ApiRequestAny(['client_type' => 'merchant']);
 
-        $genericService = new Generic\Service;
-
-        list($error, $data) = $genericService->call('POST', $saveActivationData);
+        list($error, $data) = $request->processInput($input)->send('merchant/activation', 'POST');
 
         if (empty($error) === false)
         {
@@ -299,15 +265,9 @@ class Service extends Base\Service
 
         $field = self::UPLOAD_KEYS[key($input)];
 
-        $saveActivationFilesData = [
-            'route_name' => 'merchant_activation_upload_file',
-            'file_name' => $field,
-            'file' => current($input)
-        ];
+        $request = new \App\Admin\ApiRequestAny(['client_type' => 'merchant']);
 
-        $genericService = new Generic\Service;
-
-        list($error, $data) = $genericService->call('POST', $saveActivationFilesData);
+        list($error, $data) = $request->send('merchant/activation/upload', 'POST');
 
         if (empty($error) === false)
         {
@@ -362,14 +322,9 @@ class Service extends Base\Service
 
     public function savePreSignupDetails($input)
     {
-        $savePreSignupDetails = [
-            'route_name' => 'merchant_edit_pre_signup_details',
-            'body'       => $input
-        ];
+        $request = new \App\Admin\ApiRequestAny(['client_type' => 'merchant']);
 
-        $genericService = new Generic\Service;
-
-        list($error, $data) = $genericService->call('PUT', $savePreSignupDetails);
+        list($error, $data) = $request->processInput($input)->send('pre_signup', 'PUT');
 
         if (empty($error) === false)
         {
@@ -420,17 +375,23 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function getMerchantUsers($merchantId) {
-        $getMerchantUsers = [
-            'route_name' => 'merchant_fetch_users',
-            'url_params' => [
-                '{id}' => $merchantId,
-            ],
-        ];
+    public function getMerchantUsers($merchantId)
+    {
+        $adminUser = Auth::guard('api')->user();
 
-        $genericService = new Generic\Service;
+        if (empty($adminUser) === false)
+        {
+            $request = new \App\Admin\ApiRequestAny([
+                'client_type' => 'admin',
+                'mode'        => "live_$merchantId"
+            ]);
+        }
+        else
+        {
+            $request = new \App\Admin\ApiRequestAny();
+        }
 
-        list($error, $data) = $genericService->call('GET', $getMerchantUsers);
+        list($error, $data) = $request->send("merchants-users", 'GET');
 
         if (empty($error) === false)
         {
@@ -444,17 +405,20 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function getMerchantTags($merchantId) {
-        $getTags = [
-            'route_name' => 'merchant_get_tags',
-            'url_params' => [
-                '{id}' => $merchantId,
-            ]
-        ];
+    public function getMerchantTags($merchantId)
+    {
+        $adminUser = Auth::guard('api')->user();
 
-        $genericService = new Generic\Service;
+        if (empty($adminUser) === false)
+        {
+            $request = new \App\Admin\ApiRequestAny(['client_type' => 'admin', 'mode' => "live_$merchantId"]);
+        }
+        else
+        {
+            $request = new \App\Admin\ApiRequestAny(['client_type' => 'merchant']);
+        }
 
-        list($error, $data) = $genericService->call('GET', $getTags);
+        list($error, $data) = $request->send("merchants/$merchantId/tags", 'GET');
 
         if (empty($error) === false)
         {
@@ -468,21 +432,15 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function addMerchantTagsOnAPI($merchantId, $tags) {
-        $addTags = [
-            'route_name' => 'merchant_tag_add',
-            'url_params' => [
-                '{id}' => $merchantId,
-            ],
-            'body' => [
-                'tags' => $tags
-            ],
-            'mode'  => 'live'
+    public function addMerchantTagsOnAPI($merchantId, $tags)
+    {
+        $body = [
+            'tags' => $tags
         ];
 
-        $genericService = new Generic\Service;
+        $request = new \App\Admin\ApiRequestAny();
 
-        list($error, $data) = $genericService->call('POST', $addTags);
+        list($error, $data) = $request->processInput($body)->send("merchants/$merchantId/tags", 'POST');
     }
 
     public function getCurrentMerchantId()

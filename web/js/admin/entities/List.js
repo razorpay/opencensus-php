@@ -34,18 +34,6 @@ export default class EntityList extends Component {
       return p;
     }, {});
 
-  collection = new Collection({
-    data: {
-      route_name: 'admin_fetch_entity_multiple',
-      mode: this.props.match.params.mode || 'live',
-      url_params: {
-        type: this.props.match.params.selectedEntity || 'payment',
-      },
-    },
-    filters: this.initialQueryParams,
-    fetchFn: adminFetch,
-  });
-
   submit = filters => {
     filters = parseFilters(filters);
 
@@ -61,7 +49,9 @@ export default class EntityList extends Component {
         return;
       }
 
-      this.collection.data.route_name = 'admin_fetch_entity_multiple';
+      this.collection.data.url = `${this.collection.extraFields.mode}/admin/${
+        this.collection.extraFields.type
+      }`;
 
       if (filters['from']) {
         filters['from'] = filters['from'];
@@ -89,7 +79,7 @@ export default class EntityList extends Component {
       )
       .join('&');
 
-    let newLocation = `/entities/${this.collection.data.mode}/${
+    let newLocation = `/entities/${this.collection.extraFields.mode}/${
       this.selectedEntity
     }`;
     if (query) {
@@ -99,33 +89,47 @@ export default class EntityList extends Component {
   };
 
   componentWillMount() {
+    this.collection = new Collection({
+      data: {
+        url: `${this.props.match.params.mode || 'live'}/admin/${this.props.match
+          .params.selectedEntity || 'payment'}`,
+      },
+      extraFields: {
+        mode: this.props.match.params.mode || 'live',
+        type: this.props.match.params.selectedEntity || 'payment',
+      },
+      filters: this.initialQueryParams,
+      fetchFn: adminFetch,
+    });
+
     extendObservable(this, {
       pending: !sharedData,
-      selectedEntity: this.collection.data.url_params.type,
+      selectedEntity: this.collection.extraFields.type,
     });
 
     this.updateUrl();
     if (!sharedData) {
-      adminFetch('admin_fetch_all_entities').then(data => {
-        if (data) {
-          data.entitiesArray = Object.keys(data.entities).sort();
-          sharedData = data;
-          this.pending = false;
+      adminFetch(`${this.collection.extraFields.mode}/admin/entities/all`).then(
+        data => {
+          if (data) {
+            data.entitiesArray = Object.keys(data.entities).sort();
+            sharedData = data;
+            this.pending = false;
+          }
+          return data;
         }
-        return data;
-      });
+      );
     }
   }
 
   selectEntity = e => {
     let value = e.target.value;
-    this.collection.data.url_params.type = value;
+    this.collection.extraFields.type = value;
     this.selectedEntity = value;
 
     this.collection.setFilters({});
     this.clearForm(value);
-
-    this.submit();
+    this.onSelectChange(e);
   };
 
   clearForm(currentEntity) {
@@ -133,16 +137,15 @@ export default class EntityList extends Component {
     // document.getElementsByName("from")[0].value = ''; // TODO: Clear from and to values explicitly
     // document.getElementsByName("to")[0].value = '';
     document.getElementById('selected-entity').value = currentEntity; // Keep the current selected entity selected
-    document.getElementById('entity-mode').value = this.collection.data.mode; // Keep the current mode selected
+    document.getElementById(
+      'entity-mode'
+    ).value = this.collection.extraFields.mode; // Keep the current mode selected
   }
 
   selectId = e => {
-    let urlParams = this.collection.data.url_params;
     let value = e.target.value;
     if (value) {
-      urlParams.id = value;
-    } else {
-      delete urlParams.id;
+      this.collection.data.url.replace('{id}', value);
     }
   };
 
@@ -159,7 +162,7 @@ export default class EntityList extends Component {
   };
 
   onModeChange = e => {
-    this.collection.data.mode = e.target.value;
+    this.collection.extraFields.mode = e.target.value;
     this.onSelectChange(e);
   };
 
@@ -212,7 +215,7 @@ export default class EntityList extends Component {
               class="link"
               target="_blank"
               to={`/entity/${this.selectedEntity}/${
-                this.collection.data.mode
+                this.collection.extraFields.mode
               }/${value}`}
             >
               {value}
@@ -272,7 +275,7 @@ export default class EntityList extends Component {
               name={null}
               onChange={this.onModeChange}
               id="entity-mode"
-              defaultValue={this.collection.data.mode}
+              defaultValue={this.collection.extraFields.mode}
             />
             <Field
               class="small"
@@ -323,7 +326,7 @@ export default class EntityList extends Component {
   downloadEntityCsv = e => {
     let filters = parseFilters(serialize(e.currentTarget.closest('form')));
     window.open(
-      `/admin/${this.collection.data.mode}/fetchentity/${
+      `/admin/${this.collection.extraFields.mode}/fetchentity/${
         this.selectedEntity
       }/csv?${Object.keys(filters)
         .map(

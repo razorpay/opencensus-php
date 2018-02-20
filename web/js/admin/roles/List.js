@@ -19,7 +19,7 @@ export default class RoleList extends Component {
   collection = new Collection({
     fetchFn: adminFetch,
     data: {
-      route_name: 'role_get_multiple',
+      url: 'live/roles',
     },
     model: CollectionItem,
   });
@@ -29,9 +29,7 @@ export default class RoleList extends Component {
   };
 
   componentWillMount() {
-    adminFetch({
-      route_name: 'permission_get_multiple',
-    }).then(data => {
+    adminFetch('live/permissions-multiple').then(data => {
       this.setState({
         pending: false,
       });

@@ -66,14 +66,10 @@ class Service extends Base\Service
         try
         {
             // This is password based login
-            $requestConfig = [
-                'route_name'    => 'admin_authentication',
-                'body'          => $input,
-            ];
 
-            $genericService = new Generic\Service;
+            $request = new \App\Admin\ApiRequestAny();
 
-            list($error, $data) = $genericService->call('POST', $requestConfig);
+            list($error, $data) = $request->processInput($input)->send('admin/authenticate', 'POST');
 
             Session::put(config('auth.guards.api.session_key'), $data);
         }
@@ -89,15 +85,13 @@ class Service extends Base\Service
     {
         $error = $data = null;
 
+        $input = http_build_query($input);
+
         // This is oAuth based login
-        $requestConfig = [
-            'route_name'   => 'admin_oauth_authenticate',
-            'query_params' => $input,
-        ];
 
-        $genericService = new Generic\Service;
+        $request = new Admin\ApiRequestAny();
 
-        list($error, $data) = $genericService->call('POST', $requestConfig);
+        list($error, $data) = $request->send("admin/oauth_login?$input", 'POST');
 
         return $data;
     }
@@ -119,32 +113,21 @@ class Service extends Base\Service
         }
 
         // Fetch the admin with the email
-        // TODO: can throw exception
-        $admin = $this->api
-                      ->admin
-                      ->getByEmail($orgId, ['email' => $result->email])
-                      ->toArray();
+        $request = new Admin\ApiRequestAny(['process_input' => false]);
+
+        list($error, $admin) = $request->send("admins/get-multiple-app-auth?email={$result->email}", 'GET');
 
         if ($admin)
         {
-            $updateData = [
+            $updateData = http_build_query([
                 'oauth_access_token'    => $token->getAccessToken(),
                 'oauth_provider_id'     => $result->id
-            ];
+            ]);
 
             // 1. Save the data (oauth token and provider) to API
+            $request = new Admin\ApiRequestAny(['process_input' => false]);
 
-            $requestConfig = [
-                'route_name'   => 'admin_edit_app_auth',
-                'query_params' => $updateData,
-                'url_params'   => [
-                    '{id}'  => $admin['id'],
-                ],
-            ];
-
-            $genericService = new Generic\Service;
-
-            list($error, $updatedAdmin) = $genericService->call('PUT', $requestConfig);
+            list($error, $updatedAdmin) = $request->send("admin-app-auth/{$admin['id']}?$updateData", 'PUT');
 
             // 2. Login the user to dashboard. Have to make an API call
             // to login the user and get an admin_token
@@ -425,17 +408,9 @@ class Service extends Base\Service
     {
         $input[Merchant\Entity::EMAIL] = strtolower($input[Merchant\Entity::EMAIL]);
 
-        $editMerchantEmail = [
-            'route_name' => 'merchant_edit_email',
-            'url_params' => [
-                '{id}' => $id,
-            ],
-            'body'       => $input,
-        ];
+        $request = new \App\Admin\ApiRequestAny(['client_type' => 'admin']);
 
-        $genericService = new Generic\Service;
-
-        list($error, $data) = $genericService->call('PUT', $editMerchantEmail);
+        list($error, $data) = $request->processInput($input)->send("merchants/$id/email", 'PUT');
 
         if (empty($error) === true)
         {
@@ -491,7 +466,7 @@ class Service extends Base\Service
                 'gateway_terminal_password_confirmation',
             ]);
 
-            $this->setApiCredentials(null, $mode);
+            $this->setAdminCredentials(null, $mode);
 
             if (isset($input['gateway_client_certificate']) === true)
             {
@@ -695,15 +670,15 @@ class Service extends Base\Service
             return [['id' => 'Merchant id cannot be null'], []];
         }
 
-        $requestConfig = [
-            'route_name'    => 'merchant_details_fetch',
-            'account_id'    => $id,
-            'merchant_id'   => $id,
-        ];
+        $request = new \App\Admin\ApiRequestAny([
+            'client_type' => 'admin',
+            'headers' => [
+                'X-Razorpay-Account' => $id,
+                'X-Merchant-Id'      => $id
+            ]
+        ]);
 
-        $genericService = new Generic\Service;
-
-        list($error, $response) = $genericService->call('GET', $requestConfig);
+        list($error, $response) = $request->send('merchants/details', 'GET');
 
         if (empty($error) === false)
         {
@@ -907,7 +882,7 @@ class Service extends Base\Service
             return array($error, null);
         }
 
-        $this->setApiCredentials(null, $input['mode']);
+        $this->setAdminCredentials(null, $input['mode']);
 
         try
         {
@@ -1147,17 +1122,9 @@ class Service extends Base\Service
 
     public function getOrg($domain)
     {
-        $requestConfig = [
-            'route_name' => 'org_get_by_hostname',
+        $request = new Admin\ApiRequestAny();
 
-            'url_params' => [
-                '{hostname}' => $domain
-            ]
-        ];
-
-        $genericService = new Generic\Service;
-
-        list($error, $data) = $genericService->call('GET', $requestConfig);
+        list($error, $data) = $request->send("orgs/hostname/$domain", "GET");
 
         if (empty($error))
         {
@@ -1185,19 +1152,13 @@ class Service extends Base\Service
 
         try
         {
-            $params = [
+            $body = [
                 'token' => $admin->token
             ];
 
-            $requestConfig = [
-                'route_name' => 'admin_get_app_auth',
-                'body'       => $params,
-                'mode'       => 'live',
-            ];
+            $request = new Admin\ApiRequestAny(['client_type' => 'admin']);
 
-            $genericService = new Generic\Service;
-
-            list($error, $data) = $genericService->call('POST', $requestConfig);
+            list($error, $data) = $request->processInput($body)->send('current_admin', 'POST');
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
@@ -1269,13 +1230,9 @@ class Service extends Base\Service
 
         try
         {
-            $requestConfig = [
-                'route_name' => 'admin_logout',
-            ];
+            $request = new \App\Admin\ApiRequestAny(['client_type' => 'admin']);
 
-            $genericService = new Generic\Service;
-
-            list($error, $data) = $genericService->call('POST', $requestConfig);
+            list($error, $data) = $request->send('admin/logout', 'POST');
 
             // Dashboard logout
             Auth::guard('api')->logout();

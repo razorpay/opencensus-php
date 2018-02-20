@@ -56,9 +56,8 @@ export default class GatewayRule extends CollectionItem {
 
     return this.request(
       adminPost({
-        route_name: 'gateway_create_rule',
-        mode,
-        body,
+        url: `${mode}/gateway/rules`,
+        data: body,
       })
     )
       .then(data => {
@@ -81,18 +80,9 @@ export default class GatewayRule extends CollectionItem {
 
     return this.request(
       fetch({
-        url: '/admin/generic',
+        url: `${mode}/gateway/rules/${ruleId}`,
         method: 'patch',
-        params: {
-          route_name: 'gateway_update_rule',
-          mode: mode,
-          url_params: {
-            '{id}': ruleId,
-          },
-        },
-        data: {
-          body,
-        },
+        data: body,
       })
     )
       .then(data => {
@@ -113,13 +103,7 @@ export default class GatewayRule extends CollectionItem {
     prevent(e);
     return confirm('Delete Rule?').then(_ => {
       return this.request(
-        adminDelete({
-          route_name: 'gateway_delete_rule',
-          mode: this.collection.filters.mode,
-          url_params: {
-            id: this.id,
-          },
-        })
+        adminDelete(`${this.collection.filters.mode}/gateway/rules/${this.id}`)
       ).then(data => {
         if (data) {
           this.collection.items.remove(this);

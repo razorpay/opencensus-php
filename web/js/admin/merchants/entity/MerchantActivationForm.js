@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 import { toJS } from 'mobx';
 
-import { adminFetch, adminPatch } from 'common/fetch';
+import fetch, { adminFetch, adminPatch } from 'common/fetch';
 import { closeModal, confirm, notifySuccess } from 'common/modal';
 import { isWorkflow } from 'common/util';
 
@@ -36,22 +36,15 @@ export default class MerchantActivationForm extends Component {
     });
   }
 
+  // TODO: TEST live mode to be sent here?
   componentWillMount() {
-    adminFetch({
-      route_name: 'invitation_fetch',
-      merchant_id: this.merchantId,
-    }).then(data => {
+    adminFetch(`live_${this.merchantId}/invitations`).then(data => {
       this.setState({
         pendingInvites: data,
       });
     });
 
-    adminFetch({
-      route_name: 'merchant_fetch_users',
-      url_params: {
-        id: this.merchantId,
-      },
-    }).then(data => {
+    fetch(`/admin/api/live_${this.merchantId}/merchants-users`).then(data => {
       this.setState({
         users: data,
       });
@@ -67,11 +60,8 @@ export default class MerchantActivationForm extends Component {
       } this form?`
     ).then(() => {
       adminPatch({
-        route_name: 'merchant_activation_archive',
-        url_params: {
-          id: details.id,
-        },
-        body: {
+        url: `live/merchant/activation/${details.id}/archive`,
+        data: {
           archive: details.merchant_details.archived ? 0 : 1,
         },
       }).then(response => {

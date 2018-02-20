@@ -61,11 +61,10 @@ export default class ActivationDetails extends Component {
 
   updateActivationStatus = body => {
     return adminPatch({
-      route_name: 'merchant_activation_status',
-      url_params: {
-        id: this.props.merchantId,
-      },
-      body,
+      url: `live/merchant/activation/${
+        this.props.merchantId
+      }/activation_status`,
+      data: body,
     }).then(response => {
       if (response) {
         if (isWorkflow(response)) {

@@ -13,10 +13,7 @@ export default class PricingPlanModal extends Component {
   state = { merchantBanksMapping: {} };
 
   componentWillMount() {
-    adminFetch({
-      route_name: 'merchant_get_banks',
-      url_params: { id: this.props.merchantId },
-    }).then(data => {
+    adminFetch(`merchants/${this.props.merchantId}/banks`).then(data => {
       let merchantBanksMapping = {};
       let banksList = {};
 
@@ -64,11 +61,8 @@ export default class PricingPlanModal extends Component {
         banks: Object.keys(body).filter(bank => body[bank] == '1'),
       };
       return adminPost({
-        route_name: 'merchant_set_banks',
-        url_params: {
-          id: this.props.merchantId,
-        },
-        body: banksData,
+        url: `live/merchants/${this.props.merchantId}/banks`,
+        data: banksData,
       })
         .then(response => {
           if (response) {

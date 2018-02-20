@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 import BaseModal from 'ui/BaseModal';
 
-import { adminFetch } from 'common/fetch';
+import fetch, { adminFetch } from 'common/fetch';
 
 import Table from 'ui/Table';
 
@@ -11,20 +11,14 @@ export default class TeamDetails extends Component {
   state = {};
 
   componentWillMount() {
-    adminFetch({
-      route_name: 'invitation_fetch',
-      merchant_id: this.props.merchantId,
-    }).then(data => {
+    adminFetch(`live_${this.props.merchantId}/invitations`).then(data => {
       this.setState({
         pendingInvites: data,
       });
     });
 
-    adminFetch({
-      route_name: 'merchant_fetch_users',
-      url_params: {
-        id: this.props.merchantId,
-      },
+    return fetch({
+      url: `/admin/api/live_${this.props.merchantId}/merchants-users`,
     }).then(data => {
       this.setState({
         users: data,
@@ -34,7 +28,7 @@ export default class TeamDetails extends Component {
 
   render() {
     return (
-      <BaseModal header={`Team Details for merchant ${this.propsmerchantId}`}>
+      <BaseModal header={`Team Details for merchant ${this.props.merchantId}`}>
         <div class="container">
           <div class="heading">Users</div>
           {!this.state.users ? (

@@ -10,24 +10,14 @@ export const INVITATION_REMOVE = 'INVITATION_REMOVE';
 export const USER_UPDATE = 'USER_UPDATE';
 export const USER_REMOVE = 'USER_REMOVE';
 
-const fetchInvitations = merchant_id =>
-  merchantFetch({
-    url: 'invitations',
-    params: {
-      merchant_id,
-    },
-  });
+const fetchInvitations = _ => merchantFetch('invitations');
 
-const fetchUsers = merchant_id =>
-  merchantFetch(`merchants/${merchant_id}/users`);
+const fetchUsers = _ => merchantFetch(`merchants-users`);
 
 export const fetchTeamDetails = params => {
   return {
     type: TEAM_FETCH,
-    payload: Promise.all([
-      fetchInvitations(params.merchant_id),
-      fetchUsers(params.merchant_id),
-    ]).then(values => {
+    payload: Promise.all([fetchInvitations(), fetchUsers()]).then(values => {
       if (!values[0].success || !values[1].success) {
         throw "Couldn't load team details";
       }

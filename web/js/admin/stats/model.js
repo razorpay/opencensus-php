@@ -92,10 +92,10 @@ class Stat {
       },
     };
 
+    // TODO: TEST whether mode needs to be sent as live or not as earlier it wasn't there?
     return adminPost({
-      merchant_id: data.merchant_id,
-      body,
-      route_name: 'merchant_analytics',
+      url: `live_${data.merchant_id}/merchant/analytics`,
+      data: body,
     }).then(response => {
       var result;
       if (response) {

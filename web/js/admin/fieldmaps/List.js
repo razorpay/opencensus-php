@@ -13,7 +13,7 @@ const fields = [
   ['ID', item => item.id],
   ['Org ID', item => item.org_id],
   ['Entity Name', item => item.entity_name],
-  ['Fields', item => item.fields.join(',')],
+  ['Fields', item => item.fields.join(', ')],
   [
     'Actions',
     item => (
@@ -28,10 +28,7 @@ const fields = [
 export default class FieldMaps extends Component {
   collection = new Collection({
     data: {
-      route_name: 'org_fieldmap_get_multiple',
-      url_params: {
-        orgId: this.props.match.params.orgId,
-      },
+      url: `live/orgs/${this.props.match.params.orgId}/field-map`,
     },
     fetchFn: adminFetch,
     model: CollectionItem,

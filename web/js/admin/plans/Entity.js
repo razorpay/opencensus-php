@@ -17,7 +17,7 @@ export default class PlanEntity extends Component {
   collection = new Plan(this.props.plan);
 
   componentWillMount() {
-    adminFetch('pricing_supported_networks').then(networks => {
+    adminFetch('live/pricing/networks').then(networks => {
       networks.netbanking = networks.bank;
       networks.emi = networks.card;
       sharedNetworks.set(networks);

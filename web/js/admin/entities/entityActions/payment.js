@@ -18,13 +18,7 @@ import Amount from 'ui/Amount';
 // Payment Actions
 export default ({ entity, mode, updateEntity }) => {
   function verifyPayment() {
-    return adminFetch({
-      route_name: 'payment_verify',
-      mode: mode,
-      url_params: {
-        id: entity.id,
-      },
-    }).then(data => {
+    return adminFetch(`${mode}/payments/${entity.id}/verify`).then(data => {
       if (data) {
         notifyDone();
         setTimeout(() => window.location.reload(), 1500);
@@ -35,16 +29,11 @@ export default ({ entity, mode, updateEntity }) => {
 
   function capturePayment() {
     return adminPost({
-      route_name: 'payment_capture',
-      mode: mode,
-      url_params: {
-        id: entity.id,
-      },
-      body: {
+      url: `${mode}_${entity.merchant_id}/payments/${entity.id}/capture`,
+      data: {
         amount: entity.amount,
         currency: entity.currency,
       },
-      merchant_id: entity.merchant_id,
     }).then(data => {
       if (data) {
         notifyDone();
@@ -54,14 +43,9 @@ export default ({ entity, mode, updateEntity }) => {
     });
   }
   function refundAuthorizedPayment() {
-    return adminPost({
-      route_name: 'payment_authorize_refund',
-      mode: mode,
-      url_params: {
-        id: entity.id,
-      },
-      merchant_id: entity.merchant_id,
-    }).then(data => {
+    return adminPost(
+      `${mode}_${entity.merchant_id}/payments/${entity.id}/authorize_refund`
+    ).then(data => {
       if (data) {
         notifySuccess('');
         // data belongs to refund entity, not payment
@@ -78,13 +62,8 @@ export default ({ entity, mode, updateEntity }) => {
       parseInt(entity.amount) - parseInt(entity.amount_refunded);
 
     return adminPost({
-      route_name: 'payment_refund',
-      mode: mode,
-      url_params: {
-        id: entity.id,
-      },
-      merchant_id: entity.merchant_id,
-      body,
+      url: `${mode}_${entity.merchant_id}/payments/${entity.id}/refund`,
+      data: body,
     }).then(data => {
       if (data) {
         notifySuccess('Refund is successful');
@@ -97,12 +76,8 @@ export default ({ entity, mode, updateEntity }) => {
 
   function createDispute(body) {
     adminPost({
-      route_name: 'payment_disputes',
-      url_params: {
-        id: entity.id,
-      },
-      mode: mode,
-      body,
+      url: `${mode}/payments/${entity.id}/disputes}`,
+      data: body,
     })
       .then(data => {
         if (data) {
@@ -122,19 +97,15 @@ export default ({ entity, mode, updateEntity }) => {
   }
 
   function authorizePayment() {
-    return adminPost({
-      url_params: {
-        id: entity.id,
-      },
-      mode: mode,
-      route_name: 'payment_authorize_failed',
-    }).then(data => {
-      if (data) {
-        updateEntity(data);
-        notifySuccess('Payment Authorized Successfully.');
-        closeModal();
+    return adminPost(`${mode}/payments/${entity.id}/authorize_failed`).then(
+      data => {
+        if (data) {
+          updateEntity(data);
+          notifySuccess('Payment Authorized Successfully.');
+          closeModal();
+        }
       }
-    });
+    );
   }
 
   return (
@@ -291,13 +262,9 @@ class PaymentAnalytics extends Component {
   fields = this::getFields;
 
   componentWillMount() {
-    adminFetch({
-      route_name: 'admin_fetch_entity_multiple',
-      url_params: {
-        type: 'payment_analytics',
-      },
-      mode: this.props.mode,
-      query_params: {
+    fetch({
+      url: `${this.props.mode}/admin/payment_analytics`,
+      params: {
         payment_id: this.props.paymentId,
       },
     }).then(data => {
@@ -406,14 +373,11 @@ export class PaymentRefundsList extends Component {
   ];
 
   componentWillMount() {
-    adminFetch({
-      route_name: 'payment_fetch_refunds',
-      merchant_id: this.props.merchant_id,
-      mode: this.props.mode,
-      url_params: {
-        id: this.props.id,
-      },
-    }).then(response => {
+    adminFetch(
+      `${this.props.mode}_${this.props.merchant_id}/payments/${
+        this.props.id
+      }/refunds`
+    ).then(response => {
       if (response) {
         this.setState({ refunds: response.items });
       }

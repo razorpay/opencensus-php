@@ -29,20 +29,13 @@ class Service extends Base\Service
      */
     public function acceptInvitationForUser($inviteId, $user)
     {
-        $acceptInvitationForUser = [
-            'route_name' => 'invitation_action',
-            'url_params' => [
-                '{id}'     => $inviteId,
-                '{action}' => 'accept'
-            ],
-            'body' => [
-                'user_id' => $user->id
-            ]
+        $body = [
+            'user_id' => $user->id
         ];
 
-        $genericService = new Generic\Service;
+        $request = new \App\Admin\ApiRequestAny();
 
-        list($error, $data) = $genericService->call('POST', $acceptInvitationForUser);
+        list($error, $data) = $request->processInput($body)->send("invitations/$inviteId/accept", 'POST');
 
         if (empty($error) === true)
         {

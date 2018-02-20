@@ -170,12 +170,4 @@ class Admin extends Entity
         $className = lcfirst($className);
         return $className.'/';
     }
-
-    public function getByEmail($orgId, $options)
-    {
-        // $relativeUrl = "orgs/$orgId/admins/get_by_attr";
-        $relativeUrl = "admins/get-multiple-app-auth";
-
-        return $this->request('GET', $relativeUrl, $options);
-    }
 }

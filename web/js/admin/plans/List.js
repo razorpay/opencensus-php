@@ -22,7 +22,7 @@ function fetchFn() {
 export default class PlanList extends Component {
   collection = new Collection({
     data: {
-      route_name: 'pricing_get_merchant_plans',
+      url: 'live/pricing/merchants',
     },
     fetchFn,
   });

@@ -15,28 +15,19 @@ export default class EditUser extends Component {
   // selected actions
   groups = observable.map();
 
+  // TODO: TEST Check what's orgId. 'org_fieldmap_get_by_entity' in api-route-map
   fetchFieldMapsParams = {
-    route_name: 'org_fieldmap_get_by_entity',
-    url_params: {
-      entity: 'admin',
-    },
+    url: `live/field-map/entity/admin`,
   };
 
   fetchUserParams = {
-    route_name: 'admin_get',
-    url_params: {
-      adminId: this.props.match.params.id,
-    },
+    url: `live/admin/${this.props.match.params.id}/fetch`,
   };
 
   componentWillMount() {
     extendObservable(this, { pending: true });
     let { id } = this.props.match.params;
-    let requests = [
-      'group_get_multiple',
-      'role_get_multiple',
-      this.fetchFieldMapsParams,
-    ];
+    let requests = ['live/groups', 'live/roles', this.fetchFieldMapsParams];
 
     if (id !== 'new') {
       requests.push(this.fetchUserParams);
@@ -82,28 +73,29 @@ export default class EditUser extends Component {
   save = body => {
     let { id } = this.props.match.params;
     let { groups } = this;
-    let data = { body };
     let request = null;
 
-    let successMsg;
+    let successMsg, url;
 
     if (id !== 'new') {
-      data.route_name = 'admin_edit';
-      data.url_params = { adminId: id };
+      url = `live/admin/${id}`;
       request = adminPut;
       successMsg = 'User is created successfully';
     } else {
-      data.route_name = 'admin_create';
+      url = 'live/admins';
       request = adminPost;
       successMsg = 'User is updated successfully';
     }
 
-    data.body.groups = groups.keys();
-    if (data.body.roles) {
-      data.body.roles = data.body.roles.split(',');
+    body.groups = groups.keys();
+    if (body.roles) {
+      body.roles = body.roles.split(',');
     }
 
-    return request(data).then(response => {
+    return request({
+      url,
+      data: body,
+    }).then(response => {
       if (response) {
         if (isWorkflow(response)) {
           notifySuccess('Workflow created successfully');
@@ -138,14 +130,8 @@ export default class EditUser extends Component {
 
 export function removeEntity(e) {
   prevent(e);
-  let params = {
-    route_name: 'admin_delete',
-    url_params: {
-      adminId: this.id,
-    },
-  };
 
-  return adminDelete(params).then(response => {
+  return adminDelete(`admin/${this.id}`).then(response => {
     if (response) {
       if (isWorkflow(response)) {
         notifySuccess('Workflow created successfully');

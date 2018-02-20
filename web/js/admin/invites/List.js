@@ -17,7 +17,7 @@ const fields = [
 export default class InvitesList extends Component {
   collection = new Collection({
     data: {
-      route_name: 'admin_lead_get_multiple',
+      url: 'live/admin-lead-multiple',
     },
     fetchFn: adminFetch,
     model: CollectionItem,

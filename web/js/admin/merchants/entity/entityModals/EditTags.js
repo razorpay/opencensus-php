@@ -14,11 +14,8 @@ export default ({ props, merchantId }) => {
     const tags = body.tags ? body.tags.split(',').map(tag => tag.trim()) : [];
 
     return adminPost({
-      route_name: 'merchant_tag_add',
-      url_params: {
-        id: merchantId,
-      },
-      body: { tags },
+      url: `live/merchants/${merchantId}/tags`,
+      data: { tags },
     })
       .then(data => {
         if (data) {

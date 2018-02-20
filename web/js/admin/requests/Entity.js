@@ -23,12 +23,7 @@ export default class RequestEntity extends Component {
     extendObservable(this, { pending: true });
     const { id } = this.props.match.params;
 
-    adminFetch({
-      route_name: 'workflow_action_details',
-      url_params: {
-        id,
-      },
-    }).then(
+    adminFetch(`live/w-actions/${id}/details`).then(
       action(response => {
         if (response) {
           //init levels map {level_num : [role1, role2, ...]}
@@ -71,11 +66,8 @@ export default class RequestEntity extends Component {
     }
 
     return adminPut({
-      route_name: 'workflow_action_update',
-      url_params: {
-        id,
-      },
-      body,
+      url: `live/w-actions/${id}`,
+      data: body,
     }).then(response => {
       if (response) {
         notifyDone();

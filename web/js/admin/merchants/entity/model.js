@@ -36,55 +36,51 @@ export default class Model extends BaseModel {
 
   @action
   fetchDetails() {
-    const data = {
-      route_name: 'merchant_details_fetch',
-      account_id: this.merchantId,
-      merchant_id: this.merchantId,
-    };
-
-    return this.request('fetchMerchantDetails', this.fetchFn(data)).then(
-      data => {
-        if (data) {
-          this.setAutoRefundDelay(data);
-          this.merchant.details = data;
-        }
-
-        // TODO: Ensure rendering happpens on resolve of each below otherwise data will update but not merchant object, hence no re-rendering. Or take out each property instead of putting inside merchant object
-
-        if (user.permissions.find(perm => perm === 'view_merchant_pricing')) {
-          this.fetchPricingPlans();
-        }
-
-        if (user.permissions.find(perm => perm === 'view_merchant_balance')) {
-          this.fetchBalance();
-        }
-
-        this.fetchScheduleTasks();
-        this.fetchGatewayRules();
-
-        if (user.permissions.find(perm => perm === 'view_all_admin')) {
-          this.fetchAdmins();
-        }
-
-        this.fetchTerminals('live');
-        // this.fetchTerminals('test');
-        if (user.permissions.find(perm => perm === 'view_merchant_features')) {
-          this.fetchFeatures('live');
-          this.fetchFeatures('test');
-        }
+    return this.request(
+      'fetchMerchantDetails',
+      this.fetchFn({
+        url: 'live/merchants/details',
+        headers: {
+          'X-Razorpay-Account': this.merchantId,
+        },
+      })
+    ).then(data => {
+      if (data) {
+        this.setAutoRefundDelay(data);
+        this.merchant.details = data;
       }
-    );
+
+      // TODO: Ensure rendering happpens on resolve of each below otherwise data will update but not merchant object, hence no re-rendering. Or take out each property instead of putting inside merchant object
+
+      if (user.permissions.find(perm => perm === 'view_merchant_pricing')) {
+        this.fetchPricingPlans();
+      }
+
+      if (user.permissions.find(perm => perm === 'view_merchant_balance')) {
+        this.fetchBalance();
+      }
+
+      this.fetchScheduleTasks();
+      this.fetchGatewayRules();
+
+      if (user.permissions.find(perm => perm === 'view_all_admin')) {
+        this.fetchAdmins();
+      }
+
+      this.fetchTerminals('live');
+      // this.fetchTerminals('test');
+      if (user.permissions.find(perm => perm === 'view_merchant_features')) {
+        this.fetchFeatures('live');
+        this.fetchFeatures('test');
+      }
+    });
   }
 
   @action
   fetchMerchantOffers() {
     const data = {
-      route_name: 'admin_fetch_entity_multiple',
-      url_params: {
-        type: 'offer',
-      },
-      mode: 'live',
-      query_params: {
+      url: 'live/admin/offer',
+      params: {
         merchant_id: this.merchantId,
       },
     };
@@ -104,19 +100,14 @@ export default class Model extends BaseModel {
   @action
   fetchBalance() {
     const request = mode => {
-      const data = {
-        route_name: 'balance_fetch',
-        merchant_id: this.merchantId,
-        mode,
-      };
-
-      return this.request('fetchMerchantBalance', this.fetchFn(data)).then(
-        data => {
-          if (data) {
-            this.merchant.balanceDetails[mode] = data;
-          }
+      return this.request(
+        'fetchMerchantBalance',
+        this.fetchFn(`${mode}_${this.merchantId}/balance`)
+      ).then(data => {
+        if (data) {
+          this.merchant.balanceDetails[mode] = data;
         }
-      );
+      });
     };
 
     request('test');
@@ -125,75 +116,52 @@ export default class Model extends BaseModel {
 
   @action
   fetchPricingPlans() {
-    const data = {
-      route_name: 'merchant_get_pricing',
-      url_params: {
-        id: this.merchantId,
-      },
-    };
-
-    return this.request('fetchMerchantPricingPlans', this.fetchFn(data)).then(
-      data => {
-        if (data) {
-          this.merchant.pricingPlans = data;
-        }
+    return this.request(
+      'fetchMerchantPricingPlans',
+      this.fetchFn(`live/merchants/${this.merchantId}/pricing`)
+    ).then(data => {
+      if (data) {
+        this.merchant.pricingPlans = data;
       }
-    );
+    });
   }
 
   @action
   fetchTerminals(mode) {
-    const data = {
-      route_name: 'merchant_get_terminals',
-      url_params: {
-        id: this.merchantId,
-      },
-      mode,
-    };
-
-    return this.request('fetchMerchantTerminals', this.fetchFn(data)).then(
-      data => {
-        if (data) {
-          this.merchant.terminals.items = data.items;
-          this.merchant.terminals.count += data.count;
-        }
+    return this.request(
+      'fetchMerchantTerminals',
+      this.fetchFn(`${mode}/merchants/${this.merchantId}/terminals`)
+    ).then(data => {
+      if (data) {
+        this.merchant.terminals.items = data.items;
+        this.merchant.terminals.count += data.count;
       }
-    );
+    });
   }
 
   @action
   fetchFeatures(mode) {
-    const data = {
-      route_name: 'feature_get_multiple',
-      url_params: {
-        entityId: this.merchantId,
-      },
-      mode: mode,
-    };
-
-    return this.request('fetchMerchantFeatures', this.fetchFn(data)).then(
-      data => {
-        if (data) {
-          data.assigned_features = data.assigned_features.map(
-            feature => feature.name
-          );
-          this.merchant.features = { ...this.merchant.features, [mode]: data }; // To allow re-render when 2nd api request modifies features.
-        }
+    return this.request(
+      'fetchMerchantFeatures',
+      this.fetchFn(`${mode}/features/${this.merchantId}`)
+    ).then(data => {
+      if (data) {
+        data.assigned_features = data.assigned_features.map(
+          feature => feature.name
+        );
+        this.merchant.features = { ...this.merchant.features, [mode]: data }; // To allow re-render when 2nd api request modifies features.
       }
-    );
+    });
   }
 
+  // TODO: TEST if merchant id to be passed as params or in url
   @action
   fetchGatewayRules() {
     const data = {
-      route_name: 'admin_fetch_entity_multiple',
-      url_params: {
-        type: 'gateway_rule',
-      },
-      query_params: {
+      url: 'live/admin/gateway_rule',
+      params: {
         merchant_id: this.merchantId,
       },
-      mode: 'live',
     };
 
     return this.request('fetchGatewayRules', this.fetchFn(data)).then(data => {
@@ -205,34 +173,29 @@ export default class Model extends BaseModel {
 
   @action
   fetchAdmins() {
-    const data = {
-      route_name: 'admin_get_multiple',
-    };
+    return this.request('fetchAdmins', this.fetchFn('live/admins')).then(
+      data => {
+        const adminsMap = {};
 
-    return this.request('fetchAdmins', this.fetchFn(data)).then(data => {
-      const adminsMap = {};
+        data.items.map(admin => {
+          adminsMap[admin.id] = {
+            role: admin.roles.length ? admin.roles[0].name : '',
+            email: admin.email,
+            name: admin.name,
+          };
+        });
 
-      data.items.map(admin => {
-        adminsMap[admin.id] = {
-          role: admin.roles.length ? admin.roles[0].name : '',
-          email: admin.email,
-          name: admin.name,
-        };
-      });
-
-      this.merchant.adminsMap = adminsMap;
-    });
+        this.merchant.adminsMap = adminsMap;
+      }
+    );
   }
 
   @action
   fetchCreditsLogs = mode => {
-    const data = {
-      route_name: 'credits_fetch_multiple',
-      merchant_id: this.merchantId,
-      mode,
-    };
-
-    return this.request('fetchGatewayRules', this.fetchFn(data)).then(data => {
+    return this.request(
+      'fetchGatewayRules',
+      this.fetchFn(`${mode}_${this.merchantId}/credits`)
+    ).then(data => {
       if (data) {
         this.merchant.creditsLogs = {
           ...this.merchant.creditsLogs,
@@ -246,21 +209,13 @@ export default class Model extends BaseModel {
   deleteCreditLogs = (creditId, mode) => {
     creditId = creditId.split('_')[1];
 
-    const data = {
-      route_name: 'credits_delete',
-      url_params: {
-        mid: this.merchantId,
-        id: creditId,
-      },
-      mode,
-    };
-
     return this.request(
       'deleteCreditLogs',
-      adminDelete(data).then(data => {
+      adminDelete(
+        `${mode}/merchants/${this.merchantId}/credits/${creditId}`
+      ).then(data => {
         if (data.success) {
           notifySuccess('Credit Log deleted successfully');
-
           this.fetchCreditsLogs(mode);
         }
       })
@@ -269,18 +224,11 @@ export default class Model extends BaseModel {
 
   @action
   deleteFeature = (featureName, featureMode) => {
-    const data = {
-      route_name: 'feature_delete',
-      url_params: {
-        entityId: this.merchantId,
-        featureName,
-      },
-      mode: featureMode,
-    };
-
     return this.request(
       'deleteFeature',
-      adminDelete(data).then(data => {
+      adminDelete(
+        `${featureMode}/features/${this.merchantId}/${featureName}`
+      ).then(data => {
         if (isWorkflow(data)) {
           return;
         }
@@ -367,21 +315,14 @@ export default class Model extends BaseModel {
 
   @action
   fetchScheduleTasks() {
-    const data = {
-      route_name: 'admin_fetch_entity_multiple',
-      url_params: {
-        type: 'schedule_task',
-      },
-      query_params: {
-        merchant_id: this.merchantId,
-        type: 'settlement',
-      },
-    };
-
     return this.request(
       'fetchMerchantScheduleTasks',
       this.fetchFn({
-        ...data,
+        url: 'live/admin/schedule_task',
+        params: {
+          merchant_id: this.merchantId,
+          type: 'settlement',
+        },
       })
     ).then(data => {
       // Check if merchant has Settlement Schedule

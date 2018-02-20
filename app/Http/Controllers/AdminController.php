@@ -128,7 +128,7 @@ class AdminController extends Controller
         {
             $error = (new Admin\Service)->loginWithGoogle($code, $googleService, $org['id']);
 
-            if (empty($error))
+            if (empty($error) === true)
             {
                 // sort of a page reload/refresh
                 return redirect('/admin');

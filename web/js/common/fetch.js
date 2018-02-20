@@ -2,6 +2,8 @@ import axios from 'axios';
 import { deepClone } from 'common/util';
 import { notifyError } from 'common/modal';
 
+// If directly using fetch, then send absolute url
+// Eg: fetch({url: '/admin/api/live/your_url'})
 export default function fetch(options, suppressError) {
   return axios(options)
     .then(({ data }) => {
@@ -23,81 +25,47 @@ export default function fetch(options, suppressError) {
     .catch(e => notifyError(e));
 }
 
-export function adminFetch(params, customUrl) {
-  return fetch({
-    url: customUrl ? customUrl : '/admin/generic',
-    params:
-      typeof params === 'string' ? { route_name: params } : parseParams(params),
-  });
+/*
+  For all custom adminFetch, Post, /etc helpers, payload must have relative url to "/admin/api/"
+  Eg: adminFetch({url: '{mode}/your_url'}), or adminFetch('{mode}/your_url')
+*/
+export const adminFetch = payload => fetch(_makePayload(payload, 'get'));
+export const adminPost = payload => fetch(_makePayload(payload, 'post'));
+export const adminPut = payload => fetch(_makePayload(payload, 'put'));
+export const adminDelete = payload => fetch(_makePayload(payload, 'delete'));
+export const adminPatch = payload => fetch(_makePayload(payload, 'patch'));
+
+function _makePayload(payload, type) {
+  let reqPayload = {
+    method: type,
+  };
+
+  if (typeof payload === 'string') {
+    reqPayload.url = payload;
+  } else {
+    reqPayload = { ...reqPayload, ...payload };
+  }
+
+  reqPayload.url = '/admin/api/' + reqPayload.url; // final url is "/admin/api/+url"
+
+  return reqPayload;
 }
 
-export function adminPost(data, customUrl) {
-  data = parseParams(data);
-  return fetch({
-    url: customUrl ? customUrl : '/admin/generic',
-    method: 'post',
-    data,
-  });
-}
-
-export function adminPut(data, customUrl) {
-  data = parseParams(data);
-  return fetch({
-    url: customUrl ? customUrl : '/admin/generic',
-    method: 'put',
-    data,
-  });
-}
-
-export function adminFormUpload(form, customUrl) {
+// url are must be absolute url, Eg: /admin/api/{mode}/your_url
+export function adminFormUpload(form, url) {
   //Let axios decide which "Content-Type" to send
-  let url = customUrl ? customUrl : '/admin/generic';
   let fData = createFormData(form);
 
   return axios.post(url, fData);
 }
 
+// url are must be absolute url, Eg: /admin/api/{mode}/your_url
 //TODO: [CRITICAL] Merchant batch upload broke due to change in createFormData supporting array
-export function adminFormUpload2(form, customUrl) {
+export function adminFormUpload2(form, url) {
   //Let axios decide which "Content-Type" to send
-  let url = customUrl ? customUrl : '/admin/generic';
   let fData = createFormData2(form);
 
   return axios.post(url, fData);
-}
-
-export function adminDelete(params) {
-  return fetch({
-    url: '/admin/generic',
-    method: 'delete',
-    params: parseParams(params),
-  });
-}
-
-export function adminPatch(params) {
-  const data = parseParams(params);
-  return fetch({
-    url: '/admin/generic',
-    method: 'patch',
-    data,
-  });
-}
-
-function parseParams(origParams) {
-  let params = deepClone(origParams);
-
-  if (origParams.query_params) {
-    params.query_params = JSON.stringify(origParams.query_params);
-  }
-
-  if (origParams.url_params) {
-    let curlyParams = {};
-    for (let i in origParams.url_params) {
-      curlyParams[`{${i}}`] = origParams.url_params[i];
-    }
-    params.url_params = JSON.stringify(curlyParams);
-  }
-  return params;
 }
 
 const createFormData = (form = {}) => {

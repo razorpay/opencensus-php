@@ -86,10 +86,8 @@ export default class CreateOffer extends Component {
     body = this.cleanFields(body);
 
     return adminPost({
-      route_name: 'offer_create',
-      merchant_id: this.props.merchantId,
-      mode,
-      body,
+      url: `${mode}_${this.props.merchantId}/offers`,
+      data: body,
     })
       .then(response => {
         if (response) {

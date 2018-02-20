@@ -26,6 +26,14 @@ class ApiRequestAny
      */
     protected $client;
 
+    protected $mode;
+
+    protected $path;
+
+    protected $routeMap;
+
+    protected $shouldProcessInput = true;
+
     const RAZORPAY_ACCOUNT_HEADER = 'X-Razorpay-Account';
 
     const CONTENT_TYPE_JSON = 'application/json';
@@ -40,54 +48,142 @@ class ApiRequestAny
      * @param string $mode live|test
      * @param string $base_url base url of dashboard
      */
-    function __construct($mode, $base_url = null)
+    function __construct(array $options = [])
     {
         // Increase the time limit
         set_time_limit(600);
 
-        $this->options = [
-            'headers' => [
-                'X-Dashboard' => 'true',
-                'X-User-Agent' => Request::header('User-Agent'),
-                'X-IP-Address' => Request::ip()
-            ],
-        ];
+        // === Mode
 
-        $this->processRoute($mode);
+        $this->mode = $options['mode'] ?? 'live';
 
-        $this->processInput();
+        // === Client Type
 
-        $this->forwardCookies();
-
-        if ($base_url === null)
+        if (empty($options['client_type']) === true)
         {
-            $base_url = Config::get('api.url');
+            $routeName = Route::currentRouteName();
+
+            if (in_array($routeName, ['merchant', 'admin'], true) === false)
+            {
+                // Default
+                $this->clientType = 'user';
+            }
+            else
+            {
+                $this->clientType = $routeName;
+            }
+        }
+        else
+        {
+            $this->clientType = $options['client_type'];
         }
 
-        // Create the guzzle client
+        // === Headers
+
+        $domain = \Request::server('SERVER_NAME');
+
+        $defaultHeaders = [
+            'X-Dashboard'       => 'true',
+            'X-User-Agent'      => Request::header('User-Agent'),
+            'X-IP-Address'      => Request::ip(),
+            'X-Org-Hostname'    => $domain,
+        ];
+
+        $headers = $options['headers'] ?? [];
+        
+        $headers = array_merge($defaultHeaders, $headers);
+
+        // === Request options
+
+        $this->options = [
+            'headers' => $headers,
+        ];
+
+        $base_url = Config::get('api.url');
+
+        // === Guzzle client
+
         $this->client = new Guzzle([
             'base_url' => $base_url
         ]);
+
+        // === Get API Route map config
+
+        $this->routeMap = Config::get('api-route-map');
+
+        // === Process client specific headers
+
+        $this->processAuthHeaders();
+
+        // === Forward cookies from the api
+
+        $this->forwardCookies();
+
+        // === Auto process input
+
+        $processInput = $options['process_input'] ?? true;
+
+        if ($processInput === true)
+        {
+            $this->processInput();
+        }
     }
 
-    public function processRoute($mode) {
+    public function processAuthHeaders() {
 
-        $routeName = Route::currentRouteName();
+        $clientType = $this->clientType;
 
-        if (empty($routeName) === false) {
+        $baUser = null;
 
-            if ($routeName === 'merchant')
+        if (empty($clientType) === false) {
+
+            if ($clientType === 'merchant')
             {
-
                 $user = Auth::guard('user')->user();
 
-                $currentMerchant = $user->currentMerchant();
+                if (empty($user) === false)
+                {
+                    $currentMerchant = $user->currentMerchant();
 
-                $this->options['headers']['X-Dashboard-User-Role'] = $currentMerchant->role;
+                    $this->options['headers']['X-Dashboard-User-Role'] = $currentMerchant->role;
 
-                $this->options['headers']['X-Dashboard-User-Id'] = $user->id;
+                    $this->options['headers']['X-Dashboard-User-Id'] = $user->id;
 
-                $this->options['headers']['X-Dashboard-User-Email'] = $user->email;
+                    $this->options['headers']['X-Dashboard-User-Email'] = $user->email;
+                }
+
+                $accountId = Request::header(self::RAZORPAY_ACCOUNT_HEADER);
+                
+                if ($accountId)
+                {
+                    $this->options['headers'][self::RAZORPAY_ACCOUNT_HEADER] = $accountId;
+                }
+
+                $baUser = $this->mode . '_' . $currentMerchant->id;
+
+                $pass = Config::get('api.auth_pass');
+            }
+            else if ($clientType === 'admin')
+            {
+                $adminUser = Auth::guard('api')->user();
+
+                if (empty($adminUser) === true)
+                {
+                    throw new \Razorpay\Api\Errors\BadRequestError(
+                        'Invalid admin request.',
+                        \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                        400);
+                }
+
+                $adminUsername = $adminUser->username ?? null;
+
+                $this->options['headers']['X-Dashboard-Admin-Username'] = $adminUsername;
+
+                $adminEmail = $adminUser->email ?? null;
+
+                $this->options['headers']['X-Dashboard-Admin-Email'] = $adminEmail;
+
+                $this->options['headers']['X-Admin-Token'] = $adminUser->token;
 
                 $accountId = Request::header(self::RAZORPAY_ACCOUNT_HEADER);
 
@@ -96,41 +192,48 @@ class ApiRequestAny
                     $this->options['headers'][self::RAZORPAY_ACCOUNT_HEADER] = $accountId;
                 }
 
-                $mode .= '_' . $currentMerchant->id;
+                $baUser = $this->mode;
 
+                $pass = Config::get('api.auth_pass');
             }
-            else if ($routeName === 'admin')
+            else if ($clientType === 'user')
             {
+                // NOTE: Merchant will be able to access the user/guest routes
 
-                $adminUser = Auth::guard('api')->user();
+                $user = Auth::guard('user')->user();
 
-                $this->options['headers']['X-Admin-Token'] = $adminUser->token;
+                if (empty($user) === false)
+                {
+                    $this->options['headers']['X-Dashboard-User-Id'] = $user->id;
 
-                $this->options['headers']['X-Org-Hostname'] = \Request::server('SERVER_NAME');
+                    $this->options['headers']['X-Dashboard-User-Id'] = $user->id;
 
-            }
-            else if ($routeName === 'user')
-            {
-                $headers['X-Dashboard-User-Id'] = Auth::guard('user')->user()->id;
+                    $this->options['headers']['X-Dashboard-User-Email'] = $user->email;
+                }
 
-                $mode = 'live';
+                // NOTE: We should NEVER hit this as Dashboard internal.
+                $baUser = 'live';
+
+                $pass = Config::get('api.auth_guest_pass');
             }
         }
 
-        if (empty($mode) === false) {
+        // Set BasicAuth creds
+        if (empty($baUser) === false)
+        {
             $this->options['auth'] = [
-                'rzp_' . $mode,
-                Config::get('api.auth_pass')
+                'rzp_' . $baUser,
+                $pass
             ];
         }
 
+        return $this;
     }
 
     // process body according to content-type
-    public function processInput()
+    public function processInput($data = null)
     {
-
-        $input = Request::all();
+        $input = $data ?? Request::all();
 
         $contentType = Request::header('content-type', self::CONTENT_TYPE_JSON);
 
@@ -166,18 +269,20 @@ class ApiRequestAny
         {
             $this->options['body'] = $input;
         }
+
+        return $this;
     }
 
     /**
      * Fires the request to the API
      * @return array standard response
      */
-    public function send($path)
+    public function send($path, $method = null)
     {
         $exception = null;
         $errors = [];
         $response = null;
-        $method = Request::method();
+        $method = $method ?? Request::method();
 
         try
         {

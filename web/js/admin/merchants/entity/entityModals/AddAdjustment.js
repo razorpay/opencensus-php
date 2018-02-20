@@ -20,10 +20,9 @@ export default ({ merchantId }) => {
       body.merchant_id = merchantId;
 
       return adminPost({
-        route_name: 'adj_add',
+        url: `${mode}/adjustments`,
+        data: body,
         merchant_id: merchantId,
-        mode,
-        body,
       })
         .then(response => {
           if (response) {

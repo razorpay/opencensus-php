@@ -2,18 +2,15 @@ import React, { Component } from 'react';
 
 import { notifyError } from 'common/modal';
 
-import { adminFetch } from 'common/fetch';
+import fetch, { adminFetch } from 'common/fetch';
 import EntityRow from 'ui/EntityRow';
 
 export default class DocumentDetails extends Component {
   state = { files: null };
 
   componentWillMount() {
-    adminFetch({
-      route_name: 'merchant_activation_files',
-      url_params: {
-        id: this.props.merchantId,
-      },
+    fetch({
+      url: `/admin/api/live/merchant/activation/${this.props.merchantId}/files`,
       account_id: this.props.merchantId,
     })
       .then(data => {
@@ -59,17 +56,15 @@ export default class DocumentDetails extends Component {
                       </ul>
                     </span>
                     <div class="m-t left-align">
-                      {
-                        do {
-                          if (files.business_proof) {
-                            <a href={files.business_proof} target="_blank">
-                              {files.business_proof}
-                            </a>;
-                          } else {
-                            <a>No file Uploaded</a>;
-                          }
+                      {do {
+                        if (files.business_proof) {
+                          <a href={files.business_proof} target="_blank">
+                            {files.business_proof}
+                          </a>;
+                        } else {
+                          <a>No file Uploaded</a>;
                         }
-                      }
+                      }}
                     </div>
                   </div>
                 )}
@@ -92,20 +87,18 @@ export default class DocumentDetails extends Component {
                       </ul>
                     </span>
                     <div class="m-t left-align">
-                      {
-                        do {
-                          if (files.business_operation_proof) {
-                            <a
-                              href={files.business_operation_proof}
-                              target="_blank"
-                            >
-                              {files.business_operation_proof}
-                            </a>;
-                          } else {
-                            <a>No file Uploaded</a>;
-                          }
+                      {do {
+                        if (files.business_operation_proof) {
+                          <a
+                            href={files.business_operation_proof}
+                            target="_blank"
+                          >
+                            {files.business_operation_proof}
+                          </a>;
+                        } else {
+                          <a>No file Uploaded</a>;
                         }
-                      }
+                      }}
                     </div>
                   </div>
                 )}
@@ -120,17 +113,15 @@ export default class DocumentDetails extends Component {
                       Company Pan Card (Sole Proprietor can use personal PAN)
                     </span>
                     <div class="m-t left-align">
-                      {
-                        do {
-                          if (files.business_pan_proof) {
-                            <a href={files.business_pan_proof} target="_blank">
-                              {files.business_pan_proof}
-                            </a>;
-                          } else {
-                            <a>No file Uploaded</a>;
-                          }
+                      {do {
+                        if (files.business_pan_proof) {
+                          <a href={files.business_pan_proof} target="_blank">
+                            {files.business_pan_proof}
+                          </a>;
+                        } else {
+                          <a>No file Uploaded</a>;
                         }
-                      }
+                      }}
                     </div>
                   </div>
                 )}
@@ -148,17 +139,15 @@ export default class DocumentDetails extends Component {
                       </ul>
                     </span>
                     <div class="m-t left-align">
-                      {
-                        do {
-                          if (files.address_proof) {
-                            <a href={files.address_proof} target="_blank">
-                              {files.address_proof}
-                            </a>;
-                          } else {
-                            <a>No file Uploaded</a>;
-                          }
+                      {do {
+                        if (files.address_proof) {
+                          <a href={files.address_proof} target="_blank">
+                            {files.address_proof}
+                          </a>;
+                        } else {
+                          <a>No file Uploaded</a>;
                         }
-                      }
+                      }}
                     </div>
                   </div>
                 )}
@@ -170,17 +159,15 @@ export default class DocumentDetails extends Component {
                 value={() => (
                   <div>
                     <div class="m-t left-align">
-                      {
-                        do {
-                          if (files.promoter_proof) {
-                            <a href={files.promoter_proof} target="_blank">
-                              {files.promoter_proof}
-                            </a>;
-                          } else {
-                            <a>No file Uploaded</a>;
-                          }
+                      {do {
+                        if (files.promoter_proof) {
+                          <a href={files.promoter_proof} target="_blank">
+                            {files.promoter_proof}
+                          </a>;
+                        } else {
+                          <a>No file Uploaded</a>;
                         }
-                      }
+                      }}
                     </div>
                   </div>
                 )}
@@ -197,17 +184,15 @@ export default class DocumentDetails extends Component {
                       proprietership, upload your personal PAN.
                     </span>
                     <div class="m-t left-align">
-                      {
-                        do {
-                          if (files.promoter_pan_proof) {
-                            <a href={files.promoter_pan_proof} target="_blank">
-                              {files.promoter_pan_proof}
-                            </a>;
-                          } else {
-                            <a>No file Uploaded</a>;
-                          }
+                      {do {
+                        if (files.promoter_pan_proof) {
+                          <a href={files.promoter_pan_proof} target="_blank">
+                            {files.promoter_pan_proof}
+                          </a>;
+                        } else {
+                          <a>No file Uploaded</a>;
                         }
-                      }
+                      }}
                     </div>
                   </div>
                 )}
@@ -224,20 +209,18 @@ export default class DocumentDetails extends Component {
                       proprietership, upload your personal PAN.
                     </span>
                     <div class="m-t left-align">
-                      {
-                        do {
-                          if (files.promoter_address_proof) {
-                            <a
-                              href={files.promoter_address_proof}
-                              target="_blank"
-                            >
-                              {files.promoter_address_proof}
-                            </a>;
-                          } else {
-                            <a>No file Uploaded</a>;
-                          }
+                      {do {
+                        if (files.promoter_address_proof) {
+                          <a
+                            href={files.promoter_address_proof}
+                            target="_blank"
+                          >
+                            {files.promoter_address_proof}
+                          </a>;
+                        } else {
+                          <a>No file Uploaded</a>;
                         }
-                      }
+                      }}
                     </div>
                   </div>
                 )}
@@ -250,17 +233,15 @@ export default class DocumentDetails extends Component {
                   <div>
                     <span class="info-block">Mandatory for NGOs</span>
                     <div class="m-t left-align">
-                      {
-                        do {
-                          if (files.form_12a_url) {
-                            <a href={files.form_12a_url} target="_blank">
-                              {files.form_12a_url}
-                            </a>;
-                          } else {
-                            <a>No file Uploaded</a>;
-                          }
+                      {do {
+                        if (files.form_12a_url) {
+                          <a href={files.form_12a_url} target="_blank">
+                            {files.form_12a_url}
+                          </a>;
+                        } else {
+                          <a>No file Uploaded</a>;
                         }
-                      }
+                      }}
                     </div>
                   </div>
                 )}
@@ -273,17 +254,15 @@ export default class DocumentDetails extends Component {
                   <div>
                     <span class="info-block">Mandatory for NGOs</span>
                     <div class="m-t left-align">
-                      {
-                        do {
-                          if (files.form_80g_url) {
-                            <a href={files.form_80g_url} target="_blank">
-                              {files.form_80g_url}
-                            </a>;
-                          } else {
-                            <a>No file Uploaded</a>;
-                          }
+                      {do {
+                        if (files.form_80g_url) {
+                          <a href={files.form_80g_url} target="_blank">
+                            {files.form_80g_url}
+                          </a>;
+                        } else {
+                          <a>No file Uploaded</a>;
                         }
-                      }
+                      }}
                     </div>
                   </div>
                 )}

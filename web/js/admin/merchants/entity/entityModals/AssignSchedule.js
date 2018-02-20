@@ -36,9 +36,7 @@ export default class ScheduleModal extends Component {
   }
 
   componentWillMount() {
-    adminFetch({
-      route_name: 'setl_fetch_schedule',
-    }).then(data => {
+    adminFetch('settlements/schedules').then(data => {
       const settlementPlans = {};
 
       for (let key in data.items) {
@@ -62,11 +60,8 @@ export default class ScheduleModal extends Component {
     };
 
     return adminPost({
-      route_name: 'schedule_assign',
-      url_params: {
-        id: this.props.merchantId,
-      },
-      body: schedulePlanData,
+      url: `live/merchants/${this.props.merchantId}/schedules`,
+      data: schedulePlanData,
     })
       .then(response => {
         if (response) {

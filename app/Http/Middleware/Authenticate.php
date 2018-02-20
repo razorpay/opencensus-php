@@ -55,7 +55,7 @@ class Authenticate {
 				ApiRequest::addHeader('X-Dashboard-User-Id', $user->id);
 				ApiRequest::addHeader('X-Dashboard-User-Email', $user->email);
 
-                $currentMerchant = $user->currentMerchant();
+        		$currentMerchant = $user->currentMerchant();
 
 				if ($currentMerchant !== null)
 				{

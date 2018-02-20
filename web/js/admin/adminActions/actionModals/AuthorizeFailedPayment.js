@@ -19,13 +19,9 @@ export default function AuthorizeFailedPayment() {
         class="btn"
         pendingClass="small spinner"
         onSubmit={data => {
-          return adminPost({
-            url_params: {
-              id: data.payment || '',
-            },
-            mode: data.mode,
-            route_name: 'payment_authorize_failed',
-          }).then(response => {
+          return adminPost(
+            `${data.mode}/payments/${data.payment}/authorize_failed`
+          ).then(response => {
             if (response) {
               notifySuccess('Payment Authorized Successfully.');
               closeModal();

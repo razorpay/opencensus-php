@@ -19,33 +19,33 @@ class EditGroup extends Component {
     this.props.collection.items.push(item);
   };
 
-  save = body => {
+  save = data => {
     let self = this;
     let { model } = self.props;
-    let data = { body };
     let request = null;
 
-    data.body.parents = self.state.parents.map(p => p.id);
+    data.parents = self.state.parents.map(p => p.id);
 
+    let url;
     if (model) {
-      data.url_params = {
-        groupId: self.props.model.id,
-      };
-      data.route_name = 'edit_group';
+      url = `live/groups/${self.props.model.id}`;
       request = adminPut;
     } else {
-      data.route_name = 'group_create';
+      url = 'live/groups';
       request = adminPost;
     }
 
     return request({
-      ...data,
+      url,
+      data,
     }).then(response => {
       if (response) {
         if (!model) {
           self.addItem(response);
+          notifySuccess('Group is created successfully!');
+        } else {
+          notifySuccess('Group edited successfully!');
         }
-        notifySuccess('Success!');
       }
       closeModal();
     });
@@ -57,8 +57,8 @@ class EditGroup extends Component {
 
     if (model) {
       let requests = [
-        this._fetchFn('group_get_allowed_groups'),
-        this._fetchFn('group_get'),
+        this._fetchFn('live/groups/{groupId}/allowed_groups'),
+        this._fetchFn('live/groups/{groupId}'),
       ];
 
       Promise.all(requests).then(([allowedGroups, group]) => {
@@ -70,7 +70,7 @@ class EditGroup extends Component {
         });
       });
     } else {
-      adminFetch({ route_name: 'group_get_multiple' }).then(response => {
+      adminFetch('live/groups').then(response => {
         if (response) {
           this.setState({ potentialParents: response.items, pending: false });
         }
@@ -78,14 +78,7 @@ class EditGroup extends Component {
     }
   }
 
-  _fetchFn = route_name => {
-    return adminFetch({
-      route_name,
-      url_params: {
-        groupId: this.props.model.id,
-      },
-    });
-  };
+  _fetchFn = url => adminFetch(url.replace('{groupId}', this.props.model.id));
 
   selectParent = e => {
     this.state.potentialParents.some(p => {
@@ -126,14 +119,8 @@ export function showEntity(collection) {
 
 export function removeEntity(e) {
   prevent(e);
-  let params = {
-    route_name: 'group_delete',
-    url_params: {
-      groupId: this.id,
-    },
-  };
 
-  return adminDelete(params).then(response => {
+  return adminDelete(`live/groups/${this.id}`).then(response => {
     notifyDone();
     this.collection.items.remove(this);
   });

@@ -3,7 +3,7 @@ import BaseModal from 'ui/BaseModal';
 import { toJS, observable } from 'mobx';
 import { observer } from 'mobx-react';
 import { closeModal, notifyError, notifySuccess } from 'common/modal';
-import { adminFetch, adminPost } from 'common/fetch';
+import fetch, { adminFetch, adminPost } from 'common/fetch';
 import { getRiskRating } from '../entity-resources';
 import ShowWhen from 'admin/components/ShowWhen';
 import Form from 'ui/Form';
@@ -85,10 +85,6 @@ export default class EditMerchant extends Component {
 
     this.dropUnchangedFields(body);
 
-    if (body.transaction_report_email) {
-      body.transaction_report_email = body.transaction_report_email.join(',');
-    }
-
     delete body.auto_refund_delay_type;
     delete body.auto_refund_delay_val;
 
@@ -97,7 +93,11 @@ export default class EditMerchant extends Component {
       return;
     }
 
-    return adminPost(body, '/admin/merchant/' + this.props.merchantId + '/edit')
+    return fetch({
+      url: '/admin/api/live/merchants/' + this.props.merchantId,
+      method: 'put',
+      data: body,
+    })
       .then(data => {
         if (data) {
           closeModal();
@@ -113,9 +113,7 @@ export default class EditMerchant extends Component {
   };
 
   fetchGroups() {
-    adminFetch({
-      route_name: 'group_get_multiple',
-    })
+    adminFetch('live/groups')
       .then(data => {
         data.items.forEach(group => this.allGroups.set(group.id, group));
       })

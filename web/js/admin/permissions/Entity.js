@@ -17,21 +17,16 @@ export default class EditPerm extends Component {
     orgTableData: null,
   };
 
-  fetchFn(route_name) {
-    return adminFetch({
-      route_name,
-      url_params: {
-        id: this.props.model.id,
-      },
-    });
+  fetchFn(url) {
+    return adminFetch(url.replace('{id}', this.props.model.id));
   }
 
   componentWillMount() {
-    let requests = [adminFetch('org_get_multiple')];
+    let requests = [adminFetch('live/orgs')];
     if (this.props.model) {
       requests.push(
-        this.fetchFn('permission_get'),
-        this.fetchFn('permission_get_roles')
+        this.fetchFn('live/permissions/{id}'),
+        this.fetchFn('live/permissions/{id}/roles')
       );
     }
     Promise.all(requests).then(([orgs, permission, roles]) => {
@@ -62,18 +57,14 @@ export default class EditPerm extends Component {
   onSubmit = body => {
     body = { ...body, ...this.state.orgTableData };
     body.assignable = body.assignable === '1' ? 1 : 0;
-    let data = { body };
+    let data = { data: body };
 
     let promise;
     if (this.props.model) {
-      data.url_params = {
-        id: this.props.model.id,
-      };
-      data.route_name = 'permission_edit';
-      data.content_type = 'application/json';
+      data.url = `live/permissions/${this.props.model.id}`;
       promise = adminPut(data);
     } else {
-      data.route_name = 'permission_create';
+      data.url = 'live/permissions';
       promise = adminPost(data).then(data => {
         if (data) {
           this.props.collection.items.push(data);
@@ -158,14 +149,7 @@ export function showEntity(collection) {
   openModal(<EditPerm collection={collection} model={this} />);
 }
 export function removeEntity(e) {
-  let params = {
-    route_name: 'permission_delete',
-    url_params: {
-      id: this.id,
-    },
-  };
-
-  return adminDelete(params).then(response => {
+  return adminDelete(`live/permissions/${this.id}`).then(response => {
     notifyDone();
     this.collection.items.remove(this);
 

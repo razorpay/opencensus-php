@@ -34,9 +34,8 @@ export default class Comments extends Component {
     const { onCommentAdd } = this.props;
 
     return adminPost({
-      route_name: 'action_comment_create',
-      url_params: { id: this.props.id },
-      body: { comment: this.state.comment },
+      url: `live/w-actions/${this.props.id}/comments`,
+      data: { comment: this.state.comment },
     }).then(response => {
       if (response) {
         this.setState({ comment: '' }, () => onCommentAdd(response));

@@ -8,7 +8,7 @@ import { adminFetch } from 'common/fetch';
 export default class AuditLogList extends Component {
   collection = new Collection({
     data: {
-      route_name: 'auditlog_search',
+      url: 'live/auditlog/search',
     },
     filters: {
       count: 100,

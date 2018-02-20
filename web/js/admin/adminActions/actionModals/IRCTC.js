@@ -4,14 +4,16 @@ import Form from 'ui/Form';
 import AsyncButton from 'ui/AsyncButton';
 import { notifySuccess, closeModal } from 'common/modal';
 
-import { adminFetch } from 'common/fetch';
+import fetch from 'common/fetch';
 
+// TODO: TEST mode to be sent in query params or just url?
 IRCTC.title = 'IRCTC';
 export default function IRCTC() {
   return (
     <Form class="full-span full-elements" style={{ minHeight: '300px' }}>
       <DateField
         label="Date"
+        fieldClass="irctc-form"
         name="on"
         placeholder="YYYY-MM-DD"
         defaultValue={moment()}
@@ -25,13 +27,11 @@ export default function IRCTC() {
         class="btn"
         pendingClass="small spinner"
         onSubmit={data => {
-          return adminFetch({
-            route_name: 'reports_refund_irctc',
-            merchant_id: data.merchant_id,
-            query_params: {
+          return fetch({
+            url: `${data.mode}_${data.merchant_id}/reports/refund/irctc`,
+            params: {
               email: data.email,
               on: data.on,
-              mode: data.mode,
             },
           }).then(response => {
             if (response) {

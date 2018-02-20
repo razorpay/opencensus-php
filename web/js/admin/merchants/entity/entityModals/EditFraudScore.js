@@ -6,12 +6,16 @@ import BaseModal from 'ui/BaseModal';
 import Field from 'ui/Field';
 import Form from 'ui/Form';
 import AsyncButton from 'ui/AsyncButton';
-import { adminFetch, adminPost } from 'common/fetch';
+import fetch, { adminFetch, adminPost } from 'common/fetch';
 
 @observer
-export default class EditMerchant extends Component {
+export default class EditFraudScore extends Component {
   handleConfirm = body => {
-    return adminPost(body, '/admin/merchant/' + this.props.merchantId + '/edit')
+    return fetch({
+      url: '/admin/api/live/merchants/' + this.props.merchantId,
+      method: 'put',
+      data: body,
+    })
       .then(data => {
         if (data) {
           closeModal();

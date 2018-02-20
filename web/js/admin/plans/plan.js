@@ -1,7 +1,7 @@
 import { toJS, extendObservable, computed } from 'mobx';
 import Collection from 'model/collection';
 import CollectionItem from 'model/collectionItem';
-import { adminDelete, adminFetch, adminPost } from 'common/fetch';
+import fetch, { adminDelete, adminFetch, adminPost } from 'common/fetch';
 import { methods } from 'common/data';
 import { notifySuccess, notifyError } from 'common/modal';
 import { deepClone } from 'common/util';
@@ -14,10 +14,7 @@ export default class Plan extends Collection {
       // array value will prevent fetch
       items: props.id ? null : [],
       data: {
-        route_name: 'pricing_get_plan',
-        url_params: {
-          id: props.id,
-        },
+        url: `live/pricing/${props.id}`,
       },
       model: Rule,
     });
@@ -35,7 +32,7 @@ export default class Plan extends Collection {
       'fetch',
       adminFetch({
         ...this.data,
-        query_params: this.filters,
+        params: this.filters,
       })
     ).then(data => {
       this.items.replace(
@@ -54,8 +51,8 @@ export default class Plan extends Collection {
     return this.request(
       'save',
       adminPost({
-        route_name: 'pricing_create_plan',
-        body: {
+        url: 'live/pricing',
+        data: {
           plan_name: name,
           rules: this.items.slice(0, -1).map(p => p.serialize()),
         },
@@ -181,11 +178,8 @@ class Rule extends CollectionItem {
       return this.request(
         'save',
         adminPost({
-          body: this.serialize(),
-          route_name: 'pricing_add_plan_rule',
-          url_params: {
-            id: this.collection.props.id,
-          },
+          url: `live/pricing/${this.collection.props.id}/rule`,
+          data: this.serialize(),
         })
       ).then(data => {
         if (data) {
@@ -203,13 +197,7 @@ class Rule extends CollectionItem {
     }
     return this.request(
       'delete',
-      adminDelete({
-        route_name: 'pricing_delete_plan_rule',
-        url_params: {
-          planId: this.collection.props.id,
-          ruleId: this.id,
-        },
-      })
+      adminDelete(`live/pricing/${this.collection.props.id}/rule/${this.id}`)
     ).then(data => {
       if (data) {
         notifySuccess(data.message);
@@ -290,9 +278,9 @@ class Rule extends CollectionItem {
     } else if (this.payment_method === 'emandate') {
       data = {
         '': 'All',
-        'aadhar': 'Aadhar',
-        'netbanking': 'Netbanking'
-      }
+        aadhar: 'Aadhar',
+        netbanking: 'Netbanking',
+      };
     }
 
     if (data) {
