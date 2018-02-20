@@ -78,7 +78,7 @@ export default function GenerateRefundsExcel() {
 
           return adminPost({
             url: `${body.mode}/refunds/excel`,
-            ...body,
+            data: body,
           }).then(response => {
             if (response) {
               notifySuccess(`${data.bank} Refunds Excel Generated`);

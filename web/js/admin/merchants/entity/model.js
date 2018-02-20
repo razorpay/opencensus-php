@@ -40,8 +40,9 @@ export default class Model extends BaseModel {
       'fetchMerchantDetails',
       this.fetchFn({
         url: 'live/merchants/details',
-        account_id: this.merchantId,
-        merchant_id: this.merchantId,
+        headers: {
+          'X-Razorpay-Account': this.merchantId,
+        },
       })
     ).then(data => {
       if (data) {
@@ -172,19 +173,21 @@ export default class Model extends BaseModel {
 
   @action
   fetchAdmins() {
-    return this.request('fetchAdmins', this.fetchFn('admins')).then(data => {
-      const adminsMap = {};
+    return this.request('fetchAdmins', this.fetchFn('live/admins')).then(
+      data => {
+        const adminsMap = {};
 
-      data.items.map(admin => {
-        adminsMap[admin.id] = {
-          role: admin.roles.length ? admin.roles[0].name : '',
-          email: admin.email,
-          name: admin.name,
-        };
-      });
+        data.items.map(admin => {
+          adminsMap[admin.id] = {
+            role: admin.roles.length ? admin.roles[0].name : '',
+            email: admin.email,
+            name: admin.name,
+          };
+        });
 
-      this.merchant.adminsMap = adminsMap;
-    });
+        this.merchant.adminsMap = adminsMap;
+      }
+    );
   }
 
   @action

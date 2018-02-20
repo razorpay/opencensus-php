@@ -10,12 +10,12 @@ import { adminPut } from 'common/fetch';
 
 export default ({ merchantId }) => {
   function onSubmit(body) {
-    return adminPut(
-      {
+    return adminPut({
+      url: '/admin/merchant/' + merchantId + '/email',
+      data: {
         email: body.email,
       },
-      '/admin/merchant/' + merchantId + '/email'
-    )
+    })
       .then(response => {
         if (response) {
           notifySuccess('Merchant email updated successfully.');

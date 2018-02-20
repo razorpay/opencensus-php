@@ -2,14 +2,14 @@ import React, { Component } from 'react';
 
 import { notifyError } from 'common/modal';
 
-import { adminFetch } from 'common/fetch';
+import fetch, { adminFetch } from 'common/fetch';
 import EntityRow from 'ui/EntityRow';
 
 export default class DocumentDetails extends Component {
   state = { files: null };
 
   componentWillMount() {
-    adminFetch({
+    fetch({
       url: `live/merchant/activation/${this.props.merchantId}/files`,
       account_id: this.props.merchantId,
     })

@@ -1,7 +1,7 @@
 import { toJS, extendObservable, computed } from 'mobx';
 import Collection from 'model/collection';
 import CollectionItem from 'model/collectionItem';
-import { adminDelete, adminFetch, adminPost } from 'common/fetch';
+import fetch, { adminDelete, adminFetch, adminPost } from 'common/fetch';
 import { methods } from 'common/data';
 import { notifySuccess, notifyError } from 'common/modal';
 import { deepClone } from 'common/util';
@@ -30,7 +30,7 @@ export default class Plan extends Collection {
   fetch() {
     return this.request(
       'fetch',
-      adminFetch({
+      fetch({
         ...this.data,
         params: this.filters,
       })
@@ -81,6 +81,8 @@ export const options = {
   },
   payment_method: {
     ...methods,
+    emandate: 'e-Mandate',
+    aeps: 'AEPS',
     transfer: 'Transfer',
     bank_transfer: 'Bank Transfer',
     fund_transfer: 'Payout: Fund Transfer',
@@ -176,8 +178,8 @@ class Rule extends CollectionItem {
       return this.request(
         'save',
         adminPost({
-          data: this.serialize(),
           url: `live/pricing/${this.collection.props.id}/rule`,
+          data: this.serialize(),
         })
       ).then(data => {
         if (data) {
@@ -270,8 +272,19 @@ class Rule extends CollectionItem {
   }
 
   paymentMethodTypeField() {
+    var data;
     if (this.payment_method === 'card') {
-      var field = this.selectField('payment_method_type');
+      data = options.payment_method_type;
+    } else if (this.payment_method === 'emandate') {
+      data = {
+        '': 'All',
+        'aadhar': 'Aadhar',
+        'netbanking': 'Netbanking'
+      }
+    }
+
+    if (data) {
+      var field = this.selectField('payment_method_type', data);
       if (field) {
         return <div>Type {field}</div>;
       }

@@ -111,18 +111,22 @@ export default class Collection extends BaseModel {
   }
 
   delete = item => {
-    const data = {
-      url: this.deleteUrl.replace('{id}', item.id),
-    };
+    if (typeof this.deleteUrl === 'function') {
+      const data = {
+        url: this.deleteUrl(item.id)
+      };
 
-    return adminDelete(data)
-      .then(data => {
-        if (data) {
-          this.remove(item);
-          notifySuccess('Workflow deleted successfully');
-        }
-      })
-      .catch(err => notifyError(err));
+      return adminDelete(data)
+        .then(data => {
+          if (data) {
+            this.remove(item);
+            notifySuccess('Workflow deleted successfully');
+          }
+        })
+        .catch(err => notifyError(err));
+    } else {
+      notifyError('entity doesn\'t have delete url');
+    }
   };
 
   push(item) {

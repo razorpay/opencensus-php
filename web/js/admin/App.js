@@ -49,7 +49,7 @@ import InvitesList from 'admin/invites/List';
 
 import AsyncButton from 'ui/AsyncButton';
 
-import { adminFetch } from 'common/fetch';
+import fetch, { adminFetch } from 'common/fetch';
 
 @withRouter
 export default class App extends Component {
@@ -72,7 +72,7 @@ export default class App extends Component {
   }
 
   handleLogout = () => {
-    return adminFetch({}, '/admin/user/logout').then(r => {
+    return fetch({ url: '/admin/user/logout' }).then(r => {
       window.location.reload();
     });
   };

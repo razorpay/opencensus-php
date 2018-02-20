@@ -57,7 +57,7 @@ export const updateConfig = data => {
     payload: merchantFetch({
       url: 'account/config',
       method: 'put',
-      data: data,
+      data,
     }),
   };
 };
