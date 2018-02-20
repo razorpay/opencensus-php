@@ -81,6 +81,8 @@ export const options = {
   },
   payment_method: {
     ...methods,
+    emandate: 'e-Mandate',
+    aeps: 'AEPS',
     transfer: 'Transfer',
     bank_transfer: 'Bank Transfer',
     fund_transfer: 'Payout: Fund Transfer',
@@ -270,8 +272,19 @@ class Rule extends CollectionItem {
   }
 
   paymentMethodTypeField() {
+    var data;
     if (this.payment_method === 'card') {
-      var field = this.selectField('payment_method_type');
+      data = options.payment_method_type;
+    } else if (this.payment_method === 'emandate') {
+      data = {
+        '': 'All',
+        'aadhar': 'Aadhar',
+        'netbanking': 'Netbanking'
+      }
+    }
+
+    if (data) {
+      var field = this.selectField('payment_method_type', data);
       if (field) {
         return <div>Type {field}</div>;
       }
