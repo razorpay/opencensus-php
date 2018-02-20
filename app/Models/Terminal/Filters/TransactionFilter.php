@@ -514,10 +514,8 @@ class TransactionFilter extends Terminal\Filter
 
             $iin = $payment->card->iin;
 
-            if ((isset($debitPinGateways[$gateway]) === true) and
-                (isset($debitPinGateways[$gateway][$acquirer]) === true) and
-                (in_array($iin->getIssuer(), $debitPinGateways[$gateway][$acquirer], true) === true) and
-                ($payment->card->iin->supports(Flows::DEBIT_PIN) === true))
+            if ((isset($debitPinGateways[$gateway][$acquirer]) === true) and
+                (in_array($iin->getIssuer(), $debitPinGateways[$gateway][$acquirer], true) === true))
             {
                 return true;
             }

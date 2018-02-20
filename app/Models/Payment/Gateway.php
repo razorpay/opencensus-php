@@ -869,7 +869,7 @@ class Gateway
 
     public static $debitPinGateways = [
         Gateway::CARD_FSS => [
-            Acquirer::ACQUIRER_FSS => [
+            self::ACQUIRER_FSS => [
                 IFSC::UTIB,
                 IFSC::IOBA,
                 IFSC::ANDB,
