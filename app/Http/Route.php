@@ -587,7 +587,6 @@ final class Route
         'payout_fetch_by_id'                      => ['get',      'payouts/{id}',                                   'PayoutController@getPayout'                                        ],
         'payout_fetch_multiple'                   => ['get',      'payouts',                                        'PayoutController@getPayouts'                                       ],
         'payout_create'                           => ['post',     'payouts',                                        'PayoutController@postPayout'                                       ],
-        'payout_initiate'                         => ['post',     'payouts/initiate/{channel?}',                    'PayoutController@postPayoutInitiate'                               ],
         'transfer_fetch'                          => ['get',      'transfers/{id}',                                 'TransferController@getTransfer'                                    ],
         'transfer_fetch_multiple'                 => ['get',      'transfers/',                                     'TransferController@getTransfers'                                   ],
         'transfer_edit'                           => ['patch',    'transfers/{id}',                                 'TransferController@patchTransfer'                                  ],
@@ -994,7 +993,6 @@ final class Route
         'payment_timeout',
         'payment_update_on_hold',
         'payment_verify_multiple',
-        'payout_initiate',
         'reconciliate',
         'refund_create_gateway_record',
         'refund_gateway_refunded_txns',
@@ -1773,7 +1771,6 @@ final class Route
         'cron' => [
             'entity_tax_update',
             'setl_initiate',
-            'payout_initiate',
             'setl_reconcile_generate',
             'setl_reconcile_test',
             'nodal_initiate_transfer',
