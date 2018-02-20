@@ -12,7 +12,6 @@ use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
-use RZP\Models\Feature\Entity as FeatureEntity;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Mail\Merchant\FeatureEnabled as FeatureEnabledEmail;
 
