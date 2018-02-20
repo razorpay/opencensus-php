@@ -117,12 +117,15 @@ class RoutesTest extends TestCase
      *
      * ie, cron/mailgun etc should not be able to call a route
      * that we also expect to be hit from admin
+     *
+     * @todo Once we get rid of internal the first argument
+     * to assertEquals would be an empty array.
      */
     public function testSecurityOnlyInternal()
     {
         $disAllowedRoutes = array_merge(Route::$admin, Route::$private);
 
-        $this->assertEquals([], array_intersect(Route::$internal, $disAllowedRoutes));
+        $this->assertEquals(['user_fetch'], array_values(array_intersect(Route::$internal, $disAllowedRoutes)));
     }
 
     protected function matchRouteWithMailgunRoutes($route, $result)
