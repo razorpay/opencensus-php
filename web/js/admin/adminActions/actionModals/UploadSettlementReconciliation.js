@@ -54,10 +54,10 @@ export default function UploadSettlementReconciliation() {
             file_name: 'file',
           };
 
-          return adminFormUpload({
-            url: `${mode}/settlements/reconcile/${channel}`,
-            ...form,
-          }).then(response => {
+          return adminFormUpload(
+            form,
+            `api/${mode}/settlements/reconcile/${channel}`
+          ).then(response => {
             if (response.data.success) {
               notifySuccess('API Request successful');
               closeModal();
