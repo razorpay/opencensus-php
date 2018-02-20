@@ -19,6 +19,7 @@ export const acceptInvitation = inviteId => {
     return ajax({
       url: `/settings/invitations/${inviteId}/accept`,
       method: 'post',
+      appendModeInURL: false,
     });
   };
 };
@@ -43,7 +44,7 @@ export const upgradeAccount = data => {
       url: '/merchants/register',
       method: 'post',
       data: data,
-      mode: 'live',
+      appendModeInURL: false,
     });
   };
 };
@@ -52,7 +53,6 @@ export const updatePassword = data => {
   return () => {
     return ajax({
       url: '/password',
-      mode: 'live',
       method: 'post',
       data: data,
       appendModeInQueryParam: true,

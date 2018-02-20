@@ -25,6 +25,7 @@ export default class User {
     let promise = new Promise((resolve, reject) => {
       ajax({
         url: '/user',
+        appendModeInURL: false,
       })
         .then(response => {
           // Risky. fetchFeaturesAjax can make the request always in 'test'mode.
