@@ -40,6 +40,15 @@ class Base extends BaseModel\Core
      */
     const MUTEX_LOCK_TIMEOUT = 2500;
 
+    const FILE_TYPE_PREFIX_MAP = [
+
+        FileStore\Type::BATCH_INPUT     => Batch\Entity::INPUT_FILE_PREFIX,
+
+        FileStore\Type::BATCH_ERROR     => Batch\Entity::ERROR_FILE_PREFIX,
+
+        FileStore\Type::BATCH_OUTPUT    => Batch\Entity::OUTPUT_FILE_PREFIX,
+    ];
+
     /**
      * The MUTEX instance
      */
@@ -79,7 +88,7 @@ class Base extends BaseModel\Core
     protected $createByFileUpload;
 
     /**
-     * Holds local file path of input and output file respectively.
+     * Holds local file path of input, output and generated file respectively.
      * They are re-used in the flow.
      * E.g.
      * - sending mails with attachment,
@@ -87,6 +96,13 @@ class Base extends BaseModel\Core
      */
     protected $inputFileLocalPath = "";
     protected $outputFileLocalPath = "";
+    protected $errorFileLocalPath = "";
+    protected $generatedFileLocalPath = "";
+
+    /**
+     * Holds path where generated file must be saved
+     */
+    protected $generatedFileDirectory = "";
 
     public function __construct(Batch\Entity $batch)
     {
@@ -129,7 +145,10 @@ class Base extends BaseModel\Core
         // created file store entity with this batch and save both of them.
         //
 
-        // Temporary code for backward compatibility. To be removed.
+        /**
+         * For file upload, we throw an error in Batch/Validator::validateEntries.
+         * This attribute is used in this validator. Its not stored though.
+         */
         if (isset($input[Batch\Entity::FILE]) === true)
         {
             $this->batch->setCreatedByFileUpload(true);
@@ -137,43 +156,48 @@ class Base extends BaseModel\Core
 
         // For new flow, the file_store entity referenced by
         // `file_id` in input gets associated with this batch
-        $ufhFile = $this->getInputFileAndValidateEntries($input, true);
+        $ufhFile = $this->getInputFileAndValidateEntries($input);
+
+        $ufhFile->entity()->associate($this->batch);
 
         $this->repo->transaction(function () use ($ufhFile, $input)
         {
+            $this->repo->saveOrFail($ufhFile);
+
             $this->repo->saveOrFail($this->batch);
 
             $this->saveSettings($input);
         });
     }
 
-    public function getInputFileAndValidateEntries(array $input,
-                                                   bool $associateBatch = false,
-                                                   array & $entries = [])
+    public function getInputFileAndValidateEntries(array $input)
     {
         // Here $ufhFile is the input file_store instance upload by merchant.
         // $ufhFile has no entity associated with it and has type = `batch_input`
-        $ufhFile = $this->getInputFileAndUpdateFileLocalPath($input);
+        $ufhFile = $this->getInputFile($input);
 
-        // $entries here has the extra error_code and error_description headers
-        $entries = $this->validateInputFile($this->inputFileLocalPath, $input);
+        // Update input file path
+        $this->inputFileLocalPath = $ufhFile->getFullFilePath();
+
+        // $entries here might have extra error_code and error_description headers
+        $entries = $this->validateInputFileEntries($this->inputFileLocalPath, $input);
 
         $this->updateBatchPostValidation($entries, $input);
 
-        $ufhFile->entity()->dissociate();
-
-        if ($associateBatch === true)
-        {
-            // This association happens only during batch create api call
-            $ufhFile->entity()->associate($this->batch);
-        }
-
-        $this->repo->transaction(function () use ($ufhFile) {
-
-            $this->repo->saveOrFail($ufhFile);
-        });
-
         return $ufhFile;
+    }
+
+    public function fetchValidatedEntriesFromInputFile(array $input): array
+    {
+        // Here $ufhFile is the input file_store instance upload by merchant.
+        // $ufhFile has no entity associated with it and has type = `batch_input`
+        $ufhFile = $this->getInputFile($input);
+
+        // Update input file path
+        $this->inputFileLocalPath = $ufhFile->getFullFilePath();
+
+        // $entries here has the extra error_code and error_description headers
+        return $this->validateInputFileEntries($this->inputFileLocalPath, $input);
     }
 
     public function getValidatedEntriesStatsAndSampleData(array $entries): array
@@ -192,15 +216,27 @@ class Base extends BaseModel\Core
         return $response;
     }
 
-    protected function getInputFileAndUpdateFileLocalPath(array $input): FileStore\Entity
+    /**
+     * Gets the input file from $input and saves it
+     * in filestore/batch/upload folder in local.
+     * If file is uploaded (contains file object in $input)
+     * a file_store entity is created with batch_input as type
+     * which uploads the file in filestore/batch/upload
+     * folder in s3 too.
+     *
+     * @param array $input
+     * @return FileStore\Entity
+     */
+    protected function getInputFile(array $input): FileStore\Entity
     {
         if (isset($input[Batch\Entity::FILE_ID]) === true)
         {
             $inputFileId = $input[Batch\Entity::FILE_ID];
 
-            $this->inputFileLocalPath = $this->accessor->id($inputFileId)
-                                                        ->merchantId($this->merchant->getId())
-                                                        ->getFile();
+            // Download the file and store in local
+            $this->accessor->id($inputFileId)
+                           ->merchantId($this->merchant->getId())
+                           ->getFile();
 
             return  $this->accessor->get();
         }
@@ -212,8 +248,6 @@ class Base extends BaseModel\Core
         $ufh = $this->saveInputFile($inputFile);
 
         $ufhFile = $ufh->getFileInstance();
-
-        $this->inputFileLocalPath = $ufhFile->getFullFilePath();
 
         return $ufhFile;
     }
@@ -502,24 +536,25 @@ class Base extends BaseModel\Core
         $this->batch->setProcessing(false);
     }
 
-    public function createSetOutputFileAndSave(array & $entries, string $headerType = Batch\Header::OUTPUT): array
+    public function createSetOutputFileAndSave(array & $entries): array
     {
+        $type = $this->batch->getType();
+
+        $headers = Batch\Header::getOutputHeadersForType($type);
+
+        $this->generatedFileDirectory = $this->batch->getLocalSaveDir(Batch\Entity::OUTPUT_FILE_PREFIX);
+
+        // Creates an output file in `batch/download` folder with
+        // same name as `$this->batch->getId . <desired_extension>`.
+        // <desired_extension> is XLSX by default.
+        // The output file path is saved in $this->outputFileLocalPath.
+        $this->createAndSetGeneratedFile($entries, $headers);
+
+        $this->outputFileLocalPath = $this->generatedFileLocalPath;
+
         try
         {
-            // Creates an output file in `batch/download` folder with
-            // same name as `$this->batch->getId . <desired_extension>`.
-            // <desired_extension> is XLSX by default.
-            // The output file path is saved in $this->outputFileLocalPath.
-            $this->createAndSetOutputFile($entries, $headerType);
-
-            if ($headerType === Batch\Header::ERROR)
-            {
-                $ufh = $this->saveErrorFile();
-            }
-            else
-            {
-                $ufh = $this->saveOutputFile();
-            }
+            $ufh = $this->saveOutputFile();
 
             return $this->getFileIdAndSignedUrl($ufh);
         }
@@ -535,33 +570,57 @@ class Base extends BaseModel\Core
         return [];
     }
 
+    public function createSetErrorFileAndSave(array & $entries): array
+    {
+        $type = $this->batch->getType();
+
+        $headers = Batch\Header::getErrorHeaderOfType($type);
+
+        $this->generatedFileDirectory = $this->batch->getLocalSaveDir(Batch\Entity::ERROR_FILE_PREFIX);
+
+        // Creates an error file in `batch/error` folder with
+        // same name as `$this->batch->getId . <desired_extension>`.
+        // <desired_extension> is XLSX by default.
+        // The error file path is saved in $this->errorFileLocalPath.
+        $this->createAndSetGeneratedFile($entries, $headers);
+
+        $this->errorFileLocalPath = $this->generatedFileLocalPath;
+
+        try
+        {
+            $ufh = $this->saveErrorFile();
+
+            return $this->getFileIdAndSignedUrl($ufh);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::BATCH_PROCESSING_ERROR,
+                $this->batch->toArrayPublic());
+        }
+
+        return [];
+    }
+
     /**
      * - Method to generate the output file (excel/text) from the processed
      *   entries.
      *
      * @param array $entries
-     * @param string $headerType
+     * @param array $headers
      */
-    protected function createAndSetOutputFile(array & $entries, string $headerType = Batch\Header::OUTPUT)
+    protected function createAndSetGeneratedFile(array & $entries, array $headers)
     {
-        $type = $this->batch->getType();
-
-        $headers = Batch\Header::HEADER_MAP[$type][Batch\Header::OUTPUT];
-
-        if ((Batch\Header::isValidOutputFileHeaderType($headerType) === true) and
-            ($headerType !== Batch\Header::OUTPUT)){
-
-            $headers = Batch\Header::HEADER_MAP[$type][$headerType];
-        }
-
-        $fieldsCount = count($headers);
-
         //
         // Constructs final input using updated $entries set. This things
         // is used to create output file. Below we fill in the empty headers
         // with null so we don't get errors during creation of files.
         //
         $cleanedEntries = [];
+
+        $fieldsCount = count($headers);
 
         foreach ($entries as $entry)
         {
@@ -575,7 +634,7 @@ class Base extends BaseModel\Core
             $cleanedEntries[] = $dict;
         }
 
-        $this->createAndSetOutputFileByExt($cleanedEntries);
+        $this->createAndSetFileByExt($cleanedEntries);
 
         unset($entries, $cleanedEntries);
     }
@@ -587,7 +646,7 @@ class Base extends BaseModel\Core
      * @param array $entries
      * @throws LogicException
      */
-    protected function createAndSetOutputFileByExt(array $entries)
+    protected function createAndSetFileByExt(array $entries)
     {
         //
         // Creation of file differs per extension, ext of output file has
@@ -595,18 +654,20 @@ class Base extends BaseModel\Core
         //
         $ext = pathinfo($this->inputFileLocalPath, PATHINFO_EXTENSION);
 
-        $dir = $this->batch->getLocalSaveDir(Batch\Entity::OUTPUT_FILE_PREFIX);
-
         switch ($ext)
         {
             case FileStore\Format::TXT:
                 $txt = $this->generateText($entries, '|');
-                $this->outputFileLocalPath = $this->createTxtFile($this->batch->getFileKeyWithExt($ext), $txt, $dir);
+                $this->generatedFileLocalPath = $this->createTxtFile($this->batch->getFileKeyWithExt($ext),
+                                                               $txt,
+                                                               $this->generatedFileDirectory);
                 return;
 
             case FileStore\Format::CSV:
                 $txt = $this->generateText($entries, ',');
-                $this->outputFileLocalPath = $this->createTxtFile($this->batch->getFileKeyWithExt($ext), $txt, $dir);
+                $this->generatedFileLocalPath = $this->createTxtFile($this->batch->getFileKeyWithExt($ext),
+                                                               $txt,
+                                                               $this->generatedFileDirectory);
                 return;
 
             case FileStore\Format::XLSX:
@@ -616,9 +677,9 @@ class Base extends BaseModel\Core
                                     $this->batch->getId(),
                                     [],
                                     $this->batch->getType()
-                                 )
-                                 ->store($ext, $dir, true);
-                $this->outputFileLocalPath = $fileMeta['full'];
+                                    )
+                                 ->store($ext, $this->generatedFileDirectory, true);
+            $this->generatedFileLocalPath = $fileMeta['full'];
                 return;
 
             default:
@@ -663,7 +724,7 @@ class Base extends BaseModel\Core
      * @param  array $input
      * @return array
      */
-    protected function validateInputFile(string $filePath, array $input): array
+    protected function validateInputFileEntries(string $filePath, array $input): array
     {
         $entries = $this->parseFile($filePath);
 
@@ -817,12 +878,18 @@ class Base extends BaseModel\Core
 
     protected function saveOutputFile(): FileStore\Creator
     {
-        return $this->saveFile($this->outputFileLocalPath, FileStore\Type::BATCH_OUTPUT);
+        return $this->saveFile(
+                        $this->outputFileLocalPath,
+                        FileStore\Type::BATCH_OUTPUT,
+                        true);
     }
 
     protected function saveErrorFile(): FileStore\Creator
     {
-        return $this->saveFile($this->outputFileLocalPath, FileStore\Type::BATCH_INPUT, false);
+        return $this->saveFile(
+                        $this->errorFileLocalPath,
+                        FileStore\Type::BATCH_ERROR,
+                        false);
     }
 
     protected function getFileIdAndSignedUrl(FileStore\Creator $ufh): array
@@ -855,9 +922,7 @@ class Base extends BaseModel\Core
         string $type,
         bool $associateBatch = true): FileStore\Creator
     {
-        $filePrefix = ($type === FileStore\Type::BATCH_INPUT) ?
-                                Batch\Entity::INPUT_FILE_PREFIX :
-                                Batch\Entity::OUTPUT_FILE_PREFIX;
+        $filePrefix = self::FILE_TYPE_PREFIX_MAP[$type];
 
         $name = $filePrefix . $this->batch->getFileKey();
 
@@ -885,7 +950,7 @@ class Base extends BaseModel\Core
      */
     protected function downloadAndSetInputFile()
     {
-        $inputFile = $this->batch->inputFile();
+        $inputFile = $this->batch->getBatchCreatorFile();
 
         $filePath = (new FileStore\Accessor)
                         ->id($inputFile->getId())
