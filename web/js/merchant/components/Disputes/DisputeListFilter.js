@@ -39,7 +39,7 @@ export default ({ type, ...otherProps }) => {
       </div>
 
       <div class="form-group list-filter-item">
-        <label>Dsipute State</label>
+        <label>Dispute State</label>
         <Field name="status" component="select" class="form-control input-sm">
           <option value=""> </option>
           {statues.map(status => (
