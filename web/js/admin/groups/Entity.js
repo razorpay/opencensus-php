@@ -19,12 +19,12 @@ class EditGroup extends Component {
     this.props.collection.items.push(item);
   };
 
-  save = body => {
+  save = data => {
     let self = this;
     let { model } = self.props;
     let request = null;
 
-    body.parents = self.state.parents.map(p => p.id);
+    data.parents = self.state.parents.map(p => p.id);
 
     let url;
     if (model) {
@@ -37,7 +37,7 @@ class EditGroup extends Component {
 
     return request({
       url,
-      ...body,
+      data,
     }).then(response => {
       if (response) {
         if (!model) {
