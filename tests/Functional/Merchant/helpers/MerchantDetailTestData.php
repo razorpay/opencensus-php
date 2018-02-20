@@ -315,6 +315,36 @@ return [
         ],
     ],
 
+    'testMerchantUpdateWebsiteDetails' => [
+        'request' => [
+            'content' => [
+                'business_website' => 'https://www.example.com',
+            ],
+            'url'     => '/merchant/activation/update_website_details',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'business_website' => 'https://www.example.com'
+            ],
+        ],
+    ],
+
+    'testMerchantUpdateKeyAccess' => [
+        'request' => [
+            'content' => [
+                'has_key_access' => true,
+            ],
+            'url'     => '/merchant/activation/%s/update_key_access',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'has_key_access' => true,
+            ],
+        ],
+    ],
+
     'testCommentMerchant' => [
         'request' => [
             'content' => [

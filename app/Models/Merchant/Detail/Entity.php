@@ -327,6 +327,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::LOCKED, $locked);
     }
 
+    protected function setBusinessWebsiteAttribute($website)
+    {
+        $this->attributes[self::BUSINESS_WEBSITE] = mb_strtolower($website);
+    }
+
     public function getWebsite()
     {
         return $this->getAttribute(self::BUSINESS_WEBSITE);

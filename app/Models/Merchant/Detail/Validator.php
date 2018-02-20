@@ -282,8 +282,7 @@ class Validator extends Base\Validator
 
     public function validateKeyAccess(array $input)
     {
-        if (($input[Entity::HAS_KEY_ACCESS] === false) or
-            ($input[Entity::HAS_KEY_ACCESS] === 0))
+        if (empty($input[Entity::HAS_KEY_ACCESS]) === true)
         {
             return;
         }

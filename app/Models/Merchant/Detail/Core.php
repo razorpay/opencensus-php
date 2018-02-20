@@ -46,8 +46,6 @@ class Core extends Base\Core
 
         return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantDetails, $merchant)
         {
-            $this->checkAndMarkHasKeyAccess($merchantDetails);
-
             $this->repo->saveOrFail($merchantDetails);
 
             $response = $this->createResponse($merchantDetails);
@@ -56,6 +54,12 @@ class Core extends Base\Core
 
             if ($this->canSubmit($input, $response) === true)
             {
+                // If a merchant does not have website or app, we would need to activate them
+                // only with PLs, Invoices and should not get API keys. Merchant's has_key_access
+                // should be set to true only if one submits website details, there by will be able to
+                // generate/access keys.
+                $this->checkAndMarkHasKeyAccess($merchantDetails);
+
                 $this->markSubmitted($merchantDetails);
 
                 $activationStatusData = [
@@ -277,7 +281,7 @@ class Core extends Base\Core
     }
 
     /**
-     * This function checks and save has_key_access if merchant has submitted
+     * This function checks and sets has_key_access to true if merchant has submitted
      * wesbite details
      *
      * @param Entity $merchantDetails
@@ -291,8 +295,6 @@ class Core extends Base\Core
         }
 
         $merchantDetails->setHasKeyAccess(true);
-
-        $this->repo->saveOrFail($merchantDetails);
     }
 
     protected function markSubmitted(Entity $merchantDetails)
@@ -499,10 +501,12 @@ class Core extends Base\Core
 
             $merchant = $merchantDetails->merchant;
 
+            // website is being synced to merchant entity as well
             $merchant->setWebsiteAttribute($input[Entity::BUSINESS_WEBSITE]);
 
             $this->repo->saveOrFail($merchant);
 
+            // admin must be notified through email about the website details update
             $this->adminNotifyWebsiteDetailsUpdate($merchantDetails);
         });
 
