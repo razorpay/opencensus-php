@@ -72,6 +72,7 @@
                                         if (rc['answers'] && rc['answers'].length) {
                                             var d = {
                                                 mid: window.rzp_user.current,
+                                                uid: window.rzp_user.user.id,
                                                 feedback: null,
                                                 rating: null
                                             };

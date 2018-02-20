@@ -213,14 +213,22 @@ export default class RefundModal extends Component {
     const amountError = amountValidation(this.props),
       partial = isPartialPayment(this.props);
 
+    const disputeCount = payment.disputes && payment.disputes.count;
     return (
       <div>
         <ModalHeader
           title="Refund Payment"
           onCloseClick={this.props.closeModal}
         />
-
         <div class="modal-body">
+          {disputeCount ? (
+            <div class="text-danger m-b">
+              There {disputeCount > 1 ? 'are' : 'is'} dispute{disputeCount >
+                1 && 's'}{' '}
+              raised against this payment. Kindly check the dispute details
+              before initiating a refund.
+            </div>
+          ) : null}
           <form onSubmit={handleSubmit(this.save)}>
             <div class="form-group">
               <label class="label-required">Refund Amount</label>

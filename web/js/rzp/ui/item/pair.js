@@ -52,6 +52,7 @@ export const reversalId = { title: 'Reversal Id', value: id.reversal };
 export const source = { title: 'Source', value: id.source };
 export const recipient = { title: 'Recipient', value: id.recipient };
 export const batchId = { title: 'Batch Id', value: id.batch };
+export const disputeId = { title: 'Dispute Id', value: id.dispute };
 
 export const mapValues = values => title => {
   return { title, value: item => values[item.id] };
