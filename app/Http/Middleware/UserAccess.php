@@ -64,29 +64,31 @@ class UserAccess
      */
     public function handle($request, Closure $next)
     {
-        $route = $this->router->currentRouteName();
-
-        $this->ba->verifyAndSetUser();
-
-        $routePolicyResponse = $this->validateUserRoutePolicy($route);
-
-        // If there's an exception return that and fail
-        if ($routePolicyResponse !== null)
+        if ($this->ba->isAdminAuth() === false)
         {
-            return $routePolicyResponse;
-        }
+            $route = $this->router->currentRouteName();
 
-        // User role validation will happen on proxy auth
-        // when merchant (not admin) is hitting the route
-        if (($this->ba->isProxyAuth() === true) and
-            ($this->ba->isAdminAuth() === false))
-        {
-            $routeUserRolePolicy = $this->validateRouteUserRolesPolicy($route);
+            $this->ba->verifyAndSetUser();
 
-            // If there's an exception then return and fail
-            if ($routeUserRolePolicy !== null)
+            $routePolicyResponse = $this->validateUserRoutePolicy($route);
+
+            // If there's an exception return that and fail
+            if ($routePolicyResponse !== null)
             {
-                return $routeUserRolePolicy;
+                return $routePolicyResponse;
+            }
+
+            // User role validation will happen on proxy auth
+            // when merchant (not admin) is hitting the route
+            if ($this->ba->isProxyAuth() === true)
+            {
+                $routeUserRolePolicy = $this->validateRouteUserRolesPolicy($route);
+
+                // If there's an exception then return and fail
+                if ($routeUserRolePolicy !== null)
+                {
+                    return $routeUserRolePolicy;
+                }
             }
         }
 

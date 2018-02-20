@@ -1389,6 +1389,8 @@ final class Route
         'shield_rules_update',
         'shield_rules_delete',
         'shield_rules_evaluate',
+
+        'user_fetch',
     ];
 
     public static $routePermission = [
@@ -1667,6 +1669,7 @@ final class Route
         'shield_rules_update'                    => Permission::EDIT_SHIELD_RULES,
         'shield_rules_delete'                    => Permission::DELETE_SHIELD_RULES,
         'shield_rules_evaluate'                  => Permission::EVALUATE_SHIELD_RULES,
+        'user_fetch'                             => Permission::VIEW_MERCHANT_LOGIN,
     ];
 
     public static $direct = [
