@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
 import moment from 'moment';
-import { Redirect } from 'react-router-dom';
+import { Redirect, Link } from 'react-router-dom';
 
 import Header from 'rzp/ui/Header';
 import {
@@ -18,15 +18,14 @@ import RecentEntityTable from 'merchant/components/Home/EntityTable';
 import AnalyticsGraph from 'merchant/components/Home/AnalyticsGraph';
 import MethodBreakupCard from 'merchant/components/Home/MethodBreakupCard';
 import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
+import OpenDisputeAlert from 'merchant/containers/Home/OpenDisputeAlert';
 import { defaults } from 'react-chartjs-2';
 import ShowWhen from 'merchant/components/ShowWhen';
 import LocalStorageService from 'rzp/utils/localStorage';
 import NewHome from './New';
 
-import {
-isMobileDevice 
-} from 'merchant/components/Home/data';
-import { trackForceOldDashboard } from './ga'; 
+import { isMobileDevice } from 'merchant/components/Home/data';
+import { trackForceOldDashboard } from './ga';
 
 defaults.global.defaultFontColor = '#666';
 defaults.global.defaultFontFamily =
@@ -44,14 +43,14 @@ defaults.global.layout = {
 const analyticsGoTo = name => {
   window.rzpAnalytics({
     eventCategory: 'Dashboard - Home',
-    eventAction: `Go To - ${name}`
+    eventAction: `Go To - ${name}`,
   });
 };
 
 const analyticsOpenDetails = name => {
   window.rzpAnalytics({
     eventCategory: 'Dashboard - Home',
-    eventAction: `Open Details - ${name}`
+    eventAction: `Open Details - ${name}`,
   });
 };
 
@@ -78,7 +77,6 @@ const analyticsOpenDetails = name => {
     fetchSettlements,
   }
 )
-
 class HomeContainer extends Component {
   componentWillMount() {
     this.props.fetchEntityTotals();
@@ -116,6 +114,7 @@ class HomeContainer extends Component {
           </div>
         </Header>
 
+        <OpenDisputeAlert />
         <div
           class="Dashboard"
           style={{
@@ -195,25 +194,21 @@ class HomeContainer extends Component {
 
 @connect(state => {
   return {
-    user: state.session.user
+    user: state.session.user,
   };
 }, null)
 export default class HomeSwitcher extends Component {
-
-  render () {
-
+  render() {
     // if the tag is enabled, force user to new dashboard
     if (this.props.user.isNewAnalyticsEnabled) {
-    
       if (isMobileDevice) {
-      
         trackForceOldDashboard();
-        return <HomeContainer/>;
+        return <HomeContainer />;
       }
 
-      return <Redirect to="/dashboard_v2"/>;
+      return <Redirect to="/dashboard_v2" />;
     }
 
-    return <HomeContainer/>;
+    return <HomeContainer />;
   }
 }
