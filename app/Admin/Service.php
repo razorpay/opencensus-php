@@ -466,7 +466,7 @@ class Service extends Base\Service
                 'gateway_terminal_password_confirmation',
             ]);
 
-            $this->setApiCredentials(null, $mode);
+            $this->setAdminCredentials(null, $mode);
 
             if (isset($input['gateway_client_certificate']) === true)
             {
