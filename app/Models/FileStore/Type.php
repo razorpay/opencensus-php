@@ -68,6 +68,7 @@ class Type
 
     const BATCH_INPUT                       = 'batch_input';
     const BATCH_OUTPUT                      = 'batch_output';
+    const BATCH_ERROR                       = 'batch_error';
     const RECONCILIATION_BATCH_INPUT        = 'reconciliation_batch_input';
 
     const BLANK                             = 'blank';
@@ -170,6 +171,7 @@ class Type
         Constants\Entity::BATCH => [
             self::BATCH_INPUT,
             self::BATCH_OUTPUT,
+            self::BATCH_ERROR,
             self::RECONCILIATION_BATCH_INPUT,
         ],
 
