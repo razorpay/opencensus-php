@@ -129,8 +129,7 @@ export default class EntityList extends Component {
 
     this.collection.setFilters({});
     this.clearForm(value);
-
-    this.submit();
+    this.onSelectChange(e);
   };
 
   clearForm(currentEntity) {
