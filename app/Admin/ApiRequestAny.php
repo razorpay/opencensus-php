@@ -57,6 +57,8 @@ class ApiRequestAny
 
         $this->processInput();
 
+        $this->forwardCookies();
+
         if ($base_url === null)
         {
             $base_url = Config::get('api.url');
@@ -244,5 +246,18 @@ class ApiRequestAny
         }
 
         return $parent;
+    }
+
+    public function forwardCookies()
+    {
+        // UTM cookies needs forwarding with some manipulation because php cookies only accept asci
+        if (empty($_COOKIE['rzp_utm']) === false)
+        {
+            $cookie = $_COOKIE['rzp_utm'];
+
+            $cookie = str_replace('+', '%2B', $cookie);
+
+            $this->options['headers']['Cookie'] = 'rzp_utm=' . $cookie;
+        }
     }
 }
