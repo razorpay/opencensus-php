@@ -1731,6 +1731,11 @@ final class Route
         'app_delete_token',
     ];
 
+    /**
+     * These are all the applications we have
+     * If you add something here, add it to $internal as well
+     * Nothing here should be in private or admin auth
+     */
     public static $internalApps = [
         'dashboard' => [
             '*'

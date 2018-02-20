@@ -100,6 +100,20 @@ class RoutesTest extends TestCase
         $this->assertEquals([], array_diff(Route::$internal, $internalAppRoutes));
     }
 
+    /**
+     * Verify that no private/admin routes are listed in
+     * internal apps as well
+     *
+     * ie, cron/mailgun etc should not be able to call a route
+     * that we also expect to be hit from admin
+     */
+    public function testSecurityOnlyInternal()
+    {
+        $disAllowedRoutes = array_merge(Route::$admin, Route::$private);
+
+        $this->assertEquals([], array_intersect(Route::$internal, $disAllowedRoutes));
+    }
+
     protected function matchRouteWithMailgunRoutes($route, $result)
     {
         $urls = \Config::get('url');
