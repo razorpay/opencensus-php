@@ -11,7 +11,7 @@ export default class ActivationStatusLogs extends Component {
 
   componentWillMount() {
     return adminFetch(
-      `merchant/activation/${this.props.merchantId}/status_change_log`
+      `live/merchant/activation/${this.props.merchantId}/status_change_log`
     ).then(response => {
       if (response) {
         this.setState({

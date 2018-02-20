@@ -7,7 +7,7 @@ import MultiSelectField from 'ui//MultiSelectField';
 import AsyncButton from 'ui/AsyncButton';
 import { notifyError, notifySuccess, closeModal } from 'common/modal';
 
-import { adminPost } from 'common/fetch';
+import fetch, { adminPost } from 'common/fetch';
 
 export default class EditFeatures extends Component {
   state = { mode: 'test' };
@@ -33,11 +33,13 @@ export default class EditFeatures extends Component {
     }
 
     const { props } = this.props;
+    requestData.mode = mode;
 
-    return adminPost(
-      requestData,
-      '/admin/features/merchant/' + props.merchantId
-    )
+    return fetch({
+      url: '/admin/features/merchant/' + props.merchantId,
+      method: 'post',
+      data: requestData,
+    })
       .then(response => {
         if (response) {
           notifySuccess('Merchant features updated successfully.');
