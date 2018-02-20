@@ -12,6 +12,7 @@ class Status
     const REJECTED         = 'R';
     const EXPIRED          = 'X';
     const VALIDATION_ERROR = 'V';
+    const CBS_DOWN         = 'T';
 
     /**
      * Below are the statuses for validateVpa API
@@ -28,6 +29,7 @@ class Status
         self::VALIDATION_ERROR => 'Request Validation Error',
         self::AVAILABLE_VPA    => 'Vpa Available',
         self::UNAVAILABLE_VPA  => 'Vpa Unavailable',
+        self::CBS_DOWN         => 'CBS transaction processing timed out',
     ];
 
     const STATUS_CODE_TO_ERROR_CODE_MAP = [
@@ -37,6 +39,9 @@ class Status
         self::PENDING          => ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_PENDING,
         self::VALIDATION_ERROR => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         self::UNAVAILABLE_VPA  => ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA,
+
+        // When T is returned in any flow other than callback, we consider it to be a time out
+        self::CBS_DOWN         => ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT
     ];
 
     public static function isStatusSuccess(string $status, string $action)
@@ -46,7 +51,14 @@ class Status
             return ($status === self::AVAILABLE_VPA);
         }
 
-        return ($status === self::SUCCESS);
+        $statuses = [self::SUCCESS];
+
+        if ($action === Action::CALLBACK)
+        {
+            array_push($statuses, self::CBS_DOWN);
+        }
+
+        return in_array($status, $statuses, true);
     }
 
     public static function getMessage(string $status)
