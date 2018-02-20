@@ -9,7 +9,10 @@ const GST_SAVE = 'GST_SAVE';
 export const fetchBankAccount = () => {
   return {
     type: BANK_ACCOUNT_FETCH,
-    payload: merchantFetch('account/bank_account'),
+    payload: merchantFetch({
+      url: 'account/bank_account',
+      mode: 'live'
+    }),
   };
 };
 
@@ -28,11 +31,12 @@ export const acceptInvitation = inviteId => {
 export const rejectInvitation = (inviteId, userId) => {
   return () => {
     return merchantFetch({
-      url: `invitation_action/${id}/${action}`,
+      url: `invitations/${inviteId}/reject`,
+      mode: 'live',
       method: 'post',
       data: {
-        user_id: userId
-      }
+        user_id: userId,
+      },
     });
   };
 };
@@ -62,7 +66,10 @@ export const updatePassword = data => {
 export const fetchGST = () => {
   return {
     type: GST_FETCH,
-    payload: merchantFetch('merchant/gst'),
+    payload: merchantFetch({
+      url: 'merchant/gst',
+      mode: 'live',
+    }),
   };
 };
 
@@ -72,8 +79,9 @@ export const saveGST = data => {
     payload: merchantFetch({
       url: 'merchant/gst',
       method: 'patch',
-      data
-    })
+      mode: 'live',
+      data,
+    }),
   };
 };
 

@@ -122,6 +122,7 @@ export default class Activation extends Entity {
   fetch() {
     let params = {
       url: 'merchant/activation',
+      mode: 'live',
       accountId: this.accountId,
     };
 
@@ -193,6 +194,7 @@ export default class Activation extends Entity {
 
     return merchantFetch({
       url: 'merchant/activation',
+      mode: 'live',
       method: 'post',
       data,
       accountId: this.accountId,

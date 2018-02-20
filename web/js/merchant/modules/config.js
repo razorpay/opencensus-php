@@ -14,8 +14,8 @@ export const fetchConfigAjax = () => {
 
 export const fetchFeaturesAjax = (currentUserId, mode) => {
   let params = {
-    url: `merchants/${currentUserId}/features`
-  }
+    url: `merchants/${currentUserId}/features`,
+  };
 
   if (mode) {
     params.mode = mode;
