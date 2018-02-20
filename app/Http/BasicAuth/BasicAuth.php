@@ -905,7 +905,7 @@ class BasicAuth
 
         // If '*' is present in the app's routes, then all routes
         // are allowed
-        if (in_array('*', $appRoutes))
+        if (in_array('*', $appRoutes, true) === true)
         {
             return true;
         }
