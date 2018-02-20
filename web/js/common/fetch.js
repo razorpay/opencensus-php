@@ -51,18 +51,18 @@ function _makePayload(payload, type) {
   return reqPayload;
 }
 
-export function adminFormUpload(form, customUrl) {
+// url are must be absolute url, Eg: /admin/api/{mode}/your_url
+export function adminFormUpload(form, url) {
   //Let axios decide which "Content-Type" to send
-  let url = customUrl ? customUrl : '/admin/admin';
   let fData = createFormData(form);
 
   return axios.post(url, fData);
 }
 
+// url are must be absolute url, Eg: /admin/api/{mode}/your_url
 //TODO: [CRITICAL] Merchant batch upload broke due to change in createFormData supporting array
-export function adminFormUpload2(form, customUrl) {
+export function adminFormUpload2(form, url) {
   //Let axios decide which "Content-Type" to send
-  let url = customUrl ? customUrl : '/admin/admin';
   let fData = createFormData2(form);
 
   return axios.post(url, fData);

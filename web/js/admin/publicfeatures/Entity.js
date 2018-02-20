@@ -77,9 +77,10 @@ export default class EditPublicFeatures extends Component {
 
       Object.keys(body).forEach(key => (form[`body[${key}]`] = body[key]));
 
-      form['url'] = `onboarding/features/${akaFeature}/update`;
-
-      return adminFormUpload(form).then(response => {
+      return adminFormUpload(
+        form,
+        `/admin/api/live/onboarding/features/${akaFeature}/update`
+      ).then(response => {
         if (response.data.success) {
           notifySuccess('Submission edited successfully.');
           closeModal();

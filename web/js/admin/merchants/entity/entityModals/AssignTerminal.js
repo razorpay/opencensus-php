@@ -91,7 +91,7 @@ export default class TerminalForm extends Component {
 
     return adminFormUpload2(
       body,
-      '/admin/merchant/' + this.props.merchantId + '/terminal'
+      `/admin/api/${body.mode}/admin/merchant/${this.props.merchantId}/terminal`
     )
       .then(response => {
         if (response.data.success) {
@@ -225,11 +225,7 @@ export default class TerminalForm extends Component {
             <option value="0">No</option>
           </SelectField>
 
-          <SelectField
-            name="emandate"
-            label="Emandate Allowed"
-            defaultValue=""
-          >
+          <SelectField name="emandate" label="Emandate Allowed" defaultValue="">
             <option value="" />
             <option value="1">Yes</option>
             <option value="0">No</option>

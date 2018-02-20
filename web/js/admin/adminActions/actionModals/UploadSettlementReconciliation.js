@@ -56,7 +56,7 @@ export default function UploadSettlementReconciliation() {
 
           return adminFormUpload(
             form,
-            `api/${mode}/settlements/reconcile/${channel}`
+            `/admin/api/${mode}/settlements/reconcile/${channel}`
           ).then(response => {
             if (response.data.success) {
               notifySuccess('API Request successful');
