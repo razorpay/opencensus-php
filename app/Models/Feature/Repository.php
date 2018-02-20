@@ -83,7 +83,7 @@ class Repository extends BaseRepository
         // Fetch all the features of the application
         // that is trying to access the resource
         //
-        $applicationFeatures = $this->findByEntityTypeAndEntityId($application, $applicationId);
+        $applicationFeatures = $this->fetchByEntityTypeAndEntityId($application, $applicationId);
 
         return $applicationFeatures->toArray();
     }
