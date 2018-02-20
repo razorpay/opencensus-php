@@ -5,7 +5,7 @@ import * as DisputeActions from 'merchant/modules/disputes/details';
 
 import DisputeDetails from 'merchant/components/Disputes/Details';
 
-const findDispute = (disputes, disputeId) =>
+const findDispute = (disputes = [], disputeId) =>
   disputes.find(({ id }) => id === disputeId) || disputeId;
 
 @withRouter
@@ -18,12 +18,17 @@ const findDispute = (disputes, disputeId) =>
 )
 export default class DisputeDetailsContainer extends Component {
   componentWillMount() {
-    this.props.loadDispute(findDispute(this.props.disputes, this.props.id));
+    this.loadDispute(this.props.id);
   }
 
   componentWillReceiveProps(nextProps) {
-    nextProps.disputes.length &&
-      this.props.loadDispute(findDispute(this.props.disputes, nextProps.id));
+    if (nextProps.id !== this.props.id) {
+      this.loadDispute(nextProps.id);
+    }
+  }
+
+  loadDispute(disputeId) {
+    this.props.loadDispute(findDispute(this.props.disputes, disputeId));
   }
 
   render() {

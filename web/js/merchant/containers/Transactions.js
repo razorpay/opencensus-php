@@ -48,7 +48,9 @@ export default class TransactionsContainer extends Component {
           <NavLink to="/orders">Orders</NavLink>
           <NavLink to="/disputes">
             Disputes&nbsp;{this.props.openDisputes > 0 && (
-              <span class="badge bg-danger">{this.props.openDisputes}</span>
+              <span class="badge bg-danger disputes-count">
+                {this.props.openDisputes}
+              </span>
             )}
           </NavLink>
         </header>
