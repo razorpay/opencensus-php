@@ -32,6 +32,7 @@ class RoutesTest extends TestCase
             Route::$proxy,
             Route::$device,
             Route::$direct,
+            Route::$admin,
         ];
 
         $uniqueRoutes = [];
