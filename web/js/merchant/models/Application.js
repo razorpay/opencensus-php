@@ -53,6 +53,7 @@ export default class Application extends GenericEntity {
 
     return merchantFetch({
       url: 'oauth/applications',
+      mode: 'live',
       method: 'post',
       data: formData,
     })
@@ -81,6 +82,7 @@ export default class Application extends GenericEntity {
 
     return merchantFetch({
       url: `oauth/applications/${this.id}`,
+      mode: 'live',
       method: 'post',
       data: formData,
     })

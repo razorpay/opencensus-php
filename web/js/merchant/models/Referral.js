@@ -24,7 +24,6 @@ export default class Referral extends Entity {
 
     return ajax({
       url: `/settings/merchants/switch/${merchantId}`,
-      appendModeInURL: false,
     }).then(response => window.location.reload());
   }
 

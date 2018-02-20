@@ -39,7 +39,6 @@ export const switchMerchant = merchantId => {
   return () => {
     return ajax({
       url: `/settings/merchants/switch/${merchantId}`,
-      appendModeInURL: false,
     });
   };
 };
@@ -49,7 +48,6 @@ export const logout = () => {
     type: USER_LOGOUT,
     payload: ajax({
       url: '/user/logout',
-      appendModeInURL: false,
     }),
   };
 };
@@ -59,7 +57,7 @@ export const submitFeedback = data => {
     return ajax({
       url: '/sendfeedback',
       method: 'post',
-      appendModeInURL: false,
+      mode: 'live',
       data,
     });
   };

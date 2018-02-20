@@ -19,7 +19,6 @@ export const acceptInvitation = inviteId => {
     return ajax({
       url: `/settings/invitations/${inviteId}/accept`,
       method: 'post',
-      appendModeInURL: false,
     });
   };
 };
@@ -28,11 +27,12 @@ export const acceptInvitation = inviteId => {
 export const rejectInvitation = (inviteId, userId) => {
   return () => {
     return merchantFetch({
-      url: `invitation_action/${id}/${action}`,
+      url: `invitations/${inviteId}/reject`,
+      mode: 'live',
       method: 'post',
       data: {
-        user_id: userId
-      }
+        user_id: userId,
+      },
     });
   };
 };
@@ -43,7 +43,7 @@ export const upgradeAccount = data => {
       url: '/merchants/register',
       method: 'post',
       data: data,
-      appendModeInURL: false,
+      mode: 'live',
     });
   };
 };
@@ -52,6 +52,7 @@ export const updatePassword = data => {
   return () => {
     return ajax({
       url: '/password',
+      mode: 'live',
       method: 'post',
       data: data,
       appendModeInQueryParam: true,
@@ -62,7 +63,10 @@ export const updatePassword = data => {
 export const fetchGST = () => {
   return {
     type: GST_FETCH,
-    payload: merchantFetch('merchant/gst'),
+    payload: merchantFetch({
+      url: 'merchant/gst',
+      mode: 'live',
+    }),
   };
 };
 
@@ -72,8 +76,8 @@ export const saveGST = data => {
     payload: merchantFetch({
       url: 'merchant/gst',
       method: 'patch',
-      data
-    })
+      data,
+    }),
   };
 };
 
