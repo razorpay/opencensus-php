@@ -81,6 +81,25 @@ class RoutesTest extends TestCase
         }
     }
 
+    /**
+     * Verify that internal[] array is composed
+     * of everything in the internalApps list
+     */
+    public function testSecurityInternalRoutes()
+    {
+        $internalAppRoutes = [];
+
+        foreach (Route::$internalApps as $app => $routes) {
+            foreach ($routes as $route) {
+                $internalAppRoutes[] = $route;
+            }
+        }
+
+        // Verify that diffing both ways returns 0 elements
+        $this->assertEquals([], array_diff($internalAppRoutes, Route::$internal));
+        $this->assertEquals([], array_diff(Route::$internal, $internalAppRoutes));
+    }
+
     protected function matchRouteWithMailgunRoutes($route, $result)
     {
         $urls = \Config::get('url');
