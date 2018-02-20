@@ -32,10 +32,12 @@ const gateWayOptions = [
   'Netbanking Pnb',
   'First Data',
   'Virtual Accounts Kotak',
+  'Virtual Accounts Yes Bank',
 ];
 
 const optionValueMap = {
-  'Virtual Accounts Kotak': 'VirtualAccKotak',
+  'Virtual Accounts Kotak'   : 'VirtualAccKotak',
+  'Virtual Accounts Yes Bank': 'VirtualAccYesBank',
 };
 
 UploadReconciliationFile.permission = 'add_reconciliation_file';
