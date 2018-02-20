@@ -5,6 +5,7 @@ import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import {
   fetchBatch,
+  batchDownload,
   fetchBatchStats,
   fetchBatchInvoices,
 } from 'merchant/modules/batches';
@@ -13,6 +14,7 @@ import BatchDetails from 'merchant/components/BatchNew/BatchDetails';
 
 @connect(null, {
   fetchBatch,
+  batchDownload,
   fetchBatchStats,
   fetchBatchInvoices,
   ...ModalActions,
@@ -23,6 +25,22 @@ export default class BatchDetailsContainer extends Component {
     batch: {},
     stats: {},
     isLoading: true,
+  };
+
+  handleDownload = id => {
+    let windowRef = window.open('', '_blank');
+    this.props
+      .batchDownload(id)
+      .then(response => {
+        windowRef.location.href = response.data.url;
+      })
+      .catch(({ errors }) => {
+        windowRef.close();
+        this.props.showNotification({
+          type: 'error',
+          message: errors,
+        });
+      });
   };
 
   componentWillMount() {
@@ -50,6 +68,6 @@ export default class BatchDetailsContainer extends Component {
       });
   }
   render() {
-    return <BatchDetails {...this.state} />;
+    return <BatchDetails onDownload={this.handleDownload} {...this.state} />;
   }
 }

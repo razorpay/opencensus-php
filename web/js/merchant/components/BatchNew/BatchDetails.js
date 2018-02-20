@@ -15,7 +15,7 @@ import {
 } from 'merchant/components/StatusLabel';
 
 export default function BatchDetails(props) {
-  let { batch, stats, invoices, isLoading } = props;
+  let { batch, stats, invoices, isLoading, onDownload } = props;
   let shouldShowAllInvoices = true;
   const MAX_INVOICE_COUNT = 4;
 
@@ -38,7 +38,10 @@ export default function BatchDetails(props) {
           </div>
           <div class="SliderPanel__Body">
             {/* TODO: remove below link */}
-            <Banner cta="Download Report File" ctaUrl="#">
+            <Banner
+              cta="Download Report File"
+              ctaOnClick={onDownload.bind(this, batch.id)}
+            >
               <span>
                 Download the output file containing all the payment links data.
               </span>
