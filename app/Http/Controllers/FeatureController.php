@@ -11,7 +11,7 @@ use RZP\Models\Feature\Constants;
 class FeatureController extends Controller
 {
     /**
-     * Assigns features to accounts
+     * Adds features to accounts
      *
      * @return \Illuminate\Http\Response
      */
