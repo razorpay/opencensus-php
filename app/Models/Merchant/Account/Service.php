@@ -56,7 +56,6 @@ class Service extends Merchant\Service
      * @param string $id
      *
      * @return array
-     * @throws Exception\BadRequestException
      */
     public function fetchSettlementDestinations(string $id): array
     {
@@ -86,5 +85,22 @@ class Service extends Merchant\Service
         $ba = (new BankAccount\Core)->createOrChangeBankAccount($input, $account);
 
         return $ba->toArrayPublic();
+    }
+
+    /**
+     * Used for dashboard
+     *
+     * @param array $input
+     *
+     * @return array
+     * @throws Exception\InvalidArgumentException
+     */
+    public function listLinkedAccounts(array $input)
+    {
+        $input[Merchant\Entity::PARENT_ID] = $this->merchant->getId();
+
+        $accounts = $this->repo->merchant->fetch($input);
+
+        return $accounts->toArrayPublic();
     }
 }

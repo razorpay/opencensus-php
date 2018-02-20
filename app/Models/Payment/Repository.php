@@ -520,7 +520,7 @@ class Repository extends Base\Repository
 
         $tId = $terminalRepo->dbColumn(Terminal\Entity::ID);
 
-        $pCreatedAt = $this->dbColumn(Entity::CREATED_AT);
+        $pAuthorizedAt = $this->dbColumn(Entity::AUTHORIZED_AT);
 
         $tCorp = $terminalRepo->dbColumn(Terminal\Entity::CORPORATE);
 
@@ -529,8 +529,8 @@ class Repository extends Base\Repository
         return $this->newQuery()
             ->select($paymentAttrs)
             ->join($tTablename, $pTerminalId, '=', $tId)
-            ->where($pCreatedAt, '>=', $from)
-            ->where($pCreatedAt, '<=', $to)
+            ->where($pAuthorizedAt, '>=', $from)
+            ->where($pAuthorizedAt, '<=', $to)
             ->where($pGateway, $gateway)
             ->whereNotNull($authorizedAt)
             ->where($tCorp, $corporate)
@@ -1020,7 +1020,7 @@ class Repository extends Base\Repository
                         })
                     ->where(Entity::RECURRING_TYPE, '=', RecurringType::INITIAL)
                     ->where($paymentRecurringColumn, '=', 1)
-                    ->where($paymentMethodColumn, '=', Method::NETBANKING)
+                    ->where($paymentMethodColumn, '=', Method::EMANDATE)
                     ->where(Entity::GATEWAY, '=', $gateway)
                     ->whereBetween($paymentCreatedAtColumn, [$from, $to])
                     ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::INITIATED)
@@ -1056,7 +1056,7 @@ class Repository extends Base\Repository
                     ->where(Entity::RECURRING_TYPE, '=', RecurringType::AUTO)
                     ->where(Entity::STATUS, '=', Status::CREATED)
                     ->where($paymentRecurringColumn, '=', 1)
-                    ->where($paymentMethodColumn, '=', Method::NETBANKING)
+                    ->where($paymentMethodColumn, '=', Method::EMANDATE)
                     ->where(Entity::GATEWAY, '=', $gateway)
                     ->whereBetween($paymentCreatedAtColumn, [$from, $to])
                     ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::CONFIRMED)

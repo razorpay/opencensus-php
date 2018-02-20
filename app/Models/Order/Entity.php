@@ -159,21 +159,6 @@ class Entity extends Base\PublicEntity
 
     /** End Related Models */
 
-    /** Mutators */
-
-    //
-    // Temporary only. To be removed later.
-    //
-    protected function setMethodAttribute($method)
-    {
-        if ($method === Payment\Method::EMANDATE)
-        {
-            $method = Payment\Method::NETBANKING;
-        }
-
-        $this->attributes[self::METHOD] = $method;
-    }
-
     /** Appends */
 
     public function getAmountDueAttribute(): int

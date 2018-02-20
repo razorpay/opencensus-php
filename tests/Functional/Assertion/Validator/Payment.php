@@ -14,7 +14,7 @@ class Payment extends Validator
         Entity::BASE_AMOUNT         => 'sometimes|integer',
         Entity::STATUS              => 'required|in:created,authorized,captured,failed,refunded',
         Entity::TWO_FACTOR_AUTH     => 'sometimes|nullable|in:passed,skipped,unknown,failed,not_applicable,unavailable',
-        Entity::METHOD              => 'required|in:card,netbanking,wallet,emi,transfer,bank_transfer,aeps',
+        Entity::METHOD              => 'required|in:card,netbanking,wallet,emi,transfer,bank_transfer,aeps,emandate',
         Entity::CAPTURED            => 'required|boolean',
         Entity::AMOUNT_REFUNDED     => 'sometimes',
         Entity::AMOUNT_TRANSFERRED  => 'sometimes',
@@ -43,6 +43,8 @@ class Payment extends Validator
         Entity::TOKEN_ID            => 'sometimes|nullable|string|size:20',
         Entity::DISPUTED            => 'sometimes|boolean',
         Entity::RECURRING_TYPE      => 'sometimes|nullable|string',
+        Entity::AUTH_TYPE           => 'sometimes|nullable|string',
+        Entity::EMI_PLAN            => 'sometimes|',
         Entity::EMI_PLAN            => 'sometimes',
         Entity::DISPUTES            => 'sometimes',
     );
