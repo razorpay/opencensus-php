@@ -10,9 +10,7 @@ import {
   fetchRefunds,
   fetchSettlements,
 } from 'rzp/modules/collection';
-import { fetchOpen as fetchOpenDisputes } from 'merchant/modules/disputes/details';
 import DateRangePickerField from 'rzp/ui/Forms/DateRangePickerField';
-import Banner from 'rzp/ui/Banner';
 
 import * as HomeActions from 'merchant/modules/home';
 import InfoCardList from 'merchant/components/Home/InfoCardList';
@@ -20,14 +18,13 @@ import RecentEntityTable from 'merchant/components/Home/EntityTable';
 import AnalyticsGraph from 'merchant/components/Home/AnalyticsGraph';
 import MethodBreakupCard from 'merchant/components/Home/MethodBreakupCard';
 import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
+import OpenDisputeAlert from 'merchant/containers/Home/OpenDisputeAlert';
 import { defaults } from 'react-chartjs-2';
 import ShowWhen from 'merchant/components/ShowWhen';
 import LocalStorageService from 'rzp/utils/localStorage';
 import NewHome from './New';
 
-import {
-isMobileDevice
-} from 'merchant/components/Home/data';
+import { isMobileDevice } from 'merchant/components/Home/data';
 import { trackForceOldDashboard } from './ga';
 
 defaults.global.defaultFontColor = '#666';
@@ -71,7 +68,6 @@ const analyticsOpenDetails = name => {
       payments: state.payments,
       refunds: state.refunds,
       settlements: state.settlements,
-      openDisputes: state.dispute.openDisputes,
     };
   },
   {
@@ -79,7 +75,6 @@ const analyticsOpenDetails = name => {
     fetchPayments,
     fetchRefunds,
     fetchSettlements,
-    fetchOpenDisputes,
   }
 )
 class HomeContainer extends Component {
@@ -90,7 +85,6 @@ class HomeContainer extends Component {
     this.props.fetchPayments({ count: 5 });
     this.props.fetchRefunds({ count: 5 });
     this.props.fetchSettlements({ count: 5 });
-    this.props.fetchOpenDisputes();
   }
 
   render() {
@@ -101,7 +95,6 @@ class HomeContainer extends Component {
       payments,
       refunds,
       settlements,
-      openDisputes,
     } = this.props;
     let mode = this.props.mode;
     let graphData = this.props.analytics;
@@ -121,16 +114,7 @@ class HomeContainer extends Component {
           </div>
         </Header>
 
-        {openDisputes > 0 && (
-          <Banner>
-            There {openDisputes > 1 ? 'are' : 'is'} {openDisputes} open dispute{openDisputes >
-              1 && 's'}{' '}
-            against {openDisputes < 2 && 'a'} payment{openDisputes > 1 && 's'}&nbsp;
-            that needs your attention. &nbsp;<Link to="/disputes">
-              Show Disputes
-            </Link>
-          </Banner>
-        )}
+        <OpenDisputeAlert />
         <div
           class="Dashboard"
           style={{
@@ -214,21 +198,17 @@ class HomeContainer extends Component {
   };
 }, null)
 export default class HomeSwitcher extends Component {
-
-  render () {
-
+  render() {
     // if the tag is enabled, force user to new dashboard
     if (this.props.user.isNewAnalyticsEnabled) {
-
       if (isMobileDevice) {
-
         trackForceOldDashboard();
-        return <HomeContainer/>;
+        return <HomeContainer />;
       }
 
-      return <Redirect to="/dashboard_v2"/>;
+      return <Redirect to="/dashboard_v2" />;
     }
 
-    return <HomeContainer/>;
+    return <HomeContainer />;
   }
 }

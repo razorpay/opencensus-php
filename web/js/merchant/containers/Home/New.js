@@ -20,6 +20,7 @@ import {
 } from 'rzp/utils/pokedex';
 
 import { fetch } from 'merchant/modules/pokedex';
+import OpenDisputeAlert from 'merchant/containers/Home/OpenDisputeAlert';
 import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
 import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
 import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
@@ -29,7 +30,7 @@ import {
   OLDEST_TXN_ERROR,
   API_ERROR,
   API_INVALID_RESP,
-  isMobileDevice
+  isMobileDevice,
 } from 'merchant/components/Home/data';
 import GenericPanel, { PanelBody } from 'merchant/components/Home/GenericPanel';
 
@@ -38,7 +39,7 @@ import {
   trackPresetChange,
   trackSettlementsClick,
   trackPlatformAnalyticsHidden,
-  trackForceOldDashboard
+  trackForceOldDashboard,
 } from './ga';
 
 const dateRangePresets = [
@@ -120,7 +121,7 @@ class HomeContainer extends Component {
     // or not
 
     const { startDate, endDate } = this.state,
-          { isAdmin } = this.props;
+      { isAdmin } = this.props;
 
     const query = {
       filters: {
@@ -165,7 +166,6 @@ class HomeContainer extends Component {
         }
 
         if (!isAdmin) {
-
           const platforms = Object.keys(data);
 
           // if we do not get platforms for given daterange
@@ -251,11 +251,9 @@ class HomeContainer extends Component {
         return OLDEST_TXN_ERROR;
       })
       .then(data => {
-
         oldestTransactionDate.loading = false;
 
         if (!data || data.error) {
-
           if (data.error) {
             oldestTransactionDate.error = data.error;
 
@@ -266,7 +264,7 @@ class HomeContainer extends Component {
           }
 
           this.setState({
-            oldestTransactionDate
+            oldestTransactionDate,
           });
 
           return onFirstTxnDate && onFirstTxnDate();
@@ -299,16 +297,14 @@ class HomeContainer extends Component {
   onDatesChange(startDate, endDate, selectedPreset) {
     const { oldestTransactionDate } = this.state;
 
-    this.setState(
-      {
-        startDate,
-        endDate,
-        oldestTransactionDate: {
-          ...oldestTransactionDate,
-          ...getPreviousDates({ startDate, endDate }),
-        }
-      }
-    );
+    this.setState({
+      startDate,
+      endDate,
+      oldestTransactionDate: {
+        ...oldestTransactionDate,
+        ...getPreviousDates({ startDate, endDate }),
+      },
+    });
 
     if (selectedPreset.name === customRangeText) {
       trackDatesChange(startDate, endDate);
@@ -334,7 +330,7 @@ class HomeContainer extends Component {
       current_balance,
       tabsMeta,
       isAdmin,
-      onFilterChange
+      onFilterChange,
     } = this.props;
 
     const {
@@ -348,6 +344,7 @@ class HomeContainer extends Component {
     return (
       <div class="react-root dashboard-home">
         <Sticky stickWhen={0} stickAt={50}>
+          <OpenDisputeAlert customClass="analytics-dash-banner" />
           <Header className="clearfix" title="" showMode={false}>
             <div className="pull-left date-range-container">
               <DateRangePicker
@@ -415,9 +412,9 @@ class HomeContainer extends Component {
 
           <div className="row">
             <div
-              className={`col-md-12 traffic-activity-row clearfix${showGrouping
-                ? ''
-                : ' traffic-hidden'}`}
+              className={`col-md-12 traffic-activity-row clearfix${
+                showGrouping ? '' : ' traffic-hidden'
+              }`}
             >
               {showGrouping && (
                 <div className="traffic-container">
@@ -472,6 +469,9 @@ class HomeContainer extends Component {
   }
 }
 
-export default (props) => isMobileDevice
-                       ? (trackForceOldDashboard(), <Redirect to="/dashboard"/>)
-                       : <HomeContainer {...props}/>
+export default props =>
+  isMobileDevice ? (
+    (trackForceOldDashboard(), <Redirect to="/dashboard" />)
+  ) : (
+    <HomeContainer {...props} />
+  );
