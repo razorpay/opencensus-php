@@ -830,7 +830,7 @@ trait PaymentTrait
 
     protected function retryFailedRefunds($gateway = [])
     {
-        $this->ba->adminAuth();
+        $this->ba->cronAuth();
 
         $content = [];
 

@@ -520,7 +520,7 @@ class Repository extends Base\Repository
 
         $tId = $terminalRepo->dbColumn(Terminal\Entity::ID);
 
-        $pCreatedAt = $this->dbColumn(Entity::CREATED_AT);
+        $pAuthorizedAt = $this->dbColumn(Entity::AUTHORIZED_AT);
 
         $tCorp = $terminalRepo->dbColumn(Terminal\Entity::CORPORATE);
 
@@ -529,8 +529,8 @@ class Repository extends Base\Repository
         return $this->newQuery()
             ->select($paymentAttrs)
             ->join($tTablename, $pTerminalId, '=', $tId)
-            ->where($pCreatedAt, '>=', $from)
-            ->where($pCreatedAt, '<=', $to)
+            ->where($pAuthorizedAt, '>=', $from)
+            ->where($pAuthorizedAt, '<=', $to)
             ->where($pGateway, $gateway)
             ->whereNotNull($authorizedAt)
             ->where($tCorp, $corporate)

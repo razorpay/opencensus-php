@@ -32,6 +32,7 @@ class RoutesTest extends TestCase
             Route::$proxy,
             Route::$device,
             Route::$direct,
+            Route::$admin,
         ];
 
         $uniqueRoutes = [];
@@ -79,6 +80,49 @@ class RoutesTest extends TestCase
         {
             $this->matchRouteWithMailgunRoutes($route, $result);
         }
+    }
+
+    /**
+     * Verify that internal[] array is composed
+     * of everything in the internalApps list
+     */
+    public function testSecurityInternalRoutes()
+    {
+        $internalAppRoutes = [];
+
+        foreach (Route::$internalApps as $app => $routes) {
+            foreach ($routes as $route) {
+                $internalAppRoutes[] = $route;
+            }
+        }
+
+        // Verify that diffing both ways returns 0 elements
+        $knownExceptions = [
+            '*',
+            // The following are proxy routes called from CRON
+            // and as such are not in $internal
+            // When we get rid of $internal entirely, this will
+            // get fixed, and we can use [] instead of knownExceptions
+            'reports_transaction_dsp',
+            'reports_refund_irctc',
+        ];
+
+        $this->assertEquals($knownExceptions, array_values(array_diff($internalAppRoutes, Route::$internal)));
+        $this->assertEquals([], array_diff(Route::$internal, $internalAppRoutes));
+    }
+
+    /**
+     * Verify that no private/admin routes are listed in
+     * internal apps as well
+     *
+     * ie, cron/mailgun etc should not be able to call a route
+     * that we also expect to be hit from admin
+     */
+    public function testSecurityOnlyInternal()
+    {
+        $disAllowedRoutes = array_merge(Route::$admin, Route::$private);
+
+        $this->assertEquals([], array_intersect(Route::$internal, $disAllowedRoutes));
     }
 
     protected function matchRouteWithMailgunRoutes($route, $result)

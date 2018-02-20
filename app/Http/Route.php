@@ -1255,12 +1255,10 @@ final class Route
         'dispute_reason_create',
         'merchant_tags_bulk',
         'refund_verify',
-        'refund_retry_failed',
         'merchant_edit',
         'adj_add_bulk',
         'adj_add_reverse',
         'adjustments_split_for_dispute',
-        'admin_fetch_all_entities',
         'admin_fetch_entity_by_id',
         'admin_fetch_entity_multiple',
         'admin_fetch_terminal_by_id',
@@ -1330,7 +1328,6 @@ final class Route
         'merchant_put_payment_methods',
         'merchant_send_activation_mail',
         'merchant_set_banks',
-        'merchant_tags_bulk',
         'merchants_update_bank_account',
         'methods_update_merchants',
         'migrate_tokens_to_gateway_tokens',
@@ -1363,8 +1360,6 @@ final class Route
         'setl_edit',
         'setl_file_generate',
         'setl_fixer',
-        'setl_reconcile',
-        'setl_update_channel_bulk',
         'settings_delete',
         'settings_fetch_defined',
         'settings_fetch',
@@ -1377,7 +1372,6 @@ final class Route
         'terminal_remove_merchant',
         'terminal_restore',
         'terminal_toggle',
-        'transaction_bulk_update',
         'transaction_create_fees_breakup',
         'upi_fill_bank',
         'upi_psp_allow',
@@ -1565,7 +1559,6 @@ final class Route
         'refund_verify_failed'                   => '*',
         'merchant_edit_email'                    => '*',
         'refund_verify'                          => '*',
-        'refund_retry_failed'                    => '*',
         'pricing_get_plans'                      => '*',
         'pricing_get_gateway_plans'              => '*',
         'pricing_get_plan_rule'                  => '*',
@@ -1731,6 +1724,11 @@ final class Route
         'app_delete_token',
     ];
 
+    /**
+     * These are all the applications we have
+     * If you add something here, add it to $internal as well
+     * Nothing here should be in private or admin auth
+     */
     public static $internalApps = [
         'dashboard' => [
             '*'

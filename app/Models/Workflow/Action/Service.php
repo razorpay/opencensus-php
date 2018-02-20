@@ -5,6 +5,7 @@ namespace RZP\Models\Workflow\Action;
 use RZP\Models\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Role;
 use RZP\Models\Workflow\Constants;
 
 class Service extends Base\Service
@@ -101,7 +102,7 @@ class Service extends Base\Service
                        ->workflow_action
                        ->getActionDetails($actionId, $orgId)
                        ->first();
-        
+
         // $action can be null because we don't validate the result after fetching from the collection.
         if (empty($action) === false)
         {
@@ -164,7 +165,7 @@ class Service extends Base\Service
         return $action->toArrayPublic();
     }
 
-    public function executeAction(string $id)
+    public function executeAction(string $id, Role\Entity $role = null)
     {
         Entity::verifyIdAndStripSign($id);
 
@@ -184,7 +185,19 @@ class Service extends Base\Service
 
         $admin = $this->app['basicauth']->getAdmin();
 
-        return $this->core()->executeAction($action, $admin);
+        if (empty($role) === true)
+        {
+            if ($admin->isSuperAdmin() === false)
+            {
+                $role = $admin->getSuperAdminRole();
+            }
+            else
+            {
+                $role = null;
+            }
+        }
+
+        return $this->core()->executeAction($action, $admin, $role);
     }
 
     /**

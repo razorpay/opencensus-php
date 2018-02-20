@@ -37,7 +37,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                                                                      $status);
     }
 
-    protected function getNbAccountDetails($row)
+    protected function getAccountDetails($row)
     {
         return [
             Base\Reconciliate::ACCOUNT_NUMBER => $this->getDebitAccountNumber($row)
