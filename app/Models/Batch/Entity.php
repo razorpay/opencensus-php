@@ -49,6 +49,7 @@ class Entity extends Base\PublicEntity
     const URL                       = 'url';
     const INPUT_FILE_PREFIX         = 'batch/upload/';
     const OUTPUT_FILE_PREFIX        = 'batch/download/';
+    const ERROR_FILE_PREFIX         = 'batch/error/';
     const CONFIG                    = 'config';
 
     protected static $sign = 'batch';
@@ -211,6 +212,51 @@ class Entity extends Base\PublicEntity
     {
         return $this->files()
                     ->where(FileStore\Entity::TYPE, FileStore\Type::BATCH_OUTPUT)
+                    ->latest()
+                    ->first();
+    }
+
+    /**
+     * The file which our processor creates finally with processed results.
+     * This is available to user to download.
+     *
+     * @return FileStore\Entity
+     */
+    public function errorFile()
+    {
+        return $this->files()
+                    ->where(FileStore\Entity::TYPE, FileStore\Type::BATCH_ERROR)
+                    ->latest()
+                    ->first();
+    }
+
+    /**
+     * This method returns the file_store entity that is used for getting
+     * latest entries for a batch.
+     *
+     * If the merchant calls the create(POST /batches) api with file_id produced
+     * from batch validate api (POST /batches/validate), the latest will be file
+     * of type `batch_error`. This is also obvious as only the last batch_error
+     * file_store entity will be associated with this batch. The associatiopn
+     * happens during batch_create sync part.
+     *
+     * If the merchant calls the create(POST /batches) api with file upload,
+     * the latest will be file of type `batch_input`.
+     *
+     * @return FileStore\Entity
+     */
+    public function getBatchCreatorFile()
+    {
+        //
+        // For files of reconciliation type batches, we use a different UFH type
+        // (hence S3 locations) for reasons.
+        //
+        $ufhTypes = ($this->isReconciliationType() === true) ?
+                            [FileStore\Type::RECONCILIATION_BATCH_INPUT] :
+                            [FileStore\Type::BATCH_ERROR, FileStore\Type::BATCH_INPUT];
+
+        return $this->files()
+                    ->whereIn(FileStore\Entity::TYPE, $ufhTypes)
                     ->latest()
                     ->first();
     }
