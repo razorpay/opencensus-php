@@ -3,7 +3,7 @@ import BaseModal from 'ui/BaseModal';
 import { toJS, observable } from 'mobx';
 import { observer } from 'mobx-react';
 import { closeModal, notifyError, notifySuccess } from 'common/modal';
-import { adminFetch, adminPost } from 'common/fetch';
+import fetch, { adminFetch, adminPost } from 'common/fetch';
 import { getRiskRating } from '../entity-resources';
 import ShowWhen from 'admin/components/ShowWhen';
 import Form from 'ui/Form';
@@ -97,7 +97,11 @@ export default class EditMerchant extends Component {
       return;
     }
 
-    return adminPost(body, '/admin/merchant/' + this.props.merchantId + '/edit')
+    return fetch({
+      url: '/admin/merchant/' + this.props.merchantId + '/edit',
+      method: 'post',
+      data: body,
+    })
       .then(data => {
         if (data) {
           closeModal();
