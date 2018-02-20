@@ -389,16 +389,14 @@ class MerchantController extends Controller
 
     public function getWebhooks()
     {
-        $data = $this->service()->getWebhooks();
+        $data = $this->service()->getWebhooks($this->input);
 
         return ApiResponse::json($data);
     }
 
     public function postOAuthApplicationWebhook(string $appId)
     {
-        $input = Request::all();
-
-        $data = $this->service()->createOAuthAppWebhook($appId, $input);
+        $data = $this->service()->createOAuthAppWebhook($appId, $this->input);
 
         return ApiResponse::json($data);
     }

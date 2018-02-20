@@ -6,7 +6,7 @@ class Webhook extends Base
 {
     public function create(array $attributes = array())
     {
-        $defaultAttributes = array('events' => ['payment.authorized' => true]);
+        $defaultAttributes = array('events' => ['payment.authorized' => '1']);
 
         $attributes = array_merge($attributes, $defaultAttributes);
 

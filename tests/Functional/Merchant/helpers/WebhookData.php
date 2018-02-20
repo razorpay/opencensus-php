@@ -227,6 +227,29 @@ return [
         ]
     ],
 
+    'testGetOAuthAppWebhooks' => [
+        'request' => [
+            'url'    => '/webhooks?application_id=10000000000App',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'url'            => 'http://example.com/v1/dummy/route',
+                        'events'         => [
+                            'payment.authorized' => true
+                        ],
+                        'active'         => true,
+                        'application_id' => '10000000000App',
+                    ]
+                ]
+            ]
+        ]
+    ],
+
     'testRecreateWebhook' => [
         'request' => [
             'url' => '/webhooks',
