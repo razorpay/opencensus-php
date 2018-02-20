@@ -96,7 +96,7 @@ class RoutesTest extends TestCase
         }
 
         // Verify that diffing both ways returns 0 elements
-        $this->assertEquals([], array_diff($internalAppRoutes, Route::$internal));
+        $this->assertEquals(['*'], array_values(array_diff($internalAppRoutes, Route::$internal)));
         $this->assertEquals([], array_diff(Route::$internal, $internalAppRoutes));
     }
 
