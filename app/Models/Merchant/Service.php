@@ -774,9 +774,9 @@ class Service extends Base\Service
         return $webhook->toArrayPublic();
     }
 
-    public function getWebhooks()
+    public function getWebhooks(array $params)
     {
-        $webhooks = $this->repo->webhook->findMultipleByMerchant($this->merchant);
+        $webhooks = $this->repo->webhook->fetch($params, $this->merchant->getId());
 
         return $webhooks->toArrayPublic();
     }

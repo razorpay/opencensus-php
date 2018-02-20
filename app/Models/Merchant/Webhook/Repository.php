@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\Webhook;
 
 use RZP\Models\Base;
+use RZP\Base\BuilderEx;
 use RZP\Models\Merchant;
 
 class Repository extends Base\Repository
@@ -23,15 +24,6 @@ class Repository extends Base\Repository
         $merchant->setRelation('methods', $methods);
 
         return $methods;
-    }
-
-    public function findMultipleByMerchant($merchant)
-    {
-        return $this->newQuery()
-                    ->merchantId($merchant->getId())
-                    ->whereNull(Entity::ENTITY_TYPE)
-                    ->whereNull(Entity::ENTITY_ID)
-                    ->get();
     }
 
     public function findByMerchant($merchant)
@@ -83,5 +75,35 @@ class Repository extends Base\Repository
     {
         $webhook->setLastSuccessfulAt();
         $webhook->saveOrFail();
+    }
+
+    protected function addQueryParamApplicationId(BuilderEx $query, array $params)
+    {
+        $entityTypeAttribute = $this->dbColumn(Entity::ENTITY_TYPE);
+
+        $entityIdAttribute = $this->dbColumn(Entity::ENTITY_ID);
+
+        $query->where($entityTypeAttribute, Entity::APPLICATION);
+
+        $query->where($entityIdAttribute, $params[Entity::APPLICATION_ID]);
+    }
+
+    protected function buildFetchQueryAdditional($params, $query)
+    {
+        $entityParams = [
+            Entity::APPLICATION_ID,
+            Entity::ENTITY_TYPE,
+            Entity::ENTITY_ID,
+        ];
+
+        $entityParamsPresent = array_intersect_key($params, array_flip($entityParams));
+
+        if (count($entityParamsPresent) === 0)
+        {
+            $query->whereNull(Entity::ENTITY_TYPE)
+                  ->whereNull(Entity::ENTITY_ID);
+        }
+
+        return $query;
     }
 }

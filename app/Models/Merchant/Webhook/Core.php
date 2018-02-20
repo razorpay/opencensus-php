@@ -43,7 +43,7 @@ class Core extends Base\Core
 
     public function getWebhooks($merchant)
     {
-        return $this->repo->webhook->findMultipleByMerchant($merchant);
+        return $this->repo->webhook->fetch([], $merchant->getId());
     }
 
     public function getWebhooksWithEntityId(
