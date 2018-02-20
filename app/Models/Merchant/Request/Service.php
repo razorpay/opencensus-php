@@ -2,10 +2,24 @@
 
 namespace RZP\Models\Merchant\Request;
 
+use Cache;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Base;
+
 
 class Service extends Base\Service
 {
+
+    protected $cache;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->cache = $this->app['cache'];
+    }
+
     /*
      * This function to be used when Merchant asks for specific product related status on relevant page on dashboard.
      */
@@ -92,5 +106,44 @@ class Service extends Base\Service
     public function getRejectionReasons()
     {
         return RejectionReasons::REJECTION_REASONS_MAPPING;
+    }
+
+    public function issueOneTimeToken()
+    {
+        $token = bin2hex(random_bytes(20));
+
+        // Generate One Time Token valid for 5 minutes
+        $this->cache->put($token, ['merchantId' => $this->merchant->getId(), 'mode' => $this->mode], 5);
+
+        return [
+            'token' =>  $token
+        ];
+    }
+
+    public function isValidOneTimeToken($token): bool
+    {
+        return $this->cache->has($token);
+    }
+
+    /**
+     * @param $token
+     * @return mixed
+     * @throws \Exception when token is invalid or expired
+     */
+    public function consumeOneTimeToken($token)
+    {
+        $value = $this->cache->pull($token);
+        $this->app['rzp.mode'] = $value['mode'];
+        $this->app['basicauth']->setModeAndDbConnection($value['mode']);
+
+        $merchant = $this->repo->merchant->find($value['merchantId']);
+        $this->app['basicauth']->setMerchant($merchant);
+
+        if ($value === null)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_BATCH_UPLOAD_INVALID_TOKEN);
+        }
+
+        return $merchant;
     }
 }

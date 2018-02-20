@@ -9,6 +9,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
+use RZP\Models\Payment\AuthType;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Gateway\Rule;
@@ -194,6 +195,13 @@ class Selector extends Base\Core
             $merchantTerminals = $merchantTerminals->merge($possibleApplicableTerminals);
         }
 
+        if ($payment->getAuthType() === AuthType::SKIP)
+        {
+            $possibleApplicableTerminals = $this->getTerminalsForAuthTypeSkip();
+
+            $merchantTerminals = $merchantTerminals->merge($possibleApplicableTerminals);
+        }
+
         return $merchantTerminals->all();
     }
 
@@ -220,6 +228,15 @@ class Selector extends Base\Core
                              ->getByTypeAndMerchantIds(
                                     Type::RECURRING_NON_3DS,
                                     $merchantIdsForGatewayTokenTerminals);
+
+        return $addTerminals;
+    }
+
+    protected function getTerminalsForAuthTypeSkip()
+    {
+        $addTerminals = $this->repo
+            ->terminal
+            ->getByType(Type::RECURRING_NON_3DS);
 
         return $addTerminals;
     }

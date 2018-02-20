@@ -67,6 +67,21 @@ class Validator extends Base\Validator
         Entity::CONFIG                  => 'filled|array',
     ];
 
+    protected static $directDebitCreateRules = [
+        Entity::TYPE            => 'required|in:direct_debit',
+        Entity::FILE            => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Header::EMAIL           => 'filled|email',
+        Header::PHONE           => 'filled|contact_syntax',
+        Header::CARD            => 'filled|numeric|luhn',
+        Header::EXPIRY          => 'filled|size:4|numeric',
+        Header::CARDHOLDER_NAME => 'filled|alpha',
+        Header::AMOUNT          => 'filled|numeric|min:100',
+        Header::RECEIPT         => 'filled',
+        Header::NOTES1          => 'filled|sometimes',
+        Header::NOTES2          => 'filled|sometimes',
+        Header::NOTES3          => 'filled|sometimes',
+    ];
+
     protected static $reconciliationCreateRules = [
         Entity::TYPE            => 'required|in:reconciliation',
         Entity::GATEWAY         => 'required|string|max:25',
@@ -108,6 +123,19 @@ class Validator extends Base\Validator
         HdfcEMDebitHeadings::TRANSACTION_REF_NO     => 'Transaction Reference No. must be present',
         HdfcEMDebitHeadings::ACCOUNT_NO             => 'Account No must be present',
         HdfcEMDebitHeadings::STATUS                 => 'Status must be present',
+    ];
+
+    protected static $directDebitRequireHeaders = [
+        Header::EMAIL           =>      'Email must be present',
+        Header::PHONE           =>      'Phone must be present',
+        Header::CARD            =>      'Card number must be present',
+        Header::EXPIRY          =>      'Expiry must be present',
+        Header::CARDHOLDER_NAME =>      'Cardholder name must be present',
+        Header::AMOUNT          =>      'Amount (in paise) must be present',
+        Header::RECEIPT         =>      'Receipt number must be present',
+        Header::NOTES1          =>      'NOTES 1 [] must be present',
+        Header::NOTES2          =>      'NOTES 2 [] must be present',
+        Header::NOTES3          =>      'NOTES 3 [] must be present',
     ];
 
     protected function validateType($attribute, $value)

@@ -35,6 +35,7 @@ class TransactionFilter extends Terminal\Filter
         'pharma',
         'corporate',
         'mcc',
+        'skip',
     ];
 
     public function methodFilter($terminal)
@@ -490,6 +491,53 @@ class TransactionFilter extends Terminal\Filter
         }
 
         return true;
+    }
+
+    public function skipFilter(Terminal\Entity $terminal)
+    {
+        $payment = $this->input['payment'];
+
+        if($payment->getAuthType() !== Payment\AuthType::SKIP)
+        {
+            return true;
+        }
+
+        if ($terminal->isNonRecurring() === true)
+        {
+            return false;
+        }
+
+        if (Gateway::isRecurringGateway($terminal->getGateway()) === false)
+        {
+            return false;
+        }
+
+        if (($terminal->getGateway() === Gateway::CYBERSOURCE) and
+            ($terminal->getGatewayAcquirer() !== 'hdfc'))
+        {
+            return false;
+        }
+
+        if ($terminal->isNon3DSRecurring() === false)
+        {
+            return false;
+        }
+
+        $applicableTypes = [
+            Terminal\Type::RECURRING_3DS,
+            Terminal\Type::RECURRING_NON_3DS,
+        ];
+
+        if ((empty(array_diff($applicableTypes, $terminal->getType())) === true) or
+            ($terminal->isNo2Fa() === true))
+        {
+
+            if (($terminal->isFallbackApplicable($this->input['merchant']) === true) and
+                ($payment->isCard() === true))
+            {
+                return true;
+            }
+        }
     }
 
     protected function isTerminalWithMerchantMccAbsent(

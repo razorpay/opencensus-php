@@ -52,6 +52,14 @@ class Repository extends Base\Repository
         }
     }
 
+    public function getByType($type)
+    {
+        return $this->newQuery()
+            ->type([$type])
+            ->enabled()
+            ->get();
+    }
+
     public function getByTypeAndMerchantIds($type, $merchantIds)
     {
         return $this->newQuery()

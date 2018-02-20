@@ -8,10 +8,12 @@ class AuthType
 {
     const NETBANKING    = 'netbanking';
     const AADHAAR       = 'aadhaar';
+    const SKIP          = 'skip';
 
     public static $types = [
         self::NETBANKING,
         self::AADHAAR,
+        self::SKIP,
     ];
 
     public static function isAuthTypeValid($type): bool

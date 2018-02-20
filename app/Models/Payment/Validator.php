@@ -65,7 +65,7 @@ class Validator extends Base\Validator
         'subscription_card_change'      => 'sometimes|boolean',
         'upi'                           => 'sometimes_if:method,upi|array',
         'upi.expiry_time'               => 'sometimes_if:method,upi|integer|between:5,30|filled',
-        'auth_type'                     => 'sometimes_if:method,emandate|string|max:10|filled|in:netbanking,aadhaar',
+        'auth_type'                     => 'sometimes_if:method,emandate,card|string|max:10|filled|in:netbanking,aadhaar,skip',
         'bank_account'                  => 'sometimes_if:method,emandate|associative_array|filled',
         'bank_account.account_number'   => 'required_with:bank_account|filled|alpha_num|between:5,20',
         'bank_account.ifsc'             => 'required_with:bank_account|filled|alpha_num|size:11',

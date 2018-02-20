@@ -230,6 +230,25 @@ class Header
     const PAYOUT_TAX                 = 'payout_tax';
 
     /**
+     * Direct Debit headers
+     */
+    const EMAIL                     =   "EMAIL";
+    const PHONE                     =   "PHONE";
+    const CARD                      =   "CARD";
+    const EXPIRY                    =   "EXPIRY";
+    const CARDHOLDER_NAME           =   "CARDHOLDER NAME";
+//    const AMOUNT            =   "AMOUNT";
+    const RECEIPT                   =   "RECEIPT";
+    const NOTES1                    =   "NOTES 1 []";
+    const NOTES2                    =   "NOTES 2 []";
+    const NOTES3                    =   "NOTES 3 []";
+
+
+    //output
+    const DIRECT_DEBIT_PAYMENT_ID   =   "PAYMENT_ID";
+    const REMARKS                   =   "REMARKS";
+
+    /**
      * Input and output file headers
      * The keys need to be like <type>_<sub-type>_<gateway>.
      * Above is subject to those value not being empty.
@@ -590,6 +609,36 @@ class Header
                 self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
+            ],
+        ],
+
+        Type::DIRECT_DEBIT  =>  [
+            self::INPUT =>  [
+                self::EMAIL,
+                self::PHONE,
+                self::CARD,
+                self::EXPIRY,
+                self::CARDHOLDER_NAME,
+                self::AMOUNT,
+                self::RECEIPT,
+                self::NOTES1,
+                self::NOTES2,
+                self::NOTES3,
+            ],
+
+            self::OUTPUT    =>  [
+                self::EMAIL,
+                self::PHONE,
+                self::CARD,
+                self::EXPIRY,
+                self::CARDHOLDER_NAME,
+                self::AMOUNT,
+                self::RECEIPT,
+                self::NOTES1,
+                self::NOTES2,
+                self::NOTES3,
+                self::DIRECT_DEBIT_PAYMENT_ID,
+                self::REMARKS,
             ],
         ],
     ];

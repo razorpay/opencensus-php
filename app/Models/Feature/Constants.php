@@ -61,6 +61,7 @@ class Constants
     const NEW_ANALYTICS                 = 'new_analytics';
     const DAILY_SETTLEMENT              = 'daily_settlement';
     const DISABLE_UPI_INTENT            = 'disable_upi_intent';
+    const SKIP                          = 'skip';
 
     // Orders
     const ORDER_ID_MANDATORY            = 'order_id_mandatory';

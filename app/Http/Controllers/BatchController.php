@@ -2,9 +2,11 @@
 
 namespace RZP\Http\Controllers;
 
-use View;
-use Request;
 use ApiResponse;
+use Illuminate\Http\Request;
+use RZP\Exception\BadRequestException;
+use View;
+use RZP\Constants\Entity as E;
 
 class BatchController extends Controller
 {
@@ -76,5 +78,62 @@ class BatchController extends Controller
         $response = $this->service()->fetchStatsOfBatch($id);
 
         return ApiResponse::json($response);
+    }
+
+    public function renderDirectDebitUploadForm(Request $request)
+    {
+        $token = $request->input('token');
+
+        $isValid = $this->isValidOneTimeToken($token);
+
+        if ($isValid === false)
+        {
+            $view = \View::make('403');
+        }
+        else {
+            $view = \View::make('direct_debit_upload_form');
+        }
+
+        return \Response::make($view);
+    }
+
+    public function submitDirectDebitUploadForm(Request $request)
+    {
+        $token = $request->input('token');
+        $input = $request->all();
+
+        $this->service(E::MERCHANT_REQUEST)->consumeOneTimeToken($token);
+
+        unset($input['token']);
+        $result =  $this->service()->createBatch($input);
+
+        $view = \View::make('direct_debit_form_submit', $result);
+        return \Response::make($view);
+    }
+
+    public function validateDirectDebitFile(Request $request)
+    {
+        $input = $request->all();
+
+        $token = $input['ott'];
+
+        $isValid = $this->isValidOneTimeToken($token);
+
+        if ($isValid === false)
+        {
+            // TODO: Throw 401
+            throw new BadRequestException("Invalid OTT");
+        }
+
+        unset($input['ott']);
+
+        $response = $this->service()->validateFile($input);
+
+        return ApiResponse::json($response);
+    }
+
+    private function isValidOneTimeToken($token)
+    {
+        return $this->service(E::MERCHANT_REQUEST)->isValidOneTimeToken($token);
     }
 }

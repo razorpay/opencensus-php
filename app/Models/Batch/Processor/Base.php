@@ -2,24 +2,24 @@
 
 namespace RZP\Models\Batch\Processor;
 
-use Mail;
 use Carbon\Carbon;
+use Mail;
 use Razorpay\Trace\Logger as Trace;
-use Symfony\Component\HttpFoundation\File\File;
-
-use RZP\Models\Batch;
-use RZP\Models\Invoice;
-use RZP\Models\Settings;
+use RZP\Encryption\Type;
 use RZP\Error\ErrorCode;
-use RZP\Models\Merchant;
-use RZP\Trace\TraceCode;
-use RZP\Models\FileStore;
-use RZP\Models\Batch\Constants;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Exception\BaseException;
 use RZP\Exception\LogicException;
 use RZP\Models\Base as BaseModel;
+use RZP\Models\Batch;
+use RZP\Models\Batch\Constants;
+use RZP\Models\FileStore;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
-use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Invoice;
+use RZP\Models\Merchant;
+use RZP\Models\Settings;
+use RZP\Trace\TraceCode;
+use Symfony\Component\HttpFoundation\File\File;
 
 class Base extends BaseModel\Core
 {
@@ -95,6 +95,8 @@ class Base extends BaseModel\Core
      */
     protected $inputFileType;
     protected $outputFileType;
+
+    protected $inputUfhFile;
 
     public function __construct(Batch\Entity $batch)
     {
@@ -196,6 +198,7 @@ class Base extends BaseModel\Core
         // Here $ufhFile is the input file_store instance upload by merchant.
         // $ufhFile has no entity associated with it and has type = `batch_input`
         $ufhFile = $this->getInputFile($input);
+        $this->inputUfhFile = $ufhFile;
 
         $this->inputFileLocalPath = $ufhFile->getFullFilePath();
         $this->inputFileType      = $ufhFile->getType();
@@ -885,6 +888,14 @@ class Base extends BaseModel\Core
             $ufh->entity($this->batch);
         }
 
+        if ($this->batch->getType() === Batch\Type::DIRECT_DEBIT and $type == FileStore\Type::BATCH_INPUT)
+        {
+            $ufh->encrypt(Type::AES_ENCRYPTION, [
+                'mode'   =>   \phpseclib\Crypt\Base::MODE_CBC,
+                'secret' =>  openssl_random_pseudo_bytes(256)
+            ]);
+        }
+
         return $ufh->localFilePath($filePath)
                    ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[$ext][0])
                    ->name($name)
@@ -1104,5 +1115,10 @@ class Base extends BaseModel\Core
     protected function increaseAllowedSystemLimits()
     {
         return;
+    }
+
+    protected function getInputUfhFile()
+    {
+        return $this->inputUfhFile;
     }
 }
