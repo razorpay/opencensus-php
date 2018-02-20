@@ -41,7 +41,21 @@ class UserAccess
     }
 
     /**
-     * Handle an incoming request
+     * We'll verify the user basis the incoming (request) user_id
+     * from dashboard headers and set that in BasicAuth context.
+     * This will involve a DB call.
+     *
+     * Once the user has been verified, basis the route => [roles]
+     * mapping we'll check whether the user is allowed to access the current
+     * route basis his own role that comes in the dashboard header as well.
+     *
+     * This way we're able to implement ACL on dashboard for merchant users.
+     * 
+     * Note: If the mapping doesn't contain role for the current route
+     * then all the users of the merchant will get access to that specific route.
+     * Also the entire logic is application on proxy auth (but not admin auth).
+     *
+     * @todo we should move from blacklisting to whitelisting.
      *
      * @param \Illuminate\Http\Request  $request
      * @param Closure  $next
@@ -56,18 +70,20 @@ class UserAccess
 
         $routePolicyResponse = $this->validateUserRoutePolicy($route);
 
+        // If there's an exception return that and fail
         if ($routePolicyResponse !== null)
         {
             return $routePolicyResponse;
         }
 
-        /**
-         * User Role to route validation will happen only in proxy auth.
-         */
-        if ($this->ba->isProxyAuth() === true and $this->ba->isAdminAuth() === false)
+        // User role validation will happen on proxy auth
+        // when merchant (not admin) is hitting the route
+        if (($this->ba->isProxyAuth() === true) and
+            ($this->ba->isAdminAuth() === false))
         {
             $routeUserRolePolicy = $this->validateRouteUserRolesPolicy($route);
 
+            // If there's an exception then return and fail
             if ($routeUserRolePolicy !== null)
             {
                 return $routeUserRolePolicy;
@@ -88,6 +104,11 @@ class UserAccess
     {
         $user = $this->ba->getUser();
 
+        // If the user is not set in the current BasicAuth context
+        // and the route being hit exists in $userWhitelist then fail
+        //
+        // Effectively $userWhitelist becomes a list of routes that
+        // makes user in current context mandatory.
         if ((empty($user) === true) and
             (in_array($route, Route::$userWhitelist, true) === true))
         {
@@ -100,6 +121,11 @@ class UserAccess
     {
         $routeRoles = $this->userRoleScope->getRouteUserRoles($route);
 
+        // Due to this we're effectively blacklisting and not whitelisting.
+        // This means that if there's a route which doesn't have a role
+        // mapping then all the users will get access to that by default.
+        //
+        // @todo change this to a whitelist instead of blacklist.
         if ($routeRoles === null)
         {
             return;
@@ -107,12 +133,15 @@ class UserAccess
 
         $userRole = $this->getUserRole();
 
+        // If no role was sent in the headers
         if (empty($userRole) === true)
         {
             return ApiResponse::unauthorized(
                 ErrorCode::BAD_REQUEST_UNAUTHORIZED_USER_ROLE_MISSING);
         }
 
+        // If the role sent in header is not allowed to hit the
+        // route basis mapping fetched (above) from UserRolesScope
         if (in_array($userRole, $routeRoles, true) === false)
         {
             return ApiResponse::unauthorized(
@@ -122,6 +151,9 @@ class UserAccess
 
     private function getUserRole()
     {
+        // @todo validate the user actually has the role sent
+        // in headers since we don't want to trust dashboard
+
         $dashboardHeaders = $this->ba->getDashboardHeaders();
 
         $userRole = $dashboardHeaders['user_role'] ?? null;
