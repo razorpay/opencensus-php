@@ -37,7 +37,8 @@ class UserTest extends TestCase
 
         $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
 
-        $this->ba->appAuth();
+        // @todo cover this flow for a guest user as well
+        $this->ba->adminAuth();
 
         $this->startTest();
     }

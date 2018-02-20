@@ -32,7 +32,8 @@ class RoutesTest extends TestCase
             Route::$proxy,
             Route::$device,
             Route::$direct,
-            Route::$admin,
+            // @todo add $admin back once we remove Internal
+            // Route::$admin,
         ];
 
         $uniqueRoutes = [];
