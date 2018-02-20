@@ -78,11 +78,11 @@ export default class EditUser extends Component {
     let successMsg, url;
 
     if (id !== 'new') {
-      url = `admin/${id}`;
+      url = `live/admin/${id}`;
       request = adminPut;
       successMsg = 'User is created successfully';
     } else {
-      url = 'admins';
+      url = 'live/admins';
       request = adminPost;
       successMsg = 'User is updated successfully';
     }

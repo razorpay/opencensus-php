@@ -37,7 +37,7 @@ function _makePayload(payload, type) {
   if (typeof payload === 'string') {
     reqPayload.url = payload;
   } else {
-    reqPayload = payload;
+    reqPayload = { ...reqPayload, ...payload };
   }
 
   reqPayload.url = '/admin/api/' + reqPayload.url; // final url is "/admin/api/+url"
