@@ -190,13 +190,17 @@ export default class GenerateReports extends Component {
       return Promise.resolve(window.open(invoiceUrl, '_blank'));
     }
 
+    // Format  MM/YYYY
     let data = {
       month: Number(date[0]),
-      year: date[1],
+      year: Number(date[1]),
     };
 
+    // Format DD/MM/YYYY
     if (type === 'daily') {
       data.day = Number(date[0]);
+      data.month = Number(date[1]);
+      data.year = Number(date[2]);
     }
 
     // let ajaxUrl__merchant_dash = '/reports/' + entity;

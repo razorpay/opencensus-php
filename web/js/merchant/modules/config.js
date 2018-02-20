@@ -52,16 +52,12 @@ export const updateFeatures = (data, currentUserId) => {
 };
 
 export const updateConfig = data => {
-  var params = {
-    route_name: 'merchant_edit_config',
-    body: data,
-  };
   return {
     type: CONFIG_SAVE,
     payload: merchantFetch({
       url: 'account/config',
       method: 'put',
-      data: data,
+      data,
     }),
   };
 };
