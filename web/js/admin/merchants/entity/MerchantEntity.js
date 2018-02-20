@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
 import ShowWhen from 'admin/components/ShowWhen';
-import { adminFetch, adminPut, adminPost } from 'common/fetch';
+import fetch, { adminFetch, adminPut, adminPost } from 'common/fetch';
 import {
   openModal,
   closeModal,
@@ -148,7 +148,10 @@ const ActionsList = ({ model, merchantId, actions }) => {
 
   /* Api call functions */
   function captureScreenshot() {
-    adminPut({}, '/admin/merchant/' + merchantId + '/screenshot')
+    fetch({
+      url: '/admin/merchant/' + merchantId + '/screenshot',
+      method: 'put',
+    })
       .then(response => {
         notifySuccess(
           'Website screenshots capture started. Wait for notification on Slack'
@@ -285,12 +288,12 @@ const ActionsList = ({ model, merchantId, actions }) => {
   }
 
   function activateMerchant() {
-    return adminFetch(
-      {
-        params: { dashboard: true },
+    return fetch({
+      url: '/admin/merchant/' + merchantId + '/activate',
+      params: {
+        dashboard: true,
       },
-      '/admin/merchant/' + merchantId + '/activate'
-    )
+    })
       .then(response => {
         if (response) {
           notifySuccess('Merchant is successfully updated');

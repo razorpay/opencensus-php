@@ -23,87 +23,26 @@ export default function fetch(options, suppressError) {
     .catch(e => notifyError(e));
 }
 
-// customUrl must start with '/'. In general, it starts with /admin/api
-export function adminFetch(data, customUrl) {
-  let url = _baseFetchWithParams(data, customUrl);
+export const adminFetch = payload => fetch(_makePayload(payload, 'get'));
+export const adminPost = payload => fetch(_makePayload(payload, 'post'));
+export const adminPut = payload => fetch(_makePayload(payload, 'put'));
+export const adminDelete = payload => fetch(_makePayload(payload, 'delete'));
+export const adminPatch = payload => fetch(_makePayload(payload, 'patch'));
 
-  return fetch({
-    url,
-  });
-}
+function _makePayload(payload, type) {
+  let reqPayload = {
+    method: type,
+  };
 
-export function adminPost(data, customUrl) {
-  let url = '/admin/api/';
-
-  if (typeof data === 'string') {
-    url += data; // If only url is passed
+  if (typeof payload === 'string') {
+    reqPayload.url = payload;
   } else {
-    data = parseParams(data);
-    url += data.url;
-    delete data.url;
+    reqPayload = { ...reqPayload, ...payload };
   }
 
-  return fetch({
-    url: customUrl ? customUrl : url,
-    method: 'post',
-    data,
-  });
-}
+  reqPayload.url = '/admin/api/' + reqPayload.url; // final url is "/admin/api/+url"
 
-export function adminPut(data, customUrl) {
-  let url = '/admin/api/';
-
-  if (typeof data === 'string') {
-    // If only url is passed
-    url += data;
-  } else {
-    data = parseParams(data);
-    url += data.url;
-    delete data.url;
-  }
-
-  return fetch({
-    url: customUrl ? customUrl : url,
-    method: 'put',
-    data,
-  });
-}
-
-// customUrl must start with '/'. In general, it starts with /admin/api
-export function adminDelete(data, customUrl) {
-  let url = _baseFetchWithParams(data, customUrl);
-
-  return fetch({
-    url,
-    method: 'delete',
-  });
-}
-// customUrl must start with '/'. In general, it starts with /admin/api
-export function adminPatch(data, customUrl) {
-  let url = _baseFetchWithParams(data, customUrl);
-  return fetch({
-    url,
-    method: 'patch',
-  });
-}
-
-function _baseFetchWithParams(data, customUrl) {
-  let url = customUrl ? customUrl : '/admin/api/';
-
-  if (typeof data === 'string') {
-    url += data; // If only url is passed
-  } else {
-    if (!customUrl && data.url) {
-      url += data.url;
-      delete data.url;
-    }
-
-    if (data.params) {
-      url += '?' + constructQueryString(data.params); // Appends query params to url or customUrl, whatever is present
-    }
-  }
-
-  return url;
+  return reqPayload;
 }
 
 export function adminFormUpload(form, customUrl) {
@@ -121,16 +60,6 @@ export function adminFormUpload2(form, customUrl) {
   let fData = createFormData2(form);
 
   return axios.post(url, fData);
-}
-
-function parseParams(origParams) {
-  let params = deepClone(origParams);
-
-  if (origParams.query_params) {
-    params.query_params = JSON.stringify(origParams.query_params);
-  }
-
-  return params;
 }
 
 const createFormData = (form = {}) => {
@@ -155,23 +84,4 @@ const createFormData2 = (form = {}) => {
     }
   });
   return formData;
-};
-
-export const constructQueryString = params => {
-  let query = [];
-
-  for (const k in params) {
-    if (params.hasOwnProperty(k)) {
-      let val = params[k];
-      if (typeof val === 'object') {
-        Object.keys(val).map(idx => query.push(`${k}[${idx}]=${val[idx]}`));
-      } else {
-        query.push(k + '=' + val);
-      }
-    }
-  }
-
-  query = query.join('&');
-
-  return query;
 };

@@ -737,14 +737,11 @@ app
         }
 
         var data = {
-          route_name: 'user_reset_password_create',
-          body: {
-            email: $scope.login.data.email,
-          },
+          email: $scope.login.data.email,
         };
         var request = $http({
           method: 'post',
-          url: '/guest/generic',
+          url: '/user/api/live/users/reset-password',
           data: data,
         });
         request.success(function(data) {

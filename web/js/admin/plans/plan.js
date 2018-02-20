@@ -1,7 +1,7 @@
 import { toJS, extendObservable, computed } from 'mobx';
 import Collection from 'model/collection';
 import CollectionItem from 'model/collectionItem';
-import { adminDelete, adminFetch, adminPost } from 'common/fetch';
+import fetch, { adminDelete, adminFetch, adminPost } from 'common/fetch';
 import { methods } from 'common/data';
 import { notifySuccess, notifyError } from 'common/modal';
 import { deepClone } from 'common/util';
@@ -30,7 +30,7 @@ export default class Plan extends Collection {
   fetch() {
     return this.request(
       'fetch',
-      adminFetch({
+      fetch({
         ...this.data,
         params: this.filters,
       })
@@ -178,8 +178,8 @@ class Rule extends CollectionItem {
       return this.request(
         'save',
         adminPost({
-          data: this.serialize(),
           url: `live/pricing/${this.collection.props.id}/rule`,
+          data: this.serialize(),
         })
       ).then(data => {
         if (data) {
