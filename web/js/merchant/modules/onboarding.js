@@ -24,6 +24,7 @@ export const saveOnboarding = (feature, fields, file, fileName) => {
     payload: merchantFetch({
       url: `feature/onboarding/${feature}`,
       data: formData,
+      mode: 'live',
       method: 'post',
     }),
   };
@@ -31,5 +32,8 @@ export const saveOnboarding = (feature, fields, file, fileName) => {
 
 // Get responses
 export const getOnboardingResponse = feature => {
-  return () => merchantFetch(`feature/onboarding/${feature}/responses`);
+  return () => merchantFetch({
+    url: `feature/onboarding/${feature}/responses`,
+    mode: 'live'
+  });
 };
