@@ -1454,6 +1454,7 @@ final class Route
         'workflow_action_update'                 => '*',
         'workflow_action_details'                => '*',
         'workflow_action_get_multiple'           => '*',
+        'refund_generate_excel'                  => '*',
         'credits_fetch_multiple'                 => Permission::VIEW_MERCHANT_CREDITS_LOG,
         'credits_create'                         => Permission::ADD_MERCHANT_CREDITS,
         'credits_delete'                         => Permission::DELETE_MERCHANT_CREDITS,
