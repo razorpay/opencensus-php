@@ -110,7 +110,7 @@ export default class AddEMIPlan extends Component {
           pendingClass="small spinner"
           onSubmit={body => {
             return adminPost({
-              url: 'emi',
+              url: 'live/emi',
               data: body,
             }).then(response => {
               if (response) {

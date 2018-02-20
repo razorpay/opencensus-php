@@ -42,19 +42,20 @@ export default class GenericEntity extends Component {
   fetchEntity(mode, suppressDefaultError) {
     let { type, id } = this.params;
 
-    fetch({ url: `${mode}/admin/${type}/${id}` }, suppressDefaultError).then(
-      data => {
-        if (!data.errors && data) {
-          if (data.mode) {
-            data[`${type} mode`] = data.mode;
-          }
-          data.mode = mode;
-          this.setState({ data, title: this.getTitle(mode) });
+    fetch(
+      { url: `/admin/api/${mode}/admin/${type}/${id}` },
+      suppressDefaultError
+    ).then(data => {
+      if (!data.errors && data) {
+        if (data.mode) {
+          data[`${type} mode`] = data.mode;
         }
-
-        return data;
+        data.mode = mode;
+        this.setState({ data, title: this.getTitle(mode) });
       }
-    );
+
+      return data;
+    });
   }
 
   render() {

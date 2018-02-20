@@ -15,7 +15,7 @@ export default ({ entity, mode, updateEntity }) => {
   function editDispute(body) {
     // Edit Dispute
     return fetch({
-      url: `${mode}_${entity.merchant_id}/disputes/${entity.id}`,
+      url: `/admin/api/${mode}_${entity.merchant_id}/disputes/${entity.id}`,
       method: 'post',
       data: body,
     })
