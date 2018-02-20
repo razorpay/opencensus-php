@@ -811,7 +811,7 @@ class CybersourceGatewayTest extends TestCase
             ]
         ];
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $this->runRequestResponseFlow($data);
 

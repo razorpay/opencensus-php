@@ -198,7 +198,7 @@ class RefundTest extends TestCase
 
         $publicBatchId = $batch->getPublicId();
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $this->testData[__FUNCTION__]['request']['url'] = "/batches/$publicBatchId/process";
 
@@ -220,7 +220,7 @@ class RefundTest extends TestCase
 
         $publicBatchId = $batch->getPublicId();
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $this->testData[__FUNCTION__]['request']['url'] = "/batches/$publicBatchId/process";
 

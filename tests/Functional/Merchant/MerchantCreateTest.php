@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Merchant;
 use Mail;
 use Queue;
 
+use RZP\Constants\Mode;
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Batch\Header;
@@ -26,21 +27,21 @@ class MerchantCreateTest extends TestCase
 
     public function testCreateMerchantWithDuplicateEmail()
     {
-        $this->ba->appAuthTest();
+        $this->ba->adminAuth(Mode::TEST);
 
         $this->startTest();
     }
 
     public function testCreateMerchantWithDuplicateId()
     {
-        $this->ba->appAuthTest();
+        $this->ba->adminAuth(Mode::TEST);
 
         $this->startTest();
     }
 
     public function testCreateMerchantAndRelations()
     {
-        $this->ba->appAuthTest();
+        $this->ba->adminAuth();
 
         $this->merchantId = '1X4hRFHFx4UiXt';
 
@@ -96,9 +97,9 @@ class MerchantCreateTest extends TestCase
 
     protected function checkNetbankingBanks()
     {
-        $this->checkNetbankingBanksInMode('test');
+        $this->checkNetbankingBanksInMode(Mode::TEST);
 
-        $this->checkNetbankingBanksInMode('live');
+        $this->checkNetbankingBanksInMode(Mode::LIVE);
     }
 
     protected function checkMethods()
@@ -140,8 +141,7 @@ class MerchantCreateTest extends TestCase
 
     protected function checkNetbankingBanksInMode($mode)
     {
-        $func = 'appAuth'.ucfirst($mode);
-        $this->ba->$func();
+        $this->ba->adminAuth($mode);
 
         $testData = $this->testData['testGetBankAccountsAfterCreatedMerchant'];
 

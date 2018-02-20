@@ -315,7 +315,7 @@ class PaymentCreateTest extends TestCase
 
         $this->assertArrayHasKey('razorpay_payment_id', $response);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $data = $this->testData[__FUNCTION__];
         $this->startTest($data);

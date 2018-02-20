@@ -219,6 +219,10 @@ return [
             Permission::VIEW_MERCHANT_REPORT   => [
                 'description' => 'View Merchant Reports',
             ],
+
+            Permission::VIEW_SPECIAL_MERCHANT_REPORT => [
+                'description'   => 'View custom merchant reports for a few large clients',
+            ],
             Permission::CREATE_MERCHANT_OFFER  => [
                 'description' => 'Create offer for a merchant',
             ],

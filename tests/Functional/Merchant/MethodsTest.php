@@ -81,7 +81,7 @@ class MethodsTest extends TestCase
 
         $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $this->startTest();
 
