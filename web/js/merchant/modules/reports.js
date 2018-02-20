@@ -23,25 +23,8 @@ const createLog = data => {
 };
 
 const getLog = logId => merchantFetch(`reporting/logs/${logId}`);
-
-const getFile = fileId => {
-  return ajax({
-    data: {
-      route_name: 'ufh_get_file_signed_url',
-      url_params: JSON.stringify({
-        '{fileId}': fileId,
-      }),
-    },
-  });
-};
-
-export const getConfigs = () => {
-  return ajax({
-    data: {
-      route_name: 'reporting_config_list',
-    },
-  });
-};
+const getFile = fileId => merchantFetch(`ufh/file/${fileId}/get-signed-url`)
+export const getConfigs = _ => merchantFetch('reporting/configs')
 
 export const generateReport = ajaxParams => {
   return {
