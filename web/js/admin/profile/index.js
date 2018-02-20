@@ -90,7 +90,7 @@ class ActivityLogModal extends Component {
   deleteOtherSessions() {
     return fetch({
       method: 'delete',
-      url: 'live/admin/activity/',
+      url: 'activity/',
     })
       .then(response => {
         notifySuccess('Sessions deleted successfully');
@@ -108,7 +108,7 @@ class ActivityLogModal extends Component {
 
   deleteSession(activity) {
     fetch({
-      url: 'live/admin/activity/' + activity.id,
+      url: 'activity/' + activity.id,
       method: 'delete',
     })
       .then(response => {
@@ -179,7 +179,7 @@ class ActivityLogModal extends Component {
 export default class Profile extends Component {
   showActivityLog() {
     return fetch({
-      url: 'live/admin/activity',
+      url: 'activity',
     }).then(log => {
       openModal(<ActivityLogModal log={log} />);
     });
