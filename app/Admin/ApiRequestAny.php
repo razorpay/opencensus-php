@@ -203,7 +203,7 @@ class ApiRequestAny
                 // NOTE: We should NEVER hit this as Dashboard internal.
                 $baUser = 'live';
 
-                $pass = Config::get('api.auth_pass');
+                $pass = Config::get('api.auth_guest_pass');
             }
         }
 
