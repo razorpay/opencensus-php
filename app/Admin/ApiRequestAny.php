@@ -181,6 +181,13 @@ class ApiRequestAny
 
                 $this->options['headers']['X-Admin-Token'] = $adminUser->token;
 
+                $accountId = Request::header(self::RAZORPAY_ACCOUNT_HEADER);
+
+                if ($accountId)
+                {
+                    $this->options['headers'][self::RAZORPAY_ACCOUNT_HEADER] = $accountId;
+                }
+
                 $baUser = $this->mode;
 
                 $pass = Config::get('api.auth_pass');
