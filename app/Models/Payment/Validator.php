@@ -208,6 +208,15 @@ class Validator extends Base\Validator
         }
 
         AuthType::validateAuthType($input[Entity::AUTH_TYPE], $input[Entity::METHOD]);
+
+        // Feature based whitelisting for debit pin
+        if (($input[Entity::METHOD] === Method::CARD) and
+            ($input[Entity::AUTH_TYPE] === AuthType::DEBIT_PIN) and
+            ($merchant->isFeatureEnabled(Feature\Constants::DEBIT_PIN) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The auth_type should be only present when method is E-Mandate');
+        }
     }
 
     protected function validateUpiExpiryTime(array $input)
