@@ -31,7 +31,7 @@ export default ({ merchantId }) => {
 
     return adminFormUpload(
       {
-        'data[type]': 'irctc',
+        type: 'irctc',
         ...requestData,
       },
       `/admin/api/${mode}/merchant/${merchantId}/batches`
