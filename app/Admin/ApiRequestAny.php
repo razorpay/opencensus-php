@@ -115,6 +115,10 @@ class ApiRequestAny
 
         $this->processAuthHeaders();
 
+        // === Forward cookies from the api
+
+        $this->forwardCookies();
+
         // === Auto process input
 
         $processInput = $options['process_input'] ?? true;
