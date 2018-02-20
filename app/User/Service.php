@@ -430,7 +430,18 @@ class Service extends Base\Service
 
     public function getUserFromApi($userId)
     {
-        $request = new \App\Admin\ApiRequestAny();
+        $adminUser = Auth::guard('api')->user();
+
+        if (empty($adminUser) === false)
+        {
+            $request = new \App\Admin\ApiRequestAny([
+                'client_type' => 'admin'
+            ]);
+        }
+        else
+        {
+            $request = new \App\Admin\ApiRequestAny();
+        }
 
         list($error, $data) = $request->send("users/$userId", "GET");
 
