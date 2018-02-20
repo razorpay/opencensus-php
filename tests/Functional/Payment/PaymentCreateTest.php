@@ -204,9 +204,9 @@ class PaymentCreateTest extends TestCase
         $paymentEntity = $this->getLastEntity('payment', true);
 
         $payment['token'] = $paymentEntity['token_id'];
-        $payment['amount'] = 2000;
+        $payment['amount'] = 3000;
 
-        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 3000]);
         $payment['order_id'] = $order->getPublicId();
 
         //
@@ -215,6 +215,9 @@ class PaymentCreateTest extends TestCase
         $response = $this->doS2SRecurringPayment($payment);
 
         $this->assertArrayHasKey('razorpay_payment_id', $response);
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('netbanking_icici', $paymentEntity['gateway']);
     }
 
     public function testRecurringTokenForEmandate()
