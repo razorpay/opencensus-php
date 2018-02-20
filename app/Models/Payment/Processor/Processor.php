@@ -1285,7 +1285,8 @@ class Processor
         }
 
         // TODO: Following is not testable in cases. Ref: BankTransferBatchTest
-        if ($this->app['basicauth']->isAppAuth() === false)
+        if (($this->app['basicauth']->isAppAuth() === false) and
+            (Route::currentRouteName() !== 'bank_transfer_process_test'))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid payment method given: ' . $payment->getMethod());

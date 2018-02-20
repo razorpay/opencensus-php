@@ -113,12 +113,31 @@ class WebhookTest extends TestCase
     {
         $this->createWebhook();
 
+        // Adding this to ensure only merchant webhooks are returned and no
+        // application webhooks.
+        $this->createApplicationWebhook('10000000000App');
+
+        $response = $this->startTest();
+
+        $this->assertNotContains('application_id', $response);
+    }
+
+    public function testGetOAuthAppWebhooks()
+    {
+        $input = ['url' => 'http://example.com/v1/dummy/route'];
+
+        $this->createWebhook();
+
+        $this->createApplicationWebhook('10000000000App', $input);
+
+        $this->createApplicationWebhook('1000000000App2');
+
         $this->startTest();
     }
 
     public function testCreateWebhookWrongUrl()
     {
-        $data = $this->startTest();
+        $this->startTest();
     }
 
     public function testWebhookEventData()
@@ -755,5 +774,17 @@ class WebhookTest extends TestCase
             $requestData['content']);
 
         return $request;
+    }
+
+    protected function createApplicationWebhook(string $appId, array $params = [])
+    {
+        $input = [
+            'entity_type' => 'application',
+            'entity_id'   => $appId,
+        ];
+
+        $input = array_merge($input, $params);
+
+        $this->fixtures->create('webhook', $input);
     }
 }
