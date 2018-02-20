@@ -1742,8 +1742,9 @@ final class Route
             'mock_hdfc_payment',
         ],
 
-        // These are the only internal routes
-        // that can be hit by merchant dashboard
+        // These routes will be hit from the dashboard.
+        // We create a new app because these routes when hit
+        // won't have any merchant or admin in context.
         'dashboard_guest' => [
             'user_login',
             'user_register',
