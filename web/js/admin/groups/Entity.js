@@ -42,8 +42,10 @@ class EditGroup extends Component {
       if (response) {
         if (!model) {
           self.addItem(response);
+          notifySuccess('Group is created successfully!');
+        } else {
+          notifySuccess('Group edited successfully!');
         }
-        notifySuccess('Group is created successfully!');
       }
       closeModal();
     });
@@ -55,8 +57,8 @@ class EditGroup extends Component {
 
     if (model) {
       let requests = [
-        this._fetchFn('groups/{groupId}/allowed_groups'),
-        this._fetchFn('groups/{groupId}'),
+        this._fetchFn('live/groups/{groupId}/allowed_groups'),
+        this._fetchFn('live/groups/{groupId}'),
       ];
 
       Promise.all(requests).then(([allowedGroups, group]) => {

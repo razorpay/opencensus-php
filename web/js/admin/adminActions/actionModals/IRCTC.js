@@ -13,6 +13,7 @@ export default function IRCTC() {
     <Form class="full-span full-elements" style={{ minHeight: '300px' }}>
       <DateField
         label="Date"
+        fieldClass="irctc-form"
         name="on"
         placeholder="YYYY-MM-DD"
         defaultValue={moment()}

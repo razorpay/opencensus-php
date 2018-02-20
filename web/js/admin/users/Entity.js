@@ -17,7 +17,7 @@ export default class EditUser extends Component {
 
   // TODO: TEST Check what's orgId. 'org_fieldmap_get_by_entity' in api-route-map
   fetchFieldMapsParams = {
-    url: `live/orgs/{orgId}/field-map/entity/admin`,
+    url: `live/field-map/entity/admin`,
   };
 
   fetchUserParams = {
