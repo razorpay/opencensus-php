@@ -29,7 +29,7 @@ export default class GenerateReports extends Component {
 
     if (isMarketplaceEnabled && false) {
       // Feature to be used only when Merchant Dash
-      adminFetch({}, '/live/accounts')
+      fetch({ url: 'live/accounts' })
         .then(response => {
           if (response) {
             this.setState({

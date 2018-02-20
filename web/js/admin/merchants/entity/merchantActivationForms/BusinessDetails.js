@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 
 import EntityRow from 'ui/EntityRow';
 import AsyncButton from 'ui/AsyncButton';
-import { adminFetch } from 'common/fetch';
+import fetch, { adminFetch } from 'common/fetch';
 import { notifyError, notifySuccess } from 'common/modal';
 import { titleCase } from 'common/util';
 
@@ -28,7 +28,7 @@ export default class BusinessDetails extends Component {
   getCompanyData = () => {
     const cin = this.props.merchant_details.company_cin;
 
-    return adminFetch({}, '/admin/companies/' + cin + '/info')
+    return fetch({ url: '/admin/companies/' + cin + '/info' })
       .then(data => {
         if (data) {
           this.setState({ companyInfo: data });
@@ -86,7 +86,11 @@ export default class BusinessDetails extends Component {
             />
 
             <Field
-              label={<span>Doing Business As<br/>(If Different from Above)</span>}
+              label={
+                <span>
+                  Doing Business As<br />(If Different from Above)
+                </span>
+              }
               name="business_dba"
               type="email"
               defaultValue={merchantDetails.business_dba}
@@ -245,7 +249,9 @@ export default class BusinessDetails extends Component {
                 <a
                   class="link"
                   target="_blank"
-                  href={`https://incometaxindiaefiling.gov.in/e-Filing/Services/KnowYourJurisdictionLink.html?panOfDeductee=${merchantDetails.company_pan}`}
+                  href={`https://incometaxindiaefiling.gov.in/e-Filing/Services/KnowYourJurisdictionLink.html?panOfDeductee=${
+                    merchantDetails.company_pan
+                  }`}
                 >
                   Verify
                 </a>
@@ -255,7 +261,11 @@ export default class BusinessDetails extends Component {
             />
 
             <Field
-              label={<span>Name on PAN Card <br/>(as provided above)</span>}
+              label={
+                <span>
+                  Name on PAN Card <br />(as provided above)
+                </span>
+              }
               name="company_pan_name"
               helpMsg="Mandatory for Companies"
               defaultValue={merchantDetails.company_pan_name}
@@ -263,14 +273,23 @@ export default class BusinessDetails extends Component {
             />
 
             <Field
-              label={<span>EPAN of any 1 authorised signatory/promoter/director <br/>(as provided above)</span>}
+              label={
+                <span>
+                  EPAN of any 1 authorised signatory/promoter/director <br />(as
+                  provided above)
+                </span>
+              }
               name="promoter_pan"
               defaultValue={merchantDetails.promoter_pan}
               disabled
             />
 
             <Field
-              label={<span>Name on PAN Card <br/>(as provided above)</span>}
+              label={
+                <span>
+                  Name on PAN Card <br />(as provided above)
+                </span>
+              }
               name="promoter_pan_name"
               defaultValue={merchantDetails.promoter_pan_name}
               disabled
@@ -279,9 +298,11 @@ export default class BusinessDetails extends Component {
             <div class="field">
               <label>Signatory PAN Verified</label>
               <i
-                class={`i ${this.state.panVerified
-                  ? 'i-yes text-success'
-                  : 'i-no text-danger'}`}
+                class={`i ${
+                  this.state.panVerified
+                    ? 'i-yes text-success'
+                    : 'i-no text-danger'
+                }`}
               />
               <div class="info-block">
                 <i class="i i-info-circle" />
@@ -310,9 +331,9 @@ function _getCompanyInfoFields() {
       item => (
         <i
           style={{ fontSize: '16px' }}
-          class={`i ${item.Defaulter
-            ? 'i-warning text-danger'
-            : 'i-smile text-success'}`}
+          class={`i ${
+            item.Defaulter ? 'i-warning text-danger' : 'i-smile text-success'
+          }`}
         />
       ),
     ],

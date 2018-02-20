@@ -110,8 +110,8 @@ export default class AddEMIPlan extends Component {
           pendingClass="small spinner"
           onSubmit={body => {
             return adminPost({
-              body,
-              route_name: 'emi_plan_add',
+              url: 'emi',
+              data: body,
             }).then(response => {
               if (response) {
                 notifySuccess('EMI Plan added successfully');

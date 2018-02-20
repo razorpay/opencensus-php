@@ -262,7 +262,7 @@ class PaymentAnalytics extends Component {
   fields = this::getFields;
 
   componentWillMount() {
-    adminFetch({
+    fetch({
       url: `${this.props.mode}/admin/payment_analytics`,
       params: {
         payment_id: this.props.paymentId,
