@@ -183,7 +183,7 @@ class PaymentLinkTest extends TestCase
 
         $this->assertEquals(null, $errorFile['entity_type']);
         $this->assertEquals(null, $errorFile['entity_id']);
-        $this->assertEquals('batch_input', $errorFile['type']);
+        $this->assertEquals('batch_error', $errorFile['type']);
 
         $this->assertEquals($errorFile['id'], $response['file_id']);
 
