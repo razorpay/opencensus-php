@@ -8,6 +8,7 @@ const baseUrl = {
   plan: '/plans/',
   sub: '/subscriptions/',
   trf: '/route/transfers/',
+  disp: '/disputes/',
   // acc: '/route/accounts/',
   // rvrsl: '/route/reversals/',
 };
@@ -42,6 +43,7 @@ export const refund = makeIdLink('refund');
 export const batch = item => idItem(item.id);
 export const settlement = makeIdLink('settlement');
 export const order = makeIdLink('order');
+export const dispute = makeIdLink('dispute');
 
 export const transfer = makeIdLink('transfer');
 export const source = item => idLink(item[sources[item.entity]]);
