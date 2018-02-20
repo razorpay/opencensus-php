@@ -39,14 +39,10 @@ app.controller('ResetPasswordCtrl', [
         return true;
       }
       $scope.alerts.resetAlerts();
-      var data = {
-        route_name: 'user_reset_password_token',
-        body: $scope.data,
-      };
       var request = $http({
         method: 'post',
-        url: '/guest/generic',
-        data: data,
+        url: '/user/api/live/users/reset-password-token',
+        data: $scope.data,
       });
       request
         .success(function(data) {
