@@ -61,8 +61,7 @@ export default class EditPerm extends Component {
 
     let promise;
     if (this.props.model) {
-      data.url = `permissions/${this.props.model.id}`;
-      data.content_type = 'application/json';
+      data.url = `live/permissions/${this.props.model.id}`;
       promise = adminPut(data);
     } else {
       data.url = 'live/permissions';
@@ -150,7 +149,7 @@ export function showEntity(collection) {
   openModal(<EditPerm collection={collection} model={this} />);
 }
 export function removeEntity(e) {
-  return adminDelete(`permissions/${this.id}`).then(response => {
+  return adminDelete(`live/permissions/${this.id}`).then(response => {
     notifyDone();
     this.collection.items.remove(this);
 
