@@ -22,11 +22,11 @@ export default ({ merchantId }) => {
     }
 
     if (body.refund) {
-      requestData['refund'] = body.refund[0];
+      requestData['data[refund]'] = body.refund[0];
     }
 
     if (body.settlement) {
-      requestData['settlement'] = body.settlement[0];
+      requestData['data[settlement]'] = body.settlement[0];
     }
 
     return adminFormUpload(
