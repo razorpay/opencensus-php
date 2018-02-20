@@ -33,8 +33,8 @@ const AccountsList = ({ accounts, selectedAccount, onChange }) => {
           typeAheadSkin = el;
         }}
       >
-        {!!this.selectedAccount && (
-          <AccountItem account={this.selectedAccount} />
+        {!!selectedAccount && (
+          <AccountItem account={selectedAccount} />
         )}
       </div>
 
