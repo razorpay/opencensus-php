@@ -83,7 +83,7 @@ export default ({
       </Definition>
     );
   } else if (paymentStatus === 'captured') {
-    const openDisputes = payment.disputes.items.filter(
+    const openDisputes = payment.disputes && payment.disputes.items.filter(
       ({ status }) => ['open', 'under_review'].indexOf(status) > -1
     ).length;
     return (
