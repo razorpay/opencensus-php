@@ -56,7 +56,6 @@ export const updateConfig = data => {
     type: CONFIG_SAVE,
     payload: merchantFetch({
       url: 'account/config',
-      mode: 'live',
       method: 'put',
       data,
     }),
@@ -71,7 +70,6 @@ export const uploadLogo = (file, fieldName) => {
     type: MERCHANT_LOGO_UPLOADED,
     payload: merchantFetch({
       url: 'account/config/logo',
-      mode: 'live',
       method: 'post',
       file,
       data: formData,

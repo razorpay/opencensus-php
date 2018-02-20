@@ -9,7 +9,10 @@ const GST_SAVE = 'GST_SAVE';
 export const fetchBankAccount = () => {
   return {
     type: BANK_ACCOUNT_FETCH,
-    payload: merchantFetch('account/bank_account'),
+    payload: merchantFetch({
+      url: 'account/bank_account',
+      mode: 'live'
+    }),
   };
 };
 
@@ -76,6 +79,7 @@ export const saveGST = data => {
     payload: merchantFetch({
       url: 'merchant/gst',
       method: 'patch',
+      mode: 'live',
       data,
     }),
   };
