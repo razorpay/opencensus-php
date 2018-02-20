@@ -53,7 +53,7 @@ export default ({
 
   return (
     <div class="table-responsive">
-      <table class={`table table-hover ${className}`}>
+      <table class={`table table-hover ${className}`} slideUnit={30}>
         {showHeaders ? (
           <thead>
             <tr>

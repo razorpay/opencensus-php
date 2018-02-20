@@ -2,6 +2,7 @@ import { Component, Fragment } from 'react';
 import { Field, reduxForm } from 'redux-form';
 
 import InputField from 'rzp/ui/Forms/InputField';
+import TableSlider from 'rzp/ui/TableSlider';
 import Table from 'rzp/ui/Table/Index';
 import AsyncButton from 'react-async-button';
 
@@ -28,13 +29,15 @@ export default class BatchCreateModal extends Component {
     return (
       <div class="modal-body">
         <p>This is how we are interpreting your data.</p>
-        <Table
-          title="Batch Entries"
-          className="table-bordered batch-table"
-          columns={getTableColumns(parsedEntries[0])}
-          rows={parsedEntries}
-          limit={3}
-        />
+        <TableSlider target=".batch-table">
+          <Table
+            title="Batch Entries"
+            className="table-bordered batch-table"
+            columns={getTableColumns(parsedEntries[0])}
+            rows={parsedEntries}
+            limit={3}
+          />
+        </TableSlider>
         <div class="modal-info stretch create">
           <form onSubmit={handleSubmit(onCreateBatch)}>
             <h5>
