@@ -793,7 +793,8 @@ trait Authorize
         // is not relevant here in case of queue flow.
         //
         if (($payment->isBankTransfer() === true) and
-            ($this->app->runningInQueue() === true))
+            (($this->app->runningInQueue() === true) or
+             (Route::currentRouteName() === 'bank_transfer_process_test')))
         {
             return;
         }
