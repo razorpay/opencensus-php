@@ -138,7 +138,7 @@ export default props => {
                 </EntityDetailRow>
 
                 <EntityDetailRow label="Disputes">
-                  {payment.disputes.count ? (
+                  {payment.disputes && payment.disputes.count ? (
                     <PaymentDisputes disputes={payment.disputes.items} />
                   ) : (
                     '--'

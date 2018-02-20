@@ -213,7 +213,7 @@ export default class RefundModal extends Component {
     const amountError = amountValidation(this.props),
       partial = isPartialPayment(this.props);
 
-    const disputeCount = payment.disputes.count;
+    const disputeCount = payment.disputes && payment.disputes.count;
     return (
       <div>
         <ModalHeader
