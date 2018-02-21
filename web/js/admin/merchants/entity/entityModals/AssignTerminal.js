@@ -91,7 +91,7 @@ export default class TerminalForm extends Component {
 
     return adminFormUpload2(
       body,
-      `/admin/api/${body.mode}/admin/merchant/${this.props.merchantId}/terminal`
+      `/admin/api/${body.mode}/merchant/${this.props.merchantId}/terminal`
     )
       .then(response => {
         if (response.data.success) {
