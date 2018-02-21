@@ -234,7 +234,16 @@ class Gateway extends Base\Gateway
         if (($this->callbackSuccess === true) and
             ($verify->gatewaySuccess === false))
         {
-            throw new GatewayErrorException(ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
+            throw new GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,
+                null,
+                null,
+                [
+                    'callback_response' => $input['content'],
+                    'verify_response'   => $verify->verifyResponseContent,
+                    'payment_id'        => $input['payment']['id'],
+                    'gateway'           => $this->gateway
+                ]);
         }
     }
 
@@ -286,7 +295,11 @@ class Gateway extends Base\Gateway
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
                 null,
                 null,
-                $content);
+                [
+                    'callback_response' => $content,
+                    'payment_id'        => $this->input['payment']['id'],
+                    'gateway'           => $this->gateway
+                ]);
         }
     }
 
