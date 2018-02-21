@@ -3614,6 +3614,21 @@ return [
         ],
     ],
 
+    'testInvoiceStatsByBatch' => [
+        'request' => [
+            'url'     => '/invoices/batch/batch_00000000000001/stats',
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entities_processed' => 3,
+                'payment_links_sent' => 3,
+                'payment_links_paid' => 1,
+                'payment_links_expired' => 1,
+            ],
+        ],
+    ],
+
     // ----------------------------------------------------------------------
     // Expectations for ES
 
