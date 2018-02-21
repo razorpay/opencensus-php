@@ -9,7 +9,6 @@ import { fetchUser } from 'merchant/modules/session';
 
 import ContactDetailsForm from './ContactDetailsForm';
 import BusinessDetailsForm from './BusinessDetailsForm';
-import WebsiteDetailsForm from './WebsiteDetailsForm';
 import BankAccountDetailsForm from './BankAccountDetailsForm';
 import DocumentsUploadForm from './DocumentsUploadForm';
 import SubmitForm from './SubmitForm';
