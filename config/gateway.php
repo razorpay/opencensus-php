@@ -436,7 +436,6 @@ return [
 
     'netbanking_csb' => [
         'test_hash_secret'  => env('NETBANKING_CSB_GATEWAY_TEST_HASH_SECRET'),
-        'live_hash_secret'  => env('NETBANKING_CSB_GATEWAY_LIVE_HASH_SECRET'),
     ],
 
     'sharp' => [

@@ -1948,7 +1948,6 @@ class DatabaseSeeder extends Seeder
                 'recurring'             => '0',
                 'gateway_merchant_id'   => 'netbanking_csb_merchant_id',
                 'gateway_merchant_id2'  => 'netbanking_csb_merchant_id2',
-                'gateway_secure_secret' => Crypt::encrypt('netbanking_csb_random_hash_secret'),
                 'created_at'            => time(),
                 'updated_at'            => time()
             ]

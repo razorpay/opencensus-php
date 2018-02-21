@@ -12,6 +12,7 @@ use RZP\Gateway\Base\Entity;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Gateway\Base\VerifyResult;
+use RZP\Constants\Mode as RZPMode;
 use RZP\Models\Payment\Gateway as PG;
 use RZP\Exception\GatewayErrorException;
 use RZP\Exception\PaymentVerificationException;
@@ -68,7 +69,7 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    public function callback(array $input): array
+    public final function callback(array $input): array
     {
         parent::callback($input);
 
@@ -95,7 +96,7 @@ class Gateway extends Base\Gateway
         return $this->getCallbackResponseData($input, $acquirerData);
     }
 
-    public function verify(array $input): array
+    public final function verify(array $input): array
     {
         parent::verify($input);
 
@@ -104,7 +105,7 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
-    public function sendPaymentVerifyRequest(Verify $verify, bool $verifyCallback = false)
+    public final function sendPaymentVerifyRequest(Verify $verify, bool $verifyCallback = false)
     {
         $request = $this->getVerifyRequestData($verify, $verifyCallback);
 
@@ -180,6 +181,21 @@ class Gateway extends Base\Gateway
         parent::compareHashes($actual, $generated);
     }
 
+    public final function computeChecksum(array $content): string
+    {
+        // Add the secret to the end of the content array to be hashed
+        array_push($content, $this->getSecret());
+
+        $contentToHash = implode('|', $content);
+
+        // Remove the last element of the array which is the checksum key
+        array_pop($content);
+
+        return (string) hexdec($this->getHashOfString($contentToHash));
+    }
+
+    //-----------------------------------------------  Public methods ------------------------------------------------//
+
     /**
      * Verifying the payment after callback response is saved to
      * prevent user tampering with the data while making a payment.
@@ -188,7 +204,7 @@ class Gateway extends Base\Gateway
      * @param array $input
      * @throws GatewayErrorException
      */
-    protected function verifyCallback(Base\Entity $gatewayPayment, array $input)
+    protected final function verifyCallback(Base\Entity $gatewayPayment, array $input)
     {
         parent::verify($input);
 
@@ -237,6 +253,18 @@ class Gateway extends Base\Gateway
         parent::assertAmount($expectedAmount, $actualAmount);
     }
 
+    /**
+     * Getting live secret from the config
+     * @override
+     * @return mixed
+     */
+    protected function getLiveSecret(): string
+    {
+        return $this->config['live_hash_secret'];
+    }
+
+    //-----------------------------------------------  Private methods -----------------------------------------------//
+
     private function checkResponseStatus(array $content)
     {
         if ((empty($content[ResponseFields::STATUS]) === false) and
@@ -262,8 +290,8 @@ class Gateway extends Base\Gateway
     {
         $content = [
             Constant::CHNPGSYN,
-            Constant::CHNPGCODE,
             $this->getMerchantId(),
+            $this->getMerchantId2(),
             $verify->input['payment']['id'],
             $verify->input['payment']['amount'] / 100,
             $this->getCallbackUrl($verify->input['payment']['id']),
@@ -376,8 +404,8 @@ class Gateway extends Base\Gateway
     {
         $content = [
             RequestFields::CHNPGSYN     => Constant::CHNPGSYN,
-            RequestFields::CHNPGCODE    => Constant::CHNPGCODE,
-            RequestFields::PAYEE_ID     => $this->getMerchantId(),
+            RequestFields::CHNPGCODE    => $this->getMerchantId(),
+            RequestFields::PAYEE_ID     => $this->getMerchantId2(),
             RequestFields::BANK_REF_NUM => $input['payment']['id'],
             RequestFields::AMOUNT       => $input['payment']['amount'] / 100,
             RequestFields::RETURN_URL   => $input['callbackUrl'],
@@ -426,22 +454,21 @@ class Gateway extends Base\Gateway
         return implode('|', $content);
     }
 
-    public final function computeChecksum(array $content): string
-    {
-        // Add the secret to the end of the content array to be hashed
-        array_push($content, $this->getSecret());
-
-        $contentToHash = implode('|', $content);
-
-        // Remove the last element of the array which is the checksum key
-        array_pop($content);
-
-        return (string) hexdec($this->getHashOfString($contentToHash));
-    }
-
     private function getMerchantId(): string
     {
-        return $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
+        $merchantId = Constant::CHNPGCODE;
+
+        if ($this->mode === RZPMode::LIVE)
+        {
+            $merchantId = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
+        }
+
+        return $merchantId;
+    }
+
+    private function getMerchantId2(): string
+    {
+        return $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2];
     }
 
     /**
@@ -479,15 +506,5 @@ class Gateway extends Base\Gateway
         $secret = $this->app->config->get('app.key');
 
         return hash_hmac(HashAlgo::SHA1, $string, $secret);
-    }
-
-    /**
-     * Getting live secret from the config
-     * @override
-     * @return mixed
-     */
-    protected function getLiveSecret(): string
-    {
-        return $this->config['live_hash_secret'];
     }
 }
