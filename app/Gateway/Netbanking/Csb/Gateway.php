@@ -328,7 +328,7 @@ class Gateway extends Base\Gateway
             $this->getMerchantId2(),
             $verify->input['payment']['id'],
             $verify->input['payment']['amount'] / 100,
-            $this->getCallbackUrl($verify->input['payment']['id']),
+            $this->getCallbackUrl(),
         ];
 
         //
@@ -339,7 +339,7 @@ class Gateway extends Base\Gateway
         {
             $content[3] = $verify->input['gateway'][ResponseFields::BANK_REF_NUM];
             $content[4] = $verify->input['gateway'][ResponseFields::AMOUNT];
-            $content[5] = $this->getCallbackUrl($verify->input['gateway'][ResponseFields::BANK_REF_NUM]);
+            $content[5] = $this->getCallbackUrl();
         }
 
         if (empty($verify->payment->getBankPaymentId()) === false)
@@ -527,40 +527,8 @@ class Gateway extends Base\Gateway
         return $merchantId2;
     }
 
-    /**
-     * Creates the callback url for payment
-     * where the gateway can hit back to say payment
-     * is finished/authorized.
-     *
-     * @param string $paymentId
-     * @return string Callback url
-     */
-    private function getCallbackUrl(string $paymentId): string
+    private function getCallbackUrl(): string
     {
-        $params = $this->getPaymentIdAndHashParams($paymentId);
-
-        return $this->route->getUrlWithPublicCallbackAuth($params);
-    }
-
-    private function getPaymentIdAndHashParams(string $paymentId): array
-    {
-        $publicId = Payment\Entity::getSignedId($paymentId);
-
-        $hash = $this->getHashOf($publicId);
-
-        return ['id' => $publicId, 'hash' => $hash];
-    }
-
-    /**
-     * Returns a hash of a string.
-     *
-     * @param string $string
-     * @return string Hash of the string
-     */
-    private function getHashOf(string $string): string
-    {
-        $secret = $this->app->config->get('app.key');
-
-        return hash_hmac(HashAlgo::SHA1, $string, $secret);
+        return 'https://www.api.razorpay.com';
     }
 }
