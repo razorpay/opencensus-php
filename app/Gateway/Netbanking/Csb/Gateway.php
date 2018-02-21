@@ -2,7 +2,6 @@
 
 namespace RZP\Gateway\Netbanking\Csb;
 
-use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
