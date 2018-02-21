@@ -36,7 +36,7 @@ export default class ScheduleModal extends Component {
   }
 
   componentWillMount() {
-    adminFetch('settlements/schedules').then(data => {
+    adminFetch('live/settlements/schedules').then(data => {
       const settlementPlans = {};
 
       for (let key in data.items) {
