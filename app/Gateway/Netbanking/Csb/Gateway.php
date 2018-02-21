@@ -420,7 +420,7 @@ class Gateway extends Base\Gateway
                                                      $content[ResponseFields::STATUS_UCFIRST];
         }
 
-        $this->updateGatewayPaymentEntity($wallet, $contentToSave, false);
+        return parent::updateGatewayPaymentEntity($wallet, $contentToSave);
     }
 
     /**
