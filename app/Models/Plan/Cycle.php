@@ -157,6 +157,9 @@ class Cycle
         {
             $nextRun = Library::computeFutureRun($schedule, $reference, $start, false);
 
+            // clone is required because
+            // its an object and start will become
+            // equalt to nextRun if we don't do it
             $start = clone $reference;
 
             $reference = clone $nextRun;

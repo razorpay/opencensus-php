@@ -120,7 +120,7 @@ return [
             'method' => 'post',
             'content' => [
                 'period'    => 'daily',
-                'interval'  => 1,
+                'interval'  => 7,
                 'item'      => [
                     'name'     => 'test plan',
                     'amount'   => 20000,
@@ -131,7 +131,7 @@ return [
         'response' => [
             'content' => [
                 'entity'   => 'plan',
-                'interval' => 1,
+                'interval' => 7,
                 'period'   => 'daily',
                 'notes'    => [],
                 'item'     => [

@@ -1558,7 +1558,7 @@ class SubscriptionChargeTest extends TestCase
     {
         $planAttributes = [
             'period'   => 'daily',
-            'interval' => 1
+            'interval' => 7
         ];
 
         $this->doAuthTxnForNewSubscription(false, $planAttributes);
