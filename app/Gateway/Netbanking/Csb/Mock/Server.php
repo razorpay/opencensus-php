@@ -62,7 +62,6 @@ class Server extends Base\Mock\Server
 
     private function getAuthorizeResponse(array $request)
     {
-        // TODO: Check if this format is correct
         $date = Carbon::now(Timezone::IST)->format('d-M-Y H:i:s A');
 
         $narration = $request[RequestFields::PAYEE_ID] . ' ' . $request[RequestFields::BANK_REF_NUM];
@@ -74,7 +73,7 @@ class Server extends Base\Mock\Server
             ResponseFields::MODE         => $request[RequestFields::MODE],
             ResponseFields::NARRATION    => $narration,
             ResponseFields::DATE_TIME    => $date,
-            ResponseFields::TRAN_REF_NUM => 9999999999, // TODO: Check the diff b/w this and bankId
+            ResponseFields::TRAN_REF_NUM => 9999999999,
             ResponseFields::STATUS       => Status::SUCCESS,
             ResponseFields::BANKID       => Constant::BANK_ID,
             ResponseFields::CHNPGCODE    => $request[RequestFields::CHNPGCODE]
