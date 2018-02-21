@@ -350,15 +350,15 @@ trait Authorize
         {
             $templateData = [
                'data' => $response,
-               'cdn'  => $this->config->get('url.cdn.production')
+               'cdn'  => $this->app['config']->get('url.cdn.production')
             ];
 
-            $content = View::make('gateway.gatewayOtpPostForm')
+            $content = \View::make('gateway.gatewayOtpPostForm')
                             ->with('data', $templateData)
                             ->render();
 
             $response = [
-                'type'       => 'otp',
+                'type'       => 'first',
                 'request'    => [
                     'method'  => 'direct',
                     'content' => $content
@@ -2437,6 +2437,7 @@ trait Authorize
                 return $this->getIntentPaymentCreatedResponse($request, $payment);
 
             case $this->canRunOtpPaymentFlow($payment):
+            case ($payment->getFlow() === 'headless_otp'):
 
                 return $this->getOtpPaymentCreatedResponse($request, $payment);
 

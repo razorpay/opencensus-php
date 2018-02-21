@@ -754,7 +754,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const MISC_TOSTRING_ERROR                       = 'MISC_TOSTRING_ERROR';
 
-    const OTPELF__REQUEST                           = 'OTPELF__REQUEST';
+    const OTPELF_REQUEST                            = 'OTPELF_REQUEST';
     const OTPELF_RESPONSE                           = 'OTPELF_RESPONSE';
     const TOKENEX_REQUEST                           = 'TOKENEX_REQUEST';
     const TOKENEX_RESPONSE                          = 'TOKENEX_RESPONSE';

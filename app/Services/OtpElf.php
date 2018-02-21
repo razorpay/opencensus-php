@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Service;
+namespace RZP\Services;
 
 use Requests;
 use RZP\Exception;
@@ -49,7 +49,9 @@ class OtpElf
             'payment_id' => $data['payment_id'],
             'request'    => [
                 'action' => 'submit_otp',
-                'otp'    => $data['gateway']['otp']
+                'data'   => [
+                    'otp'    => $data['gateway']['otp']
+                ]
             ]
         ];
 
@@ -110,13 +112,13 @@ class OtpElf
 
     protected function checkErrors($response)
     {
-        $success = $response['success'];
-
         $this->trace->info(
             TraceCode::OTPELF_RESPONSE,
             [
                 'response' => $response
             ]);
+
+        $success = $response['success'];
 
         if ($success === false)
         {

@@ -38,7 +38,7 @@ trait HeadlessOtp
         }
 
         // todo: move it to a dummy one
-        $request['url'] = 'https://api.razorpay.com';
+        $request['content']['TermUrl'] = 'https://api.razorpay.com';
 
         $data = [
             'payment_id' => $payment->getId(),
@@ -52,28 +52,27 @@ trait HeadlessOtp
             ($response['data']['data']['type'] === 'otp'))
         {
             $payment->setFlow('headless_otp');
-            // todo: Build OTP coproto here
-            return [];
+
+            return ['url' => $this->getOtpSubmitUrl(), 'method' => 'POST'];
         }
 
         // Returning the same request as a fallback
         return $request;
     }
 
-    protected function submitHeadlessOtp($payment, $input)
+    protected function submitHeadlessOtp($payment, $gatewayInput)
     {
         $data = [
             'payment_id' => $payment->getId(),
-            'gateway'    => $input['gateway'],
+            'gateway'    => $gatewayInput,
         ];
 
         $response = $this->app['card.otpelf']->otpSubmit($data);
 
         if (($response['success'] === true) and
-            ($response['data']['action'] === 'page_resolved') and
-            ($response['data']['data']['type'] === 'otp'))
+            ($response['data']['action'] === 'submit_otp'))
         {
-            return [];
+            return $response['data']['data'];
         }
 
         // Returning the same request as a fallback

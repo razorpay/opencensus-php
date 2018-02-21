@@ -223,7 +223,7 @@ trait Callback
 
         if ($payment->getFlow() === 'headless_otp')
         {
-            $this->preProcessGatewayCallback($payment, $input);
+            $this->preProcessGatewayCallback($input);
         }
 
         try
