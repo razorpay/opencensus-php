@@ -435,6 +435,7 @@ return [
     ],
 
     'netbanking_csb' => [
+        'test_merchant_id'  => env('NETBANKING_CSB_GATEWAY_TEST_MERCHANT_ID'),
         'test_hash_secret'  => env('NETBANKING_CSB_GATEWAY_TEST_HASH_SECRET'),
     ],
 

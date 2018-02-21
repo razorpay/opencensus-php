@@ -456,7 +456,7 @@ class Gateway extends Base\Gateway
 
     private function getMerchantId(): string
     {
-        $merchantId = Constant::CHNPGCODE;
+        $merchantId = $this->config['test_merchant_id'];
 
         if ($this->mode === RZPMode::LIVE)
         {
@@ -466,9 +466,20 @@ class Gateway extends Base\Gateway
         return $merchantId;
     }
 
+    /**
+     * Sub merchant.
+     * @return string
+     */
     private function getMerchantId2(): string
     {
-        return $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2];
+        $merchantId2 = Constant::PID;
+
+        if ($this->mode === RZPMode::LIVE)
+        {
+            $merchantId2 = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2];
+        }
+
+        return $merchantId2;
     }
 
     /**
