@@ -110,7 +110,7 @@ class Service extends Base\Service
 
     public function fetchMerchantFromApi($merchantId)
     {
-        $this->setApiCredentials();
+        $this->setAdminCredentials();
 
         $error = $response = null;
 
