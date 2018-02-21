@@ -76,7 +76,7 @@ export default ({ entity, mode, updateEntity }) => {
 
   function createDispute(body) {
     adminPost({
-      url: `${mode}/payments/${entity.id}/disputes}`,
+      url: `${mode}/payments/${entity.id}/disputes`,
       data: body,
     })
       .then(data => {
@@ -194,6 +194,7 @@ export default ({ entity, mode, updateEntity }) => {
                 entity={entity}
                 handleSubmit={createDispute}
                 isEditMode={false}
+                mode={mode}
               />
             )
           }

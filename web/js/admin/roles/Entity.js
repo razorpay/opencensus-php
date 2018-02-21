@@ -57,7 +57,7 @@ class EditRole extends Component {
 
       //customer request
       fetch({
-        url: `live/roles/${mode.id}`,
+        url: `/admin/api/live/roles/${model.id}`,
         method: 'put',
         data: body,
       }).then(data => {
@@ -135,7 +135,7 @@ export function showEntity(collection) {
 export function removeEntity(e) {
   prevent(e);
 
-  return adminDelete(`roles/${this.id}`).then(response => {
+  return adminDelete(`live/roles/${this.id}`).then(response => {
     if (response) {
       this.collection.items.remove(this);
       notifyDone();

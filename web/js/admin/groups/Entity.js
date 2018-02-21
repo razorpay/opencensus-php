@@ -19,12 +19,12 @@ class EditGroup extends Component {
     this.props.collection.items.push(item);
   };
 
-  save = body => {
+  save = data => {
     let self = this;
     let { model } = self.props;
     let request = null;
 
-    body.parents = self.state.parents.map(p => p.id);
+    data.parents = self.state.parents.map(p => p.id);
 
     let url;
     if (model) {
@@ -37,13 +37,15 @@ class EditGroup extends Component {
 
     return request({
       url,
-      ...body,
+      data,
     }).then(response => {
       if (response) {
         if (!model) {
           self.addItem(response);
+          notifySuccess('Group is created successfully!');
+        } else {
+          notifySuccess('Group edited successfully!');
         }
-        notifySuccess('Group is created successfully!');
       }
       closeModal();
     });
@@ -55,8 +57,8 @@ class EditGroup extends Component {
 
     if (model) {
       let requests = [
-        this._fetchFn('groups/{groupId}/allowed_groups'),
-        this._fetchFn('groups/{groupId}'),
+        this._fetchFn('live/groups/{groupId}/allowed_groups'),
+        this._fetchFn('live/groups/{groupId}'),
       ];
 
       Promise.all(requests).then(([allowedGroups, group]) => {

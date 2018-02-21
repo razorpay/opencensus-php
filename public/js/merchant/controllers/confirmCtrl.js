@@ -42,7 +42,7 @@ app.controller('ConfirmCtrl', [
 
     var request = $http({
       method: 'put',
-      url: 'user/api/live/users/confirm_user_by_data',
+      url: '/user/api/live/users/confirm_user_by_data',
       data: data,
     });
 

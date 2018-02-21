@@ -190,9 +190,9 @@ const ActionsList = ({ model, merchantId, actions }) => {
 
     if (merchant.details.activated == 1 && merchant.details.live == 0) {
       successMsg = 'Live transactions enabeld successfully.';
-      url = `merchants/${merchantId}/live/enable`;
+      url = `live/merchants/${merchantId}/live/enable`;
     } else if (merchant.details.live == 1) {
-      url = `merchants/${merchantId}/live/disable`;
+      url = `live/merchants/${merchantId}/live/disable`;
       successMsg = 'Live transactions disabled successfully.';
     }
 

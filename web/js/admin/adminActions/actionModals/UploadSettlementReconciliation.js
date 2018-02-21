@@ -43,6 +43,9 @@ export default function UploadSettlementReconciliation() {
 
           delete data.channel;
 
+          let mode = data.mode;
+          delete data.mode;
+
           let form = {
             ...data,
             file: file,
@@ -51,10 +54,10 @@ export default function UploadSettlementReconciliation() {
             file_name: 'file',
           };
 
-          return adminFormUpload({
-            url: `live/settlements/reconcile/${channel}`,
-            ...form,
-          }).then(response => {
+          return adminFormUpload(
+            form,
+            `/admin/api/${mode}/settlements/reconcile/${channel}`
+          ).then(response => {
             if (response.data.success) {
               notifySuccess('API Request successful');
               closeModal();

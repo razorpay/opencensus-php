@@ -65,8 +65,8 @@ class Service extends Base\Service
         ], $input);
 
         $request = new \App\Admin\ApiRequestAny([
-            'mode' => $mode,
-            'client_type' => 'merchant'
+            'mode'        => $mode,
+            'client_type' => 'merchant',
         ]);
 
         list($error, $data) = $request->processInput($data)->send('submerchants', 'POST');
@@ -110,7 +110,7 @@ class Service extends Base\Service
 
     public function fetchMerchantFromApi($merchantId)
     {
-        $this->setApiCredentials();
+        $this->setAdminCredentials();
 
         $error = $response = null;
 
@@ -138,7 +138,12 @@ class Service extends Base\Service
 
     public function fetchKeysFromApi($merchantId, $mode)
     {
-        $request = new \App\Admin\ApiRequestAny($mode, 'merchant');
+        $options = [
+            'mode'        => $mode,
+            'client_type' => 'merchant',
+        ];
+
+        $request = new \App\Admin\ApiRequestAny($options);
 
         list($error, $data) = $request->send('keys', 'GET');
 
@@ -156,7 +161,12 @@ class Service extends Base\Service
 
     public function fetchInvoices($mode)
     {
-        $request = new \App\Admin\ApiRequestAny($mode, 'merchant');
+        $options = [
+            'mode'        => $mode,
+            'client_type' => 'merchant',
+        ];
+
+        $request = new \App\Admin\ApiRequestAny($options);
 
         list($error, $data) = $request->send('invoices', 'GET');
 
@@ -174,7 +184,12 @@ class Service extends Base\Service
 
     public function createKey($merchantId, $mode)
     {
-        $request = new \App\Admin\ApiRequestAny($mode, 'merchant');
+        $options = [
+            'mode'        => $mode,
+            'client_type' => 'merchant',
+        ];
+
+        $request = new \App\Admin\ApiRequestAny($options);
 
         list($error, $data) = $request->send('keys', 'POST');
 
@@ -212,7 +227,12 @@ class Service extends Base\Service
 
     public function createInvoice($mode, $input)
     {
-        $request = new \App\Admin\ApiRequestAny($mode, 'merchant');
+        $options = [
+            'mode'        => $mode,
+            'client_type' => 'merchant',
+        ];
+
+        $request = new \App\Admin\ApiRequestAny($options);
 
         list($error, $data) = $request->processInput($input)->send('invoices', 'POST');
 

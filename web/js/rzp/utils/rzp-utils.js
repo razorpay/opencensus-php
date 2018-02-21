@@ -92,6 +92,13 @@ export const pipe = (...funcs) => {
 export const normalizeDate = date => moment(date).format('D/M/Y');
 export const formatFromNow = unixSeconds => moment(unixSeconds * 1e3).fromNow();
 
+/*
+  calculates no of days from today for a given date
+  negative if date given date (in seconds) was of past
+ */
+export const daysFromToday = date =>
+  Math.ceil((Number(date) - new Date().getTime() / 1000) / 86400);
+
 export const normalizeBoolean = bool => {
   if (bool === undefined) {
     return bool;
@@ -105,20 +112,18 @@ const numberFormatRegex = /(.{1,2})(?=.(..)+(\...)$)/g;
 export const getFixedINRAmount = amount => (Number(amount) / 100).toFixed(2);
 
 export const getFixedNumber = value => {
-
-  if (typeof value === "number") {
-  
+  if (typeof value === 'number') {
     value = value.toFixed(2);
   }
 
   const valueArr = value.split('.');
 
   if (valueArr[1] == '00') {
-    value = valueArr[0].replace(".", "");
+    value = valueArr[0].replace('.', '');
   }
 
   return value;
-}
+};
 
 export const getFormattedNumber = value => {
   if (typeof value === 'number') {
@@ -135,15 +140,18 @@ export const currencySymbols = {
   USD: 'US$',
 };
 
-export const getFormattedAmountNew = (amount, showCurrency, currency = 'INR') => {
-
+export const getFormattedAmountNew = (
+  amount,
+  showCurrency,
+  currency = 'INR'
+) => {
   const formattedAmount = getFormattedNumber((amount / 100).toFixed(2));
 
   return (showCurrency ? currencySymbols[currency] : '') + formattedAmount;
-}
+};
 
 // following regex formats in indian comma separated, i.e. 2,01,20,45,222.66
-export const getFormattedAmount = (amount) => {
+export const getFormattedAmount = amount => {
   return (amount / 100).toFixed(2).replace(numberFormatRegex, '$1,');
 };
 
@@ -276,10 +284,9 @@ export const getIntervalCycle = (interval, period) => {
 export const getCustomerDisplayName = ({ name, contact, email }) => {
   let displayParts = [name, contact, email].filter(item => !isBlank(item));
 
-  return `${displayParts.join(' / ').replace('/ ', '(')}${displayParts.length >
-  1
-    ? ')'
-    : ''}`;
+  return `${displayParts.join(' / ').replace('/ ', '(')}${
+    displayParts.length > 1 ? ')' : ''
+  }`;
 };
 
 /**
@@ -330,22 +337,19 @@ export const getEventCategoryFromPath = pathname => {
 };
 
 export const getPercentage = (divident, divisor) => {
-
   let value = 0;
 
   if (divident) {
-  
     value = getFixedNumber(divisor / divident * 100);
-  } 
+  }
 
   return Number(value);
-}
+};
 
 export const getPercentages = (...args) => {
-
   /*
    * Given Number arguments, returns a dictionary
-   * with keys as given numbers and values as the 
+   * with keys as given numbers and values as the
    * percentage of value compared to sum
    *
    * eg:
@@ -355,12 +359,11 @@ export const getPercentages = (...args) => {
   const sum = args.reduce((sum, item) => item + sum, 0);
 
   return args.reduce((result, item) => {
-  
     result[item] = getPercentage(sum, item);
 
     return result;
   }, {});
-}
+};
 
 export const getEMI = (principle, length, rate) => {
   /*

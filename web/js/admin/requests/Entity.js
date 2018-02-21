@@ -23,7 +23,7 @@ export default class RequestEntity extends Component {
     extendObservable(this, { pending: true });
     const { id } = this.props.match.params;
 
-    adminFetch(`w-actions/${id}/details`).then(
+    adminFetch(`live/w-actions/${id}/details`).then(
       action(response => {
         if (response) {
           //init levels map {level_num : [role1, role2, ...]}

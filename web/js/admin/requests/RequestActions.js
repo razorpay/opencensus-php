@@ -26,7 +26,7 @@ export default class RequestActions extends Component {
     switch (action) {
       case 'approve':
       case 'reject':
-        params.body = { approved: action === 'approve' ? 1 : 0 };
+        params.data = { approved: action === 'approve' ? 1 : 0 };
         break;
       default:
         break;

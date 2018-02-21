@@ -30,7 +30,7 @@ export default class Plan extends Collection {
   fetch() {
     return this.request(
       'fetch',
-      fetch({
+      adminFetch({
         ...this.data,
         params: this.filters,
       })
@@ -197,7 +197,7 @@ class Rule extends CollectionItem {
     }
     return this.request(
       'delete',
-      adminDelete(`pricing/${this.collection.props.id}/rule/${this.id}`)
+      adminDelete(`live/pricing/${this.collection.props.id}/rule/${this.id}`)
     ).then(data => {
       if (data) {
         notifySuccess(data.message);
@@ -278,9 +278,9 @@ class Rule extends CollectionItem {
     } else if (this.payment_method === 'emandate') {
       data = {
         '': 'All',
-        'aadhar': 'Aadhar',
-        'netbanking': 'Netbanking'
-      }
+        aadhar: 'Aadhar',
+        netbanking: 'Netbanking',
+      };
     }
 
     if (data) {

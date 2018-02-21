@@ -17,7 +17,7 @@ export default class EditUser extends Component {
 
   // TODO: TEST Check what's orgId. 'org_fieldmap_get_by_entity' in api-route-map
   fetchFieldMapsParams = {
-    url: `live/orgs/{orgId}/field-map/entity/admin`,
+    url: `live/field-map/entity/admin`,
   };
 
   fetchUserParams = {
@@ -78,11 +78,11 @@ export default class EditUser extends Component {
     let successMsg, url;
 
     if (id !== 'new') {
-      url = `admin/${id}`;
+      url = `live/admin/${id}`;
       request = adminPut;
       successMsg = 'User is created successfully';
     } else {
-      url = 'admins';
+      url = 'live/admins';
       request = adminPost;
       successMsg = 'User is updated successfully';
     }

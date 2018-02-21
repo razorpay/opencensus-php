@@ -34,19 +34,6 @@ export default class EntityList extends Component {
       return p;
     }, {});
 
-  collection = new Collection({
-    data: {
-      url: `${this.props.match.params.mode || 'live'}/admin/${this.props.match
-        .params.selectedEntity || 'payment'}`,
-    },
-    extraFields: {
-      mode: this.props.match.params.mode || 'live',
-      type: this.props.match.params.selectedEntity || 'payment',
-    },
-    filters: this.initialQueryParams,
-    fetchFn: adminFetch,
-  });
-
   submit = filters => {
     filters = parseFilters(filters);
 
@@ -102,6 +89,19 @@ export default class EntityList extends Component {
   };
 
   componentWillMount() {
+    this.collection = new Collection({
+      data: {
+        url: `${this.props.match.params.mode || 'live'}/admin/${this.props.match
+          .params.selectedEntity || 'payment'}`,
+      },
+      extraFields: {
+        mode: this.props.match.params.mode || 'live',
+        type: this.props.match.params.selectedEntity || 'payment',
+      },
+      filters: this.initialQueryParams,
+      fetchFn: adminFetch,
+    });
+
     extendObservable(this, {
       pending: !sharedData,
       selectedEntity: this.collection.extraFields.type,
@@ -129,8 +129,7 @@ export default class EntityList extends Component {
 
     this.collection.setFilters({});
     this.clearForm(value);
-
-    this.submit();
+    this.onSelectChange(e);
   };
 
   clearForm(currentEntity) {

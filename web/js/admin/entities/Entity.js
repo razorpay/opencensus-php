@@ -15,6 +15,7 @@ import ToggleEntityRow from 'ui/ToggleEntityRow';
 export default class GenericEntity extends Component {
   params = this.props.match.params;
   fields = this::getFields;
+  inAnymode = 2; // Flag to check if entity id is not found in any mode
 
   getTitle(mode) {
     let type = this.params.type.replace('_', ' ');
@@ -28,6 +29,7 @@ export default class GenericEntity extends Component {
   state = {
     data: null,
     title: this.getTitle(),
+    loading: true,
   };
 
   componentWillMount() {
@@ -42,24 +44,38 @@ export default class GenericEntity extends Component {
   fetchEntity(mode, suppressDefaultError) {
     let { type, id } = this.params;
 
-    fetch({ url: `${mode}/admin/${type}/${id}` }, suppressDefaultError).then(
-      data => {
-        if (!data.errors && data) {
-          if (data.mode) {
-            data[`${type} mode`] = data.mode;
-          }
-          data.mode = mode;
-          this.setState({ data, title: this.getTitle(mode) });
+    fetch(
+      { url: `/admin/api/${mode}/admin/${type}/${id}` },
+      suppressDefaultError
+    ).then(data => {
+      if (!data.errors && data) {
+        if (data.mode) {
+          data[`${type} mode`] = data.mode;
+        }
+        data.mode = mode;
+
+        // Need to set because of actions on entity page need correct mode
+        if (!this.params.mode) {
+          this.params.mode = data.mode;
         }
 
-        return data;
+        this.setState({ data, loading: false, title: this.getTitle(mode) });
+      } else {
+        this.inAnymode--;
+        if (this.inAnymode === 0) {
+          // If entity id is not found in any modes
+          this.setState({ loading: false, title: 'Entity Not Found:' });
+        }
       }
-    );
+
+      return data;
+    });
   }
 
   render() {
     let { id, type, mode = null } = this.params;
-    let { data } = this.state;
+    let { data, loading } = this.state;
+    console.log('LOADING..', loading);
 
     return (
       <div class="entity-page">
@@ -74,7 +90,7 @@ export default class GenericEntity extends Component {
             <span class="capitalize">{this.state.title}</span>
             <code>{id}</code>
           </header>
-          <Duplex pending={!data} model={data} fields={this.fields()} />
+          <Duplex pending={loading} model={data} fields={this.fields()} />
           {type === 'payment' &&
             data && (
               <ToggleEntityRow label="Refunds">
@@ -87,20 +103,22 @@ export default class GenericEntity extends Component {
             )}
 
           <br />
-          {data && (
-            <ToggleEntityRow label="Raw Data">
-              <div class="code">{JSON.stringify(data, null, 4)}</div>
-            </ToggleEntityRow>
-          )}
+          {data &&
+            !loading && (
+              <ToggleEntityRow label="Raw Data">
+                <div class="code">{JSON.stringify(data, null, 4)}</div>
+              </ToggleEntityRow>
+            )}
         </main>
         <aside class="container">
           {data &&
+            !loading &&
             actions[type] && (
               <div class="header">
                 <b>ACTIONS</b>
               </div>
             )}
-          {data && actions[type] && actions[type](data, this)}
+          {data && !loading && actions[type] && actions[type](data, this)}
         </aside>
       </div>
     );

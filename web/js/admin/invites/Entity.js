@@ -14,7 +14,7 @@ class AddInvites extends Component {
 
   // TODO: TEST whether orgId to be sent or not. Check 'org_fieldmap_get_by_entity' in api-route-map
   componentWillMount() {
-    adminFetch(`orgs/{orgId}/field-map/entity/admin_lead`).then(response => {
+    adminFetch(`live/field-map/entity/admin_lead`).then(response => {
       if (response) {
         this.fields = response.fields;
       }

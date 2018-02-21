@@ -113,11 +113,9 @@ class Service extends Base\Service
         }
 
         // Fetch the admin with the email
-        // TODO: can throw exception
-        $admin = $this->api
-                      ->admin
-                      ->getByEmail($orgId, ['email' => $result->email])
-                      ->toArray();
+        $request = new Admin\ApiRequestAny(['process_input' => false]);
+
+        list($error, $admin) = $request->send("admins/get-multiple-app-auth?email={$result->email}", 'GET');
 
         if ($admin)
         {
@@ -468,7 +466,7 @@ class Service extends Base\Service
                 'gateway_terminal_password_confirmation',
             ]);
 
-            $this->setApiCredentials(null, $mode);
+            $this->setAdminCredentials(null, $mode);
 
             if (isset($input['gateway_client_certificate']) === true)
             {

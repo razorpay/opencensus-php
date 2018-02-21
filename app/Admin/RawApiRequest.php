@@ -136,6 +136,14 @@ class RawApiRequest
 
             case 'internal':
                 $this->setApiCredentials($input['mode']);
+
+                // Admin should be able to hit any internal route
+                // which means we have to skip sending admin token
+                unset($this->params['headers']['X-Admin-Token']);
+                break;
+
+            case 'admin':
+                $this->setApiCredentials($input['mode']);
                 break;
         }
     }
@@ -148,7 +156,11 @@ class RawApiRequest
     {
         if ($input['auth'] === 'proxy' and empty($_COOKIE['rzp_utm']) === false)
         {
-            $this->params['headers']['Cookie'] = 'rzp_utm=' . $_COOKIE['rzp_utm'];
+            $cookie = $_COOKIE['rzp_utm'];
+
+            $cookie = str_replace('+', '%2B', $cookie);
+
+            $this->params['headers']['Cookie'] = 'rzp_utm=' . $cookie;
         }
     }
 

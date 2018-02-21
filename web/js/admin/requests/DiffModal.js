@@ -13,7 +13,7 @@ export default class DiffModal extends Component {
   componentWillMount() {
     const { id } = this.props;
 
-    adminFetch(`w-actions/${id}/diff`).then(response => {
+    adminFetch(`live/w-actions/${id}/diff`).then(response => {
       let items = [...this.state.items];
 
       Object.keys(response.new).forEach(key => {

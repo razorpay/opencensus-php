@@ -24,6 +24,7 @@ export const saveStep = ({ step, data, accountId = '' }) => {
   return {
     type: ACTIVATION_SAVE_STEP,
     payload: activation.saveStep(),
+    mode: 'live',
     step,
     data,
   };
@@ -49,8 +50,9 @@ export const saveFile = ({ step, file, fieldName, accountId = '' }) => {
     payload: merchantFetch({
       url: 'merchant/activation/upload',
       method: 'post',
+      mode: 'live',
       data: formData,
-      accountId
+      accountId,
     }),
     fileName: file.name,
     fieldName,
@@ -174,12 +176,12 @@ export const getPincodeDetails = (pincode, changeFunc) => {
 
   if (pincode.length === 6) {
     merchantFetch(`pincodes/${pincode}`)
-    .then(response => {
-      if (response.data) {
-        changeFunc(response.data.city, response.data.state_code);
-      }
-    })
-    .catch(e => changeFunc()); //- send empty values if error
+      .then(response => {
+        if (response.data) {
+          changeFunc(response.data.city, response.data.state_code);
+        }
+      })
+      .catch(e => changeFunc()); //- send empty values if error
   } else {
     //- send empty values if length less or greater than 6
     changeFunc();

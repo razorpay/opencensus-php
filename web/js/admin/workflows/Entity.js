@@ -31,10 +31,12 @@ export default class EditWorkflow extends Component {
 
     let requests = [
       adminFetch('live/roles'),
-      fetch({
+      adminFetch({
         url: 'live/permissions-multiple',
-        params: { type: 'workflow' },
-        count: 1000,
+        params: {
+          type: 'workflow',
+          count: 1000
+        }
       }),
     ];
 
@@ -132,7 +134,7 @@ export default class EditWorkflow extends Component {
 
     if (id === 'new') {
       requestFn = adminPost;
-      url = 'workflows';
+      url = 'live/workflows';
       body.org_id = user.org_id;
     } else {
       requestFn = adminPut;
