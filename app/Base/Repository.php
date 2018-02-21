@@ -256,6 +256,15 @@ class Repository extends \Razorpay\Spine\Repository
         return $entity->setConnection($this->connection)->newQuery();
     }
 
+    /**
+     * Overwritng this here, as we want to reuse the find method overriden
+     * in certain repository classes (required for query caching). We want to execurte find and throw exception
+     * if the entity is not found.
+     *
+     * TODO: Move this to spine
+     * @param  string $id
+     * @param  array  $columns [description]
+     */
     public function findOrFail($id, $columns = array('*'))
     {
         if ( ! is_null($model = $this->find($id, $columns))) return $model;

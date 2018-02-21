@@ -53,16 +53,6 @@ class Entity extends Base\PublicEntity
         self::EXPIRED_AT => null
     ];
 
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::updated(function ($key)
-        {
-            static::flushCache('key_' . $key->getId());
-        });
-    }
-
     public function merchant()
     {
         return $this->belongsTo(

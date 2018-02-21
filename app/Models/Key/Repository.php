@@ -3,11 +3,11 @@
 namespace RZP\Models\Key;
 
 use RZP\Models\Base;
-use RZP\Models\Base\QueryCache\CacheFindQueries;
+use RZP\Models\Base\QueryCache\CacheQueries;
 
 class Repository extends Base\Repository
 {
-    use CacheFindQueries;
+    use CacheQueries;
 
     // Cache TTL defined in minutes
     const CACHE_TTL = 5;

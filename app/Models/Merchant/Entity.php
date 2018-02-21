@@ -315,16 +315,6 @@ class Entity extends Base\PublicEntity
         self::ACTIVATED_AT,
     ];
 
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::updated(function ($merchant)
-        {
-            static::flushCache('merchant_' . $merchant->getId());
-        });
-    }
-
     const MAX_PAYMENT_AMOUNT_DEFAULT = 50000000;
     const RISK_THRESHOLD_DEFAULT     = 5;
 

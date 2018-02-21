@@ -2,7 +2,12 @@
 
 namespace RZP\Models\Base\QueryCache;
 
-trait CacheFindQueries
+/**
+ * This trait overrides the find query for entites which
+ * want to cache the find query. The ttl for the cache entry
+ * needs to be specified in the CACHE_TTL constant in the repository class
+ */
+trait CacheQueries
 {
     public function find($id, $columns = ['*'])
     {
