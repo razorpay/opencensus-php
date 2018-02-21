@@ -51,6 +51,7 @@ class Channel
             self::YESBANK,
             self::AXIS,
             self::ICICI,
+            self::HDFC
         ];
     }
 
