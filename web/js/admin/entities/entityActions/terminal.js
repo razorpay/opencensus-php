@@ -104,7 +104,7 @@ export default ({ entity, mode, updateEntity }) => {
 
   function updatePrimaryMerchant(body) {
     return adminPut({
-      url: `${mode}/terminals/{entity.id}/reassign`,
+      url: `${mode}/terminals/${entity.id}/reassign`,
       data: {
         merchant_id: body.merchant_id,
       },
