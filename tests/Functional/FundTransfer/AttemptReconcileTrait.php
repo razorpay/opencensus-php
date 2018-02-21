@@ -73,7 +73,7 @@ trait AttemptReconcileTrait
 
     protected function reconcileEntitiesForChannel(string $channel)
     {
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $request = [
             'url'       => '/fund_transfer_attempts/reconcile/' . $channel,

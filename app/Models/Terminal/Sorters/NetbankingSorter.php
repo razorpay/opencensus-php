@@ -13,9 +13,15 @@ class NetbankingSorter extends Terminal\Sorter
         'gateway',
     ];
 
-    // Arrange netbanking terminals in the order
-    // Direct bank first, next Direct gateway, finally shared
-    // In This order as well use,
+    /**
+     * Arrange netbanking terminals in the order
+     * Direct bank first, next Direct gateway, finally shared
+     * In This order as well use,
+     *
+     * @param $terminals
+     *
+     * @return array
+     */
     public function gatewaySorter($terminals)
     {
         $method = $this->input['payment']->getMethod();
@@ -60,7 +66,7 @@ class NetbankingSorter extends Terminal\Sorter
      * Get gateway name to match with based on gateway type.
      *
      * @param string $gatewayType Gateway type, i.e direct or gatewayName
-     * @param string $gatewaysForBank gateways that support bank
+     * @param array $gatewaysForBank gateways that support bank
      *
      * @return string gateway
      */

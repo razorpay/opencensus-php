@@ -341,7 +341,7 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $this->createRefundForFileGeneration($payments);
 
-        $data = $this->generateRefundsExcelForNB('UTIB');
+        $data = $this->generateRefundsExcelForNb('UTIB');
 
         $this->checkRefundTextData($data);
 

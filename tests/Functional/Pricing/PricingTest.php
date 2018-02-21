@@ -17,7 +17,7 @@ class PricingTest extends TestCase
 
         parent::setUp();
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
     }
 
     public function testAddPricingPlanRule()
@@ -31,36 +31,26 @@ class PricingTest extends TestCase
 
     public function testBulkPricingPlan()
     {
-        $this->ba->adminAuth();
-
         $this->startTest();
     }
 
     public function testEmptyBulkPricingPlan()
     {
-        $this->ba->adminAuth();
-
         $this->startTest();
     }
 
     public function testDuplicateBulkPricingPlan()
     {
-        $this->ba->adminAuth();
-
         $this->startTest();
     }
 
     public function testCreatePricingPlanWithMinAndMaxFee()
     {
-        $this->ba->adminAuth();
-
         $this->startTest();
     }
 
     public function testCreatePricingPlanWithInvalidMinAndMaxFee()
     {
-        $this->ba->adminAuth();
-
         $this->startTest();
     }
 
@@ -84,6 +74,42 @@ class PricingTest extends TestCase
     }
 
     public function testAddPricingPlanWalletRule()
+    {
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'.$content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddPricingPlanEmandateRule()
+    {
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'.$content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddPricingPlanEmandateRegistrationRule()
+    {
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'.$content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddPricingPlanEmandateDebitAadhaarRule()
+    {
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'.$content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddPricingPlanEmandatePercentageRateRule()
     {
         $content = $this->createPricingPlan();
 
@@ -117,16 +143,16 @@ class PricingTest extends TestCase
         $testData['request']['url'] = '/pricing/'.$id;
         $testData['request']['method'] = 'GET';
 
-        $this->ba->appAuth('rzp_test');
+        $this->ba->adminAuth('test');
         $this->startTest($testData);
 
-        $this->ba->appAuth('rzp_live');
+        $this->ba->adminAuth('live');
         $this->startTest($testData);
     }
 
     public function testGetPricingNetworks()
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $response = $this->startTest();
 
@@ -145,24 +171,26 @@ class PricingTest extends TestCase
         $this->createPricingPlan();
         $this->createPricingPlan2();
 
-        $this->ba->appAuth('rzp_test');
+        $this->ba->adminAuth('test');
         $this->startTest();
 
-        $this->ba->appAuth('rzp_live');
+        $this->ba->adminAuth('live');
         $this->startTest();
     }
 
     public function testGetPricingPlansGrouping()
     {
+        $this->ba->adminAuth();
+
         $content = $this->createPricingPlan();
         $this->createPricingPlan2();
 
         $this->addPricingPlanRule($content['id']);
 
-        $this->ba->appAuth('rzp_test');
+        $this->ba->adminAuth('test');
         $this->startTest();
 
-        $this->ba->appAuth('rzp_live');
+        $this->ba->adminAuth('live');
         $this->startTest();
     }
 
@@ -286,6 +314,8 @@ class PricingTest extends TestCase
 
         $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
 
+        $this->ba->adminAuth();
+
         return $this->startTest($testData);
     }
 
@@ -294,6 +324,8 @@ class PricingTest extends TestCase
         $content = $this->createPricingPlan();
 
         $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->ba->adminAuth();
 
         return $this->startTest($testData);
     }
@@ -304,6 +336,8 @@ class PricingTest extends TestCase
 
         $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
 
+        $this->ba->adminAuth();
+
         return $this->startTest($testData);
     }
 
@@ -312,6 +346,8 @@ class PricingTest extends TestCase
         $content = $this->createAmountRangePricingPlan();
 
         $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->ba->adminAuth();
 
         $this->startTest($testData);
     }
@@ -322,6 +358,8 @@ class PricingTest extends TestCase
 
         $testData['request']['url'] = '/pricing/'. $content['plan_id'] . '/rule';
 
+        $this->ba->adminAuth();
+
         $this->startTest($testData);
 
         $this->startTest($testData);
@@ -329,15 +367,21 @@ class PricingTest extends TestCase
 
     public function testAddInternationalPricingPlanRuleForNonCardMethod()
     {
+        $this->ba->adminAuth();
+
         $content = $this->createPricingPlan();
 
         $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->ba->adminAuth();
 
         return $this->startTest($testData);
     }
 
     public function testAddInternationalPricingPlanRuleWithExtraFields()
     {
+        $this->ba->adminAuth();
+
         $content = $this->createPricingPlan();
 
         $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
@@ -349,16 +393,21 @@ class PricingTest extends TestCase
     {
         $testData['request']['url'] = '/pricing/'. '1hDYlICobzOCYt' . '/rule';
 
+        $this->ba->adminAuth();
+
         $this->startTest($testData);
     }
 
     public function testDeletePricingPlanRule()
     {
+        $this->ba->adminAuth();
+
         $content = $this->startTest();
     }
 
     public function testDeletePricingPlanRuleForce()
     {
+
         $content = $this->startTest();
     }
 
@@ -384,6 +433,8 @@ class PricingTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] =
                 '/pricing/'.$pricing['plan_id'].'/rule/'.$ruleId;
+
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
@@ -508,6 +559,8 @@ class PricingTest extends TestCase
 
         $pricingPlanId = $plan['id'];
 
+        $this->ba->adminAuth();
+
         foreach ($pricingData as $data)
         {
             $request = array(
@@ -549,6 +602,8 @@ class PricingTest extends TestCase
 
     public function testAddPricingPlanRuleWithFeature()
     {
+        $this->ba->adminAuth();
+
         $content = $this->createPricingPlan();
 
         $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';

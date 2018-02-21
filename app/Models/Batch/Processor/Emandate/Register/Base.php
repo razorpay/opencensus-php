@@ -48,7 +48,7 @@ class Base extends BaseProcessor
             Token\Entity::RECURRING_FAILURE_REASON  => $remark,
         ];
 
-        (new Token\Core)->updateTokenFromNetbankingGatewayData($token, $tokenParams);
+        (new Token\Core)->updateTokenFromEmandateGatewayData($token, $tokenParams);
 
         $this->repo->saveOrFail($token);
     }

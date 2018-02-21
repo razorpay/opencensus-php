@@ -29,6 +29,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         RequestProcessor\Base::NETBANKING_CORPORATION,
         RequestProcessor\Base::JIOMONEY,
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK,
+        RequestProcessor\Base::VIRTUAL_ACC_YESBANK,
         RequestProcessor\Base::NETBANKING_PNB,
         RequestProcessor\Base::NETBANKING_BOB,
         RequestProcessor\Base::UPI_SBI,
@@ -53,9 +54,9 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
     protected $messenger;
 
-    public function __construct()
+    public function __construct(string $gateway = null)
     {
-        parent::__construct();
+        parent::__construct($gateway);
 
         $this->messenger = new Messenger;
 
@@ -507,7 +508,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $customerDetails = $this->getCustomerDetails($row);
 
-        $accountDetails = $this->getNbAccountDetails($row);
+        $accountDetails = $this->getAccountDetails($row);
 
         $authCode = $this->getAuthCode($row);
 
@@ -1492,7 +1493,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      * @param $row
      * @return null
      */
-    protected function getNbAccountDetails($row)
+    protected function getAccountDetails($row)
     {
         return [];
     }

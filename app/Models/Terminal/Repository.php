@@ -106,7 +106,7 @@ class Repository extends Base\Repository
 
         $query = $this->newQuery()
                       ->enabled()
-                      ->where(Entity::NETBANKING, true)
+                      ->where(Entity::EMANDATE, true)
                       ->where(Entity::TYPE, 6)
                       ->whereIn(Entity::GATEWAY, Payment\Gateway::$recurringGateways);
 

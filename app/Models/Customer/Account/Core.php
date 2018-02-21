@@ -211,7 +211,7 @@ class Core extends Base\Core
             //
 
             // TODO: Uncomment this when we use charge_at_will for global flow
-            // $tokens = (new Token\Core)->removeNetbankingRecurringTokens($tokens);
+            // $tokens = (new Token\Core)->removeEmandateRecurringTokens($tokens);
 
             $response['tokens'] = $tokens->toArrayPublic();
         }

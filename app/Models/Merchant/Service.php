@@ -362,7 +362,9 @@ class Service extends Base\Service
         // validate if this plan can be set for this merchant.
         // Refer: https://github.com/razorpay/api/issues/324
 
-        (new Merchant\Methods\Core)->validatePricingPlanForMethods($merchant, $plan);
+        $methods = $this->repo->methods->getMethodsForMerchant($merchant);
+
+        (new Merchant\Methods\Core)->validatePricingPlanForMethods($merchant, $plan, $methods);
 
         $originalPricingPlan = null;
 
@@ -774,9 +776,9 @@ class Service extends Base\Service
         return $webhook->toArrayPublic();
     }
 
-    public function getWebhooks()
+    public function getWebhooks(array $params)
     {
-        $webhooks = $this->repo->webhook->fetch([], $this->merchant->getId());
+        $webhooks = $this->repo->webhook->fetch($params, $this->merchant->getId());
 
         return $webhooks->toArrayPublic();
     }
@@ -1312,8 +1314,10 @@ class Service extends Base\Service
         $this->repo->saveOrFail($merchant);
     }
 
-    public function getUsers(string $merchantId)
+    public function getUsers()
     {
+        $merchantId = $this->merchant->getId();
+
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
         $users = (new Merchant\Core)->getUsers($merchant);

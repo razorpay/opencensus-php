@@ -83,7 +83,7 @@ class CaptureTest extends TestCase
             $payments[] = $this->defaultAuthPayment();
         }
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $this->mockDashboardRequest($count);
 

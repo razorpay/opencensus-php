@@ -77,9 +77,13 @@ class Reconciliate extends Base\Core
     protected $app;
     protected $repo;
 
-    public function __construct()
+    protected $gateway;
+
+    public function __construct(string $gateway = null)
     {
         parent::__construct();
+
+        $this->gateway = $gateway;
 
         $this->messenger = new Messenger;
     }
@@ -326,7 +330,7 @@ class Reconciliate extends Base\Core
     {
         $subReconciliatorClassName = $this->getSubReconciliatorClassName($reconciliationType);
 
-        $this->subReconciliator = new $subReconciliatorClassName;
+        $this->subReconciliator = new $subReconciliatorClassName($this->gateway);
     }
 
     protected function getSubReconciliatorClassName($reconciliationType)

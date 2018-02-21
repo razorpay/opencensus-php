@@ -115,6 +115,7 @@ class SettlementTest extends TestCase
         $this->assertSame($content['count'], 0);
     }
 
+
     // Random settlement holiday - Test for live mode
     public function testSettlementOnHolidayInLiveMode()
     {
@@ -142,6 +143,7 @@ class SettlementTest extends TestCase
 
         $this->assertEquals('Today is a holiday! Happy holidays :)', $content['message']);
 
+
         // Reset test params
         Carbon::setTestNow();
         $this->ba->publicAuth();
@@ -168,7 +170,6 @@ class SettlementTest extends TestCase
         Carbon::setTestNow($setDate);
 
         $channel = Channel::AXIS;
-
         // Generate settlements for above transactions
         $content = $this->initiateSettlements($channel);
 
@@ -196,7 +197,6 @@ class SettlementTest extends TestCase
         Carbon::setTestNow($setDate);
 
         $channel = Channel::AXIS;
-
         // Generate settlements for above transactions
         $content = $this->initiateSettlements($channel);
 
@@ -222,7 +222,6 @@ class SettlementTest extends TestCase
         Carbon::setTestNow($setDate);
 
         $channel = Channel::AXIS;
-
         // Generate settlements for above transactions
         $content = $this->initiateSettlements($channel);
 
@@ -248,7 +247,6 @@ class SettlementTest extends TestCase
             ]);
 
         $channel = Channel::AXIS;
-
         // Generate settlements for above transactions
         $content = $this->initiateSettlements($channel);
 
@@ -288,8 +286,11 @@ class SettlementTest extends TestCase
         $content = $this->initiateSettlements(Channel::AXIS);
 
         $setl = $this->getLastEntity('settlement', true);
+
         $setlAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
         $this->assertEquals($setlAttempt['source'], $setl['id']);
+
 
         $content = $this->getEntities('settlement_details', ['settlement_id' => $setl['id']], true);
 
@@ -344,6 +345,7 @@ class SettlementTest extends TestCase
 
     public function testMerchantSettlementV2YesBank()
     {
+
         $this->ba->adminAuth();
 
         $channel = Channel::YESBANK;
@@ -353,6 +355,7 @@ class SettlementTest extends TestCase
 
     public function testMerchantSettlementV2Axis()
     {
+
         $this->ba->adminAuth();
 
         $channel = Channel::AXIS;
@@ -362,6 +365,7 @@ class SettlementTest extends TestCase
 
     public function testMerchantSettlementV2Icici()
     {
+
         $this->ba->adminAuth();
 
         $channel = Channel::ICICI;
@@ -371,6 +375,7 @@ class SettlementTest extends TestCase
 
     public function testMerchantSettlementV2Kotak()
     {
+
         $this->ba->adminAuth();
 
         $channel = Channel::KOTAK;
@@ -463,6 +468,7 @@ class SettlementTest extends TestCase
         }
 
         $setlResponse = $this->initiateSettlements(Channel::AXIS);
+
         $this->assertTestResponse($setlResponse);
 
         // Verifiy settlement amounts
@@ -512,6 +518,7 @@ class SettlementTest extends TestCase
         {
             $this->assertEquals($txn['settled'], false);
         }
+
     }
 
     public function testNodalTransferWithGateway()
@@ -540,6 +547,8 @@ class SettlementTest extends TestCase
                 'destination' => 'kotak'
             ]
         ];
+
+        $this->ba->cronAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 
@@ -612,7 +621,6 @@ class SettlementTest extends TestCase
         $this->assertEquals($defaultSettlementId1, null);
 
         $channel = Channel::AXIS;
-
         // Generate settlements
         $content = $this->initiateSettlements($channel);
 
@@ -681,7 +689,6 @@ class SettlementTest extends TestCase
     public function testSettlementAccountTransferOnHold()
     {
         $channel = Channel::AXIS;
-
         $payment = $this->createPaymentEntities(1);
 
         $createdAt = Carbon::today(Timezone::IST)->subDays(10)->timestamp + 5;
@@ -715,7 +722,6 @@ class SettlementTest extends TestCase
     public function testSettlementAccountTransferOnHoldUntil()
     {
         $channel = Channel::AXIS;
-
         $payment = $this->createPaymentEntities(1);
 
         $createdAt = Carbon::today(Timezone::IST)->subDays(10)->timestamp + 5;
@@ -790,7 +796,6 @@ class SettlementTest extends TestCase
             ]);
 
         $channel = Channel::AXIS;
-
         $reversal = $this->fixtures->create(
             'reversal',
             [
@@ -842,7 +847,6 @@ class SettlementTest extends TestCase
             ]);
 
         $channel = Channel::AXIS;
-
         // Generate settlements
         $content = $this->initiateSettlements($channel);
 

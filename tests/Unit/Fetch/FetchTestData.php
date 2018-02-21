@@ -178,4 +178,12 @@ return [
     ],
 
     E::INVOICE => [],
+
+    E::WEBHOOK => [
+        Type::PRIVATE_AUTH => [
+            [
+                'application_id' => str_random(14)
+            ],
+        ],
+    ],
 ];
