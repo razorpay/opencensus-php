@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Trace\TraceCode;
+use RZP\Models\FileStore;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Icici\Headings;
 use RZP\Models\FundTransfer\Base\Reconciliation\FileProcessor as BaseProcessor;
@@ -19,6 +20,10 @@ class FileProcessor extends BaseProcessor
     protected static $channel = Channel::ICICI;
 
     protected static $delimiter = ',';
+
+    protected static $fileExtensions = [
+        FileStore\Format::TXT
+    ];
 
     public static function getHeadings()
     {

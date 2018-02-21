@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\FundTransfer\Axis\Reconciliation;
+namespace RZP\Models\FundTransfer\Hdfc\Reconciliation;
 
 use Carbon\Carbon;
 
@@ -10,15 +10,16 @@ use RZP\Models\FundTransfer\Base\Reconciliation\EntityProcessor as BaseEntityPro
 
 class EntityProcessor extends BaseEntityProcessor
 {
+
     protected function getAttemptStatus(): array
     {
         $status = $this->fta->getStatus();
 
         $bankStatusCode = $this->fta->getBankStatusCode();
 
-        $failureReason  = null;
+        $failureReason = null;
 
-        if (in_array($bankStatusCode, [Status::SETTLED, Status::EXECUTED], true) === true)
+        if ($bankStatusCode === Status::SETTLED)
         {
             $status = Attempt\Status::PROCESSED;
 
@@ -35,7 +36,7 @@ class EntityProcessor extends BaseEntityProcessor
                 $status = $this->fta->getStatus();
             }
         }
-        else if (in_array($bankStatusCode, [Status::CANCELLED, Status::REJECTED], true) === true)
+        else if ($bankStatusCode === Status::CANCELLED)
         {
             $status = Attempt\Status::FAILED;
 

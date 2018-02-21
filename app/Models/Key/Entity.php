@@ -8,7 +8,7 @@ use Crypt;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
-use RZP\Models\Base\Traits\QueryCache\Cacheable;
+use RZP\Models\Base\QueryCache\Cacheable;
 
 class Entity extends Base\PublicEntity
 {
@@ -20,6 +20,11 @@ class Entity extends Base\PublicEntity
     const EXPIRED_AT    = 'expired_at';
 
     const SECRET_LENGTH = 24;
+
+    /**
+     * Version prefix to be used for query cache
+     */
+    const QUERY_CACHE_VERSION = 'v1';
 
     protected $entity = 'key';
 
