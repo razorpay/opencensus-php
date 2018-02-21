@@ -49,7 +49,10 @@ class Activate extends Base\Core
         // Ensure that all payment methods enabled for the merchant
         // has an associated pricing assigned
         //
-        (new Methods\Core)->checkPricing($merchant);
+        //
+        $methods = $this->repo->methods->getMethodsForMerchant($merchant);
+
+        (new Methods\Core)->checkPricing($merchant, $methods);
 
         // $terminal = (new Terminal\Repository)->getByMerchantId($id);
 

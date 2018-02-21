@@ -4,19 +4,20 @@ namespace RZP\Models\Merchant\Methods;
 
 use Config;
 
-use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Models\Emi;
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
-use RZP\Error\ErrorCode;
 use RZP\Models\Card\Network;
+use RZP\Models\Pricing\Plan;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Feature\Constants;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Payment\Processor\Netbanking;
 
 class Core extends Base\Core
@@ -53,13 +54,8 @@ class Core extends Base\Core
         return $methods->toArray();
     }
 
-    public function validatePricingPlanForMethods($merchant, $plan, $methods = null)
+    public function validatePricingPlanForMethods(Merchant\Entity $merchant, Plan $plan, Entity $methods)
     {
-        if ($methods === null)
-        {
-            $methods = $this->getPaymentMethods($merchant);
-        }
-
         $methodsToCheck = Payment\Method::getAllPaymentMethods();
 
         foreach ($methodsToCheck as $method)
@@ -82,13 +78,8 @@ class Core extends Base\Core
         $this->validateInternationalPricingForMerchant($merchant, $plan);
     }
 
-    public function checkPricing($merchant, $methods = null)
+    public function checkPricing(Merchant\Entity $merchant, Entity $methods)
     {
-        if ($methods === null)
-        {
-            $methods = $this->getPaymentMethods($merchant);
-        }
-
         $plan = $this->repo->pricing->getMerchantPricingPlan($merchant);
 
         $this->validatePricingPlanForMethods($merchant, $plan, $methods);
@@ -319,14 +310,9 @@ class Core extends Base\Core
         return $this->disablePaymentBanks($method, $input);
     }
 
-    protected function getPaymentMethods(Merchant\Entity $merchant)
+    protected function getPaymentMethods(Merchant\Entity $merchant): Entity
     {
         $methods = $this->repo->methods->getMethodsForMerchant($merchant);
-
-        if ($methods === null)
-        {
-            $methods = $this->setDefaultMethods($merchant);
-        }
 
         return $methods;
     }

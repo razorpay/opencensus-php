@@ -503,6 +503,10 @@ class MerchantTest extends TestCase
     {
         $this->ba->adminAuth();
 
+        $this->fixtures->on('live')->create('methods:default_methods', [
+            'merchant_id' => '1cXSLlUU8V9sXl'
+        ]);
+
         $this->fixtures->on('live')->create('merchant_detail', [
             'merchant_id' => '1cXSLlUU8V9sXl',
             'submitted'   => true,
@@ -535,6 +539,10 @@ class MerchantTest extends TestCase
             'merchant_id' => '1cXSLlUU8V9sXl',
             'submitted'   => true,
             'locked'      => false
+        ]);
+
+        $this->fixtures->on('live')->create('methods:default_methods', [
+            'merchant_id' => '1cXSLlUU8V9sXl'
         ]);
 
         $activatedAt = time();

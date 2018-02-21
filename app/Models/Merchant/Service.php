@@ -362,7 +362,9 @@ class Service extends Base\Service
         // validate if this plan can be set for this merchant.
         // Refer: https://github.com/razorpay/api/issues/324
 
-        (new Merchant\Methods\Core)->validatePricingPlanForMethods($merchant, $plan);
+        $methods = $this->repo->methods->getMethodsForMerchant($merchant);
+
+        (new Merchant\Methods\Core)->validatePricingPlanForMethods($merchant, $plan, $methods);
 
         $originalPricingPlan = null;
 
