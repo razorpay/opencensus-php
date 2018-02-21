@@ -41,30 +41,13 @@ class Gateway extends Base\Gateway
         ResponseFields::STATUS       => Base\Entity::STATUS,
     ];
 
-    /**
-     * This array is modified while getting the authorize request.
-     * It is used to create the gateway netbanking entity.
-     * @see getAuthorizeRequest
-     * @var array
-     */
-    private $gatewayAttributes = [];
-
-    /**
-     * Used to check if the callback response is a success
-     * @var bool
-     */
-    private $callbackSuccess = true;
-
     public function authorize(array $input): array
     {
         parent::authorize($input);
 
         $request = $this->getAuthorizeRequest($input);
 
-        $this->createGatewayPaymentEntity($this->gatewayAttributes);
-
-        // Freeing memory occupied by this instance variable
-        $this->gatewayAttributes = [];
+        $this->createGatewayPaymentEntity([RequestFields::AMOUNT => $input['payment']['amount'] / 100]);
 
         $this->traceGatewayPaymentRequest($request,
                                           $input,
@@ -87,7 +70,7 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
 
         // We check the callback status and set the callbackSuccess property of this class
-        $this->checkCallbackSuccess($input['gateway']);
+        $callbackSuccess = $this->checkCallbackSuccess($input['gateway']);
 
         //
         // We verify the callback response before doing anything else with the response,
@@ -95,11 +78,11 @@ class Gateway extends Base\Gateway
         // We are eliminating false positives in this case (callback returns success, when it actually a failure).
         // We do not handle the case when callback = failure, and verify callback = success. We do not handle false negatives.
         //
-        $this->verifyCallback($gatewayPayment, $input);
+        $this->verifyCallback($gatewayPayment, $input, $callbackSuccess);
 
         $this->updateGatewayPaymentEntity($gatewayPayment, $content);
 
-        $this->throwExceptionIfCallbackFailure($content);
+        $this->throwExceptionIfCallbackFailure($callbackSuccess, $content);
 
         $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
@@ -220,9 +203,10 @@ class Gateway extends Base\Gateway
      *
      * @param Base\Entity $gatewayPayment
      * @param array $input
+     * @param bool $callbackSuccess
      * @throws GatewayErrorException
      */
-    protected final function verifyCallback(Base\Entity $gatewayPayment, array $input)
+    protected final function verifyCallback(Base\Entity $gatewayPayment, array $input, bool $callbackSuccess)
     {
         parent::verify($input);
 
@@ -239,7 +223,7 @@ class Gateway extends Base\Gateway
         // If verify returns false, we throw an error as
         // authorize request / response has been tampered with
         //
-        if (($this->callbackSuccess === true) and
+        if (($callbackSuccess === true) and
             ($verify->gatewaySuccess === false))
         {
             throw new GatewayErrorException(
@@ -294,10 +278,10 @@ class Gateway extends Base\Gateway
 
     //-----------------------------------------------  Private methods -----------------------------------------------//
 
-    private function throwExceptionIfCallbackFailure(array $content)
+    private function throwExceptionIfCallbackFailure(bool $callbackSuccess, array $content)
     {
         // callbackSuccess is set during verify callback
-        if ($this->callbackSuccess === false)
+        if ($callbackSuccess === false)
         {
             throw new GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
@@ -390,8 +374,10 @@ class Gateway extends Base\Gateway
         if ((empty($content[ResponseFields::STATUS]) === false) and
             ($content[ResponseFields::STATUS] !== Status::SUCCESS))
         {
-            $this->callbackSuccess = false;
+            return false;
         }
+
+        return true;
     }
 
     private function checkGatewaySuccess(Verify $verify)
@@ -446,7 +432,7 @@ class Gateway extends Base\Gateway
      */
     private function getAuthorizeRequest(array $input): array
     {
-        $content = [
+        $contentToEncrypt = [
             RequestFields::CHNPGSYN     => Constant::CHNPGSYN,
             RequestFields::CHNPGCODE    => $this->getMerchantId(),
             RequestFields::PAYEE_ID     => $this->getMerchantId2(),
@@ -457,14 +443,12 @@ class Gateway extends Base\Gateway
         ];
 
         $this->traceGatewayPaymentRequest(
-            $content,
+            $contentToEncrypt,
             $input,
             $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST,
             ['encrypted' => false]);
 
-        $this->gatewayAttributes = $content;
-
-        $contentToEncode = $this->computeStringToEncode(array_values($content));
+        $contentToEncode = $this->computeStringToEncode(array_values($contentToEncrypt));
 
         $content = [RequestFields::POST_DATA => base64_encode($contentToEncode)];
 
