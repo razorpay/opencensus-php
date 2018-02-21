@@ -17,7 +17,6 @@ import SubmitForm from './SubmitForm';
 const FORM_COMPONENTS = {
   activationContactDetails: ContactDetailsForm,
   activationBusinessDetails: BusinessDetailsForm,
-  activationWebsiteDetails: WebsiteDetailsForm,
   activationBankAccounts: BankAccountDetailsForm,
   activationDocumentUpload: DocumentsUploadForm,
   activationSubmitForm: SubmitForm,
@@ -49,7 +48,7 @@ const FORM_COMPONENTS = {
   // keepDirtyOnReinitialize: true,
 })
 export default class WizardItem extends Component {
-  finalStep = 6;
+  finalStep = 5;
   state = {
     errors: null,
   };
@@ -92,7 +91,7 @@ export default class WizardItem extends Component {
           }
         });
 
-        window.trackViz && window.trackViz({ act: "step" + lastCompletedStep })
+        window.trackViz && window.trackViz({ act: 'step' + lastCompletedStep });
 
         // For updating the accounts list view on success of activation
         if (step === this.finalStep && this.props.callback) {
@@ -179,9 +178,9 @@ export default class WizardItem extends Component {
         <div class="panel-body">
           <div class="row">
             <div
-              class={`${this.props.accountId
-                ? ''
-                : 'col-lg-10'} col-md-12 col-sm-12`}
+              class={`${
+                this.props.accountId ? '' : 'col-lg-10'
+              } col-md-12 col-sm-12`}
             >
               <div class="row">
                 <div class="col-md-offset-3 col-md-9">
