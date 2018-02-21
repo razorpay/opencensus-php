@@ -14,8 +14,8 @@
           <label class="form-label auth-subheading" for="email">Your Work Email</label>
           <input tabindex=1 type="email" placeholder="yourname@company.com" name="email" id="email" ng-model="signup.data.email" class="form-control auth-form-input" required ng-readonly="lock_email">
           <label class="form-label auth-subheading" for="password">Create a Password</label>
-          <input tabindex=2 type="password" placeholder="Min 7 char, 1 letter & 1 number" name="password" id="password" ng-model="signup.data.password" class="form-control auth-form-input" required>
-          <div class="google-captcha" 
+          <input tabindex=2 type="password" placeholder="Min 8 char, 1 letter & 1 number" name="password" id="password" ng-model="signup.data.password" class="form-control auth-form-input" required>
+          <div class="google-captcha"
             no-captcha
             g-recaptcha-response="signup.data.captcha"
             theme="light"
