@@ -72,20 +72,6 @@ class PaymentLinkTest extends TestCase
     }
 
     /**
-     * Few of the file rows has validation errors
-     */
-    public function testCreateBatchOfPaymentLinkTypeWithInvalidFile3()
-    {
-        $entries = $this->getDefaultPaymentLinkFileEntries();
-
-        $entries[1][Header::AMOUNT] = 0;
-
-        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
-
-        $this->startTest();
-    }
-
-    /**
      * File's header is invalid
      */
     public function testCreateBatchOfPaymentLinkTypeWithInvalidFile1()
@@ -123,6 +109,20 @@ class PaymentLinkTest extends TestCase
     public function testCreateBatchOfPaymentLinkTypeWithInvalidFile2()
     {
         $entries = [];
+
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+
+        $this->startTest();
+    }
+
+    /**
+     * Few of the file rows has validation errors
+     */
+    public function testCreateBatchOfPaymentLinkTypeWithInvalidFile3()
+    {
+        $entries = $this->getDefaultPaymentLinkFileEntries();
+
+        $entries[1][Header::AMOUNT] = 0;
 
         $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
 

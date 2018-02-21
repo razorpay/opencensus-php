@@ -263,10 +263,9 @@ class Validator extends Base\Validator
      *
      * @throws BadRequestException
      */
-    protected function validatePaymentLinkEntries(
-        array & $entries,
-        array $params,
-        Merchant\Entity $merchant)
+    protected function validatePaymentLinkEntries(array & $entries,
+                                                  array $params,
+                                                  Merchant\Entity $merchant)
     {
         // Associative array with index as input file's row index and values
         // as the error message.
@@ -275,7 +274,9 @@ class Validator extends Base\Validator
 
         foreach ($entries as $idx => $entry)
         {
-            $input = Helpers\PaymentLink::getEntityInput($entry, $params);
+            $input = Helpers\PaymentLink::getEntityInput($entry,
+                                                         $params,
+                                                         $this->entity->isCreatedByFileUpload());
 
             // Need to create dummy entity and associate merchant
             // for the validation around max allowed payment to happen.

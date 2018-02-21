@@ -31,7 +31,7 @@ class Core extends Base\Core
         return $batch;
     }
 
-    public function storeAndValidateBatchFile(Merchant\Entity $merchant, array $input): array
+    public function storeAndValidateUploadedFile(Merchant\Entity $merchant, array $input): array
     {
         $this->trace->info(TraceCode::BATCH_FILE_VALIDATE_REQUEST, $input);
 

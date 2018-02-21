@@ -111,7 +111,6 @@ class Base extends BaseModel\Core
         $this->mutex            = $this->app['api.mutex'];
         $this->batch            = $batch;
         $this->merchant         = $batch->merchant;
-        $this->accessor         = new FileStore\Accessor;
         $this->settingsAccessor = Settings\Accessor::for($this->batch, Settings\Module::BATCH);
     }
 
@@ -234,11 +233,13 @@ class Base extends BaseModel\Core
             $inputFileId = $input[Batch\Entity::FILE_ID];
 
             // Download the file and store in local
-            $this->accessor->id($inputFileId)
-                           ->merchantId($this->merchant->getId())
-                           ->getFile();
+            $accessor = new FileStore\Accessor;
 
-            return  $this->accessor->get();
+            $accessor->id($inputFileId)
+                     ->merchantId($this->merchant->getId())
+                     ->getFile();
+
+            return $accessor->get();
         }
 
         $inputFile = $input[Batch\Entity::FILE];
@@ -730,7 +731,7 @@ class Base extends BaseModel\Core
 
         // This cleanup is required because when we validate
         // the entries, we check the headers in the entries
-        $this->cleanupEntriesForErrorFile($entries);
+        $this->removeErrorDetailsFromEntries($entries);
 
         $this->validateEntries($entries, $input);
 
@@ -761,19 +762,19 @@ class Base extends BaseModel\Core
      *
      * @param array $entries
      */
-    protected function cleanupEntriesForErrorFile(array & $entries)
+    protected function removeErrorDetailsFromEntries(array & $entries)
     {
-        $entries = array_map(function ($entry)
-        {
-            if (array_key_exists(Batch\Header::ERROR_CODE, $entry) === true)
+        $entries = array_map(
+
+            function ($entry)
             {
                 unset($entry[Batch\Header::ERROR_CODE]);
                 unset($entry[Batch\Header::ERROR_DESCRIPTION]);
-            }
 
-            return $entry;
+                return $entry;
+            },
 
-        }, $entries);
+            $entries);
     }
 
     /**
