@@ -247,7 +247,7 @@ class Gateway extends Base\Gateway
                 null,
                 null,
                 [
-                    'callback_response' => $input['content'],
+                    'callback_response' => $input['gateway'],
                     'verify_response'   => $verify->verifyResponseContent,
                     'payment_id'        => $input['payment']['id'],
                     'gateway'           => $this->gateway
@@ -400,14 +400,16 @@ class Gateway extends Base\Gateway
 
         $content = $verify->verifyResponseContent;
 
-        if (array_key_exists(ResponseFields::VERIFICATION, $content) === false)
+        $status = Status::FAILURE;
+
+        if (array_key_exists(ResponseFields::VERIFICATION, $content) === true)
+        {
+            $status = trim($content[ResponseFields::VERIFICATION]);
+        }
+        elseif (array_key_exists(ResponseFields::STATUS_UCFIRST, $content) === true)
         {
             // When TID is null, they send verify status inside Status
             $status = trim($content[ResponseFields::STATUS_UCFIRST]);
-        }
-        else
-        {
-            $status = trim($content[ResponseFields::VERIFICATION]);
         }
 
         // content will contain status 100 or 101

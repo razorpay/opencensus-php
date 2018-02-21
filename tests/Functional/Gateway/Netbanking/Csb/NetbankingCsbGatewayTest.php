@@ -204,6 +204,33 @@ class NetbankingCsbGatewayTest extends TestCase
         $this->assertTestResponse($netbanking, 'testPaymentFailedNetbankingEntity');
     }
 
+    public function testPaymentEmptyStringVerifyResponse()
+    {
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $this->assertEquals(Payment\Status::CAPTURED, $payment[Payment\Entity::STATUS]);
+
+        $data = $this->testData['testVerifyMismatch'];
+
+        $this->mockPaymentVerifyEmptyStringResponse();
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment[Payment\Entity::ID]);
+            });
+
+        $payment = $this->getLastEntity(ConstantsEntity::PAYMENT, true);
+
+        $this->assertEquals(Payment\Status::CAPTURED, $payment[Payment\Entity::STATUS]);
+        $this->assertEquals(VerifyStatus::FAILED, $payment[Payment\Entity::VERIFIED]);
+
+        $netbanking = $this->getLastEntity(ConstantsEntity::NETBANKING, true);
+
+        $this->assertTestResponse($netbanking, 'testPayment');
+    }
+
     public function testVerifyCallbackFailure()
     {
         $this->mockPaymentVerifyFailed();
@@ -260,6 +287,18 @@ class NetbankingCsbGatewayTest extends TestCase
                 if ($action === 'verify')
                 {
                     $content = file_get_contents(__DIR__ . '/csbk.html');
+                }
+            });
+    }
+
+    private function mockPaymentVerifyEmptyStringResponse()
+    {
+        $this->mockServerContentFunction(
+            function(& $content, $action = null)
+            {
+                if ($action === 'verify')
+                {
+                    $content = '';
                 }
             });
     }
