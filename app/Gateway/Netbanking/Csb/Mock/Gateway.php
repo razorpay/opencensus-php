@@ -6,11 +6,11 @@ use RZP\Gateway\Base\Mock\GatewayTrait;
 use RZP\Models\Payment;
 use RZP\Gateway\Netbanking\Csb;
 
-class Gateway extends Csb\Gateway
+final class Gateway extends Csb\Gateway
 {
     use GatewayTrait;
 
-    public function authorize(array $input)
+    public final function authorize(array $input): array
     {
         $request = parent::authorize($input);
 
