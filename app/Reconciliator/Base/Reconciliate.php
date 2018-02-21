@@ -7,6 +7,7 @@ use App;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Batch;
+use RZP\Reconciliator\Service;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Messenger;
 use RZP\Reconciliator\Orchestrator;
@@ -162,8 +163,10 @@ class Reconciliate extends Base\Core
 
         $summary = $this->getBatchProcessingSummary($batch);
 
+        $skipSlack = in_array($batch->getGateway(), Service::BATCH_SUMMARY_SKIP_GATEWAYS, true);
+
         // Raise recon info with the batch processing summary
-        $this->messenger->raiseReconInfo($summary);
+        $this->messenger->setSkipSlack($skipSlack)->raiseReconInfo($summary);
     }
 
     /**

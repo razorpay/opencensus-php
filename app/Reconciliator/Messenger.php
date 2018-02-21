@@ -9,12 +9,21 @@ class Messenger
 {
     protected $app;
 
+    protected $skipSlack = false;
+
     const ALERT = 'alert';
     const INFO  = 'info';
 
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
+    }
+
+    public function setSkipSlack(bool $skipSlack)
+    {
+        $this->skipSlack = $skipSlack;
+
+        return $this;
     }
 
     /**
@@ -72,6 +81,11 @@ class Messenger
     protected function notifySlack($data, string $level)
     {
         if (empty($data) === true)
+        {
+            return;
+        }
+
+        if ($this->skipSlack === true)
         {
             return;
         }
