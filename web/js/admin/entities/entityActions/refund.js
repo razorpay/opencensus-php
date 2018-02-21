@@ -8,7 +8,7 @@ import AsyncButton from 'ui/AsyncButton';
 // refund Actions
 export default ({ entity, mode }) => {
   function retryRefund(body) {
-    return adminPost(`${mode}/refunds/{entity.id}/retry`)
+    return adminPost(`${mode}/refunds/${entity.id}/retry`)
       .then(data => {
         if (data) {
           notifySuccess('Refund is successful');
