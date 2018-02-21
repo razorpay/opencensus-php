@@ -9,13 +9,12 @@ use RZP\Models\FileStore;
 use RZP\Base\RuntimeManager;
 use RZP\Jobs\DispatchRouter;
 use RZP\Jobs\Batch as BatchJob;
-use RZP\Models\Batch\Header as BatchHeaders;
 
 class Core extends Base\Core
 {
     public function create(Merchant\Entity $merchant, array $input): Entity
     {
-        $this->trace->info(TraceCode::BATCH_CREATE_REQUEST, array_except($input, Entity::FILE));
+        $this->trace->info(TraceCode::BATCH_CREATE_REQUEST, $input);
 
         $batch = (new Entity)->build($input);
 
@@ -32,11 +31,9 @@ class Core extends Base\Core
         return $batch;
     }
 
-    public function storeAndValidateBatchFile(Merchant\Entity $merchant, array $input): array
+    public function storeAndValidateUploadedFile(Merchant\Entity $merchant, array $input): array
     {
-        $this->trace->info(TraceCode::BATCH_FILE_VALIDATE_REQUEST, array_except($input, Entity::FILE));
-
-        $entries = [];
+        $this->trace->info(TraceCode::BATCH_FILE_VALIDATE_REQUEST, $input);
 
         $batch = (new Entity)->build($input);
 
@@ -44,15 +41,15 @@ class Core extends Base\Core
 
         $processor = Processor\Factory::get($batch);
 
-        $processor->getInputFileAndValidateEntries($input, false, $entries);
+        $validatedEntries = $processor->fetchValidatedEntriesFromInputFile($input);
 
-        $response = $processor->getValidatedEntriesStatsAndSampleData($entries);
+        $response = $processor->getValidatedEntriesStatsAndSampleData($validatedEntries);
 
         // The error file to be created and saved is supposed to be used in batch create api.
         // Hence it must be saved as an input file and to be saved inside batch/upload folder
         // This error file_store instance has no entity associated with it as any input file
         // and should have the type as `batch_input`. For backward compatibility.
-        $response += $processor->createSetOutputFileAndSave($entries, BatchHeaders::ERROR);
+        $response += $processor->createSetErrorFileAndSave($validatedEntries);
 
         return $response;
     }

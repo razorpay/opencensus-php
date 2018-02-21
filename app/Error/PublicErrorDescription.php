@@ -435,6 +435,7 @@ class PublicErrorDescription
     const BAD_REQUEST_BATCH_FILE_UNDER_PROCESSING                               = 'The uploaded file is being processed';
     const BAD_REQUEST_BATCH_ANOTHER_OPERATION_IN_PROGRESS                       = 'Request failed because another operation on the batch is in progress';
     const BAD_REQUEST_BATCH_FILE_EXCEED_LIMIT                                   = 'The uploaded file exceeds the number of entries allowed';
+    const BAD_REQUEST_BATCH_UNABLE_TO_SAVE_FILE                                 = 'Unable to save file and get signed url';
     const BAD_REQUEST_BATCH_UNABLE_TO_SAVE_OUTPUT_FILE                          = 'Unable to save output file and get signed url';
     const BAD_REQUEST_BATCH_IS_PROCESSING                                       = 'Batch is currently in processing state. Try later.';
 
@@ -455,7 +456,7 @@ class PublicErrorDescription
     const BAD_REQUEST_INVOICE_EXPIRE_FAILED                                     = 'Invoice expiry failed as payment exists or is in progress for this invoice.';
     const BAD_REQUEST_INVOICE_FEE_BEARER_CUSTOMER                               = 'Invoices disabled because fee bearer is customer';
     const BAD_REQUEST_PAYMENT_LINK_BATCH_ISSUED_ALREADY                         = 'Some/all payment links of given batch has been issued already';
-    const BAD_REQUEST_BATCH_NOTIFICATION_SENT_ALREADY                           = 'Notification for this batch has already been sent';
+    const BAD_REQUEST_BATCH_NOTIFICATIONS_SENT_ALREADY                          = 'Notification for this batch has already been sent';
 
     const BAD_REQUEST_API_KEY_NOT_PRESENT                                       = 'The operation cannot be performed without an API key being generated';
     const BAD_REQUEST_ITEM_INACTIVE                                             = 'Item cannot be used as it is inactive';

@@ -263,17 +263,20 @@ class Validator extends Base\Validator
      *
      * @throws BadRequestException
      */
-    protected function validatePaymentLinkEntries(
-        array & $entries,
-        array $params,
-        Merchant\Entity $merchant)
+    protected function validatePaymentLinkEntries(array & $entries,
+                                                  array $params,
+                                                  Merchant\Entity $merchant)
     {
         // Associative array with index as input file's row index and values
         // as the error message.
 
+        $errorCount = 0;
+
         foreach ($entries as $idx => $entry)
         {
-            $input = Helpers\PaymentLink::getEntityInput($entry, $params);
+            $input = Helpers\PaymentLink::getEntityInput($entry,
+                                                         $params,
+                                                         $this->entity->isCreatedByFileUpload());
 
             // Need to create dummy entity and associate merchant
             // for the validation around max allowed payment to happen.
@@ -297,6 +300,8 @@ class Validator extends Base\Validator
             }
             catch (BaseException $e)
             {
+                $errorCount++;
+
                 $error = [
                     Header::ERROR_CODE          => $e->getError()->getPublicErrorCode(),
                     Header::ERROR_DESCRIPTION   => $e->getError()->getDescription(),
@@ -307,6 +312,17 @@ class Validator extends Base\Validator
             finally
             {
                 unset($invoice);
+            }
+
+            if (($errorCount > 0) and ($this->entity->isCreatedByFileUpload() === true))
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_BATCH_PAYMENT_LINK_FILE_ERRORS,
+                    Entity::FILE,
+                    [
+                        'count'         => $errorCount,
+                        'merchant_id'   => $merchant->getId(),
+                    ]);
             }
         }
     }

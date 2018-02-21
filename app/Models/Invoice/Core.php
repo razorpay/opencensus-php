@@ -717,80 +717,28 @@ class Core extends Base\Core
         return ['success' => true];
     }
 
-    public function notifyIssuedInvoicesOfBatch(Batch\Entity $batch, array $input): array
+    /**
+     * Sends notifications for all the invoices of a given batch, if not
+     * already sent.
+     *
+     * @param  Batch\Entity $batch
+     * @param  array        $input
+     */
+    public function notifyInvoicesOfBatch(Batch\Entity $batch, array $input): array
     {
-        (new Validator)->validateInput(Validator::NOTIFY_FOR_BATCH, $input);
+        //
+        // Settings module captures whether notification for this batch has
+        // been already sent or not.
+        //
+        $settingsAccessor = Settings\Accessor::for($batch, Settings\Module::BATCH);
 
-        $settingAccessor = Settings\Accessor::for($batch, Settings\Module::BATCH);
+        (new Validator)->validateNotifyInvoicesOfBatch($settingsAccessor, $batch, $input);
 
-        // Check if notification has already been sent
-        if ($this->hasNotificationBeenSentForBatch($settingAccessor) === true)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_LINK_BATCH_ISSUED_ALREADY,
-                Entity::BATCH_ID,
-                [
-                    Entity::BATCH_ID => $batch->getPublicId(),
-                ]);
-        }
-
-        // Save the new notification settings
-        $settingAccessor->upsert($input)->save();
+        $settingsAccessor->upsert($input)->save();
 
         $job = new InvoiceBatchNotifyJob($this->mode, $batch->getId(), $input);
 
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
-
-        return ['success' => true];
-    }
-
-    public function saveAndNotify(Entity $invoice, string $event)
-    {
-        $this->repo->transaction(function() use ($invoice)
-            {
-                $this->repo->saveOrFail($invoice);
-            });
-
-        $job = new InvoiceJob(
-                            $this->mode,
-                            $event,
-                            $invoice->getId());
-
-        (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
-    }
-
-    public function fetchStatsOfBatch(Batch\Entity $batch)
-    {
-        if ($batch->isProcessing() === true)
-        {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_BATCH_IS_PROCESSING,
-                                          $batch->getPublicId());
-        }
-
-        $stats[Entity::ENTITIES_PROCESSED] = $batch->getSuccessCount();
-
-        $stats += $this->repo->invoice->getInvoiceStatsForBatch($batch);
-
-        $response = [
-            Entity::TYPE      => $batch->getType(),
-            Entity::ID        => $batch->getPublicId(),
-            Entity::STATS     => $stats,
-        ];
-
-        return $response;
-    }
-
-    protected function hasNotificationBeenSentForBatch(Settings\Accessor $settingAccessor): bool
-    {
-        $smsNotified = $settingAccessor->get(Entity::SMS_NOTIFY);
-        $emailNotified = $settingAccessor->get(Entity::EMAIL_NOTIFY);
-
-        if (($smsNotified === true) or ($emailNotified === true))
-        {
-            return true;
-        }
-
-        return false;
     }
 
     /**

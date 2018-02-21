@@ -233,19 +233,6 @@ class Header
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
             ],
-
-            self::ERROR => [
-                self::INVOICE_NUMBER,
-                self::CUSTOMER_NAME,
-                self::CUSTOMER_EMAIL,
-                self::CUSTOMER_CONTACT,
-                self::AMOUNT,
-                self::DESCRIPTION,
-                self::EXPIRE_BY,
-                self::PARTIAL_PAYMENT,
-                self::ERROR_CODE,
-                self::ERROR_DESCRIPTION,
-            ],
         ],
 
         Type::IRCTC_REFUND => [
@@ -499,6 +486,11 @@ class Header
         ],
     ];
 
+    const ERROR_HEADERS = [
+        self::ERROR_CODE,
+        self::ERROR_DESCRIPTION,
+    ];
+
     /**
      * Validates headers of batch input file.
      *
@@ -537,6 +529,11 @@ class Header
     public static function getOutputHeadersForType(string $type): array
     {
         return self::HEADER_MAP[$type][self::OUTPUT];
+    }
+
+    public static function getErrorHeaderOfType(string $type): array
+    {
+        return array_merge(self::HEADER_MAP[$type][self::INPUT], self::ERROR_HEADERS);
     }
 
     public static function isValidOutputFileHeaderType(string $headerType): bool

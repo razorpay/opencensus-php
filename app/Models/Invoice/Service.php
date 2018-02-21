@@ -92,12 +92,10 @@ class Service extends Base\Service
     public function notifyInvoicesOfBatch(string $batchId, array $input): array
     {
         $batch = $this->repo->batch->findByPublicIdAndMerchant(
-            $batchId,
-            $this->merchant);
+                                        $batchId,
+                                        $this->merchant);
 
-        $response = $this->core->notifyIssuedInvoicesOfBatch($batch, $input);
-
-        return $response;
+        $this->core->notifyInvoicesOfBatch($batch, $input);
     }
 
     public function fetchStatsOfBatch(string $batchId): array
