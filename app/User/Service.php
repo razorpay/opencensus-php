@@ -437,13 +437,15 @@ class Service extends Base\Service
             $request = new \App\Admin\ApiRequestAny([
                 'client_type' => 'admin'
             ]);
+
+            list($error, $data) = $request->send("users-admin/$userId", "GET");
         }
         else
         {
             $request = new \App\Admin\ApiRequestAny();
-        }
 
-        list($error, $data) = $request->send("users/$userId", "GET");
+            list($error, $data) = $request->send("users/$userId", "GET");
+        }
 
         $genericUser = null;
 
