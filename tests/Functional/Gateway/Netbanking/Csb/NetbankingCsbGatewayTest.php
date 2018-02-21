@@ -284,6 +284,31 @@ class NetbankingCsbGatewayTest extends TestCase
         $this->assertTestResponse($netbanking, 'testPayment');
     }
 
+    public function testPaymentFailedVerifyCallbackSuccess()
+    {
+        $this->mockPaymentFailed();
+
+        $data = $this->testData['testPaymentFailed'];
+
+        $payment = $this->payment;
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                // Payment is a failure, but verify callback is a success
+                $this->doAuthAndCapturePayment($payment);
+            });
+
+        $payment = $this->getLastEntity(ConstantsEntity::PAYMENT, true);
+
+        $this->assertEquals(Payment\Status::FAILED, $payment[Payment\Entity::STATUS]);
+
+        $netbanking = $this->getLastEntity(ConstantsEntity::NETBANKING, true);
+
+        $this->assertTestResponse($netbanking, 'testPaymentFailedNetbankingEntity');
+    }
+
     private function mockPaymentFailed()
     {
         $this->mockServerContentFunction(
