@@ -32,8 +32,6 @@ class Gateway extends Base\Gateway
         /**
          * Fields from authorize request used to create gateway payment entity
          */
-        RequestFields::CHNPGSYN      => Base\Entity::REFERENCE1,
-        RequestFields::CHNPGCODE     => Base\Entity::MERCHANT_CODE,
         RequestFields::AMOUNT        => Base\Entity::AMOUNT,
 
         /**
