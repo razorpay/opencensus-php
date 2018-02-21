@@ -53,21 +53,19 @@ angular
                 });
               } catch (e) {}
               _identity = data.data;
-              if (_identity) {
-                if (data.data.steps_finished) {
-                  _identity.activation_progress = data.data.activation_progress;
-                }
-                if (
-                  !_identity.user.merchants.length ||
-                  _identity.pre_signup.length === 0
-                ) {
-                  _isPreSignupDone = true;
-                } else {
-                  _isPreSignupDone = _identity.pre_signup_complete;
-                }
-
-                _isVerified = _identity.user.confirmed;
+              if (data.data.steps_finished) {
+                _identity.activation_progress = data.data.activation_progress;
               }
+              if (
+                !_identity.user.merchants.length ||
+                _identity.pre_signup.length === 0
+              ) {
+                _isPreSignupDone = true;
+              } else {
+                _isPreSignupDone = _identity.pre_signup_complete;
+              }
+
+              _isVerified = _identity.user.confirmed;
 
               _authenticated = data.success === true;
               if (_authenticated) $idle.watch();
