@@ -2137,17 +2137,6 @@ final class Route
         'virtual_account_fetch_payments'       => [Feature::VIRTUAL_ACCOUNTS],
         'reports_refund_irctc'                 => [Feature::IRCTC_REPORT],
 
-        // Reporting Service
-        'reporting_config_get'                 => [Feature::REPORT_V2],
-        'reporting_config_list'                => [Feature::REPORT_V2],
-        'reporting_config_create'              => [Feature::REPORT_V2],
-        'reporting_config_edit'                => [Feature::REPORT_V2],
-        'reporting_config_delete'              => [Feature::REPORT_V2],
-        'reporting_log_get'                    => [Feature::REPORT_V2],
-        'reporting_log_list'                   => [Feature::REPORT_V2],
-        'reporting_log_create'                 => [Feature::REPORT_V2],
-        'ufh_get_file_signed_url'              => [Feature::REPORT_V2],
-
         // Account APIs
         'beta_account_create'                  => [Feature::MARKETPLACE],
         'beta_account_fetch'                   => [Feature::MARKETPLACE],
