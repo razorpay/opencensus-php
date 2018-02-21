@@ -190,9 +190,12 @@ class NewApplicationForm extends Component {
         <div class="content-header">
           <Link to="/applications" class="breadcrumb__backNav--link ">
             <i class="i i-arrow-back" />
-            <span> Back</span>
+            <span> Back&nbsp;</span>
           </Link>
-          <strong> / {this.state.edit ? 'Edit' : 'Create'} Application</strong>
+          <strong>
+            {' '}
+            /&nbsp; {this.state.edit ? 'Edit' : 'Create'} Application
+          </strong>
         </div>
         <form
           class="form-horizontal"

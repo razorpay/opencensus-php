@@ -1,6 +1,26 @@
 import Time from 'rzp/ui/Time';
 import { NavLink } from 'react-router-dom';
+import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
 
+export function AppDetailsLoader() {
+  return (
+    <div class="application-details-container col-lg-6">
+      <div class="application-details ">
+        <div class="app-icon-container">
+          <PlaceholderLoader
+            style={{ height: '100%', width: '100%', display: 'block' }}
+          />
+        </div>
+
+        <div class="app-details-container">
+          <PlaceholderLoader />
+          <PlaceholderLoader style={{ display: 'block' }} />
+          <PlaceholderLoader />
+        </div>
+      </div>
+    </div>
+  );
+}
 export default function AppDetails(props) {
   const data = props.data;
   const isConnected = props.type === 'connected';
@@ -14,10 +34,21 @@ export default function AppDetails(props) {
               e.preventDefault();
               props.onBtnClick(data);
             }}
-            class="btn btn-default"
+            class={`btn btn-default ${!isConnected ? 'delete-btn' : ''}`}
           >
-            <span>{isConnected ? 'Revoke Access' : 'Delete Application'}</span>
+            {isConnected ? 'Revoke Access' : 'Delete Application'}
           </button>
+          {props.showWebhookModal && (
+            <button
+              onClick={e => {
+                e.preventDefault();
+                props.showWebhookModal(data);
+              }}
+              class="btn-link webhook-btn"
+            >
+              Manage Webhook
+            </button>
+          )}
         </div>
         <div
           class={`application-details ${isConnected ? 'connected-app' : ''}`}
