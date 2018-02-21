@@ -121,14 +121,22 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
-            array_merge($request, ['encrypted' => true]));
+            array_merge(
+                $request,
+                [
+                    'encrypted'       => true,
+                    'payment_id'      => $verify->input['payment']['id'],
+                    'gateway'         => $this->gateway,
+                    'verify_callback' => $verifyCallback
+                ]));
 
         $response = $this->sendGatewayRequest($request);
 
         $data = [
-            'gateway'    => $this->gateway,
-            'response'   => $response->body,
-            'payment_id' => $verify->input['payment']['id'],
+            'gateway'         => $this->gateway,
+            'response'        => $response->body,
+            'payment_id'      => $verify->input['payment']['id'],
+            'verify_callback' => $verifyCallback
         ];
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE, $data);
@@ -344,7 +352,7 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
-            array_merge($content, ['not yet encrypted']));
+            array_merge($content, ['not yet encrypted', "verify_callback = $verifyCallback"]));
 
         // Setting verify request property of $verify
         $verify->verifyRequest = $content;
