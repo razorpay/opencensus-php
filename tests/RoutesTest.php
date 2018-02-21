@@ -126,7 +126,7 @@ class RoutesTest extends TestCase
     {
         $disAllowedRoutes = array_merge(Route::$admin, Route::$private);
 
-        $this->assertEquals(['user_fetch'], array_values(array_intersect(Route::$internal, $disAllowedRoutes)));
+        $this->assertEquals([], array_values(array_intersect(Route::$internal, $disAllowedRoutes)));
     }
 
     protected function matchRouteWithMailgunRoutes($route, $result)

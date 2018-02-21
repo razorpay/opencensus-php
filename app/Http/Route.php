@@ -612,6 +612,8 @@ final class Route
         'user_fetch_email'                        => ['get',      'users/email/{email}',                            'UserController@getUserByEmail'                                     ],
         'user_edit'                               => ['put',      'users/{id}',                                     'UserController@editUser'                                           ],
         'user_fetch'                              => ['get',      'users/{id}',                                     'UserController@getUser'                                            ],
+        // Same as user_fetch but for admin
+        'user_fetch_admin'                        => ['get',      'users-admin/{id}',                               'UserController@getUser'                                            ],
         // The order of the following routes is important. The one with action should be last
         'user_confirm'                            => ['put',      'users/{id}/confirm',                             'UserController@confirmUser'                                        ],
         'user_change_password'                    => ['put',      'users/{id}/password',                            'UserController@changeUserPassword'                                 ],
@@ -1390,7 +1392,7 @@ final class Route
         'shield_rules_delete',
         'shield_rules_evaluate',
 
-        'user_fetch',
+        'user_fetch_admin',
     ];
 
     public static $routePermission = [
@@ -1669,7 +1671,7 @@ final class Route
         'shield_rules_update'                    => Permission::EDIT_SHIELD_RULES,
         'shield_rules_delete'                    => Permission::DELETE_SHIELD_RULES,
         'shield_rules_evaluate'                  => Permission::EVALUATE_SHIELD_RULES,
-        'user_fetch'                             => Permission::VIEW_MERCHANT_LOGIN,
+        'user_fetch_admin'                       => Permission::VIEW_MERCHANT_LOGIN,
     ];
 
     public static $direct = [
