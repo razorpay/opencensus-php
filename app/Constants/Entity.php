@@ -88,6 +88,7 @@ class Entity
     const MERCHANT_INVOICE      = 'merchant_invoice';
     const MERCHANT_EMI_PLANS    = 'merchant_emi_plans';
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
+    const MERCHANT_ACCESS_MAP   = 'merchant_access_map';
     const BATCH_FUND_TRANSFER   = 'batch_fund_transfer';
     const CUSTOMER_TRANSACTION  = 'customer_transaction';
     const FUND_TRANSFER_ATTEMPT = 'fund_transfer_attempt';
@@ -224,6 +225,7 @@ class Entity
         self::MERCHANT_EMI_PLANS    => \RZP\Models\Merchant\EmiPlans::class,
         self::SETTLEMENT_DETAILS    => \RZP\Models\Settlement\Details::class,
         self::TERMINAL_ANALYTICS    => \RZP\Models\Payment\TerminalAnalytics::class,
+        self::MERCHANT_ACCESS_MAP   => \RZP\Models\Merchant\AccessMap::class,
         self::BATCH_FUND_TRANSFER   => \RZP\Models\FundTransfer\Batch::class,
         self::CUSTOMER_TRANSACTION  => \RZP\Models\Customer\Transaction::class,
         self::FUND_TRANSFER_ATTEMPT => \RZP\Models\FundTransfer\Attempt::class,
@@ -335,6 +337,7 @@ class Entity
         self::MERCHANT,
         self::USER,
         self::SCHEDULE,
+        self::MERCHANT_ACCESS_MAP,
     ];
 
     public static function getAllEntities()

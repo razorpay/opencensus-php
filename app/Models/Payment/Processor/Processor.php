@@ -434,15 +434,6 @@ class Processor
 
             $tokenMethod = $token->getMethod();
 
-            //
-            // TODO: Remove this after we move netbanking recurring to emandate method
-            // We have to start storing method as `emandate` in token entity for this.
-            //
-            if ($tokenMethod === Payment\Method::NETBANKING)
-            {
-                $tokenMethod = Payment\Method::EMANDATE;
-            }
-
             $input[Payment\Entity::METHOD] = $tokenMethod;
 
             if ($tokenMethod === Payment\Method::EMANDATE)
@@ -882,8 +873,12 @@ class Processor
     {
         $payment = $this->payment;
 
-        // For Netbanking payments two_factor_auth was set to NOT_APPLICABLE on authorize itself
-        if ($payment->isNetbanking() === true)
+        //
+        // For Netbanking and emandate payments two_factor_auth
+        // was set to NOT_APPLICABLE on authorize itself
+        //
+        if (($payment->isNetbanking() === true) or
+            ($payment->isEmandate() === true))
         {
             $twoFactorAuth = Payment\TwoFactorAuth::UNAVAILABLE;
         }
@@ -1290,7 +1285,8 @@ class Processor
         }
 
         // TODO: Following is not testable in cases. Ref: BankTransferBatchTest
-        if ($this->app['basicauth']->isAppAuth() === false)
+        if (($this->app['basicauth']->isAppAuth() === false) and
+            (Route::currentRouteName() !== 'bank_transfer_process_test'))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid payment method given: ' . $payment->getMethod());

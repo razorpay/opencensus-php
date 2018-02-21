@@ -62,6 +62,7 @@ class DatabaseSeeder extends Seeder
                     'updated_at'       => $currentTime,
                     'cross_org_access' => true,
                     'custom_code'      => 'rzp',
+                    'from_email'       => 'admin@razorpay.com',
                 ]
             );
 
@@ -78,7 +79,8 @@ class DatabaseSeeder extends Seeder
                     'main_logo_url'     => null,
                     'created_at'        => $currentTime,
                     'updated_at'        => $currentTime,
-                    'custom_code'      => 'hdfc',
+                    'custom_code'       => 'hdfc',
+                    'from_email'        => 'admin@hdfcbank.com',
                 ]
             );
 

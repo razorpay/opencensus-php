@@ -125,8 +125,6 @@ class CreateTransactions extends Migration
 
             $table->index(Transaction::TYPE);
 
-            $table->index(Transaction::SETTLED_AT);
-
             $table->index(Transaction::ON_HOLD);
 
             $table->index(Transaction::RECONCILED_AT);

@@ -1148,7 +1148,7 @@ return [
         'jsonp' => true
     ],
 
-    'testGetBanksByAppAuth' => [
+    'testGetBanksByAdminAuth' => [
         'request' => [
             'url' => '/merchants/10000000000000/banks',
             'method' => 'GET',
@@ -2595,7 +2595,7 @@ return [
             'content' => [
                 'action' => 'archive'
             ],
-            'url' => '/merchants/1cXSLlUU8V9sXl/action',
+            'url' => '/merchants/%s/action',
             'method' => 'PUT',
         ],
         'response' => [
@@ -2611,7 +2611,7 @@ return [
             'content' => [
                 'action' => 'archive'
             ],
-            'url' => '/merchants/1cXSLlUU8V9sXl/action',
+            'url' => '/merchants/%s/action',
             'method' => 'PUT',
         ],
         'response' => [
@@ -2634,7 +2634,7 @@ return [
             'content' => [
                 'action' => 'archive'
             ],
-            'url' => '/merchants/1cXSLlUU8V9sXl/action',
+            'url' => '/merchants/%s/action',
             'method' => 'PUT',
         ],
         'response' => [
@@ -2657,7 +2657,7 @@ return [
             'content' => [
                 'action' => 'unarchive'
             ],
-            'url' => '/merchants/1cXSLlUU8V9sXl/action',
+            'url' => '/merchants/%s/action',
             'method' => 'PUT',
         ],
         'response' => [
@@ -2696,7 +2696,7 @@ return [
             'content' => [
                 'action' => 'suspend'
             ],
-            'url' => '/merchants/1cXSLlUU8V9sXl/action',
+            'url' => '/merchants/%s/action',
             'method' => 'PUT',
         ],
         'response' => [
@@ -2714,7 +2714,7 @@ return [
             'content' => [
                 'action' => 'suspend'
             ],
-            'url' => '/merchants/1cXSLlUU8V9sXl/action',
+            'url' => '/merchants/%s/action',
             'method' => 'PUT',
         ],
         'response' => [
@@ -2737,7 +2737,7 @@ return [
             'content' => [
                 'action' => 'unsuspend'
             ],
-            'url' => '/merchants/1cXSLlUU8V9sXl/action',
+            'url' => '/merchants/%s/action',
             'method' => 'PUT',
         ],
         'response' => [

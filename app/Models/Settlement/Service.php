@@ -60,9 +60,15 @@ class Service extends Base\Service
                                 ['source', 'source.merchant', 'source.merchant.bankAccount']);
         }
 
-        $urls = (new Kotak\Service)->generateSettlementFile($entities);
+        $channel = $batch->getChannel();
 
-        return $urls;
+        $nodalAccountClass = 'RZP\\Models\\FundTransfer\\' . ucwords($channel). '\\NodalAccount';
+
+        $h2h = (bool)($input['h2h']);
+
+        $fileCreator = (new $nodalAccountClass)->generateFundTransferFile($entities, $h2h);
+
+        return $fileCreator->get();
     }
 
     public function fetch($id)

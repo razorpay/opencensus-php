@@ -219,6 +219,10 @@ return [
             Permission::VIEW_MERCHANT_REPORT   => [
                 'description' => 'View Merchant Reports',
             ],
+
+            Permission::VIEW_SPECIAL_MERCHANT_REPORT => [
+                'description'   => 'View custom merchant reports for a few large clients',
+            ],
             Permission::CREATE_MERCHANT_OFFER  => [
                 'description' => 'Create offer for a merchant',
             ],
@@ -227,6 +231,11 @@ return [
             ],
             Permission::ASSIGN_MERCHANT_HANDLE => 'Assign merchant handle',
             Permission::VIEW_MERCHANT_PRICING  => 'View Mercant Pricing Plan',
+            Permission::VIEW_MERCHANT_ANALYTICS => [
+                'description' => 'View Merchant Analytics',
+                'assignable'  => true,
+                'workflow'    => false
+            ],
         ],
 
         PermissionCategory::SETTLEMENT  => [
@@ -502,7 +511,30 @@ return [
                 'description' => 'Retry batch processing',
                 'assignable'  => true,
             ]
-        ]
+        ],
+
+        PermissionCategory::SHIELD => [
+            Permission::VIEW_SHIELD_RULES  => [
+                'description' => 'View shield rules',
+                'assignable'  => false
+            ],
+            Permission::CREATE_SHIELD_RULES => [
+                'description' => 'Create shield rules',
+                'assignable'  => false
+            ],
+            Permission::EDIT_SHIELD_RULES   => [
+                'description' => 'Edit shield rules',
+                'assignable'  => false
+            ],
+            Permission::DELETE_SHIELD_RULES => [
+                'description' => 'Delete shield rules',
+                'assignable'  => false
+            ],
+            Permission::EVALUATE_SHIELD_RULES => [
+                'description' => 'Evaluate shield rules',
+                'assignable'  => false,
+            ],
+        ],
     ],
 
     'workflows' => [

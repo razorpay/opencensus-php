@@ -386,6 +386,10 @@ class MerchantInvoiceTest extends TestCase
                                 'invoice_code' => 'hello1234567',
                             ]);
 
+        $this->fixtures->on('live')->create('methods:default_methods', [
+            'merchant_id' => '1cXSLlUU8V9sXl'
+        ]);
+
         $md1 = $this->fixtures->create(
             'merchant_detail',
             [

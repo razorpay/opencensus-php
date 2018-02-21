@@ -351,7 +351,7 @@ class Repository extends Base\Repository
 
         $ids = $txns->getIds();
 
-        $batchedIds = array_chunk($ids, 20000);
+        $batchedIds = array_chunk($ids, 1000);
 
         foreach ($batchedIds as $batch)
         {

@@ -44,6 +44,7 @@ class Validator
                                             . "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
         RequestProcessor\Base::FIRST_DATA         => "/Statement for Merchant MID No. razorpay/",
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK  => "/^RAZOR_VA_REPORT$/",
+        RequestProcessor\Base::VIRTUAL_ACC_YESBANK=> "Confidential | Cash Management MIS Report E-Collect",
     ];
 
     const GATEWAY_BODY_REGEX = [
@@ -58,6 +59,7 @@ class Validator
                                             . " You net amount settled is/",
         RequestProcessor\Base::FIRST_DATA         => "/the statement of transactions for MID (.)*razorpay/",
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK  => "/Please find the hourly report of Virtual Accounts./",
+        RequestProcessor\Base::VIRTUAL_ACC_YESBANK=> "/Please find attached subject scheduled reports./",
     ];
 
     const GATEWAY_ATTACHMENT_COUNT = [

@@ -520,6 +520,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_DOWNTIME_WEBHOOK                  = 'GATEWAY_DOWNTIME_WEBHOOK';
 
     const FTA_BULK_RECONCILE_REQUEST                = 'FTA_BULK_RECONCILE_REQUEST';
+    const INITIATE_FUND_TRANSFER                    = 'INITIATE_FUND_TRANSFER';
     const FTA_FILE_RECON_INVALID_STATUS_CHANGE      = 'FTA_FILE_RECON_INVALID_STATUS_CHANGE';
 
     const SETTLEMENT_INITIATING                     = 'SETTLEMENT_INITIATING';
@@ -698,6 +699,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const HARVESTER_REQUEST                         = 'HARVESTER_REQUEST';
     const HARVESTER_RETRY                           = 'HARVESTER_RETRY';
     const HARVESTER_FAILURE                         = 'HARVESTER_FAILURE';
+
+    const SHIELD_INTEGRATION_ERROR                  = 'SHIELD_INTEGRATION_ERROR';
 
     // ES related trace codes
     const ES_DEBUG_RESPONSE                         = 'ES_DEBUG_RESPONSE';
@@ -946,6 +949,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const AUTH_SERVICE_REQUEST                          = 'AUTH_SERVICE_REQUEST';
     const SEND_OAUTH_MAIL_REQUEST                       = 'SEND_OAUTH_MAIL_REQUEST';
     const OAUTH_TOKEN_INVALID                           = 'OAUTH_TOKEN_INVALID';
+    const APP_MERCHANT_ACCESS_MAP                       = 'APP_MERCHANT_ACCESS_MAP';
+    const APP_MERCHANT_ACCESS_MAP_DELETE                = 'APP_MERCHANT_ACCESS_MAP_DELETE';
 
     const SERVER_ERROR_MISSING_HANDLER                  = 'SERVER_ERROR_MISSING_HANDLER';
     const GATEWAY_FILE_CREATE_REQUEST                   = 'GATEWAY_FILE_CREATE_REQUEST';

@@ -11,7 +11,6 @@ use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Models\Dispute\Entity as DisputeEntity;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Mail\Dispute\Creation as DisputeCreationMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Dispute\File\Entity as DisputeFileEntity;
@@ -113,7 +112,7 @@ class DisputeTest extends TestCase
 
         $this->testData[$eventTestDataKey]['payload']['dispute']['entity']['payment_id'] = $paymentId;
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $this->startTest($testData);
     }

@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional;
 
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Tests\Functional\Fixtures\Entity\User;
 
 class Authorization
 {
@@ -21,10 +22,12 @@ class Authorization
     protected $appHeaders;
     protected $bearerHeaders;
     protected $adminProxyHeaders;
+    protected $proxyHeaders;
 
     protected $defaultKey               = 'rzp_test_TheTestAuthKey';
     protected $defaultSecret            = 'TheKeySecretForTests';
     protected $defaultDeviceToken       = 'authentication_token';
+    protected $defaultMerchantUser      = User::MERCHANT_USER_ID;
     protected $defaultToken             = Org::DEFAULT_TOKEN . Org::DEFAULT_TOKEN_PRINCIPAL;
     protected $defaultOrgId             = Org::RZP_ORG_SIGNED;
 
@@ -105,11 +108,31 @@ class Authorization
         $this->appAuth('rzp_test', $pwd);
     }
 
-    public function proxyAuth($user = 'rzp_test_10000000000000')
+    public function proxyAuth($user = 'rzp_test_10000000000000', $merchantUser = null, $merchantUserRole = 'owner')
     {
         $this->appAuth($user);
 
         $this->proxy = true;
+
+        $this->addProxyAuthHeaders($merchantUser, $merchantUserRole);
+    }
+
+    public function addProxyAuthHeaders($user, $userRole)
+    {
+        if ($user === null)
+        {
+            $user = $this->defaultMerchantUser;
+        }
+
+        $this->proxyHeaders = [
+            'X-Dashboard-User-Id'   => $user,
+            'X-Dashboard-User-Role' => $userRole,
+        ];
+    }
+
+    public function getProxyHeaders()
+    {
+        return $this->proxyHeaders;
     }
 
     public function proxyAuthTest()
@@ -371,6 +394,11 @@ class Authorization
     public function isAdminProxyAuth()
     {
         return ($this->type === 'admin_proxy');
+    }
+
+    public function isProxyAuth()
+    {
+        return ($this->proxy === true);
     }
 
     public function isPrivateAuth()

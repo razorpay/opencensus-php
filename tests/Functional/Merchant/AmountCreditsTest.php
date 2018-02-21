@@ -17,8 +17,10 @@ class AmountCreditsTest extends TestCase
 
         parent::setUp();
 
+        $this->ba->getAdmin()->merchants()->attach('10000000000000');
+
         // All API calls to Credits have to be through admin account.
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
     }
 
     public function testCreateCreditsLog()

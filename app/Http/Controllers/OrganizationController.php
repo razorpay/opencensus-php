@@ -264,47 +264,59 @@ class OrganizationController extends Controller
 
 // --------------------- CRUD for Org FieldMap ----------------------------------------
 
-    public function postOrgFieldMap(string $orgId)
+    public function postOrgFieldMap()
     {
         $input = Request::all();
+
+        $orgId = $this->ba->getOrgId();
 
         $data = $this->service(E::ORG_FIELD_MAP)->createFieldMapForEntity($orgId, $input);
 
         return ApiResponse::json($data);
     }
 
-    public function putOrgFieldMap(string $orgId, string $id)
+    public function putOrgFieldMap(string $id)
     {
         $input = Request::all();
+
+        $orgId = $this->ba->getOrgId();
 
         $data = $this->service(E::ORG_FIELD_MAP)->editFieldMapForEntity($orgId, $id, $input);
 
         return ApiResponse::json($data);
     }
 
-    public function getOrgFieldMapMultiple(string $orgId)
+    public function getOrgFieldMapMultiple()
     {
+        $orgId = $this->ba->getOrgId();
+
         $data = $this->service(E::ORG_FIELD_MAP)->fetchMultiple($orgId);
 
         return ApiResponse::json($data);
     }
 
-    public function getOrgFieldMap(string $orgId, string $id)
+    public function getOrgFieldMap(string $id)
     {
+        $orgId = $this->ba->getOrgId();
+
         $data = $this->service(E::ORG_FIELD_MAP)->getFieldsForEntity($orgId, $id);
 
         return ApiResponse::json($data);
     }
 
-    public function getOrgFieldMapByEntity(string $orgId, string $entity)
+    public function getOrgFieldMapByEntity(string $entity)
     {
+        $orgId = $this->ba->getOrgId();
+
         $data = $this->service(E::ORG_FIELD_MAP)->getByEntity($orgId, $entity);
 
         return ApiResponse::json($data);
     }
 
-    public function deleteOrgFieldMap(string $orgId, string $id)
+    public function deleteOrgFieldMap(string $id)
     {
+        $orgId = $this->ba->getOrgId();
+
         $data = $this->service(E::ORG_FIELD_MAP)->deleteFieldMapForEntity($orgId, $id);
 
         return ApiResponse::json($data);

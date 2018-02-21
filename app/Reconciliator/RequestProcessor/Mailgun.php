@@ -128,6 +128,7 @@ class Mailgun extends Base
      * It also sets the gateway reconciliator object for the class.
      *
      * @throws Exception\ReconciliationException
+     * @throws Exception\LogicException
      */
     protected function setGatewayFromEmail()
     {

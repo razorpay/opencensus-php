@@ -85,6 +85,24 @@ class UpiMindgateGatewayTest extends TestCase
         return $payment;
     }
 
+    public function testUpiAmountCap()
+    {
+        $this->payment['vpa'] = 'vishnu@upi';
+
+        $payment = $this->payment;
+
+        $payment['amount'] = 2100000;
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthPaymentViaAjaxRoute($payment);
+            });
+    }
+
     public function testFailedVpaValidation()
     {
         $this->payment['vpa'] = 'invalidvpa@hdfcbank';
