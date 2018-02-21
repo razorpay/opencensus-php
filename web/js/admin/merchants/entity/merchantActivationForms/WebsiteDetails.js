@@ -11,13 +11,6 @@ export default ({ merchant_details: merchantDetails }) => (
     ) : (
       <Form class="full-span full-elements limited">
         <Field
-          label="Website Address"
-          name="business_website"
-          defaultValue={merchantDetails.business_website}
-          disabled
-        />
-
-        <Field
           label="About Us URL"
           name="website_about"
           defaultValue={merchantDetails.website_about}

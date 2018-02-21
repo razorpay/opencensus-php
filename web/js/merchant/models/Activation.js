@@ -22,6 +22,7 @@ const activationStepMap = {
     'business_name',
     'business_dba',
     'business_international',
+    'business_website',
     'business_paymentdetails',
     'business_model',
     'business_registered_address',
@@ -41,7 +42,6 @@ const activationStepMap = {
     'company_pan_name',
   ],
   3: [
-    'business_website',
     'website_about',
     'website_contact',
     'website_privacy',

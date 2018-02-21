@@ -11,6 +11,7 @@ import {
   validatePincodeLength,
   validatePANCard,
   validateCIN,
+  lenientUrl,
 } from 'rzp/utils/validators';
 import { states } from 'rzp/utils/constants';
 
@@ -251,6 +252,28 @@ export default class BusinessDetailsForm extends Component {
               </div>
 
               <div class="form-group">
+                <label class="col-md-3 control-label label-required">
+                  Website Address
+                </label>
+                <div class="col-md-9">
+                  <span class="help-block">
+                    Example: http://www.example.com/
+                  </span>
+
+                  <Field
+                    name="business_website"
+                    component={InputField}
+                    class="form-control"
+                    autoFocus={true}
+                    validate={[
+                      required(),
+                      lenientUrl('Please enter a valid URL'),
+                    ]}
+                  />
+                </div>
+              </div>
+
+              <div class="form-group">
                 <div class="col-md-offset-3 col-md-9">
                   <div class="checkbox rzpCheckbox">
                     <Field
@@ -260,7 +283,7 @@ export default class BusinessDetailsForm extends Component {
                       type="checkbox"
                       disabled={locked}
                     />
-                    <label for="business_international" class="icon i-check"/>
+                    <label for="business_international" class="icon i-check" />
                     <span class="left-label label-required">
                       International Payments Required?
                     </span>
@@ -359,7 +382,7 @@ export default class BusinessDetailsForm extends Component {
                         onChange={this.handleSameAddressCheck}
                         checked={this.state.or_same}
                       />
-                      <label htmlFor="or_same" class="icon i-check"/>
+                      <label htmlFor="or_same" class="icon i-check" />
                       <span class="left-label">
                         Operational Address same as Registered Address
                       </span>
