@@ -50,6 +50,12 @@ class Gateway extends Base\Gateway
      */
     private $gatewayAttributes = [];
 
+    /**
+     * Used to check if the callback response is a success
+     * @var bool
+     */
+    private $callbackSuccess = true;
+
     public function authorize(array $input): array
     {
         parent::authorize($input);
@@ -81,15 +87,19 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
 
+        // We check the callback status and set the callbackSuccess property of this class
+        $this->checkCallbackSuccess($input['gateway']);
+
         //
         // We verify the callback response before doing anything else with the response,
         // this is so that we ensure the response is for the right payment id and amount
+        // We are eliminating false positives in this case (callback returns success, when it actually a failure).
         //
         $this->verifyCallback($gatewayPayment, $input);
 
         $this->updateGatewayPaymentEntity($gatewayPayment, $content);
 
-        $this->checkResponseStatus($content);
+        $this->throwExceptionIfCallbackFailure($content);
 
         $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
@@ -217,10 +227,12 @@ class Gateway extends Base\Gateway
         $this->checkGatewaySuccess($verify);
 
         //
+        // If callback returned a success and
         // If verify returns false, we throw an error as
         // authorize request / response has been tampered with
         //
-        if ($verify->gatewaySuccess === false)
+        if (($this->callbackSuccess === true) and
+            ($verify->gatewaySuccess === false))
         {
             throw new GatewayErrorException(ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
         }
@@ -265,10 +277,10 @@ class Gateway extends Base\Gateway
 
     //-----------------------------------------------  Private methods -----------------------------------------------//
 
-    private function checkResponseStatus(array $content)
+    private function throwExceptionIfCallbackFailure(array $content)
     {
-        if ((empty($content[ResponseFields::STATUS]) === false) and
-            ($content[ResponseFields::STATUS] !== Status::SUCCESS))
+        // callbackSuccess is set during verify callback
+        if ($this->callbackSuccess === false)
         {
             throw new GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
@@ -350,6 +362,15 @@ class Gateway extends Base\Gateway
         }
 
         return $status;
+    }
+
+    private function checkCallbackSuccess(array $content)
+    {
+        if ((empty($content[ResponseFields::STATUS]) === false) and
+            ($content[ResponseFields::STATUS] !== Status::SUCCESS))
+        {
+            $this->callbackSuccess = false;
+        }
     }
 
     private function checkGatewaySuccess(Verify $verify)
