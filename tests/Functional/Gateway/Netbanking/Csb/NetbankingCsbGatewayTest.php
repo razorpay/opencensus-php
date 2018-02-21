@@ -204,6 +204,32 @@ class NetbankingCsbGatewayTest extends TestCase
         $this->assertTestResponse($netbanking, 'testPaymentFailedNetbankingEntity');
     }
 
+    public function testVerifyCallbackFailure()
+    {
+        $this->mockPaymentVerifyFailed();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function()
+            {
+                $this->testPayment();
+            });
+
+        $payment = $this->getLastEntity(ConstantsEntity::PAYMENT, true);
+
+        // The payment status is updated to failed due to the verify callback error
+        $this->assertEquals(Payment\Status::FAILED, $payment[Payment\Entity::STATUS]);
+
+        $netbanking = $this->getLastEntity(ConstantsEntity::NETBANKING, true);
+
+        // The status doesn't get updated from Y to N
+        $testData = $this->testData[__FUNCTION__ . 'Entity'];
+
+        $this->assertArraySelectiveEquals($testData, $netbanking);
+    }
+
     public function testPaymentEmptyStringVerifyResponse()
     {
         $payment = $this->doAuthAndCapturePayment($this->payment);
@@ -231,30 +257,31 @@ class NetbankingCsbGatewayTest extends TestCase
         $this->assertTestResponse($netbanking, 'testPayment');
     }
 
-    public function testVerifyCallbackFailure()
+    public function testPaymentRandomStringVerifyResponse()
     {
-        $this->mockPaymentVerifyFailed();
+        $payment = $this->doAuthAndCapturePayment($this->payment);
 
-        $data = $this->testData[__FUNCTION__];
+        $this->assertEquals(Payment\Status::CAPTURED, $payment[Payment\Entity::STATUS]);
+
+        $data = $this->testData['testVerifyMismatch'];
+
+        $this->mockPaymentVerifyRandomStringResponse();
 
         $this->runRequestResponseFlow(
             $data,
-            function()
+            function() use ($payment)
             {
-                $this->testPayment();
+                $this->verifyPayment($payment[Payment\Entity::ID]);
             });
 
         $payment = $this->getLastEntity(ConstantsEntity::PAYMENT, true);
 
-        // The payment status is updated to failed due to the verify callback error
-        $this->assertEquals(Payment\Status::FAILED, $payment[Payment\Entity::STATUS]);
+        $this->assertEquals(Payment\Status::CAPTURED, $payment[Payment\Entity::STATUS]);
+        $this->assertEquals(VerifyStatus::FAILED, $payment[Payment\Entity::VERIFIED]);
 
         $netbanking = $this->getLastEntity(ConstantsEntity::NETBANKING, true);
 
-        // The status doesn't get updated from Y to N
-        $testData = $this->testData[__FUNCTION__ . 'Entity'];
-
-        $this->assertArraySelectiveEquals($testData, $netbanking);
+        $this->assertTestResponse($netbanking, 'testPayment');
     }
 
     private function mockPaymentFailed()
@@ -299,6 +326,18 @@ class NetbankingCsbGatewayTest extends TestCase
                 if ($action === 'verify')
                 {
                     $content = '';
+                }
+            });
+    }
+
+    private function mockPaymentVerifyRandomStringResponse()
+    {
+        $this->mockServerContentFunction(
+            function(& $content, $action = null)
+            {
+                if ($action === 'verify')
+                {
+                    $content = 'Random string';
                 }
             });
     }
