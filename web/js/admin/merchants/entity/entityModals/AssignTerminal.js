@@ -89,9 +89,12 @@ export default class TerminalForm extends Component {
       delete body.file;
     }
 
+    let mode = body.mode;
+    delete body.mode;
+
     return adminFormUpload2(
       body,
-      `/admin/api/${body.mode}/merchant/${this.props.merchantId}/terminal`
+      `/admin/api/${mode}/merchants/${this.props.merchantId}/terminals`
     )
       .then(response => {
         if (response.data.success) {
@@ -99,7 +102,7 @@ export default class TerminalForm extends Component {
           closeModal();
 
           // We're displaying only live terminal on right side of merchant details, so update only for live mode
-          if (body.mode === 'live') {
+          if (mode === 'live') {
             this.props.props.updateTerminal(response.data.data);
           }
         } else {
