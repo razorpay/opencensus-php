@@ -1971,7 +1971,6 @@ final class Route
         'invoice_view_live',
         'invoice_view_test',
         'invoice_get_stats_by_batch_ids',
-        'invoice_get_pdf',
         'item_fetch',
         'item_fetch_multiple',
         'app_fetch_tokens',
