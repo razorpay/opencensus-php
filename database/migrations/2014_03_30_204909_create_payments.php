@@ -256,6 +256,9 @@ class CreatePayments extends Migration
             $table->string(Payment::AUTH_TYPE, 14)
                   ->nullable();
 
+            $table->string(Payment::FLOW, 14)
+                  ->nullable();
+
             $table->integer(Payment::ACKNOWLEDGED_AT)
                   ->unsigned()
                   ->nullable();

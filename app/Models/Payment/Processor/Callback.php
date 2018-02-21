@@ -221,6 +221,11 @@ trait Callback
             $input['s2s'] = true;
         }
 
+        if ($payment->getFlow() === 'headless_otp')
+        {
+            $this->preProcessGatewayCallback($payment, $input);
+        }
+
         try
         {
             $data = $this->callGatewayCallback($input);
@@ -315,6 +320,17 @@ trait Callback
             ($diff < self::CALLBACK_PROCESS_AGAIN_DURATION * 60))
         {
             $this->rethrowFailedPaymentErrorException($payment);
+        }
+    }
+
+    protected function preProcessGatewayCallback(array &$input)
+    {
+        $payment = $this->payment;
+
+        if (($payment->isCard() === true) and
+            ($payment->getFlow() === 'headless_otp'))
+        {
+            $input['gateway'] = $this->submitHeadlessOtp($payment, $input['gateway']);
         }
     }
 

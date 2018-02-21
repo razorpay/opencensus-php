@@ -112,6 +112,11 @@ class ApiServiceProvider extends BaseServiceProvider
             return new TokenEx($app);
         });
 
+        $this->app->singleton('card.otpelf', function($app)
+        {
+            return new OtpElf($app);
+        });
+
         $this->app->singleton('authservice', function($app)
         {
             return new AuthService($app);

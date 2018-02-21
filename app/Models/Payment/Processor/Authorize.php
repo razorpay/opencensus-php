@@ -175,6 +175,11 @@ trait Authorize
 
                 $retry = false;
 
+                if ($this->canRunHeadlessOtpFlow($payment) === true)
+                {
+                    $request = $this->openHeadlessBrowser($payment, $request);
+                }
+
                 break;
             }
             catch (Exception\GatewayRequestException $e)

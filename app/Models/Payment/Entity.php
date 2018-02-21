@@ -131,6 +131,7 @@ class Entity extends Base\PublicEntity
     const LATE_AUTHORIZED       = 'late_authorized';
     const CONVERT_CURRENCY      = 'convert_currency';
     const AUTH_TYPE             = 'auth_type';
+    const FLOW                  = 'flow';
     const ACKNOWLEDGED_AT       = 'acknowledged_at';
 
     const MAX_AMOUNT            = 'max_amount';
@@ -290,11 +291,13 @@ class Entity extends Base\PublicEntity
         self::SUBSCRIPTION_ID,
         self::CONVERT_CURRENCY,
         self::AUTH_TYPE,
-        self::CREATED_AT,
-        self::UPDATED_AT,
+        self::FLOW,
         self::DISPUTED,
         self::RECURRING_TYPE,
         self::ACKNOWLEDGED_AT,
+        self::PAYMENT_LINK_ID,
+        self::CREATED_AT,
+        self::UPDATED_AT,
     ];
 
     protected $public = [
@@ -421,6 +424,7 @@ class Entity extends Base\PublicEntity
         self::DISPUTED             => false,
         self::RECURRING_TYPE       => null,
         self::AUTH_TYPE            => null,
+        self::FLOW                 => null,
         self::ACKNOWLEDGED_AT      => null,
     ];
 
@@ -963,6 +967,11 @@ class Entity extends Base\PublicEntity
     public function setAuthType($authType)
     {
         $this->setAttribute(self::AUTH_TYPE, $authType);
+    }
+
+    public function setFlow(string $flow)
+    {
+        $this->setAttribute(self::FLOW, $flow);
     }
 
     public function setMetadataKey($key, $value)
@@ -1603,6 +1612,11 @@ class Entity extends Base\PublicEntity
     public function getAuthType()
     {
         return $this->getAttribute(self::AUTH_TYPE);
+    }
+
+    public function getFlow()
+    {
+        return $this->getAttribute(self::FLOW);
     }
 
     public function getStatus()
