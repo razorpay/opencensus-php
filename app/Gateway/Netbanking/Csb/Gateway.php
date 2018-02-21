@@ -51,7 +51,7 @@ class Gateway extends Base\Gateway
      */
     private $gatewayAttributes = [];
 
-    public function authorize(array $input)
+    public function authorize(array $input): array
     {
         parent::authorize($input);
 
@@ -70,7 +70,7 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    public function callback(array $input)
+    public function callback(array $input): array
     {
         parent::callback($input);
 
@@ -130,7 +130,7 @@ class Gateway extends Base\Gateway
         }
         catch (\ErrorException $e)
         {
-            // We set apiSuccess and gatewaySuccess to false
+            // We set apiSuccess to true/false and gatewaySuccess to false
             $this->checkApiSuccess($verify);
 
             $verify->gatewaySuccess = false;
@@ -167,7 +167,6 @@ class Gateway extends Base\Gateway
      */
     public final function getHashOfString($str): string
     {
-        // TODO: Verify that this is the right way to generate the checksum
         return hash(HashAlgo::CRC32, $str);
     }
 
@@ -216,7 +215,7 @@ class Gateway extends Base\Gateway
     protected final function updateGatewayPaymentEntity(
         Entity $gatewayPayment,
         array $attributes,
-        bool $mapped = true)
+        bool $mapped = true): Entity
     {
         $attributes = $this->getMappedAttributes($attributes);
 
@@ -378,8 +377,8 @@ class Gateway extends Base\Gateway
     private function getAuthorizeRequest(array $input): array
     {
         $content = [
-            RequestFields::CHNPGSYN     => Constant::CHNPGSYN, // TODO: These are terminal specific
-            RequestFields::CHNPGCODE    => Constant::CHNPGCODE, // TODO: These are terminal specific
+            RequestFields::CHNPGSYN     => Constant::CHNPGSYN,
+            RequestFields::CHNPGCODE    => Constant::CHNPGCODE,
             RequestFields::PAYEE_ID     => $this->getMerchantId(),
             RequestFields::BANK_REF_NUM => $input['payment']['id'],
             RequestFields::AMOUNT       => $input['payment']['amount'] / 100,
@@ -429,7 +428,7 @@ class Gateway extends Base\Gateway
         return implode('|', $content);
     }
 
-    public final function computeChecksum(array $content)
+    public final function computeChecksum(array $content): string
     {
         // Add the secret to the end of the content array to be hashed
         array_push($content, $this->getSecret());
@@ -489,7 +488,7 @@ class Gateway extends Base\Gateway
      * @override
      * @return mixed
      */
-    protected function getLiveSecret()
+    protected function getLiveSecret(): string
     {
         return $this->config['live_hash_secret'];
     }
