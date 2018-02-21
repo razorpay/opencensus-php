@@ -20,6 +20,8 @@ class MailTags
     const AXIS_SETTLEMENT_FILES            = 'axis_settlement_files';
     const AXIS_BENEFICIARY_MAIL            = 'axis_beneficiary_mail';
 
+    const HDFC_SETTLEMENT_FILES            = 'hdfc_settlement_files';
+
     const SETTLEMENT_FAILURE_EMAIL         = 'settlement_failure_email';
 
     const CORPORATION_NETBANKING_REFUNDS_MAIL   = 'corporation_netbanking_refunds_mail';
