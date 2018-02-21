@@ -194,6 +194,7 @@ export default ({ entity, mode, updateEntity }) => {
                 entity={entity}
                 handleSubmit={createDispute}
                 isEditMode={false}
+                mode={mode}
               />
             )
           }

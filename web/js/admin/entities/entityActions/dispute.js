@@ -44,7 +44,8 @@ export default ({ entity, mode, updateEntity }) => {
       <DisputeForm
         entity={entity}
         handleSubmit={editDispute}
-        isEditMode={mode}
+        isEditMode={true}
+        mode={mode}
       />
     );
   }
