@@ -722,7 +722,9 @@ class Core extends Base\Core
      * already sent.
      *
      * @param  Batch\Entity $batch
-     * @param  array        $input
+     * @param  array $input
+     *
+     * @return array
      */
     public function notifyInvoicesOfBatch(Batch\Entity $batch, array $input): array
     {
@@ -790,6 +792,36 @@ class Core extends Base\Core
         $invoice->setAmount($amount);
 
         $invoice->getValidator()->validateMaxAllowedAmount($grossAmount);
+    }
+
+    public function fetchStatsOfBatch(Batch\Entity $batch): array
+    {
+        $response = [Entity::ENTITIES_PROCESSED => $batch->getTotalCount()];
+
+        $invoices = $this->repo->invoice->getInvoiceForBatch($batch)->toArrayPublic();
+
+        $nonDraftInvoices = array_filter($invoices['items'], function($invoice) {
+
+            return ($invoice['status'] !== 'draft');
+        });
+
+        $paidInvoices = array_filter($nonDraftInvoices, function($invoice) {
+
+            return ($invoice['status'] === 'paid');
+        });
+
+        $expiredInvoices = array_filter($nonDraftInvoices, function($invoice) {
+
+            return ($invoice['status'] === 'expired');
+        });
+
+        $response += [
+                    Entity::PAYMENT_LINKS_SENT      => count($nonDraftInvoices),
+                    Entity::PAYMENT_LINKS_PAID      => count($paidInvoices),
+                    Entity::PAYMENT_LINKS_EXPIRED   => count($expiredInvoices),
+        ];
+
+        return $response;
     }
 
     // -------------------- Protected methods --------------------

@@ -380,16 +380,11 @@ class Repository extends Base\Repository
                 })->toArray();
     }
 
-    public function getInvoiceStatsForBatch(Batch\Entity $batch): array
+    public function getInvoiceForBatch(Batch\Entity $batch): Base\PublicCollection
     {
-        $query = $this->newQuery()
-                      ->where(Entity::BATCH_ID, $batch->getId());
-
-        return [
-            Entity::PAYMENT_LINKS_SENT      => $query->count(),
-            Entity::PAYMENT_LINKS_PAID      => $query->where(Entity::STATUS, Status::PAID)->count(),
-            Entity::PAYMENT_LINKS_EXPIRED   => $query->where(Entity::STATUS, Status::EXPIRED)->count(),
-        ];
+        return $this->newQuery()
+                    ->where(Entity::BATCH_ID, $batch->getId())
+                    ->get();
     }
 
     protected function addQueryParamPaymentId(BuilderEx $query, array $params)
