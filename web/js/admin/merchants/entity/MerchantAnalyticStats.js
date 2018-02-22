@@ -225,7 +225,6 @@ export default class MerchantAnalyticStats extends Component {
       },
     };
 
-    // TODO: TEST if live mode needs to be sent as earlier we never sent
     adminPost({
       url: `live_${this.merchantId}/merchant/analytics`,
       data: requestData,
