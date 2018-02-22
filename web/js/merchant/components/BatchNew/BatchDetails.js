@@ -34,11 +34,9 @@ export default function BatchDetails(props) {
       ) : (
         <div class="panel panel-default SliderPanel">
           <div class="panel-heading">
-            <i class="i i-file text-primary icon--formal" />{' '}
-            <strong>{batch.name}</strong>
+            <i class="i i-plan text-primary" /> <strong>{batch.name}</strong>
           </div>
           <div class="SliderPanel__Body">
-            {/* TODO: remove below link */}
             <Banner
               cta="Download Report File"
               ctaOnClick={onDownload.bind(this, batch.id)}
