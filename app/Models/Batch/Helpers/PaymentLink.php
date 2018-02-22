@@ -22,8 +22,7 @@ class PaymentLink
      *
      */
     public static function getEntityInput(array & $entry,
-                                          array & $params,
-                                          bool $isCreatedByFileUpload = true): array
+                                          array & $params): array
     {
         // Set partial_payment attribute to false if field comes as null
         // from excel file.
@@ -44,7 +43,7 @@ class PaymentLink
         // Get draft, sms_notify, email_notify from $params or use default as
         // 1, 0 and 0 respectively.
 
-        $draft       = $params[Invoice\Entity::DRAFT] ?? '0';
+        $draft       = $params[Invoice\Entity::DRAFT] ?? '1';
         $smsNotify   = $params[Invoice\Entity::SMS_NOTIFY] ?? '0';
         $emailNotify = $params[Invoice\Entity::EMAIL_NOTIFY] ?? '0';
 

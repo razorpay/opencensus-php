@@ -274,14 +274,17 @@ class Validator extends Base\Validator
 
         foreach ($entries as $idx => $entry)
         {
-            $input = Helpers\PaymentLink::getEntityInput($entry,
-                                                         $params,
-                                                         $this->entity->isCreatedByFileUpload());
+            $input = Helpers\PaymentLink::getEntityInput($entry, $params);
 
             // Need to create dummy entity and associate merchant
             // for the validation around max allowed payment to happen.
 
-            $rule = Invoice\Validator::CREATE_ISSUED;
+            $rule = Invoice\Validator::CREATE_DRAFT;
+
+            if ($input[Invoice\Entity::DRAFT] === '0')
+            {
+                $rule = Invoice\Validator::CREATE_ISSUED;
+            }
 
             $invoice = new Invoice\Entity;
 
