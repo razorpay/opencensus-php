@@ -25,6 +25,8 @@ class Mailable extends BaseMailable
 
     public $taskId;
 
+    protected $invalidTlds = [];
+
     public function __construct()
     {
         $queueMock = Config::get('queue.mock');
@@ -62,7 +64,7 @@ class Mailable extends BaseMailable
 
         try
         {
-            $this->validateEmailTld($this->to);
+            $this->validateEmailTld();
 
             parent::send($mailer);
         }
@@ -72,10 +74,11 @@ class Mailable extends BaseMailable
                                    Trace::ERROR,
                                    TraceCode::MAILER_JOB_ERROR,
                                    [
-                                        'from'    => $this->from,
-                                        'to'      => $this->to,
-                                        'subject' => $this->subject,
-                                        'mailable' => get_class($this)
+                                        'from'          => $this->from,
+                                        'to'            => $this->to,
+                                        'subject'       => $this->subject,
+                                        'invalid_TLDs'  => $this->invalidTlds,
+                                        'mailable'      => get_class($this)
                                    ]);
 
             // After logging the exception caught, we rethrow it so that the
@@ -107,21 +110,38 @@ class Mailable extends BaseMailable
     }
 
     /**
+     * Checks if all the emails to which we're sending have valid TLDs
+     *
      * @throws Exception\BadRequestValidationFailureException
      */
     protected function validateEmailTld()
     {
+        $validTldsCount = 0;
+
         // For each of the receipients, do a TLD check
-        foreach (['to', 'cc', 'bcc'] as $type) {
-            foreach ($this->{$type} as $email) {
+        foreach (['to', 'cc', 'bcc'] as $type)
+        {
+            foreach ($this->{$type} as $email)
+            {
                 $tld = last(explode('.', $email));
 
                 if (TLD::isValid($tld) === false)
                 {
-                    throw new Exception\BadRequestValidationFailureException(
-                        'The email must be a valid email address.', 'email');
+                    $this->invalidTlds[] = $email;
+                }
+                else
+                {
+                    $validTldsCount++;
                 }
             }
+        }
+
+        // If all of the emails in the to addresses are having invalid TLDs,
+        // we should not push this to mailgun.
+        if ($validTldsCount === 0)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The email must be a valid email address.', 'email');
         }
 
     }
