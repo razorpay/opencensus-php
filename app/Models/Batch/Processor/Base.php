@@ -993,7 +993,7 @@ class Base extends BaseModel\Core
         //
         $receipts = array_pluck($entries, Batch\Header::INVOICE_NUMBER);
 
-        $invoices = $this->repo->invoice->findByIdAndReceipts($this->batch->getId(), $receipts);
+        $invoices = $this->repo->invoice->findByBatchIdAndReceipts($this->batch->getId(), $receipts);
 
         //
         // Makes 'receipt' the key of collection for easy access and check later
