@@ -1259,9 +1259,9 @@ final class Route
         'adj_add_bulk',
         'adj_add_reverse',
         'adjustments_split_for_dispute',
-        'admin_fetch_entity_by_id',
         'admin_fetch_entity_multiple',
         'admin_fetch_terminal_by_id',
+        'admin_fetch_entity_by_id',
         'bank_transfer_edit_payer_account',
         'bank_transfer_insert',
         'bank_transfer_strip_payer_accounts',
@@ -2136,17 +2136,6 @@ final class Route
         'virtual_account_fetch_multiple'       => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_fetch_payments'       => [Feature::VIRTUAL_ACCOUNTS],
         'reports_refund_irctc'                 => [Feature::IRCTC_REPORT],
-
-        // Reporting Service
-        'reporting_config_get'                 => [Feature::REPORT_V2],
-        'reporting_config_list'                => [Feature::REPORT_V2],
-        'reporting_config_create'              => [Feature::REPORT_V2],
-        'reporting_config_edit'                => [Feature::REPORT_V2],
-        'reporting_config_delete'              => [Feature::REPORT_V2],
-        'reporting_log_get'                    => [Feature::REPORT_V2],
-        'reporting_log_list'                   => [Feature::REPORT_V2],
-        'reporting_log_create'                 => [Feature::REPORT_V2],
-        'ufh_get_file_signed_url'              => [Feature::REPORT_V2],
 
         // Account APIs
         'beta_account_create'                  => [Feature::MARKETPLACE],
