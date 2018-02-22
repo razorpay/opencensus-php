@@ -67,7 +67,7 @@ class Traffic extends Component {
     startDate = startDate || this.props.startDate;
     endDate = endDate || this.props.endDate;
 
-    const { sectionTitle } = this.props;
+    const { sectionTitle, analyticsFetch } = this.props;
 
     const { selectedGrouping, groupsState } = this.state,
       groupState = groupsState[selectedGrouping.value],
@@ -93,7 +93,7 @@ class Traffic extends Component {
 
     const requestId = ++this.requestId;
 
-    fetch(query, this.props.mode)
+    (analyticsFetch || fetch)(query, this.props.mode)
       .then(resp => {
         if (requestId !== this.requestId) {
           return null;
