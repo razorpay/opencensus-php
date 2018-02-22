@@ -380,6 +380,13 @@ class Repository extends Base\Repository
                 })->toArray();
     }
 
+    public function getInvoiceForBatch(Batch\Entity $batch): Base\PublicCollection
+    {
+        return $this->newQuery()
+                    ->where(Entity::BATCH_ID, $batch->getId())
+                    ->get();
+    }
+
     protected function addQueryParamPaymentId(BuilderEx $query, array $params)
     {
         $this->joinQueryPayment($query);

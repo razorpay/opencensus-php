@@ -149,6 +149,15 @@ class Entity extends Base\PublicEntity
     const PAYMENTS                 = 'payments';
     const USER                     = 'user';
 
+    // -------------------------- Stats Keys -------------------------
+
+    const STATS                    = 'stats';
+    const ENTITIES_PROCESSED       = 'entities_processed';
+    const PAYMENT_LINKS_SENT       = 'payment_links_sent';
+    const PAYMENT_LINKS_PAID       = 'payment_links_paid';
+    const PAYMENT_LINKS_EXPIRED    = 'payment_links_expired';
+
+
     // ------------------------ Other constants ----------------------
 
     const ALLOWED_LINE_ITEM_TYPES_INVOICE = [

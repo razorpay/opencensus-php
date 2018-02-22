@@ -6,6 +6,7 @@ use Mail;
 use Queue;
 use Carbon\Carbon;
 
+use RZP\Models\Batch;
 use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Jobs\Invoice\BatchNotify;
@@ -18,7 +19,6 @@ use RZP\Mail\Invoice\Issued as InvoiceIssuedMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Mail\Invoice\Payment\Captured as InvoiceCapturedMail;
 use RZP\Mail\Invoice\Payment\Authorized as InvoiceAuthorizedMail;
-
 
 /**
  * @group dns-sensitive
@@ -2290,6 +2290,31 @@ class InvoiceTest extends TestCase
 
                 return true;
             });
+    }
+
+    public function testInvoiceStatsByBatch()
+    {
+        $this->testCreateDraftInvoiceWithSomeData();
+        $this->testCreateDraftInvoiceWithSomeData();
+        $this->testCreateDraftInvoiceWithSomeData();
+
+        $invoices = $this->getEntities('invoice');
+
+        $ids = array_column($invoices['items'], 'id');
+
+        $this->fixtures->create(
+            'batch',
+            [
+                'id'          => '00000000000001',
+                'type'        => 'payment_link',
+                'total_count' => 3,
+            ]);
+
+        $this->fixtures->invoice->edit($ids[0], ['batch_id' => '00000000000001', 'status' => 'issued']);
+        $this->fixtures->invoice->edit($ids[1], ['batch_id' => '00000000000001', 'status' => 'paid']);
+        $this->fixtures->invoice->edit($ids[2], ['batch_id' => '00000000000001', 'status' => 'expired']);
+
+        $this->startTest();
     }
 
     // -------------------- Protected methods --------------------
