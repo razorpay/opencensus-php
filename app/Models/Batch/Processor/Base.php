@@ -264,7 +264,7 @@ class Base extends BaseModel\Core
     }
 
     /**
-     * Checks if the batch can be processed, if yes sets the processing flag
+     * Checks if the batch can be processed. If yes, sets the processing flag
      * and calls the main process method. In other case throws an exception.
      * We perform the entire operation inside a mutex lock, so that concurrent
      * process requests are handled successfully. We also validate after doing a

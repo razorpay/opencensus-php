@@ -13,6 +13,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\LineItem;
+use RZP\Models\Settings;
 use RZP\Models\FileStore;
 use RZP\Jobs\DispatchRouter;
 use RZP\Models\Plan\Subscription;
@@ -21,6 +22,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Jobs\Invoice\BatchIssue as InvoiceBatchIssueJob;
+use RZP\Jobs\Invoice\BatchNotify as InvoiceBatchNotifyJob;
 
 class Core extends Base\Core
 {
@@ -713,6 +715,30 @@ class Core extends Base\Core
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
 
         return ['success' => true];
+    }
+
+    /**
+     * Sends notifications for all the invoices of a given batch, if not
+     * already sent.
+     *
+     * @param  Batch\Entity $batch
+     * @param  array        $input
+     */
+    public function notifyInvoicesOfBatch(Batch\Entity $batch, array $input)
+    {
+        //
+        // Settings module captures whether notification for this batch has
+        // been already sent or not.
+        //
+        $settingsAccessor = Settings\Accessor::for($batch, Settings\Module::BATCH);
+
+        (new Validator)->validateNotifyInvoicesOfBatch($settingsAccessor, $batch, $input);
+
+        $settingsAccessor->upsert($input)->save();
+
+        $job = new InvoiceBatchNotifyJob($this->mode, $batch->getId(), $input);
+
+        (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
     }
 
     /**
