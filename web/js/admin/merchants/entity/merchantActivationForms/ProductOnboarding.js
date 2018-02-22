@@ -10,9 +10,10 @@ export default class ProductOnboarding extends Component {
   state = { onboarding: null };
 
   componentWillMount() {
-    fetch(
-      `/admin/api/live_${this.props.merchantId}/feature/onboarding/responses`
-    )
+    fetch({
+      url: '/admin/api/live/feature/onboarding/responses',
+      headers: {'X-Razorpay-Account': this.props.merchantId}
+    })
       .then(data => {
         const onboarding = {};
 
