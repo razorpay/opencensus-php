@@ -16,7 +16,7 @@ export default class SubmitForm extends Component {
         <Fieldset disabled={locked}>
           <div class="form-group">
             <div class="col-md-offset-3 col-md-9">
-              <div class="checkbox rzpCheckbox submit-form">
+              <div class="checkbox rzpCheckbox next submit-form">
                 <Field
                   name="agree_terms"
                   id="agree_terms"
