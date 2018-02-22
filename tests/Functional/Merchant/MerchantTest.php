@@ -1643,7 +1643,7 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
-    public function testQueryCacheHitForKey()
+    public function testQueryCacheHitForKeyAndMerchant()
     {
         config(['app.query_cache.mock' => false]);
 
@@ -1658,11 +1658,17 @@ class MerchantTest extends TestCase
         //
         Event::assertDispatched(CacheMissed::class, function ($e)
         {
-            $expectedTags = [
-                'key_TheTestAuthKey',
-            ];
-
-            $this->assertArraySelectiveEquals($expectedTags, $e->tags);
+            foreach ($e->tags as $tag)
+            {
+                if (starts_with($tag, 'key') === true)
+                {
+                    $this->assertEquals('key_TheTestAuthKey', $tag);
+                }
+                else if (starts_with($tag, 'merchant') === true)
+                {
+                    $this->assertEquals('merchant_10000000000000', $tag);
+                }
+            }
 
             return true;
         });
@@ -1672,13 +1678,21 @@ class MerchantTest extends TestCase
         //
         Event::assertDispatched(KeyWritten::class, function ($e)
         {
-            $expectedTags = [
-                'key_TheTestAuthKey',
-            ];
+            foreach ($e->tags as $tag)
+            {
+                if (starts_with($tag, 'key') === true)
+                {
+                    $this->assertEquals('key_TheTestAuthKey', $tag);
 
-            $this->assertArraySelectiveEquals($expectedTags, $e->tags);
+                    $this->assertEquals('TheTestAuthKey', $e->value[0]->id);
+                }
+                else if (starts_with($tag, 'merchant') === true)
+                {
+                    $this->assertEquals('merchant_10000000000000', $tag);
 
-            $this->assertEquals('TheTestAuthKey', $e->value[0]->id);
+                    $this->assertEquals('10000000000000', $e->value[0]->id);
+                }
+            }
 
             return true;
         });
@@ -1695,19 +1709,27 @@ class MerchantTest extends TestCase
         //
         Event::assertDispatched(CacheHit::class, function ($e)
         {
-            $expectedTags = [
-                'key_TheTestAuthKey',
-            ];
+            foreach ($e->tags as $tag)
+            {
+                if (starts_with($tag, 'key') === true)
+                {
+                    $this->assertEquals('key_TheTestAuthKey', $tag);
 
-            $this->assertArraySelectiveEquals($expectedTags, $e->tags);
+                    $this->assertEquals('TheTestAuthKey', $e->value[0]->id);
+                }
+                else if (starts_with($tag, 'merchant') === true)
+                {
+                    $this->assertEquals('merchant_10000000000000', $tag);
 
-            $this->assertEquals('TheTestAuthKey', $e->value[0]->id);
+                    $this->assertEquals('10000000000000', $e->value[0]->id);
+                }
+            }
 
             return true;
         });
     }
 
-    public function testQueryCacheFlushForKey()
+    public function testQueryCacheFlushForKeyAndMerchant()
     {
         config(['app.query_cache.mock' => false]);
 
@@ -1736,29 +1758,41 @@ class MerchantTest extends TestCase
         //
         Event::assertDispatched(CacheMissed::class, function ($e) use ($newKey)
         {
-            $expectedTags = [
-                'key_' . $newKey,
-            ];
-
-            $this->assertArraySelectiveEquals($expectedTags, $e->tags);
+            foreach ($e->tags as $tag)
+            {
+                if (starts_with($tag, 'key') === true)
+                {
+                    $this->assertEquals('key_' . $newKey, $tag);
+                }
+                else if (starts_with($tag, 'merchant') === true)
+                {
+                    $this->assertEquals('merchant_10000000000000', $tag);
+                }
+            }
 
             return true;
         });
 
         Event::assertDispatched(KeyWritten::class, function ($e) use ($newKey)
         {
-            $expectedTags = [
-                'key_' . $newKey,
-            ];
+            foreach ($e->tags as $tag)
+            {
+                if (starts_with($tag, 'key') === true)
+                {
+                    $this->assertEquals('key_' . $newKey, $tag);
 
-            $this->assertArraySelectiveEquals($expectedTags, $e->tags);
+                    $this->assertEquals($newKey, $e->value[0]->id);
+                }
+                else if (starts_with($tag, 'merchant') === true)
+                {
+                    $this->assertEquals('merchant_10000000000000', $tag);
 
-            $this->assertEquals($newKey, $e->value[0]->id);
+                    $this->assertEquals('10000000000000', $e->value[0]->id);
+                }
+            }
 
             return true;
         });
-
-        Event::assertNotDispatched(CacheHit::class);
     }
 
     public function testBeneficiaryRegisterKotak()
