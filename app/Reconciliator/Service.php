@@ -31,6 +31,7 @@ class Service extends Base\Service
      */
     const BATCH_SUMMARY_SKIP_GATEWAYS = [
         RequestProcessor\Base::VIRTUAL_ACC_KOTAK,
+        RequestProcessor\Base::VIRTUAL_ACC_YESBANK,
     ];
 
     public function initiateReconciliationProcess(array $input)
