@@ -19,7 +19,7 @@ class Preferences
     const MID_WEALTHY          = '8lv4idBRY4C9c0';
     const MID_PIGGY            = '9IjdEkLQb0j2ro';
     const MID_ENDURANCE        = ['9YAQd3b47mdIQY', '9ZO8jNaR0OORNH'];
-    const MID_SHELL            = '10000000000000';
+    const MID_SHELL            = '100DemoAccount';
 
     /**
      * This needs to go in DB, for hotfix we are keeping it here
