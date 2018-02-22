@@ -9,15 +9,24 @@ export default props => {
   const { file, progress = 0 } = props;
   return (
     <div class="staged-file" key={`${file.name}`}>
-      <div class="file-icon pull-left" />
-      <div class="file-details pull-right">
+      <div class="file-icon">
+        <div>
+          <span class={`icon i-file-type-${file.name.split('.')[1]}`} />
+        </div>
+      </div>
+      <div class="file-details">
         <div>
           <span class="text-muted">
             {file.name} ({readableFileSize(file.size)})
           </span>
         </div>
+        {props.children}
       </div>
-      {props.children}
+      <div class="close-icon">
+        <div>
+          <span class="icon i-close" />
+        </div>
+      </div>
       <div class="upload-status-bar">
         <div class="status" style={{ width: `${progress}%` }} />
       </div>
