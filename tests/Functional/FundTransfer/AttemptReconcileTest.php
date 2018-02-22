@@ -45,6 +45,26 @@ class AttemptReconcileTest extends TestCase
         $this->assertReconFileProcessSuccessForChannel($setlFile, $channel, Attempt\Type::SETTLEMENT);
     }
 
+    protected function verifySettlementReconFileProcessForHdfc()
+    {
+        $channel = Channel::HDFC;
+
+        $setlFile = $this->createDataAndAssertInitiateTransferSuccess(
+            $channel, 1, Attempt\Type::SETTLEMENT);
+
+        $this->assertReconFileProcessSuccessForChannel($setlFile, $channel, Attempt\Type::SETTLEMENT);
+    }
+
+    protected function verifySettlementReconFileProcessForAxis()
+    {
+        $channel = Channel::AXIS;
+
+        $setlFile = $this->createDataAndAssertInitiateTransferSuccess(
+            $channel, 1, Attempt\Type::SETTLEMENT);
+
+        $this->assertReconFileProcessSuccessForChannel($setlFile, $channel, Attempt\Type::SETTLEMENT);
+    }
+
     protected function verifySettlementReconFileProcessFailureKotak()
     {
         $channel = Channel::KOTAK;
@@ -58,6 +78,26 @@ class AttemptReconcileTest extends TestCase
     protected function verifySettlementReconFileProcessFailureIcici()
     {
         $channel = Channel::ICICI;
+
+        $setlFile = $this->createDataAndAssertInitiateTransferSuccess(
+            $channel, 1, Attempt\Type::SETTLEMENT);
+
+        $this->assertReconFileProcessFailureForChannel($setlFile, $channel);
+    }
+
+    protected function verifySettlementReconFileProcessFailureHdfc()
+    {
+        $channel = Channel::HDFC;
+
+        $setlFile = $this->createDataAndAssertInitiateTransferSuccess(
+            $channel, 1, Attempt\Type::SETTLEMENT);
+
+        $this->assertReconFileProcessFailureForChannel($setlFile, $channel);
+    }
+
+    protected function verifySettlementReconFileProcessFailureAxis()
+    {
+        $channel = Channel::AXIS;
 
         $setlFile = $this->createDataAndAssertInitiateTransferSuccess(
             $channel, 1, Attempt\Type::SETTLEMENT);
@@ -112,6 +152,24 @@ class AttemptReconcileTest extends TestCase
         $this->verifySettlementReconFileProcessForIcici();
 
         $this->reconcileEntitiesForChannel(Channel::ICICI);
+
+        $this->assertReconcileEntitiesSuccessForSource(Attempt\Type::SETTLEMENT);
+    }
+
+    public function testSettlementReconcileEntitiesSuccessForHdfc()
+    {
+        $this->verifySettlementReconFileProcessForHdfc();
+
+        $this->reconcileEntitiesForChannel(Channel::HDFC);
+
+        $this->assertReconcileEntitiesSuccessForSource(Attempt\Type::SETTLEMENT);
+    }
+
+    public function testSettlementReconcileEntitiesSuccessForAxis()
+    {
+        $this->verifySettlementReconFileProcessForAxis();
+
+        $this->reconcileEntitiesForChannel(Channel::AXIS);
 
         $this->assertReconcileEntitiesSuccessForSource(Attempt\Type::SETTLEMENT);
     }
@@ -199,6 +257,7 @@ class AttemptReconcileTest extends TestCase
     protected function assertReconcileEntitiesSuccessForSource(string $sourceType)
     {
         $attempts = $this->getEntities('fund_transfer_attempt', [], true);
+
         foreach ($attempts['items'] as $attempt)
         {
             $this->assertNull($attempt['failure_reason']);

@@ -1638,7 +1638,6 @@ class MerchantTest extends TestCase
         Event::assertDispatched(CacheMissed::class, function ($e)
         {
             $expectedTags = [
-                'v1',
                 'key_TheTestAuthKey',
             ];
 
@@ -1653,7 +1652,6 @@ class MerchantTest extends TestCase
         Event::assertDispatched(KeyWritten::class, function ($e)
         {
             $expectedTags = [
-                'v1',
                 'key_TheTestAuthKey',
             ];
 
@@ -1677,7 +1675,6 @@ class MerchantTest extends TestCase
         Event::assertDispatched(CacheHit::class, function ($e)
         {
             $expectedTags = [
-                'v1',
                 'key_TheTestAuthKey',
             ];
 
@@ -1719,7 +1716,6 @@ class MerchantTest extends TestCase
         Event::assertDispatched(CacheMissed::class, function ($e) use ($newKey)
         {
             $expectedTags = [
-                'v1',
                 'key_' . $newKey,
             ];
 
@@ -1731,7 +1727,6 @@ class MerchantTest extends TestCase
         Event::assertDispatched(KeyWritten::class, function ($e) use ($newKey)
         {
             $expectedTags = [
-                'v1',
                 'key_' . $newKey,
             ];
 
