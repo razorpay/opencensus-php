@@ -83,7 +83,7 @@ abstract class FileProcessor extends Base\Core
      *
      * @throws LogicException
      */
-    protected function getFileExtension(string $filePath): string
+    protected function getFileExtensionForParsing(string $filePath): string
     {
         $extension = pathinfo($filePath, PATHINFO_EXTENSION);
 
@@ -102,7 +102,7 @@ abstract class FileProcessor extends Base\Core
 
     protected function parseFile(string $filePath)
     {
-        $ext = $this->getFileExtension($filePath);
+        $ext = $this->getFileExtensionForParsing($filePath);
 
         switch ($ext)
         {

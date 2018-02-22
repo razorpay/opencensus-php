@@ -8,6 +8,8 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Mail\Mailer as MailerContract;
 use Illuminate\Contracts\Queue\Factory as Queue;
 use Illuminate\Mail\Mailable as BaseMailable;
+use GuzzleHttp\Exception\ClientException as GuzzleClientException;
+
 use Razorpay\Trace\Logger as Trace;
 use RZP\Trace\TraceCode;
 
@@ -71,9 +73,14 @@ class Mailable extends BaseMailable
                                         'mailable' => get_class($this)
                                    ]);
 
-            // After logging the exception caught, we rethrw it so that the
-            // retry mechanism for mails is triggerred
-            throw $e;
+            // After logging the exception caught, we rethrow it so that the
+            // retry mechanism for mails is triggerred unless the exception
+            // was a guzzle client exception (i.e 4XX errors), in which case,
+            // retrying the request would just cause the request to fail.
+            if (($e instanceof GuzzleClientException) !== true)
+            {
+                throw $e;
+            }
         }
     }
 
