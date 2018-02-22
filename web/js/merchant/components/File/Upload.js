@@ -5,6 +5,9 @@ import Staged from './Staged';
 export default class FileUpload extends Component {
   static defaultProps = {
     multi: false,
+    acceptedTypes: [],
+    name: 'file-upload',
+    onBiggerFileSize: () => {},
   };
 
   state = {
@@ -12,10 +15,13 @@ export default class FileUpload extends Component {
   };
 
   updateFile = file => {
-    if (this.props.onDrop) {
-      this.props.onDrop(file);
-    } else {
-      this.setState({ files: [...this.state.files, file] });
+    // check if file type is allowed
+    if (this.isFileAllowed(file)) {
+      if (this.props.onDrop) {
+        this.props.onDrop(file);
+      } else {
+        this.setState({ files: [...this.state.files, file] });
+      }
     }
   };
 
@@ -23,10 +29,33 @@ export default class FileUpload extends Component {
     return this.state.files;
   };
 
-  isFileAllowed = file => {
-    const type = file.type.substr(file.type.indexOf('/') + 1);
+  isFileOfRightSize = file => {
+    return file.size <= this.props.maxSize;
+  };
+
+  isFileTypeAllowed = file => {
+    const type = file.type;
     const acceptedTypes = this.props.accept;
     return acceptedTypes.length === 0 || acceptedTypes.indexOf(type) > -1;
+  };
+
+  handleBiggerFile = fileSize => {
+    this.props.onBiggerFileSize(fileSize);
+  };
+
+  isFileAllowed = file => {
+    if (this.isFileOfRightSize(file)) {
+      return this.isFileTypeAllowed(file);
+    } else {
+      this.handleBiggerFile(file.size);
+      return false;
+    }
+  };
+
+  handleCloseClick = fileIndex => () => {
+    this.setState({
+      files: this.state.files.filter((_, index) => index !== fileIndex),
+    });
   };
 
   handleDrop = event => {
@@ -45,12 +74,7 @@ export default class FileUpload extends Component {
         file = files[index];
       }
 
-      // check if file type is allowed
-      if (this.isFileAllowed(file)) {
-        this.updateFile(file);
-      } else {
-        continue;
-      }
+      this.updateFile(file);
     }
   };
 
@@ -58,8 +82,9 @@ export default class FileUpload extends Component {
     event.preventDefault();
   };
 
-  handleClick = () => {
-    // TODO: handle click on upload component
+  handleFileInputChange = event => {
+    event.preventDefault();
+    this.updateFile(event.currentTarget.files[0]);
   };
 
   render() {
@@ -79,18 +104,28 @@ export default class FileUpload extends Component {
                 {children || (
                   <React.Fragment>
                     <span>Drop files here or </span>
-                    <span class="text-primary">Click to Upload</span>
+                    <label for={`fileInput-${this.props.name}`}>
+                      <span class="text-primary upload-label">
+                        Click to Upload
+                      </span>
+                    </label>
+                    <input
+                      type="file"
+                      id={`fileInput-${this.props.name}`}
+                      onChange={this.handleFileInputChange}
+                      accept={this.props.accept}
+                    />
                   </React.Fragment>
                 )}
               </div>
             </div>
           )}
-        {this.state.files.map(file => (
+        {this.state.files.map((file, index) => (
           <div
             class="staged-files"
             key={`${file.name}.${Math.random()}.${Math.random()}`}
           >
-            <Staged file={file} />
+            <Staged file={file} onCloseClick={this.handleCloseClick(index)} />
           </div>
         ))}
       </div>
