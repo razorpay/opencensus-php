@@ -64,11 +64,11 @@ class PaymentMethods extends Component {
       error: '',
     });
 
-    const {sectionTitle} = this.props;
+    const {sectionTitle, analyticsFetch} = this.props;
 
     const requestId = ++this.requestId;
 
-    fetch(
+    (analyticsFetch || fetch)(
       getQuery({
         startTime: startDate.unix(),
         endTime: endDate.unix(),

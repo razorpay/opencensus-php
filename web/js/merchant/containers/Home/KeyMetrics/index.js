@@ -195,7 +195,14 @@ class KeyMetricsContainer extends Component {
     const { tabsState, selectedTab } = this.state,
       tabState = tabsState[selectedTab],
       { selectedGrouping, selectedFilters } = tabState,
-      { startDate, endDate, mode, sectionTitle, isAdmin } = this.props;
+      {
+        startDate,
+        endDate,
+        mode,
+        sectionTitle,
+        isAdmin,
+        analyticsFetch
+      } = this.props;
 
     let filterBy = null;
 
@@ -227,7 +234,7 @@ class KeyMetricsContainer extends Component {
 
     const requestId = ++this.requestId;
 
-    return fetch(query, mode)
+    return (analyticsFetch || fetch)(query, mode)
       .then(resp => {
         if (requestId !== this.requestId) {
           return null;
@@ -411,7 +418,8 @@ class KeyMetricsContainer extends Component {
     oldestTransactionDate =
       oldestTransactionDate || this.props.oldestTransactionDate;
 
-    const { startDate, endDate, value } = oldestTransactionDate;
+    const { analyticsFetch } = this.props,
+          { startDate, endDate, value } = oldestTransactionDate;
 
     if (
       oldestTransactionDate.error ||
@@ -450,7 +458,7 @@ class KeyMetricsContainer extends Component {
       countsOnly: true,
     });
 
-    return fetch(query, this.props.mode)
+    return (analyticsFetch || fetch)(query, this.props.mode)
       .then(data => {
         if (trendRequestID !== this.trendRequestID) {
           return null;
