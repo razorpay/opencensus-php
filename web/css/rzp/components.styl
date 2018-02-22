@@ -547,19 +547,27 @@ dl.rzp-definition {
 .file {
   &.upload {
     height: 83px;
-    width: 443px;
-    border: 1px dashed;
+    width: 100%;
 
     .drop-zone {
       height: 100%;
       width: 100%;
       display: table;
+      border: 1px dashed;
 
       .content {
         display: table-cell;
         vertical-align: middle;
         margin: auto;
         text-align: center;
+
+        input[type=file] {
+          display: none;
+        }
+
+        .upload-label {
+          cursor: pointer;
+        }
       }
     }
   }
@@ -573,19 +581,40 @@ dl.rzp-definition {
   border: 1px solid #DBDBDB;
   border-bottom: none;
   position: relative;
+  background-color: #FAFAFA;
 
   .file-icon,
-  .file-details {
+  .file-details,
+  .close-icon {
     height: 100%;
     box-sizing: border-box;
+    display: table;
+    float: left;
+
+    & > div {
+      display: table-cell;
+      vertical-align: middle;
+    }
   }
+
   $fileIconWidth = 10%;
   .file-icon {
     width: $fileIconWidth;
+    text-align: center;
+
+    span.icon {
+      font-size: 28px;
+    }
+  }
+
+  .close-icon {
+    width: $fileIconWidth;
+    text-align: center;
+    cursor: pointer;
   }
 
   .file-details {
-    width: 100% - $fileIconWidth;
+    width: 100% - $fileIconWidth - $fileIconWidth;
     display: table;
     padding-left: 10px;
 
