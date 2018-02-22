@@ -428,6 +428,9 @@ class ErrorCode
     const BAD_REQUEST_BATCH_ANOTHER_OPERATION_IN_PROGRESS                           = 'BAD_REQUEST_BATCH_ANOTHER_OPERATION_IN_PROGRESS';
     const BAD_REQUEST_BATCH_UNABLE_TO_SAVE_FILE                                     = 'BAD_REQUEST_BATCH_UNABLE_TO_SAVE_FILE';
     const BAD_REQUEST_BATCH_NOTIFICATIONS_SENT_ALREADY                              = 'BAD_REQUEST_BATCH_NOTIFICATIONS_SENT_ALREADY';
+    const BAD_REQUEST_BATCH_UNABLE_TO_SAVE_OUTPUT_FILE                              = 'BAD_REQUEST_BATCH_UNABLE_TO_SAVE_OUTPUT_FILE';
+    const BAD_REQUEST_BATCH_UNABLE_TO_SAVE_ERROR_FILE                               = 'BAD_REQUEST_BATCH_UNABLE_TO_SAVE_ERROR_FILE';
+    const BAD_REQUEST_BATCH_IS_PROCESSING                                           = 'BAD_REQUEST_BATCH_IS_PROCESSING';
 
     const BAD_REQUEST_URL_NOT_FOUND                                                 = 'BAD_REQUEST_URL_NOT_FOUND';
     const BAD_REQUEST_ROUTE_DISABLED                                                = 'BAD_REQUEST_ROUTE_DISABLED';
