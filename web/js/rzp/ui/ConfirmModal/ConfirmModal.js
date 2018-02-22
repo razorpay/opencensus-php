@@ -22,6 +22,7 @@ const ConfirmModal = (props, context) => {
         closeTimeoutMS={300}
         class={`Modal Modal--small Modal--confirm`}
         contentLabel="ConfirmModal"
+        ariaHideApp={false}
       >
         <div class="modal-header">
           <h3 class="modal-title">
