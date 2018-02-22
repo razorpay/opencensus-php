@@ -266,10 +266,7 @@ class Entity extends Base\PublicEntity
             // In case of auth transaction (immediate), charge_at would be null.
             // In that case, we can use actual current time as the reference time.
             //
-            // Here we do + 1 because in case of daily schedules referenceTime has to be
-            // greter than the last run
-            //
-            $referenceTime = $this->getNextRunAt() ? $this->getNextRunAt() + 1 : Carbon::now()->getTimestamp() + 1;
+            $referenceTime = $this->getNextRunAt() ?? Carbon::now()->getTimestamp();
 
             $referenceTime = Carbon::createFromTimestamp($referenceTime, Timezone::IST);
         }

@@ -186,6 +186,44 @@ class Library
 
         $interval = $schedule->getInterval();
 
+        //
+        // Problem: Some services (settlements) have a concept of `refTime` and some services (subscriptions) don't.
+        // `refTime` is basically the minimum time that should be passed while calculating
+        // the next run from the last run. If there was no `refTime`, we could just directly
+        // do `lastRun->addDays(3)`. But since we need to pass the refTime, we do
+        // `lastRun->addDay(3)` multiple times until the `refTime` is passed completely (not equal).
+        // The services which are not using refTime, they are sending `refTime = lastRun`.
+        // Due to this, these services (which don't require `refTime`) cannot get the `nextRun`.
+        // ---
+        // Solutions:
+        // Terminology:
+        // Current implementation: `while(refTime > lastRun) {lastRun += interval}`
+        // 1. Proposed implementation: use `refTime >= lastRun`
+        //    We cannot do this because it breaks the current implementation.
+        //    For example: refTime = 29th Jan 12am, lastRun = 20th Jan 12am
+        //    Current implementation: lastRun would become 29th Jan 12am
+        //    Proposed implementation: lastRun would become 1st Feb 12am
+        // 2. Proposed implementation: use `doWhile(refTime > lastRun)`
+        //    We cannot do this because that would break the current implementation too.
+        //    For example: refTime = 20th Jan 12am, lastRun = 20th Jan 12am
+        //    Current implementation: lastRun would remain as 20th Jan 12am
+        //    Proposed implementation: lastRun would become 23rd Jan 12am
+        //    `refTime` CAN be equal to `lastRun` in the following case:
+        //    `lastRun` (time when the cron is supposed to run next): 21st Jan 12am
+        //    `captured_at`: 20th Jan 9am
+        //    `delay`: 1day
+        //    `hour`: 0 (this is the default one)
+        //    `refTime` (captured_at + delay): 21st Jan 12 am
+        //    But this isn't an issue as such, because there's only one function
+        //    (settlement related: `getNextApplicableTime`) which CAN send `refTime = lastRun`.
+        //    This settlement function (`getNextApplicableTime`) does not use this function
+        //    and does the nextRun calculation on its own. It basically just uses lastRun time itself.
+        // 3. Proposed implementation: have an option to accept `refTime = null`.
+        //    If refTime = null, we just directly do `lastRun->addDays(3)`.
+        //    If refTime is not null, we do the current implementation which is
+        //    `while(refTime > lastRun) {lastRun += interval}`
+        //
+
         // Increment by interval until we cross minimum delay time.
         while ($refTime > $lastRun)
         {

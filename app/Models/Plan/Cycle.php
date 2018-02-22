@@ -15,7 +15,6 @@ class Cycle
     const WEEKLY  = 'weekly';
     const DAILY   = 'daily';
 
-    const ONE_YEAR             = 1;
     const SEVEN_DAYS           = 7;
     const DEFAULT_MIN_INTERVAL = 1;
     const MONTHS_IN_YEAR       = Carbon::MONTHS_PER_YEAR;
@@ -35,7 +34,7 @@ class Cycle
     ];
 
     protected static $allowedMaxInterval = [
-        self::YEARLY  => self::ONE_YEAR * Subscription\Entity::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION,
+        self::YEARLY  => Subscription\Entity::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION,
         self::MONTHLY => self::MONTHS_IN_YEAR * Subscription\Entity::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION,
         self::WEEKLY  => self::WEEKS_IN_YEAR * Subscription\Entity::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION,
         self::DAILY   => self::DAYS_IN_YEAR * Subscription\Entity::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION,
@@ -152,15 +151,9 @@ class Cycle
 
         $start = $subscription->getStartAt();
 
-        // reference time + 1 because reference should be greater than last run in case of
-        // unanchored to calculate the next time
-        $reference = $start + 1;
-
         $totalCount = $subscription->getTotalCount();
 
         $start = Carbon::createFromTimestamp($start, Timezone::IST);
-
-        $reference = Carbon::createFromTimestamp($reference, Timezone::IST);
 
         //
         // We are subtracting one because we would be
@@ -170,14 +163,9 @@ class Cycle
         //
         foreach (range(1, $totalCount - 1) as $i)
         {
-            $nextRun = Library::computeFutureRun($schedule, $reference, $start, false);
+            $nextRun = Library::computeFutureRun($schedule, $start, $start, false);
 
-            // clone is required because
-            // its an object and start will become
-            // equalt to nextRun if we don't do it
-            $start = clone $reference;
-
-            $reference = clone $nextRun;
+            $start = $nextRun;
         }
 
         $end = $start->getTimestamp();
