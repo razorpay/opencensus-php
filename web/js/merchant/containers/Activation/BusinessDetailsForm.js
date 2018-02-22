@@ -18,6 +18,9 @@ import { states } from 'rzp/utils/constants';
 import { getPincodeDetails } from 'merchant/modules/activation';
 
 const selector = formValueSelector('activationBusinessDetails');
+
+const appUrlDomains = ['itunes.apple', 'play.google'];
+
 @connect(state => {
   return {
     business_type: selector(state, 'business_type'),
@@ -29,14 +32,25 @@ const selector = formValueSelector('activationBusinessDetails');
     business_operation_state: selector(state, 'business_operation_state'),
     business_operation_city: selector(state, 'business_operation_city'),
     business_operation_pin: selector(state, 'business_operation_pin'),
+    business_website: selector(state, 'business_website'),
   };
 }, null)
 export default class BusinessDetailsForm extends Component {
   state = {
     or_same: true,
+    url_type: 'web',
   };
 
   componentWillMount() {
+    const { business_website } = this.props;
+
+    if (business_website) {
+      const found = appUrlDomains.some(domain => {
+        return business_website.indexOf(domain) > -1;
+      });
+      this.setState({ url_type: 'app' });
+    }
+
     this.verifySameAddress();
   }
 
@@ -108,6 +122,10 @@ export default class BusinessDetailsForm extends Component {
       this.props.change(`business_${code}_state`, state);
       this.updateOperationalAddress();
     });
+  };
+
+  onUrlTypeChange = e => {
+    this.setState({ url_type: e.target.value });
   };
 
   render() {
@@ -226,7 +244,6 @@ export default class BusinessDetailsForm extends Component {
                   </Field>
                 </div>
               </div>
-
               <div class="form-group">
                 <label class="col-md-3 control-label label-required">
                   Business Model
@@ -252,28 +269,6 @@ export default class BusinessDetailsForm extends Component {
               </div>
 
               <div class="form-group">
-                <label class="col-md-3 control-label label-required">
-                  Website Address
-                </label>
-                <div class="col-md-9">
-                  <span class="help-block">
-                    Example: http://www.example.com/
-                  </span>
-
-                  <Field
-                    name="business_website"
-                    component={InputField}
-                    class="form-control"
-                    autoFocus={true}
-                    validate={[
-                      required(),
-                      lenientUrl('Please enter a valid URL'),
-                    ]}
-                  />
-                </div>
-              </div>
-
-              <div class="form-group">
                 <div class="col-md-offset-3 col-md-9">
                   <div class="checkbox rzpCheckbox next">
                     <Field
@@ -292,6 +287,87 @@ export default class BusinessDetailsForm extends Component {
                     <span>
                       Please note that applications for international
                       transactions take longer time to process.
+                    </span>
+                  </small>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="col-md-3 control-label label-required">
+                  Website Address
+                </label>
+                <div class="col-md-9">
+                  <div class="RadioButton next">
+                    <label>
+                      <input
+                        type="radio"
+                        name="url_type"
+                        value="web"
+                        checked={this.state.url_type === 'web'}
+                        onChange={this.onUrlTypeChange}
+                      />
+                      <div>
+                        <div class="RadioButton__button" />
+                        <div class="RadioButton__label">
+                          <div>
+                            <span>Website</span>
+                          </div>
+                        </div>
+                      </div>
+                    </label>
+                  </div>
+
+                  <div class="RadioButton next">
+                    <label>
+                      <input
+                        type="radio"
+                        name="url_type"
+                        value="app"
+                        checked={this.state.url_type === 'app'}
+                        onChange={this.onUrlTypeChange}
+                      />
+                      <div>
+                        <div class="RadioButton__button" />
+                        <div class="RadioButton__label">
+                          <div>
+                            <span>App</span>
+                          </div>
+                        </div>
+                      </div>
+                    </label>
+                  </div>
+                  <span class="help-block">
+                    {this.state.url_type === 'web'
+                      ? 'Example: http://www.example.com/'
+                      : 'Example: https://play.google.com/store/apps/ExampleApp'}
+                  </span>
+                  <Field
+                    name="business_website"
+                    component={InputField}
+                    class="form-control"
+                    autoFocus={true}
+                    validate={[
+                      required(),
+                      lenientUrl('Please enter a valid URL'),
+                    ]}
+                  />
+                  <small class="help-block">
+                    <i class="i i-info-circle" />
+                    <span>
+                      The entered App/Website should contain{' '}
+                      <strong>
+                        About Us, Contact, Privacy Policy, Terms & Conditions,
+                        Refund Policy & Pricing
+                      </strong>{' '}
+                      pages for compliance purposes. In case of any problem,
+                      please refer our{' '}
+                      <a
+                        href="https://razorpay.com/"
+                        target="_blank"
+                        class="btn-link"
+                      >
+                        Compliance Policies
+                      </a>
                     </span>
                   </small>
                 </div>
