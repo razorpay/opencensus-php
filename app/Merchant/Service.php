@@ -110,14 +110,26 @@ class Service extends Base\Service
 
     public function fetchMerchantFromApi($merchantId)
     {
-        $this->setAdminCredentials();
-
         $error = $response = null;
 
-        $response = $this->api
-                         ->merchant
-                         ->fetch($merchantId)
-                         ->toArray();
+        if (empty($this->currentUser) === false)
+        {
+            $currentMerchant = $this->currentUser->currentMerchant();
+
+            if (empty($currentMerchant) === false)
+            {
+                $response = $currentMerchant->toArray();
+            }
+        }
+        else
+        {
+            $this->setAdminCredentials();
+
+            $response = $this->api
+                             ->merchant
+                             ->fetch($merchantId)
+                             ->toArray();
+        }
 
         if (empty($response) === false)
         {
