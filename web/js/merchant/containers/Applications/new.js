@@ -151,7 +151,7 @@ class NewApplicationForm extends Component {
       .catch(err => {
         this.props.showNotification({
           type: 'error',
-          message: "Couldn't create application",
+          message: err.errors,
         });
       });
   };
