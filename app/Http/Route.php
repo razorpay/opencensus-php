@@ -1112,7 +1112,6 @@ final class Route
         'reports_refund_irctc',
         'feature_onboarding_create',
         'feature_onboarding_fetch_responses',
-        'feature_onboarding_fetch_all_responses',
         'merchant_pre_signup_details',
         'merchant_edit_pre_signup_details',
         'create_submerchant_user',
@@ -1236,6 +1235,7 @@ final class Route
         'onboarding_features_fetch_status',
         'onboarding_features_bulk_update_status',
         'onboarding_features_update',
+        'feature_onboarding_fetch_all_responses',
         'pricing_get_merchant_plans',
         'pricing_supported_networks',
         'pricing_add_plan_rule',
@@ -1540,6 +1540,7 @@ final class Route
         'onboarding_features_update'             => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
         'onboarding_features_fetch_details'      => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
         'onboarding_features_get_submissions'    => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
+        'feature_onboarding_fetch_all_responses' => '*' /* deprecated; will be removed. not adding permissions */,
         'geoip_update'                           => '*',
         'batch_process_by_id'                    => Permission::RETRY_BATCH,
         'merchant_get_tags'                      => '*',
@@ -1668,7 +1669,7 @@ final class Route
         'shield_rules_update'                    => Permission::EDIT_SHIELD_RULES,
         'shield_rules_delete'                    => Permission::DELETE_SHIELD_RULES,
         'shield_rules_evaluate'                  => Permission::EVALUATE_SHIELD_RULES,
-        'user_fetch_admin'                       => Permission::VIEW_MERCHANT_LOGIN,
+        'user_fetch_admin'                       => '*',
     ];
 
     public static $direct = [
@@ -1970,7 +1971,6 @@ final class Route
         'invoice_view_live',
         'invoice_view_test',
         'invoice_get_stats_by_batch_ids',
-        'invoice_get_pdf',
         'item_fetch',
         'item_fetch_multiple',
         'app_fetch_tokens',

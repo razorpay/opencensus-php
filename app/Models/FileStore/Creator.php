@@ -655,7 +655,7 @@ class Creator extends Base\Core
         $bucketConfig = $this->storageHandler->getBucketConfig(
             $this->file->getType(), $this->env);
 
-        $fileName = $this->file->getName() . '.' . $this->file->getExtension();
+        $fileName = $this->getFullFileName();
 
         $fileDetails = [
             'key'       => $fileName,
@@ -690,6 +690,9 @@ class Creator extends Base\Core
             case Format::TXT:
             case Format::ENC:
             case Format::PDF:
+            // When the extension of the file which need to be created has no standerd extension (in case of ASCII file)
+            // we dont set the extestion while creating it, then `NONE` will match with it and process it as text file
+            case Format::NONE:
                 $this->writeTextFile();
                 break;
 
@@ -786,7 +789,7 @@ class Creator extends Base\Core
 
     protected function writeTextFile()
     {
-        $fileName = $this->file->getName() . '.' . $this->file->getExtension();
+        $fileName = $this->getFullFileName();
 
         $fullPath = $this->getFullFilePath();
 
@@ -880,12 +883,21 @@ class Creator extends Base\Core
 
     protected function getFullFileName()
     {
-        return $this->file->getName() . '.' . $this->file->getExtension();
+        $extension = $this->file->getExtension();
+
+        $fileName  = $this->file->getName();
+
+        if ($extension !== null)
+        {
+            $fileName .= ('.' . $extension);
+        }
+
+        return $fileName;
     }
 
     public function getFullFilePath()
     {
-        return $this->getStorageDir() . $this->file->getName() . '.' . $this->file->getExtension();
+        return $this->getStorageDir() . $this->getFullFileName();
     }
 
     public function getCompressedFileFullPath()
