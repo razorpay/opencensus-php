@@ -3,6 +3,10 @@ import React, { Component } from 'react';
 import Staged from './Staged';
 
 export default class FileUpload extends Component {
+  static defaultProps = {
+    multi: false,
+  };
+
   state = {
     files: [],
   };
@@ -59,25 +63,28 @@ export default class FileUpload extends Component {
   };
 
   render() {
-    const { children } = this.props;
+    const { children, multi } = this.props;
     return (
       <div class="file upload">
-        <div
-          id="dropZone"
-          onDrop={this.handleDrop}
-          onDragOver={this.handleDragOver}
-          onClick={this.handleClick}
-          class="drop-zone"
-        >
-          <div class="content">
-            {children || (
-              <React.Fragment>
-                <span>Drop files here or </span>
-                <span class="text-primary">Click to Upload</span>
-              </React.Fragment>
-            )}
-          </div>
-        </div>
+        {!multi &&
+          !this.state.files.length && (
+            <div
+              id="dropZone"
+              onDrop={this.handleDrop}
+              onDragOver={this.handleDragOver}
+              onClick={this.handleClick}
+              class="drop-zone"
+            >
+              <div class="content">
+                {children || (
+                  <React.Fragment>
+                    <span>Drop files here or </span>
+                    <span class="text-primary">Click to Upload</span>
+                  </React.Fragment>
+                )}
+              </div>
+            </div>
+          )}
         {this.state.files.map(file => (
           <div
             class="staged-files"
