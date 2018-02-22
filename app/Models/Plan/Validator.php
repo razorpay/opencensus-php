@@ -35,11 +35,7 @@ class Validator extends Base\Validator
         if ($interval > $maxAllowedInterval)
         {
             throw new Exception\BadRequestValidationFailureException(
-<<<<<<< Updated upstream
-                'Interval provided exceed the maximum interval (' . $maxAllowedInterval . ') allowed for the given period (' . $period . ')',
-=======
-                'Interval provided is less than the minimum interval (' . 7 . ') allowed for the given period (daily)',
->>>>>>> Stashed changes
+                'Interval provided exceeds the maximum interval (' . $maxAllowedInterval . ') allowed for the given period (' . $period . ')',
                 'interval',
                 [
                     'interval'      => $interval,
@@ -54,7 +50,7 @@ class Validator extends Base\Validator
         if ($interval < $minAllowedInterval)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Interval provided is less that  the min interval (' . $minAllowedInterval . ') allowed for the given period (' . $period . ')',
+                'Interval provided is less than the minimum interval (' . $minAllowedInterval . ') allowed for the given period (' . $period . ')',
                 'interval',
                 [
                     'interval'      => $interval,

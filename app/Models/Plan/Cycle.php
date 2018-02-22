@@ -99,7 +99,8 @@ class Cycle
 
     public static function getMinAllowedInterval(string $period): int
     {
-        if (isset(self::$allowMinInterval[$period]) === true) {
+        if (isset(self::$allowMinInterval[$period]) === true)
+        {
             return self::$allowMinInterval[$period];
         }
 
