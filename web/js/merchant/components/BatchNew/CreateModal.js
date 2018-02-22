@@ -29,15 +29,15 @@ export default class BatchCreateModal extends Component {
     return (
       <div class="modal-body">
         <p>This is how we are interpreting your data.</p>
-        <TableSlider target=".batch-table">
-          <Table
-            title="Batch Entries"
-            className="table-bordered batch-table"
-            columns={getTableColumns(parsedEntries[0])}
-            rows={parsedEntries}
-            limit={3}
-          />
-        </TableSlider>
+        <TableSlider
+          title="Batch Entries"
+          className="table-bordered batch-table"
+          columns={getTableColumns(parsedEntries[0])}
+          rows={parsedEntries}
+          limit={3}
+          tabWidth={30}
+          slideUnit={100}
+        />
         <div class="modal-info stretch create">
           <form onSubmit={handleSubmit(onCreateBatch)}>
             <h5>

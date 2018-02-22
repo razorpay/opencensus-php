@@ -676,11 +676,11 @@ dl.rzp-definition {
       align-items: center;
       border: 1px solid #DBDBDB;
       border-radius: 2px;
-      background-color: #F5F5F5;
-      width: 50px;
+      flex: 0 0 30px;
       color: $primary-color;
-      &.left-tab {
-        dispay:none
+      cursor: pointer;
+      &[disabled] {
+        color: #d6d6d6
       }
     }
   }
