@@ -6,12 +6,13 @@ import Field from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 import { notifyError, notifySuccess, closeModal } from 'common/modal';
 
-import { adminPut } from 'common/fetch';
+import fetch from 'common/fetch';
 
 export default ({ merchantId }) => {
   function onSubmit(body) {
-    return adminPut({
+    return fetch({
       url: '/admin/merchant/' + merchantId + '/email',
+      method: 'put',
       data: {
         email: body.email,
       },
