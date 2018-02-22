@@ -46,12 +46,10 @@ export default class ActivationWizard extends Component {
     if (this.props.accountId) {
       this.activationForms = this.activationForms.filter(
         activationForm =>
-          activationForm.name !==
-          'activationContactDetails'(
-            needKyc === 0
-              ? activationForm.name !== 'activationDocumentUpload'
-              : true
-          )
+          activationForm.name !== 'activationContactDetails' &&
+          (needKyc === 0
+            ? activationForm.name !== 'activationDocumentUpload'
+            : true)
       );
     }
   }
