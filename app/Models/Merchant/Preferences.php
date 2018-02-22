@@ -19,7 +19,7 @@ class Preferences
     const MID_WEALTHY          = '8lv4idBRY4C9c0';
     const MID_PIGGY            = '9IjdEkLQb0j2ro';
     const MID_ENDURANCE        = ['9YAQd3b47mdIQY', '9ZO8jNaR0OORNH'];
-    const MID_SHELL            = '100DemoAccount';
+    const MID_SHELL            = '9LMdTQdjgMJ6uR';
     const DEMO_ACCOUNT         = '100DemoAccount';
 
     /**
@@ -43,6 +43,7 @@ class Preferences
     const CUSTOMER_TRANSACTION_HISTORY_ENABLED_MID = [
         self::MID_SHELL,
         self::DEMO_ACCOUNT,
+        '10000000000000'
     ];
 
     public static $merchantSharedTerminalsBlackList = [
