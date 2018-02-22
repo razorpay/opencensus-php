@@ -724,7 +724,7 @@ class Core extends Base\Core
      * @param  Batch\Entity $batch
      * @param  array        $input
      */
-    public function notifyInvoicesOfBatch(Batch\Entity $batch, array $input): array
+    public function notifyInvoicesOfBatch(Batch\Entity $batch, array $input)
     {
         //
         // Settings module captures whether notification for this batch has

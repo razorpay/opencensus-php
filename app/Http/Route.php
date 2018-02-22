@@ -1196,6 +1196,7 @@ final class Route
         'invoice_update_line_item',
         'invoice_remove_line_item_bulk',
         'invoice_remove_line_item',
+        'invoice_notify_by_batch',
         'subscription_manual_retry',
         'subscription_test_charge',
         'subscription_fetch_due_addons',

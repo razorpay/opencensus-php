@@ -3614,6 +3614,21 @@ return [
         ],
     ],
 
+    'testInvoiceSmsNotifyByBatch' => [
+        'request' => [
+            'url'       => '/invoices/batch/batch_00000000000001/notify',
+            'method'    => 'put',
+            'content'   => [
+                'sms_notify'    => 1,
+                'email_notify'  => 0,
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
     // ----------------------------------------------------------------------
     // Expectations for ES
 

@@ -8,6 +8,7 @@ use Carbon\Carbon;
 
 use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
+use RZP\Jobs\Invoice\BatchNotify;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
@@ -1405,6 +1406,42 @@ class InvoiceTest extends TestCase
         $this->createDraftInvoice(['id' => '1000003invoice', 'type' => 'ecod']);
 
         $this->startTest();
+    }
+
+    public function testInvoiceSmsNotifyByBatch()
+    {
+        Queue::fake();
+
+        $this->testCreateDraftInvoiceWithSomeData();
+
+        $invoice = $this->getLastEntity('invoice');
+
+        $this->fixtures->create(
+            'batch',
+            [
+                'id'          => '00000000000001',
+                'type'        => 'payment_link',
+                'total_count' => 1,
+            ]);
+
+        $this->fixtures->invoice->edit($invoice['id'], ['batch_id' => '00000000000001', 'status' => 'issued']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        Queue::assertPushed(
+            BatchNotify::class,
+            function($job) use ($invoice)
+            {
+                $this->assertEquals(Mode::TEST, $job->getMode());
+                $this->assertEquals('00000000000001', $job->getBatchId());
+                $this->assertEquals([
+                        'sms_notify'    => 1,
+                        'email_notify'  => 0,
+                    ], $job->getInput());
+                return true;
+            });
     }
 
     // -------------------------------------------------------------------------

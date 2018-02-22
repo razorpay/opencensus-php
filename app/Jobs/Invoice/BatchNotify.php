@@ -51,6 +51,16 @@ class BatchNotify extends BaseJob implements ShouldQueue
         $this->input   = $input;
     }
 
+    public function getBatchId(): string
+    {
+        return $this->batchId;
+    }
+
+    public function getInput(): array
+    {
+        return $this->input;
+    }
+
     public function handle()
     {
         parent::handle();
@@ -59,12 +69,13 @@ class BatchNotify extends BaseJob implements ShouldQueue
             Batch\Entity::ID => $this->batchId,
         ];
 
-        $this->trace->debug(TraceCode::INVOICE_BATCH_NOTIFY_JOB_RECEIVED, $tracePayload + [self::INPUT => $input]);
+        $this->trace->debug(TraceCode::INVOICE_BATCH_NOTIFY_JOB_RECEIVED, $tracePayload + [self::INPUT => $this->input]);
 
         try
         {
             $smsNotify   = (bool) ($this->input[InvoiceModel\Entity::SMS_NOTIFY] ?? '1');
             $emailNotify = (bool) ($this->input[InvoiceModel\Entity::EMAIL_NOTIFY] ?? '1');
+            s($smsNotify, $emailNotify);
 
             $invoices = $this->repoManager->invoice->findIssuedByBatchId($this->batchId);
 
@@ -107,6 +118,7 @@ class BatchNotify extends BaseJob implements ShouldQueue
             $this->repoManager->saveOrFail($invoice);
 
             $job = new InvoiceJob($this->mode, InvoiceJob::ISSUED, $invoice->getId());
+            s($job->getId(), $job->getEvent());
             (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
         }
         catch (\Throwable $e)

@@ -89,7 +89,7 @@ class Service extends Base\Service
         return $invoice->toArrayPublic();
     }
 
-    public function notifyInvoicesOfBatch(string $batchId, array $input): array
+    public function notifyInvoicesOfBatch(string $batchId, array $input)
     {
         $batch = $this->repo->batch->findByPublicIdAndMerchant(
                                         $batchId,
