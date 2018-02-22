@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { NavLink } from 'react-router-dom';
 
 import Time from 'rzp/ui/Time';
 import Amount from 'rzp/ui/Amount';
@@ -90,9 +91,12 @@ export default function BatchDetails(props) {
                   batch.
                 </span>
                 {!shouldShowAllInvoices && (
-                  <a class="btn-link pull-right" href="#">
-                    View all <strong>{invoices.length}</strong> &gt;
-                  </a>
+                  <NavLink
+                    to={`/paymentlinks?batch_id=${batch.id}`}
+                    className="btn-link pull-right"
+                  >
+                    View All <strong>{invoices.length}</strong> &gt;
+                  </NavLink>
                 )}
               </div>
               <div class="table-responsive p-all">
@@ -109,11 +113,13 @@ export default function BatchDetails(props) {
                   </TableBody>
                 </table>
               </div>
-              {/* TODO: add link below */}
               {!shouldShowAllInvoices && (
-                <a class="btn btn-default btn-block" href="#">
-                  View All {invoices.length}
-                </a>
+                <NavLink
+                  to={`/paymentlinks?batch_id=${batch.id}`}
+                  className="btn btn-default btn-block"
+                >
+                  View All <strong>{invoices.length}</strong>
+                </NavLink>
               )}
             </div>
           </div>
