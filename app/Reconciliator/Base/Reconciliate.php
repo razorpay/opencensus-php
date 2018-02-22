@@ -7,6 +7,7 @@ use App;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Batch;
+use RZP\Reconciliator\Service;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Messenger;
 use RZP\Reconciliator\Orchestrator;
@@ -77,9 +78,13 @@ class Reconciliate extends Base\Core
     protected $app;
     protected $repo;
 
-    public function __construct()
+    protected $gateway;
+
+    public function __construct(string $gateway = null)
     {
         parent::__construct();
+
+        $this->gateway = $gateway;
 
         $this->messenger = new Messenger;
     }
@@ -156,22 +161,21 @@ class Reconciliate extends Base\Core
             $this->subReconciliator->startReconciliationV2($fileContents, $batch);
         }
 
-        $this->trace->info(
-            TraceCode::RECON_INFO_SUMMARY,
-            [
-                'total_count'   => $batch->getTotalCount(),
-                'success_count' => $batch->getSuccessCount(),
-                'failure_count' => $batch->getFailureCount(),
-            ]);
+        $summary = $this->getBatchProcessingSummary($batch);
+
+        $skipSlack = in_array($batch->getGateway(), Service::BATCH_SUMMARY_SKIP_GATEWAYS, true);
+
+        // Raise recon info with the batch processing summary
+        $this->messenger->setSkipSlack($skipSlack)->raiseReconInfo($summary);
     }
 
     /**
      * This should be implemented in the child class if the gateway needs to
      * look at only certain sheets present in the excel file and not all of them.
      */
-    public function getSheetNames()
+    public function getSheetNames(array $fileDetails = [])
     {
-        return null;
+        return [];
     }
 
     /**
@@ -329,7 +333,7 @@ class Reconciliate extends Base\Core
     {
         $subReconciliatorClassName = $this->getSubReconciliatorClassName($reconciliationType);
 
-        $this->subReconciliator = new $subReconciliatorClassName;
+        $this->subReconciliator = new $subReconciliatorClassName($this->gateway);
     }
 
     protected function getSubReconciliatorClassName($reconciliationType)
@@ -371,5 +375,27 @@ class Reconciliate extends Base\Core
             FileProcessor::LINES_FROM_TOP    => 0,
             FileProcessor::LINES_FROM_BOTTOM => 0
         ];
+    }
+
+    // Get recon batch processing summary
+    protected function getBatchProcessingSummary($batch)
+    {
+        $summary = [
+            'total_count'   => $batch->getTotalCount(),
+            'success_count' => $batch->getSuccessCount(),
+            'failure_count' => $batch->getFailureCount(),
+            'batch_id'      => $batch->getId(),
+            'gateway'       => $batch->getGateway()
+        ];
+
+        //Check if recon request was made through dashboard
+        $isDashboardRequest = $this->app['basicauth']->isDashboardApp();
+
+        if ($isDashboardRequest === true)
+        {
+            $summary['dashboard_user'] = $this->getInternalUsernameOrEmail();
+        }
+
+        return $summary;
     }
 }

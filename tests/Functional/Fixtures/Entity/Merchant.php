@@ -366,6 +366,21 @@ class Merchant extends Base
         return $this->fixtures->edit('methods', $id, ['mobikwik' => false]);
     }
 
+    public function enableEmandate($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['emandate' => true]);
+    }
+
+    public function disableEmandate($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['emandate' => false]);
+    }
+
+    public function editBalance(int $amount, string $id = '10000000000000')
+    {
+        return $this->fixtures->edit('balance', $id, ['balance' => $amount]);
+    }
+
     public function editCredits($credits, $id = '10000000000000')
     {
         return $this->fixtures->edit('balance', $id, ['credits' => $credits]);
@@ -401,6 +416,16 @@ class Merchant extends Base
     public function disableConvenienceFeeModel($id = '10000000000000')
     {
         return $this->edit($id, ['fee_bearer' => 'platform']);
+    }
+
+    public function editWhitelistedIpsLive($id = '10000000000000', $ips = [])
+    {
+        return $this->edit($id, ['whitelisted_ips_live' => $ips]);
+    }
+
+    public function editWhitelistedIpsTest($id = '10000000000000', $ips = [])
+    {
+        return $this->edit($id, ['whitelisted_ips_test' => $ips]);
     }
 
     public function enableInternational($id = '10000000000000')

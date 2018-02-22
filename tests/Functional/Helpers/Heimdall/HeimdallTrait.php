@@ -122,7 +122,7 @@ trait HeimdallTrait
         string $token = null)
     {
         $request = [
-            'url' => '/orgs/' . $orgId . '/field-map',
+            'url' => '/field-map',
             'method' => 'POST',
             'content' => [
                 'entity_name' => $entity,

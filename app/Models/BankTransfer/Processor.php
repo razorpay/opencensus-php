@@ -50,8 +50,6 @@ class Processor extends VirtualAccount\Processor
      */
     public function process(Base\PublicEntity $bankTransfer)
     {
-        $this->setUtrInTestMode($bankTransfer);
-
         if ($this->isDuplicate($bankTransfer) === true)
         {
             //
@@ -136,29 +134,6 @@ class Processor extends VirtualAccount\Processor
         }
     }
 
-    /**
-     * A UTR is required processing, but test providers like dashboard
-     * do not give a UTR. In this case, we use a mocked UTR instead.
-     *
-     * @param Entity $bankTransfer
-     */
-    protected function setUtrInTestMode(Entity $bankTransfer)
-    {
-        // Dashboard provider is used in test mode
-        // to simulate payments to a virtual account.
-        //
-        // UTR is not sent by dashboard in test mode, but is exposed to the merchant.
-        // So we add a mock UTR here itself, and skip the uniqueness check.
-        if (($this->mode === RzpMode::TEST) and
-            ($this->provider === VirtualAccount\Provider::DASHBOARD) and
-            ($this->env !== 'testing'))
-        {
-            $mockedUtr = $this->getMockedUtr();
-
-            $bankTransfer->setUtr($mockedUtr);
-        }
-    }
-
     protected function isPaymentExpected(Base\PublicEntity $bankTransfer): bool
     {
         //
@@ -238,17 +213,6 @@ class Processor extends VirtualAccount\Processor
         );
 
         return true;
-    }
-
-    /**
-     * Mock UTR for test mode.
-     * UTRs are supposed to be 16 or 22 chars, alphanumeric.
-     *
-     * @return string
-     */
-    protected function getMockedUtr(): string
-    {
-        return strtoupper(random_alphanum_string(22));
     }
 
     /**

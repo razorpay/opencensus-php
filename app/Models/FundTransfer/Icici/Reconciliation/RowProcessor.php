@@ -2,6 +2,8 @@
 
 namespace RZP\Models\FundTransfer\Icici\Reconciliation;
 
+use RZP\Trace\TraceCode;
+use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Icici\Headings;
 use RZP\Models\FundTransfer\Base\Reconciliation\RowProcessor as BaseRowProcessor;
 
@@ -16,20 +18,20 @@ class RowProcessor extends BaseRowProcessor
 
     protected function parseRow()
     {
-        $bankStatus = $this->row[Headings::STATUS];
+        $bankStatus = $this->getNullOnEmpty(Headings::STATUS);
 
-        $mode = trim($this->row[Headings::PAYMENT_MODE]) ?? null;
+        $mode       = $this->getNullOnEmpty(Headings::PAYMENT_MODE);
 
-        $remarks = trim($this->row[Headings::REMARKS] ?? null);
+        $remarks    = $this->getNullOnEmpty(Headings::REMARKS);
 
-        $cmsRefNo = trim($this->row[Headings::CMS_REF_NO] ?? null);
+        $cmsRefNo   = $this->getNullOnEmpty(Headings::CMS_REF_NO);
 
         $utr = null;
 
         switch ($mode)
         {
             case Mode::RTGS:
-                $utr = (($bankStatus === Status::PAID) ? $remarks :null);
+                $utr = (($bankStatus === Status::PAID) ? $remarks : null);
                 break;
 
             case Mode::NEFT:
@@ -39,22 +41,45 @@ class RowProcessor extends BaseRowProcessor
         }
 
         $this->parsedData = [
-            self::PAYMENT_REF_NO    => trim($this->row[Headings::PAYMENT_REF_NO] ?? null),
+            self::PAYMENT_REF_NO    => $this->getNullOnEmpty(Headings::PAYMENT_REF_NO),
             self::UTR               => $utr,
             self::BANK_STATUS_CODE  => $bankStatus,
             self::REMARKS           => $remarks,
-            self::PAYMENT_DATE      => trim($this->row[Headings::PAYMENT_DATE] ?? null),
+            self::PAYMENT_DATE      => $this->getNullOnEmpty(Headings::PAYMENT_DATE),
             self::CMS_REF_NO        => $cmsRefNo,
         ];
 
-        $this->reconEntityId = $this->parsedData['payment_ref_no'];
+        $this->reconEntityId = $this->parsedData[self::PAYMENT_REF_NO];
     }
 
     protected function updateReconEntity()
     {
+        $currentBankStatusCode = $this->reconEntity->getBankStatusCode();
+
+        $newBankStatusCode = $this->parsedData[self::BANK_STATUS_CODE];
+
+        $currentStatus = $this->reconEntity->getStatus();
+
+        if (($currentBankStatusCode === Status::PAID) and
+            ($newBankStatusCode === Status::CANCELLED))
+        {
+            $this->reconEntity->setStatus(Attempt\Status::INITIATED);
+        }
+        else if (($currentBankStatusCode === Status::CANCELLED) and
+            ($currentBankStatusCode !== $newBankStatusCode))
+        {
+            $this->trace->error(TraceCode::FTA_FILE_RECON_INVALID_STATUS_CHANGE,
+                [
+                    'parsed_data'               => $this->parsedData,
+                    'row'                       => $this->row,
+                    'current_bank_status_code'  => $currentBankStatusCode,
+                    'current_status'            => $currentStatus,
+                ]);
+        }
+
         $this->reconEntity->setUtr($this->parsedData[self::UTR]);
         $this->reconEntity->setRemarks($this->parsedData[self::REMARKS]);
-        $this->reconEntity->setBankStatusCode($this->parsedData[self::BANK_STATUS_CODE]);
+        $this->reconEntity->setBankStatusCode($newBankStatusCode);
         $this->reconEntity->setCmsRefNo($this->parsedData[self::CMS_REF_NO]);
 
         $this->reconEntity->saveOrFail();

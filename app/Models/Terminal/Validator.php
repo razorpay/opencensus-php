@@ -28,9 +28,11 @@ class Validator extends Base\Validator
         Entity::CATEGORY                    => 'sometimes|integer|digits:4',
         Entity::CARD                        => 'sometimes|boolean',
         Entity::NETBANKING                  => 'sometimes|boolean',
+        Entity::EMANDATE                    => 'sometimes|boolean',
         Entity::EMI                         => 'sometimes|boolean',
         Entity::UPI                         => 'sometimes|boolean',
         Entity::AEPS                        => 'sometimes|boolean',
+        Entity::EMANDATE                    => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
         Entity::TYPE                        => 'sometimes|array',
         Entity::MODE                        => 'sometimes|in:1,2,3',
@@ -86,6 +88,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY                    => 'required|in:hitachi',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string|max:15',
         Entity::GATEWAY_TERMINAL_ID        => 'required|string|max:8',
+        Entity::TYPE                       => 'sometimes|array',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
         Entity::CURRENCY                   => 'sometimes|alpha|size:3'
     ];
@@ -192,6 +195,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY                    => 'required|in:hitachi',
         Entity::GATEWAY_TERMINAL_ID        => 'sometimes|string|max:8',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
+        Entity::TYPE                       => 'sometimes|array',
     ];
 
     protected static $firstDataEditTerminalRules = [
@@ -346,6 +350,15 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET       => 'required|alpha_num|max:32',
     ];
 
+    protected static $cardFssTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:card_fss',
+        Entity::GATEWAY_SECURE_SECRET       => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes|string',
+        Entity::GATEWAY_ACCESS_CODE         => 'sometimes',
+        Entity::GATEWAY_MERCHANT_ID         => 'required',
+        Entity::GATEWAY_TERMINAL_ID         => 'sometimes',
+    ];
+
     protected function validateGateway($input)
     {
         Payment\Gateway::validateGateway($input['gateway']);
@@ -357,6 +370,7 @@ class Validator extends Base\Validator
             $input[Entity::CATEGORY],
             $input[Entity::CORPORATE],
             $input[Entity::NETBANKING],
+            $input[Entity::EMANDATE],
             $input[Entity::MERCHANT_ID],
             $input[Entity::NETWORK_CATEGORY],
             $input[Entity::GATEWAY_ACQUIRER],
@@ -611,6 +625,15 @@ class Validator extends Base\Validator
         if (empty($input[Entity::CARD]) === false)
         {
             return Method::CARD;
+        }
+
+        //
+        // This is kept before netbanking on purpose to avoid
+        // manual errors where both emandate and netbanking is set.
+        //
+        if (empty($input[Entity::EMANDATE]) === false)
+        {
+            return Method::EMANDATE;
         }
 
         if (empty($input[Entity::NETBANKING]) === false)

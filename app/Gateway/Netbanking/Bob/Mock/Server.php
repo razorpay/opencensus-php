@@ -31,10 +31,24 @@ class Server extends Base\Mock\Server
         $redirectUrl = $content[RequestFields::CALLBACK_URL];
 
         $request = [
-            'url' => $redirectUrl,
+            'url'     => $redirectUrl,
             'content' => $authResponseContent,
-            'method' => 'post',
+            'method'  => 'post',
         ];
+
+        $modifyContent = [
+            'request' => $request,
+            'content' => $content
+        ];
+
+        $this->content($modifyContent, 'cancelPayment');
+
+        $request = $modifyContent['request'];
+
+        if ($request['method'] === 'get')
+        {
+            return $request['url'];
+        }
 
         return $this->makePostResponse($request);
     }

@@ -2,8 +2,10 @@
 
 namespace RZP\Tests\TestDummy;
 
+use Carbon\Carbon;
 use Faker\Provider\Base;
 use Illuminate\Support\Str;
+use RZP\Constants\Timezone;
 
 class FakerProviderFrequent extends Base
 {
@@ -17,9 +19,14 @@ class FakerProviderFrequent extends Base
         return array();
     }
 
-    public function timestamp($str = 'now')
+    public function timestamp($modifyDays = 0)
     {
-        return strtotime($str);
+        $time = Carbon::now(Timezone::IST);
+
+        $time = ($modifyDays > 0) ? $time->addDays($modifyDays) :
+                                    $time->subDays($modifyDays);
+
+        return $time->timestamp;
     }
 
     public function name($n = 5)

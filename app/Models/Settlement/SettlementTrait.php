@@ -315,7 +315,7 @@ trait SettlementTrait
     {
         try
         {
-            // create settlement and update batch settlement entity in transaction
+            // create settlement and attempt
             $merchantSettler = new Merchant($merchant, $channel, $this->repo);
 
             $setlDetailAmounts = $merchantSettler->calculateSettlementDetailAmounts($setlTxns);
@@ -331,17 +331,7 @@ trait SettlementTrait
 
             $merchantSettler->createTransaction($settlement);
 
-            $bankTransferAtpt = $this->repo->transaction( function() use ($settlement, $setlTxns, $merchantSettler)
-            {
-                $bankTransferAtpt = $merchantSettler->createSettlementAttempt();
-
-                $this->createAndupdateBatchEntities(
-                    $settlement,
-                    $setlTxns->count(),
-                    $bankTransferAtpt);
-
-                return $bankTransferAtpt;
-            });
+            $bankTransferAtpt = $merchantSettler->createSettlementAttempt();
 
             return [$settlement, $bankTransferAtpt];
         }
@@ -358,21 +348,6 @@ trait SettlementTrait
         }
 
         return [null, null];
-    }
-
-    protected function createAndupdateBatchEntities($setl, int $setlTxnsCount, $bankTransferAtpt)
-    {
-        $this->createOrUpdateBatchFundTransferForEntity($setl, $setlTxnsCount);
-
-        $bankTransferAtpt->batchFundTransfer()->associate($this->batchFundTransfer);
-
-        $setl->batchFundTransfer()->associate($this->batchFundTransfer);
-
-        $this->repo->saveOrFail($setl);
-
-        $this->repo->saveOrFail($bankTransferAtpt);
-
-        return [$setl, $bankTransferAtpt];
     }
 
     /**
@@ -397,6 +372,7 @@ trait SettlementTrait
             Preferences::MID_GOALWISE_TPV,
             Preferences::MID_MONEYVIEW,
             Preferences::MID_WEALTHY,
+            Preferences::MID_PIGGY,
         ];
 
         if (in_array($merchant->getId(), $skipMerchantIds, true) === true)

@@ -201,7 +201,7 @@ return [
         ],
     ],
 
-    'testFetchForSoftDeletedInvoiceForAppAuth' => [
+    'testFetchForSoftDeletedInvoiceForAdminAuth' => [
         'request' => [
             'url'     => '/admin/invoice',
             'method'  => 'GET',
@@ -212,7 +212,7 @@ return [
         ],
     ],
 
-    'testFindByIdForSoftDeletedInvoiceForAppAuth' => [
+    'testFindByIdForSoftDeletedInvoiceForAdminAuth' => [
         'request' => [
             'url'     => '/admin/invoice/',
             'method'  => 'GET',

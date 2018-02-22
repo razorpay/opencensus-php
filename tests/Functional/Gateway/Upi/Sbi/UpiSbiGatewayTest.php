@@ -221,6 +221,74 @@ class UpiSbiGatewayTest extends TestCase
         $this->assertEquals(ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_REJECTED, $payment[Payment\Entity::INTERNAL_ERROR_CODE]);
     }
 
+    public function testCbsDownCollectRequest()
+    {
+        $this->payment[Payment\Entity::VPA] = Constants::CBS_DOWN_VPA;
+
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->payment;
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthPaymentViaAjaxRoute($payment);
+            });
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+        $upiEntity = $this->getLastEntity(Entity::UPI, true);
+
+        $this->assertNotNull($upiEntity[Upi::NPCI_REFERENCE_ID]);
+        $this->assertNotNull($upiEntity[Upi::GATEWAY_PAYMENT_ID]);
+
+        $this->assertEquals(SbiStatus::CBS_DOWN, $upiEntity[Upi::STATUS_CODE]);
+        $this->assertEquals($payment[Payment\Entity::VPA], $upiEntity[Upi::VPA]);
+
+        $this->assertEquals(Payment\Status::FAILED, $payment[Payment\Entity::STATUS]);
+        $this->assertEquals(ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT, $payment[Payment\Entity::INTERNAL_ERROR_CODE]);
+    }
+
+    public function testCbsDownCallback()
+    {
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $paymentId = $response[Constants::PAYMENT_ID];
+
+        // Coproto must be working
+        $this->assertEquals(Constants::ASYNC, $response[Constants::TYPE]);
+
+        $this->checkPaymentStatus($paymentId, Payment\Status::CREATED);
+
+        $upiEntity = $this->getLastEntity(Entity::UPI, true);
+
+        $upiEntity[Upi::VPA] = Constants::CBS_DOWN_VPA;
+
+        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity);
+
+        $response = $this->makeS2SCallbackAndGetContent($content);
+
+        // We should have gotten a successful response
+        $this->assertEquals([Constants::SUCCESS => true], $response);
+
+        // The payment should now be authorized
+        $payment = $this->getEntityById(Entity::PAYMENT, $paymentId, true);
+        $upiEntity = $this->getLastEntity(Entity::UPI, true);
+
+        $this->assertEquals(Payment\Status::AUTHORIZED, $payment[Payment\Entity::STATUS]);
+
+        $content = $this->getDecryptedContent($content[ResponseFields::MESSAGE], ResponseFields::RESPONSE);
+
+        $this->assertEquals($content[ResponseFields::UPI_TRANS_REFERENCE_NO], $upiEntity[Upi::NPCI_REFERENCE_ID]);
+        $this->assertEquals($content[ResponseFields::CUSTOMER_REFERENCE_NO], $upiEntity[Upi::GATEWAY_PAYMENT_ID]);
+
+        // The upi entity status will be changed from S to T
+        $this->assertEquals(SbiStatus::CBS_DOWN, $upiEntity[Upi::STATUS_CODE]);
+        $this->assertEquals($content[ResponseFields::STATUS], $upiEntity[Upi::STATUS_CODE]);
+
+        $this->assertEquals($payment[Payment\Entity::VPA], $upiEntity[Upi::VPA]);
+    }
+
     /**
      * This verifies the transaction status after a payment has been successfully made.
      */

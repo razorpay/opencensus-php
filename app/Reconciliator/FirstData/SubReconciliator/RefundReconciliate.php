@@ -44,6 +44,7 @@ class RefundReconciliate extends Base\RefundReconciliate
             $this->trace->error(
                 TraceCode::RECON_ALERT,
                 [
+                    'info_code' => 'REFUND_ABSENT',
                     'message'   => 'Refund not found. Skipping',
                     'row'       => $row,
                     'gateway'   => get_called_class()
@@ -59,6 +60,7 @@ class RefundReconciliate extends Base\RefundReconciliate
             $this->trace->info(
                 TraceCode::RECON_INFO,
                 [
+                    'info_code' => 'REVERSE_ENTITY_FOUND',
                     'message'   => 'Reversal entity. Skipping.',
                     'row'       => $row,
                     'gateway'   => get_called_class()

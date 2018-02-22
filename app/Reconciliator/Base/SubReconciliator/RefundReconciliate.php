@@ -23,6 +23,11 @@ class RefundReconciliate extends Foundation\SubReconciliate
     // This will need to be overridden in each gateway's refund recon.
     const COLUMN_REFUND_AMOUNT = '';
 
+    // List of gateways whose refund status must be set to processed without ARN
+    const GATEWAYS_PROCESSED_WO_ARN = [
+        RequestProcessor\Base::UPI_ICICI
+    ];
+
     protected $messenger;
 
     /**
@@ -35,9 +40,9 @@ class RefundReconciliate extends Foundation\SubReconciliate
      */
     protected $refund;
 
-    public function __construct()
+    public function __construct(string $gateway = null)
     {
-        parent::__construct();
+        parent::__construct($gateway);
 
         $this->messenger = new Messenger();
     }
@@ -198,12 +203,30 @@ class RefundReconciliate extends Foundation\SubReconciliate
             $this->refund->reload()->transaction->reload();
         }
 
-        // Sets the reconciled_at in the transactions entity, on a successful reconciliation.
         $this->persistReconciledAt($this->refund);
 
         $this->persistGatewaySettledAt($this->refund, $rowDetails);
 
+        $this->setRefundProcessedWithoutArn();
+
         return true;
+    }
+
+    protected function setRefundProcessedWithoutArn()
+    {
+        //
+        // We check if refund is marked as processed already.
+        // If it's not, only then we check whether we allow
+        // it to be marked as processed without the ARN. If ARN
+        // was present, we would have already marked it as processed.
+        //
+        if (($this->refund->isProcessed() === false) and
+            (in_array($this->gateway, self::GATEWAYS_PROCESSED_WO_ARN, true) === true))
+        {
+            $this->refund->setStatusProcessed();
+
+            $this->repo->saveOrFail($this->refund);
+        }
     }
 
     protected function attemptToCreateMissingRefundTransaction()
@@ -531,6 +554,8 @@ class RefundReconciliate extends Foundation\SubReconciliate
         $refund->setReference1($reconArn);
         $refund->setStatusProcessed();
 
+        // This needs to be present here and not in the calling function,
+        // to ensure that if any failure happens, arn still gets saved.
         $this->repo->saveOrFail($refund);
     }
 

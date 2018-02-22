@@ -167,7 +167,7 @@ class SoapWrapper
                                 <ipgapi:ProcessorCCVResponse/>
                                 <ipgapi:ReferencedTDate>1498640277</ipgapi:ReferencedTDate>
                                 <ipgapi:TDate>1498640277</ipgapi:TDate>
-                                <ipgapi:TDateFormatted>2017.06.28 14:27:57 (IST)</ipgapi:TDateFormatted>
+                                <ipgapi:TDateFormatted>2017.06.30 00:51:15 (IST)</ipgapi:TDateFormatted>
                                 <ipgapi:TerminalID>00224579</ipgapi:TerminalID>
                             </ipgapi:IPGApiOrderResponse>
                             <a1:TraceNumber>062808</a1:TraceNumber>
@@ -182,7 +182,7 @@ class SoapWrapper
         return $soapContent;
     }
 
-    public static function verifyResponseWrapper($oid, $timestamp, $tdate, $approvalCode, $tdateformatted)
+    public static function verifyResponseWrapper($oid)
     {
         $soapContent = "
             <SOAP-ENV:Envelope xmlns:SOAP-ENV='http://schemas.xmlsoap.org/soap/envelope/'>
@@ -213,11 +213,11 @@ class SoapWrapper
                             <v1:InvoiceNumber>$oid</v1:InvoiceNumber>
                             <v1:OrderId>$oid</v1:OrderId>
                             <v1:Ip>182.74.201.50</v1:Ip>
-                            <v1:TDate>$tdate</v1:TDate>
+                            <v1:TDate>1513967400</v1:TDate>
                             <v1:TransactionOrigin>ECI</v1:TransactionOrigin>
                         </v1:TransactionDetails>
                         <ipgapi:IPGApiOrderResponse>
-                            <ipgapi:ApprovalCode>$approvalCode</ipgapi:ApprovalCode>
+                            <ipgapi:ApprovalCode>Y:815527:5341037593:PPX</ipgapi:ApprovalCode>
                             <ipgapi:AVSResponse>PPX</ipgapi:AVSResponse>
                             <ipgapi:Brand>VISA</ipgapi:Brand>
                             <ipgapi:OrderId>$oid</ipgapi:OrderId>
@@ -225,9 +225,9 @@ class SoapWrapper
                             <ipgapi:PaymentType>CREDITCARD</ipgapi:PaymentType>
                             <ipgapi:ProcessorApprovalCode>543210</ipgapi:ProcessorApprovalCode>
                             <ipgapi:ProcessorCCVResponse/>
-                            <ipgapi:ReferencedTDate>$tdate</ipgapi:ReferencedTDate>
-                            <ipgapi:TDate>$tdate</ipgapi:TDate>
-                            <ipgapi:TDateFormatted>$tdateformatted</ipgapi:TDateFormatted>
+                            <ipgapi:ReferencedTDate>1513967400</ipgapi:ReferencedTDate>
+                            <ipgapi:TDate>1513967400</ipgapi:TDate>
+                            <ipgapi:TDateFormatted>2017.06.30 00:51:15 (IST)</ipgapi:TDateFormatted>
                             <ipgapi:TerminalID>44000025</ipgapi:TerminalID>
                         </ipgapi:IPGApiOrderResponse>
                         <a1:TraceNumber>625915</a1:TraceNumber>
@@ -252,11 +252,11 @@ class SoapWrapper
                             <v1:InvoiceNumber>$oid</v1:InvoiceNumber>
                             <v1:OrderId>$oid</v1:OrderId>
                             <v1:Ip>182.74.201.50</v1:Ip>
-                            <v1:TDate>$tdate</v1:TDate>
+                            <v1:TDate>1513967400</v1:TDate>
                             <v1:TransactionOrigin>ECI</v1:TransactionOrigin>
                         </v1:TransactionDetails>
                         <ipgapi:IPGApiOrderResponse>
-                            <ipgapi:ApprovalCode>$approvalCode</ipgapi:ApprovalCode>
+                            <ipgapi:ApprovalCode>Y:815527:5341037593:PPX</ipgapi:ApprovalCode>
                             <ipgapi:AVSResponse>PPX</ipgapi:AVSResponse>
                             <ipgapi:Brand>VISA</ipgapi:Brand>
                             <ipgapi:OrderId>$oid</ipgapi:OrderId>
@@ -264,9 +264,9 @@ class SoapWrapper
                             <ipgapi:PaymentType>CREDITCARD</ipgapi:PaymentType>
                             <ipgapi:ProcessorApprovalCode>014932</ipgapi:ProcessorApprovalCode>
                             <ipgapi:ProcessorCCVResponse/>
-                            <ipgapi:ReferencedTDate>$tdate</ipgapi:ReferencedTDate>
-                            <ipgapi:TDate>$tdate</ipgapi:TDate>
-                            <ipgapi:TDateFormatted>$tdateformatted</ipgapi:TDateFormatted>
+                            <ipgapi:ReferencedTDate>1513967400</ipgapi:ReferencedTDate>
+                            <ipgapi:TDate>1513967400</ipgapi:TDate>
+                            <ipgapi:TDateFormatted>2017.06.30 00:51:15 (IST)</ipgapi:TDateFormatted>
                             <ipgapi:TerminalID>44000025</ipgapi:TerminalID>
                         </ipgapi:IPGApiOrderResponse>
                         <a1:TraceNumber>625915</a1:TraceNumber>
@@ -276,7 +276,7 @@ class SoapWrapper
                     </a1:TransactionValues>
                     <a1:TransactionValues>
                         <v1:CreditCardTxType>
-                            <v1:Type>credit</v1:Type>
+                            <v1:Type>return</v1:Type>
                         </v1:CreditCardTxType>
                         <v1:CreditCardData>
                             <v1:CardNumber>scrubbed_card_number</v1:CardNumber>
@@ -291,21 +291,22 @@ class SoapWrapper
                         <v1:TransactionDetails>
                             <v1:InvoiceNumber>$oid</v1:InvoiceNumber>
                             <v1:OrderId>$oid</v1:OrderId>
+                            <v1:MerchantTransactionId>FakeRfndId</v1:MerchantTransactionId>
                             <v1:Ip>182.74.201.50</v1:Ip>
-                            <v1:TDate>$tdate</v1:TDate>
+                            <v1:TDate>1513967400</v1:TDate>
                             <v1:TransactionOrigin>ECI</v1:TransactionOrigin>
                         </v1:TransactionDetails>
                         <ipgapi:IPGApiOrderResponse>
-                            <ipgapi:ApprovalCode>$approvalCode</ipgapi:ApprovalCode>
+                            <ipgapi:ApprovalCode>Y:approvalCodeOfThe:FakeRfnd</ipgapi:ApprovalCode>
                             <ipgapi:AVSResponse>PPX</ipgapi:AVSResponse>
                             <ipgapi:Brand>VISA</ipgapi:Brand>
                             <ipgapi:OrderId>$oid</ipgapi:OrderId>
                             <ipgapi:PaymentType>CREDITCARD</ipgapi:PaymentType>
                             <ipgapi:ProcessorApprovalCode>014932</ipgapi:ProcessorApprovalCode>
                             <ipgapi:ProcessorCCVResponse/>
-                            <ipgapi:ReferencedTDate>$tdate</ipgapi:ReferencedTDate>
-                            <ipgapi:TDate>$tdate</ipgapi:TDate>
-                            <ipgapi:TDateFormatted>$tdateformatted</ipgapi:TDateFormatted>
+                            <ipgapi:ReferencedTDate>1513967400</ipgapi:ReferencedTDate>
+                            <ipgapi:TDate>1513967400</ipgapi:TDate>
+                            <ipgapi:TDateFormatted>2017.06.30 00:51:15 (IST)</ipgapi:TDateFormatted>
                             <ipgapi:TerminalID>44000025</ipgapi:TerminalID>
                         </ipgapi:IPGApiOrderResponse>
                         <a1:TraceNumber>625915</a1:TraceNumber>

@@ -75,6 +75,12 @@ class CreateHitachiGateway extends Migration
             $table->index(Hitachi::CREATED_AT);
 
             $table->index(Hitachi::REFUND_ID);
+
+            $table->index(Hitachi::REQUEST_ID);
+
+            $table->index(Hitachi::RRN);
+
+            $table->index(Hitachi::ACTION);
         });
     }
 

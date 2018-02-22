@@ -76,7 +76,7 @@ return [
         'gateway_fee'       => 0,
         'api_fee'           => 0,
 //        'escrow_balance'    => 1048850,
-        'channel'           => 'kotak',
+        'channel'           => \RZP\Models\Settlement\Channel::AXIS,
         'settled'           => false,
         'settlement_id'     => null,
         'reconciled_at'     => null,

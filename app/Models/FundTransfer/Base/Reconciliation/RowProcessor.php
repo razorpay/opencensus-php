@@ -62,15 +62,39 @@ abstract class RowProcessor extends Base\Core
     {
         $this->updateReconEntity();
 
+        $sourceBatchId = $this->reconEntity->source->getBatchFundTransferId();
+
+        if ($sourceBatchId !== $this->reconEntity->getBatchFundTransferId())
+        {
+            return;
+        }
+
         $this->updateSourceEntity();
     }
 
     protected function updateSourceEntity()
     {
         $utr = $this->reconEntity->getUtr();
+        $remarks = $this->reconEntity->getRemarks();
 
         $this->reconEntity->source->setUtr($utr);
+        $this->reconEntity->source->setRemarks($remarks);
 
         $this->repo->saveOrFail($this->reconEntity->source);
+    }
+
+    /**
+     * trims the value and checks for empty.
+     * ensures empty strings are considered as null
+     *
+     * @param string $key
+     *
+     * @return null|string
+     */
+    protected function getNullOnEmpty(string $key)
+    {
+        $value = trim($this->row[$key] ?? null);
+
+        return (empty($value) === true) ? null : $value;
     }
 }

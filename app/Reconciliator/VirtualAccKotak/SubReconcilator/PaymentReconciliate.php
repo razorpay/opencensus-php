@@ -47,6 +47,8 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'gateway'       => get_called_class()
                 ]);
 
+            $this->setFailUnprocessedRow(true);
+
             return null;
         }
 
@@ -61,6 +63,8 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         if ($bankTransfer === null)
         {
             $this->alertUnexpectedBankTransferIfApplicable($row);
+
+            $this->setFailUnprocessedRow(true);
 
             return null;
         }

@@ -51,6 +51,19 @@ class Channel
             self::YESBANK,
             self::AXIS,
             self::ICICI,
+            self::HDFC
+        ];
+    }
+
+    /**
+     * Channels for which balance API is available
+     *
+     * @return array
+     */
+    public static function getChannelsWithFetchBalance(): array
+    {
+        return [
+            self::KOTAK,
         ];
     }
 

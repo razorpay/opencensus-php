@@ -68,6 +68,16 @@ class Entity extends BaseModel\PublicEntity
         }
     }
 
+    public function setPublicStateChangerIdAttribute(array &$attributes)
+    {
+        $adminId = $this->getAttribute(Action\Entity::STATE_CHANGER_ID);
+
+        if ($adminId !== null)
+        {
+            $attributes[Action\Entity::STATE_CHANGER_ID] = Admin\Entity::getSignedId($adminId);
+        }
+    }
+
     public function setPublicActionIdAttribute(array &$attributes)
     {
         $actionId = $this->getAttribute(Comment\Entity::ACTION_ID);

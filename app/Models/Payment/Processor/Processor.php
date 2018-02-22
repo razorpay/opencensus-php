@@ -434,15 +434,6 @@ class Processor
 
             $tokenMethod = $token->getMethod();
 
-            //
-            // TODO: Remove this after we move netbanking recurring to emandate method
-            // We have to start storing method as `emandate` in token entity for this.
-            //
-            if ($tokenMethod === Payment\Method::NETBANKING)
-            {
-                $tokenMethod = Payment\Method::EMANDATE;
-            }
-
             $input[Payment\Entity::METHOD] = $tokenMethod;
 
             if ($tokenMethod === Payment\Method::EMANDATE)
@@ -682,7 +673,6 @@ class Processor
      * @param  string $id payment id
      * @return array
      * @throws Exception\BadRequestException
-     * @throws Exception\LogicException
      */
     public function getAsyncResponse($id)
     {
@@ -883,8 +873,12 @@ class Processor
     {
         $payment = $this->payment;
 
-        // For Netbanking payments two_factor_auth was set to NOT_APPLICABLE on authorize itself
-        if ($payment->isNetbanking() === true)
+        //
+        // For Netbanking and emandate payments two_factor_auth
+        // was set to NOT_APPLICABLE on authorize itself
+        //
+        if (($payment->isNetbanking() === true) or
+            ($payment->isEmandate() === true))
         {
             $twoFactorAuth = Payment\TwoFactorAuth::UNAVAILABLE;
         }
@@ -1291,7 +1285,8 @@ class Processor
         }
 
         // TODO: Following is not testable in cases. Ref: BankTransferBatchTest
-        if ($this->app['basicauth']->isAppAuth() === false)
+        if (($this->app['basicauth']->isAppAuth() === false) and
+            (Route::currentRouteName() !== 'bank_transfer_process_test'))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid payment method given: ' . $payment->getMethod());
@@ -1485,35 +1480,25 @@ class Processor
         }
 
         //
-        // We do auto capture for eMandate in two ways.
-        // For file based registration, we auto capture once the
-        // registration is complete.
-        // For normal flow, we auto capture the payment as soon as
-        // it is authorized
+        // In case of emandate debit payment, the payment would be in `created` status
+        // and this flow will not get executed at all. Once the debit recon is done,
+        // only then the payment gets authorized and this flow gets run.
         //
-        if ($this->isAsyncEmandatePayment($payment) === true)
+        // But in case of emandate registration payment, the payment would be in `authorized`
+        // status and this flow will get executed. But, we should be capturing it only after
+        // the token is successfully confirmed as recurring. This, we get to know only
+        // after registration recon. Again, this is an issue only for async registration gateways.
+        // In case of sync registration gateways, the token is marked as recurring/confirmed in
+        // the normal flow itself.
+        //
+        // Hence, we don't need to handle for emandate debit and emandate sync register here.
+        //
+        if ($payment->isFileBasedEmandateRegistrationPayment() === true)
         {
             return false;
         }
 
         return $this->shouldAutoCaptureOrder($payment);
-    }
-
-    protected function isAsyncEmandatePayment(Payment\Entity $payment)
-    {
-        if ($payment->isEmandate() === true)
-        {
-            if ($payment->isRecurringTypeInitial() === true)
-            {
-                return (Payment\Gateway::isFileBasedEMandateRegistrationGateway($payment->getGateway()) === true);
-            }
-            else if ($payment->isRecurringTypeAuto() === true)
-            {
-                return (Payment\Gateway::isFileBasedEMandateDebitGateway($payment->getGateway()) === true);
-            }
-        }
-
-        return false;
     }
 
     protected function shouldAutoCaptureAlreadyAuthenticatedSubscription(Payment\Entity $payment)
