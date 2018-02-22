@@ -11,6 +11,9 @@ use Illuminate\Mail\Mailable as BaseMailable;
 use GuzzleHttp\Exception\ClientException as GuzzleClientException;
 
 use Razorpay\Trace\Logger as Trace;
+
+use RZP\Constants\TLD;
+use RZP\Exception;
 use RZP\Trace\TraceCode;
 
 class Mailable extends BaseMailable
@@ -59,6 +62,8 @@ class Mailable extends BaseMailable
 
         try
         {
+            $this->validateEmailTld($this->to);
+
             parent::send($mailer);
         }
         catch (\Throwable $e)
@@ -99,6 +104,26 @@ class Mailable extends BaseMailable
         return $queue->connection($connection)->pushOn(
             $queueName ?: null, new SendQueuedMailable($this)
         );
+    }
+
+    /**
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    protected function validateEmailTld()
+    {
+        // For each of the receipients, do a TLD check
+        foreach (['to', 'cc', 'bcc'] as $type) {
+            foreach ($this->{$type} as $email) {
+                $tld = last(explode('.', $email));
+
+                if (TLD::isValid($tld) === false)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'The email must be a valid email address.', 'email');
+                }
+            }
+        }
+
     }
 
     /**
