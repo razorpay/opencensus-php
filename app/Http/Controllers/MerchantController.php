@@ -574,7 +574,7 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function updateMerchantFeatures($id)
+    public function updateMerchantFeatures()
     {
         $input = Request::all();
 
@@ -583,7 +583,7 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getMerchantFeatures($id)
+    public function getMerchantFeatures()
     {
         $data = $this->service()->getMerchantFeatures();
 
