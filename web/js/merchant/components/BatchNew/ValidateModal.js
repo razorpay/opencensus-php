@@ -1,7 +1,7 @@
 import { Component, Fragment } from 'react';
 
 // TODO: temporary file upload till the file upload component is built
-import FileUploadInputButton from 'rzp/ui/FileUpload/InputButton';
+import FileUpload from 'merchant/components/File/Upload';
 
 import ModalHeader from 'rzp/ui/ModalHeader';
 import { titleCase } from 'rzp/utils/rzp-utils';
@@ -22,11 +22,19 @@ export default function BatchValidateModal({
     <div class="modal-body">
       <h4 class="modal-heading">Upload File</h4>
       <div class="modal-file">
-        <FileUploadInputButton
-          accept="xlsx,csv"
+        <FileUpload
+          accept={['xlsx', 'csv']}
+          accept={[
+            'text/csv',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'application/pdf',
+          ]}
           uploadedFileName="Upload File here"
-          maxSize="1000000"
+          maxSize={1000000}
           onChange={onFileChange}
+          onBiggerFileSize={() => {
+            console.log('called');
+          }}
         />
         {notifyMsg && (
           <h5 class={`notification ${status}`}>
