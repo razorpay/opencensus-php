@@ -1,8 +1,6 @@
 import { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import Spinner from 'rzp/ui/Spinner';
-import WebhookCreation from 'merchant/containers/Webhooks/New';
 import AppDetails, {
   AppDetailsLoader,
 } from 'merchant/components/Applications/AppDetails';
@@ -11,40 +9,9 @@ import {
   NoConnectedApps,
   LoadingConnectedApps,
 } from 'merchant/components/Applications/NoConnectedApps';
-import * as ApplicationActions from 'merchant/modules/applications';
 import * as NotificationActions from 'rzp/modules/notifications';
 import * as ModalActions from 'rzp/modules/modals';
-
-class AppWebhook extends Component {
-  state = {};
-
-  componentWillMount() {
-    // Fetch call getting app's webhook
-    ApplicationActions.fetchAppWebhooks(this.props.appId).then(data => {
-      this.setState({ webhook: data.data.items });
-    });
-  }
-  render() {
-    let component;
-
-    if (this.state.webhook) {
-      // Edit WebhookCreation won't send appId when it's edit webhook for this application
-      return (
-        <WebhookCreation
-          webhook={this.state.webhook.length && this.state.webhook[0]}
-          appId={this.props.appId}
-          onSave={this.props.onSave}
-        />
-      );
-    } else {
-      return (
-        <div class="page-spinner-container">
-          <Spinner />
-        </div>
-      );
-    }
-  }
-}
+import * as ApplicationActions from 'merchant/modules/applications';
 
 @connect(
   state => {
@@ -85,24 +52,6 @@ export default class ApplicationContainer extends Component {
               message: err.errors,
             });
           }),
-    });
-  };
-
-  onWebhookSave = webhook => {
-    console.log('check..');
-    this.props.closeModal();
-  };
-
-  showWebhookModal = application => {
-    this.props.openModal({
-      component: (
-        <AppWebhook
-          webhook={application.webhook || undefined}
-          appId={application.id}
-          isApplication={true}
-          onSave={this.onWebhookSave}
-        />
-      ),
     });
   };
 
@@ -171,7 +120,6 @@ export default class ApplicationContainer extends Component {
                 data={data}
                 key={data.id}
                 onBtnClick={this.deleteApp}
-                showWebhookModal={this.showWebhookModal}
               />
             ))}
             {isCreatedAppsLoading && <AppDetailsLoader />}
