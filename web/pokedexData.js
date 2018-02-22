@@ -158,7 +158,7 @@ const successRateMeta = {
                 sourceType = sourcesArr[1],
                 sourceValue = sourcesArr[0];
 
-          if (sourceType === "network" || sourceType === "bank") {
+          if (sourceType === "network" || sourceType === "issuer") {
           
             filter[sourceType] = [sourceValue];
           }
@@ -281,7 +281,7 @@ const populatePaymentMethods = (result) => {
                          .map(bank => {
                            return {
                              text: getBankName(bank),
-                             value: bank + "-bank"
+                             value: bank + "-issuer"
                            };
                          })
         });
