@@ -15,9 +15,11 @@ class Cycle
     const WEEKLY  = 'weekly';
     const DAILY   = 'daily';
 
-    const ONE_YEAR          = 1;
-    const MONTHS_IN_YEAR    = Carbon::MONTHS_PER_YEAR;
-    const WEEKS_IN_YEAR     = Carbon::WEEKS_PER_YEAR;
+    const ONE_YEAR             = 1;
+    const SEVEN_DAYS           = 7;
+    const DEFAULT_MIN_INTERVAL = 1;
+    const MONTHS_IN_YEAR       = Carbon::MONTHS_PER_YEAR;
+    const WEEKS_IN_YEAR        = Carbon::WEEKS_PER_YEAR;
     // TODO: This can be 366 too. Fix.
     const DAYS_IN_YEAR      = 365;
 
@@ -26,6 +28,10 @@ class Cycle
         self::MONTHLY,
         self::WEEKLY,
         self::DAILY,
+    ];
+
+    protected static $allowMinInterval = [
+        self::DAILY => self::SEVEN_DAYS
     ];
 
     protected static $allowedMaxInterval = [
@@ -90,6 +96,15 @@ class Cycle
         self::validatePeriod($period);
 
         return self::$allowedMaxInterval[$period];
+    }
+
+    public static function getMinAllowedInterval(string $period): int
+    {
+        if (isset(self::$allowMinInterval[$period]) === true) {
+            return self::$allowMinInterval[$period];
+        }
+
+        return self::DEFAULT_MIN_INTERVAL;
     }
 
     public static function getTotalCountForOneYear(Entity $plan)

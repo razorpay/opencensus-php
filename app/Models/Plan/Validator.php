@@ -30,21 +30,6 @@ class Validator extends Base\Validator
         $period = $input[Entity::PERIOD];
         $interval = $input[Entity::INTERVAL];
 
-        if (($period === Period::DAILY) and
-            ($interval < 7))
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Interval provided is less that  the min interval (' . 7 . ') allowed for the given period (daily)',
-                'interval',
-                [
-                    'interval'      => $interval,
-                    'period'        => $period,
-                    'min_allowed'   => 7,
-                    'input'         => $input
-                ]);
-
-        }
-
         $maxAllowedInterval = Cycle::getMaxAllowedInterval($period);
 
         if ($interval > $maxAllowedInterval)
@@ -56,6 +41,21 @@ class Validator extends Base\Validator
                     'interval'      => $interval,
                     'period'        => $period,
                     'max_allowed'   => $maxAllowedInterval,
+                    'input'         => $input
+                ]);
+        }
+
+        $minAllowedInterval = Cycle::getMinAllowedInterval($period);
+
+        if ($interval < $minAllowedInterval)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Interval provided is less that  the min interval (' . $minAllowedInterval . ') allowed for the given period (' . $period . ')',
+                'interval',
+                [
+                    'interval'      => $interval,
+                    'period'        => $period,
+                    'min_allowed'   => $minAllowedInterval,
                     'input'         => $input
                 ]);
         }

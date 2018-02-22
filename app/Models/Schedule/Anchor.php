@@ -44,7 +44,7 @@ class Anchor
         {
             $anchor = self::getAnchorForYearly($startTime);
         }
-        elseif ($period === Period::DAILY)
+        else if ($period === Period::DAILY)
         {
             $anchor = null;
         }

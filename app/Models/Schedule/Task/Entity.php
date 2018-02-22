@@ -269,7 +269,7 @@ class Entity extends Base\PublicEntity
             // Here we do + 1 because in case of daily schedules referenceTime has to be
             // greter than the last run
             //
-            $referenceTime = $this->getNextRunAt() + 1 ?? Carbon::now()->getTimestamp() + 1;
+            $referenceTime = $this->getNextRunAt() ? $this->getNextRunAt() + 1 : Carbon::now()->getTimestamp() + 1;
 
             $referenceTime = Carbon::createFromTimestamp($referenceTime, Timezone::IST);
         }

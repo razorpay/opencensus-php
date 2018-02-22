@@ -1595,6 +1595,28 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals(0, $result['invoices_created']);
     }
 
+    public function testSubscriptionManualTestChargeForDaily()
+    {
+        $planAttributes = [
+            'period'   => 'daily',
+            'interval' => 7
+        ];
+
+        $this->doAuthTxnForNewSubscription(false, $planAttributes);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $this->assertEquals('active', $subscription['status']);
+
+        $oldSubscription = $subscription;
+
+        // First test charge marks the subscription as active
+        // Billing period has been updated, paid count increased
+        $subscription = $this->chargeSubscriptionManuallyTestMode($oldSubscription['id'], true);
+
+        $this->assertEquals(2, $subscription['paid_count']);
+    }
+
     public function testSubscriptionChargeWithDueAddon()
     {
         $this->doAuthTxnForNewSubscription(false);
