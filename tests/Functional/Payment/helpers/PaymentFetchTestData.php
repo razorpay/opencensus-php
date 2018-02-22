@@ -48,7 +48,7 @@ return [
             'url'     => '/payments',
             'method'  => 'get',
             'content' => [
-                'customer_id' => '1321313213',
+                'customer_id' => 'cust_9evnGgkvo0XnSh',
             ],
         ],
         'response' => [

@@ -43,7 +43,6 @@ class Preferences
     const CUSTOMER_TRANSACTION_HISTORY_ENABLED_MID = [
         self::MID_SHELL,
         self::DEMO_ACCOUNT,
-        '10000000000000'
     ];
 
     public static $merchantSharedTerminalsBlackList = [
