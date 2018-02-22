@@ -2930,6 +2930,8 @@ ALTER TABLE payments
     ADD INDEX payments_merchant_id_status_created_at_index (merchant_id, status, created_at),
     ADD INDEX payments_merchant_id_index (merchant_id);
 
+ALTER TABLE files modify extension varchar(255) default null;
+
 ALTER TABLE terminals
     ADD COLUMN emandate TINYINT(1) DEFAULT 0 NOT NULL AFTER upi;
 

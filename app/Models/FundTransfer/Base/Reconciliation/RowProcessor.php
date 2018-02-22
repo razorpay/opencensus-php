@@ -82,4 +82,19 @@ abstract class RowProcessor extends Base\Core
 
         $this->repo->saveOrFail($this->reconEntity->source);
     }
+
+    /**
+     * trims the value and checks for empty.
+     * ensures empty strings are considered as null
+     *
+     * @param string $key
+     *
+     * @return null|string
+     */
+    protected function getNullOnEmpty(string $key)
+    {
+        $value = trim($this->row[$key] ?? null);
+
+        return (empty($value) === true) ? null : $value;
+    }
 }
