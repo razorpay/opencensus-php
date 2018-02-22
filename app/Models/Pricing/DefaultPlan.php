@@ -49,6 +49,19 @@ class DefaultPlan
             ],
 
             [
+                'id'             => '1GuENK6Xk6a8I1',
+                'plan_id'        => '1AXludj60w4pSp',
+                'plan_name'      => 'Full Price',
+                'feature'        => 'payment',
+                'payment_method' => 'emandate',
+                'percent_rate'   => '0',
+                'fixed_rate'     => '10',
+                'expired_at'     => null,
+                'created_at'     => time(),
+                'updated_at'     => time()
+            ],
+
+            [
                 'id'             => '1HvFLd6436r9L1',
                 'plan_id'        => '1AXludj60w4pSp',
                 'plan_name'      => 'Full Price',
@@ -115,7 +128,7 @@ class DefaultPlan
 
             [
                 'id'             => '1L8dUj9MzP3Bj3',
-                'plan_id'        => '1In3Yh5Mluj605',
+                'plan_id'        => '1AXludj60w4pSp',
                 'plan_name'      => 'Promotional Price',
                 'feature'        => 'payment',
                 'payment_method' => 'card',
@@ -127,11 +140,11 @@ class DefaultPlan
             ],
 
             [
-                'id'             => '1Nsi8IbQ3pWP7T',
-                'plan_id'        => '1In3Yh5Mluj605',
+                'id'             => '1Otj9JcY5qYB9Z',
+                'plan_id'        => '1AXludj60w4pSp',
                 'plan_name'      => 'Promotional Price',
                 'feature'        => 'payment',
-                'payment_method' => 'netbanking',
+                'payment_method' => 'wallet',
                 'percent_rate'   => '200',
                 'fixed_rate'     => '0',
                 'expired_at'     => null,
@@ -140,11 +153,11 @@ class DefaultPlan
             ],
 
             [
-                'id'             => '1Otj9JcY5qYB9Z',
-                'plan_id'        => '1In3Yh5Mluj605',
+                'id'             => '1Otj9JcY5qYB92',
+                'plan_id'        => '1AXludj60w4pSp',
                 'plan_name'      => 'Promotional Price',
                 'feature'        => 'payment',
-                'payment_method' => 'wallet',
+                'payment_method' => 'emi',
                 'percent_rate'   => '200',
                 'fixed_rate'     => '0',
                 'expired_at'     => null,
@@ -184,6 +197,19 @@ class DefaultPlan
             ],
 
             [
+                'id'             => '1a92ef8iWFE881',
+                'plan_id'        => '2atGxLIYLyHWg7',
+                'plan_name'      => 'Startup Plan',
+                'feature'        => 'payment',
+                'payment_method' => 'emandate',
+                'percent_rate'   => '0',
+                'fixed_rate'     => '20',
+                'expired_at'     => null,
+                'created_at'     => time(),
+                'updated_at'     => time()
+            ],
+
+            [
                 'id'             => '1b03fh9jXGH34f',
                 'plan_id'        => '2atGxLIYLyHWg7',
                 'plan_name'      => 'Startup Plan',
@@ -202,6 +228,19 @@ class DefaultPlan
                 'plan_name'      => 'Startup Plan',
                 'feature'        => 'payment',
                 'payment_method' => 'transfer',
+                'percent_rate'   => '0',
+                'fixed_rate'     => '0',
+                'expired_at'     => null,
+                'created_at'     => time(),
+                'updated_at'     => time()
+            ],
+
+            [
+                'id'             => '1b03wh9jXAH421',
+                'plan_id'        => '2atGxLIYLyHWg7',
+                'plan_name'      => 'Startup Plan',
+                'feature'        => 'payment',
+                'payment_method' => 'emi',
                 'percent_rate'   => '0',
                 'fixed_rate'     => '0',
                 'expired_at'     => null,
@@ -232,6 +271,18 @@ class DefaultPlan
                 'plan_name'      => 'ZeroPricingPlan',
                 'feature'        => 'payment',
                 'payment_method' => 'netbanking',
+                'percent_rate'   => 0,
+                'fixed_rate'     => 0,
+                'expired_at'     => null,
+                'created_at'     => time(),
+                'updated_at'     => time()
+            ],
+            [
+                'id'             => '1ZeroPricingR8',
+                'plan_id'        => '10ZeroPricingP',
+                'plan_name'      => 'ZeroPricingPlan',
+                'feature'        => 'payment',
+                'payment_method' => 'emandate',
                 'percent_rate'   => 0,
                 'fixed_rate'     => 0,
                 'expired_at'     => null,
@@ -292,6 +343,18 @@ class DefaultPlan
                 'plan_name'      => 'ZeroPricingPlan',
                 'feature'        => 'transfer',
                 'payment_method' => 'customer',
+                'percent_rate'   => 0,
+                'fixed_rate'     => 0,
+                'expired_at'     => null,
+                'created_at'     => time(),
+                'updated_at'     => time()
+            ],
+            [
+                'id'             => '1ZeroPricingR9',
+                'plan_id'        => '10ZeroPricingP',
+                'plan_name'      => 'ZeroPricingPlan',
+                'feature'        => 'payment',
+                'payment_method' => 'emi',
                 'percent_rate'   => 0,
                 'fixed_rate'     => 0,
                 'expired_at'     => null,

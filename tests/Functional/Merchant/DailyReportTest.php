@@ -35,9 +35,9 @@ class DailyReportTest extends TestCase
 
         $this->setUpFixture();
 
-        $content = $this->initiateSettlements('kotak', $this->settleAtTimestamp);
+        $content = $this->initiateSettlements('axis', $this->settleAtTimestamp);
 
-        $this->assertNotEquals($content['kotak']['count'], 0);
+        $this->assertNotEquals($content['axis']['count'], 0);
 
         $setl = $this->getLastEntity('settlement', true);
 

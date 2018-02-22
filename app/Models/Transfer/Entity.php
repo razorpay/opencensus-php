@@ -14,6 +14,9 @@ use RZP\Constants\Entity as E;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Merchant\Entity as Merchant;
 
+/**
+ * @property Merchant $merchant
+ */
 class Entity extends Base\PublicEntity
 {
     use NotesTrait;

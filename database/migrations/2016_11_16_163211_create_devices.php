@@ -76,7 +76,6 @@ class CreateDevices extends Migration
             $table->integer(Entity::UPDATED_AT);
 
             $table->index(Entity::CUSTOMER_ID);
-            $table->index(Entity::VERIFICATION_TOKEN);
             $table->index(Entity::CREATED_AT);
 
             $table->foreign(Entity::CUSTOMER_ID)

@@ -49,9 +49,9 @@ class NodalAccount extends NodalBase\NodalAccount
         $this->id = Base\UniqueIdEntity::generateUniqueId();
     }
 
-    public function generateSettlementFile($entities, $h2h = true): array
+    public function generateFundTransferFile($entities, $h2h = true): FileStore\Creator
     {
-        $rows = $this->getSettlementRows($entities);
+        $rows = $this->getRows($entities);
 
         $txt = $this->getTxtFromRows($rows);
 
@@ -61,7 +61,7 @@ class NodalAccount extends NodalBase\NodalAccount
 
         $this->sendIciciTransferMail($fileData);
 
-        return [$file, $file];
+        return $file;
     }
 
     protected function getTxtFromRows(array $rows): string
@@ -88,7 +88,7 @@ class NodalAccount extends NodalBase\NodalAccount
         return $txt;
     }
 
-    protected function getSettlementRows(Base\PublicCollection $entities): array
+    protected function getRows(Base\PublicCollection $entities): array
     {
         $rows = [];
 

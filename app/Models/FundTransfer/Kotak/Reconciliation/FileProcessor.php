@@ -6,6 +6,7 @@ use Mail;
 use Carbon\Carbon;
 
 use RZP\Exception;
+use RZP\Models\FileStore;
 use RZP\Models\Settlement\Channel;
 use RZP\Trace\TraceCode;
 use RZP\Models\FundTransfer\Kotak;
@@ -21,6 +22,10 @@ class FileProcessor extends BaseProcessor
     protected static $channel = Channel::KOTAK;
 
     protected static $delimiter = '~';
+
+    protected static $fileExtensions = [
+        FileStore\Format::TXT
+    ];
 
     protected function setDate($data)
     {
@@ -71,7 +76,12 @@ class FileProcessor extends BaseProcessor
         if (($count < 54) or ($count > 55))
         {
             throw new Exception\LogicException(
-                'Invalid count: ' . $count . ' Should be either 54 or 55. Row: ', null, $ix);
+                'Invalid count: ' . $count . ' Should be either 54 or 55. Row',
+                null,
+                [
+                    'line'      => $ix,
+                    'content'   => $values
+                ]);
         }
 
         $headings = array_slice($headings, 0, $count);

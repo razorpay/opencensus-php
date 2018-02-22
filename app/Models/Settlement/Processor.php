@@ -8,18 +8,12 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
-use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\FundTransfer\Batch\Entity as BatchFundTransfer;
-use RZP\Models\FundTransfer\Batch\BatchFundTransferTrait;
-use RZP\Models\FundTransfer\Kotak;
-use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Trace\TraceCode;
 
 class Processor extends Base\Core
 {
     use SettlementTrait;
-    use BatchFundTransferTrait;
 
     protected $setlTime;
 
@@ -101,11 +95,13 @@ class Processor extends Base\Core
 
             foreach ($channels as $channel)
             {
-                $this->batchFundTransfer = null;
 
                 list($settlements, $txnCount, $setlAttempts) = $this->createSettlements($channel);
 
-                $response[$channel] = $this->generateAndSendSettlementFile($settlements, $setlAttempts, $txnCount, $channel);
+                $response[$channel] = [
+                    'count'    => count($settlements),
+                    'txnCount' => $txnCount
+                ];
             }
         }
         catch (\Exception $e)
@@ -136,12 +132,7 @@ class Processor extends Base\Core
 
             Entity::verifyIdAndStripSignMultiple($setlIds);
 
-            $channels = $this->getArrayedChannels();
-
-            foreach ($channels as $channel)
-            {
-                $response[$channel] = $this->retrySettlementsForChannel($setlIds, $channel);
-            }
+            $response = $this->retrySettlementsForChannel($setlIds, $channel);
         }
         catch (\Exception $e)
         {
@@ -151,13 +142,13 @@ class Processor extends Base\Core
         return $response;
     }
 
-    protected function retrySettlementsForChannel($setlIds, $channel)
+    protected function retrySettlementsForChannel(array $setlIds)
     {
         $setlAttempts = new Base\PublicCollection;
 
         $totalTxns = 0;
 
-        $settlements = $this->repo->settlement->getFailedSettlementsForRetry($setlIds, $channel);
+        $settlements = $this->repo->settlement->getFailedSettlementsForRetry($setlIds);
 
         $settlementsRetried = [];
 
@@ -166,6 +157,8 @@ class Processor extends Base\Core
             $setlTxns = $setl->setlTransactions;
 
             $setlTxnsCount = $setlTxns->count();
+
+            $channel = $setl->getChannel();
 
             $merchantSettler = new Merchant($setl->merchant, $channel, $this->repo);
 
@@ -177,9 +170,7 @@ class Processor extends Base\Core
                     $merchantSettler->createTransaction($setl);
                 }
 
-                list($setl, $bankTransferAtpt) = $merchantSettler->retryFailedSettlement($setl);
-
-                return $this->createAndupdateBatchEntities($setl, $setlTxnsCount, $bankTransferAtpt);
+                return $merchantSettler->retryFailedSettlement($setl);
             });
 
             $setlAttempts->push($bankTransferAtpt);
@@ -189,69 +180,18 @@ class Processor extends Base\Core
             $settlementsRetried[] = $setl->getId();
         }
 
-        $response = $this->generateAndSendSettlementFile($settlements, $setlAttempts, $totalTxns, $channel);
-
         $setlNotRetried = array_diff($setlIds, $settlementsRetried);
+
+        $response['retried_settlements'] = $settlementsRetried;
 
         if (empty($setlNotRetried) === false)
         {
             $response['retry_skipped_count'] = count($setlNotRetried);
 
-            $response['retry_skipped_settlements'] = implode(', ', $setlNotRetried);
+            $response['retry_skipped_settlements'] = $setlNotRetried;
         }
 
         return $response;
-    }
-
-    protected function generateAndSendSettlementFile(
-        $settlements,
-        $setlAttempts,
-        $txnCount,
-        $channel,
-        $h2h = true)
-    {
-        $returnData = [
-            'channel'           => $channel,
-            'count'             => $settlements->count(),
-            'transaction_count' => $txnCount,
-        ];
-
-        if ($setlAttempts->count() > 0)
-        {
-            list($txtFileEntity, $excelFileEntity) =
-                $this->generateSettlementFile($setlAttempts, $channel, $h2h);
-
-            $txtFileDetails = $txtFileEntity->get();
-            $excelFileDetails = $excelFileEntity->get();
-
-            $txtUrl = $txtFileEntity->getUrl();
-            $excelUrl = $excelFileEntity->getUrl();
-
-            $urls = [
-                'txt_file'   => $txtUrl,
-                'excel_file' => $excelUrl,
-            ];
-
-            $this->updateFileDetailsInBatchFundTransferEntity(
-                [
-                    'urls'          => $urls,
-                    'txt_file_id'   => $txtFileDetails['id'],
-                    'excel_file_id' => $excelFileDetails['id'],
-                ]);
-
-            $slackData = $returnData;
-
-            $this->successNotification($slackData, $settlements, TraceCode::SETTLEMENT_INITIATED);
-
-            $returnData['settlement_text_file'] = $txtFileDetails;
-            $returnData['settlement_excel_file'] = $excelFileDetails;
-        }
-        else
-        {
-            $returnData['message'] = 'No settlements found!';
-        }
-
-        return $returnData;
     }
 
     protected function createSettlements($channel): array

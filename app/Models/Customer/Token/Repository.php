@@ -3,9 +3,9 @@
 namespace RZP\Models\Customer\Token;
 
 use RZP\Models\Base;
+use RZP\Models\Customer;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Method;
-use RZP\Models\Customer;
 
 class Repository extends Base\Repository
 {
@@ -33,7 +33,8 @@ class Repository extends Base\Repository
                         $query->whereNull(Token\Entity::EXPIRED_AT)
                               ->orWhere(Token\Entity::EXPIRED_AT, '>', time());
                     })
-                    ->orderBy(Entity::ID, 'desc')
+                    ->orderBy(Token\Entity::CREATED_AT, 'desc')
+                    ->orderBy(Token\Entity::ID, 'desc')
                     ->get();
     }
 
@@ -101,13 +102,15 @@ class Repository extends Base\Repository
                     ->where(Entity::METHOD, '=', $method)
                     ->where(Entity::CUSTOMER_ID, '=', $customer->getId())
                     ->where(Entity::MERCHANT_ID, '=', $customer->merchant->getId())
+                    ->orderBy(Token\Entity::CREATED_AT, 'desc')
+                    ->orderBy(Token\Entity::ID, 'desc')
                     ->get();
     }
 
     public function getTokenByIdAndAccountNumber(string $tokenId, string $accountNumber)
     {
         return $this->newQuery()
-                    ->where(Entity::METHOD, Method::NETBANKING)
+                    ->where(Entity::METHOD, Method::EMANDATE)
                     ->where(Entity::ID, $tokenId)
                     ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
                     ->firstOrFail();

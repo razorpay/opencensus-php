@@ -82,6 +82,8 @@ class TerminalSelectionTest extends TestCase
 
         $this->assertEquals('1000BdeskTrmnl', $payment['terminal_id']);
 
+        $this->ba->getAdmin()->merchants()->attach($mid);
+
         $this->assignSubMerchant($tid, $mid);
 
         $payment = $this->getDefaultNetbankingPaymentArray();
@@ -119,12 +121,14 @@ class TerminalSelectionTest extends TestCase
             'method' => 'PUT',
         ];
 
+        $this->ba->adminAuth();
+
         $content = $this->makeRequestAndGetContent($request);
     }
 
     public function testSubMerchantAssignWithMultipleAssignments()
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $this->fixtures->create('terminal:multiple_netbanking_terminals');
 
@@ -133,6 +137,8 @@ class TerminalSelectionTest extends TestCase
         $mid = Merchant\Account::TEST_ACCOUNT;
 
         $tid = '10BillDirTrmn2';
+
+        $this->ba->getAdmin()->merchants()->attach($mid);
 
         $this->assignSubMerchant($tid, $mid);
 
@@ -759,6 +765,8 @@ class TerminalSelectionTest extends TestCase
         $payment1 = $this->getLastEntity('payment', true);
 
         $this->assertEquals('DrctNbBdkTmnl3', $payment1['terminal_id']);
+
+        $this->ba->adminAuth();
 
         $this->verifyPayment($payment1['id']);
 

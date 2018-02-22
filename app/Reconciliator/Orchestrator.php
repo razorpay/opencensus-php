@@ -376,7 +376,7 @@ class Orchestrator extends Base\Core
         // If sheetNames returned is empty, ensure that the gateway does not perform
         // any operation based on the sheet name.
         //
-        $sheetNames = $this->gatewayReconciliator->getSheetNames();
+        $sheetNames = $this->gatewayReconciliator->getSheetNames($fileDetails);
 
         $startRow = $this->gatewayReconciliator->getStartRow($fileDetails);
 

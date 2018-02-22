@@ -37,7 +37,7 @@ class NetbankingHdfcRefundFileTest extends TestCase
 
         $refund = $this->refundPayment($payment['id']);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->startTest();
 

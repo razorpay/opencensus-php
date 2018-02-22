@@ -86,15 +86,7 @@ class Server extends Base\Mock\Server
                 'Input fields not set properly');
         }
 
-        //
-        // TODO: To remove this completely once we use emandate method
-        // internally also and not only in the external request.
-        //
-        if (empty($input[Payment\Entity::AUTH_TYPE]) === false)
-        {
-            $data['emandate'] = true;
-        }
-
+        $data['method'] = $input['method'];
         $data['action'] = 'authorize';
         $data['url'] = $this->route->getUrlWithPublicAuth('mock_sharp_payment_submit');
         $data['content'] = array(
@@ -158,10 +150,23 @@ class Server extends Base\Mock\Server
             'status' => 'authorized',
         ];
 
-        if (($payment['method'] === Payment\Method::UPI) and
-            ($payment['vpa'] === Vpa::FAILURE))
+        if ($payment['method'] === Payment\Method::UPI)
         {
-            $response['status'] = 'failed';
+            if (isset($payment['vpa']) === false)
+            {
+                $response['vpa'] = Vpa::SUCCESS;
+                if (($payment['amount'] === 5555))
+                {
+                    $response['status'] = 'failed';
+                    $response['vpa'] = Vpa::FAILURE;
+                }
+            }
+
+            if ((isset($payment['vpa']) === true) and
+                ($payment['vpa'] === Vpa::FAILURE))
+            {
+                $response['status'] = 'failed';
+            }
         }
 
         return $response;

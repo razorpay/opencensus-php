@@ -81,7 +81,7 @@ class MethodsTest extends TestCase
 
         $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $this->startTest();
 
@@ -156,7 +156,8 @@ class MethodsTest extends TestCase
             'merchant_id'               => '10000000000000',
             'gateway'                   => 'netbanking_icici',
             'card'                      => 0,
-            'netbanking'                => 1,
+            'netbanking'                => 0,
+            'emandate'                  => 1,
             'gateway_merchant_id'       => 'razorpay billdesk',
             'gateway_terminal_id'       => 'nodal account billdesk',
             'gateway_terminal_password' => 'razorpay_password',

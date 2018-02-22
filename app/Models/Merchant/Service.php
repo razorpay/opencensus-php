@@ -21,7 +21,6 @@ use RZP\Models\BankAccount;
 use RZP\Models\Base;
 use RZP\Models\Coupon;
 use RZP\Models\Feature;
-use RZP\Models\Key;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 use RZP\Models\Merchant\Webhook;
@@ -36,10 +35,8 @@ class Service extends Base\Service
 {
     use Notify;
 
-    const COUPON_RESPONSE   = 'apply_coupon';
-    const OAUTH_MAIL        = 'oauth_mail';
-    const APPLICATION       = 'application';
-
+    const COUPON_RESPONSE               = 'apply_coupon';
+    const OAUTH_MAIL                    = 'oauth_mail';
 
     /**
      * Creates a merchant and saves in database
@@ -365,7 +362,9 @@ class Service extends Base\Service
         // validate if this plan can be set for this merchant.
         // Refer: https://github.com/razorpay/api/issues/324
 
-        (new Merchant\Methods\Core)->validatePricingPlanForMethods($merchant, $plan);
+        $methods = $this->repo->methods->getMethodsForMerchant($merchant);
+
+        (new Merchant\Methods\Core)->validatePricingPlanForMethods($merchant, $plan, $methods);
 
         $originalPricingPlan = null;
 
@@ -777,16 +776,16 @@ class Service extends Base\Service
         return $webhook->toArrayPublic();
     }
 
-    public function getWebhooks()
+    public function getWebhooks(array $params)
     {
-        $webhooks = $this->repo->webhook->fetch([], $this->merchant->getId());
+        $webhooks = $this->repo->webhook->fetch($params, $this->merchant->getId());
 
         return $webhooks->toArrayPublic();
     }
 
     public function createOAuthAppWebhook(string $appId, array $input): array
     {
-        $input[Webhook\Entity::ENTITY_TYPE] = self::APPLICATION;
+        $input[Webhook\Entity::ENTITY_TYPE] = AccessMap\Entity::APPLICATION;
 
         $input[Webhook\Entity::ENTITY_ID] = $appId;
 
@@ -1315,8 +1314,10 @@ class Service extends Base\Service
         $this->repo->saveOrFail($merchant);
     }
 
-    public function getUsers(string $merchantId)
+    public function getUsers()
     {
+        $merchantId = $this->merchant->getId();
+
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
         $users = (new Merchant\Core)->getUsers($merchant);
@@ -1390,7 +1391,6 @@ class Service extends Base\Service
         );
 
         return $response;
-
     }
 
     /**
@@ -1588,13 +1588,19 @@ class Service extends Base\Service
      */
     public function sendOAuthMail(array $input, string $type): array
     {
-        $this->trace->info(TraceCode::SEND_OAUTH_MAIL_REQUEST, ['type' => $type, 'input' => $input]);
+        $this->trace->info(
+            TraceCode::SEND_OAUTH_MAIL_REQUEST,
+            [
+                'type' => $type,
+                'input' => $input
+            ]);
 
-        (new Merchant\Validator)->validateInput(self::OAUTH_MAIL, $input);
+        (new Validator)->validateInput(self::OAUTH_MAIL, $input);
 
         $merchant = $this->repo->merchant->findOrFail($input[Entity::MERCHANT_ID]);
         $user     = $this->repo->user->findOrFail($input[User\Entity::USER_ID]);
-        $client   = (new OAuthClient\Repository)->findOrFail($input[OAuthToken\Entity::CLIENT_ID]);
+        $client   = (new OAuthClient\Repository)->findOrFail(
+                                                    $input[OAuthToken\Entity::CLIENT_ID]);
 
         $mailer = $this->getOAuthMailerClassByType($type);
 
@@ -1682,5 +1688,14 @@ class Service extends Base\Service
             User\Entity::PASSWORD_CONFIRMATION => $input['password_confirmation'],
             User\Entity::CAPTCHA_DISABLE       => User\Validator::DISABLE_CAPTCHA_SECRET,
         ];
+    }
+
+    public function enableEmiMerchantSubvention(string $id, string $emiPlanId, array $input)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        $emiPlan = $this->repo->emi_plan->findOrFailPublic($emiPlanId);
+
+        return $this->core()->enableEmiMerchantSubvention($merchant, $emiPlan, $input);
     }
 }

@@ -3,6 +3,7 @@
 namespace RZP\Base;
 
 use RZP\Exception;
+use Carbon\Carbon;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Entity as E;
 
@@ -68,7 +69,7 @@ class EloquentEx extends \Razorpay\Spine\Entity
 
     public function freshTimestamp()
     {
-        return time();
+        return Carbon::now()->getTimestamp();
     }
 
     public function getTable()

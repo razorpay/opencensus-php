@@ -2,6 +2,33 @@
 
 return [
     'facades' => [
+        'virtual_yes_bank' => [
+            'cust_code'          => '111222',
+            'remitter_code'      => '123',
+            'customer_subcode'   => null,
+            'invoice_no'         => null,
+            'bene_account_no'    => '11122200123',
+            'amount'             => 100,
+            'rmtr_account_no'    => null,
+            'rmtr_account_ifsc'  => 'HDFC0000240',
+            'transaction_ref_no' => '81231231232',
+            'trans_received_at'  => '1/25/2018 7:16:25 PM',
+            'trans_status'       => 'CREDITED',
+            'validation_status'  => 'VALIDATED: OK',
+            'transfer_type'      => 'NEFT',
+            'credit_ref'         => '004331798',
+            'notify_status'      => 'NOTIFIED: OK',
+            'notify_result'      => null,
+            'return_ref'         => null,
+            'returned_at'        => null,
+            'rmtr_full_name'     => 'TECNOTREE CONVERGENCE PVT LTD',
+            'rmtr_add'           => 'BANGALORE',
+            'udf11'              => null,
+            'udf12'              => null,
+            'udf13'              => null,
+            'udf14'              => null,
+        ],
+
         'first_data' => [
             'super_mid'            => '78541547',
             'mid'                  => '87001081',
@@ -48,7 +75,7 @@ return [
             'custom_data'          => null,
             'se_no'                => null,
         ],
-
+        
         'hdfc' => [
             'merchant_code'    => 'T69801',
             'terminal_number'  => 70011863,
@@ -120,6 +147,27 @@ return [
             'order_info'           => null,
             'curr_exp'             => '2',
             'arn'                  => '75105177297000905183277',
+        ],
+        
+
+        'billdesk' => [
+            'Refund ID'                 => 'uibpgthqndxmwcf',
+            'Ref. 1'                    => '9LRjiRNokiZ3Ww',
+            'Refund Amount (Rs. Ps.)'   => 500
+        ],
+
+        'hitachi' => [
+            'terminal_id'           => '38R00001',
+            'amount'                => 500,
+            'retr_ref_nr'           => 736022780722,
+            'auth_id'               => 108418,
+            'interchange_type'      => 'VISA',
+            'fee_amount'            => 0.00,
+            'credit_debit'          => 'C',
+            'cardcountry'           => 'IN',
+            'arn'                   => 74110757361008597807228,
+            'issettled'             => 'S',
+            'message_type'          => '0200'
         ]
     ],
 

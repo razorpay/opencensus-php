@@ -49,7 +49,10 @@ class Activate extends Base\Core
         // Ensure that all payment methods enabled for the merchant
         // has an associated pricing assigned
         //
-        (new Methods\Core)->checkPricing($merchant);
+        //
+        $methods = $this->repo->methods->getMethodsForMerchant($merchant);
+
+        (new Methods\Core)->checkPricing($merchant, $methods);
 
         // $terminal = (new Terminal\Repository)->getByMerchantId($id);
 
@@ -345,9 +348,15 @@ class Activate extends Base\Core
      */
     protected function rearrangeRules(array $rules)
     {
-        $arrangedRules = array();
+        $arrangedRules = [];
 
-        $orderOfRules = array('card', 'netbanking', 'wallet', 'emi', 'exceptional');
+        $orderOfRules = [
+            Payment\Method::CARD,
+            Payment\Method::NETBANKING,
+            Payment\Method::WALLET,
+            Payment\Method::EMI,
+            'exceptional'
+        ];
 
         $exceptionalRules = $emiRules = $cardRules = $netbankingRules = $walletRules = [];
 
@@ -355,7 +364,7 @@ class Activate extends Base\Core
         {
             switch ($rule['payment_method'])
             {
-                case 'card':
+                case Payment\Method::CARD:
                     if ($rule['payment_network'] === null)
                     {
                         $cardRules[] = $rule;
@@ -367,15 +376,15 @@ class Activate extends Base\Core
 
                     break;
 
-                case 'netbanking':
+                case Payment\Method::NETBANKING:
                     $netbankingRules[] = $rule;
                     break;
 
-                case 'wallet':
+                case Payment\Method::WALLET:
                     $walletRules[] = $rule;
                     break;
 
-                case 'emi':
+                case Payment\Method::EMI:
                     $emiRules[] = $rule;
                     break;
 

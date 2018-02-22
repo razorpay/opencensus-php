@@ -6,15 +6,22 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
+use RZP\Gateway\Blade\Mock\CardNumber;
 
 use RZP\Reconciliator\FirstData\PaymentReconciliate as FDPaymentRecon;
 use RZP\Reconciliator\HDFC\PaymentReconciliate as HDFCPaymentRecon;
 use RZP\Reconciliator\Axis\PaymentReconciliate as AxisPaymentRecon;
+use RZP\Reconciliator\VirtualAccYesBank\PaymentReconciliate as VirtualAccYesBank;
+use RZP\Reconciliator\BillDesk\RefundReconciliate as BilldeskRefundRecon;
+use RZP\Reconciliator\Hitachi\PaymentReconciliate as HitachiPaymentRecon;
+use RZP\Reconciliator\Hitachi\RefundReconciliate as HitachiRefundRecon;
 
 class ReconciliationFileTest extends TestCase
 {
     use FileHandlerTrait;
     use PaymentTrait;
+    use VirtualAccountTrait;
     use DbEntityFetchTrait;
 
     protected $payment;
@@ -157,6 +164,35 @@ class ReconciliationFileTest extends TestCase
         $this->assertTrue($updatedPayment1['gateway_captured']);
     }
 
+    public function testVirtualAccYesBankReconFile()
+    {
+        $this->fixtures->merchant->addFeatures(['virtual_accounts']);
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        $account = $this->createVirtualAccount();
+
+        $payment = $this->payVirtualAccount($account['id']);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(null, $transaction['reconciled_at']);
+
+        $entries[] = $this->overrideVirtualAccYesBankPayment($account, $payment);
+
+        $file = $this->writeToExcelFile($entries, 'virtualAccYesBank', 'files/settlement','Sheet1');
+
+        $this->runForFiles([$file], 'VirtualAccYesBank');
+
+        $bankTransfer = $this->getLastEntity('bank_transfer', true);
+
+        $bankAccount = $this->getLastEntity('bank_account', true);
+
+        $this->assertEquals($entries[0]['rmtr_account_ifsc'], $bankTransfer['payer_ifsc']);
+        $this->assertEquals($entries[0]['rmtr_account_ifsc'], $bankAccount['ifsc']);
+
+    }
+
     public function testAxisCyberSourceReconPaymentFile()
     {
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
@@ -212,6 +248,39 @@ class ReconciliationFileTest extends TestCase
 
         $this->assertEquals($entries[0][HDFCPaymentRecon::COLUMN_ARN[0]], "'" . $updatedRefund1['arn']);
 
+    }
+    
+    //For success case of Bill desk reconciliation
+    public function testBillDeskReconRefundFileFailure()
+    {
+        $this->fixtures->create('terminal:shared_billdesk_terminal');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        // Recurring authorised payment
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $refund = $this->refundPayment($payment['id']);
+        $gatewayRefund = $this->getLastEntity('billdesk', true);
+        
+        $refundEntity = $this->getEntityById('refund', $gatewayRefund['refund_id'], true);
+        $transaction = $this->getEntityById('transaction', $refundEntity['transaction_id'], true);
+        
+        //Reconciled at should be null
+        $this->assertNull($transaction['reconciled_at']);
+
+        $entries[] = $this->overrideBilldeskRefund($gatewayRefund);
+
+        $file = $this->writeToCsvFile($entries, 'billdesk_refund');
+
+        $this->runForFiles([$file], 'BillDesk');
+        
+        $updatedRefund1 = $this->getEntityById('refund', $gatewayRefund['refund_id'], true);
+        $updatedTransaction = $this->getEntityById('transaction', $updatedRefund1['transaction_id'], true);
+        
+        //Reconciled at should not be null
+        $this->assertNotNull($updatedTransaction['reconciled_at']);
     }
 
     /*
@@ -302,12 +371,53 @@ class ReconciliationFileTest extends TestCase
         return $facade;
     }
 
+    private function overrideVirtualAccYesBankPayment($account, $payment)
+    {
+        $facade = $this->testData['facades']['virtual_yes_bank'];
+
+        $facade[VirtualAccYesBank::COLUMN_UTR]           = $payment['transaction_id'];
+        $facade[VirtualAccYesBank::COLUMN_PAYEE_ACCOUNT] = $account['receivers'][0]['account_number'];
+
+        return $facade;
+    }
+
     private function overrideHdfcRefund(array $payment, array $forceOverride = [], $gateway = 'fss')
     {
         $facade = $this->overrideHdfcPayment($payment, $forceOverride, $gateway);
 
         $facade['rec_fmt'] = 'CVD';
         $facade[HDFCPaymentRecon::COLUMN_PAYMENT_ID[0]] = $payment['refund_id'];
+
+        return $facade;
+    }
+    
+    private function overrideBilldeskRefund(array $refund)
+    {
+        $facade = $this->testData['facades']['billdesk'];
+
+        $facade[BilldeskRefundRecon::COLUMN_REFUND_ID]  = $refund['RefundId'];
+        $facade[BilldeskRefundRecon::COLUMN_PAYMENT_ID] = $refund['payment_id'];
+
+        return $facade;
+    }
+
+    private function overrideHitachiPayment(array $payment, array $forceOverride = [])
+    {
+        $facade = $this->testData['facades']['hitachi'];
+        $facade[HitachiPaymentRecon::COLUMN_PAYMENT_ID]     = $payment['payment_id'];
+        $facade[HitachiPaymentRecon::COLUMN_PAYMENT_AMOUNT] = intval($payment['amount'] / 100);
+        $facade[HitachiPaymentRecon::COLUMN_AUTH_CODE]      = random_integer(6);
+        $facade[HitachiPaymentRecon::COLUMN_ARN]            = str_random(24);
+
+        return array_merge($facade, $forceOverride);
+    }
+
+    private function overrideHitachiRefund(array $payment, array $forceOverride = [])
+    {
+        $facade = $this->overrideHitachiPayment($payment, $forceOverride);
+
+        $facade['message_type'] = '0220';
+        $facade[HitachiRefundRecon::COLUMN_REFUND_ID] = $payment['refund_id'];
 
         return $facade;
     }
@@ -347,10 +457,66 @@ class ReconciliationFileTest extends TestCase
 
         return new UploadedFile(
             $url,
-            'file.xlsx',
+            basename($url),
             $mime,
             filesize($url),
             null,
             true);
     }
+    
+    public function testHitachiReconPaymentFile()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_hitachi_terminal');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        $this->payment['card']['number'] = CardNumber::VALID_ENROLL_NUMBER;
+
+        $payment1 = $this->getNewPaymentEntity(false,true);
+
+        $gatewayPayment1 = $this->getLastEntity('hitachi', true);
+
+        $this->assertNull($payment1['reference1']);
+
+        $entries[] = $this->overrideHitachiPayment($gatewayPayment1);
+
+        $file = $this->writeToExcelFile($entries, 'hitachi');
+
+        $this->runForFiles([$file], 'Hitachi');
+
+        $updatedPayment1 = $this->getEntityById('payment', $payment1['id'], true);
+
+        $this->assertEquals($entries[0][HitachiPaymentRecon::COLUMN_ARN], $updatedPayment1['reference1']);
+        $this->assertEquals($entries[0][HitachiPaymentRecon::COLUMN_AUTH_CODE], $updatedPayment1['reference2']);
+
+        $this->assertTrue($updatedPayment1['gateway_captured']);
+    }
+
+    /**
+     * Refund Recon is disabled temporary
+    public function testHitachiReconRefundFile()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_hitachi_terminal');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
+
+        $this->payment['card']['number'] = CardNumber::VALID_ENROLL_NUMBER;
+
+        $refund1 = $this->getNewRefundEntity(true, false);
+
+        $gatewayPayment1 = $this->getDbLastEntityToArray('hitachi');
+
+        $this->assertNull($refund1['arn']);
+
+        $entries[] = $this->overrideHitachiRefund($gatewayPayment1);
+
+        $file = $this->writeToExcelFile($entries, 'hitachi');
+        $this->runForFiles([$file], 'Hitachi');
+
+        $updatedRefund1 = $this->getDbEntityById('refund', $refund1['id'])->toArrayAdmin();
+
+        $this->assertEquals($entries[0][HitachiRefundRecon::COLUMN_ARN], $updatedRefund1['arn']);
+    }
+    */
+
 }

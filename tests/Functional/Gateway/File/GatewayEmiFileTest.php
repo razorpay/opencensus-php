@@ -41,7 +41,7 @@ class GatewayEmiFileTest extends TestCase
 
         $this->makeEmiPaymentOnCard('4111460212312338', 3);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->startTest();
 
@@ -71,7 +71,7 @@ class GatewayEmiFileTest extends TestCase
     {
         Mail::fake();
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->startTest();
 
@@ -98,7 +98,7 @@ class GatewayEmiFileTest extends TestCase
 
         $this->makeEmiPaymentOnCard('4111460212312338', 3);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->startTest();
     }
@@ -113,7 +113,7 @@ class GatewayEmiFileTest extends TestCase
 
         $this->makeEmiPaymentOnCard('4111460212312338', 3);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->startTest();
 
@@ -133,7 +133,7 @@ class GatewayEmiFileTest extends TestCase
 
         $this->makeEmiPaymentOnCard('4147720000000009', 9);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->startTest();
 
@@ -167,7 +167,7 @@ class GatewayEmiFileTest extends TestCase
 
         $this->makeEmiPaymentOnCard('4280951000002433', 9, 1, 'capp_1000000custapp');
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->startTest();
 
@@ -201,7 +201,7 @@ class GatewayEmiFileTest extends TestCase
 
         $this->makeEmiPaymentOnCard('5243730000000008', 9);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->startTest();
 
@@ -235,7 +235,7 @@ class GatewayEmiFileTest extends TestCase
 
         $this->makeEmiPaymentOnCard('4028740000000001', 9);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->startTest();
 

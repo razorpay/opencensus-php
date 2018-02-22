@@ -79,7 +79,7 @@ class AtomTransactionTest extends TestCase
         $this->assertEquals('1000AtomShared', $payment['terminal_id']);
 
         $txn = $this->getLastTransaction(true);
-        $this->assertEquals('kotak', $txn['channel']);
+        $this->assertEquals('axis', $txn['channel']);
 
         $testData = $this->testData['txnDataAfterPaymentOnSharedTerminal'];
         $testData['entity_id'] = $payment['id'];
@@ -106,7 +106,7 @@ class AtomTransactionTest extends TestCase
         $this->assertEquals('1000AtomShared', $payment['terminal_id']);
 
         $txn = $this->getLastTransaction(true);
-        $this->assertEquals('kotak', $txn['channel']);
+        $this->assertEquals('axis', $txn['channel']);
 
         $testData = $this->testData['txnDataAfterPaymentOnSharedTerminal'];
         $testData['entity_id'] = $payment['id'];
