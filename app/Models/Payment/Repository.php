@@ -35,7 +35,7 @@ class Repository extends Base\Repository
         Entity::ORDER_ID           => 'sometimes|string|size:20',
         Entity::TRANSFERRED        => 'sometimes|boolean|in:0,1',
         self::EXPAND . '.*'        => 'filled|string|in:card',
-        Entity::CUSTOMER_ID        => 'sometimes|custom|string'
+        Entity::CUSTOMER_ID        => 'sometimes|size:19|custom'
     ];
 
     // These are proxy allowed params to search on.
@@ -81,6 +81,7 @@ class Repository extends Base\Repository
         Entity::ORDER_ID,
         Entity::INVOICE_ID,
         Entity::SUBSCRIPTION_ID,
+        Entity::CUSTOMER_ID,
     ];
 
 
