@@ -134,7 +134,8 @@ class TransactionController extends Controller
         // GST is applicable from 1st July 2017
         $isGstApplicable = ($year >= 2018 or ($year === 2017 and $month >= 7));
 
-        if ($isGstApplicable) {
+        if ($isGstApplicable)
+        {
             $input['format'] = 'new';
         }
 
@@ -146,8 +147,8 @@ class TransactionController extends Controller
 
             list($error, $merchant) = (new Merchant\Service)->fetchMerchantFromApi($merchantId);
 
-            if ($error !== null) {
-
+            if ($error !== null)
+            {
               return AppResponse::validationErrorResponse($errorMsg);
             }
 

@@ -341,6 +341,7 @@ class Service extends Base\Service
         if (isset($input['merchant_id']))
         {
             $merchantId = $input['merchant_id'];
+
             unset($input['merchant_id']);
         }
 

@@ -99,7 +99,16 @@ class Service extends Base\Service
             'merchant_id'   => $merchantId,
         ]);
 
-        $this->setApiCredentials($merchantId);
+        $adminUser = Auth::guard('api')->user();
+
+        if (empty($adminUser) === false)
+        {
+            $this->setAdminCredentials($merchantId);
+        }
+        else
+        {
+            $this->setApiCredentials($merchantId);
+        }
 
         list($error, $merchantDetails) = $this->api
                                               ->merchantDetail
