@@ -45,16 +45,9 @@ final class Constants
         Detail\Entity::PROMOTER_PAN_NAME           => 2,
 
         Detail\Entity::BUSINESS_WEBSITE            => 3,
-        Detail\Entity::WEBSITE_ABOUT               => 3,
-        Detail\Entity::WEBSITE_CONTACT             => 3,
-        Detail\Entity::WEBSITE_PRIVACY             => 3,
-        Detail\Entity::WEBSITE_TERMS               => 3,
-        Detail\Entity::WEBSITE_REFUND              => 3,
-        Detail\Entity::WEBSITE_PRICING             => 3,
 
         Detail\Entity::BANK_BRANCH_IFSC            => 4,
         Detail\Entity::BANK_ACCOUNT_NUMBER         => 4,
-        Detail\Entity::BANK_ACCOUNT_TYPE           => 4,
         Detail\Entity::BANK_ACCOUNT_NAME           => 4,
         Detail\Entity::BANK_BENEFICIARY_ADDRESS1   => 4,
         Detail\Entity::BANK_BENEFICIARY_ADDRESS2   => 4,
@@ -79,7 +72,6 @@ final class Constants
 
         Detail\Entity::BANK_BRANCH_IFSC            => 2,
         Detail\Entity::BANK_ACCOUNT_NUMBER         => 2,
-        Detail\Entity::BANK_ACCOUNT_TYPE           => 2,
         Detail\Entity::BANK_ACCOUNT_NAME           => 2,
 
         Detail\Entity::ADDRESS_PROOF_URL           => 3,

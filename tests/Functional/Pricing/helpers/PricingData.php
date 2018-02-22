@@ -325,6 +325,98 @@ return [
         ],
     ],
 
+    'testAddPricingPlanEmandateRule' => [
+        'request' => [
+            'content' => [
+                'payment_method' => 'emandate',
+                'fixed_rate'     => 1000
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name' => 'TestPlan1',
+                'payment_method' => 'emandate',
+                'payment_method_type' => null,
+                'payment_network' => null,
+                'payment_issuer' => null,
+                'percent_rate' => 0,
+                'fixed_rate'   => 1000
+            ],
+        ],
+    ],
+
+    'testAddPricingPlanEmandateRegistrationRule' => [
+        'request' => [
+            'content' => [
+                'payment_method' => 'emandate',
+                'payment_method_type' => 'netbanking',
+                'payment_issuer' => 'initial',
+                'fixed_rate'     => 1000
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name' => 'TestPlan1',
+                'payment_method' => 'emandate',
+                'payment_method_type' => 'netbanking',
+                'payment_network' => null,
+                'payment_issuer' => 'initial',
+                'percent_rate' => 0,
+                'fixed_rate'   => 1000
+            ],
+        ],
+    ],
+
+    'testAddPricingPlanEmandateDebitAadhaarRule' => [
+        'request' => [
+            'content' => [
+                'payment_method' => 'emandate',
+                'payment_method_type' => 'aadhaar',
+                'payment_issuer' => 'auto',
+                'fixed_rate'     => 2000
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name' => 'TestPlan1',
+                'payment_method' => 'emandate',
+                'payment_method_type' => 'aadhaar',
+                'payment_network' => null,
+                'payment_issuer' => 'auto',
+                'percent_rate' => 0,
+                'fixed_rate'   => 2000
+            ],
+        ],
+    ],
+
+    'testAddPricingPlanEmandatePercentageRateRule' => [
+        'request' => [
+            'content' => [
+                'payment_method' => 'emandate',
+                'payment_method_type' => 'aadhaar',
+                'payment_issuer' => 'auto',
+                'percent_rate'     => 1000
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Percentage rate pricing is not allowed for E-mandate',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testAddDuplicatePricingPlanRule' => [
         'request' => [
             'method' => 'POST',
@@ -438,7 +530,7 @@ return [
                     ],
                     [
                         'plan_name' => 'TestPlan2',
-                        'gateway' => NULL,
+                        'gateway' => null,
                         'payment_method' => 'card',
                         'payment_method_type' => 'credit',
                         'payment_network' => 'DICL',
@@ -472,7 +564,7 @@ return [
                         'rules' => [
                             [
                                 'plan_name' => 'TestPlan2',
-                                'gateway' => NULL,
+                                'gateway' => null,
                                 'payment_method' => 'card',
                                 'payment_method_type' => 'credit',
                                 'payment_network' => 'MC',
@@ -519,23 +611,23 @@ return [
                         'count' => 1,
                         'rules' => [
                             [
-                                'plan_name' =>  'TestPlan1',
-                                'gateway' => NULL,
-                                'payment_method' =>  'card',
+                                'plan_name' => 'TestPlan1',
+                                'gateway' => null,
+                                'payment_method' => 'card',
                                 'payment_method_type' => 'credit',
-                                'payment_network' =>  'DICL',
-                                'payment_issuer' =>  'HDFC',
-                                'percent_rate' =>  1000,
+                                'payment_network' => 'DICL',
+                                'payment_issuer' => 'HDFC',
+                                'percent_rate' => 1000,
                                 'international' => false,
-                                'fixed_rate' =>  0,
-                                'expired_at' => NULL
+                                'fixed_rate' => 0,
+                                'expired_at' => null
                             ]
                         ]
                     ],
                     [
                         'name' => 'testDefaultPlan',
                         'entity' => 'pricing',
-                        'count' => 13,
+                        'count' => 15,
                         'rules' => [
                             [],
                         ],
@@ -562,7 +654,7 @@ return [
                 ],
                 [
                     'plan_name'   => 'testDefaultPlan',
-                    'rules_count' => 13,
+                    'rules_count' => 15,
                 ],
             ],
         ],
@@ -592,7 +684,7 @@ return [
         ]
     ],
 
-    'testMerchantAssignPricingPlanWithInternational' =>[
+    'testMerchantAssignPricingPlanWithInternational' => [
         'request' => [
             'url' => '/merchants/10000000000000/pricing',
             'method' => 'POST'
@@ -611,7 +703,7 @@ return [
         ]
     ],
 
-    'testMerchantWithAmexEnabled' =>[
+    'testMerchantWithAmexEnabled' => [
         'request' => [
             'url' => '/merchants/10000000000000/pricing',
             'method' => 'POST'
@@ -630,7 +722,7 @@ return [
         ]
     ],
 
-    'testMerchantAssignPricingPlanMerchantDefault' =>[
+    'testMerchantAssignPricingPlanMerchantDefault' => [
         'request' => [
             'url' => '/merchants/10000000000000/pricing',
             'method' => 'POST'
@@ -998,7 +1090,7 @@ return [
             ],
             'method' => 'POST'
         ],
-        'response'  =>  [
+        'response'  => [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,

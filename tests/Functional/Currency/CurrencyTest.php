@@ -14,12 +14,12 @@ class CurrencyTest extends TestCase
         $this->testDataFilePath = __DIR__.'/CurrencyTestData.php';
 
         parent::setUp();
-
-        $this->ba->appAuth();
     }
 
     public function testCurrencyRatesLatest()
     {
+        $this->ba->appAuth();
+
         $this->startTest();
     }
 
@@ -27,6 +27,8 @@ class CurrencyTest extends TestCase
     {
         // set the rates in redis
         $this->testCurrencyRatesLatest();
+
+        $this->ba->adminAuth();
 
         // fetch current rates
         $this->startTest();

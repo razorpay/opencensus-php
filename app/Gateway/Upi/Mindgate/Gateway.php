@@ -602,6 +602,21 @@ class Gateway extends Base\Gateway
         $this->updateGatewayPaymentEntity($verify->payment, $content);
     }
 
+    public function verifyRefund(array $input)
+    {
+        if ($this->isUnprocessedRefund($input) === true)
+        {
+            return false;
+        }
+
+        if ($this->isProcessedRefund($input) === true)
+        {
+            return true;
+        }
+
+        parent::verifyRefund($input);
+    }
+
     private function checkGatewaySuccess(Verify $verify)
     {
         $content = $verify->verifyResponseContent;

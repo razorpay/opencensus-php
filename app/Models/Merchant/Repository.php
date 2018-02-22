@@ -12,7 +12,6 @@ use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
-use RZP\Models\Merchant\Balance;
 
 class Repository extends Base\Repository
 {
@@ -40,6 +39,10 @@ class Repository extends Base\Repository
         Entity::FEE_MODEL               => 'sometimes|in:prepaid,postpaid',
         Entity::HOLD_FUNDS              => 'sometimes|in:0,1',
         Entity::RISK_RATING             => 'sometimes|integer|max:5|min:1',
+    ];
+
+    protected $proxyFetchParamRules = [
+        Entity::PARENT_ID               => 'required|filled|size:14',
     ];
 
     protected $adminFetchParamRules = [

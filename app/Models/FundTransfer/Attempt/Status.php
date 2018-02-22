@@ -14,6 +14,8 @@ class Status
     const BULK_UPDATE_STATUSES = [
         self::FAILED,
         self::PROCESSED,
+        self::INITIATED,
+        self::CREATED
     ];
 
     public static function isValidForBulkUpdate(string $status) : bool

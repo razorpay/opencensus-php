@@ -168,4 +168,11 @@ class SettlementController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function getAccountBalance(string $channel)
+    {
+        $data = $this->service()->getAccountBalance($channel);
+
+        return ApiResponse::json($data);
+    }
 }

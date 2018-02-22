@@ -280,13 +280,7 @@ class AdminAccess
         // there's a hierarchy (or actually a graph)
         $nodes = $this->getAllNodes($admin);
 
-        // $nodes['groups'], $nodes['admins']
-
-        // dd($nodes);
-
         $merchantIds = $this->getMerchantIdsOfNodes($nodes);
-
-        // dd($merchantIds);
 
         if (in_array($merchant->id, $merchantIds))
         {

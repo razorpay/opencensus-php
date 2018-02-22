@@ -140,6 +140,7 @@ return [
             'method'  => 'post',
             'content' => [
                 'type' => 'payment_link',
+                'draft'=> 0,
             ],
         ],
         'response' => [
@@ -195,6 +196,7 @@ return [
             'method'  => 'post',
             'content' => [
                 'type' => 'payment_link',
+                'draft'=> 0,
             ],
         ],
         'response' => [
@@ -251,6 +253,7 @@ return [
             'content' => [
                 'type' => 'payment_link',
                 'name' => 'My batch entity',
+                'draft'=> 0,
             ],
         ],
         'response' => [

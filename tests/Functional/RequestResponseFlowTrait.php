@@ -297,6 +297,13 @@ trait RequestResponseFlowTrait
             $request['server'] += $this->transformHeadersToServerVars($bearerHeaders);
         }
 
+        if ($this->ba->isProxyAuth() === true)
+        {
+            $proxyHeaders = $this->ba->getProxyHeaders();
+
+            $request['server'] += $this->transformHeadersToServerVars($proxyHeaders);
+        }
+
         /**
          * This is the function signature
          *

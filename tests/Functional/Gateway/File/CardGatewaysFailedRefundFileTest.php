@@ -8,11 +8,13 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Mail\Gateway\FailedRefund\Base as FailedRefundMail;
 
 class CardGatewaysFailedRefundFileTest extends TestCase
 {
     use PaymentTrait;
+    use FileHandlerTrait;
 
     public function setUp()
     {
@@ -118,6 +120,16 @@ class CardGatewaysFailedRefundFileTest extends TestCase
             $fileName = 'Icic_FirstData_Failed_Refunds_test_'. $date  . '.xlsx';
 
             $this->assertEquals($subject, $mail->subject);
+
+            $attachment = $mail->attachments[0]['file'];
+
+            $attachment = $this->parseExcelFile($attachment);
+
+            $fileContentCount = count($attachment);
+
+            $this->assertEquals($fileContentCount, 3);
+
+            $this->assertEquals($body, $mail->viewData['body']);
 
             $this->assertEquals($body, $mail->viewData['body']);
 
@@ -308,5 +320,13 @@ class CardGatewaysFailedRefundFileTest extends TestCase
 
             $this->fixtures->edit('payment', $payment['id'], ['created_at' => $six_months_ago]);
         }
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment2 = $this->doAuthAndCapturePayment($payment);
+
+        $refund2 = $this->refundPayment($payment2['id'], 300);
+
+        $this->fixtures->edit('refund', $refund2['id'], ['status' => 'failed']);
     }
 }

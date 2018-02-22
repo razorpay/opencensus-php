@@ -12,12 +12,13 @@ class EntityProcessor extends BaseEntityProcessor
 {
     protected function getAttemptStatus(): array
     {
-        //TODO: Attempt status based on the status given by bank.
         $status = $this->fta->getStatus();
 
         $bankStatusCode = $this->fta->getBankStatusCode();
 
-        if(Status::SETTLED === $bankStatusCode)
+        $failureReason  = null;
+
+        if (in_array($bankStatusCode, [Status::SETTLED, Status::EXECUTED], true) === true)
         {
             $status = Attempt\Status::PROCESSED;
 
@@ -34,29 +35,14 @@ class EntityProcessor extends BaseEntityProcessor
                 $status = $this->fta->getStatus();
             }
         }
-
-        return [$status, null];
-    }
-
-    protected function updateSourceEntity()
-    {
-        if ($this->source->getBatchFundTransferId() !== $this->fta->getBatchFundTransferId())
+        else if (in_array($bankStatusCode, [Status::CANCELLED, Status::REJECTED], true) === true)
         {
-            return;
+            $status = Attempt\Status::FAILED;
+
+            $failureReason = 'Reconciliation';
         }
 
-        $sourceStatus = $this->getSourceStatusFromReconEntityStatus();
-
-        $this->source->setUtr($this->fta->getUtr());
-
-        $this->source->setRemarks($this->fta->getRemarks());
-
-//      TODO: uncomment to update the source status once the bank confirms the possible status of recon
-//        $this->source->setStatus($sourceStatus);
-
-//        $this->source->setFailureReason($this->fta->getFailureReason());
-
-        $this->repo->saveOrFail($this->source);
+        return [$status, $failureReason];
     }
 
     protected function isMerchantLevelError(): bool

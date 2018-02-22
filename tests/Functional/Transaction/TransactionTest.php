@@ -19,20 +19,19 @@ class TransactionTest extends TestCase
 
         parent::setUp();
 
+        $this->setAdminForInternalAuth();
+
         $this->ba->proxyAuth();
     }
 
     public function testAddAdjustment()
     {
-        $this->setAdminForInternalAuth();
-
         $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
 
         $adj = $this->startTest();
 
         $testData = $this->testData['testGetAdjustment'];
         $testData['request']['url'] = '/adjustments/'.$adj['id'];
-
 
         $this->ba->proxyAuth();
 
@@ -49,7 +48,6 @@ class TransactionTest extends TestCase
 
     public function testAddReverseAdjustment()
     {
-        $this->ba->appAuth();
         $adj = $this->testAddAdjustment();
 
         $testData = $this->testData['testAddReverseAdjustment'];
@@ -57,8 +55,8 @@ class TransactionTest extends TestCase
             $adj['id']
         ];
 
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
 
-        $this->ba->appAuth();
         $response = $this->runRequestResponseFlow($testData);
 
         $rev = $this->getLastEntity('adjustment', true);

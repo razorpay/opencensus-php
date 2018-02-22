@@ -17,7 +17,9 @@ trait EntityActionTrait
             'url' => '/merchants/'.$mid.'/terminals/'.$tid,
             'method' => 'delete');
 
-        $this->ba->appAuth();
+        $this->ba->getAdmin()->merchants()->attach($mid);
+
+        $this->ba->adminAuth();
 
         return $this->makeRequestAndGetContent($request);
     }
@@ -28,7 +30,7 @@ trait EntityActionTrait
             'url' => '/terminals/'.$tid,
             'method' => 'delete');
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         return $this->makeRequestAndGetContent($request);
     }
@@ -39,7 +41,7 @@ trait EntityActionTrait
             'url' => '/terminals/'.$tid.'/restore',
             'method' => 'put');
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         return $this->makeRequestAndGetContent($request);
     }
@@ -51,7 +53,7 @@ trait EntityActionTrait
             'method' => 'put',
             'content' => $input);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         return $this->makeRequestAndGetContent($request);
     }
@@ -63,7 +65,7 @@ trait EntityActionTrait
             'method' => 'post',
             'content' => $input);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         return $this->makeRequestAndGetContent($request);
     }
@@ -97,7 +99,7 @@ trait EntityActionTrait
             'method' => 'POST',
             'content' => $input);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         return $this->makeRequestAndGetContent($request);
     }
@@ -111,7 +113,7 @@ trait EntityActionTrait
             'method' => 'POST',
             'content' => $input);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         return $this->makeRequestAndGetContent($request);
     }
@@ -123,7 +125,7 @@ trait EntityActionTrait
             'method' => 'POST',
             'content' => $input);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         return $this->makeRequestAndGetContent($request);
     }
@@ -135,7 +137,7 @@ trait EntityActionTrait
             'method' => 'PUT',
             'content' => $input);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         return $this->makeRequestAndGetContent($request);
     }
@@ -169,7 +171,7 @@ trait EntityActionTrait
             'method' => 'post',
             'content' => ['credits' => $credits]);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         return $this->makeRequestAndGetContent($request);
     }
@@ -261,7 +263,11 @@ trait EntityActionTrait
 
     protected function setPaymentMethods($methods, $merchantId = '10000000000000')
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach($merchantId);
 
         $request = [
             'url' => '/merchants/'.$merchantId.'/methods',

@@ -2,8 +2,6 @@
 
 namespace RZP\Models\Base;
 
-use RZP\Exception;
-
 class Entity extends \RZP\Base\EloquentEx
 {
     /**

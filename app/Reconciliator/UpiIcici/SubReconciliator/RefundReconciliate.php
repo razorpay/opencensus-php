@@ -17,7 +17,12 @@ class RefundReconciliate extends Base\RefundReconciliate
 
     protected function getRefundId(array $row)
     {
-        return $row[self::REFUND_ID] ?? null;
+        if (empty($row[self::REFUND_ID]) === false)
+        {
+            return substr($row[self::REFUND_ID], 0, 14);
+        }
+
+        return null;
     }
 
     protected function getGatewaySettledAt(array $row)
@@ -37,6 +42,13 @@ class RefundReconciliate extends Base\RefundReconciliate
         return Carbon::createFromFormat('d-m-Y h:i a', $refundSettledAt, Timezone::IST)->getTimestamp();
     }
 
+    /**
+     * This method is called when refundId is not found in our DB. Therefore,
+     * we would need to find it based on the UPI entity instead.
+     *
+     * @param array $row
+     * @return null
+     */
     protected function getPaymentId(array $row)
     {
         $rrn = $row[self::ORIGINAL_BANK_RRN] ?? null;

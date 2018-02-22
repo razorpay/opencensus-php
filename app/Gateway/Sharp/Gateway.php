@@ -9,10 +9,13 @@ use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Gateway\Upi\Base as UpiBase;
 use RZP\Models\Customer\Token;
 
 class Gateway extends Base\Gateway
 {
+    const DEFAULT_PAYEE_VPA = 'upi@razopay';
+
     protected $gateway = 'sharp';
 
     public function authorize(array $input)
@@ -57,7 +60,6 @@ class Gateway extends Base\Gateway
             'recurring'         => 0,
         ];
 
-
         if (isset($input['payment']['auth_type']) === true)
         {
             $content['auth_type'] = $input['payment']['auth_type'];
@@ -84,10 +86,33 @@ class Gateway extends Base\Gateway
         {
             $this->processTestUpiPayment($input['payment']);
 
+            if ((isset($input['upi']['flow']) === true) and
+                ($input['upi']['flow'] === 'intent'))
+            {
+                return $this->getIntentRequest($input);
+            }
+
             $request = true;
         }
 
         return $request;
+    }
+
+    protected function getIntentRequest($input)
+    {
+        $content = [
+            UpiBase\IntentParams::PAYEE_ADDRESS => self::DEFAULT_PAYEE_VPA,
+            UpiBase\IntentParams::PAYEE_NAME    => preg_replace('/\s+/', '', $input['merchant']->getFilteredDba()),
+            UpiBase\IntentParams::TXN_REF_ID    => str_random(15),
+            UpiBase\IntentParams::TXN_NOTE      => 'razorpay',
+            UpiBase\IntentParams::TXN_AMOUNT    => $input['payment']['amount'] / 100,
+            UpiBase\IntentParams::TXN_CURRENCY  => 'INR',
+            UpiBase\IntentParams::MCC           => '5411',
+        ];
+
+        $query = str_replace(' ', '', urldecode(http_build_query($content)));
+
+        return ['data' => ['intent_url' => 'upi://pay?' . $query]];
     }
 
     protected function processTestUpiPayment($payment)
@@ -203,10 +228,19 @@ class Gateway extends Base\Gateway
     {
         $acquirer = [];
 
-        if ($input['payment']['method'] === Payment\Method::NETBANKING)
+        if (($input['payment']['method'] === Payment\Method::NETBANKING) or
+            ($input['payment']['method'] === Payment\Method::EMANDATE))
         {
             $acquirer = [
                 'reference1' => (string) random_integer(7)
+            ];
+        }
+
+        if (($input['payment']['method'] === Payment\Method::UPI) and
+            (isset($input['gateway']['vpa']) === true))
+        {
+            $acquirer = [
+                Payment\Entity::VPA => $input['gateway']['vpa']
             ];
         }
 
@@ -326,7 +360,7 @@ class Gateway extends Base\Gateway
     protected function addRecurringDataIfApplicable(array $input, array & $acquirerData)
     {
         if (($input['payment']['recurring'] === true) and
-            ($input['payment']['method'] === 'netbanking'))
+            ($input['payment']['method'] === Payment\Method::EMANDATE))
         {
             $recurringData = $this->getRecurringData($input['gateway']);
 
