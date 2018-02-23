@@ -131,22 +131,24 @@ export default ({ payment, card = {}, bankTransfer = {} }) => {
                 </div>
               </div>
               {!!bankTransfer.payer_bank_account && (
-                <div className="row">
-                  <div className="col-sm-4 col-xs-5">Payer Name:</div>
-                  <div className="col-sm-8 col-xs-7">
-                    {bankTransfer.payer_bank_account.name}
+                <div className="col-sm-12">
+                  <div className="row">
+                    <div className="col-sm-4 col-xs-5">Payer Name:</div>
+                    <div className="col-sm-8 col-xs-7">
+                      {bankTransfer.payer_bank_account.name}
+                    </div>
                   </div>
-                </div>
-                <div className="row">
-                  <div className="col-sm-4 col-xs-5">Payer a/c:</div>
-                  <div className="col-sm-8 col-xs-7">
-                    {bankTransfer.payer_bank_account.account_number}
+                  <div className="row">
+                    <div className="col-sm-4 col-xs-5">Payer a/c:</div>
+                    <div className="col-sm-8 col-xs-7">
+                      {bankTransfer.payer_bank_account.account_number}
+                    </div>
                   </div>
-                </div>
-                <div className="row">
-                  <div className="col-sm-4 col-xs-5">Payer IFSC:</div>
-                  <div className="col-sm-8 col-xs-7">
-                    {bankTransfer.payer_bank_account.ifsc}
+                  <div className="row">
+                    <div className="col-sm-4 col-xs-5">Payer IFSC:</div>
+                    <div className="col-sm-8 col-xs-7">
+                      {bankTransfer.payer_bank_account.ifsc}
+                    </div>
                   </div>
                 </div>
               )}
