@@ -37,7 +37,7 @@ class Library
     public static function computeFutureRun(
         Entity $schedule,
         Carbon $referenceTime,
-        Carbon $lastRun,
+        Carbon $lastRun = null,
         bool $considerHolidays = true)
     {
         if ($schedule->getAnchor() !== null)
@@ -164,7 +164,7 @@ class Library
         return $nextRun;
     }
 
-    protected static function resolveUnAnchored(Entity $schedule, Carbon $refTime, Carbon $lastRun)
+    protected static function resolveUnAnchored(Entity $schedule, Carbon $refTime, Carbon $lastRun = null)
     {
         $period = $schedule->getPeriod();
 
@@ -185,6 +185,13 @@ class Library
         $step = Steps::getStep($schedule->getPeriod());
 
         $interval = $schedule->getInterval();
+
+        if ($lastRun === null)
+        {
+            $refTime->$step($interval);
+
+            return $refTime;
+        }
 
         //
         // Problem: Some services (settlements) have a concept of `refTime` and some services (subscriptions) don't.

@@ -167,14 +167,14 @@ class Biller extends Base\Core
             //
             foreach (range(1, $planChargeInvoiceCount - 1) as $i)
             {
-                $nextRun = Library::computeFutureRun($schedule, $start, $start, false);
+                $nextRun = Library::computeFutureRun($schedule, $start, null, false);
 
                 $start = $nextRun->copy();
             }
         }
 
         // Cannot pass start here, as computeFutureRun will modify the value
-        $end = Library::computeFutureRun($schedule, $nextRun, $nextRun, false);
+        $end = Library::computeFutureRun($schedule, $nextRun, null, false);
 
         $billingPeriod = [
             'start' => $start->timestamp,

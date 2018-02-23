@@ -15,7 +15,7 @@ class Cycle
     const WEEKLY  = 'weekly';
     const DAILY   = 'daily';
 
-    const SEVEN_DAYS           = 7;
+    const DAILY_MIN_INTERVAL   = 7;
     const DEFAULT_MIN_INTERVAL = 1;
     const MONTHS_IN_YEAR       = Carbon::MONTHS_PER_YEAR;
     const WEEKS_IN_YEAR        = Carbon::WEEKS_PER_YEAR;
@@ -29,8 +29,8 @@ class Cycle
         self::DAILY,
     ];
 
-    protected static $allowMinInterval = [
-        self::DAILY => self::SEVEN_DAYS
+    protected static $allowedMinInterval = [
+        self::DAILY => self::DAILY_MIN_INTERVAL,
     ];
 
     protected static $allowedMaxInterval = [
@@ -99,9 +99,9 @@ class Cycle
 
     public static function getMinAllowedInterval(string $period): int
     {
-        if (isset(self::$allowMinInterval[$period]) === true)
+        if (isset(self::$allowedMinInterval[$period]) === true)
         {
-            return self::$allowMinInterval[$period];
+            return self::$allowedMinInterval[$period];
         }
 
         return self::DEFAULT_MIN_INTERVAL;
@@ -136,7 +136,7 @@ class Cycle
 
         while ($nextRun < $end)
         {
-            $nextRun = Library::computeFutureRun($schedule, $start, $start, false);
+            $nextRun = Library::computeFutureRun($schedule, $start, null, false);
 
             $start = $nextRun;
 
@@ -164,7 +164,7 @@ class Cycle
         //
         foreach (range(1, $totalCount - 1) as $i)
         {
-            $nextRun = Library::computeFutureRun($schedule, $start, $start, false);
+            $nextRun = Library::computeFutureRun($schedule, $start, null, false);
 
             $start = $nextRun;
         }

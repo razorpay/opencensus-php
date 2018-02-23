@@ -1565,6 +1565,8 @@ class SubscriptionChargeTest extends TestCase
 
         $subscription = $this->getLastEntity('subscription', true);
 
+        $scheduleTask = $this->getLastEntity('schedule_task', true);
+
         $expectedPaidCount = 1;
 
         while ($expectedPaidCount < $subscription['total_count'])

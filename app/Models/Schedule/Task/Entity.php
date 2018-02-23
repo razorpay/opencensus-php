@@ -159,6 +159,11 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::NEXT_RUN_AT);
     }
+    public function getLastRunAt()
+    {
+        return $this->getAttribute(self::LAST_RUN_AT);
+    }
+
 
     // -------------------------- Setters --------------------------------------
 
@@ -186,11 +191,18 @@ class Entity extends Base\PublicEntity
         $this->updateNextRunAndLastRunFromGivenRefTime($currentTime, $considerHolidays);
     }
 
-    public function updateNextRunAndLastRunFromGivenRefTime($refTime, $considerHolidays = false)
+    public function updateNextRunAndLastRunFromGivenRefTime($refTime, $considerHolidays = false, $considerLastRun = true)
     {
         $lastRun = Carbon::createFromTimestamp($this->getNextRunAt(), Timezone::IST);
 
-        $nextRun = Library::computeFutureRun($this->schedule, $refTime, $lastRun->copy(), $considerHolidays);
+        $lastRunCopy = $lastRun->copy();
+
+        if ($considerLastRun === false)
+        {
+            $lastRunCopy = null;
+        }
+
+        $nextRun = Library::computeFutureRun($this->schedule, $refTime, $lastRunCopy, $considerHolidays);
 
         $this->setNextRunAt($nextRun->getTimestamp());
 
@@ -266,12 +278,12 @@ class Entity extends Base\PublicEntity
             // In case of auth transaction (immediate), charge_at would be null.
             // In that case, we can use actual current time as the reference time.
             //
-            $referenceTime = $this->getNextRunAt() ?? Carbon::now()->getTimestamp();
+            $referenceTime = $this->getLastRunAt() ? $this->getNextRunAt() : Carbon::now()->getTimestamp();
 
             $referenceTime = Carbon::createFromTimestamp($referenceTime, Timezone::IST);
         }
 
-        $this->updateNextRunAndLastRunFromGivenRefTime($referenceTime, false);
+        $this->updateNextRunAndLastRunFromGivenRefTime($referenceTime, false, false);
     }
 
     public function isTypeSettlement()

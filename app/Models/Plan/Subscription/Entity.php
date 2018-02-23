@@ -15,6 +15,7 @@ use RZP\Models\Item;
 use RZP\Models\Invoice;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
+use RZP\Models\Schedule\Period;
 use RZP\Models\Schedule\Task;
 use RZP\Models\Customer\Token;
 use RZP\Models\Schedule\Anchor;
@@ -911,7 +912,8 @@ class Entity extends Base\PublicEntity
 
         $period = $this->plan->getPeriod();
 
-        if ($this->getStartAt() !== null)
+        if (($this->getStartAt() !== null) and
+            (Period::isPeriodAnchored($period)))
         {
             $startAt = Carbon::createFromTimestamp($this->getStartAt(), Timezone::IST);
 
