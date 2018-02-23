@@ -1,5 +1,5 @@
 // oauth application settings screens
-.application-index-page {  
+.application-index-page {
   .content-box {
     border: 1px solid #e2e8ea;
     background-color: #fff;
@@ -82,6 +82,29 @@
   .app-created-on {
     margin-top: 2px;
   }
+
+  .connected-apps {
+    .img {
+      position: relative;
+      margin: 0 auto;
+      max-width: 25%;
+      width: 170px;
+
+      img {
+        width: 100%;
+      }
+
+      span {
+        border-radius: 50%;
+        position: absolute;
+        top: 4%;
+        width: 93%;
+        left: 4%;
+        height: 93%;
+        opacity: 0.4;
+      }
+    }
+  }
 }
 
 .new-application-form
@@ -135,21 +158,30 @@
     height: 90px;
     width: 120px;
     text-align: center;
+
+    label {
+      cursor: pointer;
+      height: 100%;
+      display: table-cell;
+      vertical-align: middle;
+    }
   }
   .upload-inner {
     height 100%
     width 100%
     border: 1px solid #cfdadd;
     border-radius 2px
-    padding 14px
+    display: table;
+
     i {
       display block
       margin-bottom 4 px
     }
   }
-  .btn {
-    margin-left: 10px;
+  .loader-dots {
+    line-height: 0;
   }
+
   .btn-show-secret {
     position: absolute;
     top: 0;

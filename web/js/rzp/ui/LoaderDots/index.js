@@ -1,6 +1,6 @@
-export default () => {
+export default ({ customClass }) => {
   return (
-    <span class="LoaderDots">
+    <span class={`LoaderDots ${customClass}`}>
       <span>.</span>
       <span>.</span>
       <span>.</span>

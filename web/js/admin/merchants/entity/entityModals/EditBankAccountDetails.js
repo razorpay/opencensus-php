@@ -47,7 +47,7 @@ export default class EditBankAccountDetails extends Component {
   };
 
   componentWillMount() {
-    adminFetch(`merchants/${this.props.merchantId}/bank_account`)
+    adminFetch(`live/merchants/${this.props.merchantId}/bank_account`)
       .then(data => {
         if (data) {
           this.setState({ bankAccount: data });

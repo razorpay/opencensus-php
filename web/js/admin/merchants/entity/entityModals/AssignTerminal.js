@@ -89,9 +89,15 @@ export default class TerminalForm extends Component {
       delete body.file;
     }
 
+    let mode = body.mode;
+    delete body.mode;
+
+    body.mode = body.terminal_mode || undefined;
+    delete body.terminal_mode;
+
     return adminFormUpload2(
       body,
-      `/admin/api/${body.mode}/merchant/${this.props.merchantId}/terminal`
+      `/admin/api/${mode}/merchants/${this.props.merchantId}/terminals`
     )
       .then(response => {
         if (response.data.success) {
@@ -99,7 +105,7 @@ export default class TerminalForm extends Component {
           closeModal();
 
           // We're displaying only live terminal on right side of merchant details, so update only for live mode
-          if (body.mode === 'live') {
+          if (mode === 'live') {
             this.props.props.updateTerminal(response.data.data);
           }
         } else {
@@ -346,11 +352,9 @@ export default class TerminalForm extends Component {
             onSubmit={handleEdit ? handleEdit : this.handleCreate}
             class="btn"
             pendingClass="small spinner"
-            confirm={
-              handleEdit
-                ? 'Are you sure you want to edit this terminal?'
-                : 'Any previously assigned plan for the merchant will be replace with selected.'
-            }
+            confirm={`Are you sure you want to ${
+              handleEdit ? 'edit' : 'assign'
+            } this terminal?`}
           >
             Ok
           </AsyncButton>

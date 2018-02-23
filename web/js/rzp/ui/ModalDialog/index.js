@@ -32,6 +32,7 @@ class ModalDialog extends Component {
           shouldCloseOnOverlayClick={false}
           class={`Modal ${props.size ? `Modal--${props.size}` : ''}`}
           contentLabel="Modal"
+          ariaHideApp={false}
         >
           {props.component}
         </Modal>

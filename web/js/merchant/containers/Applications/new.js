@@ -10,6 +10,9 @@ import Fieldset from 'rzp/ui/Forms/Fieldset';
 import { autoPrefixUrls } from 'rzp/utils/rzp-utils';
 import * as NotificationActions from 'rzp/modules/notifications';
 import * as ApplicationActions from 'merchant/modules/applications';
+import { openModal, closeModal } from 'rzp/modules/modals';
+import AppWebhook from './AppWebhook';
+import LoaderDots from 'rzp/ui/LoaderDots';
 
 const INFO = {
   icon:
@@ -22,6 +25,23 @@ const INFO = {
 
 const selector = formValueSelector('newApplicationForm');
 
+function readURL(input, self) {
+  if (input.files && input.files[0]) {
+    var reader = new FileReader();
+
+    reader.onload = function(e) {
+      self.setState({
+        details: {
+          ...self.state.details,
+          logo_url: e.target.result,
+        },
+      });
+    };
+
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
 @withRouter
 @connect(
   state => {
@@ -30,7 +50,7 @@ const selector = formValueSelector('newApplicationForm');
       applications: state.applications.items,
     };
   },
-  { ...ApplicationActions, ...NotificationActions }
+  { ...ApplicationActions, ...NotificationActions, openModal, closeModal }
 )
 @reduxForm({
   form: 'newApplicationForm',
@@ -46,6 +66,9 @@ class NewApplicationForm extends Component {
     let id = this.props.match.params.id;
     if (!id) return;
     this.setState({ edit: true });
+
+    this.fetchWebhooks();
+
     var appDetails = this.props.applications.filter(app => app.id === id);
     if (appDetails.length) {
       const data = appDetails[0];
@@ -63,6 +86,19 @@ class NewApplicationForm extends Component {
           message: `Application id '${id}' not found`,
         });
         this.props.history.replace('/applications');
+      });
+  }
+
+  fetchWebhooks() {
+    this.setState({ webhookLoading: true });
+    // Fetch call getting app's webhook
+    ApplicationActions.fetchAppWebhooks(this.props.appId)
+      .then(data => {
+        let webhook = data.data.items.length ? data.data.items[0] : {};
+        this.setState({ webhookLoading: false, webhook });
+      })
+      .catch(e => {
+        this.setState({ webhookLoading: false, webhook: null });
       });
   }
 
@@ -115,7 +151,7 @@ class NewApplicationForm extends Component {
       .catch(err => {
         this.props.showNotification({
           type: 'error',
-          message: "Couldn't create application",
+          message: err.errors,
         });
       });
   };
@@ -182,17 +218,40 @@ class NewApplicationForm extends Component {
     this.setState({ showProdSecret: true });
   };
 
+  onWebhookSave = webhook => {
+    this.props.closeModal();
+    this.setState({ webhook: webhook.data });
+  };
+
+  showWebhookModal = _ => {
+    this.props.openModal({
+      component: (
+        <AppWebhook
+          webhook={this.state.webhook}
+          loading={this.state.webhookLoading}
+          appId={this.props.match.params.id}
+          isApplication={true}
+          onSave={this.onWebhookSave}
+        />
+      ),
+    });
+  };
+
   render() {
     const { handleSubmit } = this.props;
+    const { webhook, webhookLoading } = this.state;
 
     return (
       <div class="content-box new-application-form">
         <div class="content-header">
           <Link to="/applications" class="breadcrumb__backNav--link ">
             <i class="i i-arrow-back" />
-            <span> Back</span>
+            <span> Back&nbsp;</span>
           </Link>
-          <strong> / {this.state.edit ? 'Edit' : 'Create'} Application</strong>
+          <strong>
+            {' '}
+            /&nbsp; {this.state.edit ? 'Edit' : 'Create'} Application
+          </strong>
         </div>
         <form
           class="form-horizontal"
@@ -235,13 +294,17 @@ class NewApplicationForm extends Component {
                   <label htmlFor="logo-upload">
                     {this.state.details.logo_url === null ||
                     typeof this.state.details.logo_url === 'undefined' ? (
-                      <span style={{ fontWeight: 'normal' }}>
+                      <span
+                        class="upload-icon"
+                        style={{ fontWeight: 'normal' }}
+                      >
                         <i class="fa fa-folder-open" />
                         Upload App Icon
                       </span>
                     ) : (
                       <img
                         class="media-object"
+                        id="logo-url"
                         style={{ width: '100%' }}
                         src={this.state.details.logo_url}
                       />
@@ -253,6 +316,7 @@ class NewApplicationForm extends Component {
                       class="hide"
                       onChange={e => {
                         this.props.change('file', e.target.files[0]);
+                        readURL(e.target, this);
                       }}
                     />
                   </label>
@@ -376,6 +440,59 @@ class NewApplicationForm extends Component {
               </div>
             )}
 
+            {this.state.edit && (
+              <div class="form-group">
+                <label class="col-md-2 control-label">Webhooks:</label>
+                <div class="col-md-10" style={{ paddingTop: '7px' }}>
+                  {webhookLoading ? (
+                    <LoaderDots customClass={'loader-dots'} />
+                  ) : (
+                    <div>
+                      <div>
+                        {webhook ? (
+                          <div>
+                            <div>
+                              <b>Url: </b> {webhook.url}
+                            </div>
+                            <div>
+                              <b>Active: </b>{' '}
+                              <i
+                                class={`fa ${
+                                  webhook.active
+                                    ? 'fa-check text-success'
+                                    : 'fa-close text-danger'
+                                }`}
+                              />
+                            </div>
+                            <div>
+                              <b>Total Events: </b>
+                              {
+                                Object.keys(webhook.events).filter(
+                                  i => webhook.events[i]
+                                ).length
+                              }
+                            </div>
+                          </div>
+                        ) : (
+                          'No webhook created'
+                        )}
+                      </div>
+                      <button
+                        class="btn btn-default webhook-btn m-t"
+                        onClick={e => {
+                          e.preventDefault();
+                          this.showWebhookModal();
+                        }}
+                      >
+                        Manage Webhook
+                      </button>
+                    </div>
+                  )}
+                </div>
+                <div class="clearfix" />
+              </div>
+            )}
+
             <div class="form-group">
               <div class="col-md-offset-3 col-md-9">
                 <div class="btn-toolbar">
@@ -391,7 +508,7 @@ class NewApplicationForm extends Component {
                   {this.state.edit && (
                     <AsyncButton
                       type="button"
-                      class="btn btn-default pull-right"
+                      class="btn btn-default pull-right m-r"
                       text="Preview OAuth Page"
                       onClick={this.openPreviewPage}
                     />

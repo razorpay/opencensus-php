@@ -85,6 +85,8 @@ export default class Collection extends BaseModel {
   }
 
   fetch() {
+    delete this.filters.mode; // mode no longer need to be sent in any request
+
     return this.request(
       'fetch',
       this.fetchFn({
@@ -113,7 +115,7 @@ export default class Collection extends BaseModel {
   delete = item => {
     if (typeof this.deleteUrl === 'function') {
       const data = {
-        url: this.deleteUrl(item.id)
+        url: this.deleteUrl(item.id),
       };
 
       return adminDelete(data)
@@ -125,7 +127,7 @@ export default class Collection extends BaseModel {
         })
         .catch(err => notifyError(err));
     } else {
-      notifyError('entity doesn\'t have delete url');
+      notifyError("entity doesn't have delete url");
     }
   };
 

@@ -121,7 +121,7 @@ class HomeContainer extends Component {
     // or not
 
     const { startDate, endDate } = this.state,
-      { isAdmin } = this.props;
+      { isAdmin, analyticsFetch } = this.props;
 
     const query = {
       filters: {
@@ -138,7 +138,7 @@ class HomeContainer extends Component {
       },
     };
 
-    return fetch(query, this.props.mode)
+    return (analyticsFetch || fetch)(query, this.props.mode)
       .then(data => {
         if (!data.success) {
           return API_ERROR;
@@ -213,7 +213,7 @@ class HomeContainer extends Component {
   fetchOldestTransactionDate() {
     let { oldestTransactionDate, dateRangePresets } = this.state;
 
-    const { onFirstTxnDate } = this.props;
+    const { onFirstTxnDate, analyticsFetch } = this.props;
 
     var oldestTxnReqId = ++this.oldestTxnReqId;
 
@@ -226,8 +226,10 @@ class HomeContainer extends Component {
       oldestTransactionDate: { ...oldestTransactionDate },
     });
 
-    return fetch(oldestTransactionQuery, this.props.mode)
-      .then(data => {
+    return (analyticsFetch || fetch)(
+        oldestTransactionQuery,
+        this.props.mode
+      ).then(data => {
         if (oldestTxnReqId !== this.oldestTxnReqId) {
           return null;
         }
@@ -330,6 +332,7 @@ class HomeContainer extends Component {
       current_balance,
       tabsMeta,
       isAdmin,
+      analyticsFetch,
       onFilterChange,
     } = this.props;
 
@@ -391,6 +394,7 @@ class HomeContainer extends Component {
                 sectionTitle={keymetricsSectionTitle}
                 tabsMeta={tabsMeta}
                 isAdmin={isAdmin}
+                analyticsFetch={analyticsFetch}
                 onFilterChange={onFilterChange}
               />
             </div>
@@ -405,6 +409,7 @@ class HomeContainer extends Component {
                 startDate={startDate}
                 endDate={endDate}
                 mode={mode}
+                analyticsFetch={analyticsFetch}
                 sectionTitle={paymentInsightsTitle}
               />
             </div>
@@ -426,6 +431,7 @@ class HomeContainer extends Component {
                       startDate={startDate}
                       endDate={endDate}
                       mode={mode}
+                      analyticsFetch={analyticsFetch}
                       sectionTitle={trafficSectionTitle}
                     />
                   </div>
