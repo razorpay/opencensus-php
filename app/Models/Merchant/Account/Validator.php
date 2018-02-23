@@ -19,4 +19,8 @@ class Validator extends Merchant\Validator
          // Sub keys are validated in respective validators.
          Entity::BANK_ACCOUNT                                  => 'required|array',
      ];
+
+    protected static $fetchRules = [
+        Entity::EMAIL => 'sometimes|email',
+    ];
 }
