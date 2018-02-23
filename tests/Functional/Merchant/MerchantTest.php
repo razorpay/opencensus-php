@@ -16,6 +16,7 @@ use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Models\Settlement\Channel;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\BankAccount\Entity as BankAccount;
@@ -35,6 +36,7 @@ class MerchantTest extends TestCase
     use SettlementTrait;
     use InteractsWithSession;
     use HeimdallTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -237,8 +239,8 @@ class MerchantTest extends TestCase
 
         $result = $this->startTest();
 
-        $merchant1 = $this->getEntityById('merchant', '10000000000044', true);
-        $merchant2 = $this->getEntityById('merchant', '10000000000055', true);
+        $merchant1 = $this->getDbEntityById('merchant', '10000000000044');
+        $merchant2 = $this->getDbEntityById('merchant', '10000000000055');
 
         $this->assertEquals(1, $merchant1['hold_funds']);
         $this->assertEquals(1, $merchant2['hold_funds']);
