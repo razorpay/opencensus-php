@@ -470,7 +470,7 @@ class Service extends Base\Service
             'tags' => $tags
         ];
 
-        $request = new \App\Admin\ApiRequestAny();
+        $request = new \App\Admin\ApiRequestAny(['client_type' => 'admin']);
 
         list($error, $data) = $request->processInput($body)->send("merchants/$merchantId/tags", 'POST');
     }
