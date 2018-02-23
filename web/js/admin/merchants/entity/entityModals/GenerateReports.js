@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import BaseModal from 'ui/BaseModal';
+import { saveAs } from 'file-saver';
 
 import { notifyError, notifySuccess } from 'common/modal';
 
