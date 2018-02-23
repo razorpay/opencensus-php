@@ -352,11 +352,9 @@ export default class TerminalForm extends Component {
             onSubmit={handleEdit ? handleEdit : this.handleCreate}
             class="btn"
             pendingClass="small spinner"
-            confirm={
-              handleEdit
-                ? 'Are you sure you want to edit this terminal?'
-                : 'Any previously assigned plan for the merchant will be replace with selected.'
-            }
+            confirm={`Are you sure you want to ${
+              handleEdit ? 'edit' : 'assign'
+            } this terminal?`}
           >
             Ok
           </AsyncButton>
