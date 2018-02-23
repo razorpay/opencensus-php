@@ -75,7 +75,6 @@ export default class GenericEntity extends Component {
   render() {
     let { id, type, mode = null } = this.params;
     let { data, loading } = this.state;
-    console.log('LOADING..', loading);
 
     return (
       <div class="entity-page">
