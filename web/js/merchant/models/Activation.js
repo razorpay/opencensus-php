@@ -76,8 +76,8 @@ const accountStepMapWithKYC = {
   3: ['address_proof_url', 'promoter_pan_url'],
 };
 
-// We use only the keys aprat from last one from the activationStepMap
-// the fifth key consists the file fields
+// We use only the keys except the last one from the activationStepMap
+// the last key consists the file fields
 const activationFields = Object.keys(activationStepMap).reduce((prev, curr) => {
   if (curr < Object.keys(activationStepMap).length) {
     prev.push(...activationStepMap[curr]);

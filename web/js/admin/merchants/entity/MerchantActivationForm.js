@@ -175,11 +175,12 @@ function _getOverviewFields(details) {
         ? 'Form is Archived'
         : 'Form is Unarchived',
       value: () =>
-        details.merchant_details.activation_status ===
-          'needs_clarification' && (
+        details.merchant_details.activation_status === 'needs_clarification' ? (
           <button onClick={this.handleArchive}>
             {details.merchant_details.archived ? 'Unarchive' : 'Archive'}
           </button>
+        ) : (
+          '--'
         ),
     },
     {
