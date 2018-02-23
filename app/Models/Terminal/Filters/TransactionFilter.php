@@ -65,6 +65,9 @@ class TransactionFilter extends Terminal\Filter
             case Method::AEPS:
                 return $terminal->isAepsEnabled();
 
+            case Method::EMANDATE:
+                return $terminal->isEmandateEnabled();
+
             default:
                 throw new Exception\LogicException(
                     'Unknown payment method passed.',
@@ -91,7 +94,8 @@ class TransactionFilter extends Terminal\Filter
 
     public function bankFilter($terminal)
     {
-        if ($this->input['payment']->isNetbanking())
+        if (($this->input['payment']->isNetbanking() === true) or
+            ($this->input['payment']->isEmandate() === true))
         {
             $bank = $this->input['payment']->getBank();
 
@@ -361,7 +365,7 @@ class TransactionFilter extends Terminal\Filter
         }
 
         $emiDuration = $this->input['payment']->emiPlan->getDuration();
-        
+
         return $terminal->isValidEmiTerminal($gateway, $emiDuration);
     }
 

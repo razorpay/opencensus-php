@@ -16,7 +16,7 @@ class CouponsTest extends TestCase
 
         parent::setUp();
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
     }
 
     public function createCoupon()
@@ -147,7 +147,7 @@ class CouponsTest extends TestCase
             'method' => 'post',
         ];
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $this->merchantAssignPricingPlan('1hDYlICobzOCYt', $merchantId);
 

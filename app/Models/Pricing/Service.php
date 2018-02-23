@@ -5,6 +5,7 @@ namespace RZP\Models\Pricing;
 use RZP\Models\Bank;
 use RZP\Models\Base;
 use RZP\Models\Card;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Processor;
 use RZP\Models\Pricing;
 use RZP\Trace\TraceCode;
@@ -99,18 +100,24 @@ class Service extends Base\Service
 
     public function getSupportedNetworks()
     {
-        $bankCodes = Processor\Netbanking::getSupportedBanks();
+        $netbankingBanks = Processor\Netbanking::getSupportedBanks();
 
-        $bankNamesMap = Bank\Name::getNames($bankCodes);
+        $netbankingBankNamesMap = Bank\Name::getNames($netbankingBanks);
 
         $cards = Card\Network::getSupportedNetworksNamesMap();
 
         $wallets = Processor\Wallet::getWalletNetworkNamesMap();
 
-        $networks = array(
-            'bank' => $bankNamesMap,
-            'card' => $cards,
-            'wallet' => $wallets);
+        $emandateBanks = Gateway::getAvailableEmandateBanks();
+
+        $emandateBankNamesMap = Bank\Name::getNames($emandateBanks);
+
+        $networks = [
+            'bank'      => $netbankingBankNamesMap,
+            'card'      => $cards,
+            'wallet'    => $wallets,
+            'emandate'  => $emandateBankNamesMap,
+        ];
 
         return $networks;
     }

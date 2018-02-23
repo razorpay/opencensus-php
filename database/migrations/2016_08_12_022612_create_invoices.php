@@ -153,6 +153,7 @@ class CreateInvoices extends Migration
                   ->nullable();
 
             $table->index(Entity::CREATED_AT);
+            $table->index(Entity::UPDATED_AT);
             $table->index(Entity::DELETED_AT);
             $table->index(Entity::STATUS);
             $table->index(Entity::SUBSCRIPTION_STATUS);

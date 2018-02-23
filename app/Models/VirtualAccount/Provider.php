@@ -190,13 +190,9 @@ class Provider
         return false;
     }
 
+    //
     // Blocks test providers for making live requests
     //
-    // Unused right now because Kotak is making changes in their
-    // format, and IMPS testing is ongoing, so we need to use
-    // Dashboard to make corrective requests occasionally.
-    //
-    // TODO: Use in validateProvider when changes are stable
     public static function validateMode(string $provider, string $mode)
     {
         $isLiveProvider = (in_array($provider, self::TEST_PROVIDERS, true) === false);

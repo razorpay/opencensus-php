@@ -277,7 +277,7 @@ final class FactoryData
             'merchant_id' => '10000000000000',
             'url' => $faker->url,
             'events' => [
-                'payment.authorized' => true,
+                'payment.authorized' => '1',
             ],
             'active' => true,
         ]);

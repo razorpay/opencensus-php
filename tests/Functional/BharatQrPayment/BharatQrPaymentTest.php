@@ -4,11 +4,13 @@ namespace RZP\Tests\Functional\QrPayment;
 
 use RZP\Exception;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class BharatQrPaymentTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -68,9 +70,9 @@ class BharatQrPaymentTest extends TestCase
 
         // Live because by default mode is live
         // if entity id is not given
-        $bharatQr = $this->getLastEntity('bharat_qr', true, 'live');
+        $bharatQr = $this->getDbLastEntity('bharat_qr', 'live');
 
-        $payment =  $this->getLastEntity('payment', true, 'live');
+        $payment =  $this->getDbLastEntity('payment', 'live');
 
         $this->assertEquals('card', $payment['method']);
         $this->assertEquals('authorized', $payment['status']);
@@ -103,9 +105,9 @@ class BharatQrPaymentTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $bharatQr = $this->getEntities('bharat_qr', [], true);
+        $bharatQr = $this->getDbEntities('bharat_qr', []);
 
-        $this->assertEquals(count($bharatQr['items']) , 1);
+        $this->assertEquals(count($bharatQr) , 1);
     }
 
     protected function createVirtualAccount()

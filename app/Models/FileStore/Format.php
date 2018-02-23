@@ -21,6 +21,7 @@ class Format
     const DOCX  = 'docx';
     const RPT   = 'rpt';
     const DAT   = 'dat';
+    const NONE  = null;
 
     const EXCEL_COLUMN_TEXT = '@';
 
@@ -66,6 +67,7 @@ class Format
         self::DOCX  => ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
         self::RPT   => ['text/plain'],
         self::DAT   => ['text/plain'],
+        self::NONE  => ['text/plain'],
     ];
 
     const VALID_LOCAL_EXTENSIONS = [
@@ -88,7 +90,8 @@ class Format
     public static function validateContentTypeForExtension($content, $extension)
     {
         // TODO : Fix content checking
-        if (in_array($extension, self::SUPPORTED_EXTENSION_TYPES) === false)
+        if (($extension !== Format::NONE) and
+            (in_array($extension, self::SUPPORTED_EXTENSION_TYPES, true) === false))
         {
             throw new Exception\BadRequestValidationFailureException('Invalid Extension');
         }

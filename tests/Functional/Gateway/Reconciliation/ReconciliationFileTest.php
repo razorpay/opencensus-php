@@ -6,11 +6,13 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 use RZP\Gateway\Blade\Mock\CardNumber;
 
 use RZP\Reconciliator\FirstData\PaymentReconciliate as FDPaymentRecon;
 use RZP\Reconciliator\HDFC\PaymentReconciliate as HDFCPaymentRecon;
 use RZP\Reconciliator\Axis\PaymentReconciliate as AxisPaymentRecon;
+use RZP\Reconciliator\VirtualAccYesBank\PaymentReconciliate as VirtualAccYesBank;
 use RZP\Reconciliator\BillDesk\RefundReconciliate as BilldeskRefundRecon;
 use RZP\Reconciliator\Hitachi\PaymentReconciliate as HitachiPaymentRecon;
 use RZP\Reconciliator\Hitachi\RefundReconciliate as HitachiRefundRecon;
@@ -19,6 +21,7 @@ class ReconciliationFileTest extends TestCase
 {
     use FileHandlerTrait;
     use PaymentTrait;
+    use VirtualAccountTrait;
     use DbEntityFetchTrait;
 
     protected $payment;
@@ -159,6 +162,35 @@ class ReconciliationFileTest extends TestCase
         $this->assertEquals($entries[0][AxisPaymentRecon::COLUMN_ARN], $updatedPayment1['reference1']);
         $this->assertEquals($entries[0][AxisPaymentRecon::COLUMN_AUTH_CODE], $updatedPayment1['reference2']);
         $this->assertTrue($updatedPayment1['gateway_captured']);
+    }
+
+    public function testVirtualAccYesBankReconFile()
+    {
+        $this->fixtures->merchant->addFeatures(['virtual_accounts']);
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        $account = $this->createVirtualAccount();
+
+        $payment = $this->payVirtualAccount($account['id']);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(null, $transaction['reconciled_at']);
+
+        $entries[] = $this->overrideVirtualAccYesBankPayment($account, $payment);
+
+        $file = $this->writeToExcelFile($entries, 'virtualAccYesBank', 'files/settlement','Sheet1');
+
+        $this->runForFiles([$file], 'VirtualAccYesBank');
+
+        $bankTransfer = $this->getLastEntity('bank_transfer', true);
+
+        $bankAccount = $this->getLastEntity('bank_account', true);
+
+        $this->assertEquals($entries[0]['rmtr_account_ifsc'], $bankTransfer['payer_ifsc']);
+        $this->assertEquals($entries[0]['rmtr_account_ifsc'], $bankAccount['ifsc']);
+
     }
 
     public function testAxisCyberSourceReconPaymentFile()
@@ -335,6 +367,16 @@ class ReconciliationFileTest extends TestCase
             $facade[AxisPaymentRecon::COLUMN_MID] = 'RAZORPAYCYBS';
             $facade[AxisPaymentRecon::COLUMN_ORDER_ID] = $payment['ref'];
         }
+
+        return $facade;
+    }
+
+    private function overrideVirtualAccYesBankPayment($account, $payment)
+    {
+        $facade = $this->testData['facades']['virtual_yes_bank'];
+
+        $facade[VirtualAccYesBank::COLUMN_UTR]           = $payment['transaction_id'];
+        $facade[VirtualAccYesBank::COLUMN_PAYEE_ACCOUNT] = $account['receivers'][0]['account_number'];
 
         return $facade;
     }

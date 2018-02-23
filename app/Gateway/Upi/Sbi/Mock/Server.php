@@ -193,6 +193,11 @@ class Server extends Base\Mock\Server
             $response[ResponseFields::STATUS] = Status::REJECTED;
             $response[ResponseFields::STATUS_DESCRIPTION] = 'Collect request rejected';
         }
+        else if ($upiEntity[Entity::VPA] === 'cbsdown@sbi')
+        {
+            $response[ResponseFields::STATUS] = Status::CBS_DOWN;
+            $response[ResponseFields::STATUS_DESCRIPTION] = 'CBS transaction processing timed out';
+        }
 
         return [ResponseFields::API_RESPONSE => $response];
     }
@@ -219,6 +224,11 @@ class Server extends Base\Mock\Server
         {
             $content[ResponseFields::STATUS] = Status::FAILED;
             $content[ResponseFields::STATUS_DESCRIPTION] = 'Payment failed';
+        }
+        else if ($vpa === 'cbsdown@sbi')
+        {
+            $content[ResponseFields::STATUS] = Status::CBS_DOWN;
+            $content[ResponseFields::STATUS_DESCRIPTION] = 'CBS transaction processing timed out';
         }
 
         $this->content($content, 'auth_decrypted');

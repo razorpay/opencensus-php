@@ -2,6 +2,33 @@
 
 return [
     'facades' => [
+        'virtual_yes_bank' => [
+            'cust_code'          => '111222',
+            'remitter_code'      => '123',
+            'customer_subcode'   => null,
+            'invoice_no'         => null,
+            'bene_account_no'    => '11122200123',
+            'amount'             => 100,
+            'rmtr_account_no'    => null,
+            'rmtr_account_ifsc'  => 'HDFC0000240',
+            'transaction_ref_no' => '81231231232',
+            'trans_received_at'  => '1/25/2018 7:16:25 PM',
+            'trans_status'       => 'CREDITED',
+            'validation_status'  => 'VALIDATED: OK',
+            'transfer_type'      => 'NEFT',
+            'credit_ref'         => '004331798',
+            'notify_status'      => 'NOTIFIED: OK',
+            'notify_result'      => null,
+            'return_ref'         => null,
+            'returned_at'        => null,
+            'rmtr_full_name'     => 'TECNOTREE CONVERGENCE PVT LTD',
+            'rmtr_add'           => 'BANGALORE',
+            'udf11'              => null,
+            'udf12'              => null,
+            'udf13'              => null,
+            'udf14'              => null,
+        ],
+
         'first_data' => [
             'super_mid'            => '78541547',
             'mid'                  => '87001081',

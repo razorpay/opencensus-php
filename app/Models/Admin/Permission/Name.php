@@ -151,6 +151,7 @@ class Name
     const DELETE_GATEWAY_RULE                 = 'delete_gateway_rule';
     const VIEW_GATEWAY_RULE                   = 'view_gateway_rule';
     const VIEW_MERCHANT_REPORT                = 'view_merchant_report';
+    const VIEW_SPECIAL_MERCHANT_REPORT        = 'view_special_merchant_report';
     const CREATE_MERCHANT_OFFER               = 'create_merchant_offer';
     const EDIT_MERCHANT_OFFER                 = 'edit_merchant_offer';
     const ASSIGN_MERCHANT_HANDLE              = 'assign_merchant_handle';

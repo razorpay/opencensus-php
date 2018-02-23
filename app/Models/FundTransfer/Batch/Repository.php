@@ -3,9 +3,8 @@
 namespace RZP\Models\FundTransfer\Batch;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
 use RZP\Models\Base;
-use RZP\Models\Settlement;
+use RZP\Constants\Timezone;
 
 class Repository extends Base\Repository
 {
@@ -35,5 +34,23 @@ class Repository extends Base\Repository
         }
 
         return $query;
+    }
+
+    /**
+     * Gives the count of batch fund transfer generated on current day
+     *
+     * @param string $channel
+     * @return mixed
+     */
+    public function getSettlementBatchCountOfDay(string $channel)
+    {
+        $today  = Carbon::today(Timezone::IST)->getTimestamp();
+
+        $count  = $this->newQuery()
+                       ->where(Entity::CHANNEL, $channel)
+                       ->where(Entity::CREATED_AT, '>=' , $today)
+                       ->count();
+
+        return $count;
     }
 }

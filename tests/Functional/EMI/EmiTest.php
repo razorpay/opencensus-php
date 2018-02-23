@@ -15,11 +15,13 @@ class EmiTest extends TestCase
 
         parent::setUp();
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
     }
 
     public function testAddEmiPlans()
     {
+        $this->ba->adminAuth();
+
         $this->startTest();
     }
 

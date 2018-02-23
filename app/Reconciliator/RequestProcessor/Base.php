@@ -51,6 +51,7 @@ class Base extends Core
     const NETBANKING_PNB         = 'NetbankingPnb';
     const NETBANKING_BOB         = 'NetbankingBob';
     const VIRTUAL_ACC_KOTAK      = 'VirtualAccKotak';
+    const VIRTUAL_ACC_YESBANK    = 'VirtualAccYesBank';
     const JIOMONEY               = 'Jiomoney';
     const UPI_SBI                = 'UpiSbi';
     const PAYUMONEY              = 'PayuMoney';
@@ -87,6 +88,7 @@ class Base extends Core
         self::FIRST_DATA          => ['customer.care@icici.mailserv.in'],
         self::UPI_ICICI           => [],
         self::VIRTUAL_ACC_KOTAK   => ['kmb.reports@kotak.com'],
+        self::VIRTUAL_ACC_YESBANK => [],
         self::UPI_SBI             => [],
         self::PAYUMONEY           => [],
         // Used when someone from the team needs to send the
@@ -137,7 +139,7 @@ class Base extends Core
         $gatewayReconciliatorClassName = 'RZP\\Reconciliator' . '\\' .
             $this->gateway . '\\' . 'Reconciliate';
 
-        $this->gatewayReconciliator = new $gatewayReconciliatorClassName;
+        $this->gatewayReconciliator = new $gatewayReconciliatorClassName($this->gateway);
     }
 
     /**

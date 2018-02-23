@@ -59,6 +59,8 @@ class UpiIciciGatewayReconTest extends TestCase
 
         foreach ($refunds['items'] as $refund)
         {
+            $this->assertEquals('processed', $refund['status']);
+
             $transactionId = $refund['transaction_id'];
 
             $transaction = $this->getEntityById('transaction', $transactionId, true);
@@ -107,6 +109,8 @@ class UpiIciciGatewayReconTest extends TestCase
         // We do not reconcile refunds that fail the amount assertion step
         foreach ($refunds['items'] as $refund)
         {
+            $this->assertNull($refund['status']);
+
             $transactionId = $refund['transaction_id'];
 
             $transaction = $this->getEntityById('transaction', $transactionId, true);

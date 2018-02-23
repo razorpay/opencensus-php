@@ -311,7 +311,7 @@ class AuthorizeTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = '/payments/fix_authorized_at';
         $this->testData[__FUNCTION__]['request']['content']['payment_ids'] = [$payment->getPublicId()];
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
@@ -351,13 +351,15 @@ class AuthorizeTest extends TestCase
 
         $tokenId = $token['id'];
 
+        // TODO: Figure out how to write the test cases here!
+
         // Should timeout
         $payment2 = $this->fixtures->create('payment:status_created',
             [
                 'created_at'        => time() - (60 * 100),
                 'gateway'           => PaymentModel\Gateway::NETBANKING_HDFC,
                 'bank'              => IFSC::HDFC,
-                'method'            => PaymentModel\Method::NETBANKING,
+                'method'            => PaymentModel\Method::EMANDATE,
                 'token_id'          => $tokenId,
                 'recurring'         => 1,
                 'recurring_type'    => PaymentModel\RecurringType::INITIAL,
@@ -369,7 +371,7 @@ class AuthorizeTest extends TestCase
                 'created_at'        => time() - (60 * 100),
                 'gateway'           => PaymentModel\Gateway::NETBANKING_HDFC,
                 'bank'              => IFSC::HDFC,
-                'method'            => PaymentModel\Method::NETBANKING,
+                'method'            => PaymentModel\Method::EMANDATE,
                 'token_id'          => $tokenId,
                 'recurring'         => 1,
                 'recurring_type'    => PaymentModel\RecurringType::AUTO,
@@ -382,7 +384,7 @@ class AuthorizeTest extends TestCase
                 'gateway'           => PaymentModel\Gateway::NETBANKING_HDFC,
                 'bank'              => IFSC::HDFC,
                 'token_id'          => $tokenId,
-                'method'            => PaymentModel\Method::NETBANKING,
+                'method'            => PaymentModel\Method::EMANDATE,
                 'recurring'         => 1,
                 'recurring_type'    => PaymentModel\RecurringType::AUTO,
             ]);

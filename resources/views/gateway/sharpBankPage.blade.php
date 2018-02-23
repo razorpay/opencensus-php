@@ -44,7 +44,7 @@
     This is just a demo bank page.<br>
     You can choose whether to make this payment successful or not: <br><br>
     <form onsubmit="return false" method="post" action="{{{ $url }}}">
-      @if (isset($emandate))
+      @if ($method === 'emandate')
         <input type="hidden" name="emandate_success">
         <button data-val="S" class="success">Success</button>
         <button data-val="M" class="warn em">Payment successful but e-Mandate failed</button>

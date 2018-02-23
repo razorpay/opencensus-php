@@ -19,7 +19,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->remember(self::CACHE_TTL)
-                    ->cacheTags(['v1', 'key_'. $id])
+                    ->cacheTags('key_'. $id)
                     ->find($id, $columns);
     }
 

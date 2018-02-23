@@ -26,7 +26,7 @@ trait AttemptTrait
             'content'   => [Attempt\Entity::PURPOSE => $purpose],
         ];
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 

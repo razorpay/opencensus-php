@@ -12,6 +12,7 @@ use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Customer\Token\Entity as Token;
 use RZP\Models\Customer\Token\RecurringStatus;
 use RZP\Models\Payment\Status as PaymentStatus;
+use RZP\Models\Payment\Method as PaymentMethod;
 use RZP\Gateway\Netbanking\Base\Entity as Netbanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Customer\GatewayToken\Entity as GatewayToken;
@@ -27,7 +28,7 @@ class NetbankingIciciEMandateTest extends TestCase
     protected $payment;
 
     const ACCOUNT_NUMBER    = '914010009305862';
-    const IFSC              = 'UTIB0002766';
+    const IFSC              = 'ICIC0002766';
     const NAME              = 'Test account';
 
     // TODO: Test global customer / token flow
@@ -40,11 +41,13 @@ class NetbankingIciciEMandateTest extends TestCase
 
         $this->gateway = Gateway::NETBANKING_ICICI;
 
-        $this->fixtures->create('terminal:shared_netbanking_icici_recurring_terminal');
+        $this->fixtures->create('terminal:shared_emandate_icici_terminal');
 
         $this->fixtures->create(Entity::CUSTOMER);
 
         $this->fixtures->merchant->addFeatures([Constants::CHARGE_AT_WILL, Constants::E_MANDATE]);
+
+        $this->fixtures->merchant->enableEmandate();
 
         $this->payment = $this->getEmandateNetbankingRecurringPaymentArray(IFSC::ICIC);
 
@@ -80,8 +83,11 @@ class NetbankingIciciEMandateTest extends TestCase
 
         $paymentEntity = $this->getLastEntity(Entity::PAYMENT, true);
 
+        $this->assertEquals(1180, $paymentEntity[Payment::FEE]);
+        $this->assertEquals(180, $paymentEntity[Payment::TAX]);
+
         $payment[Payment::TOKEN] = $paymentEntity[Payment::TOKEN_ID];
-        $payment['amount'] = 2000;
+        $payment['amount'] = 4000;
 
         $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
         $payment['order_id'] = $order->getPublicId();
@@ -92,6 +98,11 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->doS2SRecurringPayment($payment);
 
         $this->assertEMandateEntities(false);
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+
+        $this->assertEquals(2360, $payment[Payment::FEE]);
+        $this->assertEquals(360, $payment[Payment::TAX]);
     }
 
     public function testEMandateScheduledPaymentWithoutMethod()
@@ -106,7 +117,7 @@ class NetbankingIciciEMandateTest extends TestCase
         $paymentEntity = $this->getLastEntity(Entity::PAYMENT, true);
 
         $payment[Payment::TOKEN] = $paymentEntity[Payment::TOKEN_ID];
-        $payment['amount'] = 2000;
+        $payment['amount'] = 4000;
 
         $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
         $payment['order_id'] = $order->getPublicId();
@@ -144,11 +155,10 @@ class NetbankingIciciEMandateTest extends TestCase
         $paymentEntity = $this->getLastEntity(Entity::PAYMENT, true);
 
         $payment[Payment::TOKEN] = $paymentEntity[Payment::TOKEN_ID];
-        $payment['amount'] = 2000;
+        $payment['amount'] = 4000;
 
         $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
         $payment['order_id'] = $order->getPublicId();
-
 
         $this->mockScheduledPaymentFailure();
 
@@ -215,7 +225,7 @@ class NetbankingIciciEMandateTest extends TestCase
         $token1 = $this->getLastEntity(Entity::TOKEN, true);
 
         $payment[Payment::TOKEN] = $paymentEntity[Payment::TOKEN_ID];
-        $payment['amount'] = 2000;
+        $payment['amount'] = 4000;
 
         $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
         $payment['order_id'] = $order->getPublicId();
@@ -289,7 +299,7 @@ class NetbankingIciciEMandateTest extends TestCase
         $firstPayment = $this->getLastEntity('payment', true);
 
         $payment[Payment::TOKEN] = $firstPayment['token_id'];
-        $payment['amount'] = 2000;
+        $payment['amount'] = 4000;
 
         $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
         $payment['order_id'] = $order->getPublicId();
@@ -377,7 +387,7 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->mockDebitRequestFailure();
 
         $payment[Payment::TOKEN] = $token1[TOKEN::ID];
-        $payment['amount'] = 2000;
+        $payment['amount'] = 4000;
 
         $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
         $payment['order_id'] = $order->getPublicId();
@@ -460,7 +470,7 @@ class NetbankingIciciEMandateTest extends TestCase
         $paymentEntity = $this->getLastEntity(Entity::PAYMENT, true);
 
         $payment[Payment::TOKEN] = $paymentEntity[Payment::TOKEN_ID];
-        $payment['amount'] = 2000;
+        $payment['amount'] = 4000;
 
         $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
         $payment['order_id'] = $order->getPublicId();
@@ -501,7 +511,7 @@ class NetbankingIciciEMandateTest extends TestCase
         $paymentEntity = $this->getLastEntity(Entity::PAYMENT, true);
 
         $payment[Payment::TOKEN] = $paymentEntity[Payment::TOKEN_ID];
-        $payment['amount'] = 2000;
+        $payment['amount'] = 4000;
 
         $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
         $payment['order_id'] = $order->getPublicId();
@@ -539,7 +549,7 @@ class NetbankingIciciEMandateTest extends TestCase
 
         $payment = $this->payment;
         $payment[Payment::TOKEN] = 'token_' . $token[Token::ID];
-        $payment['amount'] = 2000;
+        $payment['amount'] = 4000;
 
         $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
         $payment['order_id'] = $order->getPublicId();
@@ -644,7 +654,7 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->assertEquals($payment[Payment::TERMINAL_ID], $token[Token::TERMINAL_ID]);
         $this->assertEquals($payment[Payment::CUSTOMER_ID], 'cust_' . $token[Token::CUSTOMER_ID]);
         $this->assertEquals(IFSC::ICIC, $payment[Payment::BANK]);
-        $this->assertEquals(Entity::NETBANKING, $token[Token::METHOD]);
+        $this->assertEquals(PaymentMethod::EMANDATE, $token[Token::METHOD]);
         $this->assertEquals(IFSC::ICIC, $token[Token::BANK]);
 
         // Assert GatewayToken entity
@@ -714,7 +724,7 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->assertEquals($payment[Payment::TERMINAL_ID], $token[Token::TERMINAL_ID]);
         $this->assertEquals($payment[Payment::CUSTOMER_ID], 'cust_' . $token[Token::CUSTOMER_ID]);
         $this->assertEquals(IFSC::ICIC, $payment[Payment::BANK]);
-        $this->assertEquals(Entity::NETBANKING, $token[Token::METHOD]);
+        $this->assertEquals(PaymentMethod::EMANDATE, $token[Token::METHOD]);
         $this->assertEquals(IFSC::ICIC, $token[Token::BANK]);
     }
 

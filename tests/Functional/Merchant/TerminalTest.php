@@ -15,7 +15,7 @@ class TerminalTest extends TestCase
 
         parent::setUp();
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
     }
 
     public function testAssignTerminal()
@@ -104,6 +104,8 @@ class TerminalTest extends TestCase
                          ->create('merchant_fluid', ['id' => '10abcdefghsdfs'])
                          ->addTerminal('atom', ['id' => 'testatomrandom'])
                          ->get();
+
+        $this->ba->getAdmin()->merchants()->attach($merchant);
 
         $content = $this->startTest();
     }
