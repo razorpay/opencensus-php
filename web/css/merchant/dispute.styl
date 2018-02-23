@@ -6,16 +6,31 @@
 .open-dispute-banner {
   .rzp-banner {
     padding: 8px 24px;
+    font-size: 12px;
 
-    .i {
+    .i-close {
       line-height: unset;
       cursor: pointer;
+    }
+
+    .i-info-outline {
+      font-size: inherit;
+
+      &::after {
+        vertical-align: middle;
+      }
     }
   }
 
   &.analytics-dash-banner {
     .rzp-banner {
       margin-bottom: unset;
+    }
+  }
+
+  &.dispute-list-banner {
+    .rzp-banner {
+      border-width: 0 0 1px 0;
     }
   }
 }

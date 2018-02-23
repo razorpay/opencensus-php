@@ -16,7 +16,8 @@ export default class OpenDisputeAlert extends Component {
   state = { open: true };
 
   componentWillMount() {
-    this.props.fetchOpenDisputes();
+    /* disabling fetching for a while */
+    // this.props.fetchOpenDisputes();
   }
 
   handleClose = () => {
@@ -26,16 +27,21 @@ export default class OpenDisputeAlert extends Component {
   render() {
     let { openDisputes, customClass } = this.props;
     return (
-      this.state.open &&
-      openDisputes > 0 && (
+      this.state.open && (
+        /* disabling this check for a while */
+        // openDisputes > 0 && (
         <div class={`open-dispute-banner ${customClass || ''}`}>
           <Banner>
-            There {openDisputes > 1 ? 'are' : 'is'} {openDisputes} open dispute{openDisputes >
+            {/* disabling this message for a while */}
+            {/*There {openDisputes > 1 ? 'are' : 'is'} {openDisputes} open dispute{openDisputes >
               1 && 's'}{' '}
             against {openDisputes < 2 && 'a'} payment{openDisputes > 1 && 's'}&nbsp;
             that needs your attention. &nbsp;<Link to="/disputes">
               Show Disputes
             </Link>
+            */}
+            <span class="icon i-info-outline" />&nbsp; You can now view all your
+            disputes on the dashboard. <Link to="/disputes">Show Disputes</Link>
             <i class="i i-close pull-right" onClick={this.handleClose} />
           </Banner>
         </div>
