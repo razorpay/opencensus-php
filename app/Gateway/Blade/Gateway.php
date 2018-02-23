@@ -822,8 +822,8 @@ class Gateway extends Base\Gateway
 
         $request['options'] = $options;
 
-        $request['options']['timeout'] = 10;
-        $request['options']['connect_timeout'] = 10;
+        $request['options']['timeout'] = 20;
+        $request['options']['connect_timeout'] = 20;
         $request['options']['verify'] = $this->getCaInfo();
 
         return $request;
