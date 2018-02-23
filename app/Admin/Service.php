@@ -694,13 +694,20 @@ class Service extends Base\Service
         return [[], $file];
     }
 
-    public function fetchMultipleEntities($mode, $entity, $input)
+    public function fetchMultipleEntities($mode, $entity, $input, $adminAuth = false)
     {
         $error = array();
 
         $response = array();
 
-        $this->setApiCredentials(null, $mode);
+        if ($adminAuth === true)
+        {
+            $this->setAdminCredentials(null, $mode);
+        }
+        else
+        {
+            $this->setApiCredentials(null, $mode);
+        }
 
         try
         {

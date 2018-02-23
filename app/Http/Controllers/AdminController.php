@@ -324,7 +324,7 @@ class AdminController extends Controller
     {
         $input = Input::all();
 
-        list($error, $data) = (new Admin\Service)->fetchMultipleEntities($mode, $entity, $input);
+        list($error, $data) = (new Admin\Service)->fetchMultipleEntities($mode, $entity, $input, true);
 
         if ($format === 'csv' and empty($error) === true)
         {
