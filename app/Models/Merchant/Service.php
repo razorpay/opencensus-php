@@ -919,18 +919,16 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function updateHoldFundsForMultipleMerchants(array $input)
+    public function updateForMultipleMerchants(array $input)
     {
-        (new Validator)->validateInput('updateHoldFunds', $input);
-
         $this->trace->info(
-            TraceCode::MERCHANT_HOLD_FUNDS_BULK_UPDATE_REQUEST,
+            TraceCode::MERCHANT_BULK_UPDATE_REQUEST,
             $input
         );
 
         $merchantIds = $input['merchant_ids'];
 
-        $holdFunds = $input['hold_funds'];
+        unset($input['merchant_ids']);
 
         $successCount = $failedCount = 0;
 
@@ -940,7 +938,7 @@ class Service extends Base\Service
         {
             try
             {
-                $this->updateHoldFunds($merchantId, $holdFunds);
+                $this->edit($merchantId, $input);
 
                 $successCount++;
             }
@@ -962,7 +960,7 @@ class Service extends Base\Service
         ];
 
         $this->trace->info(
-            TraceCode::MERCHANT_HOLD_FUNDS_BULK_UPDATE_RESPONSE,
+            TraceCode::MERCHANT_BULK_UPDATE_RESPONSE,
             $response
         );
 
@@ -1303,15 +1301,6 @@ class Service extends Base\Service
             $response);
 
         return $response;
-    }
-
-    protected function updateHoldFunds(string $merchantId, bool $holdFunds)
-    {
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
-
-        $merchant->setHoldFunds($holdFunds);
-
-        $this->repo->saveOrFail($merchant);
     }
 
     public function getUsers()

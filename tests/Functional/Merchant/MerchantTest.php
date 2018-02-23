@@ -209,6 +209,45 @@ class MerchantTest extends TestCase
         $this->assertArrayNotHasKey('groups', $result);
     }
 
+    public function testEditBulkMerchant()
+    {
+        $this->fixtures->create('merchant',[
+            'id'     => '10000000000044',
+            'email'  => 'test1@razorpay.com',
+            'live' => true,
+            'activated' => 1,
+        ]);
+
+        $this->fixtures->create('merchant',[
+            'id'     => '10000000000055',
+            'email'  => 'test2@razorpay.com',
+            'live' => true,
+            'activated' => 1,
+        ]);
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000044', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
+
+        $this->fixtures->merchant->edit('10000000000055', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('live');
+
+        $result = $this->startTest();
+
+        $merchant1 = $this->getEntityById('merchant', '10000000000044', true);
+        $merchant2 = $this->getEntityById('merchant', '10000000000055', true);
+
+        $this->assertEquals(1, $merchant1['hold_funds']);
+        $this->assertEquals(1, $merchant2['hold_funds']);
+
+        $this->assertEquals(['1.1.1.1', '2.2.2.2'], $merchant1['whitelisted_ips_live']);
+        $this->assertEquals(['1.1.1.1', '2.2.2.2'], $merchant2['whitelisted_ips_live']);
+
+    }
+
     public function testEditMerchantEditGroups()
     {
         $merchant = $this->createMerchant();

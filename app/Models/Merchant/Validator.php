@@ -117,11 +117,6 @@ class Validator extends Base\Validator
         'tags' => 'required|array'
     ];
 
-    protected static $updateHoldFundsRules = [
-        'hold_funds'   => 'required|boolean',
-        'merchant_ids' => 'required|array'
-    ];
-
     protected static $updateChannelRules = [
         'channel'       => 'required|string|max:32|custom',
         'merchant_ids'  => 'required|array'
