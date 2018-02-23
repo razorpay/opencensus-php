@@ -552,4 +552,34 @@ class HitachiGatewayTest extends TestCase
             $this->verifyPayment($payment['id']);
         });
     }
+
+    public function testVerifyPaymentwithblankPrn()
+    {
+        $this->mockBlankPrn();
+
+        $data = $this->testData['testInvalidJson'];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function ()
+            {
+                $this->defaultAuthPayment([
+                    'card' => [
+                        'number'       => CardNumber::VALID_ENROLL_NUMBER,
+                        'expiry_month' => '02',
+                        'expiry_year'  => '21',
+                        'cvv'          => 123,
+                        'name'         => 'Test Card'
+                    ]
+                ]);
+            });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->verifyPayment($payment['id']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(1, $payment['verified']);
+    }
 }
