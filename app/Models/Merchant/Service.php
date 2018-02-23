@@ -921,6 +921,8 @@ class Service extends Base\Service
 
     public function updateForMultipleMerchants(array $input)
     {
+        (new Validator)->validateInput('updateForMultipleMerchants', $input);
+
         $this->trace->info(
             TraceCode::MERCHANT_BULK_UPDATE_REQUEST,
             $input
@@ -938,7 +940,7 @@ class Service extends Base\Service
         {
             try
             {
-                $this->edit($merchantId, $input);
+                $this->edit($merchantId, $input['edit']);
 
                 $successCount++;
             }

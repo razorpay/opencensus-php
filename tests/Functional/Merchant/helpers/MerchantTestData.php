@@ -25,9 +25,11 @@ return [
             'method'  => 'PUT',
             'url'     => '/merchants/bulk',
             'content' => [
-                'merchant_ids'         => ['10000000000044', '10000000000055'],
-                'hold_funds'           => 1,
-                'whitelisted_ips_live' => ['1.1.1.1', '2.2.2.2'],
+                'merchant_ids' => ['10000000000044', '10000000000055'],
+                'edit'         => [
+                    'hold_funds'           => 1,
+                    'whitelisted_ips_live' => ['1.1.1.1', '2.2.2.2']
+                ],
             ],
             'server'  => [
                 // Case: In sign-up case we will not have any other headers
