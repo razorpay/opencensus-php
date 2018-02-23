@@ -92,7 +92,10 @@ export default class TerminalForm extends Component {
     let mode = body.mode;
     delete body.mode;
 
-    body.mode = body.terminal_mode || undefined;
+    if (!body.terminal_mode) {
+      delete body.mode;
+    }
+
     delete body.terminal_mode;
 
     return adminFormUpload2(
