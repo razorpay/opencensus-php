@@ -206,6 +206,8 @@ class Entity extends Base\PublicEntity
 
         $this->setNextRunAt($nextRun->getTimestamp());
 
+        // This may not be needed because
+        // next_run_at is never null
         if ($lastRun !== null)
         {
             $this->setLastRunAt($lastRun->getTimestamp());
@@ -277,6 +279,11 @@ class Entity extends Base\PublicEntity
             //
             // In case of auth transaction (immediate), charge_at would be null.
             // In that case, we can use actual current time as the reference time.
+            //
+            // Last run at will be null the first time but it will always be set the next
+            // time because last run is equal to last next_run_at which is always
+            // set while creation of task and is to midnight of creation date if start_at
+            // of subscription is not set.
             //
             $referenceTime = $this->getLastRunAt() ? $this->getNextRunAt() : Carbon::now()->getTimestamp();
 

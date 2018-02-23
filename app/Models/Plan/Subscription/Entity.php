@@ -913,7 +913,7 @@ class Entity extends Base\PublicEntity
         $period = $this->plan->getPeriod();
 
         if (($this->getStartAt() !== null) and
-            (Period::isPeriodAnchored($period)))
+            (Period::isPeriodAnchored($period) === true))
         {
             $startAt = Carbon::createFromTimestamp($this->getStartAt(), Timezone::IST);
 
