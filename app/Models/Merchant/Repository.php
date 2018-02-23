@@ -41,10 +41,6 @@ class Repository extends Base\Repository
         Entity::RISK_RATING             => 'sometimes|integer|max:5|min:1',
     ];
 
-    protected $proxyFetchParamRules = [
-        Entity::PARENT_ID               => 'required|filled|size:14',
-    ];
-
     protected $adminFetchParamRules = [
         EsRepository::SEARCH_HITS       => 'filled|boolean',
         EsRepository::QUERY             => 'filled|string|min:2|max:100',
