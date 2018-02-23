@@ -54,14 +54,9 @@ configure_dev(){
 
 configure_cloud(){
   ALOHOMORA_BIN=$(which alohomora)
-  echo "casting alohomora - vault"
-  $ALOHOMORA_BIN cast --region ap-south-1 --env $APP_MODE --app api "environment/.env.vault.j2"
-  echo "casting alohomora - env.php"
-  $ALOHOMORA_BIN cast --region ap-south-1 --env $APP_MODE --app api "environment/env.php.j2"
-  echo "casting alohomora - apache"
+  echo "casting alohomora - vault,env.php,apache"
   sed -i "s|APACHE_HOST|$HOSTNAME|g" dockerconf/api.apache.conf.j2
-  $ALOHOMORA_BIN cast --region ap-south-1 --env $APP_MODE --app api "dockerconf/api.apache.conf.j2"
-
+  $ALOHOMORA_BIN cast --region ap-south-1 --env $APP_MODE --app api "environment/.env.vault.j2" "environment/env.php.j2" "dockerconf/api.apache.conf.j2"
   echo "copying nginx config"
   cp dockerconf/api.apache.conf /etc/apache2/conf.d/api.conf
 
@@ -176,11 +171,6 @@ function main {
       echo "starting sqs listener"
       php artisan queue:work ${app_type} --queue=${APP_MODE}-${queue_name} --sleep=${sleep_time}
     fi
-    else
-      echo "Specify sqs-listener-type: <sqs | sqs_multi_default>"
-    fi
-  else
-    echo "specify app-type: <web | sqs | sqs_multi_default>"
   fi
 
 }
