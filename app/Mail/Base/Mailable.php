@@ -64,8 +64,6 @@ class Mailable extends BaseMailable
 
         try
         {
-            $this->validateEmailTld();
-
             parent::send($mailer);
         }
         catch (\Throwable $e)
@@ -110,28 +108,34 @@ class Mailable extends BaseMailable
     }
 
     /**
-     * Checks if all the emails to which we're sending have valid TLDs
+     * Overriding the base method so that we don't add recipients
+     * if its TLDs are invalid
      *
+     * @param \Illuminate\Mail\Message $message
+     * @return $this
      * @throws Exception\BadRequestValidationFailureException
      */
-    protected function validateEmailTld()
+    protected function buildRecipients($message)
     {
         $validTldsCount = 0;
 
-        // For each of the receipients, do a TLD check
-        foreach (['to', 'cc', 'bcc'] as $type)
+        foreach (['to', 'cc', 'bcc', 'replyTo'] as $type)
         {
-            foreach ($this->{$type} as $email)
+            foreach ($this->{$type} as $recipient)
             {
+                $email = $recipient['address'];
+
                 $tld = last(explode('.', $email));
 
-                if (TLD::isValid($tld) === false)
+                if (TLD::isValid($tld) === true)
                 {
-                    $this->invalidTlds[] = $email;
+                    $message->{$type}($recipient['address'], $recipient['name']);
+
+                    $validTldsCount++;
                 }
                 else
                 {
-                    $validTldsCount++;
+                    $this->invalidTlds[] = $email;
                 }
             }
         }
@@ -144,6 +148,7 @@ class Mailable extends BaseMailable
                 'The email must be a valid email address.', 'email');
         }
 
+        return $this;
     }
 
     /**
