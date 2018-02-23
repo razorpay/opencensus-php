@@ -92,8 +92,8 @@ export default class User {
   // TODO: Remove this code and reports v1 code when confirmed no rollbacks
   // Enabling reportsV2 for all merchants.
   get isReportV2Enabled() {
-
-    return this.isFeatureEnabled('report_v2');
+    return true;
+    // return this.isFeatureEnabled('report_v2');
   }
 
   get isNewAnalyticsEnabled() {
