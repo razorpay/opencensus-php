@@ -19,6 +19,7 @@ class Repository extends Merchant\Repository
         $limit = 500;
 
         $query = $this->newQuery()
+                      ->whereNull(Entity::SUSPENDED_AT)
                       ->where(Entity::PARENT_ID, $parentId);
 
         foreach ($input as $attribute => $value)
