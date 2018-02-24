@@ -71,11 +71,9 @@ class FeaturesTest extends TestCase
 
     public function testAccountFeatures()
     {
-        $accountId = '10000000000001';
+        $accountId = '10000000000000';
 
         $dummy = 'dummy';
-
-        $this->fixtures->create('merchant', ['id' => $accountId]);
 
         $testData = $this->getDataToAddAccountFeatures(Mode::TEST,
             true,
@@ -1041,7 +1039,7 @@ class FeaturesTest extends TestCase
 
         $testData['request']['content']['should_sync'] = (int)$shouldSync;
 
-        $testData['request']['url'] = '/accounts/' . $entityId . '/features';
+        $testData['request']['url'] = '/accounts/public/features';
 
         $testData['response']['content'][0]['entity_id'] = $entityId;
 
@@ -1162,7 +1160,7 @@ class FeaturesTest extends TestCase
     {
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = '/accounts/' . $entityId . '/features';
+        $testData['request']['url'] = '/accounts/public/features';
 
         if ($mode === Mode::LIVE)
         {
