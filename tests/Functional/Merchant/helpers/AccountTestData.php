@@ -37,7 +37,10 @@ return [
         'request'  => [
             'url'    => '/accounts',
             'method' => 'get',
-            'content'   => [ ]
+            'content'   => [
+                'skip'  => 0,
+                'count' => 100
+            ]
         ],
         'response' => [
             'content' => [
