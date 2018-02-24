@@ -721,6 +721,8 @@ final class Route
         'beta_account_fetch_multiple'             => ['get',      'beta/accounts',                                  'AccountController@list'                                            ],
         'beta_account_post_bank_account'          => ['post',     'beta/accounts/{id}/bank_accounts',               'AccountController@createOrChangeBankAccount'                       ],
         'beta_account_fetch_setl_destinations'    => ['get',      'beta/accounts/{id}/settlement_destinations',     'AccountController@fetchSettlementDestinations'                     ],
+        'account_features_add'                    => ['post',     'accounts/public/features',                       'FeatureController@addAccountFeatures'                              ],
+        'account_features_get'                    => ['get',      'accounts/public/features',                       'FeatureController@getAccountFeatures'                              ],
 
         'account_fetch'                           => ['get',      'accounts',                                       'AccountController@listLinkedAccounts'                              ],
 
@@ -734,8 +736,6 @@ final class Route
         // Features
         'feature_add'                             => ['post',     'features',                                       'FeatureController@addFeatures'                                     ],
         'feature_get'                             => ['get',      'features/{entityType}/{entityId}',               'FeatureController@getFeatures'                                     ],
-        'feature_add_accounts'                    => ['post',     'accounts/{entityId}/features',                   'FeatureController@addAccountFeatures'                              ],
-        'feature_get_accounts'                    => ['get',      'accounts/{entityId}/features',                   'FeatureController@getAccountFeatures'                              ],
         'feature_bulk_assign'                     => ['post',     'features/assign',                                'FeatureController@multiAssignFeature'                              ],
         'feature_bulk_remove'                     => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
         'feature_delete_entity'                   => ['delete',   '{entityType}/{entityId}/features/{featureName}', 'FeatureController@deleteEntityFeature'                             ],
@@ -944,8 +944,8 @@ final class Route
         'beta_account_post_bank_account',
         'beta_account_fetch_setl_destinations',
         'dispute_fetch',
-        'feature_add_accounts',
-        'feature_get_accounts',
+        'account_features_add',
+        'account_features_get',
     ];
 
     // Only routes defined in internalApps go here

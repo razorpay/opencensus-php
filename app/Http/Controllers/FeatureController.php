@@ -12,13 +12,11 @@ class FeatureController extends Controller
     /**
      * Adds features to entities
      *
-     * @param string|null $accountId
-     *
      * @return \Illuminate\Http\Response
      */
-    public function addAccountFeatures(string $accountId = null)
+    public function addAccountFeatures()
     {
-        return $this->addFeatures(Constants::ACCOUNTS, $accountId);
+        return $this->addFeatures();
     }
 
     /**
@@ -69,7 +67,7 @@ class FeatureController extends Controller
      */
     public function deleteFeature(string $entityId, string $featureName)
     {
-        return $this->deleteEntityFeature(Constants::MERCHANTS, $entityId, $featureName);
+        return $this->deleteEntityFeature(Constants::ACCOUNTS, $entityId, $featureName);
     }
 
     /**
@@ -100,31 +98,28 @@ class FeatureController extends Controller
      */
     public function getMerchantFeatures(string $merchantId)
     {
-        return $this->getFeatures(Constants::MERCHANTS, $merchantId);
+        return $this->getFeatures(Constants::ACCOUNTS, $merchantId);
     }
 
     /**
      * Returns the features assigned to the merchant
      *
-     * @deprecated Use getAccountFeatures instead
-     * @param string|null $accountId
-     *
      * @return \Illuminate\Http\Response
      */
-    public function getAccountFeatures(string $accountId)
+    public function getAccountFeatures()
     {
-        return $this->getFeatures(Constants::MERCHANTS, $accountId);
+        return $this->getFeatures();
     }
 
     /**
      * Returns the features assigned to the entity
      *
-     * @param string $entityType
-     * @param string $entityId
+     * @param string|null $entityType
+     * @param string|null $entityId
      *
      * @return \Illuminate\Http\Response
      */
-    protected function getFeatures(string $entityType, string $entityId)
+    protected function getFeatures($entityType = null, $entityId = null)
     {
         $data = $this->service()->getFeatures($entityType, $entityId);
 

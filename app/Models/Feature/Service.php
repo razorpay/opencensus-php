@@ -35,9 +35,22 @@ class Service extends Base\Service
         return $features->toArray();
     }
 
-    public function getFeatures(string $routeEndpoint, string $entityId)
+    public function getFeatures($routeEndpoint, $entityId)
     {
-        $entityType = Entity::getEntityTypeFromRoute($routeEndpoint);
+        //
+        // Allow only the admins to provide the entity_type and entity_id from the input.
+        // If the merchant is hitting the route directly, only allow him to update his own account features.
+        //
+        if ($this->app['basicauth']->isAdminAuth() === true)
+        {
+            $entityType = Entity::getEntityTypeFromRoute($routeEndpoint);
+        }
+        else
+        {
+            $entityType = Constants::MERCHANT;
+
+            $entityId = $this->merchant->getId();
+        }
 
         $response = new Base\Collection;
 
@@ -155,7 +168,7 @@ class Service extends Base\Service
         foreach ($entityIds as $entityId)
         {
             $feature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail(
-                        'merchant',
+                        Constants::MERCHANT,
                         $entityId,
                         $featureName);
 
@@ -298,9 +311,22 @@ class Service extends Base\Service
     {
         $featureParams = new Base\Collection;
 
-        $entityType = $entityType ?? $input[Entity::ENTITY_TYPE];
+        //
+        // Allow only the admins to provide the entity_type and entity_id from the input.
+        // If the merchant is hitting the route directly, only allow him to update his own account features.
+        //
+        if ($this->app['basicauth']->isAdminAuth() === true)
+        {
+            $entityType = $entityType ?? $input[Entity::ENTITY_TYPE];
 
-        $entityId = $entityId ?? $input[Entity::ENTITY_ID];
+            $entityId = $entityId ?? $input[Entity::ENTITY_ID];
+        }
+        else
+        {
+            $entityType = Constants::MERCHANT;
+
+            $entityId = $this->merchant->getId();
+        }
 
         $featureNames = $input[Constants::NAMES];
 

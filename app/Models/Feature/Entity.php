@@ -60,7 +60,6 @@ class Entity extends Base\PublicEntity
      * @var array
      */
     protected static $routeToEntityTypeMap = [
-        Constants::MERCHANTS    => Constants::MERCHANT,
         Constants::ACCOUNTS     => Constants::MERCHANT,
         Constants::APPLICATIONS => Constants::APPLICATION,
     ];
