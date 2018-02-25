@@ -46,6 +46,39 @@ class OrderTest extends TestCase
         return $order;
     }
 
+    public function testUniqueReceiptFeatureWithNoReceipt()
+    {
+        $this->addOrderReceiptUniqueFeature();
+
+        $order = $this->startTest();
+
+        return $order;
+    }
+
+    public function testUniqueReceiptFeatureWithValidReceipt()
+    {
+        $this->addOrderReceiptUniqueFeature();
+
+        $order = $this->startTest();
+
+        return $order;
+    }
+
+    public function testUniqueReceiptFeatureWithDuplicateReceipt()
+    {
+        $this->fixtures->create('order', [
+            'amount'        => 50000,
+            'currency'      => 'INR',
+            'receipt'       => 'rcptid42',
+        ]);
+
+        $this->addOrderReceiptUniqueFeature();
+
+        $order = $this->startTest();
+
+        return $order;
+    }
+
     public function testCreateOrderWithNegativeAmount()
     {
         $this->startTest();
@@ -1025,5 +1058,15 @@ class OrderTest extends TestCase
         }
 
         return $feesArray;
+    }
+
+    protected function addOrderReceiptUniqueFeature()
+    {
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_id' => '10000000000000',
+                'name' => 'order_receipt_unique'
+            ]);
     }
 }
