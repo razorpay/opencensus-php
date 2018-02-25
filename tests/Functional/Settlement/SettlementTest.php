@@ -373,6 +373,15 @@ class SettlementTest extends TestCase
         $this->initiateAndverifySettlementEntitiesForChannel($channel);
     }
 
+    public function testMerchantSettlementV2Hdfc()
+    {
+        $this->ba->adminAuth();
+
+        $channel = Channel::HDFC;
+
+        $this->initiateAndverifySettlementEntitiesForChannel($channel);
+    }
+
     public function testMerchantSettlementV2Kotak()
     {
 

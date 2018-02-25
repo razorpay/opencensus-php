@@ -6,6 +6,7 @@ use Mail;
 use Carbon\Carbon;
 
 use RZP\Exception;
+use RZP\Models\FileStore;
 use RZP\Models\Settlement\Channel;
 use RZP\Trace\TraceCode;
 use RZP\Models\FundTransfer\Kotak;
@@ -21,6 +22,10 @@ class FileProcessor extends BaseProcessor
     protected static $channel = Channel::KOTAK;
 
     protected static $delimiter = '~';
+
+    protected static $fileExtensions = [
+        FileStore\Format::TXT
+    ];
 
     protected function setDate($data)
     {

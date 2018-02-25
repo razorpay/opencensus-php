@@ -26,6 +26,14 @@ class Service extends Base\Service
         RequestProcessor\Base::VIRTUAL_ACC_YESBANK,
     ];
 
+    /**
+     * List of gateways where we skips the batch summary slack post
+     */
+    const BATCH_SUMMARY_SKIP_GATEWAYS = [
+        RequestProcessor\Base::VIRTUAL_ACC_KOTAK,
+        RequestProcessor\Base::VIRTUAL_ACC_YESBANK,
+    ];
+
     public function initiateReconciliationProcess(array $input)
     {
         $this->traceReconRequest($input);

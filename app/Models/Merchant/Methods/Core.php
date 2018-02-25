@@ -263,7 +263,7 @@ class Core extends Base\Core
         {
             $methods->setCreditCard(true);
             $methods->setDebitCard(true);
-            $methods->setMobikwik(true);
+            $methods->setMobikwik(false);
             $methods->setPayzapp(true);
             $methods->setPayumoney(true);
             $methods->setOlamoney(true);
