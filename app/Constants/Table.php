@@ -36,6 +36,7 @@ class Table
     const FEATURE               = 'features';
     const DISPUTE               = 'disputes';
     const ADDRESS               = 'addresses';
+    const DISCOUNT              = 'discounts';
     const MERCHANT              = 'merchants';
 
     // Account entity is currently pointing to the 'merchants' table.
@@ -81,6 +82,7 @@ class Table
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const MERCHANT_EMI_PLANS    = 'merchant_emi_plans';
     const BATCH_FUND_TRANSFER   = 'daily_settlements';
+    const MERCHANT_ACCESS_MAP   = 'merchant_access_map';
     const CUSTOMER_TRANSACTION  = 'customer_transactions';
     const FUND_TRANSFER_ATTEMPT = 'fund_transfer_attempts';
 

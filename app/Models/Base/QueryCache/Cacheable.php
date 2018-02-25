@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Base\Traits\QueryCache;
+namespace RZP\Models\Base\QueryCache;
 
 use App;
 
@@ -32,6 +32,8 @@ trait Cacheable
 
         $builder->cacheDriver($driver);
 
+        $builder->prefix($this->getCachePrefix());
+
         return $builder;
     }
 
@@ -48,5 +50,29 @@ trait Cacheable
         $mode = $app['rzp.mode'] ?? null;
 
         return ($mode === Mode::TEST) ? 'query_cache_test' : 'query_cache_live';
+    }
+
+    /**
+     * Gets the prefix to be used for the query cache key.
+     * It is of the form "rememberable:v1:<entity>"
+     * The version prefix is for deleting all cached values
+     * for an entity corresponding to the version number. If the entity
+     * attributes change, we need this to delete cached items corresponding
+     * to this version.
+     * The entity prefix is need to delete cached items corresponding to a
+     * particular entity, if we want to bulk remove all keys corresponding
+     * to a given entity.
+     *
+     * @return string
+     */
+    protected function getCachePrefix(): string
+    {
+        $prefixArray = [
+            Constants::QUERY_CACHE_PREFIX,
+            static::QUERY_CACHE_VERSION,
+            $this->entity,
+        ];
+
+        return implode(':', $prefixArray);
     }
 }

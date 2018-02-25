@@ -268,7 +268,7 @@ class AdminTest extends TestCase
             'admin_id'  => $admin->getId(),
         ]);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $result = $this->startTest();
 
@@ -875,7 +875,7 @@ class AdminTest extends TestCase
 
     public function testConfigKeys()
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $request = $this->testData['testConfigKeysSet']['request'];
 
@@ -921,7 +921,7 @@ class AdminTest extends TestCase
 
         $this->assertCount(10, $result['fields']);
 
-        $this->assertCount(128, $result['entities']);
+        $this->assertCount(129, $result['entities']);
     }
 
     public function testFetchSoftDeletedEntityForAdmin()

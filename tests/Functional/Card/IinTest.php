@@ -16,7 +16,7 @@ class IinTest extends TestCase
 
         parent::setUp();
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
     }
 
     public function testAddIin()
@@ -45,38 +45,52 @@ class IinTest extends TestCase
 
     public function testGetIin()
     {
+        $this->ba->adminAuth();
+
         $this->startTest();
     }
 
     public function testGetIins()
     {
+        $this->ba->adminAuth();
+
         $this->startTest();
     }
 
     public function testImportIin()
     {
+        $this->ba->adminAuth();
+
         $file = $this->getUploadedIinFile();
 
         $testData = &$this->testData['testImportIin'];
 
         $testData['request']['files']['file'] = $file;
 
+        $this->ba->adminAuth();
+
         $this->startTest();
     }
 
     public function testImportIinWithIssuer()
     {
+        $this->ba->adminAuth();
+
         $file = $this->getUploadedIinFile(true);
 
         $testData = &$this->testData['testImportIinWithIssuer'];
 
         $testData['request']['files']['file'] = $file;
 
+        $this->ba->adminAuth();
+
         $this->startTest();
     }
 
     public function testIinRangeUploadWithType()
     {
+        $this->ba->adminAuth();
+
         $this->startTest();
 
         $iin = $this->getEntityById('iin', 652851, true);

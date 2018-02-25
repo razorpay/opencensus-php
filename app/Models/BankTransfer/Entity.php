@@ -378,4 +378,9 @@ class Entity extends Base\PublicEntity
     {
         $this->setAttribute(self::PAYER_NAME, $name);
     }
+
+    public function setPayerIfsc(string $ifsc)
+    {
+        $this->setAttribute(self::PAYER_IFSC, $ifsc);
+    }
 }

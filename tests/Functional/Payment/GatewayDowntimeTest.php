@@ -35,7 +35,7 @@ class GatewayDowntimeTest extends TestCase
 
         $this->statusCakeToken = md5($statusCakeUserName . $statusCakeApiKey);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
     }
 
     //----- Create Tests -----

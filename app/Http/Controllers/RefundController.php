@@ -41,9 +41,9 @@ class RefundController extends Controller
         return ApiResponse::json($refundExcel);
     }
 
-    public function postRefundVerify($ids)
+    public function postRefundVerifyMultiple($ids)
     {
-        $data = $this->service()->verify($ids);
+        $data = $this->service()->verifyMultiple($ids);
 
         return ApiResponse::json($data);
     }
@@ -131,6 +131,13 @@ class RefundController extends Controller
         $input = Request::all();
 
         $response = $this->service()->retry($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function postRefundVerify(string $id)
+    {
+        $response = $this->service()->verify($id);
 
         return ApiResponse::json($response);
     }

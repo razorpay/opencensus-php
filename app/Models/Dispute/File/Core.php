@@ -15,8 +15,8 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::DISPUTE_FILE_CREATE,
             [
-                'input'       => $input,
-                'dispute_id'  => $dispute->getId(),
+                'input'      => $input,
+                'dispute_id' => $dispute->getId(),
             ]);
 
         $file = (new Entity)->build($input);
@@ -40,15 +40,15 @@ class Core extends Base\Core
         $file = $fileInput[Entity::FILE];
 
         $uploadedFileDetails = $this->app['ufh.service']->uploadFileAndGetUrl(
-                                                            $file,
-                                                            $this->getStorageFileName($dispute, $file),
-                                                            $fileInput[Entity::CATEGORY],
-                                                            $dispute);
+            $file,
+            $this->getStorageFileName($dispute, $file),
+            $fileInput[Entity::CATEGORY],
+            $dispute);
 
         $input = [
-            Entity::FILE_ID    => $uploadedFileDetails[UfhService::FILE_ID],
-            Entity::NAME       => $fileInput[Entity::NAME],
-            Entity::CATEGORY   => $fileInput[Entity::CATEGORY],
+            Entity::FILE_ID  => $uploadedFileDetails[UfhService::FILE_ID],
+            Entity::NAME     => $fileInput[Entity::NAME],
+            Entity::CATEGORY => $fileInput[Entity::CATEGORY],
         ];
 
         $file = $this->create($dispute, $input);
@@ -70,7 +70,7 @@ class Core extends Base\Core
         return $files;
     }
 
-    public function uploadFiles(DisputeEntity $dispute, array $files): array
+    public function uploadFiles(DisputeEntity $dispute, array $files)
     {
         $this->trace->info(
             TraceCode::DISPUTE_FILES_UPLOAD,
@@ -79,25 +79,19 @@ class Core extends Base\Core
                 'files_count' => count($files),
             ]);
 
-        $disputeFiles = [];
-
         foreach ($files as $fileInput)
         {
-            $file = $this->uploadAndCreateFile($dispute, $fileInput);
-
-            $disputeFiles[] = $file->toArrayPublic();
+            $this->uploadAndCreateFile($dispute, $fileInput);
         }
-
-        return $disputeFiles;
     }
 
     protected function getStorageFileName(DisputeEntity $dispute, UploadedFile $file): string
     {
-        $nameWithoutExtension = str_replace('.' . $file->getClientOriginalExtension() ,
-                                            '' ,
+        $nameWithoutExtension = str_replace('.' . $file->getClientOriginalExtension(),
+                                            '',
                                             $file->getClientOriginalName());
 
         return $dispute->getEntityName() . '/' . $dispute->merchant->getPublicId() . '/' .
-                          $dispute->getPublicId() . '/' . $nameWithoutExtension;
+               $dispute->getPublicId() . '/' . $nameWithoutExtension;
     }
 }

@@ -139,7 +139,7 @@ class PaymentLinkTest extends TestCase
                     Entity::TYPE => Type::PAYMENT_LINK,
                 ]);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         Queue::fake();
 

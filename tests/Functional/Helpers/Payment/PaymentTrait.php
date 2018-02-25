@@ -117,6 +117,16 @@ trait PaymentTrait
         return $this->getAndMatchPayment($id, $paymentResponse);
     }
 
+    public function createRefundFromPayments($payments)
+    {
+        foreach ($payments as $payment)
+        {
+            $attrs = ['payment' => $payment, 'amount'  => '100'];
+            $refund = $this->fixtures->create('refund:from_payment', $attrs);
+            $refunds[] = $refund;
+        }
+    }
+
     protected function createAndGetFeesForPayment($payment = null)
     {
         if ($payment === null)
@@ -197,7 +207,7 @@ trait PaymentTrait
 
     protected function sendAutoCaptureEmails()
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $request = [
             'url'    => '/payments/autocapture/email',
@@ -690,7 +700,7 @@ trait PaymentTrait
             'url'    => '/payments/'.$id.'/verify',
             'method' => 'GET');
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 
@@ -703,7 +713,7 @@ trait PaymentTrait
             'url'    => '/payments/'.$id.'/authorize_failed',
             'method' => 'POST');
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 
@@ -777,7 +787,7 @@ trait PaymentTrait
 
     protected function disputePayment(Payment\Entity $payment, int $deduct = 0): array
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $reason = $this->fixtures->create('dispute_reason');
 
@@ -804,7 +814,7 @@ trait PaymentTrait
 
     protected function verifyRefund($id)
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = [];
 
@@ -820,7 +830,7 @@ trait PaymentTrait
 
     protected function retryFailedRefunds($gateway = [])
     {
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $content = [];
 
@@ -837,7 +847,7 @@ trait PaymentTrait
 
     protected function retryFailedRefund($id, $content = [])
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $request = array(
             'method'  => 'POST',
@@ -879,7 +889,7 @@ trait PaymentTrait
 
     protected function refundOldAuthorizedPayments()
     {
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $request = array(
             'method'  => 'POST',
@@ -897,7 +907,7 @@ trait PaymentTrait
             'url'    => '/payments/'.$id.'/authorize_failed',
             'method' => 'post');
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 
@@ -911,7 +921,7 @@ trait PaymentTrait
             'method'  => 'post',
             'content' => $content);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 
@@ -1034,7 +1044,7 @@ trait PaymentTrait
         return $payment;
     }
 
-    protected function getEmandateNetbankingRecurringPaymentArray($bank = 'HDFC', $amount = 2000)
+    protected function getEmandateNetbankingRecurringPaymentArray($bank = 'HDFC', $amount = 4000)
     {
         $payment = $this->getDefaultNetbankingPaymentArray($bank);
 

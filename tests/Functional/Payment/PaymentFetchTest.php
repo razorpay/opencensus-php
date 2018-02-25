@@ -38,6 +38,13 @@ class PaymentFetchTest extends TestCase
         $this->startTest();
     }
 
+    public function testFetchRuleswithCustomerIdError()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     public function testFetchRulesCascadingForProxyAuth()
     {
         $this->ba->proxyAuth();

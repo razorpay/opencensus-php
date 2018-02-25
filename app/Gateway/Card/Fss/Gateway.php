@@ -1006,7 +1006,7 @@ class Gateway extends Base\Gateway
      */
     protected function traceGatewayData(array $content, string $traceCode)
     {
-        $this->removeSensitiveRequestFields($content);
+        $content = $this->removeSensitiveRequestFields($content);
 
         $this->trace->info(
             $traceCode,

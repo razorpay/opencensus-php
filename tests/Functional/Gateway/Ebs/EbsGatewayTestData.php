@@ -3,6 +3,7 @@ use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Payment\TwoFactorAuth;
+use RZP\Models\Settlement\Channel;
 
 return [
     'testPayment' => [
@@ -61,7 +62,7 @@ return [
         'balance'         => 0,
         'gateway_fee'     => 0,
         'api_fee'         => 0,
-        'channel'         => 'kotak',
+        'channel'         => Channel::AXIS,
         'settled'         => false,
         'settled_at'      => null,
         'settlement_id'   => null,
@@ -81,7 +82,7 @@ return [
         'balance'       => 1048524,
         'gateway_fee'   => 0,
         'api_fee'       => 0,
-        'channel'       => 'kotak',
+        'channel'       => Channel::AXIS,
         'settled'       => false,
         'settlement_id' => null,
         'reconciled_at' => null,
@@ -276,7 +277,7 @@ return [
         'fee'                       => 0,
         'tax'                       => 0,
 //        'escrow_balance'            => 998562,
-        'channel'                   => 'kotak',
+        'channel'                   => Channel::AXIS,
         'settled'                   => false,
         'settled_at'                => null,
         'settlement_id'             => null,

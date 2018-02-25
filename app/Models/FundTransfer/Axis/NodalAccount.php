@@ -54,9 +54,9 @@ class NodalAccount extends NodalBase\NodalAccount
         $this->iv = base64_decode(Config::get('nodal.axis.iv'));
     }
 
-    public function generateSettlementFile($entities, $h2h = true): array
+    public function generateFundTransferFile($entities, $h2h = true): FileStore\Creator
     {
-        $rows = $this->getSettlementRows($entities);
+        $rows = $this->getRows($entities);
 
         list($excelFile, $rzpFile) = $this->createFile($rows);
 
@@ -64,7 +64,7 @@ class NodalAccount extends NodalBase\NodalAccount
 
         $this->sendAxisTransferMail($fileData);
 
-        return [$rzpFile, $excelFile];
+        return $excelFile;
     }
 
     protected function createFile(array $values): array
@@ -144,7 +144,7 @@ class NodalAccount extends NodalBase\NodalAccount
         ];
     }
 
-    protected function getSettlementRows($entities): array
+    protected function getRows($entities): array
     {
         $totalAmount = 0;
 

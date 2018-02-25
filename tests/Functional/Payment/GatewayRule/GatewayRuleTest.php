@@ -21,7 +21,7 @@ class GatewayRuleTest extends TestCase
 
     public function testCreateGatewayRule()
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $testCases = $this->testData[__FUNCTION__];
 
@@ -41,7 +41,7 @@ class GatewayRuleTest extends TestCase
 
     public function testUpdateGatewayRule()
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $testCases = $this->testData[__FUNCTION__];
 
@@ -74,7 +74,7 @@ class GatewayRuleTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = '/gateway/rules/' . $rule->getId();
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $this->startTest();
     }

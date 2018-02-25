@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\Payment;
 
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use Mockery;
@@ -141,10 +143,10 @@ class PaymentCreateTest extends TestCase
 
     public function testWalletPostFormViaPaymentCreate()
     {
-        $this->fixtures->merchant->enableWallet('10000000000000', 'payumoney');
+        $this->fixtures->merchant->enableWallet('10000000000000', 'airtelmoney');
         $this->fixtures->merchant->addFeatures(['email_optional', 'contact_optional']);
 
-        $payment = $this->getDefaultWalletPaymentArray('payumoney');
+        $payment = $this->getDefaultWalletPaymentArray('airtelmoney');
 
         unset($payment['email'], $payment['contact'], $payment['notes']);
 
@@ -202,9 +204,9 @@ class PaymentCreateTest extends TestCase
         $paymentEntity = $this->getLastEntity('payment', true);
 
         $payment['token'] = $paymentEntity['token_id'];
-        $payment['amount'] = 2000;
+        $payment['amount'] = 3000;
 
-        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 3000]);
         $payment['order_id'] = $order->getPublicId();
 
         //
@@ -213,6 +215,76 @@ class PaymentCreateTest extends TestCase
         $response = $this->doS2SRecurringPayment($payment);
 
         $this->assertArrayHasKey('razorpay_payment_id', $response);
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('netbanking_icici', $paymentEntity['gateway']);
+    }
+
+    public function testRecurringTokenForEmandate()
+    {
+        $payment = $this->setupEmandateAndGetPaymentRequest('UTIB', 0);
+
+        $payment['bank_account'] = [
+            'account_number'    => '123123123',
+            'name'              => 'test name',
+            'ifsc'              => 'UTIB0002766'
+        ];
+
+        $expireBy = Carbon::now(Timezone::IST)->addDays(10)->getTimestamp();
+
+        $payment['recurring_token'] = [
+            'max_amount' => 2000,
+            'expire_by' => $expireBy,
+        ];
+
+        $this->doAuthPayment($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $token = $this->getEntityById('token', $paymentEntity['token_id'], true);
+
+        $this->assertEquals(2000, $token['max_amount']);
+        $this->assertEquals($expireBy, $token['expired_at']);
+    }
+
+    public function testRecurringTokenForSecondRecurringForEmandate()
+    {
+        $payment = $this->setupEmandateAndGetPaymentRequest('UTIB', 0);
+
+        $payment['bank_account'] = [
+            'account_number'    => '123123123',
+            'name'              => 'test name',
+            'ifsc'              => 'UTIB0002766'
+        ];
+
+        $expireBy = Carbon::now(Timezone::IST)->addDays(10)->getTimestamp();
+
+        $payment['recurring_token'] = [
+            'max_amount' => 2000,
+            'expire_by' => $expireBy,
+        ];
+
+        $this->doAuthPayment($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $payment['token'] = $paymentEntity['token_id'];
+        unset($payment['bank_account'], $payment['auth_type']);
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 2000]);
+        $payment['amount'] = 2000;
+        $payment['order_id'] = $order->getPublicId();
+        $payment['recurring_token']['max_amount'] = 1000;
+
+        //
+        // Second auth payment for the recurring product
+        //
+        $this->doS2SRecurringPayment($payment);
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $token = $this->getEntityById('token', $paymentEntity['token_id'], true);
+
+        $this->assertEquals(2000, $token['max_amount']);
     }
 
     public function testSecondRecurringWithMissingBankAccountDetailsAndAuthType()
@@ -243,7 +315,7 @@ class PaymentCreateTest extends TestCase
 
         $this->assertArrayHasKey('razorpay_payment_id', $response);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $data = $this->testData[__FUNCTION__];
         $this->startTest($data);
@@ -442,9 +514,11 @@ class PaymentCreateTest extends TestCase
     protected function setupEmandateAndGetPaymentRequest($bank = 'HDFC', $amount = 2000)
     {
         $this->mockTokenex();
-        $this->fixtures->create('terminal:shared_netbanking_icici_recurring_terminal');
-        $this->fixtures->create('terminal:shared_netbanking_axis_recurring_terminal');
+        $this->fixtures->create('terminal:shared_emandate_icici_terminal');
+        $this->fixtures->create('terminal:shared_emandate_axis_terminal');
         $this->fixtures->merchant->addFeatures(['e_mandate', 'charge_at_will']);
+
+        $this->fixtures->merchant->enableEmandate();
 
         $payment = $this->getEmandateNetbankingRecurringPaymentArray($bank, $amount);
 

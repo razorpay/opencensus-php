@@ -95,6 +95,8 @@ class Repository extends \Razorpay\Spine\Repository
 
         $this->repo = $this->app['repo'];
 
+        $this->merchant = $this->app['basicauth']->getMerchant();
+
         $this->entityFetch = E::getEntityFetch($this->entity);
     }
 

@@ -64,6 +64,7 @@ class Gateway
     const ACQUIRER_AMEX      = 'amex';
     const ACQUIRER_FSS       = 'fss';
     const ACQUIRER_RATN      = 'ratn';
+    const ACQUIRER_BARB      = 'barb';
 
     const NOT_SUPPORTED      = 'not_supported';
     const SUPPORTED          = 'supported';
@@ -75,7 +76,7 @@ class Gateway
         self::FIRST_DATA  => [self::ACQUIRER_ICIC],
         self::AMEX        => [self::ACQUIRER_AMEX],
         self::AEPS_ICICI  => [self::ACQUIRER_ICIC],
-        self::CARD_FSS    => [self::ACQUIRER_FSS],
+        self::CARD_FSS    => [self::ACQUIRER_FSS, self::ACQUIRER_BARB],
         self::HITACHI     => [self::ACQUIRER_RATN],
     ];
 
@@ -132,6 +133,7 @@ class Gateway
         self::NETBANKING_RBL,
         self::NETBANKING_INDUSIND,
         self::NETBANKING_PNB,
+        self::WALLET_OPENWALLET,
     ];
 
     /**
@@ -161,6 +163,8 @@ class Gateway
         Payment\Gateway::CARD_FSS,
         Payment\Gateway::WALLET_PAYUMONEY,
         Payment\Gateway::WALLET_FREECHARGE,
+        Payment\Gateway::UPI_MINDGATE,
+        Payment\Gateway::HITACHI,
     ];
 
     public static $channels = [
@@ -237,6 +241,22 @@ class Gateway
             self::NETBANKING_INDUSIND,
             self::NETBANKING_PNB,
         ],
+
+        //
+        // We cannot add this here as generateMethod()
+        // in terminal entity uses it to fill the method
+        // attribute in the entity. Keeping this here will
+        // set both netbanking and emandate attributes,
+        // which is not the intended flow.
+        // Hence, we will ensure that it gets explicitly set
+        // during the terminal creation, so that it does not
+        // go via generator method.
+        //
+        // Method::EMANDATE    => [
+        //     self::NETBANKING_ICICI,
+        //     self::NETBANKING_HDFC,
+        //     self::NETBANKING_AXIS,
+        // ],
 
         Method::WALLET => [
             self::MOBIKWIK,
@@ -478,6 +498,7 @@ class Gateway
         Gateway::FIRST_DATA,
         Gateway::AXIS_MIGS,
         Gateway::HDFC,
+        Gateway::HITACHI,
         Gateway::NETBANKING_ICICI,
         Gateway::NETBANKING_AXIS,
         Gateway::NETBANKING_HDFC,
@@ -793,6 +814,18 @@ class Gateway
         }
 
         return $banks;
+    }
+
+    public static function getAvailableEmandateBanks()
+    {
+        $emandateBanks = [];
+
+        foreach (self::$emandateBanks as $authType => $banks)
+        {
+            $emandateBanks = array_merge($emandateBanks, $banks);
+        }
+
+        return array_values(array_unique($emandateBanks));
     }
 
     public static function getChannel($gateway)

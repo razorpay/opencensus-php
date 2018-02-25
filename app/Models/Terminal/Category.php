@@ -124,6 +124,9 @@ class Category
                 self::INSURANCE      => self::INSURANCE,
                 self::HOUSING        => self::HOUSING,
             ],
+        ],
+        Method::EMANDATE => [
+            self::DEFAULT => self::ECOMMERCE,
         ]
     ];
 

@@ -263,7 +263,7 @@ class Validator extends Base\Validator
             return;
         }
 
-        if (empty($order->getMethod()))
+        if (empty($order->getMethod()) === true)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ORDER_METHOD_REQUIRED_FOR_MERCHANT);

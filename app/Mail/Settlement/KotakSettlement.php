@@ -47,7 +47,6 @@ class KotakSettlement extends Base
 
     protected function addAttachments()
     {
-        $this->attach($this->data['excelFile']);
         $this->attach($this->data['textFile']);
 
         return $this;
