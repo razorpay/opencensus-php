@@ -28,16 +28,50 @@ class Library
         //
         if ($settledAt > $nextRun)
         {
-            $nextRun = self::computeFutureRun($schedule, $settledAt, $nextRun);
+            if ($schedule->getAnchor() != null)
+            {
+                $refTime = $settledAt;
+
+                // minTime is not needed because
+                // in anchored schedules there is no
+                // concept of time intervals.
+                // future run simply will give us next
+                // anchored time.
+                $minTime = null;
+            }
+            else
+            {
+                $refTime = $nextRun;
+
+                $minTime = $settledAt;
+            }
+
+            $nextRun = self::computeFutureRun($schedule, $refTime, $minTime);
         }
 
         return $nextRun->getTimestamp();
     }
 
+    /**
+     * Here minTime is the minimum time that ought to be
+     * when we calculate future run
+     *
+     * $reference time is the time which we take as a
+     * base reference to calculate the next run
+     *
+     *
+     * @param Entity $schedule
+     * @param Carbon $referenceTime
+     * @param Carbon $minTime
+     *
+     * @return Carbon
+     * @throws LogicException
+     */
+
     public static function computeFutureRun(
         Entity $schedule,
         Carbon $referenceTime,
-        Carbon $lastRun = null,
+        Carbon $minTime = null,
         bool $considerHolidays = true)
     {
         if ($schedule->getAnchor() !== null)
@@ -57,7 +91,7 @@ class Library
             // of time. For example, settlements that happen N days after their
             // corresponding payments, or settlements that happen every N hours.
             //
-            $futureRun = self::resolveUnAnchored($schedule, $referenceTime, $lastRun);
+            $futureRun = self::resolveUnAnchored($schedule, $referenceTime, $minTime);
         }
 
         if ($considerHolidays === true)
@@ -164,7 +198,7 @@ class Library
         return $nextRun;
     }
 
-    protected static function resolveUnAnchored(Entity $schedule, Carbon $refTime, Carbon $lastRun = null)
+    protected static function resolveUnAnchored(Entity $schedule, Carbon $refTime, Carbon $minTime = null)
     {
         $period = $schedule->getPeriod();
 
@@ -177,7 +211,7 @@ class Library
                     'period' => $period,
                     'schedule_id' => $schedule->getId(),
                     'ref_time' => $refTime->getTimestamp(),
-                    'last_run' => $lastRun->getTimestamp(),
+                    'min_time' => $minTime->getTimestamp(),
                 ]);
         }
 
@@ -185,13 +219,6 @@ class Library
         $step = Steps::getStep($schedule->getPeriod());
 
         $interval = $schedule->getInterval();
-
-        if ($lastRun === null)
-        {
-            $refTime->$step($interval);
-
-            return $refTime;
-        }
 
         //
         // Problem: Some services (settlements) have a concept of `refTime` and some services (subscriptions) don't.
@@ -231,13 +258,20 @@ class Library
         //    `while(refTime > lastRun) {lastRun += interval}`
         //
 
-        // Increment by interval until we cross minimum delay time.
-        while ($refTime > $lastRun)
+        if ($minTime === null)
         {
-            $lastRun->$step($interval);
+            $refTime->$step($interval);
+
+            return $refTime;
         }
 
-        return $lastRun;
+        // Increment by interval until we cross minimum delay time.
+        while ($minTime > $refTime)
+        {
+            $refTime->$step($interval);
+        }
+
+        return $refTime;
     }
 
     protected static function checkAnchor(Carbon $time, Entity $schedule)

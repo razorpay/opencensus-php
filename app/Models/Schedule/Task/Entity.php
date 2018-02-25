@@ -188,21 +188,44 @@ class Entity extends Base\PublicEntity
     {
         $currentTime = Carbon::now(Timezone::IST);
 
-        $this->updateNextRunAndLastRunFromGivenRefTime($currentTime, $considerHolidays);
+        $this->updateNextRunAndLastRunFromGivenMinTime($currentTime, $considerHolidays);
     }
 
-    public function updateNextRunAndLastRunFromGivenRefTime($refTime, $considerHolidays = false, $considerLastRun = true)
+
+    /**
+     * considerMinTime takes case of the service which want certain
+     * next run without taking into account the min time
+     *
+     * @param Carbon $minTime
+     * @param bool $considerHolidays
+     * @param bool $considerMinTime
+     *
+     * @return null
+     */
+    public function updateNextRunAndLastRunFromGivenMinTime($minTime, $considerHolidays = false, $considerMinTime = true)
     {
         $lastRun = Carbon::createFromTimestamp($this->getNextRunAt(), Timezone::IST);
 
-        $lastRunCopy = $lastRun->copy();
-
-        if ($considerLastRun === false)
+        if ($this->schedule->getAnchor != null)
         {
-            $lastRunCopy = null;
+            // this is so because there is no concept
+            // of time intervals in anchored schedules
+            // min time will be equal to refTime
+            $refTime = $minTime;
+
+            $minTime = null;
+        }
+        else
+        {
+            $refTime = $lastRun;
         }
 
-        $nextRun = Library::computeFutureRun($this->schedule, $refTime, $lastRunCopy, $considerHolidays);
+        if ($considerMinTime == false)
+        {
+            $minTime = null;
+        }
+
+        $nextRun = Library::computeFutureRun($this->schedule, $refTime, $minTime, $considerHolidays);
 
         $this->setNextRunAt($nextRun->getTimestamp());
 
@@ -290,7 +313,7 @@ class Entity extends Base\PublicEntity
             $referenceTime = Carbon::createFromTimestamp($referenceTime, Timezone::IST);
         }
 
-        $this->updateNextRunAndLastRunFromGivenRefTime($referenceTime, false, false);
+        $this->updateNextRunAndLastRunFromGivenMinTime($referenceTime, false, false);
     }
 
     public function isTypeSettlement()

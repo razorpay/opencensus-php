@@ -31,7 +31,7 @@ class Anchor
      */
     const MONTHLY_WEEK_DAY = Carbon::MONDAY;
 
-    public static function getAnchor(string $period, Carbon $startTime = null)
+    public static function getAnchor(string $period, Carbon $startTime = null): int
     {
         Period::validatePeriod($period);
 
