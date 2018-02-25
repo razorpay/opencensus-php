@@ -8,6 +8,8 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Offer;
 use RZP\Trace\TraceCode;
+use RZP\Error\PublicErrorDescription;
+use RZP\Models\Feature\Constants as FeatureConstants;
 
 class Core extends Base\Core
 {
@@ -35,6 +37,8 @@ class Core extends Base\Core
         $order->merchant()->associate($merchant);
 
         $order->build($input);
+
+        $this->validateReceiptUniqueness($order);
 
         if ($partialPayment === true)
         {
@@ -122,5 +126,40 @@ class Core extends Base\Core
             ]);
 
         $order->offer()->associate($offer);
+    }
+
+    /**
+     * Validates the uniqueness of the receipt for featured merchants. The uniqueness here, is within the orders of that
+     * particular merchant and not across all the merchants.
+     *
+     * @param Entity $order
+     *
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    protected function validateReceiptUniqueness(Entity $order)
+    {
+        $merchant = $order->merchant;
+
+        if ($merchant->isFeatureEnabled(FeatureConstants::ORDER_RECEIPT_UNIQUE) === true)
+        {
+            $receipt = $order->getReceipt();
+
+            if ($receipt === null)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    PublicErrorDescription::BAD_REQUEST_ORDER_RECEIPT_ID_REQUIRED,
+                    Entity::RECEIPT
+                    );
+            }
+
+            $isReceiptUnique = $this->repo->order->isReceiptUnique($merchant->getId(), $receipt);
+
+            if ($isReceiptUnique === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    PublicErrorDescription::BAD_REQUEST_ORDER_RECEIPT_ID_NOT_UNIQUE,
+                    Entity::RECEIPT);
+            }
+        }
     }
 }
