@@ -55,4 +55,14 @@ class Repository extends Base\Repository
 
         return $orders;
     }
+
+    public function isReceiptUnique(string $merchantId, string $receipt)
+    {
+        $ordersCount = $this->newQuery()
+                            ->where(Entity::MERCHANT_ID, $merchantId)
+                            ->where(Entity::RECEIPT, $receipt)
+                            ->count();
+
+        return ($ordersCount === 0);
+    }
 }
