@@ -41,7 +41,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_ORDER_RECEIPT_ID_REQUIRED,
+                    'description' => PublicErrorDescription::BAD_REQUEST_ORDER_RECEIPT_REQUIRED,
                     'field'       => 'receipt'
                 ],
             ],
@@ -86,7 +86,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_ORDER_RECEIPT_ID_NOT_UNIQUE,
+                    'description' => PublicErrorDescription::BAD_REQUEST_ORDER_RECEIPT_NOT_UNIQUE,
                     'field' => 'receipt'
                 ],
             ],
