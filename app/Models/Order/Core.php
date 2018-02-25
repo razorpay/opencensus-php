@@ -147,7 +147,7 @@ class Core extends Base\Core
             if ($receipt === null)
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    PublicErrorDescription::BAD_REQUEST_ORDER_RECEIPT_ID_REQUIRED,
+                    PublicErrorDescription::BAD_REQUEST_ORDER_RECEIPT_REQUIRED,
                     Entity::RECEIPT
                     );
             }
@@ -157,7 +157,7 @@ class Core extends Base\Core
             if ($isReceiptUnique === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    PublicErrorDescription::BAD_REQUEST_ORDER_RECEIPT_ID_NOT_UNIQUE,
+                    PublicErrorDescription::BAD_REQUEST_ORDER_RECEIPT_NOT_UNIQUE,
                     Entity::RECEIPT);
             }
         }

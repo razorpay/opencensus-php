@@ -56,7 +56,16 @@ class Repository extends Base\Repository
         return $orders;
     }
 
-    public function isReceiptUnique(string $merchantId, string $receipt)
+    /**
+     * Checks for uniqueness across the orders of a particular merchant. Uniqueness across all the orders is not
+     * checked.
+     *
+     * @param string $merchantId
+     * @param string $receipt
+     *
+     * @return bool
+     */
+    public function isReceiptUnique(string $merchantId, string $receipt): bool
     {
         $ordersCount = $this->newQuery()
                             ->where(Entity::MERCHANT_ID, $merchantId)
