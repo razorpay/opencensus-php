@@ -5,11 +5,14 @@ namespace RZP\Models\Schedule\Task;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Carbon\Carbon;
-use RZP\Constants\Mode;
-use RZP\Constants\Timezone;
 use RZP\Models\Base;
-use RZP\Models\Schedule\Library;
+use RZP\Constants\Mode;
+use RZP\Models\Schedule;
+use RZP\Constants\Timezone;
 
+/**
+ * @property Schedule\Entity $schedule
+ */
 class Entity extends Base\PublicEntity
 {
     use SoftDeletes;
@@ -188,29 +191,31 @@ class Entity extends Base\PublicEntity
     {
         $currentTime = Carbon::now(Timezone::IST);
 
-        $this->updateNextRunAndLastRunFromGivenMinTime($currentTime, $considerHolidays);
+        $this->updateNextRunAndLastRunFromGivenMinTime($currentTime, $considerHolidays, true);
     }
 
-
     /**
-     * considerMinTime takes case of the service which want certain
-     * next run without taking into account the min time
-     *
-     * @param Carbon $minTime
+     * @param Carbon $minTime           takes case of the service which want certain next
+     *                                  run without taking into account the min time
      * @param bool $considerHolidays
      * @param bool $considerMinTime
      *
-     * @return null
+     * @throws \RZP\Exception\LogicException
      */
-    public function updateNextRunAndLastRunFromGivenMinTime($minTime, $considerHolidays = false, $considerMinTime = true)
+    public function updateNextRunAndLastRunFromGivenMinTime(
+        $minTime,
+        $considerHolidays = false,
+        $considerMinTime = false)
     {
         $lastRun = Carbon::createFromTimestamp($this->getNextRunAt(), Timezone::IST);
 
-        if ($this->schedule->getAnchor != null)
+        if ($this->schedule->getAnchor() !== null)
         {
-            // this is so because there is no concept
+            //
+            // This is so because there is no concept
             // of time intervals in anchored schedules
-            // min time will be equal to refTime
+            // min time will be equal to refTime.
+            //
             $refTime = $minTime;
 
             $minTime = null;
@@ -225,7 +230,7 @@ class Entity extends Base\PublicEntity
             $minTime = null;
         }
 
-        $nextRun = Library::computeFutureRun($this->schedule, $refTime, $minTime, $considerHolidays);
+        $nextRun = Schedule\Library::computeFutureRun($this->schedule, $refTime, $minTime, $considerHolidays);
 
         $this->setNextRunAt($nextRun->getTimestamp());
 
@@ -313,7 +318,7 @@ class Entity extends Base\PublicEntity
             $referenceTime = Carbon::createFromTimestamp($referenceTime, Timezone::IST);
         }
 
-        $this->updateNextRunAndLastRunFromGivenMinTime($referenceTime, false, false);
+        $this->updateNextRunAndLastRunFromGivenMinTime($referenceTime);
     }
 
     public function isTypeSettlement()
