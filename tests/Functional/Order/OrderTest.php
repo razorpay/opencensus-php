@@ -66,13 +66,54 @@ class OrderTest extends TestCase
 
     public function testUniqueReceiptFeatureWithDuplicateReceipt()
     {
-        $this->fixtures->create('order', [
-            'amount'        => 50000,
-            'currency'      => 'INR',
-            'receipt'       => 'rcptid42',
+        $order = $this->fixtures->create('order', [
+            'amount'   => 50000,
+            'currency' => 'INR',
+            'receipt'  => 'rcptid42',
         ]);
 
         $this->addOrderReceiptUniqueFeature();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['response']['content']['error']['field']['order_ids'] = [$order->getId()];
+
+        $order = $this->startTest($testData);
+
+        return $order;
+    }
+
+    /**
+     * Checks if two orders can be created each having receipt as null when the order_receipt_unique feature is not
+     * added.
+     *
+     * @return array
+     */
+    public function testCreateOrderWithTwoNullReceipts()
+    {
+        $order = $this->fixtures->create('order', [
+            'amount'   => 50000,
+            'currency' => 'INR',
+        ]);
+
+        $order = $this->startTest();
+
+        return $order;
+    }
+
+    /**
+     * Checks if two orders can be created each having the same receipt when the order_receipt_unique feature is not
+     * added.
+     *
+     * @return array
+     */
+    public function testCreateOrderWithTwoValidReceipts()
+    {
+        $order = $this->fixtures->create('order', [
+            'amount'   => 50000,
+            'currency' => 'INR',
+            'receipt'  => 'rcptid42',
+        ]);
 
         $order = $this->startTest();
 
