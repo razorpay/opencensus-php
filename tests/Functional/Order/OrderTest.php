@@ -417,7 +417,9 @@ class OrderTest extends TestCase
 
     public function testCreateOrderWithNotApplicableOffer()
     {
-        $offer = $this->fixtures->create('offer:card');
+        $offer = $this->fixtures->create('offer:card', [
+            'active' => false,
+        ]);
 
         $this->testData[__FUNCTION__]['request']['content']['offer_id'] = $offer->getPublicId();
 
