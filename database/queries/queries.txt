@@ -2993,7 +2993,8 @@ ALTER TABLE hitachi
     MODIFY COLUMN action char(20) DEFAULT NULL,
     MODIFY COLUMN pRRN char(20) DEFAULT NULL,
     ADD COLUMN card_number varchar(255) DEFAULT NULL after pStatus,
-    ADD COLUMN card_network varchar(255) DEFAULT NULL after card_number;
+    ADD COLUMN card_network varchar(255) DEFAULT NULL after card_number,
+    ADD COLUMN merchant_reference varchar(255) DEFAULT NULL after card_nerwork;
 
 ALTER TABLE upi
-    ADD COLUMN merchant_reference char(20) DEFAULT NULL after received;
+    ADD COLUMN merchant_reference varchar(255) DEFAULT NULL after received;

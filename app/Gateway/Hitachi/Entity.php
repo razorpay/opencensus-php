@@ -6,20 +6,21 @@ use RZP\Gateway\Base;
 
 class Entity extends Base\Entity
 {
-    const ACQUIRER      = 'acquirer';
-    const AMOUNT        = 'amount';
-    const CURRENCY      = 'currency';
-    const REQUEST_ID    = 'pRequestId';
-    const RESPONSE_CODE = 'pRespCode';
-    const AUTH_STATUS   = 'pAuthStatus';
-    const ALGORITHM     = 'pALGO';
-    const CAVV2         = 'pCAVV2';
-    const UCAF          = 'pUCAF';
-    const AUTH_ID       = 'pAuthID';
-    const RRN           = 'pRRN';
-    const STATUS        = 'pStatus';
-    const CARD_NUMBER   = 'card_number';
-    const CARD_NETWORK  = 'card_network';
+    const ACQUIRER           = 'acquirer';
+    const AMOUNT             = 'amount';
+    const CURRENCY           = 'currency';
+    const REQUEST_ID         = 'pRequestId';
+    const RESPONSE_CODE      = 'pRespCode';
+    const AUTH_STATUS        = 'pAuthStatus';
+    const ALGORITHM          = 'pALGO';
+    const CAVV2              = 'pCAVV2';
+    const UCAF               = 'pUCAF';
+    const AUTH_ID            = 'pAuthID';
+    const RRN                = 'pRRN';
+    const STATUS             = 'pStatus';
+    const CARD_NUMBER        = 'card_number';
+    const CARD_NETWORK       = 'card_network';
+    const MERCHANT_REFERENCE = 'merchant_reference';
 
     protected $entity = 'hitachi';
 
@@ -40,6 +41,7 @@ class Entity extends Base\Entity
         self::AUTH_ID,
         self::RRN,
         self::STATUS,
+        self::MERCHANT_REFERENCE,
     ];
 
     protected $fillable = [
@@ -55,6 +57,7 @@ class Entity extends Base\Entity
         self::STATUS,
         self::AMOUNT,
         self::CARD_NUMBER,
+        self::MERCHANT_REFERENCE,
     ];
 
     protected $casts = [
@@ -105,5 +108,10 @@ class Entity extends Base\Entity
     public function getRequestId()
     {
         return $this->getAttribute(self::REQUEST_ID);
+    }
+
+    public function getMerchantReference()
+    {
+        return $this->getAttribute(self::MERCHANT_REFERENCE);
     }
 }

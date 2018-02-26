@@ -503,7 +503,7 @@ class Gateway extends Base\Gateway
             RequestFields::TRANSACTION_DATE    => $date,
             RequestFields::RETRIEVAL_REF_NUM   => $gatewayPayment->getRrn(),
             RequestFields::MERCHANT_ID         => $this->getMerchantId(),
-            RequestFields::MERCHANT_REF_NUMBER => $input['payment']['id']
+            RequestFields::MERCHANT_REF_NUMBER => $gatewayPayment->getMerchantReference(),
         ];
 
         return $this->getStandardRequestArray($content);
@@ -575,13 +575,14 @@ class Gateway extends Base\Gateway
     protected function getAttributesForQrResponse(array $response)
     {
         $attributes = [
-            Entity::RECEIVED     => true,
-            Entity::CARD_NUMBER  => $response[ResponseFields::F002],
-            Entity::CARD_NETWORK => $response[ResponseFields::F003],
-            Entity::AMOUNT       => $this->getIntegerFormattedAmount($response[ResponseFields::F004]),
-            Entity::RRN          => $response[ResponseFields::F037],
-            Entity::REQUEST_ID   => $response[ResponseFields::F038],
-            Entity::STATUS       => $response[ResponseFields::F039],
+            Entity::RECEIVED           => true,
+            Entity::CARD_NUMBER        => $response[ResponseFields::F002],
+            Entity::CARD_NETWORK       => $response[ResponseFields::F003],
+            Entity::AMOUNT             => $this->getIntegerFormattedAmount($response[ResponseFields::F004]),
+            Entity::RRN                => $response[ResponseFields::F037],
+            Entity::REQUEST_ID         => $response[ResponseFields::F038],
+            Entity::STATUS             => $response[ResponseFields::F039],
+            Entity::MERCHANT_REFERENCE => $response[ResponseFields::PURCHASE_ID],
         ];
 
         return $attributes;
@@ -590,10 +591,11 @@ class Gateway extends Base\Gateway
     protected function getAttributesFromAuthResponse(array $response) : array
     {
         $attributes = [
-            Entity::RECEIVED      => true,
-            Entity::RRN           => $response[ResponseFields::RETRIEVAL_REF_NUM] ?? null,
-            Entity::RESPONSE_CODE => $response[ResponseFields::RESPONSE_CODE] ?? null,
-            Entity::AUTH_ID       => $response[ResponseFields::AUTH_ID] ?? null,
+            Entity::RECEIVED           => true,
+            Entity::RRN                => $response[ResponseFields::RETRIEVAL_REF_NUM] ?? null,
+            Entity::RESPONSE_CODE      => $response[ResponseFields::RESPONSE_CODE] ?? null,
+            Entity::AUTH_ID            => $response[ResponseFields::AUTH_ID] ?? null,
+            Entity::MERCHANT_REFERENCE => $response[ResponseFields::MERCHANT_REF_NUMBER] ?? null,
         ];
 
         return $attributes;

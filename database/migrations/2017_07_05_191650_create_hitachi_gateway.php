@@ -60,10 +60,13 @@ class CreateHitachiGateway extends Migration
                   ->nullable();
 
             $table->string(Hitachi::CARD_NUMBER)
-                ->nullable();
+                  ->nullable();
 
             $table->string(Hitachi::CARD_NETWORK)
-                ->nullable();
+                  ->nullable();
+
+            $table->string(Hitachi::MERCHANT_REFERENCE)
+                  ->nullable();
 
             $table->char(Hitachi::AUTH_ID, 6)
                   ->nullable();
