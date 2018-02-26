@@ -10,6 +10,7 @@ use Requests_Exception;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
+use RZP\Models\Base\PublicCollection;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
@@ -30,6 +31,8 @@ class Reporting
     const CONFIG_PATH   = '/v1/configs';
     const LOG_PATH      = '/v1/logs';
     const SCHEDULE_PATH = '/v1/schedules';
+
+    const SCHEDULE_PREFIX = 'sched_';
 
     /**
      * @var array
@@ -52,6 +55,7 @@ class Reporting
         $this->config = $app['config']['applications.reporting'];
         $this->trace  = $app['trace'];
         $this->mode   = $app['rzp.mode'];
+        $this->repo   = $app['repo'];
 
         // TODO: This service should(to discuss) not depend on BA, better to pass
         // or set merchant context on the instance before using.
@@ -163,28 +167,55 @@ class Reporting
         return $this->createAndSendRequest(Requests::DELETE, $path);
     }
 
-    public function triggerSchedule($scheduleTasks): array
+    public function processTasks(PublicCollection $scheduleTasks): array
     {
-        $payload = [];
-
-        foreach ($scheduleTasks as $scheduleTask)
+        if (count($scheduleTasks) === 0)
         {
-            $payload[] = [
-                'id'          => 'sched_' . $scheduleTask->getEntityId(),
-                'merchant_id' => $scheduleTask->getMerchantId(),
-            ];
+            return [];
         }
 
-        // Mode is necessary to trigger a schedule
-        // Depending upon mode, the corresponding test/live data would be fetched
-        $request = [
-            'mode'    => $this->mode,
-            'payload' => $payload,
-        ];
+        $response = $this->triggerSchedule($scheduleTasks);
 
-        $path = self::SCHEDULE_PATH . '/trigger';
+        // If there is no error then
+        // 1. Strip sign for all ids, as api doesn't know the signs for schedule entity
+        // 2. For all the success cases, update the next run
 
-        return $this->createAndSendRequest(Requests::POST, $path, $request, Merchant\Account::SHARED_ACCOUNT);
+        if (isset($response['error']) === false)
+        {
+            $failureIds = $response['failure_ids'];
+
+            $finalFailureIds = [];
+
+            foreach ($failureIds as $failureId)
+            {
+                $finalFailureIds[] = explode(self::SCHEDULE_PREFIX, $failureId)[1];
+            }
+
+            $response['failure_ids'] = $finalFailureIds;
+
+            $successIds = $response['success_ids'];
+
+            $finalSuccessIds = [];
+
+            // We need to get all success_ids and mark their next run.
+            foreach ($successIds as $successId)
+            {
+                // We need to do a substr, as we need to strp `sched_`
+                $successId = explode(self::SCHEDULE_PREFIX, $successId)[1];
+
+                $finalSuccessIds[] = $successId;
+
+                $scheduleTask = $this->repo->schedule_task->fetchByEntity($successId);
+
+                $scheduleTask->updateNextRunAndLastRun(false);
+
+                $this->repo->saveOrFail($scheduleTask);
+            }
+
+            $response['success_ids'] = $finalSuccessIds;
+        }
+
+        return $response;
     }
 
     protected function createScheduleOnAPI(array $input)
@@ -214,10 +245,35 @@ class Reporting
         return $response;
     }
 
+    protected function triggerSchedule(PublicCollection $scheduleTasks): array
+    {
+        $payload = [];
+
+        foreach ($scheduleTasks as $scheduleTask)
+        {
+            $payload[] = [
+                'id'          => self::SCHEDULE_PREFIX . $scheduleTask->getEntityId(),
+                'merchant_id' => $scheduleTask->getMerchantId(),
+            ];
+        }
+
+        // Mode is necessary to trigger a schedule
+        // Depending upon mode, the corresponding test/live data would be fetched
+        $request = [
+            'mode'    => $this->mode,
+            'payload' => $payload,
+        ];
+
+        $path = self::SCHEDULE_PATH . '/trigger';
+
+        return $this->createAndSendRequest(Requests::POST, $path, $request, Merchant\Account::SHARED_ACCOUNT);
+    }
+
     protected function createAndSendRequest(
         string $method,
         string $path,
-        array $input = []): array
+        array $input = [],
+        string $merchantId = null): array
     {
         // In case reporting is to be mocked, don't make any external call
         // and just return empty array.
@@ -232,7 +288,7 @@ class Reporting
         ];
 
         $headers = [
-            'X-Merchant-Id' => $this->ba->getMerchantId()
+            'X-Merchant-Id' => $merchantId ?? $this->ba->getMerchantId()
         ];
 
         $request = [

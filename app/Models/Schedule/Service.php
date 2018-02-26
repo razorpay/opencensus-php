@@ -117,41 +117,15 @@ class Service extends Base\Service
         //all tasks which are due and less than time
         $timestamp = Carbon::now()->getTimestamp();
 
-        $scheduleTasksToProcess = $this->repo->schedule_task->fetchDueScheduleTasks($input['type'], $timestamp);
-
         $type = $input['type'];
 
-        // In case of reporting type we need to call the reporting service
-        if ($type === ScheduleTask\Type::REPORTING)
+        $scheduleTasksToProcess = $this->repo->schedule_task->fetchDueScheduleTasks($type, $timestamp);
+
+        if (ScheduleTask\Type::isValidService($type) === true)
         {
-            if (count($scheduleTasksToProcess) === 0)
-            {
-                return [];
-            }
+            $serviceClass = ScheduleTask\Type::getServiceClass($type);
 
-            $reportingService = new Reporting();
-
-            $response = $reportingService->triggerSchedule($scheduleTasksToProcess);
-
-            if (isset($response['error']) === false)
-            {
-                $successIds = $response['success_ids'];
-
-                // We need to get all success_ids and mark their next run.
-                foreach ($successIds as $successId)
-                {
-                    // We need to do a substr, as we need to strp `sched_`
-                    $successId = substr($successId, 6);
-
-                    $scheduleTask = $this->repo->schedule_task->fetchByEntity($successId);
-
-                    $scheduleTask->updateNextRunAndLastRun(false);
-
-                    $this->repo->saveOrFail($scheduleTask);
-                }
-            }
-
-            return $response;
+            return $serviceClass->processTasks($scheduleTasksToProcess);
         }
         else
         {
