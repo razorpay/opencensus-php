@@ -246,7 +246,6 @@ class Library
         // - If minTime is not null, keep adding the interval
         //   to refTime until the minTime is equal or crossed.
         //
-
         if ($minTime === null)
         {
             $refTime->$step($interval);

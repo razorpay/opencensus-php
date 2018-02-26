@@ -161,7 +161,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Interval provided exceed the maximum interval (120) allowed for the given period (monthly)',
+                    'description' => 'Interval provided exceeds the maximum interval (120) allowed for the given period (monthly)',
                 ],
             ],
             'status_code' => 400,

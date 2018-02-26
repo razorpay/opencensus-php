@@ -222,20 +222,13 @@ class Entity extends Base\PublicEntity
             $refTime = $minTime;
         }
 
+        $lastRun = Carbon::createFromTimestamp($this->getNextRunAt(), Timezone::IST);
+
         $nextRun = Schedule\Library::computeFutureRun($this->schedule, $refTime, $minTime, $considerHolidays);
 
         $this->setNextRunAt($nextRun->getTimestamp());
 
-        $lastRun = Carbon::createFromTimestamp($this->getNextRunAt(), Timezone::IST);
-
         $this->setLastRunAt($lastRun->getTimestamp());
-    }
-
-    public function updateNextRunAndLastRunFromGivenRefTime(
-        $refTime,
-        $considerHoliday = false)
-    {
-
     }
 
     /**
@@ -308,12 +301,18 @@ class Entity extends Base\PublicEntity
             // next run at will be randomly set to the creation date. So we don't want that
             // as a reference date. So for the first transaction we need to consider current time
             // stamp.
-            // Solution : Last run at will be null the first time but it will always be set the next
-            // time because last run is equal to last next_run_at which is always
-            // set while creation of task and is to midnight of creation date if start_at
-            // of subscription is not set.
+            // Solution : next run  will be set to past time when the subscription was
+            // created in case start at is null. So next_run_at will be less than current
+            // timestamp.
             //
-            $referenceTime = $this->getLastRunAt() ? $this->getNextRunAt() : Carbon::now()->getTimestamp();
+            if ($this->getNextRunAt() > Carbon::now()->getTimestamp())
+            {
+                $referenceTime = $this->getNextRunAt();
+            }
+            else
+            {
+                $referenceTime = Carbon::now()->getTimestamp();
+            }
 
             $referenceTime = Carbon::createFromTimestamp($referenceTime, Timezone::IST);
         }
