@@ -124,6 +124,12 @@ class Reporting
 
         $response = $this->createAndSendRequest(Requests::POST, self::SCHEDULE_PATH, $reportingServiceRequest);
 
+        // In case reporting service returns error, then we dont create schedule/schedule task
+        if (isset($response['error']) === true)
+        {
+            return $response;
+        }
+
         // Need to store entity_id without sign.
         $scheduleTaskRequest['entity_id'] = explode('sched_', $response['id'])[1];
 
@@ -168,7 +174,11 @@ class Reporting
 
     public function triggerSchedule(string $id, string $merchantId = null): array
     {
-        $id = "sched_$id";
+        // In case its called directly by the API (not via schedule task), `sched_` will be set in id and merchant would be taken from auth.
+        if (strpos($id, 'sched_') === false)
+        {
+            $id = "sched_$id";
+        }
 
         $path = self::SCHEDULE_PATH . '/' . $id . '/trigger';
 

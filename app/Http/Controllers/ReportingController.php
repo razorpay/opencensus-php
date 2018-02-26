@@ -2,6 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
+use Request;
 use ApiResponse;
 
 use RZP\Services\Reporting;
@@ -95,6 +96,15 @@ class ReportingController extends Controller
     public function deleteSchedule(string $id)
     {
         $data = $this->reportingService()->deleteSchedule($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function triggerSchedule(string $id)
+    {
+        $input = Request::all();
+
+        $data = $this->reportingService()->triggerSchedule($id, $input['merchant_id']);
 
         return ApiResponse::json($data);
     }
