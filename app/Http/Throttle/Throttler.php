@@ -171,7 +171,7 @@ class Throttler
 
     private function getThrottleRateDuration(): int
     {
-        return $this->getThrottleValue(K::LEAK_RATE_DURATION, 1000);
+        return $this->getThrottleValue(K::LEAK_RATE_DURATION, 1);
     }
 
     private function getThrottleMaxBucketSize(): int

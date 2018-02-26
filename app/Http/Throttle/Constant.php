@@ -9,7 +9,7 @@ final class Constant
     /**
      * Key to hold global level settings
      */
-    const GLOBAL                   = 'global';      //
+    const GLOBAL                   = 'global';
 
     /**
      * Key to hold id level settings

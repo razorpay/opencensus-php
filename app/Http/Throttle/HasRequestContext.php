@@ -145,9 +145,6 @@ trait HasRequestContext
         }
     }
 
-    // TODO: Following methods are redundant between here and at least
-    //       one more place in \RZP\Http namespace. Move these out.
-
     private function getInternalAppName()
     {
         foreach ($this->applications as $name => $config)

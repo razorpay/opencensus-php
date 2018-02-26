@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "a00b6d5815d4f325b9d6ef734fbd24bc",
+    "content-hash": "381663ab9e3e08f54fcddc0efc3b0f4b",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -2124,16 +2124,16 @@
         },
         {
             "name": "jitendra/php-valve",
-            "version": "1.0.3",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/jitendra-1217/php-valve.git",
-                "reference": "0f3590bf567581a7b0f97a9d6709aafef22d70fa"
+                "reference": "08bf8366fbe3b4d3ba47067938e777d1306cce55"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jitendra-1217/php-valve/zipball/0f3590bf567581a7b0f97a9d6709aafef22d70fa",
-                "reference": "0f3590bf567581a7b0f97a9d6709aafef22d70fa",
+                "url": "https://api.github.com/repos/jitendra-1217/php-valve/zipball/08bf8366fbe3b4d3ba47067938e777d1306cce55",
+                "reference": "08bf8366fbe3b4d3ba47067938e777d1306cce55",
                 "shasum": ""
             },
             "require": {
@@ -2148,10 +2148,7 @@
                 "psr-4": {
                     "Jitendra\\PhpValve\\": "src/",
                     "Jitendra\\PhpValveTests\\": "tests/"
-                },
-                "files": [
-                    "lib/helpers.php"
-                ]
+                }
             },
             "notification-url": "https://packagist.org/downloads/",
             "description": "Resource or API rate limiting/throttling",
@@ -2161,7 +2158,7 @@
                 "rate-limiting",
                 "redis"
             ],
-            "time": "2018-02-01T19:33:17+00:00"
+            "time": "2018-03-06T12:45:28+00:00"
         },
         {
             "name": "jms/metadata",
@@ -9350,6 +9347,7 @@
         "graham-campbell/throttle": 20,
         "razorpay/oauth": 20,
         "razorpay/ufh-sdk-php": 20,
+        "jitendra/php-valve": 20,
         "codacy/coverage": 20,
         "symfony/phpunit-bridge": 20
     },
