@@ -8,7 +8,10 @@ export default class FileUpload extends Component {
     multi: false,
     acceptedTypes: [],
     name: 'file-upload',
+    stagedFileStatus: null,
     onBiggerFileSize: () => {},
+    onFileChange: () => {},
+    onCloseClick: () => {},
   };
 
   state = {
@@ -21,7 +24,10 @@ export default class FileUpload extends Component {
       if (this.props.onDrop) {
         this.props.onDrop(file);
       } else {
-        this.setState({ files: [...this.state.files, file] });
+        this.setState(
+          { files: [...this.state.files, file] },
+          this.props.onFileChange.call(this, file)
+        );
       }
     }
   };
@@ -71,9 +77,12 @@ export default class FileUpload extends Component {
   };
 
   handleCloseClick = fileIndex => () => {
-    this.setState({
-      files: this.state.files.filter((_, index) => index !== fileIndex),
-    });
+    this.setState(
+      {
+        files: this.state.files.filter((_, index) => index !== fileIndex),
+      },
+      this.props.onCloseClick
+    );
   };
 
   handleDrop = event => {
@@ -106,7 +115,14 @@ export default class FileUpload extends Component {
   };
 
   render() {
-    const { children, multi, maxSize, name, accept } = this.props;
+    const {
+      children,
+      multi,
+      maxSize,
+      name,
+      accept,
+      stagedFileStatus,
+    } = this.props;
     return (
       <div class="file upload">
         {!multi &&
@@ -150,7 +166,11 @@ export default class FileUpload extends Component {
             class="staged-files"
             key={`${file.name}.${Math.random()}.${Math.random()}`}
           >
-            <Staged file={file} onCloseClick={this.handleCloseClick(index)} />
+            <Staged
+              file={file}
+              onCloseClick={this.handleCloseClick(index)}
+              currentStatus={stagedFileStatus}
+            />
           </div>
         ))}
       </div>

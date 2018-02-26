@@ -611,10 +611,18 @@ dl.rzp-definition {
   width: 100%;
   height: 70px;
   border: 1px solid #DBDBDB;
-  border-bottom: none;
+  // border-bottom: none;
   position: relative;
   background-color: #FAFAFA;
+  &.error {
+    background-color: #FFF2F2;
+    border-color: #FF6363;
+  }
+  &.success {
+    border-color: #00C452;
+    background-color: #FBFFFD;
 
+  }
   .file-icon,
   .file-details,
   .close-icon {
@@ -669,6 +677,33 @@ dl.rzp-definition {
       height: 100%;
     }
   }
+  .loader {
+    height: 3px;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+    background-color: #ddd;
+  }
+  .loader:before{
+    display: block;
+    position: absolute;
+    content: "";
+    left: -200px;
+    width: 200px;
+    height: 4px;
+    background-color: #1DC155;
+    animation: loading 2s linear infinite;
+  }
+
+  @keyframes loading {
+      from {left: -200px; width: 30%;}
+      50% {width: 30%;}
+      70% {width: 70%;}
+      80% { left: 50%;}
+      95% {left: 120%;}
+      to {left: 100%;}
+  }
+
 }
 /* End Component: merchant/components/File/Staged */
 
