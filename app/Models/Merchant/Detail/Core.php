@@ -55,7 +55,7 @@ class Core extends Base\Core
             if ($this->canSubmit($input, $response) === true)
             {
                 // If a merchant does not have website or app, we would need to activate them
-                // only with PLs, Invoices and should not get API keys. Merchant's has_key_access
+                // only with PLs, Invoices and should not get API keys in live mode. Merchant's has_key_access
                 // should be set to true only if one submits website details, there by will be able to
                 // generate/access keys.
                 $this->checkAndMarkHasKeyAccess($merchantDetails);
@@ -288,13 +288,17 @@ class Core extends Base\Core
      */
     protected function checkAndMarkHasKeyAccess(Entity $merchantDetails)
     {
-        if (($merchantDetails->getWebsite() === null) or
-            ($merchantDetails->getHasKeyAccess() === true))
+        $merchant = $merchantDetails->merchant;
+
+        if ((empty($merchantDetails->getWebsite()) === true) or
+            ($merchant->getHasKeyAccess() === true))
         {
             return;
         }
 
-        $merchantDetails->setHasKeyAccess(true);
+        $merchant->setHasKeyAccess(true);
+
+        $this->repo->saveOrFail($merchant);
     }
 
     protected function markSubmitted(Entity $merchantDetails)
@@ -509,32 +513,6 @@ class Core extends Base\Core
             // admin must be notified through email about the website details update
             $this->adminNotifyWebsiteDetailsUpdate($merchantDetails);
         });
-
-        return $merchantDetails;
-    }
-
-    /**
-     * This function is used for updating key access of a merchant
-     * @param Entity $merchantDetails
-     * @param array $input
-     *
-     * @return Entity
-     */
-    public function updateKeyAccess(Entity $merchantDetails, array $input): Entity
-    {
-        $merchantDetails->getValidator()->validateInput('keyAccess', $input);
-
-        $this->trace->info(
-            TraceCode::MERCHANT_UPDATE_KEY_ACCESS,
-            ['input' => $input]);
-
-        $oldMerchantDetails = clone $merchantDetails;
-
-        $merchantDetails->setHasKeyAccess($input[Entity::HAS_KEY_ACCESS]);
-
-        $this->app['workflow']->handle($oldMerchantDetails, $merchantDetails);
-
-        $this->repo->saveOrFail($merchantDetails);
 
         return $merchantDetails;
     }

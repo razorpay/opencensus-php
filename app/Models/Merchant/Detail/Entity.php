@@ -79,7 +79,6 @@ class Entity extends Base\PublicEntity
     const STEPS_FINISHED                     = 'steps_finished';
     const ACTIVATION_PROGRESS                = 'activation_progress';
     const LOCKED                             = 'locked';
-    const HAS_KEY_ACCESS                     = 'has_key_access';
     const ACTIVATION_STATUS                  = 'activation_status';
     const CLARIFICATION_MODE                 = 'clarification_mode';
     const ARCHIVED_AT                        = 'archived_at';
@@ -229,7 +228,6 @@ class Entity extends Base\PublicEntity
         self::STEPS_FINISHED,
         self::ACTIVATION_PROGRESS,
         self::LOCKED,
-        self::HAS_KEY_ACCESS,
         self::ACTIVATION_STATUS,
         self::CLARIFICATION_MODE,
         self::ARCHIVED,
@@ -273,7 +271,6 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
         self::LOCKED                 => 'bool',
-        self::HAS_KEY_ACCESS         => 'bool',
         self::SUBMITTED              => 'bool',
         self::BUSINESS_INTERNATIONAL => 'bool',
         self::ACTIVATION_PROGRESS    => 'int',
@@ -335,16 +332,6 @@ class Entity extends Base\PublicEntity
     public function getWebsite()
     {
         return $this->getAttribute(self::BUSINESS_WEBSITE);
-    }
-
-    public function getHasKeyAccess()
-    {
-        return ($this->getAttribute(self::HAS_KEY_ACCESS) === true);
-    }
-
-    public function setHasKeyAccess(bool $hasKeyAccess)
-    {
-        $this->setAttribute(self::HAS_KEY_ACCESS, $hasKeyAccess);
     }
 
     public function isSubmitted()

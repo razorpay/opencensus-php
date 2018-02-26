@@ -766,7 +766,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service(E::MERCHANT_DETAIL)->updateKeyAccess($id, $input);
+        $response = $this->service()->updateKeyAccess($id, $input);
 
         return ApiResponse::json($response);
     }

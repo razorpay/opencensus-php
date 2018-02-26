@@ -1549,6 +1549,7 @@ WHERE id IN ('91LaFcjGVPBmcu',
              '9YrlbhQML8cd4Y')
 
 # Update has_key_access to 1 for activation form submitted merchants
-update `merchant_details`
-SET `has_key_access` = 1
-WHERE `submitted_at` IS NOT NULL;
+UPDATE `merchants` m
+JOIN `merchant_details` md ON m.`id` = md.`merchant_id`
+SET m.`has_key_access` = 1
+WHERE m.`parent_id` IS NULL AND md.`submitted_at` IS NOT NULL;

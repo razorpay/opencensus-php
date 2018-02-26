@@ -2984,5 +2984,5 @@ ALTER TABLE bank_transfers
 ALTER TABLE virtual_accounts
     ADD INDEX virtual_accounts_updated_at_index (updated_at);
 
-ALTER TABLE `merchant_details`
-    ADD COLUMN `has_key_access` TINYINT(1) NOT NULL DEFAULT 0 after `locked`;
+ALTER TABLE `merchants`
+    ADD COLUMN `has_key_access` TINYINT(1) NOT NULL DEFAULT 0 after `linked_account_kyc`;

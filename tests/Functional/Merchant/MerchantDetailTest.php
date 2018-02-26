@@ -295,27 +295,6 @@ class MerchantDetailTest extends TestCase
         $this->startTest();
     }
 
-    public function testMerchantUpdateKeyAccess()
-    {
-        $attribute = ['business_website' => 'https://www.example.com'];
-
-        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
-
-        $merchantId = $merchantDetail['merchant_id'];
-
-        $testData = & $this->testData[__FUNCTION__];
-
-        $url = $testData['request']['url'];
-
-        $url = sprintf($url, $merchantId);
-
-        $testData['request']['url'] = $url;
-
-        $this->ba->adminAuth('test', null, Org::RZP_ORG_SIGNED);
-
-        $this->startTest();
-    }
-
     public function testCommentMerchant()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');

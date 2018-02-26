@@ -15,7 +15,6 @@ class Validator extends Base\Validator
     const INVALID_CLARIFICATION_MODE_MESSAGE            = 'Invalid clarification mode';
     const INVALID_CLARIFICATION_MODE_FOR_STATUS_MESSAGE = 'Clarification mode should not be sent for this status';
     const INVALID_FILE_NON_NGO_ORGANISATION_TYPE        = 'Invalid file for non NGO organisation type';
-    const INVALID_KEY_ACCESS_UPDATE                     = 'Key access cannot be granted with out website details';
 
     protected static $createRules = [
         Entity::CONTACT_NAME                    => 'sometimes|alpha_space|max:255',
@@ -176,16 +175,8 @@ class Validator extends Base\Validator
         'clarification_mode',
     ];
 
-    protected static $keyAccessValidators = [
-        'key_access',
-    ];
-
     protected static $websiteDetailsRules = [
         Entity::BUSINESS_WEBSITE                => 'required|max:255|url',
-    ];
-
-    protected static $keyAccessRules = [
-        Entity::HAS_KEY_ACCESS                  => 'required|boolean',
     ];
 
     /**
@@ -277,19 +268,6 @@ class Validator extends Base\Validator
         if ($this->entity->getBusinessType() !== BusinessType::NGO)
         {
             throw new Exception\BadRequestValidationFailureException(self::INVALID_FILE_NON_NGO_ORGANISATION_TYPE);
-        }
-    }
-
-    public function validateKeyAccess(array $input)
-    {
-        if (empty($input[Entity::HAS_KEY_ACCESS]) === true)
-        {
-            return;
-        }
-
-        if ($this->entity->getWebsite() === null)
-        {
-            throw new Exception\BadRequestValidationFailureException(self::INVALID_KEY_ACCESS_UPDATE);
         }
     }
 

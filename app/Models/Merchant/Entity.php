@@ -52,6 +52,7 @@ class Entity extends Base\PublicEntity
     const FEE_MODEL                = 'fee_model';
     const REFUND_SOURCE            = 'refund_source';
     const LINKED_ACCOUNT_KYC       = 'linked_account_kyc';
+    const HAS_KEY_ACCESS           = 'has_key_access';
     const BRAND_COLOR              = 'brand_color';
     const HANDLE                   = 'handle';
     const RISK_RATING              = 'risk_rating';
@@ -212,6 +213,7 @@ class Entity extends Base\PublicEntity
         self::CATEGORY2,
         self::INTERNATIONAL,
         self::LINKED_ACCOUNT_KYC,
+        self::HAS_KEY_ACCESS,
         self::FEE_BEARER,
         self::FEE_MODEL,
         self::REFUND_SOURCE,
@@ -284,6 +286,7 @@ class Entity extends Base\PublicEntity
         self::RECEIPT_EMAIL_ENABLED  => 'bool',
         self::HOLD_FUNDS             => 'bool',
         self::LINKED_ACCOUNT_KYC     => 'bool',
+        self::HAS_KEY_ACCESS         => 'bool',
         self::CATEGORY               => 'int',
         self::RISK_THRESHOLD         => 'int',
         self::CONVERT_CURRENCY       => 'bool',
@@ -381,6 +384,16 @@ class Entity extends Base\PublicEntity
     public function linkedAccountsRequireKyc(): bool
     {
         return $this->getAttribute(self::LINKED_ACCOUNT_KYC);
+    }
+
+    public function getHasKeyAccess(): bool
+    {
+        return ($this->getAttribute(self::HAS_KEY_ACCESS) === true);
+    }
+
+    public function setHasKeyAccess(bool $hasKeyAccess)
+    {
+        $this->setAttribute(self::HAS_KEY_ACCESS, $hasKeyAccess);
     }
 
     public function getReferrer()
@@ -642,7 +655,7 @@ class Entity extends Base\PublicEntity
     {
         return $this->setAttribute(self::CATEGORY2, $category);
     }
-    
+
     public function getCategory2()
     {
         return $this->getAttribute(self::CATEGORY2);
