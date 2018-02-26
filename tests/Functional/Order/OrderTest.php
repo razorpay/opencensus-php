@@ -1107,14 +1107,4 @@ class OrderTest extends TestCase
 
         return $feesArray;
     }
-
-    protected function addOrderReceiptUniqueFeature()
-    {
-        $this->fixtures->create(
-            'feature',
-            [
-                'entity_id' => '10000000000000',
-                'name' => 'order_receipt_unique'
-            ]);
-    }
 }
