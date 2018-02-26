@@ -189,12 +189,16 @@ class Entity extends Base\PublicEntity
 
     public function updateNextRunAndLastRun(bool $considerHolidays = true)
     {
+        $lastRun = Carbon::createFromTimestamp($this->getNextRunAt(), Timezone::IST);
+
         $currentTime = Carbon::now(Timezone::IST);
 
-        $this->updateNextRunAndLastRunFromGivenMinTime($currentTime, $considerHolidays, true);
+        $this->updateNextRunAndLastRunFromGivenMinTimeAndRefTime($lastRun, $currentTime, $considerHolidays);
     }
 
     /**
+     * @param Carbon $refTime           reference time refers to the base time from which next run
+     *                                  should be calculated
      * @param Carbon $minTime           takes case of the service which want certain next
      *                                  run without taking into account the min time
      * @param bool $considerHolidays
@@ -202,14 +206,13 @@ class Entity extends Base\PublicEntity
      *
      * @throws \RZP\Exception\LogicException
      */
-    public function updateNextRunAndLastRunFromGivenMinTime(
-        $minTime,
-        $considerHolidays = false,
-        $considerMinTime = false)
+    public function updateNextRunAndLastRunFromGivenMinTimeAndRefTime(
+        $refTime,
+        $minTime = null,
+        $considerHolidays = false)
     {
-        $lastRun = Carbon::createFromTimestamp($this->getNextRunAt(), Timezone::IST);
-
-        if ($this->schedule->getAnchor() !== null)
+        if (($this->schedule->getAnchor() !== null) and
+            ($minTime !== null))
         {
             //
             // This is so because there is no concept
@@ -217,29 +220,22 @@ class Entity extends Base\PublicEntity
             // min time will be equal to refTime.
             //
             $refTime = $minTime;
-
-            $minTime = null;
-        }
-        else
-        {
-            $refTime = $lastRun;
-        }
-
-        if ($considerMinTime == false)
-        {
-            $minTime = null;
         }
 
         $nextRun = Schedule\Library::computeFutureRun($this->schedule, $refTime, $minTime, $considerHolidays);
 
         $this->setNextRunAt($nextRun->getTimestamp());
 
-        // This may not be needed because
-        // next_run_at is never null
-        if ($lastRun !== null)
-        {
-            $this->setLastRunAt($lastRun->getTimestamp());
-        }
+        $lastRun = Carbon::createFromTimestamp($this->getNextRunAt(), Timezone::IST);
+
+        $this->setLastRunAt($lastRun->getTimestamp());
+    }
+
+    public function updateNextRunAndLastRunFromGivenRefTime(
+        $refTime,
+        $considerHoliday = false)
+    {
+
     }
 
     /**
@@ -308,7 +304,11 @@ class Entity extends Base\PublicEntity
             // In case of auth transaction (immediate), charge_at would be null.
             // In that case, we can use actual current time as the reference time.
             //
-            // Last run at will be null the first time but it will always be set the next
+            // Problem : In case it the first auth transaction for which start at was null
+            // next run at will be randomly set to the creation date. So we don't want that
+            // as a reference date. So for the first transaction we need to consider current time
+            // stamp.
+            // Solution : Last run at will be null the first time but it will always be set the next
             // time because last run is equal to last next_run_at which is always
             // set while creation of task and is to midnight of creation date if start_at
             // of subscription is not set.
@@ -318,7 +318,7 @@ class Entity extends Base\PublicEntity
             $referenceTime = Carbon::createFromTimestamp($referenceTime, Timezone::IST);
         }
 
-        $this->updateNextRunAndLastRunFromGivenMinTime($referenceTime);
+        $this->updateNextRunAndLastRunFromGivenMinTimeAndRefTime($referenceTime);
     }
 
     public function isTypeSettlement()
