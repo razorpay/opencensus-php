@@ -120,6 +120,11 @@ class Entity extends Base\PublicEntity
     {
         if (isset($input[self::NEXT_RUN_AT]) === false)
         {
+            //
+            // It is important to set default value of next run at as
+            // while updating next run and last run, value of next run is
+            // being used. If it is not set it will break
+            //
             $nextRunAt = Carbon::today(Timezone::IST)->getTimestamp();
 
             $input[self::NEXT_RUN_AT] = $nextRunAt;
@@ -228,6 +233,11 @@ class Entity extends Base\PublicEntity
 
         $this->setNextRunAt($nextRun->getTimestamp());
 
+        //
+        // We don't put a null check on last Run because
+        // it is derived from next_run_at which will never be
+        // null. By default it is set to today midnight
+        //
         $this->setLastRunAt($lastRun->getTimestamp());
     }
 
@@ -298,12 +308,16 @@ class Entity extends Base\PublicEntity
             // In that case, we can use actual current time as the reference time.
             //
             // Problem : In case it the first auth transaction for which start at was null
-            // next run at will be randomly set to the creation date. So we don't want that
-            // as a reference date. So for the first transaction we need to consider current time
-            // stamp.
-            // Solution : next run  will be set to past time when the subscription was
-            // created in case start at is null. So next_run_at will be less than current
-            // timestamp.
+            // next run at will be set to the creation date of the subscription. But we don't
+            // want creation date of subscription as reference time to calculate the next run as
+            // that will give us wrong next_run_at. To calculate right next_run_at reference should
+            // be the time when the first auth transaction happens which would be equal to
+            // current timestamp in this case.
+            // Solution : next_run  will be set to creation date of subscription by default
+            // in case start_at is null. So when auth transaction happens in test mode it will always in
+            // future time. And Carbon::now will always be greater than next_run_at. But in subsequent charges
+            // either cron will charge the payment or the merchant. But if merchant is charging that mean next_run_at
+            // hasn't happened yet. So Carbon::now will always be less than that of next_run_at
             //
             if ($this->getNextRunAt() > Carbon::now()->getTimestamp())
             {

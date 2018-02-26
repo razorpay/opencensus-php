@@ -28,7 +28,6 @@ class Library
         //
         if ($settledAt > $nextRun)
         {
-
             if ($schedule->getAnchor() != null)
             {
                 $refTime = $settledAt;
