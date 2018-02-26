@@ -23,12 +23,7 @@ export default function BatchValidateModal({
       <h4 class="modal-heading">Upload File</h4>
       <div class="modal-file">
         <FileUpload
-          accept={['xlsx', 'csv']}
-          accept={[
-            'text/csv',
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'application/pdf',
-          ]}
+          accept={['csv', 'xlsx', 'xls']}
           uploadedFileName="Upload File here"
           maxSize={1000000}
           onChange={onFileChange}
