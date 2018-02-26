@@ -64,6 +64,41 @@ class ReportingController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getSchedule(string $id)
+    {
+        $data = $this->reportingService()->fetchScheduleById($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function listSchedule()
+    {
+        $data = $this->reportingService()->fetchScheduleMultiple($this->input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function createSchedule()
+    {
+        $data = $this->reportingService()->createSchedule($this->input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function updateSchedule(string $id)
+    {
+        $data = $this->reportingService()->editSchedule($id, $this->input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function deleteSchedule(string $id)
+    {
+        $data = $this->reportingService()->deleteSchedule($id);
+
+        return ApiResponse::json($data);
+    }
+
     /**
      * Returns reporting service instance. It's not in constructor as it
      * depends on ba's vars which get set in middleware.

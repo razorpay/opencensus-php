@@ -177,6 +177,16 @@ class Entity extends Base\PublicEntity
         return $this->setAttribute(self::LAST_RUN_AT, $timestamp);
     }
 
+    public function setEntityId(string $entityId)
+    {
+        $this->setAttribute(self::ENTITY_ID, $entityId);
+    }
+
+    public function setEntityType(string $entityType)
+    {
+        $this->setAttribute(self::ENTITY_TYPE, $entityType);
+    }
+
     // ------------------------- Helper methods --------------------------------
 
     public function updateNextRunAndLastRun(bool $considerHolidays = true)

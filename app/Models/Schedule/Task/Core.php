@@ -25,7 +25,7 @@ class Core extends Base\Core
         $input = [
             Entity::METHOD      => null,
             Entity::TYPE        => Type::SETTLEMENT,
-            Entity::SCHEDULE_ID => $schedule->getId()
+            Entity::SCHEDULE_ID => $schedule->getId(),
         ];
 
         $this->createOrUpdate($merchant, $merchant, $input);
@@ -35,7 +35,7 @@ class Core extends Base\Core
      * Create a merchant schedule task entity and deletes the existing entity if any
      *
      * @param Merchant\Entity $merchant
-     * @param Base\Entity     $entity
+     * @param Base\Entity $entity
      * @param                 $input
      *
      * @return Entity
@@ -47,7 +47,7 @@ class Core extends Base\Core
 
         $this->app['workflow']->setEntityId($merchant->getId());
 
-        $this->repo->transactionOnLiveAndTest(function() use ($scheduleTask)
+        $this->repo->transactionOnLiveAndTest(function () use ($scheduleTask)
         {
             // for settlements, we want to keep schedules in sync in test and live
             if ($scheduleTask->isTypeSettlement() === true)
@@ -57,8 +57,7 @@ class Core extends Base\Core
 
                 // Notify slack only in the case of settlement schedule_task
                 $this->traceAndNotifyScheduleAssignment($scheduleTask);
-            }
-            else
+            } else
             {
                 $this->createOrUpdateInMode($scheduleTask, $this->mode);
             }
@@ -71,7 +70,7 @@ class Core extends Base\Core
      * Creates merchant schedule entity
      *
      * @param Merchant\Entity $merchant
-     * @param Base\Entity     $entity
+     * @param Base\Entity $entity
      * @param                 $input
      *
      * @return Entity
@@ -97,6 +96,47 @@ class Core extends Base\Core
         return $scheduleTask;
     }
 
+
+    /**
+     * Creates merchant schedule entity for Log (Reporting Service)
+     * Cannot use the normal create as the `entity_id` doesn't exists in API
+     * So the morph relations wont work
+     *
+     * @param Merchant\Entity $merchant
+     * @param                 $input
+     *
+     * @return Entity
+     */
+    public function createForLog(Merchant\Entity $merchant, array $input): Entity
+    {
+        $entityId = $input[Entity::ENTITY_ID];
+
+        $entityType = $input[Entity::ENTITY_TYPE];
+
+        unset($input[Entity::ENTITY_ID]);
+        unset($input[Entity::ENTITY_TYPE]);
+
+        $scheduleTask = (new Entity)->build($input);
+
+        $scheduleTask->merchant()->associate($merchant);
+
+        $scheduleId = $input[Entity::SCHEDULE_ID];
+
+        $schedule = $this->repo->schedule->findByIdAndMerchantId($scheduleId, $merchant->getId());
+
+        $scheduleTask->schedule()->associate($schedule);
+
+        $scheduleTask->setEntityId($entityId);
+
+        $scheduleTask->setEntityType($entityType);
+
+        $scheduleTask->updateNextRunAt($scheduleTask->getNextRunAt());
+
+        $this->repo->saveOrFail($scheduleTask);
+
+        return $scheduleTask;
+    }
+
     /**
      * Get All Settlement schedules assigned to merchant for payment method
      *
@@ -108,12 +148,12 @@ class Core extends Base\Core
     public function getMerchantSettlementSchedule(Merchant\Entity $merchant, $method)
     {
         $scheduleTasks = $this->repo
-                              ->schedule_task
-                              ->fetchByMerchant($merchant, Type::SETTLEMENT);
+            ->schedule_task
+            ->fetchByMerchant($merchant, Type::SETTLEMENT);
 
         $scheduleTask = $this->filterAndGetScheduleByMethodOrDefault(
-                                    $scheduleTasks,
-                                    $method);
+            $scheduleTasks,
+            $method);
 
         return $scheduleTask;
     }
@@ -125,9 +165,9 @@ class Core extends Base\Core
         $entity->setConnection($mode);
 
         $currentScheduleTask = $this->repo
-                                    ->schedule_task
-                                    ->connection($mode)
-                                    ->fetchExistingScheduleTask($entity);
+            ->schedule_task
+            ->connection($mode)
+            ->fetchExistingScheduleTask($entity);
 
         $originalData = [];
 
@@ -136,25 +176,25 @@ class Core extends Base\Core
             $entity->updateNextRunAt($currentScheduleTask->getNextRunAt());
 
             $originalData = [
-                'type' => $currentScheduleTask->getType(),
-                'schedule' => $currentScheduleTask->schedule->getName(),
+                'type'        => $currentScheduleTask->getType(),
+                'schedule'    => $currentScheduleTask->schedule->getName(),
                 'next_run_at' => $currentScheduleTask->getNextRunAt(),
-                'method' => $currentScheduleTask->getMethod(),
+                'method'      => $currentScheduleTask->getMethod(),
             ];
 
             $this->repo->deleteOrFail($currentScheduleTask);
         }
 
         $dirtyData = [
-            'type' => $entity->getType(),
-            'schedule' => $entity->schedule->getName(),
+            'type'        => $entity->getType(),
+            'schedule'    => $entity->schedule->getName(),
             'next_run_at' => $entity->getNextRunAt(),
-            'method' => $entity->getMethod(),
+            'method'      => $entity->getMethod(),
         ];
 
         $this->app['workflow']
-             ->setEntity($entity->getEntity())
-             ->handle($originalData, $dirtyData);
+            ->setEntity($entity->getEntity())
+            ->handle($originalData, $dirtyData);
 
         $this->repo->saveOrFail($entity);
     }
@@ -178,8 +218,8 @@ class Core extends Base\Core
             $parentMerchant = $merchant->parent;
 
             $scheduleTask = $this->repo
-                                 ->schedule_task
-                                 ->findByMerchantAndMethod($parentMerchant, null);
+                ->schedule_task
+                ->findByMerchantAndMethod($parentMerchant, null);
 
             $schedule = $scheduleTask->schedule;
         }
@@ -215,8 +255,7 @@ class Core extends Base\Core
             if ($scheduleMethod === $method)
             {
                 return $scheduleTask;
-            }
-            else if ($scheduleMethod === null)
+            } else if ($scheduleMethod === null)
             {
                 $defaultScheduleTask = $scheduleTask;
             }
@@ -231,7 +270,7 @@ class Core extends Base\Core
             Entity::MERCHANT_ID => $scheduleTask->getMerchantId(),
             Entity::SCHEDULE_ID => $scheduleTask->getScheduleId(),
             Entity::TYPE        => $scheduleTask->getType(),
-            Entity::METHOD      => $scheduleTask->getMethod()
+            Entity::METHOD      => $scheduleTask->getMethod(),
         ];
 
         $this->trace->info(TraceCode::SCHEDULE_ASSIGNED, $data);
@@ -239,12 +278,12 @@ class Core extends Base\Core
         $user = $this->getInternalUsernameOrEmail();
 
         $this->app['slack']->queue(
-                "Schedule assigned to Merchant by $user",
-                $data,
-                [
-                    'channel'  => Config::get('slack.channels.operations_log'),
-                    'username' => 'Jordan Belfort',
-                    'icon'     => ':boom:',
-                ]);
+            "Schedule assigned to Merchant by $user",
+            $data,
+            [
+                'channel'  => Config::get('slack.channels.operations_log'),
+                'username' => 'Jordan Belfort',
+                'icon'     => ':boom:',
+            ]);
     }
 }

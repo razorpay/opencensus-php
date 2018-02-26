@@ -7,11 +7,14 @@ use Requests;
 use Requests_Response;
 use Requests_Exception;
 
+use Razorpay\Trace\Logger as Trace;
+
 use RZP\Exception;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Table;
-use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Schedule as Schedule;
 use RZP\Models\Feature\Constants as Feature;
+use RZP\Models\Schedule\Task as ScheduleTask;
 
 /**
  * Interface for api to talk to Reporting service
@@ -25,6 +28,7 @@ class Reporting
      */
     const CONFIG_PATH   = '/v1/configs';
     const LOG_PATH      = '/v1/logs';
+    const SCHEDULE_PATH = '/v1/schedules';
 
     /**
      * @var array
@@ -108,6 +112,69 @@ class Reporting
     public function fetchLogMultiple(array $input): array
     {
         return $this->createAndSendRequest(Requests::GET, self::LOG_PATH, $input);
+    }
+
+    public function createSchedule(array $input): array
+    {
+        $reportingServiceRequest = $input['trigger'];
+
+        $scheduleRequest = $input['schedule'];
+
+        $scheduleTaskRequest = $input['schedule_task'];
+
+        $response = $this->createAndSendRequest(Requests::POST, self::SCHEDULE_PATH, $reportingServiceRequest);
+
+        // Need to store entity_id without sign.
+        $scheduleTaskRequest['entity_id'] = explode('sched_', $response['id'])[1];
+
+        $merchant = $this->ba->getMerchant();
+
+        $schedule = (new Schedule\Core)->createSchedule($scheduleRequest, $merchant);
+
+        $scheduleTaskRequest['schedule_id'] = $schedule->getId();
+
+        (new ScheduleTask\Core)->createForLog($merchant, $scheduleTaskRequest);
+
+        return $response;
+    }
+
+    public function fetchScheduleMultiple(array $input): array
+    {
+        $configs = $this->createAndSendRequest(Requests::GET, self::SCHEDULE_PATH, $input);
+
+        return $this->filterConfigsByFeatureAndTags($configs);
+    }
+
+    public function fetchScheduleById(string $id): array
+    {
+        $path = self::SCHEDULE_PATH . '/' . $id;
+
+        return $this->createAndSendRequest(Requests::GET, $path);
+    }
+
+    public function editSchedule(string $id, array $input): array
+    {
+        $path = self::SCHEDULE_PATH . '/' . $id;
+
+        return $this->createAndSendRequest(Requests::PATCH, $path, $input);
+    }
+
+    public function deleteSchedule(string $id): array
+    {
+        $path = self::SCHEDULE_PATH . '/' . $id;
+
+        return $this->createAndSendRequest(Requests::DELETE, $path);
+    }
+
+    public function triggerSchedule(string $id): array
+    {
+        $path = self::SCHEDULE_PATH . '/' . $id . '/trigger';
+
+        // Mode is necessary to trigger a schedule
+        // Depending upon mode, the corresponding test/live data would be fetched
+        $input['mode'] = $this->mode;
+
+        return $this->createAndSendRequest(Requests::PUT, $path, $input);
     }
 
     protected function createAndSendRequest(
