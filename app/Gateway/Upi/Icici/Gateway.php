@@ -53,6 +53,7 @@ class Gateway extends Base\Gateway
         Fields::PAYER_NAME                => Entity::NAME,
         Fields::PAYER_MOBILE              => Entity::CONTACT,
         Fields::RESPONSE                  => Entity::STATUS_CODE,
+        Fields::MERCHANT_TRAN_ID          => Entity::MERCHANT_REFERENCE,
         Fields::BANK_RRN                  => Entity::GATEWAY_PAYMENT_ID,
         Fields::ORIGINAL_BANK_RRN         => Entity::GATEWAY_PAYMENT_ID,
         Fields::MERCHANT_ID               => Entity::GATEWAY_MERCHANT_ID,
@@ -575,9 +576,13 @@ class Gateway extends Base\Gateway
 
     protected function getPaymentVerifyRequestArray(array $input)
     {
+        $repo = $this->getRepository();
+
+        $gatewayPayment = $repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
+
         $data = [
             'merchantId'        => $this->getMerchantId(),
-            'merchantTranId'    => $input['payment']['id'],
+            'merchantTranId'    => $gatewayPayment['merchant_reference'],
             'subMerchantId'     => $this->getSubMerchantId($input),
             'terminalId'        => '1234',
         ];
@@ -925,7 +930,7 @@ class Gateway extends Base\Gateway
             Fields::TERMINAL_ID                     => $this->getTerminalId($input),
             Fields::ORIGINAL_BANK_RRN_REQ           => $gatewayPayment->getGatewayPaymentId(),
             Fields::MERCHANT_TRAN_ID                => $this->getRefundId($refund),
-            Fields::ORIGINAL_MERCHANT_TRAN_ID       => $payment['id'],
+            Fields::ORIGINAL_MERCHANT_TRAN_ID       => $gatewayPayment['merchant_reference'],
             Fields::REFUND_AMOUNT                   => $this->formatAmount($refund['amount']),
             Fields::NOTE                            => 'Razorpay Refund ' . $refund['id'],
             Fields::ONLINE_REFUND                   => $this->isOnlineRefund($refund),

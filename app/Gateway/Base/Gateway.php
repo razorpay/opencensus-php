@@ -236,7 +236,7 @@ class Gateway
     {
         $this->input = $input;
 
-        $this->action = Action::QR_NOTIFICATION;
+        $this->action = Action::AUTHORIZE;
     }
 
     public function capture(array $input)

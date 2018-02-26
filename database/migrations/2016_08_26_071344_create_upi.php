@@ -63,6 +63,9 @@ class CreateUpi extends Migration
             $table->tinyInteger(Upi::RECEIVED)
                   ->default(0);
 
+            $table->string(Upi::MERCHANT_REFERENCE)
+                  ->nullable();
+
             $table->string(Upi::GATEWAY_MERCHANT_ID)
                   ->nullable();
 
