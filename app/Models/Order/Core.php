@@ -140,26 +140,31 @@ class Core extends Base\Core
     {
         $merchant = $order->merchant;
 
-        if ($merchant->isFeatureEnabled(FeatureConstants::ORDER_RECEIPT_UNIQUE) === true)
+        if ($merchant->isFeatureEnabled(FeatureConstants::ORDER_RECEIPT_UNIQUE) === false)
         {
-            $receipt = $order->getReceipt();
+            return;
+        }
 
-            if ($receipt === null)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    PublicErrorDescription::BAD_REQUEST_ORDER_RECEIPT_REQUIRED,
-                    Entity::RECEIPT
-                    );
-            }
+        $receipt = $order->getReceipt();
 
-            $isReceiptUnique = $this->repo->order->isReceiptUnique($merchant->getId(), $receipt);
+        if ($receipt === null)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_ORDER_RECEIPT_REQUIRED,
+                Entity::RECEIPT);
+        }
 
-            if ($isReceiptUnique === false)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    PublicErrorDescription::BAD_REQUEST_ORDER_RECEIPT_NOT_UNIQUE,
-                    Entity::RECEIPT);
-            }
+        $params = [Entity::RECEIPT => $receipt];
+
+        $duplicateOrders = $this->repo->order->fetch($params, $merchant->getId());
+
+        if (count($duplicateOrders) > 0)
+        {
+            $duplicateOrderIds = $duplicateOrders->pluck(Entity::ID)->all();
+
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_ORDER_RECEIPT_NOT_UNIQUE,
+                ['order_ids' => $duplicateOrderIds]);
         }
     }
 }
