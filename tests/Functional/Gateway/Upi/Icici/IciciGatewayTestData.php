@@ -46,6 +46,21 @@ return [
         ],
     ],
 
+    'testIntentDisabledPayment' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'UPI intent is not enabled for the merchant'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
 
     'testPaymentWithExpiryPublicAuth'   => [
         'response'  => [
