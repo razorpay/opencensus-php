@@ -251,7 +251,7 @@ export default class ReportsContainer extends Component {
 
       return generateReportV2({
         config_id: selectedConfig._item.id,
-        generated_by: selectedAccount.id,
+        generated_by: selectedAccount.id.replace('acc_', ''),
         start_time: startTime,
         end_time: endTime,
       }).then(data => {
