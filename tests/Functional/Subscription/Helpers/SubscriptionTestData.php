@@ -186,7 +186,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Interval provided exceed the maximum interval (10) allowed for the given period (yearly)',
+                    'description' => 'Interval provided exceeds the maximum interval (10) allowed for the given period (yearly)',
                 ],
             ],
             'status_code' => 400,
