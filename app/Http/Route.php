@@ -721,7 +721,6 @@ final class Route
         'reporting_schedule_create'               => ['post',     'reporting/schedules',                             'ReportingController@createSchedule'                               ],
         'reporting_schedule_edit'                 => ['patch',    'reporting/schedules/{id}',                        'ReportingController@updateSchedule'                               ],
         'reporting_schedule_delete'               => ['delete',   'reporting/schedules/{id}',                        'ReportingController@deleteSchedule'                               ],
-        'reporting_schedule_trigger'              => ['post',     'reporting/schedules/{id}/trigger',                'ReportingController@triggerSchedule'                              ],
 
         // UFH Service
         // TODO: Should change to just /signed_url (No 'get' and underscore)
@@ -1009,7 +1008,6 @@ final class Route
         'schedule_migration',
         'schedule_process_tasks',
         'schedule_reporting_tasks',
-        'reporting_schedule_trigger',
         'scorecard',
         'setl_initiate',
         'setl_post_details_old',

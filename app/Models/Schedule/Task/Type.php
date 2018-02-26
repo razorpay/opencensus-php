@@ -16,7 +16,8 @@ class Type
     const TYPE_LIST = [
         self::SETTLEMENT,
         self::SUBSCRIPTION,
-        self::PROMOTION
+        self::PROMOTION,
+        self::REPORTING
     ];
 
     public static function isSyncedInLiveAndTest(string $type)

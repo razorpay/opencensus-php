@@ -12,6 +12,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Table;
+use RZP\Models\Merchant;
 use RZP\Models\Schedule as Schedule;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Schedule\Task as ScheduleTask;
@@ -162,21 +163,28 @@ class Reporting
         return $this->createAndSendRequest(Requests::DELETE, $path);
     }
 
-    public function triggerSchedule(string $id, string $merchantId = null): array
+    public function triggerSchedule($scheduleTasks): array
     {
-        // In case its called directly by the API (not via schedule task), `sched_` will be set in id and merchant would be taken from auth.
-        if (strpos($id, 'sched_') === false)
-        {
-            $id = "sched_$id";
-        }
+        $payload = [];
 
-        $path = self::SCHEDULE_PATH . '/' . $id . '/trigger';
+        foreach ($scheduleTasks as $scheduleTask)
+        {
+            $payload[] = [
+                'id'          => 'sched_' . $scheduleTask->getEntityId(),
+                'merchant_id' => $scheduleTask->getMerchantId(),
+            ];
+        }
 
         // Mode is necessary to trigger a schedule
         // Depending upon mode, the corresponding test/live data would be fetched
-        $input['mode'] = $this->mode;
+        $request = [
+            'mode'    => $this->mode,
+            'payload' => $payload,
+        ];
 
-        return $this->createAndSendRequest(Requests::POST, $path, $input, $merchantId);
+        $path = self::SCHEDULE_PATH . '/trigger';
+
+        return $this->createAndSendRequest(Requests::POST, $path, $request, Merchant\Account::SHARED_ACCOUNT);
     }
 
     protected function createScheduleOnAPI(array $input)

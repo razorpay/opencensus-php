@@ -119,45 +119,37 @@ class Service extends Base\Service
 
         $scheduleTasksToProcess = $this->repo->schedule_task->fetchDueScheduleTasks($input['type'], $timestamp);
 
-        $entityNameSpace = Constants\Entity::getEntityNamespace($input['type']) . '\Core';
+        $type = $input['type'];
 
-        return (new $entityNameSpace)->processTasks($scheduleTasksToProcess, $timestamp);
-    }
-
-    public function processTasksForReporting(): array
-    {
-        $this->trace->info(TraceCode::SCHEDULE_TASKS_PROCESS_REQUEST, []);
-
-        //all tasks which are due and less than time
-        $timestamp = Carbon::now()->getTimestamp();
-
-        $scheduleTasks = $this->repo->schedule_task->fetchDueScheduleTasks(ScheduleTask\Type::REPORTING, $timestamp);
-
-        $reportingService = new Reporting();
-
-        $response = [
-            'success' => [],
-            'failure' => []
-        ];
-
-        foreach ($scheduleTasks as $scheduleTask)
+        // In case of reporting type we need to call the reporting service
+        if ($type === ScheduleTask\Type::REPORTING)
         {
-            $reportingReponse = $reportingService->triggerSchedule($scheduleTask->getEntityId(), $scheduleTask->merchant->getId());
+            $reportingService = new Reporting();
 
-            if (isset($reportingReponse['error']) === true)
+            $response = $reportingService->triggerSchedule($scheduleTasksToProcess);
+
+            if (isset($response['error']) === false)
             {
-                $response['failure'][] = $scheduleTask->getEntityId();
-            }
-            else
-            {
-                $scheduleTask->updateNextRunAndLastRun(false);
+                $successIds = $response['success_ids'];
 
-                $this->repo->saveOrFail($scheduleTask);
+                // We need to get all success_ids and mark their next run.
+                foreach ($successIds as $successId)
+                {
+                    $scheduleTask = $this->repo->schedule_task->findOrFailPublic($successId);
 
-                $response['success'][] = $scheduleTask->getEntityId();
+                    $scheduleTask->updateNextRunAndLastRun(false);
+
+                    $this->repo->saveOrFail($scheduleTask);
+                }
             }
+
+            return $response;
         }
+        else
+        {
+            $entityNameSpace = Constants\Entity::getEntityNamespace($input['type']) . '\Core';
 
-        return $response;
+            return (new $entityNameSpace)->processTasks($scheduleTasksToProcess, $timestamp);
+        }
     }
 }
