@@ -8,18 +8,15 @@ fi
 
 cd /app/
 
-ALOHOMORA_BIN=$(which alohomora)
-$ALOHOMORA_BIN cast --region ap-south-1 --env $APP_MODE --app dashboard "dockerconf/dashboard.conf.j2"
-sed -i "s|NGINX_HOST|$HOSTNAME|g" dockerconf/dashboard.conf
-cp dockerconf/dashboard.conf /etc/nginx/conf.d/dashboard.conf
-$ALOHOMORA_BIN cast --region ap-south-1 --env $APP_MODE --app dashboard "environment/env.php.j2"
-
 if [[ "${APP_MODE}" == "dev" ]]
 then
   cp environment/.env.docker environment/.env.dev
 else
-  $ALOHOMORA_BIN cast --region ap-south-1 --env $APP_MODE --app dashboard "environment/.env.vault.j2"
+  $ALOHOMORA_BIN cast --region ap-south-1 --env $APP_MODE --app dashboard "environment/.env.vault.j2" "dockerconf/dashboard.conf.j2" "environment/env.php.j2"
 fi
+
+cp dockerconf/dashboard.conf /etc/nginx/conf.d/dashboard.conf
+sed -i "s|NGINX_HOST|$HOSTNAME|g" dockerconf/dashboard.conf
 
 # echo "$date Memory Limit"
 ## This is a bad workaround for increasing php's memory to to 3G enable running tests locally
