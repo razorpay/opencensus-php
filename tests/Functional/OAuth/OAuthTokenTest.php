@@ -53,7 +53,7 @@ class OAuthTokenTest extends TestCase
 
         $this->setAuthServiceMockDetail(
                                     'tokens/8ckeirnw84ifkg',
-                                    'DELETE',
+                                    'PUT',
                                     $requestParams);
 
         $this->startTest();
