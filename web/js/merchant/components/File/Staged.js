@@ -1,10 +1,4 @@
-const sizes = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB'];
-
-const readableFileSize = bytes => {
-  if (!bytes) return `0 bytes`;
-  var e = Math.floor(Math.log(bytes) / Math.log(1024));
-  return `${(bytes / Math.pow(1024, e)).toFixed(2)} ${sizes[e]}`;
-};
+import { readableFileSize } from 'rzp/utils/rzp-utils';
 
 const avlblFileTypeIcons = ['pdf', 'jpg', 'png', 'csv'];
 

@@ -409,7 +409,7 @@ export const arrayToCsvDataUrl = array => {
 };
 
 /**
- * 
+ *
  * @param {*} url
  * Add 'http' to the URL is not available
  */
@@ -429,3 +429,16 @@ export const autoPrefixUrls = url => {
 };
 
 export { acronyms, shortenText };
+
+/**
+ *Get human readable file size
+ * @param {*} fileSize in bytes in Binary prefixes
+ */
+
+export const readableFileSize = bytes => {
+  const sizes = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB'];
+
+  if (!bytes) return `0 bytes`;
+  var e = Math.floor(Math.log(bytes) / Math.log(1024));
+  return `${(bytes / Math.pow(1024, e)).toFixed(2)} ${sizes[e]}`;
+};

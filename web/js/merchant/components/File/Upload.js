@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { readableFileSize } from 'rzp/utils/rzp-utils';
 
 import Staged from './Staged';
 
@@ -125,7 +126,7 @@ export default class FileUpload extends Component {
                           Click to Upload
                         </span>
                       </label>
-                      <span>&nbsp;({maxSize / 1000000} MB Max)</span>
+                      <span>&nbsp;({readableFileSize(maxSize)} Max)</span>
                       <input
                         type="file"
                         id={`fileInput-${name}`}
