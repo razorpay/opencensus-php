@@ -4,13 +4,15 @@ namespace RZP\Models\Schedule;
 
 use Carbon\Carbon;
 
-use RZP\Models\Base;
-use RZP\Models\Merchant\Account;
-use RZP\Trace\TraceCode;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Constants;
+use RZP\Models\Base;
+use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\Services\Reporting;
+use RZP\Models\Merchant\Account;
 use RZP\Models\Schedule\Task as ScheduleTask;
+
 
 class Service extends Base\Service
 {
@@ -120,5 +122,42 @@ class Service extends Base\Service
         $entityNameSpace = Constants\Entity::getEntityNamespace($input['type']) . '\Core';
 
         return (new $entityNameSpace)->processTasks($scheduleTasksToProcess, $timestamp);
+    }
+
+    public function processTasksForReporting(): array
+    {
+        $this->trace->info(TraceCode::SCHEDULE_TASKS_PROCESS_REQUEST, []);
+
+        //all tasks which are due and less than time
+        $timestamp = Carbon::now()->getTimestamp();
+
+        $scheduleTasks = $this->repo->schedule_task->fetchDueScheduleTasks(ScheduleTask\Type::REPORTING, $timestamp);
+
+        $reportingService = new Reporting();
+
+        $response = [
+            'success' => [],
+            'failure' => []
+        ];
+
+        foreach ($scheduleTasks as $scheduleTask)
+        {
+            $reportingReponse = $reportingService->triggerSchedule($scheduleTask->getEntityId(), $scheduleTask->merchant->getId());
+
+            if (isset($reportingReponse['error']) === true)
+            {
+                $response['failure'][] = $scheduleTask->getEntityId();
+            }
+            else
+            {
+                $scheduleTask->updateNextRunAndLastRun(false);
+
+                $this->repo->saveOrFail($scheduleTask);
+
+                $response['success'][] = $scheduleTask->getEntityId();
+            }
+        }
+
+        return $response;
     }
 }

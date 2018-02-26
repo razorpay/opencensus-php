@@ -166,21 +166,24 @@ class Reporting
         return $this->createAndSendRequest(Requests::DELETE, $path);
     }
 
-    public function triggerSchedule(string $id): array
+    public function triggerSchedule(string $id, string $merchantId = null): array
     {
+        $id = "sched_$id";
+
         $path = self::SCHEDULE_PATH . '/' . $id . '/trigger';
 
         // Mode is necessary to trigger a schedule
         // Depending upon mode, the corresponding test/live data would be fetched
         $input['mode'] = $this->mode;
 
-        return $this->createAndSendRequest(Requests::PUT, $path, $input);
+        return $this->createAndSendRequest(Requests::POST, $path, $input, $merchantId);
     }
 
     protected function createAndSendRequest(
         string $method,
         string $path,
-        array $input = []): array
+        array $input = [],
+        string $merchantId = null): array
     {
         // In case reporting is to be mocked, don't make any external call
         // and just return empty array.
@@ -195,7 +198,7 @@ class Reporting
         ];
 
         $headers = [
-            'X-Merchant-Id' => $this->ba->getMerchantId()
+            'X-Merchant-Id' => $merchantId ?? $this->ba->getMerchantId()
         ];
 
         $request = [

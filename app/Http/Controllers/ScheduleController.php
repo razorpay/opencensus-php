@@ -72,4 +72,11 @@ class ScheduleController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function processTasksForReports()
+    {
+        $data = $this->service()->processTasksForReporting();
+
+        return ApiResponse::json($data);
+    }
 }
