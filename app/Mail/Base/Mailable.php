@@ -25,8 +25,6 @@ class Mailable extends BaseMailable
 
     public $taskId;
 
-    protected $invalidTlds = [];
-
     public function __construct()
     {
         $queueMock = Config::get('queue.mock');
@@ -68,16 +66,23 @@ class Mailable extends BaseMailable
         }
         catch (\Throwable $e)
         {
-            $trace->traceException($e,
-                                   Trace::ERROR,
-                                   TraceCode::MAILER_JOB_ERROR,
-                                   [
-                                        'from'          => $this->from,
-                                        'to'            => $this->to,
-                                        'subject'       => $this->subject,
-                                        'invalid_TLDs'  => $this->invalidTlds,
-                                        'mailable'      => get_class($this)
-                                   ]);
+            $traceData = [
+                'from'          => $this->from,
+                'to'            => $this->to,
+                'subject'       => $this->subject,
+                'mailable'      => get_class($this)
+            ];
+
+            // For invalid TLDs, we're passing that in the exception data
+            // which we fetche here and pushes to the trace data
+            $traceData = array_merge($traceData, $e->getData());
+
+            $trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::MAILER_JOB_ERROR,
+                $traceData
+            );
 
             // After logging the exception caught, we rethrow it so that the
             // retry mechanism for mails is triggerred unless the exception
@@ -118,6 +123,7 @@ class Mailable extends BaseMailable
     protected function buildRecipients($message)
     {
         $validTldsCount = 0;
+        $invalidEmails  = [];
 
         foreach (['to', 'cc', 'bcc', 'replyTo'] as $type)
         {
@@ -135,7 +141,7 @@ class Mailable extends BaseMailable
                 }
                 else
                 {
-                    $this->invalidTlds[] = $email;
+                    $invalidEmails[] = $email;
                 }
             }
         }
@@ -145,7 +151,12 @@ class Mailable extends BaseMailable
         if ($validTldsCount === 0)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'The email must be a valid email address.', 'email');
+                'The email must be a valid email address.',
+                'email',
+                [
+                    'invalidEmails' => $invalidEmails
+                ]
+            );
         }
 
         return $this;
