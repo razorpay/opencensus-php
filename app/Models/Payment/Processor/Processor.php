@@ -247,15 +247,16 @@ class Processor
             return null;
         }
 
-        $methods = [];
+        $emandateMethods = [];
 
-        (new Methods\Core)->addRecurringEmandateToMethodsIfApplicable($this->merchant, $this->methods, $methods);
+        (new Methods\Core)->addRecurringEmandateToMethodsIfApplicable(
+                                $this->merchant, $this->methods, $emandateMethods);
 
         //
         // This can happen when the required features are not enabled
         // or when there's not a single bank for any auth type.
         //
-        if (empty($methods) === true)
+        if (empty($emandateMethods) === true)
         {
             return null;
         }
@@ -269,7 +270,7 @@ class Processor
         // not come up in the methods API now, then most likely someone
         // is tampering with the request on the frontend.
         //
-        if (isset($methods['emandate'][$bank]) === false)
+        if (isset($emandateMethods['emandate'][$bank]) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_BANK_FOR_EMANDATE,
@@ -286,7 +287,7 @@ class Processor
                 'method'  => 'POST',
                 'content' => [
                     'input' => $input,
-                    'bank_details' => $methods['emandate'][$input[Payment\Entity::BANK]],
+                    'bank_details' => $emandateMethods['emandate'][$input[Payment\Entity::BANK]],
                 ]
             ],
             'version' => '1',

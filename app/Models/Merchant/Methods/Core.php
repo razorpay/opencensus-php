@@ -163,7 +163,10 @@ class Core extends Base\Core
         }
     }
 
-    public function addRecurringEmandateToMethodsIfApplicable(Merchant\Entity $merchant, $methods, array & $recurringData)
+    public function addRecurringEmandateToMethodsIfApplicable(
+        Merchant\Entity $merchant,
+        Methods\Entity $methods,
+        array & $recurringData)
     {
         //
         // We don't allow netbanking for subscriptions currently.
