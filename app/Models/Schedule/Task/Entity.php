@@ -125,6 +125,12 @@ class Entity extends Base\PublicEntity
             // while updating next run and last run, value of next run is
             // being used. If it is not set it will break
             //
+
+            //
+            // We need to set a default value here since some flows
+            // are dependent on always having a value for this.
+            // Examples: `updateNextRunAndLastRunFromGivenMinTimeAndRefTime`
+            //
             $nextRunAt = Carbon::today(Timezone::IST)->getTimestamp();
 
             $input[self::NEXT_RUN_AT] = $nextRunAt;
@@ -167,6 +173,7 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::NEXT_RUN_AT);
     }
+
     public function getLastRunAt()
     {
         return $this->getAttribute(self::LAST_RUN_AT);
@@ -202,12 +209,11 @@ class Entity extends Base\PublicEntity
     }
 
     /**
-     * @param Carbon $refTime           reference time refers to the base time from which next run
-     *                                  should be calculated
-     * @param Carbon $minTime           takes case of the service which want certain next
+     * @param Carbon $refTime           reference time refers to the base time
+     *                                  from which next run should be calculated
+     * @param Carbon $minTime           takes care of the service which want certain next
      *                                  run without taking into account the min time
      * @param bool $considerHolidays
-     * @param bool $considerMinTime
      *
      * @throws \RZP\Exception\LogicException
      */
@@ -234,8 +240,8 @@ class Entity extends Base\PublicEntity
         $this->setNextRunAt($nextRun->getTimestamp());
 
         //
-        // We don't put a null check on last Run because
-        // it is derived from next_run_at which will never be
+        // last run will never be null because it is
+        // derived from next_run_at which will never be
         // null. By default it is set to today midnight
         //
         $this->setLastRunAt($lastRun->getTimestamp());
@@ -277,7 +283,8 @@ class Entity extends Base\PublicEntity
      * whatever it's supposed to get set to initially without retry.
      *
      * @param string $mode
-     * @param bool   $retry
+     * @param bool $retry
+     * @throws \RZP\Exception\LogicException
      */
     public function updateForSubscription(string $mode , $retry = false)
     {
@@ -307,7 +314,7 @@ class Entity extends Base\PublicEntity
             // In case of auth transaction (immediate), charge_at would be null.
             // In that case, we can use actual current time as the reference time.
             //
-            // Problem : In case it the first auth transaction for which start at was null
+            // Problem : In case it is the first auth transaction for which start at was null
             // next run at will be set to the creation date of the subscription. But we don't
             // want creation date of subscription as reference time to calculate the next run as
             // that will give us wrong next_run_at. To calculate right next_run_at reference should
