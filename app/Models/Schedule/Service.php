@@ -128,7 +128,7 @@ class Service extends Base\Service
             {
                 return [];
             }
-            
+
             $reportingService = new Reporting();
 
             $response = $reportingService->triggerSchedule($scheduleTasksToProcess);

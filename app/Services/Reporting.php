@@ -217,8 +217,7 @@ class Reporting
     protected function createAndSendRequest(
         string $method,
         string $path,
-        array $input = [],
-        string $merchantId = null): array
+        array $input = []): array
     {
         // In case reporting is to be mocked, don't make any external call
         // and just return empty array.
@@ -233,7 +232,7 @@ class Reporting
         ];
 
         $headers = [
-            'X-Merchant-Id' => $merchantId ?? $this->ba->getMerchantId()
+            'X-Merchant-Id' => $this->ba->getMerchantId()
         ];
 
         $request = [

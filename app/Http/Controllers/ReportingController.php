@@ -100,15 +100,6 @@ class ReportingController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function triggerSchedule(string $id)
-    {
-        $input = Request::all();
-
-        $data = $this->reportingService()->triggerSchedule($id, $input['merchant_id']);
-
-        return ApiResponse::json($data);
-    }
-
     /**
      * Returns reporting service instance. It's not in constructor as it
      * depends on ba's vars which get set in middleware.
