@@ -116,32 +116,22 @@ class Reporting
 
     public function createSchedule(array $input): array
     {
-        $reportingServiceRequest = $input['trigger'];
+        $reportingServiceRequest = $input['payload'];
 
         $scheduleRequest = $input['schedule'];
 
-        $scheduleTaskRequest = $input['schedule_task'];
-
-        $response = $this->createAndSendRequest(Requests::POST, self::SCHEDULE_PATH, $reportingServiceRequest);
+        $reportingServiceResponse = $this->createScheduleOnReportingService($reportingServiceRequest);
 
         // In case reporting service returns error, then we dont create schedule/schedule task
-        if (isset($response['error']) === true)
+        if (isset($reportingServiceResponse['error']) === false)
         {
-            return $response;
+            // Need to store entity_id without sign.
+            $scheduleRequest[ScheduleTask\Entity::ENTITY_ID] = explode('sched_', $reportingServiceResponse['id'])[1];
+
+            $this->createScheduleOnAPI($scheduleRequest);
         }
 
-        // Need to store entity_id without sign.
-        $scheduleTaskRequest['entity_id'] = explode('sched_', $response['id'])[1];
-
-        $merchant = $this->ba->getMerchant();
-
-        $schedule = (new Schedule\Core)->createSchedule($scheduleRequest, $merchant);
-
-        $scheduleTaskRequest['schedule_id'] = $schedule->getId();
-
-        (new ScheduleTask\Core)->createForLog($merchant, $scheduleTaskRequest);
-
-        return $response;
+        return $reportingServiceResponse;
     }
 
     public function fetchScheduleMultiple(array $input): array
@@ -187,6 +177,33 @@ class Reporting
         $input['mode'] = $this->mode;
 
         return $this->createAndSendRequest(Requests::POST, $path, $input, $merchantId);
+    }
+
+    protected function createScheduleOnAPI(array $input)
+    {
+        $entityId = $input[ScheduleTask\Entity::ENTITY_ID];
+
+        unset($input[ScheduleTask\Entity::ENTITY_ID]);
+
+        $merchant = $this->ba->getMerchant();
+
+        $schedule = (new Schedule\Core)->createSchedule($input, $merchant);
+
+        $scheduleTaskRequest = [
+            ScheduleTask\Entity::ENTITY_ID   => $entityId,
+            ScheduleTask\Entity::TYPE        => 'reporting',
+            ScheduleTask\Entity::ENTITY_TYPE => 'log',
+            ScheduleTask\Entity::SCHEDULE_ID => $schedule->getId(),
+        ];
+
+        (new ScheduleTask\Core)->createForReportingService($merchant, $schedule, $scheduleTaskRequest);
+    }
+
+    protected function createScheduleOnReportingService(array $input): array
+    {
+        $response = $this->createAndSendRequest(Requests::POST, self::SCHEDULE_PATH, $input);
+
+        return $response;
     }
 
     protected function createAndSendRequest(

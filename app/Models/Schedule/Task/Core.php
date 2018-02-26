@@ -3,11 +3,10 @@
 namespace RZP\Models\Schedule\Task;
 
 use Config;
-use Carbon\Carbon;
 
+use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
-use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Schedule;
 
@@ -104,11 +103,12 @@ class Core extends Base\Core
      * So the morph relations wont work
      *
      * @param Merchant\Entity $merchant
+     * @param Schedule\Entity $schedule
      * @param                 $input
      *
      * @return Entity
      */
-    public function createForLog(Merchant\Entity $merchant, array $input): Entity
+    public function createForReportingService(Merchant\Entity $merchant, Schedule\Entity $schedule, array $input): Entity
     {
         $entityId = $input[Entity::ENTITY_ID];
 
@@ -120,10 +120,6 @@ class Core extends Base\Core
         $scheduleTask = (new Entity)->build($input);
 
         $scheduleTask->merchant()->associate($merchant);
-
-        $scheduleId = $input[Entity::SCHEDULE_ID];
-
-        $schedule = $this->repo->schedule->findByIdAndMerchantId($scheduleId, $merchant->getId());
 
         $scheduleTask->schedule()->associate($schedule);
 
