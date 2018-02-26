@@ -5,9 +5,12 @@ namespace RZP\Models\Merchant\AccessMap;
 use DB;
 
 use RZP\Models\Base;
+use RZP\Models\Base\RepositoryUpdateTestAndLive;
 
 class Repository extends Base\Repository
 {
+    use RepositoryUpdateTestAndLive;
+
     protected $entity = 'merchant_access_map';
 
     // These are admin allowed params to search on.
