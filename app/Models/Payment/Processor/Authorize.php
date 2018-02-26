@@ -2117,14 +2117,17 @@ trait Authorize
 
         $token = null;
 
+        $this->trace->info(
+            TraceCode::PAYMENT_SAVE_METHOD,
+            [
+                'save_method_input' => $saveMethodInput
+            ]
+        );
+
         // @codingStandardsIgnoreStart
         try
         {
             $token = (new Token\Core)->create($customer, $saveMethodInput);
-        }
-        catch (Exception\RecoverableException $e)
-        {
-            // Ignore the exception, can be an already saved method
         }
         catch (\Exception $e)
         {
