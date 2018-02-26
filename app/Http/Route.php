@@ -721,8 +721,8 @@ final class Route
         'beta_account_fetch_multiple'             => ['get',      'beta/accounts',                                  'AccountController@list'                                            ],
         'beta_account_post_bank_account'          => ['post',     'beta/accounts/{id}/bank_accounts',               'AccountController@createOrChangeBankAccount'                       ],
         'beta_account_fetch_setl_destinations'    => ['get',      'beta/accounts/{id}/settlement_destinations',     'AccountController@fetchSettlementDestinations'                     ],
-        'account_features_add'                    => ['post',     'accounts/public/features',                       'FeatureController@addAccountFeatures'                              ],
-        'account_features_get'                    => ['get',      'accounts/public/features',                       'FeatureController@getAccountFeatures'                              ],
+        'account_features_add'                    => ['post',     'accounts/me/features',                           'FeatureController@addAccountFeatures'                              ],
+        'account_features_get'                    => ['get',      'accounts/me/features',                           'FeatureController@getAccountFeatures'                              ],
 
         'account_fetch'                           => ['get',      'accounts',                                       'AccountController@listLinkedAccounts'                              ],
 

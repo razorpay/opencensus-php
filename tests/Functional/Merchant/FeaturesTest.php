@@ -1039,7 +1039,7 @@ class FeaturesTest extends TestCase
 
         $testData['request']['content']['should_sync'] = (int)$shouldSync;
 
-        $testData['request']['url'] = '/accounts/public/features';
+        $testData['request']['url'] = '/accounts/me/features';
 
         $testData['response']['content'][0]['entity_id'] = $entityId;
 
@@ -1160,7 +1160,7 @@ class FeaturesTest extends TestCase
     {
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = '/accounts/public/features';
+        $testData['request']['url'] = '/accounts/me/features';
 
         if ($mode === Mode::LIVE)
         {
