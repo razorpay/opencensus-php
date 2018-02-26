@@ -249,7 +249,7 @@ class Processor
 
         $methods = [];
 
-        (new Methods\Core)->addRecurringEmandateToMethodsIfApplicable($this->merchant, $methods);
+        (new Methods\Core)->addRecurringEmandateToMethodsIfApplicable($this->merchant, $this->merchant->methods, $methods);
 
         //
         // This can happen when the required features are not enabled

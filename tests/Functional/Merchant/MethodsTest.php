@@ -133,7 +133,7 @@ class MethodsTest extends TestCase
 
         $content = $this->startTest($testData);
 
-        $this->assertCount(3, $content['recurring']['emandate']);
+        $this->assertCount(37, $content['recurring']['emandate']);
     }
 
     public function testRecurringNetbankingOnChargeAtWillInLive()
