@@ -19,12 +19,12 @@ const AccountsListItem = ({ account, onEdit }) => {
         <Time value={account.created_at} format="DD MMM YYYY, hh:mm:ss a" />
       </td>
       <td>
-        <span data-tip={account.activated ? 'Activated' : 'Not Activated'}>
-          <CheckIcon value={account.activated} />
+        <span data-tip={account.activation_details.status == 'activated' ? 'Activated' : 'Not Activated'}>
+          <CheckIcon value={account.activation_details.status == 'activated'} />
         </span>
       </td>
       <td>
-        <Time value={account.activated_at} format="DD MMM YYYY, hh:mm:ss a" />
+        <Time value={account.activation_details.activated_at} format="DD MMM YYYY, hh:mm:ss a" />
       </td>
     </EntityItemRow>
   );
