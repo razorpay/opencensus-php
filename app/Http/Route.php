@@ -1025,7 +1025,7 @@ final class Route
         'fund_transfer_attempt_process',
     ];
 
-    // The below routes needs X-Dashboard-User-Id
+    // The below routes needs X-Dashboard-User-Id in case of proxy authentication.
     // User context is taken from the provided header.
     // Below rotues deal only with user entity without context of merchant.
     public static $userWhitelist = [
@@ -1033,6 +1033,18 @@ final class Route
         'user_fetch',
         'user_change_password',
         'user_merchant_upgrade',
+        'invoice_create',
+        'invoice_fetch',
+        'invoice_fetch_multiple',
+        'invoice_update',
+        'invoice_issue',
+        'invoice_delete',
+        'invoice_add_line_items',
+        'invoice_update_line_item',
+        'invoice_remove_line_item_bulk',
+        'invoice_remove_line_item',
+        'invoice_send_notification_private',
+        'invoice_cancel',
     ];
 
     public static $proxy = [
