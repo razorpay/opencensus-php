@@ -36,7 +36,9 @@ export default class FileUpload extends Component {
 
   isFileTypeAllowed = file => {
     const type = file.type;
-    const acceptedTypes = this.props.accept;
+    const acceptedTypes = this.props.accept.map(
+      fileType => fileTypesMap[fileType]
+    );
     return acceptedTypes.length === 0 || acceptedTypes.indexOf(type) > -1;
   };
 
