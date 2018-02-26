@@ -56,11 +56,9 @@ class ImportCards extends Command
         $file = fopen($phoneNumbersFilePath,"r");
         while (feof($file) === false)
         {
-            $row = fgets($file);
+            $row = fgetcsv($file);
 
             if ($row === false) break;
-
-            $row = explode(",", $row);
 
             $email = trim($row[1]);
             $phone = trim($row[2]);
@@ -69,6 +67,8 @@ class ImportCards extends Command
         }
         fclose($file);
 
+
+        $count = 0;
         $file = fopen($cardsFilePath,"r");
         while (feof($file) === false)
         {
@@ -85,37 +85,59 @@ class ImportCards extends Command
                 continue;
             }
 
-            if (array_key_exists($email, $phoneNumbersMap) === false)
-            {
-                $this->error('Phone number not found for customer ' . $email);
-                continue;
-            }
-
             $request = [
                 Customer::NAME      =>  $cardDetails['name_on_card'],
                 Customer::EMAIL     =>  $cardDetails['customer_id'],
-                Customer::CONTACT   =>  $phoneNumbersMap[$email],
             ];
 
-            $customer = $core->createLocalCustomer($request, $merchant, false);
+            if (empty($request[Customer::NAME]) === true)
+            {
+                $request[Customer::NAME] = "Name";
+            }
+
+            if (isset($phoneNumbersMap[$email]) === true)
+            {
+                $request[Customer::CONTACT] =  $phoneNumbersMap[$email];
+            } else
+            {
+                $this->warn('Importing card without phone number for customer ' . $email);
+            }
+
+            try
+            {
+                $customer = $core->createLocalCustomer($request, $merchant, false);
+            }
+            catch(\Exception $e)
+            {
+                $this->error("Failed to create customer for " . $cardDetails['customer_id']);
+                continue;
+            }
 
             $card   =   [
                 'method'    =>  'card',
                 'card'      => [
                     Card::NUMBER        =>  $cardDetails['card_number'],
-                    Card::NAME          =>  $cardDetails['name_on_card'],
+                    Card::NAME          =>  $request[Customer::NAME],
                     Card::EXPIRY_MONTH  =>  $cardDetails['card_exp_month'],
                     Card::EXPIRY_YEAR   =>  $cardDetails['card_exp_year'],
                 ]
             ];
 
             $tokenCore = new Core();
-            $tokenCore->createDirectToken($customer, $card);
+            try
+            {
+                $tokenCore->createDirectToken($customer, $card);
+                $this->info("Successfully imported card ending with xx" . substr($cardDetails['card_number'], -4) . " for " . $cardDetails['customer_id']);
+                $count++;
+            }
+            catch (\Exception $e)
+            {
+                $this->error("Failed to save card for " . $cardDetails['customer_id']);
+            }
 
-            $this->info("Successfully imported card ending with xx" . substr($cardDetails['card_number'], -4) . " for " . $cardDetails['name_on_card']);
         }
         fclose($file);
 
-        $this->info("\n\n\n\nSuccessfully finished importing the cards");
+        $this->info("\n\n\n\nSuccessfully finished importing the cards. Total Cards Imported: " . $count);
     }
 }
