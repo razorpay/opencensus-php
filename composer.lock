@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "710a9e400d1f7411d2b9c444b69e748f",
+    "content-hash": "12b2469197c2e064bbd9154d155165be",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -5325,16 +5325,16 @@
         },
         {
             "name": "razorpay/trace",
-            "version": "2.0.6",
+            "version": "dev-log_reduce",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/trace.git",
-                "reference": "f8193bf83378007a4a8d8a41464b29678752885e"
+                "reference": "bbbe9722d0e1e6f03b500a466665562646062f5e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/trace/zipball/f8193bf83378007a4a8d8a41464b29678752885e",
-                "reference": "f8193bf83378007a4a8d8a41464b29678752885e",
+                "url": "https://api.github.com/repos/razorpay/trace/zipball/bbbe9722d0e1e6f03b500a466665562646062f5e",
+                "reference": "bbbe9722d0e1e6f03b500a466665562646062f5e",
                 "shasum": ""
             },
             "require": {
@@ -5384,10 +5384,10 @@
                 "trace"
             ],
             "support": {
-                "source": "https://github.com/razorpay/trace/tree/2.0.6",
+                "source": "https://github.com/razorpay/trace/tree/log_reduce",
                 "issues": "https://github.com/razorpay/trace/issues"
             },
-            "time": "2017-10-24T13:59:57+00:00"
+            "time": "2018-02-26T04:11:59+00:00"
         },
         {
             "name": "razorpay/ufh-sdk-php",
@@ -9116,6 +9116,7 @@
         "razorpay/spine": 20,
         "razorpay/upi-clients": 20,
         "graham-campbell/throttle": 20,
+        "razorpay/trace": 20,
         "razorpay/oauth": 20,
         "razorpay/ufh-sdk-php": 20,
         "codacy/coverage": 20,

@@ -108,6 +108,7 @@ class Job
 
         // Task Id needs to be set in trace
         $this->trace->processor('web')->setTaskId($this->taskId);
+        $this->trace->processor('aws')->setTaskId($this->taskId);
 
         // Sets application and db mode if $mode is set
         if ($this->mode !== null)

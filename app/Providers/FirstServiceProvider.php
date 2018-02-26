@@ -86,7 +86,7 @@ class FirstServiceProvider extends ServiceProvider
                 // header value. Otherwise, simply copy the request id to task id.
                 $taskIdHeader = $this->headers->get('X-Razorpay-TaskId');
 
-                $this->taskId = $taskIdHeader ?? $this->generateId();
+                $this->taskId = $taskIdHeader ?? $this->getId();
             }
 
             return $this->taskId;
