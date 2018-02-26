@@ -6,8 +6,11 @@ import FileUpload from 'merchant/components/File/Upload';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import { titleCase } from 'rzp/utils/rzp-utils';
 
+const MAX_FILE_SIZE = 1048576; // 1MB in bytes.
+
 export default function BatchValidateModal({
   status,
+  stagedFileStatus,
   fileUrl,
   notifyMsg,
   shouldLoadMore,
@@ -16,6 +19,8 @@ export default function BatchValidateModal({
   batchType,
   onLoadMore,
   onFileChange,
+  onBiggerFileSize,
+  onCloseClick,
   closeModal,
 }) {
   return (
@@ -23,13 +28,13 @@ export default function BatchValidateModal({
       <h4 class="modal-heading">Upload File</h4>
       <div class="modal-file">
         <FileUpload
-          accept={['csv', 'xlsx', 'xls']}
+          accept={['csv', 'xlsx']}
           uploadedFileName="Upload File here"
-          maxSize={1000000}
-          onChange={onFileChange}
-          onBiggerFileSize={() => {
-            console.log('called');
-          }}
+          maxSize={MAX_FILE_SIZE}
+          onBiggerFileSize={onBiggerFileSize}
+          onFileChange={onFileChange}
+          onCloseClick={onCloseClick}
+          stagedFileStatus={stagedFileStatus}
         />
         {notifyMsg && (
           <h5 class={`notification ${status}`}>
@@ -40,7 +45,7 @@ export default function BatchValidateModal({
       </div>
 
       {/* Show batch upload modal info when no file uploaded */}
-      {!status && (
+      {!status || status === 'exceed' ? (
         <div class="modal-info">
           <h5>
             Getting Started with Batch Uploads?{' '}
@@ -76,7 +81,7 @@ export default function BatchValidateModal({
             </Fragment>
           )}
         </div>
-      )}
+      ) : null}
 
       {/* Show batch modal error-info when file upload */}
       {fileUrl ? (

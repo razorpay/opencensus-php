@@ -12,39 +12,38 @@ export default class BatchValidate extends Component {
     shouldLoadMore: false,
     notifyMsg: null,
     fileUrl: null,
+    stagedFileStatus: null,
   };
 
   handleStateChange = (status = null, errorMsg = null, fileUrl = null) => {
     const newState = {};
-
     newState.status = status;
-    newState.notifyMsg =
-      (errorMsg ? `${errorMsg} ` : '') + notificationMsgs[status];
+    newState.stagedFileStatus = status;
+    newState.notifyMsg = status
+      ? (errorMsg ? `${errorMsg}. ` : '') + notificationMsgs[status]
+      : null;
     newState.fileUrl = fileUrl;
-
     this.setState(newState);
   };
 
-  //TODO: remove after file component is added
-  handleFileChange = e => {
-    this.setState({ file: e.target.files[0] }, this.handleBatchValidation);
-  };
-
-  handleBatchValidation = () => {
+  handleBatchValidation = file => {
     this.handleStateChange('process');
-    this.props
-      .validateBatch(this.state.file, this.props.mode)
-      .then(response => {
-        this.handleStateChange('success');
-        this.props.onValidation(response.data);
-      })
-      .catch(error => {
-        // Pass file URL if the user made a mistake in certain fields of batch file
-        const fileUrl = error.fileUrl || null;
+    setTimeout(() => {
+      this.props
+        .validateBatch(file, this.props.mode)
+        .then(response => {
+          this.handleStateChange('success');
+          setTimeout(() => {
+            this.props.onValidation(response.data);
+          }, 1000);
+        })
+        .catch(error => {
+          // Pass file URL if the user made a mistake in certain fields of batch file
+          const fileUrl = error.fileUrl || null;
 
-        this.handleStateChange('error', error.errors[0], fileUrl);
-        console.log('Errors: ', error);
-      });
+          this.handleStateChange('error', error.errors[0], fileUrl);
+        });
+    }, 1000);
   };
 
   handleLoadMore = () => {
@@ -53,11 +52,17 @@ export default class BatchValidate extends Component {
     });
   };
 
+  handleBiggerFileSize = () => {
+    this.handleStateChange('exceed');
+  };
+
   render() {
     return (
       <BatchValidateModal
         onLoadMore={this.handleLoadMore}
-        onFileChange={this.handleFileChange}
+        onFileChange={this.handleBatchValidation}
+        onBiggerFileSize={this.handleBiggerFileSize}
+        onCloseClick={this.handleStateChange}
         {...this.state}
         {...this.props}
       />
@@ -73,4 +78,5 @@ const notificationMsgs = {
     'The batch file is being processed. Please wait as this may take some time.',
   success: 'The batch file has been processed successfully.',
   error: 'Please upload the file again.',
+  exceed: 'The file size exceeds the 1MB limit. Please upload a smaller file.',
 };
