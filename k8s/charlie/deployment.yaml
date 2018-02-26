@@ -1,15 +1,17 @@
-apiVersion: apps/v1beta2
+apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: api
   namespace: charlie
+  labels:
+    name: api
 spec:
   replicas: 1
   strategy:
-    type: RollingUpdate
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 0
+    type: RollingUpdate
   selector:
     matchLabels:
       name: api
@@ -21,287 +23,417 @@ spec:
         name: api
     spec:
       nodeSelector:
-        node-role.kubernetes.io/node-api: ""
+        node-role.kubernetes.io/node-components: ""
       imagePullSecrets:
       - name: registry
+      dnsPolicy: Default
+      restartPolicy: Always
       containers:
-      - name: api-web
+      - args:
+        - web
+        command:
+        - /entrypoint.sh
         env:
         - name: APP_MODE
           valueFrom:
             configMapKeyRef:
-              name: api
               key: APP_MODE
+              name: api
         image: razorpay/api:302842
         imagePullPolicy: IfNotPresent
-        command: ["/entrypoint.sh"]
-        args: ["web"]
-        ports:
-        - containerPort: 80
-          protocol: TCP
-        resources: {}
-        volumeMounts:
-          - name: trace
-            mountPath: /app/storage/logs/
-          - name: apache
-            mountPath: /var/log/apache/
-        readinessProbe:
-          httpGet:
-            path: /commit.txt
-            port: 80
-            httpHeaders:
-              - name: Host
-                value: charlie-api.razorpay.in
-          initialDelaySeconds: 60
-          periodSeconds: 120
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - /bin/rm
+              - -f
+              - /app/public/commit.txt
+              - ;
+              - sleep
+              - "5"
+              - ;
+              - /usr/sbin/apachectl
+              - -k
+              - graceful-stop
         livenessProbe:
+          failureThreshold: 3
           httpGet:
+            httpHeaders:
+            - name: Host
+              value: charlie-api.razorpay.in
             path: /commit.txt
             port: 80
-            httpHeaders:
-              - name: Host
-                value: charlie-api.razorpay.in
+            scheme: HTTP
           initialDelaySeconds: 60
           periodSeconds: 2
-        lifecycle:
-          preStop:
-            exec:
-              command: ["/bin/rm","-f","/app/public/commit.txt",";","sleep","5",";","/usr/sbin/apachectl","-k","graceful-stop"]
-      - name: api-sqs-main
+          successThreshold: 1
+          timeoutSeconds: 1
+        name: api-web
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            httpHeaders:
+            - name: Host
+              value: charlie-api.razorpay.in
+            path: /commit.txt
+            port: 80
+            scheme: HTTP
+          initialDelaySeconds: 60
+          periodSeconds: 120
+          successThreshold: 1
+          timeoutSeconds: 1
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /app/storage/logs/
+          name: trace
+        - mountPath: /var/log/apache/
+          name: apache
+      - args:
+        - sqs
+        - "10"
+        command:
+        - /entrypoint.sh
         env:
         - name: APP_MODE
           valueFrom:
             configMapKeyRef:
-              name: api
               key: APP_MODE
+              name: api
         image: razorpay/api:302842
         imagePullPolicy: IfNotPresent
-        command: ["/entrypoint.sh"]
-        args: ["sqs", "10"]
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - /usr/bin/php
+              - artisan
+              - down
+        name: api-sqs-main
         ports:
         - containerPort: 80
           protocol: TCP
         resources: {}
-        lifecycle:
-          preStop:
-            exec:
-              command: ["/usr/bin/php","artisan","down"]
-      - name: api-sqs-gen-live
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      - args:
+        - sqs_multi_default
+        - api-gen-live
+        - "10"
+        command:
+        - /entrypoint.sh
         env:
         - name: APP_MODE
           valueFrom:
             configMapKeyRef:
-              name: api
               key: APP_MODE
+              name: api
         image: razorpay/api:302842
         imagePullPolicy: IfNotPresent
-        command: ["/entrypoint.sh"]
-        args: ["sqs_multi_default", "api-gen-live", "10"]
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - /usr/bin/php
+              - artisan
+              - down
+        name: api-sqs-gen-live
         ports:
         - containerPort: 80
           protocol: TCP
         resources: {}
-        lifecycle:
-          preStop:
-            exec:
-              command: ["/usr/bin/php", "artisan", "down"]
-      - name: api-sqs-gen-test
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      - args:
+        - sqs_multi_default
+        - api-gen-test
+        - "20"
+        command:
+        - /entrypoint.sh
         env:
         - name: APP_MODE
           valueFrom:
             configMapKeyRef:
-              name: api
               key: APP_MODE
+              name: api
         image: razorpay/api:302842
         imagePullPolicy: IfNotPresent
-        command: ["/entrypoint.sh"]
-        args: ["sqs_multi_default", "api-gen-test", "20"]
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - /usr/bin/php
+              - artisan
+              - down
+        name: api-sqs-gen-test
         ports:
         - containerPort: 80
           protocol: TCP
         resources: {}
-        lifecycle:
-          preStop:
-            exec:
-              command: ["/usr/bin/php", "artisan", "down"]
-      - name: api-sqs-webhooks-live
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      - args:
+        - sqs_multi_default
+        - webhooks-live
+        - "10"
+        command:
+        - /entrypoint.sh
         env:
         - name: APP_MODE
           valueFrom:
             configMapKeyRef:
-              name: api
               key: APP_MODE
+              name: api
         image: razorpay/api:302842
         imagePullPolicy: IfNotPresent
-        command: ["/entrypoint.sh"]
-        args: ["sqs_multi_default", "webhooks-live", "10"]
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - /usr/bin/php
+              - artisan
+              - down
+        name: api-sqs-webhooks-live
         ports:
         - containerPort: 80
           protocol: TCP
         resources: {}
-        lifecycle:
-          preStop:
-            exec:
-              command: ["/usr/bin/php", "artisan", "down"]
-      - name: api-sqs-webhooks-test
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      - args:
+        - sqs_multi_default
+        - webhooks-test
+        - "20"
+        command:
+        - /entrypoint.sh
         env:
         - name: APP_MODE
           valueFrom:
             configMapKeyRef:
-              name: api
               key: APP_MODE
+              name: api
         image: razorpay/api:302842
         imagePullPolicy: IfNotPresent
-        command: ["/entrypoint.sh"]
-        args: ["sqs_multi_default", "webhooks-test", "20"]
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - /usr/bin/php
+              - artisan
+              - down
+        name: api-sqs-webhooks-test
         ports:
         - containerPort: 80
           protocol: TCP
         resources: {}
-        lifecycle:
-          preStop:
-            exec:
-              command: ["/usr/bin/php", "artisan", "down"]
-      - name: api-sqs-webhooks-failure
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      - args:
+        - sqs_multi_default
+        - webhooks-failure
+        - "10"
+        command:
+        - /entrypoint.sh
         env:
         - name: APP_MODE
           valueFrom:
             configMapKeyRef:
-              name: api
               key: APP_MODE
+              name: api
         image: razorpay/api:302842
         imagePullPolicy: IfNotPresent
-        command: ["/entrypoint.sh"]
-        args: ["sqs_multi_default", "webhooks-failure", "10"]
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - /usr/bin/php
+              - artisan
+              - down
+        name: api-sqs-webhooks-failure
         ports:
         - containerPort: 80
           protocol: TCP
         resources: {}
-        lifecycle:
-          preStop:
-            exec:
-              command: ["/usr/bin/php", "artisan", "down"]
-      - name: api-sqs-invoice-email
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      - args:
+        - sqs_multi_default
+        - invoice-emails
+        - "10"
+        command:
+        - /entrypoint.sh
         env:
         - name: APP_MODE
           valueFrom:
             configMapKeyRef:
-              name: api
               key: APP_MODE
+              name: api
         image: razorpay/api:302842
         imagePullPolicy: IfNotPresent
-        command: ["/entrypoint.sh"]
-        args: ["sqs_multi_default", "invoice-emails", "10"]
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - /usr/bin/php
+              - artisan
+              - down
+        name: api-sqs-invoice-email
         ports:
         - containerPort: 80
           protocol: TCP
         resources: {}
-        lifecycle:
-          preStop:
-            exec:
-              command: ["/usr/bin/php", "artisan", "down"]
-      - name: api-sqs-invoice-reports
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      - args:
+        - sqs_multi_default
+        - invoice-reports
+        - "10"
+        command:
+        - /entrypoint.sh
         env:
         - name: APP_MODE
           valueFrom:
             configMapKeyRef:
-              name: api
               key: APP_MODE
+              name: api
         image: razorpay/api:302842
         imagePullPolicy: IfNotPresent
-        command: ["/entrypoint.sh"]
-        args: ["sqs_multi_default", "invoice-reports", "10"]
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - /usr/bin/php
+              - artisan
+              - down
+        name: api-sqs-invoice-reports
         ports:
         - containerPort: 80
           protocol: TCP
         resources: {}
-        lifecycle:
-          preStop:
-            exec:
-              command: ["/usr/bin/php", "artisan", "down"]
-      - name: api-sqs-es-sync
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      - args:
+        - sqs_multi_default
+        - es-sync
+        - "10"
+        command:
+        - /entrypoint.sh
         env:
         - name: APP_MODE
           valueFrom:
             configMapKeyRef:
-              name: api
               key: APP_MODE
+              name: api
         image: razorpay/api:302842
         imagePullPolicy: IfNotPresent
-        command: ["/entrypoint.sh"]
-        args: ["sqs_multi_default", "es-sync", "10"]
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - /usr/bin/php
+              - artisan
+              - down
+        name: api-sqs-es-sync
         ports:
         - containerPort: 80
           protocol: TCP
         resources: {}
-        lifecycle:
-          preStop:
-            exec:
-              command: ["/usr/bin/php", "artisan", "down"]
-      - name: api-sqs-emails
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      - args:
+        - sqs_multi_default
+        - emails
+        - "10"
+        command:
+        - /entrypoint.sh
         env:
         - name: APP_MODE
           valueFrom:
             configMapKeyRef:
-              name: api
               key: APP_MODE
+              name: api
         image: razorpay/api:302842
         imagePullPolicy: IfNotPresent
-        command: ["/entrypoint.sh"]
-        args: ["sqs_multi_default", "emails", "10"]
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - /usr/bin/php
+              - artisan
+              - down
+        name: api-sqs-emails
         ports:
         - containerPort: 80
           protocol: TCP
         resources: {}
-        lifecycle:
-          preStop:
-            exec:
-              command: ["/usr/bin/php", "artisan", "down"]
-      - name: api-sqs-subscription-charge
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      - args:
+        - sqs_multi_default
+        - subscription-charge
+        - "10"
+        command:
+        - /entrypoint.sh
         env:
         - name: APP_MODE
           valueFrom:
             configMapKeyRef:
-              name: api
               key: APP_MODE
+              name: api
         image: razorpay/api:302842
         imagePullPolicy: IfNotPresent
-        command: ["/entrypoint.sh"]
-        args: ["sqs_multi_default", "subscription-charge", "10"]
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - /usr/bin/php
+              - artisan
+              - down
+        name: api-sqs-subscription-charge
         ports:
         - containerPort: 80
           protocol: TCP
         resources: {}
-        lifecycle:
-          preStop:
-            exec:
-              command: ["/usr/bin/php", "artisan", "down"]
-      - name: api-sqs-batch
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      - args:
+        - sqs_multi_default
+        - batch
+        - "10"
+        command:
+        - /entrypoint.sh
         env:
         - name: APP_MODE
           valueFrom:
             configMapKeyRef:
-              name: api
               key: APP_MODE
+              name: api
         image: razorpay/api:302842
         imagePullPolicy: IfNotPresent
-        command: ["/entrypoint.sh"]
-        args: ["sqs_multi_default", "batch", "10"]
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - /usr/bin/php
+              - artisan
+              - down
+        name: api-sqs-batch
         ports:
         - containerPort: 80
           protocol: TCP
         resources: {}
-        lifecycle:
-          preStop:
-            exec:
-              command: ["/usr/bin/php", "artisan", "down"]
-      terminationGracePeriodSeconds: 60
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
       volumes:
-      - name: trace
-        hostPath:
+      - hostPath:
           path: /var/log/fluentd/splunk/api/trace
-      - name: apache
-        hostPath:
+          type: ""
+        name: trace
+      - hostPath:
           path: /var/log/fluentd/splunk/api/apache
-      dnsPolicy: ClusterFirst
-      restartPolicy: Always
+          type: ""
+        name: apache
