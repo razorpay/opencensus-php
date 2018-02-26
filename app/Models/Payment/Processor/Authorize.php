@@ -1053,9 +1053,6 @@ trait Authorize
                 ]);
         }
 
-        // We ensure that the e_mandate feature has been enabled for the merchant
-        $this->verifyFeatureForMerchant($payment->merchant, Feature\Constants::E_MANDATE);
-
         //
         // TODO: This is broken still. We should not be accepting any token
         // in private auth also for first recurring. But, in private auth,
