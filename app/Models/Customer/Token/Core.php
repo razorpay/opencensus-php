@@ -3,6 +3,7 @@
 namespace RZP\Models\Customer\Token;
 
 use Carbon\Carbon;
+use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Customer;
@@ -186,8 +187,8 @@ class Core extends Base\Core
     /**
      * @param string $id
      * @param string $customerId
-     *
      * @return Entity
+     * @throws Exception\BadRequestException
      */
     public function getByTokenIdAndCustomerId(string $id, string $customerId)
     {
@@ -196,6 +197,17 @@ class Core extends Base\Core
         if ($token === null)
         {
             $token = $this->repo->token->getByTokenIdAndCustomerId($id, $customerId);
+
+            if ($token === null)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_SUBSCRIPTION_CUSTOMER_TOKEN_NOT_FOUND,
+                    null,
+                    [
+                        'token_id'          => $id,
+                        'customer_id'       => $customerId
+                    ]);
+            }
         }
 
         return $token;

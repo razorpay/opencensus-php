@@ -84,7 +84,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Token\Entity::CUSTOMER_ID, '=', $customerId)
                     ->where(Token\Entity::ID, '=', $tokenId)
-                    ->firstOrFail();
+                    ->first();
     }
 
     public function getByWalletTerminalAndCustomerId($wallet, $terminal, $customer)
