@@ -1,3 +1,5 @@
+import { prefixEntityValue } from 'common/data';
+
 import Time from 'rzp/ui/Time';
 import CheckIcon from 'rzp/ui/CheckIcon';
 import TableBody from 'rzp/ui/TableBody';
@@ -8,7 +10,7 @@ const AccountsListItem = ({ account, onEdit }) => {
     <EntityItemRow id={account.id}>
       <td>
         <a onClick={onEdit}>
-          <code>{`acc_${account.id}`}</code>
+          <code>{prefixEntityValue('account', account.id)}</code>
         </a>
       </td>
       <td>{account.email}</td>

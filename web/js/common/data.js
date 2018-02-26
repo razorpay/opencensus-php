@@ -2,6 +2,7 @@ export const testMerchantId = '10000000000000';
 import { snakeToTitleCase } from './util';
 
 export const entity2Prefix = {
+  account: 'acc',
   balance_account: 'ba',
   balance_transfer: 'bt',
   card: 'card',
@@ -219,5 +220,7 @@ export const statusPill = (status, emptyValue = '--') => {
     <span class={`pill ${statusPillClasses[status] || 'label-semi-muted'}`}>
       {snakeToTitleCase(status)}
     </span>
-  ) : emptyValue
+  ) : (
+    emptyValue
+  );
 };
