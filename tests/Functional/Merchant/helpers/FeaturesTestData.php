@@ -11,7 +11,7 @@ return [
             'content' => [
                 'features'      => [ ],
             ],
-            'url' => '/merchants/public/features',
+            'url' => '/merchants/10000000000000/features',
             'method' => 'post',
             'server' => [
                 'HTTP_X-Dashboard'            => 'true',
@@ -338,7 +338,7 @@ return [
 
     'testGetFeaturesAsMerchant' => [
         'request' => [
-            'url' => '/merchants/public/features',
+            'url' => '/merchants/10000000000000/features',
             'method' => 'get'
         ],
         'response' => [
@@ -378,7 +378,7 @@ return [
                 ],
                 'optout_reason' => 'some reason'
             ],
-            'url' => '/merchants/public/features',
+            'url' => '/merchants/10000000000000/features',
             'method' => 'post',
             'server' => [
                 'HTTP_X-Dashboard'            => 'true',
@@ -398,7 +398,7 @@ return [
                     'dummy' => '1'
                 ]
             ],
-            'url' => '/merchants/public/features',
+            'url' => '/merchants/10000000000000/features',
             'method' => 'post'
         ],
         'response' => [
@@ -489,7 +489,7 @@ return [
                     'marketplace' => '1',
                 ]
             ],
-            'url' => '/merchants/public/features',
+            'url' => '/merchants/10000000000000/features',
             'method' => 'post',
             'server' => [
                 'HTTP_X-Dashboard'            => 'true',
