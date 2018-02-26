@@ -58,8 +58,6 @@ class SharpGatewayTest extends TestCase
     {
         $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
 
-        $this->fixtures->merchant->addFeatures(['upi_intent']);
-
         $payment = $this->getDefaultUpiPaymentArray();
 
         unset($payment['description']);
@@ -87,8 +85,6 @@ class SharpGatewayTest extends TestCase
     public function testFailedIntentPayment()
     {
         $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
-
-        $this->fixtures->merchant->addFeatures(['upi_intent']);
 
         $payment = $this->getDefaultUpiPaymentArray();
 

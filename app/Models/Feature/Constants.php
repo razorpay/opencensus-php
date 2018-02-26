@@ -56,10 +56,10 @@ class Constants
     const ALLOW_DC_RECURRING            = 'allow_dc_recurring';
     const SKIP_HOLD_FUNDS_ON_PAYOUT     = 'skip_hold_funds_on_payout';
     const REPORT_V2                     = 'report_v2';
-    const UPI_INTENT                    = 'upi_intent';
     const CORPORATE_BANKS               = 'corporate_banks';
     const MAGIC                         = 'magic';
     const NEW_ANALYTICS                 = 'new_analytics';
+    const DISABLE_UPI_INTENT            = 'disable_upi_intent';
 
     // Orders
     const ORDER_ID_MANDATORY            = 'order_id_mandatory';
@@ -133,12 +133,12 @@ class Constants
         self::ALLOW_DC_RECURRING            => true,
         self::SKIP_HOLD_FUNDS_ON_PAYOUT     => true,
         self::REPORT_V2                     => true,
-        self::UPI_INTENT                    => true,
         self::CORPORATE_BANKS               => true,
         self::ORDER_ID_MANDATORY            => true,
         self::ORDER_RECEIPT_UNIQUE          => true,
         self::MAGIC                         => true,
         self::NEW_ANALYTICS                 => true,
+        self::DISABLE_UPI_INTENT            => true,
     ];
 
     // Keys used in the feature on-boarding workflow

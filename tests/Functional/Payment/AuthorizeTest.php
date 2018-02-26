@@ -576,7 +576,7 @@ class AuthorizeTest extends TestCase
     {
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_icici_terminal');
 
-        $this->fixtures->merchant->addFeatures(['s2supi', 'upi_intent']);
+        $this->fixtures->merchant->addFeatures(['s2supi']);
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
 
