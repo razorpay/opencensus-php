@@ -12,7 +12,7 @@ COPY ./dockerconf/entrypoint.sh /entrypoint.sh
 
 WORKDIR /app
 
-apk add --virtual .node-deps --update nodejs nodejs-npm
+RUN apk add --virtual .node-deps --update nodejs nodejs-npm
 
 RUN chown -R nginx.nginx /app && \
     composer config -g github-oauth.github.com ${GIT_TOKEN} && \
