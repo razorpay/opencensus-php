@@ -160,8 +160,8 @@ class Throttler
 
         $ip = $this->isPublicAuth() ? $this->request->ip() : '';
 
-        // E.g.: payments_create:live:private::10000000000000:
-        return implode(':', [$this->route, $this->mode, $this->auth, $this->oauthAppId, $id, $ip]);
+        // E.g.: payments_create:live:private:0::10000000000000:
+        return implode(':', [$this->route, $this->mode, $this->auth, (int) $this->proxy, $this->oauthAppId, $id, $ip]);
     }
 
     private function getThrottleRateValue(): int
@@ -210,14 +210,17 @@ class Throttler
         // }
         //
 
+        // Boolean value doesn't get type-casted to string properly
+        $proxy = (int) $this->proxy;
+
                 // Value for given mid/application id, mode, auth & route
-        return $this->settings[K::ID_LEVEL]["{$this->mode}:{$this->auth}:{$this->route}:{$key}"] ??
+        return $this->settings[K::ID_LEVEL]["{$this->mode}:{$this->auth}:{$proxy}:{$this->route}:{$key}"] ??
                 // Value for given mid/application id, mode & auth
-                $this->settings[K::ID_LEVEL]["{$this->mode}:{$this->auth}:{$key}"] ??
+                $this->settings[K::ID_LEVEL]["{$this->mode}:{$this->auth}:{$proxy}:{$key}"] ??
                 // Value for given mode, auth & route
-                $this->settings[K::GLOBAL]["{$this->mode}:{$this->auth}:{$this->route}:{$key}"] ??
+                $this->settings[K::GLOBAL]["{$this->mode}:{$this->auth}:{$proxy}:{$this->route}:{$key}"] ??
                 // Value for given mode & auth
-                $this->settings[K::GLOBAL]["{$this->mode}:{$this->auth}:{$key}"] ??
+                $this->settings[K::GLOBAL]["{$this->mode}:{$this->auth}:{$proxy}:{$key}"] ??
                 $default;
     }
 

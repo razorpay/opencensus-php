@@ -38,6 +38,7 @@ trait HasRequestContext
     // in throttle core logic we construct throttle key using the one available.
     //
 
+    private $keyWithoutPrefix;
     private $keyId;
     private $mid;
     private $oauthAppId;
@@ -45,6 +46,7 @@ trait HasRequestContext
     private $internalAppName;
     private $adminEmail;
     private $device;
+    private $proxy = false;
 
     private function initRequestContextVars(Request $request)
     {
@@ -73,76 +75,117 @@ trait HasRequestContext
 
         $this->validateKeyLen($key);
 
-        $this->key    = $key;
-        $this->mode   = substr($key, 4, 4);
-        $this->secret = $this->request->getPassword();
+        $this->key              = $key;
+        $this->keyWithoutPrefix = substr($key, 9);
+        $this->mode             = substr($key, 4, 4);
+        $this->secret           = $this->request->getPassword();
     }
 
     private function setAdditionalVars()
     {
-        $key = substr($this->key, 9); // Excluding rzp_test_ prefix
-
-        if (in_array($this->route, Route::$internal, true) === true)
+        if ($this->setAdditionalVarsForPublicAuth() == true)
         {
-            $this->auth        = Type::PRIVILEGE_AUTH;
-            $this->internalapp = $this->getInternalAppName($secret);
+            $this->auth = Type::PUBLIC_AUTH;
         }
-        else if (in_array($this->route, Route::$admin, true) === true)
-        {
-            $this->auth       = Type::ADMIN_AUTH;
-            $this->adminEmail = $request->headers(RequestHeader::X_DASHBOARD_ADMIN_EMAIL);
-        }
-        else if ((in_array($this->route, Route::$private, true) === true) and
-                 (empty($token = $this->getBearerToken()) === false))
+        else if ($this->setAdditionalVarsForPrivateAuth() == true)
         {
             $this->auth = Type::PRIVATE_AUTH;
+        }
+        else if ($this->setAdditionalVarsForDirectAuth() == true)
+        {
+            $this->auth = Type::DIRECT_AUTH;
+        }
+        else if ($this->setAdditionalVarsForPrivilegeAuth() == true)
+        {
+            $this->auth = Type::PRIVILEGE_AUTH;
+        }
+        else if ($this->setAdditionalVarsForDeviceAuth() == true)
+        {
+            $this->auth = Type::DEVICE_AUTH;
+        }
+        else
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+        }
+    }
 
+    private function setAdditionalVarsForPublicAuth()
+    {
+        if ((in_array($this->route, Route::$public, true) === true) and
+            ($this->isKeyOAuthPublicToken() === true))
+        {
+            // Further excludes "oauth_" part
+            $this->oauthPublicToken = substr($this->keyWithoutPrefix, 6);
+            return true;
+        }
+        else if ((in_array($this->route, Route::$public, true) === true) or
+                 (in_array($this->route, Route::$publicCallback, true) === true))
+        {
+            $this->keyId = $this->keyWithoutPrefix;
+            return true;
+        }
+
+        return false;
+    }
+
+    private function setAdditionalVarsForPrivateAuth()
+    {
+        if ((in_array($this->route, Route::$private, true) === true) and
+            (empty($token = $this->getBearerToken()) === false))
+        {
             $parsed           = (new Parser)->parse($token);
             $this->oauthAppId = $parsed->getClaim('aud');
             $this->mid        = $parsed->getClaim('merchant_id');
+            return true;
         }
-        else if ((in_array($this->route, Route::$private, true) === true) and
-                 ($this->isDashboard() === true))
+        else if (((in_array($this->route, Route::$private, true) === true) and
+                    ($this->isDashboard() === true)) or
+                    (in_array($this->route, Route::$proxy, true) === true))
         {
-            $this->auth = Type::PROXY_AUTH;
-            $this->mid  = $key;
+            $this->mid  = $this->keyWithoutPrefix;
+            $this->proxy = true;
+            return true;
         }
         else if ((in_array($this->route, Route::$private, true) === true) and
                  ($this->isDashboard() === false))
         {
-            $this->auth  = Type::PRIVATE_AUTH;
-            $this->keyId = $key;
+            $this->keyId = $this->keyWithoutPrefix;
+            return true;
         }
-        else if ((in_array($this->route, Route::$public, true) === true) and
-                 ($this->isKeyOAuthPublicToken() === true))
+
+        return false;
+    }
+
+    private function setAdditionalVarsForDirectAuth()
+    {
+        return in_array($this->route, Route::$direct, true);
+    }
+
+    private function setAdditionalVarsForPrivilegeAuth()
+    {
+        if (in_array($this->route, Route::$internal, true) === true)
         {
-            $this->auth             = Type::PUBLIC_AUTH;
-            $this->oauthPublicToken = substr($key, 6); // Further excludes oauth_ part :)
+            $this->internalapp = $this->getInternalAppName();
+            return true;
         }
-        else if (in_array($this->route, Route::$public, true) === true)
+        else if (in_array($this->route, Route::$admin, true) === true)
         {
-            $this->auth  = Type::PUBLIC_AUTH;
-            $this->keyId = $key;
+            $this->adminEmail = $this->request->headers(RequestHeader::X_DASHBOARD_ADMIN_EMAIL);
+            return true;
         }
-        else if (in_array($this->route, Route::$publicCallback, true) === true)
+
+        return false;
+    }
+
+    private function setAdditionalVarsForDeviceAuth()
+    {
+        if (in_array($this->route, Route::$device, true) === true)
         {
-            $this->auth  = Type::PUBLIC_AUTH;
-            $this->keyId = $key;
+            $this->device = $this->secret;
+            return true;
         }
-        else if (in_array($this->route, Route::$proxy, true) === true)
-        {
-            $this->auth = Type::PROXY_AUTH;
-            $this->mid  = $key;
-        }
-        else if (in_array($this->route, Route::$device, true) === true)
-        {
-            $this->auth   = Type::DEVICE_AUTH;
-            $this->device = $secret;
-        }
-        else if (in_array($this->route, Route::$direct, true) === true)
-        {
-            $this->auth = Type::DIRECT_AUTH;
-        }
+
+        return false;
     }
 
     private function getInternalAppName()
