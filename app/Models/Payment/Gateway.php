@@ -563,7 +563,7 @@ class Gateway
     ];
 
     /**
-     * TODO: This needs to be removed after we migrate all the gateways to
+     * @todo: https://razorpay.atlassian.net/projects/GL/issues/GL-315
      *
      * @var array
      */
