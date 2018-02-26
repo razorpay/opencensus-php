@@ -94,18 +94,6 @@ class Validator extends Base\Validator
         Entity::OLD_PASSWORD          => 'required|string',
     ];
 
-    /**
-     * @deprecated Ref: #4216
-     */
-    protected static $filterRules = [
-        self::SUSPENDED         => 'sometimes|boolean',
-        self::ARCHIVED          => 'sometimes|boolean',
-        self::ACTIVATED         => 'sometimes|boolean',
-        self::PENDING           => 'sometimes|boolean',
-        self::DEAD              => 'sometimes|boolean',
-        self::SUB_ACCOUNTS      => 'sometimes',
-    ];
-
     protected static $createValidators = [
         Entity::PASSWORD
     ];
