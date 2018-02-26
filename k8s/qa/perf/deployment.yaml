@@ -1,0 +1,77 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: dashboard
+  namespace: perf
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      name: dashboard
+  template:
+    metadata:
+      annotations:
+        iam.amazonaws.com/role: iam-echo-dashboard
+      labels:
+        name: dashboard
+    spec:
+      nodeSelector:
+        node-role.kubernetes.io/node-services: ""
+      imagePullSecrets:
+      - name: registry
+      containers:
+      - env:
+        - name: APP_MODE
+          valueFrom:
+            configMapKeyRef:
+              name: dashboard
+              key: APP_MODE
+        name: perf
+        image: razorpay/dashboard:1dd5360f9c7b9639cc703d0304a39f562d24b642
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        resources: {}
+        volumeMounts:
+          - name: trace
+            mountPath: /app/storage/logs/
+          - name: nginx
+            mountPath: /var/log/nginx/
+#        readinessProbe:
+#          httpGet:
+#            path: /v1/status
+#            port: 80
+#            httpHeaders:
+#              - name: Host
+#                value: echo-dashboard.razorpay.in
+#          initialDelaySeconds: 60
+#          periodSeconds: 120
+#        livenessProbe:
+#          httpGet:
+#            path: /commit.txt
+#            port: 80
+#            httpHeaders:
+#              - name: Host
+#                value: echo-dashboard.razorpay.in
+#          initialDelaySeconds: 60
+#          periodSeconds: 2
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/bin/rm","-f","/app/public/commit.txt",";","sleep","5",";","/usr/sbin/nginx","-s","quit"]
+      terminationGracePeriodSeconds: 60
+      volumes:
+      - name: trace
+        hostPath:
+          path: /var/log/fluentd/splunk/perf/trace
+      - name: nginx
+        hostPath:
+          path: /var/log/fluentd/splunk/perf/nginx
+      dnsPolicy: Default
+      restartPolicy: Always
