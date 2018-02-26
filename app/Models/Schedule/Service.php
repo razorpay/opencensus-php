@@ -124,6 +124,11 @@ class Service extends Base\Service
         // In case of reporting type we need to call the reporting service
         if ($type === ScheduleTask\Type::REPORTING)
         {
+            if (count($scheduleTasksToProcess) === 0)
+            {
+                return [];
+            }
+            
             $reportingService = new Reporting();
 
             $response = $reportingService->triggerSchedule($scheduleTasksToProcess);
@@ -135,7 +140,10 @@ class Service extends Base\Service
                 // We need to get all success_ids and mark their next run.
                 foreach ($successIds as $successId)
                 {
-                    $scheduleTask = $this->repo->schedule_task->findOrFailPublic($successId);
+                    // We need to do a substr, as we need to strp `sched_`
+                    $successId = substr($successId, 6);
+
+                    $scheduleTask = $this->repo->schedule_task->fetchByEntity($successId);
 
                     $scheduleTask->updateNextRunAndLastRun(false);
 
