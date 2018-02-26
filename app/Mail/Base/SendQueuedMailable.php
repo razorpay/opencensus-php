@@ -25,7 +25,6 @@ class SendQueuedMailable extends BaseSendQueuedMailable
 
         // Task Id needs to be set in trace
         $trace->processor('web')->setTaskId($this->mailable->taskId);
-        $trace->processor('aws')->setTaskId($this->mailable->taskId);
 
         parent::handle($mailer);
     }
