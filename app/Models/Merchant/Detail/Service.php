@@ -92,7 +92,7 @@ class Service extends Base\Service
 
         $merchantDetails->edit($input);
 
-        $params = $this->storeActivationFile($merchant, $merchantDetails, $input);
+        $params = $this->storeActivationFile($merchantDetails, $input);
 
         $merchantDetails->fill($params);
 
@@ -106,13 +106,12 @@ class Service extends Base\Service
     }
 
     public function storeActivationFile(
-        Merchant\Entity $merchant,
         Merchant\Detail\Entity $merchantDetails,
-        array $input
-    )
+        array $input)
     {
-
         $params = [];
+
+        $merchant = $merchantDetails->merchant;
 
         foreach ($input as $key => $value)
         {
@@ -130,17 +129,6 @@ class Service extends Base\Service
 
             $params[$key] = FileStore\Entity::verifyIdAndSilentlyStripSign($file['id']);
         }
-
-        return $params;
-    }
-
-    public function uploadActivationFileTemporarily(Merchant\Entity $merchant, array $input)
-    {
-        $core = new Core;
-
-        $merchantDetails = $core->getMerchantDetails($merchant, $input);
-
-        $params = $this->storeActivationFile($merchant, $merchantDetails, $input);
 
         return $params;
     }
@@ -216,8 +204,10 @@ class Service extends Base\Service
     {
         $core = new FileStore\Core;
 
-        return $core->getSignedUrl($fileStoreId, $merchantId);
+        // [ id1 => url1, id2 => url2, ... ]
+        $signedUrls = $core->getSignedUrl($fileStoreId, $merchantId);
 
+        return $signedUrls;
     }
 
     private function getFieldsToStepMap() : array

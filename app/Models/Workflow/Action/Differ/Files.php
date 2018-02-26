@@ -2,11 +2,11 @@
 
 namespace RZP\Models\Workflow\Action\Differ;
 
-use RZP\Models\Merchant\Detail\Entity as MDE;
+use RZP\Models\Merchant\Detail;
 
 class Files
 {
-    const ADDRESS_PROOF_URL = MDE::ADDRESS_PROOF_URL;
+    const ADDRESS_PROOF_URL = Detail\Entity::ADDRESS_PROOF_URL;
 
     public static function exists($type)
     {

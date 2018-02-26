@@ -64,11 +64,9 @@ class Workflow
 
         // Disable workflows if:
         // - It is mocked
-        // - If the maker isn't one of Admin or Merchant
-        if ($this->config->get('heimdall.workflows.mock') === true or
-            $maker === false or
-            empty($this->ba->getOrgId()) == true
-        )
+        // - The maker isn't an Admin or Merchant
+        if (($this->config->get('heimdall.workflows.mock') === true) or
+            ($maker === false))
         {
             return $next($request);
         }
@@ -77,8 +75,7 @@ class Workflow
         {
             $permission = $this->getRoutePermission($routeName);
 
-            // Workflows for EXCLUDED_PERMISSIONS will be triggered from inside
-            // the code.
+            // Workflows for EXCLUDED_PERMISSIONS will be triggered from inside the code
             if (in_array($permission, self::EXCLUDED_PERMISSIONS, true) === true)
             {
                 // Set the default permission in workflow service
@@ -88,8 +85,19 @@ class Workflow
                 return $next($request);
             }
 
+            // ba->getOrgId() returns route's org ID, not maker's org ID
+            // This will also work when RZP admin tries to hit route for HDFC
+            // but yes the admin can spoof the call by passing random org_id in $input
+            // note: this will only happen for Route::$crossOrgRoutes since for all
+            // other routes we have a strict check of admin->org === route->org
+            //
+            // So only RZP admins can exploit this, can figure out a solution later
+            // when this is a "real" issue.
             $permissionHasWorkflow = (new WorkflowService)->permissionHasWorkflow(
                 $permission, $this->ba->getOrgId());
+
+            // rzp admin -> hdfc bank_account_update
+            // rzp P1 no workflow
 
             // If the permissions has no workflow assigned to it
             // then let's not apply any maker-checker process

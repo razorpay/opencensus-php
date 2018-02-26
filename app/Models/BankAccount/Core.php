@@ -97,32 +97,18 @@ class Core extends Base\Core
         // Upload the file and get the file id
         if (isset($input[Detail\Entity::ADDRESS_PROOF_URL]) === true)
         {
-
             // upload the file and then add the file id in the array
             if (is_object($input[Detail\Entity::ADDRESS_PROOF_URL]) === true)
             {
-                $mds = new Detail\Service();
-                $uploadedFileIds = $mds->uploadActivationFileTemporarily(
-                    $merchant,
-                    array(Detail\Entity::ADDRESS_PROOF_URL => $input[Detail\Entity::ADDRESS_PROOF_URL])
-                );
-
-                if (is_array($uploadedFileIds) === false or
-                    empty($uploadedFileIds) === true or
-                    isset($uploadedFileIds[Detail\Entity::ADDRESS_PROOF_URL]) === false)
-                {
-                    throw new Exception\ServerErrorException(
-                        'Server error getting repeated for payment callback',
-                        ErrorCode::SERVER_ERROR);
-                }
-
-                $input[Detail\Entity::ADDRESS_PROOF_URL] = $uploadedFileIds[Detail\Entity::ADDRESS_PROOF_URL];
+                $input = $this->uploadAddressProof($merchant, $input);
             }
 
             $newBankAccountArray[Detail\Entity::ADDRESS_PROOF_URL] = $input[Detail\Entity::ADDRESS_PROOF_URL];
 
             $oldBankAccountArray[Detail\Entity::ADDRESS_PROOF_URL] = (new Detail\Core())
-                ->getMerchantDetails($merchant)->getAddressProofFile();
+                ->getMerchantDetails($merchant)
+                ->getAddressProofFile();
+
             // to replace the file with file id in request for workflow payload
             $this->app['request']->replace($input);
         }
@@ -144,6 +130,8 @@ class Core extends Base\Core
 
                 if ($merchantDetails !== null)
                 {
+                    // Doing a fill only for ADDRESS_PROOF_URL because Details\Validator
+                    // expects it to be a file object where as we're passing a File ID.
                     $merchantDetails->fill($input);
 
                     $merchantDetails->edit($detail);
@@ -153,6 +141,33 @@ class Core extends Base\Core
 
                 return $ba;
             });
+    }
+
+    protected function uploadAddressProof($merchant, $input)
+    {
+        $merchantDetailService = new Detail\Service();
+
+        $merchantDetails = $merchantDetailService->core()->getMerchantDetails($merchant);
+
+        $fileInputs = [
+            Detail\Entity::ADDRESS_PROOF_URL => $input[Detail\Entity::ADDRESS_PROOF_URL]
+        ];
+
+        $uploadedFileIds = $merchantDetailService->storeActivationFile(
+            $merchantDetails,
+            $fileInputs);
+
+        if ((is_array($uploadedFileIds) === false) or
+            (isset($uploadedFileIds[Detail\Entity::ADDRESS_PROOF_URL]) === false))
+        {
+            throw new Exception\ServerErrorException(
+                'Address Proof URL upload failed.',
+                ErrorCode::SERVER_ERROR);
+        }
+
+        $input[Detail\Entity::ADDRESS_PROOF_URL] = $uploadedFileIds[Detail\Entity::ADDRESS_PROOF_URL];
+
+        return $input;
     }
 
     public function updateBeneficiaryCodes()

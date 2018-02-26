@@ -19,7 +19,7 @@ use Conner\Tagging\Taggable;
 use RZP\Models\Merchant\Detail;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\Traits\NotesTrait;
-use RZP\Models\Workflow\Action\Entity as WAE;
+use RZP\Models\Workflow\Action;
 
 /**
  * @property Detail\Entity $merchantDetail
@@ -606,7 +606,7 @@ class Entity extends Base\PublicEntity
 
     public function workflows()
     {
-        return $this->morphMany('RZP\Models\Workflow\Action\Entity', WAE::MAKER);
+        return $this->morphMany(Action\Entity::class, Action\Entity::MAKER);
     }
 
     public function merchantDetail()

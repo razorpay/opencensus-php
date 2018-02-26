@@ -408,11 +408,13 @@ class Service
 
     public function getWorkflowMaker()
     {
+        // If admin auth then return Admin
         if ($this->ba->isAdminAuth() === true)
         {
             return $this->ba->getAdmin();
         }
 
+        // If any other auth but admin then return merchant
         if ($this->ba->getMerchant() !== null)
         {
             return $this->ba->getMerchant();
@@ -428,11 +430,6 @@ class Service
             return MakerType::ADMIN;
         }
 
-        if ($this->ba->getMerchant() !== null)
-        {
-            return MakerType::MERCHANT;
-        }
-
-        return false;
+        return MakerType::MERCHANT;
     }
 }
