@@ -176,7 +176,7 @@ class Core extends Base\Core
         //
         // We allow netbanking recurring only for certain merchants
         //
-        if ($methods->isEmandateEnabled() === true)
+        if ($methods->isEmandateEnabled() === false)
         {
             return;
         }

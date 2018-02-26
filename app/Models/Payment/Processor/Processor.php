@@ -249,7 +249,7 @@ class Processor
 
         $methods = [];
 
-        (new Methods\Core)->addRecurringEmandateToMethodsIfApplicable($this->merchant, $this->merchant->methods, $methods);
+        (new Methods\Core)->addRecurringEmandateToMethodsIfApplicable($this->merchant, $this->methods, $methods);
 
         //
         // This can happen when the required features are not enabled
@@ -293,7 +293,6 @@ class Processor
         ];
 
         return $coproto;
-
     }
 
     protected function preProcessPaymentInputsForWallet(array $input, Payment\Entity $payment)
