@@ -20,7 +20,6 @@ import {
 } from 'rzp/utils/pokedex';
 
 import { fetch } from 'merchant/modules/pokedex';
-import OpenDisputeAlert from 'merchant/containers/Home/OpenDisputeAlert';
 import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
 import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
 import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
@@ -347,7 +346,6 @@ class HomeContainer extends Component {
     return (
       <div class="react-root dashboard-home">
         <Sticky stickWhen={0} stickAt={50}>
-          <OpenDisputeAlert customClass="analytics-dash-banner" />
           <Header className="clearfix" title="" showMode={false}>
             <div className="pull-left date-range-container">
               <DateRangePicker
