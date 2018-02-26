@@ -2122,10 +2122,6 @@ trait Authorize
         {
             $token = (new Token\Core)->create($customer, $saveMethodInput);
         }
-        catch (Exception\RecoverableException $e)
-        {
-            // Ignore the exception, can be an already saved method
-        }
         catch (\Exception $e)
         {
             $this->trace->traceException($e);
@@ -3812,7 +3808,7 @@ trait Authorize
 
     protected function validateIfIntentEnabled(Payment\Entity $payment)
     {
-        if ($payment->merchant->isFeatureEnabled(Feature\Constants::UPI_INTENT) === false)
+        if ($payment->merchant->isFeatureEnabled(Feature\Constants::DISABLE_UPI_INTENT) === true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'UPI intent is not enabled for the merchant');
