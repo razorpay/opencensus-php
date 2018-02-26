@@ -29,16 +29,16 @@ return [
     ],
 
     'testUniqueReceiptFeatureWithNoReceipt' => [
-        'request' => [
+        'request'   => [
             'content' => [
-                'amount'        => 50000,
-                'currency'      => 'INR',
+                'amount'   => 50000,
+                'currency' => 'INR',
             ],
-            'method'    => 'POST',
-            'url'       => '/orders',
+            'method'  => 'POST',
+            'url'     => '/orders',
         ],
-        'response' => [
-            'content' => [
+        'response'  => [
+            'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => PublicErrorDescription::BAD_REQUEST_ORDER_RECEIPT_REQUIRED,
@@ -48,88 +48,88 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
     ],
 
     'testUniqueReceiptFeatureWithValidReceipt' => [
-        'request' => [
+        'request'  => [
             'content' => [
-                'amount'        => 50000,
-                'currency'      => 'INR',
-                'receipt'       => 'rcptid42',
+                'amount'   => 50000,
+                'currency' => 'INR',
+                'receipt'  => 'rcptid42',
             ],
-            'method'    => 'POST',
-            'url'       => '/orders',
+            'method'  => 'POST',
+            'url'     => '/orders',
         ],
         'response' => [
             'content' => [
-                'amount'        => 50000,
-                'currency'      => 'INR',
-                'receipt'       => 'rcptid42',
+                'amount'   => 50000,
+                'currency' => 'INR',
+                'receipt'  => 'rcptid42',
             ],
         ],
     ],
 
     'testUniqueReceiptFeatureWithDuplicateReceipt' => [
-        'request' => [
+        'request'   => [
             'content' => [
-                'amount'        => 50000,
-                'currency'      => 'INR',
-                'receipt'       => 'rcptid42',
+                'amount'   => 50000,
+                'currency' => 'INR',
+                'receipt'  => 'rcptid42',
             ],
-            'method'    => 'POST',
-            'url'       => '/orders',
+            'method'  => 'POST',
+            'url'     => '/orders',
         ],
-        'response' => [
-            'content' => [
+        'response'  => [
+            'content'     => [
                 'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => PublicErrorDescription::BAD_REQUEST_ORDER_RECEIPT_NOT_UNIQUE,
-                    'field' => [ ]
+                    'field'       => []
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
     ],
 
     'testCreateOrderWithTwoNullReceipts' => [
-        'request' => [
+        'request'  => [
             'content' => [
-                'amount'        => 50000,
-                'currency'      => 'INR',
+                'amount'   => 50000,
+                'currency' => 'INR',
             ],
-            'method'    => 'POST',
-            'url'       => '/orders',
+            'method'  => 'POST',
+            'url'     => '/orders',
         ],
         'response' => [
             'content' => [
-                'amount'        => 50000,
-                'currency'      => 'INR',
+                'amount'   => 50000,
+                'currency' => 'INR',
             ],
         ],
     ],
 
     'testCreateOrderWithTwoValidReceipts' => [
-        'request' => [
+        'request'  => [
             'content' => [
-                'amount'        => 50000,
-                'currency'      => 'INR',
-                'receipt'       => 'rcptid42',
+                'amount'   => 50000,
+                'currency' => 'INR',
+                'receipt'  => 'rcptid42',
             ],
-            'method'    => 'POST',
-            'url'       => '/orders',
+            'method'  => 'POST',
+            'url'     => '/orders',
         ],
         'response' => [
             'content' => [
-                'amount'        => 50000,
-                'currency'      => 'INR',
-                'receipt'       => 'rcptid42',
+                'amount'   => 50000,
+                'currency' => 'INR',
+                'receipt'  => 'rcptid42',
             ],
         ],
     ],

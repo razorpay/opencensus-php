@@ -48,20 +48,16 @@ class OrderTest extends TestCase
 
     public function testUniqueReceiptFeatureWithNoReceipt()
     {
-        $this->addOrderReceiptUniqueFeature();
+        $this->fixtures->merchant->addFeatures(['order_receipt_unique']);
 
-        $order = $this->startTest();
-
-        return $order;
+        $this->startTest();
     }
 
     public function testUniqueReceiptFeatureWithValidReceipt()
     {
-        $this->addOrderReceiptUniqueFeature();
+        $this->fixtures->merchant->addFeatures(['order_receipt_unique']);
 
-        $order = $this->startTest();
-
-        return $order;
+        $this->startTest();
     }
 
     public function testUniqueReceiptFeatureWithDuplicateReceipt()
@@ -72,15 +68,13 @@ class OrderTest extends TestCase
             'receipt'  => 'rcptid42',
         ]);
 
-        $this->addOrderReceiptUniqueFeature();
+        $this->fixtures->merchant->addFeatures(['order_receipt_unique']);
 
         $testData = $this->testData[__FUNCTION__];
 
         $testData['response']['content']['error']['field']['order_ids'] = [$order->getId()];
 
-        $order = $this->startTest($testData);
-
-        return $order;
+        $this->startTest();
     }
 
     /**
@@ -91,14 +85,12 @@ class OrderTest extends TestCase
      */
     public function testCreateOrderWithTwoNullReceipts()
     {
-        $order = $this->fixtures->create('order', [
+        $this->fixtures->create('order', [
             'amount'   => 50000,
             'currency' => 'INR',
         ]);
 
-        $order = $this->startTest();
-
-        return $order;
+        $this->startTest();
     }
 
     /**
@@ -109,15 +101,13 @@ class OrderTest extends TestCase
      */
     public function testCreateOrderWithTwoValidReceipts()
     {
-        $order = $this->fixtures->create('order', [
+        $this->fixtures->create('order', [
             'amount'   => 50000,
             'currency' => 'INR',
             'receipt'  => 'rcptid42',
         ]);
 
-        $order = $this->startTest();
-
-        return $order;
+        $this->startTest();
     }
 
     public function testCreateOrderWithNegativeAmount()
