@@ -297,7 +297,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY                    => 'required|in:upi_mindgate',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::GATEWAY_MERCHANT_ID2       => 'required|string',
-        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
         Entity::UPI                        => 'sometimes|boolean|in:1',
     ];
 

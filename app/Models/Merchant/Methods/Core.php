@@ -140,7 +140,7 @@ class Core extends Base\Core
 
             $this->addRecurringCardsToMethods($data['recurring'], $methods);
 
-            $this->addRecurringEmandateToMethodsIfApplicable($merchant, $data['recurring']);
+            $this->addRecurringEmandateToMethodsIfApplicable($merchant, $methods, $data['recurring']);
         }
 
         if ($merchant->isFeatureEnabled(Constants::DISABLE_UPI_INTENT) === false)
@@ -163,7 +163,7 @@ class Core extends Base\Core
         }
     }
 
-    public function addRecurringEmandateToMethodsIfApplicable(Merchant\Entity $merchant, array & $recurringData)
+    public function addRecurringEmandateToMethodsIfApplicable(Merchant\Entity $merchant, $methods, array & $recurringData)
     {
         //
         // We don't allow netbanking for subscriptions currently.
@@ -176,7 +176,7 @@ class Core extends Base\Core
         //
         // We allow netbanking recurring only for certain merchants
         //
-        if ($merchant->isFeatureEnabled(Constants::E_MANDATE) === false)
+        if ($methods->isEmandateEnabled() === true)
         {
             return;
         }

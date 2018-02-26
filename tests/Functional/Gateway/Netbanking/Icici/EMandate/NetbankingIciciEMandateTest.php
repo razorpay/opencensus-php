@@ -45,7 +45,7 @@ class NetbankingIciciEMandateTest extends TestCase
 
         $this->fixtures->create(Entity::CUSTOMER);
 
-        $this->fixtures->merchant->addFeatures([Constants::CHARGE_AT_WILL, Constants::E_MANDATE]);
+        $this->fixtures->merchant->addFeatures([Constants::CHARGE_AT_WILL]);
 
         $this->fixtures->merchant->enableEmandate();
 
