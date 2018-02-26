@@ -90,6 +90,11 @@ class ImportCards extends Command
                 Customer::EMAIL     =>  $cardDetails['customer_id'],
             ];
 
+            if (empty($request[Customer::NAME]) === true)
+            {
+                $request[Customer::NAME] = "Name";
+            }
+
             if (isset($phoneNumbersMap[$email]) === true)
             {
                 $request[Customer::CONTACT] =  $phoneNumbersMap[$email];
@@ -105,7 +110,7 @@ class ImportCards extends Command
                 'method'    =>  'card',
                 'card'      => [
                     Card::NUMBER        =>  $cardDetails['card_number'],
-                    Card::NAME          =>  $cardDetails['name_on_card'],
+                    Card::NAME          =>  $request[Customer::NAME],
                     Card::EXPIRY_MONTH  =>  $cardDetails['card_exp_month'],
                     Card::EXPIRY_YEAR   =>  $cardDetails['card_exp_year'],
                 ]
