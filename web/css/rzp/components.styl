@@ -565,7 +565,7 @@ dl.rzp-definition {
 /* Component: merchant/components/File/Upload.js */
 .file {
   &.upload {
-    height: 83px;
+    height: 84px;
     width: 100%;
 
     .drop-zone {
@@ -576,6 +576,7 @@ dl.rzp-definition {
       border-radius: 5px;
 
       .content {
+        position: relative;
         display: table-cell;
         vertical-align: middle;
         margin: auto;
@@ -591,6 +592,13 @@ dl.rzp-definition {
 
         .upload-label {
           cursor: pointer;
+        }
+
+        .i-file-placeholder {
+          position: absolute;
+          left: 0px;
+          font-size: 34px;
+          padding: 25px 0 25px 10px;
         }
       }
     }

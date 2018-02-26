@@ -119,6 +119,7 @@ export default class FileUpload extends Component {
               <div class="content">
                 {children || (
                   <React.Fragment>
+                    <i class="i i-file-placeholder" />
                     <p class="content-primary m-t">
                       <span>Drop files here or </span>
                       <label for={`fileInput-${this.props.name}`}>
