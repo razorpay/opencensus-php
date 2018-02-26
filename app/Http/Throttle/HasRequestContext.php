@@ -25,12 +25,39 @@ use RZP\Exception\BadRequestException;
  */
 trait HasRequestContext
 {
+    /**
+     * @var string
+     */
     private $route;
+
+    /**
+     * @var Request
+     */
     private $request;
+
+    /**
+     * @var string
+     */
     private $key;
+
+    /**
+     * @var string
+     */
     private $secret;
+
+    /**
+     * @var string
+     */
     private $bearerToken;
+
+    /**
+     * @var string
+     */
     private $mode;
+
+    /**
+     * @var string
+     */
     private $auth;
 
     //
@@ -38,14 +65,49 @@ trait HasRequestContext
     // in throttle core logic we construct throttle key using the one available.
     //
 
+    /**
+     * @var string
+     */
     private $keyWithoutPrefix;
+
+    /**
+     * @var string
+     */
     private $keyId;
+
+    /**
+     * @var string
+     */
     private $mid;
+
+    /**
+     * @var string
+     */
     private $oauthAppId;
+
+    /**
+     * @var string
+     */
     private $oauthPublicToken;
+
+    /**
+     * @var string
+     */
     private $internalAppName;
+
+    /**
+     * @var string
+     */
     private $adminEmail;
+
+    /**
+     * @var string
+     */
     private $device;
+
+    /**
+     * @var bool
+     */
     private $proxy = false;
 
     private function initRequestContextVars(Request $request)
@@ -111,15 +173,18 @@ trait HasRequestContext
 
     private function setAdditionalVarsForPublicAuth()
     {
-        if ((in_array($this->route, Route::$public, true) === true) and
+        $isPublicRoute         = in_array($this->route, Route::$public, true);
+        $isPublicCallbackRoute = in_array($this->route, Route::$publicCallback, true);
+
+        if (($isPublicRoute === true) and
             ($this->isKeyOAuthPublicToken() === true))
         {
             // Further excludes "oauth_" part
             $this->oauthPublicToken = substr($this->keyWithoutPrefix, 6);
             return true;
         }
-        else if ((in_array($this->route, Route::$public, true) === true) or
-                 (in_array($this->route, Route::$publicCallback, true) === true))
+        else if (($isPublicRoute === true) or
+                 ($isPublicCallbackRoute === true))
         {
             $this->keyId = $this->keyWithoutPrefix;
             return true;
@@ -130,7 +195,10 @@ trait HasRequestContext
 
     private function setAdditionalVarsForPrivateAuth()
     {
-        if ((in_array($this->route, Route::$private, true) === true) and
+        $isPrivateRoute = in_array($this->route, Route::$private, true);
+        $isProxyRoute   = in_array($this->route, Route::$proxy, true);
+
+        if (($isPrivateRoute === true) and
             (empty($token = $this->getBearerToken()) === false))
         {
             $parsed           = (new Parser)->parse($token);
@@ -138,15 +206,14 @@ trait HasRequestContext
             $this->mid        = $parsed->getClaim('merchant_id');
             return true;
         }
-        else if (((in_array($this->route, Route::$private, true) === true) and
-                    ($this->isDashboard() === true)) or
-                    (in_array($this->route, Route::$proxy, true) === true))
+        else if ((($isPrivateRoute === true) and ($this->isDashboard() === true)) or
+                 ($isProxyRoute === true))
         {
             $this->mid  = $this->keyWithoutPrefix;
             $this->proxy = true;
             return true;
         }
-        else if ((in_array($this->route, Route::$private, true) === true) and
+        else if (($isPrivateRoute === true) and
                  ($this->isDashboard() === false))
         {
             $this->keyId = $this->keyWithoutPrefix;
@@ -197,6 +264,8 @@ trait HasRequestContext
                 return $name;
             }
         }
+
+        return null;
     }
 
     private function isDashboard(): bool

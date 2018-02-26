@@ -3,11 +3,16 @@
 namespace RZP\Http\Throttle;
 
 use App;
-use Illuminate\Http\Request;
+use Predis\Pipeline\Pipeline;
+use Illuminate\Routing\Router;
 use Jitendra\PhpValve\LeakyBucket;
+use Illuminate\Redis\RedisManager;
+use Razorpay\Trace\Logger as Trace;
 use Illuminate\Support\Facades\Redis;
 
 use RZP\Trace\TraceCode;
+use RZP\Foundation\Application;
+use RZP\Base\RepositoryManager;
 use RZP\Exception\ThrottleException;
 use RZP\Http\Throttle\Constant as K;
 use RZP\Exception\BadRequestException;
@@ -38,17 +43,49 @@ class Throttler
 {
     use HasRequestContext;
 
+    /**
+     * @var array
+     */
     private $config;
+
+    /**
+     * @var array
+     */
     private $applications;
+
+    /**
+     * @var Trace
+     */
     private $trace;
+
+    /**
+     * @var Router
+     */
     private $router;
+
+    /**
+     * @var RepositoryManager
+     */
     private $repo;
+
+    /**
+     * @var RedisManager
+     */
     private $redis;
+
+    /**
+     * @var array
+     */
     private $settings;
+
+    /**
+     * @var bool
+     */
     private $isRunningUnitTests;
 
     public function __construct()
     {
+        /** @var $app Application */
         $app = App::getFacadeRoot();
 
         $this->config             = $app['config']->get('throttle');
@@ -101,6 +138,7 @@ class Throttler
         $settings = $this->redis->pipeline(
             function ($pipe)
             {
+                /** @var $pipe Pipeline */
                 $pipe->hgetall(K::GLOBAL_SETTINGS_KEY);
                 $pipe->hgetall(K::ID_SETTINGS_KEY_PREFIX . $this->getIdSettingsKey());
             });
@@ -110,7 +148,6 @@ class Throttler
 
     private function attemptThrottle()
     {
-        $allowed = 1;
         $limits  = [];
 
         // Throttling and blocking may be temporarily skipped via remote configuration(Redis)
