@@ -3815,7 +3815,7 @@ trait Authorize
 
     protected function validateIfIntentEnabled(Payment\Entity $payment)
     {
-        if ($payment->merchant->isFeatureEnabled(Feature\Constants::UPI_INTENT) === false)
+        if ($payment->merchant->isFeatureEnabled(Feature\Constants::DISABLE_UPI_INTENT) === true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'UPI intent is not enabled for the merchant');

@@ -143,7 +143,7 @@ class Core extends Base\Core
             $this->addRecurringEmandateToMethodsIfApplicable($merchant, $data['recurring']);
         }
 
-        if ($merchant->isFeatureEnabled(Constants::UPI_INTENT) === true)
+        if ($merchant->isFeatureEnabled(Constants::DISABLE_UPI_INTENT) === false)
         {
             $data['upi_intent'] = true;
         }
