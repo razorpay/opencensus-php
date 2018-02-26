@@ -46,7 +46,7 @@ class Repository extends BaseRepository
                     ->first();
     }
 
-    public function getRequestDetails(string $id)
+    public function getRequestDetails(string $id, string $merchantId)
     {
         $relations = [
             'merchant',
@@ -56,6 +56,7 @@ class Repository extends BaseRepository
 
         return $this->newQuery()
                        ->where(Entity::ID, $id)
+                       ->where(Entity::MERCHANT_ID, $merchantId)
                        ->with($relations)
                        ->get();
     }

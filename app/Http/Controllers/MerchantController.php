@@ -961,15 +961,6 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getMerchantRequests()
-    {
-        $input = Request::all();
-
-        $data = $this->service(E::MERCHANT_REQUEST)->fetchMerchantRequests($input);
-
-        return ApiResponse::json($data);
-    }
-
     public function updateMerchantRequestStatus(string $id)
     {
         $input = Request::all();

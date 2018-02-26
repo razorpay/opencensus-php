@@ -691,9 +691,9 @@ final class Route
         // Merchant Requests Routes
         'merchant_requests_fetch_details'         => ['get',      'merchant/requests/{id}',                         'MerchantController@getMerchantRequestDetails'                      ],
         'merchant_requests_fetch_all'             => ['get',      'merchant/requests/fetch',                        'MerchantController@fetchAllMerchantRequests'                       ],
-        'merchant_requests_create'                => ['post',     'merchant/requests',                              'MerchantController@createMerchantRequest'                            ],
+        'merchant_requests_create'                => ['post',     'merchant/requests',                              'MerchantController@createMerchantRequest'                          ],
         'merchant_requests_status_log'            => ['get',      'merchant/requests/{id}/status_log',              'MerchantController@getMerchantRequestStatusLog'                    ],
-        'merchant_requests_update'                => ['post',     'merchant/requests/{id}/update',                  'FeatureController@updateMerchantRequest'                           ],
+        'merchant_requests_update'                => ['patch',    'merchant/requests/{id}',                         'MerchantController@updateMerchantRequest'                          ],
 
         'onboarding_features_fetch_details'       => ['get',      'onboarding/features',                            'FeatureController@getOnboardingDetails'                            ],
         'onboarding_features_fetch_submission'    => ['get',      'onboarding/features/{feature}',                  'FeatureController@getOnboardingSubmissions'                        ],
@@ -1178,6 +1178,7 @@ final class Route
         'account_fetch',
         'merchant_add_bank_account',
         'merchant_requests_create',
+        'merchant_requests_fetch_details',
     ];
 
     // These will run on internal auth with the assurance
@@ -1439,7 +1440,6 @@ final class Route
 
         'user_fetch_admin',
         'merchant_requests_fetch_all',
-        'merchant_requests_fetch_details',
         'merchant_requests_update',
         'merchant_requests_status_log'
     ];

@@ -8,8 +8,6 @@ use ApiResponse;
 use RZP\Models\Feature\Type;
 use RZP\Models\Feature\Constants;
 
-use RZP\Constants\Entity as E;
-
 class FeatureController extends Controller
 {
     /**
@@ -158,7 +156,7 @@ class FeatureController extends Controller
 
     public function getOnboardingSubmissions(string $feature)
     {
-        $response = $this->service(E::MERCHANT_REQUEST)->getOnboardingSubmissions($feature);
+        $response = $this->service()->getOnboardingSubmissions($feature);
 
         return ApiResponse::json($response);
     }

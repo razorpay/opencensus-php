@@ -51,7 +51,7 @@ class Service extends Base\Service
     {
         Entity::verifyIdAndStripSign($id);
 
-        return (new Core)->getMerchantRequestDetails($id);
+        return (new Core)->getMerchantRequestDetails($id, $this->merchant->getId());
     }
 
     public function createMerchantRequest(array $input)
@@ -61,10 +61,14 @@ class Service extends Base\Service
 
     public function updateMerchantRequest(string $id, array $input)
     {
+        Entity::verifyIdAndStripSign($id);
+
         $request = $this->repo->merchant_request->findByIdOrFail($id);
 
-        (new Core)->updateMerchantRequest($request, $input);
+        $core = new Core;
 
-        return $this->getMerchantRequestDetails($id);
+        $core->updateMerchantRequest($request, $input);
+
+        return $core->getMerchantRequestDetails($id, $request->merchant->getId());
     }
 }

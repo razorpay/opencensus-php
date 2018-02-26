@@ -31,11 +31,11 @@ class Validator extends Base\Validator
     protected static $editRules = [
         Entity::STATUS         => 'sometimes|max:255',
         Entity::PUBLIC_MESSAGE => 'sometimes|max:255',
+        Entity::COMMENT        => 'sometimes|max:255',
     ];
 
     protected static $changeStatusRules = [
         Entity::STATUS            => 'required|max:30',
-        Entity::PUBLIC_MESSAGE    => 'sometimes|max:255',
         Entity::REJECTION_REASONS => 'filled|array',
     ];
 

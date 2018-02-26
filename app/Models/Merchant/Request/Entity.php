@@ -34,6 +34,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::NAME,
         self::TYPE,
+        self::COMMENT,
         self::PUBLIC_MESSAGE,
         self::STATUS,
     ];
@@ -43,6 +44,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::NAME,
         self::MERCHANT,
+        self::COMMENT,
         self::TYPE,
         self::STATUS,
         self::PUBLIC_MESSAGE,

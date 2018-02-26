@@ -12,6 +12,8 @@ class Constants
     const EXPAND   = 'expand';
     const MERCHANT = 'merchant';
 
+    // Need this map to map onboarding statuses to marchant request statuses to
+    // ensure backward compatability with existing code till it isn't deprecated
     const ONBOARDING_REQUEST_MAP = [
         MerchantDetail\Entity::PENDING => Status::UNDER_REVIEW,
         MerchantDetail\Entity::APPROVED => Status::ACTIVATED,

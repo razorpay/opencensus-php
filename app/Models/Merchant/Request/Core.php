@@ -175,10 +175,14 @@ class Core extends Base\Core
 
     }
 
+    /*
+     * Create a merchant request for a given type, name if not already present
+     */
     public function createMerchantRequestIfApplicable(
         Merchant\Entity $merchant,
         array $input)
     {
+        // Find by type and name first, to not to create a request again if it exists
         $request = $this->repo->merchant_request->findByMerchantIdAndTypeAndName(
             $merchant->getId(),
             $input[Entity::NAME],
@@ -195,6 +199,11 @@ class Core extends Base\Core
         return $request;
     }
 
+    /*
+     * This function will be used to create/edit a merchant request from old feature flow
+     * till the time the old code isnt deprecated. Hence first either the merchant request is created or found,
+     * and then the respective status is marked if needed.
+     */
     public function addRequestForcefullyIfApplicable(
         Merchant\Entity $merchant,
         string $feature,
@@ -251,9 +260,9 @@ class Core extends Base\Core
         return $response;
     }
 
-    public function getMerchantRequestDetails(string $id)
+    public function getMerchantRequestDetails(string $id, string $merchantId)
     {
-        $merchantRequest = $this->repo->merchant_request->getRequestDetails($id)->first();
+        $merchantRequest = $this->repo->merchant_request->getRequestDetails($id, $merchantId)->first();
 
         $returnData = $merchantRequest->toArray();
 
@@ -271,12 +280,12 @@ class Core extends Base\Core
     {
         (new Validator)->validateInput('update', $input);
 
-        (new Validator)->validateQuestions($request->getType(), $input);
+        //(new Validator)->validateQuestions($request->getType(), $input);
 
         $this->transaction(function() use($request, $input) {
 
             // Check form submissions on update
-            if ($request->isProductRequest() === true)
+            if ($request->isProductRequest() === true and isset($input[Entity::SUBMISSIONS]) === true)
             {
                 $questions = $input[Entity::SUBMISSIONS];
 
@@ -287,11 +296,14 @@ class Core extends Base\Core
 
             if ($input[Entity::STATUS] !== $request->getStatus())
             {
-                $statusChangeInput = $input;
+                $statusChangeInput = [
+                    Entity::STATUS => $input[Entity::STATUS]
+                ];
 
-                unset($statusChangeInput[Entity::COMMENT]);
-
-                unset($statusChangeInput[Entity::PUBLIC_MESSAGE]);
+                if (isset($input[Entity::REJECTION_REASONS]) === true)
+                {
+                    $statusChangeInput[Entity::REJECTION_REASONS] = $input[Entity::REJECTION_REASONS];
+                }
 
                 $this->changeStatus($request, $statusChangeInput, true);
             }
