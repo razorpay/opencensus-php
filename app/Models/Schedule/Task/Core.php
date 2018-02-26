@@ -24,7 +24,7 @@ class Core extends Base\Core
         $input = [
             Entity::METHOD      => null,
             Entity::TYPE        => Type::SETTLEMENT,
-            Entity::SCHEDULE_ID => $schedule->getId()
+            Entity::SCHEDULE_ID => $schedule->getId(),
         ];
 
         $this->createOrUpdate($merchant, $merchant, $input);
@@ -42,7 +42,7 @@ class Core extends Base\Core
      */
     public function createOrUpdate(Merchant\Entity $merchant, Base\Entity $entity, $input)
     {
-        $scheduleTask = $this->create($merchant, $entity, $input);
+        $scheduleTask = $this->create($merchant, $entity, null, $input);
 
         $this->app['workflow']->setEntityId($merchant->getId());
 
@@ -71,23 +71,30 @@ class Core extends Base\Core
      *
      * @param Merchant\Entity $merchant
      * @param Base\Entity     $entity
+     * @param Schedule\Entity $schedule
      * @param                 $input
      *
      * @return Entity
      */
-    public function create(Merchant\Entity $merchant, Base\Entity $entity, $input)
+    public function create(Merchant\Entity $merchant, Base\Entity $entity = null, Schedule\Entity $schedule = null, array $input = [])
     {
         $scheduleTask = (new Entity)->build($input);
 
         $scheduleTask->merchant()->associate($merchant);
 
-        $scheduleTask->entity()->associate($entity);
+        if ($entity !== null)
+        {
+            $scheduleTask->entity()->associate($entity);
+        }
 
-        $scheduleId = $input[Entity::SCHEDULE_ID];
+        if ($schedule === null)
+        {
+            $scheduleId = $input[Entity::SCHEDULE_ID];
 
-        $merchantId = Merchant\Account::SHARED_ACCOUNT;
+            $merchantId = Merchant\Account::SHARED_ACCOUNT;
 
-        $schedule = $this->repo->schedule->findByIdAndMerchantId($scheduleId, $merchantId);
+            $schedule = $this->repo->schedule->findByIdAndMerchantId($scheduleId, $merchantId);
+        }
 
         $scheduleTask->schedule()->associate($schedule);
 
@@ -108,26 +115,9 @@ class Core extends Base\Core
      *
      * @return Entity
      */
-    public function createForReportingService(Merchant\Entity $merchant, Schedule\Entity $schedule, array $input): Entity
+    public function createForExternalService(Merchant\Entity $merchant, Schedule\Entity $schedule, array $input): Entity
     {
-        $entityId = $input[Entity::ENTITY_ID];
-
-        $entityType = $input[Entity::ENTITY_TYPE];
-
-        unset($input[Entity::ENTITY_ID]);
-        unset($input[Entity::ENTITY_TYPE]);
-
-        $scheduleTask = (new Entity)->build($input);
-
-        $scheduleTask->merchant()->associate($merchant);
-
-        $scheduleTask->schedule()->associate($schedule);
-
-        $scheduleTask->setEntityId($entityId);
-
-        $scheduleTask->setEntityType($entityType);
-
-        $scheduleTask->updateNextRunAt($scheduleTask->getNextRunAt());
+        $scheduleTask = $this->create($merchant, null, $schedule, $input);
 
         $this->repo->saveOrFail($scheduleTask);
 

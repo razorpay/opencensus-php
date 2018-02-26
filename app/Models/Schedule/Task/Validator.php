@@ -16,6 +16,8 @@ class Validator extends Base\Validator
         ScheduleTask::METHOD            => 'sometimes|nullable|string|max:20|custom',
         ScheduleTask::SCHEDULE_ID       => 'required|alpha_dash|max:20',
         ScheduleTask::NEXT_RUN_AT       => 'sometimes|integer',
+        ScheduleTask::ENTITY_ID         => 'sometimes|max:14',
+        ScheduleTask::ENTITY_TYPE       => 'sometimes'
     ];
 
     protected static $updateNextRunAtRules = [
@@ -25,6 +27,10 @@ class Validator extends Base\Validator
 
     protected static $processTasksRules = [
         ScheduleTask::TYPE => 'required|string|max:20|custom',
+    ];
+
+    protected static $createValidators = [
+        Entity::ENTITY_TYPE,
     ];
 
     protected function validateMethod($attribute, $method)
@@ -42,6 +48,17 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid Type given: ' . $type);
+        }
+    }
+
+    public function validateEntityType(array $input)
+    {
+        $type = $input[Entity::TYPE];
+
+        if (($type === Type::REPORTING) and (Type::isValidEntityType($type, $input[Entity::ENTITY_TYPE]) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "Invalid Entity Type given for $type");
         }
     }
 }

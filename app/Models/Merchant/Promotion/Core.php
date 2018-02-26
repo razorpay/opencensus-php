@@ -140,9 +140,7 @@ class Core extends Base\Core
     {
         $input[Task\Entity::TYPE] = Task\Type::PROMOTION;
 
-        $input[Task\Entity::SCHEDULE_ID] = $promotion->schedule->getId();
-
-        $task = (new Task\Core)->create($merchant, $promotion, $input);
+        $task = (new Task\Core)->create($merchant, $promotion, $promotion->schedule, $input);
 
         return $task;
     }

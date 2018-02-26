@@ -35,6 +35,8 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::METHOD,
         self::NEXT_RUN_AT,
+        self::ENTITY_ID,
+        self::ENTITY_TYPE
     ];
 
     protected $visible = [

@@ -235,7 +235,7 @@ class Reporting
             ScheduleTask\Entity::SCHEDULE_ID => $schedule->getId(),
         ];
 
-        (new ScheduleTask\Core)->createForReportingService($merchant, $schedule, $scheduleTaskRequest);
+        (new ScheduleTask\Core)->createForExternalService($merchant, $schedule, $scheduleTaskRequest);
     }
 
     protected function createScheduleOnReportingService(array $input): array

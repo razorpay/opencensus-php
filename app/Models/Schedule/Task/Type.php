@@ -11,6 +11,8 @@ class Type
     const PROMOTION    = 'promotion';
     const REPORTING    = 'reporting'; // Reporting Service
 
+    const LOG          = 'log';
+
     const SYNC_LIVE_TEST = [
         self::SETTLEMENT,
     ];
@@ -24,6 +26,12 @@ class Type
 
     const EXTERNAL_SERVICES = [
         self::REPORTING => Reporting::class
+    ];
+
+    const TYPE_ENTITY_MAP = [
+        self::REPORTING => [
+            self::LOG
+        ]
     ];
 
     public static function isSyncedInLiveAndTest(string $type)
@@ -46,5 +54,10 @@ class Type
         $className = self::EXTERNAL_SERVICES[$type];
 
         return new $className();
+    }
+
+    public static function isValidEntityType(string $type, $entityType)
+    {
+        return (in_array($entityType, self::TYPE_ENTITY_MAP[$type], true) === true);
     }
 }
