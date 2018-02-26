@@ -2,8 +2,6 @@
 
 namespace RZP\Models\Feature;
 
-use RZP\Exception;
-
 use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Constants\Entity as E;
@@ -54,16 +52,6 @@ class Entity extends Base\PublicEntity
         self::NAME,
     ];
 
-    /**
-     * Maps the route endpoints to the corresponding Entity type
-     *
-     * @var array
-     */
-    protected static $routeToEntityTypeMap = [
-        Constants::ACCOUNTS     => Constants::MERCHANT,
-        Constants::APPLICATIONS => Constants::APPLICATION,
-    ];
-
     public function getName()
     {
         return $this->getAttribute(self::NAME);
@@ -108,24 +96,5 @@ class Entity extends Base\PublicEntity
     public function isMerchantFeature(): bool
     {
         return ($this->getEntityType() === Constants::MERCHANT);
-    }
-
-    /**
-     * Extracts entity type from route endpoint.
-     * @param string $routeEndpoint
-     *
-     * @return string
-     * @throws Exception\BadRequestException
-     */
-    public static function getEntityTypeFromRoute(string $routeEndpoint): string
-    {
-        if (array_key_exists($routeEndpoint, self::$routeToEntityTypeMap) === false)
-        {
-            throw new Exception\BadRequestException(
-                'Entity type is invalid',
-                ['route_endpoint' => $routeEndpoint]);
-        }
-
-        return self::$routeToEntityTypeMap[$routeEndpoint];
     }
 }

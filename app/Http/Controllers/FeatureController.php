@@ -5,6 +5,7 @@ namespace RZP\Http\Controllers;
 use Request;
 use ApiResponse;
 
+use RZP\Models\Feature\Type;
 use RZP\Models\Feature\Constants;
 
 class FeatureController extends Controller
@@ -67,7 +68,7 @@ class FeatureController extends Controller
      */
     public function deleteFeature(string $entityId, string $featureName)
     {
-        return $this->deleteEntityFeature(Constants::ACCOUNTS, $entityId, $featureName);
+        return $this->deleteEntityFeature(Type::ACCOUNTS, $entityId, $featureName);
     }
 
     /**
@@ -98,7 +99,7 @@ class FeatureController extends Controller
      */
     public function getMerchantFeatures(string $merchantId)
     {
-        return $this->getFeatures(Constants::ACCOUNTS, $merchantId);
+        return $this->getFeatures(Type::ACCOUNTS, $merchantId);
     }
 
     /**

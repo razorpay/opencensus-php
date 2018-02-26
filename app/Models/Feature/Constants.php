@@ -132,11 +132,6 @@ class Constants
     const MERCHANT                      = 'merchant';
     const APPLICATION                   = 'application';
 
-    // Entity routes
-    const ACCOUNTS                      = 'accounts';
-    const MERCHANTS                     = 'merchants';
-    const APPLICATIONS                  = 'applications';
-
     // Keys used in the feature on-boarding workflow
     const STATUS                        = 'status';
     const PRODUCT                       = 'product';

@@ -18,7 +18,7 @@ class Service extends Base\Service
 
         if ($routeEndpoint !== null)
         {
-            $entityType = Entity::getEntityTypeFromRoute($routeEndpoint);
+            $entityType = Type::getEntityTypeFromRoute($routeEndpoint);
         }
 
         $featureParams = $this->buildFeatureParams($input, $entityType, $entityId);
@@ -43,7 +43,7 @@ class Service extends Base\Service
         //
         if ($this->app['basicauth']->isAdminAuth() === true)
         {
-            $entityType = Entity::getEntityTypeFromRoute($routeEndpoint);
+            $entityType = Type::getEntityTypeFromRoute($routeEndpoint);
         }
         else
         {
@@ -80,7 +80,7 @@ class Service extends Base\Service
         string $featureName,
         array $input): array
     {
-        $entityType = Entity::getEntityTypeFromRoute($routeEndpoint);
+        $entityType = Type::getEntityTypeFromRoute($routeEndpoint);
 
         $feature = $this->repo
                         ->feature
