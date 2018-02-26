@@ -572,13 +572,18 @@ dl.rzp-definition {
       height: 100%;
       width: 100%;
       display: table;
-      border: 1px dashed;
+      border: 2px dashed $primary-color;
+      border-radius: 5px;
 
       .content {
         display: table-cell;
         vertical-align: middle;
         margin: auto;
         text-align: center;
+        font-size: 16px;
+        .content-secondary {
+          font-size: 14px;
+        }
 
         input[type=file] {
           display: none;

@@ -52,6 +52,21 @@ export default class FileUpload extends Component {
     }
   };
 
+  getAcceptedFileTypesInfo = () => {
+    let { accept } = this.props;
+    let infotext = 'Only ';
+
+    if (accept.length > 1) {
+      infotext += `${accept.slice(0, -1).join(', ')} and ${accept.slice(-1)}`;
+    } else {
+      infotext += `${accept[0]}`;
+    }
+
+    infotext += ' files are allowed';
+
+    return infotext;
+  };
+
   handleCloseClick = fileIndex => () => {
     this.setState({
       files: this.state.files.filter((_, index) => index !== fileIndex),
@@ -88,7 +103,7 @@ export default class FileUpload extends Component {
   };
 
   render() {
-    const { children, multi } = this.props;
+    const { children, multi, maxSize, name, accept } = this.props;
     return (
       <div class="file upload">
         {!multi &&
@@ -103,18 +118,24 @@ export default class FileUpload extends Component {
               <div class="content">
                 {children || (
                   <React.Fragment>
-                    <span>Drop files here or </span>
-                    <label for={`fileInput-${this.props.name}`}>
-                      <span class="text-primary upload-label">
-                        Click to Upload
-                      </span>
-                    </label>
-                    <input
-                      type="file"
-                      id={`fileInput-${this.props.name}`}
-                      onChange={this.handleFileInputChange}
-                      accept={this.props.accept}
-                    />
+                    <p class="content-primary m-t">
+                      <span>Drop files here or </span>
+                      <label for={`fileInput-${this.props.name}`}>
+                        <span class="text-primary upload-label btn-link">
+                          Click to Upload
+                        </span>
+                      </label>
+                      <span>&nbsp;({maxSize / 1000000} MB Max)</span>
+                      <input
+                        type="file"
+                        id={`fileInput-${name}`}
+                        onChange={this.handleFileInputChange}
+                        accept={accept.map(fileType => fileTypesMap[fileType])}
+                      />
+                    </p>
+                    <p class="content-secondary">
+                      {this.getAcceptedFileTypesInfo()}
+                    </p>
                   </React.Fragment>
                 )}
               </div>
@@ -132,3 +153,10 @@ export default class FileUpload extends Component {
     );
   }
 }
+
+const fileTypesMap = {
+  csv: 'text/csv',
+  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', //new excel format
+  pdf: 'application/pdf',
+  xls: 'application/vnd.ms-excel', //Old microsoft excel sheets.
+};
