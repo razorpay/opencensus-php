@@ -20,6 +20,8 @@ use RZP\Exception\BadRequestException;
  *
  * Keeping this outside of core throttle logic to maintain
  * clarity.
+ *
+ * TODO: Reuse this trait in BasicAuth class!
  */
 trait HasRequestContext
 {
@@ -32,7 +34,7 @@ trait HasRequestContext
     private $auth;
 
     //
-    // In one request some(and not all) of below identifiers are set. Further
+    // In one request some (and not all) of below identifiers are set. Further
     // in throttle core logic we construct throttle key using the one available.
     //
 
@@ -56,12 +58,12 @@ trait HasRequestContext
     private function setAuthVars()
     {
         // Key can come
+        // - as part of authentication header(http basic username)
+        // - as part of route parameters for callback URLS
         // - in request input as key_id for public routes
-        // - as part of route parameters for callback URLS
-        // - as part of route parameters for callback URLS
-        $key = $this->request->input('key_id') ?:
+        $key = $this->request->getUser() ?:
                 $this->router->current()->parameter('key') ?:
-                $this->request->getUser();
+                $this->request->input('key_id');
 
         // Direct authentication and bearer token case
         if (empty($key) === true)
@@ -69,13 +71,7 @@ trait HasRequestContext
             return;
         }
 
-        // Validate key length
-        $validKeyLengths   = BasicAuth::$validKeyLengths;
-        $validKeyLengths[] = OAuth::PUBLIC_TOKEN_LENGTH;
-        if (in_array(strlen($key), $validKeyLengths, true) === false)
-        {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY);
-        }
+        $this->validateKeyLen($key);
 
         $this->key    = $key;
         $this->mode   = substr($key, 4, 4);
@@ -97,7 +93,7 @@ trait HasRequestContext
             $this->adminEmail = $request->headers(RequestHeader::X_DASHBOARD_ADMIN_EMAIL);
         }
         else if ((in_array($this->route, Route::$private, true) === true) and
-            (empty($token = $this->getBearerToken()) === false))
+                 (empty($token = $this->getBearerToken()) === false))
         {
             $this->auth = Type::PRIVATE_AUTH;
 
@@ -106,19 +102,19 @@ trait HasRequestContext
             $this->mid        = $parsed->getClaim('merchant_id');
         }
         else if ((in_array($this->route, Route::$private, true) === true) and
-            ($this->isDashboard() === true))
+                 ($this->isDashboard() === true))
         {
             $this->auth = Type::PROXY_AUTH;
             $this->mid  = $key;
         }
         else if ((in_array($this->route, Route::$private, true) === true) and
-            ($this->isDashboard() === false))
+                 ($this->isDashboard() === false))
         {
             $this->auth  = Type::PRIVATE_AUTH;
             $this->keyId = $key;
         }
         else if ((in_array($this->route, Route::$public, true) === true) and
-            ($this->isKeyOAuthPublicToken() === true))
+                 ($this->isKeyOAuthPublicToken() === true))
         {
             $this->auth             = Type::PUBLIC_AUTH;
             $this->oauthPublicToken = substr($key, 6); // Further excludes oauth_ part :)
@@ -175,7 +171,7 @@ trait HasRequestContext
 
     private function getBearerToken(): string
     {
-        return $this->isUnitTests ? $this->request->bearerToken() : $this->getBearerTokenForApache();
+        return $this->isRunningUnitTests ? $this->request->bearerToken() : $this->getBearerTokenForApache();
     }
 
     private function getBearerTokenForApache(): string
@@ -189,5 +185,15 @@ trait HasRequestContext
     {
         return ((strlen($this->key) === OAuth::PUBLIC_TOKEN_LENGTH) and
                 (substr($this->key, 8, 7) === '_oauth_'));
+    }
+
+    private function validateKeyLen(string $key)
+    {
+        $validKeyLengths = array_merge(BasicAuth::$validKeyLengths, [OAuth::PUBLIC_TOKEN_LENGTH]);
+
+        if (in_array(strlen($key), $validKeyLengths, true) === false)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY);
+        }
     }
 }

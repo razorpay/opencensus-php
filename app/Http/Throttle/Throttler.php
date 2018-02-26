@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Redis;
 
 use RZP\Trace\TraceCode;
 use RZP\Exception\ThrottleException;
+use RZP\Http\Throttle\Constant as K;
 use RZP\Exception\BadRequestException;
 
 /**
@@ -33,7 +34,7 @@ use RZP\Exception\BadRequestException;
  * Redis: In the whole process we end up making 3 redis call(all the time). In
  * case of cache miss for key id to mid remap there is 1 db call involved.
  */
-class Throttle
+class Throttler
 {
     use HasRequestContext;
 
@@ -44,21 +45,21 @@ class Throttle
     private $repo;
     private $redis;
     private $settings;
-    private $isUnitTests;
+    private $isRunningUnitTests;
 
     public function __construct()
     {
         $app = App::getFacadeRoot();
 
-        $this->config       = $app['config']->get('throttle');
-        $this->applications = $app['config']->get('applications');
-        $this->trace        = $app['trace'];
-        $this->router       = $app['router'];
-        $this->repo         = $app['repo'];
-        $this->isUnitTests  = $app->runningUnitTests();
+        $this->config             = $app['config']->get('throttle');
+        $this->applications       = $app['config']->get('applications');
+        $this->trace              = $app['trace'];
+        $this->router             = $app['router'];
+        $this->repo               = $app['repo'];
+        $this->isRunningUnitTests = $app->runningUnitTests();
     }
 
-    public function throttle($request): array
+    public function throttle($request)
     {
         // Usually in local or test ENV we skip basis local configuration
         if ($this->config['skip'] === true)
@@ -72,7 +73,7 @@ class Throttle
             $this->initRedisConnection();
             $this->initThrottleSettings();
 
-            return $this->attemptThrottle();
+            $this->attemptThrottle();
         }
         catch (\Throwable $e)
         {
@@ -97,21 +98,23 @@ class Throttle
     {
         $this->setMidIfApplicable();
 
-        $this->settings = $this->redis->pipeline(
+        $settings = $this->redis->pipeline(
             function ($pipe)
             {
-                $pipe->hgetall(Constant::GLOBAL_SETTINGS_KEY);
-                $pipe->hgetall(Constant::ID_SETTINGS_KEY_PREFIX . $this->getIdSettingsKey());
+                $pipe->hgetall(K::GLOBAL_SETTINGS_KEY);
+                $pipe->hgetall(K::ID_SETTINGS_KEY_PREFIX . $this->getIdSettingsKey());
             });
+
+        list($this->settings[K::GLOBAL], $this->settings[K::ID_LEVEL]) = $settings;
     }
 
-    private function attemptThrottle(): array
+    private function attemptThrottle()
     {
         $allowed = 1;
         $limits  = [];
 
-        // Throttling and blocking may be temporarily skipped via remote configuration
-        if (($this->settings[0]['skip'] ?? '0') === '1')
+        // Throttling and blocking may be temporarily skipped via remote configuration(Redis)
+        if (($this->settings[K::GLOBAL]['skip'] ?? '0') === '1')
         {
             return $limits;
         }
@@ -123,21 +126,18 @@ class Throttle
 
         $limiter  = new LeakyBucket\Redis($maxBucketSize, $leakRateValue, $leakRateDuration, $this->redis);
         $response = $limiter->attempt($key);
-        $allowed  = array_shift($response);
-        $limits   = $response;
 
         // Payload for trace and exception extra data
-        $payload  = compact('key', 'leakRateValue', 'leakRateDuration', 'maxBucketSize', 'allowed', 'limits');
+        $payload  = compact('key', 'leakRateValue', 'leakRateDuration', 'maxBucketSize', 'response');
 
         // Only throttle if it is not in mock mode(early release)
-        if (($allowed === 0) and (($this->settings[0]['mocked'] ?? '0') === '0'))
+        $mock = $this->settings[K::GLOBAL]['mocked'] ?? '0';
+        if (($response->allowed === 0) and ($mock === '0'))
         {
-            throw new ThrottleException($limits[3], $payload);
+            throw new ThrottleException($response->retryAfter, $payload);
         }
 
-        $this->trace->debug(TraceCode::THROTTLE_DEBUG_LIMITS, $payload);
-
-        return $limits;
+        $this->trace->debug(TraceCode::THROTTLE_ATTEMPT_RESPONSE, $payload);
     }
 
     private function getIdSettingsKey(): string
@@ -160,22 +160,23 @@ class Throttle
 
         $ip = $this->isPublicAuth() ? $this->request->ip() : '';
 
-        return "{$this->route}:{$this->mode}:{$this->auth}:{$this->oauthAppId}:{$id}:{$ip}";
+        // E.g.: payments_create:live:private::10000000000000:
+        return implode(':', [$this->route, $this->mode, $this->auth, $this->oauthAppId, $id, $ip]);
     }
 
     private function getThrottleRateValue(): int
     {
-        return $this->getThrottleValue(Constant::LEAK_RATE_VALUE, 2);
+        return $this->getThrottleValue(K::LEAK_RATE_VALUE, 2);
     }
 
     private function getThrottleRateDuration(): int
     {
-        return $this->getThrottleValue(Constant::LEAK_RATE_DURATION, 1000);
+        return $this->getThrottleValue(K::LEAK_RATE_DURATION, 1000);
     }
 
     private function getThrottleMaxBucketSize(): int
     {
-        return $this->getThrottleValue(Constant::MAX_BUCKET_SIZE, 30);
+        return $this->getThrottleValue(K::MAX_BUCKET_SIZE, 30);
     }
 
     private function getThrottleValue(string $key, int $default): int
@@ -210,13 +211,13 @@ class Throttle
         //
 
                 // Value for given mid/application id, mode, auth & route
-        return $this->settings[1]["{$this->mode}:{$this->auth}:{$this->route}:{$key}"] ??
+        return $this->settings[K::ID_LEVEL]["{$this->mode}:{$this->auth}:{$this->route}:{$key}"] ??
                 // Value for given mid/application id, mode & auth
-                $this->settings[1]["{$this->mode}:{$this->auth}:{$key}"] ??
+                $this->settings[K::ID_LEVEL]["{$this->mode}:{$this->auth}:{$key}"] ??
                 // Value for given mode, auth & route
-                $this->settings[0]["{$this->mode}:{$this->auth}:{$this->route}:{$key}"] ??
+                $this->settings[K::GLOBAL]["{$this->mode}:{$this->auth}:{$this->route}:{$key}"] ??
                 // Value for given mode & auth
-                $this->settings[0]["{$this->mode}:{$this->auth}:{$key}"] ??
+                $this->settings[K::GLOBAL]["{$this->mode}:{$this->auth}:{$key}"] ??
                 $default;
     }
 
@@ -231,13 +232,13 @@ class Throttle
             return;
         }
 
-        $key = Constant::KEYID_MID_KEY_PREFIX . $this->keyId;
+        $key = K::KEYID_MID_KEY_PREFIX . $this->keyId;
         $mid = $this->redis->get($key);
 
         if (empty($mid) === true)
         {
             $mid = $this->repo->key->connection($this->mode)->findOrFailPublic($this->keyId)->getMerchantId();
-            $this->redis->setex($key, 604800, $mid);
+            $this->redis->setex($key, K::NUM_SECONDS_IN_WEEK, $mid);
         }
 
         $this->mid = $mid;

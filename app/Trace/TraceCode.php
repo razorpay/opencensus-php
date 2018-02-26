@@ -214,7 +214,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const REQUEST_THROTTLED                             = 'REQUEST_THROTTLED';
     const THROTTLE_REQUEST_THROTTLED                    = 'THROTTLE_REQUEST_THROTTLED';
-    const THROTTLE_DEBUG_LIMITS                         = 'THROTTLE_DEBUG_LIMITS';
+    const THROTTLE_ATTEMPT_RESPONSE                     = 'THROTTLE_ATTEMPT_RESPONSE';
 
     const CARD_NETWORK_INVALID                          = 'CARD_NETWORK_INVALID';
 

@@ -3,13 +3,13 @@
 namespace RZP\Http\Middleware;
 
 use ApiResponse;
-use RZP\Http\Throttle\Throttle;
+use RZP\Http\Throttle\Throttler;
 
 final class ThrottleV2
 {
     public function handle($request, \Closure $next)
     {
-        (new Throttle)->throttle($request);
+        (new Throttler)->throttle($request);
 
         return $next($request);
     }
