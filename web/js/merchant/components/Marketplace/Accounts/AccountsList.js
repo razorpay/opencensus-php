@@ -1,3 +1,5 @@
+import { prefixEntityValue } from 'common/data';
+
 import Time from 'rzp/ui/Time';
 import CheckIcon from 'rzp/ui/CheckIcon';
 import TableBody from 'rzp/ui/TableBody';
@@ -8,7 +10,7 @@ const AccountsListItem = ({ account, onEdit }) => {
     <EntityItemRow id={account.id}>
       <td>
         <a onClick={onEdit}>
-          <code>{`acc_${account.id}`}</code>
+          <code>{prefixEntityValue('account', account.id)}</code>
         </a>
       </td>
       <td>{account.email}</td>
@@ -17,12 +19,12 @@ const AccountsListItem = ({ account, onEdit }) => {
         <Time value={account.created_at} format="DD MMM YYYY, hh:mm:ss a" />
       </td>
       <td>
-        <span data-tip={account.activated ? 'Activated' : 'Not Activated'}>
-          <CheckIcon value={account.activated} />
+        <span data-tip={account.activation_details.status == 'activated' ? 'Activated' : 'Not Activated'}>
+          <CheckIcon value={account.activation_details.status == 'activated'} />
         </span>
       </td>
       <td>
-        <Time value={account.activated_at} format="DD MMM YYYY, hh:mm:ss a" />
+        <Time value={account.activation_details.activated_at} format="DD MMM YYYY, hh:mm:ss a" />
       </td>
     </EntityItemRow>
   );

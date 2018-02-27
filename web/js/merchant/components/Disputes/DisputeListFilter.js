@@ -17,12 +17,16 @@ export default ({ type, ...otherProps }) => {
   return (
     <ListFilter {...otherProps}>
       <div class="form-group list-filter-item">
-        <label>Search</label>
+        <label>Dispute Id</label>
+        <Field name="id" component="input" class="form-control input-sm" />
+      </div>
+
+      <div class="form-group list-filter-item">
+        <label>Payment Id</label>
         <Field
-          name="id"
+          name="payment_id"
           component="input"
           class="form-control input-sm"
-          placeholder="Payment Id or Dispute Id"
         />
       </div>
 

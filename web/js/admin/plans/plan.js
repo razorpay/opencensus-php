@@ -291,6 +291,17 @@ class Rule extends CollectionItem {
     }
   }
 
+  issuerField() {
+    if (this.payment_method === 'emandate') {
+      return this.selectField('payment_issuer', {
+        '': 'All',
+        'initial': 'Initial',
+        'auto': 'Auto'
+      })
+    }
+    return this.selectField('payment_issuer');
+  }
+
   internationalField() {
     if (this.payment_method === 'card') {
       var field = this.binaryField('international');
