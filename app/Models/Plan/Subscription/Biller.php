@@ -245,7 +245,7 @@ class Biller extends Base\Core
 
         $task = $subscription->task;
 
-        $task->updateForSubscription($this->mode);
+        $task->updateForSubscription($subscription, $this->mode);
 
         $charge->setEndedAtIfApplicable($subscription);
 

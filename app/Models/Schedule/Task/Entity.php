@@ -9,6 +9,7 @@ use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Schedule;
 use RZP\Constants\Timezone;
+use RZP\Models\Plan\Subscription;
 
 /**
  * @property Schedule\Entity $schedule
@@ -282,11 +283,12 @@ class Entity extends Base\PublicEntity
      * we would call this function and the next_run_at will get set to
      * whatever it's supposed to get set to initially without retry.
      *
-     * @param string $mode
-     * @param bool $retry
+     * @param Subscription\Entity $subscription
+     * @param string              $mode
+     * @param bool                $retry
      * @throws \RZP\Exception\LogicException
      */
-    public function updateForSubscription(string $mode , $retry = false)
+    public function updateForSubscription(Subscription\Entity $subscription, string $mode , $retry = false)
     {
         if ($retry === true)
         {
@@ -296,47 +298,44 @@ class Entity extends Base\PublicEntity
         }
 
         //
-        // TODO: We should be able to use `getNextRunAt()` for Live Mode also.
+        // Calling updateNextRunAndLastRun for task sets the next_run starting
+        // from current time. This works fine in most cases, since charge time
+        // is usually equal to current time. But in the merchant-initiated test
+        // charge flow, we allow merchants to simulate a future charge for a
+        // subscription. So in this case, using current time will give the wrong
+        // result. So we use charge_at (next_run_at) instead, which is equal to
+        // current time in normal flow, and equal to simulated current time in
+        // test charge flow.
         //
-        $referenceTime = Carbon::now(Timezone::IST);
-
-        if ($mode === Mode::TEST)
+        // But, using next_run_at creates an issue when auth transaction (immediate) is made.
+        //
+        // In case of auth transaction (immediate), start_at would be null.
+        // Since start_at is null, we don't set any next_run_at during subscription
+        // creation (If it was not null, we would have set the next_run_at to the
+        // start_at value). Since we don't set next_run_at, the task entity sets the
+        // next_run_at to a default value: midnight. In this case, it would get set
+        // to subscription's creation date's midnight -- hence, in the past. We cannot
+        // use this value as refTime since it's not the actual next_run_at, but a dummy one.
+        //
+        // Solution: We know for a fact that next_run_at can NEVER be lesser than the
+        // subscription start_at value. If it is, it means that it's the auth
+        // transaction (immediate) where we haven't gotten a chance to update next_run_at.
+        // In this case, we just use the subscription's start_at time (which we do when
+        // subscription is created with start_at value) to calculate the next_run_at.
+        // In all other cases, we just use next_run_at as it is, because this value is set by us
+        // explicitly when to run and in simulated flow, this is equivalent to current time itself.
+        //
+        if (($this->getNextRunAt() < $subscription->getStartAt()) or
+            ($this->getNextRunAt() === null))
         {
-            //
-            // Calling updateNextRunAndLastRun for task sets the next_run starting
-            // from current time. This works fine in most cases, since charge time
-            // is usually equal to current time. But in the merchant-initiated test
-            // charge flow, we allow merchants to simulate a future charge for a
-            // subscription. So in this case, using current time will give the wrong
-            // result. So we use charge_at instead, which is equal to current time
-            // in normal flow, and equal to simulated current time in test charge flow.
-            //
-            // In case of auth transaction (immediate), charge_at would be null.
-            // In that case, we can use actual current time as the reference time.
-            //
-            // Problem : In case it is the first auth transaction for which start at was null
-            // next run at will be set to the creation date of the subscription. But we don't
-            // want creation date of subscription as reference time to calculate the next run as
-            // that will give us wrong next_run_at. To calculate right next_run_at reference should
-            // be the time when the first auth transaction happens which would be equal to
-            // current timestamp in this case.
-            // Solution : next_run  will be set to creation date of subscription by default
-            // in case start_at is null. So when auth transaction happens in test mode it will always in
-            // future time. And Carbon::now will always be greater than next_run_at. But in subsequent charges
-            // either cron will charge the payment or the merchant. But if merchant is charging that mean next_run_at
-            // hasn't happened yet. So Carbon::now will always be less than that of next_run_at
-            //
-            if ($this->getNextRunAt() > Carbon::now()->getTimestamp())
-            {
-                $referenceTime = $this->getNextRunAt();
-            }
-            else
-            {
-                $referenceTime = Carbon::now()->getTimestamp();
-            }
-
-            $referenceTime = Carbon::createFromTimestamp($referenceTime, Timezone::IST);
+            $referenceTime = $subscription->getStartAt();
         }
+        else
+        {
+            $referenceTime = $this->getNextRunAt();
+        }
+
+        $referenceTime = Carbon::createFromTimestamp($referenceTime, Timezone::IST);
 
         $this->updateNextRunAndLastRunFromGivenMinTimeAndRefTime($referenceTime);
     }
