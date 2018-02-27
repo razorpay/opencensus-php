@@ -65,6 +65,8 @@ class Entity extends Base\PublicEntity
      */
     const DEFAULT_MAX_AMOUNT    = 10000000;
 
+    const DEFAULT_EMANDATE_MAX_AMOUNT    = 9999900;
+
     /**
      * We use this to set the number of years after which the
      * emandate token will get expired and cannot be used
@@ -234,6 +236,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::IFSC);
     }
 
+    public function getAadhaarNumber()
+    {
+        return $this->getAttribute(self::AADHAAR_NUMBER);
+    }
+
     public function getToken()
     {
         return $this->getAttribute(self::TOKEN);
@@ -399,6 +406,10 @@ class Entity extends Base\PublicEntity
         {
             $maxAmount = self::DEFAULT_MAX_AMOUNT;
 
+            if ($this->getAuthType() === Payment\AuthType::AADHAAR)
+            {
+                $maxAmount = self::DEFAULT_EMANDATE_MAX_AMOUNT;
+            }
         }
 
         $this->attributes[self::MAX_AMOUNT] = $maxAmount;

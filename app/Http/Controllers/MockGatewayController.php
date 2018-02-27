@@ -288,6 +288,17 @@ class MockGatewayController extends Controller
         return $server->authorize($input, $paymentId);
     }
 
+    public function postEsignerPayment($esigner)
+    {
+        $input = Request::all();
+
+        $driver = 'esigner_' . $esigner;
+
+        $server = $this->gateway->server($driver);
+
+        return $server->sign($input);
+    }
+
     public function postUpiPayment($bank)
     {
         $input = Request::all();
