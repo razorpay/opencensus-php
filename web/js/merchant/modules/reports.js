@@ -36,11 +36,16 @@ export const generateReport = ajaxParams => {
 const pollInterval = 2, // poll interval in SECONDS
   timeout = 30 * 60 * 1000; // 30 minutes
 
-export const generateReportV2 = params => {
+export const generateReportV2 = (params, isMerchantAccount) => {
   const startTime = new Date();
 
   let numCallsMade = 0,
     timeElapsed = 0;
+
+  if (!isMerchantAccount) {
+  
+    params.accountId = params.generated_by;
+  }
 
   return createLog(params)
     .then(resp => {
