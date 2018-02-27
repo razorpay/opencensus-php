@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Customer\Token;
 
+use Crypt;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\Base;
@@ -91,6 +92,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_TOKEN2,
         self::RECURRING,
         self::AUTH_TYPE,
+        self::AADHAAR_NUMBER,
         self::MAX_AMOUNT,
         self::EXPIRED_AT,
     ];
@@ -117,6 +119,7 @@ class Entity extends Base\PublicEntity
         self::RECURRING_STATUS,
         self::MAX_AMOUNT,
         self::AUTH_TYPE,
+        self::AADHAAR_NUMBER,
         self::USED_COUNT,
         self::USED_AT,
         self::EXPIRED_AT,
@@ -153,6 +156,7 @@ class Entity extends Base\PublicEntity
         self::RECURRING_STATUS          => null,
         self::MAX_AMOUNT                => null,
         self::AUTH_TYPE                 => null,
+        self::AADHAAR_NUMBER            => null,
         self::USED_AT                   => null,
         self::USED_COUNT                => 0,
         self::EXPIRED_AT                => null,
