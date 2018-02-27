@@ -219,7 +219,7 @@ class Entity extends Base\PublicEntity
     }
 
     /**
-     * The file which our processor creates finally with validation
+     * The file which our processor creates with validation
      * results only. This is available to user to download.
      * Currently available only for payment_links.
      *

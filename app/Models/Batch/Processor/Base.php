@@ -15,6 +15,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
+use RZP\Models\Batch\Constants;
 use RZP\Exception\BaseException;
 use RZP\Exception\LogicException;
 use RZP\Models\Base as BaseModel;
@@ -24,12 +25,6 @@ use RZP\Exception\BadRequestValidationFailureException;
 class Base extends BaseModel\Core
 {
     use FileHandlerTrait;
-
-    const PROCESSABLE_COUNT = 'processable_count';
-
-    const ERROR_COUNT       = 'error_count';
-
-    const PARSED_ENTRIES    = 'parsed_entries';
 
     const FILE_ID           = 'file_id';
 
@@ -171,6 +166,19 @@ class Base extends BaseModel\Core
         });
     }
 
+    public function storeAndValidateInputFile(array $input): array
+    {
+        $validatedEntries = $this->fetchValidatedEntriesFromInputFile($input);
+
+        $response = $this->getValidatedEntriesStatsAndPreview($validatedEntries);
+
+        $ufh = $this->createValidatedFileAndSave($validatedEntries);
+
+        $response += $this->getFileIdAndSignedUrl($ufh);
+
+        return $response;
+    }
+
     public function saveInputFileAndValidateEntries(array $input)
     {
         // Here $ufhFile is the input file_store instance upload by merchant.
@@ -201,17 +209,17 @@ class Base extends BaseModel\Core
         return $this->validateInputFileEntries($this->inputFileLocalPath, $input);
     }
 
-    public function getValidatedEntriesStatsAndSampleData(array $entries): array
+    public function getValidatedEntriesStatsAndPreview(array $entries): array
     {
-        $correctEntries = array_filter($entries, function($entry) {
-
+        $correctEntries = array_filter($entries, function($entry)
+        {
             return (isset($entry[Batch\Header::ERROR_CODE]) === false);
         });
 
         $response = [
-            self::PROCESSABLE_COUNT     => count($correctEntries),
-            self::ERROR_COUNT           => count($entries) - count($correctEntries),
-            self::PARSED_ENTRIES        => array_slice($correctEntries, 0, self::MAX_PARSED_ROWS),
+            Constants::PROCESSABLE_COUNT     => count($correctEntries),
+            Constants::ERROR_COUNT           => count($entries) - count($correctEntries),
+            Constants::PARSED_ENTRIES        => array_slice($correctEntries, 0, self::MAX_PARSED_ROWS),
         ];
 
         return $response;
@@ -659,16 +667,18 @@ class Base extends BaseModel\Core
         {
             case FileStore\Format::TXT:
                 $txt = $this->generateText($entries, '|');
-                $this->generatedFileLocalPath = $this->createTxtFile($this->batch->getFileKeyWithExt($ext),
-                                                                     $txt,
-                                                                     $this->generatedFileDirectory);
+                $this->generatedFileLocalPath = $this->createTxtFile(
+                                                        $this->batch->getFileKeyWithExt($ext),
+                                                        $txt,
+                                                        $this->generatedFileDirectory);
                 return;
 
             case FileStore\Format::CSV:
                 $txt = $this->generateText($entries, ',');
-                $this->generatedFileLocalPath = $this->createTxtFile($this->batch->getFileKeyWithExt($ext),
-                                                                     $txt,
-                                                                     $this->generatedFileDirectory);
+                $this->generatedFileLocalPath = $this->createTxtFile(
+                                                        $this->batch->getFileKeyWithExt($ext),
+                                                        $txt,
+                                                        $this->generatedFileDirectory);
                 return;
 
             case FileStore\Format::XLSX:
@@ -1107,15 +1117,5 @@ class Base extends BaseModel\Core
     protected function increaseAllowedSystemLimits()
     {
         return;
-    }
-
-    protected function getTimeStampedName(string $fileKey, string $ext = FileStore\Format::XLSX): string
-    {
-        return $fileKey . '_' . $this->getTimestamp() . '.' . $ext;
-    }
-
-    protected function getTimestamp()
-    {
-        return Carbon::now(Timezone::IST)->getTimestamp();
     }
 }

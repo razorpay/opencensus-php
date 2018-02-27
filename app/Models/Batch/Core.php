@@ -41,19 +41,7 @@ class Core extends Base\Core
 
         $processor = Processor\Factory::get($batch);
 
-        $validatedEntries = $processor->fetchValidatedEntriesFromInputFile($input);
-
-        $response = $processor->getValidatedEntriesStatsAndSampleData($validatedEntries);
-
-        // TODO : Correct this comment logic as per new logic
-        // The validated file to be created and saved is supposed to be used in batch create api.
-        // Hence it must be saved as an input file and to be saved inside batch/upload folder
-        // This validated file_store instance has no entity associated with it as any input file
-        // and should have the type as `batch_input`. For backward compatibility.
-
-        $ufh = $processor->createValidatedFileAndSave($validatedEntries);
-
-        $response += $processor->getFileIdAndSignedUrl($ufh);
+        $response = $processor->storeAndValidateInputFile($input);
 
         return $response;
     }

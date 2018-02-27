@@ -55,7 +55,7 @@ final class Route
         'payment_payout'                          => ['post',     'payments/{id}/payouts',                          'PaymentController@postPayout'                                      ],
         'payment_bank_transfer_fetch'             => ['get',      'payments/{id}/bank_transfer',                    'BankTransferController@fetchBankTransferForPayment'                ],
         'batch_create'                            => ['post',     'batches',                                        'BatchController@createBatch'                                       ],
-        'batch_validate_file'                     => ['post',     'batches/validate',                               'BatchController@validateBatchInputFile'                                 ],
+        'batch_validate_file'                     => ['post',     'batches/validate',                               'BatchController@validateFile'                                      ],
         'batch_fetch_multiple'                    => ['get',      'batches',                                        'BatchController@getBatches'                                        ],
         'batch_fetch_by_id'                       => ['get',      'batches/{id}',                                   'BatchController@getBatchById'                                      ],
         'batch_process_file'                      => ['post',     'batches/process',                                'BatchController@processBatches'                                    ],

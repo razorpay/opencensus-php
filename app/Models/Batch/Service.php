@@ -74,7 +74,7 @@ class Service extends Base\Service
         return $batch->toArrayPublic();
     }
 
-    public function validateBatchInputFile(array $input): array
+    public function validateFile(array $input): array
     {
         $response = (new Core)->storeAndValidateInputFile($this->merchant, $input);
 
