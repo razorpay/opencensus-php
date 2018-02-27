@@ -256,6 +256,7 @@ class Entity extends Base\PublicEntity
         self::HANDLE                 => null,
         self::RISK_RATING            => 3,
         self::LINKED_ACCOUNT_KYC     => 0,
+        self::HAS_KEY_ACCESS         => 0,
         self::RISK_THRESHOLD         => null,
         self::LOGO_URL               => null,
         self::MAX_PAYMENT_AMOUNT     => null,
@@ -1350,16 +1351,17 @@ class Entity extends Base\PublicEntity
     public function toArrayUser()
     {
         $attributes = [
-            self::ID            => $this->getAttribute(self::ID),
-            self::NAME          => $this->getAttribute(self::NAME),
-            self::BILLING_LABEL => $this->getAttribute(self::BILLING_LABEL),
-            self::EMAIL         => $this->getAttribute(self::EMAIL),
-            self::ACTIVATED     => $this->getAttribute(self::ACTIVATED),
-            self::ARCHIVED_AT   => $this->getAttribute(self::ARCHIVED_AT),
-            self::SUSPENDED_AT  => $this->getAttribute(self::SUSPENDED_AT),
-            self::LOGO_URL      => $this->getFullLogoUrlWithSize(self::MEDIUM_SIZE),
-            self::CREATED_AT    => $this->getAttribute(self::CREATED_AT),
-            self::UPDATED_AT    => $this->getAttribute(self::UPDATED_AT),
+            self::ID             => $this->getAttribute(self::ID),
+            self::NAME           => $this->getAttribute(self::NAME),
+            self::BILLING_LABEL  => $this->getAttribute(self::BILLING_LABEL),
+            self::EMAIL          => $this->getAttribute(self::EMAIL),
+            self::ACTIVATED      => $this->getAttribute(self::ACTIVATED),
+            self::ARCHIVED_AT    => $this->getAttribute(self::ARCHIVED_AT),
+            self::SUSPENDED_AT   => $this->getAttribute(self::SUSPENDED_AT),
+            self::HAS_KEY_ACCESS => $this->getAttribute(self::HAS_KEY_ACCESS),
+            self::LOGO_URL       => $this->getFullLogoUrlWithSize(self::MEDIUM_SIZE),
+            self::CREATED_AT     => $this->getAttribute(self::CREATED_AT),
+            self::UPDATED_AT     => $this->getAttribute(self::UPDATED_AT),
         ];
 
         $attributes[self::ROLE] = $this->getAttribute(self::PIVOT)->role;

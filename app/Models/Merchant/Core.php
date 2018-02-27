@@ -448,7 +448,9 @@ class Core extends Base\Core
 
         $merchant->setHasKeyAccess($input[Entity::HAS_KEY_ACCESS]);
 
-        $this->app['workflow']->handle($oldMerchant, $merchant);
+        $this->app['workflow']
+             ->setEntity($merchant->getEntity())
+             ->handle($oldMerchant, $merchant);
 
         $this->repo->saveOrFail($merchant);
 
