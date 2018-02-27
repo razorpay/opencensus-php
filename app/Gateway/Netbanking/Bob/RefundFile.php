@@ -51,7 +51,7 @@ class RefundFile extends Base\RefundFile
 
         foreach ($input['data'] as $row)
         {
-            if ($row['gateway']['account_number'] === null)
+            if (empty($row['gateway']['account_number']) === true)
             {
                 throw new Exception\LogicException(
                     'Recon needs to be run before generation of refund file',
