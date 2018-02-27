@@ -121,12 +121,6 @@ class Entity extends Base\PublicEntity
         if (isset($input[self::NEXT_RUN_AT]) === false)
         {
             //
-            // It is important to set default value of next run at as
-            // while updating next run and last run, value of next run is
-            // being used. If it is not set it will break
-            //
-
-            //
             // We need to set a default value here since some flows
             // are dependent on always having a value for this.
             // Examples: `updateNextRunAndLastRunFromGivenMinTimeAndRefTime`
@@ -199,20 +193,32 @@ class Entity extends Base\PublicEntity
 
     // ------------------------- Helper methods --------------------------------
 
-    public function updateNextRunAndLastRun(bool $considerHolidays = true)
+    public function updateNextRunAndLastRun(bool $considerHolidays = false)
     {
-        $lastRun = Carbon::createFromTimestamp($this->getNextRunAt(), Timezone::IST);
-
         $currentTime = Carbon::now(Timezone::IST);
 
-        $this->updateNextRunAndLastRunFromGivenMinTimeAndRefTime($lastRun, $currentTime, $considerHolidays);
+        $schedulePeriod = $this->schedule->getPeriod();
+
+        if (Schedule\Period::isPeriodAnchored($schedulePeriod) === true)
+        {
+            $refTime = $currentTime;
+            $minTime = null;
+        }
+        else
+        {
+            $lastRun = Carbon::createFromTimestamp($this->getNextRunAt(), Timezone::IST);
+
+            $refTime = $lastRun;
+            $minTime = $currentTime;
+        }
+
+        $this->updateNextRunAndLastRunFromGivenMinTimeAndRefTime($refTime, $minTime, $considerHolidays);
     }
 
     /**
      * @param Carbon $refTime           reference time refers to the base time
      *                                  from which next run should be calculated
-     * @param Carbon $minTime           takes care of the service which want certain next
-     *                                  run without taking into account the min time
+     * @param int|null $minTime
      * @param bool $considerHolidays
      *
      * @throws \RZP\Exception\LogicException
@@ -222,19 +228,13 @@ class Entity extends Base\PublicEntity
         $minTime = null,
         $considerHolidays = false)
     {
-        if (($this->schedule->getAnchor() !== null) and
-            ($minTime !== null))
-        {
-            //
-            // This is so because there is no concept
-            // of time intervals in anchored schedules
-            // min time will be equal to refTime.
-            //
-            $refTime = $minTime;
-        }
-
         $lastRun = Carbon::createFromTimestamp($this->getNextRunAt(), Timezone::IST);
 
+        //
+        // Even though we are are passing minTime here, for anchored
+        // schedules, this will not be used and will be ignored completely.
+        // Unanchored will work with/without the minTime.
+        //
         $nextRun = Schedule\Library::computeFutureRun($this->schedule, $refTime, $minTime, $considerHolidays);
 
         $this->setNextRunAt($nextRun->getTimestamp());
@@ -242,7 +242,7 @@ class Entity extends Base\PublicEntity
         //
         // last run will never be null because it is
         // derived from next_run_at which will never be
-        // null. By default it is set to today midnight
+        // null since it is set to midnight by default.
         //
         $this->setLastRunAt($lastRun->getTimestamp());
     }
