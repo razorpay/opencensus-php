@@ -30,6 +30,7 @@ const getLog = (logId, accountId) => {
     ...(!!accountId && {accountId})
   });
 };
+
 const getFile = (fileId, accountId) => {
     
   return merchantFetch({
@@ -37,12 +38,14 @@ const getFile = (fileId, accountId) => {
     ...(!!accountId && {accountId})
   });
 };
+
 export const getConfigs = () => {
     
   return merchantFetch({
     url: 'reporting/configs'
   });
 };
+
 export const generateReport = ajaxParams => {
   return {
     type: GENERATE_REPORT,
@@ -55,7 +58,7 @@ const pollInterval = 2, // poll interval in SECONDS
 
 export const generateReportV2 = (params, isMerchantAccount) => {
   const startTime = new Date(),
-        accountHeaderVal = isMerchantAccount && 
+        accountHeaderVal = !isMerchantAccount && 
                            params.generated_by;
   
   let numCallsMade = 0,
