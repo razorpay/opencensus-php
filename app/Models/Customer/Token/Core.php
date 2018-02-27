@@ -67,6 +67,14 @@ class Core extends Base\Core
      */
     public function create($customer, $input, Card\Entity $card = null)
     {
+        $this->trace->info(
+            TraceCode::CUSTOMER_TOKEN_CREATE,
+            [
+                'customer_id' => $customer->getId(),
+                'input'       => $input
+            ]
+        );
+
         $token = new Token\Entity;
 
         if (isset($input[Token\Entity::CARD_ID]) === true)

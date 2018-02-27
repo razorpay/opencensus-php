@@ -127,8 +127,21 @@ class DefaultPlan
             ],
 
             [
-                'id'             => '1L8dUj9MzP3Bj3',
+                'id'             => '1Otj9JcY5qYB92',
                 'plan_id'        => '1AXludj60w4pSp',
+                'plan_name'      => 'Promotional Price',
+                'feature'        => 'payment',
+                'payment_method' => 'emi',
+                'percent_rate'   => '200',
+                'fixed_rate'     => '0',
+                'expired_at'     => null,
+                'created_at'     => time(),
+                'updated_at'     => time()
+            ],
+
+            [
+                'id'             => '1L8dUj9MzP3Bj3',
+                'plan_id'        => '1In3Yh5Mluj605',
                 'plan_name'      => 'Promotional Price',
                 'feature'        => 'payment',
                 'payment_method' => 'card',
@@ -140,11 +153,11 @@ class DefaultPlan
             ],
 
             [
-                'id'             => '1Otj9JcY5qYB9Z',
-                'plan_id'        => '1AXludj60w4pSp',
+                'id'             => '1Nsi8IbQ3pWP7T',
+                'plan_id'        => '1In3Yh5Mluj605',
                 'plan_name'      => 'Promotional Price',
                 'feature'        => 'payment',
-                'payment_method' => 'wallet',
+                'payment_method' => 'netbanking',
                 'percent_rate'   => '200',
                 'fixed_rate'     => '0',
                 'expired_at'     => null,
@@ -153,11 +166,11 @@ class DefaultPlan
             ],
 
             [
-                'id'             => '1Otj9JcY5qYB92',
-                'plan_id'        => '1AXludj60w4pSp',
+                'id'             => '1Otj9JcY5qYB9Z',
+                'plan_id'        => '1In3Yh5Mluj605',
                 'plan_name'      => 'Promotional Price',
                 'feature'        => 'payment',
-                'payment_method' => 'emi',
+                'payment_method' => 'wallet',
                 'percent_rate'   => '200',
                 'fixed_rate'     => '0',
                 'expired_at'     => null,

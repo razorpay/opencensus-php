@@ -43,7 +43,7 @@ class NetbankingAxisEMandateTest extends TestCase
 
         $this->fixtures->create('customer');
 
-        $this->fixtures->merchant->addFeatures(['charge_at_will', 'e_mandate']);
+        $this->fixtures->merchant->addFeatures(['charge_at_will']);
 
         $this->fixtures->merchant->enableEmandate('10000000000000');
 
