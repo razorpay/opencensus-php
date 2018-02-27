@@ -124,7 +124,8 @@ class Entity extends Base\PublicEntity
             //
             // We need to set a default value here since some flows
             // are dependent on always having a value for this.
-            // Examples: `updateNextRunAndLastRunFromGivenMinTimeAndRefTime`
+            // Examples: `updateNextRunAndLastRunFromGivenMinTimeAndRefTime`,
+            // `updateForSubscription`
             //
             $nextRunAt = Carbon::today(Timezone::IST)->getTimestamp();
 
@@ -241,11 +242,15 @@ class Entity extends Base\PublicEntity
         $this->setNextRunAt($nextRun->getTimestamp());
 
         //
-        // last run will never be null because it is
+        // lastRun will never be null because it is
         // derived from next_run_at which will never be
         // null since it is set to midnight by default.
+        // But, the condition is here nevertheless.
         //
-        $this->setLastRunAt($lastRun->getTimestamp());
+        if ($lastRun !== null)
+        {
+            $this->setLastRunAt($lastRun->getTimestamp());
+        }
     }
 
     /**
@@ -333,18 +338,22 @@ class Entity extends Base\PublicEntity
         else
         {
             //
-            // We are not using next_run_at but current start here
-            // because next_run_at gets updated by 1 day on every
-            // retry. In case of unanchored schedule, it will take the
-            // updated time as reference and calculate the next run
-            // which is wrong. Say its a 3 days interval. Next_run was
-            // 10 Jan. But it failed first time. Next run gets updated to
-            // 11 Jan. Here it passes, but if we take 11 Jan as reference
-            // next run will be 15 Jan while correct next_run is 14 Jan.
-            // So we use current start because current start will be last
-            // run of current billing cycle. So it only makes sense to use
-            // this variable Also current start for the billing is always
-            // updated before reaching this point
+            // We are not actually using next_run_at here because of unanchored
+            // schedules. Anchored schedules have no issue with using current
+            // time or next_run_at values. They both would have the same value
+            // in live mode. In test mode, we can't use the current time
+            // because of simulated charges. But, we can use next_run_at in
+            // both test and live modes. But, next_run_at has an issue with
+            // unanchored schedules. Let's take an example of a schedule having
+            // 4 days interval. If the next_run_at was on 10th Jan and a
+            // failure happened, the next_run_at will get updated to 11th Jan.
+            // Once we run on 11th Jan and it goes through successfully, and if
+            // we use next_run_at, the next run calculated would end up being
+            // 15th Jan and not 14th Jan. Hence, we cannot use next_run_at to
+            // calculate the next next_run_at. So, we use current_start instead.
+            //
+            // current_start will be last run of the current billing cycle.
+            // It's always updated before reaching this point.
             //
             $referenceTime = $subscription->getCurrentStart();
         }
