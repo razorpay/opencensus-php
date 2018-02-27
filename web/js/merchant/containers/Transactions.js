@@ -33,9 +33,8 @@ export default function TransactionsContainer() {
         </ShowWhen>
         <NavLink to="/orders">Orders</NavLink>
         <NavLink to="/disputes">
-          Disputes &nbsp;<span class="badge bg-primary disputes-count">
-            new
-          </span>
+          Disputes
+          <span class="badge bg-primary disputes-count">new</span>
         </NavLink>
       </header>
       <TestModeBanner />
