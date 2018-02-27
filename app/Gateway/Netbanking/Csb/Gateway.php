@@ -124,25 +124,16 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE, $data);
 
-        try
-        {
-            $verify->verifyResponseContent = $this->parseVerifyResponse($response->body);
-        }
-        catch (\ErrorException $e)
-        {
-            // We set apiSuccess to true/false and gatewaySuccess to false
-            $this->checkApiSuccess($verify);
+        $verify->verifyResponseContent = $this->parseVerifyResponse($response->body);
 
-            $verify->gatewaySuccess = false;
-
-            // If we are unable to parse the verify response, we must move the payment to verify bucket 9
-            throw new PaymentVerificationException(
-                $data,
-                $verify,
-                VerifyAction::FINISH,
-                ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
-                $e);
-        }
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            [
+                'response_body' => $response->body,
+                'content'       => $verify->verifyResponseContent,
+                'payment_id'    => $verify->input['payment']['id'],
+                'status_code'   => $response->status_code
+            ]);
     }
 
     public function verifyPayment(Verify $verify)
@@ -350,7 +341,19 @@ class Gateway extends Base\Gateway
 
     private function parseVerifyResponse(string $responseString): array
     {
-        return (array) simplexml_load_string($responseString);
+        if (empty($response) === true)
+        {
+            return $response;
+        }
+
+        $response = simplexml_load_string($response);
+
+        //
+        // Converting all elements of $response xml into an array
+        //
+        $responseArray = json_decode(json_encode($response), true);
+
+        return $responseArray;
     }
 
     private function getVerifyStatus(Verify $verify): string
