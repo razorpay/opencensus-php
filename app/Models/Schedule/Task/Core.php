@@ -117,7 +117,7 @@ class Core extends Base\Core
      *
      * @return Entity
      */
-    public function createForExternalService(Merchant\Entity $merchant, Schedule\Entity $schedule, array $input): Entity
+    public function createForExternalService(Merchant\Entity $merchant, Schedule\Entity $schedule = null, array $input = []): Entity
     {
         (new Validator())->validateForExternalServices($input);
 

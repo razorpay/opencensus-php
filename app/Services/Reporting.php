@@ -224,20 +224,20 @@ class Reporting
     {
         $entityId = $input[ScheduleTask\Entity::ENTITY_ID];
 
-        unset($input[ScheduleTask\Entity::ENTITY_ID]);
-
         $merchant = $this->ba->getMerchant();
 
-        $schedule = (new Schedule\Core)->createSchedule($input, $merchant);
+        // As discussed, we will not be creating new schedule
+        // Schedule id will be passed in request object
+//        $schedule = (new Schedule\Core)->createSchedule($input, $merchant);
 
         $scheduleTaskRequest = [
             ScheduleTask\Entity::ENTITY_ID   => $entityId,
             ScheduleTask\Entity::TYPE        => 'reporting',
             ScheduleTask\Entity::ENTITY_TYPE => 'log',
-            ScheduleTask\Entity::SCHEDULE_ID => $schedule->getId(),
+            ScheduleTask\Entity::SCHEDULE_ID => $input['schedule_id'],
         ];
 
-        (new ScheduleTask\Core)->createForExternalService($merchant, $schedule, $scheduleTaskRequest);
+        (new ScheduleTask\Core)->createForExternalService($merchant, null, $scheduleTaskRequest);
     }
 
     protected function createScheduleOnReportingService(array $input): array
