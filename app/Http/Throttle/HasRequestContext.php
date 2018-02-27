@@ -28,37 +28,37 @@ trait HasRequestContext
     /**
      * @var string
      */
-    private $route;
+    protected $route;
 
     /**
      * @var Request
      */
-    private $request;
+    protected $request;
 
     /**
      * @var string
      */
-    private $key;
+    protected $key;
 
     /**
      * @var string
      */
-    private $secret;
+    protected $secret;
 
     /**
      * @var string
      */
-    private $bearerToken;
+    protected $bearerToken;
 
     /**
      * @var string
      */
-    private $mode;
+    protected $mode;
 
     /**
      * @var string
      */
-    private $auth;
+    protected $auth;
 
     //
     // In one request some (and not all) of below identifiers are set. Further
@@ -68,49 +68,49 @@ trait HasRequestContext
     /**
      * @var string
      */
-    private $keyWithoutPrefix;
+    protected $keyWithoutPrefix;
 
     /**
      * @var string
      */
-    private $keyId;
+    protected $keyId;
 
     /**
      * @var string
      */
-    private $mid;
+    protected $mid;
 
     /**
      * @var string
      */
-    private $oauthAppId;
+    protected $oauthAppId;
 
     /**
      * @var string
      */
-    private $oauthPublicToken;
+    protected $oauthPublicToken;
 
     /**
      * @var string
      */
-    private $internalAppName;
+    protected $internalAppName;
 
     /**
      * @var string
      */
-    private $adminEmail;
+    protected $adminEmail;
 
     /**
      * @var string
      */
-    private $device;
+    protected $device;
 
     /**
      * @var bool
      */
-    private $proxy = false;
+    protected $proxy = false;
 
-    private function initRequestContextVars(Request $request)
+    protected function initRequestContextVars(Request $request)
     {
         $this->request = $request;
         $this->route   = $this->router->currentRouteName();
@@ -119,7 +119,7 @@ trait HasRequestContext
         $this->setAdditionalVars();
     }
 
-    private function setAuthVars()
+    protected function setAuthVars()
     {
         // Key can come
         // - as part of authentication header(http basic username)
@@ -143,7 +143,7 @@ trait HasRequestContext
         $this->secret           = $this->request->getPassword();
     }
 
-    private function setAdditionalVars()
+    protected function setAdditionalVars()
     {
         if ($this->setAdditionalVarsForPublicAuth() == true)
         {
@@ -171,7 +171,7 @@ trait HasRequestContext
         }
     }
 
-    private function setAdditionalVarsForPublicAuth()
+    protected function setAdditionalVarsForPublicAuth()
     {
         $isPublicRoute         = in_array($this->route, Route::$public, true);
         $isPublicCallbackRoute = in_array($this->route, Route::$publicCallback, true);
@@ -193,7 +193,7 @@ trait HasRequestContext
         return false;
     }
 
-    private function setAdditionalVarsForPrivateAuth()
+    protected function setAdditionalVarsForPrivateAuth()
     {
         $isPrivateRoute = in_array($this->route, Route::$private, true);
         $isProxyRoute   = in_array($this->route, Route::$proxy, true);
@@ -223,16 +223,22 @@ trait HasRequestContext
         return false;
     }
 
-    private function setAdditionalVarsForDirectAuth()
+    protected function setAdditionalVarsForDirectAuth()
     {
         return in_array($this->route, Route::$direct, true);
     }
 
-    private function setAdditionalVarsForPrivilegeAuth()
+    protected function setAdditionalVarsForPrivilegeAuth()
     {
+        // TODO:
+        // - Now rate limit will apply across internal(e.g. crons) and admin usage.
+        // I doubt if we want that? If we don't want that, I will revert this to
+        // old logic where I was setting it all as explicit PROXY_AUTH, ADMIN_AUTH
+        // etc. (inconsistent with how BasicAuth does it).
+
         if (in_array($this->route, Route::$internal, true) === true)
         {
-            $this->internalapp = $this->getInternalAppName();
+            $this->internalAppName = $this->getInternalAppName();
             return true;
         }
         else if (in_array($this->route, Route::$admin, true) === true)
@@ -244,7 +250,7 @@ trait HasRequestContext
         return false;
     }
 
-    private function setAdditionalVarsForDeviceAuth()
+    protected function setAdditionalVarsForDeviceAuth()
     {
         if (in_array($this->route, Route::$device, true) === true)
         {
@@ -255,7 +261,7 @@ trait HasRequestContext
         return false;
     }
 
-    private function getInternalAppName()
+    protected function getInternalAppName()
     {
         foreach ($this->applications as $name => $config)
         {
@@ -268,35 +274,35 @@ trait HasRequestContext
         return null;
     }
 
-    private function isDashboard(): bool
+    protected function isDashboard(): bool
     {
         return ($this->getInternalAppName() === 'dashboard');
     }
 
-    private function isPublicAuth(): bool
+    protected function isPublicAuth(): bool
     {
         return ($this->auth === Type::PUBLIC_AUTH);
     }
 
-    private function getBearerToken(): string
+    protected function getBearerToken(): string
     {
         return $this->isRunningUnitTests ? $this->request->bearerToken() : $this->getBearerTokenForApache();
     }
 
-    private function getBearerTokenForApache(): string
+    protected function getBearerTokenForApache(): string
     {
         $headers = getallheaders()['Authorization'] ?? null;
 
         return starts_with($headers, 'Bearer ') ? substr($headers, 7) : '';
     }
 
-    private function isKeyOAuthPublicToken(): bool
+    protected function isKeyOAuthPublicToken(): bool
     {
         return ((strlen($this->key) === OAuth::PUBLIC_TOKEN_LENGTH) and
                 (substr($this->key, 8, 7) === '_oauth_'));
     }
 
-    private function validateKeyLen(string $key)
+    protected function validateKeyLen(string $key)
     {
         $validKeyLengths = array_merge(BasicAuth::$validKeyLengths, [OAuth::PUBLIC_TOKEN_LENGTH]);
 

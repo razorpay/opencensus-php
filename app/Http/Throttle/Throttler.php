@@ -46,42 +46,42 @@ class Throttler
     /**
      * @var array
      */
-    private $config;
+    protected $config;
 
     /**
      * @var array
      */
-    private $applications;
+    protected $applications;
 
     /**
      * @var Trace
      */
-    private $trace;
+    protected $trace;
 
     /**
      * @var Router
      */
-    private $router;
+    protected $router;
 
     /**
      * @var RepositoryManager
      */
-    private $repo;
+    protected $repo;
 
     /**
      * @var RedisManager
      */
-    private $redis;
+    protected $redis;
 
     /**
      * @var array
      */
-    private $settings;
+    protected $settings;
 
     /**
      * @var bool
      */
-    private $isRunningUnitTests;
+    protected $isRunningUnitTests;
 
     public function __construct()
     {
@@ -109,8 +109,7 @@ class Throttler
             $this->initRequestContextVars($request);
             $this->initRedisConnection();
             $this->initThrottleSettings();
-
-            $this->attemptThrottle();
+            $this->attemptThrottleIfApplicable();
         }
         catch (\Throwable $e)
         {
@@ -126,12 +125,12 @@ class Throttler
         }
     }
 
-    private function initRedisConnection()
+    protected function initRedisConnection()
     {
         $this->redis = Redis::connection('throttle')->client();
     }
 
-    private function initThrottleSettings()
+    protected function initThrottleSettings()
     {
         $this->setMidIfApplicable();
 
@@ -146,16 +145,19 @@ class Throttler
         list($this->settings[K::GLOBAL], $this->settings[K::ID_LEVEL]) = $settings;
     }
 
-    private function attemptThrottle()
+    protected function attemptThrottleIfApplicable()
     {
-        $limits  = [];
-
         // Throttling and blocking may be temporarily skipped via remote configuration(Redis)
         if (($this->settings[K::GLOBAL]['skip'] ?? '0') === '1')
         {
-            return $limits;
+            return;
         }
 
+        $this->attemptThrottle();
+    }
+
+    protected function attemptThrottle()
+    {
         $key              = $this->getThrottleKey();
         $leakRateValue    = $this->getThrottleRateValue();
         $leakRateDuration = $this->getThrottleRateDuration();
@@ -168,7 +170,7 @@ class Throttler
         $payload  = compact('key', 'leakRateValue', 'leakRateDuration', 'maxBucketSize', 'response');
 
         // Only throttle if it is not in mock mode(early release)
-        $mock = $this->settings[K::GLOBAL]['mocked'] ?? '0';
+        $mock = $this->settings[K::GLOBAL]['mocked'] ?? '1';
         if (($response->allowed === 0) and ($mock === '0'))
         {
             throw new ThrottleException($response->retryAfter, $payload);
@@ -177,7 +179,7 @@ class Throttler
         $this->trace->debug(TraceCode::THROTTLE_ATTEMPT_RESPONSE, $payload);
     }
 
-    private function getIdSettingsKey(): string
+    protected function getIdSettingsKey(): string
     {
         return $this->internalAppName ?:
                 $this->device ?:
@@ -187,7 +189,7 @@ class Throttler
                 '';
     }
 
-    private function getThrottleKey(): string
+    protected function getThrottleKey(): string
     {
         $id = $this->internalAppName ?:
                 $this->device ?:
@@ -201,22 +203,22 @@ class Throttler
         return implode(':', [$this->route, $this->mode, $this->auth, (int) $this->proxy, $this->oauthAppId, $id, $ip]);
     }
 
-    private function getThrottleRateValue(): int
+    protected function getThrottleRateValue(): int
     {
         return $this->getThrottleValue(K::LEAK_RATE_VALUE, 2);
     }
 
-    private function getThrottleRateDuration(): int
+    protected function getThrottleRateDuration(): int
     {
         return $this->getThrottleValue(K::LEAK_RATE_DURATION, 1);
     }
 
-    private function getThrottleMaxBucketSize(): int
+    protected function getThrottleMaxBucketSize(): int
     {
         return $this->getThrottleValue(K::MAX_BUCKET_SIZE, 30);
     }
 
-    private function getThrottleValue(string $key, int $default): int
+    protected function getThrottleValue(string $key, int $default): int
     {
         //
         // Redis data structures:
@@ -265,7 +267,7 @@ class Throttler
      * Sets mid if key id is available so only mid gets used
      * to retrieve settings and further in throttle key.
      */
-    private function setMidIfApplicable()
+    protected function setMidIfApplicable()
     {
         if (empty($this->keyId) === true)
         {
