@@ -40,7 +40,7 @@
         "laravel/tinker": "1.0.1",
         "graham-campbell/throttle": "dev-master",
         "rtconner/laravel-tagging": "~2.2",
-        "razorpay/trace": "dev-log_reduce",
+        "razorpay/trace": "2.0.9",
         "anlutro/l4-settings": "0.5.3",
         "razorpay/oauth": "dev-master",
         "drewm/mailchimp-api": "^2.1",
