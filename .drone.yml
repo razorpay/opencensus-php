@@ -129,5 +129,5 @@ pipeline:
       event:
         exclude: [push]
         include: [deployment]
-  branches:
-   include: [ master, drone-tests, qakube ]
+branches:
+  include: [ master, drone-tests, qakube ]
