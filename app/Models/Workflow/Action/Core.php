@@ -28,15 +28,11 @@ class Core extends Base\Core
     {
         $maker = $this->app['workflow']->getWorkflowMaker();
 
-        $input[Entity::MAKER_TYPE] = $this->app['workflow']->getWorkflowMakerType();
-
-        $input[Entity::MAKER_ID] = $maker->getId();
+        $orgId = $maker->getOrgId();
 
         $params = [
-            Entity::ORG_ID      => $maker->getOrgId()
+            Entity::ORG_ID      => $orgId
         ];
-
-        $orgId = $maker->getOrgId();
 
         $routePermission = $input[Differ\Entity::PERMISSION];
 
@@ -164,6 +160,10 @@ class Core extends Base\Core
         }
         else
         {
+            $input[Entity::MAKER_TYPE] = $this->app['workflow']->getWorkflowMakerType();
+
+            $input[Entity::MAKER_ID] = $maker->getId();
+
             $params = $this->buildParams($input);
         }
 
@@ -199,7 +199,7 @@ class Core extends Base\Core
             State\Entity::NAME       => State\Name::OPEN,
         ];
 
-        $actionState = (new State\Core)->createForWorkflowAction($input, $maker, $action);
+        $actionState = (new State\Core)->createForMakerAndEntity($input, $maker, $action);
 
         return $actionState;
     }
@@ -293,7 +293,7 @@ class Core extends Base\Core
                 State\Entity::NAME      => State\Name::APPROVED,
             ];
 
-            (new State\Core)->createForWorkflowAction($stateData, $admin, $action);
+            (new State\Core)->createForMakerAndEntity($stateData, $admin, $action);
 
             (new Differ\Core)->updateStateInEs(
                 $action->getId(), $stateData[State\Entity::NAME]);
@@ -476,7 +476,7 @@ class Core extends Base\Core
                 $this->updateStateAndStateChanger($action, $state, $admin, null);
             }
 
-            (new State\Core)->createForWorkflowAction($stateData, $admin, $action);
+            (new State\Core)->createForMakerAndEntity($stateData, $admin, $action);
 
             (new Differ\Core)->updateStateInEs(
                 $action->getId(), $stateData[State\Entity::NAME]);
@@ -551,7 +551,7 @@ class Core extends Base\Core
     {
         $maker = $this->app['workflow']->getWorkflowMaker();
 
-        $orgId = $maker->getOrgId();
+        $orgId = $this->ba->getOrgId();
 
         $permissionId = $this->repo
                              ->permission

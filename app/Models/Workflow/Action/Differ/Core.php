@@ -74,37 +74,28 @@ class Core extends Base\Core
             $diff = $esResponse[0]['_source'][Entity::DIFF];
         }
 
-        $core = new FileStore\Core;
+        $diff["old"] = $this->transformFileIdsToUrls($diff["old"]);
+        $diff["new"] = $this->transformFileIdsToUrls($diff["new"]);
 
-        $merchantId = '';
+        return $diff;
+    }
 
-        if (array_key_exists(Entity::AUTH_DETAILS, $esResponse[0]['_source']) and
-            array_key_exists('merchant_id', $esResponse[0]['_source'][Entity::AUTH_DETAILS])
-        )
+    // code for getting the expiring URLs for the files
+    // transforming those urls inline
+    private function transformFileIdsToUrls($diff)
+    {
+        $fileStoreCore = new FileStore\Core;
+
+        foreach ($diff as $key => $value)
         {
-            $merchantId = $esResponse[0]['_source'][Entity::AUTH_DETAILS]['merchant_id'];
-        }
-
-        // code for getting the expiring URLs for the files
-        // transforming those urls inline
-        $transformFunc = function($diff) use($core, $merchantId)
-        {
-            foreach ($diff as $key => $value)
+            if (Files::exists($key) === true)
             {
-                if (Files::exists($key) === true)
+                $diff[$key] = (function($value) use ($fileStoreCore)
                 {
-                    $diff[$key] = (function($value) use ($core, $merchantId)
-                    {
-                        return $core->getSignedUrl($value, $merchantId);
-                    })($value);
-                }
+                    return $fileStoreCore->getSignedUrlForFileId($value);
+                })($value);
             }
-
-            return $diff;
-        };
-
-        $diff["old"] = $transformFunc($diff["old"]);
-        $diff["new"] = $transformFunc($diff["new"]);
+        }
 
         return $diff;
     }

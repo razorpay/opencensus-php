@@ -659,6 +659,11 @@ class Service extends Base\Service
         return $ba->toArray();
     }
 
+    public function getBankAccountChangeStatus($id, $input)
+    {
+
+    }
+
     public function getBankAccount($id)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
