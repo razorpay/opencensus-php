@@ -16,7 +16,6 @@ class PaymentLink
      *
      * @param array $entry
      * @param array $params
-     * @param bool $isCreatedByFileUpload
      *
      * @return array
      *

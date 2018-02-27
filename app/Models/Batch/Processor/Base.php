@@ -41,6 +41,12 @@ class Base extends BaseModel\Core
     const MUTEX_LOCK_TIMEOUT = 2500;
 
     /**
+     * Max number of parsed rows that should
+     * be shown to merchant for reference
+     */
+    const MAX_PARSED_ROWS    = 3;
+
+    /**
      * Map for the file type of batch entity and the
      * corresponding path where they should be stored.
      */
@@ -205,7 +211,7 @@ class Base extends BaseModel\Core
         $response = [
             self::PROCESSABLE_COUNT     => count($correctEntries),
             self::ERROR_COUNT           => count($entries) - count($correctEntries),
-            self::PARSED_ENTRIES        => array_slice($correctEntries, 0 , 3),
+            self::PARSED_ENTRIES        => array_slice($correctEntries, 0, self::MAX_PARSED_ROWS),
         ];
 
         return $response;
