@@ -283,7 +283,7 @@ export default class BusinessDetailsForm extends Component {
                     </label>
                   </div>
                   <small class="help-block">
-                    <i class="icon icon-info-circle" />
+                    <i class="i i-info-circle" />
                     <span>
                       Please note that applications for international
                       transactions take longer time to process.
