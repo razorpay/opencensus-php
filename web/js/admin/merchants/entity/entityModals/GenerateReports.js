@@ -7,6 +7,7 @@ import { notifyError, notifySuccess } from 'common/modal';
 import Form from 'ui/Form';
 import { Field, RadioField, SelectField, DateField } from 'ui/Field';
 import fetch, { adminFetch } from 'common/fetch';
+import { prefixEntityValue } from 'common/data';
 import AsyncButton from 'ui/AsyncButton';
 import { PowerSelect, TypeAhead } from 'react-power-select';
 
@@ -215,7 +216,7 @@ export default class GenerateReports extends Component {
     };
 
     if (isMarketplaceEnabled && account_id !== details.current) {
-      data.account_id = 'acc_' + account_id; // It will be handled at api level later
+      data.account_id = prefixEntityValue('account', account_id); // It will be handled at api level later
     }
 
     if (entity === 'broking') {

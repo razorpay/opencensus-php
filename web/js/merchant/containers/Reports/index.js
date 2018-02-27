@@ -3,6 +3,9 @@ import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 import { saveAs } from 'file-saver';
+
+import { prefixEntityValue } from 'common/data';
+
 import { titleCase } from 'rzp/utils/rzp-utils';
 import AsyncButton from 'react-async-button';
 import moment from 'moment';
@@ -269,7 +272,7 @@ export class ReportsContainer extends Component {
       this.props.user.isMarketplaceEnabled &&
       account_id !== this.props.user.current
     ) {
-      data.account_id = 'acc_' + account_id; // It will be handled at api level later
+      data.account_id = prefixEntityValue('account', account_id); // It will be handled at api level later
     }
 
     if (entity === 'broking') {

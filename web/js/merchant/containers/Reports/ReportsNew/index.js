@@ -6,6 +6,7 @@ import { saveAs } from 'file-saver';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 import moment from 'moment';
 
+import { prefixEntityValue } from 'common/data';
 import ReduxDatetime from 'rzp/ui/ReduxDatetime';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import AccountsList from 'rzp/ui/AccountsList/index.js';
@@ -78,7 +79,7 @@ export default class ReportsContainer extends Component {
 
     this.defaultAccount = {
       name: user.name || user.user.name,
-      id: user.current,
+      id: prefixEntityValue('account', user.current),
       email: user.email,
       tag: 'My Account',
       tagIcon: 'i-account',
@@ -250,7 +251,7 @@ export default class ReportsContainer extends Component {
 
       return generateReportV2({
         config_id: selectedConfig._item.id,
-        generated_by: selectedAccount.id,
+        generated_by: selectedAccount.id.replace('acc_', ''),
         start_time: startTime,
         end_time: endTime,
       }).then(data => {
@@ -292,7 +293,7 @@ export default class ReportsContainer extends Component {
         this.props.user.isMarketplaceEnabled &&
         account_id !== this.props.user.current
       ) {
-        data.account_id = 'acc_' + account_id; // It will be handled at api level later
+        data.account_id = prefixEntityValue('account', account_id); // It will be handled at api level later
       }
 
       if (entity === 'broking') {
