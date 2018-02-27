@@ -2991,3 +2991,7 @@ ALTER TABLE merchant_access_map
 ALTER TABLE merchant_access_map
     ADD CONSTRAINT merchant_access_map_merchant_id_foreign FOREIGN KEY(merchant_id)
         REFERENCES merchants(id);
+
+ALTER TABLE workflow_actions
+    ADD COLUMN `maker_id` char(14) COLLATE utf8_bin  NULL AFTER `admin_id`,
+    ADD COLUMN `maker_type` char(14) COLLATE utf8_bin  NULL AFTER `maker_id`;
