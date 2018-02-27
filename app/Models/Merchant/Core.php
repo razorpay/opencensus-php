@@ -217,7 +217,13 @@ class Core extends Base\Core
 
         (new Methods\Core)->validateInternationalPricingForMerchant($merchant, $plan);
 
-        $this->saveAndNotify($merchant);
+        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $input)
+        {
+            // This is used to sync fields transaction_report_email and website in merchant and merchantDetail
+            (new Detail\Core)->editMerchantDetailFields($merchant, $input);
+
+            $this->saveAndNotify($merchant);
+        });
 
         $this->syncHeimdallRelatedEntities($merchant, $input);
 

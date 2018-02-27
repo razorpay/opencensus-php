@@ -114,6 +114,41 @@ class Core extends Base\Core
     }
 
     /**
+     * This function is used to sync fields transaction_report_email and website
+     * in both merchant and merchantDetail entities
+     *
+     * @param Merchant\Entity $merchant
+     * @param array $input
+     *
+     * @return Entity
+     */
+    public function editMerchantDetailFields(Merchant\Entity $merchant, array $input): Entity
+    {
+        $merchantDetails = $merchant->merchantDetail;
+
+        $data = [];
+
+        if (isset($input[Merchant\Entity::TRANSACTION_REPORT_EMAIL]) === true)
+        {
+            $data[Entity::TRANSACTION_REPORT_EMAIL] = implode(',', $input[Entity::TRANSACTION_REPORT_EMAIL]);
+        }
+
+        if (isset($input[Merchant\Entity::WEBSITE]) === true)
+        {
+            $data[Entity::BUSINESS_WEBSITE] = $input[Merchant\Entity::WEBSITE];
+        }
+
+        if (empty($data) === false)
+        {
+            $merchantDetails->edit($data);
+
+            $this->repo->saveOrFail($merchantDetails);
+        }
+
+        return $merchantDetails;
+    }
+
+    /**
      * Fills up dummy file IDs, required fields for merchant activation
      * Use with caution
      *

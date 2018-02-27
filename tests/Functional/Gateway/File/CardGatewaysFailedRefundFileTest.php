@@ -197,10 +197,7 @@ class CardGatewaysFailedRefundFileTest extends TestCase
 
         $this->mockTokenex();
 
-        $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal');
-
-        $this->fixtures->create('terminal:shared_cybersource_hdfc_recurring_terminals');
-
+        $this->fixtures->create('terminal:shared_cybersource_axis_terminal');
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $this->payment = $this->getDefaultPaymentArray();
