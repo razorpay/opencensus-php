@@ -213,17 +213,17 @@ class MerchantTest extends TestCase
 
     public function testEditBulkMerchant()
     {
-        $this->fixtures->create('merchant',[
-            'id'     => '10000000000044',
-            'email'  => 'test1@razorpay.com',
-            'live' => true,
+        $this->fixtures->create('merchant', [
+            'id'        => '10000000000044',
+            'email'     => 'test1@razorpay.com',
+            'live'      => true,
             'activated' => 1,
         ]);
 
-        $this->fixtures->create('merchant',[
-            'id'     => '10000000000055',
-            'email'  => 'test2@razorpay.com',
-            'live' => true,
+        $this->fixtures->create('merchant', [
+            'id'        => '10000000000055',
+            'email'     => 'test2@razorpay.com',
+            'live'      => true,
             'activated' => 1,
         ]);
 
@@ -237,17 +237,16 @@ class MerchantTest extends TestCase
 
         $this->ba->adminAuth('live');
 
-        $result = $this->startTest();
+        $this->startTest();
 
         $merchant1 = $this->getDbEntityById('merchant', '10000000000044');
         $merchant2 = $this->getDbEntityById('merchant', '10000000000055');
 
-        $this->assertEquals(1, $merchant1['hold_funds']);
-        $this->assertEquals(1, $merchant2['hold_funds']);
-
-        $this->assertEquals(['1.1.1.1', '2.2.2.2'], $merchant1['whitelisted_ips_live']);
-        $this->assertEquals(['1.1.1.1', '2.2.2.2'], $merchant2['whitelisted_ips_live']);
-
+        foreach ([$merchant1, $merchant2] as $merchant)
+        {
+            $this->assertEquals(1, $merchant['hold_funds']);
+            $this->assertEquals(['1.1.1.1', '2.2.2.2'], $merchant['whitelisted_ips_live']);
+        }
     }
 
     public function testEditMerchantEditGroups()

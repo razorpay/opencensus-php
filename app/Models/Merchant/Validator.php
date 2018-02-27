@@ -117,9 +117,9 @@ class Validator extends Base\Validator
         'tags' => 'required|array'
     ];
 
-    protected static $updateForMultipleMerchantsRules = [
+    protected static $updateMerchantsBulkRules = [
         'merchant_ids' => 'required|sequential_array',
-        'edit'         => 'required|associative_array',
+        'attributes'   => 'required|associative_array',
     ];
 
     protected static $updateChannelRules = [

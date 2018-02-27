@@ -26,7 +26,7 @@ return [
             'url'     => '/merchants/bulk',
             'content' => [
                 'merchant_ids' => ['10000000000044', '10000000000055'],
-                'edit'         => [
+                'attributes'   => [
                     'hold_funds'           => 1,
                     'whitelisted_ips_live' => ['1.1.1.1', '2.2.2.2']
                 ],

@@ -540,11 +540,11 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function updateForMultipleMerchants()
+    public function updateMerchantsBulk()
     {
         $input = Request::all();
 
-        $data = $this->service()->updateForMultipleMerchants($input);
+        $data = $this->service()->updateMerchantsBulk($input);
 
         return ApiResponse::json($data);
     }

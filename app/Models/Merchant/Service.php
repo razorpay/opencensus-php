@@ -919,18 +919,16 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function updateForMultipleMerchants(array $input)
+    public function updateMerchantsBulk(array $input)
     {
         $this->trace->info(
             TraceCode::MERCHANT_BULK_UPDATE_REQUEST,
             $input
         );
 
-        (new Validator)->validateInput('updateForMultipleMerchants', $input);
+        (new Validator)->validateInput('updateMerchantsBulk', $input);
 
         $merchantIds = $input['merchant_ids'];
-
-        unset($input['merchant_ids']);
 
         $successCount = $failedCount = 0;
 
@@ -940,7 +938,7 @@ class Service extends Base\Service
         {
             try
             {
-                $this->edit($merchantId, $input['edit']);
+                $this->edit($merchantId, $input['attributes']);
 
                 $successCount++;
             }
