@@ -6,6 +6,7 @@ use RZP\Gateway\Base;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Models\FileStore;
 use RZP\Models\Payment\Gateway;
+use RZP\Exception;
 
 use Mail;
 use Config;
@@ -50,6 +51,18 @@ class RefundFile extends Base\RefundFile
 
         foreach ($input['data'] as $row)
         {
+            if (empty($row['gateway']['account_number']) === true)
+            {
+                throw new Exception\LogicException(
+                    'Recon needs to be run before generation of refund file',
+                    null,
+                    [
+                        'gateway' => 'netbanking_bob',
+                        'row'     => $row,
+                    ]
+                );
+            }
+
             $data[] = $this->getDataForRow(
                 $row['gateway']['account_number'],
                 $row['refund']['amount'],
