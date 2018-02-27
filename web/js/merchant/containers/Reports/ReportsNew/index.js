@@ -250,7 +250,9 @@ export default class ReportsContainer extends Component {
       this.props.showNotification(downloadStartedMessage);
 
       const { user } = this.props,
-            selectedAccountId = selectedAccount.id.replace('acc_', ''),
+            selectedAccountId = ((selectedConfig.type in marketplaceConfigTypes)
+                                  ? selectedAccount.id
+                                  : this.defaultAccount.id).replace('acc_', ''),
             isMerchantAccount = selectedAccountId === user.current,
             reqData = {
               config_id: selectedConfig._item.id,
