@@ -6,6 +6,13 @@ import TableBody from 'rzp/ui/TableBody';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 
 const AccountsListItem = ({ account, onEdit }) => {
+  let status = account.activation_details
+    ? account.activation_details.status
+    : account.activated;
+  let timeStamp = account.activation_details
+    ? account.activation_details.activated_at
+    : account.activated_at;
+
   return (
     <EntityItemRow id={account.id}>
       <td>
@@ -19,12 +26,12 @@ const AccountsListItem = ({ account, onEdit }) => {
         <Time value={account.created_at} format="DD MMM YYYY, hh:mm:ss a" />
       </td>
       <td>
-        <span data-tip={account.activation_details.status == 'activated' ? 'Activated' : 'Not Activated'}>
-          <CheckIcon value={account.activation_details.status == 'activated'} />
+        <span data-tip={status == 'activated' ? 'Activated' : 'Not Activated'}>
+          <CheckIcon value={status == 'activated'} />
         </span>
       </td>
       <td>
-        <Time value={account.activation_details.activated_at} format="DD MMM YYYY, hh:mm:ss a" />
+        <Time value={timeStamp} format="DD MMM YYYY, hh:mm:ss a" />
       </td>
     </EntityItemRow>
   );
