@@ -549,9 +549,8 @@ class Core extends Base\Core
         string $entityName,
         string $permissionName)
     {
-        $maker = $this->app['workflow']->getWorkflowMaker();
 
-        $orgId = $this->ba->getOrgId();
+        $orgId = $this->app['basicauth']->getOrgId();
 
         $permissionId = $this->repo
                              ->permission
