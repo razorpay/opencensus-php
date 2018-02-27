@@ -336,11 +336,6 @@ export default class BusinessDetailsForm extends Component {
                       </div>
                     </label>
                   </div>
-                  <span class="help-block">
-                    {this.state.url_type === 'web'
-                      ? 'Example: http://www.example.com/'
-                      : 'Example: https://play.google.com/store/apps/ExampleApp'}
-                  </span>
                   <Field
                     name="business_website"
                     component={InputField}
@@ -356,18 +351,29 @@ export default class BusinessDetailsForm extends Component {
                     <span>
                       The entered App/Website should contain{' '}
                       <strong>
-                        About Us, Contact, Privacy Policy, Terms & Conditions,
-                        Refund Policy & Pricing
-                      </strong>{' '}
-                      pages for compliance purposes. In case of any problem,
-                      please refer our{' '}
-                      <a
-                        href="https://razorpay.com/"
-                        target="_blank"
-                        class="btn-link"
-                      >
-                        Compliance Policies
-                      </a>
+                        About Us, Contact Us,{' '}
+                        <a
+                          class="btn-link"
+                          href="https://docs.google.com/document/d/1yqqWTE_jfC8F_u9UV9nLq3AUZR2wwpQGJigRJV3YQvg/pub"
+                          target="_blank"
+                        >
+                          Privacy Policy
+                        </a>,{' '}
+                        <a
+                          class="btn-link"
+                          href="https://docs.google.com/document/d/1bCwt0WccF7oDMBGAGRxtPgUfzqGzkUjtLnnE1JlL2dg/pub"
+                          target="_blank"
+                        >
+                          Terms & Conditions
+                        </a>,{' '}
+                        <a
+                          class="btn-link"
+                          href="https://docs.google.com/document/d/1xYM1QHm9S5phnkzyENqJ3KXv37schlsiTp0Id_4IMwE/pub"
+                          target="_blank"
+                        >
+                          Cancellation/Refund Policies
+                        </a>
+                      </strong>. (Refer to the links for sample pages)
                     </span>
                   </small>
                 </div>
