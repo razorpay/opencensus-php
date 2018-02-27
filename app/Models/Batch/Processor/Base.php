@@ -40,6 +40,10 @@ class Base extends BaseModel\Core
      */
     const MUTEX_LOCK_TIMEOUT = 2500;
 
+    /**
+     * Map for the file type of batch entity and the
+     * corresponding path where they should be stored.
+     */
     const FILE_TYPE_PREFIX_MAP = [
 
         FileStore\Type::BATCH_INPUT     => Batch\Entity::INPUT_FILE_PREFIX,
@@ -61,12 +65,6 @@ class Base extends BaseModel\Core
     protected $batch;
 
     /**
-     * The accessor used for fetching file from id
-     * @var FileStore\Accessor
-     */
-    protected $accessor;
-
-    /**
      * The merchant instance
      *
      * @var Merchant\Entity
@@ -84,8 +82,6 @@ class Base extends BaseModel\Core
      * @var Settings\Accessor
      */
     protected $settingsAccessor;
-
-    protected $createByFileUpload;
 
     /**
      * Holds local file path of input, output and generated file respectively.
@@ -155,7 +151,7 @@ class Base extends BaseModel\Core
 
         // For new flow, the file_store entity referenced by
         // `file_id` in input gets associated with this batch
-        $ufhFile = $this->getInputFileAndValidateEntries($input);
+        $ufhFile = $this->saveInputFileAndValidateEntries($input);
 
         $ufhFile->entity()->associate($this->batch);
 
@@ -169,7 +165,7 @@ class Base extends BaseModel\Core
         });
     }
 
-    public function getInputFileAndValidateEntries(array $input)
+    public function saveInputFileAndValidateEntries(array $input)
     {
         // Here $ufhFile is the input file_store instance upload by merchant.
         // $ufhFile has no entity associated with it and has type = `batch_input`
@@ -216,12 +212,14 @@ class Base extends BaseModel\Core
     }
 
     /**
-     * Gets the input file from $input and saves it
-     * in filestore/batch/upload folder in local.
-     * If file is uploaded (contains file object in $input)
+     * - If file_store entity is is passed in input, fetches file
+     * from s3 and saves it in filestore/batch/upload folder in local.
+
+     * - If file is uploaded (contains file object in $input)
      * a file_store entity is created with batch_input as type
      * which uploads the file in filestore/batch/upload
-     * folder in s3 too.
+     * folder in s3 too. The original file is saved in
+     * filestore/batch/upload folder in local.
      *
      * @param array $input
      * @return FileStore\Entity
@@ -537,7 +535,7 @@ class Base extends BaseModel\Core
         $this->batch->setProcessing(false);
     }
 
-    public function createSetOutputFileAndSave(array & $entries): array
+    public function createSetOutputFileAndSave(array & $entries)
     {
         $type = $this->batch->getType();
 
@@ -555,9 +553,7 @@ class Base extends BaseModel\Core
 
         try
         {
-            $ufh = $this->saveOutputFile();
-
-            return $this->getFileIdAndSignedUrl($ufh);
+            return $this->saveOutputFile();
         }
         catch (\Throwable $e)
         {
@@ -568,14 +564,14 @@ class Base extends BaseModel\Core
                             $this->batch->toArrayPublic());
         }
 
-        return [];
+        return null;
     }
 
-    public function createSetErrorFileAndSave(array & $entries): array
+    public function createSetErrorFileAndSave(array & $entries)
     {
         $type = $this->batch->getType();
 
-        $headers = Batch\Header::getErrorHeaderOfType($type);
+        $headers = Batch\Header::getErrorHeadersForType($type);
 
         $this->generatedFileDirectory = $this->batch->getLocalSaveDir(Batch\Entity::ERROR_FILE_PREFIX);
 
@@ -589,9 +585,7 @@ class Base extends BaseModel\Core
 
         try
         {
-            $ufh = $this->saveErrorFile();
-
-            return $this->getFileIdAndSignedUrl($ufh);
+            return $this->saveErrorFile();
         }
         catch (\Throwable $e)
         {
@@ -602,7 +596,7 @@ class Base extends BaseModel\Core
                 $this->batch->toArrayPublic());
         }
 
-        return [];
+        return null;
     }
 
     /**
@@ -660,15 +654,15 @@ class Base extends BaseModel\Core
             case FileStore\Format::TXT:
                 $txt = $this->generateText($entries, '|');
                 $this->generatedFileLocalPath = $this->createTxtFile($this->batch->getFileKeyWithExt($ext),
-                                                               $txt,
-                                                               $this->generatedFileDirectory);
+                                                                     $txt,
+                                                                     $this->generatedFileDirectory);
                 return;
 
             case FileStore\Format::CSV:
                 $txt = $this->generateText($entries, ',');
                 $this->generatedFileLocalPath = $this->createTxtFile($this->batch->getFileKeyWithExt($ext),
-                                                               $txt,
-                                                               $this->generatedFileDirectory);
+                                                                     $txt,
+                                                                     $this->generatedFileDirectory);
                 return;
 
             case FileStore\Format::XLSX:
@@ -778,23 +772,6 @@ class Base extends BaseModel\Core
     }
 
     /**
-     * Fills Batch entity with details extracted from the input file.
-     * Eg.
-     * - Total row count
-     * - Aggregate sum of amount field
-     *
-     * @param array $entries
-     */
-    protected function fillBatchEntityWithInputFileDetails(array $entries)
-    {
-        $totalAmount = array_sum(array_column($entries, Batch\Header::AMOUNT));
-        $totalCount  = count($entries);
-
-        $this->batch->setAmount($totalAmount);
-        $this->batch->setTotalCount($totalCount);
-    }
-
-    /**
      * Parses input file and runs validation on the entries. Finally returns
      * the validated entries.
      *
@@ -893,15 +870,9 @@ class Base extends BaseModel\Core
                         false);
     }
 
-    protected function getFileIdAndSignedUrl(FileStore\Creator $ufh): array
+    public function getFileIdAndSignedUrl(FileStore\Creator $ufh): array
     {
         $ufhSignedUrl = $ufh->getSignedUrl();
-
-        if ($ufhSignedUrl['id'] === null)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_BATCH_UNABLE_TO_SAVE_FILE);
-        }
 
         return [
             self::FILE_ID       => FileStore\Entity::getSignedId($ufhSignedUrl['id']),
@@ -951,7 +922,32 @@ class Base extends BaseModel\Core
      */
     protected function downloadAndSetInputFile()
     {
-        $inputFile = $this->batch->getBatchCreatorFile();
+        //
+        // For files of reconciliation type batches, we use a different UFH type
+        // (hence S3 locations) for reasons.
+        //
+        $ufhTypes = ($this->batch->isReconciliationType() === true) ?
+            [FileStore\Type::RECONCILIATION_BATCH_INPUT] :
+            [FileStore\Type::BATCH_ERROR, FileStore\Type::BATCH_INPUT];
+
+        /**
+         * We now fetch the file_store entity that is used for getting
+         * latest entries for a batch.
+         *
+         * If the merchant calls the create(POST /batches) api with file upload,
+         * the latest will be file of type `batch_input`.
+         *
+         * If the merchant calls the create(POST /batches) api with file_id produced
+         * from batch validate api (POST /batches/validate), the latest will be file
+         * of type `batch_error`. This is also obvious as only the last batch_error
+         * file_store entity will be associated with this batch. The association
+         * happens during batch_create sync part.
+         */
+        $inputFile = $this->batch
+                          ->files()
+                          ->whereIn(FileStore\Entity::TYPE, $ufhTypes)
+                          ->latest()
+                          ->first();
 
         $filePath = (new FileStore\Accessor)
                         ->id($inputFile->getId())

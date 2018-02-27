@@ -263,9 +263,10 @@ class Validator extends Base\Validator
      *
      * @throws BadRequestException
      */
-    protected function validatePaymentLinkEntries(array & $entries,
-                                                  array $params,
-                                                  Merchant\Entity $merchant)
+    protected function validatePaymentLinkEntries(
+        array & $entries,
+        array $params,
+        Merchant\Entity $merchant)
     {
         // Associative array with index as input file's row index and values
         // as the error message.
