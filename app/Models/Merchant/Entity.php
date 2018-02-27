@@ -955,7 +955,7 @@ class Entity extends Base\PublicEntity
     {
         $this->attributes[self::WEBSITE] = mb_strtolower($website);
     }
-    
+
     protected function setTransactionReportEmailAttribute($emails)
     {
         if (is_array($emails) === false)
@@ -1310,6 +1310,11 @@ class Entity extends Base\PublicEntity
     public function isPhoneOptional()
     {
         return $this->isFeatureEnabled(Feature\Constants::CONTACT_OPTIONAL);
+    }
+
+    public static function hascustomerTransactionHistoryEnabled($merchantId)
+    {
+        return (in_array($merchantId, Merchant\Preferences::CUSTOMER_TRANSACTION_HISTORY_ENABLED_MID, true) === true);
     }
 
     public function getOptionalInputConfig()

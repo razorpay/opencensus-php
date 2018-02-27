@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\OAuth;
 
+use Carbon\Carbon;
 use RZP\Constants;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
@@ -44,6 +45,36 @@ class OAuthAppMerchantMapTest extends OAuthTestCase
         $this->assertEquals(null, $testMapping);
     }
 
+    public function testOAuthAppMerchantMapDuplicate()
+    {
+        $this->fixtures->create('merchant_access_map');
+
+        $this->startTest();
+
+        $liveMappings = $this->getMappings('live')['items'];
+
+        $testMappings = $this->getMappings('test')['items'];
+
+        $this->assertEquals(1, count($liveMappings));
+
+        $this->assertEquals(1, count($testMappings));
+    }
+
+    public function testOAuthAppMerchantMapDuplicateWithDeleted()
+    {
+        $this->fixtures->create('merchant_access_map', ['deleted_at' => Carbon::now()->getTimestamp()]);
+
+        $this->startTest();
+
+        $liveMappings = $this->getMappings('live')['items'];
+
+        $testMappings = $this->getMappings('test')['items'];
+
+        $this->assertEquals(1, count($liveMappings));
+
+        $this->assertEquals(1, count($testMappings));
+    }
+
     public function testOAuthAppDeleteMerchantMap()
     {
         $this->fixtures->create('merchant_access_map');
@@ -74,11 +105,20 @@ class OAuthAppMerchantMapTest extends OAuthTestCase
 
     protected function getMapping(string $mode)
     {
-        \Database\DefaultConnection::set($mode);
-
         return $this->getLastEntity(
                 Constants\Entity::MERCHANT_ACCESS_MAP,
-                true);
+                true,
+                $mode);
+
+    }
+
+    protected function getMappings(string $mode)
+    {
+        return $this->getEntities(
+                Constants\Entity::MERCHANT_ACCESS_MAP,
+                [],
+                true,
+                $mode);
 
     }
 }

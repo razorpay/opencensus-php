@@ -110,7 +110,7 @@ class MerchantCreateTest extends TestCase
 
         $expectedMethods = [
             'amex'     => false,
-            'mobikwik' => true,
+            'mobikwik' => false,
             'paytm'    => false
         ];
 

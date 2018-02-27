@@ -1330,7 +1330,6 @@ class TerminalSelectionTest extends TestCase
         $iciciTerminal = $this->fixtures->create('terminal:shared_upi_icici_terminal', ['enabled' => false]);
         $mgTerminal = $this->fixtures->create('terminal:shared_upi_mindgate_terminal', ['gateway' => 'upi_mindgate']);
 
-        $this->fixtures->merchant->addFeatures(['upi_intent']);
         $this->fixtures->merchant->enableUpi();
 
         $data = $this->testData[__FUNCTION__];

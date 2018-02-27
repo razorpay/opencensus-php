@@ -458,28 +458,6 @@ class OrganizationController extends Controller
         return ApiResponse::json([], $responseStatus);
     }
 
-    /**
-     * @deprecated Ref: #4216
-     */
-    public function getMerchantIds($id, $adminId)
-    {
-        $merchantIds = $this->service(E::ADMIN)->getMerchantIds($id, $adminId);
-
-        return ApiResponse::json($merchantIds);
-    }
-
-    /**
-     * @deprecated Ref: #4216
-     */
-    public function getMerchants($id, $adminId)
-    {
-        $input = Request::all();
-
-        $response = $this->service(E::ADMIN)->getMerchants($id, $adminId, $input);
-
-        return ApiResponse::json($response);
-    }
-
     public function getMerchantIdsFromEs(Admin\Admin\Service $service)
     {
         $response = $service->getMerchantIdsFromEs();
