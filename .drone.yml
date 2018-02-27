@@ -32,7 +32,7 @@ pipeline:
     secrets: [docker_username, docker_password, git_token]
     build_args_from_env: [git_token]
     build_args:
-     - GIT_COMMIT_HASH=$DRONE_COMMIT_SHA
+     - GIT_COMMIT_HASH=${DRONE_COMMIT_SHA}
     tags: ${DRONE_REPO_BRANCH}-${DRONE_COMMIT_SHA}
     when:
       status: [success]
@@ -121,7 +121,7 @@ pipeline:
     deployment: api
     repo: razorpay/api
     container: api
-    namespace: func
+    namespace: echo
     tag:
       - ${DRONE_REPO_BRANCH}-${DRONE_COMMIT_SHA}
     when:

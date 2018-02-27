@@ -2,9 +2,16 @@
   # {{ ansible_managed }}
   ServerAdmin serverlogs@razorpay.com
 
-  {% if env != 'prod' %}
+  {% set qa = ['perf', 'func'] %}
+  {% if env in qa  %}
+  ServerName {{ env }}-api.razorpay.in
+  ServerAlias {{ env }}-invoices.razorpay.in
+  {% elif env != 'prod' %}
   ServerName {{ env }}-api.razorpay.com
   ServerAlias {{ env }}-invoices.razorpay.com
+  {% elif env == 'echo' %}
+  ServerName {{ env }}-api.razorpay.in
+  ServerAlias {{ env }}-invoices.razorpay.in
   {% elif env == 'prod' %}
   ServerName api.razorpay.com
   ServerAlias invoices.razorpay.com
