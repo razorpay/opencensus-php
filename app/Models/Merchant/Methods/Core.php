@@ -184,30 +184,15 @@ class Core extends Base\Core
             return;
         }
 
-        foreach (Payment\AuthType::$types as $type)
+        foreach (Payment\AuthType::$types as $authType)
         {
             if ($this->isTestMode() === true)
             {
-                $banks = Payment\Gateway::getAvailableEmandateBanksForAuthType($type);
+                $banks = Payment\Gateway::getAvailableEmandateBanksForAuthType($authType);
             }
             else
             {
-                $func = 'getEmandateBanksEnabledFor' . studly_case($type);
-
-                if (method_exists($this, $func) === false)
-                {
-                    $this->trace->error(
-                        TraceCode::EMANDATE_FUNCTION_NOT_IMPLEMENTED,
-                        [
-                            'function_name' => $func
-                        ]);
-
-                    $banks = [];
-                }
-                else
-                {
-                    $banks = $this->$func($merchant);
-                }
+                $banks = $this->getEmandateBanksEnabled($merchant, $authType);
             }
 
             if (empty($banks) === false)
@@ -216,7 +201,7 @@ class Core extends Base\Core
 
                 foreach ($banks as $ifsc => $name)
                 {
-                    $recurringData['emandate'][$ifsc]['auth_types'][] = $type;
+                    $recurringData['emandate'][$ifsc]['auth_types'][] = $authType;
                     $recurringData['emandate'][$ifsc]['name'] = $name;
                 }
             }
@@ -406,13 +391,16 @@ class Core extends Base\Core
         }
     }
 
-    protected function getEmandateBanksEnabledForNetbanking(Merchant\Entity $merchant): array
+    protected function getEmandateBanksEnabled(Merchant\Entity $merchant, $authType): array
     {
         $availableEmandateBanks = [];
 
+        // @todo: Can be done by passing gateway
+        // That way we can check if gateways are empty and return
+        // empty array if it is
         $applicableEmandateTerminals = $this->repo
                                             ->terminal
-                                            ->getEmandateNetbankingTerminalsForMerchantAndSharedMerchant($merchant);
+                                            ->getEmandateTerminalsForMerchantAndSharedMerchant($merchant, $authType);
 
         $availableGatewaysForMerchant = $applicableEmandateTerminals->pluck(Terminal\Entity::GATEWAY);
 
@@ -427,11 +415,6 @@ class Core extends Base\Core
         }
 
         return array_values(array_unique($availableEmandateBanks));
-    }
-
-    protected function getEmandateBanksEnabledForAadhaar(Merchant\Entity $merchant): array
-    {
-        return [];
     }
 
     protected function getBankNames($banks)

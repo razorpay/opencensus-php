@@ -23,10 +23,10 @@ class Gateway
     const BILLDESK               = 'billdesk';
     const BLADE                  = 'blade';
     const CYBERSOURCE            = 'cybersource';
-    const HITACHI                = 'hitachi';
     const EBS                    = 'ebs';
     const FIRST_DATA             = 'first_data';
     const HDFC                   = 'hdfc';
+    const HITACHI                = 'hitachi';
     const MOBIKWIK               = 'mobikwik';
     const NETBANKING_AIRTEL      = 'netbanking_airtel';
     const NETBANKING_AXIS        = 'netbanking_axis';
@@ -560,6 +560,15 @@ class Gateway
             IFSC::VARA,
             IFSC::KVBL,
         ]
+    ];
+
+    public static $authTypeToEmandateGatewayMap = [
+        AuthType::NETBANKING => [
+            Gateway::NETBANKING_AXIS,
+            Gateway::NETBANKING_ICICI,
+            Gateway::NETBANKING_HDFC,
+        ],
+        AuthType::AADHAAR => [],
     ];
 
     /**

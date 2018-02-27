@@ -26,6 +26,7 @@ class TransactionFilter extends Terminal\Filter
         'method',
         'network',
         'bank',
+        'emandate',
         'recurring',
         'gateway',
         'subscription',
@@ -94,8 +95,7 @@ class TransactionFilter extends Terminal\Filter
 
     public function bankFilter($terminal)
     {
-        if (($this->input['payment']->isNetbanking() === true) or
-            ($this->input['payment']->isEmandate() === true))
+        if ($this->input['payment']->isNetbanking() === true)
         {
             $bank = $this->input['payment']->getBank();
 
@@ -104,6 +104,42 @@ class TransactionFilter extends Terminal\Filter
             $isTPV = $this->input['merchant']->isTPVRequired();
 
             $gateways = Gateway::getGatewaysForNetbankingBank($bank, $isTPV);
+
+            return in_array($terminalGateway, $gateways);
+        }
+
+        return true;
+    }
+
+    public function emandateFilter($terminal)
+    {
+        if ($this->input['payment']->isEmandate() === true)
+        {
+            $gateways = [];
+
+            $bank = $this->input['payment']->getBank();
+
+            $authType = $this->input['payment']->getAuthType();
+
+            $terminalGateway = $terminal->getGateway();
+
+            // @todo: Can be more cleaner
+            foreach (Gateway::$gatewaysEmandateBanksMap as $gateway => $banks)
+            {
+                if (in_array($bank, $banks, true) === true)
+                {
+                    if (($authType !== null) and
+                        (isset(Gateway::$authTypeToEmandateGatewayMap[$authType]) === true))
+                    {
+                        if (in_array($gateway, Gateway::$authTypeToEmandateGatewayMap[$authType], true) === false)
+                        {
+                            continue;
+                        }
+                    }
+
+                    $gateways[] = $gateway;
+                }
+            }
 
             return in_array($terminalGateway, $gateways);
         }
