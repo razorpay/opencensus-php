@@ -66,7 +66,7 @@ export const generateReportV2 = (params, isMerchantAccount) => {
 
   return createLog(params, accountHeaderVal)
     .then(resp => {
-      if (!resp.success) {
+      if (!resp.success || !resp.data || !resp.data.id) {
         return reportErrorMsg;
       }
 
