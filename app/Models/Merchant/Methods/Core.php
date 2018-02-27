@@ -184,6 +184,8 @@ class Core extends Base\Core
             return;
         }
 
+        $supportedBanks = $methods->getSupportedBanks();
+
         foreach (Payment\AuthType::$types as $authType)
         {
             if ($this->isTestMode() === true)
@@ -197,6 +199,8 @@ class Core extends Base\Core
 
             if (empty($banks) === false)
             {
+                $banks = array_intersect($supportedBanks, $banks);
+
                 $banks = $this->getBankNames($banks);
 
                 foreach ($banks as $ifsc => $name)

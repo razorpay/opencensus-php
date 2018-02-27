@@ -2104,6 +2104,9 @@ trait Authorize
             $saveMethodInput[Token\Entity::IFSC] =
                     $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::IFSC] ?? null;
 
+            $saveMethodInput[Token\Entity::AADHAAR_NUMBER] =
+                    $input[Payment\Entity::AADHAAR]['number'] ?? null;
+
             $saveMethodInput[Token\Entity::EXPIRED_AT] =
                     $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::EXPIRE_BY] ?? null;
         }

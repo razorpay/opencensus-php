@@ -2991,3 +2991,6 @@ ALTER TABLE merchant_access_map
 ALTER TABLE merchant_access_map
     ADD CONSTRAINT merchant_access_map_merchant_id_foreign FOREIGN KEY(merchant_id)
         REFERENCES merchants(id);
+
+ALTER TABLE tokens
+    ADD COLUMN aadhaar_number VARCHAR(255) DEFAULT NULL AFTER ifsc;

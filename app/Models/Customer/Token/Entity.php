@@ -42,6 +42,7 @@ class Entity extends Base\PublicEntity
     const RECURRING_DETAILS         = 'recurring_details';
     const BENEFICIARY_NAME          = 'beneficiary_name';
     const IFSC                      = 'ifsc';
+    const AADHAAR_NUMBER            = 'aadhaar_number';
     const USED_COUNT                = 'used_count';
     const USED_AT                   = 'used_at';
     const EXPIRED_AT                = 'expired_at';
@@ -421,6 +422,16 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::EXPIRED_AT] = $expiredAt;
     }
 
+    protected function setAadhaarNumberAttribute($aadhaarNumber)
+    {
+        if ($aadhaarNumber === null)
+        {
+            $aadhaarNumber = '';
+        }
+
+        $this->attributes[self::AADHAAR_NUMBER] = Crypt::encrypt($aadhaarNumber);
+    }
+
     protected function setPublicCardAttribute(array & $array)
     {
         if ($this->hasCard())
@@ -439,6 +450,16 @@ class Entity extends Base\PublicEntity
             self::RECURRING_STATUS_SHORT            => $this->getRecurringStatus(),
             self::RECURRING_FAILURE_REASON_SHORT    => $this->getRecurringFailureReason()
         ];
+    }
+
+    protected function getAadhaarNumberAttribute($aadhaarNumber)
+    {
+        if ($aadhaarNumber === null)
+        {
+            return $aadhaarNumber;
+        }
+
+        return Crypt::decrypt($aadhaarNumber);
     }
 
     public function setPublicRecurringDetailsAttribute(array & $array)

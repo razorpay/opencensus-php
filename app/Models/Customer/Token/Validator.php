@@ -30,6 +30,7 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_NUMBER      => 'sometimes|alpha_num|between:5,20',
         Entity::BENEFICIARY_NAME    => 'sometimes|alpha_space_num|between:4,120',
         Entity::IFSC                => 'sometimes|alpha_num|size:11',
+        Entity::AADHAAR_NUMBER      => 'sometimes|numeric|size:12',
     ];
 
     protected static $createDirectRules = [
