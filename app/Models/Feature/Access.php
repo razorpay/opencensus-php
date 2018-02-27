@@ -49,11 +49,9 @@ class Access
      * Checks if the accessed route is a feature route, if yes
      * checks if the merchant has access to the feature
      *
-     * @param array $authReturn
-     *
      * @return null
      */
-    public function verifyFeatureAccessByApplication(array $authReturn)
+    public function verifyFeatureAccessByApplication()
     {
         $routeFeatures = $this->ba->getCurrentRouteFeatures();
 
@@ -67,8 +65,7 @@ class Access
 
         $allowAccess = $this->allowApplicationToAccessFeatureRoute(
                             $routeFeatures,
-                            $routeFeaturesAvailableWithMerchant,
-                            $authReturn);
+                            $routeFeaturesAvailableWithMerchant);
 
         if ($allowAccess === true)
         {
@@ -133,14 +130,12 @@ class Access
      *
      * @param array $routeFeatures
      * @param array $routeFeaturesAvailableWithMerchant
-     * @param array $authReturn
      *
      * @return bool
      */
     protected function allowApplicationToAccessFeatureRoute(
         array $routeFeatures,
-        array $routeFeaturesAvailableWithMerchant,
-        array $authReturn): bool
+        array $routeFeaturesAvailableWithMerchant): bool
     {
         //
         // 1. If the application has any of the route features required,
@@ -150,7 +145,7 @@ class Access
         // Fetch all the features of the application that is trying to access the resource
         $applicationFeatures = $this->repo
                                     ->feature
-                                    ->getApplicationFeatures($authReturn['application']['id']);
+                                    ->getApplicationFeatures($this->ba->applicationId);
 
         // Get an array of features
         $applicationFeatures = array_pluck($applicationFeatures, 'name');

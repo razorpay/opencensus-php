@@ -77,7 +77,6 @@ class Authenticate
         {
             $ret = $this->authenticateBearerAuth($route, $bearerToken);
 
-
             // Post process after authentication completes for an application
             $ret = $this->postApplicationAuthenticationProcessing($ret);
         }
@@ -211,13 +210,13 @@ class Authenticate
      */
     protected function postApplicationAuthenticationProcessing($authReturn)
     {
-        // Error flow - error object is returned
-        if (is_array($authReturn) === false)
+        // non-null value indicates failure flow
+        if ($authReturn !== null)
         {
             return $authReturn;
         }
 
-        $featureCheck = (new Feature\Access)->verifyFeatureAccessByApplication($authReturn);
+        $featureCheck = (new Feature\Access)->verifyFeatureAccessByApplication();
 
         return $featureCheck;
     }

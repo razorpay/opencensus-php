@@ -1125,6 +1125,11 @@ class BasicAuth
         $this->oauthClientId = $oauthClientId;
     }
 
+    public function setApplicationId(string $applicationId)
+    {
+        $this->applicationId = $applicationId;
+    }
+
     public function setMerchant($merchant)
     {
         if ($merchant !== null)

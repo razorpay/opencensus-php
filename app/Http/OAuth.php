@@ -180,15 +180,7 @@ class OAuth
             return ApiResponse::generateErrorResponse(ErrorCode::BAD_REQUEST_UNAUTHORIZED_OAUTH_TOKEN_INVALID);
         }
 
-        $response = $this->parseOAuthServerResponse($response);
-
-        // Return the error if there is any
-        if ($this->hasErrorOccurred($response) === true)
-        {
-            return $response;
-        }
-
-        return null;
+        return $this->parseOAuthServerResponse($response);
     }
 
     /**
@@ -237,8 +229,7 @@ class OAuth
         // Sets the identifiers that are sent in trace logs
         $this->ba->setAccessTokenId($response[OAuthToken::ID]);
         $this->ba->setOAuthClientId($response[OAuthToken::CLIENT_ID]);
-
-        return $response;
+        $this->ba->setApplicationId($response[OAuthToken::APPLICATION][OAuthToken::ID]);
     }
 
     /**
