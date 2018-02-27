@@ -233,26 +233,6 @@ class OAuth
     }
 
     /**
-     * Returns true if $response is an object - instance of the
-     * class JsonResponse and has the key error in it.
-     *
-     * @param $response
-     *
-     * @return bool
-     */
-    protected function hasErrorOccurred($response)
-    {
-        if (($response instanceof Illuminate\Http\JsonResponse) === true)
-        {
-            $response = $response->getData();
-
-            return (array_key_exists('error', $response) === true);
-        }
-
-        return false;
-    }
-
-    /**
      * Check if a token has enough scopes to access a route
      *
      * @param array $tokenScopes

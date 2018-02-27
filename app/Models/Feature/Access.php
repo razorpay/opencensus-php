@@ -61,7 +61,7 @@ class Access
             return null;
         }
 
-        $routeFeaturesAvailableWithMerchant = $this->getRouteFeaturesAvailableWithMerchant($routeFeatures);
+        $routeFeaturesAvailableWithMerchant = $this->getMerchantRouteFeatures($routeFeatures);
 
         $allowAccess = $this->allowApplicationToAccessFeatureRoute(
                             $routeFeatures,
@@ -91,7 +91,7 @@ class Access
             return null;
         }
 
-        $routeFeaturesAvailableWithMerchant = $this->getRouteFeaturesAvailableWithMerchant($routeFeatures);
+        $routeFeaturesAvailableWithMerchant = $this->getMerchantRouteFeatures($routeFeatures);
 
         //
         // If the merchant is directly accessing the resource, allow if it
@@ -113,7 +113,7 @@ class Access
      *
      * @return array
      */
-    protected function getRouteFeaturesAvailableWithMerchant(array $routeFeatures): array
+    protected function getMerchantRouteFeatures(array $routeFeatures): array
     {
         //
         // If the merchant has at least one of the features
@@ -163,11 +163,11 @@ class Access
         //    resource if the feature required is not a blacklisted feature.
         //
 
-        $oauthBlacklistedFeatures = Entity::$oauthBlacklistedFeatures;
+        $appBlacklistedFeatures = Entity::$appBlacklistedFeatures;
 
         $routeFeaturesAvailableWithMerchantWhitelisted = array_diff(
                                                             $routeFeaturesAvailableWithMerchant,
-                                                            $oauthBlacklistedFeatures);
+                                                            $appBlacklistedFeatures);
 
         if (empty($routeFeaturesAvailableWithMerchantWhitelisted) === false)
         {
