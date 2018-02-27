@@ -30,6 +30,7 @@ class Mailgun extends Base
         self::FREECHARGE,
         self::FIRST_DATA,
         self::NETBANKING_AXIS,
+        self::NETBANKING_BOB,
         self::NETBANKING_ICICI,
         self::NETBANKING_FEDERAL,
         self::VIRTUAL_ACC_KOTAK,
