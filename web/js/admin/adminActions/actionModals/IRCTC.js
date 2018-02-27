@@ -13,7 +13,7 @@ export default function IRCTC() {
     <Form class="full-span full-elements" style={{ minHeight: '300px' }}>
       <DateField
         label="Date"
-        fieldClass="irctc-form"
+        fieldClass="irctc-form m-l"
         name="on"
         placeholder="YYYY-MM-DD"
         defaultValue={moment()}
@@ -28,7 +28,9 @@ export default function IRCTC() {
         pendingClass="small spinner"
         onSubmit={data => {
           return fetch({
-            url: `${data.mode}_${data.merchant_id}/reports/refund/irctc`,
+            url: `/admin/api/${data.mode}_${
+              data.merchant_id
+            }/reports/refund/irctc`,
             params: {
               email: data.email,
               on: data.on,

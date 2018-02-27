@@ -80,7 +80,7 @@ export default class GatewayRule extends CollectionItem {
 
     return this.request(
       fetch({
-        url: `${mode}/gateway/rules/${ruleId}`,
+        url: `/admin/api/${mode}/gateway/rules/${ruleId}`,
         method: 'patch',
         data: body,
       })
