@@ -498,8 +498,6 @@ final class Route
         'admin_get'                               => ['get',      'admin/{id}/fetch',                               'OrganizationController@getAdmin'                                   ],
         'admin_edit'                              => ['put',      'admin/{id}',                                     'OrganizationController@editAdmin'                                  ],
         'admin_edit_app_auth'                     => ['put',      'admin-app-auth/{id}',                            'OrganizationController@editAdmin'                                  ],
-        'admin_fetch_merchant_ids'                => ['get',      'orgs/{orgId}/admins/{id}/merchant_ids',          'OrganizationController@getMerchantIds'                             ],
-        'admin_fetch_merchants'                   => ['get',      'orgs/{orgId}/admins/{id}/merchants',             'OrganizationController@getMerchants'                               ],
         'admin_fetch_merchant_ids_new'            => ['get',      'admins/merchant_ids',                            'OrganizationController@getMerchantIdsFromEs'                       ],
         'admin_fetch_merchants_new'               => ['get',      'admins/merchants',                               'OrganizationController@getMerchantsFromEs'                         ],
         'admin_delete'                            => ['delete',   'admin/{id}',                                     'OrganizationController@deleteAdmin'                                ],
@@ -1149,8 +1147,6 @@ final class Route
     public static $admin = [
         'org_get',
         'org_get_multiple',
-        'admin_fetch_merchant_ids',
-        'admin_fetch_merchants',
         'admin_fetch_merchant_ids_new',
         'admin_fetch_merchants_new',
         'admin_create',
@@ -1429,8 +1425,6 @@ final class Route
         'schedule_delete'                        => Permission::SCHEDULE_DELETE,
         'schedule_update'                        => Permission::SCHEDULE_UPDATE,
         'schedule_assign'                        => Permission::SCHEDULE_ASSIGN,
-        'admin_fetch_merchant_ids'               => Permission::VIEW_ALL_MERCHANTS,
-        'admin_fetch_merchants'                  => Permission::VIEW_ALL_MERCHANTS,
         'admin_fetch_merchant_ids_new'           => '*',
         'admin_fetch_merchants_new'              => '*',
         'permission_create'                      => Permission::CREATE_PERMISSION,
@@ -1680,6 +1674,7 @@ final class Route
         'shield_rules_delete'                    => Permission::DELETE_SHIELD_RULES,
         'shield_rules_evaluate'                  => Permission::EVALUATE_SHIELD_RULES,
         'user_fetch_admin'                       => '*',
+        'batch_create'                           => '*',
     ];
 
     public static $direct = [
@@ -2015,8 +2010,6 @@ final class Route
         // 'role_get',
         // 'admin_get_multiple',
         // 'admin_get',
-        'admin_fetch_merchant_ids',
-        'admin_fetch_merchants',
         'admin_fetch_merchant_ids_new',
         'admin_fetch_merchants_new',
         // 'admin_lead_get_multiple',
