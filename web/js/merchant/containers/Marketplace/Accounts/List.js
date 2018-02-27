@@ -23,7 +23,6 @@ import { luminateRow } from 'merchant/modules/app';
 export default class AccountsListContainer extends ListContainer {
   fetchEntityList({ id, ...params }) {
     if (id) {
-      id = id.replace('acc_', '');
       return Promise.resolve(
         this.showAccountDetailsModal({
           id,

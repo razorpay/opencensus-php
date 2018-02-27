@@ -13,7 +13,7 @@ export default class PricingPlanModal extends Component {
   state = { merchantBanksMapping: {} };
 
   componentWillMount() {
-    adminFetch(`merchants/${this.props.merchantId}/banks`).then(data => {
+    adminFetch(`live/merchants/${this.props.merchantId}/banks`).then(data => {
       let merchantBanksMapping = {};
       let banksList = {};
 
