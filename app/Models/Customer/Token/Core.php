@@ -205,17 +205,6 @@ class Core extends Base\Core
         if ($token === null)
         {
             $token = $this->repo->token->getByTokenIdAndCustomerId($id, $customerId);
-
-            if ($token === null)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_SUBSCRIPTION_CUSTOMER_TOKEN_NOT_FOUND,
-                    null,
-                    [
-                        'token_id'          => $id,
-                        'customer_id'       => $customerId
-                    ]);
-            }
         }
 
         return $token;
