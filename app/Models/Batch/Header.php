@@ -490,7 +490,7 @@ class Header
      * Headers added against each entry detailing the
      * type of error and its description, if any.
      */
-    const ERROR_HEADERS = [
+    const VALIDATED_HEADERS = [
         self::ERROR_CODE,
         self::ERROR_DESCRIPTION,
     ];
@@ -535,8 +535,8 @@ class Header
         return self::HEADER_MAP[$type][self::OUTPUT];
     }
 
-    public static function getErrorHeadersForType(string $type): array
+    public static function getValidatedHeadersForType(string $type): array
     {
-        return array_merge(self::HEADER_MAP[$type][self::INPUT], self::ERROR_HEADERS);
+        return array_merge(self::HEADER_MAP[$type][self::INPUT], self::VALIDATED_HEADERS);
     }
 }

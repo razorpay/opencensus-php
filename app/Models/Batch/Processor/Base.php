@@ -54,7 +54,7 @@ class Base extends BaseModel\Core
 
         FileStore\Type::BATCH_INPUT     => Batch\Entity::INPUT_FILE_PREFIX,
 
-        FileStore\Type::BATCH_ERROR     => Batch\Entity::ERROR_FILE_PREFIX,
+        FileStore\Type::BATCH_VALIDATED     => Batch\Entity::VALIDATED_FILE_PREFIX,
 
         FileStore\Type::BATCH_OUTPUT    => Batch\Entity::OUTPUT_FILE_PREFIX,
     ];
@@ -98,7 +98,7 @@ class Base extends BaseModel\Core
      */
     protected $inputFileLocalPath = "";
     protected $outputFileLocalPath = "";
-    protected $errorFileLocalPath = "";
+    protected $validatedFileLocalPath = "";
     protected $generatedFileLocalPath = "";
 
     /**
@@ -573,13 +573,13 @@ class Base extends BaseModel\Core
         return null;
     }
 
-    public function createSetErrorFileAndSave(array & $entries)
+    public function createValidatedFileAndSave(array & $entries)
     {
         $type = $this->batch->getType();
 
-        $headers = Batch\Header::getErrorHeadersForType($type);
+        $headers = Batch\Header::getValidatedHeadersForType($type);
 
-        $this->generatedFileDirectory = $this->batch->getLocalSaveDir(Batch\Entity::ERROR_FILE_PREFIX);
+        $this->generatedFileDirectory = $this->batch->getLocalSaveDir(Batch\Entity::VALIDATED_FILE_PREFIX);
 
         // Creates an error file in `batch/error` folder with
         // same name as `$this->batch->getId . <desired_extension>`.
@@ -587,11 +587,11 @@ class Base extends BaseModel\Core
         // The error file path is saved in $this->errorFileLocalPath.
         $this->createAndSetGeneratedFile($entries, $headers);
 
-        $this->errorFileLocalPath = $this->generatedFileLocalPath;
+        $this->validatedFileLocalPath = $this->generatedFileLocalPath;
 
         try
         {
-            return $this->saveErrorFile();
+            return $this->saveValidatedFile();
         }
         catch (\Throwable $e)
         {
@@ -731,7 +731,7 @@ class Base extends BaseModel\Core
 
         // This cleanup is required because when we validate
         // the entries, we check the headers in the entries
-        $this->removeErrorDetailsFromEntries($entries);
+        $this->removeErrorColumnsFromEntries($entries);
 
         $this->validateEntries($entries, $input);
 
@@ -762,7 +762,7 @@ class Base extends BaseModel\Core
      *
      * @param array $entries
      */
-    protected function removeErrorDetailsFromEntries(array & $entries)
+    protected function removeErrorColumnsFromEntries(array & $entries)
     {
         $entries = array_map(
 
@@ -868,11 +868,11 @@ class Base extends BaseModel\Core
                         true);
     }
 
-    protected function saveErrorFile(): FileStore\Creator
+    protected function saveValidatedFile(): FileStore\Creator
     {
         return $this->saveFile(
-                        $this->errorFileLocalPath,
-                        FileStore\Type::BATCH_ERROR,
+                        $this->validatedFileLocalPath,
+                        FileStore\Type::BATCH_VALIDATED,
                         false);
     }
 
@@ -934,7 +934,7 @@ class Base extends BaseModel\Core
         //
         $ufhTypes = ($this->batch->isReconciliationType() === true) ?
             [FileStore\Type::RECONCILIATION_BATCH_INPUT] :
-            [FileStore\Type::BATCH_ERROR, FileStore\Type::BATCH_INPUT];
+            [FileStore\Type::BATCH_VALIDATED, FileStore\Type::BATCH_INPUT];
 
         /**
          * We now fetch the file_store entity that is used for getting
@@ -945,7 +945,7 @@ class Base extends BaseModel\Core
          *
          * If the merchant calls the create(POST /batches) api with file_id produced
          * from batch validate api (POST /batches/validate), the latest will be file
-         * of type `batch_error`. This is also obvious as only the last batch_error
+         * of type `batch_validated`. This is also obvious as only the last batch_validated
          * file_store entity will be associated with this batch. The association
          * happens during batch_create sync part.
          */

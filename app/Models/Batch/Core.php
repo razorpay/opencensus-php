@@ -45,12 +45,13 @@ class Core extends Base\Core
 
         $response = $processor->getValidatedEntriesStatsAndSampleData($validatedEntries);
 
-        // The error file to be created and saved is supposed to be used in batch create api.
+        // TODO : Correct this comment logic as per new logic
+        // The validated file to be created and saved is supposed to be used in batch create api.
         // Hence it must be saved as an input file and to be saved inside batch/upload folder
-        // This error file_store instance has no entity associated with it as any input file
+        // This validated file_store instance has no entity associated with it as any input file
         // and should have the type as `batch_input`. For backward compatibility.
 
-        $ufh = $processor->createSetErrorFileAndSave($validatedEntries);
+        $ufh = $processor->createValidatedFileAndSave($validatedEntries);
 
         $response += $processor->getFileIdAndSignedUrl($ufh);
 

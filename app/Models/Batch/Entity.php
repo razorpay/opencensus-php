@@ -49,7 +49,7 @@ class Entity extends Base\PublicEntity
     const URL                       = 'url';
     const INPUT_FILE_PREFIX         = 'batch/upload/';
     const OUTPUT_FILE_PREFIX        = 'batch/download/';
-    const ERROR_FILE_PREFIX         = 'batch/error/';
+    const VALIDATED_FILE_PREFIX     = 'batch/validated/';
     const CONFIG                    = 'config';
 
     protected static $sign = 'batch';
@@ -219,14 +219,16 @@ class Entity extends Base\PublicEntity
     }
 
     /**
-     * TODO : Correct description comment !
+     * The file which our processor creates finally with validation
+     * results only. This is available to user to download.
+     * Currently available only for payment_links.
      *
      * @return FileStore\Entity
      */
-    public function errorFile()
+    public function validatedFile()
     {
         return $this->files()
-                    ->where(FileStore\Entity::TYPE, FileStore\Type::BATCH_ERROR)
+                    ->where(FileStore\Entity::TYPE, FileStore\Type::BATCH_VALIDATED)
                     ->latest()
                     ->first();
     }
