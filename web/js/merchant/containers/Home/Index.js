@@ -18,7 +18,6 @@ import RecentEntityTable from 'merchant/components/Home/EntityTable';
 import AnalyticsGraph from 'merchant/components/Home/AnalyticsGraph';
 import MethodBreakupCard from 'merchant/components/Home/MethodBreakupCard';
 import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
-import OpenDisputeAlert from 'merchant/containers/Home/OpenDisputeAlert';
 import { defaults } from 'react-chartjs-2';
 import ShowWhen from 'merchant/components/ShowWhen';
 import LocalStorageService from 'rzp/utils/localStorage';
@@ -114,7 +113,6 @@ class HomeContainer extends Component {
           </div>
         </Header>
 
-        <OpenDisputeAlert />
         <div
           class="Dashboard"
           style={{
