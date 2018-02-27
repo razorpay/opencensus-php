@@ -28,6 +28,112 @@ return [
         ],
     ],
 
+    'testUniqueReceiptFeatureWithNoReceipt' => [
+        'request'   => [
+            'content' => [
+                'amount'   => 50000,
+                'currency' => 'INR',
+            ],
+            'method'  => 'POST',
+            'url'     => '/orders',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_ORDER_RECEIPT_REQUIRED,
+                    'field'       => 'receipt'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testUniqueReceiptFeatureWithValidReceipt' => [
+        'request'  => [
+            'content' => [
+                'amount'   => 50000,
+                'currency' => 'INR',
+                'receipt'  => 'rcptid42',
+            ],
+            'method'  => 'POST',
+            'url'     => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'   => 50000,
+                'currency' => 'INR',
+                'receipt'  => 'rcptid42',
+            ],
+        ],
+    ],
+
+    'testUniqueReceiptFeatureWithDuplicateReceipt' => [
+        'request'   => [
+            'content' => [
+                'amount'   => 50000,
+                'currency' => 'INR',
+                'receipt'  => 'rcptid42',
+            ],
+            'method'  => 'POST',
+            'url'     => '/orders',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_ORDER_RECEIPT_NOT_UNIQUE,
+                    'field'       => []
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testCreateOrderWithTwoNullReceipts' => [
+        'request'  => [
+            'content' => [
+                'amount'   => 50000,
+                'currency' => 'INR',
+            ],
+            'method'  => 'POST',
+            'url'     => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'   => 50000,
+                'currency' => 'INR',
+            ],
+        ],
+    ],
+
+    'testCreateOrderWithTwoValidReceipts' => [
+        'request'  => [
+            'content' => [
+                'amount'   => 50000,
+                'currency' => 'INR',
+                'receipt'  => 'rcptid42',
+            ],
+            'method'  => 'POST',
+            'url'     => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'   => 50000,
+                'currency' => 'INR',
+                'receipt'  => 'rcptid42',
+            ],
+        ],
+    ],
+
     'testCreateOrderWithNegativeAmount' => [
         'request' => [
             'content' => [

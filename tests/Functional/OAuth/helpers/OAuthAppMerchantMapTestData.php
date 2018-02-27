@@ -45,6 +45,42 @@ return [
         ],
     ],
 
+    'testOAuthAppMerchantMapDuplicate' => [
+        'request'  => [
+            'url'     => '/merchants/10000000000000/applications',
+            'method'  => 'POST',
+            'content' => [
+                'application_id' => '10000000000App',
+            ]
+        ],
+        'response' => [
+            'content'     => [
+                'merchant_id' => '10000000000000',
+                'entity_id'   => '10000000000App',
+                'entity_type' => 'application',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testOAuthAppMerchantMapDuplicateWithDeleted' => [
+        'request'  => [
+            'url'     => '/merchants/10000000000000/applications',
+            'method'  => 'POST',
+            'content' => [
+                'application_id' => '10000000000App',
+            ]
+        ],
+        'response' => [
+            'content'     => [
+                'merchant_id' => '10000000000000',
+                'entity_id'   => '10000000000App',
+                'entity_type' => 'application',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testOAuthAppDeleteMerchantMap' => [
         'request'  => [
             'url'     => '/merchants/10000000000000/applications/10000000000App',

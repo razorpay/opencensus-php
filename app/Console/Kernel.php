@@ -2,8 +2,10 @@
 
 namespace RZP\Console;
 
+use Illuminate\Console\Command;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use RZP\Console\Commands\ImportCards;
 
 class Kernel extends ConsoleKernel
 {
@@ -24,6 +26,8 @@ class Kernel extends ConsoleKernel
         Commands\VerifyTopLevelDomain::class,
         Commands\GenerateEmailTemplates::class,
         \Laravel\Tinker\Console\TinkerCommand::class,
+        Commands\ImportCards::class,
+        Commands\ExportCustomers::class,
     ];
 
     /**
