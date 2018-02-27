@@ -332,7 +332,21 @@ class Entity extends Base\PublicEntity
         }
         else
         {
-            $referenceTime = $this->getNextRunAt();
+            //
+            // We are not using next_run_at but current start here
+            // because next_run_at gets updated by 1 day on every
+            // retry. In case of unanchored schedule, it will take the
+            // updated time as reference and calculate the next run
+            // which is wrong. Say its a 3 days interval. Next_run was
+            // 10 Jan. But it failed first time. Next run gets updated to
+            // 11 Jan. Here it passes, but if we take 11 Jan as reference
+            // next run will be 15 Jan while correct next_run is 14 Jan.
+            // So we use current start because current start will be last
+            // run of current billing cycle. So it only makes sense to use
+            // this variable Also current start for the billing is always
+            // updated before reaching this point
+            //
+            $referenceTime = $subscription->getCurrentStart();
         }
 
         $referenceTime = Carbon::createFromTimestamp($referenceTime, Timezone::IST);

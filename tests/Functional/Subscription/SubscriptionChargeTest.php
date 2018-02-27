@@ -141,6 +141,38 @@ class SubscriptionChargeTest extends TestCase
         // Carbon::setTestNow();
     }
 
+    public function testDailySubscriptionsWithRetry()
+    {
+        $planAttributes = [
+            'period'   => 'daily',
+            'interval' => 7
+        ];
+
+        $this->doAuthTxnForNewSubscription(false, $planAttributes);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        // this will be equal to January 10, 2018 8:30:00 AM
+        $this->assertEquals(1515553200, $subscription['start_at']);
+
+        // this will be equal to  January 17, 2018 8:30:00 AM
+        $this->assertEquals(1516158000, $subscription['task']['next_run_at']);
+
+        $this->chargeSubscriptionManuallyTestMode($subscription['id'], false);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        // this will be equal to  January 18, 2018 8:30:00 AM
+        $this->assertEquals(1516244400, $subscription['task']['next_run_at']);
+
+        $this->chargeSubscriptionManuallyTestMode($subscription['id'], true);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        // this will be equal to  January 24, 2018 8:30:00 AM
+        $this->assertEquals(1516762800, $subscription['task']['next_run_at']);
+    }
+
     public function testUpdateforSubscriptionWithoutStartAt()
     {
         $this->doAuthTxnForNewSubscription(false);
@@ -168,8 +200,22 @@ class SubscriptionChargeTest extends TestCase
 
         $subscription = $this->getLastEntity('subscription', true);
 
-        // It will be equal to 10 July May 2018
+        // It will be equal to 10 July 2018
         $this->assertEquals(1531161000, $subscription['task']['next_run_at']);
+
+        $this->chargeSubscriptionManuallyTestMode($subscription['id'], false);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        // It will be equal to 11 July 2018
+        $this->assertEquals(1531247400, $subscription['task']['next_run_at']);
+
+        $this->chargeSubscriptionManuallyTestMode($subscription['id'], true);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        // It will be equal to 10 Sept 2018
+        $this->assertEquals(1536517800, $subscription['task']['next_run_at']);
     }
 
     public function testUpdateforSubscriptionWithStartAt()
@@ -1627,8 +1673,6 @@ class SubscriptionChargeTest extends TestCase
         $this->doAuthTxnForNewSubscription(false, $planAttributes);
 
         $subscription = $this->getLastEntity('subscription', true);
-
-        $scheduleTask = $this->getLastEntity('schedule_task', true);
 
         $expectedPaidCount = 1;
 
