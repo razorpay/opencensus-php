@@ -10,11 +10,11 @@ use Requests_Exception;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
-use RZP\Models\Base\PublicCollection;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Schedule as Schedule;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Schedule\Task as ScheduleTask;
 
@@ -125,18 +125,20 @@ class Reporting
 
         $scheduleRequest = $input['schedule'];
 
-        $reportingServiceResponse = $this->createScheduleOnReportingService($reportingServiceRequest);
+        $response = $this->createScheduleOnReportingService($reportingServiceRequest);
 
         // In case reporting service returns error, then we dont create schedule/schedule task
-        if (isset($reportingServiceResponse['error']) === false)
+        if (isset($response['error']) === false)
         {
+            $this->trace->info(TraceCode::REPORTING_SERVICE_CREATE_SCHEDULE, $input);
+
             // Need to store entity_id without sign.
-            $scheduleRequest[ScheduleTask\Entity::ENTITY_ID] = explode('sched_', $reportingServiceResponse['id'])[1];
+            $scheduleRequest[ScheduleTask\Entity::ENTITY_ID] = explode('sched_', $response['id'])[1];
 
             $this->createScheduleOnAPI($scheduleRequest);
         }
 
-        return $reportingServiceResponse;
+        return $response;
     }
 
     public function fetchScheduleMultiple(array $input): array

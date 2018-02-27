@@ -78,6 +78,8 @@ class Core extends Base\Core
      */
     public function create(Merchant\Entity $merchant, Base\Entity $entity = null, Schedule\Entity $schedule = null, array $input = [])
     {
+        $this->trace->info(TraceCode::SCHEDULE_TASKS_CREATE_REQUEST, $input);
+
         $scheduleTask = (new Entity)->build($input);
 
         $scheduleTask->merchant()->associate($merchant);
@@ -117,6 +119,8 @@ class Core extends Base\Core
      */
     public function createForExternalService(Merchant\Entity $merchant, Schedule\Entity $schedule, array $input): Entity
     {
+        (new Validator())->validateForExternalServices($input);
+
         $scheduleTask = $this->create($merchant, null, $schedule, $input);
 
         $this->repo->saveOrFail($scheduleTask);

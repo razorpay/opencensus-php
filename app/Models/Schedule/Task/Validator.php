@@ -61,4 +61,19 @@ class Validator extends Base\Validator
                 "Invalid Entity Type given for $type");
         }
     }
+
+    public function validateForExternalServices(array $input)
+    {
+        if (isset($input[Entity::ENTITY_ID]) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Entity ID should be present');
+        }
+
+        if (isset($input[Entity::ENTITY_TYPE]) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Entity Type should be present');
+        }
+    }
 }
