@@ -90,7 +90,7 @@ class RefundFile extends Base\RefundFile
         $amt = $this->getFormattedAmountString($amount);
 
         $data = [
-            str_pad($accountNumber, 16, ' '),
+            str_pad(trim($accountNumber), 16, ' '),
             'INR',
             substr($accountNumber, 0, 4),
             $type,
