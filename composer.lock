@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "710a9e400d1f7411d2b9c444b69e748f",
+    "content-hash": "8f495662dc59c2616fd86e4a78ae461f",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -5325,16 +5325,16 @@
         },
         {
             "name": "razorpay/trace",
-            "version": "2.0.6",
+            "version": "2.0.9",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/trace.git",
-                "reference": "f8193bf83378007a4a8d8a41464b29678752885e"
+                "reference": "09dbe2b6fa01d78246f29b324e3d36bf5df7fdb5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/trace/zipball/f8193bf83378007a4a8d8a41464b29678752885e",
-                "reference": "f8193bf83378007a4a8d8a41464b29678752885e",
+                "url": "https://api.github.com/repos/razorpay/trace/zipball/09dbe2b6fa01d78246f29b324e3d36bf5df7fdb5",
+                "reference": "09dbe2b6fa01d78246f29b324e3d36bf5df7fdb5",
                 "shasum": ""
             },
             "require": {
@@ -5384,10 +5384,10 @@
                 "trace"
             ],
             "support": {
-                "source": "https://github.com/razorpay/trace/tree/2.0.6",
+                "source": "https://github.com/razorpay/trace/tree/2.0.9",
                 "issues": "https://github.com/razorpay/trace/issues"
             },
-            "time": "2017-10-24T13:59:57+00:00"
+            "time": "2018-02-27T09:05:35+00:00"
         },
         {
             "name": "razorpay/ufh-sdk-php",
