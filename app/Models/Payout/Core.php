@@ -189,11 +189,12 @@ class Core extends Base\Core
         $fundTransferAttempt = new FundTransferAttempt\Entity;
 
         $values = [
-            FundTransferAttempt\Entity::PURPOSE   => $payout->getPurpose(),
-            FundTransferAttempt\Entity::CHANNEL   => $payout->getChannel(),
-            FundTransferAttempt\Entity::VERSION   => FundTransferAttempt\Version::V3,
-            FundTransferAttempt\Entity::STATUS    => FundTransferAttempt\Status::CREATED,
-            FundTransferAttempt\Entity::NARRATION => 'RAZORPAY SETTLEMENT',
+            FundTransferAttempt\Entity::PURPOSE         => $payout->getPurpose(),
+            FundTransferAttempt\Entity::CHANNEL         => $payout->getChannel(),
+            FundTransferAttempt\Entity::VERSION         => FundTransferAttempt\Version::V3,
+            FundTransferAttempt\Entity::STATUS          => FundTransferAttempt\Status::CREATED,
+            FundTransferAttempt\Entity::NARRATION       => 'RAZORPAY SETTLEMENT',
+            FundTransferAttempt\Entity::INITIATE_AT     => Carbon::now(Timezone::IST)->getTimestamp(),
         ];
 
         $fundTransferAttempt->fillAndGenerateId($values);

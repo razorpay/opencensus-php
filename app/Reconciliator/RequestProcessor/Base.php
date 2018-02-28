@@ -82,7 +82,7 @@ class Base extends Core
         self::NETBANKING_RBL      => ['internetbanking@rblbank.com'],
         self::NETBANKING_INDUSIND => [],
         self::NETBANKING_PNB      => [],
-        self::NETBANKING_BOB      => [],
+        self::NETBANKING_BOB      => ['billpay@bankofbaroda.com'],
         self::JIOMONEY            => [],
         self::EBS                 => [],
         self::FIRST_DATA          => ['customer.care@icici.mailserv.in'],

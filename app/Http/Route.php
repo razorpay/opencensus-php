@@ -257,6 +257,7 @@ final class Route
         'setl_fixer'                              => ['get',      'settlements/fixer',                              'SettlementController@getSettlementFixer'                           ],
         'setl_delete_file'                        => ['delete',   'settlements/file/{setlFileType}',                'SettlementController@deleteSettlementFile'                         ],
         'setl_initiate'                           => ['post',     'settlements/initiate/{channel?}',                'SettlementController@postSettlementInitiate'                       ],
+        'setl_initiate_daily'                     => ['post',     'settlements/initiate_daily',                     'SettlementController@processDailySettlements'                      ],
         'setl_retry'                              => ['post',     'settlements/retry',                              'SettlementController@postSettlementRetry'                          ],
         'setl_file_generate'                      => ['post',     'settlements/file/generate',                      'SettlementController@postSettlementFileGenerate'                   ],
         'setl_reconcile_generate'                 => ['post',     'settlements/reconcile/generate/{channel}',       'SettlementController@postSettlementReconcileGenerate'              ],
@@ -1011,6 +1012,7 @@ final class Route
         'schedule_process_tasks',
         'scorecard',
         'setl_initiate',
+        'setl_initiate_daily',
         'setl_post_details_old',
         'setl_reconcile_generate',
         'setl_reconcile_h2h',
@@ -1033,7 +1035,7 @@ final class Route
         'fund_transfer_attempt_process',
     ];
 
-    // The below routes needs X-Dashboard-User-Id
+    // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
     // User context is taken from the provided header.
     // Below rotues deal only with user entity without context of merchant.
     public static $userWhitelist = [
@@ -1041,6 +1043,18 @@ final class Route
         'user_fetch',
         'user_change_password',
         'user_merchant_upgrade',
+        'invoice_create',
+        'invoice_fetch',
+        'invoice_fetch_multiple',
+        'invoice_update',
+        'invoice_issue',
+        'invoice_delete',
+        'invoice_add_line_items',
+        'invoice_update_line_item',
+        'invoice_remove_line_item_bulk',
+        'invoice_remove_line_item',
+        'invoice_send_notification_private',
+        'invoice_cancel',
     ];
 
     public static $proxy = [
@@ -1678,6 +1692,7 @@ final class Route
         'shield_rules_delete'                    => Permission::DELETE_SHIELD_RULES,
         'shield_rules_evaluate'                  => Permission::EVALUATE_SHIELD_RULES,
         'user_fetch_admin'                       => '*',
+        'batch_create'                           => '*',
     ];
 
     public static $direct = [
@@ -1782,6 +1797,7 @@ final class Route
         'cron' => [
             'entity_tax_update',
             'setl_initiate',
+            'setl_initiate_daily',
             'setl_reconcile_generate',
             'setl_reconcile_test',
             'nodal_initiate_transfer',
