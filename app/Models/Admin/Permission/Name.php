@@ -10,6 +10,7 @@ class Name
     const VIEW_ALL_MERCHANTS                  = 'view_all_merchants';
     const VIEW_MERCHANT                       = 'view_merchant';
     const VIEW_MERCHANT_BALANCE               = 'view_merchant_balance';
+    // @todo - Rename view_merchant_features to view_features as features have now been extended to applications as well.
     const VIEW_MERCHANT_FEATURES              = 'view_merchant_features';
     const VIEW_MERCHANT_BANKS                 = 'view_merchant_banks';
     const VIEW_NETWORKS                       = 'view_networks';
@@ -135,6 +136,7 @@ class Name
     const DELETE_PERMISSION                   = 'delete_permission';
     const CREATE_PERMISSION                   = 'create_permission';
     const EDIT_PERMISSION                     = 'edit_permission';
+    // @todo - Rename delete_merchant_features to delete_features as features have now been extended to applications as well.
     const DELETE_MERCHANT_FEATURES            = 'delete_merchant_features';
     const CREATE_MERCHANT_INVITE              = 'create_merchant_invite';
     const EDIT_MERCHANT_INVITE                = 'edit_merchant_invite';
