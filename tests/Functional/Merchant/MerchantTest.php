@@ -890,6 +890,8 @@ class MerchantTest extends TestCase
     {
         $this->testAddBankAccount();
 
+        $this->ba->adminAuth();
+
         $this->startTest();
     }
 
