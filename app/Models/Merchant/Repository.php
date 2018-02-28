@@ -21,7 +21,7 @@ class Repository extends Base\Repository
     use CacheQueries;
 
     // Cache TTL defined in minutes
-    const CACHE_TTL = 5;
+    const CACHE_TTL = 1;
 
     use Base\RepositoryUpdateTestAndLive;
 

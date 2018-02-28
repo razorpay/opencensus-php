@@ -35,6 +35,11 @@ class Repository extends \Razorpay\Spine\Repository
     const ES_JOB_DELAY = 3;
 
     /**
+     * Default cache ttl defined in minutes
+     */
+    const CACHE_TTL = 5;
+
+    /**
      * Query parameter: Holds list of relations to be
      * eager loaded when doing getting entity(s).
      *
@@ -263,7 +268,8 @@ class Repository extends \Razorpay\Spine\Repository
      *
      * TODO: Move this to spine
      * @param  string $id
-     * @param  array  $columns [description]
+     * @param  array  $columns
+     * @return RZP\Models\Base\Entity
      */
     public function findOrFail($id, $columns = array('*'))
     {

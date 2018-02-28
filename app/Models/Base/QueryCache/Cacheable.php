@@ -5,6 +5,7 @@ namespace RZP\Models\Base\QueryCache;
 use App;
 
 use RZP\Constants\Mode;
+use RZP\Constants\Entity as E;
 use RZP\Models\Base\QueryCache\CacheQueryBuilder;
 
 /**
@@ -67,9 +68,11 @@ trait Cacheable
      */
     protected function getCachePrefix(): string
     {
+        $queryCacheVersion = E::CACHED_ENTITIES[$this->entity];
+
         $prefixArray = [
             Constants::QUERY_CACHE_PREFIX,
-            static::QUERY_CACHE_VERSION,
+            $queryCacheVersion,
             $this->entity,
         ];
 

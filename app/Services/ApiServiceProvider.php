@@ -22,13 +22,14 @@ use RZP\Models\Promotion;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Models\BankAccount;
-use RZP\Models\Base\Observer;
+use RZP\Constants\Entity as E;
 use RZP\Models\Admin as Admin;
 use RZP\Gateway\GatewayManager;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Plan\Subscription\Addon;
 use RZP\Models\Gateway\File as GatewayFile;
+use RZP\Models\Base\Observer as BaseObserver;
 
 
 class ApiServiceProvider extends BaseServiceProvider
@@ -43,13 +44,28 @@ class ApiServiceProvider extends BaseServiceProvider
     /**
      * Registering observers for eloquent events here.
      * Used for invalidating cached entities on update
-     *
      */
     public function boot()
     {
-        Key\Entity::observe(Observer::class);
+        foreach (E::CACHED_ENTITIES as $entity => $version)
+        {
+            $entityNamespace = E::getEntityNamespace($entity);
+            $entityClass = E::getEntityClass($entity);
+            $entityObserverClass = $entityNamespace . '\\Observer';
 
-        Merchant\Entity::observe(Observer::class);
+            //
+            // If we have a entity specific observer class defined,
+            // use that, else use the base observer class
+            //
+            if (class_exists($entityObserverClass) === true)
+            {
+                $entityClass::observe($entityObserverClass);
+            }
+            else
+            {
+                $entityClass::observe(BaseObserver::class);
+            }
+        }
     }
 
     /**

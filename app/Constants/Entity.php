@@ -171,6 +171,15 @@ class Entity
     const TAX                   = 'tax';
     const TAX_GROUP             = 'tax_group';
 
+    /**
+     * Defines a map of entites which are currently
+     * being cached and associated cache version prefixes.
+     */
+    const CACHED_ENTITIES = [
+        self::KEY      => 'v1',
+        self::MERCHANT => 'v1',
+    ];
+
     public static $namespace = [
         self::IIN                   => \RZP\Models\Card\IIN::class,
         self::P2P                   => \RZP\Models\P2p::class,

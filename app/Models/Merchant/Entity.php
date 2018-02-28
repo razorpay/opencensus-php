@@ -133,8 +133,6 @@ class Entity extends Base\PublicEntity
     const ROLE                      = 'role';
     const PIVOT                     = 'pivot';
 
-    const QUERY_CACHE_VERSION = 'v1';
-
     protected $entity = 'merchant';
 
     protected static $sign = '';
