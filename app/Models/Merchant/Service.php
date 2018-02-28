@@ -203,7 +203,28 @@ class Service extends Base\Service
             Org\Entity::verifyIdAndStripSign($input[Entity::ORG_ID]);
         }
 
-        $merchant = (new Merchant\Core)->edit($merchant, $input);
+        $merchant = $this->repo->transactionOnLiveAndTest(function() use ($merchant, $input)
+        {
+            $merchant = (new Merchant\Core)->edit($merchant, $input);
+
+            if (isset($input[Entity::FEE_BEARER]) === true)
+            {
+                $merchantId = $merchant->getId();
+
+                // add feebearer tag if fee_bearer field is set to customer
+                // else remove feebearer tag
+                if ($input[Entity::FEE_BEARER] === 'customer')
+                {
+                    $this->insertTag($merchantId, 'feebearer');
+                }
+                else
+                {
+                    $this->deleteTag($merchantId, 'feebearer');
+                }
+            }
+
+            return $merchant;
+        });
 
         return $merchant->toArrayPublic();
     }

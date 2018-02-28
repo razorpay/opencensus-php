@@ -173,6 +173,7 @@ class PaymentCreateTest extends TestCase
             $content['bank_account[account_number]'],
             $content['bank_account[ifsc]'],
             $content['aadhaar[number]']);
+
         $content['bank_account'] = [
             'account_number' => '12812891982',
             'name'           => 'test name',
@@ -516,7 +517,7 @@ class PaymentCreateTest extends TestCase
         $this->mockTokenex();
         $this->fixtures->create('terminal:shared_emandate_icici_terminal');
         $this->fixtures->create('terminal:shared_emandate_axis_terminal');
-        $this->fixtures->merchant->addFeatures(['e_mandate', 'charge_at_will']);
+        $this->fixtures->merchant->addFeatures(['charge_at_will']);
 
         $this->fixtures->merchant->enableEmandate();
 

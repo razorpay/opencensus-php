@@ -3,6 +3,7 @@
 namespace RZP\Models\Customer\Token;
 
 use Carbon\Carbon;
+use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Customer;
@@ -66,6 +67,14 @@ class Core extends Base\Core
      */
     public function create($customer, $input, Card\Entity $card = null)
     {
+        $this->trace->info(
+            TraceCode::CUSTOMER_TOKEN_CREATE,
+            [
+                'customer_id' => $customer->getId(),
+                'input'       => $input
+            ]
+        );
+
         $token = new Token\Entity;
 
         if (isset($input[Token\Entity::CARD_ID]) === true)
@@ -186,8 +195,8 @@ class Core extends Base\Core
     /**
      * @param string $id
      * @param string $customerId
-     *
      * @return Entity
+     * @throws Exception\BadRequestException
      */
     public function getByTokenIdAndCustomerId(string $id, string $customerId)
     {

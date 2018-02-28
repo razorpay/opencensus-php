@@ -1547,3 +1547,6 @@ WHERE id IN ('91LaFcjGVPBmcu',
              '9TNbtq22gvZql3',
              '9Yrjx0YHzWBlVQ',
              '9YrlbhQML8cd4Y')
+
+UPDATE fund_transfer_attempts
+SET initiate_at = created_at;

@@ -157,6 +157,8 @@ class OrderTest extends TestCase
 
     public function testEmandateRegistrationOrderWithoutZeroRupee()
     {
+        $this->markTestSkipped('No non-zero ruppee flow available');
+
         $order = $this->startTest();
 
         return $order;
