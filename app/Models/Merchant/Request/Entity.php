@@ -8,16 +8,16 @@ use RZP\Models\Merchant;
 
 class Entity extends Base\PublicEntity
 {
-    const MERCHANT_ID       = 'merchant_id';
     const NAME              = 'name';
     const TYPE              = 'type';
     const STATUS            = 'status';
-    const PUBLIC_MESSAGE    = 'public_message';
-    const REJECTION_REASONS = 'rejection_reasons';
-    const COMMENT           = 'comment';
     const MERCHANT          = 'merchant';
-    const SUBMISSIONS       = 'submissions';
     const QUESTIONS         = 'questions';
+    const SUBMISSIONS       = 'submissions';
+    const MERCHANT_ID       = 'merchant_id';
+    const PUBLIC_MESSAGE    = 'public_message';
+    const INTERNAL_COMMENT  = 'internal_comment';
+    const REJECTION_REASONS = 'rejection_reasons';
 
     protected $entity = 'merchant_request';
 
@@ -26,22 +26,22 @@ class Entity extends Base\PublicEntity
     protected $primaryKey = self::ID;
 
     protected $fillable = [
-        self::MERCHANT_ID,
         self::NAME,
         self::TYPE,
-        self::COMMENT,
-        self::PUBLIC_MESSAGE,
         self::STATUS,
+        self::INTERNAL_COMMENT,
+        self::MERCHANT_ID,
+        self::PUBLIC_MESSAGE,
     ];
 
     protected $public = [
         self::ID,
-        self::MERCHANT_ID,
         self::NAME,
-        self::MERCHANT,
-        self::COMMENT,
         self::TYPE,
         self::STATUS,
+        self::INTERNAL_COMMENT,
+        self::MERCHANT,
+        self::MERCHANT_ID,
         self::PUBLIC_MESSAGE,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -49,8 +49,8 @@ class Entity extends Base\PublicEntity
 
     protected $publicSetters = [
         self::ID,
+        self::INTERNAL_COMMENT,
         self::MERCHANT_ID,
-        self::COMMENT,
     ];
 
     protected $defaults = [
@@ -109,7 +109,7 @@ class Entity extends Base\PublicEntity
 
         if ($app['basicauth']->isAdminAuth() !== true)
         {
-            unset($attributes[Entity::COMMENT]);
+            unset($attributes[Entity::INTERNAL_COMMENT]);
         }
     }
 }

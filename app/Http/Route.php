@@ -690,7 +690,7 @@ final class Route
 
         // Merchant Requests Routes
         'merchant_requests_get'                   => ['get',      'merchant/requests/{id}',                         'MerchantRequestController@get'                                     ],
-        'merchant_requests_status_log'            => ['get',      'merchant/requests/{id}/status_log',              'MerchantRequestController@getMerchantRequestStatusLog'             ],
+        'merchant_requests_status_log'            => ['get',      'merchant/requests/{id}/status_log',              'MerchantRequestController@getStatusLog'                            ],
         'merchant_requests_get_feature'           => ['get',      'merchant/requests/{type}/{name}',                'MerchantRequestController@getForFeatureTypeAndName'                ],
         'merchant_requests_list'                  => ['get',      'merchant/requests',                              'MerchantRequestController@getAll'                                  ],
         'merchant_requests_create'                => ['post',     'merchant/requests',                              'MerchantRequestController@create'                                  ],

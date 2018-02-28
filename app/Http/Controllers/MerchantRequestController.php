@@ -28,9 +28,9 @@ class MerchantRequestController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getMerchantRequestStatusLog(string $id)
+    public function getStatusLog(string $id)
     {
-        $data = $this->service(E::MERCHANT_REQUEST)->getMerchantRequestStatusLog($id, $this->input);
+        $data = $this->service(E::MERCHANT_REQUEST)->getStatusLog($id, $this->input);
 
         return ApiResponse::json($data);
     }

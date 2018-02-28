@@ -13,11 +13,10 @@ class Service extends Base\Service
     {
         $merchantId = $this->merchant->getId();
 
-        $input = array();
-
-        $input[Entity::NAME] = $featureName;
-
-        $input[Entity::TYPE] = $type;
+        $input = [
+            Entity::NAME => $featureName,
+            Entity::TYPE => $type,
+        ];
 
         return (new Core)->fetch($input, $merchantId);
     }
@@ -29,7 +28,7 @@ class Service extends Base\Service
         return (new Core)->fetch($input);
     }
 
-    public function getMerchantRequestStatusLog(string $id)
+    public function getStatusLog(string $id)
     {
         Entity::verifyIdAndStripSign($id);
 

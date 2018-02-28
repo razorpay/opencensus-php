@@ -24,15 +24,6 @@ class Repository extends BaseRepository
         self::EXPAND . '.*' => 'filled|string|in:merchant,',
     );
 
-    public function findByMerchantIdAndTypeAndName(string $merchantId, string $type, string $featureName)
-    {
-        return $this->newQuery()
-                    ->where(Entity::MERCHANT_ID, $merchantId)
-                    ->where(Entity::TYPE, $type)
-                    ->where(Entity::NAME, $featureName)
-                    ->first();
-    }
-
     public function getRequestDetails(string $id)
     {
         $relations = [
@@ -42,8 +33,8 @@ class Repository extends BaseRepository
         ];
 
         return $this->newQuery()
-                       ->where(Entity::ID, $id)
-                       ->with($relations)
-                       ->get();
+                    ->where(Entity::ID, $id)
+                    ->with($relations)
+                    ->get();
     }
 }

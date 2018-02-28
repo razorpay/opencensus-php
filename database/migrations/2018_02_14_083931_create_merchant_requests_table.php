@@ -25,7 +25,7 @@ class CreateMerchantRequestsTable extends Migration
 
             $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH);
 
-            $table->string(Entity::NAME, 25);
+            $table->string(Entity::NAME, 40);
 
             $table->string(Entity::STATUS, 30);
 
@@ -34,7 +34,7 @@ class CreateMerchantRequestsTable extends Migration
             $table->string(Entity::PUBLIC_MESSAGE, 255)
                   ->nullable();
 
-            $table->string(Entity::COMMENT, 255)
+            $table->string(Entity::INTERNAL_COMMENT, 255)
                   ->nullable();
 
             $table->integer(Entity::CREATED_AT);

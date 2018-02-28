@@ -15,23 +15,23 @@ class Validator extends Base\Validator
     const INVALID_FEATURE                               = 'Invalid feature';
 
     protected static $createRules = [
-        Entity::TYPE        => 'required|alpha_space|max:255|custom',
+        Entity::TYPE        => 'required|string|max:25|custom',
         Entity::STATUS      => 'required|max:30',
-        Entity::NAME        => 'required|string|max:15|custom',
+        Entity::NAME        => 'required|string|max:40|custom',
         Entity::MERCHANT_ID => 'required|string|max:15',
     ];
 
     protected static $createRequestRules = [
-        Entity::SUBMISSIONS => 'sometimes|array',
-        Entity::TYPE        => 'required|alpha_space|max:255|custom',
+        Entity::NAME        => 'required|string|max:40|custom',
+        Entity::TYPE        => 'required|alpha_space|max:25|custom',
         Entity::STATUS      => 'sometimes|max:30',
-        Entity::NAME        => 'required|string|max:15|custom',
+        Entity::SUBMISSIONS => 'sometimes|array',
     ];
 
     protected static $editRules = [
-        Entity::STATUS         => 'sometimes|max:255',
-        Entity::PUBLIC_MESSAGE => 'sometimes|max:255',
-        Entity::COMMENT        => 'sometimes|max:255',
+        Entity::STATUS           => 'sometimes|max:30',
+        Entity::PUBLIC_MESSAGE   => 'sometimes|max:255',
+        Entity::INTERNAL_COMMENT => 'sometimes|max:255',
     ];
 
     protected static $changeStatusRules = [
@@ -40,10 +40,10 @@ class Validator extends Base\Validator
     ];
 
     protected static $updateRules = [
-        Entity::SUBMISSIONS       => 'sometimes|array|custom',
         Entity::STATUS            => 'required|max:30',
+        Entity::SUBMISSIONS       => 'sometimes|array|custom',
         Entity::PUBLIC_MESSAGE    => 'sometimes|max:255',
-        Entity::COMMENT           => 'sometimes|max:255',
+        Entity::INTERNAL_COMMENT  => 'sometimes|max:255',
         Entity::REJECTION_REASONS => 'filled|array',
     ];
 

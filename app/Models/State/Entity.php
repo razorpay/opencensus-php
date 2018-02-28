@@ -17,7 +17,6 @@ class Entity extends Base\PublicEntity
     const NAME                 = 'name';
     const ENTITY_TYPE          = 'entity_type';
     const ENTITY_ID            = 'entity_id';
-    const COMMENT              = 'comment';
 
     protected static $sign = 'state';
 
@@ -36,7 +35,6 @@ class Entity extends Base\PublicEntity
         self::ENTITY_TYPE,
         self::ACTION_ID,
         self::NAME,
-        self::COMMENT,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -48,7 +46,6 @@ class Entity extends Base\PublicEntity
         self::ENTITY_TYPE,
         self::ACTION_ID,
         self::NAME,
-        self::COMMENT,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];

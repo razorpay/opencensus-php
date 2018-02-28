@@ -13,10 +13,15 @@ use RZP\Models\Merchant\Detail\RejectionReasons;
 
 class Core extends Base\Core
 {
-    /*
-     * Create and save request entity
-     * Create Initial State for Request
-     * Also save Onboarding Submissions, if any for a product type request
+    /**
+     * This function creates the following :
+     * 1. Create and save request entity
+     * 2. Create Initial State for Request
+     * 3. Also save Onboarding Submissions, if any for a product type request
+     *
+     * @param array $input
+     *
+     * @return Entity
      */
     public function create(array $input)
     {
@@ -52,6 +57,12 @@ class Core extends Base\Core
         return $request;
     }
 
+    /**
+     * @param Entity $request
+     * @param array  $input
+     *
+     * @return Entity
+     */
     public function update(Entity $request, array $input)
     {
         $request->edit($input);
@@ -81,10 +92,17 @@ class Core extends Base\Core
         return $stateObj;
     }
 
-    /*
-     * Change Request Entity
-     * Add new State for Request
-     * Save Rejection Reasons if any
+    /**
+     * This function does the following :
+     * 1. Change Request Entity
+     * 2. Add new State for Request
+     * 3. Save Rejection Reasons if any
+     *
+     * @param Entity $request
+     * @param array  $input
+     * @param bool   $useWorkflow
+     *
+     * @return Entity
      */
     public function changeStatus(Entity $request, array $input, $useWorkflow = true)
     {
@@ -130,11 +148,14 @@ class Core extends Base\Core
         {
             if ($status === Status::ACTIVATED)
             {
-                $useWorkflow === true and $this->app['workflow']
-                    ->setEntity($request->getEntity())
-                    ->setOriginal($oldRequestDetails)
-                    ->setDirty($newRequestDetails)
-                    ->handle();
+                if ($useWorkflow === true)
+                {
+                    $this->app['workflow']
+                        ->setEntity($request->getEntity())
+                        ->setOriginal($oldRequestDetails)
+                        ->setDirty($newRequestDetails)
+                        ->handle();
+                }
 
                 // Check if feature is not already enabled, else add it.
                 if ($request->merchant->isFeatureEnabled($request->getName()) === false)
@@ -151,7 +172,7 @@ class Core extends Base\Core
                 }
             }
 
-            if ($status === Status::REJECTED and $useWorkflow === true)
+            if (($status === Status::REJECTED) and ($useWorkflow === true))
             {
                 $this->triggerWorkflowForRejectionStatusChange(
                     $oldRequestDetails,
@@ -168,24 +189,31 @@ class Core extends Base\Core
         });
 
         return $request;
-
     }
 
-    /*
+    /**
      * Create a merchant request for a given type, name if not already present
+     *
+     * @param Merchant\Entity $merchant
+     * @param array           $input
+     *
+     * @return Entity
      */
     public function findOrCreateMerchantRequest(
         Merchant\Entity $merchant,
         array $input)
     {
-        // Find by type and name first, to not to create a request again if it exists
+
         $request = $this->repo
                         ->merchant_request
-                        ->findByMerchantIdAndTypeAndName(
-                            $merchant->getId(),
-                            $input[Entity::NAME],
-                            $input[Entity::TYPE]
-                        );
+                        ->fetch(
+                            [
+                                Entity::NAME => $input[Entity::NAME],
+                                Entity::TYPE => $input[Entity::TYPE]
+                            ],
+                            $merchant->getId()
+                        )
+                        ->first();
 
         if (empty($request) === true)
         {
@@ -198,10 +226,17 @@ class Core extends Base\Core
         return $request;
     }
 
-    /*
+    /**
      * This function will be used to create/edit a merchant request from old feature flow
      * till the time the old code isnt deprecated. Hence first either the merchant request is created or found,
      * and then the respective status is marked if needed.
+     *
+     * @param Merchant\Entity $merchant
+     * @param string          $feature
+     * @param string          $type
+     * @param string          $onboardingStatus
+     *
+     * @return Entity
      */
     public function syncOnboardingSubmissionToMerchantRequest(
         Merchant\Entity $merchant,
@@ -223,9 +258,15 @@ class Core extends Base\Core
         return $request;
     }
 
-    /*
+    /**
      * Function to be used to replace rejection reason_codes with the actual descriptions to store in ES
      * and show it to the team on admin dashboard
+     *
+     * @param Entity $oldDetails
+     * @param Entity $newDetails
+     * @param array  $rejectionReasons
+     *
+     * @throws \RZP\Exception\BadRequestValidationFailureException
      */
     protected function triggerWorkflowForRejectionStatusChange(
         Entity $oldDetails,
@@ -252,8 +293,13 @@ class Core extends Base\Core
             ->handle($oldMerchantDetailsArray, $newMerchantDetailsArray);
     }
 
-    /*
+    /**
      * Fetches the request entites and also the questions to be shown to the person for the respective form.
+     *
+     * @param array       $input
+     * @param string|null $merchantId
+     *
+     * @return mixed
      */
     public function fetch(array $input, string $merchantId = null)
     {
@@ -278,6 +324,11 @@ class Core extends Base\Core
         return $response;
     }
 
+    /**
+     * @param string $id
+     *
+     * @return mixed
+     */
     public function getMerchantRequestDetails(string $id)
     {
         $merchantRequest = $this->repo->merchant_request->getRequestDetails($id)->first();
@@ -294,10 +345,14 @@ class Core extends Base\Core
         return $returnData;
     }
 
-    /*
-     * Update Onboarding submissions, if any
-     * Update Status/Rejection Reasons if any
-     * Update the Request Entity
+    /**
+     * This function does the following :
+     * 1. Update Onboarding submissions, if any
+     * 2. Update Status/Rejection Reasons if any
+     * 3. Update the Request Entity
+     *
+     * @param Entity $request
+     * @param array  $input
      */
     public function updateMerchantRequest(Entity $request, array $input)
     {
@@ -308,7 +363,7 @@ class Core extends Base\Core
         $this->transaction(function() use($request, $input) {
 
             // Check form submissions on update
-            if ($request->isProductRequest() === true and isset($input[Entity::SUBMISSIONS]) === true)
+            if (($request->isProductRequest() === true) and (isset($input[Entity::SUBMISSIONS]) === true))
             {
                 $questions = $input[Entity::SUBMISSIONS];
 
@@ -339,7 +394,13 @@ class Core extends Base\Core
         });
     }
 
-    public function createMerchantRequest(array $input)
+    /**
+     * @param array $input
+     *
+     * @return Entity
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     */
+    public function createMerchantRequest(array $input): Entity
     {
         (new Validator)->validateInput('create_request', $input);
 

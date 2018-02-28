@@ -5,9 +5,9 @@ namespace RZP\Tests\Functional\Merchant;
 use DB;
 
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Merchant\Request\Entity;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
-use RZP\Models\Merchant\Request\Entity;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Fixtures\Entity\MerchantRequest;
 
