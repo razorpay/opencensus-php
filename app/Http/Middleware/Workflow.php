@@ -162,7 +162,7 @@ class Workflow
 
         $proxyAuth = $this->ba->isProxyAuth();
 
-        $strictPrivateAuth = $this->isStrictPrivateAuth();
+        $strictPrivateAuth = $this->ba->isStrictPrivateAuth();
 
         if (($adminAuth === true) or
             ($proxyAuth === true and $strictPrivateAuth === false))
