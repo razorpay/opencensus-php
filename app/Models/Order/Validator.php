@@ -193,7 +193,7 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH,
-                'amount',
+                Entity::AMOUNT,
                 [
                     'order_amount'   => $orderAmountDue,
                     'payment_amount' => $paymentAmount,
@@ -327,7 +327,11 @@ class Validator extends Base\Validator
     /**
      * Custom validator not used as both the entity values are not
      * available at the time of creation.
-     * */
+     *
+     * @param array $input
+     *
+     * @throws Exception\BadRequestException
+     */
     protected function validateAccountNumber(array $input)
     {
         $accountNumberLengths = Netbanking::getAccountNumberLengths();
@@ -341,6 +345,7 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_BANK_REQUIRED_WITH_ACCOUNT_NUMBER,
+                Entity::BANK,
                 [
                     $input
                 ]);
@@ -359,6 +364,7 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ORDER_ACCOUNT_NUMBER_INCORRECT_LENGTH,
+                Entity::ACCOUNT_NUMBER,
                 [
                     $input
                 ]);

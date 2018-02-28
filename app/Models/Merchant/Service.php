@@ -203,7 +203,28 @@ class Service extends Base\Service
             Org\Entity::verifyIdAndStripSign($input[Entity::ORG_ID]);
         }
 
-        $merchant = (new Merchant\Core)->edit($merchant, $input);
+        $merchant = $this->repo->transactionOnLiveAndTest(function() use ($merchant, $input)
+        {
+            $merchant = (new Merchant\Core)->edit($merchant, $input);
+
+            if (isset($input[Entity::FEE_BEARER]) === true)
+            {
+                $merchantId = $merchant->getId();
+
+                // add feebearer tag if fee_bearer field is set to customer
+                // else remove feebearer tag
+                if ($input[Entity::FEE_BEARER] === 'customer')
+                {
+                    $this->insertTag($merchantId, 'feebearer');
+                }
+                else
+                {
+                    $this->deleteTag($merchantId, 'feebearer');
+                }
+            }
+
+            return $merchant;
+        });
 
         return $merchant->toArrayPublic();
     }
@@ -1083,11 +1104,7 @@ class Service extends Base\Service
 
     public function getMerchantFeatures()
     {
-        $merchant = $this->merchant;
-
-        $data = (new Feature\Service)->getFeaturesForEntity($merchant);
-
-        return $data;
+        return (new Feature\Service)->getFeaturesForEntity($this->merchant);
     }
 
     public function addOrRemoveMerchantFeatures(array $input)
@@ -1260,6 +1277,22 @@ class Service extends Base\Service
         $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
 
         return $merchant->tagNames();
+    }
+
+    /**
+     * This function is used for updating key access of a merchant
+     * @param string $merchantId
+     * @param array $input
+     *
+     * @return array
+     */
+    public function updateKeyAccess(string $merchantId, array $input): array
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $merchant = (new Core)->updateKeyAccess($merchant, $input);
+
+        return $merchant->toArrayPublic();
     }
 
     public function markGratisTransactionPostpaid($input)
@@ -1513,7 +1546,8 @@ class Service extends Base\Service
 
         foreach ($featureNames as $featureName)
         {
-            $feature = $this->repo->feature->findByEntityIdAndNameOrFail(
+            $feature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail(
+                Feature\Constants::MERCHANT,
                 $entityId,
                 $featureName);
 

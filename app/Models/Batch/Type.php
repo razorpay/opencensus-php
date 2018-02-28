@@ -30,6 +30,14 @@ class Type
 
     const SUB_MERCHANT          = 'sub_merchant';
 
+    public static $disabledTypes = [
+        //
+        // Removing till auth for this is figured out. Other parts of the code aren't
+        // removed, since this may be necessary for the YesBank integration as well.
+        //
+        self::BANK_TRANSFER,
+    ];
+
     /**
      * Following batch types get processed via CRON job, CRON currently runs
      * less frequently (now every 6 hrs).
@@ -64,9 +72,15 @@ class Type
         return ((defined($key) === true) and (constant($key) === $type));
     }
 
+    public static function isDisabled(string $type)
+    {
+        return (in_array($type, self::$disabledTypes, true) === true);
+    }
+
     public static function validateType(string $type)
     {
-        if (self::exists($type) === false)
+        if ((self::exists($type) === false) or
+            (self::isDisabled($type) === true))
         {
             throw new Exception\BadRequestValidationFailureException('Not a valid type: ' . $type);
         }

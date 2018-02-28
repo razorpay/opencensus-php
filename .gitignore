@@ -4,6 +4,7 @@
 .env.*
 .idea/*
 !environment/.env.wercker
+!environment/.env.drone
 !environment/.env.defaults
 !environment/.env.production
 !environment/.env.beta

@@ -13,6 +13,8 @@ class SettlementFailure extends Mailable
     public function __construct(array $data)
     {
         $this->data = $data;
+
+        parent::__construct();
     }
 
     protected function addRecipients()

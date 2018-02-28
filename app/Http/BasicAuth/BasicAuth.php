@@ -1226,6 +1226,11 @@ class BasicAuth
         return ($this->type === Type::PRIVATE_AUTH);
     }
 
+    public function isStrictPrivateAuth()
+    {
+        return (($this->isPrivateAuth() === true) and ($this->isProxyAuth() === false));
+    }
+
     public function isPrivilegeAuth()
     {
         return ($this->type === Type::PRIVILEGE_AUTH);

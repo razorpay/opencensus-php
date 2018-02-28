@@ -29,6 +29,57 @@ return [
         ],
     ],
 
+    'testT3ScheduleWithMinTime' => [
+        'cases' => [
+            // This will check the case when settled at time
+            // will be 29 jan and ref time 20 jan next run will
+            // be equal to 29 jan only
+            [
+                'initialTime'      => "2018-01-20 00:00:00",
+                'expectedNextTime' => "2018-01-29 00:00:00"
+            ],
+        ],
+
+        // Delay 5 will gives us settled at as 2018-01-29 00:00:00
+        'schedule' => [
+            'name'        => 'Basic T3',
+            'period'      => 'daily',
+            'interval'    => 3,
+            'anchor'      => null,
+            'delay'       => 5,
+        ],
+
+    ],
+
+    'testComputeFutureRun' => [
+        'cases' => [
+            // This will check the case when min time is not
+            // given and next run is 3 days later which will
+            // be 23 jan in this case
+            [
+                'refTime'          => "2018-01-20 00:00:00",
+                'minTime'          => null,
+                'expectedNextTime' => "2018-01-23 00:00:00"
+            ],
+            // This will check the case if minTime is equal to refTime
+            // nextrun will be equal to reftime
+            [
+                'refTime'          => "2018-01-20 00:00:00",
+                'minTime'          => "2018-01-20 00:00:00",
+                'expectedNextTime' => "2018-01-20 00:00:00"
+            ],
+        ],
+
+        'schedule' => [
+            'name'        => 'Basic T3',
+            'period'      => 'daily',
+            'interval'    => 3,
+            'anchor'      => null,
+            'delay'       => 5,
+        ],
+
+    ],
+
     'testTwoHourSchedule' => [
         'cases' => [
             //Initial at 8.57pm. Delay one hour, so expected is 10pm

@@ -93,6 +93,10 @@ return [
                 'assignable' => true,
                 'workflow'   => true
             ],
+            Permission::EDIT_MERCHANT_KEY_ACCESS => [
+                'assignable' => true,
+                'workflow'   => true
+            ],
             Permission::EDIT_MERCHANT_ENABLE_LIVE => [
                 'assignable' => true,
                 'workflow'   => true
