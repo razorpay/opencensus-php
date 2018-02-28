@@ -9,6 +9,7 @@ use Illuminate\Contracts\Mail\Mailer as MailerContract;
 use Illuminate\Contracts\Queue\Factory as Queue;
 use Illuminate\Mail\Mailable as BaseMailable;
 use GuzzleHttp\Exception\ClientException as GuzzleClientException;
+use LayerShifter\TLDExtract\Extract;
 
 use Razorpay\Trace\Logger as Trace;
 
@@ -125,13 +126,15 @@ class Mailable extends BaseMailable
         $validTldsCount = 0;
         $invalidEmails  = [];
 
+        $tldExtractor = new Extract();
+
         foreach (['to', 'cc', 'bcc', 'replyTo'] as $type)
         {
             foreach ($this->{$type} as $recipient)
             {
                 $email = $recipient['address'];
 
-                $tld = last(explode('.', $email));
+                $tld = $tldExtractor->parse($email)->getSuffix();
 
                 if (TLD::isValid($tld) === true)
                 {
