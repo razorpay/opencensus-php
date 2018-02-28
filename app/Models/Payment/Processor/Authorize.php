@@ -1118,8 +1118,8 @@ trait Authorize
             );
         }
 
-        if (($payment->getAuthType() === AuthType::AADHAAR) and
-            (empty($input[Entity::AADHAAR]['number']) === true))
+        if (($payment->getAuthType() === Payment\AuthType::AADHAAR) and
+            (empty($input[Payment\Entity::AADHAAR]['number']) === true))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'The aadhaar[number] field is required.');
