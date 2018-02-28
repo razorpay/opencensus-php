@@ -543,8 +543,6 @@ class BasicAuth
 
                 $this->adminOrgId = $this->admin->getOrgId();
 
-                $this->setOrgId($this->adminOrgId);
-
                 return;
             }
 
@@ -1173,7 +1171,7 @@ class BasicAuth
     {
         $this->merchant = $merchant;
 
-        $this->setOrgId($this->merchant->getOrgId());
+        $this->setOrgId($this->merchant->org->getPublicId());
     }
 
     protected function setType($type)

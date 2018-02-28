@@ -1339,7 +1339,6 @@ final class Route
         'merchant_activate',
         'merchant_activation_update',
         'merchant_activation_upload_file_admin',
-        'merchant_add_bank_account',
         'merchant_beneficiary_file',
         'merchant_create',
         'merchant_create_terminal',

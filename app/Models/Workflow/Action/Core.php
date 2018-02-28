@@ -552,6 +552,8 @@ class Core extends Base\Core
 
         $orgId = $this->app['basicauth']->getOrgId();
 
+        Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
         $permissionId = $this->repo
                              ->permission
                              ->retrieveIdsByNamesAndOrg($permissionName, $orgId)

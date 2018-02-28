@@ -2997,7 +2997,8 @@ ALTER TABLE merchant_access_map
 
 ALTER TABLE workflow_actions
     ADD COLUMN `maker_id` char(14) COLLATE utf8_bin  NULL AFTER `admin_id`,
-    ADD COLUMN `maker_type` char(14) COLLATE utf8_bin  NULL AFTER `maker_id`;
+    ADD COLUMN `maker_type` char(14) COLLATE utf8_bin  NULL AFTER `maker_id`,
+    MODIFY `admin_id` CHAR(14) NULL DEFAULT NULL;
 
 ALTER TABLE `merchants`
     ADD COLUMN `has_key_access` TINYINT(1) NOT NULL DEFAULT 0 after `linked_account_kyc`;

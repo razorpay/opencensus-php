@@ -6,6 +6,7 @@ use Closure;
 use RZP\Exception;
 use RZP\Http\Route;
 use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Org;
 use Illuminate\Foundation\Application;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Workflow\Service as WorkflowService;
@@ -96,8 +97,10 @@ class Workflow
             //
             // So only RZP admins can exploit this, can figure out a solution later
             // when this is a "real" issue.
+            $orgId = $this->ba->getOrgId();
+
             $permissionHasWorkflow = (new WorkflowService)->permissionHasWorkflow(
-                $permission, $this->ba->getOrgId());
+                $permission, Org\Entity::verifyIdAndSilentlyStripSign($orgId));
 
             // rzp admin -> hdfc bank_account_update
             // rzp P1 no workflow
