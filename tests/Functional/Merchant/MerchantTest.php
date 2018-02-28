@@ -10,7 +10,6 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Cache\Events\CacheHit;
 use Illuminate\Cache\Events\KeyWritten;
 use Illuminate\Cache\Events\CacheMissed;
-use Illuminate\Cache\Events\KeyForgotten;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
 use RZP\Models\Key;

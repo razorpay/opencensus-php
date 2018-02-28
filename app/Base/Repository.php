@@ -35,11 +35,6 @@ class Repository extends \Razorpay\Spine\Repository
     const ES_JOB_DELAY = 3;
 
     /**
-     * Default cache ttl defined in minutes
-     */
-    const CACHE_TTL = 5;
-
-    /**
      * Query parameter: Holds list of relations to be
      * eager loaded when doing getting entity(s).
      *

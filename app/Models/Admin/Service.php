@@ -179,7 +179,7 @@ class Service extends Base\Service
             QueryCacheConstants::CACHE_FLUSHES,
         ];
 
-        foreach (Entity::CACHED_ENTITIES as $entity => $version)
+        foreach (Entity::CACHED_ENTITIES as $entity => $_)
         {
             $result[$entity] = [];
 

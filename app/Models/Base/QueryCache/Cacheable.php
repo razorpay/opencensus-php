@@ -68,7 +68,7 @@ trait Cacheable
      */
     protected function getCachePrefix(): string
     {
-        $queryCacheVersion = E::CACHED_ENTITIES[$this->entity];
+        $queryCacheVersion = $this->getQueryCacheVersion();
 
         $prefixArray = [
             Constants::QUERY_CACHE_PREFIX,
@@ -77,5 +77,11 @@ trait Cacheable
         ];
 
         return implode(':', $prefixArray);
+    }
+
+    protected function getQueryCacheVersion(): string
+    {
+        return E::CACHED_ENTITIES[$this->entity][Constants::VERSION] ??
+                Constants::DEFAULT_QUERY_CACHE_VERSION;
     }
 }

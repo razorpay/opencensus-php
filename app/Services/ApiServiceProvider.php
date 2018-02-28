@@ -29,8 +29,6 @@ use RZP\Models\Workflow\Action;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Plan\Subscription\Addon;
 use RZP\Models\Gateway\File as GatewayFile;
-use RZP\Models\Base\Observer as BaseObserver;
-
 
 class ApiServiceProvider extends BaseServiceProvider
 {
@@ -47,24 +45,12 @@ class ApiServiceProvider extends BaseServiceProvider
      */
     public function boot()
     {
-        foreach (E::CACHED_ENTITIES as $entity => $version)
+        foreach (E::CACHED_ENTITIES as $entity => $_)
         {
-            $entityNamespace = E::getEntityNamespace($entity);
             $entityClass = E::getEntityClass($entity);
-            $entityObserverClass = $entityNamespace . '\\Observer';
+            $entityObserverClass = E::getEntityObserverClass($entity);
 
-            //
-            // If we have a entity specific observer class defined,
-            // use that, else use the base observer class
-            //
-            if (class_exists($entityObserverClass) === true)
-            {
-                $entityClass::observe($entityObserverClass);
-            }
-            else
-            {
-                $entityClass::observe(BaseObserver::class);
-            }
+            $entityClass::observe($entityObserverClass);
         }
     }
 

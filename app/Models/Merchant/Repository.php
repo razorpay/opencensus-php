@@ -20,9 +20,6 @@ class Repository extends Base\Repository
 {
     use CacheQueries;
 
-    // Cache TTL defined in minutes
-    const CACHE_TTL = 1;
-
     use Base\RepositoryUpdateTestAndLive;
 
     const SUB_ACCOUNTS_ONLY_VALUE = '1';
