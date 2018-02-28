@@ -35,7 +35,7 @@ class MerchantIpFilter
     {
         $ret = null;
 
-        if ($this->ba->isPrivateAuth() === true)
+        if ($this->ba->isPrivateAuth() === true and $this->ba->isProxyAuth() === false)
         {
             $ret = $this->authenticateIp($request);
         }
