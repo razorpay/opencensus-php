@@ -174,15 +174,18 @@ class Core extends Base\Core
     /*
      * Create a merchant request for a given type, name if not already present
      */
-    public function createMerchantRequestIfApplicable(
+    public function findOrCreateMerchantRequest(
         Merchant\Entity $merchant,
         array $input)
     {
         // Find by type and name first, to not to create a request again if it exists
-        $request = $this->repo->merchant_request->findByMerchantIdAndTypeAndName(
-            $merchant->getId(),
-            $input[Entity::NAME],
-            $input[Entity::TYPE]);
+        $request = $this->repo
+                        ->merchant_request
+                        ->findByMerchantIdAndTypeAndName(
+                            $merchant->getId(),
+                            $input[Entity::NAME],
+                            $input[Entity::TYPE]
+                        );
 
         if (empty($request) === true)
         {
@@ -200,7 +203,7 @@ class Core extends Base\Core
      * till the time the old code isnt deprecated. Hence first either the merchant request is created or found,
      * and then the respective status is marked if needed.
      */
-    public function addRequestForcefullyIfApplicable(
+    public function syncOnboardingSubmissionToMerchantRequest(
         Merchant\Entity $merchant,
         string $feature,
         string $type,
@@ -208,7 +211,7 @@ class Core extends Base\Core
     {
         $requestStatus = Constants::mapOnboardingStatusToRequestStatus($onboardingStatus);
 
-        $request = $this->createMerchantRequestIfApplicable(
+        $request = $this->findOrCreateMerchantRequest(
             $merchant,
             [Entity::NAME => $feature, Entity::TYPE => $type]);
 
@@ -344,6 +347,6 @@ class Core extends Base\Core
 
         (new Validator)->validateProduct($input[Entity::TYPE], $input[Entity::NAME]);
 
-        return $this->createMerchantRequestIfApplicable($this->merchant, $input);
+        return $this->findOrCreateMerchantRequest($this->merchant, $input);
     }
 }

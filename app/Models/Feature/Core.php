@@ -315,7 +315,7 @@ class Core extends Base\Core
         );
 
         // Creating/Update a Merchant Request if applicable from the current status of onboarding feature submission
-        (new MerchantRequest\Core)->addRequestForcefullyIfApplicable(
+        (new MerchantRequest\Core)->syncOnboardingSubmissionToMerchantRequest(
             $merchant,
             $featureName,
             MerchantRequest\Type::PRODUCT,
