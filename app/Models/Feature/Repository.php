@@ -39,6 +39,14 @@ class Repository extends BaseRepository
                     ->first();
     }
 
+    public function findMerchantsHavingFeatures(array $featureNames)
+    {
+        return $this->newQuery()
+                    ->whereIn(Entity::NAME, $featureNames)
+                    ->where(Entity::ENTITY_TYPE, 'merchant')
+                    ->get();
+    }
+
     public function saveAndSyncIfApplicableOrFail(Entity $feature, array $assignedFeatureNames, bool $shouldSync)
     {
         if ($shouldSync === true)
