@@ -62,11 +62,11 @@ class Entity extends BaseModel\PublicEntity
 
     public function setPublicAdminIdAttribute(array &$attributes)
     {
-        $adminId = $this->getAttribute(Action\Entity::ADMIN_ID);
+        $adminId = $this->getAttribute(Action\Checker\Entity::ADMIN_ID);
 
         if ($adminId !== null)
         {
-            $attributes[Action\Entity::ADMIN_ID] = Admin\Entity::getSignedId($adminId);
+            $attributes[Action\Checker\Entity::ADMIN_ID] = Admin\Entity::getSignedId($adminId);
         }
     }
 

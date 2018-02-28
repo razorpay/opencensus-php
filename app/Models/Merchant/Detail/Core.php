@@ -465,7 +465,7 @@ class Core extends Base\Core
                 State\Entity::NAME => $input[Entity::ACTIVATION_STATUS],
             ];
 
-            $state = (new State\Core)->createForMakerAndEntity($stateData, $merchantDetails, $maker);
+            $state = (new State\Core)->createForMakerAndEntity($stateData, $maker, $merchantDetails);
 
             if (empty($rejectionReasons) === false)
             {
