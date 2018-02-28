@@ -213,25 +213,15 @@ class MerchantTest extends TestCase
 
     public function testEditBulkMerchant()
     {
-        $this->fixtures->create('merchant', [
-            'id'        => '10000000000044',
-            'email'     => 'test1@razorpay.com',
-            'live'      => true,
-            'activated' => 1,
-        ]);
+        $this->createMerchant([
+                                  'id'    => '10000000000044',
+                                  'email' => 'test1@razorpay.com',
+                              ]);
 
-        $this->fixtures->create('merchant', [
-            'id'        => '10000000000055',
-            'email'     => 'test2@razorpay.com',
-            'live'      => true,
-            'activated' => 1,
-        ]);
-
-        $this->fixtures->create('pricing:standard_plan');
-
-        $this->fixtures->merchant->edit('10000000000044', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
-
-        $this->fixtures->merchant->edit('10000000000055', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
+        $this->createMerchant([
+                                  'id'    => '10000000000055',
+                                  'email' => 'test2@razorpay.com',
+                              ]);
 
         $this->setAdminForInternalAuth();
 
@@ -1943,17 +1933,17 @@ class MerchantTest extends TestCase
         return $this->runRequestResponseFlow($testData);
     }
 
-    protected function createMerchant()
+    protected function createMerchant($attributes = [])
     {
         $this->ba->adminAuth();
 
-        $id = '1X4hRFHFx4UiXt';
-
-        $merchant = [
-            'id'    => $id,
+        $defaultAttributes = [
+            'id'    => '1X4hRFHFx4UiXt',
             'name'  => 'Tester 2',
             'email' => 'liveandtest@localhost.com'
         ];
+
+        $merchant = array_merge($defaultAttributes, $attributes);
 
         $request = [
             'content' => $merchant,
@@ -1963,7 +1953,7 @@ class MerchantTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->merchantAssignPricingPlan('1hDYlICobzOCYt', $id);
+        $this->merchantAssignPricingPlan('1hDYlICobzOCYt', $merchant['id']);
 
         $this->ba->appAuth();
 
