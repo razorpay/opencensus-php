@@ -812,6 +812,21 @@ return [
         ],
     ],
 
+    'testMerchantUpdateKeyAccess' => [
+        'request' => [
+            'content' => [
+                'has_key_access' => true,
+            ],
+            'url'     => '/merchants/%s/update_key_access',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'has_key_access' => true,
+            ],
+        ],
+    ],
+
     'testActivateMerchantWithoutBankAccount' => [
         'request' => [
             'content' => [],
