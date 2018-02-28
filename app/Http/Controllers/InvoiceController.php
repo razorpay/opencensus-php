@@ -228,11 +228,4 @@ class InvoiceController extends Controller
 
         return ApiResponse::json($response);
     }
-
-    public function getStatsOfBatch(string $batchId)
-    {
-        $response = $this->service()->fetchStatsOfBatch($batchId);
-
-        return ApiResponse::json($response);
-    }
 }

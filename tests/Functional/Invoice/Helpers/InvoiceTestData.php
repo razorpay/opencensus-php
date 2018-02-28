@@ -3631,7 +3631,7 @@ return [
 
     'testInvoiceStatsByBatch' => [
         'request' => [
-            'url'     => '/invoices/batch/batch_00000000000001/stats',
+            'url'     => '/batch/batch_00000000000001/stats',
             'method'  => 'get',
         ],
         'response' => [
