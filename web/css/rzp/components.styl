@@ -688,20 +688,21 @@ dl.rzp-definition {
     display: block;
     position: absolute;
     content: "";
-    left: -200px;
-    width: 200px;
+    width: 90%;
     height: 4px;
     background-color: #1DC155;
-    animation: loading 2s linear infinite;
+    animation: loading 10s linear;
   }
 
   @keyframes loading {
-      from {left: -200px; width: 30%;}
-      50% {width: 30%;}
+      from {width: 1%;}
+      5% {width: 5%;}
+      10% {width: 10%;}
+      20% {width: 20%;}
+      30% {width: 30%;}
+      50% {width: 50%;}
       70% {width: 70%;}
-      80% { left: 50%;}
-      95% {left: 120%;}
-      to {left: 100%;}
+      to {width: 90%;}
   }
 
 }
