@@ -64,6 +64,10 @@ class Time extends Component {
       isoString = date.toISOString(),
       title = date.toDate() + '';
 
+    if (!value) {
+      return '--';
+    }
+
     return (
       <time dateTime={`${isoString}`} title={`${title}`} {...props}>
         {displayText}
