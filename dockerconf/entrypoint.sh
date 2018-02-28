@@ -60,7 +60,7 @@ configure_cloud(){
   echo "copying nginx config"
   cp dockerconf/api.apache.conf /etc/apache2/conf.d/api.conf
 
-  ## Enable newrelic only for prod
+  ## Enable newrelic only for prod and perf
   if [[ "${APP_MODE}" == "prod" ]] || [[ "${APP_MODE}" == "perf" ]]; then
     $ALOHOMORA_BIN cast --region ap-south-1 --env $APP_MODE --app api "dockerconf/newrelic.ini.j2"
     cp dockerconf/newrelic.ini /etc/php7/conf.d/newrelic.ini
@@ -88,11 +88,6 @@ configure_db_dev(){
 }
 
 configure_db_cloud(){
-  # php artisan migrate --force && php artisan migrate --database=test --force
-  # # Restart all queue worker processes
-  # echo "Queue Restart"
-  # php artisan queue:restart
-
   # Clear and Re-cache Routes
   echo "Route Cache"
   php artisan route:cache
