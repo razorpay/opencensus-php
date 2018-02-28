@@ -8,7 +8,7 @@ use RZP\Models\State;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\State\Reason;
-use RZP\Models\Base\PublicEntity as PublicEntity;
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\Merchant\Detail\RejectionReasons;
 
 class Core extends Base\Core
@@ -39,7 +39,7 @@ class Core extends Base\Core
 
         $this->transaction(function() use($request, $merchant, $input, $submissions)
         {
-            $this->createInitialStateForRequest($request, $merchant);
+            $this->createState(Status::UNDER_REVIEW, $request, $merchant);
 
             $this->repo->saveOrFail($request);
 
@@ -61,36 +61,24 @@ class Core extends Base\Core
         return $request;
     }
 
-    private function createState(string $state, Entity $request, PublicEntity $maker)
+    /**
+     * Creates a State Entity for the Request entity
+     *
+     * @param string       $state
+     * @param Entity       $request
+     * @param PublicEntity $maker
+     *
+     * @return State\Entity
+     */
+    protected function createState(string $state, Entity $request, PublicEntity $maker)
     {
-        if (empty($state) === false)
-        {
-            $input = [
-                State\Entity::NAME => $state,
-            ];
+        $params = [
+            State\Entity::NAME => $state,
+        ];
 
-            $stateObj = (new State\Core)->createForMakerAndEntity($input, $maker, $request);
+        $stateObj = (new State\Core)->createForMerchantRequest($params, $request, $maker);
 
-            return $stateObj;
-        }
-
-        return null;
-    }
-
-    private function createRejectionReasons(array $rejectionReasons, State\Entity $state)
-    {
-
-        if (empty($rejectionReasons) === false and empty($state) === false)
-        {
-            return (new Reason\Core)->addRejectionReasons($rejectionReasons, $state);
-        }
-
-        return null;
-    }
-
-    protected function createInitialStateForRequest(Entity $request, Merchant\Entity $merchant)
-    {
-        return $this->createState(Status::UNDER_REVIEW, $request, $merchant);
+        return $stateObj;
     }
 
     /*
@@ -172,9 +160,9 @@ class Core extends Base\Core
                 );
             }
 
-            $state = $this->createState($status, $request, $admin);
+            $stateEntity = $this->createState($status, $request, $admin);
 
-            $this->createRejectionReasons($rejectionReasons, $state);
+            (new Reason\Core)->addRejectionReasons($rejectionReasons, $stateEntity);
 
             $this->repo->saveOrFail($request);
         });
