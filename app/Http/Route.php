@@ -1025,7 +1025,7 @@ final class Route
         'fund_transfer_attempt_process',
     ];
 
-    // The below routes needs X-Dashboard-User-Id in case of proxy authentication.
+    // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
     // User context is taken from the provided header.
     // Below rotues deal only with user entity without context of merchant.
     public static $userWhitelist = [
