@@ -65,8 +65,12 @@ class Workflow
         // Disable workflows if:
         // - It is mocked
         // - The maker isn't an Admin or Merchant
+        // - We only want to run workflows for admin and proxy routes
+        // whenever orgId is set. In case of private, public, etc. there
+        // won't be any orgID and hence we should move to the next middleware.
         if (($this->config->get('heimdall.workflows.mock') === true) or
-            ($maker === false))
+            ($maker === false) or
+            (empty($this->ba->getOrgId()) === true))
         {
             return $next($request);
         }
