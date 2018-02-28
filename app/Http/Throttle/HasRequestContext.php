@@ -113,7 +113,7 @@ trait HasRequestContext
     protected function initRequestContextVars(Request $request)
     {
         $this->request = $request;
-        $this->route   = $this->router->currentRouteName();
+        $this->route   = $request->route()->getName();
 
         $this->setAuthVars();
         $this->setAdditionalVars();
@@ -126,7 +126,7 @@ trait HasRequestContext
         // - as part of route parameters for callback URLS
         // - in request input as key_id for public routes
         $key = $this->request->getUser() ?:
-                $this->router->current()->parameter('key') ?:
+                $this->request->route()->parameter('key') ?:
                 $this->request->input('key_id');
 
         // Direct authentication and bearer token case
@@ -284,12 +284,12 @@ trait HasRequestContext
         return ($this->auth === Type::PUBLIC_AUTH);
     }
 
-    protected function getBearerToken(): string
+    protected function getBearerToken()
     {
         return $this->isRunningUnitTests ? $this->request->bearerToken() : $this->getBearerTokenForApache();
     }
 
-    protected function getBearerTokenForApache(): string
+    protected function getBearerTokenForApache()
     {
         $headers = getallheaders()['Authorization'] ?? null;
 

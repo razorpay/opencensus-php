@@ -108,6 +108,7 @@ class Throttler
         {
             $this->initRequestContextVars($request);
             $this->initRedisConnection();
+            $this->setMidIfApplicable();
             $this->initThrottleSettings();
             $this->attemptThrottleIfApplicable();
         }
@@ -132,17 +133,20 @@ class Throttler
 
     protected function initThrottleSettings()
     {
-        $this->setMidIfApplicable();
+        $settings = $this->loadSettingsFromRedis();
 
-        $settings = $this->redis->pipeline(
+        list($this->settings[K::GLOBAL], $this->settings[K::ID_LEVEL]) = $settings;
+    }
+
+    protected function loadSettingsFromRedis(): array
+    {
+        return $this->redis->pipeline(
             function ($pipe)
             {
                 /** @var $pipe Pipeline */
                 $pipe->hgetall(K::GLOBAL_SETTINGS_KEY);
                 $pipe->hgetall(K::ID_SETTINGS_KEY_PREFIX . $this->getIdSettingsKey());
             });
-
-        list($this->settings[K::GLOBAL], $this->settings[K::ID_LEVEL]) = $settings;
     }
 
     protected function attemptThrottleIfApplicable()
