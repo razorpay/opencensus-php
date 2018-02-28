@@ -4,7 +4,7 @@ import ModalHeader from 'rzp/ui/ModalHeader';
 export default ({ onCloseClick }) => {
   return (
     <div>
-      <ModalHeader title="Activation Required" />
+      <ModalHeader title="Activation Required" onCloseClick={onCloseClick} />
       <div class="modal-body">
         You can only use Razorpay in test mode until your account is activated.{' '}
         <br />
