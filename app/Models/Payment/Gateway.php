@@ -894,6 +894,18 @@ class Gateway
         return $banks;
     }
 
+    public static function getEmandateGatewaysForAuthType(string $authType): array
+    {
+        $gateways = [];
+
+        if (isset(self::$authTypeToEmandateGatewayMap[$authType]) === true)
+        {
+            $gateways = self::$authTypeToEmandateGatewayMap[$authType];
+        }
+
+        return $gateways;
+    }
+
     public static function getAvailableEmandateBanks()
     {
         $emandateBanks = [];

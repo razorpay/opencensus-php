@@ -1118,6 +1118,13 @@ trait Authorize
             );
         }
 
+        if (($payment->getAuthType() === AuthType::AADHAAR) and
+            (empty($input[Entity::AADHAAR]['number']) === true))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The aadhaar[number] field is required.');
+        }
+
         $bank = $payment->getBank();
 
         // TODO: Handle first recurring / second recurring based on token and route

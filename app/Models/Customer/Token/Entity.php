@@ -428,12 +428,12 @@ class Entity extends Base\PublicEntity
 
     protected function setAadhaarNumberAttribute($aadhaarNumber)
     {
-        if ($aadhaarNumber === null)
+        if ($aadhaarNumber !== null)
         {
-            $aadhaarNumber = '';
+            $aadhaarNumber = Crypt::encrypt($aadhaarNumber);
         }
 
-        $this->attributes[self::AADHAAR_NUMBER] = Crypt::encrypt($aadhaarNumber);
+        $this->attributes[self::AADHAAR_NUMBER] = $aadhaarNumber;
     }
 
     protected function setPublicCardAttribute(array & $array)

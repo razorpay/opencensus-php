@@ -200,24 +200,6 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateEmandate(array $input)
-    {
-        if ($input[Entity::METHOD] !== Method::EMANDATE)
-        {
-            return;
-        }
-
-        if ((isset($input[Entity::AUTH_TYPE]) === true) and
-            ($input[Entity::AUTH_TYPE] === AuthType::AADHAAR))
-        {
-            if (empty($input[Entity::AADHAAR]['number']) === true)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'The aadhaar[number] field is required.');
-            }
-        }
-    }
-
     protected function validateUpiExpiryTime(array $input)
     {
         if (isset($input['upi']['expiry_time']) === false)

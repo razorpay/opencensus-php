@@ -108,7 +108,7 @@ class Repository extends Base\Repository
                       ->enabled()
                       ->where(Entity::EMANDATE, true)
                       ->where(Entity::TYPE, 6)
-                      ->whereIn(Entity::GATEWAY, Payment\Gateway::$authTypeToEmandateGatewayMap[$authType]);
+                      ->whereIn(Entity::GATEWAY, Payment\Gateway::getEmandateGatewaysForAuthType($authType));
 
         $this->addMerchantWhereCondition($query, $merchantIds);
 
