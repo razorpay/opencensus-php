@@ -30,7 +30,7 @@ export default class BatchUpload extends Component {
       batch: { ...this.state.batch, ...batch },
       currentStatus: 'success',
     });
-    // this.props.onSave(batch);
+    this.props.onSave(batch);
   };
 
   render() {

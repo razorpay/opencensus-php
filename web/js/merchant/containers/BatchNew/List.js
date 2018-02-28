@@ -18,7 +18,6 @@ function batchActions({
   issueAll,
   onDownloadClick,
   issuableIdList,
-  luminateRow,
 }) {
   return {
     viewAll,
@@ -71,15 +70,20 @@ function batchActions({
 
 @connect(null, {
   openModal,
+  luminateRow,
 })
 export default class BatchList extends Component {
   openUploadModal = () => {
     this.props.openModal({
       size: 'large',
-      component: <BatchUpload {...this.props} />,
-      onSave: batch => {
-        this.props.luminateRow(batch.id);
-      },
+      component: (
+        <BatchUpload
+          onSave={batch => {
+            this.props.luminateRow(batch.id);
+          }}
+          {...this.props}
+        />
+      ),
     });
   };
 
