@@ -46,6 +46,7 @@ class Entity
     const PAYMENT               = 'payment';
     const PRICING               = 'pricing';
     const WEBHOOK               = 'webhook';
+    const DISCOUNT              = 'discount';
     const EMI_PLAN              = 'emi_plan';
     const CUSTOMER              = 'customer';
     const MERCHANT              = 'merchant';

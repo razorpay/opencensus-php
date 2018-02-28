@@ -17,6 +17,11 @@ class OffersTest extends TestCase
         parent::setUp();
 
         $this->ba->proxyAuth();
+
+        // This is set to 1 Jan 2018
+        // Because in test cases offers start date is set
+        // to Feb 2018 and it should always be in future
+        Carbon::setTestNow("1-1-2018 00:00:00");
     }
 
     public function testCreateCardOffer()

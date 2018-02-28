@@ -486,7 +486,11 @@ class Header
         ],
     ];
 
-    const ERROR_HEADERS = [
+    /**
+     * Headers added against each entry detailing the
+     * type of error and its description, if any.
+     */
+    const VALIDATED_HEADERS = [
         self::ERROR_CODE,
         self::ERROR_DESCRIPTION,
     ];
@@ -531,13 +535,8 @@ class Header
         return self::HEADER_MAP[$type][self::OUTPUT];
     }
 
-    public static function getErrorHeaderOfType(string $type): array
+    public static function getValidatedHeadersForType(string $type): array
     {
-        return array_merge(self::HEADER_MAP[$type][self::INPUT], self::ERROR_HEADERS);
-    }
-
-    public static function isValidOutputFileHeaderType(string $headerType): bool
-    {
-        return in_array($headerType, [self::OUTPUT, self::ERROR]);
+        return array_merge(self::HEADER_MAP[$type][self::INPUT], self::VALIDATED_HEADERS);
     }
 }
