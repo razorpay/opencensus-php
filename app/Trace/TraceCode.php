@@ -217,6 +217,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const CUSTOMER_CREATE                               = 'CUSTOMER_CREATE';
     const CUSTOMER_EDIT                                 = 'CUSTOMER_EDIT';
+    const CUSTOMER_TOKEN_CREATE                         = 'CUSTOMER_TOKEN_CREATE';
     const CUSTOMER_TOKEN_EDIT                           = 'CUSTOMER_TOKEN_EDIT';
     const CARD_NUMBER_SCRUBBED                          = 'CARD_NUMBER_SCRUBBED';
     const ORDERS_MULTIPLE_AUTHORIZED_REFUNDS            = 'ORDERS_MULTIPLE_AUTHORIZED_REFUNDS';
@@ -528,6 +529,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SETTLEMENT_RECONCILIATION_SKIPPED         = 'SETTLEMENT_RECONCILIATION_SKIPPED';
     const SETTLEMENT_RETURNED                       = 'SETTLEMENT_RETURNED';
     const SETTLEMENT_INITIATE_FAILED                = 'SETTLEMENT_INITIATE_FAILED';
+    const DAILY_SETTLEMENT_INITIATE_FAILED          = 'DAILY_SETTLEMENT_INITIATE_FAILED';
     const SETTLEMENT_RETRY_FAILED                   = 'SETTLEMENT_RETRY_FAILED';
     const SETTLEMENT_RECONCILIATION_FAILED          = 'SETTLEMENT_RECONCILIATION_FAILED';
     const SETTLEMENT_RETURN_FAILED                  = 'SETTLEMENT_RETURN_FAILED';
