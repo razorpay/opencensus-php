@@ -139,7 +139,6 @@ class Validator extends Base\Validator
         // due to dot notation, we cannot use it.
         'token_max_amount',
         'token_expire_by',
-        'emandate'
     ];
 
     protected function validateIfsc(array $input)
