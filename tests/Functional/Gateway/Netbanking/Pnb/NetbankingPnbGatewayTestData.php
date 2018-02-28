@@ -16,7 +16,7 @@ return [
         'currency'          => 'INR',
         'description'       => 'random description',
         'card_id'           => null,
-        'bank'              => 'PUNB',
+        'bank'              => 'PUNB_R',
         'error_code'        => null,
         'error_description' => null,
         'email'             => 'a@b.com',
@@ -34,7 +34,7 @@ return [
     'testPaymentNetbankingEntity' => [
         'bank_payment_id' => '99999999',
         'received'        => true,
-        'bank'            => 'PUNB',
+        'bank'            => 'PUNB_R',
         'status'          => 'S',
     ],
 
@@ -105,26 +105,26 @@ return [
     'testPaymentFailedNetbankingEntity' => [
         'bank_payment_id' => null,
         'received'        => false,
-        'bank'            => 'PUNB',
+        'bank'            => 'PUNB_R',
         'status'          => null
     ],
 
     'testPaymentVerifySuccessEntity' => [
         'bank_payment_id' => '99999999',
         'received'        => true,
-        'bank'            => 'PUNB',
+        'bank'            => 'PUNB_R',
         'status'          => 'S'
     ],
 
     'testAuthFailedVerifyFailedEntity' => [
         'received'        => false,
-        'bank'            => 'PUNB',
+        'bank'            => 'PUNB_R',
         'status'          => 'F'
     ],
 
     'testAuthSuccessVerifyFailedNetbankingEntity' => [
         'received'        => true,
-        'bank'            => 'PUNB',
+        'bank'            => 'PUNB_R',
         'status'          => 'S'
     ],
 
