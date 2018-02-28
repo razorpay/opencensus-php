@@ -45,11 +45,11 @@ return [
 
         PermissionCategory::MERCHANT_REQUEST => [
             Permission::VIEW_MERCHANT_REQUESTS => [
-                'description' => 'View merchant request',
+                'description' => 'View merchant requests',
                 'assignable'  => true,
             ],
             Permission::EDIT_MERCHANT_REQUESTS => [
-                'description' => 'Edit a merchant Request',
+                'description' => 'Edit merchant requests',
                 'assignable'  => true,
             ],
         ],

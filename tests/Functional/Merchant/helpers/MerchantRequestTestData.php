@@ -34,7 +34,39 @@ return [
             'content' => [
                 'status'      => 'needs_clarification',
                 'merchant_id' => '10000000000000',
+                'comment'     => 'test',
+            ],
+        ],
+    ],
+
+    'testChangeMerchantRequestStatusToRejectedWithRejectionReasons' => [
+        'request' => [
+            'url' => '/merchant/requests/%s',
+            'method' => 'PATCH',
+            'content' => [
+                'status'            => 'rejected',
+                'comment'           => 'test',
+                'rejection_reasons' => [
+                    [
+                        "reason_code"     => "duplicate_or_errenous_creation",
+                        "reason_category" => "others",
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status'      => 'rejected',
+                'merchant_id' => '10000000000000',
                 'comment' => 'test',
+                'states' => [
+                    [
+                        'name' => 'under_review'
+                    ],
+                    [
+                        'name' => 'rejected'
+                    ]
+                ]
             ],
         ],
     ],
@@ -59,19 +91,6 @@ return [
         'exception' => [
             'class'                 => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code'   => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-        ],
-    ],
-
-    'testGetMerchantRequestDetailsWithProxyAuth' => [
-        'request' => [
-            'url' => '/merchant/requests/%s',
-            'method' => 'GET'
-        ],
-        'response' => [
-            'content' => [
-                'status'      => 'under_review',
-                'merchant_id' => '10000000000000',
-            ],
         ],
     ],
 

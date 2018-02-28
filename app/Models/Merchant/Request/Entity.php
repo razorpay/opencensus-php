@@ -6,9 +6,6 @@ use RZP\Models\Base;
 use RZP\Models\State;
 use RZP\Models\Merchant;
 
-/**
- * Class Entity
- */
 class Entity extends Base\PublicEntity
 {
     const MERCHANT_ID       = 'merchant_id';
@@ -16,8 +13,6 @@ class Entity extends Base\PublicEntity
     const TYPE              = 'type';
     const STATUS            = 'status';
     const PUBLIC_MESSAGE    = 'public_message';
-    const CREATED_AT        = 'created_at';
-    const UPDATED_AT        = 'updated_at';
     const REJECTION_REASONS = 'rejection_reasons';
     const COMMENT           = 'comment';
     const MERCHANT          = 'merchant';
@@ -65,12 +60,12 @@ class Entity extends Base\PublicEntity
 
     public function merchant()
     {
-        return $this->belongsTo('RZP\Models\Merchant\Entity');
+        return $this->belongsTo(Merchant\Entity::class);
     }
 
     public function states()
     {
-        return $this->morphMany('\RZP\Models\State\Entity', 'entity');
+        return $this->morphMany(State\Entity::class, 'entity');
     }
 
     public function getStatus()
@@ -95,7 +90,7 @@ class Entity extends Base\PublicEntity
 
     public function isProductRequest()
     {
-        return $this->getAttribute(self::TYPE) === Type::PRODUCT;
+        return ($this->getAttribute(self::TYPE) === Type::PRODUCT);
     }
 
     public function setPublicMerchantIdAttribute(array &$attributes)

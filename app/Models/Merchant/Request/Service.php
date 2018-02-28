@@ -6,34 +6,25 @@ use RZP\Models\Base;
 
 class Service extends Base\Service
 {
-
-    public function fetchMerchantRequests(array $input)
-    {
-        $merchantId = $this->merchant->getId();
-
-        $input[Entity::MERCHANT_ID] = $merchantId;
-
-        $input[Constants::EXPAND] = ['merchant'];
-
-        return (new Core)->fetch($input);
-    }
-
-    public function fetchMerchantRequestForFeature(string $feature)
+    /*
+     * This function to be used when Merchant asks for specific product related status on relevant page on dashboard.
+     */
+    public function getForFeatureTypeAndName(string $type, string $featureName)
     {
         $merchantId = $this->merchant->getId();
 
         $input = array();
 
-        $input[Entity::MERCHANT_ID] = $merchantId;
+        $input[Entity::NAME] = $featureName;
 
-        $input[Entity::NAME] = $feature;
+        $input[Entity::TYPE] = $type;
 
-        return (new Core)->fetch($input);
+        return (new Core)->fetch($input, $merchantId);
     }
 
-    public function fetch(array $input)
+    public function getAll(array $input)
     {
-        $input[Constants::EXPAND] = ['merchant'];
+        $input[Constants::EXPAND] = [Entity::MERCHANT];
 
         return (new Core)->fetch($input);
     }
@@ -47,23 +38,23 @@ class Service extends Base\Service
         return $merchantRequest->states->toArrayPublic();
     }
 
-    public function getMerchantRequestDetails(string $id)
+    public function get(string $id)
     {
         Entity::verifyIdAndStripSign($id);
 
-        return (new Core)->getMerchantRequestDetails($id, $this->merchant->getId());
+        return (new Core)->getMerchantRequestDetails($id);
     }
 
-    public function createMerchantRequest(array $input)
+    public function create(array $input)
     {
         return (new Core)->createMerchantRequest($input);
     }
 
-    public function updateMerchantRequest(string $id, array $input)
+    public function update(string $id, array $input)
     {
         Entity::verifyIdAndStripSign($id);
 
-        $request = $this->repo->merchant_request->findByIdOrFail($id);
+        $request = $this->repo->merchant_request->findOrFailPublic($id);
 
         $core = new Core;
 

@@ -4,8 +4,8 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-use RZP\Models\Merchant\Request\Entity;
 use RZP\Constants\Table;
+use RZP\Models\Merchant\Request\Entity;
 
 class CreateMerchantRequestsTable extends Migration
 {
@@ -31,9 +31,11 @@ class CreateMerchantRequestsTable extends Migration
 
             $table->string(Entity::TYPE, 25);
 
-            $table->string(Entity::PUBLIC_MESSAGE, 255)->nullable();
+            $table->string(Entity::PUBLIC_MESSAGE, 255)
+                  ->nullable();
 
-            $table->string(Entity::COMMENT, 255)->nullable();
+            $table->string(Entity::COMMENT, 255)
+                  ->nullable();
 
             $table->integer(Entity::CREATED_AT);
 
@@ -41,9 +43,7 @@ class CreateMerchantRequestsTable extends Migration
 
             $table->index(Entity::MERCHANT_ID);
 
-            $table->index(Entity::STATUS);
-
-            $table->index(Entity::TYPE);
+            $table->unique([Entity::MERCHANT_ID, Entity::NAME, Entity::TYPE]);
         });
     }
 

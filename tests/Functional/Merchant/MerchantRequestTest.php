@@ -28,7 +28,7 @@ class MerchantRequestTest extends TestCase
 
     public function testGetMerchantRequestDetails()
     {
-        $this->ba->adminProxyAuth();
+        $this->ba->adminAuth();
 
         $this->setDefaultMerchantRequestIdInUrl();
 
@@ -72,15 +72,6 @@ class MerchantRequestTest extends TestCase
             'merchant_request',
             MerchantRequest::DEFAULT_MERCHANT_REQUEST_ID,
             [Entity::STATUS => 'needs_clarification']);
-
-        $this->setDefaultMerchantRequestIdInUrl();
-
-        $this->startTest();
-    }
-
-    public function testGetMerchantRequestDetailsWithProxyAuth()
-    {
-        $this->ba->proxyAuth();
 
         $this->setDefaultMerchantRequestIdInUrl();
 

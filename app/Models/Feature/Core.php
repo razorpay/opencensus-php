@@ -15,10 +15,10 @@ use RZP\Models\FileStore;
 use RZP\Exception\LogicException;
 use RZP\Models\Settings\Accessor;
 use RZP\Models\Base\PublicEntity;
-use RZP\Models\Merchant\Request as MerchantRequest;
 use RZP\Mail\Merchant\FeatureEnabled;
 use RZP\Models\Merchant\SlackActions;
 use RZP\Models\Merchant\Notify as NotifyTrait;
+use RZP\Models\Merchant\Request as MerchantRequest;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 
 class Core extends Base\Core
@@ -307,6 +307,7 @@ class Core extends Base\Core
             $this->create($params, true);
         }
 
+        // TODO:: Remove this once the migration to new merchant requests flow has been done.
         $this->repo->merchant_detail->updateFeatureActivationStatus(
             $merchant,
             $featureName,

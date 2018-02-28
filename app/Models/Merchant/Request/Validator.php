@@ -11,7 +11,7 @@ class Validator extends Base\Validator
     const INVALID_STATUS_MESSAGE                        = 'Invalid status';
     const INVALID_STATUS_CHANGE_MESSAGE                 = 'Invalid status change';
     const INVALID_TYPE                                  = 'Invalid request type';
-    const MISSING_QUESTIONS                             = 'Missing Questions in request';
+    const MISSING_QUESTIONS                             = 'Missing questions in request';
     const INVALID_FEATURE                               = 'Invalid feature';
 
     protected static $createRules = [
@@ -40,10 +40,11 @@ class Validator extends Base\Validator
     ];
 
     protected static $updateRules = [
-        Entity::SUBMISSIONS    => 'sometimes|array|custom',
-        Entity::STATUS         => 'required|max:30',
-        Entity::PUBLIC_MESSAGE => 'sometimes|max:255',
-        Entity::COMMENT        => 'sometimes|max:255',
+        Entity::SUBMISSIONS       => 'sometimes|array|custom',
+        Entity::STATUS            => 'required|max:30',
+        Entity::PUBLIC_MESSAGE    => 'sometimes|max:255',
+        Entity::COMMENT           => 'sometimes|max:255',
+        Entity::REJECTION_REASONS => 'filled|array',
     ];
 
     public function validateStatus(array $input)
