@@ -176,6 +176,7 @@ export default class AddPlan extends Component {
                         marginLeft: '8px',
                       }}
                     >
+                      <option value="daily">Days(s)</option>
                       <option value="weekly">Week(s)</option>
                       <option value="monthly">Month(s)</option>
                       <option value="yearly">Year(s)</option>
