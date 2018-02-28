@@ -60,10 +60,6 @@ class Type
         self::SUB_MERCHANT,
     ];
 
-    public static $statsSupportedGroup = [
-        self::PAYMENT_LINK,
-    ];
-
     public static function exists(string $type)
     {
         $key = __CLASS__ . '::' . strtoupper($type);
@@ -87,23 +83,5 @@ class Type
     public static function isStatsSupportedForType(string $type): bool
     {
         return in_array($type, self::$statsSupportedGroup, true);
-    }
-
-    public static function getStatsCoreForType(string $type): Base\Core
-    {
-        if (self::isStatsSupportedForType($type) === false)
-        {
-            throw new BadRequestException(
-                BAD_REQUEST_BATCH_STATS_NOT_SUPPORTED_FOR_TYPE,
-                Entity::TYPE,
-                [Entity::TYPE => $type]
-            );
-        }
-
-        switch ($type)
-        {
-            case Type::PAYMENT_LINK:
-                return (new Invoice\Core);
-        }
     }
 }

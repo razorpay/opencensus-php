@@ -3,6 +3,7 @@
 namespace RZP\Models\Batch;
 
 use RZP\Models\Base;
+use RZP\Models\Invoice;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
@@ -113,9 +114,18 @@ class Core extends Base\Core
 
     public function fetchStatsOfBatch(Entity $batch): array
     {
-        $core = Type::getStatsCoreForType($batch->getType());
+        switch ($batch->getType())
+        {
+            case Type::PAYMENT_LINK:
+                return (new Invoice\Core)->fetchStatsOfBatch($batch);
 
-        return $core->fetchStatsOfBatch($batch);
+            default:
+                throw new BadRequestException(
+                    BAD_REQUEST_BATCH_STATS_NOT_SUPPORTED_FOR_TYPE,
+                    Entity::TYPE,
+                    [Entity::TYPE => $batch->getType()]
+                );
+        }
     }
 
     public function processBatchAsync(Entity $batch, array $input = []): Entity
