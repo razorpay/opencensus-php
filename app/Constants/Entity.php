@@ -178,6 +178,7 @@ class Entity
     const CACHED_ENTITIES = [
         self::KEY      => 'v1',
         self::MERCHANT => 'v1',
+        self::ACCOUNT  => 'v1',
     ];
 
     public static $namespace = [
