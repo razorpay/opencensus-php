@@ -8,6 +8,7 @@ use Razorpay\OAuth\Application;
 
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Mail\OAuth\AppAuthorized as OAuthAppAuthorizedMail;
+use RZP\Mail\OAuth\JuspayAuthorized as OAuthJuspayAuthorizedMail;
 
 class OAuthMailTest extends OAuthTestCase
 {
@@ -51,6 +52,15 @@ class OAuthMailTest extends OAuthTestCase
         $this->startTest();
 
         Mail::assertQueued(OAuthAppAuthorizedMail::class, function ($mail) use ($user, $application)
+        {
+            $this->assertEquals($user->getPublicId(), $mail->viewData['user']['id']);
+
+            $this->assertEquals($application->id, $mail->viewData['application']['id']);
+
+            return true;
+        });
+
+        Mail::assertSent(OAuthJusPayAuthorizedMail::class, function ($mail) use ($user, $application)
         {
             $this->assertEquals($user->getPublicId(), $mail->viewData['user']['id']);
 

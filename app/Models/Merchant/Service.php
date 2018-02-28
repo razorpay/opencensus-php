@@ -1681,9 +1681,10 @@ class Service extends Base\Service
         (new Validator)->validateInput(self::OAUTH_MAIL, $input);
 
         $merchant = $this->repo->merchant->findOrFail($input[Entity::MERCHANT_ID]);
+
         $user     = $this->repo->user->findOrFail($input[User\Entity::USER_ID]);
-        $client   = (new OAuthClient\Repository)->findOrFail(
-                                                    $input[OAuthToken\Entity::CLIENT_ID]);
+
+        $client   = (new OAuthClient\Repository)->findOrFail($input[OAuthToken\Entity::CLIENT_ID]);
 
         $mailer = $this->getOAuthMailerClassByType($type);
 
@@ -1692,6 +1693,12 @@ class Service extends Base\Service
             'user'        => $user->toArrayPublic(),
             'application' => $client->application->toArrayPublic(),
         ];
+
+//        Mail::queue((new $mailer($data)));
+
+        $type = 'juspay_authorized';
+
+        $mailer = $this->getOAuthMailerClassByType($type);
 
         Mail::queue((new $mailer($data)));
 
