@@ -28,6 +28,7 @@ class Workflow
         Permission::ADD_MERCHANT_CREDITS,
         Permission::EDIT_MERCHANT_PRICING,
         Permission::EDIT_ACTIVATE_MERCHANT,
+        Permission::EDIT_MERCHANT_KEY_ACCESS,
         Permission::ADD_MERCHANT_ADJUSTMENT,
         Permission::SCHEDULE_ASSIGN,
         Permission::EDIT_MERCHANT_ENABLE_LIVE,
@@ -161,7 +162,7 @@ class Workflow
 
         $proxyAuth = $this->ba->isProxyAuth();
 
-        $strictPrivateAuth = $this->isStrictPrivateAuth();
+        $strictPrivateAuth = $this->ba->isStrictPrivateAuth();
 
         if (($adminAuth === true) or
             ($proxyAuth === true and $strictPrivateAuth === false))
