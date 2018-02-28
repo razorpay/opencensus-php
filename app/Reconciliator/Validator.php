@@ -37,6 +37,7 @@ class Validator
         RequestProcessor\Base::FREECHARGE         => "/^Merchant (Transaction|Settlement) Report/",
         RequestProcessor\Base::NETBANKING_AXIS    => "/^MIS file for (0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}, "
                                             . "for all RazorPay & Payees : Payeespecific MIS\(FEBA\)/",
+        RequestProcessor\Base::NETBANKING_BOB     => "/^Razorpay_Scroll_ of /",
         RequestProcessor\Base::NETBANKING_ICICI   => "/^Payment Through Internet Banking Center Razorpay/",
         RequestProcessor\Base::NETBANKING_FEDERAL => "/^MIS Report File Dated "
                                             . "(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}---razorpay/",
@@ -171,6 +172,15 @@ class Validator
             RequestProcessor\Base::NETBANKING_AXIS);
 
         return ($validSubject and $validAttachmentCount and $validBody);
+    }
+
+    public function validateNetbankingBobEmail(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+            RequestProcessor\Base::NETBANKING_BOB);
+
+        return $validSubject;
     }
 
     public function validateNetbankingIciciEmail(array $emailDetails)

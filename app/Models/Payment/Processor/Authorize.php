@@ -1053,9 +1053,6 @@ trait Authorize
                 ]);
         }
 
-        // We ensure that the e_mandate feature has been enabled for the merchant
-        $this->verifyFeatureForMerchant($payment->merchant, Feature\Constants::E_MANDATE);
-
         //
         // TODO: This is broken still. We should not be accepting any token
         // in private auth also for first recurring. But, in private auth,
@@ -2121,10 +2118,6 @@ trait Authorize
         try
         {
             $token = (new Token\Core)->create($customer, $saveMethodInput);
-        }
-        catch (Exception\RecoverableException $e)
-        {
-            // Ignore the exception, can be an already saved method
         }
         catch (\Exception $e)
         {
@@ -3812,7 +3805,7 @@ trait Authorize
 
     protected function validateIfIntentEnabled(Payment\Entity $payment)
     {
-        if ($payment->merchant->isFeatureEnabled(Feature\Constants::UPI_INTENT) === false)
+        if ($payment->merchant->isFeatureEnabled(Feature\Constants::DISABLE_UPI_INTENT) === true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'UPI intent is not enabled for the merchant');

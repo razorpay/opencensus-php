@@ -85,6 +85,12 @@ class ImportCards extends Command
                 continue;
             }
 
+            if (array_key_exists('card_number', $cardDetails) === false)
+            {
+                continue;
+
+            }
+
             $request = [
                 Customer::NAME      =>  $cardDetails['name_on_card'],
                 Customer::EMAIL     =>  $cardDetails['customer_id'],
@@ -103,8 +109,15 @@ class ImportCards extends Command
                 $this->warn('Importing card without phone number for customer ' . $email);
             }
 
-
-            $customer = $core->createLocalCustomer($request, $merchant, false);
+            try
+            {
+                $customer = $core->createLocalCustomer($request, $merchant, false);
+            }
+            catch(\Exception $e)
+            {
+                $this->error("Failed to create customer for " . $cardDetails['customer_id']);
+                continue;
+            }
 
             $card   =   [
                 'method'    =>  'card',
@@ -117,10 +130,17 @@ class ImportCards extends Command
             ];
 
             $tokenCore = new Core();
-            $tokenCore->createDirectToken($customer, $card);
+            try
+            {
+                $tokenCore->createDirectToken($customer, $card);
+                $this->info("Successfully imported card ending with xx" . substr($cardDetails['card_number'], -4) . " for " . $cardDetails['customer_id']);
+                $count++;
+            }
+            catch (\Exception $e)
+            {
+                $this->error("Failed to save card for " . $cardDetails['customer_id']);
+            }
 
-            $this->info("Successfully imported card ending with xx" . substr($cardDetails['card_number'], -4) . " for " . $cardDetails['name_on_card']);
-            $count++;
         }
         fclose($file);
 
