@@ -182,7 +182,7 @@ class Gateway extends Base\Gateway
     {
        $attributes = $this->getAttributesForQrResponse($input);
 
-        $payment = $this->createGatewayPaymentEntity($input, $attributes, Base\Action::QR_NOTIFICATION);
+        $payment = $this->createGatewayPaymentEntity($input, $attributes);
 
         return $payment;
     }

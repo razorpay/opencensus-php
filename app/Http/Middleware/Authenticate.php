@@ -108,6 +108,7 @@ class Authenticate
         // In Throttle middleware also, we have very similar conditions.
         // We should try to merge these or move out to a common function.
         //
+
         if ((in_array($route, Route::$internal, true) === true) or
             (in_array($route, Route::$admin, true) === true))
         {

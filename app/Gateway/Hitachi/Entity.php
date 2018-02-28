@@ -41,6 +41,8 @@ class Entity extends Base\Entity
         self::AUTH_ID,
         self::RRN,
         self::STATUS,
+        self::CARD_NUMBER,
+        self::CARD_NETWORK,
         self::MERCHANT_REFERENCE,
     ];
 
@@ -57,6 +59,7 @@ class Entity extends Base\Entity
         self::STATUS,
         self::AMOUNT,
         self::CARD_NUMBER,
+        self::CARD_NETWORK,
         self::MERCHANT_REFERENCE,
     ];
 

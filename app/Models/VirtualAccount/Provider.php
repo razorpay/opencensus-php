@@ -250,7 +250,6 @@ class Provider
             $masterCardTlv,
             $rupayCardTlv,
             $this->getBharatQrUpiTlv(),
-            // This tag is not supported by UPI ICICI
             $this->getBharatQrDynamicUpiTlv($qrCode),
             Tags::MERCHANT_CATEGORY .$this->getLengthAndValue(Constants::MERCHANT_CATEGORY),
             Tags::CURRENCY_CODE . $this->getLengthAndValue(Constants::CURRENCY_CODE),
@@ -334,11 +333,6 @@ class Provider
         $identifierPadding = Config::get('gateway.bharat_qr.identifier_padding');
 
         $identifier = $acquirerCode . '0' . str_pad(strlen($identifierPadding), 8, '0', STR_PAD_LEFT);
-
-        if ($network === NetworkName::MC)
-        {
-            return $identifier;
-        }
 
         return $identifier . Luhn::computeCheckDigit($identifier);
     }
