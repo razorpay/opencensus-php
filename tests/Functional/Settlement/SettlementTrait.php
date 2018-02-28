@@ -8,14 +8,19 @@ use RZP\Models\Settlement\Holidays;
 
 trait SettlementTrait
 {
-    protected function createPaymentAndRefundEntities(int $count = 5)
+    protected function createPaymentAndRefundEntities(int $count = 5, $dt = null)
     {
         $prEntities = [];
 
         $r = range(1, $count);
 
-        $createdAt = Carbon::today(Timezone::IST)->subDays(20)->timestamp + 5;
-        $capturedAt = Carbon::today(Timezone::IST)->subDays(20)->timestamp + 10;
+        if ($dt === null)
+        {
+            $dt = Carbon::today(Timezone::IST)->subDays(20);
+        }
+
+        $createdAt = $dt->timestamp + 5;
+        $capturedAt = $dt->timestamp + 10;
 
         foreach ($r as $i)
         {
@@ -120,6 +125,20 @@ trait SettlementTrait
             'url' => '/settlements/initiate/'.$channel,
             'method' => 'POST',
             'content' => $content,
+        ];
+
+        $this->ba->appAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
+    protected function initiateDailySettlements()
+    {
+        $request = [
+            'url'       => '/settlements/initiate_daily',
+            'method'    => 'POST'
         ];
 
         $this->ba->appAuth();

@@ -105,7 +105,10 @@ class BankTransferTest extends TestCase
         $this->assertStringEndsWith($utr, $attempt['narration']);
 
         $content = $this->initiateTransferViaFileAndAssertSuccess(
-            Channel::AXIS, Attempt\Purpose::REFUND, 1, Attempt\Type::REFUND);
+            Channel::AXIS,
+            Attempt\Purpose::REFUND,
+            1,
+            Attempt\Type::REFUND);
 
         $attempt = $this->getLastEntity('fund_transfer_attempt', true);
         $this->assertEquals('NEFT', $attempt['mode']);
