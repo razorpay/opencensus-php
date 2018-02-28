@@ -249,7 +249,7 @@ class Service
 
         $maker = $this->getWorkflowMaker();
 
-        if ($maker === false)
+        if (empty($maker) === true)
         {
             return false;
         }
