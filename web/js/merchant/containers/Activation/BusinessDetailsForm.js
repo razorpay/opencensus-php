@@ -48,7 +48,9 @@ export default class BusinessDetailsForm extends Component {
       const found = appUrlDomains.some(domain => {
         return business_website.indexOf(domain) > -1;
       });
-      this.setState({ url_type: 'app' });
+      if (found) {
+        this.setState({ url_type: 'app' });
+      }
     }
 
     this.verifySameAddress();
