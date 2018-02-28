@@ -103,7 +103,9 @@ export default class GatewayRule extends CollectionItem {
     prevent(e);
     return confirm('Delete Rule?').then(_ => {
       return this.request(
-        adminDelete(`${this.collection.filters.mode}/gateway/rules/${this.id}`)
+        adminDelete(
+          `${this.collection.extraFields.mode}/gateway/rules/${this.id}`
+        )
       ).then(data => {
         if (data) {
           this.collection.items.remove(this);
