@@ -150,6 +150,7 @@ final class Route
         'merchant_get_tags'                       => ['get',      'merchants/{id}/tags',                            'MerchantController@getTags'                                        ],
         'merchant_tag_add'                        => ['post',     'merchants/{id}/tags',                            'MerchantController@addTags'                                        ],
         'merchant_tag_delete'                     => ['delete',   'merchants/{id}/tags/{tagName}',                  'MerchantController@deleteTag'                                      ],
+        'merchant_update_key_access'              => ['put',      'merchants/{id}/update_key_access',               'MerchantController@updateKeyAccess'                                ],
         'merchant_edit_free_credits'              => ['post',     'merchants/{id}/credits',                         'MerchantController@postAmountCredits',                             ],
         'merchant_fetch_users'                    => ['get',      'merchants-users',                                'MerchantController@getUsers',                                      ],
         'merchant_patch_beneficiary_code'         => ['patch',    'merchants/beneficiary/code',                     'MerchantController@patchMerchantBeneficiaryCode'                   ],
@@ -217,6 +218,7 @@ final class Route
         'merchant_activation_details'             => ['get',      'merchant/activation',                            'MerchantController@getActivationDetails'                           ],
         'merchant_activation_save'                => ['post',     'merchant/activation',                            'MerchantController@postSaveActivationDetails'                      ],
         'merchant_activation_upload_file'         => ['post',     'merchant/activation/upload',                     'MerchantController@postUploadActivationFile'                       ],
+        'merchant_activation_update_website'      => ['put',      'merchant/activation/update_website_details',     'MerchantController@updateWebsiteDetails'                           ],
         'merchant_activation_files'               => ['get',      'merchant/activation/{id}/files',                 'MerchantController@getActivationFiles'                             ],
         'merchant_activation_upload_file_admin'   => ['post',     'merchant/activation/{id}/files',                 'MerchantController@postUploadActivationFileAdmin'                  ],
         'merchant_activation_update'              => ['put',      'merchant/activation/{id}/update',                'MerchantController@putEditMerchantDetailsAfterLock'                ],
@@ -258,6 +260,7 @@ final class Route
         'setl_fixer'                              => ['get',      'settlements/fixer',                              'SettlementController@getSettlementFixer'                           ],
         'setl_delete_file'                        => ['delete',   'settlements/file/{setlFileType}',                'SettlementController@deleteSettlementFile'                         ],
         'setl_initiate'                           => ['post',     'settlements/initiate/{channel?}',                'SettlementController@postSettlementInitiate'                       ],
+        'setl_initiate_daily'                     => ['post',     'settlements/initiate_daily',                     'SettlementController@processDailySettlements'                      ],
         'setl_retry'                              => ['post',     'settlements/retry',                              'SettlementController@postSettlementRetry'                          ],
         'setl_file_generate'                      => ['post',     'settlements/file/generate',                      'SettlementController@postSettlementFileGenerate'                   ],
         'setl_reconcile_generate'                 => ['post',     'settlements/reconcile/generate/{channel}',       'SettlementController@postSettlementReconcileGenerate'              ],
@@ -1002,6 +1005,7 @@ final class Route
         'schedule_process_tasks',
         'scorecard',
         'setl_initiate',
+        'setl_initiate_daily',
         'setl_post_details_old',
         'setl_reconcile_generate',
         'setl_reconcile_h2h',
@@ -1024,7 +1028,7 @@ final class Route
         'fund_transfer_attempt_process',
     ];
 
-    // The below routes needs X-Dashboard-User-Id
+    // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
     // User context is taken from the provided header.
     // Below rotues deal only with user entity without context of merchant.
     public static $userWhitelist = [
@@ -1032,6 +1036,18 @@ final class Route
         'user_fetch',
         'user_change_password',
         'user_merchant_upgrade',
+        'invoice_create',
+        'invoice_fetch',
+        'invoice_fetch_multiple',
+        'invoice_update',
+        'invoice_issue',
+        'invoice_delete',
+        'invoice_add_line_items',
+        'invoice_update_line_item',
+        'invoice_remove_line_item_bulk',
+        'invoice_remove_line_item',
+        'invoice_send_notification_private',
+        'invoice_cancel',
     ];
 
     public static $proxy = [
@@ -1086,6 +1102,7 @@ final class Route
         'merchant_activation_details',
         'merchant_activation_upload_file',
         'merchant_activation_save',
+        'merchant_activation_update_website',
         'offer_create',
         'offer_update',
         'offer_fetch_multiple',
@@ -1247,6 +1264,7 @@ final class Route
         'admin_lead_verify',
         'merchant_tag_add',
         'merchant_tag_delete',
+        'merchant_update_key_access',
         'refund_verify_multiple',
         'refund_verify_failed',
         'merchant_edit_email',
@@ -1526,6 +1544,7 @@ final class Route
         'merchant_activation_archive'            => '*', // permission handled in code
         'merchant_activation_status'             => Permission::EDIT_ACTIVATE_MERCHANT,
         'merchant_activation_status_change_log'  => Permission::VIEW_ACTIVATION_FORM,
+        'merchant_update_key_access'             => Permission::EDIT_MERCHANT_KEY_ACCESS,
         'merchant_get_rejection_reasons'         => '*',
         'dispute_reason_create'                  => Permission::CREATE_DISPUTE_REASON,
         'user_confirm_by_data'                   => '*',
@@ -1771,6 +1790,7 @@ final class Route
         'cron' => [
             'entity_tax_update',
             'setl_initiate',
+            'setl_initiate_daily',
             'setl_reconcile_generate',
             'setl_reconcile_test',
             'nodal_initiate_transfer',

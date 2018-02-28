@@ -88,51 +88,7 @@ build:
           icon_url: https://cdn.rawgit.com/wantedly/step-pretty-slack-notify/master/icons/$WERCKER_RESULT.jpg
       - script:
           name: Save trace
-          code: >
-            tar -zcvf $WERCKER_REPORT_ARTIFACTS_DIR/archive.tar.gz storage/logs
-dockerhub-push:
-    box:
-      id: razorpay/containers:base-php7
-      username: $DOCKERHUB_USER
-      password: $DOCKERHUB_PASSWORD
-      cmd: /bin/bash
-    steps:
-      - script:
-          name:  Copy app directory
-          code: |
-            cp -Rp $WERCKER_SOURCE_DIR/* /app/
-      - script:
-          name: Fix permissions
-          code: |
-            chown -R apache.www-data /app
-      - script:
-          name: Configure mpm and httpd
-          code: |
-            sed -i 's#PidFile "/run/.*#Pidfile /tmp/run/httpd.pid"#g' /etc/apache2/conf.d/mpm.conf && \
-            sed -i 's/#LoadModule rewrite_module*/LoadModule rewrite_module/' /etc/apache2/httpd.conf
-      - script:
-          name: Copy entrypoint script
-          code: |
-            cp /app/dockerconf/entrypoint.sh /app/entrypoint.sh
-      - internal/docker-push:
-          username: $DOCKERHUB_USER
-          password: $DOCKERHUB_PASSWORD
-          repository: razorpay/api
-          entrypoint: /app/entrypoint.sh
-          ports: 80/tcp
-          working-dir: /app/
-          tag: ${WERCKER_GIT_BRANCH}-${WERCKER_GIT_COMMIT}
-      - script:
-          name: Docker Image tag
-          code: |
-            echo "[INFO] Tag for created image:"
-            echo "${WERCKER_GIT_BRANCH}-${WERCKER_GIT_COMMIT}"
-    after-steps:
-      - slack-notifier:
-          url: $SLACK_URL
-          channel: tech_bots
-          username: wercker
-          icon_url: https://cdn.rawgit.com/wantedly/step-pretty-slack-notify/master/icons/$WERCKER_RESULT.jpg
+          code: cp storage/logs/* $WERCKER_REPORT_ARTIFACTS_DIR/
 deploy:
     steps:
       - script:

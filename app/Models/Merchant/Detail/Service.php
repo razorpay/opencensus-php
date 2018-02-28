@@ -306,6 +306,21 @@ class Service extends Base\Service
         return $activationStatusChangeLog->toArrayPublic();
     }
 
+    /**
+     * This function is used for updating website details of a merchant
+     * @param array $input
+     *
+     * @return array
+     */
+    public function updateWebsiteDetails(array $input): array
+    {
+        $merchantDetails = $this->merchant->merchantDetail;
+
+        $merchantDetails = (new Core)->updateWebsiteDetails($merchantDetails, $input);
+
+        return $merchantDetails->toArrayPublic();
+    }
+
     public function getRejectionReasons()
     {
         return RejectionReasons::REJECTION_REASONS_MAPPING;
