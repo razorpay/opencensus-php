@@ -1169,9 +1169,12 @@ class BasicAuth
 
     public function setMerchant($merchant)
     {
-        $this->merchant = $merchant;
+        if ($merchant !== null)
+        {
+            $this->setOrgId($merchant->org->getPublicId());
+        }
 
-        $this->setOrgId($this->merchant->org->getPublicId());
+        $this->merchant = $merchant;
     }
 
     protected function setType($type)

@@ -84,9 +84,14 @@ class Entity extends BaseModel\PublicEntity
     {
         $makerId = $this->getAttribute(Action\Entity::MAKER_ID);
 
-        $makerClass = E::getEntityClass($this->getAttribute(Action\Entity::MAKER_TYPE));
+        $makerType = $this->getAttribute(Action\Entity::MAKER_TYPE);
 
-        $attributes[Action\Entity::MAKER_ID] = $makerClass::getSignedId($makerId);
+        if ($makerId !== null and $makerType !== null)
+        {
+            $makerClass = E::getEntityClass($makerType);
+
+            $attributes[Action\Entity::MAKER_ID] = $makerClass::getSignedId($makerId);
+        }
     }
 
     public function setPublicActionIdAttribute(array &$attributes)

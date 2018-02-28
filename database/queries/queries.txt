@@ -3000,5 +3000,9 @@ ALTER TABLE workflow_actions
     ADD COLUMN `maker_type` char(14) COLLATE utf8_bin  NULL AFTER `maker_id`,
     MODIFY `admin_id` CHAR(14) NULL DEFAULT NULL;
 
+# To run after the PR is merged.
+UPDATE `workflow_actions` SET maker_id = admin_id , maker_type = 'admin' WHERE maker_id is null and admin_id is not
+null;
+
 ALTER TABLE `merchants`
     ADD COLUMN `has_key_access` TINYINT(1) NOT NULL DEFAULT 0 after `linked_account_kyc`;
