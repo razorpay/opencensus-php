@@ -65,12 +65,10 @@ class Workflow
         // Disable workflows if:
         // - It is mocked
         // - The maker isn't an Admin or Merchant
-        // - We only want to run workflows for admin and proxy routes
-        // whenever orgId is set. In case of private, public, etc. there
-        // won't be any orgID and hence we should move to the next middleware.
+        // - Auth is not apt for workflows
         if (($this->config->get('heimdall.workflows.mock') === true) or
-            ($maker === false) or
-            (empty($this->ba->getOrgId()) === true))
+            (empty($maker) === true) or
+            ($this->isAptAuthForWorkflows() === false))
         {
             return $next($request);
         }
@@ -151,6 +149,27 @@ class Workflow
 
         throw new Exception\BadRequestException(
             ErrorCode::BAD_REQUEST_PERMISSION_ERROR);
+    }
+
+    /**
+     * Workflows will work for admin auth (admins) + proxy auth (merchants)
+     * (without internal auth)
+     */
+    private function isAptAuthForWorkflows()
+    {
+        $adminAuth = $this->ba->isAdminAuth();
+
+        $proxyAuth = $this->ba->isProxyAuth();
+
+        $strictPrivateAuth = $this->isStrictPrivateAuth();
+
+        if (($adminAuth === true) or
+            ($proxyAuth === true and $strictPrivateAuth === false))
+        {
+            return true;
+        }
+
+        return false;
     }
 
 }

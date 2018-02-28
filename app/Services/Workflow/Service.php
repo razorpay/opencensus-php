@@ -420,7 +420,7 @@ class Service
             return $this->ba->getMerchant();
         }
 
-        return false;
+        return null;
     }
 
     public function getWorkflowMakerType()
