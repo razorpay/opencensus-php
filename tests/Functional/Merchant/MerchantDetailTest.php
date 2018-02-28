@@ -284,6 +284,17 @@ class MerchantDetailTest extends TestCase
         $responseContent['activation_status'] = 'rejected';
     }
 
+    public function testMerchantUpdateWebsiteDetails()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $this->ba->proxyAuth('rzp_test_'.$merchantId);
+
+        $this->startTest();
+    }
+
     public function testCommentMerchant()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
