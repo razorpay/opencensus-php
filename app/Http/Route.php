@@ -456,11 +456,6 @@ final class Route
         'addon_fetch_multiple'                    => ['get',      'addons',                                         'SubscriptionController@getAddons'                                  ],
         'addon_delete'                            => ['delete',   'addons/{addonId}',                               'SubscriptionController@deleteAddon'                                ],
         'billdesk_create_cancelled_refunds'       => ['post',     'refunds/billdesk/cancelled',                     'RefundController@postCreateBilldeskCancelledRefunds'               ],
-        'feature_add'                             => ['post',     'features',                                       'FeatureController@addFeatures'                                     ],
-        'feature_delete'                          => ['delete',   'features/{entityId}/{featureName}',              'FeatureController@deleteFeature'                                   ],
-        'feature_get_multiple'                    => ['get',      'features/{entityId}',                            'FeatureController@getFeatures'                                     ],
-        'feature_bulk_assign'                     => ['post',     'features/assign',                                'FeatureController@multiAssignFeature'                              ],
-        'feature_bulk_remove'                     => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
         'upi_fill_bank'                           => ['patch',    'gateway/upi_fill_bank',                          'GatewayController@fillUpiBank'                                     ],
         'mailgun_webhook'                         => ['post',     'mailgun/callback/{type}',                        'AdminController@postMailgunCallback'                               ],
         'offer_create'                            => ['post',     'offers',                                         'OfferController@createOffer'                                       ],
@@ -728,11 +723,24 @@ final class Route
         'beta_account_fetch_multiple'             => ['get',      'beta/accounts',                                  'AccountController@list'                                            ],
         'beta_account_post_bank_account'          => ['post',     'beta/accounts/{id}/bank_accounts',               'AccountController@createOrChangeBankAccount'                       ],
         'beta_account_fetch_setl_destinations'    => ['get',      'beta/accounts/{id}/settlement_destinations',     'AccountController@fetchSettlementDestinations'                     ],
+        'account_features_add'                    => ['post',     'accounts/me/features',                           'FeatureController@addAccountFeatures'                              ],
+        'account_features_get'                    => ['get',      'accounts/me/features',                           'FeatureController@getAccountFeatures'                              ],
 
         'account_fetch'                           => ['get',      'accounts',                                       'AccountController@listLinkedAccounts'                              ],
 
         // Pincode Service
         'pincode_get'                             => ['get',      'pincodes/{id}',                                  'PincodeSearchController@get'                                       ],
+
+        // Deprecated feature routes - maintaining for BC - Remove after dashboard changes
+        'feature_get_multiple'                    => ['get',      'features/{entityId}',                            'FeatureController@getMerchantFeatures'                             ],
+        'feature_delete'                          => ['delete',   'features/{entityId}/{featureName}',              'FeatureController@deleteFeature'                                   ],
+
+        // Features
+        'feature_add'                             => ['post',     'features',                                       'FeatureController@addFeatures'                                     ],
+        'feature_get'                             => ['get',      'features/{entityType}/{entityId}',               'FeatureController@getFeatures'                                     ],
+        'feature_bulk_assign'                     => ['post',     'features/assign',                                'FeatureController@multiAssignFeature'                              ],
+        'feature_bulk_remove'                     => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
+        'feature_delete_entity'                   => ['delete',   '{entityType}/{entityId}/features/{featureName}', 'FeatureController@deleteEntityFeature'                             ],
     ];
 
     public static $public = [
@@ -938,6 +946,8 @@ final class Route
         'beta_account_post_bank_account',
         'beta_account_fetch_setl_destinations',
         'dispute_fetch',
+        'account_features_add',
+        'account_features_get',
     ];
 
     // Only routes defined in internalApps go here
@@ -1205,6 +1215,8 @@ final class Route
         'setl_update_channel_bulk',
         'setl_fetch_schedule',
         'feature_delete',
+        'feature_delete_entity',
+        'feature_get',
         'admin_dummy_account_test',
         'admin_get_file',
         // workflows
@@ -1457,6 +1469,8 @@ final class Route
         'admin_lead_get_multiple'                => Permission::VIEW_MERCHANT_INVITE,
         'admin_dummy_account_test'               => Permission::VIEW_MERCHANT,
         'feature_delete'                         => Permission::DELETE_MERCHANT_FEATURES,
+        'feature_delete_entity'                  => Permission::DELETE_MERCHANT_FEATURES,
+        'feature_get'                            => Permission::VIEW_MERCHANT_FEATURES,
         'workflow_create'                        => Permission::CREATE_WORKFLOW, // Fix permissions
         'workflow_get'                           => Permission::VIEW_WORKFLOW,
         'workflow_get_multiple'                  => Permission::VIEW_ALL_WORKFLOW,
@@ -2004,7 +2018,8 @@ final class Route
         'subscription_view_test',
         'addon_fetch',
         'addon_fetch_multiple',
-        'feature_get_multiple',
+        // 'feature_get_multiple',
+        // 'feature_get',
         'offer_fetch_multiple',
         'offer_fetch_by_id',
         'currency_fetch_rates',
