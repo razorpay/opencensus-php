@@ -2984,5 +2984,13 @@ ALTER TABLE bank_transfers
 ALTER TABLE virtual_accounts
     ADD INDEX virtual_accounts_updated_at_index (updated_at);
 
+ALTER TABLE merchant_access_map
+    DROP FOREIGN KEY merchant_access_map_merchant_id_foreign,
+    DROP INDEX merchant_access_map_merchant_id_entity_id_unique;
+
+ALTER TABLE merchant_access_map
+    ADD CONSTRAINT merchant_access_map_merchant_id_foreign FOREIGN KEY(merchant_id)
+        REFERENCES merchants(id);
+
 ALTER TABLE batches
     ADD COLUMN name varchar(255) AFTER sub_type;

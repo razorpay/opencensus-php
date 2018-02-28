@@ -141,9 +141,8 @@ class Base extends BaseProcessor
         throw new \BadMethodCallException();
     }
 
-    public function createSetOutputFileAndSave(array & $entries, string $headerType = Batch\Header::OUTPUT): array
+    public function createSetOutputFileAndSave(array & $entries)
     {
-        return [];
     }
 
     protected function sendProcessedMail()

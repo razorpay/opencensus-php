@@ -311,18 +311,6 @@ return [
         ]
     ],
 
-    'testGetMerchantIds' => [
-        'request' => [
-            'url' => '/orgs/%s/admins/%s/merchant_ids',
-            'method' => 'get',
-            'content' => [],
-        ],
-        'response' => [
-            'content' => [
-            ],
-        ],
-    ],
-
     'testLoginUserDoesNotExist' => [
         'request' => [
             'url' => '/admin/authenticate',

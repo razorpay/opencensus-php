@@ -16,13 +16,11 @@ class PaymentLink
      *
      * @param array $entry
      * @param array $params
-     * @param bool $isCreatedByFileUpload
      *
      * @return array
      *
      */
-    public static function getEntityInput(array & $entry,
-                                          array & $params): array
+    public static function getEntityInput(array & $entry, array & $params): array
     {
         // Set partial_payment attribute to false if field comes as null
         // from excel file.

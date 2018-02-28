@@ -33,6 +33,27 @@ return [
         ],
     ],
 
+    'testRetrieveLinkedAccounts' => [
+        'request'  => [
+            'url'    => '/accounts',
+            'method' => 'get',
+            'content'   => [
+                'skip'  => 0,
+                'count' => 100
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'count' => 1,
+                'items' => [
+                    [
+                        'id' => 'acc_10000000000001',
+                    ]
+                ],
+            ],
+        ],
+    ],
+
     'createLinkedAccount' => [
         'request'  => [
             'url'     => '/beta/accounts',

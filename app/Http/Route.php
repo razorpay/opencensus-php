@@ -55,7 +55,7 @@ final class Route
         'payment_payout'                          => ['post',     'payments/{id}/payouts',                          'PaymentController@postPayout'                                      ],
         'payment_bank_transfer_fetch'             => ['get',      'payments/{id}/bank_transfer',                    'BankTransferController@fetchBankTransferForPayment'                ],
         'batch_create'                            => ['post',     'batches',                                        'BatchController@createBatch'                                       ],
-        'batch_validate_file'                     => ['post',     'batches/validate',                               'BatchController@validateBatchFile'                                 ],
+        'batch_validate_file'                     => ['post',     'batches/validate',                               'BatchController@validateFile'                                      ],
         'batch_fetch_multiple'                    => ['get',      'batches',                                        'BatchController@getBatches'                                        ],
         'batch_fetch_by_id'                       => ['get',      'batches/{id}',                                   'BatchController@getBatchById'                                      ],
         'batch_process_file'                      => ['post',     'batches/process',                                'BatchController@processBatches'                                    ],
@@ -500,8 +500,6 @@ final class Route
         'admin_get'                               => ['get',      'admin/{id}/fetch',                               'OrganizationController@getAdmin'                                   ],
         'admin_edit'                              => ['put',      'admin/{id}',                                     'OrganizationController@editAdmin'                                  ],
         'admin_edit_app_auth'                     => ['put',      'admin-app-auth/{id}',                            'OrganizationController@editAdmin'                                  ],
-        'admin_fetch_merchant_ids'                => ['get',      'orgs/{orgId}/admins/{id}/merchant_ids',          'OrganizationController@getMerchantIds'                             ],
-        'admin_fetch_merchants'                   => ['get',      'orgs/{orgId}/admins/{id}/merchants',             'OrganizationController@getMerchants'                               ],
         'admin_fetch_merchant_ids_new'            => ['get',      'admins/merchant_ids',                            'OrganizationController@getMerchantIdsFromEs'                       ],
         'admin_fetch_merchants_new'               => ['get',      'admins/merchants',                               'OrganizationController@getMerchantsFromEs'                         ],
         'admin_delete'                            => ['delete',   'admin/{id}',                                     'OrganizationController@deleteAdmin'                                ],
@@ -1143,8 +1141,6 @@ final class Route
     public static $admin = [
         'org_get',
         'org_get_multiple',
-        'admin_fetch_merchant_ids',
-        'admin_fetch_merchants',
         'admin_fetch_merchant_ids_new',
         'admin_fetch_merchants_new',
         'admin_create',
@@ -1263,9 +1259,9 @@ final class Route
         'adj_add_bulk',
         'adj_add_reverse',
         'adjustments_split_for_dispute',
-        'admin_fetch_entity_by_id',
         'admin_fetch_entity_multiple',
         'admin_fetch_terminal_by_id',
+        'admin_fetch_entity_by_id',
         'bank_transfer_edit_payer_account',
         'bank_transfer_insert',
         'bank_transfer_strip_payer_accounts',
@@ -1423,8 +1419,6 @@ final class Route
         'schedule_delete'                        => Permission::SCHEDULE_DELETE,
         'schedule_update'                        => Permission::SCHEDULE_UPDATE,
         'schedule_assign'                        => Permission::SCHEDULE_ASSIGN,
-        'admin_fetch_merchant_ids'               => Permission::VIEW_ALL_MERCHANTS,
-        'admin_fetch_merchants'                  => Permission::VIEW_ALL_MERCHANTS,
         'admin_fetch_merchant_ids_new'           => '*',
         'admin_fetch_merchants_new'              => '*',
         'permission_create'                      => Permission::CREATE_PERMISSION,
@@ -1674,6 +1668,7 @@ final class Route
         'shield_rules_delete'                    => Permission::DELETE_SHIELD_RULES,
         'shield_rules_evaluate'                  => Permission::EVALUATE_SHIELD_RULES,
         'user_fetch_admin'                       => '*',
+        'batch_create'                           => '*',
     ];
 
     public static $direct = [
@@ -2009,8 +2004,6 @@ final class Route
         // 'role_get',
         // 'admin_get_multiple',
         // 'admin_get',
-        'admin_fetch_merchant_ids',
-        'admin_fetch_merchants',
         'admin_fetch_merchant_ids_new',
         'admin_fetch_merchants_new',
         // 'admin_lead_get_multiple',
@@ -2140,17 +2133,6 @@ final class Route
         'virtual_account_fetch_multiple'       => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_fetch_payments'       => [Feature::VIRTUAL_ACCOUNTS],
         'reports_refund_irctc'                 => [Feature::IRCTC_REPORT],
-
-        // Reporting Service
-        'reporting_config_get'                 => [Feature::REPORT_V2],
-        'reporting_config_list'                => [Feature::REPORT_V2],
-        'reporting_config_create'              => [Feature::REPORT_V2],
-        'reporting_config_edit'                => [Feature::REPORT_V2],
-        'reporting_config_delete'              => [Feature::REPORT_V2],
-        'reporting_log_get'                    => [Feature::REPORT_V2],
-        'reporting_log_list'                   => [Feature::REPORT_V2],
-        'reporting_log_create'                 => [Feature::REPORT_V2],
-        'ufh_get_file_signed_url'              => [Feature::REPORT_V2],
 
         // Account APIs
         'beta_account_create'                  => [Feature::MARKETPLACE],
