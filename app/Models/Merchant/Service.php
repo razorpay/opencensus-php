@@ -1279,6 +1279,22 @@ class Service extends Base\Service
         return $merchant->tagNames();
     }
 
+    /**
+     * This function is used for updating key access of a merchant
+     * @param string $merchantId
+     * @param array $input
+     *
+     * @return array
+     */
+    public function updateKeyAccess(string $merchantId, array $input): array
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $merchant = (new Core)->updateKeyAccess($merchant, $input);
+
+        return $merchant->toArrayPublic();
+    }
+
     public function markGratisTransactionPostpaid($input)
     {
         $this->trace->info(
