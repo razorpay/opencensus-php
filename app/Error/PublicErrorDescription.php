@@ -439,9 +439,7 @@ class PublicErrorDescription
     const BAD_REQUEST_BATCH_FILE_UNDER_PROCESSING                               = 'The uploaded file is being processed';
     const BAD_REQUEST_BATCH_ANOTHER_OPERATION_IN_PROGRESS                       = 'Request failed because another operation on the batch is in progress';
     const BAD_REQUEST_BATCH_FILE_EXCEED_LIMIT                                   = 'The uploaded file exceeds the number of entries allowed';
-    const BAD_REQUEST_BATCH_UNABLE_TO_SAVE_FILE                                 = 'Unable to save file and get signed url';
-    const BAD_REQUEST_BATCH_UNABLE_TO_SAVE_OUTPUT_FILE                          = 'Unable to save output file and get signed url';
-    const BAD_REQUEST_BATCH_IS_PROCESSING                                       = 'Batch is currently in processing state. Try later.';
+    const BAD_REQUEST_BATCH_STATS_NOT_SUPPORTED_FOR_TYPE                        = 'Batch stats api is not supported for this batch type';
 
     const BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS                  = 'Request failed because another settlement operation in progress';
     const BAD_REQUEST_SETTLEMENT_RECONCILIATION_IN_PROGRESS                     = 'Request failed because another settlement reconciliation operation in progress';

@@ -111,6 +111,13 @@ class Core extends Base\Core
         return $batches;
     }
 
+    public function fetchStatsOfBatch(Entity $batch): array
+    {
+        $core = Type::getStatsCoreForType($batch->getType());
+
+        return $core->fetchStatsOfBatch($batch);
+    }
+
     public function processBatchAsync(Entity $batch, array $input = []): Entity
     {
         $this->trace->info(TraceCode::BATCH_PROCESS_ASYNC, [$batch->toArrayPublic(), $input]);
