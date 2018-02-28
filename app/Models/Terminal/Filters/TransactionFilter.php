@@ -113,38 +113,40 @@ class TransactionFilter extends Terminal\Filter
 
     public function emandateFilter($terminal)
     {
-        if ($this->input['payment']->isEmandate() === true)
+        if ($this->input['payment']->isEmandate() === false)
         {
-            $gateways = [];
-
-            $bank = $this->input['payment']->getBank();
-
-            $authType = $this->input['payment']->getAuthType();
-
-            $terminalGateway = $terminal->getGateway();
-
-            // @todo: Can be more cleaner
-            foreach (Gateway::$gatewaysEmandateBanksMap as $gateway => $banks)
-            {
-                if (in_array($bank, $banks, true) === true)
-                {
-                    if (($authType !== null) and
-                        (isset(Gateway::$authTypeToEmandateGatewayMap[$authType]) === true))
-                    {
-                        if (in_array($gateway, Gateway::$authTypeToEmandateGatewayMap[$authType], true) === false)
-                        {
-                            continue;
-                        }
-                    }
-
-                    $gateways[] = $gateway;
-                }
-            }
-
-            return in_array($terminalGateway, $gateways);
+            return true;
         }
 
-        return true;
+        $gateways = [];
+
+        $paymentBank = $this->input['payment']->getBank();
+
+        $authType = $this->input['payment']->getAuthType();
+
+        $terminalGateway = $terminal->getGateway();
+
+        // @todo: Can be more cleaner
+        foreach (Gateway::$gatewaysEmandateBanksMap as $gateway => $gatewaySupportedBanks)
+        {
+            if (in_array($paymentBank, $gatewaySupportedBanks, true) === true)
+            {
+                if ($authType !== null)
+                {
+                    $authTypeGateways = Gateway::getEmandateGatewaysForAuthType($authType);
+
+                    if (in_array($gateway, $authTypeGateways, true) === false)
+                    {
+                        continue;
+                    }
+                }
+
+                $gateways[] = $gateway;
+            }
+        }
+
+        return in_array($terminalGateway, $gateways);
+
     }
 
     /**

@@ -66,11 +66,14 @@ class Core extends Base\Core
      */
     public function create($customer, $input, Card\Entity $card = null)
     {
+        $traceInput = $input;
+        unset($traceInput[Entity::AADHAAR_NUMBER]);
+
         $this->trace->info(
             TraceCode::CUSTOMER_TOKEN_CREATE,
             [
                 'customer_id' => $customer->getId(),
-                'input'       => $input
+                'input'       => $traceInput
             ]
         );
 
