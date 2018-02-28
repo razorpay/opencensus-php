@@ -35,7 +35,7 @@ class EntityProcessor extends BaseEntityProcessor
                 $status = $this->fta->getStatus();
             }
         }
-        else if ($bankStatusCode === Status::REJECTED)
+        else if (in_array($bankStatusCode, [Status::CANCELLED, Status::REJECTED], true) === true)
         {
             $status = Attempt\Status::FAILED;
 

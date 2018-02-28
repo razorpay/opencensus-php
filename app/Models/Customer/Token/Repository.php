@@ -84,7 +84,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Token\Entity::CUSTOMER_ID, '=', $customerId)
                     ->where(Token\Entity::ID, '=', $tokenId)
-                    ->firstOrFail();
+                    ->firstOrFailPublic();
     }
 
     public function getByWalletTerminalAndCustomerId($wallet, $terminal, $customer)
@@ -110,7 +110,7 @@ class Repository extends Base\Repository
     public function getTokenByIdAndAccountNumber(string $tokenId, string $accountNumber)
     {
         return $this->newQuery()
-                    ->where(Entity::METHOD, Method::NETBANKING)
+                    ->where(Entity::METHOD, Method::EMANDATE)
                     ->where(Entity::ID, $tokenId)
                     ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
                     ->firstOrFail();

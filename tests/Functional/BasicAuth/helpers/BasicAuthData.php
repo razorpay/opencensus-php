@@ -1,7 +1,5 @@
 <?php
 
-use RZP\Gateway\Hdfc;
-use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
@@ -326,9 +324,7 @@ return [
             'url' => '/dummy/internal'
         ],
         'response' => [
-            'content' => [
-                'id' => '10000000000000'
-            ],
+            'content' => [],
             'status_code' => 200,
         ],
     ],
@@ -360,5 +356,43 @@ return [
             'status_code' => 401,
         ],
     ],
+
+    'testUserWhiteListAuthenticate' => [
+        'request' => [
+            'method' => 'POST',
+            'url'    => '/users/resend-verification',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_NOT_AUTHENTICATED,
+                ]
+            ],
+            'status_code' => 401,
+        ],
+    ],
+
+    'testFailedMerchantUserRouteValidation' => [
+        'request'  => [
+            'url'     => '/batches',
+            'method'  => 'get',
+            'content' => [
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
 
 ];

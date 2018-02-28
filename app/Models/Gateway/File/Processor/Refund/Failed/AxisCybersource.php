@@ -15,7 +15,7 @@ class AxisCybersource extends Base
     const EXTENSION        = FileStore\Format::XLSX;
     const FILE_NAME        = 'Axis_Cybersource_Failed_Refunds';
     const FILE_TYPE        = FileStore\Type::AXIS_CYBERSOURCE_FAILED_REFUND;
-    const ACQUIRER         = Payment\Gateway::ACQUIRER_HDFC;
+    const ACQUIRER         = Payment\Gateway::ACQUIRER_AXIS;
 
     const SR_NO                   = 'Sr No';
     const CARD_NUMBER             = 'Card Number';
@@ -27,6 +27,7 @@ class AxisCybersource extends Base
     const APPROVAL_CODE           = 'Approval Code';
     const RAZORPAY_TRANSACTION_ID = 'Razorpay Payment ID';
     const RAZORPAY_REFUND_ID      = 'Razorpay Refund ID';
+    const REF                     = 'Authorized Ref';
 
     const CARD_GATEWAY_API_REFUND_SPAN = 15552000;
 
@@ -62,6 +63,7 @@ class AxisCybersource extends Base
                 self::REFUND_AMOUNT      => $this->getFormattedAmount($row['refund']['amount']),
                 self::TRANSACTION_DATE   => $this->getFormattedDate($row['payment']['created_at'], 'd/m/y H:m'),
                 self::APPROVAL_CODE      => $row['gateway']['authorizationCode'],
+                self::REF                => $row['gateway']['ref'],
                 self::RAZORPAY_REFUND_ID => $row['refund']['id'],
                 self::RAZORPAY_TRANSACTION_ID => $row['payment']['id'],
             ];

@@ -233,11 +233,11 @@
             @if ($data['data']['type'] === 'intent')
                 <div id='message-txt' class="center">
                     <b>Select your UPI app</b>
-                    <div>Payment will be made to <b>razorpay@icici</b></div>
+                    <div>Payment will be made to Razorpay's vpa</div>
                 </div>
             @else
                 <div id='message-txt' class="center">
-                    <div>Please accept collect request from <b>razorpay@icici</b> in your UPI app</div>
+                    <div>Please accept collect request from Razorpay's vpa in your UPI app</div>
                 </div>
             @endif
 

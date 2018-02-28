@@ -12,7 +12,6 @@ use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
-use RZP\Models\Merchant\Balance;
 
 class Repository extends Base\Repository
 {
@@ -286,75 +285,6 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    /**
-     * @deprecated Ref: #4216
-     */
-    public function fetchMerchantsByFilter(array $merchantIds, array $input)
-    {
-        $merchantCreatedAt = $this->repo->merchant->dbColumn(Entity::CREATED_AT);
-        $merchantUpdatedAt = $this->repo->merchant->dbColumn(Entity::CREATED_AT);
-
-        $merchantId = $this->repo
-                           ->merchant_detail
-                           ->dbColumn(Merchant\Detail\Entity::MERCHANT_ID);
-
-        $submittedAt = $this->repo
-                            ->merchant_detail
-                            ->dbColumn(Merchant\Detail\Entity::SUBMITTED_AT);
-
-        $stepsFinished = $this->repo
-                              ->merchant_detail
-                              ->dbColumn(Merchant\Detail\Entity::STEPS_FINISHED);
-
-        $activationProgress = $this->repo
-                                   ->merchant_detail
-                                   ->dbColumn(Merchant\Detail\Entity::ACTIVATION_PROGRESS);
-
-        $submitted = $this->repo
-                          ->merchant_detail
-                          ->dbColumn(Merchant\Detail\Entity::SUBMITTED);
-
-        $updatedAt = $this->repo
-                          ->merchant_detail
-                          ->dbColumn(Merchant\Detail\Entity::UPDATED_AT);
-
-        $query = $this->newQuery()
-                      ->with('features')
-                      ->select(Entity::ID,
-                               Entity::NAME,
-                               Entity::EMAIL,
-                               Entity::ACTIVATED,
-                               Entity::PARENT_ID,
-                               $merchantCreatedAt,
-                               $merchantUpdatedAt,
-                               Entity::ARCHIVED_AT,
-                               Entity::SUSPENDED_AT,
-                               $stepsFinished,
-                               $activationProgress,
-                               $submitted,
-                               $submittedAt,
-                               $updatedAt)
-                      ->join(Table::MERCHANT_DETAIL, Entity::ID, '=', $merchantId)
-                      ->whereIn(Entity::ID, $merchantIds);
-
-        $this->modifyQuery($query, $input);
-
-        // Marketplace accounts filter
-        if (empty($input['sub_accounts']) === false)
-        {
-            if ($input['sub_accounts'] === '1')
-            {
-                $query = $query->whereNotNull(Entity::PARENT_ID);
-            }
-            else
-            {
-                $query = $query->where(Entity::PARENT_ID, $input['sub_accounts']);
-            }
-        }
-
-        return $query->get();
-    }
-
     public function findByAccountIdAndParent(
         string $accountId,
         Entity $parent,
@@ -401,52 +331,6 @@ class Repository extends Base\Repository
         return $query->take($count)
                      ->skip($skip)
                      ->get();
-    }
-
-    /**
-     * @deprecated Ref: #4216
-     */
-    protected function modifyQuery($query, array $input)
-    {
-        $submittedAt = $this->repo
-                            ->merchant_detail
-                            ->dbColumn(Merchant\Detail\Entity::SUBMITTED_AT);
-
-        switch (true)
-        {
-            case (empty($input['suspended']) === false):
-                $query = $query->whereNotNull(Entity::SUSPENDED_AT);
-                break;
-
-            case (empty($input['archived']) === false):
-                $query = $query->whereNotNull(Entity::ARCHIVED_AT);
-                break;
-
-            case (empty($input['activated']) === false):
-                $query = $query->whereNotNull(Entity::ACTIVATED_AT)
-                               ->whereNull(Entity::SUSPENDED_AT)
-                               ->whereNull(Entity::ARCHIVED_AT);
-                break;
-
-            case (empty($input['pending']) === false):
-                $query = $query->whereNull(Entity::ACTIVATED_AT)
-                               ->whereNotNull($submittedAt)
-                               ->whereNull(Entity::SUSPENDED_AT)
-                               ->whereNull(Entity::ARCHIVED_AT);
-                break;
-
-            case (empty($input['dead']) === false):
-                $query = $query->where($merchantCreatedAt, '<', time() - 24 * 7 * 3600)
-                               ->whereNull($submittedAt)
-                               ->whereNull(Entity::SUSPENDED_AT)
-                               ->whereNull(Entity::ARCHIVED_AT);
-                break;
-
-            default:
-                $query = $query->whereNull(Entity::ARCHIVED_AT)
-                               ->whereNull(Entity::SUSPENDED_AT);
-                break;
-        }
     }
 
     /**

@@ -113,6 +113,10 @@ class Validator extends Base\Validator
         'transfers.*.on_hold_until'  => 'sometimes|epoch',
     ];
 
+    protected static $pspAmountLimit = [
+        'upi'       => 2000000,
+    ];
+
     protected static $createValidators = [
         'card_key',
         'amount',
@@ -135,6 +139,7 @@ class Validator extends Base\Validator
         // due to dot notation, we cannot use it.
         'token_max_amount',
         'token_expire_by',
+        'emandate'
     ];
 
     protected function validateIfsc(array $input)
@@ -192,6 +197,24 @@ class Validator extends Base\Validator
                     'current_time'      => $currentTime,
                     'payment_id'        => $this->entity->getId(),
                 ]);
+        }
+    }
+
+    protected function validateEmandate(array $input)
+    {
+        if ($input[Entity::METHOD] !== Method::EMANDATE)
+        {
+            return;
+        }
+
+        if ((isset($input[Entity::AUTH_TYPE]) === true) and
+            ($input[Entity::AUTH_TYPE] === AuthType::AADHAAR))
+        {
+            if (empty($input[Entity::AADHAAR]['number']) === true)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'The aadhaar[number] field is required.');
+            }
         }
     }
 
@@ -389,6 +412,35 @@ class Validator extends Base\Validator
             return;
         }
 
+        if ($input['method'] === Payment\Method::UPI)
+        {
+            if ($amount > 10000000)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Amount for UPI payment cannot be greater than 100000000');
+            }
+
+            if ((isset($input['_']['flow']) === true) and
+                ($input['_']['flow'] === 'intent'))
+            {
+                return;
+            }
+
+            if (isset($input['vpa']) === true)
+            {
+                $vpa = $input['vpa'];
+
+                $handle = substr($vpa, strpos($vpa, '@') + 1);
+
+                if ((isset(self::$pspAmountLimit[$handle]) === true) and
+                    ($amount > self::$pspAmountLimit[$handle]))
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Maximum amount for UPI payment can be Rs ' . (self::$pspAmountLimit[$handle] / 100));
+                }
+            }
+        }
+
         $maxAmountAllowed = $this->entity->merchant->getMaxPaymentAmount();
 
         if ($amount > $maxAmountAllowed)
@@ -466,6 +518,9 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_PAYMENT_BANK_NOT_PROVIDED);
         }
 
+        //
+        // The bank is validated for emandate in `validateInitialRecurringForEmandate`
+        //
         if (Payment\Processor\Netbanking::isSupportedBank($input['bank']) === false)
         {
             throw new Exception\BadRequestException(

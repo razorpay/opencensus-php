@@ -12,7 +12,16 @@ use RZP\Models\FundTransfer\Attempt\Status as AttemptStatus;
 
 class Service extends Base\Service
 {
-    public function bulkReconcile(array $input, string $channel): array
+    public function initiateFundTransfers(array $input, $channel = null)
+    {
+        $this->trace->info(TraceCode::INITIATE_FUND_TRANSFER, $input);
+
+        $data = (new Initiator)->initiateFundTransfers($input, $channel);
+
+        return $data;
+    }
+
+    public function reconcileFundTransfers(array $input, string $channel): array
     {
         $this->trace->info(TraceCode::FTA_BULK_RECONCILE_REQUEST, $input);
 

@@ -28,6 +28,13 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function processDailySettlements($input)
+    {
+        $data = (new Settlement\Processor)->processDailySettlements($input);
+
+        return $data;
+    }
+
     /** Generates settlement file for a given batch_fund_transfer_id
       * Uses settlement entities / fund_transfer_attempt entities to generate
       * file depending on the created_at timestamp of the batch.
@@ -60,9 +67,15 @@ class Service extends Base\Service
                                 ['source', 'source.merchant', 'source.merchant.bankAccount']);
         }
 
-        $urls = (new Kotak\Service)->generateSettlementFile($entities);
+        $channel = $batch->getChannel();
 
-        return $urls;
+        $nodalAccountClass = 'RZP\\Models\\FundTransfer\\' . ucwords($channel). '\\NodalAccount';
+
+        $h2h = (bool)($input['h2h']);
+
+        $fileCreator = (new $nodalAccountClass)->generateFundTransferFile($entities, $h2h);
+
+        return $fileCreator->get();
     }
 
     public function fetch($id)

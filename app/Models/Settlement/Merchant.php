@@ -3,11 +3,13 @@
 namespace RZP\Models\Settlement;
 
 use App;
+use Carbon\Carbon;
+
 use RZP\Constants\Mode;
+use RZP\Constants\Timezone;
 use RZP\Models;
 use RZP\Models\Base;
 use RZP\Exception;
-use RZP\Models\Adjustment;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
@@ -15,12 +17,9 @@ use RZP\Models\Schedule\Task\Type as ScheduleTaskType;
 use RZP\Models\Settlement;
 use RZP\Models\Settlement\Details as SetlDetails;
 use RZP\Models\Settlement\Details\Component as SetlComponent;
-use RZP\Models\FundTransfer\Batch\BatchFundTransferTrait;
 
 class Merchant
 {
-    use BatchFundTransferTrait;
-
     protected $merchant;
     protected $amount;
     protected $apiFee;
@@ -62,11 +61,11 @@ class Merchant
 
         $this->txns = $this->setl->setlTransactions;
 
-        // Update Settlement Entity
         $this->updateSettlementEntity();
 
-        // Increment attempts in settlements
         $this->setl->incrementAttempts();
+
+        $this->repo->saveOrFail($this->setl);
 
         // Create Settlement attempt entity
         $this->createSettlementAttemptEntity();
@@ -133,7 +132,9 @@ class Merchant
     {
         assert($this->setl->hasTransaction(), true);
 
-        $this->createSettlementAttemptEntity();
+        $initiateAt = $this->txns->max(Transaction\Entity::SETTLED_AT);
+
+        $this->createSettlementAttemptEntity($initiateAt);
 
         return $this->bankTransferAtpt;
     }
@@ -322,28 +323,32 @@ class Merchant
         $setl->setFailureReason(null);
         $setl->setUtr(null);
         $setl->setRemarks(null);
+        $setl->batchFundTransfer()->dissociate();
 
         $this->setl = $setl;
     }
 
-    protected function createSettlementAttemptEntity()
+    protected function createSettlementAttemptEntity(int $initiateAt = null)
     {
         $fundTransferAttempt = new FundTransferAttempt\Entity;
 
+        $fundTransferAttempt->merchant()->associate($this->merchant);
+
+        $fundTransferAttempt->source()->associate($this->setl);
+
+        $fundTransferAttempt->bankAccount()->associate($this->bankAccount);
+
+        $initiateAt = ($initiateAt ?: Carbon::now(Timezone::IST)->getTimestamp());
+
         $values = [
+            FundTransferAttempt\Entity::INITIATE_AT     => $initiateAt,
             FundTransferAttempt\Entity::CHANNEL         => $this->channel,
             FundTransferAttempt\Entity::VERSION         => FundTransferAttempt\Version::V3,
-            FundTransferAttempt\Entity::STATUS          => FundTransferAttempt\Status::INITIATED,
+            FundTransferAttempt\Entity::STATUS          => FundTransferAttempt\Status::CREATED,
             FundTransferAttempt\Entity::PURPOSE         => FundTransferAttempt\Purpose::SETTLEMENT,
         ];
 
         $fundTransferAttempt->fillAndGenerateId($values);
-
-        $fundTransferAttempt->source()->associate($this->setl);
-
-        $fundTransferAttempt->merchant()->associate($this->merchant);
-
-        $fundTransferAttempt->bankAccount()->associate($this->bankAccount);
 
         $this->repo->saveOrFail($fundTransferAttempt);
 
@@ -369,7 +374,7 @@ class Merchant
 
         foreach ($scheduleTasks as $scheduleTask)
         {
-            $scheduleTask->updateNextRunAndLastRun();
+            $scheduleTask->updateNextRunAndLastRun(true);
 
             $this->scheduleTasks->push($scheduleTask);
         }

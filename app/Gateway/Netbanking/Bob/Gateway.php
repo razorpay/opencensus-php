@@ -8,13 +8,14 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Gateway\Base\Action;
-use RZP\Gateway\Base\Entity as GatewayEntity;
 use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Gateway\Base\Entity as GatewayEntity;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
 use RZP\Models\Payment\Entity as Payment;
+use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Trace\TraceCode;
 
 class Gateway extends Base\Gateway
@@ -88,15 +89,19 @@ class Gateway extends Base\Gateway
     {
         $payment = $input['payment'];
 
+        $customerType = (($payment[Payment::BANK] === Netbanking::BARB_R) ?
+                            Constants::CUSTOMER_TYPE_RETAIL :
+                            Constants::CUSTOMER_TYPE_CORPORATE);
         $content = [
-            RequestFields::BANK_ID          => $this->getMerchantId(),
-            RequestFields::BANK_FIXED_VALUE => Constants::BANK_FIXED_VALUE,
+            RequestFields::BANK_ID          => Constants::BANK_ID,
+            RequestFields::BANK_FIXED_VALUE => $this->getMerchantId(),
             RequestFields::BILLER_NAME      => Constants::BILLER_NAME,
             RequestFields::AMOUNT           => $this->formatAmount($payment[Payment::AMOUNT]),
             // When a user cancels the payment, they seem to be sending the data
             // via URL params and without adding the '?' separator
             RequestFields::CALLBACK_URL     => $input['callbackUrl'] . '?',
-            RequestFields::PAYMENT_ID       => $payment[Payment::ID]
+            RequestFields::PAYMENT_ID       => $payment[Payment::ID],
+            RequestFields::CUSTOMER_TYPE    => $customerType,
         ];
 
         $encryptedData = $this->getEncryptor()->encryptData($content);

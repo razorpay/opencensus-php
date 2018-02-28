@@ -15,6 +15,7 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Payment\Refund;
+use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Exception;
 use RZP\Models\Transaction;
 use Razorpay\Trace\Logger as Trace;
@@ -79,6 +80,7 @@ class Service extends Base\Service
                 unset($gateways[IFSC::KKBK]);
                 unset($gateways[IFSC::CORP]);
                 unset($gateways[IFSC::RATN]);
+                unset($gateways[Netbanking::BARB_R]);
 
                 // These banks refund files have been moved to gateway_file, so
                 // unsetting it here
@@ -299,7 +301,7 @@ class Service extends Base\Service
         return $refunds->toArrayPublic();
     }
 
-    public function verify($ids)
+    public function verifyMultiple($ids)
     {
         $refundIds = explode(',', $ids);
 
@@ -769,6 +771,18 @@ class Service extends Base\Service
         return [
             'refund_id' => $id,
             'status'    => $refundStatus
+        ];
+    }
+
+    public function verify(string $id)
+    {
+        $refund = $this->repo->refund->findByPublicId($id);
+
+        $verifySuccess = $this->getNewProcessor($refund->merchant)->verifyRefund($refund);
+
+        return [
+            'refund_id'      => $id,
+            'verify_success' => $verifySuccess
         ];
     }
 }

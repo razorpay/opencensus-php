@@ -28,9 +28,9 @@ class CombinedReconciliate extends Foundation\SubReconciliate
      */
     protected $subReconciliatorObjects = [];
 
-    public function __construct()
+    public function __construct(string $gateway = null)
     {
-        parent::__construct();
+        parent::__construct($gateway);
 
         $this->messenger = new Messenger();
     }
@@ -87,7 +87,7 @@ class CombinedReconciliate extends Foundation\SubReconciliate
             }
 
             $subReconciliatorClassName = $this->getSubReconciliatorClassName($entityType);
-            $subReconciliatorObject = new $subReconciliatorClassName;
+            $subReconciliatorObject = new $subReconciliatorClassName($this->gateway);
 
             $this->repo->transactionOnLiveAndTest(function() use ($subReconciliatorObject, $row, $extraDetails)
             {

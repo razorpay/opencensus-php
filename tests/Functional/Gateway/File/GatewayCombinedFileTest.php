@@ -37,7 +37,7 @@ class GatewayCombinedFileTest extends TestCase
 
         $refund = $this->refundPayment($payment['id']);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->startTest();
 
@@ -74,7 +74,7 @@ class GatewayCombinedFileTest extends TestCase
     {
         Mail::fake();
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->startTest();
 
@@ -109,7 +109,7 @@ class GatewayCombinedFileTest extends TestCase
         $refund1 = $this->refundPayment($payment1['id']);
         $refund2 = $this->refundPayment($payment2['id']);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->startTest();
 
@@ -143,7 +143,7 @@ class GatewayCombinedFileTest extends TestCase
 
         Excel::shouldReceive('create')->andThrow(new \Exception('file_generation_exception'));
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->startTest();
 
@@ -167,7 +167,7 @@ class GatewayCombinedFileTest extends TestCase
 
         $refund = $this->refundPayment($payment['id']);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->startTest();
 

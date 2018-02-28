@@ -217,6 +217,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const CUSTOMER_CREATE                               = 'CUSTOMER_CREATE';
     const CUSTOMER_EDIT                                 = 'CUSTOMER_EDIT';
+    const CUSTOMER_TOKEN_CREATE                         = 'CUSTOMER_TOKEN_CREATE';
     const CUSTOMER_TOKEN_EDIT                           = 'CUSTOMER_TOKEN_EDIT';
     const CARD_NUMBER_SCRUBBED                          = 'CARD_NUMBER_SCRUBBED';
     const ORDERS_MULTIPLE_AUTHORIZED_REFUNDS            = 'ORDERS_MULTIPLE_AUTHORIZED_REFUNDS';
@@ -520,6 +521,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_DOWNTIME_WEBHOOK                  = 'GATEWAY_DOWNTIME_WEBHOOK';
 
     const FTA_BULK_RECONCILE_REQUEST                = 'FTA_BULK_RECONCILE_REQUEST';
+    const INITIATE_FUND_TRANSFER                    = 'INITIATE_FUND_TRANSFER';
     const FTA_FILE_RECON_INVALID_STATUS_CHANGE      = 'FTA_FILE_RECON_INVALID_STATUS_CHANGE';
 
     const SETTLEMENT_INITIATING                     = 'SETTLEMENT_INITIATING';
@@ -527,6 +529,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SETTLEMENT_RECONCILIATION_SKIPPED         = 'SETTLEMENT_RECONCILIATION_SKIPPED';
     const SETTLEMENT_RETURNED                       = 'SETTLEMENT_RETURNED';
     const SETTLEMENT_INITIATE_FAILED                = 'SETTLEMENT_INITIATE_FAILED';
+    const DAILY_SETTLEMENT_INITIATE_FAILED          = 'DAILY_SETTLEMENT_INITIATE_FAILED';
     const SETTLEMENT_RETRY_FAILED                   = 'SETTLEMENT_RETRY_FAILED';
     const SETTLEMENT_RECONCILIATION_FAILED          = 'SETTLEMENT_RECONCILIATION_FAILED';
     const SETTLEMENT_RETURN_FAILED                  = 'SETTLEMENT_RETURN_FAILED';
@@ -615,6 +618,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_ORG_NOT_GIVEN                    = 'MERCHANT_ORG_NOT_GIVEN';
     const MERCHANT_SAVE_ACTIVATION_DETAILS          = 'MERCHANT_SAVE_ACTIVATION_DETAILS';
     const MERCHANT_UPDATE_ACTIVATION_STATUS         = 'MERCHANT_UPDATE_ACTIVATION_STATUS';
+    const MERCHANT_UPDATE_WEBSITE_DETAILS           = 'MERCHANT_UPDATE_WEBSITE_DETAILS';
+    const MERCHANT_UPDATE_KEY_ACCESS                = 'MERCHANT_UPDATE_KEY_ACCESS';
     const MERCHANT_TAGS_ADD                         = 'MERCHANT_TAGS_ADD';
     const MERCHANT_PRICING_PLAN_ASSIGN_REQUEST      = 'MERCHANT_PRICING_PLAN_ASSIGN_REQUEST';
     const MERCHANT_ACTIVATE_REQUEST                 = 'MERCHANT_ACTIVATE_REQUEST';
@@ -698,6 +703,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const HARVESTER_REQUEST                         = 'HARVESTER_REQUEST';
     const HARVESTER_RETRY                           = 'HARVESTER_RETRY';
     const HARVESTER_FAILURE                         = 'HARVESTER_FAILURE';
+
+    const SHIELD_INTEGRATION_ERROR                  = 'SHIELD_INTEGRATION_ERROR';
 
     // ES related trace codes
     const ES_DEBUG_RESPONSE                         = 'ES_DEBUG_RESPONSE';
@@ -946,6 +953,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const AUTH_SERVICE_REQUEST                          = 'AUTH_SERVICE_REQUEST';
     const SEND_OAUTH_MAIL_REQUEST                       = 'SEND_OAUTH_MAIL_REQUEST';
     const OAUTH_TOKEN_INVALID                           = 'OAUTH_TOKEN_INVALID';
+    const APP_MERCHANT_ACCESS_MAP                       = 'APP_MERCHANT_ACCESS_MAP';
+    const APP_MERCHANT_ACCESS_MAP_DELETE                = 'APP_MERCHANT_ACCESS_MAP_DELETE';
 
     const SERVER_ERROR_MISSING_HANDLER                  = 'SERVER_ERROR_MISSING_HANDLER';
     const GATEWAY_FILE_CREATE_REQUEST                   = 'GATEWAY_FILE_CREATE_REQUEST';

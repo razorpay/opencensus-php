@@ -127,6 +127,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::DATE, $timestamp);
     }
 
+    public function getChannel()
+    {
+        return $this->getAttribute(self::CHANNEL);
+    }
+
     public function getTotalCount()
     {
         return $this->getAttribute(self::TOTAL_COUNT);

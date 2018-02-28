@@ -21,7 +21,6 @@ use RZP\Models\BankAccount;
 use RZP\Models\Base;
 use RZP\Models\Coupon;
 use RZP\Models\Feature;
-use RZP\Models\Key;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 use RZP\Models\Merchant\Webhook;
@@ -36,10 +35,8 @@ class Service extends Base\Service
 {
     use Notify;
 
-    const COUPON_RESPONSE   = 'apply_coupon';
-    const OAUTH_MAIL        = 'oauth_mail';
-    const APPLICATION       = 'application';
-
+    const COUPON_RESPONSE               = 'apply_coupon';
+    const OAUTH_MAIL                    = 'oauth_mail';
 
     /**
      * Creates a merchant and saves in database
@@ -206,7 +203,28 @@ class Service extends Base\Service
             Org\Entity::verifyIdAndStripSign($input[Entity::ORG_ID]);
         }
 
-        $merchant = (new Merchant\Core)->edit($merchant, $input);
+        $merchant = $this->repo->transactionOnLiveAndTest(function() use ($merchant, $input)
+        {
+            $merchant = (new Merchant\Core)->edit($merchant, $input);
+
+            if (isset($input[Entity::FEE_BEARER]) === true)
+            {
+                $merchantId = $merchant->getId();
+
+                // add feebearer tag if fee_bearer field is set to customer
+                // else remove feebearer tag
+                if ($input[Entity::FEE_BEARER] === 'customer')
+                {
+                    $this->insertTag($merchantId, 'feebearer');
+                }
+                else
+                {
+                    $this->deleteTag($merchantId, 'feebearer');
+                }
+            }
+
+            return $merchant;
+        });
 
         return $merchant->toArrayPublic();
     }
@@ -365,7 +383,9 @@ class Service extends Base\Service
         // validate if this plan can be set for this merchant.
         // Refer: https://github.com/razorpay/api/issues/324
 
-        (new Merchant\Methods\Core)->validatePricingPlanForMethods($merchant, $plan);
+        $methods = $this->repo->methods->getMethodsForMerchant($merchant);
+
+        (new Merchant\Methods\Core)->validatePricingPlanForMethods($merchant, $plan, $methods);
 
         $originalPricingPlan = null;
 
@@ -777,16 +797,16 @@ class Service extends Base\Service
         return $webhook->toArrayPublic();
     }
 
-    public function getWebhooks()
+    public function getWebhooks(array $params)
     {
-        $webhooks = $this->repo->webhook->fetch([], $this->merchant->getId());
+        $webhooks = $this->repo->webhook->fetch($params, $this->merchant->getId());
 
         return $webhooks->toArrayPublic();
     }
 
     public function createOAuthAppWebhook(string $appId, array $input): array
     {
-        $input[Webhook\Entity::ENTITY_TYPE] = self::APPLICATION;
+        $input[Webhook\Entity::ENTITY_TYPE] = AccessMap\Entity::APPLICATION;
 
         $input[Webhook\Entity::ENTITY_ID] = $appId;
 
@@ -1084,11 +1104,7 @@ class Service extends Base\Service
 
     public function getMerchantFeatures()
     {
-        $merchant = $this->merchant;
-
-        $data = (new Feature\Service)->getFeaturesForEntity($merchant);
-
-        return $data;
+        return (new Feature\Service)->getFeaturesForEntity($this->merchant);
     }
 
     public function addOrRemoveMerchantFeatures(array $input)
@@ -1263,6 +1279,22 @@ class Service extends Base\Service
         return $merchant->tagNames();
     }
 
+    /**
+     * This function is used for updating key access of a merchant
+     * @param string $merchantId
+     * @param array $input
+     *
+     * @return array
+     */
+    public function updateKeyAccess(string $merchantId, array $input): array
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $merchant = (new Core)->updateKeyAccess($merchant, $input);
+
+        return $merchant->toArrayPublic();
+    }
+
     public function markGratisTransactionPostpaid($input)
     {
         $this->trace->info(
@@ -1315,8 +1347,10 @@ class Service extends Base\Service
         $this->repo->saveOrFail($merchant);
     }
 
-    public function getUsers(string $merchantId)
+    public function getUsers()
     {
+        $merchantId = $this->merchant->getId();
+
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
         $users = (new Merchant\Core)->getUsers($merchant);
@@ -1390,7 +1424,6 @@ class Service extends Base\Service
         );
 
         return $response;
-
     }
 
     /**
@@ -1513,7 +1546,8 @@ class Service extends Base\Service
 
         foreach ($featureNames as $featureName)
         {
-            $feature = $this->repo->feature->findByEntityIdAndNameOrFail(
+            $feature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail(
+                Feature\Constants::MERCHANT,
                 $entityId,
                 $featureName);
 
@@ -1588,13 +1622,19 @@ class Service extends Base\Service
      */
     public function sendOAuthMail(array $input, string $type): array
     {
-        $this->trace->info(TraceCode::SEND_OAUTH_MAIL_REQUEST, ['type' => $type, 'input' => $input]);
+        $this->trace->info(
+            TraceCode::SEND_OAUTH_MAIL_REQUEST,
+            [
+                'type' => $type,
+                'input' => $input
+            ]);
 
-        (new Merchant\Validator)->validateInput(self::OAUTH_MAIL, $input);
+        (new Validator)->validateInput(self::OAUTH_MAIL, $input);
 
         $merchant = $this->repo->merchant->findOrFail($input[Entity::MERCHANT_ID]);
         $user     = $this->repo->user->findOrFail($input[User\Entity::USER_ID]);
-        $client   = (new OAuthClient\Repository)->findOrFail($input[OAuthToken\Entity::CLIENT_ID]);
+        $client   = (new OAuthClient\Repository)->findOrFail(
+                                                    $input[OAuthToken\Entity::CLIENT_ID]);
 
         $mailer = $this->getOAuthMailerClassByType($type);
 

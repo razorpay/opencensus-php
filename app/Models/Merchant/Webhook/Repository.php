@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\Webhook;
 
 use RZP\Models\Base;
+use RZP\Base\BuilderEx;
 use RZP\Models\Merchant;
 
 class Repository extends Base\Repository
@@ -25,17 +26,10 @@ class Repository extends Base\Repository
         return $methods;
     }
 
-    public function findMultipleByMerchant($merchant)
-    {
-        return $this->newQuery()
-                    ->where(Entity::MERCHANT_ID, '=', $merchant->getId())
-                    ->get();
-    }
-
     public function findByMerchant($merchant)
     {
         $webhook = $this->newQuery()
-                        ->where(Entity::MERCHANT_ID, '=', $merchant->getId())
+                        ->merchantId($merchant->getId())
                         ->first();
 
         if ($webhook !== null)
@@ -53,8 +47,8 @@ class Repository extends Base\Repository
         string $entityId = null)
     {
         return $this->newQuery()
-                    ->where(Entity::MERCHANT_ID, '=', $merchant->getId())
-                    ->where(Entity::ENTITY_ID, '=', $entityId)
+                    ->merchantId($merchant->getId())
+                    ->where(Entity::ENTITY_ID, $entityId)
                     ->get();
     }
 
@@ -67,7 +61,7 @@ class Repository extends Base\Repository
     public function findByMerchantId($merchantId)
     {
         return $this->newQuery()
-                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->merchantId($merchantId)
                     ->first();
     }
 
@@ -81,5 +75,35 @@ class Repository extends Base\Repository
     {
         $webhook->setLastSuccessfulAt();
         $webhook->saveOrFail();
+    }
+
+    protected function addQueryParamApplicationId(BuilderEx $query, array $params)
+    {
+        $entityTypeAttribute = $this->dbColumn(Entity::ENTITY_TYPE);
+
+        $entityIdAttribute = $this->dbColumn(Entity::ENTITY_ID);
+
+        $query->where($entityTypeAttribute, Entity::APPLICATION);
+
+        $query->where($entityIdAttribute, $params[Entity::APPLICATION_ID]);
+    }
+
+    protected function buildFetchQueryAdditional($params, $query)
+    {
+        $entityParams = [
+            Entity::APPLICATION_ID,
+            Entity::ENTITY_TYPE,
+            Entity::ENTITY_ID,
+        ];
+
+        $entityParamsPresent = array_intersect_key($params, array_flip($entityParams));
+
+        if (count($entityParamsPresent) === 0)
+        {
+            $query->whereNull(Entity::ENTITY_TYPE)
+                  ->whereNull(Entity::ENTITY_ID);
+        }
+
+        return $query;
     }
 }

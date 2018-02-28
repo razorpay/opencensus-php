@@ -27,9 +27,11 @@ class Mailgun extends Base
         self::AXIS,
         self::KOTAK,
         self::OLAMONEY,
+        self::UPI_ICICI,
         self::FREECHARGE,
         self::FIRST_DATA,
         self::NETBANKING_AXIS,
+        self::NETBANKING_BOB,
         self::NETBANKING_ICICI,
         self::NETBANKING_FEDERAL,
         self::VIRTUAL_ACC_KOTAK,
@@ -128,6 +130,7 @@ class Mailgun extends Base
      * It also sets the gateway reconciliator object for the class.
      *
      * @throws Exception\ReconciliationException
+     * @throws Exception\LogicException
      */
     protected function setGatewayFromEmail()
     {

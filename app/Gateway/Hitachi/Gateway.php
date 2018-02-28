@@ -28,6 +28,8 @@ class Gateway extends Base\Gateway
     protected $secureCacheDriver;
 
     const CACHE_KEY = 'hitachi_%s_card_details';
+    const CACHE_TTL = 20;
+
 
     const TIME_FORMAT = 'His';
     const DATE_FORMAT = 'md';
@@ -365,6 +367,16 @@ class Gateway extends Base\Gateway
     protected function getAuthorizeRequestArrayForNotEnrolled(array $input)
     {
         $content = $this->getDefaultAuthorizeRequestArray($input);
+
+        $networkCode  = Network::getCode($input['card']['network']);
+
+        $eciValues = [
+            Card\Network::VISA => '07',
+            Card\Network::MAES => '00',
+            Card\Network::MC   => '00',
+        ];
+
+        $content[RequestFields::ECI] = $eciValues[$networkCode];
 
         $traceContent = $content;
 

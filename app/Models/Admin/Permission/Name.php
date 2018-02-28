@@ -10,6 +10,7 @@ class Name
     const VIEW_ALL_MERCHANTS                  = 'view_all_merchants';
     const VIEW_MERCHANT                       = 'view_merchant';
     const VIEW_MERCHANT_BALANCE               = 'view_merchant_balance';
+    // @todo - Rename view_merchant_features to view_features as features have now been extended to applications as well.
     const VIEW_MERCHANT_FEATURES              = 'view_merchant_features';
     const VIEW_MERCHANT_BANKS                 = 'view_merchant_banks';
     const VIEW_NETWORKS                       = 'view_networks';
@@ -37,6 +38,7 @@ class Name
     const EDIT_MERCHANT_BANK_DETAIL           = 'edit_merchant_bank_detail';
     const EDIT_IIN_RULE                       = 'edit_iin_rule';
     const EDIT_ACTIVATE_MERCHANT              = 'edit_activate_merchant';
+    const EDIT_MERCHANT_KEY_ACCESS            = 'edit_merchant_key_access';
     const EDIT_MERCHANT_ENABLE_LIVE           = 'edit_merchant_enable_live';
     const EDIT_MERCHANT_DISABLE_LIVE          = 'edit_merchant_disable_live';
     const EDIT_MERCHANT_ENABLE_INTERNATIONAL  = 'edit_merchant_enable_international';
@@ -134,6 +136,7 @@ class Name
     const DELETE_PERMISSION                   = 'delete_permission';
     const CREATE_PERMISSION                   = 'create_permission';
     const EDIT_PERMISSION                     = 'edit_permission';
+    // @todo - Rename delete_merchant_features to delete_features as features have now been extended to applications as well.
     const DELETE_MERCHANT_FEATURES            = 'delete_merchant_features';
     const CREATE_MERCHANT_INVITE              = 'create_merchant_invite';
     const EDIT_MERCHANT_INVITE                = 'edit_merchant_invite';
@@ -149,6 +152,7 @@ class Name
     const DELETE_GATEWAY_RULE                 = 'delete_gateway_rule';
     const VIEW_GATEWAY_RULE                   = 'view_gateway_rule';
     const VIEW_MERCHANT_REPORT                = 'view_merchant_report';
+    const VIEW_SPECIAL_MERCHANT_REPORT        = 'view_special_merchant_report';
     const CREATE_MERCHANT_OFFER               = 'create_merchant_offer';
     const EDIT_MERCHANT_OFFER                 = 'edit_merchant_offer';
     const ASSIGN_MERCHANT_HANDLE              = 'assign_merchant_handle';
@@ -163,6 +167,11 @@ class Name
     const MANAGE_ONBOARDING_SUBMISSIONS       = 'manage_onboarding_submissions';
     const EDIT_MERCHANT_RISK_THRESHOLD        = 'edit_merchant_risk_threshold';
     const RETRY_BATCH                         = 'retry_batch';
+    const VIEW_SHIELD_RULES                   = 'view_shield_rules';
+    const CREATE_SHIELD_RULES                 = 'create_shield_rules';
+    const EDIT_SHIELD_RULES                   = 'edit_shield_rules';
+    const DELETE_SHIELD_RULES                 = 'delete_shield_rules';
+    const EVALUATE_SHIELD_RULES               = 'evaluate_shield_rules';
     const VIEW_MERCHANT_ANALYTICS             = 'view_merchant_analytics';
 
     public static $actionMap = [

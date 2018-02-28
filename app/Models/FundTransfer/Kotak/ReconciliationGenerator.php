@@ -204,10 +204,7 @@ class ReconciliationGenerator
 
         if ($generateFailedReconciliations === true)
         {
-            $data[Headings::REMARKS]  = 'This is a string which test characters count limit.' .
-                ' This is a string which test characters count limit. This is a string which' .
-                ' test characters count limit. This is a string which test characters count limit.' .
-                ' This is a string which test characters count limit.';
+            $data[Headings::REMARKS]  = 'Some failure.';
         }
 
         return $data;

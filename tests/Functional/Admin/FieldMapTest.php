@@ -25,6 +25,8 @@ class FieldMapTest extends TestCase
 
         $this->orgId = $this->org->getId();
 
+        $this->orgPublicId = $this->org->getPublicId();
+
         $this->authToken = $this->getAuthTokenForOrg($this->org);
 
         $this->ba->adminAuth('test', $this->authToken);
@@ -81,10 +83,11 @@ class FieldMapTest extends TestCase
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $this->org->getPublicId(),
-                        $fieldMap->getPublicId());
+        $url = sprintf($url, $fieldMap->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth('test', $this->authToken, $this->orgPublicId);
 
         $this->startTest();
     }
@@ -95,10 +98,11 @@ class FieldMapTest extends TestCase
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $this->org->getPublicId(),
-                        $fieldMap->getPublicId());
+        $url = sprintf($url, $fieldMap->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth('test', $this->authToken, $this->orgPublicId);
 
         $this->startTest();
     }
@@ -109,10 +113,11 @@ class FieldMapTest extends TestCase
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $this->org->getPublicId(),
-                        $fieldMap->getPublicId());
+        $url = sprintf($url, $fieldMap->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth('test', $this->authToken, $this->orgPublicId);
 
         $result = $this->startTest();
     }
@@ -141,6 +146,8 @@ class FieldMapTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
+        $this->ba->adminAuth('test', $this->authToken, $this->orgPublicId);
+
         $result = $this->startTest();
 
         $this->assertEquals(2, count($result['items']));
@@ -152,10 +159,11 @@ class FieldMapTest extends TestCase
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $this->org->getPublicId(),
-                        $fieldMap->getNameOfEntity());
+        $url = sprintf($url, $fieldMap->getNameOfEntity());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth('test', $this->authToken, $this->orgPublicId);
 
         $this->startTest();
     }

@@ -254,7 +254,7 @@ class Charge extends Base\Core
                 'payment_id'        => $capturedPayment->getId(),
             ]);
 
-        $task->updateForSubscription($this->mode);
+        $task->updateForSubscription($subscription, $this->mode);
 
         //
         // Even though we are updating it in the invoice now,
@@ -527,7 +527,7 @@ class Charge extends Base\Core
             $subscription->setStatus(Status::PENDING);
 
             // Update task by a day
-            $task->updateForSubscription($this->mode, true);
+            $task->updateForSubscription($subscription, $this->mode, true);
 
             // As long as retries are going on, we don't
             // mark the subscription as completed.
@@ -544,7 +544,7 @@ class Charge extends Base\Core
             //
             // Update task by a full plan period
             //
-            $task->updateForSubscription($this->mode);
+            $task->updateForSubscription($subscription, $this->mode);
 
             $this->setEndedAtIfApplicable($subscription);
         }
