@@ -1,7 +1,6 @@
 <?php
 
 $hostname = 'localhost';
-
 if (getenv('HOSTNAME') !== false)
 {
     $hostname = getenv('HOSTNAME');
