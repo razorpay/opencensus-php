@@ -3636,10 +3636,10 @@ return [
         ],
         'response' => [
             'content' => [
-                'entities_processed' => 3,
-                'payment_links_sent' => 3,
-                'payment_links_paid' => 1,
-                'payment_links_expired' => 1,
+                'batch_total'       => 4,
+                'invoice_issued'    => 1,
+                'invoice_paid'      => 2,
+                'invoice_expired'   => 1,
             ],
         ],
     ],

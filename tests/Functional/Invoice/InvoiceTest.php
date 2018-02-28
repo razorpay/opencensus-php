@@ -2297,6 +2297,7 @@ class InvoiceTest extends TestCase
         $this->testCreateDraftInvoiceWithSomeData();
         $this->testCreateDraftInvoiceWithSomeData();
         $this->testCreateDraftInvoiceWithSomeData();
+        $this->testCreateDraftInvoiceWithSomeData();
 
         $invoices = $this->getEntities('invoice');
 
@@ -2307,12 +2308,15 @@ class InvoiceTest extends TestCase
             [
                 'id'          => '00000000000001',
                 'type'        => 'payment_link',
-                'total_count' => 3,
+                'total_count' => 4,
             ]);
 
         $this->fixtures->invoice->edit($ids[0], ['batch_id' => '00000000000001', 'status' => 'issued']);
         $this->fixtures->invoice->edit($ids[1], ['batch_id' => '00000000000001', 'status' => 'paid']);
         $this->fixtures->invoice->edit($ids[2], ['batch_id' => '00000000000001', 'status' => 'expired']);
+        $this->fixtures->invoice->edit($ids[3], ['batch_id' => '00000000000001', 'status' => 'paid']);
+
+        $this->ba->proxyAuth();
 
         $this->startTest();
     }
