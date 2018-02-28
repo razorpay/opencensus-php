@@ -9,16 +9,17 @@ use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\State;
 use RZP\Models\Feature;
-use RZP\Models\Terminal;
 use RZP\Constants\Table;
-use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
-use RZP\Models\Settlement;
+use RZP\Models\Merchant;
+use RZP\Models\Terminal;
 use RZP\Models\Invitation;
+use RZP\Models\Settlement;
 use Conner\Tagging\Taggable;
 use RZP\Models\Merchant\Detail;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Base\QueryCache\Cacheable;
 
 /**
  * @property Detail\Entity $merchantDetail
@@ -27,6 +28,7 @@ class Entity extends Base\PublicEntity
 {
     use Taggable;
     use NotesTrait;
+    use Cacheable;
 
     const ID                       = 'id';
     const ORG_ID                   = 'org_id';
