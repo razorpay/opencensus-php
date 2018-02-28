@@ -132,10 +132,6 @@ class RawApiRequest
         {
             case 'proxy':
                 $this->setApiCredentials($input['mode'], $merchantId);
-
-                // Admin should be able to hit any proxy route (as merchant)
-                // which means we have to *skip* sending admin token
-                unset($this->params['headers']['X-Admin-Token']);
                 break;
 
             case 'internal':
