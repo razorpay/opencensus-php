@@ -37,7 +37,7 @@ class Validator extends Base\Validator
 
     protected static $globalCreateRules = [
         Entity::CONTACT         => 'required|contact_syntax|phone:AUTO,LENIENT,IN,mobile,fixed_line',
-        Entity::EMAIL           => 'required|email',
+        Entity::EMAIL           => 'sometimes|string|custom',
         'otp'                   => 'required|string|regex:"^\d{4,8}$"',
         'device_token'          => 'sometimes|string|max:14',
         '_'                     => 'sometimes|array'
@@ -57,6 +57,21 @@ class Validator extends Base\Validator
         Entity::NAME            => 'sometimes|string|max:50|nullable|custom',
         'otp'                   => 'required|string|regex:"^\d{4,8}$"',
     ];
+
+    protected static $global_createValidators = [
+        Entity::EMAIL,
+    ];
+
+    protected function validateEmail($input)
+    {
+        if (($this->merchant->isEmailOptional() !== true) and
+            (empty(input['email']) === true))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'email is required',
+                 Entity::EMAIL);
+        }
+    }
 
     protected function validateName($attribute, $value)
     {
@@ -146,11 +161,6 @@ class Validator extends Base\Validator
 
     public static function validateGlobalCustomerCreateInput($input, $merchant)
     {
-        if ($merchant->isEmailOptional() === true)
-        {
-            self::$globalCreateRules[\RZP\Models\Merchant\Entity::EMAIL] = 'sometimes|email';
-        }
-
         (new static)->validateInput('global_create', $input);
     }
 
