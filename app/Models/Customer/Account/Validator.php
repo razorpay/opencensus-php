@@ -61,7 +61,7 @@ class Validator extends Base\Validator
     protected function validateEmail($attribute, $value)
     {
         if (($this->merchant->isEmailOptional() !== true) and
-            is_null($value) == false)
+            is_null($value) == true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'email is required',
