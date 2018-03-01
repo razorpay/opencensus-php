@@ -206,9 +206,9 @@ trait SubscriptionTrait
         return $subscriptionResponse;
     }
 
-    protected function doAuthTxnForNewSubscription(bool $startAt = true)
+    protected function doAuthTxnForNewSubscription(bool $startAt = true, $planAttributes = [])
     {
-        $subscription = $this->createSubscription($startAt);
+        $subscription = $this->createSubscription($startAt, $planAttributes);
 
         $authAmount = null;
 

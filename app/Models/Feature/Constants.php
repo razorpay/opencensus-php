@@ -143,11 +143,15 @@ class Constants
         self::DISABLE_UPI_INTENT            => true,
     ];
 
+    // Entity type constants
+    const ACCOUNT                       = 'account';
+    const MERCHANT                      = 'merchant';
+    const APPLICATION                   = 'application';
+
     // Keys used in the feature on-boarding workflow
     const STATUS                        = 'status';
     const PRODUCT                       = 'product';
     const FEATURES                      = 'features';
-    const MERCHANT                      = 'merchant';
     const ONBOARDING                    = 'onboarding';
     const ONBOARDING_SUBMISSIONS_FETCH  = 'onboarding_submissions_fetch';
     const ONBOARDING_SUBMISSIONS_UPSERT = 'onboarding_submissions_upsert';

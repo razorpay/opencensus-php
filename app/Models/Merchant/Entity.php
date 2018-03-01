@@ -9,16 +9,17 @@ use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\State;
 use RZP\Models\Feature;
-use RZP\Models\Terminal;
 use RZP\Constants\Table;
-use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
-use RZP\Models\Settlement;
+use RZP\Models\Merchant;
+use RZP\Models\Terminal;
 use RZP\Models\Invitation;
+use RZP\Models\Settlement;
 use Conner\Tagging\Taggable;
 use RZP\Models\Merchant\Detail;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Base\QueryCache\Cacheable;
 
 /**
  * @property Detail\Entity $merchantDetail
@@ -27,6 +28,7 @@ class Entity extends Base\PublicEntity
 {
     use Taggable;
     use NotesTrait;
+    use Cacheable;
 
     const ID                       = 'id';
     const ORG_ID                   = 'org_id';
@@ -52,6 +54,7 @@ class Entity extends Base\PublicEntity
     const FEE_MODEL                = 'fee_model';
     const REFUND_SOURCE            = 'refund_source';
     const LINKED_ACCOUNT_KYC       = 'linked_account_kyc';
+    const HAS_KEY_ACCESS           = 'has_key_access';
     const BRAND_COLOR              = 'brand_color';
     const HANDLE                   = 'handle';
     const RISK_RATING              = 'risk_rating';
@@ -212,6 +215,7 @@ class Entity extends Base\PublicEntity
         self::CATEGORY2,
         self::INTERNATIONAL,
         self::LINKED_ACCOUNT_KYC,
+        self::HAS_KEY_ACCESS,
         self::FEE_BEARER,
         self::FEE_MODEL,
         self::REFUND_SOURCE,
@@ -254,6 +258,7 @@ class Entity extends Base\PublicEntity
         self::HANDLE                 => null,
         self::RISK_RATING            => 3,
         self::LINKED_ACCOUNT_KYC     => 0,
+        self::HAS_KEY_ACCESS         => 0,
         self::RISK_THRESHOLD         => null,
         self::LOGO_URL               => null,
         self::MAX_PAYMENT_AMOUNT     => null,
@@ -284,6 +289,7 @@ class Entity extends Base\PublicEntity
         self::RECEIPT_EMAIL_ENABLED  => 'bool',
         self::HOLD_FUNDS             => 'bool',
         self::LINKED_ACCOUNT_KYC     => 'bool',
+        self::HAS_KEY_ACCESS         => 'bool',
         self::CATEGORY               => 'int',
         self::RISK_THRESHOLD         => 'int',
         self::CONVERT_CURRENCY       => 'bool',
@@ -381,6 +387,16 @@ class Entity extends Base\PublicEntity
     public function linkedAccountsRequireKyc(): bool
     {
         return $this->getAttribute(self::LINKED_ACCOUNT_KYC);
+    }
+
+    public function getHasKeyAccess(): bool
+    {
+        return ($this->getAttribute(self::HAS_KEY_ACCESS) === true);
+    }
+
+    public function setHasKeyAccess(bool $hasKeyAccess)
+    {
+        $this->setAttribute(self::HAS_KEY_ACCESS, $hasKeyAccess);
     }
 
     public function getReferrer()
@@ -642,7 +658,7 @@ class Entity extends Base\PublicEntity
     {
         return $this->setAttribute(self::CATEGORY2, $category);
     }
-    
+
     public function getCategory2()
     {
         return $this->getAttribute(self::CATEGORY2);
@@ -951,7 +967,7 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::EMAIL] = mb_strtolower($email);
     }
 
-    protected function setWebsiteAttribute($website)
+    public function setWebsiteAttribute($website)
     {
         $this->attributes[self::WEBSITE] = mb_strtolower($website);
     }
@@ -1337,16 +1353,17 @@ class Entity extends Base\PublicEntity
     public function toArrayUser()
     {
         $attributes = [
-            self::ID            => $this->getAttribute(self::ID),
-            self::NAME          => $this->getAttribute(self::NAME),
-            self::BILLING_LABEL => $this->getAttribute(self::BILLING_LABEL),
-            self::EMAIL         => $this->getAttribute(self::EMAIL),
-            self::ACTIVATED     => $this->getAttribute(self::ACTIVATED),
-            self::ARCHIVED_AT   => $this->getAttribute(self::ARCHIVED_AT),
-            self::SUSPENDED_AT  => $this->getAttribute(self::SUSPENDED_AT),
-            self::LOGO_URL      => $this->getFullLogoUrlWithSize(self::MEDIUM_SIZE),
-            self::CREATED_AT    => $this->getAttribute(self::CREATED_AT),
-            self::UPDATED_AT    => $this->getAttribute(self::UPDATED_AT),
+            self::ID             => $this->getAttribute(self::ID),
+            self::NAME           => $this->getAttribute(self::NAME),
+            self::BILLING_LABEL  => $this->getAttribute(self::BILLING_LABEL),
+            self::EMAIL          => $this->getAttribute(self::EMAIL),
+            self::ACTIVATED      => $this->getAttribute(self::ACTIVATED),
+            self::ARCHIVED_AT    => $this->getAttribute(self::ARCHIVED_AT),
+            self::SUSPENDED_AT   => $this->getAttribute(self::SUSPENDED_AT),
+            self::HAS_KEY_ACCESS => $this->getAttribute(self::HAS_KEY_ACCESS),
+            self::LOGO_URL       => $this->getFullLogoUrlWithSize(self::MEDIUM_SIZE),
+            self::CREATED_AT     => $this->getAttribute(self::CREATED_AT),
+            self::UPDATED_AT     => $this->getAttribute(self::UPDATED_AT),
         ];
 
         $attributes[self::ROLE] = $this->getAttribute(self::PIVOT)->role;

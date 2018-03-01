@@ -122,6 +122,10 @@ class Validator extends Base\Validator
         'attributes'   => 'required|associative_array',
     ];
 
+    protected static $keyAccessRules = [
+        Entity::HAS_KEY_ACCESS => 'required|boolean',
+    ];
+
     protected static $updateChannelRules = [
         'channel'       => 'required|string|max:32|custom',
         'merchant_ids'  => 'required|array'
@@ -174,6 +178,10 @@ class Validator extends Base\Validator
 
     protected static $editEmailValidators = [
         'is_test_account',
+    ];
+
+    protected static $keyAccessValidators = [
+        'key_access',
     ];
 
     protected function validateIsTestAccount(array $input)
@@ -244,6 +252,22 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid channel name: ' . $channel);
+        }
+    }
+
+    public function validateKeyAccess(array $input)
+    {
+        $merchant = $this->entity;
+
+        if (empty($input[Entity::HAS_KEY_ACCESS]) === true)
+        {
+            return;
+        }
+
+        if (empty($merchant->merchantDetail->getWebsite()) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Key access cannot be granted with out website details');
         }
     }
 
