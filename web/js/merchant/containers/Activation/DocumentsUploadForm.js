@@ -123,7 +123,7 @@ export default class DocumentsUploadForm extends Component {
               <div class="col-md-9">
                 <span class="help-block">
                   Upload both sides of the government issued photo ID
-                  (Passport/AADHAR/Driving License/Election Card)
+                  (Passport/Aadhaar/Driving License/Election Card)
                 </span>
                 <FileUploadInputButton
                   accept="image/jpeg,image/png,application/pdf,application/x-pdf"
