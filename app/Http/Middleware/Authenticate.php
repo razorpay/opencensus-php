@@ -68,25 +68,15 @@ class Authenticate
 
         $bearerToken = $this->getBearerTokenFromHeaders($request);
 
-        //
-        // If the request was sent with Bearer auth (OAuth),
-        // authenticate with the access token, else go for the
-        // otherwise existing key-secret flow
-        //
-        if (empty($bearerToken) === false)
-        {
-            $ret = $this->authenticateBearerAuth($route, $bearerToken);
+        $ret = $this->authenticateAuth($route, $bearerToken);
 
-            // Post process after authentication completes for an application
-            $ret = $this->postApplicationAuthenticationProcessing($ret);
-        }
-        else
+        // non-null value indicates failure flow
+        if ($ret !== null)
         {
-            $ret = $this->authenticateBasicAuth($route);
-
-            // Post process after authentication completes for a merchant
-            $ret = $this->postMerchantAuthenticationProcessing($ret);
+            return $ret;
         }
+
+        $ret = $this->postAuthenticationProcessing($ret, $bearerToken);
 
         // non-null value indicates failure flow
         if ($ret !== null)
@@ -95,6 +85,41 @@ class Authenticate
         }
 
         return $next($request);
+    }
+
+    protected function authenticateAuth($route, $bearerToken)
+    {
+        if (empty($bearerToken) === true)
+        {
+            $ret = $this->authenticateBasicAuth($route);
+        }
+        else
+        {
+            $ret = $this->authenticateBearerAuth($route, $bearerToken);
+        }
+
+        return $ret;
+    }
+
+    protected function postAuthenticationProcessing($ret, $bearerToken)
+    {
+        //
+        // If the request was sent with Bearer auth (OAuth),
+        // authenticate with the access token, else go for the
+        // otherwise existing key-secret flow
+        //
+        if (empty($bearerToken) === true)
+        {
+            // Post process after authentication completes for a merchant
+            $ret = $this->postMerchantAuthenticationProcessing();
+        }
+        else
+        {
+            // Post process after authentication completes for an application
+            $ret = $this->postApplicationAuthenticationProcessing();
+        }
+
+        return $ret;
     }
 
     /**
@@ -204,18 +229,10 @@ class Authenticate
      * Post process after auth completes
      * Function returns non-null value for failure flow
      *
-     * @param $authReturn
-     *
      * @return mixed
      */
-    protected function postApplicationAuthenticationProcessing($authReturn)
+    protected function postApplicationAuthenticationProcessing()
     {
-        // non-null value indicates failure flow
-        if ($authReturn !== null)
-        {
-            return $authReturn;
-        }
-
         $featureCheck = (new Feature\Access)->verifyFeatureAccessByApplication();
 
         return $featureCheck;
@@ -225,18 +242,10 @@ class Authenticate
      * Post process after auth completes
      * Function returns non-null value for failure flow
      *
-     * @param      $authReturn
-     *
      * @return mixed
      */
-    protected function postMerchantAuthenticationProcessing($authReturn)
+    protected function postMerchantAuthenticationProcessing()
     {
-        // non-null value indicates failure flow
-        if ($authReturn !== null)
-        {
-            return $authReturn;
-        }
-
         $featureCheck = (new Feature\Access)->verifyFeatureAccessByMerchant();
 
         return $featureCheck;
