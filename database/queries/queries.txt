@@ -2997,3 +2997,6 @@ ALTER TABLE merchant_access_map
 
 ALTER TABLE `merchants`
     ADD COLUMN `has_key_access` TINYINT(1) NOT NULL DEFAULT 0 after `linked_account_kyc`;
+
+ALTER TABLE tokens
+    ADD COLUMN aadhaar_number VARCHAR(255) DEFAULT NULL AFTER ifsc;

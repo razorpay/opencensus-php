@@ -245,7 +245,7 @@ class Processor extends Base\Core
 
             $merchants = $this->repo->merchant->findMany($mids);
 
-            $settlementTimestamp = Carbon::today(Timezone::IST)->getTimestamp();
+            $settlementTimestamp = Carbon::tomorrow(Timezone::IST)->getTimestamp();
 
             foreach ($merchants as $merchant)
             {

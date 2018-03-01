@@ -6,7 +6,6 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use Mockery;
 
 class PaymentCreateTest extends TestCase
 {

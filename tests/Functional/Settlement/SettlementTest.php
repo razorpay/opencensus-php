@@ -494,9 +494,9 @@ class SettlementTest extends TestCase
         $this->assertEquals(0, $content[$channel]['txnCount']);
 
         // Set time to day after tomorrow
-        $dayAfterTomorrow = Carbon::today(Timezone::IST)->addDays(2);
+        $tomorrow = Carbon::tomorrow(Timezone::IST);
 
-        Carbon::setTestNow($dayAfterTomorrow);
+        Carbon::setTestNow($tomorrow);
 
         $content = $this->initiateDailySettlements();
 

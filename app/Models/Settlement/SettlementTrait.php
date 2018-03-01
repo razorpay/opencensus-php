@@ -366,9 +366,16 @@ trait SettlementTrait
             return false;
         }
 
-        $shouldSettle = true;
-
         $today = Carbon::today(Timezone::IST);
+
+        // Do not settle for Wealthy's sub-merchants on Saturday
+        if (($merchant->getParentId() === Preferences::MID_WEALTHY) and
+            ($today->dayOfWeek === Carbon::SATURDAY))
+        {
+            return false;
+        }
+
+        $shouldSettle = true;
 
         $lastWorkingDay = Holidays::getPreviousWorkingDay($today);
 
