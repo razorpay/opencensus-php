@@ -429,7 +429,7 @@ class Reporting
         {
             $payload['body'] = $response->body;
 
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_REPORTING_INTEGRATION, $payload);
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_REPORTING_INTEGRATION, null, $payload);
         }
     }
 
