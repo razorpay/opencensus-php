@@ -1,6 +1,10 @@
 import { set } from 'rzp/utils/immutable';
 import ajax from 'merchant/utils/ajax';
-import { getActionName, makeCollectionReducer } from 'rzp/modules/collection';
+import {
+  getActionName,
+  makeCollectionReducer,
+  makeActionCollectionReducer,
+} from 'rzp/modules/collection';
 import { merchantFetch } from 'rzp/utils/ajax';
 
 const REFUND = 'REFUND_BATCHES';
@@ -8,6 +12,7 @@ const PAYMENT_LINK = 'PAYMENT_LINK_BATCHES';
 const BATCH_DOWNLOAD = 'BATCH_DOWNLOAD';
 const ISSUABLE_BATCHES = 'ISSUABLE_BATCHES';
 const EDIT_ISSUABLE_BATCHES = 'EDIT_ISSUABLE_BATCHES';
+/* New Batch Action Types */
 const VALIDATE_BATCH = 'VALIDATE_BATCH';
 const CREATE_BATCH = 'CREATE_BATCH';
 const FETCH_BATCH = 'FETCH_BATCH';
@@ -106,6 +111,7 @@ const createBatch = (actionType, batchType) => data => {
       data: {
         type: batchType,
         ...data,
+        draft: 0, //for backward compatibility
         config: {
           sms_notify: data.sms_notify,
           email_notify: data.email_notify,
@@ -167,22 +173,11 @@ export const validatePaymentLinkBatch = validateBatch(
 );
 
 export const fetchBatchStats = batchId => {
-  //TODO: remove fake data.
   return {
     type: FETCH_BATCH_STATS,
-    payload: Promise.resolve({
-      success: true,
-      data: {
-        entity: 'batch',
-        type: 'payment_link',
-        id: 'batch_1234',
-        stats: {
-          entities_processed: 3000,
-          payment_links_sent: 2990,
-          paid: 1550,
-          expired: 10,
-        },
-      },
+    payload: merchantFetch({
+      method: 'get',
+      url: `invoices/batch/${batchId}/stats`,
     }),
   };
 };
