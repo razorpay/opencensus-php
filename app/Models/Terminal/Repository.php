@@ -52,6 +52,15 @@ class Repository extends Base\Repository
         }
     }
 
+    public function getByTypeAndMerchantIds($type, $merchantIds)
+    {
+        return $this->newQuery()
+                    ->type($type)
+                    ->whereIn(Entity::MERCHANT_ID, $merchantIds)
+                    ->enabled()
+                    ->get();
+    }
+
     protected function addQueryParamShared($query, $params)
     {
         if ($params[Entity::SHARED] === '1')

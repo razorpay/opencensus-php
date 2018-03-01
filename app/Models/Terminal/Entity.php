@@ -575,6 +575,22 @@ class Entity extends Base\PublicEntity
         return $query->where(Entity::ENABLED, '=', '1');
     }
 
+    public function scopeType($query, $type)
+    {
+        if (in_array($type, Type::getValidTypes(), true) === false)
+        {
+            return;
+        }
+
+        $position = Type::getBitPosition($type);
+
+        $bitComparator = (1 << ($position - 1));
+
+        $typeColumn = $this->dbColumn(Entity::TYPE);
+
+        return $query->whereRaw($typeColumn . " & " . $bitComparator . " = " . $bitComparator);
+    }
+
     // ---------------------- END SCOPES ----------------------
 
     /**
