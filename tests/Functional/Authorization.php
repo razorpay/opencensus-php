@@ -25,6 +25,7 @@ class Authorization
     protected $proxyHeaders;
 
     protected $defaultKey               = 'rzp_test_TheTestAuthKey';
+    protected $defaultOAuthKey          = 'rzp_test_oauth_TheTestAuthKey';
     protected $defaultSecret            = 'TheKeySecretForTests';
     protected $defaultDeviceToken       = 'authentication_token';
     protected $defaultMerchantUser      = User::MERCHANT_USER_ID;
@@ -53,9 +54,11 @@ class Authorization
         ];
     }
 
-    public function oauthPublicTokenAuth(string $token)
+    public function oauthPublicTokenAuth(string $token = null)
     {
         $this->type = 'public';
+
+        $token = $token ?? $this->defaultOAuthKey;
 
         $this->auth = [
             'PHP_AUTH_USER' => $token
