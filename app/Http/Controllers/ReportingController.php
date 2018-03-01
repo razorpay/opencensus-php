@@ -86,13 +86,6 @@ class ReportingController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function updateSchedule(string $id)
-    {
-        $data = $this->reportingService()->editSchedule($id, $this->input);
-
-        return ApiResponse::json($data);
-    }
-
     public function deleteSchedule(string $id)
     {
         $data = $this->reportingService()->deleteSchedule($id);

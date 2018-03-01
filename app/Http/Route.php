@@ -716,7 +716,6 @@ final class Route
         'reporting_schedule_get'                  => ['get',      'reporting/schedules/{id}',                        'ReportingController@getSchedule'                                  ],
         'reporting_schedule_list'                 => ['get',      'reporting/schedules',                             'ReportingController@listSchedule'                                 ],
         'reporting_schedule_create'               => ['post',     'reporting/schedules',                             'ReportingController@createSchedule'                               ],
-        'reporting_schedule_edit'                 => ['patch',    'reporting/schedules/{id}',                        'ReportingController@updateSchedule'                               ],
         'reporting_schedule_delete'               => ['delete',   'reporting/schedules/{id}',                        'ReportingController@deleteSchedule'                               ],
 
         // UFH Service
@@ -1133,7 +1132,6 @@ final class Route
         'reporting_schedule_get',
         'reporting_schedule_list',
         'reporting_schedule_create',
-        'reporting_schedule_edit',
         'reporting_schedule_delete',
         'ufh_get_file_signed_url',
         'pincode_get',

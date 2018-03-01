@@ -90,7 +90,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TRANSACTION_AMOUNT_CREDITS                    = 'TRANSACTION_AMOUNT_CREDITS';
     const CREDITS_EXPIRED                               = 'CREDITS_EXPIRED';
     const CREDITS_ADDED                                 = 'CREDITS_ADDED';
-    const SCHEDULE_TASKS_CREATE_REQUEST                 = 'SCHEDULE_TASKS_CREATE_REQUEST';
+    const SCHEDULE_TASK_CREATE_REQUEST                  = 'SCHEDULE_TASK_CREATE_REQUEST';
     const SCHEDULE_TASKS_PROCESS_REQUEST                = 'SCHEDULE_TASKS_PROCESS_REQUEST';
     const SCHEDULE_TASKS_PROCESSED                      = 'SCHEDULE_TASKS_PROCESSED';
     const SCHEDULE_TASK_PROCESSING_FAILED               = 'SCHEDULE_TASK_PROCESSING_FAILED';

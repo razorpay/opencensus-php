@@ -132,7 +132,7 @@ class Reporting
             $this->trace->info(TraceCode::REPORTING_SERVICE_CREATE_SCHEDULE, $input);
 
             // Need to store entity_id without sign.
-            $scheduleRequest[ScheduleTask\Entity::ENTITY_ID] = explode('sched_', $response['id'])[1];
+            $scheduleRequest[ScheduleTask\Entity::ENTITY_ID] = $this->generateEntityId($response['id']);
 
             $this->createScheduleOnAPI($scheduleRequest);
         }
@@ -154,18 +154,23 @@ class Reporting
         return $this->createAndSendRequest(Requests::GET, $path);
     }
 
-    public function editSchedule(string $id, array $input): array
-    {
-        $path = self::SCHEDULE_PATH . '/' . $id;
-
-        return $this->createAndSendRequest(Requests::PATCH, $path, $input);
-    }
-
     public function deleteSchedule(string $id): array
     {
         $path = self::SCHEDULE_PATH . '/' . $id;
 
-        return $this->createAndSendRequest(Requests::DELETE, $path);
+        $response = $this->createAndSendRequest(Requests::DELETE, $path);
+
+        // Deleting the corresponding schedule task as well.
+        if (isset($response['error']) === false)
+        {
+            $entityId = $this->generateEntityId($id);
+
+            $scheduleTask = $this->repo->schedule_task->fetchByEntity($entityId);
+
+            $this->repo->deleteOrFail($scheduleTask);
+        }
+
+        return $response;
     }
 
     public function processTasks(PublicCollection $scheduleTasks): array
@@ -183,37 +188,23 @@ class Reporting
 
         if (isset($response['error']) === false)
         {
-            $failureIds = $response['failure_ids'];
-
-            $finalFailureIds = [];
-
-            foreach ($failureIds as $failureId)
-            {
-                $finalFailureIds[] = explode(self::SCHEDULE_PREFIX, $failureId)[1];
-            }
-
-            $response['failure_ids'] = $finalFailureIds;
+            $response = array_map(function($entityIds) {
+                            return array_map(function($entityId){
+                                        return $this->generateEntityId($entityId);
+                                    }, $entityIds);
+                            }, $response);
 
             $successIds = $response['success_ids'];
-
-            $finalSuccessIds = [];
 
             // We need to get all success_ids and mark their next run.
             foreach ($successIds as $successId)
             {
-                // We need to do a substr, as we need to strp `sched_`
-                $successId = explode(self::SCHEDULE_PREFIX, $successId)[1];
-
-                $finalSuccessIds[] = $successId;
-
                 $scheduleTask = $this->repo->schedule_task->fetchByEntity($successId);
 
                 $scheduleTask->updateNextRunAndLastRun(false);
 
                 $this->repo->saveOrFail($scheduleTask);
             }
-
-            $response['success_ids'] = $finalSuccessIds;
         }
 
         return $response;
@@ -227,16 +218,14 @@ class Reporting
 
         // As discussed, we will not be creating new schedule
         // Schedule id will be passed in request object
-//        $schedule = (new Schedule\Core)->createSchedule($input, $merchant);
-
         $scheduleTaskRequest = [
             ScheduleTask\Entity::ENTITY_ID   => $entityId,
-            ScheduleTask\Entity::TYPE        => 'reporting',
-            ScheduleTask\Entity::ENTITY_TYPE => 'log',
-            ScheduleTask\Entity::SCHEDULE_ID => $input['schedule_id'],
+            ScheduleTask\Entity::TYPE        => ScheduleTask\Type::REPORTING,
+            ScheduleTask\Entity::ENTITY_TYPE => ScheduleTask\Type::LOG,
+            ScheduleTask\Entity::SCHEDULE_ID => $input[ScheduleTask\Entity::SCHEDULE_ID],
         ];
 
-        (new ScheduleTask\Core)->createForExternalService($merchant, null, $scheduleTaskRequest);
+        (new ScheduleTask\Core)->createForExternalService($merchant, $scheduleTaskRequest);
     }
 
     protected function createScheduleOnReportingService(array $input): array
@@ -268,6 +257,11 @@ class Reporting
         $path = self::SCHEDULE_PATH . '/trigger';
 
         return $this->createAndSendRequest(Requests::POST, $path, $request, Merchant\Account::SHARED_ACCOUNT);
+    }
+
+    protected function generateEntityId(string $entityId)
+    {
+        return explode(self::SCHEDULE_PREFIX, $entityId)[1];
     }
 
     protected function createAndSendRequest(

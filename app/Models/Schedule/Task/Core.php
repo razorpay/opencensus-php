@@ -42,7 +42,7 @@ class Core extends Base\Core
      */
     public function createOrUpdate(Merchant\Entity $merchant, Base\Entity $entity, $input)
     {
-        $scheduleTask = $this->create($merchant, $entity, null, $input);
+        $scheduleTask = $this->create($merchant, $entity, $input);
 
         $this->app['workflow']->setEntityId($merchant->getId());
 
@@ -71,32 +71,25 @@ class Core extends Base\Core
      *
      * @param Merchant\Entity $merchant
      * @param Base\Entity     $entity
-     * @param Schedule\Entity $schedule
      * @param                 $input
      *
      * @return Entity
      */
-    public function create(Merchant\Entity $merchant, Base\Entity $entity = null, Schedule\Entity $schedule = null, array $input = [])
+    public function create(Merchant\Entity $merchant, Base\Entity $entity = null, array $input = [])
     {
-        $this->trace->info(TraceCode::SCHEDULE_TASKS_CREATE_REQUEST, $input);
+        $this->trace->info(TraceCode::SCHEDULE_TASK_CREATE_REQUEST, $input);
 
         $scheduleTask = (new Entity)->build($input);
 
         $scheduleTask->merchant()->associate($merchant);
 
-        if ($entity !== null)
-        {
-            $scheduleTask->entity()->associate($entity);
-        }
+        $scheduleTask->entity()->associate($entity);
 
-        if ($schedule === null)
-        {
-            $scheduleId = $input[Entity::SCHEDULE_ID];
+        $scheduleId = $input[Entity::SCHEDULE_ID];
 
-            $merchantId = Merchant\Account::SHARED_ACCOUNT;
+        $merchantId = Merchant\Account::SHARED_ACCOUNT;
 
-            $schedule = $this->repo->schedule->findByIdAndMerchantId($scheduleId, $merchantId);
-        }
+        $schedule = $this->repo->schedule->findByIdAndMerchantId($scheduleId, $merchantId);
 
         $scheduleTask->schedule()->associate($schedule);
 
@@ -112,16 +105,19 @@ class Core extends Base\Core
      * So the morph relations wont work
      *
      * @param Merchant\Entity $merchant
-     * @param Schedule\Entity $schedule
      * @param                 $input
      *
      * @return Entity
      */
-    public function createForExternalService(Merchant\Entity $merchant, Schedule\Entity $schedule = null, array $input = []): Entity
+    public function createForExternalService(Merchant\Entity $merchant, array $input = []): Entity
     {
         (new Validator())->validateForExternalServices($input);
 
-        $scheduleTask = $this->create($merchant, null, $schedule, $input);
+        $scheduleTask = $this->create($merchant, null, $input);
+
+        $scheduleTask->setEntityId($input[Entity::ENTITY_ID]);
+
+        $scheduleTask->setEntityType($input[Entity::ENTITY_TYPE]);
 
         $this->repo->saveOrFail($scheduleTask);
 
