@@ -94,7 +94,7 @@ class Repository extends Base\Repository
     }
 
     public function getEmandateTerminalsForMerchantAndSharedMerchant(
-        Merchant\Entity $merchant, $authType): PublicCollection
+        Merchant\Entity $merchant, string $authType): PublicCollection
     {
         $merchantIds = [$merchant->getId(), Merchant\Account::SHARED_ACCOUNT];
 

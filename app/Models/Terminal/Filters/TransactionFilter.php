@@ -144,7 +144,6 @@ class TransactionFilter extends Terminal\Filter
         }
 
         return in_array($terminalGateway, $gateways);
-
     }
 
     /**
