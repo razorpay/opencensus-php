@@ -13,8 +13,8 @@ use LayerShifter\TLDExtract\Extract;
 
 use Razorpay\Trace\Logger as Trace;
 
-use RZP\Constants\TLD;
 use RZP\Exception;
+use RZP\Constants\TLD;
 use RZP\Trace\TraceCode;
 
 class Mailable extends BaseMailable
