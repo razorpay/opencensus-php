@@ -11,7 +11,8 @@ import { isIpAddress } from 'rzp/utils/validators';
 import { closeModal, notifyError, notifySuccess } from 'common/modal';
 import { adminPut } from 'common/fetch';
 
-const verifyAddresses = ipAddresses => ipAddresses.every(isIpAddress);
+const getInvalidAddresses = ipAddresses =>
+  ipAddresses.filter(ipAdd => !isIpAddress(ipAdd));
 
 const splitAddressesString = addressesString =>
   addressesString
@@ -21,15 +22,24 @@ const splitAddressesString = addressesString =>
 
 @observer
 export default class EditWhiteListIps extends Component {
+  notifyError = (entries, mode) => {
+    notifyError(
+      `${entries.join(', ')} in "${mode}" mode ${
+        entries.length > 1 ? 'are' : 'is'
+      } invalid`,
+      7000
+    );
+  };
+
   handleSave = ({ whitelisted_ips_test = '', whitelisted_ips_live = '' }) => {
     whitelisted_ips_live = splitAddressesString(whitelisted_ips_live);
     whitelisted_ips_test = splitAddressesString(whitelisted_ips_test);
 
-    if (
-      !verifyAddresses(whitelisted_ips_live) ||
-      !verifyAddresses(whitelisted_ips_test)
-    ) {
-      notifyError('Please ensure all entries are valid IP Addresses');
+    const invalidLiveAdd = getInvalidAddresses(whitelisted_ips_live);
+    const invalidTestAdd = getInvalidAddresses(whitelisted_ips_test);
+    if (invalidLiveAdd.length || invalidTestAdd.length) {
+      invalidLiveAdd.length && this.notifyError(invalidLiveAdd, 'live');
+      invalidTestAdd.length && this.notifyError(invalidTestAdd, 'test');
       return;
     }
 
