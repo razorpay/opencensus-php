@@ -24,8 +24,7 @@ class CreateHitachiGateway extends Migration
 
             $table->increments(Hitachi::ID);
 
-            $table->char(Hitachi::PAYMENT_ID, Payment::ID_LENGTH)
-                  ->nullable();
+            $table->char(Hitachi::PAYMENT_ID, Payment::ID_LENGTH);
 
             $table->char(Hitachi::REFUND_ID, Refund::ID_LENGTH)
                   ->nullable();
@@ -33,7 +32,7 @@ class CreateHitachiGateway extends Migration
             $table->char(Hitachi::ACQUIRER, 10)
                   ->nullable();
 
-            $table->char(Hitachi::ACTION, 20)
+            $table->char(Hitachi::ACTION, 10)
                   ->nullable();
 
             $table->integer(Hitachi::RECEIVED)
@@ -59,7 +58,7 @@ class CreateHitachiGateway extends Migration
             $table->string(Hitachi::STATUS)
                   ->nullable();
 
-            $table->string(Hitachi::CARD_NUMBER)
+            $table->string(Hitachi::MASKED_CARD_NUMBER)
                   ->nullable();
 
             $table->string(Hitachi::CARD_NETWORK)

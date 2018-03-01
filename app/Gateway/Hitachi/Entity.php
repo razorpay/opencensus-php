@@ -18,7 +18,7 @@ class Entity extends Base\Entity
     const AUTH_ID            = 'pAuthID';
     const RRN                = 'pRRN';
     const STATUS             = 'pStatus';
-    const CARD_NUMBER        = 'card_number';
+    const MASKED_CARD_NUMBER = 'masked_card_number';
     const CARD_NETWORK       = 'card_network';
     const MERCHANT_REFERENCE = 'merchant_reference';
 
@@ -41,7 +41,7 @@ class Entity extends Base\Entity
         self::AUTH_ID,
         self::RRN,
         self::STATUS,
-        self::CARD_NUMBER,
+        self::MASKED_CARD_NUMBER,
         self::CARD_NETWORK,
         self::MERCHANT_REFERENCE,
     ];
@@ -58,7 +58,7 @@ class Entity extends Base\Entity
         self::RECEIVED,
         self::STATUS,
         self::AMOUNT,
-        self::CARD_NUMBER,
+        self::MASKED_CARD_NUMBER,
         self::CARD_NETWORK,
         self::MERCHANT_REFERENCE,
     ];
@@ -95,7 +95,7 @@ class Entity extends Base\Entity
 
     public function getCardNumber()
     {
-        return $this->getAttribute(self::CARD_NUMBER);
+        return $this->getAttribute(self::MASKED_CARD_NUMBER);
     }
 
     public function getRrn()

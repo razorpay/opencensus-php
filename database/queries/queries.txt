@@ -2984,13 +2984,7 @@ ALTER TABLE bank_transfers
 ALTER TABLE virtual_accounts
     ADD INDEX virtual_accounts_updated_at_index (updated_at);
 
-ALTER TABLE bharat_qr
-    ADD COLUMN gateway varchar(255) NOT NULL after expected,
-    ADD COLUMN card_first6 char(6) DEFAULT NULL after vpa,
-    ADD COLUMN card_last4 char(4) DEFAULT NULL after card_first6;
-
 ALTER TABLE hitachi
-    MODIFY COLUMN action char(20) DEFAULT NULL,
     MODIFY COLUMN pRRN char(20) DEFAULT NULL,
     ADD COLUMN card_number varchar(255) DEFAULT NULL after pStatus,
     ADD COLUMN card_network varchar(255) DEFAULT NULL after card_number,
