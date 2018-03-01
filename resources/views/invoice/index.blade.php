@@ -181,6 +181,7 @@
         box-shadow: 0px 0px 20px rgba(0,0,0,0.08);
         border: 1px solid #dfdfdf;
         border-radius: 4px;
+        min-height: 340px;
       }
 
       .inv-details {
@@ -251,6 +252,29 @@
         color: #717171;
         font-size: 12px;
       }
+
+        #inv-info-box #cancelled-invoice {
+            height: 45px;
+            width: 100%;
+            top: -12px;
+            background-image: url(http://i.imgur.com/4c9Zkf4.png);
+            background-repeat: no-repeat;
+            background-position: -19px -147px;
+            font-size: 20px;
+            padding: 40px;
+            line-height: 20px;
+        }
+
+        #inv-info-box #cancelled-invoice .title {
+            font-weight: 600;
+            margin-top: 30px;
+        }
+        #inv-info-box #cancelled-invoice .desc {
+            font-size: 14px;
+            color: #777777;
+            margin-top: 8px;
+        }
+
 
       #inv-info-box .footer img {
           height: 15px;
@@ -390,6 +414,8 @@
             background-color: rgba(0,0,0,0.35);
             z-index: 100;
             transition: 0.17s opacity ease-in-out, 0.1s 0.15s z-index;
+
+            display: none;
         }
 
         #scs-screen .scs-modal {
@@ -612,6 +638,15 @@
                                       </div>
                                       <div class="line-strike"></div>
 
+                                  </div>
+                              </div>
+                              <div id="cancelled-invoice">
+                                  <div class="title">
+                                      Payment Link Expired<span style="color:#f54443">&nbsp;/ Cancelled</span>
+                                  </div>
+                                  <div class="desc">
+                                      Oops! This payment links is expired on 30 November 2017.<br/>
+                                      Please contact {{$data['merchant']['organization']['business_name']}} at {{$data['merchant']['organization']['email']}} or call at +91 9282882 for any queries.
                                   </div>
                               </div>
                               <div class="footer">
