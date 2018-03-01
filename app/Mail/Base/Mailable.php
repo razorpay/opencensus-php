@@ -9,8 +9,12 @@ use Illuminate\Contracts\Mail\Mailer as MailerContract;
 use Illuminate\Contracts\Queue\Factory as Queue;
 use Illuminate\Mail\Mailable as BaseMailable;
 use GuzzleHttp\Exception\ClientException as GuzzleClientException;
+use LayerShifter\TLDExtract\Extract;
 
 use Razorpay\Trace\Logger as Trace;
+
+use RZP\Exception;
+use RZP\Constants\TLD;
 use RZP\Trace\TraceCode;
 
 class Mailable extends BaseMailable
@@ -63,15 +67,23 @@ class Mailable extends BaseMailable
         }
         catch (\Throwable $e)
         {
-            $trace->traceException($e,
-                                   Trace::ERROR,
-                                   TraceCode::MAILER_JOB_ERROR,
-                                   [
-                                        'from'    => $this->from,
-                                        'to'      => $this->to,
-                                        'subject' => $this->subject,
-                                        'mailable' => get_class($this)
-                                   ]);
+            $traceData = [
+                'from'          => $this->from,
+                'to'            => $this->to,
+                'subject'       => $this->subject,
+                'mailable'      => get_class($this)
+            ];
+
+            // For invalid TLDs, we're passing that in the exception data
+            // which we fetche here and pushes to the trace data
+            $traceData = array_merge($traceData, $e->getData());
+
+            $trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::MAILER_JOB_ERROR,
+                $traceData
+            );
 
             // After logging the exception caught, we rethrow it so that the
             // retry mechanism for mails is triggerred unless the exception
@@ -99,6 +111,58 @@ class Mailable extends BaseMailable
         return $queue->connection($connection)->pushOn(
             $queueName ?: null, new SendQueuedMailable($this)
         );
+    }
+
+    /**
+     * Overriding the base method so that we don't add recipients
+     * if its TLDs are invalid
+     *
+     * @param \Illuminate\Mail\Message $message
+     * @return $this
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    protected function buildRecipients($message)
+    {
+        $validTldsCount = 0;
+        $invalidEmails  = [];
+
+        $tldExtractor = new Extract();
+
+        foreach (['to', 'cc', 'bcc', 'replyTo'] as $type)
+        {
+            foreach ($this->{$type} as $recipient)
+            {
+                $email = $recipient['address'];
+
+                $tld = $tldExtractor->parse($email)->getSuffix();
+
+                if (TLD::isValid($tld) === true)
+                {
+                    $message->{$type}($recipient['address'], $recipient['name']);
+
+                    $validTldsCount++;
+                }
+                else
+                {
+                    $invalidEmails[] = $email;
+                }
+            }
+        }
+
+        // If all of the emails in the to addresses are having invalid TLDs,
+        // we should not push this to mailgun.
+        if ($validTldsCount === 0)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The email must be a valid email address.',
+                'email',
+                [
+                    'invalidEmails' => $invalidEmails
+                ]
+            );
+        }
+
+        return $this;
     }
 
     /**
