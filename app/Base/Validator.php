@@ -9,11 +9,14 @@ use RZP\Constants\Mode;
 
 class Validator extends \Razorpay\Spine\Validation\Validator
 {
-    public function __construct()
+    public function __construct($entity = null)
     {
         $this->app = App::getFacadeRoot();
 
         $this->merchant = $this->app['basicauth']->getMerchant();
+
+        $this->entity = $entity;
+
     }
 
     protected function throwExtraFieldsException($extraFields)
