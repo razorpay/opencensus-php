@@ -4,7 +4,6 @@ ARG GIT_COMMIT_HASH
 ENV GIT_COMMIT_HASH=${GIT_COMMIT_HASH}
 ARG GIT_TOKEN
 
-
 COPY . /app/
 
 RUN chown -R nginx.nginx /app
