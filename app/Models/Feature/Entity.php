@@ -89,4 +89,12 @@ class Entity extends Base\PublicEntity
     {
         return (in_array($this->getName(), Constants::PRODUCT_FEATURES) === true);
     }
+
+    /**
+     * @return bool
+     */
+    public function isMerchantFeature(): bool
+    {
+        return ($this->getEntityType() === Constants::MERCHANT);
+    }
 }

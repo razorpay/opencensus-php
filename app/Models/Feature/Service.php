@@ -9,9 +9,19 @@ use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
-    public function addFeatures(array $input)
+    public function addFeatures(
+        array $input,
+        string $routeEndpoint = null,
+        string $entityId = null): array
     {
-        $featureParams = $this->buildFeatureParams($input);
+        $entityType = null;
+
+        if ($routeEndpoint !== null)
+        {
+            $entityType = Type::getEntityTypeFromRoute($routeEndpoint);
+        }
+
+        $featureParams = $this->buildFeatureParams($input, $entityType, $entityId);
 
         $shouldSync = (bool) ($input[Entity::SHOULD_SYNC] ?? false);
 
@@ -25,11 +35,28 @@ class Service extends Base\Service
         return $features->toArray();
     }
 
-    public function getFeatures(string $entityId)
+    public function getFeatures($routeEndpoint, $entityId)
     {
+        //
+        // Allow only the admins to provide the entity_type and entity_id from the input.
+        // If the merchant is hitting the route directly, only allow him to update his own account features.
+        //
+        if ($this->app['basicauth']->isAdminAuth() === true)
+        {
+            $entityType = Type::getEntityTypeFromRoute($routeEndpoint);
+        }
+        else
+        {
+            $entityType = Constants::MERCHANT;
+
+            $entityId = $this->merchant->getId();
+        }
+
         $response = new Base\Collection;
 
-        $response['assigned_features'] = $this->repo->feature->findByEntityId($entityId);
+        $response['assigned_features'] = $this->repo
+                                              ->feature
+                                              ->fetchByEntityTypeAndEntityId($entityType, $entityId);
 
         // all_features is a list of currently available features in the system
         $response['all_features'] = array_keys(Constants::$featureValueMap);
@@ -37,18 +64,56 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function deleteFeature(string $entityId, string $featureName, array $input)
+    /**
+     * Delete the feature association with an entity
+     *
+     * @param string $routeEndpoint
+     * @param string $entityId
+     * @param string $featureName
+     * @param array  $input
+     *
+     * @return array
+     */
+    public function deleteEntityFeature(
+        string $routeEndpoint,
+        string $entityId,
+        string $featureName,
+        array $input): array
     {
-        $feature = $this->repo->feature->findByEntityIdAndNameOrFail($entityId, $featureName);
+        $entityType = Type::getEntityTypeFromRoute($routeEndpoint);
+
+        $feature = $this->repo
+                        ->feature
+                        ->findByEntityTypeEntityIdAndNameOrFail(
+                            $entityType,
+                            $entityId,
+                            $featureName);
 
         $shouldSync = (bool) ($input[Entity::SHOULD_SYNC] ?? false);
 
         (new Core)->delete($feature, $shouldSync);
 
         // We delete the tag also along with feature.
-        (new Merchant\Service)->deleteTag($entityId, $feature->getName());
+        $this->deleteTagIfApplicable($entityType, $entityId, $feature->getName());
 
         return $feature->toArrayDeleted();
+    }
+
+    /**
+     * Delete the tag if the entity type is merchant
+     *
+     * @param string $entityType
+     * @param string $entityId
+     * @param string $featureName
+     */
+    protected function deleteTagIfApplicable(string $entityType, string $entityId, string $featureName)
+    {
+        if ($entityType !== Constants::MERCHANT)
+        {
+            return;
+        }
+
+        (new Merchant\Service)->deleteTag($entityId, $featureName);
     }
 
     public function multiAssignFeature($input)
@@ -102,7 +167,8 @@ class Service extends Base\Service
 
         foreach ($entityIds as $entityId)
         {
-            $feature = $this->repo->feature->findByEntityIdAndNameOrFail(
+            $feature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail(
+                        Constants::MERCHANT,
                         $entityId,
                         $featureName);
 
@@ -238,13 +304,29 @@ class Service extends Base\Service
         return $settings;
     }
 
-    protected function buildFeatureParams($input)
+    protected function buildFeatureParams(
+        array $input,
+        string $entityType = null,
+        string $entityId = null): Base\Collection
     {
         $featureParams = new Base\Collection;
 
-        $entityType = $input[Entity::ENTITY_TYPE];
+        //
+        // Allow only the admins to provide the entity_type and entity_id from the input.
+        // If the merchant is hitting the route directly, only allow him to update his own account features.
+        //
+        if ($this->app['basicauth']->isAdminAuth() === true)
+        {
+            $entityType = $entityType ?? $input[Entity::ENTITY_TYPE];
 
-        $entityId = $input[Entity::ENTITY_ID];
+            $entityId = $entityId ?? $input[Entity::ENTITY_ID];
+        }
+        else
+        {
+            $entityType = Constants::MERCHANT;
+
+            $entityId = $this->merchant->getId();
+        }
 
         $featureNames = $input[Constants::NAMES];
 

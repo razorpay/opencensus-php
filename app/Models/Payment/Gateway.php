@@ -694,7 +694,7 @@ class Gateway
         IFSC::FDRL,
         IFSC::RATN,
         IFSC::INDB,
-        IFSC::PUNB,
+        Netbanking::PUNB_R,
     ];
 
     /**
@@ -720,19 +720,19 @@ class Gateway
         //corp banks
         Netbanking::ICIC_C => Gateway::NETBANKING_ICICI,
         Netbanking::UTIB_C => Gateway::NETBANKING_AXIS,
-        Netbanking::BARB_R => Gateway::NETBANKING_BOB,
 
         // retail banks
-        IFSC::ICIC => Gateway::NETBANKING_ICICI,
-        IFSC::HDFC => Gateway::NETBANKING_HDFC,
-        IFSC::CORP => Gateway::NETBANKING_CORPORATION,
-        IFSC::AIRP => Gateway::NETBANKING_AIRTEL,
-        IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
-        IFSC::INDB => Gateway::NETBANKING_INDUSIND,
-        IFSC::KKBK => Gateway::NETBANKING_KOTAK,
-        IFSC::UTIB => Gateway::NETBANKING_AXIS,
-        IFSC::RATN => Gateway::NETBANKING_RBL,
-        IFSC::PUNB => Gateway::NETBANKING_PNB,
+        IFSC::ICIC         => Gateway::NETBANKING_ICICI,
+        IFSC::HDFC         => Gateway::NETBANKING_HDFC,
+        IFSC::CORP         => Gateway::NETBANKING_CORPORATION,
+        IFSC::AIRP         => Gateway::NETBANKING_AIRTEL,
+        IFSC::FDRL         => Gateway::NETBANKING_FEDERAL,
+        IFSC::INDB         => Gateway::NETBANKING_INDUSIND,
+        IFSC::KKBK         => Gateway::NETBANKING_KOTAK,
+        IFSC::UTIB         => Gateway::NETBANKING_AXIS,
+        IFSC::RATN         => Gateway::NETBANKING_RBL,
+        Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
+        Netbanking::BARB_R => Gateway::NETBANKING_BOB,
     ];
 
     /**
@@ -750,8 +750,8 @@ class Gateway
         IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
         IFSC::RATN => Gateway::NETBANKING_RBL,
         IFSC::INDB => Gateway::NETBANKING_INDUSIND,
-        IFSC::PUNB => Gateway::NETBANKING_PNB,
 
+        Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
         Netbanking::BARB_R => Gateway::NETBANKING_BOB,
     ];
 

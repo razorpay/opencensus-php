@@ -8,6 +8,7 @@ use Mail;
 
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Feature\Constants;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Settlement\Entity as SettlementEntity;
 use RZP\Tests\Functional\TestCase;
@@ -27,6 +28,13 @@ class SettlementTest extends TestCase
         parent::setUp();
 
         $this->ba->publicAuth();
+    }
+
+    public function tearDown()
+    {
+        parent::tearDown();
+
+        Carbon::setTestNow();
     }
 
     public function testSettlement()
@@ -433,6 +441,105 @@ class SettlementTest extends TestCase
         $this->assertEquals(4, $setlResponse[$channel]['txnCount']);
 
         Carbon::setTestNow();
+    }
+
+    public function testSeparateSettlement1()
+    {
+        Carbon::setTestNow(Carbon::now(Timezone::IST));
+
+        $channel = Channel::ICICI;
+
+        $this->fixtures->merchant->addFeatures([Constants::DAILY_SETTLEMENT]);
+
+        $this->fixtures->merchant->edit('10000000000000', ['channel' => $channel]);
+
+        $today = Carbon::today(Timezone::IST);
+
+        // Create payment with captured at as 26th Jan
+        $entities = $this->createPaymentAndRefundEntities(1, $today);
+
+        $txns = $this->getEntities('transaction', [], true);
+
+        $settledAt1 = $today->addHours(10);
+
+        $tomorrow = Carbon::tomorrow(Timezone::IST);
+
+        // Create payment with captured at as 27th Jan
+        $entities = $this->createPaymentAndRefundEntities(1, $tomorrow);
+
+        $settledAt2 = $tomorrow->addHours(10);
+
+        // Mark payments eligible for settlement
+        $paymentTxns = $this->getEntities('transaction', ['type' => 'payment'], true);
+
+        $this->fixtures->transaction->edit($paymentTxns['items'][0]['id'],
+            ['settled_at' => $settledAt1->getTimestamp()]);
+
+        $this->fixtures->transaction->edit($paymentTxns['items'][1]['id'],
+            ['settled_at' => $settledAt2->getTimestamp()]);
+
+        // Mark refunds eligible for settlement
+        $refundTxns = $this->getEntities('transaction', ['type' => 'refund'], true);
+
+        $this->fixtures->transaction->edit($refundTxns['items'][0]['id'],
+            ['settled_at' => 1, 'created_at' => $today->getTimestamp() + 100]);
+
+        $this->fixtures->transaction->edit($refundTxns['items'][1]['id'],
+            ['settled_at' => 1, 'created_at' => $tomorrow->getTimestamp() + 100]);
+
+        // Normal settlement route must not settle to Airtel
+        $content = $this->initiateSettlements($channel);
+
+        $this->assertEquals(0, $content[$channel]['count']);
+        $this->assertEquals(0, $content[$channel]['txnCount']);
+
+        // Set time to day after tomorrow
+        $tomorrow = Carbon::tomorrow(Timezone::IST);
+
+        Carbon::setTestNow($tomorrow);
+
+        $content = $this->initiateDailySettlements();
+
+        $this->assertEquals(2, $content[$channel]['count']);
+        $this->assertEquals(4, $content[$channel]['txnCount']);
+
+        $ftas = ($this->getEntities('fund_transfer_attempt', [], true))['items'];
+
+        $this->assertEquals($settledAt1->getTimestamp(), $ftas[0]['initiate_at']);
+        $this->assertEquals($settledAt2->getTimestamp(), $ftas[1]['initiate_at']);
+    }
+
+    /**
+     * Tests the case when settlement entity gets created,
+     * but the transaction creation for it fails because
+     * the merchant's balance was less than the amount to be settled.
+     * This test then adjusts the balance, and
+     * verifies that retry of the settlement creates the transaction.
+     */
+    public function testSettlementRetryWhenNoTransaction()
+    {
+        $channel = Channel::ICICI;
+
+        $this->ba->adminAuth();
+
+        $this->fixtures->merchant->edit('10000000000000', ['channel' => $channel]);
+
+        $this->createPaymentEntities(1);
+
+        // Setting the balance to a value less than expected settlement
+        // for above entitties, so that balance update fails because of
+        // going negavative. So transaction creation for settlement
+        // will fail.
+        $this->fixtures->balance->edit('10000000000000', ['balance' => 100]);
+
+        $setlResponse = $this->initiateSettlements($channel);
+
+        $this->assertEquals(0, $setlResponse[$channel]['count']);
+        $this->assertEquals(0, $setlResponse[$channel]['txnCount']);
+
+        $setl = $this->getLastEntity('settlement', true);
+
+        $this->assertNull($setl);
     }
 
     public function testSettlementForMultipleMerchants()

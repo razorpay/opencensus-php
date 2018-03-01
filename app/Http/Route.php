@@ -149,6 +149,7 @@ final class Route
         'merchant_get_tags'                       => ['get',      'merchants/{id}/tags',                            'MerchantController@getTags'                                        ],
         'merchant_tag_add'                        => ['post',     'merchants/{id}/tags',                            'MerchantController@addTags'                                        ],
         'merchant_tag_delete'                     => ['delete',   'merchants/{id}/tags/{tagName}',                  'MerchantController@deleteTag'                                      ],
+        'merchant_update_key_access'              => ['put',      'merchants/{id}/update_key_access',               'MerchantController@updateKeyAccess'                                ],
         'merchant_edit_free_credits'              => ['post',     'merchants/{id}/credits',                         'MerchantController@postAmountCredits',                             ],
         'merchant_fetch_users'                    => ['get',      'merchants-users',                                'MerchantController@getUsers',                                      ],
         'merchant_patch_beneficiary_code'         => ['patch',    'merchants/beneficiary/code',                     'MerchantController@patchMerchantBeneficiaryCode'                   ],
@@ -171,7 +172,7 @@ final class Route
         'credits_fetch_multiple'                  => ['get',      'credits',                                        'MerchantController@getCreditsLogs'                                 ],
         'merchant_get_features'                   => ['get',      'merchants/{id}/features',                        'MerchantController@getMerchantFeatures'                            ],
         'merchant_update_features'                => ['post',     'merchants/{id}/features',                        'MerchantController@updateMerchantFeatures'                         ],
-        'merchants_update_hold_funds'             => ['put',      'merchants/hold_funds/bulk',                      'MerchantController@updateHoldFundsForMultipleMerchants'            ],
+        'merchants_update_bulk'                   => ['put',      'merchants/bulk',                                 'MerchantController@updateMerchantsBulk'                            ],
         'merchants_update_channel'                => ['put',      'merchants/channel/bulk',                         'MerchantController@updateChannelForMultipleMerchants'              ],
         'merchants_update_bank_account'           => ['put',      'merchants/bank_account/bulk',                    'MerchantController@updateBankAccountForMultipleMerchants'          ],
         'methods_update_merchants'                => ['put',      'methods/bulkupdate',                             'MerchantController@updateMethodsForMultipleMerchants'              ],
@@ -216,6 +217,7 @@ final class Route
         'merchant_activation_details'             => ['get',      'merchant/activation',                            'MerchantController@getActivationDetails'                           ],
         'merchant_activation_save'                => ['post',     'merchant/activation',                            'MerchantController@postSaveActivationDetails'                      ],
         'merchant_activation_upload_file'         => ['post',     'merchant/activation/upload',                     'MerchantController@postUploadActivationFile'                       ],
+        'merchant_activation_update_website'      => ['put',      'merchant/activation/update_website_details',     'MerchantController@updateWebsiteDetails'                           ],
         'merchant_activation_files'               => ['get',      'merchant/activation/{id}/files',                 'MerchantController@getActivationFiles'                             ],
         'merchant_activation_upload_file_admin'   => ['post',     'merchant/activation/{id}/files',                 'MerchantController@postUploadActivationFileAdmin'                  ],
         'merchant_activation_update'              => ['put',      'merchant/activation/{id}/update',                'MerchantController@putEditMerchantDetailsAfterLock'                ],
@@ -257,6 +259,7 @@ final class Route
         'setl_fixer'                              => ['get',      'settlements/fixer',                              'SettlementController@getSettlementFixer'                           ],
         'setl_delete_file'                        => ['delete',   'settlements/file/{setlFileType}',                'SettlementController@deleteSettlementFile'                         ],
         'setl_initiate'                           => ['post',     'settlements/initiate/{channel?}',                'SettlementController@postSettlementInitiate'                       ],
+        'setl_initiate_daily'                     => ['post',     'settlements/initiate_daily',                     'SettlementController@processDailySettlements'                      ],
         'setl_retry'                              => ['post',     'settlements/retry',                              'SettlementController@postSettlementRetry'                          ],
         'setl_file_generate'                      => ['post',     'settlements/file/generate',                      'SettlementController@postSettlementFileGenerate'                   ],
         'setl_reconcile_generate'                 => ['post',     'settlements/reconcile/generate/{channel}',       'SettlementController@postSettlementReconcileGenerate'              ],
@@ -452,11 +455,6 @@ final class Route
         'addon_fetch_multiple'                    => ['get',      'addons',                                         'SubscriptionController@getAddons'                                  ],
         'addon_delete'                            => ['delete',   'addons/{addonId}',                               'SubscriptionController@deleteAddon'                                ],
         'billdesk_create_cancelled_refunds'       => ['post',     'refunds/billdesk/cancelled',                     'RefundController@postCreateBilldeskCancelledRefunds'               ],
-        'feature_add'                             => ['post',     'features',                                       'FeatureController@addFeatures'                                     ],
-        'feature_delete'                          => ['delete',   'features/{entityId}/{featureName}',              'FeatureController@deleteFeature'                                   ],
-        'feature_get_multiple'                    => ['get',      'features/{entityId}',                            'FeatureController@getFeatures'                                     ],
-        'feature_bulk_assign'                     => ['post',     'features/assign',                                'FeatureController@multiAssignFeature'                              ],
-        'feature_bulk_remove'                     => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
         'upi_fill_bank'                           => ['patch',    'gateway/upi_fill_bank',                          'GatewayController@fillUpiBank'                                     ],
         'mailgun_webhook'                         => ['post',     'mailgun/callback/{type}',                        'AdminController@postMailgunCallback'                               ],
         'offer_create'                            => ['post',     'offers',                                         'OfferController@createOffer'                                       ],
@@ -724,11 +722,24 @@ final class Route
         'beta_account_fetch_multiple'             => ['get',      'beta/accounts',                                  'AccountController@list'                                            ],
         'beta_account_post_bank_account'          => ['post',     'beta/accounts/{id}/bank_accounts',               'AccountController@createOrChangeBankAccount'                       ],
         'beta_account_fetch_setl_destinations'    => ['get',      'beta/accounts/{id}/settlement_destinations',     'AccountController@fetchSettlementDestinations'                     ],
+        'account_features_add'                    => ['post',     'accounts/me/features',                           'FeatureController@addAccountFeatures'                              ],
+        'account_features_get'                    => ['get',      'accounts/me/features',                           'FeatureController@getAccountFeatures'                              ],
 
         'account_fetch'                           => ['get',      'accounts',                                       'AccountController@listLinkedAccounts'                              ],
 
         // Pincode Service
         'pincode_get'                             => ['get',      'pincodes/{id}',                                  'PincodeSearchController@get'                                       ],
+
+        // Deprecated feature routes - maintaining for BC - Remove after dashboard changes
+        'feature_get_multiple'                    => ['get',      'features/{entityId}',                            'FeatureController@getMerchantFeatures'                             ],
+        'feature_delete'                          => ['delete',   'features/{entityId}/{featureName}',              'FeatureController@deleteFeature'                                   ],
+
+        // Features
+        'feature_add'                             => ['post',     'features',                                       'FeatureController@addFeatures'                                     ],
+        'feature_get'                             => ['get',      'features/{entityType}/{entityId}',               'FeatureController@getFeatures'                                     ],
+        'feature_bulk_assign'                     => ['post',     'features/assign',                                'FeatureController@multiAssignFeature'                              ],
+        'feature_bulk_remove'                     => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
+        'feature_delete_entity'                   => ['delete',   '{entityType}/{entityId}/features/{featureName}', 'FeatureController@deleteEntityFeature'                             ],
     ];
 
     public static $public = [
@@ -934,6 +945,8 @@ final class Route
         'beta_account_post_bank_account',
         'beta_account_fetch_setl_destinations',
         'dispute_fetch',
+        'account_features_add',
+        'account_features_get',
     ];
 
     // Only routes defined in internalApps go here
@@ -1001,6 +1014,7 @@ final class Route
         'schedule_process_tasks',
         'scorecard',
         'setl_initiate',
+        'setl_initiate_daily',
         'setl_post_details_old',
         'setl_reconcile_generate',
         'setl_reconcile_h2h',
@@ -1023,7 +1037,7 @@ final class Route
         'fund_transfer_attempt_process',
     ];
 
-    // The below routes needs X-Dashboard-User-Id
+    // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
     // User context is taken from the provided header.
     // Below rotues deal only with user entity without context of merchant.
     public static $userWhitelist = [
@@ -1031,6 +1045,18 @@ final class Route
         'user_fetch',
         'user_change_password',
         'user_merchant_upgrade',
+        'invoice_create',
+        'invoice_fetch',
+        'invoice_fetch_multiple',
+        'invoice_update',
+        'invoice_issue',
+        'invoice_delete',
+        'invoice_add_line_items',
+        'invoice_update_line_item',
+        'invoice_remove_line_item_bulk',
+        'invoice_remove_line_item',
+        'invoice_send_notification_private',
+        'invoice_cancel',
     ];
 
     public static $proxy = [
@@ -1085,6 +1111,7 @@ final class Route
         'merchant_activation_details',
         'merchant_activation_upload_file',
         'merchant_activation_save',
+        'merchant_activation_update_website',
         'offer_create',
         'offer_update',
         'offer_fetch_multiple',
@@ -1186,6 +1213,8 @@ final class Route
         'setl_update_channel_bulk',
         'setl_fetch_schedule',
         'feature_delete',
+        'feature_delete_entity',
+        'feature_get',
         'admin_dummy_account_test',
         'admin_get_file',
         // workflows
@@ -1202,7 +1231,7 @@ final class Route
         'workflow_action_details',
         'workflow_action_close',
         'workflow_action_get_multiple',
-        'merchants_update_hold_funds',
+        'merchants_update_bulk',
         'merchants_update_channel',
         'adj_add',
         'payment_authorize_refund',
@@ -1245,6 +1274,7 @@ final class Route
         'admin_lead_verify',
         'merchant_tag_add',
         'merchant_tag_delete',
+        'merchant_update_key_access',
         'refund_verify_multiple',
         'refund_verify_failed',
         'merchant_edit_email',
@@ -1437,6 +1467,8 @@ final class Route
         'admin_lead_get_multiple'                => Permission::VIEW_MERCHANT_INVITE,
         'admin_dummy_account_test'               => Permission::VIEW_MERCHANT,
         'feature_delete'                         => Permission::DELETE_MERCHANT_FEATURES,
+        'feature_delete_entity'                  => Permission::DELETE_MERCHANT_FEATURES,
+        'feature_get'                            => Permission::VIEW_MERCHANT_FEATURES,
         'workflow_create'                        => Permission::CREATE_WORKFLOW, // Fix permissions
         'workflow_get'                           => Permission::VIEW_WORKFLOW,
         'workflow_get_multiple'                  => Permission::VIEW_ALL_WORKFLOW,
@@ -1471,7 +1503,7 @@ final class Route
         'merchant_add_bank_account'              => Permission::EDIT_MERCHANT_BANK_DETAIL,
         'merchant_activate'                      => Permission::EDIT_ACTIVATE_MERCHANT,
         'admin_fetch_terminal_by_id'             => '*',
-        'merchants_update_hold_funds'            => Permission::EDIT_BULK_MERCHANT_HOLD_FUNDS,
+        'merchants_update_bulk'                  => Permission::EDIT_BULK_MERCHANT,
         'merchants_update_channel'               => Permission::EDIT_BULK_MERCHANT_CHANNEL,
         'schedule_fetch_multiple'                => Permission::SCHEDULE_FETCH_MULTIPLE,
         'setl_fetch_schedule'                    => Permission::SCHEDULE_FETCH_MULTIPLE,
@@ -1524,6 +1556,7 @@ final class Route
         'merchant_activation_archive'            => '*', // permission handled in code
         'merchant_activation_status'             => Permission::EDIT_ACTIVATE_MERCHANT,
         'merchant_activation_status_change_log'  => Permission::VIEW_ACTIVATION_FORM,
+        'merchant_update_key_access'             => Permission::EDIT_MERCHANT_KEY_ACCESS,
         'merchant_get_rejection_reasons'         => '*',
         'dispute_reason_create'                  => Permission::CREATE_DISPUTE_REASON,
         'user_confirm_by_data'                   => '*',
@@ -1769,6 +1802,7 @@ final class Route
         'cron' => [
             'entity_tax_update',
             'setl_initiate',
+            'setl_initiate_daily',
             'setl_reconcile_generate',
             'setl_reconcile_test',
             'nodal_initiate_transfer',
@@ -1982,7 +2016,8 @@ final class Route
         'subscription_view_test',
         'addon_fetch',
         'addon_fetch_multiple',
-        'feature_get_multiple',
+        // 'feature_get_multiple',
+        // 'feature_get',
         'offer_fetch_multiple',
         'offer_fetch_by_id',
         'currency_fetch_rates',

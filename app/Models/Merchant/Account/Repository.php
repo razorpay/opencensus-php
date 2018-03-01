@@ -19,7 +19,7 @@ class Repository extends Merchant\Repository
         $skip  = 0;
 
         // Send all the linked accounts. Dashboard applies a local filter.
-        $count = 500;
+        $count = 1000;
 
         if (isset($input[Fetch::SKIP]) === true)
         {
