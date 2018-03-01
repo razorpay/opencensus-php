@@ -4,6 +4,18 @@ const pageTitle = 'Dashboard - Home V2';
 
 export const track = setTrackData({ eventCategory: pageTitle });
 
+export const trackError = (error) => {
+
+  const eventLabel = typeof error === "object"
+                       ? JSON.stringify(error)
+                       : String(error);
+
+  track({
+    eventAction: "Error Triggered",
+    eventLabel
+  });
+};
+
 export const trackPresetChange = preset => {
   track({
     eventAction: 'Select - Date Dropdown',
