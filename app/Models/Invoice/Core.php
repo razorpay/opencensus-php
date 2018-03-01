@@ -810,9 +810,9 @@ class Core extends Base\Core
         });
 
         $response += [
-                    Entity::PAYMENT_LINKS_SENT      => $stats[Status::ISSUED],
-                    Entity::PAYMENT_LINKS_PAID      => $stats[Status::PAID],
-                    Entity::PAYMENT_LINKS_EXPIRED   => $stats[Status::EXPIRED],
+                    Entity::PAYMENT_LINKS_SENT      => $stats[Status::ISSUED] ?? 0,
+                    Entity::PAYMENT_LINKS_PAID      => $stats[Status::PAID] ?? 0,
+                    Entity::PAYMENT_LINKS_EXPIRED   => $stats[Status::EXPIRED] ?? 0,
         ];
 
         return $response;
