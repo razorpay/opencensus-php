@@ -117,13 +117,13 @@ class Validator extends Base\Validator
         'tags' => 'required|array'
     ];
 
-    protected static $keyAccessRules = [
-        Entity::HAS_KEY_ACCESS => 'required|boolean',
+    protected static $updateMerchantsBulkRules = [
+        'merchant_ids' => 'required|sequential_array',
+        'attributes'   => 'required|associative_array',
     ];
 
-    protected static $updateHoldFundsRules = [
-        'hold_funds'   => 'required|boolean',
-        'merchant_ids' => 'required|array'
+    protected static $keyAccessRules = [
+        Entity::HAS_KEY_ACCESS => 'required|boolean',
     ];
 
     protected static $updateChannelRules = [
