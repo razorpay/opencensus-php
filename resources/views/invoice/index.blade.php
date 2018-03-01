@@ -111,12 +111,12 @@
 
       #desktop-container {
         width: 100%;
-        display: none;
+        /*display: none;*/
       }
 
       #mobile-container {
           position: relative;
-        /*display: none;*/
+        display: none;
       }
 
       #payment-container {
@@ -381,6 +381,67 @@
             margin-bottom: 0;
         }
 
+        #scs-screen {
+            position: fixed;
+            display: block;
+            width: 100%;
+            height: 100vh;
+            top: 0;
+            background-color: rgba(0,0,0,0.35);
+            z-index: 100;
+            transition: 0.17s opacity ease-in-out, 0.1s 0.15s z-index;
+        }
+
+        #scs-screen .scs-modal {
+            position: absolute;
+            line-height: 28px;
+            transform: translate(-50%, -50%);
+            top: 40%;
+            left: 50%;
+            width: 85%;
+            max-width: 400px;
+            border-radius: 4px;
+            background-color: #fff;
+            padding: 36px 30px;
+            text-align: center;
+            box-shadow: 0 0 10px rgba(0,0,0,0.35);
+            font-size: 14px;
+        }
+
+        #tick {
+            font-size: 30px;
+            color: #16bc56;
+            padding-left: 2px;
+            line-height: 32px;
+            height: 36px;
+            width: 36px;
+            margin: 4px auto;
+            border-radius: 50%;
+            border: 2px solid #16bc56;
+            font-weight: 400;
+        }
+
+        #scs-screen .scs-modal button {
+            width: 110px;
+            height: 40px;
+            margin-top: 20px;
+            border-radius: 4px;
+            background-color: #6954d1;
+            color: #fff;
+            border: none;
+            font-size: 14px;
+        }
+
+        .scs-modal #cross-btn {
+            right: 8px;
+            top: 6px;
+            position: absolute;
+            padding: 4px 10px;
+            text-align: right;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
     </style>
   </head>
   <body>
@@ -511,14 +572,14 @@
               <div id="desktop-container">
                   <div id="payment-container">
                     <svg class="bg-svg" width="1665px" height="665px" viewBox="0 0 1665 665" preserveAspectRatio="none">
-                        <polygon fill="#fafafa" transform="translate(750, 300) scale(1, -1) translate(-810, -274.0)" points="0 200 1665 3 1665 346 117 545 0 475"></polygon>
+                        <polygon fill="#fafafa" transform="translate(750, 300) scale(1, -1) translate(-810, -274.0)" points="0 200 1665 3 1665 346 220 545 0 475"></polygon>
                         <polygon fill="#f5f5f5" transform="translate(0, -40)" points="-40 200 1465 0 1665 450 1300 670 0 635"></polygon>
                     </svg>
 
                       <div class="table-box" id="inv-info-par">
                           <div id="inv-info-box">
                               <div class="inv-details">
-                                  <div class="inv-for">Payment requested by {{$data['merchant']['organization']['business_name']}}</div>
+                                  <div class="inv-for">Payment Request from {{$data['merchant']['organization']['business_name']}}</div>
                                   <div class="info">
                                       PAYMENT FOR
                                       <div class="val">{{$data['invoice']['description']}}</div>
@@ -635,8 +696,19 @@
                       <button class="mob-payment-btn" onclick="openCheckout()" >
                           PROCEED TO PAY
                       </button>
+                </div>
               </div>
+              <div id="scs-screen">
+                  <div class="scs-modal">
+                      <div id="cross-btn" onclick="closeSuccessModal()">✕</div>
+                      <div id="tick">✓</div>
+                      <span style="font-weight: 500">Payment Successful</span>
+                      <div style="color:#9b9b9b">
+                          Your payment of ₹{{number_format($data['invoice']['amount_due']/ 100, 2, '.', ',')}} is successful!
+                      </div>
+                      <button style="cursor: pointer" onclick="closeSuccessModal()">Close</button>
                   </div>
+              </div>
           @endif
         @if ($data['invoice']['type'] !== 'invoice')
           <div id="success" class="card">
@@ -800,12 +872,16 @@
     @endif
 
     <script>
-    function showOverlay() {
-        document.getElementById('overlay').style.opacity = 1;
-    }
-    function hideOverlay() {
-        document.getElementById('overlay').style.opacity = 0;
-    }
+        function showOverlay() {
+            document.getElementById('overlay').style.opacity = 1;
+        }
+        function hideOverlay() {
+            document.getElementById('overlay').style.opacity = 0;
+        }
+        function closeSuccessModal() {
+            document.getElementById('scs-screen').style.opacity = 0;
+            document.getElementById('scs-screen').style['z-index'] = -100;
+        }
     </script>
 
     <script>
