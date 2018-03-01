@@ -33,13 +33,15 @@ export default class EditWhiteListIps extends Component {
       return;
     }
 
+    const data = { whitelisted_ips_live, whitelisted_ips_test };
     return adminPut({
       url: `live/merchants/${this.props.merchantId}`,
-      data: { whitelisted_ips_live, whitelisted_ips_test },
+      data,
     })
       .then(response => {
         if (response) {
           notifySuccess('IP Addresses added successfully');
+          this.props.props.updateDetails(data);
           closeModal();
         }
       })
