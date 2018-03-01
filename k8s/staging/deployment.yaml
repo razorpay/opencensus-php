@@ -1,7 +1,7 @@
 apiVersion: apps/v1beta2
 kind: Deployment
 metadata:
-  name: echo
+  name: dashboard
   namespace: echo
 spec:
   replicas: 2
@@ -12,13 +12,13 @@ spec:
       maxUnavailable: 0
   selector:
     matchLabels:
-      name: echo
+      name: dashboard
   template:
     metadata:
       annotations:
-        iam.amazonaws.com/role: iam-echo-dashboard
+        iam.amazonaws.com/role: echo-dashboard
       labels:
-        name: echo
+        name: dashboard
     spec:
       nodeSelector:
         node-role.kubernetes.io/node-services: ""
@@ -32,7 +32,7 @@ spec:
               name: echo
               key: APP_MODE
         name: echo
-        image: razorpay/gimli:cdbad7371804660c4e2a34e8332540d041e342b5
+        image: razorpay/dashboard:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 80
@@ -43,24 +43,24 @@ spec:
             mountPath: /app/storage/logs/
           - name: nginx
             mountPath: /var/log/nginx/
-        readinessProbe:
-          httpGet:
-            path: /v1/status
-            port: 80
-            httpHeaders:
-              - name: Host
-                value: echo-dashboard.razorpay.in
-          initialDelaySeconds: 60
-          periodSeconds: 120
-        livenessProbe:
-          httpGet:
-            path: /commit.txt
-            port: 80
-            httpHeaders:
-              - name: Host
-                value: echo-dashboard.razorpay.in
-          initialDelaySeconds: 60
-          periodSeconds: 2
+        # readinessProbe:
+        #   httpGet:
+        #     path: /v1/status
+        #     port: 80
+        #     httpHeaders:
+        #       - name: Host
+        #         value: echo-dashboard.razorpay.in
+        #   initialDelaySeconds: 60
+        #   periodSeconds: 120
+        # livenessProbe:
+        #   httpGet:
+        #     path: /commit.txt
+        #     port: 80
+        #     httpHeaders:
+        #       - name: Host
+        #         value: echo-dashboard.razorpay.in
+        #   initialDelaySeconds: 60
+        #   periodSeconds: 2
         lifecycle:
           preStop:
             exec:
@@ -73,5 +73,5 @@ spec:
       - name: nginx
         hostPath:
           path: /var/log/fluentd/splunk/echo/nginx
-      dnsPolicy: ClusterFirst
+      dnsPolicy: Default
       restartPolicy: Always
