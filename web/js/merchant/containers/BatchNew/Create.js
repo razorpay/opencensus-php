@@ -18,7 +18,7 @@ export default class BatchCreate extends Component {
     return this.props
       .createBatch(data)
       .then(response => {
-        this.props.onCreation(response.data);
+        this.props.onCreation(response);
       })
       .catch(error => console.log('err: ', error)); //TODO: Handle error response
   };
