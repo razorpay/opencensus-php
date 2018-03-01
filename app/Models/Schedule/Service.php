@@ -13,7 +13,6 @@ use RZP\Services\Reporting;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Schedule\Task as ScheduleTask;
 
-
 class Service extends Base\Service
 {
     public function createSchedule($input)

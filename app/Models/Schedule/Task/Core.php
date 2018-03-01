@@ -83,7 +83,10 @@ class Core extends Base\Core
 
         $scheduleTask->merchant()->associate($merchant);
 
-        $scheduleTask->entity()->associate($entity);
+        if ($entity !== null)
+        {
+            $scheduleTask->entity()->associate($entity);
+        }
 
         $scheduleId = $input[Entity::SCHEDULE_ID];
 
@@ -113,11 +116,18 @@ class Core extends Base\Core
     {
         (new Validator())->validateForExternalServices($input);
 
+        $entityId = $input[Entity::ENTITY_ID];
+
+        $entityType = $input[Entity::ENTITY_TYPE];
+
+        unset($input[Entity::ENTITY_ID]);
+        unset($input[Entity::ENTITY_TYPE]);
+
         $scheduleTask = $this->create($merchant, null, $input);
 
-        $scheduleTask->setEntityId($input[Entity::ENTITY_ID]);
+        $scheduleTask->setEntityId($entityId);
 
-        $scheduleTask->setEntityType($input[Entity::ENTITY_TYPE]);
+        $scheduleTask->setEntityType($entityType);
 
         $this->repo->saveOrFail($scheduleTask);
 
