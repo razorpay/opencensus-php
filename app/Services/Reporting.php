@@ -10,6 +10,7 @@ use Requests_Exception;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
@@ -412,6 +413,8 @@ class Reporting
         if ($response->status_code !== 200)
         {
             $payload['body'] = $response->body;
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_REPORTING_INTEGRATION, $payload);
         }
 
         $this->trace->info(TraceCode::REPORTING_SERVICE_API_RESPONSE, $payload);
