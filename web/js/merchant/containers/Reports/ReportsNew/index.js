@@ -6,6 +6,7 @@ import { saveAs } from 'file-saver';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 import moment from 'moment';
 
+import { prefixEntityValue } from 'common/data';
 import ReduxDatetime from 'rzp/ui/ReduxDatetime';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import AccountsList from 'rzp/ui/AccountsList/index.js';
@@ -78,7 +79,7 @@ export default class ReportsContainer extends Component {
 
     this.defaultAccount = {
       name: user.name || user.user.name,
-      id: user.current,
+      id: prefixEntityValue('account', user.current),
       email: user.email,
       tag: 'My Account',
       tagIcon: 'i-account',
@@ -248,12 +249,22 @@ export default class ReportsContainer extends Component {
 
       this.props.showNotification(downloadStartedMessage);
 
-      return generateReportV2({
-        config_id: selectedConfig._item.id,
-        generated_by: selectedAccount.id,
-        start_time: startTime,
-        end_time: endTime,
-      }).then(data => {
+      const { user } = this.props,
+            selectedAccountId = ((selectedConfig.type in marketplaceConfigTypes)
+                                  ? selectedAccount.id
+                                  : this.defaultAccount.id).replace('acc_', ''),
+            isMerchantAccount = selectedAccountId === user.current,
+            reqData = {
+              config_id: selectedConfig._item.id,
+              generated_by: selectedAccountId,
+              start_time: startTime,
+              end_time: endTime,
+            };
+
+      return generateReportV2(
+        reqData,
+        isMerchantAccount
+      ).then(data => {
         if (data.error) {
           return this.props.showNotification({
             type: 'error',
@@ -292,7 +303,7 @@ export default class ReportsContainer extends Component {
         this.props.user.isMarketplaceEnabled &&
         account_id !== this.props.user.current
       ) {
-        data.account_id = 'acc_' + account_id; // It will be handled at api level later
+        data.account_id = prefixEntityValue('account', account_id); // It will be handled at api level later
       }
 
       if (entity === 'broking') {

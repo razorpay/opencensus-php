@@ -92,9 +92,10 @@ class NewApplicationForm extends Component {
   fetchWebhooks() {
     this.setState({ webhookLoading: true });
     // Fetch call getting app's webhook
-    ApplicationActions.fetchAppWebhooks(this.props.appId)
+    let appId = this.props.match.params.id;
+    ApplicationActions.fetchAppWebhooks(appId)
       .then(data => {
-        let webhook = data.data.items.length ? data.data.items[0] : {};
+        let webhook = data.data.items.length ? data.data.items[0] : null;
         this.setState({ webhookLoading: false, webhook });
       })
       .catch(e => {

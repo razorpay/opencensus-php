@@ -12,9 +12,9 @@ export const isEmail = email => {
 export const isUrlLenient = url => {
   url = url || '';
 
-  let urlRegExp = /^(https?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/
+  let urlRegExp = /^(https?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/;
   return urlRegExp.test(url);
-}
+};
 
 export const isDeepLink = url => {
   url = url || '';
@@ -55,6 +55,14 @@ export function validateCIN(value) {
   return value && value.length != 21
     ? 'CIN length must be 21 characters'
     : undefined;
+}
+
+export function validateMultipleEmails(emails) {
+  if (!emails || !emails.length) {
+    return false;
+  }
+
+  return emails.every(email => !!email && isEmail(email));
 }
 
 // Parse Object recursively and trims off extra spaces in strings

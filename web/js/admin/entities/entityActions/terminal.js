@@ -119,7 +119,7 @@ export default ({ entity, mode, updateEntity }) => {
 
   function deleteTerminal() {
     return fetch({
-      url: `${mode}/terminals/${entity.id}`,
+      url: `/admin/api/${mode}/terminals/${entity.id}`,
       method: 'delete',
     })
       .then(data => {

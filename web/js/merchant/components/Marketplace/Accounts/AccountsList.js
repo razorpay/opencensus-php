@@ -1,14 +1,23 @@
+import { prefixEntityValue } from 'common/data';
+
 import Time from 'rzp/ui/Time';
 import CheckIcon from 'rzp/ui/CheckIcon';
 import TableBody from 'rzp/ui/TableBody';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 
 const AccountsListItem = ({ account, onEdit }) => {
+  let status = account.activation_details
+    ? account.activation_details.status
+    : account.activated;
+  let timeStamp = account.activation_details
+    ? account.activation_details.activated_at
+    : account.activated_at;
+
   return (
     <EntityItemRow id={account.id}>
       <td>
         <a onClick={onEdit}>
-          <code>{`acc_${account.id}`}</code>
+          <code>{prefixEntityValue('account', account.id)}</code>
         </a>
       </td>
       <td>{account.email}</td>
@@ -17,12 +26,12 @@ const AccountsListItem = ({ account, onEdit }) => {
         <Time value={account.created_at} format="DD MMM YYYY, hh:mm:ss a" />
       </td>
       <td>
-        <span data-tip={account.activated ? 'Activated' : 'Not Activated'}>
-          <CheckIcon value={account.activated} />
+        <span data-tip={status == 'activated' ? 'Activated' : 'Not Activated'}>
+          <CheckIcon value={status == 'activated'} />
         </span>
       </td>
       <td>
-        <Time value={account.activated_at} format="DD MMM YYYY, hh:mm:ss a" />
+        <Time value={timeStamp} format="DD MMM YYYY, hh:mm:ss a" />
       </td>
     </EntityItemRow>
   );

@@ -20,14 +20,12 @@ import {
 } from 'rzp/utils/pokedex';
 
 import { fetch } from 'merchant/modules/pokedex';
-import OpenDisputeAlert from 'merchant/containers/Home/OpenDisputeAlert';
 import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
 import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
 import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
 import Traffic from 'merchant/containers/Home/Traffic';
 import RecentActivity from 'merchant/containers/Home/RecentActivity';
 import {
-  OLDEST_TXN_ERROR,
   API_ERROR,
   API_INVALID_RESP,
   isMobileDevice,
@@ -35,6 +33,7 @@ import {
 import GenericPanel, { PanelBody } from 'merchant/components/Home/GenericPanel';
 
 import {
+  trackError,
   trackDatesChange,
   trackPresetChange,
   trackSettlementsClick,
@@ -159,9 +158,13 @@ class HomeContainer extends Component {
       })
       .then(data => {
         if (data.error) {
+
+          trackError(`While Fetching Txns Grouped by Ptfm`);
+
           return this.props.showNotification({
             type: 'error',
             message: data.error,
+            hidePrevious: true
           });
         }
 
@@ -235,7 +238,7 @@ class HomeContainer extends Component {
         }
 
         if (!data.success) {
-          return OLDEST_TXN_ERROR;
+          return API_ERROR;
         }
 
         if (!data.data || !data.data.records) {
@@ -250,7 +253,7 @@ class HomeContainer extends Component {
       .catch(err => {
         console.error(err);
 
-        return OLDEST_TXN_ERROR;
+        return API_ERROR;
       })
       .then(data => {
         oldestTransactionDate.loading = false;
@@ -259,9 +262,12 @@ class HomeContainer extends Component {
           if (data.error) {
             oldestTransactionDate.error = data.error;
 
+            trackError(`While Fetching Oldest txn date`);
+
             this.props.showNotification({
               type: 'error',
               message: data.error,
+              hidePrevious: true
             });
           }
 
@@ -347,7 +353,6 @@ class HomeContainer extends Component {
     return (
       <div class="react-root dashboard-home">
         <Sticky stickWhen={0} stickAt={50}>
-          <OpenDisputeAlert customClass="analytics-dash-banner" />
           <Header className="clearfix" title="" showMode={false}>
             <div className="pull-left date-range-container">
               <DateRangePicker
