@@ -374,7 +374,7 @@ class Merchant
 
         foreach ($scheduleTasks as $scheduleTask)
         {
-            $scheduleTask->updateNextRunAndLastRun();
+            $scheduleTask->updateNextRunAndLastRun(true);
 
             $this->scheduleTasks->push($scheduleTask);
         }
