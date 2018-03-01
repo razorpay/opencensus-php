@@ -175,6 +175,10 @@ class Validator extends Base\Validator
         'clarification_mode',
     ];
 
+    protected static $websiteDetailsRules = [
+        Entity::BUSINESS_WEBSITE                => 'required|max:255|url',
+    ];
+
     /**
      * Validate the transaction report email
      *

@@ -5,11 +5,15 @@ namespace RZP\Models\Schedule\Task;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Carbon\Carbon;
-use RZP\Constants\Mode;
-use RZP\Constants\Timezone;
 use RZP\Models\Base;
-use RZP\Models\Schedule\Library;
+use RZP\Constants\Mode;
+use RZP\Models\Schedule;
+use RZP\Constants\Timezone;
+use RZP\Models\Plan\Subscription;
 
+/**
+ * @property Schedule\Entity $schedule
+ */
 class Entity extends Base\PublicEntity
 {
     use SoftDeletes;
@@ -117,6 +121,12 @@ class Entity extends Base\PublicEntity
     {
         if (isset($input[self::NEXT_RUN_AT]) === false)
         {
+            //
+            // We need to set a default value here since some flows
+            // are dependent on always having a value for this.
+            // Examples: `updateNextRunAndLastRunFromGivenMinTimeAndRefTime`,
+            // `updateForSubscription`
+            //
             $nextRunAt = Carbon::today(Timezone::IST)->getTimestamp();
 
             $input[self::NEXT_RUN_AT] = $nextRunAt;
@@ -160,6 +170,12 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::NEXT_RUN_AT);
     }
 
+    public function getLastRunAt()
+    {
+        return $this->getAttribute(self::LAST_RUN_AT);
+    }
+
+
     // -------------------------- Setters --------------------------------------
 
     public function setType($type)
@@ -179,21 +195,58 @@ class Entity extends Base\PublicEntity
 
     // ------------------------- Helper methods --------------------------------
 
-    public function updateNextRunAndLastRun(bool $considerHolidays = true)
+    public function updateNextRunAndLastRun(bool $considerHolidays = false)
     {
         $currentTime = Carbon::now(Timezone::IST);
 
-        $this->updateNextRunAndLastRunFromGivenRefTime($currentTime, $considerHolidays);
+        $schedulePeriod = $this->schedule->getPeriod();
+
+        if (Schedule\Period::isPeriodAnchored($schedulePeriod) === true)
+        {
+            $refTime = $currentTime;
+            $minTime = null;
+        }
+        else
+        {
+            $lastRun = Carbon::createFromTimestamp($this->getNextRunAt(), Timezone::IST);
+
+            $refTime = $lastRun;
+            $minTime = $currentTime;
+        }
+
+        $this->updateNextRunAndLastRunFromGivenMinTimeAndRefTime($refTime, $minTime, $considerHolidays);
     }
 
-    public function updateNextRunAndLastRunFromGivenRefTime($refTime, $considerHolidays = false)
+    /**
+     * @param Carbon $refTime           reference time refers to the base time
+     *                                  from which next run should be calculated
+     * @param int|null $minTime
+     * @param bool $considerHolidays
+     *
+     * @throws \RZP\Exception\LogicException
+     */
+    public function updateNextRunAndLastRunFromGivenMinTimeAndRefTime(
+        $refTime,
+        $minTime = null,
+        $considerHolidays = false)
     {
         $lastRun = Carbon::createFromTimestamp($this->getNextRunAt(), Timezone::IST);
 
-        $nextRun = Library::computeFutureRun($this->schedule, $refTime, $lastRun->copy(), $considerHolidays);
+        //
+        // Even though we are are passing minTime here, for anchored
+        // schedules, this will not be used and will be ignored completely.
+        // Unanchored will work with/without the minTime.
+        //
+        $nextRun = Schedule\Library::computeFutureRun($this->schedule, $refTime, $minTime, $considerHolidays);
 
         $this->setNextRunAt($nextRun->getTimestamp());
 
+        //
+        // lastRun will never be null because it is
+        // derived from next_run_at which will never be
+        // null since it is set to midnight by default.
+        // But, the condition is here nevertheless.
+        //
         if ($lastRun !== null)
         {
             $this->setLastRunAt($lastRun->getTimestamp());
@@ -235,10 +288,12 @@ class Entity extends Base\PublicEntity
      * we would call this function and the next_run_at will get set to
      * whatever it's supposed to get set to initially without retry.
      *
-     * @param string $mode
-     * @param bool   $retry
+     * @param Subscription\Entity $subscription
+     * @param string              $mode
+     * @param bool                $retry
+     * @throws \RZP\Exception\LogicException
      */
-    public function updateForSubscription(string $mode , $retry = false)
+    public function updateForSubscription(Subscription\Entity $subscription, string $mode , $retry = false)
     {
         if ($retry === true)
         {
@@ -248,30 +303,64 @@ class Entity extends Base\PublicEntity
         }
 
         //
-        // TODO: We should be able to use `getNextRunAt()` for Live Mode also.
+        // Calling updateNextRunAndLastRun for task sets the next_run starting
+        // from current time. This works fine in most cases, since charge time
+        // is usually equal to current time. But in the merchant-initiated test
+        // charge flow, we allow merchants to simulate a future charge for a
+        // subscription. So in this case, using current time will give the wrong
+        // result. So we use charge_at (next_run_at) instead, which is equal to
+        // current time in normal flow, and equal to simulated current time in
+        // test charge flow.
         //
-        $referenceTime = Carbon::now(Timezone::IST);
-
-        if ($mode === Mode::TEST)
+        // But, using next_run_at creates an issue when auth transaction (immediate) is made.
+        //
+        // In case of auth transaction (immediate), start_at would be null.
+        // Since start_at is null, we don't set any next_run_at during subscription
+        // creation (If it was not null, we would have set the next_run_at to the
+        // start_at value). Since we don't set next_run_at, the task entity sets the
+        // next_run_at to a default value: midnight. In this case, it would get set
+        // to subscription's creation date's midnight -- hence, in the past. We cannot
+        // use this value as refTime since it's not the actual next_run_at, but a dummy one.
+        //
+        // Solution: We know for a fact that next_run_at can NEVER be lesser than the
+        // subscription start_at value. If it is, it means that it's the auth
+        // transaction (immediate) where we haven't gotten a chance to update next_run_at.
+        // In this case, we just use the subscription's start_at time (which we do when
+        // subscription is created with start_at value) to calculate the next_run_at.
+        // In all other cases, we just use next_run_at as it is, because this value is set by us
+        // explicitly when to run and in simulated flow, this is equivalent to current time itself.
+        //
+        if (($this->getNextRunAt() < $subscription->getStartAt()) or
+            ($this->getNextRunAt() === null))
+        {
+            $referenceTime = $subscription->getStartAt();
+        }
+        else
         {
             //
-            // Calling updateNextRunAndLastRun for task sets the next_run starting
-            // from current time. This works fine in most cases, since charge time
-            // is usually equal to current time. But in the merchant-initiated test
-            // charge flow, we allow merchants to simulate a future charge for a
-            // subscription. So in this case, using current time will give the wrong
-            // result. So we use charge_at instead, which is equal to current time
-            // in normal flow, and equal to simulated current time in test charge flow.
+            // We are not actually using next_run_at here because of unanchored
+            // schedules. Anchored schedules have no issue with using current
+            // time or next_run_at values. They both would have the same value
+            // in live mode. In test mode, we can't use the current time
+            // because of simulated charges. But, we can use next_run_at in
+            // both test and live modes. But, next_run_at has an issue with
+            // unanchored schedules. Let's take an example of a schedule having
+            // 4 days interval. If the next_run_at was on 10th Jan and a
+            // failure happened, the next_run_at will get updated to 11th Jan.
+            // Once we run on 11th Jan and it goes through successfully, and if
+            // we use next_run_at, the next run calculated would end up being
+            // 15th Jan and not 14th Jan. Hence, we cannot use next_run_at to
+            // calculate the next next_run_at. So, we use current_start instead.
             //
-            // In case of auth transaction (immediate), charge_at would be null.
-            // In that case, we can use actual current time as the reference time.
+            // current_start will be last run of the current billing cycle.
+            // It's always updated before reaching this point.
             //
-            $referenceTime = $this->getNextRunAt() ?? Carbon::now()->getTimestamp();
-
-            $referenceTime = Carbon::createFromTimestamp($referenceTime, Timezone::IST);
+            $referenceTime = $subscription->getCurrentStart();
         }
 
-        $this->updateNextRunAndLastRunFromGivenRefTime($referenceTime, false);
+        $referenceTime = Carbon::createFromTimestamp($referenceTime, Timezone::IST);
+
+        $this->updateNextRunAndLastRunFromGivenMinTimeAndRefTime($referenceTime);
     }
 
     public function isTypeSettlement()

@@ -117,7 +117,7 @@ class Core extends Base\Core
 
                 if ($merchantPromotion->getRemainingIterations() > 0)
                 {
-                    $scheduleTask->updateNextRunAndLastRun(false);
+                    $scheduleTask->updateNextRunAndLastRun();
 
                     $this->repo->saveOrFail($scheduleTask);
 
@@ -160,7 +160,7 @@ class Core extends Base\Core
             {
                 $scheduleTask = $this->createScheduleTask($merchant, $promotion);
 
-                $scheduleTask->updateNextRunAndLastRun(false);
+                $scheduleTask->updateNextRunAndLastRun();
 
                 $this->repo->saveOrFail($scheduleTask);
             }

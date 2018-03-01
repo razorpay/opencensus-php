@@ -92,7 +92,6 @@ class Service extends Merchant\Service
      * @param array $input
      *
      * @return array
-     * @throws Exception\InvalidArgumentException
      */
     public function listLinkedAccounts(array $input)
     {

@@ -279,7 +279,30 @@ class TerminalRuleFilterTest extends TestCase
         $this->runTestCase($test, $merchant);
     }
 
-    protected function runTestCase(array $testData, Merchant\Entity $merchant)
+    public function testTerminalSortingWithSorterRuleForDirectTerminal()
+    {
+        $directHdfcTerminal = $this->fixtures->create('terminal:shared_hdfc_terminal', [
+            'id'          => '1000HdfcDirect',
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $directAxisTerminal =  $this->fixtures->create('terminal:shared_axis_terminal', [
+            'id'          => '1000AxisDirect',
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $sharedHdfcTerminal = $this->fixtures->create('terminal:shared_hdfc_terminal');
+
+        Terminal\Options::setTestChance(3000);
+
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $test = $this->testData[__FUNCTION__];
+
+        $this->runTestCase($test, $merchant, true);
+    }
+
+    protected function runTestCase(array $testData, Merchant\Entity $merchant, bool $strictCompare = false)
     {
         $payment = $this->createPaymentEntity($merchant, $testData['payment_options']);
 
@@ -303,9 +326,15 @@ class TerminalRuleFilterTest extends TestCase
 
         $selectedTerminalIds = array_pluck($selectedTerminals, 'id');
 
-        $this->assertEquals(count($expectedTerminalIds), count($selectedTerminalIds));
-
-        $this->assertArraySelectiveEquals($expectedTerminalIds, $selectedTerminalIds);
+        if ($strictCompare === true)
+        {
+            $this->assertEquals($expectedTerminalIds, $selectedTerminalIds);
+        }
+        else
+        {
+            $this->assertEquals(count($expectedTerminalIds), count($selectedTerminalIds));
+            $this->assertArraySelectiveEquals($expectedTerminalIds, $selectedTerminalIds);
+        }
 
         if (empty($ruleIds) === false)
         {
