@@ -36,7 +36,7 @@ class Processor extends VirtualAccount\Processor
      *
      * @return Entity
      */
-    public function process(Base\PublicEntity $bharatQr)
+    public function process(Base\PublicEntity $bharatQr, array $gatewayInput = null)
     {
         $isDuplicateNotification = $this->checkIfDuplicateNotification($bharatQr);
 
@@ -58,7 +58,7 @@ class Processor extends VirtualAccount\Processor
             $this->createAndSetVirtualAccount($bharatQr->getAmount());
         }
 
-        $this->processBharatQr($bharatQr);
+        $this->processBharatQr($bharatQr, $gatewayInput);
 
         $this->trace->info(
                 TraceCode::BHARAT_QR_PAYMENT_PROCESSING_SUCCESSFUL,
@@ -104,14 +104,14 @@ class Processor extends VirtualAccount\Processor
         return true;
     }
 
-    protected function processBharatQr(Base\PublicEntity $bharatQr)
+    protected function processBharatQr(Base\PublicEntity $bharatQr, array $gatewayInput)
     {
         $paymentProcessor = new PaymentProcessor($this->merchant);
 
         $payment = $this->repo->transaction(
-                        function() use ($bharatQr, $paymentProcessor)
+                        function() use ($bharatQr, $paymentProcessor, $gatewayInput)
                         {
-                            $paymentInput = $this->getBharatQrPaymentArray($bharatQr);
+                            $paymentInput = $this->getBharatQrPaymentArray($gatewayInput);
 
                             $res = $paymentProcessor->process($paymentInput);
 
@@ -122,7 +122,7 @@ class Processor extends VirtualAccount\Processor
                             $bharatQr->payment()->associate($payment);
 
 
-                            $payment->setGatewayBharatQr($bharatQr->getGateway());
+                            $payment->setGatewayBharatQr($gatewayInput[Entity::GATEWAY]);
 
 
                             $bharatQr->virtualAccount()->associate($this->virtualAccount);
@@ -181,11 +181,11 @@ class Processor extends VirtualAccount\Processor
      *
      * @return string
      */
-    protected function getLuhnValidCardNumberFromBharatQr(Entity $bharatQr)
+    protected function getLuhnValidCardNumberFromBharatQr(array $gatewayInput)
     {
-        $firstSix = $bharatQr->getCardFirstSix();
+        $firstSix = $gatewayInput[Entity::CARD_FIRST6];
 
-        $lastFour = $bharatQr->getCardLastFour();
+        $lastFour = $gatewayInput[Entity::CARD_LAST4];
 
         $part1 = $firstSix . self::RANDOM_CARD_PADDING;
 
@@ -198,23 +198,23 @@ class Processor extends VirtualAccount\Processor
         return $finalCardNumber;
     }
 
-    protected function getBharatQrPaymentArray(Entity $bharatQr): array
+    protected function getBharatQrPaymentArray(array $gatewayInput): array
     {
         $paymentArray = [
             Payment\Entity::CURRENCY    => Currency::INR,
-            Payment\Entity::METHOD      => $bharatQr->getMethod(),
-            Payment\Entity::AMOUNT      => $bharatQr->getAmount(),
+            Payment\Entity::METHOD      => $gatewayInput[Entity::METHOD],
+            Payment\Entity::AMOUNT      => $gatewayInput[Entity::AMOUNT],
             Payment\Entity::DESCRIPTION => "Bharat Qr Payment",
         ];
 
         // TODO: find a better method to do this. This is done in order to bypass validation
-        if ($bharatQr->getMethod() === Method::CARD)
+        if ($gatewayInput[Entity::METHOD] === Method::CARD)
         {
-            $paymentArray['card'] = $this->getDummyCardDetails($bharatQr);
+            $paymentArray['card'] = $this->getDummyCardDetails($gatewayInput);
         }
         else
         {
-            $paymentArray['vpa'] = $bharatQr->getVpa();
+            $paymentArray['vpa'] = $gatewayInput[Entity::VPA];
         }
 
         if ($this->virtualAccount->hasCustomer() === true)
@@ -229,11 +229,11 @@ class Processor extends VirtualAccount\Processor
         return $paymentArray;
     }
 
-    protected function getDummyCardDetails(Entity $bharatQr)
+    protected function getDummyCardDetails(array $gatewayInput)
     {
         // TODO: Handle the null checks in card validation
         $card = [
-            Card\Entity::NUMBER       => $this->getLuhnValidCardNumberFromBharatQr($bharatQr),
+            Card\Entity::NUMBER       => $this->getLuhnValidCardNumberFromBharatQr($gatewayInput),
             Card\Entity::CVV          => Constants::CARD_CVV,
             Card\Entity::NAME         => Constants::CARD_NAME,
             Card\Entity::EXPIRY_MONTH => Constants::CARD_EXPIRY_MONTH,

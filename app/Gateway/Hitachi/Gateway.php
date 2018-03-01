@@ -576,7 +576,7 @@ class Gateway extends Base\Gateway
     {
         $attributes = [
             Entity::RECEIVED           => true,
-            Entity::CARD_NUMBER        => $response[ResponseFields::F002],
+            Entity::MASKED_CARD_NUMBER => $response[ResponseFields::F002],
             Entity::CARD_NETWORK       => $response[ResponseFields::F003],
             Entity::AMOUNT             => $this->getIntegerFormattedAmount($response[ResponseFields::F004]),
             Entity::RRN                => $response[ResponseFields::F037],

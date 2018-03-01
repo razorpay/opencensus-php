@@ -45,11 +45,13 @@ class Service extends Base\Service
 
         $this->determineAndSetModeForQr($qrCodeId);
 
-        $bharatQrInputParams = $this->callGatewayFunction($gateway, $input);
+        $gatewayInput = $this->callGatewayFunction($gateway, $input);
 
-        $bharatQrInputParams[Entity::GATEWAY] = $gateway;
+        $gatewayInput[Entity::GATEWAY] = $gateway;
 
-        list($valid, $payment) = $this->core->processPayment($bharatQrInputParams);
+        $bharatQrInputParams = $this->getBharatQrInputParams($gatewayInput);
+
+        list($valid, $payment) = $this->core->processPayment($bharatQrInputParams, $gatewayInput);
 
         $input['payment'] = $payment;
 
@@ -65,6 +67,16 @@ class Service extends Base\Service
         $action = Action::QR_NOTIFICATION;
 
         return $this->app['gateway']->call($gateway, $action, $gatewayInput, null);
+    }
+
+    protected function getBharatQrInputParams(array $gatewayInput)
+    {
+        return [
+            Entity::PROVIDER_REFERENCE_ID => $gatewayInput[Entity::PROVIDER_REFERENCE_ID],
+            Entity::MERCHANT_REFERENCE    => $gatewayInput[Entity::MERCHANT_REFERENCE],
+            Entity::METHOD                => $gatewayInput[Entity::METHOD],
+            Entity::AMOUNT                => $gatewayInput[Entity::AMOUNT],
+        ];
     }
 
     protected function getResponse(bool $valid)
