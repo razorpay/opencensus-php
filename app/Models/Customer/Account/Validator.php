@@ -53,19 +53,15 @@ class Validator extends Base\Validator
 
     protected static $walletAppCreateRules = [
         Entity::CONTACT         => 'required|contact_syntax',
-        Entity::EMAIL           => 'sometimes|email',
+        Entity::EMAIL           => 'sometimes|email|custom',
         Entity::NAME            => 'sometimes|string|max:50|nullable|custom',
         'otp'                   => 'required|string|regex:"^\d{4,8}$"',
     ];
 
-    protected static $global_createValidators = [
-        Entity::EMAIL,
-    ];
-
-    protected function validateEmail($input)
+    protected function validateEmail($attribute, $value)
     {
         if (($this->merchant->isEmailOptional() !== true) and
-            (empty(input['email']) === true))
+            is_null($value) == false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'email is required',
@@ -161,7 +157,7 @@ class Validator extends Base\Validator
 
     public static function validateGlobalCustomerCreateInput($input, $merchant)
     {
-        (new static)->validateInput('global_create', $input);
+        (new self)->validateInput('global_create', $input);
     }
 
     public static function validateWalletAppCustomerCreateInput($input)
