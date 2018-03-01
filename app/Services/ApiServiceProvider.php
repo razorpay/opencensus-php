@@ -8,6 +8,7 @@ use Http\Mock\Client as MockHttplug;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 
+use RZP\Models\Key;
 use RZP\Models\Batch;
 use RZP\Models\Payout;
 use RZP\Models\Dispute;
@@ -21,13 +22,13 @@ use RZP\Models\Promotion;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Models\BankAccount;
+use RZP\Constants\Entity as E;
 use RZP\Models\Admin as Admin;
-use RZP\Models\Workflow\Action;
 use RZP\Gateway\GatewayManager;
+use RZP\Models\Workflow\Action;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Plan\Subscription\Addon;
 use RZP\Models\Gateway\File as GatewayFile;
-
 
 class ApiServiceProvider extends BaseServiceProvider
 {
@@ -37,6 +38,21 @@ class ApiServiceProvider extends BaseServiceProvider
      * @var bool
      */
     protected $defer = true;
+
+    /**
+     * Registering observers for eloquent events here.
+     * Used for invalidating cached entities on update
+     */
+    public function boot()
+    {
+        foreach (E::CACHED_ENTITIES as $entity => $_)
+        {
+            $entityClass = E::getEntityClass($entity);
+            $entityObserverClass = E::getEntityObserverClass($entity);
+
+            $entityClass::observe($entityObserverClass);
+        }
+    }
 
     /**
      * Register the service provider.

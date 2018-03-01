@@ -61,7 +61,8 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchUnsettledTransactions($timestamp, $channel)
+    public function fetchUnsettledTransactions(
+        $timestamp, string $channel, array $inMerchantIds = [], array $notInMerchantIds = [])
     {
         $merchantId = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
 
@@ -82,49 +83,46 @@ class Repository extends Base\Repository
         $transactionFee         = $this->dbColumn(Entity::FEE);
         $transactionFeeCredits  = $this->dbColumn(Entity::CREDITS);
         $transactionCreditsType = $this->dbColumn(Entity::CREDIT_TYPE);
+        $transactionCreatedAt   = $this->dbColumn(Entity::CREATED_AT);
 
-        $txns = $this->newQuery()
-                    ->select(
-                        $transactionId,
-                        $transactionMerchantId,
-                        $transactionBalance,
-                        $transactionType,
-                        $transactionSourceId,
-                        $transactionSettledAt,
-                        $transactionSettled,
-                        $transactionAmount,
-                        $transactionCredit,
-                        $transactionDebit,
-                        $transactionTax,
-                        $transactionFee,
-                        $transactionFeeCredits,
-                        $transactionCreditsType
-                    )
-                    ->join(Table::MERCHANT, $merchantId, '=', $transactionMerchantId)
-                    ->where(Entity::SETTLED_AT, '<', $timestamp)
-                    ->where(Entity::ON_HOLD, 0)
-                    ->where(Entity::SETTLED, '=', 0)
-                    ->where($transactionChannel, '=', $channel)
-                    ->where(Entity::TYPE, '!=', Type::SETTLEMENT)
-                    ->where(Merchant\Entity::HOLD_FUNDS, '=', 0)
-                    ->with('merchant', 'merchant.bankAccount', 'merchant.balance')
-                    ->orderBy($transactionMerchantId)
-                    ->orderBy($transactionId)
-                    ->get();
+        $query = $this->newQuery()
+                      ->select(
+                          $transactionId,
+                          $transactionMerchantId,
+                          $transactionBalance,
+                          $transactionType,
+                          $transactionSourceId,
+                          $transactionSettledAt,
+                          $transactionSettled,
+                          $transactionAmount,
+                          $transactionCredit,
+                          $transactionDebit,
+                          $transactionTax,
+                          $transactionFee,
+                          $transactionFeeCredits,
+                          $transactionCreditsType,
+                          $transactionCreatedAt
+                      )
+                      ->join(Table::MERCHANT, $merchantId, '=', $transactionMerchantId)
+                      ->where(Entity::SETTLED_AT, '<', $timestamp)
+                      ->where(Entity::ON_HOLD, 0)
+                      ->where(Entity::SETTLED, 0)
+                      ->where($transactionChannel, $channel)
+                      ->where(Entity::TYPE, '!=', Type::SETTLEMENT)
+                      ->where(Merchant\Entity::HOLD_FUNDS, 0)
+                      ->with('merchant', 'merchant.bankAccount', 'merchant.balance');
 
-        return $txns;
-    }
+        if (empty($inMerchantIds) === false)
+        {
+            $query = $query->whereIn($merchantId, $inMerchantIds);
+        }
 
-    public function fetchUnsettledTransactionsForMerchant($timestamp, $merchant)
-    {
-        return $this->newQuery()
-                    ->where(Transaction\Entity::ON_HOLD, 0)
-                    ->where(Transaction\Entity::SETTLED_AT, '<', $timestamp)
-                    ->where(Transaction\Entity::SETTLED, '=', 0)
-                    ->where(Transaction\Entity::TYPE, '!=', Type::SETTLEMENT)
-                    ->merchantId($merchant->getId())
-                    ->orderBy(Transaction\Entity::ID)
-                    ->get();
+        if (empty($notInMerchantIds) === false)
+        {
+            $query = $query->whereNotIn($merchantId, $notInMerchantIds);
+        }
+
+        return $query->get();
     }
 
     public function fetchUnsettledTransactionsForMerchantUpdate($merchantId)

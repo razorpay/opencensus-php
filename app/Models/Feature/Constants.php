@@ -59,6 +59,7 @@ class Constants
     const CORPORATE_BANKS               = 'corporate_banks';
     const MAGIC                         = 'magic';
     const NEW_ANALYTICS                 = 'new_analytics';
+    const DAILY_SETTLEMENT              = 'daily_settlement';
     const DISABLE_UPI_INTENT            = 'disable_upi_intent';
 
     // Orders
@@ -138,14 +139,19 @@ class Constants
         self::ORDER_RECEIPT_UNIQUE          => true,
         self::MAGIC                         => true,
         self::NEW_ANALYTICS                 => true,
+        self::DAILY_SETTLEMENT              => true,
         self::DISABLE_UPI_INTENT            => true,
     ];
+
+    // Entity type constants
+    const ACCOUNT                       = 'account';
+    const MERCHANT                      = 'merchant';
+    const APPLICATION                   = 'application';
 
     // Keys used in the feature on-boarding workflow
     const STATUS                        = 'status';
     const PRODUCT                       = 'product';
     const FEATURES                      = 'features';
-    const MERCHANT                      = 'merchant';
     const ONBOARDING                    = 'onboarding';
     const ONBOARDING_SUBMISSIONS_FETCH  = 'onboarding_submissions_fetch';
     const ONBOARDING_SUBMISSIONS_UPSERT = 'onboarding_submissions_upsert';
