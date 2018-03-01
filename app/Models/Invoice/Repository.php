@@ -2,8 +2,8 @@
 
 namespace RZP\Models\Invoice;
 
+use DB;
 use Carbon\Carbon;
-
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Order;
@@ -332,9 +332,9 @@ class Repository extends Base\Repository
     public function findIssuedByBatchId(string $batchId): Base\PublicCollection
     {
         return $this->newQuery()
-            ->where(Entity::BATCH_ID, $batchId)
-            ->where(Entity::STATUS, Status::ISSUED)
-            ->get();
+                    ->where(Entity::BATCH_ID, $batchId)
+                    ->where(Entity::STATUS, Status::ISSUED)
+                    ->get();
     }
 
     public function findByBatchIdAndReceipts(
@@ -383,7 +383,10 @@ class Repository extends Base\Repository
     public function getInvoiceForBatch(Batch\Entity $batch): Base\PublicCollection
     {
         return $this->newQuery()
-                    ->where(Entity::BATCH_ID, $batch->getId())
+                    ->selectRaw(Entity::STATUS . ', '.
+                        'COUNT(*) AS count')
+                    ->where(Entity::BATCH_ID, '=', $batch->getId())
+                    ->groupBy(Entity::STATUS)
                     ->get();
     }
 

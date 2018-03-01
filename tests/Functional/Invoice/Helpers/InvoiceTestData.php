@@ -3614,21 +3614,6 @@ return [
         ],
     ],
 
-    'testInvoiceStatsByBatch' => [
-        'request' => [
-            'url'     => '/invoices/batch/batch_00000000000001/stats',
-            'method'  => 'get',
-        ],
-        'response' => [
-            'content' => [
-                'entities_processed' => 3,
-                'payment_links_sent' => 3,
-                'payment_links_paid' => 1,
-                'payment_links_expired' => 1,
-            ],
-        ],
-    ],
-
     'testInvoiceSmsNotifyByBatch' => [
         'request' => [
             'url'       => '/invoices/batch/batch_00000000000001/notify',
@@ -3641,6 +3626,21 @@ return [
         'response' => [
             'content' => [],
             'status_code' => 200,
+        ],
+    ],
+
+    'testInvoiceStatsByBatch' => [
+        'request' => [
+            'url'     => '/batch/batch_00000000000001/stats',
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'batch_total'       => 4,
+                'invoice_issued'    => 1,
+                'invoice_paid'      => 2,
+                'invoice_expired'   => 1,
+            ],
         ],
     ],
 

@@ -56,11 +56,14 @@ class Constants
     const ALLOW_DC_RECURRING            = 'allow_dc_recurring';
     const SKIP_HOLD_FUNDS_ON_PAYOUT     = 'skip_hold_funds_on_payout';
     const REPORT_V2                     = 'report_v2';
-    const UPI_INTENT                    = 'upi_intent';
     const CORPORATE_BANKS               = 'corporate_banks';
-    const ORDER_ID_MANDATORY            = 'order_id_mandatory';
     const MAGIC                         = 'magic';
     const NEW_ANALYTICS                 = 'new_analytics';
+    const DISABLE_UPI_INTENT            = 'disable_upi_intent';
+
+    // Orders
+    const ORDER_ID_MANDATORY            = 'order_id_mandatory';
+    const ORDER_RECEIPT_UNIQUE          = 'order_receipt_unique';
 
     // Different actions for feature activation flow
     const CREATE           = 'create';
@@ -72,6 +75,16 @@ class Constants
     ];
 
     // TODO: Use this instead of allFeatures once in final code change pr
+    /**
+     * This map defines the feature's value when it is added through an incoming request (add/remove feature request).
+     *
+     * The feature will be added only when the incoming request has the particular feature's value set to
+     * the value defined in this map. Else, it gets removed.
+     *
+     * Ex: The feature 'dummy' gets added when the request has 'dummy' => true and gets removed when 'dummy' => false.
+     *
+     * @var array
+     */
     public static $featureValueMap = [
         self::DUMMY                         => true,
         self::WEBHOOKS                      => true,
@@ -120,11 +133,12 @@ class Constants
         self::ALLOW_DC_RECURRING            => true,
         self::SKIP_HOLD_FUNDS_ON_PAYOUT     => true,
         self::REPORT_V2                     => true,
-        self::UPI_INTENT                    => true,
         self::CORPORATE_BANKS               => true,
         self::ORDER_ID_MANDATORY            => true,
+        self::ORDER_RECEIPT_UNIQUE          => true,
         self::MAGIC                         => true,
         self::NEW_ANALYTICS                 => true,
+        self::DISABLE_UPI_INTENT            => true,
     ];
 
     // Keys used in the feature on-boarding workflow

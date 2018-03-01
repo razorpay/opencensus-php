@@ -33,8 +33,6 @@ class CreateMerchantAccessMapTable extends Migration
 
             $table->integer(Entity::UPDATED_AT);
 
-            $table->unique([Entity::MERCHANT_ID, Entity::ENTITY_ID]);
-
             $table->integer(Entity::DELETED_AT)
                   ->nullable();
 

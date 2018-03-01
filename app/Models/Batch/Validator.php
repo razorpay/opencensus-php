@@ -51,13 +51,13 @@ class Validator extends Base\Validator
 
     protected static $defaultCreateRules = [
         Entity::TYPE                 => 'required|custom',
-        Entity::NAME                 => 'sometimes|string|max:255',
+        Entity::NAME                 => 'filled|string|max:255',
         Entity::FILE                 => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
     ];
 
     protected static $paymentLinkCreateRules = [
         Entity::TYPE                    => 'required|in:payment_link',
-        Entity::NAME                    => 'sometimes|string|max:255',
+        Entity::NAME                    => 'filled|string|max:255',
         Entity::FILE                    => 'required_without:file_id|file|max:1024' . self::DEFAULT_MIME_RULE,
         Entity::FILE_ID                 => 'required_without:file|public_id',
         Invoice\Entity::DRAFT           => 'filled|in:0,1',
@@ -263,9 +263,10 @@ class Validator extends Base\Validator
      *
      * @throws BadRequestException
      */
-    protected function validatePaymentLinkEntries(array & $entries,
-                                                  array $params,
-                                                  Merchant\Entity $merchant)
+    protected function validatePaymentLinkEntries(
+        array & $entries,
+        array $params,
+        Merchant\Entity $merchant)
     {
         // Associative array with index as input file's row index and values
         // as the error message.

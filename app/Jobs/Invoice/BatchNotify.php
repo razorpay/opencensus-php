@@ -75,7 +75,6 @@ class BatchNotify extends BaseJob implements ShouldQueue
         {
             $smsNotify   = (bool) ($this->input[InvoiceModel\Entity::SMS_NOTIFY] ?? '1');
             $emailNotify = (bool) ($this->input[InvoiceModel\Entity::EMAIL_NOTIFY] ?? '1');
-            s($smsNotify, $emailNotify);
 
             $invoices = $this->repoManager->invoice->findIssuedByBatchId($this->batchId);
 
@@ -118,7 +117,7 @@ class BatchNotify extends BaseJob implements ShouldQueue
             $this->repoManager->saveOrFail($invoice);
 
             $job = new InvoiceJob($this->mode, InvoiceJob::ISSUED, $invoice->getId());
-            s($job->getId(), $job->getEvent());
+
             (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
         }
         catch (\Throwable $e)

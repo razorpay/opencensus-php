@@ -798,27 +798,21 @@ class Core extends Base\Core
     {
         $response = [Entity::ENTITIES_PROCESSED => $batch->getTotalCount()];
 
-        $invoices = $this->repo->invoice->getInvoiceForBatch($batch)->toArrayPublic();
+        $invoices = $this->repo->invoice->getInvoiceForBatch($batch);
 
-        $nonDraftInvoices = array_filter($invoices['items'], function($invoice) {
+        $stats = [];
 
-            return ($invoice['status'] !== 'draft');
-        });
+        $invoices->each(function ($item) use (& $stats) {
 
-        $paidInvoices = array_filter($nonDraftInvoices, function($invoice) {
+            $content = $item->getOriginal();
 
-            return ($invoice['status'] === 'paid');
-        });
-
-        $expiredInvoices = array_filter($nonDraftInvoices, function($invoice) {
-
-            return ($invoice['status'] === 'expired');
+            $stats[$content['status']]  = (int) $content['count'];
         });
 
         $response += [
-                    Entity::PAYMENT_LINKS_SENT      => count($nonDraftInvoices),
-                    Entity::PAYMENT_LINKS_PAID      => count($paidInvoices),
-                    Entity::PAYMENT_LINKS_EXPIRED   => count($expiredInvoices),
+                    Entity::PAYMENT_LINKS_SENT      => $stats[Status::ISSUED],
+                    Entity::PAYMENT_LINKS_PAID      => $stats[Status::PAID],
+                    Entity::PAYMENT_LINKS_EXPIRED   => $stats[Status::EXPIRED],
         ];
 
         return $response;

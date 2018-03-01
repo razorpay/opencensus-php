@@ -64,9 +64,16 @@ class BatchController extends Controller
         return ApiResponse::json($result);
     }
 
-    public function validateBatchFile()
+    public function validateFile()
     {
-        $response = $this->service()->validateBatchFile($this->input);
+        $response = $this->service()->validateFile($this->input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getStatsOfBatch(string $id)
+    {
+        $response = $this->service()->fetchStatsOfBatch($id);
 
         return ApiResponse::json($response);
     }

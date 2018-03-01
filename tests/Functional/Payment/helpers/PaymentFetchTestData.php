@@ -42,6 +42,29 @@ return [
         ],
     ],
 
+
+    'testFetchRuleswithCustomerIdError' => [
+        'request' => [
+            'url'     => '/payments',
+            'method'  => 'get',
+            'content' => [
+                'customer_id' => 'cust_9evnGgkvo0XnSh',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\ExtraFieldsException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
+        ],
+    ],
+
     'testFetchRulesCascadingForProxyAuth' => [
         'request' => [
             'url'     => '/payments',
@@ -183,14 +206,14 @@ return [
                 'count'  => 1,
                 'items'  => [
                     [
-                        'entity'            => 'payment',
-                        'amount'            => 1000000,
-                        'currency'          => 'INR',
-                        'status'            => 'captured',
-                        'method'            => 'card',
-                        'amount_refunded'   => 0,
-                        'amount_transferred'=> 0,
-                        'captured'          => true,
+                        'entity'             => 'payment',
+                        'amount'             => 1000000,
+                        'currency'           => 'INR',
+                        'status'             => 'captured',
+                        'method'             => 'card',
+                        'amount_refunded'    => 0,
+                        'amount_transferred' => 0,
+                        'captured'            => true,
                         'email'             => 'abc@email.com',
                         'fee'               => 0,
                         'disputes'          => [

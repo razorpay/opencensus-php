@@ -62,7 +62,7 @@ class AuthService
     {
         $input = [Application\Entity::MERCHANT_ID => $merchantId];
 
-        return $this->sendRequest('applications/' . $id, Requests::DELETE, $input);
+        return $this->sendRequest('applications/' . $id, Requests::PUT, $input);
     }
 
     public function updateApplication(string $id, array $input, string $merchantId): array
@@ -90,7 +90,7 @@ class AuthService
     {
         $input[Token\Entity::MERCHANT_ID] = $merchantId;
 
-        return $this->sendRequest('tokens/' . $id, Requests::DELETE, $input);
+        return $this->sendRequest('tokens/' . $id, Requests::PUT, $input);
     }
 
     protected function sendRequest(
