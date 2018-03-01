@@ -173,7 +173,7 @@ class Core extends Base\Core
     public function verifyOtp($input, $merchant)
     {
         // Currently, the validator does not have any mandatory field.
-        Customer\Validator::validateGlobalCustomerCreateInput($input);
+        Customer\Validator::validateGlobalCustomerCreateInput($input, $merchant);
 
         // Parse contact
         $input = Customer\Validator::validateAndParseContactInInput($input);
@@ -306,7 +306,9 @@ class Core extends Base\Core
     protected function getOrCreateGlobalCustomer($input)
     {
         $contact = $input[Customer\Entity::CONTACT];
-        $email = $input[Customer\Entity::EMAIL];
+
+        $email = $input[Customer\Entity::EMAIL]  ??  NULL;
+
 
         $customer = $this->repo->customer->findByContactAndMerchant(
             $contact,

@@ -210,11 +210,25 @@ class CustomerTest extends TestCase
         $customer = $this->getLastEntity('customer', true);
 
         $request = &$this->testData['testDeleteCustomer']['request'];
+
         $request['url'] = '/customers/'.$customer['id'];
 
         $this->ba->proxyAuth();
 
         $this->startTest();
+    }
+
+    public function testOtpFlowforEmailOptionalMerchants()
+    {
+        $this->ba->publicAuth();
+
+        $this->mockRaven();
+
+        $response = $this->sendOtp('9988776655');
+
+        $this->fixtures->merchant->addFeatures(['email_optional']);
+
+        $content = $this->verifyOtp('9988776655', null,  '233323');
     }
 
     public function testOtpFlowWithoutDeviceToken()

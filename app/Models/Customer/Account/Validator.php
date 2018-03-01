@@ -33,7 +33,6 @@ class Validator extends Base\Validator
         Entity::CONTACT         => 'sometimes|contact_syntax',
         Entity::NAME            => 'sometimes|string|max:50|nullable|custom',
         Entity::ACTIVE          => 'sometimes|in:0,1',
-        Entity::EMAIL           => 'sometimes|email',
     ];
 
     protected static $globalCreateRules = [
@@ -145,8 +144,13 @@ class Validator extends Base\Validator
         (new static)->validateInput('payment', $input);
     }
 
-    public static function validateGlobalCustomerCreateInput($input)
+    public static function validateGlobalCustomerCreateInput($input, $merchant)
     {
+        if ($merchant->isEmailOptional() === true)
+        {
+            self::$globalCreateRules[\RZP\Models\Merchant\Entity::EMAIL] = 'sometimes|email';
+        }
+
         (new static)->validateInput('global_create', $input);
     }
 
