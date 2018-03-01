@@ -308,12 +308,17 @@ class Reporting
     {
         try
         {
-            return Requests::request(
-                        $request['url'],
-                        $request['headers'],
-                        $request['content'],
-                        $request['method'],
-                        $request['options']);
+            $response = Requests::request(
+                            $request['url'],
+                            $request['headers'],
+                            $request['content'],
+                            $request['method'],
+                            $request['options']);
+
+            $this->validateResponse($response);
+
+            return $response;
+
         }
         catch (Requests_Exception $e)
         {
@@ -413,11 +418,19 @@ class Reporting
         if ($response->status_code !== 200)
         {
             $payload['body'] = $response->body;
-
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_REPORTING_INTEGRATION, $payload);
         }
 
         $this->trace->info(TraceCode::REPORTING_SERVICE_API_RESPONSE, $payload);
+    }
+
+    protected function validateResponse(Requests_Response $response)
+    {
+        if ($response->status_code !== 200)
+        {
+            $payload['body'] = $response->body;
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_REPORTING_INTEGRATION, $payload);
+        }
     }
 
     /**
