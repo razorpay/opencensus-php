@@ -11,6 +11,7 @@ use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Entity as Constants;
 use RZP\Models\Gateway\Rule;
 use RZP\Models\Admin\ConfigKey;
 
@@ -179,15 +180,24 @@ class Selector extends Base\Core
                                   ->getTerminalsForMerchantAndSharedMerchant(
                                         $this->input['merchant']);
 
+        //
+        // For second recurring payments, the payment must go through a designated
+        // terminal, even if the merchant has since been unassigned from it. This
+        // is achieved by referring to the gateway token, the original terminal of
+        // that gateway token, and finding other usable terminals assigned to the
+        // same primary merchant
+        //
         if ($this->input['payment']->isSecondRecurring() === true)
         {
-            $merchantTerminals = $this->addTerminalsForSecondRecurringPayment($merchantTerminals);
+            $addTerminals = $this->getTerminalsForSecondRecurringPayment();
+
+            $merchantTerminals = $merchantTerminals->merge($addTerminals);
         }
 
         return $merchantTerminals->all();
     }
 
-    protected function addTerminalsForSecondRecurringPayment($selectedTerminals)
+    protected function getTerminalsForSecondRecurringPayment()
     {
         $token = $this->input['payment']->getGlobalOrLocalTokenEntity();
 
@@ -195,7 +205,7 @@ class Selector extends Base\Core
 
         $merchantIdsForGatewayTokenTerminals = $this->repo
                                                     ->gateway_token
-                                                    ->findByTokenAndReference($token, $reference, ['terminal'])
+                                                    ->findByTokenAndReference($token, $reference, [Constants::TERMINAL])
                                                     ->pluck('terminal.merchant_id')
                                                     ->toArray();
 
@@ -209,7 +219,7 @@ class Selector extends Base\Core
                              ->terminal
                              ->getByTypeAndMerchantIds(Type::RECURRING_NON_3DS, $merchantIdsForGatewayTokenTerminals);
 
-        return $selectedTerminals->merge($addTerminals);
+        return $addTerminals;
     }
 
     protected function filterTerminals(array $terminals, Base\PublicCollection $rules, bool $verbose = false): array
