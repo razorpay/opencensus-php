@@ -3620,7 +3620,7 @@ return [
             'method'    => 'put',
             'content'   => [
                 'sms_notify'    => 1,
-                'email_notify'  => 0,
+                'email_notify'  => 1,
             ],
         ],
         'response' => [
