@@ -1125,7 +1125,7 @@ class BasicAuth
         $this->oauthClientId = $oauthClientId;
     }
 
-    public function setApplicationId(string $applicationId)
+    public function setOAuthApplicationId(string $applicationId)
     {
         $this->applicationId = $applicationId;
     }

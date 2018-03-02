@@ -36,8 +36,6 @@ class Authenticate
 
     protected $router;
 
-    protected $hasBearerToken;
-
     /**
      * Create a new filter instance.
      *
@@ -52,8 +50,6 @@ class Authenticate
         $this->router = $this->app['router'];
 
         $this->oauth = new OAuth();
-
-        $this->hasBearerToken = false;
     }
 
     /**
@@ -93,7 +89,7 @@ class Authenticate
 
     protected function authenticateAuth($route, $bearerToken)
     {
-        if ($this->hasBearerToken === false)
+        if (empty($bearerToken) === true)
         {
             $ret = $this->authenticateBasicAuth($route);
         }
@@ -112,7 +108,7 @@ class Authenticate
         // authenticate with the access token, else go for the
         // otherwise existing key-secret flow
         //
-        if ($this->hasBearerToken === false)
+        if (empty($bearerToken) === true)
         {
             // Post process after authentication completes for a merchant
             $ret = $this->postMerchantAuthenticationProcessing();
@@ -276,19 +272,10 @@ class Authenticate
 
         if ($this->app->runningUnitTests() === true)
         {
-            $bearerToken = $request->bearerToken();
-
-            if (empty($bearerToken) === false)
-            {
-                $this->hasBearerToken = true;
-            }
-
-            return $bearerToken;
+            return $request->bearerToken();
         }
 
         $authHeader = getallheaders()['Authorization'] ?? null;
-
-        $this->hasBearerToken = false;
 
         $bearerToken = '';
 
@@ -296,8 +283,6 @@ class Authenticate
         {
             if (Str::startsWith($authHeader, 'Bearer '))
             {
-                $this->hasBearerToken = true;
-
                 $bearerToken = Str::substr($authHeader, 7);
             }
         }
