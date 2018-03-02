@@ -386,6 +386,28 @@ if (! function_exists('camel_case_array'))
     }
 }
 
+if (! function_exists('seq_array'))
+{
+    /**
+     * Associative to sequential array. For e.g. passing an associative array
+     * to redis hmset method can use this method to prepare argument list.
+     *
+     * @param  array $assocArray
+     * @return array
+     */
+    function seq_array(array $assocArray): array
+    {
+        $seqArray = [];
+        foreach ($assocArray as $k => $v)
+        {
+            $seqArray[] = $k;
+            $seqArray[] = $v;
+        }
+
+        return $seqArray;
+    }
+}
+
 if (! function_exists('encode_currency'))
 {
     function encode_currency(string $str)

@@ -2,28 +2,77 @@
 
 namespace RZP\Tests\Unit\Request;
 
+use RZP\Tests\TestCase;
 use RZP\Http\Throttle\Throttler;
+use RZP\Tests\Traits\TestsThrottle;
+use RZP\Exception\ThrottleException;
+use RZP\Exception\BadRequestException;
 
-class ThrottlerTest extends \RZP\Tests\AbstractThrottleTest
+class ThrottlerTest extends TestCase
 {
+    use TestsThrottle { setUp as baseSetUp; }
     use Traits\HasRequestCases;
 
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/Helpers/ThrottlerTestData.php';
-        parent::setUp();
+
+        $this->baseSetUp();
     }
 
     /**
-     * Must not trigger attempt when redis has skip flag enabled.
+     * When global setting is set with max bucket size 0:
+     * - Must throw ThrottleException
+     */
+    public function testAttemptThrottle()
+    {
+        $this->setRedisGlobalSettings(['skip' => 0, 'mock' => 0, 'test:private:0:mbs' => 0]);
+
+        $requestMock = $this->invokeRequestCase('privateRoute');
+
+        $this->expectException(ThrottleException::class);
+        (new Throttler)->throttle($requestMock);
+    }
+
+    /**
+     * When requested with incorrect key id, throttler:
+     * - Must fail with BadRequestException
+     */
+    public function testAttemptThrottleWhenInvalidKeyId()
+    {
+        $requestMock = $this->invokeRequestCase('privateRouteWhenInvalidKey');
+
+        $this->expectException(BadRequestException::class);
+        (new Throttler)->throttle($requestMock);
+    }
+
+    /**
+     * When skip flag is enabled in global settings:
+     * - Must not trigger attemptThrottle
      */
     public function testAttemptThrottleWhenSkipped()
     {
-        $this->setRedisGlobalSettings(1);
+        $this->setRedisGlobalSettings(['skip' => 1]);
 
-        $requestMock = $this->mockRouteRequest('invoice_fetch_multiple');
+        $requestMock = $this->invokeRequestCase('privateRoute');
 
         $throttlerMock = $this->createThrottlerMock(['attemptThrottle']);
+        $throttlerMock->expects($this->never())->method('attemptThrottle');
+
+        $throttlerMock->throttle($requestMock);
+    }
+
+    /**
+     * When there is redis connection error:
+     * - Must not trigger attemptThrottle
+     * - Must not throw any exception
+     */
+    public function testAttemptThrottleWhenRedisConnectionError()
+    {
+        $requestMock = $this->invokeRequestCase('privateRoute');
+
+        $throttlerMock = $this->createThrottlerMock(['attemptThrottle', 'initRedisConnection']);
+        $throttlerMock->expects($this->once())->method('initRedisConnection')->will($this->throwException(new \Exception));
         $throttlerMock->expects($this->never())->method('attemptThrottle');
 
         $throttlerMock->throttle($requestMock);

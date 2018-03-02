@@ -190,7 +190,7 @@ class Throttler
         $payload  = compact('key', 'leakRateValue', 'leakRateDuration', 'maxBucketSize', 'response');
 
         // Only throttle if it is not in mock mode(early release)
-        $mock = $this->settings[K::GLOBAL]['mocked'] ?? '1';
+        $mock = $this->settings[K::GLOBAL]['mock'] ?? '1';
         if (($response->allowed === false) and ($mock === '0'))
         {
             throw new ThrottleException($response->retryAfter, $payload);

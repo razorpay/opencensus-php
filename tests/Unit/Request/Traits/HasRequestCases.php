@@ -19,6 +19,7 @@ trait HasRequestCases
         'publicRouteWhenKeyInHeaders',
 
         'privateRoute',
+        'privateRouteWhenInvalidKey',
     ];
 
     protected function invokeRequestCase(string $case, ...$args)
@@ -33,7 +34,7 @@ trait HasRequestCases
     {
         $requestMock = $this->mockRouteRequest($name, $path, ['getUser']);
 
-        $requestMock->expects($this->atLeastOnce())
+        $requestMock->expects($this->any())
                     ->method('getUser')
                     ->willReturn(self::$testKey);
 
@@ -46,10 +47,26 @@ trait HasRequestCases
     {
         $requestMock = $this->mockRouteRequest($name, $path, ['getUser', 'getPassword']);
 
-        $requestMock->expects($this->atLeastOnce())
+        $requestMock->expects($this->any())
                     ->method('getUser')
                     ->willReturn(self::$testKey);
-        $requestMock->expects($this->atLeastOnce())
+        $requestMock->expects($this->any())
+                    ->method('getPassword')
+                    ->willReturn(self::$testSecret);
+
+        return $requestMock;
+    }
+
+    protected function mockPrivateRouteWhenInvalidKey(
+        string $name = 'invoice_fetch_multiple',
+        string $path = 'invoices'): Request
+    {
+        $requestMock = $this->mockRouteRequest($name, $path, ['getUser', 'getPassword']);
+
+        $requestMock->expects($this->any())
+                    ->method('getUser')
+                    ->willReturn('invalidkey');
+        $requestMock->expects($this->any())
                     ->method('getPassword')
                     ->willReturn(self::$testSecret);
 

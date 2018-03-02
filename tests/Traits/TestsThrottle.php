@@ -1,12 +1,12 @@
 <?php
 
-namespace RZP\Tests;
+namespace RZP\Tests\Traits;
 
 use Illuminate\Support\Facades\Redis;
 
 use RZP\Http\Throttle\Constant as K;
 
-abstract class AbstractThrottleTest extends TestCase
+trait TestsThrottle
 {
     /**
      * @var \Predis\Client
@@ -46,10 +46,26 @@ abstract class AbstractThrottleTest extends TestCase
         $this->redis = Redis::connection('throttle')->client();
     }
 
-    protected function setRedisGlobalSettings(int $skip = 0, int $mock = 0)
+    protected function setRedisGlobalSettings(array $parameters = ['skip' => 0, 'mock' => 0])
     {
-        $args = ['skip', $skip, 'mock', $mock];
-        $this->redis->hmset(K::GLOBAL_SETTINGS_KEY, ...$args);
+        $this->setRedisSettings(K::GLOBAL_SETTINGS_KEY, $parameters);
+    }
+
+    protected function setRedisIdLevelSettings(string $id, array $parameters = [])
+    {
+        $this->setRedisSettings(K::ID_SETTINGS_KEY_PREFIX . $id, $parameters);
+    }
+
+    protected function setRedisSettings(string $key, array $parameters)
+    {
+        if (empty($parameters) === false)
+        {
+            $this->redis->hmset($key, ...seq_array($parameters));
+        }
+        else
+        {
+            $this->redis->del($key);
+        }
     }
 
     protected function flushRedis()
