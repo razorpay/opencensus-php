@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "381663ab9e3e08f54fcddc0efc3b0f4b",
+    "content-hash": "6b61cba700d22004e26c1d1bcc9bc9ca",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -2124,16 +2124,16 @@
         },
         {
             "name": "jitendra/php-valve",
-            "version": "dev-master",
+            "version": "dev-hash",
             "source": {
                 "type": "git",
                 "url": "https://github.com/jitendra-1217/php-valve.git",
-                "reference": "08bf8366fbe3b4d3ba47067938e777d1306cce55"
+                "reference": "c0093bad8802261cdc392fec05ddb763ff5d9c16"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jitendra-1217/php-valve/zipball/08bf8366fbe3b4d3ba47067938e777d1306cce55",
-                "reference": "08bf8366fbe3b4d3ba47067938e777d1306cce55",
+                "url": "https://api.github.com/repos/jitendra-1217/php-valve/zipball/c0093bad8802261cdc392fec05ddb763ff5d9c16",
+                "reference": "c0093bad8802261cdc392fec05ddb763ff5d9c16",
                 "shasum": ""
             },
             "require": {
@@ -2158,7 +2158,7 @@
                 "rate-limiting",
                 "redis"
             ],
-            "time": "2018-03-06T12:45:28+00:00"
+            "time": "2018-03-06T12:40:00+00:00"
         },
         {
             "name": "jms/metadata",
