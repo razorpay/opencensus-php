@@ -342,9 +342,9 @@ class Repository extends Base\Repository
         array $receipts = []): Base\PublicCollection
     {
         return $this->newQuery()
-            ->where(Entity::BATCH_ID, $batchId)
-            ->whereIn(Entity::RECEIPT, $receipts)
-            ->get();
+                    ->where(Entity::BATCH_ID, $batchId)
+                    ->whereIn(Entity::RECEIPT, $receipts)
+                    ->get();
     }
 
     public function getNonDraftInvoiceCountByBatchId(string $batchId): int
