@@ -307,8 +307,7 @@ class Core extends Base\Core
     {
         $contact = $input[Customer\Entity::CONTACT];
 
-        $email = $input[Customer\Entity::EMAIL]  ??  NULL;
-
+        $email = $input[Customer\Entity::EMAIL] ?? null;
 
         $customer = $this->repo->customer->findByContactAndMerchant(
             $contact,
