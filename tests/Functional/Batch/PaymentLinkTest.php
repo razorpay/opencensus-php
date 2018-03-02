@@ -173,7 +173,7 @@ class PaymentLinkTest extends TestCase
 
         $files = $this->getEntities('file_store', [], true);
 
-        $errorFile = $files['items'][0];
+        $validatedFile = $files['items'][0];
 
         $inputFile = $files['items'][1];
 
@@ -181,15 +181,17 @@ class PaymentLinkTest extends TestCase
         $this->assertEquals(null, $inputFile['entity_id']);
         $this->assertEquals('batch_input', $inputFile['type']);
 
-        $this->assertEquals(null, $errorFile['entity_type']);
-        $this->assertEquals(null, $errorFile['entity_id']);
-        $this->assertEquals('batch_validated', $errorFile['type']);
+        $this->assertEquals(null, $validatedFile['entity_type']);
+        $this->assertEquals(null, $validatedFile['entity_id']);
+        $this->assertEquals('batch_validated', $validatedFile['type']);
 
-        $this->assertEquals($errorFile['id'], $response['file_id']);
+        $this->assertEquals($validatedFile['id'], $response['file_id']);
 
-        // The error file is supposed to be inside batch/upload folder
-        $this->assertEquals(storage_path('files/filestore/') . $errorFile['location'],
+        // The validated file is supposed to be inside batch/validated folder
+        $this->assertEquals(storage_path('files/filestore/') . $validatedFile['location'],
                             $response['signed_url']);
+        $this->assertEquals(true, (strpos($validatedFile['location'], 'batch/validated') !== false));
+        $this->assertEquals(true, (strpos($response['signed_url'], 'batch/validated') !== false));
     }
 
     public function testBatchCreateForUploadedFile()
@@ -209,6 +211,33 @@ class PaymentLinkTest extends TestCase
         $response = $this->runRequestResponseFlow($testdata);
 
         $this->assertArraySelectiveEquals($testdata['response']['content'], $response);
+
+        // Check invoices
+        $invoices = $this->getEntities('invoice', [], true);
+        $this->assertEquals(2, $invoices['count']);
+
+        // Check files
+        $files = $this->getEntities('file_store', [], true);
+        $this->assertEquals(3, $files['count']);
+
+        // Check output file
+        $outputFile = $files['items'][0];
+        $this->assertEquals('batch_output', $outputFile['type']);
+        $this->assertEquals($response['id'], $outputFile['entity_type'] . '_' . $outputFile['entity_id']);
+        $this->assertEquals('batch/download/' . Entity::stripDefaultSign($response['id']), $outputFile['name']);
+
+        // Check validated file
+        $validatedFile = $files['items'][1];
+        $this->assertEquals('batch_validated', $validatedFile['type']);
+        $this->assertEquals($response['id'], $validatedFile['entity_type'] . '_' . $validatedFile['entity_id']);
+        $this->assertEquals(true, (strpos($validatedFile['location'], 'batch/validated') !== false));
+
+        // Check input file
+        $inputFile = $files['items'][2];
+        $this->assertEquals('batch_input', $inputFile['type']);
+        $this->assertEquals(null, $inputFile['entity_type']);
+        $this->assertEquals(null, $inputFile['entity_id']);
+        $this->assertEquals(true, (strpos($inputFile['location'], 'batch/upload') !== false));
     }
 
     protected function getDefaultPaymentLinkFileEntries()
