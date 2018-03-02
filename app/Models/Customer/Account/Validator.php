@@ -58,10 +58,14 @@ class Validator extends Base\Validator
         'otp'                   => 'required|string|regex:"^\d{4,8}$"',
     ];
 
-    protected function validateEmail($attribute, $value)
+   protected static $global_createValidators = [
+       Entity::EMAIL,
+   ];
+
+    protected function validateEmail($input)
     {
         if (($this->merchant->isEmailOptional() !== true) and
-            is_null($value) == true)
+            (empty($input['email']) === true))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'email is required',
