@@ -29,7 +29,7 @@
         }
       body {
         margin: 0;
-        font-family: -apple-system, BlinkMacSystemFont, 'Lato', 'Segoe UI', 'Roboto', 'Ubuntu', 'Cantarell', 'Droid Sans', 'Helvetica Neue', sans-serif;
+        font-family: "Lato",ubuntu,helvetica,sans-serif;
         color: #414141;
         background: #fff;
       }
@@ -115,9 +115,18 @@
         display: none;
       }
 
+      #desktop-container > div {
+        position: absolute;
+        transform: translate(-50%, -50%);
+        left: 50%;
+        top: 50%;
+      }
+
       #mobile-container {
-          position: relative;
+        position: relative;
         display: none;
+        background: #eaeaea;
+        height: 100vh;
       }
 
       #payment-container {
@@ -149,24 +158,14 @@
       #chkout-box {
         width: 100%;
         margin: 0 auto;
-        box-shadow: 0px 0px 20px rgba(0,0,0,0.08);
+        box-shadow: 0 0 20px rgba(0,0,0,0.08);
         min-height: 511px;
         background-color: #fff;
         overflow: hidden;
+        position: relative;
+        z-index: 0;
+        margin-left: -15px;
       }
-
-        #desktop-container #chkout-box {
-            position: relative;
-            z-index: 0;
-            margin-left: -15px;
-        }
-
-        #mobile-container #chkout-box {
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: -101;
-        }
 
       #overlay {
         position: fixed;
@@ -189,20 +188,21 @@
         max-width: 600px;
         width: 100%;
         margin: 0 auto;
-        box-shadow: 0px 0px 20px rgba(0,0,0,0.08);
+        box-shadow: 0 0 20px rgba(0,0,0,0.08);
         border: 1px solid #dfdfdf;
         border-radius: 4px;
-        min-height: 340px;
+        /*min-height: 300px;*/
       }
 
       .inv-details {
         padding: 30px 40px;
         background-color: #fff;
+        min-height: 250px;
       }
 
       .inv-details .inv-for {
         font-size: 16px;
-        font-weight: 500;
+        font-weight: 600;
       }
 
       .inv-details {
@@ -226,12 +226,16 @@
           color: #969a9a;
       }
 
-      .inv-details .info .amount {
+        #partial-payment-info {
+            display: none;
+        }
+
+      .inv-details .info #display-pay-amt {
         font-weight: 600;
         font-size: 24px;
       }
 
-      .inv-details .info .amount span {
+      .inv-details .info #display-pay-amt > span {
         position: relative;
       }
 
@@ -245,7 +249,6 @@
         transform: rotate(-16deg) scaleY(1.15);
         right: -48px;
         top: -8px;
-
       }
 
       .line-strike {
@@ -301,7 +304,7 @@
         border: 1px solid #dfdfdf;
         font-size: 12px;
         border-radius: 4px;
-        box-shadow: 0px 0px 15px rgba(0,0,0,0.08);
+        box-shadow: 0 0 15px rgba(0,0,0,0.08);
         color: #787878;
         overflow: auto;
       }
@@ -323,13 +326,12 @@
       }
 
       #payment-container--mob {
-        border-radius: 4px;
         width: 100%;
-        max-width: 411px;
+        max-width: 412px;
+        padding-bottom: 80px;
         margin: 0 auto;
-        width: 100%;
+        border: 1px solid #dfdfdf;
         box-shadow: 0 0 10px rgba(0,0,0,0.08);
-         background-color: #eaeaea;
       }
         #payment-container--mob .inv-details{
             background-color: #fff;
@@ -337,7 +339,7 @@
             padding: 28px 24px;
             border-radius: 4px;
             border: 1px solid #dfdfdf;
-            box-shadow: 0px 0px 15px rgba(0,0,0,0.08);
+            box-shadow: 0 0 15px rgba(0,0,0,0.08);
         }
         #chkout-header {
             padding: 24px;
@@ -361,6 +363,7 @@
             border: 0;
             background-image: linear-gradient(to bottom right,rgba(255,255,255,0.2),rgba(0,0,0,0.2));
             cursor: pointer;
+            display: none;
         }
 
         #chkout-header:before {
@@ -398,6 +401,10 @@
             position: relative;
         }
 
+        #header-details #merchant {
+            margin-top: 18px;
+        }
+
         #header-details #merchant-name {
             text-overflow: ellipsis;
             overflow: hidden;
@@ -409,15 +416,12 @@
             text-overflow: ellipsis;
             overflow: hidden;
             opacity: .8;
+            font-size: 14px;
         }
 
         #header-details #amount {
             font-size: 24px;
             margin-top: 10px;
-        }
-
-        #payment-container--mob {
-          padding-bottom: 60px;
         }
 
         #payment-container--mob #footer {
@@ -432,67 +436,25 @@
             margin-bottom: 0;
         }
 
-        #scs-screen {
-            position: fixed;
+        #scs-box svg {
             display: block;
-            width: 100%;
-            height: 100vh;
-            top: 0;
-            background-color: rgba(0,0,0,0.35);
-            z-index: 100;
-            transition: 0.17s opacity ease-in-out, 0.1s 0.15s z-index;
-
-            display: none;
+            fill: #16bc56;
+            padding-left: 2px;
+            height: 48px;
+            width: 48px;
+            margin: 4px auto;
         }
 
-        #scs-screen .scs-modal {
-            position: absolute;
+
+        #scs-box {
             line-height: 28px;
-            transform: translate(-50%, -50%);
-            top: 40%;
-            left: 50%;
             width: 85%;
-            max-width: 400px;
-            border-radius: 4px;
             background-color: #fff;
             padding: 36px 30px;
             text-align: center;
-            box-shadow: 0 0 10px rgba(0,0,0,0.35);
             font-size: 14px;
-        }
-
-        #tick {
-            font-size: 30px;
-            color: #16bc56;
-            padding-left: 2px;
-            line-height: 32px;
-            height: 36px;
-            width: 36px;
-            margin: 4px auto;
-            border-radius: 50%;
-            border: 2px solid #16bc56;
-            font-weight: 400;
-        }
-
-        #scs-screen .scs-modal button {
-            width: 110px;
-            height: 40px;
-            margin-top: 20px;
-            border-radius: 4px;
-            background-color: #6954d1;
-            color: #fff;
-            border: none;
-            font-size: 14px;
-        }
-
-        .scs-modal #cross-btn {
-            right: 8px;
-            top: 6px;
-            position: absolute;
-            padding: 4px 10px;
-            text-align: right;
-            font-weight: 600;
-            cursor: pointer;
+            margin: 128px auto 0;
+            display: none;
         }
 
     </style>
@@ -641,6 +603,7 @@
       <div id="invoice-status-container" class={{$data['invoice']['status']}}>
           @if (isset($data['invoice']) && $data['invoice']['type'] !== 'invoice')
             <div id="desktop-container">
+                <div>
                   <div id="payment-container">
                     <svg class="bg-svg" width="1665px" height="665px" viewBox="0 0 1665 665" preserveAspectRatio="none">
                         <polygon fill="#fafafa" transform="translate(750, 300) scale(1, -1) translate(-810, -274.0)" points="0 200 1665 3 1665 346 220 545 0 475"></polygon>
@@ -651,72 +614,75 @@
                           <div id="inv-info-box">
                               <div class="inv-details">
                                   <div class="inv-for">Payment Request from {{$data['merchant']['organization']['business_name']}}</div>
-                                  <div class="info">
-                                      PAYMENT FOR
-                                      <div class="val">{{$data['invoice']['description']}}</div>
-                                  </div>
-
-                                  <div class="info">
-                                      REQUEST EXPIRES
-                                      <div class="val">{{$data['invoice']['expire_by']}}</div>
-                                  </div>
-
-                                  <div class="info">
-                                      AMOUNT PAYABLE
-                                      <div class="val amount">
-                                          <span>
-                                            ₹{{number_format($data['invoice']['amount_due']/ 100, 2, '.', ',')}}
-                                            <span id="paid-tag">PAID</span>
-                                          </span>
+                                  @if ($data['invoice']['status'] !== 'cancelled' or ($data['invoice']['expire_by'] < time()))
+                                      <div class="info">
+                                          PAYMENT FOR
+                                          <div class="val">{{$data['invoice']['description']}}</div>
                                       </div>
 
+                                      @if($data['invoice']['expire_by'])
+                                          <div class="info">
+                                              REQUEST EXPIRES
+                                              <div class="val">{{date('M D, Y', $data['invoice']['expire_by'])}} </div>
+                                          </div>
+                                      @endif
 
                                       <div class="info">
-                                          <div class="val">
-                                              <b>₹{{number_format($data['invoice']['amount_due']/ 100, 2, '.', ',')}}</b>
-                                              <span class="light">Due</span>
-                                          </div>
-                                          <div class="val">
-                                              ₹{{number_format($data['invoice']['amount_paid']/ 100, 2, '.', ',')}}
-                                              <span class="light">Paid</span>
-                                          </div>
-                                      </div>
-                                      <div class="line-strike"></div>
+                                          <span id="pay-title"></span>
+                                          <div class="val" id="display-pay-amt"></div>
 
-                                  </div>
+                                          <div class="info" id="partial-payment-info">
+                                              <div class="val">
+                                                  <b id=due-amt>₹{{number_format($data['invoice']['amount_due']/ 100, 2, '.', ',')}}</b>
+                                                  <span class="light">Due</span>
+                                              </div>
+                                              <div class="val">
+                                                  <span id="paid-amt"> ₹{{number_format($data['invoice']['amount_paid']/ 100, 2, '.', ',')}}</span>
+                                                  <span class="light">Paid</span>
+                                              </div>
+                                          </div>
+                                          <div class="line-strike"></div>
+
+                                      </div>
+                                  @endif
                               </div>
-                              <div id="cancelled-invoice">
-                                  <div class="title">
-                                      Payment Link Expired<span style="color:#f54443">&nbsp;/ Cancelled</span>
+                              @if ($data['invoice']['status'] !== 'cancelled' or ($data['invoice']['expire_by'] < time()))
+                                  <div class="footer">
+                                      Powered by
+                                      <img src="https://cdn.razorpay.com/logo.svg" />
                                   </div>
-                                  <div class="desc">
-                                      Oops! This payment links is expired on 30 November 2017.<br/>
-                                      Please contact {{$data['merchant']['organization']['business_name']}} at {{$data['merchant']['organization']['email']}} or call at +91 9282882 for any queries.
+                              @endif
+                              @if ($data['invoice']['status'] === 'cancelled' or ($data['invoice']['expire_by'] > time()))
+                                  <div id="cancelled-invoice">
+                                      <div class="title">
+                                          Payment Link Expired<span style="color:#f54443">&nbsp;/ Cancelled</span>
+                                      </div>
+                                      <div class="desc">
+                                          Oops! This payment links is expired on 30 November 2017.<br/>
+                                          Please contact {{$data['merchant']['organization']['business_name']}} at {{$data['merchant']['organization']['email']}} or call at +91 9282882 for any queries.
+                                      </div>
                                   </div>
-                              </div>
-                              <div class="footer">
-                                  Powered by
-                                  <img src="https://cdn.razorpay.com/logo.svg" />
-                              </div>
+                              @endif
                           </div>
                       </div>
                       <div class="table-box" id="chkout-par">
                         <div id="overlay"></div>
-                        <div id="chkout-box" onmouseout="hideOverlay()" onmouseover="showOverlay()">
+                        <div id="chkout-box">
                             <div id="chkout-header">
-                                <div id="header-logo">
-                                    @if (isset($data['merchant']['image']) and true)
-                                        <img src={{$data['merchant']['image']}} width="100%" height="100%">
-                                    @endif
-                                </div>
+                                <div id="header-logo"></div>
                                 <div id="header-details">
-                                    @if (isset($data['merchant']) and true)
+                                    @if (isset($data['merchant']))
                                         <div id="merchant">
-                                            <div id="merchant-name">Test Account</div>
-                                            <div id="merchant-desc">Invoice #inv_9gr8V2pBZwlEYS</div>
-                                            <div id="amount">₹<span class="amount-figure">23</span></div>
+                                            <div id="merchant-name">{{$data['merchant']['organization']['business_name']}}</div>
+                                            <div id="merchant-desc">Invoice #{{$data['invoice']['id']}}</div>
                                         </div>
                                     @endif
+                                </div>
+                            </div>
+                            <div id="scs-box">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"><path d="M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm0-2c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm-1.959 17l-4.5-4.319 1.395-1.435 3.08 2.937 7.021-7.183 1.422 1.409-8.418 8.591z"/></svg>
+                                <span style="font-weight: 500">Payment Completed</span>
+                                <div id="scs-msg"style="color:#9b9b9b">
                                 </div>
                             </div>
                         </div>
@@ -733,21 +699,21 @@
                           and get started instantly
                       </div>
                   </div>
+                </div>
               </div>
             <div id="mobile-container">
               <div id="payment-container--mob">
                   <div id="chkout-header">
                     <div id="header-logo">
-                        @if (isset($data['merchant']['image']) and true)
+                        @if (isset($data['merchant']['image']))
                             <img src={{$data['merchant']['image']}}>
                         @endif
                     </div>
                     <div id="header-details">
-                        @if (isset($data['merchant']) and true)
+                        @if (isset($data['merchant']))
                             <div id="merchant">
-                                <div id="merchant-name">Test Account</div>
-                                <div id="merchant-desc">Invoice #inv_9gr8V2pBZwlEYS</div>
-                                <div id="amount">₹<span class="amount-figure">23</span></div>
+                                <div id="merchant-name">{{$data['merchant']['organization']['business_name']}}</div>
+                                <div id="merchant-desc">Invoice #{{$data['invoice']['id']}}</div>
                             </div>
                         @endif
                     </div>
@@ -759,37 +725,31 @@
                           <div class="val">{{$data['invoice']['description']}}</div>
                       </div>
 
-                      <div class="info">
-                          REQUEST EXPIRES
-                          <div class="val">{{$data['invoice']['expire_by']}}</div>
-                      </div>
-
-                      <div class="info">
-                          AMOUNT PAYABLE
-                          <div class="val amount">
-                                      <span>
-                                        ₹{{number_format($data['invoice']['amount_due']/ 100, 2, '.', ',')}}
-                                          <span id="paid-tag">PAID</span>
-                                      </span>
-                          </div>
-
-
+                      @if($data['invoice']['expire_by'])
                           <div class="info">
+                              REQUEST EXPIRES
+                              <div class="val">{{date('M D, Y', $data['invoice']['expire_by'])}} </div>
+                          </div>
+                      @endif
+
+                      <div class="info">
+                          <span id="pay-title"></span>
+                          <div class="val" id="display-pay-amt"></div>
+
+
+                          <div class="info" id="partial-payment-info">
                               <div class="val">
-                                  <b>₹{{number_format($data['invoice']['amount_due']/ 100, 2, '.', ',')}}</b>
+                                  <b id="due-amt">₹{{number_format($data['invoice']['amount_due']/ 100, 2, '.', ',')}}</b>
                                   <span class="light">Due</span>
                               </div>
                               <div class="val">
-                                  ₹{{number_format($data['invoice']['amount_paid']/ 100, 2, '.', ',')}}
+                                  <span id="paid-amt">₹{{number_format($data['invoice']['amount_paid']/ 100, 2, '.', ',')}}</span>
                                   <span class="light">Paid</span>
                               </div>
                           </div>
                           <div class="line-strike"></div>
 
                       </div>
-                  </div>
-                  <div id="chkout-box">
-
                   </div>
                   <div id="footer">
                       <img id="rzp-logo" src="https://cdn.razorpay.com/logo.svg" />
@@ -800,53 +760,64 @@
                       </div>
                       <img id="fin-logo" src="data:image/jpeg;base64,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" />
                   </div>
-                  @if (true)
-                      <button id="mob-payment-btn">
-                          PROCEED TO PAY
-                      </button>
-                  @endif
+                  <button id="mob-payment-btn">
+                      PROCEED TO PAY
+                  </button>
             </div>
           </div>
-            <div id="scs-screen">
-                  <div class="scs-modal">
-                      <div id="cross-btn" onclick="closeSuccessModal()">✕</div>
-                      <div id="tick">✓</div>
-                      <span style="font-weight: 500">Payment Successful</span>
-                      <div style="color:#9b9b9b">
-                          Your payment of ₹{{number_format($data['invoice']['amount_due']/ 100, 2, '.', ',')}} is successful!
-                      </div>
-                      <button style="cursor: pointer" onclick="closeSuccessModal()">Close</button>
-                  </div>
-              </div>
           @endif
+
         @if ($data['invoice']['type'] !== 'invoice')
-          <div id="success" class="card">
-            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"><path d="M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm0-2c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm-1.959 17l-4.5-4.319 1.395-1.435 3.08 2.937 7.021-7.183 1.422 1.409-8.418 8.591z"/></svg>
-            <h3>Your Payment has been received</h3>
-            <div id='break'>
-              <div>Amount Paid<span>₹ {{ $data['invoice']['amount']/100 }}</span></div>
-              <div>Invoice ID<span>{{ $data['invoice']['id'] }}</span></div>
-              <div>Payment ID<span id='pay_id'>{{ $data['invoice']['payment_id'] or '' }}</span></div>
-            </div>
-          </div>
+          <script>
+              cleanHTML();
 
-          <div class="redirect-message">
-            <br/>
-            <center><i>Redirecting you to the Merchant Site...</i></center>
-          </div>
+              var data = window.RZP_DATA.data;
+              var color = data.merchant.color || '#168AFA';
+              document.getElementById('chkout-header').style['background-color'] = color;
 
-          @if ($data['invoice']['partial_payment'] && $data['invoice']['amount_due'] > 0)
-            <div id="partial" class="card">
-              <h3>You have made a partial payment of ₹ {{ $data['invoice']['amount_paid']/100 }}.</h3>
-              <button id="button" onclick="razorpay.open()">Pay remaining ₹ {{ $data['invoice']['amount_due']/100 }}</button>
-              <div id='break'>
-                <div>Amount Paid<span>₹ {{ $data['invoice']['amount_paid']/100 }}</span></div>
-                <div>Amount Due<span>₹ {{ $data['invoice']['amount_due']/100 }}</span></div>
-                <div>Total<span>₹ {{ $data['invoice']['amount']/100 }}</span></div>
-                <div>Invoice ID<span>{{ $data['invoice']['id'] }}</span></div>
-              </div>
-            </div>
-          @endif
+              function fullPaid() {
+                  document.getElementById('pay-title').innerHTML = 'AMOUNT PAID';
+                  document.getElementById('display-pay-amt').innerHTML = '<span> ₹' + (data['invoice']['amount_paid'] /100).toFixed(2) + '<span id="paid-tag">PAID</span></span>';
+
+                  if (checkIsDesktop()) {
+                      document.getElementById('scs-box').style.display = 'block';
+                      document.getElementById('scs-msg').innerHTML = "Your payment of ₹ " +  (data['invoice']['amount_paid']/ 100).toFixed(2) + " is received!"
+                  }
+              }
+
+              // Full paid
+              if (data['invoice']['amount_due'] === 0 && data['invoice']['status'] === 'paid') {
+                  fullPaid();
+              } else {
+                  document.getElementById('pay-title').innerHTML = 'AMOUNT PAYABLE';
+                  document.getElementById('display-pay-amt').innerHTML = "<span> ₹" + (data['invoice']['amount_due']/ 100).toFixed(2) + "</span>";
+
+                  if (checkIsDesktop()) {
+                      function showOverlay() {
+                          document.getElementById('overlay').style.opacity = 1;
+                      }
+                      function hideOverlay() {
+                          document.getElementById('overlay').style.opacity = 0;
+                      }
+                      document.getElementById('chkout-box').addEventListener('mouseover', showOverlay);
+                      document.getElementById('chkout-box').addEventListener('mouseout', hideOverlay);
+                  } else {
+                      console.log('.....');
+                      var payBtn = document.getElementById('mob-payment-btn');
+                      payBtn.style['background-color'] = color;
+                      payBtn.style['display'] = 'block';
+                  }
+
+                  if (data['invoice']['partial_payment']) {
+                      document.getElementById('partial-payment-info').style.display = 'block';
+
+                      if (checkIsDesktop()) {
+                          document.getElementById('scs-msg').innerHTML = "Your payment of ₹ " + (data['invoice']['amount_due'] / 100).toFixed(2) + " is received!"
+                      }
+                  }
+              }
+
+          </script>
 
           @if ($data['invoice']['status'] !== 'paid')
             @if (isset($data['error']))
@@ -858,7 +829,6 @@
               </div>
             @endif
             <script>
-                cleanHTML();
               (function (globalScope) {
 
                 var data = globalScope.data;
@@ -920,18 +890,12 @@
                 @endif
 
                 if (merchant) {
-                  if (merchant.name) {
-                    options.name = merchant.name;
+                  if (merchant.organization.business_name) {
+                        options.name = merchant.organization.business_name;
                   }
 
                   var color = merchant.color || '#168AFA';
                   options.theme.color = color;
-                  document.getElementById('chkout-header').style['background-color'] = color;
-
-                  if (!checkIsDesktop()) {
-                      var payBtn = document.getElementById('mob-payment-btn');
-                      payBtn.style['background-color'] = color;
-                  }
 
                   if (merchant.image) {
                     options.image = merchant.image;
@@ -944,7 +908,6 @@
                         razorpay = window.razorpay = Razorpay(options);
                     } else {
                         document.getElementById('mob-payment-btn').addEventListener('click', function() {
-                            // document.getElementById('chkout-box').style['z-index'] = 101;
                             razorpay = window.razorpay = Razorpay(options);
                             razorpay.open();
                         });
@@ -996,20 +959,6 @@
         @endif
       </div>
     @endif
-
-    <script>
-
-        function showOverlay() {
-            document.getElementById('overlay').style.opacity = 1;
-        }
-        function hideOverlay() {
-            document.getElementById('overlay').style.opacity = 0;
-        }
-        function closeSuccessModal() {
-            document.getElementById('scs-screen').style.opacity = 0;
-            document.getElementById('scs-screen').style['z-index'] = -100;
-        }
-    </script>
 
     <script>
 
