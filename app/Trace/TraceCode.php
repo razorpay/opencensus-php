@@ -714,7 +714,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ES_ALIASES_WRITE_OP_REQUEST               = 'ES_ALIASES_WRITE_OP_REQUEST';
     const ES_ALIASES_WRITE_OP_FAILED                = 'ES_ALIASES_WRITE_OP_FAILED';
     const ES_ALIASES_WRITE_OP_RESPONSE              = 'ES_ALIASES_WRITE_OP_RESPONSE';
-    const ES_SYNC_PUSH_PAYLOAD                      = 'ES_SYNC_PUSH_PAYLOAD';
     const ES_SYNC_PUSH_FAILED                       = 'ES_SYNC_PUSH_FAILED';
     const ES_SYNC_FAILED                            = 'ES_SYNC_FAILED';
     const ES_SYNC_REQUEST                           = 'ES_SYNC_REQUEST';

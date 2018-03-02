@@ -40,13 +40,14 @@
         "laravel/tinker": "1.0.1",
         "graham-campbell/throttle": "dev-master",
         "rtconner/laravel-tagging": "~2.2",
-        "razorpay/trace": "2.0.9",
+        "razorpay/trace": "2.0.10",
         "anlutro/l4-settings": "0.5.3",
         "razorpay/oauth": "dev-master",
         "drewm/mailchimp-api": "^2.1",
         "razorpay/ufh-sdk-php": "dev-master",
         "bacon/bacon-qr-code": "1.0.3",
-        "watson/rememberable": "^2.0"
+        "watson/rememberable": "^2.0",
+        "layershifter/tld-extract": "^1.2"
     },
     "repositories": [
         {
