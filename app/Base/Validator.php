@@ -15,8 +15,7 @@ class Validator extends \Razorpay\Spine\Validation\Validator
 
         $this->merchant = $this->app['basicauth']->getMerchant();
 
-        $this->entity = $entity;
-
+        parent::__construct($entity);
     }
 
     protected function throwExtraFieldsException($extraFields)
