@@ -551,7 +551,7 @@ trait Refund
 
             $gatewayRefunded = true;
         }
-        catch (Exception\BaseException $e)
+        catch (\Throwable $e)
         {
             $this->app['segment']->trackPayment(
                 $this->payment, TraceCode::PAYMENT_REFUND_FAILURE);
@@ -578,7 +578,7 @@ trait Refund
 
             $reversed = true;
         }
-        catch (Exception\BaseException $e)
+        catch (\Throwable $e)
         {
             $this->app['segment']->trackPayment(
                 $this->payment, TraceCode::PAYMENT_REVERSE_FAILURE);
