@@ -62,6 +62,15 @@ class Validator extends Base\Validator
        Entity::EMAIL,
    ];
 
+    public function __construct($entity = null)
+    {
+        $this->app = App::getFacadeRoot();
+
+        $this->merchant = $this->app['basicauth']->getMerchant();
+
+        parent::__construct($entity);
+    }
+
     protected function validateEmail($input)
     {
         if (($this->merchant->isEmailOptional() !== true) and
