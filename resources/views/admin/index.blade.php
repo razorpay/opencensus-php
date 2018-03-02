@@ -18,3 +18,4 @@
 <body>
 <div id="react-root" class="react-root"></div>
 <script src="{{$cdn}}/dist/admin-entry.js"></script>
+<script src="{{$cdnDashboardUrl}}/dist/raven-entry.js"></script>

@@ -7,6 +7,16 @@ export default class ErrorBoundary extends Component {
   };
 
   componentDidCatch(error, info) {
+
+    if (window.Raven) {
+
+      console.log(error, info); 
+      Raven.captureException(error, { extra: info });
+    } else {
+    
+      console.error(error, info);
+    }
+
     this.setState({ error, info });
   }
 
@@ -17,17 +27,53 @@ export default class ErrorBoundary extends Component {
   }
 
   render() {
+
+    const hasRaven = !!window.Raven,
+          lastEventId = hasRaven && Raven.lastEventId();
+
     if (this.state.error) {
       return (
-        <banner class="warning">
-          <p>
-            <b>An Error Occured</b>
-          </p>
-          <pre>{this.state.error.toString()}</pre>
-          <pre>{this.state.info.componentStack.replace(/^\n/gm, '')}</pre>
-        </banner>
+        <div ref={node => this.node = node}
+             className={`rzp-error-boundary${hasRaven ? " has-raven": ""}`}>
+          {hasRaven && (
+            <div className="js-error-container">
+              <div className="js-error-content">
+                <div className="js-error-illustration"></div>
+                <p>
+                  We're sorry — something's gone wrong.
+                </p>
+                <p className={`${lastEventId ? "" : "m-0"}`}>
+                  Our team has been notified, but
+                  {' '}
+                  <a className="error-report-link" 
+                     onClick={() => lastEventId && Raven.showReportDialog()}>
+                    click here
+                  </a> to fill out a report.
+                </p>
+                {
+                  !!lastEventId && (
+                    <p> Error Code: <code>{lastEventId}</code></p>
+                  )
+                }
+              </div>
+            </div>
+          )}
+          {!hasRaven && (
+			<div className="js-error-details">
+			  <banner className="warning">
+			    <p>
+			  	<b>An Error Occured</b>
+			    </p>
+			    <pre>{this.state.error.toString()}</pre>
+			    <pre>
+                  {this.state.info.componentStack.replace(/^\n/gm, '')}
+                </pre>
+			  </banner>
+			</div>
+          )}
+        </div>
       );
     }
-    return this.props.children;
+    return this.props.children || null;
   }
 }

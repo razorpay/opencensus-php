@@ -33,6 +33,7 @@
   <script src="{{$cdnDashboardUrl}}/dist/merchant-entry.js"></script>
   <!-- smooch code -->
   @if(env('APP_ENV') === 'production')
+    <script src="{{$cdnDashboardUrl}}/dist/raven-entry.js"></script>
     <script src='https://cdn.smooch.io/smooch.min.js'></script>
     <script>
       (function () {

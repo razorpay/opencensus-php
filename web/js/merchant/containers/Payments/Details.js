@@ -274,6 +274,8 @@ export default class PaymentDetailsContainer extends Component {
 
     let { card = {} } = payment;
 
+    i = i + 2;
+
     if (error) {
       statusMsg = {
         type: 'error',
