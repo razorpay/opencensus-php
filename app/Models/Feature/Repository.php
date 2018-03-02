@@ -4,6 +4,7 @@ namespace RZP\Models\Feature;
 
 use RZP\Constants\Mode;
 use RZP\Models\Base\EsRepository;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\Repository as BaseRepository;
 
 class Repository extends BaseRepository
@@ -75,7 +76,7 @@ class Repository extends BaseRepository
         }
     }
 
-    public function getApplicationFeatures($applicationId): array
+    public function getApplicationFeatures($applicationId): PublicCollection
     {
         $application = Constants::APPLICATION;
 
@@ -85,7 +86,7 @@ class Repository extends BaseRepository
         //
         $applicationFeatures = $this->fetchByEntityTypeAndEntityId($application, $applicationId);
 
-        return $applicationFeatures->toArray();
+        return $applicationFeatures;
     }
 
     /**
