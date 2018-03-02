@@ -85,6 +85,12 @@ class ImportCards extends Command
                 continue;
             }
 
+            if (array_key_exists('card_number', $cardDetails) === false)
+            {
+                continue;
+
+            }
+
             $request = [
                 Customer::NAME      =>  $cardDetails['name_on_card'],
                 Customer::EMAIL     =>  $cardDetails['customer_id'],

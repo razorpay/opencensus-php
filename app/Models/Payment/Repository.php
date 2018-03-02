@@ -1120,7 +1120,7 @@ class Repository extends Base\Repository
                     ->where(Entity::RECURRING_TYPE, RecurringType::AUTO)
                     ->where(Entity::STATUS, Status::CREATED)
                     ->where($paymentRecurringColumn, 1)
-                    ->where($paymentMethodColumn, Method::NETBANKING)
+                    ->where($paymentMethodColumn, Method::EMANDATE)
                     ->where(Entity::GATEWAY, $gateway)
                     ->with('merchant')
                     ->firstOrFail();
