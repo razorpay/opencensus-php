@@ -38,7 +38,7 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::TYPE,
         self::METHOD,
-        self::NEXT_RUN_AT,
+        self::NEXT_RUN_AT
     ];
 
     protected $visible = [
@@ -191,6 +191,16 @@ class Entity extends Base\PublicEntity
     public function setLastRunAt(int $timestamp)
     {
         return $this->setAttribute(self::LAST_RUN_AT, $timestamp);
+    }
+
+    public function setEntityId(string $entityId)
+    {
+        $this->setAttribute(self::ENTITY_ID, $entityId);
+    }
+
+    public function setEntityType(string $entityType)
+    {
+        $this->setAttribute(self::ENTITY_TYPE, $entityType);
     }
 
     // ------------------------- Helper methods --------------------------------
