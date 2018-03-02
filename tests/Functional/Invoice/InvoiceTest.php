@@ -6,17 +6,16 @@ use Mail;
 use Queue;
 use Carbon\Carbon;
 
-use RZP\Models\Batch;
 use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Jobs\Invoice\BatchNotify;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
-use RZP\Models\Invoice\Entity as InvoiceEntity;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Mail\Invoice\Issued as InvoiceIssuedMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Unit\Models\Invoice\Traits\CreatesInvoice;
 use RZP\Mail\Invoice\Payment\Captured as InvoiceCapturedMail;
 use RZP\Mail\Invoice\Payment\Authorized as InvoiceAuthorizedMail;
 
@@ -26,6 +25,7 @@ use RZP\Mail\Invoice\Payment\Authorized as InvoiceAuthorizedMail;
 class InvoiceTest extends TestCase
 {
     use InvoiceTestTrait;
+    use CreatesInvoice;
     use PaymentTrait;
     use MocksDnsTrait;
 
@@ -2294,15 +2294,6 @@ class InvoiceTest extends TestCase
 
     public function testInvoiceStatsByBatch()
     {
-        $this->testCreateDraftInvoiceWithSomeData();
-        $this->testCreateDraftInvoiceWithSomeData();
-        $this->testCreateDraftInvoiceWithSomeData();
-        $this->testCreateDraftInvoiceWithSomeData();
-
-        $invoices = $this->getEntities('invoice');
-
-        $ids = array_column($invoices['items'], 'id');
-
         $this->fixtures->create(
             'batch',
             [
@@ -2311,10 +2302,12 @@ class InvoiceTest extends TestCase
                 'total_count' => 4,
             ]);
 
-        $this->fixtures->invoice->edit($ids[0], ['batch_id' => '00000000000001', 'status' => 'issued']);
-        $this->fixtures->invoice->edit($ids[1], ['batch_id' => '00000000000001', 'status' => 'paid']);
-        $this->fixtures->invoice->edit($ids[2], ['batch_id' => '00000000000001', 'status' => 'expired']);
-        $this->fixtures->invoice->edit($ids[3], ['batch_id' => '00000000000001', 'status' => 'paid']);
+        $attributes = $this->testData[__FUNCTION__ . 'InputData']['attributes'];
+
+        $this->createInvoice($attributes[0]['invoiceAttributes'], $attributes[0]['orderAttributes']);
+        $this->createInvoice($attributes[1]['invoiceAttributes'], $attributes[1]['orderAttributes']);
+        $this->createInvoice($attributes[2]['invoiceAttributes'], $attributes[2]['orderAttributes']);
+        $this->createInvoice($attributes[3]['invoiceAttributes'], $attributes[3]['orderAttributes']);
 
         $this->ba->proxyAuth();
 

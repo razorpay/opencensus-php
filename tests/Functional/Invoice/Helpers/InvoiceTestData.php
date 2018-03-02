@@ -3644,6 +3644,55 @@ return [
         ],
     ],
 
+    'testInvoiceStatsByBatchInputData'  => [
+        'attributes' => [
+            [
+                'invoiceAttributes' => [
+                    'id'                    => '1000001invoice',
+                    'batch_id'              => '00000000000001',
+                    'order_id'              => '100000001order',
+                    'status'                => 'issued',
+                ],
+                'orderAttributes'   => [
+                    'id'                    => '100000001order'
+                ],
+            ],
+            [
+                'invoiceAttributes' => [
+                    'id'                    => '1000002invoice',
+                    'batch_id'              => '00000000000001',
+                    'order_id'              => '100000002order',
+                    'status'                => 'paid',
+                ],
+                'orderAttributes'   => [
+                    'id'                    => '100000002order'
+                ],
+            ],
+            [
+                'invoiceAttributes' => [
+                    'id'                    => '1000003invoice',
+                    'batch_id'              => '00000000000001',
+                    'order_id'              => '100000003order',
+                    'status'                => 'paid',
+                ],
+                'orderAttributes'   => [
+                    'id'                    => '100000003order'
+                ],
+            ],
+            [
+                'invoiceAttributes' => [
+                    'id'                    => '1000004invoice',
+                    'batch_id'              => '00000000000001',
+                    'order_id'              => '100000004order',
+                    'status'                => 'expired',
+                ],
+                'orderAttributes'   => [
+                    'id'                    => '100000004order'
+                ],
+            ],
+        ],
+    ],
+
     // ----------------------------------------------------------------------
     // Expectations for ES
 
