@@ -68,6 +68,11 @@ class Authenticate
 
         $bearerToken = $this->getBearerTokenFromHeaders($request);
 
+        //
+        // If the request was sent with Bearer auth (OAuth),
+        // authenticate with the access token, else go for the
+        // otherwise existing key-secret flow
+        //
         if (empty($bearerToken) === false)
         {
             $ret = $this->authenticateBearerAuth($route, $bearerToken);
@@ -77,11 +82,6 @@ class Authenticate
             $ret = $this->authenticateBasicAuth($route);
         }
 
-        //
-        // If the request was sent with Bearer auth (OAuth),
-        // authenticate with the access token, else go for the
-        // otherwise existing key-secret flow
-        //
         if (empty($bearerToken) === true)
         {
             // Post process after authentication completes for a merchant
