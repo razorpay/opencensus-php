@@ -74,9 +74,12 @@ class Mailable extends BaseMailable
                 'mailable'      => get_class($this)
             ];
 
-            // For invalid TLDs, we're passing that in the exception data
-            // which we fetche here and pushes to the trace data
-            $traceData = array_merge($traceData, $e->getData());
+            if ($e instanceof Exception\BaseException)
+            {
+                // For invalid TLDs, we're passing that in the exception data
+                // which we fetche here and pushes to the trace data
+                $traceData = array_merge($traceData, $e->getData());
+            }
 
             $trace->traceException(
                 $e,
