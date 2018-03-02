@@ -9,6 +9,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base;
+use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 
 class Processor extends Base\Core
@@ -32,6 +33,32 @@ class Processor extends Base\Core
         parent::__construct();
 
         $this->mutex = $this->app['api.mutex'];
+    }
+
+    /**
+     * Initiates settlements for merchants with
+     * feature DAILY_SETTLEMENT enabled.
+     * These merchants have their settlements created
+     * every day, irrespective of holidays, but transfer
+     * for these settlements get initiated only on
+     * non-holidays at a time defined by the merchant.
+     */
+    public function processDailySettlements(array $input)
+    {
+        $this->increaseAllowedSystemLimits();
+
+        $mutexResource = sprintf(self::MUTEX_RESOURCE, $this->mode);
+
+        $data = $this->mutex->acquireAndRelease(
+            $mutexResource,
+            function ()
+            {
+                return $this->createDailySettlements();
+            },
+            self::MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
+
+        return $data;
     }
 
     public function processFailedSettlements(array $input)
@@ -93,15 +120,14 @@ class Processor extends Base\Core
         {
             $channels = $this->getArrayedChannels($channel);
 
+            $response = $this->makeResponse($channels);
+
             foreach ($channels as $channel)
             {
+                $setlResponse = $this->createSettlements($channel);
 
-                list($settlements, $txnCount, $setlAttempts) = $this->createSettlements($channel);
-
-                $response[$channel] = [
-                    'count'    => count($settlements),
-                    'txnCount' => $txnCount
-                ];
+                $response[$channel]['count']    += $setlResponse['settlement_count'];
+                $response[$channel]['txnCount'] += $setlResponse['txn_count'];
             }
         }
         catch (\Exception $e)
@@ -122,7 +148,6 @@ class Processor extends Base\Core
     protected function retryProcessFailedSettlements(): array
     {
         $response = [];
-        $channel = null;
 
         try
         {
@@ -132,7 +157,7 @@ class Processor extends Base\Core
 
             Entity::verifyIdAndStripSignMultiple($setlIds);
 
-            $response = $this->retrySettlementsForChannel($setlIds, $channel);
+            $response = $this->retrySettlements($setlIds);
         }
         catch (\Exception $e)
         {
@@ -142,7 +167,7 @@ class Processor extends Base\Core
         return $response;
     }
 
-    protected function retrySettlementsForChannel(array $setlIds)
+    protected function retrySettlements(array $setlIds)
     {
         $setlAttempts = new Base\PublicCollection;
 
@@ -194,38 +219,182 @@ class Processor extends Base\Core
         return $response;
     }
 
-    protected function createSettlements($channel): array
+    /**
+     * @return array
+     * Return array is keyed by channel
+     * Sample [
+     *          'channel1' => [
+     *              'count' => 'some integer',
+     *              'txnCount' => 'some integer'
+     *          ],
+     *         'channel2' => [
+     *              'count' => 'some integer',
+     *              'txnCount' => 'some integer'
+     *          ]
+     *      ]
+     */
+    protected function createDailySettlements(): array
     {
-        $txns = $this->repo->transaction->fetchUnsettledTransactions($this->setlTime, $channel);
+        $channels = $this->getArrayedChannels();
 
-        list($settlements, $settledTxnsCount, $setlAttempts) =
-            $this->processUnsettledTransactions($txns, $channel);
+        $response = $this->makeResponse($channels);
 
-        return [$settlements, $settledTxnsCount, $setlAttempts];
-    }
-
-    protected function processUnsettledTransactions($txns, $channel): array
-    {
-        $txns = $this->filterTransactionsForSettlement($txns);
-
-        list($settlements, $settledTxnsCount, $setlAttempts) =
-            $this->createSettlementsFromTxns($txns, $channel);
-
-        return [$settlements, $settledTxnsCount, $setlAttempts];
-    }
-
-    protected function generateSettlementFile($setlAttempts, $channel, $h2h)
-    {
-        $data = [null, null];
-
-        $class = '\RZP\Models\FundTransfer\\' . ucfirst($channel) . '\NodalAccount';
-
-        if (class_exists($class) === true)
+        try
         {
-            $data = (new $class)->generateSettlementFile($setlAttempts, $h2h);
+            $mids = $this->getMerchantsOnDailySettlement();
+
+            $merchants = $this->repo->merchant->findMany($mids);
+
+            $settlementTimestamp = Carbon::tomorrow(Timezone::IST)->getTimestamp();
+
+            foreach ($merchants as $merchant)
+            {
+                $channel = $merchant->getChannel();
+
+                if ($merchant->getHoldFunds() === true)
+                {
+                    continue;
+                }
+
+                $mid = $merchant->getId();
+
+                // Get all transactions due settlement till yesterday end of day
+                $txns = $this->repo->transaction->fetchUnsettledTransactions(
+                            $settlementTimestamp, $channel, [$mid]);
+
+                $filteredTxns = $this->filterTransactionsForSettlement($txns);
+
+                if (isset($filteredTxns[$mid]) === false)
+                {
+                    continue;
+                }
+
+                $groupedTxns = $this->groupTransactionsByDay($filteredTxns[$mid]);
+
+                $setlResponse = $this->createSettlementEntities($groupedTxns, $channel);
+
+                $response[$channel]['count']    += $setlResponse['settlement_count'];
+                $response[$channel]['txnCount'] += $setlResponse['txn_count'];
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::DAILY_SETTLEMENT_INITIATE_FAILED
+            );
+
+            $this->settlementFailure($channel, $e, TraceCode::DAILY_SETTLEMENT_INITIATE_FAILED);
         }
 
-        return $data;
+        return $response;
+    }
+
+    protected function makeResponse($channels)
+    {
+        $response = [];
+
+        foreach ($channels as $channel)
+        {
+            $response[$channel] = ['count' => 0, 'txnCount' => 0];
+        }
+
+        return $response;
+    }
+
+    /**
+     * @param $groupedTxns
+     * Creates a settlement entity for every group
+     *
+     * @param string $channel
+     * @return array
+     * Returns array with keys settlement_count, attempt_count, txn_count
+     */
+    protected function createSettlementEntities($groupedTxns, string $channel): array
+    {
+        $settlements        = new Base\PublicCollection;
+        $setlAttempts       = new Base\PublicCollection;
+        $txnsSettledCount   = 0;
+        $allTxns            = new Base\PublicCollection;
+
+        foreach ($groupedTxns as $key => $txns)
+        {
+            list($setl, $setlAttempt) = $this->createSettlementsFromTxns($txns, $channel);
+
+            $allTxns->push($txns);
+
+            if ($setl !== null)
+            {
+                $settlements->push($setl);
+
+                if ($setlAttempt !== null)
+                {
+                    $setlAttempts->push($setlAttempt);
+
+                    $txnsSettledCount += $txns->count();
+                }
+            }
+        }
+
+        $allTxns = $allTxns->flatten();
+
+        $this->updateSettlementIdInTransfer($allTxns);
+
+        return [
+            'settlement_count'  => $settlements->count(),
+            'attempt_count'     => $setlAttempts->count(),
+            'txn_count'         => $txnsSettledCount,
+        ];
+    }
+
+    protected function groupTransactionsByDay($txns): array
+    {
+        $groupedTxns = [];
+
+        foreach ($txns as $txn)
+        {
+            $groupTimestamp = $txn->getCreatedAt();
+
+            if ($txn->isTypePayment() === true)
+            {
+                $groupTimestamp = $txn->source->getCapturedAt();
+            }
+
+            $dayBeginTimestamp = Carbon::createFromTimestamp($groupTimestamp, Timezone::IST)
+                                        ->hour(0)
+                                        ->minute(0)
+                                        ->second(0)
+                                        ->getTimestamp();
+
+            $groupedTxns[$dayBeginTimestamp] = $groupedTxns[$dayBeginTimestamp] ?? new Base\PublicCollection;
+
+            $groupedTxns[$dayBeginTimestamp]->push($txn);
+        }
+
+        return $groupedTxns;
+    }
+
+    protected function getMerchantsOnDailySettlement()
+    {
+        $features = [Feature\Constants::DAILY_SETTLEMENT];
+
+        $featureEntities = $this->repo->feature->findMerchantsHavingFeatures($features);
+
+        $mids = $featureEntities->pluck(Feature\Entity::ENTITY_ID)->toArray();
+
+        return $mids;
+    }
+
+    protected function createSettlements($channel): array
+    {
+        $skipMids = $this->getMerchantsOnDailySettlement();
+
+        $txns = $this->repo->transaction->fetchUnsettledTransactions($this->setlTime, $channel, [], $skipMids);
+
+        $groupedTxns = $this->filterTransactionsForSettlement($txns);
+
+        return $this->createSettlementEntities($groupedTxns, $channel);
     }
 
     protected function preSettlementProcessing(array $input)

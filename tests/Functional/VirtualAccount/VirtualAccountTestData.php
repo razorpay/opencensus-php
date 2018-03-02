@@ -20,6 +20,34 @@ return [
         ],
     ],
 
+    'testCreateVirtualAccountInvalidReceiverTypes' => [
+        'request' => [
+            'url' => '/virtual_accounts',
+            'method' => 'post',
+            'content' => [
+                'description' => 'VA for tests',
+                'receivers'   => [
+                    'types' => [
+                        'random_receiver_type',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'One or more of the given receiver types is invalid.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_RECEIVER_TYPES,
+        ],
+    ],
+
     'testCreateVirtualAccountCrypto' => [
         'response' => [
             'content' => [

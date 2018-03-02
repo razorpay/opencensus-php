@@ -139,7 +139,6 @@ class Validator extends Base\Validator
         // due to dot notation, we cannot use it.
         'token_max_amount',
         'token_expire_by',
-        'emandate'
     ];
 
     protected function validateIfsc(array $input)
@@ -197,24 +196,6 @@ class Validator extends Base\Validator
                     'current_time'      => $currentTime,
                     'payment_id'        => $this->entity->getId(),
                 ]);
-        }
-    }
-
-    protected function validateEmandate(array $input)
-    {
-        if ($input[Entity::METHOD] !== Method::EMANDATE)
-        {
-            return;
-        }
-
-        if ((isset($input[Entity::AUTH_TYPE]) === true) and
-            ($input[Entity::AUTH_TYPE] === AuthType::AADHAAR))
-        {
-            if (empty($input[Entity::AADHAAR]['number']) === true)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'The aadhaar[number] field is required.');
-            }
         }
     }
 

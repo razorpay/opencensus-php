@@ -21,6 +21,11 @@ class SendQueuedMailable extends BaseSendQueuedMailable
         // For queued mails pick the task id from the mailable payload
         $app['request']->setTaskId($this->mailable->taskId);
 
+        $trace = $app['trace'];
+
+        // Task Id needs to be set in trace
+        $trace->processor('web')->setTaskId($this->mailable->taskId);
+
         parent::handle($mailer);
     }
 }

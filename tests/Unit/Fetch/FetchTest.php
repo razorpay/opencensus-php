@@ -188,6 +188,8 @@ class FetchTest extends TestCase
 
         $fetchs = [];
 
+        unset($entities['CACHED_ENTITIES']);
+
         foreach ($entities as $entity)
         {
             $fetch = E::getEntityFetch($entity);

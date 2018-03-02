@@ -1055,6 +1055,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ON_HOLD_UNTIL);
     }
 
+    public function getCapturedAt()
+    {
+        return $this->getAttribute(self::CAPTURED_AT);
+    }
+
 // ----------------------- Accessor Ends ---------------------------------------
 
     public function isCreated()
