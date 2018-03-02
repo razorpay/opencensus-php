@@ -73,6 +73,11 @@ class SubscriptionCreateTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateDailyPlan()
+    {
+        $this->startTest();
+    }
+
     public function testFetchPlan()
     {
         $this->fixtures->plan->create();

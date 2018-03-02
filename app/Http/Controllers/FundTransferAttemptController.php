@@ -39,5 +39,4 @@ class FundTransferAttemptController extends Controller
 
         return ApiResponse::json($data);
     }
-
 }

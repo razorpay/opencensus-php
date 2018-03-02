@@ -10,7 +10,7 @@ class IrctcSettlement extends Base
 {
     protected function processEntry(array & $entry)
     {
-        $paymentId = trim($entry[Batch\Header::PAYMENT_ID]);
+        $paymentId = str_replace("\xEF\xBB\xBF", '',  $entry[Batch\Header::PAYMENT_ID]);
 
         $payment = $this->repo->payment->findByPublicId($paymentId);
 

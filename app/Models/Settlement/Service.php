@@ -28,6 +28,13 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function processDailySettlements($input)
+    {
+        $data = (new Settlement\Processor)->processDailySettlements($input);
+
+        return $data;
+    }
+
     /** Generates settlement file for a given batch_fund_transfer_id
       * Uses settlement entities / fund_transfer_attempt entities to generate
       * file depending on the created_at timestamp of the batch.

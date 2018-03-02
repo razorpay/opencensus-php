@@ -25,6 +25,24 @@ class ScheduleLibraryTest extends TestCase
         $this->runCaseWiseScheduleTest($basicT3Schedule, $data['cases']);
     }
 
+    public function testT3ScheduleWithMinTime()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $basicT3Schedule = (new Schedule\Entity)->build($data['schedule']);
+
+        $this->runCaseWiseScheduleTest($basicT3Schedule, $data['cases']);
+    }
+
+    public function testComputeFutureRun()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $basicT3Schedule = (new Schedule\Entity)->build($data['schedule']);
+
+        $this->computeFutureRun($basicT3Schedule, $data['cases']);
+    }
+
     public function testTwoHourSchedule()
     {
         $data = $this->testData[__FUNCTION__];
@@ -77,6 +95,27 @@ class ScheduleLibraryTest extends TestCase
         $lastWeekSchedule = (new Schedule\Entity)->build($data['schedule']);
 
         $this->runCaseWiseScheduleTest($lastWeekSchedule, $data['cases']);
+    }
+
+    private function computeFutureRun($schedule, $cases)
+    {
+        foreach ($cases as $case)
+        {
+            $refTime = $this->getTimeObjectFromFormatted($case['refTime']);
+
+            $minTime = null;
+
+            if ($case['minTime'] !== null)
+            {
+                $minTime = $this->getTimeObjectFromFormatted($case['minTime']);
+            }
+
+            $nextTime = Schedule\Library::computeFutureRun($schedule, $refTime, $minTime);
+
+            $calculatedTime = $this->getFormattedTimeFromTimestamp($nextTime->timestamp);
+
+            $this->assertEquals($case['expectedNextTime'], $calculatedTime);
+        }
     }
 
     private function runCaseWiseScheduleTest($schedule, $cases)

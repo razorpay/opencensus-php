@@ -4,12 +4,13 @@ namespace RZP\Models\Schedule;
 
 use Carbon\Carbon;
 
-use RZP\Models\Base;
-use RZP\Models\Merchant\Account;
-use RZP\Trace\TraceCode;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Constants;
+use RZP\Models\Base;
+use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\Services\Reporting;
+use RZP\Models\Merchant\Account;
 use RZP\Models\Schedule\Task as ScheduleTask;
 
 class Service extends Base\Service
@@ -115,10 +116,21 @@ class Service extends Base\Service
         //all tasks which are due and less than time
         $timestamp = Carbon::now()->getTimestamp();
 
-        $scheduleTasksToProcess = $this->repo->schedule_task->fetchDueScheduleTasks($input['type'], $timestamp);
+        $type = $input['type'];
 
-        $entityNameSpace = Constants\Entity::getEntityNamespace($input['type']) . '\Core';
+        $scheduleTasksToProcess = $this->repo->schedule_task->fetchDueScheduleTasks($type, $timestamp);
 
-        return (new $entityNameSpace)->processTasks($scheduleTasksToProcess, $timestamp);
+        if (ScheduleTask\Type::isValidService($type) === true)
+        {
+            $serviceClass = ScheduleTask\Type::getServiceClass($type);
+
+            return $serviceClass->processTasks($scheduleTasksToProcess);
+        }
+        else
+        {
+            $entityNameSpace = Constants\Entity::getEntityNamespace($input['type']) . '\Core';
+
+            return (new $entityNameSpace)->processTasks($scheduleTasksToProcess, $timestamp);
+        }
     }
 }
