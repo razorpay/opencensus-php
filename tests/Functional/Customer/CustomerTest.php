@@ -231,6 +231,20 @@ class CustomerTest extends TestCase
         $content = $this->verifyOtp('9988776655', null,  '233323');
     }
 
+    public function testOtpWorkFlowwithEmailRequired()
+    {
+        $this->ba->publicAuth();
+
+        $this->mockRaven();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function()
+        {
+            $this->sendOtp('4637346743722');
+        });
+    }
+
     public function testOtpFlowWithoutDeviceToken()
     {
         $this->ba->publicAuth();
