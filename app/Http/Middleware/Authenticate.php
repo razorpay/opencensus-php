@@ -68,41 +68,15 @@ class Authenticate
 
         $bearerToken = $this->getBearerTokenFromHeaders($request);
 
-        $ret = $this->authenticateAuth($route, $bearerToken);
-
-        // non-null value indicates failure flow
-        if ($ret !== null)
-        {
-            return $ret;
-        }
-
-        $ret = $this->postAuthenticationProcessing($ret, $bearerToken);
-
-        // non-null value indicates failure flow
-        if ($ret !== null)
-        {
-            return $ret;
-        }
-
-        return $next($request);
-    }
-
-    protected function authenticateAuth($route, $bearerToken)
-    {
-        if (empty($bearerToken) === true)
-        {
-            $ret = $this->authenticateBasicAuth($route);
-        }
-        else
+        if (empty($bearerToken) === false)
         {
             $ret = $this->authenticateBearerAuth($route, $bearerToken);
         }
+        else
+        {
+            $ret = $this->authenticateBasicAuth($route);
+        }
 
-        return $ret;
-    }
-
-    protected function postAuthenticationProcessing($ret, $bearerToken)
-    {
         //
         // If the request was sent with Bearer auth (OAuth),
         // authenticate with the access token, else go for the
@@ -111,15 +85,21 @@ class Authenticate
         if (empty($bearerToken) === true)
         {
             // Post process after authentication completes for a merchant
-            $ret = $this->postMerchantAuthenticationProcessing();
+            $ret = $this->postMerchantAuthenticationProcessing($ret);
         }
         else
         {
             // Post process after authentication completes for an application
-            $ret = $this->postApplicationAuthenticationProcessing();
+            $ret = $this->postApplicationAuthenticationProcessing($ret);
         }
 
-        return $ret;
+        // non-null value indicates failure flow
+        if ($ret !== null)
+        {
+            return $ret;
+        }
+
+        return $next($request);
     }
 
     /**
@@ -231,11 +211,21 @@ class Authenticate
      *
      * @return mixed
      */
-    protected function postApplicationAuthenticationProcessing()
+    protected function postApplicationAuthenticationProcessing($authReturn)
     {
+        if ($authReturn !== null)
+        {
+            return $authReturn;
+        }
+
         $featureCheck = (new Feature\Access)->verifyFeatureAccessByApplication();
 
-        return $featureCheck;
+        if ($featureCheck !== null)
+        {
+            return $featureCheck;
+        }
+
+        return null;
     }
 
     /**
@@ -244,8 +234,13 @@ class Authenticate
      *
      * @return mixed
      */
-    protected function postMerchantAuthenticationProcessing()
+    protected function postMerchantAuthenticationProcessing($authReturn)
     {
+        if ($authReturn !== null)
+        {
+            return $authReturn;
+        }
+
         $featureCheck = (new Feature\Access)->verifyFeatureAccessByMerchant();
 
         return $featureCheck;
