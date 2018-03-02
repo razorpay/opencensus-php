@@ -172,7 +172,6 @@ class Core extends Base\Core
 
     public function verifyOtp($input, $merchant)
     {
-        // Currently, the validator does not have any mandatory field.
         Customer\Validator::validateGlobalCustomerCreateInput($input, $merchant);
 
         // Parse contact
