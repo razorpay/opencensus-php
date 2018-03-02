@@ -722,7 +722,7 @@ class Core extends Base\Core
      * already sent.
      *
      * @param  Batch\Entity $batch
-     * @param  array $input
+     * @param  array        $input
      *
      * @return array
      */
