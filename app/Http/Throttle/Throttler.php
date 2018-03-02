@@ -83,6 +83,11 @@ class Throttler
      */
     protected $isRunningUnitTests;
 
+    /**
+     * @var bool
+     */
+    protected $skip;
+
     public function __construct()
     {
         /** @var $app Application */
@@ -94,14 +99,15 @@ class Throttler
         $this->router             = $app['router'];
         $this->repo               = $app['repo'];
         $this->isRunningUnitTests = $app->runningUnitTests();
+        $this->skip               = ($this->config['skip'] === true);
     }
 
     public function throttle($request)
     {
         // Usually in local or test ENV we skip basis local configuration
-        if ($this->config['skip'] === true)
+        if ($this->skip === true)
         {
-            return [];
+            return;
         }
 
         try
@@ -121,8 +127,6 @@ class Throttler
             }
 
             $this->trace->traceException($e);
-
-            return [];
         }
     }
 
@@ -136,6 +140,18 @@ class Throttler
         $settings = $this->loadSettingsFromRedis();
 
         list($this->settings[K::GLOBAL], $this->settings[K::ID_LEVEL]) = $settings;
+
+        // If settings is not found raise an alert and enable skip flag.
+        if (empty($this->settings[K::GLOBAL]) === true)
+        {
+            $this->trace->critical(TraceCode::THROTTLE_SETTINGS_MISSING);
+            $this->skip = true;
+        }
+        // Else set skip appropriately basis redis settings
+        else
+        {
+            $this->skip = (($this->settings[K::GLOBAL]['skip'] ?? '0') === '1');
+        }
     }
 
     protected function loadSettingsFromRedis(): array
@@ -152,7 +168,7 @@ class Throttler
     protected function attemptThrottleIfApplicable()
     {
         // Throttling and blocking may be temporarily skipped via remote configuration(Redis)
-        if (($this->settings[K::GLOBAL]['skip'] ?? '0') === '1')
+        if ($this->skip === true)
         {
             return;
         }
@@ -175,7 +191,7 @@ class Throttler
 
         // Only throttle if it is not in mock mode(early release)
         $mock = $this->settings[K::GLOBAL]['mocked'] ?? '1';
-        if (($response->allowed === 0) and ($mock === '0'))
+        if (($response->allowed === false) and ($mock === '0'))
         {
             throw new ThrottleException($response->retryAfter, $payload);
         }
