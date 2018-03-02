@@ -155,7 +155,7 @@ class Validator extends Base\Validator
         (new static)->validateInput('payment', $input);
     }
 
-    public static function validateGlobalCustomerCreateInput($input, $merchant)
+    public static function validateGlobalCustomerCreateInput($input)
     {
         (new self)->validateInput('global_create', $input);
     }
