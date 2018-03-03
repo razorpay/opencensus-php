@@ -14,6 +14,7 @@ class Wallet
     const PAYUMONEY   = 'payumoney';
     const OLAMONEY    = 'olamoney';
     const AIRTELMONEY = 'airtelmoney';
+    const AMAZONPAY   = 'amazonpay';
     const FREECHARGE  = 'freecharge';
     const JIOMONEY    = 'jiomoney';
     const SBIBUDDY    = 'sbibuddy';
@@ -31,7 +32,8 @@ class Wallet
         self::JIOMONEY      => 'JioMoney',
         self::SBIBUDDY      => 'SBI Buddy',
         self::OPENWALLET    => 'RZP Open Wallet',
-        self::MPESA         => 'Vodafone mPesa'
+        self::MPESA         => 'Vodafone mPesa',
+        self::AMAZONPAY     => 'AmazonPay'
     );
 
     public static function exists($wallet)

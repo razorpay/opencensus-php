@@ -54,6 +54,7 @@ class Gateway
     const CARD_FSS               = 'card_fss';
 
     const WALLET_AIRTELMONEY = 'wallet_airtelmoney';
+    const WALLET_AMAZONPAY   = 'wallet_amazonpay';
     const WALLET_FREECHARGE  = 'wallet_freecharge';
     const WALLET_JIOMONEY    = 'wallet_jiomoney';
     const WALLET_SBIBUDDY    = 'wallet_sbibuddy';
@@ -118,6 +119,16 @@ class Gateway
     ];
 
     /**
+     * List of gateways that mark the refund as initiated first,
+     * and then share a response with us via a notification system
+     * or via verifyRefund or any other asynchronous form to tell
+     * us that the refund is actually processed or failed.
+     */
+    const REFUND_INITIATED_GATEWAYS = [
+        self::WALLET_AMAZONPAY
+    ];
+
+    /**
     * Gateways for which we can validate the refunds
     * if they are successful after they are 'initiated'
     */
@@ -171,6 +182,7 @@ class Gateway
         Payment\Gateway::CARD_FSS,
         Payment\Gateway::WALLET_PAYUMONEY,
         Payment\Gateway::WALLET_FREECHARGE,
+        Payment\Gateway::WALLET_AMAZONPAY,
         Payment\Gateway::UPI_MINDGATE,
         Payment\Gateway::HITACHI,
     ];
@@ -282,6 +294,7 @@ class Gateway
             self::WALLET_SBIBUDDY,
             self::WALLET_OPENWALLET,
             self::WALLET_MPESA,
+            self::WALLET_AMAZONPAY,
         ],
 
         Method::EMI => [
@@ -460,6 +473,7 @@ class Gateway
         Wallet::SBIBUDDY    => Gateway::WALLET_SBIBUDDY,
         Wallet::OPENWALLET  => Gateway::WALLET_OPENWALLET,
         Wallet::MPESA       => Gateway::WALLET_MPESA,
+        Wallet::AMAZONPAY   => Gateway::WALLET_AMAZONPAY,
     ];
 
     public static $upiToGatewayMap = [

@@ -19,6 +19,7 @@ class Entity extends Base\PublicEntity
     const PAYZAPP           = 'payzapp';
     const PAYUMONEY         = 'payumoney';
     const AIRTELMONEY       = 'airtelmoney';
+    const AMAZONPAY         = 'amazonpay';
     const FREECHARGE        = 'freecharge';
     const JIOMONEY          = 'jiomoney';
     const SBIBUDDY          = 'sbibuddy';
@@ -174,6 +175,7 @@ class Entity extends Base\PublicEntity
         self::PAYUMONEY,
         self::OLAMONEY,
         self::AIRTELMONEY,
+        self::AMAZONPAY,
         self::FREECHARGE,
         self::MPESA,
     ];
@@ -190,6 +192,7 @@ class Entity extends Base\PublicEntity
         self::PAYZAPP       => 'bool',
         self::PAYUMONEY     => 'bool',
         self::AIRTELMONEY   => 'bool',
+        self::AMAZONPAY     => 'bool',
         self::FREECHARGE    => 'bool',
         self::JIOMONEY      => 'bool',
         self::SBIBUDDY      => 'bool',
@@ -294,6 +297,11 @@ class Entity extends Base\PublicEntity
     public function isAirtelmoneyEnabled()
     {
         return $this->getAttribute(self::AIRTELMONEY);
+    }
+
+    public function isAmazonpayEnabled()
+    {
+        return $this->getAttribute(self::AMAZONPAY);
     }
 
     public function isMpesaEnabled()
