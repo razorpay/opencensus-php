@@ -20,6 +20,9 @@ class Entity extends Base\PublicEntity
     const AMOUNT                = 'amount';
     const UNIT_AMOUNT           = 'unit_amount';
     const CURRENCY              = 'currency';
+    const HSN_CODE              = 'hsn_code';
+    const SAC_CODE              = 'sac_code';
+    const TAX_RATE              = 'tax_rate';
     const TYPE                  = 'type';
 
     /**
@@ -59,6 +62,9 @@ class Entity extends Base\PublicEntity
         self::ACTIVE        => 1,
         self::DESCRIPTION   => null,
         self::TYPE          => Type::INVOICE,
+        self::TAX_RATE      => null,
+        self::HSN_CODE      => null,
+        self::SAC_CODE      => null,
         self::UNIT          => null,
         self::TAX_INCLUSIVE => false,
         self::TAX_ID        => null,
@@ -75,6 +81,9 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::UNIT_AMOUNT,
         self::CURRENCY,
+        self::HSN_CODE,
+        self::SAC_CODE,
+        self::TAX_RATE,
         self::TYPE,
         self::UNIT,
         self::TAX_INCLUSIVE,
@@ -93,6 +102,9 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::UNIT_AMOUNT,
         self::CURRENCY,
+        self::HSN_CODE,
+        self::SAC_CODE,
+        self::TAX_RATE,
         self::TYPE,
         self::UNIT,
         self::TAX_INCLUSIVE,
@@ -108,6 +120,9 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION,
         self::AMOUNT,
         self::CURRENCY,
+        self::HSN_CODE,
+        self::SAC_CODE,
+        self::TAX_RATE,
         self::TYPE,
         self::UNIT,
         self::TAX_INCLUSIVE,
@@ -120,6 +135,7 @@ class Entity extends Base\PublicEntity
     protected $casts = [
         self::ACTIVE        => 'bool',
         self::AMOUNT        => 'int',
+        self::TAX_RATE      => 'int',
         self::UNIT_AMOUNT   => 'int',
         self::TAX_INCLUSIVE => 'bool',
     ];
@@ -151,6 +167,21 @@ class Entity extends Base\PublicEntity
     public function getCurrency(): string
     {
         return $this->getAttribute(self::CURRENCY);
+    }
+
+    public function getHsnCode(): string
+    {
+        $this->getAttribute(self::HSN_CODE);
+    }
+
+    public function getSacCode(): string
+    {
+        $this->getAttribute(self::SAC_CODE);
+    }
+
+    public function getTaxRate(): int
+    {
+        $this->getAttribute(self::TAX_RATE);
     }
 
     public function getType(): string
