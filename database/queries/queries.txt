@@ -3014,3 +3014,14 @@ ALTER TABLE tokens
 
 ALTER TABLE schedules
     MODIFY COLUMN `interval` INTEGER DEFAULT NULL;
+
+# Invoice GST - item / line_items
+
+ALTER TABLE items
+    ADD COLUMN hsn_code VARCHAR(60) DEFAULT NULL AFTER currency,
+    ADD COLUMN sac_code VARCHAR(60) DEFAULT NULL AFTER hsn_code,
+    ADD COLUMN tax_rate INTEGER UNSIGNED DEFAULT NULL AFTER sac_code;
+
+ALTER TABLE line_items
+    ADD COLUMN hsn_code VARCHAR(60) DEFAULT NULL AFTER currency,
+    ADD COLUMN sac_code VARCHAR(60) DEFAULT NULL AFTER hsn_code;
