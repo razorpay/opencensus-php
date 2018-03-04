@@ -407,6 +407,16 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
 
     protected function validateGstin(string $attribute, $value)
     {
-        GSTIN::validate($value);
+        if ((empty($value) === false) and (is_string($value) === true))
+        {
+            if (GSTIN::isValid($value) === false)
+            {
+                throw new BadRequestValidationFailureException("The $attribute is invalid",
+                    $attribute,
+                    $value);
+            }
+        }
+
+        return true;
     }
 }

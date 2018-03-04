@@ -149,24 +149,6 @@ class GSTIN
                 (array_key_exists($stateCode, static::$stateTinIdMap) === true));
     }
 
-    /**
-     * Validate GST Number
-     *
-     * @param string $gstin
-     *
-     * @throws BadRequestValidationFailureException
-     */
-    public static function validate(string $gstin)
-    {
-        if (static::isValid($gstin) === false)
-        {
-            throw new BadRequestValidationFailureException(
-                'The GSTIN is invalid',
-                null,
-                ['gstin' => $gstin]);
-        }
-    }
-
     public static function getStatesToTinIdMap(): array
     {
         $tinMap = array_flip(self::$stateTinIdMap);
