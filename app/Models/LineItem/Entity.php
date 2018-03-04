@@ -27,6 +27,8 @@ class Entity extends Base\PublicEntity
     const NET_AMOUNT       = 'net_amount';
     const CURRENCY         = 'currency';
     const TYPE             = 'type';
+    const HSN_CODE         = 'hsn_code';
+    const SAC_CODE         = 'sac_code';
     const TAX_INCLUSIVE    = 'tax_inclusive';
     const UNIT             = 'unit';
     const QUANTITY         = 'quantity';
@@ -59,6 +61,8 @@ class Entity extends Base\PublicEntity
     protected $defaults = [
         self::QUANTITY      => 1,
         self::DESCRIPTION   => null,
+        self::HSN_CODE      => null,
+        self::SAC_CODE      => null,
         self::TYPE          => Item\Type::INVOICE,
         self::REF_ID        => null,
         self::REF_TYPE      => null,
@@ -82,6 +86,8 @@ class Entity extends Base\PublicEntity
         self::TAX_AMOUNT,
         self::NET_AMOUNT,
         self::CURRENCY,
+        self::HSN_CODE,
+        self::SAC_CODE,
         self::TYPE,
         self::TAX_INCLUSIVE,
         self::UNIT,
@@ -104,6 +110,8 @@ class Entity extends Base\PublicEntity
         self::TAX_AMOUNT,
         self::NET_AMOUNT,
         self::CURRENCY,
+        self::HSN_CODE,
+        self::SAC_CODE,
         self::TYPE,
         self::TAX_INCLUSIVE,
         self::UNIT,
@@ -116,6 +124,8 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION,
         self::AMOUNT,
         self::CURRENCY,
+        self::HSN_CODE,
+        self::SAC_CODE,
         self::TYPE,
         self::TAX_INCLUSIVE,
         self::UNIT,
@@ -152,6 +162,8 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION,
         self::AMOUNT,
         self::CURRENCY,
+        self::HSN_CODE,
+        self::SAC_CODE,
         self::UNIT,
         self::TYPE,
         self::TAX_INCLUSIVE,
