@@ -33,4 +33,19 @@ class GSTINTest extends TestCase
             $this->assertFalse(GSTIN::isValid($gstin), 'Failed invalid test for GSTIN: '. $gstin);
         }
     }
+
+    /**
+     * Asserts the state metadata returned by the lib function.
+     *
+     * Note: Failsafe against accidental edits, since changes will
+     * break client usage
+     */
+    public function testGstinStateMap()
+    {
+        $expected = $this->testData[__FUNCTION__];
+
+        $actual = GSTIN::getStatesToTinIdMap();
+
+        $this->assertEquals($expected, $actual);
+    }
 }
