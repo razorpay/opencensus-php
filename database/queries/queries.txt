@@ -3252,3 +3252,6 @@ where name = 'Ref-9aHC1hl4PNU3sn';
 # Customer GSTIN - Invoices
 ALTER TABLE customers
     ADD COLUMN gstin VARCHAR(20) DEFAULT NULL AFTER email;
+
+ALTER TABLE invoices
+    ADD COLUMN customer_gstin VARCHAR(20) DEFAULT NULL AFTER customer_contact;

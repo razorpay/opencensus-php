@@ -45,6 +45,7 @@ class Entity extends Base\PublicEntity
     const CUSTOMER_NAME            = 'customer_name';
     const CUSTOMER_EMAIL           = 'customer_email';
     const CUSTOMER_CONTACT         = 'customer_contact';
+    const CUSTOMER_GSTIN           = 'customer_gstin';
     const CUSTOMER_BILLING_ADDR_ID = 'customer_billing_addr_id';
     const STATUS                   = 'status';
     const SUBSCRIPTION_STATUS      = 'subscription_status';
@@ -229,6 +230,7 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_NAME            => null,
         self::CUSTOMER_EMAIL           => null,
         self::CUSTOMER_CONTACT         => null,
+        self::CUSTOMER_GSTIN           => null,
         self::CUSTOMER_BILLING_ADDR_ID => null,
         self::GROUP_TAXES_DISCOUNTS    => false,
         self::CALLBACK_URL             => null,
@@ -488,6 +490,11 @@ class Entity extends Base\PublicEntity
     public function getCustomerContact()
     {
         return $this->getAttribute(self::CUSTOMER_CONTACT);
+    }
+
+    public function getCustomerGstin()
+    {
+        return $this->getAttribute(self::CUSTOMER_GSTIN);
     }
 
     public function getScheduledAt()
@@ -769,6 +776,7 @@ class Entity extends Base\PublicEntity
         $this->setCustomerName($customer->getName());
         $this->setCustomerContact($customer->getContact());
         $this->setCustomerEmail($customer->getEmail());
+        $this->setCustomerGstin($customer->getGstin());
 
         // Retrieves primary billing address and associates the same with invoice
         $repo = App::getFacadeRoot()['repo'];
@@ -793,6 +801,7 @@ class Entity extends Base\PublicEntity
         $this->setCustomerName(null);
         $this->setCustomerContact(null);
         $this->setCustomerEmail(null);
+        $this->setCustomerGstin(null);
     }
 
     public function setCustomerName($customerName)
@@ -808,6 +817,11 @@ class Entity extends Base\PublicEntity
     public function setCustomerContact($customerContact)
     {
         $this->setAttribute(self::CUSTOMER_CONTACT, $customerContact);
+    }
+
+    public function setCustomerGstin($customerGstin)
+    {
+        $this->setAttribute(self::CUSTOMER_GSTIN, $customerGstin);
     }
 
     public function setSmsStatus($status)
@@ -936,16 +950,22 @@ class Entity extends Base\PublicEntity
      */
     protected function getCustomerDetailsAttribute(): array
     {
+        $customerName    = $this->getCustomerName();
+        $customerEmail   = $this->getCustomerEmail();
+        $customerContact = $this->getCustomerContact();
+        $customerGstin   = $this->getCustomerGstin();
+
         $details = [
-            Customer\Entity::NAME            => $this->getAttribute(self::CUSTOMER_NAME),
-            Customer\Entity::EMAIL           => $this->getAttribute(self::CUSTOMER_EMAIL),
-            Customer\Entity::CONTACT         => $this->getAttribute(self::CUSTOMER_CONTACT),
+            Customer\Entity::NAME            => $customerName,
+            Customer\Entity::EMAIL           => $customerEmail,
+            Customer\Entity::CONTACT         => $customerContact,
+            Customer\Entity::GSTIN           => $customerGstin,
             Customer\Entity::BILLING_ADDRESS => null,
 
             // For backward compatibility.
-            self::CUSTOMER_NAME              => $this->getAttribute(self::CUSTOMER_NAME),
-            self::CUSTOMER_EMAIL             => $this->getAttribute(self::CUSTOMER_EMAIL),
-            self::CUSTOMER_CONTACT           => $this->getAttribute(self::CUSTOMER_CONTACT),
+            self::CUSTOMER_NAME              => $customerName,
+            self::CUSTOMER_EMAIL             => $customerEmail,
+            self::CUSTOMER_CONTACT           => $customerContact,
         ];
 
         if ($this->hasCustomerBillingAddress() === true)
@@ -1251,6 +1271,7 @@ class Entity extends Base\PublicEntity
         $report[self::CUSTOMER_NAME]    = $this->getCustomerName();
         $report[self::CUSTOMER_EMAIL]   = $this->getCustomerEmail();
         $report[self::CUSTOMER_CONTACT] = $this->getCustomerContact();
+        $report[self::CUSTOMER_GSTIN]   = $this->getCustomerGstin();
 
         return $report;
     }
