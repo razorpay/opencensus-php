@@ -183,6 +183,7 @@ class Validator extends Base\Validator
         Customer\Entity::NAME               => 'sometimes|regex:(^[a-zA-Z. 0-9\']+$)|max:50|nullable',
         Customer\Entity::EMAIL              => 'sometimes|email',
         Customer\Entity::CONTACT            => 'sometimes|contact_syntax',
+        Customer\Entity::GSTIN              => 'sometimes|nullable|gstin',
         Customer\Entity::BILLING_ADDRESS_ID => 'sometimes|public_id|size:19|nullable',
     ];
 

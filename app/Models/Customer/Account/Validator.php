@@ -25,7 +25,7 @@ class Validator extends Base\Validator
         Entity::CONTACT             => 'sometimes|nullable|contact_syntax',
         Entity::NAME                => 'sometimes|string|max:50|nullable|custom',
         Entity::EMAIL               => 'sometimes|nullable|email',
-        Entity::GSTIN               => 'sometimes|string|filled|custom',
+        Entity::GSTIN               => 'filled|string|gstin',
         Entity::NOTES               => 'sometimes|notes',
         Entity::SHIPPING_ADDRESS    => 'sometimes',
         Entity::BILLING_ADDRESS     => 'sometimes',
@@ -90,11 +90,6 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException('The name format is invalid.');
         }
-    }
-
-    protected function validateGstin($attribute, $value)
-    {
-        GSTIN::validate($value);
     }
 
     /**
