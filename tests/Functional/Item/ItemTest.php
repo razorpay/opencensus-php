@@ -56,6 +56,11 @@ class ItemTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateItemWithHsnAndSacCode()
+    {
+        $this->startTest();
+    }
+
     public function testGetItem()
     {
         $this->fixtures->create('item');

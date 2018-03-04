@@ -27,6 +27,7 @@ return [
                         'name'          => 'Some item name',
                         'description'   => 'Some item description',
                         'amount'        => 100000,
+                        'hsn_code'      => '00110022'
                     ]
                 ],
             ],
@@ -46,6 +47,7 @@ return [
                         'amount'      => 100000,
                         'quantity'    => 1,
                         'type'        => 'invoice',
+                        'hsn_code'    => '00110022'
                     ]
                 ],
                 'status'       => 'issued',

@@ -15,6 +15,7 @@ return [
                 'description' => 'Item 1 description :) ..',
                 'amount'      => 100,
                 'currency'    => 'INR',
+                'hsn_code'    => '00110022',
                 'type'        => 'invoice',
             ],
         ],
@@ -25,6 +26,7 @@ return [
                 'description'   => 'Item 1 description :) ..',
                 'amount'        => 100,
                 'currency'      => 'INR',
+                'hsn_code'      => '00110022',
                 'unit'          => null,
                 'tax_inclusive' => false,
                 'tax_id'        => null,
@@ -42,6 +44,7 @@ return [
                 'description' => 'Item 1 description :) ..',
                 'unit_amount' => 100,
                 'currency'    => 'INR',
+                'sac_code'    => '914566',
                 'type'        => 'invoice',
             ],
         ],
@@ -53,6 +56,7 @@ return [
                 'amount'        => 100,
                 'unit_amount'   => 100,
                 'currency'      => 'INR',
+                'sac_code'      => '914566',
                 'unit'          => null,
                 'tax_inclusive' => false,
                 'tax_id'        => null,
@@ -158,6 +162,34 @@ return [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Both tax_id and tax_group_id cannot be present',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateItemWithHsnAndSacCode' => [
+        'request' => [
+            'url'     => '/items',
+            'method'  => 'post',
+            'content' => [
+                'name'         => 'Item 1',
+                'description'  => 'Item 1 description :) ..',
+                'amount'       => 100,
+                'currency'     => 'INR',
+                'hsn_code'     => '00110022',
+                'sac_code'     => '914600',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Both hsn_code and sac_code cannot be present',
                 ],
             ],
             'status_code' => 400,
