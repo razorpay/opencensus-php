@@ -825,11 +825,15 @@ class SettlementTest extends TestCase
         //
         $this->assertEquals(6, $content[$channel]['txnCount']);
 
-        // Check if the `reversal` txn gets settled after, say, a week
-        $nextWeek = Carbon::today(Timezone::IST)->addWeek()->getTimestamp();
-        $content = $this->initiateSettlements($channel, $nextWeek);
+        // Check if the `reversal` txn gets settled on the next working day
+        $nextWorkingDay = Holidays::getNthWorkingDayFrom(Carbon::now(Timezone::IST), 1);
+        Carbon::setTestNow($nextWorkingDay->setTime(8, 0));
+
+        $content = $this->initiateSettlements($channel);
 
         $this->assertEquals(1, $content[$channel]['txnCount']);
+
+        Carbon::setTestNow();
     }
 
     public function testSettlementForReversalOfDirectTransfer()
