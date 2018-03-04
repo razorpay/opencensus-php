@@ -169,12 +169,12 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CURRENCY);
     }
 
-    public function getHsnCode(): string
+    public function getHsnCode()
     {
         $this->getAttribute(self::HSN_CODE);
     }
 
-    public function getSacCode(): string
+    public function getSacCode()
     {
         $this->getAttribute(self::SAC_CODE);
     }

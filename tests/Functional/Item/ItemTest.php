@@ -26,7 +26,7 @@ class ItemTest extends TestCase
 
     public function testCreateItem()
     {
-        $response = $this->startTest();
+        $this->startTest();
     }
 
     public function testCreateItem2()
