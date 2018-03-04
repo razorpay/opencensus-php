@@ -11,6 +11,8 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
+    const TAX_CODES  = 'tax_codes';
+
     protected static $createRules = [
         Entity::QUANTITY            => 'filled|integer|min:1',
         Entity::ITEM_ID             => 'sometimes|nullable|string|max:19',
@@ -21,10 +23,16 @@ class Validator extends Base\Validator
         Entity::UNIT_AMOUNT         => 'required_without_all:amount,item_id|mysql_unsigned_int|min:100',
         Entity::CURRENCY            => 'required_without:item_id|size:3|in:INR|custom',
         Entity::UNIT                => 'sometimes|nullable|string|max:512',
+        Entity::HSN_CODE            => 'filled|string|max:8',
+        Entity::SAC_CODE            => 'filled|string|max:8',
         Entity::TYPE                => 'filled|string|max:16|custom',
         Entity::TAX_INCLUSIVE       => 'filled|boolean',
         Entity::TAX_ID              => 'sometimes|nullable|public_id|size:18',
         Entity::TAX_GROUP_ID        => 'sometimes|nullable|public_id|size:19',
+    ];
+
+    protected static $createValidators = [
+        self::TAX_CODES,
     ];
 
     protected static $createManyRules = [
@@ -40,11 +48,17 @@ class Validator extends Base\Validator
         Entity::AMOUNT              => 'filled|mysql_unsigned_int|min:100',
         Entity::UNIT_AMOUNT         => 'filled|mysql_unsigned_int|min:100',
         Entity::CURRENCY            => 'sometimes|nullable|size:3|in:INR|custom',
+        Entity::HSN_CODE            => 'filled|string|max:8',
+        Entity::SAC_CODE            => 'filled|string|max:8',
         Entity::TYPE                => 'filled|string|max:16|custom',
         Entity::UNIT                => 'sometimes|nullable|string|max:512',
         Entity::TAX_INCLUSIVE       => 'sometimes|nullable|boolean',
         Entity::TAX_ID              => 'sometimes|nullable|public_id|size:18',
         Entity::TAX_GROUP_ID        => 'sometimes|nullable|public_id|size:19',
+    ];
+
+    protected static $editValidators = [
+        self::TAX_CODES,
     ];
 
     protected static $removeManyRules = [
@@ -105,6 +119,25 @@ class Validator extends Base\Validator
                 "Currency of all items should be the same as of the $morphEntityName.",
                 Entity::CURRENCY,
                 $traceData);
+        }
+    }
+
+    /**
+     * TODO: This functions exists in both Item and LineItem Validator. Make Common.
+     *
+     * @param array $input
+     *
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateTaxCodes(array $input)
+    {
+        $hsnCode = $input[Entity::HSN_CODE] ?? $this->entity->getHsnCode();
+
+        $sacCode = $input[Entity::SAC_CODE] ?? $this->entity->getSacCode();
+
+        if ((empty($hsnCode) === false) and (empty($sacCode) === false))
+        {
+            throw new BadRequestValidationFailureException('Both hsn_code and sac_code cannot be present');
         }
     }
 }

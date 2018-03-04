@@ -39,9 +39,9 @@ class CreateItems extends Migration
 
             $table->char(Entity::CURRENCY, 3);
 
-            $table->string(Entity::HSN_CODE, 60);
+            $table->string(Entity::HSN_CODE, 20);
 
-            $table->string(Entity::SAC_CODE, 60);
+            $table->string(Entity::SAC_CODE, 20);
 
             $table->integer(Entity::TAX_RATE)
                   ->unsigned();

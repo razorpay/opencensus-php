@@ -198,6 +198,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CURRENCY);
     }
 
+    public function getHsnCode()
+    {
+        return $this->getAttribute(self::HSN_CODE);
+    }
+
+    public function getSacCode()
+    {
+        return $this->getAttribute(self::SAC_CODE);
+    }
+
     public function isTaxInclusive()
     {
         return $this->getAttribute(self::TAX_INCLUSIVE);

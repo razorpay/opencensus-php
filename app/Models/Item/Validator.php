@@ -9,9 +9,17 @@ use RZP\Models\Base as BaseModel;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 
+/**
+ * Class Validator
+ *
+ * @package RZP\Models\Item
+ *
+ * @property Entity $entity
+ */
 class Validator extends Base\Validator
 {
     const TAX_INPUTS = 'tax_inputs';
+    const TAX_CODES  = 'tax_codes';
 
     protected static $createRules = [
         Entity::NAME                => 'required|string|max:512',
@@ -19,6 +27,9 @@ class Validator extends Base\Validator
         Entity::AMOUNT              => 'required_without:unit_amount|mysql_unsigned_int|min:100',
         Entity::UNIT_AMOUNT         => 'required_without:amount|mysql_unsigned_int|min:100',
         Entity::CURRENCY            => 'required|size:3|in:INR',
+        Entity::HSN_CODE            => 'filled|string|max:8',
+        Entity::SAC_CODE            => 'filled|string|max:8',
+        Entity::TAX_RATE            => 'sometimes|integer|between:0,10000',
         Entity::TYPE                => 'filled|string|max:16|custom',
         Entity::UNIT                => 'filled|string|max:512',
         Entity::TAX_INCLUSIVE       => 'filled|boolean',
@@ -33,6 +44,9 @@ class Validator extends Base\Validator
         Entity::AMOUNT              => 'filled|mysql_unsigned_int|min:100',
         Entity::UNIT_AMOUNT         => 'filled|mysql_unsigned_int|min:100',
         Entity::CURRENCY            => 'filled|size:3|in:INR',
+        Entity::HSN_CODE            => 'filled|string|max:8',
+        Entity::SAC_CODE            => 'filled|string|max:8',
+        Entity::TAX_RATE            => 'sometimes|integer|between:0,10000',
         Entity::UNIT                => 'sometimes|nullable|string|max:512',
         Entity::TAX_INCLUSIVE       => 'filled|boolean',
         Entity::TAX_ID              => 'sometimes|nullable|public_id|size:18',
@@ -41,10 +55,12 @@ class Validator extends Base\Validator
 
     protected static $createValidators = [
         self::TAX_INPUTS,
+        self::TAX_CODES,
     ];
 
     protected static $editValidators = [
         self::TAX_INPUTS,
+        self::TAX_CODES,
     ];
 
     public function validateType($attribute, $value)
@@ -73,6 +89,18 @@ class Validator extends Base\Validator
         {
             throw new BadRequestValidationFailureException(
                 'Both tax_id and tax_group_id cannot be present');
+        }
+    }
+
+    public function validateTaxCodes(array $input)
+    {
+        $hsnCode = $input[Entity::HSN_CODE] ?? $this->entity->getHsnCode();
+
+        $sacCode = $input[Entity::SAC_CODE] ?? $this->entity->getSacCode();
+
+        if ((empty($hsnCode) === false) and (empty($sacCode) === false))
+        {
+            throw new BadRequestValidationFailureException('Both hsn_code and sac_code cannot be present');
         }
     }
 
