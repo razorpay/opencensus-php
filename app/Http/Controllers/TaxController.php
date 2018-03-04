@@ -18,6 +18,14 @@ class TaxController extends Controller
     {
         $data = $this->service()->getMetaGstTaxes();
 
+
+        return ApiResponse::json($data);
+    }
+
+    public function getMetaStates()
+    {
+        $data = $this->service()->getMetaStates();
+
         return ApiResponse::json($data);
     }
 }
