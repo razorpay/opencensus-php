@@ -8,11 +8,13 @@ use RZP\Constants\Mode;
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
 
 class AccountTest extends TestCase
 {
     use RequestResponseFlowTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -76,6 +78,26 @@ class AccountTest extends TestCase
             ]);
 
         $this->startTest();
+    }
+
+    public function testRetrieveLinkedAccounts()
+    {
+        $merchant = $this->fixtures->create('merchant:marketplace_account');
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => $merchant['id'],
+                'submitted'   => true,
+                'locked'      => true
+            ]);
+
+        $this->ba->proxyAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['email'] = $merchant->getEmail();
+
+        $this->startTest($testData);
     }
 
     public function testSettlementDestinations()
@@ -144,7 +166,7 @@ class AccountTest extends TestCase
 
         $account = $this->startTest();
 
-        $lastAccount = $this->getLastEntity('merchant', true);
+        $lastAccount = $this->getDbLastEntityPublic('merchant');
 
         $accountId = Account\Entity::getSignedId($lastAccount['id']);
 
@@ -154,10 +176,10 @@ class AccountTest extends TestCase
 
         $this->assertNotNull($account['fund_transfer']['destination']);
 
-        $bankAccount = $this->getLastEntity('bank_account', true, 'test');
+        $bankAccount = $this->getDbLastEntity('bank_account', 'test');
         $this->assertEquals('RZPB0000000', $bankAccount['ifsc_code']);
 
-        $bankAccount = $this->getLastEntity('bank_account', true, 'live');
+        $bankAccount = $this->getDbLastEntity('bank_account', 'live');
         $this->assertEquals('0002020000304030434', $bankAccount['account_number']);
     }
 }

@@ -6,7 +6,6 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use Mockery;
 
 class PaymentCreateTest extends TestCase
 {
@@ -173,6 +172,7 @@ class PaymentCreateTest extends TestCase
             $content['bank_account[account_number]'],
             $content['bank_account[ifsc]'],
             $content['aadhaar[number]']);
+
         $content['bank_account'] = [
             'account_number' => '12812891982',
             'name'           => 'test name',
@@ -204,9 +204,9 @@ class PaymentCreateTest extends TestCase
         $paymentEntity = $this->getLastEntity('payment', true);
 
         $payment['token'] = $paymentEntity['token_id'];
-        $payment['amount'] = 2000;
+        $payment['amount'] = 3000;
 
-        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 3000]);
         $payment['order_id'] = $order->getPublicId();
 
         //
@@ -215,6 +215,9 @@ class PaymentCreateTest extends TestCase
         $response = $this->doS2SRecurringPayment($payment);
 
         $this->assertArrayHasKey('razorpay_payment_id', $response);
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('netbanking_icici', $paymentEntity['gateway']);
     }
 
     public function testRecurringTokenForEmandate()
@@ -312,7 +315,7 @@ class PaymentCreateTest extends TestCase
 
         $this->assertArrayHasKey('razorpay_payment_id', $response);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $data = $this->testData[__FUNCTION__];
         $this->startTest($data);
@@ -511,9 +514,11 @@ class PaymentCreateTest extends TestCase
     protected function setupEmandateAndGetPaymentRequest($bank = 'HDFC', $amount = 2000)
     {
         $this->mockTokenex();
-        $this->fixtures->create('terminal:shared_netbanking_icici_recurring_terminal');
-        $this->fixtures->create('terminal:shared_netbanking_axis_recurring_terminal');
-        $this->fixtures->merchant->addFeatures(['e_mandate', 'charge_at_will']);
+        $this->fixtures->create('terminal:shared_emandate_icici_terminal');
+        $this->fixtures->create('terminal:shared_emandate_axis_terminal');
+        $this->fixtures->merchant->addFeatures(['charge_at_will']);
+
+        $this->fixtures->merchant->enableEmandate();
 
         $payment = $this->getEmandateNetbankingRecurringPaymentArray($bank, $amount);
 

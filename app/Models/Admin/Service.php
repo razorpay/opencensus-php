@@ -172,10 +172,6 @@ class Service extends Base\Service
     {
         $result = [];
 
-        $cachedEntities = [
-            Entity::KEY,
-        ];
-
         $cacheEvents = [
             QueryCacheConstants::CACHE_HITS,
             QueryCacheConstants::CACHE_MISSES,
@@ -183,7 +179,7 @@ class Service extends Base\Service
             QueryCacheConstants::CACHE_FLUSHES,
         ];
 
-        foreach ($cachedEntities as $entity)
+        foreach (Entity::CACHED_ENTITIES as $entity => $_)
         {
             $result[$entity] = [];
 

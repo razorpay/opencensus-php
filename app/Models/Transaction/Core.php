@@ -851,9 +851,9 @@ class Core extends Base\Core
 
         $txn->merchant()->associate($settlement->merchant);
 
-        $txn->sourceAssociate($settlement);
-
         $this->updateBalances($txn);
+
+        $txn->sourceAssociate($settlement);
 
         return $txn;
     }

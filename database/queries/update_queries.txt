@@ -1477,3 +1477,82 @@ and merchant_details.p_gstin != ''
 and merchant_details.p_gstin is not null
 and merchant_invoice.year = 2018
 and merchant_invoice.month = 1;
+
+-- move tokens to emandate method:
+UPDATE tokens
+SET method = 'emandate', auth_type = 'netbanking'
+WHERE method = 'netbanking';
+
+-- move payments to emandate method
+UPDATE payments
+SET method = 'emandate'
+WHERE created_at > 1504243800
+  AND terminal_id IN ('91LaFcjGVPBmcu',
+                      '8n8nyWExX8l4Oy',
+                      '8qH2tMbx3MCP7n',
+                      '8yswNFkuG98eN4',
+                      '9HxXL7xNhF3KyH',
+                      '9QYaAkoHaXO8Hk',
+                      '9TNVhZGrDKIQ1R',
+                      '9TNbtq22gvZql3',
+                      '9Yrjx0YHzWBlVQ',
+                      '9YrlbhQML8cd4Y')
+
+-- move emandate payments to auth_type = netbanking:
+UPDATE payments
+SET auth_type = 'netbanking'
+WHERE created_at > 1504243800
+  AND recurring_type = 'initial'
+  AND method = 'emandate'
+  AND terminal_id IN ('91LaFcjGVPBmcu',
+                      '8n8nyWExX8l4Oy',
+                      '8qH2tMbx3MCP7n',
+                      '8yswNFkuG98eN4',
+                      '9HxXL7xNhF3KyH',
+                      '9QYaAkoHaXO8Hk',
+                      '9TNVhZGrDKIQ1R',
+                      '9TNbtq22gvZql3',
+                      '9Yrjx0YHzWBlVQ',
+                      '9YrlbhQML8cd4Y')
+
+-- move orders to emandate method:
+UPDATE orders
+SET method = 'emandate'
+WHERE id IN
+    ( SELECT order_id
+      FROM payments
+      WHERE created_at > 1504243800
+        AND terminal_id IN ('91LaFcjGVPBmcu',
+                           '8n8nyWExX8l4Oy',
+                           '8qH2tMbx3MCP7n',
+                           '8yswNFkuG98eN4',
+                           '9HxXL7xNhF3KyH',
+                           '9QYaAkoHaXO8Hk',
+                           '9TNVhZGrDKIQ1R',
+                           '9TNbtq22gvZql3',
+                           '9Yrjx0YHzWBlVQ',
+                           '9YrlbhQML8cd4Y'))
+
+-- move terminals to emandate method:
+UPDATE terminals
+SET emandate = 1,
+netbanking = 0
+WHERE id IN ('91LaFcjGVPBmcu',
+             '8n8nyWExX8l4Oy',
+             '8qH2tMbx3MCP7n',
+             '8yswNFkuG98eN4',
+             '9HxXL7xNhF3KyH',
+             '9QYaAkoHaXO8Hk',
+             '9TNVhZGrDKIQ1R',
+             '9TNbtq22gvZql3',
+             '9Yrjx0YHzWBlVQ',
+             '9YrlbhQML8cd4Y')
+
+UPDATE fund_transfer_attempts
+SET initiate_at = created_at;
+
+# Update has_key_access to 1 for activation form submitted merchants
+UPDATE `merchants` m
+JOIN `merchant_details` md ON m.`id` = md.`merchant_id`
+SET m.`has_key_access` = 1
+WHERE m.`parent_id` IS NULL AND md.`submitted_at` IS NOT NULL;

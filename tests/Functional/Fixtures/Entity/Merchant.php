@@ -375,6 +375,16 @@ class Merchant extends Base
         return $this->fixtures->edit('methods', $id, ['mobikwik' => false]);
     }
 
+    public function enableEmandate($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['emandate' => true]);
+    }
+
+    public function disableEmandate($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['emandate' => false]);
+    }
+
     public function editBalance(int $amount, string $id = '10000000000000')
     {
         return $this->fixtures->edit('balance', $id, ['balance' => $amount]);

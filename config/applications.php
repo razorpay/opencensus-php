@@ -10,6 +10,10 @@ return [
         'cloud'     => true,
     ],
 
+    'dashboard_guest'   => [
+        'secret'   => env('APP_DASHBOARD_GUEST_SECRET'),
+    ],
+
     'mock_gateways' => [
         'secret'    => env('MOCK_GATEWAY_SECRET'),
     ],

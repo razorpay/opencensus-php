@@ -8,7 +8,7 @@ use Crypt;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
-use RZP\Models\Base\Traits\QueryCache\Cacheable;
+use RZP\Models\Base\QueryCache\Cacheable;
 
 class Entity extends Base\PublicEntity
 {
@@ -47,16 +47,6 @@ class Entity extends Base\PublicEntity
     protected $defaults = [
         self::EXPIRED_AT => null
     ];
-
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::updated(function ($key)
-        {
-            static::flushCache('key_' . $key->getId());
-        });
-    }
 
     public function merchant()
     {

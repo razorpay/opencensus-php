@@ -203,7 +203,28 @@ class Service extends Base\Service
             Org\Entity::verifyIdAndStripSign($input[Entity::ORG_ID]);
         }
 
-        $merchant = (new Merchant\Core)->edit($merchant, $input);
+        $merchant = $this->repo->transactionOnLiveAndTest(function() use ($merchant, $input)
+        {
+            $merchant = (new Merchant\Core)->edit($merchant, $input);
+
+            if (isset($input[Entity::FEE_BEARER]) === true)
+            {
+                $merchantId = $merchant->getId();
+
+                // add feebearer tag if fee_bearer field is set to customer
+                // else remove feebearer tag
+                if ($input[Entity::FEE_BEARER] === 'customer')
+                {
+                    $this->insertTag($merchantId, 'feebearer');
+                }
+                else
+                {
+                    $this->deleteTag($merchantId, 'feebearer');
+                }
+            }
+
+            return $merchant;
+        });
 
         return $merchant->toArrayPublic();
     }
@@ -362,7 +383,9 @@ class Service extends Base\Service
         // validate if this plan can be set for this merchant.
         // Refer: https://github.com/razorpay/api/issues/324
 
-        (new Merchant\Methods\Core)->validatePricingPlanForMethods($merchant, $plan);
+        $methods = $this->repo->methods->getMethodsForMerchant($merchant);
+
+        (new Merchant\Methods\Core)->validatePricingPlanForMethods($merchant, $plan, $methods);
 
         $originalPricingPlan = null;
 
@@ -774,9 +797,9 @@ class Service extends Base\Service
         return $webhook->toArrayPublic();
     }
 
-    public function getWebhooks()
+    public function getWebhooks(array $params)
     {
-        $webhooks = $this->repo->webhook->findMultipleByMerchant($this->merchant);
+        $webhooks = $this->repo->webhook->fetch($params, $this->merchant->getId());
 
         return $webhooks->toArrayPublic();
     }
@@ -917,18 +940,16 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function updateHoldFundsForMultipleMerchants(array $input)
+    public function updateMerchantsBulk(array $input)
     {
-        (new Validator)->validateInput('updateHoldFunds', $input);
-
         $this->trace->info(
-            TraceCode::MERCHANT_HOLD_FUNDS_BULK_UPDATE_REQUEST,
+            TraceCode::MERCHANT_BULK_UPDATE_REQUEST,
             $input
         );
 
-        $merchantIds = $input['merchant_ids'];
+        (new Validator)->validateInput('updateMerchantsBulk', $input);
 
-        $holdFunds = $input['hold_funds'];
+        $merchantIds = $input['merchant_ids'];
 
         $successCount = $failedCount = 0;
 
@@ -938,7 +959,7 @@ class Service extends Base\Service
         {
             try
             {
-                $this->updateHoldFunds($merchantId, $holdFunds);
+                $this->edit($merchantId, $input['attributes']);
 
                 $successCount++;
             }
@@ -960,7 +981,7 @@ class Service extends Base\Service
         ];
 
         $this->trace->info(
-            TraceCode::MERCHANT_HOLD_FUNDS_BULK_UPDATE_RESPONSE,
+            TraceCode::MERCHANT_BULK_UPDATE_RESPONSE,
             $response
         );
 
@@ -1081,11 +1102,7 @@ class Service extends Base\Service
 
     public function getMerchantFeatures()
     {
-        $merchant = $this->merchant;
-
-        $data = (new Feature\Service)->getFeaturesForEntity($merchant);
-
-        return $data;
+        return (new Feature\Service)->getFeaturesForEntity($this->merchant);
     }
 
     public function addOrRemoveMerchantFeatures(array $input)
@@ -1260,6 +1277,22 @@ class Service extends Base\Service
         return $merchant->tagNames();
     }
 
+    /**
+     * This function is used for updating key access of a merchant
+     * @param string $merchantId
+     * @param array $input
+     *
+     * @return array
+     */
+    public function updateKeyAccess(string $merchantId, array $input): array
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $merchant = (new Core)->updateKeyAccess($merchant, $input);
+
+        return $merchant->toArrayPublic();
+    }
+
     public function markGratisTransactionPostpaid($input)
     {
         $this->trace->info(
@@ -1303,17 +1336,10 @@ class Service extends Base\Service
         return $response;
     }
 
-    protected function updateHoldFunds(string $merchantId, bool $holdFunds)
+    public function getUsers()
     {
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+        $merchantId = $this->merchant->getId();
 
-        $merchant->setHoldFunds($holdFunds);
-
-        $this->repo->saveOrFail($merchant);
-    }
-
-    public function getUsers(string $merchantId)
-    {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
         $users = (new Merchant\Core)->getUsers($merchant);
@@ -1509,7 +1535,8 @@ class Service extends Base\Service
 
         foreach ($featureNames as $featureName)
         {
-            $feature = $this->repo->feature->findByEntityIdAndNameOrFail(
+            $feature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail(
+                Feature\Constants::MERCHANT,
                 $entityId,
                 $featureName);
 

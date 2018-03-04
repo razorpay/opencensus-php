@@ -93,6 +93,10 @@ return [
                 'assignable' => true,
                 'workflow'   => true
             ],
+            Permission::EDIT_MERCHANT_KEY_ACCESS => [
+                'assignable' => true,
+                'workflow'   => true
+            ],
             Permission::EDIT_MERCHANT_ENABLE_LIVE => [
                 'assignable' => true,
                 'workflow'   => true
@@ -177,7 +181,7 @@ return [
             ],
             Permission::EDIT_MERCHANT_ENABLE_RECEIPT => '',
             Permission::EDIT_MERCHANT_DISABLE_RECEIPT => '',
-            Permission::EDIT_BULK_MERCHANT_HOLD_FUNDS => '',
+            Permission::EDIT_BULK_MERCHANT => '',
             Permission::ASSIGN_MERCHANT_TERMINAL => '',
             Permission::ASSIGN_MERCHANT_BANKS => '',
             Permission::ADD_MERCHANT_ADJUSTMENT => '',
@@ -218,6 +222,10 @@ return [
             ],
             Permission::VIEW_MERCHANT_REPORT   => [
                 'description' => 'View Merchant Reports',
+            ],
+
+            Permission::VIEW_SPECIAL_MERCHANT_REPORT => [
+                'description'   => 'View custom merchant reports for a few large clients',
             ],
             Permission::CREATE_MERCHANT_OFFER  => [
                 'description' => 'Create offer for a merchant',

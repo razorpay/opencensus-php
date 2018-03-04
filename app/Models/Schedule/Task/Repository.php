@@ -87,6 +87,13 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function fetchByEntity(string $entityId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ENTITY_ID, '=', $entityId)
+                    ->first();
+    }
+
     public function fetchDueScheduleTasks(string $type, int $timestamp)
     {
         return $this->newQuery()

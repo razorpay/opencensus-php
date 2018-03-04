@@ -104,7 +104,6 @@ return [
                     'YESB' => 'Yes Bank',
                 ],
                 'wallet' => [
-                    'mobikwik' => true,
                 ],
                 'recurring' => [
                     'card' => [

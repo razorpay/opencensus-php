@@ -38,6 +38,7 @@ class Entity extends Base\PublicEntity
     const EMI                           = 'emi';
     const UPI                           = 'upi';
     const AEPS                          = 'aeps';
+    const EMANDATE                      = 'emandate';
     const EMI_DURATION                  = 'emi_duration';
     const EMI_SUBVENTION                = 'emi_subvention';
     const RECURRING                     = 'recurring';
@@ -50,7 +51,7 @@ class Entity extends Base\PublicEntity
     const TYPE                          = 'type';
     const MODE                          = 'mode';
 
-    // Used for allowing gateway level changes for coporate netbanking payments.
+    // Used for allowing gateway level changes for corporate netbanking payments.
     const CORPORATE                     = 'corporate';
 
     const DELETED                       = 'deleted';
@@ -74,8 +75,10 @@ class Entity extends Base\PublicEntity
         self::CARD,
         self::CATEGORY,
         self::NETWORK_CATEGORY,
+        self::NETBANKING,
         self::UPI,
         self::AEPS,
+        self::EMANDATE,
         self::EMI,
         self::EMI_DURATION,
         self::EMI_SUBVENTION,
@@ -105,8 +108,10 @@ class Entity extends Base\PublicEntity
         self::CARD,
         self::CATEGORY,
         self::NETWORK_CATEGORY,
+        self::NETBANKING,
         self::UPI,
         self::AEPS,
+        self::EMANDATE,
         self::EMI,
         self::EMI_DURATION,
         self::EMI_SUBVENTION,
@@ -181,6 +186,7 @@ class Entity extends Base\PublicEntity
         self::INTERNATIONAL             => 'boolean',
         self::UPI                       => 'boolean',
         self::AEPS                      => 'boolean',
+        self::EMANDATE                  => 'boolean',
         self::ENABLED                   => 'boolean',
         self::TPV                       => 'int',
         self::TYPE                      => 'int',
@@ -333,6 +339,11 @@ class Entity extends Base\PublicEntity
     public function isAepsEnabled()
     {
         return $this->getAttribute(self::AEPS);
+    }
+
+    public function isEmandateEnabled()
+    {
+        return $this->getAttribute(self::EMANDATE);
     }
 
     public function isShared(): bool
@@ -566,6 +577,15 @@ class Entity extends Base\PublicEntity
 
     // ---------------------- END SCOPES ----------------------
 
+    /**
+     * This function won't work in cases where a single gateway
+     * supports multiple methods. Example: Netbanking HDFC,
+     * Netbanking ICICI. They both support emandate and netbanking.
+     *
+     * It'll end up setting both netbanking and emandate as 1.
+     *
+     * @param $input
+     */
     public function generateMethod($input)
     {
         $gateway = $input[self::GATEWAY];

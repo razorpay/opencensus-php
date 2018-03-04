@@ -112,7 +112,7 @@ class DisputeTest extends TestCase
 
         $this->testData[$eventTestDataKey]['payload']['dispute']['entity']['payment_id'] = $paymentId;
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $this->startTest($testData);
     }

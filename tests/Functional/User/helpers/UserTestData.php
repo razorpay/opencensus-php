@@ -33,7 +33,10 @@ return [
     'testGet' => [
         'request' => [
             'url'    => '/users/id',
-            'method' => 'GET'
+            'method' => 'GET',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+            ],
         ],
         'response' => [
             'content' => [
@@ -77,7 +80,7 @@ return [
         'request' => [
             'url'     => '/users/login',
             'method'  => 'POST',
-            'content' => []
+            'content' => [],
         ],
         'response' => [
             'content' => [
@@ -86,7 +89,7 @@ return [
                     'description' => PublicErrorDescription::BAD_REQUEST_USER_NOT_AUTHENTICATED,
                 ],
             ],
-            'status_code' => 400,
+            'status_code' => 401,
         ],
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',

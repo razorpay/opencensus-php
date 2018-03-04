@@ -407,15 +407,18 @@ class Validator extends Base\Validator
                 return;
             }
 
-            $vpa = $input['vpa'];
-
-            $handle = substr($vpa, strpos($vpa, '@') + 1);
-
-            if ((isset(self::$pspAmountLimit[$handle]) === true) and
-                ($amount > self::$pspAmountLimit[$handle]))
+            if (isset($input['vpa']) === true)
             {
-                throw new Exception\BadRequestValidationFailureException(
-                    'Maximum amount for UPI payment can be Rs ' . (self::$pspAmountLimit[$handle] / 100));
+                $vpa = $input['vpa'];
+
+                $handle = substr($vpa, strpos($vpa, '@') + 1);
+
+                if ((isset(self::$pspAmountLimit[$handle]) === true) and
+                    ($amount > self::$pspAmountLimit[$handle]))
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Maximum amount for UPI payment can be Rs ' . (self::$pspAmountLimit[$handle] / 100));
+                }
             }
         }
 
@@ -496,6 +499,9 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_PAYMENT_BANK_NOT_PROVIDED);
         }
 
+        //
+        // The bank is validated for emandate in `validateInitialRecurringForEmandate`
+        //
         if (Payment\Processor\Netbanking::isSupportedBank($input['bank']) === false)
         {
             throw new Exception\BadRequestException(
