@@ -631,7 +631,7 @@ return [
         ],
     ],
 
-    'testOtpWorkFlowwithEmailRequired' => [
+    'testOtpWorkFlowWithEmailRequired' => [
         'response' => [
             'content' => [
                 'error' => [

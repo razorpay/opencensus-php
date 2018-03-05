@@ -64,11 +64,11 @@ class Validator extends Base\Validator
 
     public function __construct($entity = null)
     {
+        parent::__construct($entity);
+
         $app = App::getFacadeRoot();
 
         $this->merchant = $app['basicauth']->getMerchant();
-
-        parent::__construct($entity);
     }
 
     protected function validateEmail($input)
@@ -77,7 +77,7 @@ class Validator extends Base\Validator
             (empty($input[Entity::EMAIL]) === true))
         {
             throw new Exception\BadRequestValidationFailureException(
-                'email is required',
+                'The Email field is required.',
                 Entity::EMAIL);
         }
     }

@@ -218,7 +218,7 @@ class CustomerTest extends TestCase
         $this->startTest();
     }
 
-    public function testOtpFlowforEmailOptionalMerchants()
+    public function testOtpFlowForEmailOptionalMerchants()
     {
         $this->ba->publicAuth();
 
@@ -241,7 +241,7 @@ class CustomerTest extends TestCase
         $this->assertEquals($responseWithValidEmail['success'], 1);
     }
 
-    public function testOtpWorkFlowwithEmailRequired()
+    public function testOtpWorkFlowWithEmailRequired()
     {
         $this->ba->publicAuth();
 
