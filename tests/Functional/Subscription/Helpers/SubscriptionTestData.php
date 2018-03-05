@@ -114,6 +114,39 @@ return [
         ],
     ],
 
+    'testCreateDailyPlan' => [
+        'request' => [
+            'url' => '/plans',
+            'method' => 'post',
+            'content' => [
+                'period'    => 'daily',
+                'interval'  => 7,
+                'item'      => [
+                    'name'     => 'test plan',
+                    'amount'   => 20000,
+                    'currency' => 'INR',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'   => 'plan',
+                'interval' => 7,
+                'period'   => 'daily',
+                'notes'    => [],
+                'item'     => [
+                    'active'      => true,
+                    'name'        => 'test plan',
+                    'description' => null,
+                    'amount'      => 20000,
+                    'currency'    => 'INR',
+                    'type'        => 'plan',
+                ]
+            ],
+        ],
+    ],
+
+
     'testCreatePlanWithBadMonthlyIntervalPeriod' => [
         'request' => [
             'url'     => '/plans',
@@ -128,7 +161,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Interval provided exceed the maximum interval (120) allowed for the given period (monthly)',
+                    'description' => 'Interval provided exceeds the maximum interval (120) allowed for the given period (monthly)',
                 ],
             ],
             'status_code' => 400,
@@ -153,7 +186,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Interval provided exceed the maximum interval (10) allowed for the given period (yearly)',
+                    'description' => 'Interval provided exceeds the maximum interval (10) allowed for the given period (yearly)',
                 ],
             ],
             'status_code' => 400,

@@ -1,7 +1,5 @@
 <?php
 
-use Carbon\Carbon;
-
 use RZP\Models\FundTransfer\Attempt\Status as AttemptStatus;
 use RZP\Models\Settlement\Status as SettlementStatus;
 
