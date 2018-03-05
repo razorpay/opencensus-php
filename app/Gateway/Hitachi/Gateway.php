@@ -219,8 +219,8 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $verify->payment;
 
-        if ((empty($gatewayPayment->pRRN) === true) and
-            ($gatewayPayment->pRespCode === '30'))
+        if ((empty($gatewayPayment->getRRN()) === true) and
+            ($gatewayPayment->getResponseCode() === '30'))
         {
             $verify->apiStatus = false;
 
