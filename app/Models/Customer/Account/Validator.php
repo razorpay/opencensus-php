@@ -58,7 +58,7 @@ class Validator extends Base\Validator
         'otp'                   => 'required|string|regex:"^\d{4,8}$"',
     ];
 
-   protected static $global_createValidators = [
+   protected static $globalCreateValidators = [
        Entity::EMAIL,
    ];
 
@@ -170,7 +170,7 @@ class Validator extends Base\Validator
 
     public static function validateGlobalCustomerCreateInput($input)
     {
-        (new static)->validateInput('global_create', $input);
+        (new static)->validateInput('globalCreate', $input);
     }
 
     public static function validateWalletAppCustomerCreateInput($input)
