@@ -654,12 +654,18 @@ app
                   userDetails.merchants &&
                   userDetails.merchants[userDetails.id].role;
 
-                var queryParams = location.search.slice(1).split(/=|&/).reduce(function(map, param, index, array){
-                  if (index % 2) {
-                    map[array[index - 1]] = param
-                  }
-                  return map
+                // parse query parameters to object
+                // ?next=foo&q=bar → { next: 'foo', q: 'bar' }
+                var queryParams = location.search
+                  .slice(1)
+                  .split(/=|&/)
+                  .reduce(function(map, param, index, array) {
+                    if (index % 2) {
+                      map[array[index - 1]] = param;
+                    }
+                    return map;
                   }, {});
+
                 if (queryParams.next) {
                   var parser = document.createElement('a');
                   parser.href = queryParams.next;
