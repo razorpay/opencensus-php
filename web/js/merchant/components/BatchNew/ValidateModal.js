@@ -1,6 +1,5 @@
 import { Component, Fragment } from 'react';
 
-// TODO: temporary file upload till the file upload component is built
 import FileUpload from 'merchant/components/File/Upload';
 
 import ModalHeader from 'rzp/ui/ModalHeader';

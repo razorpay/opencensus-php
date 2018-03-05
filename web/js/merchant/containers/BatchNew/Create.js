@@ -1,11 +1,12 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 
-import BatchCreateModal from 'merchant/components/BatchNew/CreateModal';
+import { showNotification } from 'rzp/modules/notifications';
 
+import BatchCreateModal from 'merchant/components/BatchNew/CreateModal';
 import { createPaymentLinkBatch as createBatch } from 'merchant/modules/batches';
 
-@connect(state => state.session, { createBatch })
+@connect(state => state.session, { createBatch, showNotification })
 export default class BatchCreate extends Component {
   handleBatchCreate = props => {
     let data = { ...props };
@@ -20,7 +21,12 @@ export default class BatchCreate extends Component {
       .then(response => {
         this.props.onCreation(response);
       })
-      .catch(error => console.log('err: ', error)); //TODO: Handle error response
+      .catch(error => {
+        this.props.showNotification({
+          type: 'error',
+          message: 'Failed to create batch.',
+        });
+      });
   };
 
   render() {
