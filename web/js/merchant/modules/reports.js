@@ -14,17 +14,37 @@ const handleError = e => {
   return reportErrorMsg;
 };
 
-const createLog = data => {
+const createLog = (data, accountId) => {
   return merchantFetch({
     url: 'reporting/logs',
     method: 'post',
     data,
+    ...(!!accountId && {accountId})
   });
 };
 
-const getLog = logId => merchantFetch(`reporting/logs/${logId}`);
-const getFile = fileId => merchantFetch(`ufh/file/${fileId}/get-signed-url`)
-export const getConfigs = _ => merchantFetch('reporting/configs')
+const getLog = (logId, accountId) => {
+    
+  return merchantFetch({
+    url: `reporting/logs/${logId}`,
+    ...(!!accountId && {accountId})
+  });
+};
+
+const getFile = (fileId, accountId) => {
+    
+  return merchantFetch({
+    url: `ufh/file/${fileId}/get-signed-url`,
+    ...(!!accountId && {accountId})
+  });
+};
+
+export const getConfigs = () => {
+    
+  return merchantFetch({
+    url: 'reporting/configs'
+  });
+};
 
 export const generateReport = ajaxParams => {
   return {
@@ -36,22 +56,27 @@ export const generateReport = ajaxParams => {
 const pollInterval = 2, // poll interval in SECONDS
   timeout = 30 * 60 * 1000; // 30 minutes
 
-export const generateReportV2 = params => {
-  const startTime = new Date();
-
+export const generateReportV2 = (params, isMerchantAccount) => {
+  const startTime = new Date(),
+        accountHeaderVal = !isMerchantAccount && 
+                           params.generated_by;
+  
   let numCallsMade = 0,
     timeElapsed = 0;
 
-  return createLog(params)
+  return createLog(params, accountHeaderVal)
     .then(resp => {
-      if (!resp.success) {
+      if (!resp.success || !resp.data || !resp.data.id) {
         return reportErrorMsg;
       }
 
       const logId = resp.data.id;
 
       const logPoll = poll({
-        fetchFunc: () => getLog(resp.data.id),
+        fetchFunc: () => getLog(
+                           resp.data.id,
+                           accountHeaderVal
+                         ),
         validator: resp => {
           numCallsMade++;
           timeElapsed = new Date() - startTime;
@@ -106,7 +131,7 @@ export const generateReportV2 = params => {
             };
           }
 
-          return getFile(fileId)
+          return getFile(fileId, accountHeaderVal)
             .then(resp => {
               if (!resp.success) {
                 return reportErrorMsg;

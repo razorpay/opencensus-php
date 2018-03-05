@@ -249,12 +249,22 @@ export default class ReportsContainer extends Component {
 
       this.props.showNotification(downloadStartedMessage);
 
-      return generateReportV2({
-        config_id: selectedConfig._item.id,
-        generated_by: selectedAccount.id.replace('acc_', ''),
-        start_time: startTime,
-        end_time: endTime,
-      }).then(data => {
+      const { user } = this.props,
+            selectedAccountId = ((selectedConfig.type in marketplaceConfigTypes)
+                                  ? selectedAccount.id
+                                  : this.defaultAccount.id).replace('acc_', ''),
+            isMerchantAccount = selectedAccountId === user.current,
+            reqData = {
+              config_id: selectedConfig._item.id,
+              generated_by: selectedAccountId,
+              start_time: startTime,
+              end_time: endTime,
+            };
+
+      return generateReportV2(
+        reqData,
+        isMerchantAccount
+      ).then(data => {
         if (data.error) {
           return this.props.showNotification({
             type: 'error',

@@ -45,7 +45,9 @@ export default class GenericEntity extends Component {
     let { type, id } = this.params;
 
     fetch(
-      { url: `/admin/api/${mode}/admin/${type}/${id}` },
+      {
+        url: `/admin/api/${mode}/admin/${type}/${id}`,
+      },
       suppressDefaultError
     ).then(data => {
       if (!data.errors && data) {

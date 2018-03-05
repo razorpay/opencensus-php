@@ -4,11 +4,12 @@ import { toJS, observable } from 'mobx';
 import { observer } from 'mobx-react';
 import { closeModal, notifyError, notifySuccess } from 'common/modal';
 import fetch, { adminFetch, adminPost } from 'common/fetch';
+import { validateMultipleEmails } from 'rzp/utils/validators';
 import { getRiskRating } from '../entity-resources';
 import ShowWhen from 'admin/components/ShowWhen';
 import Form from 'ui/Form';
 import Field, { SelectField, SwitchField } from 'ui/Field';
-import MultiSelectField from 'ui//MultiSelectField';
+import MultiSelectField from 'ui/MultiSelectField';
 import AsyncButton from 'ui/AsyncButton';
 import Table from 'ui/Table';
 
@@ -73,9 +74,15 @@ export default class EditMerchant extends Component {
       body.admins = body.admins.split(',');
     }
     body.max_payment_amount *= 100;
+
+    // validation all the transaction report emails and removing spaces if any present
     body.transaction_report_email = body.transaction_report_email
-      ? body.transaction_report_email.split(',')
+      ? body.transaction_report_email.replace(' ', '').split(',')
       : [];
+    if (!validateMultipleEmails(body.transaction_report_email)) {
+      notifyError('Please ensure all transaction report emails are valid');
+      return;
+    }
 
     if (body.auto_refund_delay_val || body.auto_refund_delay_type) {
       body.auto_refund_delay = `${body.auto_refund_delay_val} ${
@@ -243,7 +250,12 @@ export default class EditMerchant extends Component {
             label="Transaction Report Email"
             name="transaction_report_email"
             placeholder="Enter comma(,) separated emails"
-            defaultValue={details.transaction_report_email[0]}
+            defaultValue={
+              details.transaction_report_email instanceof Array
+                ? details.transaction_report_email.join(',')
+                : ''
+            }
+            required
           />
 
           <SelectField

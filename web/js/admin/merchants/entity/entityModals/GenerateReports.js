@@ -30,7 +30,7 @@ export default class GenerateReports extends Component {
     const isMarketplaceEnabled = details.tags.indexOf('Marketplace') !== -1;
 
     if (isMarketplaceEnabled && false) {
-      // Feature to be used only when Merchant Dash
+      // TODO: Feature to be used only in Merchant Dash, so being ignored in admin dashboard right now.
       fetch({ url: 'live/accounts' })
         .then(response => {
           if (response) {
