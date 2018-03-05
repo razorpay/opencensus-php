@@ -40,7 +40,7 @@ export default class BatchCreateModal extends Component {
         />
         <div class="modal-info stretch create">
           <form onSubmit={handleSubmit(onCreateBatch)}>
-            <h5>
+            <h5 class="file-name-head">
               <strong>
                 CREATE BATCH FILE NAME <i class="i i-info-circle m-l" />
               </strong>
@@ -55,12 +55,10 @@ export default class BatchCreateModal extends Component {
                 validate={[required()]}
               />
             </div>
-            <h5>
-              <strong style={{ textTransform: 'uppercase' }}>
-                SEND {titleCase(batchType)}S
-              </strong>
+            <h5 class="send-link-head">
+              <strong>SEND {titleCase(batchType)}S</strong>
             </h5>
-            <div class="form-group">
+            <div class="form-group send-links-form">
               <div class="checkbox rzpCheckbox next m-r">
                 <Field
                   name="sms_notify"
@@ -84,7 +82,7 @@ export default class BatchCreateModal extends Component {
                 </label>
               </div>
             </div>
-            <p class="m-t">
+            <p>
               <i class="i i-info-circle m-r" />
               Payment Links with SMS and Email will be sent once the batch is
               created.

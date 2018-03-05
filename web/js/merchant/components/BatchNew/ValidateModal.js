@@ -25,7 +25,7 @@ export default function BatchValidateModal({
 }) {
   return (
     <div class="modal-body">
-      <h4 class="modal-heading">Upload File</h4>
+      <h4 class="modal-heading">UPLOAD FILE</h4>
       <div class="modal-file">
         <FileUpload
           accept={['csv', 'xlsx']}
@@ -47,7 +47,7 @@ export default function BatchValidateModal({
       {/* Show batch upload modal info when no file uploaded */}
       {!status || status === 'exceed' ? (
         <div class="modal-info">
-          <h5>
+          <h5 style={{ fontSize: '16px' }}>
             Getting Started with Batch Uploads?{' '}
             <a class="btn btn-link m-l" href={docUrl} target="_blank">
               View Documentation <i class="i i-external-link" />
@@ -86,17 +86,16 @@ export default function BatchValidateModal({
       {/* Show batch modal error-info when file upload */}
       {fileUrl ? (
         <div class="modal-info error stretch">
-          <div class="row m-t">
-            <div class="col-sm-8">
+          <div class="row">
+            <div class="col-sm-9">
               <h4 class="m-b">How to fix an error?</h4>
               <p>
                 The errors are marked in a the same file in a separate column.
-                <br />
                 Download the error file, fix the errors and upload again to
                 proceed.
               </p>
             </div>
-            <div class="col-sm-4">
+            <div class="col-sm-3">
               <a class="btn btn-primary btn-block" href={fileUrl}>
                 {' '}
                 <i class="i i-download m-r" /> Download File
