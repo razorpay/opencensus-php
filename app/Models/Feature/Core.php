@@ -479,7 +479,9 @@ class Core extends Base\Core
     {
         $accessor = new FileStore\Accessor;
 
-        $signedUrls = $accessor->id($fileStoreId)->merchantId($merchantId)->getSignedUrl();
+        $signedUrls = $accessor->id($fileStoreId)
+                               ->merchantId($merchantId)
+                               ->getSignedUrl();
 
         return $signedUrls[$fileStoreId];
     }

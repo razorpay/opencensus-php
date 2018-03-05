@@ -22,6 +22,7 @@ use RZP\Models\Base;
 use RZP\Models\Coupon;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
+use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 use RZP\Models\Merchant\Webhook;
 use RZP\Models\Offer;
@@ -657,6 +658,29 @@ class Service extends Base\Service
         $this->logActionToSlack($merchant, SlackActions::EDIT_BANK_DETAILS, $input);
 
         return $ba->toArray();
+    }
+
+    public function getBankAccountChangeStatus($id)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        $oldBankAccount = $this->repo->bank_account->getBankAccount($merchant);
+
+        $entityId = PublicEntity::stripDefaultSign($oldBankAccount->getId());
+
+        $actions = (new \RZP\Models\Workflow\Action\Core)->fetchOpenActionOnEntityOperation(
+            $entityId, $oldBankAccount->getEntity(), Permission::EDIT_MERCHANT_BANK_DETAIL);
+
+        $actions = $actions->toArray();
+
+        // If there are any action in progress
+        if (empty($actions) === false)
+        {
+            return true;
+        }
+
+        return false;
+
     }
 
     public function getBankAccount($id)

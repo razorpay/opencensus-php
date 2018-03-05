@@ -857,9 +857,9 @@ class MerchantTest extends TestCase
 
     public function testAddBankAccount()
     {
-        $this->ba->adminAuth();
-
         Mail::fake();
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
 
         $this->startTest();
 
@@ -875,9 +875,9 @@ class MerchantTest extends TestCase
 
     public function testAddBankAccountWithMerchantDetail()
     {
-        $this->ba->adminAuth();
-
         Mail::fake();
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
 
         $this->fixtures->create('merchant_detail',
                                                 [
@@ -911,7 +911,7 @@ class MerchantTest extends TestCase
 
     public function testAddBankAccountWithInvalidIFSC()
     {
-        $this->ba->adminAuth();
+        $this->ba->proxyAuth('rzp_test_10000000000000');
 
         $this->startTest();
     }
@@ -919,6 +919,8 @@ class MerchantTest extends TestCase
     public function testGetBankAccount()
     {
         $this->testAddBankAccount();
+
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
