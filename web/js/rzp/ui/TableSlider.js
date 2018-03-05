@@ -4,7 +4,6 @@ import Table from 'rzp/ui/Table/Index';
 /**
  * Component: Slide table from rigth to left using "margin-left" property instead of scroll
  * Prop: Sliding Unit by which table should slide in both direction
- * Prop: Tab width, render flex based tabs width
  *
  * Pass all the usual props you pass for Table components
  *
@@ -23,11 +22,10 @@ export default class TableSlider extends Component {
   };
 
   componentDidMount() {
-    const { tabWidth = DEFAULT_TAB_WIDTH } = this.props;
     const sliderWidth = document.querySelector('.table-slider').offsetWidth;
     const targetWidth = document.querySelector('.table-slider table')
       .offsetWidth;
-    this.gutter = targetWidth - sliderWidth + 2 * tabWidth; //both slider tabs have fixed width
+    this.gutter = targetWidth - sliderWidth;
   }
 
   handleSlideClick = direction => {
@@ -62,36 +60,33 @@ export default class TableSlider extends Component {
   };
 
   render() {
-    let { children, tabWidth = DEFAULT_TAB_WIDTH } = this.props;
+    let { children } = this.props;
     let newProps = { ...this.props };
-
-    const tabWidthFlexProp = {
-      flex: `0 0 ${tabWidth}px`,
-    };
 
     delete newProps.children;
     delete newProps.slideUnit;
 
     return (
       <div class="table-slider">
-        <button
-          class="slider-tabs btn-default"
-          style={tabWidthFlexProp}
-          disabled={this.state.currentMargin === 0}
-          onClick={() => this.handleSlideClick('left')}
-        >
-          <i class="i i-arrow-back" />
-        </button>
+        {this.state.currentMargin !== 0 && (
+          <button
+            class="slider-tabs btn-default left-btn"
+            onClick={() => this.handleSlideClick('left')}
+          >
+            <i class="i i-arrow-back" />
+          </button>
+        )}
 
         <Table tableStyle={this.state.styles} {...newProps} />
-        <button
-          class="slider-tabs btn-default"
-          style={tabWidthFlexProp}
-          disabled={this.state.currentMargin === -this.gutter}
-          onClick={() => this.handleSlideClick('right')}
-        >
-          <i class="i i-arrow-forward" />
-        </button>
+
+        {this.state.currentMargin !== -this.gutter && (
+          <button
+            class="slider-tabs btn-default right-btn"
+            onClick={() => this.handleSlideClick('right')}
+          >
+            <i class="i i-arrow-forward" />
+          </button>
+        )}
       </div>
     );
   }

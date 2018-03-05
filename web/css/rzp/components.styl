@@ -737,8 +737,8 @@ dl.rzp-definition {
 
 /* Component: rzp/ui/TableSlider */
   .table-slider {
-    display: flex;
     margin: 20px 0;
+    position: relative;
     .table-responsive {
       overflow: hidden;
       .table {
@@ -747,14 +747,17 @@ dl.rzp-definition {
       }
     }
     .slider-tabs {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      border: 1px solid #DBDBDB;
+      display: inline-block;
+      border: 1px solid #dbdbdb;
       border-radius: 2px;
-      flex: 0 0 30px;
-      color: $primary-color;
+      color: #5f73cf;
       cursor: pointer;
+      position: absolute;
+      height: 100%;
+      &.right-btn {
+        right: 0px;
+        top: 0px;
+      }
       &[disabled] {
         color: #d6d6d6
       }

@@ -35,7 +35,6 @@ export default class BatchCreateModal extends Component {
           columns={getTableColumns(parsedEntries[0])}
           rows={parsedEntries}
           limit={3}
-          tabWidth={30}
           slideUnit={200}
         />
         <div class="modal-info stretch create">
