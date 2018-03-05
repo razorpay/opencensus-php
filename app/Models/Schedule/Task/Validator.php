@@ -15,7 +15,7 @@ class Validator extends Base\Validator
         ScheduleTask::TYPE              => 'required|string|max:20',
         ScheduleTask::METHOD            => 'sometimes|nullable|string|max:20|custom',
         ScheduleTask::SCHEDULE_ID       => 'required|alpha_dash|max:20',
-        ScheduleTask::NEXT_RUN_AT       => 'sometimes|integer',
+        ScheduleTask::NEXT_RUN_AT       => 'sometimes|integer'
     ];
 
     protected static $updateNextRunAtRules = [
@@ -42,6 +42,34 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid Type given: ' . $type);
+        }
+    }
+
+    public function validateForExternalServices(array $input)
+    {
+        if (isset($input[Entity::ENTITY_ID]) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Entity ID should be present');
+        }
+
+        if (isset($input[Entity::ENTITY_TYPE]) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Entity Type should be present');
+        }
+
+        $this->validateEntityType($input);
+    }
+
+    protected function validateEntityType(array $input)
+    {
+        $type = $input[Entity::TYPE];
+
+        if (($type === Type::REPORTING) and (Type::isValidEntityType($type, $input[Entity::ENTITY_TYPE]) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "Invalid Entity Type given for $type");
         }
     }
 }
