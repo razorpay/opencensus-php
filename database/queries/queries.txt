@@ -3011,3 +3011,6 @@ ALTER TABLE `merchants`
 
 ALTER TABLE tokens
     ADD COLUMN aadhaar_number VARCHAR(255) DEFAULT NULL AFTER ifsc;
+
+ALTER TABLE schedules
+    MODIFY COLUMN `interval` INTEGER DEFAULT NULL;
