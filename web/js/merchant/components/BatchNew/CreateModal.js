@@ -36,7 +36,7 @@ export default class BatchCreateModal extends Component {
           rows={parsedEntries}
           limit={3}
           tabWidth={30}
-          slideUnit={100}
+          slideUnit={200}
         />
         <div class="modal-info stretch create">
           <form onSubmit={handleSubmit(onCreateBatch)}>
