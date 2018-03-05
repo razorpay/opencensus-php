@@ -542,7 +542,7 @@ final class FactoryData
             'id'            => $faker->uniqueid,
             'admin_id'      => 'RazorpayUserId',
             'created_at'    => $faker->timestamp,
-            'expires_at'    => Carbon::now()->addYears(10)->getTimestamp(),
+            'expires_at'    => Carbon::now()->addDays(30)->getTimestamp(),
         ]);
 
         $factory(\RZP\Models\Merchant\Detail\Entity::class, [
