@@ -65,6 +65,10 @@ class Entity extends Base\PublicEntity
      */
     const DEFAULT_MAX_AMOUNT    = 10000000;
 
+    /**
+     * We use this to set the max amount of the token entity for the aadhaar auth.
+     * For Aadhaar auth, it is different as it supports only ₹ 99,999
+     */
     const DEFAULT_AADHAAR_MAX_AMOUNT  = 9999900;
 
     /**

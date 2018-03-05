@@ -21,8 +21,6 @@ class DigioGatewayTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/DigioGatewayTestData.php';
-
         parent::setUp();
 
         $this->fixtures->create('terminal:shared_digio_terminal');
@@ -53,19 +51,16 @@ class DigioGatewayTest extends TestCase
     {
         $mock = $this->isGatewayMocked();
 
+        list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
+
         if ($mock)
         {
-            $content = $response->getContent();
-
-            $json = $this->getPaymentJsonFromCallback($content, 'data');
-
-            $url = getTextBetweenStrings($content, '***', '***');
-            $method = 'post';
-            $content = ['json' => $json];
-
-            $this->ba->noAuth();
             $request = $this->makeFirstGatewayPaymentMockRequest(
-                                                $url, $method, $content);
+                                                    $url, $method, $content);
+        }
+        else
+        {
+            ;
         }
 
         return $this->submitPaymentCallbackRequest($request);
