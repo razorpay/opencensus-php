@@ -37,7 +37,7 @@ class Validator extends Base\Validator
 
     protected static $globalCreateRules = [
         Entity::CONTACT         => 'required|contact_syntax|phone:AUTO,LENIENT,IN,mobile,fixed_line',
-        Entity::EMAIL           => 'sometimes|string',
+        Entity::EMAIL           => 'sometimes|email',
         'otp'                   => 'required|string|regex:"^\d{4,8}$"',
         'device_token'          => 'sometimes|string|max:14',
         '_'                     => 'sometimes|array'
@@ -54,7 +54,7 @@ class Validator extends Base\Validator
     protected static $walletAppCreateRules = [
         Entity::CONTACT         => 'required|contact_syntax',
         Entity::EMAIL           => 'sometimes|email|custom',
-        Entity::NAME            => 'sometimes|string|max:50|nullable|custom',
+        Entity::NAME            => 'sometimes|string|max:50|nullable',
         'otp'                   => 'required|string|regex:"^\d{4,8}$"',
     ];
 
@@ -64,9 +64,9 @@ class Validator extends Base\Validator
 
     public function __construct($entity = null)
     {
-        $this->app = App::getFacadeRoot();
+        $app = App::getFacadeRoot();
 
-        $this->merchant = $this->app['basicauth']->getMerchant();
+        $this->merchant = $app['basicauth']->getMerchant();
 
         parent::__construct($entity);
     }

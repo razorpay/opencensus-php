@@ -261,7 +261,7 @@ class CustomerTest extends TestCase
             $this->verifyOtp('9988776655', '', '233323');
         });
 
-        $responseWithValidEmail = $this->verifyOtp('9988776655', 'test@razorpay.com ', '233323');
+        $responseWithValidEmail = $this->verifyOtp('9988776655', 'test@razorpay.com', '233323');
 
         $this->assertEquals($responseWithValidEmail['success'], 1);
 
