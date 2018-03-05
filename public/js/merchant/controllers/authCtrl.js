@@ -653,15 +653,21 @@ app
                 var role =
                   userDetails.merchants &&
                   userDetails.merchants[userDetails.id].role;
-                if ($state.params.next !== undefined) {
-                  var next = $state.params.next;
+
+                var queryParams = location.search.slice(1).split(/=|&/).reduce(function(map, param, index, array){
+                  if (index % 2) {
+                    map[array[index - 1]] = param
+                  }
+                  return map
+                  }, {});
+                if (queryParams.next) {
                   var parser = document.createElement('a');
-                  parser.href = $state.params.next;
+                  parser.href = queryParams.next;
 
                   var hostname = parser.hostname || window.location.hostname;
 
                   if (
-                    /^(stage-auth|auth).razorpay.(com|dev|in)$/.test(hostname)
+                    /razorpay\.(com|dev|in)$/.test(hostname)
                   ) {
                     window.location.href = parser.href;
                     return false;
