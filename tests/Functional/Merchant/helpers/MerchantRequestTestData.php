@@ -27,14 +27,14 @@ return [
             'method' => 'PATCH',
             'content' => [
                 'status'  => 'needs_clarification',
-                'comment' => 'test',
+                'internal_comment' => 'test',
             ],
         ],
         'response' => [
             'content' => [
                 'status'      => 'needs_clarification',
                 'merchant_id' => '10000000000000',
-                'comment'     => 'test',
+                'internal_comment'     => 'test',
             ],
         ],
     ],
@@ -45,7 +45,7 @@ return [
             'method' => 'PATCH',
             'content' => [
                 'status'            => 'rejected',
-                'comment'           => 'test',
+                'internal_comment'           => 'test',
                 'rejection_reasons' => [
                     [
                         "reason_code"     => "duplicate_or_errenous_creation",
@@ -58,15 +58,18 @@ return [
             'content' => [
                 'status'      => 'rejected',
                 'merchant_id' => '10000000000000',
-                'comment' => 'test',
+                'internal_comment' => 'test',
                 'states' => [
-                    [
-                        'name' => 'under_review'
-                    ],
-                    [
-                        'name' => 'rejected'
+                    'entity'    => 'collection',
+                    'items'     => [
+                        [
+                            'name' => 'under_review'
+                        ],
+                        [
+                            'name' => 'rejected'
+                        ]
                     ]
-                ]
+                ],
             ],
         ],
     ],
@@ -112,5 +115,153 @@ return [
                  ],
             ],
         ],
+    ],
+
+    'testCreateMerchantRequest' => [
+        'request' => [
+            'url'     => '/merchant/requests',
+            'method'  => 'POST',
+            'content' => [
+                'name'        => 'marketplace',
+                'type'        => 'product',
+                'submissions' => [
+                    'settling_to' => 'Myself',
+                    'use_case'    => 'Some new dummy use case if you care',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'under_review',
+                'name' => 'marketplace',
+                'submissions' => [
+                    'settling_to' => 'Myself',
+                    'use_case'    => 'Some new dummy use case if you care',
+                ],
+                'merchant' => [
+                    'id' => '10000000000000'
+                ],
+                'states' => [
+                    'entity'    => 'collection',
+                    'items'     => [
+                        [
+                            'name' => 'under_review'
+                        ]
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testBulkUpdateMerchantRequests' => [
+        'request' => [
+            'url'     => '/merchant/requests/bulk',
+            'method'  => 'PUT',
+            'content' => [
+                '10000000000000' => [
+                    [
+                        'name'        => 'marketplace',
+                        'type'        => 'product',
+                        'status'      => 'rejected',
+                    ],
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success'     => 1,
+                'failed'      => 0,
+                'failedItems' => [],
+            ],
+        ],
+    ],
+
+    'testBulkUpdateMerchantRequestsWithErrors' => [
+        'request' => [
+            'url'     => '/merchant/requests/bulk',
+            'method'  => 'PUT',
+            'content' => [
+                '10000000000001' => [
+                    [
+                        'name'        => 'marketplace',
+                        'type'        => 'product',
+                        'status'      => 'rejected',
+                    ],
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success'     => 0,
+                'failed'      => 1,
+                'failedItems' => [
+                    [
+                        'name'        => 'marketplace',
+                        'type'        => 'product',
+                        'status'      => 'rejected',
+                        'merchant_id' => '10000000000001',
+                        'error'       => 'Unknown Merchant, hence feature not updated',
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchMerchantRequests' => [
+        'request' => [
+            'url'     => '/merchant/requests?type=product',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'collection',
+                'count'     => 2,
+                'items'     => [
+                    [
+                        'status' => 'under_review',
+                        'name'   => 'subscriptions',
+                    ],
+                    [
+                        'name'   => 'marketplace',
+                        'status' => 'under_review',
+                    ],
+                ]
+            ],
+        ],
+    ],
+
+    'testGetForFeatureTypeAndName' => [
+        'request' => [
+            'url'     => '/merchant/requests/product/subscriptions',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'status'    => 'under_review',
+                'name'      => 'subscriptions',
+                'type'      => 'product',
+                'questions' => [
+                    'subscriptions' => [
+
+                    ],
+                ],
+            ]
+        ]
+    ],
+
+    'testGetForFeatureTypeAndNameWhichDoesNotExist' => [
+        'request' => [
+            'url'     => '/merchant/requests/product/marketplace',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'questions' => [
+                    'marketplace' => [
+
+                    ]
+                ],
+            ]
+        ]
     ],
 ];

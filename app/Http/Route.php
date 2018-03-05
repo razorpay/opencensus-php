@@ -695,6 +695,7 @@ final class Route
         'merchant_requests_list'                  => ['get',      'merchant/requests',                              'MerchantRequestController@getAll'                                  ],
         'merchant_requests_create'                => ['post',     'merchant/requests',                              'MerchantRequestController@create'                                  ],
         'merchant_requests_update'                => ['patch',    'merchant/requests/{id}',                         'MerchantRequestController@update'                                  ],
+        'merchant_requests_bulk_update'           => ['put',      'merchant/requests/bulk',                         'MerchantRequestController@bulkUpdate'                                  ],
 
         'onboarding_features_fetch_details'       => ['get',      'onboarding/features',                            'FeatureController@getOnboardingDetails'                            ],
         'onboarding_features_fetch_submission'    => ['get',      'onboarding/features/{feature}',                  'FeatureController@getOnboardingSubmissions'                        ],
@@ -1444,6 +1445,7 @@ final class Route
         'merchant_requests_update',
         'merchant_requests_status_log',
         'merchant_requests_get',
+        'merchant_requests_bulk_update'
     ];
 
     public static $routePermission = [
@@ -1739,11 +1741,12 @@ final class Route
         'reporting_schedule_create'              => '*',
         'reporting_schedule_delete'              => '*',
         'ufh_get_file_signed_url'                => '*',
-        'merchant_requests_fetch_all'            => Permission::VIEW_MERCHANT_REQUESTS,
-        'merchant_requests_fetch_details'        => Permission::VIEW_MERCHANT_REQUESTS,
+        'merchant_requests_create'               => '*',
+        'merchant_requests_get'                  => '*',
         'merchant_requests_list'                 => Permission::VIEW_MERCHANT_REQUESTS,
         'merchant_requests_get'                  => Permission::VIEW_MERCHANT_REQUESTS,
         'merchant_requests_update'               => Permission::EDIT_MERCHANT_REQUESTS,
+        'merchant_requests_bulk_update'          => Permission::EDIT_MERCHANT_REQUESTS,
         'merchant_requests_status_log'           => Permission::VIEW_MERCHANT_REQUESTS,
     ];
 

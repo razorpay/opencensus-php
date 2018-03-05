@@ -103,7 +103,7 @@ class Core extends Base\Core
     }
 
     /**
-     * notifyFeature is enabled on Live mode
+     * Notify the merchant of feature Activation by email if applicable based on mode, feature type and sync status.
      *
      * @param string $merchantId
      * @param Entity $feature

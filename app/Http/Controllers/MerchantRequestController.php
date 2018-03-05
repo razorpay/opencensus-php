@@ -48,4 +48,11 @@ class MerchantRequestController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function bulkUpdate()
+    {
+        $response = $this->service(E::MERCHANT_REQUEST)->bulkUpdate($this->input);
+
+        return ApiResponse::json($response);
+    }
 }

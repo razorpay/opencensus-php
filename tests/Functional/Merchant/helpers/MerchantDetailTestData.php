@@ -30,7 +30,7 @@ return [
                 'bank_branch_ifsc' => 'ICIC0000002'
             ],
             'url' => '/merchant/activation',
-            'method' => 'PATCH'
+            'method' => 'POST'
         ],
         'response' => [
             'content' => [

@@ -8,11 +8,11 @@ use RZP\Models\Feature;
 
 class Validator extends Base\Validator
 {
-    const INVALID_STATUS_MESSAGE                        = 'Invalid status';
-    const INVALID_STATUS_CHANGE_MESSAGE                 = 'Invalid status change';
-    const INVALID_TYPE                                  = 'Invalid request type';
-    const MISSING_QUESTIONS                             = 'Missing questions in request';
-    const INVALID_FEATURE                               = 'Invalid feature';
+    const INVALID_STATUS_MESSAGE        = 'Invalid status';
+    const INVALID_STATUS_CHANGE_MESSAGE = 'Invalid status change';
+    const INVALID_TYPE                  = 'Invalid request type';
+    const MISSING_SUBMISSIONS           = 'Missing submissions in request';
+    const INVALID_FEATURE               = 'Invalid feature';
 
     protected static $createRules = [
         Entity::NAME        => 'required|string|max:40|custom',
@@ -29,7 +29,7 @@ class Validator extends Base\Validator
 
     protected static $changeStatusRules = [
         Entity::STATUS            => 'required|max:30',
-        Entity::REJECTION_REASONS => 'filled|array',
+        Entity::REJECTION_REASONS => 'sometimes|array',
     ];
 
     protected static $updateRules = [
@@ -58,6 +58,14 @@ class Validator extends Base\Validator
         }
     }
 
+    /**
+     * Validate the next possible status after current state.
+     *
+     * @param        $currentStatus
+     * @param string $newStatus
+     *
+     * @throws Exception\BadRequestValidationFailureException
+     */
     public function validateActivationStatusChange($currentStatus, string $newStatus)
     {
         if (empty($currentStatus) === true)
@@ -89,22 +97,38 @@ class Validator extends Base\Validator
         }
     }
 
+    /**
+     * Validate the name of feature being a product feature, if request type is Product
+     *
+     * @param $type
+     * @param $name
+     *
+     * @throws Exception\BadRequestValidationFailureException
+     */
     public function validateTypeAndProduct($type, $name)
     {
         $productFeatures = Feature\Constants::PRODUCT_FEATURES;
 
-        if ($type === Type::PRODUCT and in_array($name, $productFeatures, true) === false)
+        if (($type === Type::PRODUCT) and (in_array($name, $productFeatures, true) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 "Invalid product: $name");
         }
     }
 
-    public function validateQuestions(string $requestType, array $input)
+    /**
+     * Validate existence of submissions in case it is a Product type request
+     *
+     * @param string $requestType
+     * @param array  $input
+     *
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function validateSubmissions(string $requestType, array $input)
     {
-        if ($requestType === Type::PRODUCT and isset($input[Entity::SUBMISSIONS]) === false)
+        if (($requestType === Type::PRODUCT) and (isset($input[Entity::SUBMISSIONS]) === false))
         {
-            throw new Exception\BadRequestValidationFailureException(self::MISSING_QUESTIONS);
+            throw new Exception\BadRequestValidationFailureException(self::MISSING_SUBMISSIONS);
         }
     }
 }

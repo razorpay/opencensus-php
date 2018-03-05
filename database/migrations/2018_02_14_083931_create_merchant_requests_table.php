@@ -42,8 +42,6 @@ class CreateMerchantRequestsTable extends Migration
             $table->integer(Entity::UPDATED_AT);
 
             $table->index(Entity::MERCHANT_ID);
-
-            $table->unique([Entity::MERCHANT_ID, Entity::NAME, Entity::TYPE]);
         });
     }
 

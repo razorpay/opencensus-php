@@ -18,7 +18,7 @@ class Service extends Base\Service
             Entity::TYPE => $type,
         ];
 
-        return (new Core)->fetch($input, $merchantId);
+        return (new Core)->fetch($input, $merchantId, true);
     }
 
     public function getAll(array $input)
@@ -54,7 +54,9 @@ class Service extends Base\Service
      */
     public function create(array $input)
     {
-        return (new Core)->createMerchantRequest($input);
+        $request = (new Core)->createMerchantRequest($input);
+
+        return (new Core)->getMerchantRequestDetails($request->getId());
     }
 
     public function update(string $id, array $input)
@@ -68,5 +70,10 @@ class Service extends Base\Service
         $core->updateMerchantRequest($request, $input);
 
         return $core->getMerchantRequestDetails($id, $request->merchant->getId());
+    }
+
+    public function bulkUpdate(array $input)
+    {
+        return (new Core)->bulkUpdateMerchantRequests($input);
     }
 }

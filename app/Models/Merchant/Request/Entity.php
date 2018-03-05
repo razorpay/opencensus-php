@@ -10,6 +10,7 @@ class Entity extends Base\PublicEntity
 {
     const NAME              = 'name';
     const TYPE              = 'type';
+    const STATES            = 'states';
     const STATUS            = 'status';
     const MERCHANT          = 'merchant';
     const QUESTIONS         = 'questions';
@@ -38,19 +39,18 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::NAME,
         self::TYPE,
+        self::STATES,
         self::STATUS,
-        self::INTERNAL_COMMENT,
         self::MERCHANT,
         self::MERCHANT_ID,
         self::PUBLIC_MESSAGE,
-        self::CREATED_AT,
-        self::UPDATED_AT,
+        self::INTERNAL_COMMENT,
     ];
 
     protected $publicSetters = [
         self::ID,
-        self::INTERNAL_COMMENT,
         self::MERCHANT_ID,
+        self::INTERNAL_COMMENT,
     ];
 
     protected $defaults = [
@@ -103,7 +103,7 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function setPublicCommentAttribute(array &$attributes)
+    public function setPublicInternalCommentAttribute(array &$attributes)
     {
         $app = \App::getFacadeRoot();
 
