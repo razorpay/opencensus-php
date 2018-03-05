@@ -193,7 +193,7 @@ class Type
         ],
 
         Constants\Entity::TOKEN => [
-            self::RBL_ENACH_REGISTRATION_FILE,
+            self::RBL_ENACH_REGISTRATION_FILE_SFTP,
         ],
 
         Constants\Entity::QR_CODE => [
