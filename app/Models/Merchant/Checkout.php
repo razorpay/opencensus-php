@@ -589,7 +589,7 @@ class Checkout
                 //
                 // If offer is applicable then amount is to be discounted by us
                 //
-                if ($order->isOfferApplicable() === true)
+                if ($order->isDiscountApplicable() === true)
                 {
                     $this->applyOfferOnOrderAmount($order, $data);
                 }
