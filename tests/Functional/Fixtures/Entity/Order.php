@@ -59,7 +59,7 @@ class Order extends Base
             'receipt'                   => 'test_tpv_receipt',
             'currency'                  => 'INR',
             'amount'                    => 100000,
-            'offer'                     => 1,
+            'discount'                  => 1,
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

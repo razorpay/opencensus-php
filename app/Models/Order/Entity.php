@@ -14,7 +14,7 @@ class Entity extends Base\PublicEntity
     const ID              = 'id';
     const MERCHANT_ID     = 'merchant_id';
     const OFFER_ID        = 'offer_id';
-    const OFFER           = 'offer';
+    const DISCOUNT        = 'discount';
 
     /**
      * If set to true, partial payments are allowed on this order amount.
@@ -60,7 +60,7 @@ class Entity extends Base\PublicEntity
     const PAYMENT_CAPTURE = 'payment_capture';
 
     protected $fillable = [
-        self::OFFER,
+        self::DISCOUNT,
         self::AMOUNT,
         self::CURRENCY,
         self::RECEIPT,
@@ -74,7 +74,7 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $defaults = [
-        self::OFFER           => false,
+        self::DISCOUNT        => false,
         self::PARTIAL_PAYMENT => false,
         self::RECEIPT         => null,
         self::ATTEMPTS        => 0,
@@ -96,7 +96,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_DUE,
         self::CURRENCY,
         self::RECEIPT,
-        self::OFFER,
+        self::DISCOUNT,
         self::OFFER_ID,
         self::STATUS,
         self::ATTEMPTS,
@@ -105,7 +105,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::OFFER           => 'bool',
+        self::DISCOUNT        => 'bool',
         self::PARTIAL_PAYMENT => 'bool',
         self::AMOUNT          => 'int',
         self::AMOUNT_PAID     => 'int',
@@ -129,7 +129,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::OFFER_ID,
-        self::OFFER,
+        self::DISCOUNT,
     ];
 
     protected $dates = [
@@ -325,9 +325,9 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::STATUS) === Status::PAID);
     }
 
-    public function isOfferApplicable()
+    public function isDiscountApplicable()
     {
-        return $this->getAttribute(self::OFFER);
+        return $this->getAttribute(self::DISCOUNT);
     }
 
     public function getOfferId()
@@ -357,11 +357,11 @@ class Entity extends Base\PublicEntity
         $array[self::OFFER_ID] = Offer\Entity::getSignedIdOrNull($offerId);
     }
 
-    protected function setPublicOfferAttribute(array & $array)
+    protected function setPublicDiscountAttribute(array & $array)
     {
-        if ($this->getAttribute(self::OFFER) === true)
+        if ($this->getAttribute(self::DISCOUNT) === true)
         {
-            $array[self::OFFER] = true;
+            $array[self::DISCOUNT] = true;
         }
     }
 }
