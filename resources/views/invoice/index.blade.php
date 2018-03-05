@@ -291,6 +291,10 @@
         display: none;
       }
 
+      #payment-container--mob #cancelled-invoice {
+        padding: 40px 24px;
+      }
+
       #cancelled-invoice .title {
        font-weight: 600;
         margin-top: 30px;
@@ -358,6 +362,7 @@
             //min-height: 300px;
             margin: 12px;
             border: 1px solid #dfdfdf;
+            background: #f5f5f5;
         }
 
         #payment-container--mob #cancelled-invoice .title {
@@ -838,7 +843,6 @@
                     document.getElementById('cancelled-crack').style.display = 'block';
                     document.getElementById('chkout-box').style.background = '#f5f5f5';
                 }
-
               } else {
                   document.getElementById('pay-title').innerHTML = 'AMOUNT PAYABLE';
                   document.getElementById('display-pay-amt').innerHTML = "<span> ₹" + (data['invoice']['amount_due']/ 100).toFixed(2) + "</span>";
@@ -880,8 +884,6 @@
             @endif
             <script>
               (function (globalScope) {
-                console.log('CHECK...1');
-
                 var data = globalScope.data;
 
                 var invoiceObj = data.invoice;
@@ -954,17 +956,11 @@
                   }
                 }
 
-
-                console.log('CHECK...2');
-
                 var razorpay;
-                //TODO: Check condition invoiceObj.status !== 'partially_paid'
                 if (!data.error) {
                     if (checkIsDesktop()) {
-                        if (invoiceObj.status !== 'partially_paid') {
-                          options.parent = '#chkout-box';
-                          razorpay = window.razorpay = Razorpay(options);
-                        }
+                      options.parent = '#chkout-box';
+                      razorpay = window.razorpay = Razorpay(options);
                     } else {
                         document.getElementById('mob-payment-btn').addEventListener('click', function() {
                             razorpay = window.razorpay = Razorpay(options);
