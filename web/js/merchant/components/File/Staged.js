@@ -13,7 +13,7 @@ export default props => {
     <div class={`staged-file ${currentStatus || ''}`} key={`${file.name}`}>
       <div class="file-icon">
         <div>
-          <span class={`icon i-file-type-${getFileTypeIcon(file.name)}`} />
+          <span class={`file-type-${getFileTypeIcon(file.name)}`} />
         </div>
       </div>
       <div class="file-details">

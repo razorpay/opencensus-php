@@ -594,11 +594,13 @@ dl.rzp-definition {
           cursor: pointer;
         }
 
-        .i-file-placeholder {
+        .file-placeholder {
           position: absolute;
           left: 0px;
-          font-size: 34px;
-          padding: 25px 0 25px 10px;
+          background: url(assets/files/file-placeholder.svg) no-repeat;
+          width: 30px;
+          margin: 20px;
+          height: 35px;
         }
       }
     }
@@ -642,8 +644,29 @@ dl.rzp-definition {
     width: $fileIconWidth;
     text-align: center;
 
-    span.icon {
-      font-size: 28px;
+    span {
+      position: absolute;
+      left: 0px;
+      top: 0px;
+      background: url(assets/files/file-type-misc.svg) no-repeat;
+      width: 30px;
+      margin: 15px 10px;
+      height: 35px;
+      &.file-type-csv {
+        background: url(assets/files/file-type-csv.svg) no-repeat;
+      }
+      &.file-type-xlsx {
+        background: url(assets/files/file-type-xlsx.svg) no-repeat;
+      }
+      &.file-type-jpg {
+        background: url(assets/files/file-type-jpg.svg) no-repeat;
+      }
+      &.file-type-png {
+        background: url(assets/files/file-type-png.svg) no-repeat;
+      }
+      &.file-type-pdf {
+        background: url(assets/files/file-type-pdf.svg) no-repeat;
+      }            
     }
   }
 
