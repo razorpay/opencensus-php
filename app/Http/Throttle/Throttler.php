@@ -202,7 +202,6 @@ class Throttler
     protected function getIdSettingsKey(): string
     {
         return $this->internalAppName ?:
-                $this->device ?:
                 $this->adminEmail ?:
                 $this->oauthAppId ?:
                 $this->mid ?:
@@ -212,12 +211,12 @@ class Throttler
     protected function getThrottleKey(): string
     {
         $id = $this->internalAppName ?:
-                $this->device ?:
                 $this->adminEmail ?:
                 $this->mid ?:
                 $this->oauthPublicToken;
 
-        $ip = $this->isPublicAuth() ? $this->request->ip() : '';
+        // Only use ip address for public and direct routes
+        $ip = ($this->isPublicAuth() or $this->isDirectAuth()) ? $this->request->ip() : '';
 
         // E.g.: payments_create:live:private:0::10000000000000:
         return implode(':', [$this->route, $this->mode, $this->auth, (int) $this->proxy, $this->oauthAppId, $id, $ip]);

@@ -3,6 +3,7 @@
 namespace RZP\Tests\Unit\Request;
 
 use RZP\Tests\TestCase;
+use RZP\Exception\BadRequestException;
 
 class RequestContextTest extends TestCase
 {
@@ -18,23 +19,35 @@ class RequestContextTest extends TestCase
      * For all available request cases assert that proper context
      * vars are being set.
      */
-    public function testAllRequestCases()
+    public function testAllPositiveRequestCases()
     {
         $requestCases = array_keys($this->testData);
         foreach ($requestCases as $case)
         {
-            $this->assertForRequestCase($case);
+            $this->initRequestContextAndAssertForCase($case);
         }
     }
 
-    protected function assertForRequestCase(string $case)
+    public function testPublicRouteWhenKeyIsOfInvalidLen()
+    {
+        $this->expectException(BadRequestException::class);
+
+        $requestMock = $this->invokeRequestCase('publicRouteWhenKeyIsOfInvalidLen');
+
+        $context = new Helpers\RequestContext;
+        $context->initRequestContextVars($requestMock);
+    }
+
+    protected function initRequestContextAndAssertForCase(string $case)
     {
         $requestMock = $this->invokeRequestCase($case);
 
         $context = new Helpers\RequestContext;
         $context->initRequestContextVars($requestMock);
 
-        $expected = $this->testData[$case]['expected'];
+        $caseTestData = $this->testData[$case];
+        $expected = $caseTestData['expected'] ?? $this->testData[$caseTestData['expected_same_as']]['expected'];
+
         foreach ($expected as $key => $value)
         {
             $this->assertEquals($value, $context->$key);

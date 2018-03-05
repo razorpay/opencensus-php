@@ -101,11 +101,6 @@ trait HasRequestContext
     protected $adminEmail;
 
     /**
-     * @var string
-     */
-    protected $device;
-
-    /**
      * @var bool
      */
     protected $proxy = false;
@@ -138,8 +133,8 @@ trait HasRequestContext
         $this->validateKeyLen($key);
 
         $this->key              = $key;
-        $this->keyWithoutPrefix = substr($key, 9);
-        $this->mode             = substr($key, 4, 4);
+        $this->keyWithoutPrefix = substr($key, 9) ?: null;
+        $this->mode             = substr($key, 4, 4) ?: null;
         $this->secret           = $this->request->getPassword();
     }
 
@@ -243,7 +238,7 @@ trait HasRequestContext
         }
         else if (in_array($this->route, Route::$admin, true) === true)
         {
-            $this->adminEmail = $this->request->headers(RequestHeader::X_DASHBOARD_ADMIN_EMAIL);
+            $this->adminEmail = $this->request->headers->get(RequestHeader::X_DASHBOARD_ADMIN_EMAIL);
             return true;
         }
 
@@ -254,7 +249,7 @@ trait HasRequestContext
     {
         if (in_array($this->route, Route::$device, true) === true)
         {
-            $this->device = $this->secret;
+            $this->keyId = $this->keyWithoutPrefix;
             return true;
         }
 
@@ -282,6 +277,11 @@ trait HasRequestContext
     protected function isPublicAuth(): bool
     {
         return ($this->auth === Type::PUBLIC_AUTH);
+    }
+
+    protected function isDirectAuth(): bool
+    {
+        return ($this->auth === Type::DIRECT_AUTH);
     }
 
     protected function getBearerToken()

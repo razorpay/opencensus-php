@@ -14,18 +14,26 @@ trait MocksRequest
 {
     /**
      * Mocks a route request.
-     * @param  string      $name Name of the route (Ref Route.php)
-     * @param  string|null $path Actual url to be accessed(without placeholders)
+     * @param  string      $name    Name of the route (Ref Route.php)
+     * @param  string|null $path    Actual url to be accessed(without placeholders)
+     * @param  array       $methods Methods to mock partially
+     * @param  array       $query   Query(GET) parameters to mock
+     * @param  array       $input   Input(POST) parameters to mock
+     * @param  array       $server  Server parameters i.e. headers etc.
      * @return Request
      */
     protected function mockRouteRequest(
         string $name,
         string $path = null,
-        array $methods = []): Request
+        array $methods = [],
+        array $query = [],
+        array $input = [],
+        array $server = []): Request
     {
         $params = Route::getApiRoute($name);
 
-        $requestMock = $this->mockRequest(array_merge($methods, ['path', 'ip']));
+        $server['REQUEST_METHOD'] = $params[0];
+        $requestMock = $this->mockRequest(array_merge($methods, ['path', 'ip']), $query, $input, $server);
         $requestMock->expects($this->any())
                     ->method('path')
                     ->willReturn($path ?: $params[1]);
@@ -43,13 +51,21 @@ trait MocksRequest
 
     /**
      * Mocks request.
-     * @param  array  $withMethods
+     * @param  array  $methods Methods to mock partially
+     * @param  array  $query   Query(GET) parameters to mock
+     * @param  array  $input   Input(POST) parameters to mock
+     * @param  array  $server  Server parameters i.e. headers etc.
      * @return Request
      */
-    protected function mockRequest(array $withMethods = []): Request
+    protected function mockRequest(
+        array $methods = [],
+        array $query = [],
+        array $input = [],
+        array $server = []): Request
     {
         $requestMock = $this->getMockBuilder(Request::class)
-                            ->setMethods($withMethods)
+                            ->setConstructorArgs([$query, $input, [], [], [], $server, null])
+                            ->setMethods($methods)
                             ->getMock();
         $this->app->instance('request', $requestMock);
 

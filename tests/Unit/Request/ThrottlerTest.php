@@ -99,31 +99,34 @@ class ThrottlerTest extends TestCase
      */
     public function testAssertKeysAndSettingsPickForAllRequestCases()
     {
+        // The settings config in redis(mocked)
         $settings = $this->testData['settings'];
+
         $requestCases = array_keys(array_except($this->testData, 'settings'));
 
         foreach ($requestCases as $case)
         {
+            $expected = $this->testData[$case];
+
             $requestMock = $this->invokeRequestCase($case);
 
+            $consecutiveReturns = array_values(array_only($settings, array_keys($expected['settings'])));
             $throttlerMock = $this->createThrottlerMock(['loadSettingsFromRedis']);
             $throttlerMock->method('loadSettingsFromRedis')
-                          ->will($this->onConsecutiveCalls($settings));
+                          ->will($this->onConsecutiveCalls($consecutiveReturns));
 
             $throttlerMock->initRequestContextVars($requestMock);
             $throttlerMock->initRedisConnection();
             $throttlerMock->setMidIfApplicable();
 
-            $expected = $this->testData[$case];
             $this->assertEquals($expected['id'], $throttlerMock->getIdSettingsKey());
             $this->assertEquals($expected['key'], $throttlerMock->getThrottleKey());
 
-            foreach ($settings as $idx => $setting)
+            foreach ($expected['settings'] as $idx => $expectedSettings)
             {
-                $expectedSettings = $expected['settings'];
-                $this->assertEquals($expectedSettings[$idx][0], $throttlerMock->getThrottleRateValue());
-                $this->assertEquals($expectedSettings[$idx][1], $throttlerMock->getThrottleRateDuration());
-                $this->assertEquals($expectedSettings[$idx][2], $throttlerMock->getThrottleMaxBucketSize());
+                $this->assertEquals($expectedSettings[0], $throttlerMock->getThrottleRateValue());
+                $this->assertEquals($expectedSettings[1], $throttlerMock->getThrottleRateDuration());
+                $this->assertEquals($expectedSettings[2], $throttlerMock->getThrottleMaxBucketSize());
             }
         }
     }
