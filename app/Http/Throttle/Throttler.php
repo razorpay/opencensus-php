@@ -299,10 +299,15 @@ class Throttler
 
         if (empty($mid) === true)
         {
-            $mid = $this->repo->key->connection($this->mode)->findOrFailPublic($this->keyId)->getMerchantId();
+            $mid = $this->getMidForKeyIdFromDb();
             $this->redis->setex($key, K::NUM_SECONDS_IN_WEEK, $mid);
         }
 
         $this->mid = $mid;
+    }
+
+    protected function getMidForKeyIdFromDb()
+    {
+        return $this->repo->key->connection($this->mode)->findOrFailPublic($this->keyId)->getMerchantId();
     }
 }

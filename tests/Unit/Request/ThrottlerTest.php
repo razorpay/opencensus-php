@@ -80,6 +80,14 @@ class ThrottlerTest extends TestCase
 
     public function testAttemptMultipleThrottleAndAssertMidIsCached()
     {
+        $requestMock = $this->invokeRequestCase('privateRoute');
+
+        $throttlerMock = $this->createThrottlerMock(['getMidForKeyIdFromDb']);
+        $throttlerMock->expects($this->once())->method('getMidForKeyIdFromDb')->willReturn('10000000000000');
+
+        $throttlerMock->throttle($requestMock);
+        $throttlerMock->throttle($requestMock);
+        $throttlerMock->throttle($requestMock);
     }
 
     /**
