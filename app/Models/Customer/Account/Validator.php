@@ -37,7 +37,7 @@ class Validator extends Base\Validator
 
     protected static $globalCreateRules = [
         Entity::CONTACT         => 'required|contact_syntax|phone:AUTO,LENIENT,IN,mobile,fixed_line',
-        Entity::EMAIL           => 'sometimes|string|custom',
+        Entity::EMAIL           => 'sometimes|string',
         'otp'                   => 'required|string|regex:"^\d{4,8}$"',
         'device_token'          => 'sometimes|string|max:14',
         '_'                     => 'sometimes|array'
@@ -74,11 +74,11 @@ class Validator extends Base\Validator
     protected function validateEmail($input)
     {
         if (($this->merchant->isEmailOptional() !== true) and
-            (empty($input['email']) === true))
+            (empty($input[Entity::EMAIL]) === true))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'email is required',
-                 Entity::EMAIL);
+                Entity::EMAIL);
         }
     }
 

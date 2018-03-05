@@ -172,7 +172,7 @@ class Core extends Base\Core
 
     public function verifyOtp($input, $merchant)
     {
-        Customer\Validator::validateGlobalCustomerCreateInput($inputs);
+        Customer\Validator::validateGlobalCustomerCreateInput($input);
 
         // Parse contact
         $input = Customer\Validator::validateAndParseContactInInput($input);

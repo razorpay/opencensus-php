@@ -228,7 +228,17 @@ class CustomerTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['email_optional']);
 
-        $content = $this->verifyOtp('9988776655', null,  '233323');
+        $responseWhenEmailNull = $this->verifyOtp('9988776655', null, '233323');
+
+        $this->assertEquals($responseWhenEmailNull['success'], 1);
+
+        $responseWhenEmailBlank = $this->verifyOtp('9988776655', ' ', '233323');
+
+        $this->assertEquals($responseWhenEmailBlank['success'], 1);
+
+        $responseWithValidEmail = $this->verifyOtp('9988776655', 'test@razorpay.com ', '233323');
+
+        $this->assertEquals($responseWithValidEmail['success'], 1);
     }
 
     public function testOtpWorkFlowwithEmailRequired()
@@ -237,12 +247,24 @@ class CustomerTest extends TestCase
 
         $this->mockRaven();
 
+        $this->sendOtp('9988776655');
+
         $data = $this->testData[__FUNCTION__];
 
         $this->runRequestResponseFlow($data, function()
         {
-            $this->sendOtp('4637346743722');
+            $this->verifyOtp('9988776655', null, '233323');
         });
+
+        $this->runRequestResponseFlow($data, function()
+        {
+            $this->verifyOtp('9988776655', '', '233323');
+        });
+
+        $responseWithValidEmail = $this->verifyOtp('9988776655', 'test@razorpay.com ', '233323');
+
+        $this->assertEquals($responseWithValidEmail['success'], 1);
+
     }
 
     public function testOtpFlowWithoutDeviceToken()
