@@ -75,7 +75,6 @@ class CreateWorkflowAction extends Migration
                   ->on(Table::PERMISSION)
                   ->on_delete('restrict');
 
-
             $table->foreign(Action::STATE_CHANGER_ID)
                   ->references(Admin::ID)
                   ->on(Table::ADMIN)
@@ -96,6 +95,8 @@ class CreateWorkflowAction extends Migration
             $table->integer(Action::UPDATED_AT);
 
             $table->index([Action::ENTITY_ID, Action::ENTITY_NAME]);
+
+            $table->index([Action::MAKER_ID, Action::MAKER_TYPE]);
         });
     }
 
