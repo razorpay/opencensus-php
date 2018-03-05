@@ -611,8 +611,6 @@ class Repository extends \Razorpay\Spine\Repository
 
         try
         {
-            $this->trace->debug(TraceCode::ES_SYNC_PUSH_PAYLOAD, $tracePayload);
-
             $job = (new EsSync(
                         $mode,
                         $action,
