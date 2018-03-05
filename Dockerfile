@@ -6,6 +6,8 @@ ARG GIT_TOKEN
 
 COPY . /app/
 
+RUN apk add --update lsof nodejs
+
 RUN chown -R nginx.nginx /app
 
 COPY ./dockerconf/entrypoint.sh /entrypoint.sh
@@ -18,9 +20,9 @@ RUN chown -R nginx.nginx /app && \
     composer config -g github-oauth.github.com ${GIT_TOKEN} && \
     composer install --no-interaction && \
     npm install && \
-    npm run build
-
-RUN apk del node-deps
+    cd web && npm install && cd .. && \
+    npm run build && \
+    apk del nodejs
 
 EXPOSE 80
 
