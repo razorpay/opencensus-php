@@ -6,6 +6,22 @@ use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 
 return [
+    'testNonexistentRoute' => [
+        'request' => [
+            'method' => 'get',
+            'url'    => '/black_panther',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The requested URL was not found on the server.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
     'testFetchOrdersWhenNotThrottled' => [
         'request' => [
             'method' => 'get',

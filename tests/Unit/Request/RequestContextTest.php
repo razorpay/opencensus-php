@@ -16,6 +16,16 @@ class RequestContextTest extends TestCase
         parent::setUp();
     }
 
+    public function testPublicRouteWhenKeyIsOfInvalidLen()
+    {
+        $this->expectException(BadRequestException::class);
+
+        $requestMock = $this->invokeRequestCase('publicRouteWhenKeyIsOfInvalidLen');
+
+        $context = new Helpers\RequestContext;
+        $context->initRequestContextVars($requestMock);
+    }
+
     /**
      * For all available request cases assert that proper context
      * vars are being set.
@@ -27,16 +37,6 @@ class RequestContextTest extends TestCase
         {
             $this->initRequestContextAndAssertForCase($case);
         }
-    }
-
-    public function testPublicRouteWhenKeyIsOfInvalidLen()
-    {
-        $this->expectException(BadRequestException::class);
-
-        $requestMock = $this->invokeRequestCase('publicRouteWhenKeyIsOfInvalidLen');
-
-        $context = new Helpers\RequestContext;
-        $context->initRequestContextVars($requestMock);
     }
 
     protected function initRequestContextAndAssertForCase(string $case)

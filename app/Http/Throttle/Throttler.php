@@ -248,12 +248,12 @@ class Throttler
         //      mock:                       1
         //
         //      <mode>:<auth>:lrv:          2
-        //      <mode>:<auth>:lrd:          1000
-        //      <mode>:<auth>:mbs:          50
+        //      <mode>:<auth>:lrd:          1
+        //      <mode>:<auth>:mbs:          30
         //
         //      <mode>:<auth>:<route>:lrv:  2
-        //      <mode>:<auth>:<route>:lrd:  1000
-        //      <mode>:<auth>:<route>:mbs:  50
+        //      <mode>:<auth>:<route>:lrd:  1
+        //      <mode>:<auth>:<route>:mbs:  30
         // }
         //
         // Key: t:i:<mid>

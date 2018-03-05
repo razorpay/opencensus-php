@@ -25,6 +25,11 @@ class ThrottleTest extends TestCase
         $this->ba->privateAuth();
     }
 
+    public function testNonexistentRoute()
+    {
+        $this->startTest();
+    }
+
     public function testFetchOrdersWhenNotThrottled()
     {
         $this->startTest();

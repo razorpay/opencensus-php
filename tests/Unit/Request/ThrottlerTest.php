@@ -66,6 +66,23 @@ class ThrottlerTest extends TestCase
     }
 
     /**
+     * When skip flag is enabled in .env file (locally - test/local environment)
+     * - Must not trigger attemptThrottle
+     */
+    public function testAttemptThrottleWhenSkippedLocally()
+    {
+        $this->app['config']->set('throttle.skip', true);
+
+        $requestMock = $this->invokeRequestCase('privateRoute');
+
+        $throttlerMock = $this->createThrottlerMock(['attemptThrottle']);
+        $throttlerMock->expects($this->never())
+                      ->method('attemptThrottle');
+
+        $throttlerMock->throttle($requestMock);
+    }
+
+    /**
      * When there is redis connection error:
      * - Must not trigger attemptThrottle
      * - Must not throw any exception
@@ -120,8 +137,9 @@ class ThrottlerTest extends TestCase
 
             $consecutiveReturns = array_values(array_only($settings, array_keys($expected['settings'])));
             $throttlerMock = $this->createThrottlerMock(['loadSettingsFromRedis']);
-            $throttlerMock->method('loadSettingsFromRedis')
-                          ->will($this->onConsecutiveCalls($consecutiveReturns));
+            $throttlerMock->expects($this->exactly(count($consecutiveReturns)))
+                          ->method('loadSettingsFromRedis')
+                          ->will($this->onConsecutiveCalls(...$consecutiveReturns));
 
             $throttlerMock->initRequestContextVars($requestMock);
             $throttlerMock->initRedisConnection();
@@ -132,22 +150,26 @@ class ThrottlerTest extends TestCase
 
             foreach ($expected['settings'] as $idx => $expectedSettings)
             {
-                $this->assertEquals($expectedSettings[0], $throttlerMock->getThrottleRateValue());
-                $this->assertEquals($expectedSettings[1], $throttlerMock->getThrottleRateDuration());
-                $this->assertEquals($expectedSettings[2], $throttlerMock->getThrottleMaxBucketSize());
+                // We reset throttle settings every iteration and assert that if
+                // the new returned(mocked ^) value were settings what throttle
+                // values would be picked for given requests.
+                $throttlerMock->initThrottleSettings();
+                $this->assertEquals($expectedSettings[0], $throttlerMock->getThrottleMaxBucketSize());
+                $this->assertEquals($expectedSettings[1], $throttlerMock->getThrottleRateValue());
+                $this->assertEquals($expectedSettings[2], $throttlerMock->getThrottleRateDuration());
             }
         }
     }
 
     /**
      * Creates mock of throttler class.
-     * @param  array     $withMethods
+     * @param  array     $methods
      * @return Throttler
      */
-    protected function createThrottlerMock(array $withMethods = []): Throttler
+    protected function createThrottlerMock(array $methods = []): Throttler
     {
         return $this->getMockBuilder(Helpers\Throttler::class)
-                    ->setMethods($withMethods)
+                    ->setMethods($methods)
                     ->getMock();
     }
 }
