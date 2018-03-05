@@ -15,17 +15,10 @@ class Validator extends Base\Validator
     const INVALID_FEATURE                               = 'Invalid feature';
 
     protected static $createRules = [
+        Entity::NAME        => 'required|string|max:40|custom',
         Entity::TYPE        => 'required|string|max:25|custom',
         Entity::STATUS      => 'required|max:30',
-        Entity::NAME        => 'required|string|max:40|custom',
-        Entity::MERCHANT_ID => 'required|string|max:15',
-    ];
-
-    protected static $createRequestRules = [
-        Entity::NAME        => 'required|string|max:40|custom',
-        Entity::TYPE        => 'required|alpha_space|max:25|custom',
-        Entity::STATUS      => 'sometimes|max:30',
-        Entity::SUBMISSIONS => 'sometimes|array',
+        Entity::MERCHANT_ID => 'required|string|size:14',
     ];
 
     protected static $editRules = [
@@ -96,7 +89,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateProduct($type, $name)
+    public function validateTypeAndProduct($type, $name)
     {
         $productFeatures = Feature\Constants::PRODUCT_FEATURES;
 

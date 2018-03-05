@@ -25,18 +25,13 @@ class Core extends Base\Core
      */
     public function create(array $input)
     {
-        $submissions = [];
+        $merchant = $this->merchant;
 
-        if (($input[Entity::TYPE] === Type::PRODUCT) and (isset($input[Entity::SUBMISSIONS]) === true))
-        {
-            $submissions = $input[Entity::SUBMISSIONS];
+        $submissions = $input[Entity::SUBMISSIONS] ?? [];
 
-            unset($input[Entity::SUBMISSIONS]);
-        }
+        unset($input[Entity::SUBMISSIONS]);
 
         $request = new Entity();
-
-        $merchant = $this->merchant;
 
         $request->generateId();
 
@@ -94,7 +89,7 @@ class Core extends Base\Core
 
     /**
      * This function does the following :
-     * 1. Change Request Entity
+     * 1. Updates Request Entity with the new status
      * 2. Add new State for Request
      * 3. Save Rejection Reasons if any
      *
@@ -112,20 +107,13 @@ class Core extends Base\Core
             $useWorkflow = false;
         }
 
-        $oldStatus = $request->getStatus();
-
         $request->getValidator()->validateInput('change_status', $input);
 
-        $request->getValidator()->validateActivationStatusChange($oldStatus, $input[Entity::STATUS]);
+        $request->getValidator()->validateActivationStatusChange($request->getStatus(), $input[Entity::STATUS]);
 
-        $rejectionReasons = [];
+        $rejectionReasons = $input[Entity::REJECTION_REASONS] ?? [];
 
-        if (empty($input[Entity::REJECTION_REASONS]) === false)
-        {
-            $rejectionReasons = $input[Entity::REJECTION_REASONS];
-
-            unset($input[Entity::REJECTION_REASONS]);
-        }
+        unset($input[Entity::REJECTION_REASONS]);
 
         $oldRequestDetails = clone $request;
 
@@ -151,10 +139,10 @@ class Core extends Base\Core
                 if ($useWorkflow === true)
                 {
                     $this->app['workflow']
-                        ->setEntity($request->getEntity())
-                        ->setOriginal($oldRequestDetails)
-                        ->setDirty($newRequestDetails)
-                        ->handle();
+                         ->setEntity($request->getEntity())
+                         ->setOriginal($oldRequestDetails)
+                         ->setDirty($newRequestDetails)
+                         ->handle();
                 }
 
                 // Check if feature is not already enabled, else add it.
@@ -203,7 +191,6 @@ class Core extends Base\Core
         Merchant\Entity $merchant,
         array $input)
     {
-
         $request = $this->repo
                         ->merchant_request
                         ->fetch(
@@ -218,6 +205,7 @@ class Core extends Base\Core
         if (empty($request) === true)
         {
             $input[Entity::MERCHANT_ID] = $merchant->getId();
+
             $input[Entity::STATUS] = Status::UNDER_REVIEW;
 
             $request = $this->create($input);
@@ -246,9 +234,7 @@ class Core extends Base\Core
     {
         $requestStatus = Constants::mapOnboardingStatusToRequestStatus($onboardingStatus);
 
-        $request = $this->findOrCreateMerchantRequest(
-            $merchant,
-            [Entity::NAME => $feature, Entity::TYPE => $type]);
+        $request = $this->findOrCreateMerchantRequest($merchant, [Entity::NAME => $feature, Entity::TYPE => $type]);
 
         if ($request->getStatus() !== $requestStatus)
         {
@@ -402,11 +388,9 @@ class Core extends Base\Core
      */
     public function createMerchantRequest(array $input): Entity
     {
-        (new Validator)->validateInput('create_request', $input);
-
         (new Validator)->validateQuestions($input[Entity::TYPE], $input);
 
-        (new Validator)->validateProduct($input[Entity::TYPE], $input[Entity::NAME]);
+        (new Validator)->validateTypeAndProduct($input[Entity::TYPE], $input[Entity::NAME]);
 
         return $this->findOrCreateMerchantRequest($this->merchant, $input);
     }

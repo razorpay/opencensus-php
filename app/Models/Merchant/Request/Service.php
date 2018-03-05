@@ -44,6 +44,14 @@ class Service extends Base\Service
         return (new Core)->getMerchantRequestDetails($id);
     }
 
+    /**
+     * Creates a merchant request. If the merchant request is for a product activation, it also adds the submissions
+     * in the settings table.
+     *
+     * @param array $input
+     *
+     * @return Entity
+     */
     public function create(array $input)
     {
         return (new Core)->createMerchantRequest($input);
