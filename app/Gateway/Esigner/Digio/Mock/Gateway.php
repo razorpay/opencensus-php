@@ -11,15 +11,6 @@ class Gateway extends Digio\Gateway
 
     public function authorize(array $input)
     {
-        $request = parent::authorize($input);
-
-        if ($this->testing)
-        {
-            $url = $this->route->getUrlWithPublicAuth('mock_esigner_payment', ['signer' => 'digio']);
-
-            $request['content'] .= '***'.$url.'***';
-        }
-
-        return $request;
+        return $this->authorizeMock($input, 'mock_esigner_payment');
     }
 }

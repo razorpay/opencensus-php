@@ -46,7 +46,9 @@ class Server extends Base\Mock\Server
             'url' => $data['callback_url'],
             'method' => 'POST',
             'content' => [
-                'digio_mandate_id' => str_random(20)
+                'status' => 'success',
+                'message' => 'Signing Success',
+                'digio_doc_id' => str_random(40)
             ]
         ];
 
