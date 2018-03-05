@@ -12,7 +12,7 @@ class Validator extends Base\Validator
     protected static $createRules = array(
         Entity::NAME     => 'sometimes|string|max:50',
         Entity::PERIOD   => 'required|string',
-        Entity::INTERVAL => 'sometimes|nullable|integer|max:3650',
+        Entity::INTERVAL => 'sometimes|nullable|integer',
         // For yearly periods, anchor can be december 31st (1231).
         Entity::ANCHOR   => 'sometimes|nullable|integer|min:-1|max:1231',
         Entity::HOUR     => 'sometimes|integer|min:0|max:23',
@@ -21,7 +21,7 @@ class Validator extends Base\Validator
 
     protected static $editRules = array(
         Entity::NAME     => 'sometimes|string|max:50',
-        Entity::INTERVAL => 'sometimes|integer|max:3650',
+        Entity::INTERVAL => 'sometimes|integer',
         // For yearly periods, anchor can be december 31st (1231).
         Entity::ANCHOR   => 'sometimes|integer|min:-1|max:1231',
         Entity::HOUR     => 'sometimes|integer|min:0|max:23',
