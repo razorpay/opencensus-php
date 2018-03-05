@@ -77,7 +77,9 @@ class Access
 
     /**
      * Checks if the accessed route is a feature route, if yes
-     * checks if the merchant has access to the feature
+     * checks if the merchant has access to the feature.
+     *
+     * A return value of null indicates success.
      *
      * @return null
      */
