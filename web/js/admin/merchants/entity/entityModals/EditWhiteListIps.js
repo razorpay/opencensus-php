@@ -16,7 +16,7 @@ const getInvalidAddresses = ipAddresses =>
 
 const splitAddressesString = addressesString =>
   addressesString
-    .replace(' ', '')
+    .replace(/ /g, '')
     .split(',')
     .filter(ipAdd => !!ipAdd);
 
@@ -62,7 +62,8 @@ export default class EditWhiteListIps extends Component {
 
   render() {
     const details = this.props.props.merchant.details;
-    let { whitelisted_ips_live, whitelisted_ips_test } = details;
+    const { whitelisted_ips_live, whitelisted_ips_test } = details;
+
     return (
       <BaseModal header="Edit Whitelist IPs">
         <Form
@@ -70,18 +71,18 @@ export default class EditWhiteListIps extends Component {
           style={{ width: '500px' }}
         >
           <TextAreaField
-            label="Whitelisted IPs in Live Mode"
+            label="Live Mode Whitelisted IPs"
             name="whitelisted_ips_live"
             defaultValue={
-              whitelisted_ips_live ? whitelisted_ips_live.join(',') : ''
+              whitelisted_ips_live ? whitelisted_ips_live.join(', ') : ''
             }
           />
 
           <TextAreaField
-            label="Whitelisted IPs in Test Mode"
+            label="Test Mode Whitelisted IPs"
             name="whitelisted_ips_test"
             defaultValue={
-              whitelisted_ips_test ? whitelisted_ips_test.join(',') : ''
+              whitelisted_ips_test ? whitelisted_ips_test.join(', ') : ''
             }
           />
 
