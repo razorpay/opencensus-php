@@ -2342,13 +2342,13 @@ final class Route
     {
         $key = $this->ba->getPublicKey();
 
-        list($schema, $host) = $this->getSchemaHostAndPort();
+        list($schema, $host, $port) = $this->getSchemaHostAndPort();
 
         $parameters['key_id'] = $key;
 
         $urlSegment = \URL::route($routeName, $parameters, false);
 
-        return $schema . $host . $urlSegment;
+        return $schema . $host . ($port ? ':' . $port : '') . $urlSegment;
     }
 
     public function getUrlWithPublicCallbackAuth(array $parameters = [], $key = '', $route = 'payment_callback_with_key_post')

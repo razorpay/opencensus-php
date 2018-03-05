@@ -19,6 +19,7 @@ return [
         'card_fss',
         'cybersource',
         'esigner_digio',
+        'enach_rbl',
         'ebs',
         'first_data',
         'hdfc',
@@ -61,6 +62,7 @@ return [
     'mock_atom'                   => env('ATOM_MOCK'),
     'mock_hitachi'                => env('HITACHI_MOCK'),
     'mock_esigner_digio'          => env('ESIGNER_DIGIO_MOCK'),
+    'mock_enach_rbl'              => env('ENACH_RBL_MOCK'),
     'mock_axis_migs'              => env('AXIS_MIGS_MOCK'),
     'mock_axis_genius'            => env('AXIS_GENIUS_MOCK'),
     'mock_kotak'                  => env('KOTAK_MOCK'),
@@ -200,9 +202,11 @@ return [
     ],
 
     'esigner_digio' => [
-        'merchant_id'   => env('DIGIO_ESIGNER_GATEWAY_MERCHANT_ID'),
-        'secure_secret' => env('DIGIO_ESIGNER_GATEWAY_SECRET'),
+        'client_id'       => env('DIGIO_ESIGNER_GATEWAY_MERCHANT_ID'),
+        'client_password' => env('DIGIO_ESIGNER_GATEWAY_SECRET'),
     ],
+
+    'enach_rbl' => [],
 
     'card_fss' => [
         'barb' => [
@@ -406,7 +410,6 @@ return [
         'test_hash_secret_rec'       => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET_REC'),
         'test_hash_secret_encrec'    => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET_ENCREC'),
         'test_merchant_id_rec'       => env('NETBANKING_AXIS_GATEWAY_TEST_MERCHANT_ID_REC'),
-
     ],
 
     'netbanking_airtel' => [

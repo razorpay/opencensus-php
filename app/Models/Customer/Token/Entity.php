@@ -65,7 +65,7 @@ class Entity extends Base\PublicEntity
      */
     const DEFAULT_MAX_AMOUNT    = 10000000;
 
-    const DEFAULT_EMANDATE_MAX_AMOUNT    = 9999900;
+    const DEFAULT_EMANDATE_MAX_AADHAAR  = 9999900;
 
     /**
      * We use this to set the number of years after which the
@@ -408,7 +408,7 @@ class Entity extends Base\PublicEntity
 
             if ($this->getAuthType() === Payment\AuthType::AADHAAR)
             {
-                $maxAmount = self::DEFAULT_EMANDATE_MAX_AMOUNT;
+                $maxAmount = self::DEFAULT_AADHAAR_MAX_AMOUNT;
             }
         }
 

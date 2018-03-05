@@ -19,10 +19,10 @@ var data = {!!utf8_json_encode($request)!!};
             redirection_url: window.RZP.callback_url,
             redirect_url: window.RZP.callback_url,
 
-//            "callback": function (result) {
-//                document.write(result.message);
-//                window.location.href = window.RZP.callback_url + "?digio_doc_id=" + result.digio_doc_id;
-//            },
+            callback: function (result) {
+               document.write(result.message);
+               window.location.href = window.RZP.callback_url + "?digio_mandate_id=" + result.digio_doc_id;
+            },
 
             logo: "https://razorpay.com/assets/razorpay-logo-95e9447029.svg"
         };

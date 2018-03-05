@@ -8,6 +8,8 @@ use Carbon\Carbon;
 use RZP\Exception;
 use Lib\PhoneBook;
 use RZP\Gateway\Base;
+use RZP\Constants\Timezone;
+use RZP\Models\Bank\Name as BankName;
 
 class Gateway extends Base\Gateway
 {
@@ -68,7 +70,7 @@ class Gateway extends Base\Gateway
         $request = [
             'content' => json_encode([
                 'signer_id'     => $mandateId,
-                'identifier'    => $input['token']->getId(),
+                'identifier'    => $this->getFormattedContact($input['payment']['contact']),
                 'environment'   => Mode::map($this->mode),
             ]),
             'callback_url'  => $input['callbackUrl'],
@@ -109,40 +111,35 @@ class Gateway extends Base\Gateway
 
     protected function getEmandateData(array $input)
     {
-        $nextWorkingDt = $this->getNextWorkingDate($input);
+        $nextWorkingDt = $input['gateway']['next_working_dt'];
+        $finalCollection = Carbon::createFromTimestamp($input['token']->getExpiredAt(), Timezone::IST);
+
+        $destinationBankCode = substr($input['token']->getIfsc(), 0, 4);
 
         $content = [
             'mandate_request_id'            => $input['token']->getId(),
             'mandate_creation_date_time'    => $nextWorkingDt->toIso8601String(),
-            'sponsor_bank_id'               => '',
-            'sponsor_bank_name'             => '',
-            'destination_bank_id'           => '',
-            'destination_bank_name'         => '',
+            'sponsor_bank_id'               => $input['terminal']['gateway_access_code'],
+            'sponsor_bank_name'             => BankName::getName($input['terminal']['gateway_access_code']),
+            'destination_bank_id'           => $destinationBankCode,
+            'destination_bank_name'         => BankName::getName($destinationBankCode),
             'aadhaar'                       => $input['token']->getAadhaarNumber(),
-            'bank_identifier'               => '',
-            'customer_account_type'         => 'Other',
+            'bank_identifier'               => substr($input['terminal']['gateway_access_code'], 0, 4),
             'management_category'           => CategoryCode::A001,
-            'service_provider_name'         => '',
-            'service_provider_utility_code' => '',
+            'service_provider_name'         => $input['terminal']['gateway_merchant_id2'],
+            'service_provider_utility_code' => $input['terminal']['gateway_merchant_id'],
             'customer_account_number'       => $input['token']->getAccountNumber(),
+            'customer_account_type'         => 'SAVINGS',
             'instrument_type'               => Instrument::DEBIT,
             'customer_name'                 => $input['token']->getBeneficiaryName(),
-            // @todo: max of 1L ruppee
             'maximum_amount'                => $input['token']->getMaxAmount(),
             'is_recurring'                  => true,
             'frequency'                     => Frequency::ADHOC,
             'first_collection_date'         => $nextWorkingDt->addDay()->format('Y-m-d'),
-            'final_collection_date'         => $nextWorkingDt->addYears(5)->format('Y-m-d'),
+            'final_collection_date'         => $finalCollection->format('Y-m-d'),
         ];
 
         return json_encode($content);
-    }
-
-    protected function getNextWorkingDate(array $input)
-    {
-        $currentTs = $input['payment']['created_at'];
-
-        return Carbon::createFromTimestamp($currentTs);
     }
 
     protected function getStandardRequestArray($content = [], $method = 'post', $type = null, $json = true)
@@ -172,12 +169,12 @@ class Gateway extends Base\Gateway
 
     protected function getClientId()
     {
-        return $this->config['merchant_id'];
+        return $this->config['client_id'];
     }
 
     protected function getClientPassword()
     {
-        return $this->config['secure_secret'];
+        return $this->config['client_password'];
     }
 
     protected function getFormattedContact($contact)

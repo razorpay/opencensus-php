@@ -93,6 +93,9 @@ class Type
     const ICICI_EMI_FILE_SFTP               = 'icici_emi_file_sftp';
     const ICICI_EMI_FILE_MAIL               = 'icici_emi_file_mail';
 
+    const RBL_ENACH_REGISTRATION_FILE_SFTP  = 'rbl_enach_registration_file_sftp';
+    const RBL_ENACH_DEBIT_FILE_SFTP         = 'rbl_enach_debit_file_sftp';
+
     const MERCHANT_BUSINESS_PROOF_URL           = 'business_proof_url';
     const MERCHANT_BUSINESS_OPERATION_PROOF_URL = 'business_operation_proof_url';
     const MERCHANT_BUSINESS_PAN_URL             = 'business_pan_url';
@@ -189,6 +192,10 @@ class Type
             self::INVOICE_PDF,
         ],
 
+        Constants\Entity::TOKEN => [
+            self::RBL_ENACH_REGISTRATION_FILE,
+        ],
+
         Constants\Entity::QR_CODE => [
             self::QR_CODE_IMAGE,
         ],
@@ -252,6 +259,7 @@ class Type
         self::AXIS_CYBERSOURCE_FAILED_REFUND,
         self::MOCK_RECONCILIATION_FILE,
         self::GATEWAY_FAILED_REFUNDS,
+        self::RBL_ENACH_REGISTRATION_FILE_SFTP,
     ];
 
     /**
@@ -317,6 +325,7 @@ class Type
             self::FUND_TRANSFER_H2H,
             self::ICICI_EMI_FILE_SFTP,
             self::YES_EMI_FILE_SFTP,
+            self::RBL_ENACH_REGISTRATION_FILE_SFTP,
         ],
 
         self::RECON_BUCKET_CONFIG => [
