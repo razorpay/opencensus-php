@@ -86,9 +86,9 @@ export default function BatchValidateModal({
       {/* Show batch modal error-info when file upload */}
       {fileUrl ? (
         <div class="modal-info error stretch">
-          <h4 class="m-b">How to fix an error?</h4>
           <div class="row m-t">
-            <div class="col-sm-9">
+            <div class="col-sm-8">
+              <h4 class="m-b">How to fix an error?</h4>
               <p>
                 The errors are marked in a the same file in a separate column.
                 <br />
@@ -96,8 +96,8 @@ export default function BatchValidateModal({
                 proceed.
               </p>
             </div>
-            <div class="col-sm-3">
-              <a class="btn btn-primary" href={fileUrl}>
+            <div class="col-sm-4">
+              <a class="btn btn-primary btn-block" href={fileUrl}>
                 {' '}
                 <i class="i i-download m-r" /> Download File
               </a>
