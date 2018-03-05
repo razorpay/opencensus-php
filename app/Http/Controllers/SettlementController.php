@@ -26,6 +26,23 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
+    /**
+     * Initiates settlements for merchants with
+     * feature DAILY_SETTLEMENT enabled.
+     * These merchants have their settlements created
+     * every day, irrespective of holidays, but transfer
+     * for these settlements get initiated only on
+     * non-holidays at a time defined by the merchant.
+     */
+    public function processDailySettlements()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->processDailySettlements($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postSettlementFileGenerate()
     {
         $input = Request::all();

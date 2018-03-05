@@ -65,11 +65,11 @@ class CreateDiscounts extends Migration
     {
         Schema::table(Table::DISCOUNT, function($table)
         {
-            $table->dropForeign(Table::DISCOUNT . '_' . BankTransfer::PAYMENT_ID . '_foreign');
+            $table->dropForeign(Table::DISCOUNT . '_' . Discount::PAYMENT_ID . '_foreign');
 
-            $table->dropForeign(Table::DISCOUNT . '_' . BankTransfer::ORDER_ID . '_foreign');
+            $table->dropForeign(Table::DISCOUNT . '_' . Discount::ORDER_ID . '_foreign');
 
-            $table->dropForeign(Table::DISCOUNT . '_' . BankTransfer::OFFER_ID . '_foreign');
+            $table->dropForeign(Table::DISCOUNT . '_' . Discount::OFFER_ID . '_foreign');
         });
 
         Schema::drop(Table::DISCOUNT);

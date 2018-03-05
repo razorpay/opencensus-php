@@ -2,6 +2,9 @@
 
 namespace RZP\Models\BankTransfer;
 
+use Carbon\Carbon;
+
+use RZP\Constants\Timezone;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
@@ -65,11 +68,12 @@ class Refund extends Base\Core
         $fundTransferAttempt = new FundTransferAttempt\Entity;
 
         $data = [
-            FundTransferAttempt\Entity::PURPOSE   => FundTransferAttempt\Purpose::REFUND,
-            FundTransferAttempt\Entity::CHANNEL   => $bankTransfer->merchant->getChannel(),
-            FundTransferAttempt\Entity::VERSION   => FundTransferAttempt\Version::V3,
-            FundTransferAttempt\Entity::STATUS    => FundTransferAttempt\Status::CREATED,
-            FundTransferAttempt\Entity::NARRATION => $this->getNarration($bankTransfer),
+            FundTransferAttempt\Entity::PURPOSE         => FundTransferAttempt\Purpose::REFUND,
+            FundTransferAttempt\Entity::CHANNEL         => $bankTransfer->merchant->getChannel(),
+            FundTransferAttempt\Entity::VERSION         => FundTransferAttempt\Version::V3,
+            FundTransferAttempt\Entity::STATUS          => FundTransferAttempt\Status::CREATED,
+            FundTransferAttempt\Entity::NARRATION       => $this->getNarration($bankTransfer),
+            FundTransferAttempt\Entity::INITIATE_AT     => Carbon::now(Timezone::IST)->getTimestamp(),
         ];
 
         $fundTransferAttempt->fillAndGenerateId($data);

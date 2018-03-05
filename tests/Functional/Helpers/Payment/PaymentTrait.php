@@ -314,6 +314,17 @@ trait PaymentTrait
 
     protected function doAuthPayment($payment = null, $server = null, $key = null)
     {
+        $request = $this->buildAuthPaymentRequest($payment, $server);
+
+        $this->ba->publicAuth($key);
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
+    protected function buildAuthPaymentRequest($payment = null, $server = null): array
+    {
         if ($payment === null)
         {
             $payment = $this->getDefaultPaymentArray();
@@ -330,7 +341,14 @@ trait PaymentTrait
             $request['server'] = $server;
         }
 
-        $this->ba->publicAuth($key);
+        return $request;
+    }
+
+    public function doAuthPaymentOAuth($payment = null, $server = null, $key = null)
+    {
+        $request = $this->buildAuthPaymentRequest($payment, $server);
+
+        $this->ba->oauthPublicTokenAuth($key);
 
         $content = $this->makeRequestAndGetContent($request);
 
@@ -1031,12 +1049,13 @@ trait PaymentTrait
         return $payment;
     }
 
-    protected function getNetbankingRecurringPaymentArray($bank = 'HDFC')
+    protected function getEmandatePaymentArray($bank = 'HDFC', $authType = 'netbanking', $amount = 2000)
     {
         $payment = $this->getDefaultNetbankingPaymentArray($bank);
 
-        $payment['amount'] = 2000;
-
+        $payment['method'] = Payment\Method::EMANDATE;
+        $payment['amount'] = $amount;
+        $payment['auth_type'] = $authType;
         $payment['recurring'] = true;
 
         $payment['customer_id'] = 'cust_100000customer';
@@ -1046,8 +1065,10 @@ trait PaymentTrait
 
     protected function getEmandateNetbankingRecurringPaymentArray($bank = 'HDFC', $amount = 4000)
     {
-        $payment = $this->getDefaultNetbankingPaymentArray($bank);
+        $payment = $this->getDefaultPaymentArray();
+        unset($payment['card']);
 
+        $payment['bank'] = $bank;
         $payment['amount'] = $amount;
 
         if (in_array($bank, Payment\Gateway::$zeroRupeeEmandateBanks, true) === true)

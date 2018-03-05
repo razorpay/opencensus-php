@@ -105,6 +105,9 @@ class MailTags
     const NOTIFY_ACTIVATION_SUBMISSION     = 'notify_activation_submission';
     const CONFIRM_ACTIVATION_SUBMISSION    = 'confirm_activation_submission';
 
+    // Merchant website details update email tags
+    const NOTIFY_WEBSITE_DETAIL_SUBMISSION = 'notify_website_detail_submission';
+
     // OAuth email tags
     const OAUTH_APP_AUTHORIZED             = 'oauth_app_authorized';
 

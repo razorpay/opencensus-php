@@ -399,6 +399,8 @@ class ErrorCode
     const BAD_REQUEST_ORDER_BANK_INVALID                                            = 'BAD_REQUEST_ORDER_BANK_INVALID';
     const BAD_REQUEST_ORDER_BANK_DOES_NOT_MATCH_PAYMENT_BANK                        = 'BAD_REQUEST_ORDER_BANK_DOES_NOT_MATCH_PAYMENT_BANK';
     const BAD_REQUEST_PAYMENT_METHOD_DOES_NOT_MATCH_ORDER_METHOD                    = 'BAD_REQUEST_PAYMENT_METHOD_DOES_NOT_MATCH_ORDER_METHOD';
+    const BAD_REQUEST_ORDER_RECEIPT_REQUIRED                                        = 'BAD_REQUEST_ORDER_RECEIPT_REQUIRED';
+    const BAD_REQUEST_ORDER_RECEIPT_NOT_UNIQUE                                      = 'BAD_REQUEST_ORDER_RECEIPT_NOT_UNIQUE';
 
     const BAD_REQUEST_PAYMENT_NETBANKING_CANCELLED_BY_USER                          = 'BAD_REQUEST_PAYMENT_NETBANKING_CANCELLED_BY_USER';
 
@@ -539,6 +541,8 @@ class ErrorCode
     const BAD_REQUEST_INVALID_OS                                                    = 'BAD_REQUEST_INVALID_OS';
     const BAD_REQUEST_INVALID_DEVICE                                                = 'BAD_REQUEST_INVALID_DEVICE';
     const BAD_REQUEST_INVALID_INTEGRATION                                           = 'BAD_REQUEST_INVALID_INTEGRATION';
+
+    const BAD_REQUEST_REPORTING_INTEGRATION                                         = 'BAD_REQUEST_REPORTING_INTEGRATION';
 
     const SERVER_ERROR_GATEWAY_NOT_SET                                              = 'SERVER_ERROR_GATEWAY_NOT_SET';
     const SERVER_ERROR_INVALID_ARGUMENT                                             = 'SERVER_ERROR_INVALID_ARGUMENT';

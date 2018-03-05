@@ -21,11 +21,6 @@ class Entity extends Base\PublicEntity
 
     const SECRET_LENGTH = 24;
 
-    /**
-     * Version prefix to be used for query cache
-     */
-    const QUERY_CACHE_VERSION = 'v1';
-
     protected $entity = 'key';
 
     protected $generateIdOnCreate = true;
@@ -52,16 +47,6 @@ class Entity extends Base\PublicEntity
     protected $defaults = [
         self::EXPIRED_AT => null
     ];
-
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::updated(function ($key)
-        {
-            static::flushCache('key_' . $key->getId());
-        });
-    }
 
     public function merchant()
     {
