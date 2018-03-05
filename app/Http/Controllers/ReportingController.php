@@ -2,6 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
+use Request;
 use ApiResponse;
 
 use RZP\Services\Reporting;
@@ -60,6 +61,34 @@ class ReportingController extends Controller
     public function listLog()
     {
         $data = $this->reportingService()->fetchLogMultiple($this->input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getSchedule(string $id)
+    {
+        $data = $this->reportingService()->fetchScheduleById($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function listSchedule()
+    {
+        $data = $this->reportingService()->fetchScheduleMultiple($this->input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function createSchedule()
+    {
+        $data = $this->reportingService()->createSchedule($this->input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function deleteSchedule(string $id)
+    {
+        $data = $this->reportingService()->deleteSchedule($id);
 
         return ApiResponse::json($data);
     }

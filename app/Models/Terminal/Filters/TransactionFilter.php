@@ -26,6 +26,7 @@ class TransactionFilter extends Terminal\Filter
         'method',
         'network',
         'bank',
+        'emandate',
         'recurring',
         'gateway',
         'subscription',
@@ -94,8 +95,7 @@ class TransactionFilter extends Terminal\Filter
 
     public function bankFilter($terminal)
     {
-        if (($this->input['payment']->isNetbanking() === true) or
-            ($this->input['payment']->isEmandate() === true))
+        if ($this->input['payment']->isNetbanking() === true)
         {
             $bank = $this->input['payment']->getBank();
 
@@ -109,6 +109,41 @@ class TransactionFilter extends Terminal\Filter
         }
 
         return true;
+    }
+
+    public function emandateFilter($terminal)
+    {
+        if ($this->input['payment']->isEmandate() === false)
+        {
+            return true;
+        }
+
+        $gateways = [];
+
+        $paymentBank = $this->input['payment']->getBank();
+
+        $authType = $this->input['payment']->getAuthType();
+
+        $terminalGateway = $terminal->getGateway();
+
+        $authTypeGateways = ($authType !== null) ? Gateway::getEmandateGatewaysForAuthType($authType) : [];
+
+        // @todo: Can be more cleaner
+        foreach (Gateway::$gatewaysEmandateBanksMap as $gateway => $gatewaySupportedBanks)
+        {
+            if (in_array($paymentBank, $gatewaySupportedBanks, true) === true)
+            {
+                if (($authType !== null) and
+                    (in_array($gateway, $authTypeGateways, true) === false))
+                {
+                    continue;
+                }
+
+                $gateways[] = $gateway;
+            }
+        }
+
+        return in_array($terminalGateway, $gateways);
     }
 
     /**

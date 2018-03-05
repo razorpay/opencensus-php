@@ -314,6 +314,17 @@ trait PaymentTrait
 
     protected function doAuthPayment($payment = null, $server = null, $key = null)
     {
+        $request = $this->buildAuthPaymentRequest($payment, $server);
+
+        $this->ba->publicAuth($key);
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
+    protected function buildAuthPaymentRequest($payment = null, $server = null): array
+    {
         if ($payment === null)
         {
             $payment = $this->getDefaultPaymentArray();
@@ -330,7 +341,14 @@ trait PaymentTrait
             $request['server'] = $server;
         }
 
-        $this->ba->publicAuth($key);
+        return $request;
+    }
+
+    public function doAuthPaymentOAuth($payment = null, $server = null, $key = null)
+    {
+        $request = $this->buildAuthPaymentRequest($payment, $server);
+
+        $this->ba->oauthPublicTokenAuth($key);
 
         $content = $this->makeRequestAndGetContent($request);
 

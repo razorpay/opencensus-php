@@ -23,10 +23,10 @@ class Gateway
     const BILLDESK               = 'billdesk';
     const BLADE                  = 'blade';
     const CYBERSOURCE            = 'cybersource';
-    const HITACHI                = 'hitachi';
     const EBS                    = 'ebs';
     const FIRST_DATA             = 'first_data';
     const HDFC                   = 'hdfc';
+    const HITACHI                = 'hitachi';
     const MOBIKWIK               = 'mobikwik';
     const NETBANKING_AIRTEL      = 'netbanking_airtel';
     const NETBANKING_AXIS        = 'netbanking_axis';
@@ -562,6 +562,15 @@ class Gateway
         ]
     ];
 
+    public static $authTypeToEmandateGatewayMap = [
+        AuthType::NETBANKING => [
+            Gateway::NETBANKING_AXIS,
+            Gateway::NETBANKING_ICICI,
+            Gateway::NETBANKING_HDFC,
+        ],
+        AuthType::AADHAAR => [],
+    ];
+
     /**
      * @todo: https://razorpay.atlassian.net/projects/GL/issues/GL-315
      *
@@ -883,6 +892,18 @@ class Gateway
         }
 
         return $banks;
+    }
+
+    public static function getEmandateGatewaysForAuthType(string $authType): array
+    {
+        $gateways = [];
+
+        if (isset(self::$authTypeToEmandateGatewayMap[$authType]) === true)
+        {
+            $gateways = self::$authTypeToEmandateGatewayMap[$authType];
+        }
+
+        return $gateways;
     }
 
     public static function getAvailableEmandateBanks()
