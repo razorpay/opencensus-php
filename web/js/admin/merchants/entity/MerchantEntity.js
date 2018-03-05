@@ -647,7 +647,7 @@ const ActionsList = ({ model, merchantId, actions }) => {
             <i class="pull-right i i-camera" />
           </div>
         </ShowWhen>
-        <ShowWhen permission="edit_merchant">
+        <ShowWhen permission="edit_merchant_ips">
           <div onClick={isDetailsLoading ? null : actions.EditWhiteListIps}>
             Edit Whitelist IPs
             {isDetailsLoading && <div class="dot-loader">.</div>}
