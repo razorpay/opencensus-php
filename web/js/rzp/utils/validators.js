@@ -35,6 +35,13 @@ export const isPhone = phone => {
   return phoneRegExp.test(phone);
 };
 
+export const isIpAddress = ipAddress => {
+  const ipRegExp = new RegExp(
+    /\b(?:(?:2(?:[0-4][0-9]|5[0-5])|[0-1]?[0-9]?[0-9])\.){3}(?:(?:2([0-4][0-9]|5[0-5])|[0-1]?[0-9]?[0-9]))\b/
+  );
+  return ipRegExp.test(ipAddress);
+};
+
 // Use required validator if the field is mandatory. This fn. only check whether value if present is valid or not
 export function validatePincodeLength(value) {
   return !value || /^[0-9]{6}$/.test(value)
