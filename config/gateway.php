@@ -202,8 +202,10 @@ return [
     ],
 
     'esigner_digio' => [
-        'client_id'       => env('DIGIO_ESIGNER_GATEWAY_MERCHANT_ID'),
-        'client_password' => env('DIGIO_ESIGNER_GATEWAY_SECRET'),
+        'client_id'         => env('DIGIO_ESIGNER_GATEWAY_MERCHANT_ID'),
+        'client_password'   => env('DIGIO_ESIGNER_GATEWAY_SECRET'),
+        'test_access_code'  => env('DIGIO_ESIGNER_GATEWAY_TEST_ACCESS_CODE', 'RATN1234343'),
+        'test_merchant_id2' => env('DIGIO_ESIGNER_GATEWAY_TEST_MERCHANT_ID2', 'Razorpay'),
     ],
 
     'enach_rbl' => [],

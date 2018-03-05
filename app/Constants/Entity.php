@@ -148,7 +148,7 @@ class Entity
     const UPI_MINDGATE           = 'upi_mindgate';
     const UPI_SBI                = 'upi_sbi';
     const UPI_ICICI              = 'upi_icici';
-    const ENACH_RBL              = 'enach_ebl';
+    const ENACH_RBL              = 'enach_rbl';
     const ESIGNER_DIGIO          = 'esigner_digio';
     const NETBANKING_AXIS        = 'netbanking_axis';
     const NETBANKING_HDFC        = 'netbanking_hdfc';

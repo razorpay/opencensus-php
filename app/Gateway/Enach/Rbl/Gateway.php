@@ -9,6 +9,7 @@ use RZP\Gateway\Base;
 use RZP\Models\Payment;
 use phpseclib\Crypt\AES;
 use RZP\Models\FileStore;
+use RZP\Constants\Timezone;
 
 class Gateway extends Base\Gateway
 {
@@ -105,7 +106,7 @@ class Gateway extends Base\Gateway
     {
         $currentTs = $input['payment']['created_at'];
 
-        return Carbon::createFromTimestamp($currentTs);
+        return Carbon::createFromTimestamp($currentTs, Timezone::IST);
     }
 
     protected function getFormattedFileName(array $input)
