@@ -14,8 +14,6 @@ COPY ./dockerconf/entrypoint.sh /entrypoint.sh
 
 WORKDIR /app
 
-RUN apk add --update --virtual node-deps nodejs nodejs-npm
-
 RUN chown -R nginx.nginx /app && \
     composer config -g github-oauth.github.com ${GIT_TOKEN} && \
     composer install --no-interaction && \
