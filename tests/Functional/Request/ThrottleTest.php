@@ -9,7 +9,7 @@ use RZP\Tests\Traits\TestsThrottle;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 /**
- * End to end functional test to assert rate limiting is working fine.
+ * A few end to end functional test to assert rate limiting is working fine.
  */
 class ThrottleTest extends TestCase
 {
@@ -32,13 +32,16 @@ class ThrottleTest extends TestCase
 
     public function testGetOrderWhenThrottled()
     {
-        // Makes max bucket size for specific test mid and for private auth
-        // as O and expects the first requests itself to be throttled.
+        // Sets max bucket size for specific test mid and for private auth
+        // to O and expects the first requests itself to be throttled.
         $this->setRedisIdLevelSettings('10000000000000', ['test:private:0:order_fetch:mbs' => 0]);
 
         $this->startTest();
     }
 
+    /**
+     * If redis setting is missing, no throttle happens and an alert is raised.
+     */
     public function testGetOrderWhenRedisSettingsMissing()
     {
         $this->setRedisGlobalSettings([]);

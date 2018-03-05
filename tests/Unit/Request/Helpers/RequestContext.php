@@ -8,10 +8,7 @@ namespace RZP\Tests\Unit\Request\Helpers;
  */
 class RequestContext
 {
-    use \RZP\Http\Throttle\HasRequestContext
-    {
-        initRequestContextVars as public;
-    }
+    use \RZP\Http\Throttle\HasRequestContext { initRequestContextVars as public; }
 
     protected $isRunningUnitTests;
     protected $applications;

@@ -26,11 +26,12 @@ class ThrottlerTest extends TestCase
      */
     public function testAttemptThrottle()
     {
+        $this->expectException(ThrottleException::class);
+
         $this->setRedisGlobalSettings(['skip' => 0, 'mock' => 0, 'test:private:0:mbs' => 0]);
 
         $requestMock = $this->invokeRequestCase('privateRoute');
 
-        $this->expectException(ThrottleException::class);
         (new Throttler)->throttle($requestMock);
     }
 
@@ -40,9 +41,10 @@ class ThrottlerTest extends TestCase
      */
     public function testAttemptThrottleWhenInvalidKeyId()
     {
+        $this->expectException(BadRequestException::class);
+
         $requestMock = $this->invokeRequestCase('privateRouteWhenInvalidKey');
 
-        $this->expectException(BadRequestException::class);
         (new Throttler)->throttle($requestMock);
     }
 
@@ -57,7 +59,8 @@ class ThrottlerTest extends TestCase
         $requestMock = $this->invokeRequestCase('privateRoute');
 
         $throttlerMock = $this->createThrottlerMock(['attemptThrottle']);
-        $throttlerMock->expects($this->never())->method('attemptThrottle');
+        $throttlerMock->expects($this->never())
+                      ->method('attemptThrottle');
 
         $throttlerMock->throttle($requestMock);
     }
@@ -72,8 +75,11 @@ class ThrottlerTest extends TestCase
         $requestMock = $this->invokeRequestCase('privateRoute');
 
         $throttlerMock = $this->createThrottlerMock(['attemptThrottle', 'initRedisConnection']);
-        $throttlerMock->expects($this->once())->method('initRedisConnection')->will($this->throwException(new \Exception));
-        $throttlerMock->expects($this->never())->method('attemptThrottle');
+        $throttlerMock->expects($this->once())
+                      ->method('initRedisConnection')
+                      ->will($this->throwException(new \Exception));
+        $throttlerMock->expects($this->never())
+                      ->method('attemptThrottle');
 
         $throttlerMock->throttle($requestMock);
     }
@@ -83,7 +89,9 @@ class ThrottlerTest extends TestCase
         $requestMock = $this->invokeRequestCase('privateRoute');
 
         $throttlerMock = $this->createThrottlerMock(['getMidForKeyIdFromDb']);
-        $throttlerMock->expects($this->once())->method('getMidForKeyIdFromDb')->willReturn('10000000000000');
+        $throttlerMock->expects($this->once())
+                      ->method('getMidForKeyIdFromDb')
+                      ->willReturn('10000000000000');
 
         $throttlerMock->throttle($requestMock);
         $throttlerMock->throttle($requestMock);

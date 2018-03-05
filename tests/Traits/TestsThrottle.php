@@ -6,6 +6,10 @@ use Illuminate\Support\Facades\Redis;
 
 use RZP\Http\Throttle\Constant as K;
 
+/**
+ * Trait provides setup and tear methods which configures throttle
+ * redis instance etc for use and provides a few helper methods.
+ */
 trait TestsThrottle
 {
     /**
@@ -62,6 +66,7 @@ trait TestsThrottle
         {
             $this->redis->hmset($key, ...seq_array($parameters));
         }
+        // If parameters is empty, it implies need to unset the key
         else
         {
             $this->redis->del($key);

@@ -12,6 +12,7 @@ class RequestContextTest extends TestCase
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/Helpers/RequestContextTestData.php';
+
         parent::setUp();
     }
 

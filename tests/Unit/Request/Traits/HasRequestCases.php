@@ -14,6 +14,8 @@ trait HasRequestCases
 {
     use MocksRequest;
 
+    // Some static hard coded keys and configs for tests
+
     public static $testKey         = 'rzp_test_TheTestAuthKey';
     public static $liveKey         = 'rzp_live_TheLiveAuthKey';
     public static $testSecret      = 'TheKeySecretForTests';
@@ -26,33 +28,36 @@ trait HasRequestCases
     public static $testAdminEmail  = 'test@test.com';
     public static $testDeviceToken = 'authentication_token';
 
+    /**
+     * List of requests cases for which there is an implementation to mock
+     * such request in unit tests.
+     * @var array
+     */
     public static $requestCases = [
         'publicRouteWhenKeyInHeaders',
         'publicRouteWhenKeyInQuery',
         'publicRouteWhenKeyInInput',
         'publicRouteWhenKeyIsOfInvalidLen',
-
         'publicCallbackRoute',
-
         'publicRouteWithOAuthPublicToken',
-
-
         'privateRoute',
         'privateRouteWhenLiveMode',
         'privateRouteWhenInvalidKey',
         'privateRouteWithOAuthBearerToken',
         'privateRouteWithProxyAuth',
-
         'proxyRoute',
-
         'privilegeRouteWhenInternalAppAuth',
         'privilegeRouteWhenAdminAuth',
-
         'directRoute',
-
         'deviceRoute',
     ];
 
+    /**
+     * Invokes mocker method for given request case
+     * @param  string $case
+     * @param  array  $args
+     * @return Request
+     */
     protected function invokeRequestCase(string $case, ...$args)
     {
         $func = 'mock' . ucfirst($case);
@@ -63,49 +68,35 @@ trait HasRequestCases
         string $name = 'invoice_get_status',
         string $path = 'invoices/inv_1000000invoice/status'): Request
     {
-        $requestMock = $this->mockRouteRequest($name, $path, ['getUser']);
-
-        $requestMock->expects($this->any())
-                    ->method('getUser')
-                    ->willReturn(self::$testKey);
-
-        return $requestMock;
+        return $this->mockRouteRequest($name, $path, [], [self::$testKey]);
     }
 
     protected function mockPublicRouteWhenKeyInQuery(
         string $name = 'invoice_get_status',
         string $path = 'invoices/inv_1000000invoice/status'): Request
     {
-        $requestMock = $this->mockRouteRequest($name, $path, [], ['key_id' => 'rzp_test_TheTestAuthKey']);
-
-        return $requestMock;
+        return $this->mockRouteRequest($name, $path, [], [], ['key_id' => self::$testKey]);
     }
 
     protected function mockPublicRouteWhenKeyInInput(
         string $name = 'payment_create',
         string $path = 'payments'): Request
     {
-        $requestMock = $this->mockRouteRequest($name, $path, [], [], ['key_id' => 'rzp_test_TheTestAuthKey']);
-
-        return $requestMock;
+        return $this->mockRouteRequest($name, $path, [], [], [], ['key_id' => self::$testKey]);
     }
 
     protected function mockPublicRouteWhenKeyIsOfInvalidLen(
         string $name = 'invoice_get_status',
         string $path = 'invoices/inv_1000000invoice/status'): Request
     {
-        $requestMock = $this->mockRouteRequest($name, $path, [], ['key_id' => 'rzp_test_INVALID_LEN']);
-
-        return $requestMock;
+        return $this->mockRouteRequest($name, $path, [], [], ['key_id' => 'rzp_test_INVALID_LEN']);
     }
 
     protected function mockPublicCallbackRoute(
         string $name = 'payment_callback_with_key_get',
         string $path = 'payments/pay_10000000000000/callback/hash/rzp_test_TheTestAuthKey'): Request
     {
-        $requestMock = $this->mockRouteRequest($name, $path);
-
-        return $requestMock;
+        return $this->mockRouteRequest($name, $path);
     }
 
     protected function mockPublicRouteWithOAuthPublicToken(
@@ -119,48 +110,21 @@ trait HasRequestCases
         string $name = 'invoice_fetch_multiple',
         string $path = 'invoices'): Request
     {
-        $requestMock = $this->mockRouteRequest($name, $path, ['getUser', 'getPassword']);
-
-        $requestMock->expects($this->any())
-                    ->method('getUser')
-                    ->willReturn(self::$testKey);
-        $requestMock->expects($this->any())
-                    ->method('getPassword')
-                    ->willReturn(self::$testSecret);
-
-        return $requestMock;
+        return $this->mockRouteRequest($name, $path, [], [self::$testKey, self::$testSecret]);
     }
 
     protected function mockPrivateRouteWhenLiveMode(
         string $name = 'invoice_fetch_multiple',
         string $path = 'invoices'): Request
     {
-        $requestMock = $this->mockRouteRequest($name, $path, ['getUser', 'getPassword']);
-
-        $requestMock->expects($this->any())
-                    ->method('getUser')
-                    ->willReturn(self::$liveKey);
-        $requestMock->expects($this->any())
-                    ->method('getPassword')
-                    ->willReturn(self::$liveSecret);
-
-        return $requestMock;
+        return $this->mockRouteRequest($name, $path, [], [self::$liveKey, self::$liveSecret]);
     }
 
     protected function mockPrivateRouteWhenInvalidKey(
         string $name = 'invoice_fetch_multiple',
         string $path = 'invoices'): Request
     {
-        $requestMock = $this->mockRouteRequest($name, $path, ['getUser', 'getPassword']);
-
-        $requestMock->expects($this->any())
-                    ->method('getUser')
-                    ->willReturn('invalidkey');
-        $requestMock->expects($this->any())
-                    ->method('getPassword')
-                    ->willReturn(self::$testSecret);
-
-        return $requestMock;
+        return $this->mockRouteRequest($name, $path, [], ['invalidkey', self::$testSecret]);
     }
 
     protected function mockPrivateRouteWithOAuthBearerToken(
@@ -181,44 +145,29 @@ trait HasRequestCases
         string $name = 'batch_create',
         string $path = 'batches'): Request
     {
+        $secret = \Config::get('applications.dashboard.secret');
         $server = [
             'HTTP_X-Dashboard-User-Id'   => self::$testUserId,
             // TODO: What is role of default user created in fixtures?
             'HTTP_X-Dashboard-User-Role' => null,
         ];
 
-        $requestMock = $this->mockRouteRequest($name, $path, ['getUser', 'getPassword'], [], [], $server);
-
-        $requestMock->expects($this->any())
-                    ->method('getUser')
-                    ->willReturn(self::$testMidKey);
-        $requestMock->expects($this->any())
-                    ->method('getPassword')
-                    ->willReturn(\Config::get('applications.dashboard.secret'));
-
-        return $requestMock;
+        return $this->mockRouteRequest($name, $path, [], [self::$testMidKey, $secret], [], [], $server);
     }
 
     protected function mockPrivilegeRouteWhenInternalAppAuth(
         string $name = 'invoice_expire_bulk',
         string $path = 'invoices/expire'): Request
     {
-        $requestMock = $this->mockRouteRequest($name, $path, ['getUser', 'getPassword']);
-
-        $requestMock->expects($this->any())
-                    ->method('getUser')
-                    ->willReturn('rzp_test');
-        $requestMock->expects($this->any())
-                    ->method('getPassword')
-                    ->willReturn(\Config::get('applications.dashboard.secret'));
-
-        return $requestMock;
+        $secret = \Config::get('applications.dashboard.secret');
+        return $this->mockRouteRequest($name, $path, [], ['rzp_test', $secret]);
     }
 
     protected function mockPrivilegeRouteWhenAdminAuth(
         string $name = 'dummy_route',
         string $path = 'dummy/route'): Request
     {
+        $secret = \Config::get('applications.dashboard.secret');
         $server = [
             'HTTP_X-Org-Id'                => self::$testOrgId,
             'HTTP_X-Admin-Token'           => self::$testAdminToken,
@@ -226,16 +175,7 @@ trait HasRequestCases
             'HTTP_X-Dashboard-Admin-Email' => self::$testAdminEmail,
         ];
 
-        $requestMock = $this->mockRouteRequest($name, $path, ['getUser', 'getPassword'], [], [], $server);
-
-        $requestMock->expects($this->any())
-                    ->method('getUser')
-                    ->willReturn('rzp_test');
-        $requestMock->expects($this->any())
-                    ->method('getPassword')
-                    ->willReturn(\Config::get('applications.dashboard.secret'));
-
-        return $requestMock;
+        return $this->mockRouteRequest($name, $path, [], ['rzp_test', $secret], [], [], $server);
     }
 
     protected function mockDirectRoute(
@@ -249,15 +189,6 @@ trait HasRequestCases
         string $name = 'vpa_create',
         string $path = 'upi/vpa'): Request
     {
-        $requestMock = $this->mockRouteRequest($name, $path, ['getUser', 'getPassword']);
-
-        $requestMock->expects($this->any())
-                    ->method('getUser')
-                    ->willReturn(self::$testKey);
-        $requestMock->expects($this->any())
-                    ->method('getPassword')
-                    ->willReturn(self::$testDeviceToken);
-
-        return $requestMock;
+        return $this->mockRouteRequest($name, $path, [], [self::$testKey, self::$testDeviceToken]);
     }
 }

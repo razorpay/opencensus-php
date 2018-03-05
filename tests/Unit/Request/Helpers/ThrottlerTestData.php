@@ -6,6 +6,7 @@ return [
 
     // Set of sample settings
     'settings' => [
+        // Empty/missing settings case: Picks defaults hard-coded value in code
         'none' => [
             [],
             [],
@@ -16,7 +17,7 @@ return [
     // Per available request case, lists:
     // - what id settings key is expected to be used
     // - what throttle key is expected to be used
-    // - what throttle values is expected to be used, per settings available(above ^)
+    // - what throttle values is expected to be used, per settings
     //
 
     'publicRouteWhenKeyInHeaders' => [
