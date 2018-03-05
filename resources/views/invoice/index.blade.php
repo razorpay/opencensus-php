@@ -268,32 +268,43 @@
         font-size: 12px;
       }
 
-        #cancelled-invoice {
-            width: 100%;
-            top: -12px;
-            background-image: url(http://i.imgur.com/4c9Zkf4.png);
-            background-repeat: no-repeat;
-            background-position: -19px -147px;
-            font-size: 20px;
-            padding: 40px;
-            line-height: 20px;
-            display: none;
-        }
+      #cancelled-crack {
+        width: 100%;
+        margin-top: 114px;
+        background-image: url(http://i.imgur.com/4c9Zkf4.png);
+        background-repeat: no-repeat;
+        background-position: -189px -90px;
+        height: 80px;
+        display: none;
+      }
 
-        #cancelled-invoice .title {
-            font-weight: 600;
-            margin-top: 30px;
-        }
-        #cancelled-invoice .desc {
-            font-size: 14px;
-            color: #777777;
-            margin-top: 8px;
-        }
+      #cancelled-invoice {
+        width: 100%;
+        top: -12px;
+        background-image: url(http://i.imgur.com/4c9Zkf4.png);
+        background-repeat: no-repeat;
+        background-position: -19px -147px;
+        font-size: 20px;
+        padding: 40px;
+        line-height: 20px;
+        min-height: 260px;
+        display: none;
+      }
 
+      #cancelled-invoice .title {
+       font-weight: 600;
+        margin-top: 30px;
+      }
+
+      #cancelled-invoice .desc {
+        font-size: 14px;
+        color: #777777;
+        margin-top: 8px;
+      }
 
       #inv-info-box .footer img {
-          height: 15px;
-          vertical-align: bottom;
+        height: 15px;
+        vertical-align: bottom;
       }
 
       #footer {
@@ -476,6 +487,10 @@
       function checkIsDesktop() {
           var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
           return width > 853;
+      }
+
+      function isExpired(date) {
+        return date ? new Date().getTime()/1000 > date : false;
       }
 
       function cleanHTML() {
@@ -696,6 +711,7 @@
                                 <span style="font-weight: 500">Payment Completed</span>
                                 <div id="scs-msg"style="color:#9b9b9b"></div>
                             </div>
+                            <div id="cancelled-crack"></div>
                         </div>
                         </div>
                       </div>
@@ -813,10 +829,16 @@
               // Full paid
               if (data['invoice']['amount_due'] === 0 && data['invoice']['status'] === 'paid') {
                   fullPaid();
-              } else if (data['invoice']['status'] === 'cancelled' || (data['invoice']['expire_by'] < new Date().getTime()/1000)) {
+              } else if (data['invoice']['status'] === 'cancelled' || isExpired(data['invoice']['expire_by'])) {
                 document.getElementById('cancelled-invoice').style.display = 'block';
                 document.getElementById('inv-details-main').style.display = 'none';
-                document.getElementsByClassName('footer')[0].style.display = 'none';
+
+                if (checkIsDesktop()) {
+                    document.getElementsByClassName('footer')[0].style.display = 'none';
+                    document.getElementById('cancelled-crack').style.display = 'block';
+                    document.getElementById('chkout-box').style.background = '#f5f5f5';
+                }
+
               } else {
                   document.getElementById('pay-title').innerHTML = 'AMOUNT PAYABLE';
                   document.getElementById('display-pay-amt').innerHTML = "<span> ₹" + (data['invoice']['amount_due']/ 100).toFixed(2) + "</span>";
@@ -847,7 +869,7 @@
 
           </script>
 
-          @if ($data['invoice']['status'] !== 'paid')
+          @if ($data['invoice']['status'] !== 'paid' and ($data['invoice']['expire_by'] ? $data['invoice']['expire_by'] > time() : true))
             @if (isset($data['error']))
               <div id="failure" class="card">
                 {!! $error_icon !!}
@@ -858,6 +880,7 @@
             @endif
             <script>
               (function (globalScope) {
+                console.log('CHECK...1');
 
                 var data = globalScope.data;
 
@@ -930,11 +953,18 @@
                     options.image = merchant.image;
                   }
                 }
+
+
+                console.log('CHECK...2');
+
                 var razorpay;
+                //TODO: Check condition invoiceObj.status !== 'partially_paid'
                 if (!data.error) {
-                    if (checkIsDesktop() && invoiceObj.status !== 'partially_paid') {
-                        options.parent = '#chkout-box';
-                        razorpay = window.razorpay = Razorpay(options);
+                    if (checkIsDesktop()) {
+                        if (invoiceObj.status !== 'partially_paid') {
+                          options.parent = '#chkout-box';
+                          razorpay = window.razorpay = Razorpay(options);
+                        }
                     } else {
                         document.getElementById('mob-payment-btn').addEventListener('click', function() {
                             razorpay = window.razorpay = Razorpay(options);
