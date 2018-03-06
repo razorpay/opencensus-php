@@ -1,10 +1,4 @@
 pipeline:
-  clone:
-    image: plugins/git
-    when:
-      event:
-        exclude: [deployment]
-        include: [push]
   build:
     image: plugins/docker
     repo: razorpay/auth
@@ -12,9 +6,40 @@ pipeline:
     build_args_from_env: [git_token]
     build_args:
      - GIT_COMMIT_HASH=${DRONE_COMMIT_SHA}
-    tags: ${DRONE_COMMIT_SHA}
+    tags: ${DRONE_REPO_BRANCH}-${DRONE_COMMIT_SHA}
     when:
       status: [success]
       event:
         exclude: [deployment]
         include: [push]
+  build-notify:
+  image: plugins/slack
+  secrets: [slack_webhook]
+  channel: tech_distelli
+  username: drone
+  icon_url: https://avatars2.githubusercontent.com/u/2181346?s=200&v=4
+  template: >
+    {{#success build.status}}
+      Build succeeded.
+    {{else}}
+      Build failed.
+    {{/success}}
+      Build No:{{build.number}}
+      Branch: {{build.branch}}
+      Commit: {{build.commit}}
+      Author: {{build.author}}
+      Started at: {{build.started}}
+      Time taken: {{since build.started}}
+      Link: {{build.link}}
+  when:
+    event:
+      exclude: [deployment]
+      include: [push, pull_request, tag]
+  build-falcon-notify:
+    image: plugins/webhook
+    urls:
+      - https://falcon.razorpay.com/update
+    secrets:
+      - plugin_headers
+    when:
+      status: [ success, failure ]
