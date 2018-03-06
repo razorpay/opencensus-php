@@ -2,8 +2,6 @@
 
 namespace RZP\Tests\Functional\Request;
 
-use Illuminate\Support\Facades\Redis;
-
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Traits\TestsThrottle;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -35,13 +33,14 @@ class ThrottleTest extends TestCase
         $this->startTest();
     }
 
-    public function testGetOrderWhenThrottled()
+    public function testGetOrderWhenThrottledSecondTime()
     {
         // Sets max bucket size for specific test mid and for private auth
-        // to O and expects the first requests itself to be throttled.
-        $this->setRedisIdLevelSettings('10000000000000', ['test:private:0:order_fetch:mbs' => 0]);
+        // to 1 and expects the first request to pass and second requests to be throttled.
+        $this->setRedisIdLevelSettings('10000000000000', ['test:private:0:order_fetch:mbs' => 1]);
 
-        $this->startTest();
+        $this->startTest($this->testData[__FUNCTION__.'1']);
+        $this->startTest($this->testData[__FUNCTION__.'2']);
     }
 
     /**

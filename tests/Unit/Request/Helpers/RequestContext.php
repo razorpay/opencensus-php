@@ -2,13 +2,15 @@
 
 namespace RZP\Tests\Unit\Request\Helpers;
 
+use RZP\Http\Throttle\HasRequestContext;
+
 /**
  * Helper class that assists in unit testing protected/private
  * methods of HasRequestContext trait.
  */
 class RequestContext
 {
-    use \RZP\Http\Throttle\HasRequestContext { initRequestContextVars as public; }
+    use HasRequestContext { initRequestContextVars as public; }
 
     protected $isRunningUnitTests;
     protected $applications;

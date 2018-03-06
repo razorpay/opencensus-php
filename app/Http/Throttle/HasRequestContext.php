@@ -225,12 +225,6 @@ trait HasRequestContext
 
     protected function setAdditionalVarsForPrivilegeAuth()
     {
-        // TODO:
-        // - Now rate limit will apply across internal(e.g. crons) and admin usage.
-        // I doubt if we want that? If we don't want that, I will revert this to
-        // old logic where I was setting it all as explicit PROXY_AUTH, ADMIN_AUTH
-        // etc. (inconsistent with how BasicAuth does it).
-
         if (in_array($this->route, Route::$internal, true) === true)
         {
             $this->internalAppName = $this->getInternalAppName();

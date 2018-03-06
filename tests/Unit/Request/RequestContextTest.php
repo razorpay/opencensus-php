@@ -46,9 +46,7 @@ class RequestContextTest extends TestCase
         $context = new Helpers\RequestContext;
         $context->initRequestContextVars($requestMock);
 
-        $caseTestData = $this->testData[$case];
-        $expected = $caseTestData['expected'] ?? $this->testData[$caseTestData['expected_same_as']]['expected'];
-
+        $expected = $this->testData[$case]['expected'];
         foreach ($expected as $key => $value)
         {
             $this->assertEquals($value, $context->$key);

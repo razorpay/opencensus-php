@@ -5,6 +5,7 @@ namespace RZP\Tests\Unit\Request;
 use RZP\Tests\TestCase;
 use RZP\Http\Throttle\Throttler;
 use RZP\Tests\Traits\TestsThrottle;
+use RZP\Http\Throttle\Constant as K;
 use RZP\Exception\ThrottleException;
 use RZP\Exception\BadRequestException;
 
@@ -145,8 +146,8 @@ class ThrottlerTest extends TestCase
             $throttlerMock->initRedisConnection();
             $throttlerMock->setMidIfApplicable();
 
-            $this->assertEquals($expected['id'], $throttlerMock->getIdSettingsKey());
-            $this->assertEquals($expected['key'], $throttlerMock->getThrottleKey());
+            $this->assertEquals($expected['id_settings_key'], $throttlerMock->getIdSettingsKey());
+            $this->assertEquals($expected['throttle_key'], $throttlerMock->getThrottleKey());
 
             foreach ($expected['settings'] as $idx => $expectedSettings)
             {
@@ -154,9 +155,9 @@ class ThrottlerTest extends TestCase
                 // the new returned(mocked ^) value were settings what throttle
                 // values would be picked for given requests.
                 $throttlerMock->initThrottleSettings();
-                $this->assertEquals($expectedSettings[0], $throttlerMock->getThrottleMaxBucketSize());
-                $this->assertEquals($expectedSettings[1], $throttlerMock->getThrottleRateValue());
-                $this->assertEquals($expectedSettings[2], $throttlerMock->getThrottleRateDuration());
+                $this->assertEquals($expectedSettings[K::MAX_BUCKET_SIZE], $throttlerMock->getThrottleMaxBucketSize());
+                $this->assertEquals($expectedSettings[K::LEAK_RATE_VALUE], $throttlerMock->getThrottleRateValue());
+                $this->assertEquals($expectedSettings[K::LEAK_RATE_DURATION], $throttlerMock->getThrottleRateDuration());
             }
         }
     }

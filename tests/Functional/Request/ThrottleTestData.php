@@ -9,7 +9,7 @@ return [
     'testNonexistentRoute' => [
         'request' => [
             'method' => 'get',
-            'url'    => '/black_panther',
+            'url'    => '/invalid_route',
         ],
         'response' => [
             'content' => [
@@ -35,7 +35,20 @@ return [
         ],
     ],
 
-    'testGetOrderWhenThrottled' => [
+    'testGetOrderWhenThrottledSecondTime1' => [
+        'request' => [
+            'method' => 'get',
+            'url'    => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'count' => 0,
+                'items' => [],
+            ],
+        ],
+    ],
+
+    'testGetOrderWhenThrottledSecondTime2' => [
         'request' => [
             'method' => 'get',
             'url'    => '/orders',

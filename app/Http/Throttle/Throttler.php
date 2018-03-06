@@ -219,7 +219,8 @@ class Throttler
         $ip = ($this->isPublicAuth() or $this->isDirectAuth()) ? $this->request->ip() : '';
 
         // E.g.: payments_create:live:private:0::10000000000000:
-        return implode(':', [$this->route, $this->mode, $this->auth, (int) $this->proxy, $this->oauthAppId, $id, $ip]);
+        $args = [$this->route, $this->mode, $this->auth, (int) $this->proxy, $this->oauthAppId, $id, $ip];
+        return implode(':', $args);
     }
 
     protected function getThrottleRateValue(): int

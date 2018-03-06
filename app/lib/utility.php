@@ -397,7 +397,13 @@ if (! function_exists('seq_array'))
      */
     function seq_array(array $assocArray): array
     {
+        if (is_sequential_array($assocArray) === true)
+        {
+            return $assocArray;
+        }
+
         $seqArray = [];
+
         foreach ($assocArray as $k => $v)
         {
             $seqArray[] = $k;

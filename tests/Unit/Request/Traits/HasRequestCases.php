@@ -29,33 +29,9 @@ trait HasRequestCases
     public static $testDeviceToken = 'authentication_token';
 
     /**
-     * List of requests cases for which there is an implementation to mock
-     * such request in unit tests.
-     * @var array
-     */
-    public static $requestCases = [
-        'publicRouteWhenKeyInHeaders',
-        'publicRouteWhenKeyInQuery',
-        'publicRouteWhenKeyInInput',
-        'publicRouteWhenKeyIsOfInvalidLen',
-        'publicCallbackRoute',
-        'publicRouteWithOAuthPublicToken',
-        'privateRoute',
-        'privateRouteWhenLiveMode',
-        'privateRouteWhenInvalidKey',
-        'privateRouteWithOAuthBearerToken',
-        'privateRouteWithProxyAuth',
-        'proxyRoute',
-        'privilegeRouteWhenInternalAppAuth',
-        'privilegeRouteWhenAdminAuth',
-        'directRoute',
-        'deviceRoute',
-    ];
-
-    /**
-     * Invokes mocker method for given request case
+     * Invokes mocker method for given request case.
      * @param  string $case
-     * @param  array  $args
+     * @param  mixed  $args,...
      * @return Request
      */
     protected function invokeRequestCase(string $case, ...$args)

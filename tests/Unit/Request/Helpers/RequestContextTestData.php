@@ -27,7 +27,22 @@ return [
     ],
 
     'publicRouteWhenKeyInQuery' => [
-        'expected_same_as' => 'publicRouteWhenKeyInHeaders',
+        'expected' => [
+            'route'            => 'invoice_get_status',
+            'key'              => 'rzp_test_TheTestAuthKey',
+            'secret'           => null,
+            'bearerToken'      => null,
+            'mode'             => 'test',
+            'auth'             => 'public',
+            'keyWithoutPrefix' => 'TheTestAuthKey',
+            'keyId'            => 'TheTestAuthKey',
+            'mid'              => null,
+            'oauthAppId'       => null,
+            'oauthPublicToken' => null,
+            'internalAppName'  => null,
+            'adminEmail'       => null,
+            'proxy'            => false,
+        ],
     ],
 
     'publicRouteWhenKeyInInput' => [

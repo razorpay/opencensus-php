@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Unit\Request\Helpers;
 
+use RZP\Http\Throttle\Constant as K;
+
 return [
 
     // Set of sample settings
@@ -101,182 +103,566 @@ return [
     //
 
     'publicRouteWhenKeyInHeaders' => [
-        'id'       => '10000000000000',
-        'key'      => 'invoice_get_status:test:public:0::10000000000000:1.1.1.1',
-        'settings' => [
-            'none'        => [30, 2, 1],
-            'global_1'    => [30, 2, 1],
-            'global_2'    => [30, 2, 1],
-            'global_3'    => [30, 2, 1],
-            'id_level_1'  => [30, 2, 1],
-            'id_level_2'  => [30, 2, 1],
-            'id_level_3'  => [30, 2, 1],
-            'global_id_1' => [30, 2, 1],
+        'id_settings_key' => '10000000000000',
+        'throttle_key'    => 'invoice_get_status:test:public:0::10000000000000:1.1.1.1',
+        'settings'        => [
+            'none'        => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_1'    => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_2'    => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_3'    => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'id_level_1'  => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'id_level_2'  => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'id_level_3'  => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_id_1' => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
         ],
     ],
 
     'publicRouteWhenKeyInQuery' => [
-        'id'       => '10000000000000',
-        'key'      => 'invoice_get_status:test:public:0::10000000000000:1.1.1.1',
-        'settings' => [
-            'none'        => [30, 2, 1],
-            'global_1'    => [30, 2, 1],
-            'global_2'    => [30, 2, 1],
-            'global_3'    => [30, 2, 1],
-            'id_level_1'  => [30, 2, 1],
-            'id_level_2'  => [30, 2, 1],
-            'id_level_3'  => [30, 2, 1],
-            'global_id_1' => [30, 2, 1],
+        'id_settings_key' => '10000000000000',
+        'throttle_key'    => 'invoice_get_status:test:public:0::10000000000000:1.1.1.1',
+        'settings'        => [
+            'none'        => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_1'    => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_2'    => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_3'    => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'id_level_1'  => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'id_level_2'  => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'id_level_3'  => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_id_1' => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
         ],
     ],
 
     'publicRouteWhenKeyInInput' => [
-        'id'       => '10000000000000',
-        'key'      => 'payment_create:test:public:0::10000000000000:1.1.1.1',
-        'settings' => [
-            'none'        => [30, 2, 1],
-            'global_1'    => [30, 2, 1],
-            'global_2'    => [30, 2, 1],
-            'global_3'    => [30, 2, 1],
-            'id_level_1'  => [30, 2, 1],
-            'id_level_2'  => [30, 2, 1],
-            'id_level_3'  => [30, 2, 1],
-            'global_id_1' => [30, 2, 1],
+        'id_settings_key' => '10000000000000',
+        'throttle_key'    => 'payment_create:test:public:0::10000000000000:1.1.1.1',
+        'settings'        => [
+            'none'        => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_1'    => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_2'    => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_3'    => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'id_level_1'  => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'id_level_2'  => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'id_level_3'  => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_id_1' => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
         ],
     ],
 
     'publicCallbackRoute' => [
-        'id'       => '10000000000000',
-        'key'      => 'payment_callback_with_key_get:test:public:0::10000000000000:1.1.1.1',
-        'settings' => [
-            'none'        => [30, 2, 1],
-            'global_1'    => [30, 2, 1],
-            'global_2'    => [30, 2, 1],
-            'global_3'    => [30, 2, 1],
-            'id_level_1'  => [30, 2, 1],
-            'id_level_2'  => [30, 2, 1],
-            'id_level_3'  => [30, 2, 1],
-            'global_id_1' => [30, 2, 1],
+        'id_settings_key' => '10000000000000',
+        'throttle_key'    => 'payment_callback_with_key_get:test:public:0::10000000000000:1.1.1.1',
+        'settings'        => [
+            'none'        => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_1'    => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_2'    => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_3'    => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'id_level_1'  => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'id_level_2'  => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'id_level_3'  => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_id_1' => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
         ],
     ],
 
     'privateRoute' => [
-        'id'       => '10000000000000',
-        'key'      => 'invoice_fetch_multiple:test:private:0::10000000000000:',
-        'settings' => [
-            'none'        => [30, 2, 1],
-            'global_1'    => [30, 2, 1],
-            'global_2'    => [30, 2, 1],
-            'global_3'    => [100, 10, 2],
-            'id_level_1'  => [30, 2, 1],
-            'id_level_2'  => [30, 2, 1],
-            'id_level_3'  => [100, 10, 2],
-            'global_id_1' => [100, 10, 2],
+        'id_settings_key' => '10000000000000',
+        'throttle_key'    => 'invoice_fetch_multiple:test:private:0::10000000000000:',
+        'settings'        => [
+            'none'        => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_1'    => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_2'    => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_3'    => [
+                K::MAX_BUCKET_SIZE    => 100,
+                K::LEAK_RATE_VALUE    => 10,
+                K::LEAK_RATE_DURATION => 2,
+            ],
+            'id_level_1'  => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'id_level_2'  => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'id_level_3'  => [
+                K::MAX_BUCKET_SIZE    => 100,
+                K::LEAK_RATE_VALUE    => 10,
+                K::LEAK_RATE_DURATION => 2,
+            ],
+            'global_id_1' => [
+                K::MAX_BUCKET_SIZE    => 100,
+                K::LEAK_RATE_VALUE    => 10,
+                K::LEAK_RATE_DURATION => 2,
+            ],
         ],
     ],
 
     'privateRouteWhenLiveMode' => [
-        'id'       => '10000000000000',
-        'key'      => 'invoice_fetch_multiple:live:private:0::10000000000000:',
-        'settings' => [
-            'none'        => [30, 2, 1],
-            'global_1'    => [50, 5, 1],
-            'global_2'    => [30, 2, 1],
-            'global_3'    => [30, 2, 1],
-            'id_level_1'  => [50, 5, 1],
-            'id_level_2'  => [30, 2, 1],
-            'id_level_3'  => [30, 2, 1],
-            'global_id_1' => [50, 5, 1],
+        'id_settings_key' => '10000000000000',
+        'throttle_key'    => 'invoice_fetch_multiple:live:private:0::10000000000000:',
+        'settings'        => [
+            'none'        => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_1'    => [
+                K::MAX_BUCKET_SIZE    => 50,
+                K::LEAK_RATE_VALUE    => 5,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_2'    => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_3'    => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'id_level_1'  => [
+                K::MAX_BUCKET_SIZE    => 50,
+                K::LEAK_RATE_VALUE    => 5,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'id_level_2'  => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'id_level_3'  => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_id_1' => [
+                K::MAX_BUCKET_SIZE    => 50,
+                K::LEAK_RATE_VALUE    => 5,
+                K::LEAK_RATE_DURATION => 1,
+            ],
         ],
     ],
 
     'privateRouteWithProxyAuth' => [
-        'id'       => '10000000000000',
-        'key'      => 'invoice_create:test:private:1::10000000000000:',
-        'settings' => [
-            'none'        => [30, 2, 1],
-            'global_1'    => [30, 2, 1],
-            'global_2'    => [50, 5, 1],
-            'global_3'    => [30, 2, 1],
-            'id_level_1'  => [30, 2, 1],
-            'id_level_2'  => [50, 5, 1],
-            'id_level_3'  => [30, 2, 1],
-            'global_id_1' => [75, 10, 5],
+        'id_settings_key' => '10000000000000',
+        'throttle_key'    => 'invoice_create:test:private:1::10000000000000:',
+        'settings'        => [
+            'none'        => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_1'    => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_2'    => [
+                K::MAX_BUCKET_SIZE    => 50,
+                K::LEAK_RATE_VALUE    => 5,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_3'    => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'id_level_1'  => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'id_level_2'  => [
+                K::MAX_BUCKET_SIZE    => 50,
+                K::LEAK_RATE_VALUE    => 5,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'id_level_3'  => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_id_1' => [
+                K::MAX_BUCKET_SIZE    => 75,
+                K::LEAK_RATE_VALUE    => 10,
+                K::LEAK_RATE_DURATION => 5,
+            ],
         ],
     ],
 
     'proxyRoute' => [
-        'id'       => '10000000000000',
-        'key'      => 'batch_create:test:private:1::10000000000000:',
-        'settings' => [
-            'none'        => [30, 2, 1],
-            'global_1'    => [30, 2, 1],
-            'global_2'    => [50, 5, 1],
-            'global_3'    => [30, 2, 1],
-            'id_level_1'  => [30, 2, 1],
-            'id_level_2'  => [50, 5, 1],
-            'id_level_3'  => [30, 2, 1],
-            'global_id_1' => [75, 10, 5],
+        'id_settings_key' => '10000000000000',
+        'throttle_key'    => 'batch_create:test:private:1::10000000000000:',
+        'settings'        => [
+            'none'        => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_1'    => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_2'    => [
+                K::MAX_BUCKET_SIZE    => 50,
+                K::LEAK_RATE_VALUE    => 5,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_3'    => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'id_level_1'  => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'id_level_2'  => [
+                K::MAX_BUCKET_SIZE    => 50,
+                K::LEAK_RATE_VALUE    => 5,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'id_level_3'  => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_id_1' => [
+                K::MAX_BUCKET_SIZE    => 75,
+                K::LEAK_RATE_VALUE    => 10,
+                K::LEAK_RATE_DURATION => 5,
+            ],
         ],
     ],
 
     'privilegeRouteWhenInternalAppAuth' => [
-        'id'       => 'dashboard',
-        'key'      => 'invoice_expire_bulk:test:privilege:0::dashboard:',
-        'settings' => [
-            'none'        => [30, 2, 1],
-            'global_1'    => [30, 2, 1],
-            'global_2'    => [30, 2, 1],
-            'global_3'    => [30, 2, 1],
-            'id_level_1'  => [30, 2, 1],
-            'id_level_2'  => [30, 2, 1],
-            'id_level_3'  => [30, 2, 1],
-            'global_id_1' => [200, 10, 2],
+        'id_settings_key' => 'dashboard',
+        'throttle_key'    => 'invoice_expire_bulk:test:privilege:0::dashboard:',
+        'settings'        => [
+            'none'        => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_1'    => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_2'    => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_3'    => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'id_level_1'  => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'id_level_2'  => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'id_level_3'  => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_id_1' => [
+                K::MAX_BUCKET_SIZE    => 200,
+                K::LEAK_RATE_VALUE    => 10,
+                K::LEAK_RATE_DURATION => 2,
+            ],
         ],
     ],
 
     'privilegeRouteWhenAdminAuth' => [
-        'id'       => 'test@test.com',
-        'key'      => 'dummy_route:test:privilege:0::test@test.com:',
-        'settings' => [
-            'none'        => [30, 2, 1],
-            'global_1'    => [30, 2, 1],
-            'global_2'    => [30, 2, 1],
-            'global_3'    => [30, 2, 1],
-            'id_level_1'  => [30, 2, 1],
-            'id_level_2'  => [30, 2, 1],
-            'id_level_3'  => [30, 2, 1],
-            'global_id_1' => [80, 10, 2],
+        'id_settings_key' => 'test@test.com',
+        'throttle_key'    => 'dummy_route:test:privilege:0::test@test.com:',
+        'settings'        => [
+            'none'        => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_1'    => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_2'    => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_3'    => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'id_level_1'  => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'id_level_2'  => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'id_level_3'  => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_id_1' => [
+                K::MAX_BUCKET_SIZE    => 80,
+                K::LEAK_RATE_VALUE    => 10,
+                K::LEAK_RATE_DURATION => 2,
+            ],
         ],
     ],
 
     'directRoute' => [
-        'id'       => '',
-        'key'      => 'checkout_public::direct:0:::1.1.1.1',
-        'settings' => [
-            'none'        => [30, 2, 1],
-            'global_1'    => [30, 2, 1],
-            'global_2'    => [30, 2, 1],
-            'global_3'    => [30, 2, 1],
-            'id_level_1'  => [30, 2, 1],
-            'id_level_2'  => [30, 2, 1],
-            'id_level_3'  => [30, 2, 1],
-            'global_id_1' => [30, 2, 1],
+        'id_settings_key' => '',
+        'throttle_key'    => 'checkout_public::direct:0:::1.1.1.1',
+        'settings'        => [
+            'none'        => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_1'    => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_2'    => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_3'    => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'id_level_1'  => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'id_level_2'  => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'id_level_3'  => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_id_1' => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
         ],
     ],
 
     'deviceRoute' => [
-        'id'       => '10000000000000',
-        'key'      => 'vpa_create:test:device:0::10000000000000:',
-        'settings' => [
-            'none'        => [30, 2, 1],
-            'global_1'    => [30, 2, 1],
-            'global_2'    => [30, 2, 1],
-            'global_3'    => [30, 2, 1],
-            'id_level_1'  => [30, 2, 1],
-            'id_level_2'  => [30, 2, 1],
-            'id_level_3'  => [30, 2, 1],
-            'global_id_1' => [30, 2, 1],
+        'id_settings_key' => '10000000000000',
+        'throttle_key'    => 'vpa_create:test:device:0::10000000000000:',
+        'settings'        => [
+            'none'        => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_1'    => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_2'    => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_3'    => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'id_level_1'  => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'id_level_2'  => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'id_level_3'  => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_id_1' => [
+                K::MAX_BUCKET_SIZE    => 30,
+                K::LEAK_RATE_VALUE    => 2,
+                K::LEAK_RATE_DURATION => 1,
+            ],
         ],
     ],
 ];
