@@ -1330,6 +1330,11 @@ class Entity extends Base\PublicEntity
         return $this->isFeatureEnabled(Feature\Constants::EMAIL_OPTIONAL);
     }
 
+    public function isMagicEnabled()
+    {
+        return $this->isFeatureEnabled(Feature\Constants::MAGIC);
+    }
+
     public function isPhoneOptional()
     {
         return $this->isFeatureEnabled(Feature\Constants::CONTACT_OPTIONAL);
