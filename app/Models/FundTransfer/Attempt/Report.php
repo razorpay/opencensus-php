@@ -60,14 +60,7 @@ class Report extends Base\Core
 
             $this->createReport();
 
-            $this->sendEmail();
-
-            $data = [
-                'channel' => $this->channel,
-                'count' => $this->count
-            ];
-
-            (new SlackNotification)->success('null_utr_report', $data);
+            $this->sendNotification();
 
             unlink($this->fileName);
         }
@@ -116,7 +109,7 @@ class Report extends Base\Core
         fclose($this->fileHandler);
     }
 
-    protected function sendEmail()
+    protected function sendNotification()
     {
         if ($this->count === 0)
         {
@@ -131,7 +124,14 @@ class Report extends Base\Core
 
         $reportEmail = new ReportEmail($data);
 
-        Mail::queue($reportEmail);
+        (new SlackNotification)->success(
+            'null_utr_report',
+            [
+                'channel' => $this->channel,
+                'count' => $this->count
+            ]);
+
+        Mail::send($reportEmail);
 
         return true;
     }
