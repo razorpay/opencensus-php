@@ -12,6 +12,29 @@ pipeline:
       event:
         exclude: [deployment]
         include: [push]
+  deploy-stage-echo:
+    image: razorpay/drone-kubernetes
+    pull: true
+    secrets:
+      - docker_username
+      - docker_password
+      - server_url_stage
+      - server_cert_stage
+      - client_cert_stage
+      - client_key_stage
+    user: drone
+    cluster: stage
+    auth_mode: client-cert
+    deployment: dashboard
+    repo: razorpay/dashboard
+    namespace: echo
+    tag:
+      - ${DRONE_REPO_BRANCH}-${DRONE_COMMIT_SHA}
+    when:
+      environment: stage-echo
+      event:
+        exclude: [push]
+        include: [deployment]
   build-notify:
     image: plugins/slack
     secrets: [slack_webhook]
