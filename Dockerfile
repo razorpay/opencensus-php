@@ -6,7 +6,8 @@ ARG GIT_TOKEN
 
 COPY . /app/
 
-RUN apk add --update lsof nodejs-current nodejs-npm && \
+RUN apk add --update lsof && \
+    apk add --virtual nodejs-deps nodejs-current nodejs-npm && \
     chown -R nginx.nginx /app
 
 COPY ./dockerconf/entrypoint.sh /entrypoint.sh
@@ -15,13 +16,13 @@ WORKDIR /app
 
 RUN chown -R nginx.nginx /app && \
     composer config -g github-oauth.github.com ${GIT_TOKEN} && \
-    composer install --no-interaction && \
+    composer install --no-dev --no-interaction && \
     npm install && \
     cd web && npm install && cd .. && \
     npm run build && \
 #   Skipping tests till deploy to QA
 #   npm test && \
-    apk del nodejs-current nodejs-npm
+    apk del nodejs-deps
 
 EXPOSE 80
 

@@ -47,18 +47,12 @@ spec:
           httpGet:
             path: /status
             port: 80
-            httpHeaders:
-              - name: Host
-                value: echo-dashboard.razorpay.in
           initialDelaySeconds: 60
           periodSeconds: 120
         livenessProbe:
           httpGet:
             path: /commit.txt
             port: 80
-            httpHeaders:
-              - name: Host
-                value: echo-dashboard.razorpay.in
           initialDelaySeconds: 60
           periodSeconds: 2
         lifecycle:

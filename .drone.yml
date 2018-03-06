@@ -15,7 +15,7 @@ pipeline:
   build-notify:
     image: plugins/slack
     secrets: [slack_webhook]
-    channel: tech_distelli
+    channel: tech_builds
     username: drone
     icon_url: https://avatars2.githubusercontent.com/u/2181346?s=200&v=4
     template: >
@@ -34,7 +34,7 @@ pipeline:
     when:
       event:
         exclude: [deployment]
-        include: [push, pull_request, tag]
+        include: [push, tag]
   build-falcon-notify:
     image: plugins/webhook
     urls:
