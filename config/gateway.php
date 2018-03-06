@@ -202,10 +202,11 @@ return [
     ],
 
     'esigner_digio' => [
-        'client_id'         => env('DIGIO_ESIGNER_GATEWAY_MERCHANT_ID'),
-        'client_password'   => env('DIGIO_ESIGNER_GATEWAY_SECRET'),
-        'test_access_code'  => env('DIGIO_ESIGNER_GATEWAY_TEST_ACCESS_CODE', 'RATN1234343'),
-        'test_merchant_id2' => env('DIGIO_ESIGNER_GATEWAY_TEST_MERCHANT_ID2', 'Razorpay'),
+        'client_id'         => env('DIGIO_ESIGNER_GATEWAY_CLIENT_ID'),
+        'client_password'   => env('DIGIO_ESIGNER_GATEWAY_CLIENT_PASSWORD'),
+        'test_access_code'  => env('DIGIO_ESIGNER_GATEWAY_TEST_ACCESS_CODE'),
+        'test_merchant_id'  => env('DIGIO_ESIGNER_GATEWAY_TEST_MERCHANT_ID'),
+        'test_merchant_id2' => env('DIGIO_ESIGNER_GATEWAY_TEST_MERCHANT_ID2'),
         'test_terminal_id'  => env('DIGIO_ESIGNER_GATEWAY_TEST_TERMINAL_ID')
     ],
 
