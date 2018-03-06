@@ -45,13 +45,4 @@ export default ({ merchantId }) => {
 };
 
 /* Resources */
-const entitiesList = [
-  { label: 'Website homepage', name: 'business_website' },
-  { label: 'About Page', name: 'website_about' },
-  { label: 'Contact', name: 'website_contact' },
-  { label: 'Privacy Policy', name: 'website_privacy' },
-  { label: 'Terms & Conditions', name: 'website_terms' },
-  { label: 'Refund Policy', name: 'website_refund' },
-  { label: 'Pricing Policy', name: 'website_pricing' },
-  { label: 'Customer Login', name: 'website_login' },
-];
+const entitiesList = [{ label: 'Website homepage', name: 'business_website' }];
