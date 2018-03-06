@@ -15,10 +15,17 @@ class Calculator extends Base\Core
 
     public function calculateDiscountedAmount(int $amount)
     {
+        $discount = $this->calculateDiscount($amount);
+
+        return max(0, ($amount - $discount));
+    }
+
+    public function calculateDiscount(int $amount)
+    {
         if (($this->offer->getMinAmount() !== null) and
             ($amount < $this->offer->getMinAmount()))
         {
-            return $amount;
+            return 0;
         }
 
         $discount = $this->getRawDiscount($amount);
@@ -28,7 +35,7 @@ class Calculator extends Base\Core
             $discount = min($this->offer->getMaxCashback(), $discount);
         }
 
-        return max(0, ($amount - $discount));
+        return $discount;
     }
 
     protected function getRawDiscount(int $amount)

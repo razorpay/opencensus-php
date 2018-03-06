@@ -553,44 +553,21 @@ class Checkout
     {
         $order = $this->order;
 
-        if ($order !== null)
+        if (($order !== null) and
+            ($order->offer !== null))
         {
-            if ($order->offer !== null)
-            {
-                $offerCheckout = $order->offer->toArrayCheckout();
+            $orderAmount = $order->getAmount();
 
-                //
-                // If offer is applicable then amount is to be discounted by us
-                //
-                if ($order->isDiscountApplicable() === true)
-                {
-                    $offerCheckout['original_amount'] = $order->getAmount();
+            $this->updateMethodsToEnableOnCheckout($order->offer, $data);
 
-                    $offerCheckout['amount'] = $this->getDiscountedAmount($order);
-                }
-
-                $this->updateMethodsToEnableOnCheckout($order->offer, $data);
-
-                $data['offers'] = [
-                    $offerCheckout
-                ];
-            }
+            $data['offers'] = [
+                $order->offer->toArrayCheckout($order->isDiscountApplicable(), $orderAmount),
+            ];
         }
         else
         {
             $this->checkAndFillNonOrderOffers($merchant, $data);
         }
-    }
-
-    protected function getDiscountedAmount(Order\Entity $order)
-    {
-        $offerCore = new Offer\Core;
-
-        $originalAmount = $order->getAmount();
-
-        $offer = $order->offer;
-
-        return $offerCore->getDiscountedAmount($offer, $originalAmount);
     }
 
     protected function checkAndFillNonOrderOffers(Merchant\Entity $merchant, array & $data)
