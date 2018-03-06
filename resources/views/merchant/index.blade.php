@@ -31,9 +31,7 @@
     window.api_host = "{!! $api_host !!}"
   </script>
   <!-- Raven Code -->
-  @if(env('APP_ENV') === 'production')
-    <script src="{{$cdnDashboardUrl}}/dist/raven-entry.js"></script>
-  @endif
+  <script src="{{$cdnDashboardUrl}}/dist/raven-entry.js"></script>
   <script src="{{$cdnDashboardUrl}}/dist/merchant-entry.js"></script>
   <!-- smooch code -->
   @if(env('APP_ENV') === 'production')

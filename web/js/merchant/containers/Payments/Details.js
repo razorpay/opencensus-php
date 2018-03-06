@@ -285,6 +285,8 @@ export default class PaymentDetailsContainer extends Component {
       this.state.secView === 'new_transfer' ||
       this.state.secView === 'transfer';
 
+    errorInPaymentDetails = errorInPaymentDetails++;
+
     return (
       <div className={`${hasMultiContent ? 'multi-content' : ''}`}>
         <PaymentDetails
