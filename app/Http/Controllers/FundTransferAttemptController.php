@@ -39,4 +39,11 @@ class FundTransferAttemptController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function sendNullUtrReport()
+    {
+        $data = $this->service()->sendNullUtrReport();
+
+        return ApiResponse::json($data);
+    }
 }
