@@ -3,15 +3,18 @@
 namespace RZP\Tests\Functional\Payment;
 
 use Mail;
+use Cache;
 
+use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Admin\ConfigKey;
+use RZP\Tests\Functional\TestCase;
+use RZP\Models\Payment as PaymentModel;
+use RZP\Exception\GatewayErrorException;
 use RZP\Mail\Payment\Authorized as AuthorizedMail;
 use RZP\Mail\Payment\Failed as PaymentFailedMail;
-use RZP\Models\Payment as PaymentModel;
-use RZP\Error\ErrorCode;
-use RZP\Tests\Functional\TestCase;
-use RZP\Exception\GatewayErrorException;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+
 
 class AuthorizeTest extends TestCase
 {
@@ -42,18 +45,6 @@ class AuthorizeTest extends TestCase
         $response->assertSessionHas('foo', 'bar');
     }
 
-    public function testMagickeySet()
-    {
-        $content = $this->startTest();
-
-        $this->assertTrue($content['magic_key']);
-    }
-
-    public function testInvalidEmailInPayment()
-    {
-        $this->startTest();
-    }
-
     public function testJsonpPayment()
     {
         Mail::fake();
@@ -63,6 +54,59 @@ class AuthorizeTest extends TestCase
         $this->assertArrayHasKey('razorpay_payment_id', $content);
 
         Mail::assertSent(AuthorizedMail::class);
+    }
+
+    public function testMagicKeyFalseMerchantDisabled()
+    {
+        Cache::shouldReceive('get')
+           ->once()
+           ->with(ConfigKey::ENABLE_MAGIC)
+           ->andReturn(true);
+
+        $this->startTest();
+    }
+
+    public function testMagicKeySet()
+    {
+        $this->fixtures->merchant->enableMagic();
+
+         Cache::shouldReceive('get')
+           ->once()
+           ->with(ConfigKey::ENABLE_MAGIC)
+           ->andReturn(true);
+
+        $content = $this->startTest();
+    }
+
+    public function testMagicKeyFalseDisabledIIn()
+    {
+        $this->fixtures->merchant->enableMagic();
+
+        Cache::shouldReceive('get')
+           ->once()
+           ->with(ConfigKey::ENABLE_MAGIC)
+           ->andReturn(true);
+
+        $content= $this->startTest();
+
+        $this->assertFalse($content['magic_key']);
+    }
+
+    public function testMagicKeyFalseDisabledGlobally()
+    {
+        $this->fixtures->merchant->enableMagic();
+
+        Cache::shouldReceive('get')
+           ->once()
+           ->with(ConfigKey::ENABLE_MAGIC)
+           ->andReturn(false);
+
+        $this->startTest();
+    }
+
+    public function testInvalidEmailInPayment()
+    {
+        $this->startTest();
     }
 
     public function testEmailMissing()

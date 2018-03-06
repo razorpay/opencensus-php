@@ -17,19 +17,100 @@ return [
         ],
         'response' => [
             'content' => [
-                'http_status_code' => 200
+                'http_status_code' => 200,
             ]
         ],
         'jsonp' => true
     ],
 
-    'testMagickeySet' => [
+    'testMagicKeySet' => [
         'request' => [
             'method' => 'GET',
             'url' => '/payments/create/jsonp',
             'content' => [
                 'card' => [
                     'number' => '5567630000002004'
+                ],
+                'callback' => 'abcdefghijkl',
+                '_' => '',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'magic_key' => true,
+            ]
+        ],
+        'jsonp' => true
+    ],
+
+    'testMagicKeyFalseDisabledIIn' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/payments/create/jsonp',
+            'content' => [
+                'card' => [
+                    'number' => '4012001037167778'
+                ],
+                'callback' => 'abcdefghijkl',
+                '_' => '',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'magic_key' => false,
+            ]
+        ],
+        'jsonp' => true
+    ],
+
+
+    'testMagicKeyFalseDisabledGlobally' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/payments/create/jsonp',
+            'content' => [
+                'card' => [
+                    'number' => '5567630000002004'
+                ],
+                'callback' => 'abcdefghijkl',
+                '_' => '',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'magic_key' => false,
+            ]
+        ],
+        'jsonp' => true
+    ],
+
+    'testMagicKeyFalseMerchantDisabled' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/payments/create/jsonp',
+            'content' => [
+                'card' => [
+                    'number' => '5567630000002004'
+                ],
+                'callback' => 'abcdefghijkl',
+                '_' => '',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'magic_key' => false,
+            ]
+        ],
+        'jsonp' => true
+    ],
+
+    'testMagickeyFalsewhenDisabledIIn' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/payments/create/jsonp',
+            'content' => [
+                'card' => [
+                    'number' => '4005559876540'
                 ],
                 'callback' => 'abcdefghijkl',
                 '_' => '',

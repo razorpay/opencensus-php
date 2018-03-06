@@ -53,8 +53,6 @@ class Merchant extends Base
         $this->fixtures->create('merchant:schedule_task');
 
         $this->fixtures->merchant->enableInternational();
-
-        $this->fixtures->merchant->enableMagic();
     }
 
     public function createNodalAccount()
