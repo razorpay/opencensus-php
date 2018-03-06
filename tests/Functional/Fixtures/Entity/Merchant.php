@@ -53,6 +53,8 @@ class Merchant extends Base
         $this->fixtures->create('merchant:schedule_task');
 
         $this->fixtures->merchant->enableInternational();
+
+        $this->fixtures->merchant->enableMagic();
     }
 
     public function createNodalAccount()
@@ -481,6 +483,13 @@ class Merchant extends Base
     public function enableTPV($id = '10000000000000')
     {
         $this->addFeatures(['tpv'], $id);
+
+        return true;
+    }
+
+    public function enableMagic($id = '10000000000000')
+    {
+        $this->addFeatures(['magic'], $id);
 
         return true;
     }
