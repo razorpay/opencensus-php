@@ -121,7 +121,7 @@ class Org extends Base
             'admin_id'   => self::SUPER_ADMIN,
             'token'      => Hash::make(self::DEFAULT_TOKEN),
             'created_at' => $now,
-            'expires_at' => Carbon::now()->addYear()->timestamp,
+            'expires_at' => Carbon::now()->addYears(10)->timestamp,
         ]);
 
         return $org;
