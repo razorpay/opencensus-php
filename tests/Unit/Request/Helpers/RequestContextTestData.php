@@ -7,7 +7,7 @@ namespace RZP\Tests\Unit\Request\Helpers;
  * by the application.
  */
 return [
-    'publicRouteWhenKeyInHeaders' => [
+    'publicRouteWithKeyInHeaders' => [
         'expected' => [
             'route'            => 'invoice_get_status',
             'key'              => 'rzp_test_TheTestAuthKey',
@@ -26,7 +26,7 @@ return [
         ],
     ],
 
-    'publicRouteWhenKeyInQuery' => [
+    'publicRouteWithKeyInQuery' => [
         'expected' => [
             'route'            => 'invoice_get_status',
             'key'              => 'rzp_test_TheTestAuthKey',
@@ -45,7 +45,7 @@ return [
         ],
     ],
 
-    'publicRouteWhenKeyInInput' => [
+    'publicRouteWithKeyInInput' => [
         'expected' => [
             'route'            => 'payment_create',
             'key'              => 'rzp_test_TheTestAuthKey',
@@ -102,7 +102,7 @@ return [
         ],
     ],
 
-    'privateRouteWhenLiveMode' => [
+    'privateRouteWithLiveMode' => [
         'expected' => [
             'route'            => 'invoice_fetch_multiple',
             'key'              => 'rzp_live_TheLiveAuthKey',
@@ -159,7 +159,7 @@ return [
         ],
     ],
 
-    'privilegeRouteWhenInternalAppAuth' => [
+    'privilegeRouteWithInternalAppAuth' => [
         'expected' => [
             'route'            => 'invoice_expire_bulk',
             'key'              => 'rzp_test',
@@ -178,7 +178,7 @@ return [
         ],
     ],
 
-    'privilegeRouteWhenAdminAuth' => [
+    'privilegeRouteWithAdminAuth' => [
         'expected' => [
             'route'            => 'dummy_route',
             'key'              => 'rzp_test',

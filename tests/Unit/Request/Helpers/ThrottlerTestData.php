@@ -102,7 +102,7 @@ return [
     // - what throttle values is expected to be used, per settings
     //
 
-    'publicRouteWhenKeyInHeaders' => [
+    'publicRouteWithKeyInHeaders' => [
         'id_settings_key' => '10000000000000',
         'throttle_key'    => 'invoice_get_status:test:public:0::10000000000000:1.1.1.1',
         'settings'        => [
@@ -149,7 +149,7 @@ return [
         ],
     ],
 
-    'publicRouteWhenKeyInQuery' => [
+    'publicRouteWithKeyInQuery' => [
         'id_settings_key' => '10000000000000',
         'throttle_key'    => 'invoice_get_status:test:public:0::10000000000000:1.1.1.1',
         'settings'        => [
@@ -196,7 +196,7 @@ return [
         ],
     ],
 
-    'publicRouteWhenKeyInInput' => [
+    'publicRouteWithKeyInInput' => [
         'id_settings_key' => '10000000000000',
         'throttle_key'    => 'payment_create:test:public:0::10000000000000:1.1.1.1',
         'settings'        => [
@@ -337,7 +337,7 @@ return [
         ],
     ],
 
-    'privateRouteWhenLiveMode' => [
+    'privateRouteWithLiveMode' => [
         'id_settings_key' => '10000000000000',
         'throttle_key'    => 'invoice_fetch_multiple:live:private:0::10000000000000:',
         'settings'        => [
@@ -478,7 +478,7 @@ return [
         ],
     ],
 
-    'privilegeRouteWhenInternalAppAuth' => [
+    'privilegeRouteWithInternalAppAuth' => [
         'id_settings_key' => 'dashboard',
         'throttle_key'    => 'invoice_expire_bulk:test:privilege:0::dashboard:',
         'settings'        => [
@@ -525,7 +525,7 @@ return [
         ],
     ],
 
-    'privilegeRouteWhenAdminAuth' => [
+    'privilegeRouteWithAdminAuth' => [
         'id_settings_key' => 'test@test.com',
         'throttle_key'    => 'dummy_route:test:privilege:0::test@test.com:',
         'settings'        => [

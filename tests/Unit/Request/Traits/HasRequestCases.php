@@ -40,28 +40,28 @@ trait HasRequestCases
         return $this->$func(...$args);
     }
 
-    protected function mockPublicRouteWhenKeyInHeaders(
+    protected function mockPublicRouteWithKeyInHeaders(
         string $name = 'invoice_get_status',
         string $path = 'invoices/inv_1000000invoice/status'): Request
     {
         return $this->mockRouteRequest($name, $path, [], [self::$testKey]);
     }
 
-    protected function mockPublicRouteWhenKeyInQuery(
+    protected function mockPublicRouteWithKeyInQuery(
         string $name = 'invoice_get_status',
         string $path = 'invoices/inv_1000000invoice/status'): Request
     {
         return $this->mockRouteRequest($name, $path, [], [], ['key_id' => self::$testKey]);
     }
 
-    protected function mockPublicRouteWhenKeyInInput(
+    protected function mockPublicRouteWithKeyInInput(
         string $name = 'payment_create',
         string $path = 'payments'): Request
     {
         return $this->mockRouteRequest($name, $path, [], [], [], ['key_id' => self::$testKey]);
     }
 
-    protected function mockPublicRouteWhenKeyIsOfInvalidLen(
+    protected function mockPublicRouteWithInvalidKeyLength(
         string $name = 'invoice_get_status',
         string $path = 'invoices/inv_1000000invoice/status'): Request
     {
@@ -89,14 +89,14 @@ trait HasRequestCases
         return $this->mockRouteRequest($name, $path, [], [self::$testKey, self::$testSecret]);
     }
 
-    protected function mockPrivateRouteWhenLiveMode(
+    protected function mockPrivateRouteWithLiveMode(
         string $name = 'invoice_fetch_multiple',
         string $path = 'invoices'): Request
     {
         return $this->mockRouteRequest($name, $path, [], [self::$liveKey, self::$liveSecret]);
     }
 
-    protected function mockPrivateRouteWhenInvalidKey(
+    protected function mockPrivateRouteWithInvalidKey(
         string $name = 'invoice_fetch_multiple',
         string $path = 'invoices'): Request
     {
@@ -131,7 +131,7 @@ trait HasRequestCases
         return $this->mockRouteRequest($name, $path, [], [self::$testMidKey, $secret], [], [], $server);
     }
 
-    protected function mockPrivilegeRouteWhenInternalAppAuth(
+    protected function mockPrivilegeRouteWithInternalAppAuth(
         string $name = 'invoice_expire_bulk',
         string $path = 'invoices/expire'): Request
     {
@@ -139,7 +139,7 @@ trait HasRequestCases
         return $this->mockRouteRequest($name, $path, [], ['rzp_test', $secret]);
     }
 
-    protected function mockPrivilegeRouteWhenAdminAuth(
+    protected function mockPrivilegeRouteWithAdminAuth(
         string $name = 'dummy_route',
         string $path = 'dummy/route'): Request
     {

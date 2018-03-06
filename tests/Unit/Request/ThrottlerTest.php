@@ -44,7 +44,7 @@ class ThrottlerTest extends TestCase
     {
         $this->expectException(BadRequestException::class);
 
-        $requestMock = $this->invokeRequestCase('privateRouteWhenInvalidKey');
+        $requestMock = $this->invokeRequestCase('privateRouteWithInvalidKey');
 
         (new Throttler)->throttle($requestMock);
     }

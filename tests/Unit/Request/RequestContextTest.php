@@ -20,7 +20,7 @@ class RequestContextTest extends TestCase
     {
         $this->expectException(BadRequestException::class);
 
-        $requestMock = $this->invokeRequestCase('publicRouteWhenKeyIsOfInvalidLen');
+        $requestMock = $this->invokeRequestCase('publicRouteWithInvalidKeyLength');
 
         $context = new Helpers\RequestContext;
         $context->initRequestContextVars($requestMock);
