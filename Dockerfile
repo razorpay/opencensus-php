@@ -6,7 +6,7 @@ ARG GIT_TOKEN
 
 COPY . /app/
 
-RUN apk add --update lsof nodejs && \
+RUN apk add --update lsof nodejs-current nodejs-npm && \
     chown -R nginx.nginx /app
 
 COPY ./dockerconf/entrypoint.sh /entrypoint.sh
@@ -20,7 +20,7 @@ RUN chown -R nginx.nginx /app && \
     cd web && npm install && cd .. && \
     npm run build && \
     npm test && \
-    apk del nodejs
+    apk del nodejs-current nodejs-npm
 
 EXPOSE 80
 
