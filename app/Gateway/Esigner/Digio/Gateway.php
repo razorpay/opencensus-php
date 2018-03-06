@@ -80,7 +80,7 @@ class Gateway extends Base\Gateway
             'redirect_url' => $input['callbackUrl'],
         ];
 
-        $this->domainType = 'redirect';
+        $this->domainType = 'redirect_' . $this->getMode();
 
         $request = $this->getStandardRequestArray([], 'get', null, false);
 
@@ -109,7 +109,7 @@ class Gateway extends Base\Gateway
             'content' => json_encode([
                 'signer_id'     => $mandateId,
                 'identifier'    => $this->getFormattedContact($input['payment']['contact']),
-                'environment'   => Mode::map($this->mode),
+                'environment'   => Mode::map($this->getMode()),
             ]),
             'callback_url'  => $input['callbackUrl'],
         ];
