@@ -1,12 +1,5 @@
 server {
-    listen 80;
-    {% if env == 'echo' %}
-    server_name {{ env }}-dashboard.razorpay.in;
-    {% elif env == 'dev' %}
-    server_name dashboard.razorpay.dev;
-    {% else %}
-    server_name dashboard.razorpay.com dashboard-hdfc.razorpay.in;
-{% endif %}
+    listen 80 default_server;
 
     root "/app/public";
 
