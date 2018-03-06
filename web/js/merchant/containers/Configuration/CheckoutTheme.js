@@ -34,14 +34,14 @@ export default class CheckoutTheme extends Component {
   onSave = e => {
     this.analytics();
     this.props.handleSubmit(this.props.onSave)(e);
-  }
+  };
 
   analytics = () => {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Settings',
-      eventAction: 'Change - Checkout Theme'
+      eventAction: 'Change - Checkout Theme',
     });
-  }
+  };
 
   render() {
     return (
@@ -66,6 +66,14 @@ export default class CheckoutTheme extends Component {
                   name="brand_color"
                   component="input"
                   class="form-control"
+                />
+              </div>
+              <div class="col-md-3 col-sm-6">
+                <AsyncButton
+                  class="btn btn-primary"
+                  text="Save Changes"
+                  pendingText="Saving..."
+                  onClick={this.onSave}
                 />
               </div>
               <div class="col-md-12 help-block">
@@ -112,17 +120,6 @@ export default class CheckoutTheme extends Component {
                   </small>
                 </div>
               </div>
-            </div>
-
-            <hr />
-
-            <div class="btn-toolbar">
-              <AsyncButton
-                class="btn btn-default pull-right"
-                text="Save Changes"
-                pendingText="Saving..."
-                onClick={this.onSave}
-              />
             </div>
           </form>
         </div>

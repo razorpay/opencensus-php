@@ -62,6 +62,16 @@ export default class TerminalForm extends Component {
   handleCreate = body => {
     let file;
 
+    if (
+      body['gateway_terminal_password'] &&
+      body['gateway_terminal_password_confirmation'] !==
+        body['gateway_terminal_password']
+    ) {
+      notifyError('Password and confirmation password entered do not match');
+    } else {
+      delete body['gateway_terminal_password_confirmation'];
+    }
+
     for (let key in body.type) {
       if (body.type[key] == '0') {
         delete body.type[key];

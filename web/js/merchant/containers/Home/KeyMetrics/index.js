@@ -39,6 +39,7 @@ import {
   trackBreakdownChange,
   trackSavedCardsHidden
 } from './ga';
+import { trackError } from 'merchant/containers/Home/ga';
 import Panel from './Panel';
 
 const csvDateFormat = 'DD-MM-YYYY';
@@ -380,9 +381,14 @@ class KeyMetricsContainer extends Component {
         }
 
         if (data.error) {
+
+          trackError(`Error while fetching data for Keymetrics - ${
+                      selectedTab}`);
+
           this.props.showNotification({
             type: 'error',
             message: data.error,
+            hidePrevious: true
           });
         }
 
@@ -521,9 +527,13 @@ class KeyMetricsContainer extends Component {
 
           return;
         } else {
+
+          trackError(`Error while fetching prev data for all tabs`);
+
           this.props.showNotification({
             type: 'error',
             message: data.error,
+            hidePrevious: true
           });
 
           tabsOrder.forEach(tabName => {

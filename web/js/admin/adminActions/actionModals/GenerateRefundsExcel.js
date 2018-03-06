@@ -25,6 +25,7 @@ const options = {
     Indusind: 'INDB',
     RBL: 'RATN',
     PNB: 'PUNB',
+    BOB: 'BARB_R',
   },
 };
 
@@ -44,11 +45,11 @@ export default function GenerateRefundsExcel() {
       <ToField allowToday={true} />
       <br />
       <SelectField label="Bank" name="bank">
-        {Object.keys(options.bank).map((opt, idx) => (
+        {Object.keys(options.bank).map((opt, idx) =>
           <option key={idx} value={options.bank[opt]}>
             {opt}
           </option>
-        ))}
+        )}
       </SelectField>
       <SelectMode />
       <CheckField label="Send Email to self" name="email_self" />

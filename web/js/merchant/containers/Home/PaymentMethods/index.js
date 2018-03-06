@@ -17,7 +17,11 @@ import GenericPanel, {
   PanelFooter,
 } from 'merchant/components/Home/GenericPanel';
 import { API_ERROR, API_INVALID_RESP } from 'merchant/components/Home/data';
-import { trackGoToLinks, trackNoData } from 'merchant/containers/Home/ga';
+import {
+  trackGoToLinks,
+  trackNoData,
+  trackError
+} from 'merchant/containers/Home/ga';
 
 import { trackBreadcrumbClick } from './ga';
 import { getQuery, sampleData } from './data';
@@ -122,10 +126,14 @@ class PaymentMethods extends Component {
         this.state.isLoading = false;
 
         if (data.error) {
+
+          trackError(`Error while fetching data for Payment Methods`);
+
           this.state.error = data.error;
           this.props.showNotification({
             type: 'error',
             message: data.error,
+            hidePrevious: true
           });
         }
 
