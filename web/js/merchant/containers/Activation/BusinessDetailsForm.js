@@ -375,7 +375,7 @@ export default class BusinessDetailsForm extends Component {
                         >
                           Cancellation/Refund Policies
                         </a>
-                      </strong>. (Refer to the links for sample pages)
+                      </strong>. (Refer these links for sample pages)
                     </span>
                   </small>
                 </div>
