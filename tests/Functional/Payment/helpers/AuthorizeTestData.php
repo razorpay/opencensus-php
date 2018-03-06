@@ -23,6 +23,25 @@ return [
         'jsonp' => true
     ],
 
+    'testMagickeySet' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/payments/create/jsonp',
+            'content' => [
+                'card' => [
+                    'number' => '5567630000002004'
+                ],
+                'callback' => 'abcdefghijkl',
+                '_' => '',
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ],
+        'jsonp' => true
+    ],
+
     'testInvalidEmailInPayment' => [
         'request' => [
             'content' => [

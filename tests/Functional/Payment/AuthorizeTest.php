@@ -42,6 +42,13 @@ class AuthorizeTest extends TestCase
         $response->assertSessionHas('foo', 'bar');
     }
 
+    public function testMagickeySet()
+    {
+        $content = $this->startTest();
+
+        $this->assertTrue($content['magic_key']);
+    }
+
     public function testInvalidEmailInPayment()
     {
         $this->startTest();

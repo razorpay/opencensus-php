@@ -43,6 +43,7 @@ class Server extends Base\Mock\Server
         '4012001037411127',
         '5200000000000064',
         '6080757792005576',
+        '5567630000002004',
     );
 
     protected $notEnrolledDebitCardNumbers = array(

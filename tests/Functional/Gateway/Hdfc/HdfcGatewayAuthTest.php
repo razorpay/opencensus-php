@@ -236,6 +236,7 @@ class HdfcGatewayAuthTest extends TestCase
             'gateway',
             'amount',
             'image',
+            'magic_key',
             'http_status_code');
 
         $dataFields = array(

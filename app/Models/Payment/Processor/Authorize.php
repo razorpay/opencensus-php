@@ -2362,7 +2362,7 @@ trait Authorize
 
         $data['image'] = $payment->merchant->getFullLogoUrlWithSize(Merchant\Logo::MEDIUM_SIZE);
 
-        $data['magickey'] = $this->isMagicEnabled();
+        $data['magic_key'] = $this->isMagicEnabled();
 
         $segmentData = $data;
 
@@ -4107,6 +4107,7 @@ trait Authorize
 
         return ($MagicEnabledGlobally and
                 $magicEnabledForMerchant and
+                (empty($iinEntity) === false) and
                 $iinEntity->isMagicEnabled()
         );
     }
