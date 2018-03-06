@@ -2,7 +2,8 @@ FROM razorpay/pithos:rzp-alpine3.6-php7.0-nginx
 
 COPY . /app/
 
-RUN apk add --update lsof nodejs-current nodejs-npm && \
+RUN apk add --update lsof && \
+    apk add --virtual nodejs-deps nodejs-current nodejs-npm && \
     chown -R nginx.nginx /app
 
 COPY ./dockerconf/entrypoint.sh /entrypoint.sh
@@ -14,7 +15,7 @@ RUN npm install && \
     npm run build && \
 #   Skipping tests till deploy to QA
 #   npm test && \
-    apk del nodejs-current nodejs-npm
+    apk del nodejs-deps
 
 EXPOSE 80
 
