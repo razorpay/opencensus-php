@@ -114,9 +114,9 @@ pipeline:
       - client_key_qa
     user: drone
     cluster: qa
+    auth_mode: client-cert
     deployment: api
     repo: razorpay/api
-    container: api
     namespace: func
     tag:
       - ${DRONE_REPO_BRANCH}-${DRONE_COMMIT_SHA}
@@ -126,7 +126,7 @@ pipeline:
         exclude: [push]
         include: [deployment]
   deploy-stage-echo:
-    image: razorpay/drone-kubernetes:multi
+    image: razorpay/drone-kubernetes
     pull: true
     secrets:
       - docker_username
