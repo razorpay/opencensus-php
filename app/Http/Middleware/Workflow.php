@@ -68,9 +68,11 @@ class Workflow
         // - It is mocked
         // - The maker isn't an Admin or Merchant
         // - Auth is not apt for workflows
+        // - No org ID found in the incoming request
         if (($this->config->get('heimdall.workflows.mock') === true) or
             (empty($maker) === true) or
-            ($this->isAptAuthForWorkflows() === false))
+            ($this->isAptAuthForWorkflows() === false) or
+            (empty($this->ba->getOrgId()) === true))
         {
             return $next($request);
         }
