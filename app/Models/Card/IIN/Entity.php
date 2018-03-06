@@ -144,6 +144,11 @@ class Entity extends Base\PublicEntity
         return $this->getNetworkCodeAttribute();
     }
 
+    public function isMagicEnabled()
+    {
+        return Flow::isApplicable(Flow::MAGIC, $this->getFlows());
+    }
+
     protected function getNetworkCodeAttribute()
     {
         return Card\Network::getCode($this->getNetwork());

@@ -8,11 +8,13 @@ class Flow
     const DEBIT_PIN = 2;
     const OTP       = 4;
     const IFRAME    = 8;
+    const MAGIC    = 16;
 
     protected static $flows = [
         '3ds'       => self::_3DS,
         'debit_pin' => self::DEBIT_PIN,
         'otp'       => self::OTP,
+        'magic'     => self::MAGIC,
     ];
 
     /**
