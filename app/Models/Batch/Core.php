@@ -12,7 +12,7 @@ use RZP\Jobs\Batch as BatchJob;
 
 class Core extends Base\Core
 {
-    public function create(Merchant\Entity $merchant, array $input): Entity
+    public function create(array $input, Merchant\Entity $merchant): Entity
     {
         $this->trace->info(TraceCode::BATCH_CREATE_REQUEST, $input);
 
@@ -31,7 +31,7 @@ class Core extends Base\Core
         return $batch;
     }
 
-    public function storeAndValidateInputFile(Merchant\Entity $merchant, array $input): array
+    public function storeAndValidateInputFile(array $input, Merchant\Entity $merchant): array
     {
         $this->trace->info(TraceCode::BATCH_FILE_VALIDATE_REQUEST, $input);
 

@@ -177,12 +177,12 @@ class PaymentLinkTest extends TestCase
 
         $inputFile = $files['items'][1];
 
-        $this->assertEquals(null, $inputFile['entity_type']);
-        $this->assertEquals(null, $inputFile['entity_id']);
+        $this->assertNull($inputFile['entity_type']);
+        $this->assertNull($inputFile['entity_id']);
         $this->assertEquals('batch_input', $inputFile['type']);
 
-        $this->assertEquals(null, $validatedFile['entity_type']);
-        $this->assertEquals(null, $validatedFile['entity_id']);
+        $this->assertNull($validatedFile['entity_type']);
+        $this->assertNull($validatedFile['entity_id']);
         $this->assertEquals('batch_validated', $validatedFile['type']);
 
         $this->assertEquals($validatedFile['id'], $response['file_id']);
@@ -230,14 +230,14 @@ class PaymentLinkTest extends TestCase
         $validatedFile = $files['items'][1];
         $this->assertEquals('batch_validated', $validatedFile['type']);
         $this->assertEquals($response['id'], $validatedFile['entity_type'] . '_' . $validatedFile['entity_id']);
-        $this->assertEquals(true, (strpos($validatedFile['location'], 'batch/validated') !== false));
+        $this->assertTrue((strpos($validatedFile['location'], 'batch/validated') !== false));
 
         // Check input file
         $inputFile = $files['items'][2];
         $this->assertEquals('batch_input', $inputFile['type']);
-        $this->assertEquals(null, $inputFile['entity_type']);
-        $this->assertEquals(null, $inputFile['entity_id']);
-        $this->assertEquals(true, (strpos($inputFile['location'], 'batch/upload') !== false));
+        $this->assertNull($inputFile['entity_type']);
+        $this->assertNull($inputFile['entity_id']);
+        $this->assertTrue((strpos($inputFile['location'], 'batch/upload') !== false));
     }
 
     protected function getDefaultPaymentLinkFileEntries()
