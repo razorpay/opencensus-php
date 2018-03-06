@@ -1707,6 +1707,19 @@ final class Route
         'shield_rules_evaluate'                  => Permission::EVALUATE_SHIELD_RULES,
         'user_fetch_admin'                       => '*',
         'batch_create'                           => '*',
+        'reporting_config_get'                   => '*',
+        'reporting_config_list'                  => '*',
+        'reporting_config_create'                => '*',
+        'reporting_config_edit'                  => '*',
+        'reporting_config_delete'                => '*',
+        'reporting_log_get'                      => '*',
+        'reporting_log_list'                     => '*',
+        'reporting_log_create'                   => '*',
+        'reporting_schedule_get'                 => '*',
+        'reporting_schedule_list'                => '*',
+        'reporting_schedule_create'              => '*',
+        'reporting_schedule_delete'              => '*',
+        'ufh_get_file_signed_url'                => '*',
     ];
 
     public static $direct = [
