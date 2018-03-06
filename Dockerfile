@@ -1,4 +1,4 @@
-FROM razorpay/pithos:rzp-php7.0-nginx
+FROM razorpay/pithos:rzp-alpine3.6-php7.0-nginx
 
 ARG GIT_COMMIT_HASH
 ENV GIT_COMMIT_HASH=${GIT_COMMIT_HASH}
@@ -6,9 +6,8 @@ ARG GIT_TOKEN
 
 COPY . /app/
 
-RUN apk add --update lsof nodejs
-
-RUN chown -R nginx.nginx /app
+RUN apk add --update lsof nodejs && \
+    chown -R nginx.nginx /app
 
 COPY ./dockerconf/entrypoint.sh /entrypoint.sh
 
@@ -20,6 +19,7 @@ RUN chown -R nginx.nginx /app && \
     npm install && \
     cd web && npm install && cd .. && \
     npm run build && \
+    npm test && \
     apk del nodejs
 
 EXPOSE 80

@@ -1,10 +1,9 @@
-FROM razorpay/pithos:rzp-php7.0-nginx
-
-RUN apk add --update lsof nodejs
+FROM razorpay/pithos:rzp-alpine3.6-php7.0-nginx
 
 COPY . /app/
 
-RUN chown -R nginx.nginx /app
+RUN apk add --update lsof nodejs-current nodejs-npm && \
+    chown -R nginx.nginx /app
 
 COPY ./dockerconf/entrypoint.sh /entrypoint.sh
 
@@ -13,7 +12,8 @@ WORKDIR /app
 RUN npm install && \
     cd web && npm install && cd .. && \
     npm run build && \
-    apk del nodejs
+    npm test && \
+    apk del nodejs-current nodejs-npm
 
 EXPOSE 80
 
