@@ -21,9 +21,12 @@ class Calculator extends Base\Core
             return $amount;
         }
 
-        $rawDiscount = $this->getRawDiscount($amount);
+        $discount = $this->getRawDiscount($amount);
 
-        $discount = min($this->offer->getMaxCashback(), $rawDiscountedAmount);
+        if ($this->offer->getMaxCashback() !== null)
+        {
+            $discount = min($this->offer->getMaxCashback(), $discount);
+        }
 
         return max(0, ($amount - $discount));
     }
@@ -38,11 +41,11 @@ class Calculator extends Base\Core
         }
         else if ($this->offer->getPercentRate() !== null)
         {
-            $percentDiscount = $this->offer->getPercentRate()/100;
+            $percentDiscount = $this->offer->getPercentRate()/10000;
 
             $discount = $percentDiscount * $amount;
         }
 
-        return $discount;
+        return intval($discount);
     }
 }

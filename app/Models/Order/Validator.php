@@ -21,7 +21,7 @@ class Validator extends Base\Validator
         Entity::METHOD          => 'sometimes|in:netbanking,emandate',
         Entity::BANK            => 'sometimes|filled',
         Entity::ACCOUNT_NUMBER  => 'sometimes|filled|string|max:50|min:5',
-        Entity::OFFER           => 'sometimes|boolean',
+        Entity::DISCOUNT        => 'sometimes|boolean',
         Entity::OFFER_ID        => 'sometimes|string|size:20',
     );
 
@@ -31,7 +31,7 @@ class Validator extends Base\Validator
         Entity::BANK,
         'method_fee_bearer',
         Entity::CURRENCY,
-        Entity::OFFER,
+        'offer',
     ];
 
     protected function validateAmount($input)
@@ -387,16 +387,16 @@ class Validator extends Base\Validator
 
     protected function validateOffer($input)
     {
-        if (isset($input[Entity::OFFER]) === false)
+        if (isset($input[Entity::DISCOUNT]) === false)
         {
             return;
         }
 
-        if (($input[Entity::OFFER] === true) and
+        if (($input[Entity::DISCOUNT] === true) and
             (isset($input[Entity::OFFER_ID]) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
-                    'Offer without offer_id is currently not supported');
+                    'Discount without offer_id is currently not supported');
         }
     }
 }

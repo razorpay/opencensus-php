@@ -1531,6 +1531,117 @@ return [
         ],
     ],
 
+    'testGetCheckoutPreferencesWithOrderRelatedOffer' => [
+        'request' => [
+            'url'    => null,
+            'method' => 'get',
+        ],
+        'tests' => [
+            [
+                'offer' => [
+                    'payment_method'      => 'card',
+                    'error_message'       => 'Payment method used is not eligible for offer. Please try with a different payment method.',
+                    'display_text'        => 'Some display text',
+                    'percent_rate'        => 1000,
+                    'terms'               => 'Some terms',
+                ],
+                'response' => [
+                    'content' => [
+                        'methods' => [
+                            'entity' => 'methods',
+                            'card'   => true
+                        ],
+                        'offers' => [
+                            [
+                                'name'            => 'Test Offer',
+                                'payment_method'  => 'card',
+                                'original_amount' => 100000,
+                                'amount'          => 90000,
+                            ]
+                        ],
+                    ]
+                ]
+            ],
+            [
+                'offer' => [
+                    'payment_method'      => 'card',
+                    'error_message'       => 'Payment method used is not eligible for offer. Please try with a different payment method.',
+                    'display_text'        => 'Some display text',
+                    'flat_cashback'       => 100,
+                    'terms'               => 'Some terms',
+                ],
+                'response' => [
+                    'content' => [
+                        'methods' => [
+                            'entity' => 'methods',
+                            'card'   => true
+                        ],
+                        'offers' => [
+                            [
+                                'name'            => 'Test Offer',
+                                'payment_method'  => 'card',
+                                'original_amount' => 100000,
+                                'amount'          => 99900,
+                            ]
+                        ],
+                    ]
+                ]
+            ],
+            [
+                'offer' => [
+                    'payment_method'      => 'card',
+                    'error_message'       => 'Payment method used is not eligible for offer. Please try with a different payment method.',
+                    'display_text'        => 'Some display text',
+                    'percent_rate'        => 5000,
+                    'max_cashback'        => 2000,
+                    'terms'               => 'Some terms',
+                ],
+                'response' => [
+                    'content' => [
+                        'methods' => [
+                            'entity' => 'methods',
+                            'card'   => true
+                        ],
+                        'offers' => [
+                            [
+                                'name'            => 'Test Offer',
+                                'payment_method'  => 'card',
+                                'original_amount' => 100000,
+                                'amount'          => 98000,
+                            ]
+                        ],
+                    ]
+                ]
+            ],
+            [
+                'offer' => [
+                    'payment_method'      => 'card',
+                    'error_message'       => 'Payment method used is not eligible for offer. Please try with a different payment method.',
+                    'display_text'        => 'Some display text',
+                    'percent_rate'        => 5000,
+                    'min_amount'          => 200000,
+                    'terms'               => 'Some terms',
+                ],
+                'response' => [
+                    'content' => [
+                        'methods' => [
+                            'entity' => 'methods',
+                            'card'   => true
+                        ],
+                        'offers' => [
+                            [
+                                'name'            => 'Test Offer',
+                                'payment_method'  => 'card',
+                                'original_amount' => 100000,
+                                'amount'          => 100000,
+                            ]
+                        ],
+                    ]
+                ]
+            ],
+        ],
+    ],
+
     'testGetCheckoutPreferencesWithAllCardGeatewayDowntime' => [
         'request' => [
             'url' => '/preferences',
