@@ -7,6 +7,7 @@ if [[ "${APP_MODE}" == "dev" ]]
 then
   cp environment/.env.docker environment/.env.dev
 else
+  ALOHOMORA_BIN=$(which alohomora)
   $ALOHOMORA_BIN cast --region ap-south-1 --env $APP_MODE --app dashboard "environment/.env.vault.j2" "environment/env.php.j2"
 fi
 

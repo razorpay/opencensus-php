@@ -29,7 +29,7 @@ spec:
         - name: APP_MODE
           valueFrom:
             configMapKeyRef:
-              name: echo
+              name: dashboard
               key: APP_MODE
         name: echo
         image: razorpay/dashboard:latest
