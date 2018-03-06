@@ -40,10 +40,8 @@ class Server extends Base\Mock\Server
 
     public function sign($input)
     {
-        $data = json_decode($input['json'], true);
-
         $request = [
-            'url' => $data['callback_url'],
+            'url' => $input['redirect_url'],
             'method' => 'POST',
             'content' => [
                 'status' => 'success',

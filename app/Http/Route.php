@@ -299,7 +299,7 @@ final class Route
         'mock_mobikwik_payment'                   => ['post',     'gateway/mockmobikwik/payment',                   'MockGatewayController@postMobikwikPayment'                         ],
         'mock_billdesk_payment'                   => ['post',     'gateway/mockbilldesk/payment',                   'MockGatewayController@postBilldeskPayment'                         ],
         'mock_ebs_payment'                        => ['post',     'gateway/mockebs/payment',                        'MockGatewayController@postEbsPayment'                              ],
-        'mock_esigner_payment'                    => ['post',     'gateway/mock/esigner/{signer}',                  'MockGatewayController@postEsignerPayment'                              ],
+        'mock_esigner_payment'                    => ['get',      'gateway/mock/esigner/{signer}',                  'MockGatewayController@postEsignerPayment'                          ],
         'mock_sharp_payment_post'                 => ['post',     'gateway/mocksharp/payment',                      'MockGatewayController@getSharpPayment'                             ],
         'mock_sharp_payment_get'                  => ['get',      'gateway/mocksharp/payment',                      'MockGatewayController@getSharpPayment'                             ],
         'mock_amex_payment'                       => ['post',     'gateway/mockamex/payment',                       'MockGatewayController@postAmexPayment'                             ],
@@ -2342,13 +2342,13 @@ final class Route
     {
         $key = $this->ba->getPublicKey();
 
-        list($schema, $host, $port) = $this->getSchemaHostAndPort();
+        list($schema, $host) = $this->getSchemaHostAndPort();
 
         $parameters['key_id'] = $key;
 
         $urlSegment = \URL::route($routeName, $parameters, false);
 
-        return $schema . $host . ($port ? ':' . $port : '') . $urlSegment;
+        return $schema . $host . $urlSegment;
     }
 
     public function getUrlWithPublicCallbackAuth(array $parameters = [], $key = '', $route = 'payment_callback_with_key_post')
