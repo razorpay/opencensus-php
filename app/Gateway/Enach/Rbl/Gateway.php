@@ -53,7 +53,7 @@ class Gateway extends Base\Gateway
         return $recurringData;
     }
 
-    protected function getFileStoreBlock(array $input, array $response)
+    protected function createFile(array $input, array $response)
     {
         $fileName = 'rbl-enach/outgoing/' . $this->getFormattedFileName($input);
 
@@ -112,12 +112,22 @@ class Gateway extends Base\Gateway
     protected function getFormattedFileName(array $input)
     {
         $replacePair = [
-            '{$loginId}' => $input['terminal']->getTerminalId(),
+            '{$loginId}' => $this->getGatewayTerminalId(),
             '{$datestr}' => $this->getNextWorkingDate($input)->format('dmY'),
             '{$count}'   => str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT)
         ];
 
         return strtr(static::FILE_NAME_FORMAT, $replacePair);
+    }
+
+    protected function getGatewayTerminalId()
+    {
+        if ($this->mode === BaseMode::LIVE)
+        {
+            return $this->input['terminal']['gateway_terminal_id'];
+        }
+
+        return $this->config['test_terminal_id'];
     }
 
     public function refund(array $input)
