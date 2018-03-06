@@ -151,7 +151,7 @@ export default function(state = initialState, action) {
         action.fileName
       );
       updatedSteps = state.steps;
-      let maxUploads = action.step === 5 ? 4 : 2;
+      let maxUploads = action.step === 4 ? 4 : 2;
 
       if (Object.keys(uploadedFiles).length === maxUploads) {
         updatedSteps = set(state.steps, action.step, 'success');
