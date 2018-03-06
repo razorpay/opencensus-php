@@ -97,6 +97,8 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/submerchants', 'MerchantController@postRegisterSubMerchant')->name('submerchant_register');
         // Send Feedback Mail to support@razorpay.com
         Route::post('/sendfeedback', 'MerchantController@sendFeedback')->name('send_feedback');
+
+        Route::get('/reports/{log_id}', 'MerchantController@downloadReport');
     });
 
     Route::group(['middleware'  =>  ['admin', 'admin_access']], function()
