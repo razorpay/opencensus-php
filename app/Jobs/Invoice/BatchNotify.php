@@ -7,6 +7,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 
 use RZP\Models\Batch;
 use RZP\Trace\TraceCode;
+use RZP\Jobs\DispatchRouter;
 use RZP\Jobs\Job as BaseJob;
 use RZP\Models\Invoice as InvoiceModel;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
@@ -104,12 +105,12 @@ class BatchNotify extends BaseJob implements ShouldQueue
         // so Notifier picks them.
         if ($smsNotify === true)
         {
-            $invoice->setSmsStatus(InvoiceModel\NotifyStatus::PENDING);
+            $invoice->setSmsStatus(InvoiceModel\NotifyStatus::SENT);
         }
 
         if ($emailNotify === true)
         {
-            $invoice->setEmailStatus(InvoiceModel\NotifyStatus::PENDING);
+            $invoice->setEmailStatus(InvoiceModel\NotifyStatus::SENT);
         }
 
         try

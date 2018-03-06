@@ -1410,8 +1410,6 @@ class InvoiceTest extends TestCase
 
     public function testInvoiceSmsNotifyByBatch()
     {
-        Queue::fake();
-
         $this->testCreateDraftInvoiceWithSomeData();
 
         $invoice = $this->getLastEntity('invoice');
@@ -1430,18 +1428,10 @@ class InvoiceTest extends TestCase
 
         $this->startTest();
 
-        Queue::assertPushed(
-            BatchNotify::class,
-            function($job) use ($invoice)
-            {
-                $this->assertEquals(Mode::TEST, $job->getMode());
-                $this->assertEquals('00000000000001', $job->getBatchId());
-                $this->assertEquals([
-                        'sms_notify'    => 1,
-                        'email_notify'  => 0,
-                    ], $job->getInput());
-                return true;
-            });
+        $invoice = $this->getLastEntity('invoice',true);
+
+        $this->assertEquals('sent', $invoice['email_status']);
+        $this->assertEquals('sent', $invoice['sms_status']);
     }
 
     // -------------------------------------------------------------------------

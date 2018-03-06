@@ -8,7 +8,7 @@ class Service extends Base\Service
 {
     public function createBatch(array $input): array
     {
-        $batch = (new Core)->create($this->merchant, $input);
+        $batch = (new Core)->create($input, $this->merchant);
 
         return $batch->toArrayPublic();
     }
@@ -76,7 +76,7 @@ class Service extends Base\Service
 
     public function validateFile(array $input): array
     {
-        $response = (new Core)->storeAndValidateInputFile($this->merchant, $input);
+        $response = (new Core)->storeAndValidateInputFile($input, $this->merchant);
 
         return $response;
     }
