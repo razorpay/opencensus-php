@@ -13,28 +13,28 @@ pipeline:
         exclude: [deployment]
         include: [push]
   build-notify:
-  image: plugins/slack
-  secrets: [slack_webhook]
-  channel: tech_distelli
-  username: drone
-  icon_url: https://avatars2.githubusercontent.com/u/2181346?s=200&v=4
-  template: >
-    {{#success build.status}}
-      Build succeeded.
-    {{else}}
-      Build failed.
-    {{/success}}
-      Build No:{{build.number}}
-      Branch: {{build.branch}}
-      Commit: {{build.commit}}
-      Author: {{build.author}}
-      Started at: {{build.started}}
-      Time taken: {{since build.started}}
-      Link: {{build.link}}
-  when:
-    event:
-      exclude: [deployment]
-      include: [push, pull_request, tag]
+    image: plugins/slack
+    secrets: [slack_webhook]
+    channel: tech_distelli
+    username: drone
+    icon_url: https://avatars2.githubusercontent.com/u/2181346?s=200&v=4
+    template: >
+      {{#success build.status}}
+        Build succeeded.
+      {{else}}
+        Build failed.
+      {{/success}}
+        Build No:{{build.number}}
+        Branch: {{build.branch}}
+        Commit: {{build.commit}}
+        Author: {{build.author}}
+        Started at: {{build.started}}
+        Time taken: {{since build.started}}
+        Link: {{build.link}}
+    when:
+      event:
+        exclude: [deployment]
+        include: [push, pull_request, tag]
   build-falcon-notify:
     image: plugins/webhook
     urls:
