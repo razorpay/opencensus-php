@@ -61,17 +61,17 @@ export default class ErrorBoundary extends Component {
             </div>
           )}
           {!hasRaven && (
-			<div className="js-error-details">
-			  <banner className="warning">
-			    <p>
-			  	<b>An Error Occured</b>
-			    </p>
-			    <pre>{this.state.error.toString()}</pre>
-			    <pre>
+            <div className="js-error-details">
+              <banner className="warning">
+                <p>
+                  <b>An Error Occured</b>
+                </p>
+                <pre>{this.state.error.toString()}</pre>
+                <pre>
                   {this.state.info.componentStack.replace(/^\n/gm, '')}
                 </pre>
-			  </banner>
-			</div>
+              </banner>
+            </div>
           )}
         </div>
       );
