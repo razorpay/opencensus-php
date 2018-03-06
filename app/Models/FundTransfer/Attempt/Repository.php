@@ -3,8 +3,8 @@
 namespace RZP\Models\FundTransfer\Attempt;
 
 use RZP\Models\Base;
-use RZP\Models\Payout;
-use RZP\Constants;
+use RZP\Constants\Table;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 
 class Repository extends Base\Repository
 {
@@ -112,5 +112,23 @@ class Repository extends Base\Repository
         }
 
         return $query->get();
+    }
+
+    public function getSettlementsWithNoUtr(
+        string $channel,
+        int $startTime,
+        int $endTime,
+        int $limit = 2000,
+        int $offset = 0)
+    {
+        return $this->newQuery()
+                    ->whereNull(Entity::UTR)
+                    ->where(Entity::CHANNEL, $channel)
+                    ->where(Entity::STATUS, Status::INITIATED)
+                    ->whereBetween(Entity::INITIATE_AT, [$startTime, $endTime])
+                    ->with(['merchant'])
+                    ->take($limit)
+                    ->skip($offset)
+                    ->get();
     }
 }
