@@ -7,9 +7,11 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Models\Payment;
+use RZP\Constants\Mode;
 use phpseclib\Crypt\AES;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Models\Customer\Token;
 
 class Gateway extends Base\Gateway
 {
@@ -47,7 +49,7 @@ class Gateway extends Base\Gateway
     protected function getRecurringData()
     {
         $recurringData = [
-            Token\Entity::RECURRING_STATUS         => Token\RecurringStatus::INITIATED,
+            Token\Entity::RECURRING_STATUS => Token\RecurringStatus::INITIATED,
         ];
 
         return $recurringData;
@@ -122,7 +124,7 @@ class Gateway extends Base\Gateway
 
     protected function getGatewayTerminalId()
     {
-        if ($this->mode === BaseMode::LIVE)
+        if ($this->mode === Mode::LIVE)
         {
             return $this->input['terminal']['gateway_terminal_id'];
         }
