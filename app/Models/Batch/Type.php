@@ -3,9 +3,6 @@
 namespace RZP\Models\Batch;
 
 use RZP\Exception;
-use RZP\Models\Base;
-use RZP\Models\Invoice;
-use RZP\Exception\BadRequestException;
 
 class Type
 {
@@ -92,10 +89,5 @@ class Type
     public static function isQueueGroup(string $type): bool
     {
         return in_array($type, self::$queueGroup, true);
-    }
-
-    public static function isStatsSupportedForType(string $type): bool
-    {
-        return in_array($type, self::$statsSupportedGroup, true);
     }
 }

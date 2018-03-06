@@ -796,7 +796,7 @@ class Core extends Base\Core
 
     public function fetchStatsOfBatch(Batch\Entity $batch): array
     {
-        $response = [Entity::ENTITIES_PROCESSED => $batch->getTotalCount()];
+        $response = [Entity::TOTAL_COUNT => $batch->getTotalCount()];
 
         $invoices = $this->repo->invoice->getInvoiceForBatch($batch);
 
@@ -810,9 +810,9 @@ class Core extends Base\Core
         });
 
         $response += [
-                    Entity::PAYMENT_LINKS_SENT      => $stats[Status::ISSUED] ?? 0,
-                    Entity::PAYMENT_LINKS_PAID      => $stats[Status::PAID] ?? 0,
-                    Entity::PAYMENT_LINKS_EXPIRED   => $stats[Status::EXPIRED] ?? 0,
+                    Entity::ISSUED_COUNT      => $stats[Status::ISSUED] ?? 0,
+                    Entity::PAID_COUNT      => $stats[Status::PAID] ?? 0,
+                    Entity::EXPIRED_COUNT   => $stats[Status::EXPIRED] ?? 0,
         ];
 
         return $response;

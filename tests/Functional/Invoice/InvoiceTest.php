@@ -2304,10 +2304,10 @@ class InvoiceTest extends TestCase
 
         $attributes = $this->testData[__FUNCTION__ . 'InputData']['attributes'];
 
-        $this->createInvoice($attributes[0]['invoiceAttributes'], $attributes[0]['orderAttributes']);
-        $this->createInvoice($attributes[1]['invoiceAttributes'], $attributes[1]['orderAttributes']);
-        $this->createInvoice($attributes[2]['invoiceAttributes'], $attributes[2]['orderAttributes']);
-        $this->createInvoice($attributes[3]['invoiceAttributes'], $attributes[3]['orderAttributes']);
+        foreach ($attributes as $attribute)
+        {
+            $this->createInvoice($attribute['invoiceAttributes'], $attribute['orderAttributes']);
+        }
 
         $this->ba->proxyAuth();
 

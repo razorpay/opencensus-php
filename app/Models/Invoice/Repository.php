@@ -2,16 +2,13 @@
 
 namespace RZP\Models\Invoice;
 
-use DB;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Order;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Base\BuilderEx;
 use RZP\Models\Merchant;
-use RZP\Models\Customer;
 use RZP\Models\LineItem;
 use RZP\Error\ErrorCode;
 use RZP\Models\Plan\Subscription;
@@ -383,8 +380,7 @@ class Repository extends Base\Repository
     public function getInvoiceForBatch(Batch\Entity $batch): Base\PublicCollection
     {
         return $this->newQuery()
-                    ->selectRaw(Entity::STATUS . ', '.
-                        'COUNT(*) AS count')
+                    ->selectRaw(Entity::STATUS . ', COUNT(*) AS count')
                     ->where(Entity::BATCH_ID, '=', $batch->getId())
                     ->groupBy(Entity::STATUS)
                     ->get();

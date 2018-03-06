@@ -152,10 +152,10 @@ class Entity extends Base\PublicEntity
     // -------------------------- Stats Keys -------------------------
 
     const STATS                    = 'stats';
-    const ENTITIES_PROCESSED       = 'batch_total';
-    const PAYMENT_LINKS_SENT       = 'invoice_issued';
-    const PAYMENT_LINKS_PAID       = 'invoice_paid';
-    const PAYMENT_LINKS_EXPIRED    = 'invoice_expired';
+    const TOTAL_COUNT              = 'batch_total';
+    const ISSUED_COUNT             = 'invoice_issued';
+    const PAID_COUNT               = 'invoice_paid';
+    const EXPIRED_COUNT            = 'invoice_expired';
 
 
     // ------------------------ Other constants ----------------------

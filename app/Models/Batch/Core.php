@@ -123,8 +123,7 @@ class Core extends Base\Core
                 throw new BadRequestException(
                     BAD_REQUEST_BATCH_STATS_NOT_SUPPORTED_FOR_TYPE,
                     Entity::TYPE,
-                    [Entity::TYPE => $batch->getType()]
-                );
+                    [Entity::TYPE => $batch->getType()]);
         }
     }
 
