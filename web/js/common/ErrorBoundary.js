@@ -38,23 +38,25 @@ export default class ErrorBoundary extends Component {
           {hasRaven && (
             <div className="js-error-container">
               <div className="js-error-content">
-                <div className="js-error-illustration"></div>
-                <p>
-                  We're sorry — something's gone wrong.
-                </p>
-                <p className={`${lastEventId ? "" : "m-0"}`}>
-                  Our team has been notified, but
-                  {' '}
-                  <a className="error-report-link" 
-                     onClick={() => lastEventId && Raven.showReportDialog()}>
-                    click here
-                  </a> to fill out a report.
-                </p>
-                {
-                  !!lastEventId && (
-                    <p> Error Code: <code>{lastEventId}</code></p>
-                  )
-                }
+                <div className="js-error-illustration m-b"></div>
+                <div className="js-error-text">
+                  <p>
+                    We're sorry — something's gone wrong.
+                  </p>
+                  <p>
+                    Our team has been notified, but
+                    {' '}
+                    <a className="error-report-link" 
+                       onClick={() => lastEventId && Raven.showReportDialog()}>
+                      click here
+                    </a> to fill out a report.
+                  </p>
+                  {
+                    !!lastEventId && (
+                      <p> Error Code: <code>{lastEventId}</code></p>
+                    )
+                  }
+                </div>
               </div>
             </div>
           )}
