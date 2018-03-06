@@ -1,4 +1,4 @@
-FROM razorpay/docker:base-nginx-php7-yarn
+FROM razorpay/pithos:rzp-alpine3.6-php7.0-nginx
 
 ARG GIT_COMMIT_HASH
 ENV GIT_COMMIT_HASH=${GIT_COMMIT_HASH}
@@ -6,23 +6,22 @@ ARG GIT_TOKEN
 
 COPY . /app/
 
-RUN chown -R nginx.nginx /app
+RUN apk add --update lsof nodejs-current nodejs-npm && \
+    chown -R nginx.nginx /app
 
 COPY ./dockerconf/entrypoint.sh /entrypoint.sh
 
 WORKDIR /app
 
-RUN apk --update add python py-pip openssl ca-certificates && \
-    apk --update add --virtual build-dependencies python-dev libffi-dev openssl-dev build-base  && \
-    pip install razorpay.alohomora==0.2 && \
-    apk del build-dependencies          && \
-    rm -rf /var/cache/apk/*
-
 RUN chown -R nginx.nginx /app && \
     composer config -g github-oauth.github.com ${GIT_TOKEN} && \
     composer install --no-interaction && \
     npm install && \
-    gulp
+    cd web && npm install && cd .. && \
+    npm run build && \
+#   Skipping tests till deploy to QA
+#   npm test && \
+    apk del nodejs-current nodejs-npm
 
 EXPOSE 80
 

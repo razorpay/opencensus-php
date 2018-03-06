@@ -1,2 +1,4 @@
-.git/*
-.node_modules/*
+.git
+node_modules
+web/node_modules
+web_modules
