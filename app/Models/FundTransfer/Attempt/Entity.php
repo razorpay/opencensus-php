@@ -168,6 +168,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ENTITY_ID);
     }
 
+    public function getSourceId()
+    {
+        return $this->getAttribute(self::SOURCE_ID);
+    }
+
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);
