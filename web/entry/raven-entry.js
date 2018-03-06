@@ -27,7 +27,12 @@
   script.setAttribute("crossorigin", "anonymous");
 
   script.onload = function () {
-    Raven.config(sentryUrl).install();
+    Raven.config(
+      sentryUrl,
+      {
+        environment: 'production'
+      }
+    ).install();
     Raven.setUserContext({
       id: window.rzp_user.current
     });
