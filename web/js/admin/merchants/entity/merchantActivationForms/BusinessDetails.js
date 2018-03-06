@@ -108,6 +108,13 @@ export default class BusinessDetails extends Component {
             </SelectField>
 
             <Field
+              label="Website Address"
+              name="business_website"
+              defaultValue={merchantDetails.business_website}
+              disabled
+            />
+
+            <Field
               label="Payments Accepted for (Also mention B2b or B2C)"
               name="business_paymentdetails"
               defaultValue={merchantDetails.business_paymentdetails}
