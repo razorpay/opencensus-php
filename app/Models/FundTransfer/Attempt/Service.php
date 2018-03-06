@@ -166,4 +166,11 @@ class Service extends Base\Service
 
         return false;
     }
+
+    public function sendNullUtrReport()
+    {
+        $data = (new Report)->sendNullUtrReport();
+
+        return $data;
+    }
 }

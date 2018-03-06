@@ -91,7 +91,6 @@ class AdminAccess
 
     private function validateAdminBelongsToSameOrg($routeName, $admin, $request)
     {
-
         if (in_array($routeName, static::getExcludedRoutes(), true) === true)
         {
             return;

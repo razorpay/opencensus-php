@@ -59,7 +59,8 @@ return [
                     'id' => 'workflow_workflowId1000',
                 ],
                 'state'         => 'open',
-                'admin'         => [],
+                'maker'         => [],
+                'maker_type'    => 'admin',
                 'current_level' => 1
             ]
         ]

@@ -20,8 +20,9 @@ return [
                     [
                         'id'                => 'w_action_' . WorkflowAction::DEFAULT_WORKFLOW_ACTION_ID,
                         'state'             => 'open',
-                        'admin_id'          => 'admin_' . Org::SUPER_ADMIN,
-                        'admin'             => [],
+                        'maker_id'          => 'admin_' . Org::SUPER_ADMIN,
+                        'maker_type'        => 'admin',
+                        'maker'             => [],
                         'approved'          => false,
                         'current_level'     => 1,
                         'permission_name'   => 'edit_admin',
@@ -44,9 +45,10 @@ return [
                     [
                         'id'                => 'w_action_' . WorkflowAction::DEFAULT_WORKFLOW_ACTION_ID,
                         'state'             => 'open',
-                        'admin_id'          => 'admin_' . Org::SUPER_ADMIN,
+                        'maker_id'          => 'admin_' . Org::SUPER_ADMIN,
+                        'maker_type'        => 'admin',
                         'entity_name'       => 'admin',
-                        'admin'             => [],
+                        'maker'             => [],
                         'approved'          => false,
                         'current_level'     => 1,
                         'permission_name'   => 'edit_admin',
@@ -68,9 +70,10 @@ return [
                 'items'     => [
                     [
                         'state'             => 'closed',
-                        'admin_id'          => 'admin_' . Org::MAKER_ADMIN,
+                        'maker_id'          => 'admin_' . Org::MAKER_ADMIN,
+                        'maker_type'        => 'admin',
                         'entity_name'       => 'admin',
-                        'admin'             => [],
+                        'maker'             => [],
                         'approved'          => false,
                         'current_level'     => 1,
                     ],
@@ -91,9 +94,10 @@ return [
                 'items'     => [
                     [
                         'state'             => 'open',
-                        'admin_id'          => 'admin_' . Org::SUPER_ADMIN,
+                        'maker_id'          => 'admin_' . Org::SUPER_ADMIN,
+                        'maker_type'        => 'admin',
                         'entity_name'       => 'admin',
-                        'admin'             => [],
+                        'maker'             => [],
                         'approved'          => false,
                         'current_level'     => 2,
                         'workflow_id'       => 'workflow_' . Workflow::DEFAULT_WORKFLOW_ID,
