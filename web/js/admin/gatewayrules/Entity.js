@@ -119,6 +119,10 @@ class GatewayRuleForm extends Component {
       }
       return model.update(this.props.model.id, data, mode);
     } else {
+      //Remove method_type is no value passed
+      if (!body.method_type) {
+        delete body.method_type;
+      }
       return model.save(body, mode);
     }
   };
@@ -187,6 +191,19 @@ class GatewayRuleForm extends Component {
           onChange={model.onPropChange}
           disabled={!!model.id}
         />
+
+        {model.method === 'card' && (
+          <SelectField
+            name="method_type"
+            label="Method Type"
+            onChange={model.onPropChange}
+            disabled={!!model.id}
+          >
+            <option value="">All</option>
+            <option value="credit">Credit</option>
+            <option value="debit">Debit</option>
+          </SelectField>
+        )}
         <SelectField
           name="gateway"
           label="Gateway"
