@@ -976,7 +976,7 @@ class Entity extends Base\PublicEntity
 
     public function setWebsiteAttribute($website)
     {
-        $this->attributes[self::WEBSITE] = mb_strtolower($website);
+        $this->attributes[self::WEBSITE] = $website;
     }
 
     protected function setTransactionReportEmailAttribute($emails)
