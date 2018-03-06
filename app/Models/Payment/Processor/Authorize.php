@@ -4,6 +4,7 @@ namespace RZP\Models\Payment\Processor;
 
 use App;
 use Mail;
+use Cache;
 use Crypt;
 use Config;
 use Route;
@@ -37,6 +38,7 @@ use RZP\Models\Transaction;
 use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Method;
 use RZP\Models\Customer\Token;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Payment\Analytics;
@@ -2360,6 +2362,8 @@ trait Authorize
 
         $data['image'] = $payment->merchant->getFullLogoUrlWithSize(Merchant\Logo::MEDIUM_SIZE);
 
+        $data['magickey'] = $this->isMagicEnabled();
+
         $segmentData = $data;
 
         // this might log sensitive data. Remove it
@@ -4091,5 +4095,19 @@ trait Authorize
                     'iin'     => $card->getIin()
                 ]);
         }
+    }
+
+    protected function isMagicEnabled()
+    {
+        $MagicEnabledGlobally = (bool) Cache::get(ConfigKey::ENABLE_MAGIC);
+
+        $magicEnabledForMerchant = $this->merchant->isMagicEnabled();
+
+        $iinEntity = $this->payment->card->iinRelation;
+
+        return ($MagicEnabledGlobally and
+                $magicEnabledForMerchant and
+                $iinEntity->isMagicEnabled()
+        );
     }
 }
