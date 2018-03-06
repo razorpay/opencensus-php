@@ -17,10 +17,6 @@ export default class ActivationWizard extends Component {
       title: 'Business Details',
     },
     {
-      name: 'activationWebsiteDetails',
-      title: 'Website Details',
-    },
-    {
       name: 'activationBankAccounts',
       title: 'Bank Account Details',
     },
@@ -51,7 +47,6 @@ export default class ActivationWizard extends Component {
       this.activationForms = this.activationForms.filter(
         activationForm =>
           activationForm.name !== 'activationContactDetails' &&
-          activationForm.name !== 'activationWebsiteDetails' &&
           (needKyc === 0
             ? activationForm.name !== 'activationDocumentUpload'
             : true)
@@ -126,7 +121,6 @@ export default class ActivationWizard extends Component {
           selectedTabIndex={this.state.selectedTabIndex}
           onSelect={index => this.gotoTab(index + 1)}
         >
-
           {this.activationForms.map((form, index) => (
             <Tab key={form.name}>
               {this.renderNavAnchor(index + 1, form.title)}

@@ -88,7 +88,6 @@ let initialState = {
     3: undefined,
     4: undefined,
     5: undefined,
-    6: undefined,
   },
   uploadedFiles: {},
 };
