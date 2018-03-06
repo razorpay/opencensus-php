@@ -32,8 +32,6 @@ export default class AccountDetailsModal extends Component {
   render() {
     let { loading, data } = this.props;
 
-    errorInModal = errorInModal++;
-
     return (
       <div>
         <ModalHeader

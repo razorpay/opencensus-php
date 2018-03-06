@@ -473,8 +473,6 @@ export default class ReportsContainer extends Component {
       );
     }
 
-    errorinReports = errorinReports++;
-
     return (
       <tabbed-container>
         <header>
