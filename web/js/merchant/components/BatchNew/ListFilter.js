@@ -8,12 +8,6 @@ export default props => {
         <label>Batch Upload Id</label>
         <Field name="id" component="input" class="form-control input-sm" />
       </div>
-
-      <div class="form-group list-filter-item">
-        <label>Batch Name</label>
-        <Field name="name" component="input" class="form-control input-sm" />
-      </div>
-
       <div class="form-group list-filter-item count">
         <label>Count</label>
         <Field

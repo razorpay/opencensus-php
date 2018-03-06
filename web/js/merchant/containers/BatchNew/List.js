@@ -7,9 +7,10 @@ import { Link } from 'react-router-dom';
 import HeaderAction from 'rzp/ui/HeaderAction';
 import BatchListFilter from 'merchant/components/BatchNew/ListFilter';
 import { batchId, totalCount, status, batchName } from 'rzp/ui/item/pair';
+import { batchDownload } from 'merchant/modules/batches';
 import { openModal } from 'rzp/modules/modals';
 import { luminateRow } from 'merchant/modules/app';
-
+import * as NotificationsActions from 'rzp/modules/notifications';
 import BatchUpload from './Upload';
 
 function batchActions({
@@ -69,10 +70,28 @@ function batchActions({
 }
 
 @connect(null, {
+  batchDownload,
   openModal,
   luminateRow,
+  ...NotificationsActions,
 })
 export default class BatchList extends Component {
+  dowload = id => {
+    let windowRef = window.open('', '_blank');
+    this.props
+      .batchDownload(id)
+      .then(response => {
+        windowRef.location.href = response.data.url;
+      })
+      .catch(({ errors }) => {
+        windowRef.close();
+        this.props.showNotification({
+          type: 'error',
+          message: errors,
+        });
+      });
+  };
+
   openUploadModal = () => {
     this.props.openModal({
       size: 'large',
@@ -141,6 +160,7 @@ export default class BatchList extends Component {
               mode,
               viewAll,
               issueAll,
+              onDownloadClick: handleDownloadClick,
               issuableIdList,
             }),
           ]}
