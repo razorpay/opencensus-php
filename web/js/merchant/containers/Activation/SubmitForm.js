@@ -22,6 +22,7 @@ export default class SubmitForm extends Component {
                   id="agree_terms"
                   component="input"
                   type="checkbox"
+                  disabled={!!submitted || invalid}
                   validate={value => {
                     if (!value) {
                       return 'Required';
