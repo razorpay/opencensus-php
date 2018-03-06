@@ -15,6 +15,5 @@ class DatabaseSeeder extends Seeder
         Model::unguard();
 
         $this->call('AggregationSeeder');
-        $this->call('AnalyticsSeeder');
     }
 }

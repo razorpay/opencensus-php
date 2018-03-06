@@ -89,17 +89,19 @@ class ActivityLogModal extends Component {
 
   deleteOtherSessions() {
     return fetch({
+      url: '/admin/activity',
       method: 'delete',
-      url: 'activity/',
     })
       .then(response => {
-        notifySuccess('Sessions deleted successfully');
-        closeModal();
-        this.log.replace(
-          this.log.filter(activity => {
-            return activity.current;
-          })
-        );
+        if (response) {
+          notifySuccess('Sessions deleted successfully');
+          closeModal();
+          this.log.replace(
+            this.log.filter(activity => {
+              return activity.current;
+            })
+          );
+        }
       })
       .catch(err => {
         notifyError(JSON.stringify(err.response));
@@ -108,7 +110,7 @@ class ActivityLogModal extends Component {
 
   deleteSession(activity) {
     fetch({
-      url: 'activity/' + activity.id,
+      url: '/admin/activity/' + activity.id,
       method: 'delete',
     })
       .then(response => {
@@ -143,15 +145,16 @@ class ActivityLogModal extends Component {
         item => {
           return (
             !item.current && (
-              <i
-                class="i-trash"
-                style={{ cursor: 'pointer' }}
+              <div
+                class="link danger"
                 onClick={_ => {
                   confirm('Are you sure you want to delete this session?').then(
                     this.deleteSession.bind(this, item)
                   );
                 }}
-              />
+              >
+                Delete
+              </div>
             )
           );
         },
@@ -179,7 +182,7 @@ class ActivityLogModal extends Component {
 export default class Profile extends Component {
   showActivityLog() {
     return fetch({
-      url: 'activity',
+      url: '/admin/activity',
     }).then(log => {
       openModal(<ActivityLogModal log={log} />);
     });

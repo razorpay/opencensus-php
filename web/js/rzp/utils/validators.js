@@ -12,9 +12,9 @@ export const isEmail = email => {
 export const isUrlLenient = url => {
   url = url || '';
 
-  let urlRegExp = /^(https?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/
+  let urlRegExp = /^(https?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/;
   return urlRegExp.test(url);
-}
+};
 
 export const isDeepLink = url => {
   url = url || '';
@@ -33,6 +33,13 @@ export const isPhone = phone => {
   phone = phone || '';
   let phoneRegExp = new RegExp(/^$|\+?[0-9]{8,15}$/);
   return phoneRegExp.test(phone);
+};
+
+export const isIpAddress = ipAddress => {
+  const ipRegExp = new RegExp(
+    /\b(?:(?:2(?:[0-4][0-9]|5[0-5])|[0-1]?[0-9]?[0-9])\.){3}(?:(?:2([0-4][0-9]|5[0-5])|[0-1]?[0-9]?[0-9]))\b/
+  );
+  return ipRegExp.test(ipAddress);
 };
 
 // Use required validator if the field is mandatory. This fn. only check whether value if present is valid or not
@@ -55,6 +62,14 @@ export function validateCIN(value) {
   return value && value.length != 21
     ? 'CIN length must be 21 characters'
     : undefined;
+}
+
+export function validateMultipleEmails(emails) {
+  if (!emails || !emails.length) {
+    return false;
+  }
+
+  return emails.every(email => !!email && isEmail(email));
 }
 
 // Parse Object recursively and trims off extra spaces in strings

@@ -18,7 +18,11 @@ import Legend from 'merchant/components/Home/Legend';
 import LastUpdated from 'merchant/components/Home/LastUpdated';
 import MoreOptionsButton from 'merchant/containers/Home/MoreOptionsButton';
 import { API_ERROR, API_INVALID_RESP } from 'merchant/components/Home/data';
-import { trackGoToLinks, trackNoData } from 'merchant/containers/Home/ga';
+import {
+  trackError,
+  trackGoToLinks,
+  trackNoData
+} from 'merchant/containers/Home/ga';
 
 const chartOptions = {
     tooltips: {
@@ -158,9 +162,14 @@ class Traffic extends Component {
         groupState.loading = false;
 
         if (data.error) {
+
+          trackError(`Error while fetching data for traffic section - ${
+                      selectedGrouping.value}`);
+
           this.props.showNotification({
             type: 'error',
             message: data.error,
+            hidePrevious: true
           });
 
           groupState.error = data.error;

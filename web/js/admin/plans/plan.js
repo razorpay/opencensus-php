@@ -278,7 +278,7 @@ class Rule extends CollectionItem {
     } else if (this.payment_method === 'emandate') {
       data = {
         '': 'All',
-        aadhar: 'Aadhar',
+        aadhaar: 'Aadhaar',
         netbanking: 'Netbanking',
       };
     }
@@ -289,6 +289,17 @@ class Rule extends CollectionItem {
         return <div>Type {field}</div>;
       }
     }
+  }
+
+  issuerField() {
+    if (this.payment_method === 'emandate') {
+      return this.selectField('payment_issuer', {
+        '': 'All',
+        'initial': 'Initial',
+        'auto': 'Auto'
+      })
+    }
+    return this.selectField('payment_issuer');
   }
 
   internationalField() {

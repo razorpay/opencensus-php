@@ -1,6 +1,6 @@
 import { Component, Fragment } from 'react';
 import { openModal, closeModal, confirm } from 'common/modal';
-import { adminFetch, adminPost } from 'common/fetch';
+import fetch, { adminFetch, adminPost } from 'common/fetch';
 import { notifyError, notifySuccess, notifyDone } from 'common/modal';
 import { getFields } from '../Entity';
 import user from 'admin/user';
@@ -264,7 +264,7 @@ class PaymentAnalytics extends Component {
 
   componentWillMount() {
     fetch({
-      url: `${this.props.mode}/admin/payment_analytics`,
+      url: `/admin/api/${this.props.mode}/admin/payment_analytics`,
       params: {
         payment_id: this.props.paymentId,
       },
