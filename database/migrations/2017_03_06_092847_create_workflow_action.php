@@ -45,7 +45,9 @@ class CreateWorkflowAction extends Migration
             $table->char(Action::PERMISSION_ID, Action::ID_LENGTH)
                   ->nullable();
 
-            $table->char(Action::ADMIN_ID, Action::ID_LENGTH);
+            $table->char(Action::MAKER_ID, Action::ID_LENGTH);
+
+            $table->char(Action::MAKER_TYPE, Action::ID_LENGTH);
 
             $table->char(Action::ORG_ID, Action::ID_LENGTH);
 
@@ -73,11 +75,6 @@ class CreateWorkflowAction extends Migration
                   ->on(Table::PERMISSION)
                   ->on_delete('restrict');
 
-            $table->foreign(Action::ADMIN_ID)
-                  ->references(Admin::ID)
-                  ->on(Table::ADMIN)
-                  ->on_delete('restrict');
-
             $table->foreign(Action::STATE_CHANGER_ID)
                   ->references(Admin::ID)
                   ->on(Table::ADMIN)
@@ -98,6 +95,8 @@ class CreateWorkflowAction extends Migration
             $table->integer(Action::UPDATED_AT);
 
             $table->index([Action::ENTITY_ID, Action::ENTITY_NAME]);
+
+            $table->index([Action::MAKER_ID, Action::MAKER_TYPE]);
         });
     }
 
@@ -113,8 +112,6 @@ class CreateWorkflowAction extends Migration
             $table->dropForeign(Table::WORKFLOW_ACTION . '_' . Action::WORKFLOW_ID . '_foreign');
 
             $table->dropForeign(Table::WORKFLOW_ACTION . '_' . Action::PERMISSION_ID . '_foreign');
-
-            $table->dropForeign(Table::WORKFLOW_ACTION . '_' . Action::ADMIN_ID . '_foreign');
 
             $table->dropForeign(Table::WORKFLOW_ACTION . '_' . Action::STATE_CHANGER_ID . '_foreign');
 

@@ -1704,6 +1704,47 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals(0, $result['invoices_created']);
     }
 
+    public function testSubscriptionChargeForDailyWithLargeInterval()
+    {
+        $planAttributes = [
+            'period'   => 'daily',
+            'interval' => 366,
+        ];
+
+        $this->doAuthTxnForNewSubscription(false, $planAttributes);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $expectedPaidCount = 1;
+
+        while ($expectedPaidCount < $subscription['total_count'])
+        {
+            $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+
+            // Subscription got charged
+            $this->assertEquals(1, $result['total']);
+
+            $expectedPaidCount++;
+
+            $subscription = $this->getLastEntity('subscription', true);
+            $this->assertEquals($expectedPaidCount, $subscription['paid_count']);
+
+            $expectedStatus = 'active';
+
+            // After large charge, subscription is marked completed
+            if ($expectedPaidCount === $subscription['total_count'])
+            {
+                $expectedStatus = 'completed';
+            }
+
+            $this->assertEquals($expectedStatus, $subscription['status']);
+        }
+
+        $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+
+        $this->assertEquals(0, $result['invoices_created']);
+    }
+
     public function testSubscriptionManualTestChargeForDaily()
     {
         $planAttributes = [

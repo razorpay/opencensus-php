@@ -132,6 +132,7 @@ final class Route
         'merchant_assign_pricing'                 => ['post',     'merchants/{id}/pricing',                         'MerchantController@postAssignPricingPlan'                          ],
         'merchant_get_pricing'                    => ['get',      'merchants/{id}/pricing',                         'MerchantController@getPricingPlan'                                 ],
         'merchant_add_bank_account'               => ['post',     'merchants/{id}/bank_account',                    'MerchantController@postBankAccount'                                ],
+        'merchant_bank_account_change_status'     => ['get',      'merchants/{id}/bank_account_change/status',      'MerchantController@getBankAccountChangeStatus'                     ],
         'merchant_fetch_bank_account'             => ['get',      'merchants/{id}/bank_account',                    'MerchantController@getBankAccount'                                 ],
         'merchant_generate_test_bank_acnt'        => ['post',     'merchants/bank_account/generate/test',           'MerchantController@postGenerateTestBankAccounts'                   ],
         'merchant_create_terminal'                => ['post',     'merchants/{id}/terminals',                       'MerchantController@postCreateTerminal'                             ],
@@ -1165,6 +1166,7 @@ final class Route
         'dispute_edit',
         'merchant_get_tags',
         'account_fetch',
+        'merchant_add_bank_account',
     ];
 
     // These will run on internal auth with the assurance
@@ -1345,7 +1347,6 @@ final class Route
         'merchant_activate',
         'merchant_activation_update',
         'merchant_activation_upload_file_admin',
-        'merchant_add_bank_account',
         'merchant_beneficiary_file',
         'merchant_create',
         'merchant_create_terminal',
@@ -1706,6 +1707,19 @@ final class Route
         'shield_rules_evaluate'                  => Permission::EVALUATE_SHIELD_RULES,
         'user_fetch_admin'                       => '*',
         'batch_create'                           => '*',
+        'reporting_config_get'                   => '*',
+        'reporting_config_list'                  => '*',
+        'reporting_config_create'                => '*',
+        'reporting_config_edit'                  => '*',
+        'reporting_config_delete'                => '*',
+        'reporting_log_get'                      => '*',
+        'reporting_log_list'                     => '*',
+        'reporting_log_create'                   => '*',
+        'reporting_schedule_get'                 => '*',
+        'reporting_schedule_list'                => '*',
+        'reporting_schedule_create'              => '*',
+        'reporting_schedule_delete'              => '*',
+        'ufh_get_file_signed_url'                => '*',
     ];
 
     public static $direct = [
