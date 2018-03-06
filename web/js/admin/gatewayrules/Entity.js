@@ -191,11 +191,12 @@ class GatewayRuleForm extends Component {
           onChange={model.onPropChange}
           disabled={!!model.id}
         />
-
+        {/* Pass `undefined` if all is selected or default value not present */}
         {model.method === 'card' && (
           <SelectField
             name="method_type"
             label="Method Type"
+            value={model.method_type || undefined}
             onChange={model.onPropChange}
             disabled={!!model.id}
           >
