@@ -669,11 +669,11 @@
 
                                           <div class="info" id="partial-payment-info">
                                               <div class="val">
-                                                  <b id=due-amt>₹{{number_format($data['invoice']['amount_due']/ 100, 2, '.', ',')}}</b>
+                                                  <b>₹{{number_format($data['invoice']['amount_due']/ 100, 2, '.', ',')}}</b>
                                                   <span class="light">Due</span>
                                               </div>
                                               <div class="val">
-                                                  <span id="paid-amt"> ₹{{number_format($data['invoice']['amount_paid']/ 100, 2, '.', ',')}}</span>
+                                                  <span> ₹{{number_format($data['invoice']['amount_paid']/ 100, 2, '.', ',')}}</span>
                                                   <span class="light">Paid</span>
                                               </div>
                                           </div>
@@ -759,31 +759,28 @@
                                   <div class="val">{{$data['invoice']['description']}}</div>
                               </div>
 
-                              @if($data['invoice']['expire_by'])
-                                  <div class="info">
-                                      REQUEST EXPIRES
-                                      <div class="val">{{date('M d, Y (h:m A)', $data['invoice']['expire_by'])}} </div>
-                                  </div>
-                              @endif
-
                               <div class="info">
                                   <span id="pay-title"></span>
                                   <div class="val" id="display-pay-amt"></div>
-
-
                                   <div class="info" id="partial-payment-info">
                                       <div class="val">
-                                          <b id="due-amt">₹{{number_format($data['invoice']['amount_due']/ 100, 2, '.', ',')}}</b>
+                                          <b>₹{{number_format($data['invoice']['amount_due']/ 100, 2, '.', ',')}}</b>
                                           <span class="light">Due</span>
                                       </div>
                                       <div class="val">
-                                          <span id="paid-amt">₹{{number_format($data['invoice']['amount_paid']/ 100, 2, '.', ',')}}</span>
+                                          <span>₹{{number_format($data['invoice']['amount_paid']/ 100, 2, '.', ',')}}</span>
                                           <span class="light">Paid</span>
                                       </div>
                                   </div>
                                   <div class="line-strike"></div>
-
                               </div>
+
+                              @if($data['invoice']['expire_by'])
+                                <div class="info">
+                                    REQUEST EXPIRES
+                                    <div class="val">{{date('M d, Y (h:m A)', $data['invoice']['expire_by'])}} </div>
+                                </div>
+                              @endif
                           </div>
                       </div>
                       <div id="cancelled-invoice">
@@ -832,10 +829,12 @@
                   }
               }
 
-              // Full paid
+              // Invoice full paid
               if (data['invoice']['amount_due'] === 0 && data['invoice']['status'] === 'paid') {
                   fullPaid();
-              } else if (data['invoice']['status'] === 'cancelled' || isExpired(data['invoice']['expire_by'])) {
+              }
+              // Invoice cancelled/expired
+              else if (data['invoice']['status'] === 'cancelled' || isExpired(data['invoice']['expire_by'])) {
                 document.getElementById('cancelled-invoice').style.display = 'block';
                 document.getElementById('inv-details-main').style.display = 'none';
 
@@ -844,34 +843,7 @@
                     document.getElementById('cancelled-crack').style.display = 'block';
                     document.getElementById('chkout-box').style.background = '#f5f5f5';
                 }
-              } else {
-                  document.getElementById('pay-title').innerHTML = 'AMOUNT PAYABLE';
-                  document.getElementById('display-pay-amt').innerHTML = "<span> ₹" + (data['invoice']['amount']/ 100).toFixed(2) + "</span>";
-
-                  if (checkIsDesktop()) {
-                      function showOverlay() {
-                          document.getElementById('overlay').style.opacity = 1;
-                      }
-                      function hideOverlay() {
-                          document.getElementById('overlay').style.opacity = 0;
-                      }
-                      document.getElementById('chkout-box').addEventListener('mouseover', showOverlay);
-                      document.getElementById('chkout-box').addEventListener('mouseout', hideOverlay);
-                  } else {
-                      var payBtn = document.getElementById('mob-payment-btn');
-                      payBtn.style['background-color'] = color;
-                      payBtn.style['display'] = 'block';
-                  }
-
-                  if (data['invoice']['partial_payment']) {
-                      document.getElementById('partial-payment-info').style.display = 'block';
-
-                      if (checkIsDesktop()) {
-                          document.getElementById('scs-msg').innerHTML = "Your payment of ₹ " + (data['invoice']['amount_due'] / 100).toFixed(2) + " is received!"
-                      }
-                  }
               }
-
           </script>
 
           @if ($data['invoice']['status'] !== 'paid' and ($data['invoice']['expire_by'] ? $data['invoice']['expire_by'] > time() : true))
@@ -884,6 +856,28 @@
               </div>
             @endif
             <script>
+              document.getElementById('pay-title').innerHTML = 'AMOUNT PAYABLE';
+              document.getElementById('display-pay-amt').innerHTML = "<span> ₹" + (data['invoice']['amount']/100).toFixed(2) + "</span>";
+
+              if (checkIsDesktop()) {
+                  function showOverlay() {
+                      document.getElementById('overlay').style.opacity = 1;
+                  }
+                  function hideOverlay() {
+                      document.getElementById('overlay').style.opacity = 0;
+                  }
+                  document.getElementById('chkout-box').addEventListener('mouseover', showOverlay);
+                  document.getElementById('chkout-box').addEventListener('mouseout', hideOverlay);
+              } else {
+                  var payBtn = document.getElementById('mob-payment-btn');
+                  payBtn.style['background-color'] = color;
+                  payBtn.style['display'] = 'block';
+              }
+
+              if (data['invoice']['partial_payment']) {
+                  document.getElementById('partial-payment-info').style.display = 'block';
+              }
+
               (function (globalScope) {
                 var data = globalScope.data;
 
