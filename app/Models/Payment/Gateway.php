@@ -695,7 +695,6 @@ class Gateway
         IFSC::RATN,
         IFSC::INDB,
         Netbanking::PUNB_R,
-        Netbanking::BARB_R,
     ];
 
     /**
