@@ -2,6 +2,7 @@ import { Component } from 'react';
 import Modal from 'react-modal';
 import { connect } from 'react-redux';
 import * as ModalActions from 'rzp/modules/modals';
+import ErrorBoundary from 'common/ErrorBoundary';
 
 Object.assign(Modal.defaultStyles.overlay, {
   backgroundColor: 'rgba(58, 63, 81, 0.8)',
@@ -20,7 +21,7 @@ Modal.defaultStyles.content = {
 };
 
 @connect(state => state.modal, ModalActions)
-class ModalDialog extends Component {
+export default class ModalDialog extends Component {
   render() {
     let props = this.props;
     return (
@@ -34,7 +35,9 @@ class ModalDialog extends Component {
           contentLabel="Modal"
           ariaHideApp={false}
         >
-          {props.component}
+          <ErrorBoundary resetOnProps>
+            {props.component}
+          </ErrorBoundary>
         </Modal>
       </div>
     );
@@ -44,5 +47,3 @@ class ModalDialog extends Component {
 ModalDialog.defaultProps = {
   size: 'regular',
 };
-
-export default ModalDialog;

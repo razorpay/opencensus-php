@@ -246,9 +246,9 @@ class MerchantController extends Controller
             if ((empty($error) === true) and
                 (empty($data) === false))
             {
-                if (isset($data['url']))
+                if (isset($data['signed_url']))
                 {
-                    return redirect($data['url']);
+                    return redirect($data['signed_url']);
                 }
             }
         }
