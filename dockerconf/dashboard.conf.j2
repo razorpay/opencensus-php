@@ -1,6 +1,6 @@
-log_format dashboard 'NGINX_LOG $remote_addr - $remote_user [$time_local] "$request" '
-                '$status $body_bytes_sent "$http_referer" '
-                '"$http_user_agent" "$http_x_forwarded_for"';
+log_format main '$http_x_forwarded_for - $remote_user [$time_local] '
+            '"$request" $status $body_bytes_sent "$http_referer" '
+            '"$http_user_agent"' ;
 
 server {
     listen 80 default_server;
@@ -11,13 +11,16 @@ server {
 
     charset utf-8;
 
-    location /commit.txt { alias /app/public/commit.txt ;}
+    map $request $loggable {
+        ~*commit.txt 0;
+        default 1;
+    }
 
     location / {
         try_files $uri $uri/ /index.php?$query_string;
     }
 
-    access_log /dev/stdout dashboard;
+    access_log /dev/stdout main if=$loggable;
     error_log  /dev/stderr warn;
 
     sendfile off;
