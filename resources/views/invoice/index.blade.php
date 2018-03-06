@@ -822,12 +822,13 @@
               document.getElementById('chkout-header').style['background-color'] = color;
 
               function fullPaid() {
+                  var amount = data['invoice']['amount'];
                   document.getElementById('pay-title').innerHTML = 'AMOUNT PAID';
-                  document.getElementById('display-pay-amt').innerHTML = '<span> ₹' + (data['invoice']['amount_paid'] /100).toFixed(2) + '<span id="paid-tag">PAID</span></span>';
+                  document.getElementById('display-pay-amt').innerHTML = '<span> ₹' + (amount/100).toFixed(2) + '<span id="paid-tag">PAID</span></span>';
 
                   if (checkIsDesktop()) {
                       document.getElementById('scs-box').style.display = 'block';
-                      document.getElementById('scs-msg').innerHTML = "Your payment of ₹ " +  (data['invoice']['amount_paid']/ 100).toFixed(2) + " is received!"
+                      document.getElementById('scs-msg').innerHTML = "Your payment of ₹ " +  (amount/100).toFixed(2) + " is received!"
                   }
               }
 
@@ -845,7 +846,7 @@
                 }
               } else {
                   document.getElementById('pay-title').innerHTML = 'AMOUNT PAYABLE';
-                  document.getElementById('display-pay-amt').innerHTML = "<span> ₹" + (data['invoice']['amount_due']/ 100).toFixed(2) + "</span>";
+                  document.getElementById('display-pay-amt').innerHTML = "<span> ₹" + (data['invoice']['amount']/ 100).toFixed(2) + "</span>";
 
                   if (checkIsDesktop()) {
                       function showOverlay() {
@@ -907,10 +908,6 @@
                     }
 
                     if (invoiceObj.partial_payment && invoiceObj.amount_due) {
-                      //TODO: Update here for partial payment
-                      document.querySelector('#partial').style.display = 'block';
-                      document.querySelector('#button').style.display = 'none';
-                      document.querySelector('#partial h3').innerHTML = 'Please wait...';
                       return location.reload();
                     }
                     var chkoutFrame = document.querySelector('#chkout-box iframe');
