@@ -172,7 +172,7 @@ export const fetchBatchStats = batchId => {
     type: FETCH_BATCH_STATS,
     payload: merchantFetch({
       method: 'get',
-      url: `batch/${batchId}/stats`,
+      url: `batches/${batchId}/stats`,
     }),
   };
 };
