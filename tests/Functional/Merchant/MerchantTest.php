@@ -211,7 +211,7 @@ class MerchantTest extends TestCase
         $this->assertArrayNotHasKey('groups', $result);
     }
 
-    public function testEditBulkMerchant()
+    public function testEditBulkMerchantAttributes()
     {
         $this->createMerchant([
                                   'id'    => '10000000000044',
@@ -237,6 +237,52 @@ class MerchantTest extends TestCase
             $this->assertEquals(1, $merchant['hold_funds']);
             $this->assertEquals(['1.1.1.1', '2.2.2.2'], $merchant['whitelisted_ips_live']);
         }
+    }
+
+    public function testEditBulkMerchantAction()
+    {
+        $this->createMerchant([
+                                  'id'    => '10000000000044',
+                                  'email' => 'test1@razorpay.com',
+                              ]);
+
+        $this->createMerchant([
+                                  'id'    => '10000000000055',
+                                  'email' => 'test2@razorpay.com',
+                              ]);
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('live');
+
+        $this->startTest();
+
+        $merchant1 = $this->getDbEntityById('merchant', '10000000000044');
+        $merchant2 = $this->getDbEntityById('merchant', '10000000000055');
+
+        foreach ([$merchant1, $merchant2] as $merchant)
+        {
+            $this->assertEquals(1, $merchant['hold_funds']);
+        }
+    }
+
+    public function testFailedBulkMerchant()
+    {
+        $this->createMerchant([
+                                  'id'    => '10000000000044',
+                                  'email' => 'test1@razorpay.com',
+                              ]);
+
+        $this->createMerchant([
+                                  'id'    => '10000000000055',
+                                  'email' => 'test2@razorpay.com',
+                              ]);
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('live');
+
+        $this->startTest();
     }
 
     public function testEditMerchantEditGroups()

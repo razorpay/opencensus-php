@@ -20,7 +20,7 @@ return [
         ]
     ],
 
-    'testEditBulkMerchant' => [
+    'testEditBulkMerchantAttributes' => [
         'request'  => [
             'method'  => 'PUT',
             'url'     => '/merchants/bulk',
@@ -45,6 +45,63 @@ return [
                 'failedIds' => [],
             ],
             'status_code' => 200,
+        ],
+    ],
+
+    'testEditBulkMerchantAction' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'url'     => '/merchants/bulk',
+            'content' => [
+                'merchant_ids' => ['10000000000044', '10000000000055'],
+                'action'       => 'hold_funds',
+            ],
+            'server'  => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'total'     => 2,
+                'success'   => 2,
+                'failed'    => 0,
+                'failedIds' => [],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testFailedBulkMerchant' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'url'     => '/merchants/bulk',
+            'content' => [
+                'merchant_ids' => ['10000000000044', '10000000000055'],
+                'action'       => 'hold_funds',
+                'attributes'   => [
+                    'whitelisted_ips_live' => ['1.1.1.1', '2.2.2.2']
+                ],
+            ],
+            'server'  => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Both Action and Attributes should not be sent.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
