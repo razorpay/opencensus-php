@@ -11,6 +11,7 @@ use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Role;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Permission;
+use RZP\Models\Base\PublicEntity;
 
 use RZP\Models\Workflow;
 use RZP\Models\Workflow\Base;
@@ -18,21 +19,20 @@ use RZP\Models\Workflow\Step;
 use RZP\Models\Workflow\Action\Differ;
 use RZP\Models\Workflow\Action\Checker;
 
+use RZP\Constants\Entity as E;
+
 
 class Core extends Base\Core
 {
     private function buildParams(array $input) : array
     {
-        $admin = $this->app['basicauth']->getAdmin();
+        $maker = $this->app['workflow']->getWorkflowMaker();
+
+        $orgId = $maker->getOrgId();
 
         $params = [
-            Entity::ORG_ID      => $admin->getOrgId(),
-            Entity::ADMIN_ID    => $admin->getId()
+            Entity::ORG_ID      => $orgId
         ];
-
-        $adminPermissions = $admin->getPermissionsList();
-
-        $orgId = $admin->getOrgId();
 
         $routePermission = $input[Differ\Entity::PERMISSION];
 
@@ -47,7 +47,7 @@ class Core extends Base\Core
         // - Whether a workflow exists against the routePermission
         // because this is already done in workflow middleware
         //
-        // - Whether the admin has access to this permission because
+        // - Whether the maker has access to this permission because
         // that is also done in the middleware or should be done
         // from whereever this code is called/triggered.
 
@@ -81,6 +81,11 @@ class Core extends Base\Core
 
         $params[Entity::ENTITY_NAME] = $input[Differ\Entity::ENTITY_NAME] ?: null;
 
+        // TODO:: add code for actual verification of maker_type here
+        $params[Entity::MAKER_TYPE] = $input[Entity::MAKER_TYPE] ?: null;
+
+        $params[Entity::MAKER_ID] = $input[Entity::MAKER_ID] ?: null;
+
         return $params;
     }
 
@@ -94,9 +99,12 @@ class Core extends Base\Core
     {
         $strip = 'verifyIdAndStripSign';
 
+        $makerClass = E::getEntityClass($input[Entity::MAKER_TYPE]);
+
         $params = [
             Entity::ORG_ID          => Org\Entity::$strip($input[Entity::ORG_ID]),
-            Entity::ADMIN_ID        => Admin\Entity::$strip($input[Entity::ADMIN_ID]),
+            Entity::MAKER_ID        => $makerClass::$strip($input[Entity::MAKER_ID]),
+            Entity::MAKER_TYPE      => $input[Entity::MAKER_TYPE],
             Entity::WORKFLOW_ID     => Workflow\Entity::$strip($input[Entity::WORKFLOW_ID]),
             Entity::PERMISSION_ID   => Permission\Entity::$strip($input[Entity::PERMISSION_ID]),
             Entity::ENTITY_ID       => $input[Entity::ENTITY_ID],
@@ -134,7 +142,7 @@ class Core extends Base\Core
         our main RDBMS and to whom the entries did not fail because
         transaction rollbacks don't affect that.
     */
-    public function create(array $input, $retry = false, Admin\Entity $admin): Entity
+    public function create(array $input, $retry = false, PublicEntity $maker): Entity
     {
         $action = new Entity;
 
@@ -152,12 +160,16 @@ class Core extends Base\Core
         }
         else
         {
+            $input[Entity::MAKER_TYPE] = $this->app['workflow']->getWorkflowMakerType();
+
+            $input[Entity::MAKER_ID] = $maker->getId();
+
             $params = $this->buildParams($input);
         }
 
         // $params has data for Action\Entity (Mysql) + Differ\Entity (ES)
 
-        $this->repo->transactionOnLiveAndTest(function() use ($action, $params, $retry, $admin)
+        $this->repo->transactionOnLiveAndTest(function() use ($action, $params, $retry, $maker)
         {
             $differInput = $params[Entity::DIFFER] ?? null;
 
@@ -167,7 +179,7 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($action);
 
-            $this->createInitialStateForAction($action, $admin);
+            $this->createInitialStateForAction($action, $maker);
 
             if (($retry === false) and (empty($differInput) === false))
             {
@@ -181,13 +193,13 @@ class Core extends Base\Core
         return $action;
     }
 
-    protected function createInitialStateForAction(Entity $action, Admin\Entity $admin)
+    protected function createInitialStateForAction(Entity $action, PublicEntity $maker)
     {
         $input = [
             State\Entity::NAME       => State\Name::OPEN,
         ];
 
-        $actionState = (new State\Core)->createForWorkflowAction($input, $admin, $action);
+        $actionState = (new State\Core)->createForMakerAndEntity($input, $maker, $action);
 
         return $actionState;
     }
@@ -281,7 +293,7 @@ class Core extends Base\Core
                 State\Entity::NAME      => State\Name::APPROVED,
             ];
 
-            (new State\Core)->createForWorkflowAction($stateData, $admin, $action);
+            (new State\Core)->createForMakerAndEntity($stateData, $admin, $action);
 
             (new Differ\Core)->updateStateInEs(
                 $action->getId(), $stateData[State\Entity::NAME]);
@@ -464,7 +476,7 @@ class Core extends Base\Core
                 $this->updateStateAndStateChanger($action, $state, $admin, null);
             }
 
-            (new State\Core)->createForWorkflowAction($stateData, $admin, $action);
+            (new State\Core)->createForMakerAndEntity($stateData, $admin, $action);
 
             (new Differ\Core)->updateStateInEs(
                 $action->getId(), $stateData[State\Entity::NAME]);
@@ -537,9 +549,10 @@ class Core extends Base\Core
         string $entityName,
         string $permissionName)
     {
-        $admin = $this->app['basicauth']->getAdmin();
 
-        $orgId = $admin->getOrgId();
+        $orgId = $this->app['basicauth']->getOrgId();
+
+        Org\Entity::verifyIdAndSilentlyStripSign($orgId);
 
         $permissionId = $this->repo
                              ->permission

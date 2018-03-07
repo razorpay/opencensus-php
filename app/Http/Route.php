@@ -133,6 +133,7 @@ final class Route
         'merchant_assign_pricing'                 => ['post',     'merchants/{id}/pricing',                         'MerchantController@postAssignPricingPlan'                          ],
         'merchant_get_pricing'                    => ['get',      'merchants/{id}/pricing',                         'MerchantController@getPricingPlan'                                 ],
         'merchant_add_bank_account'               => ['post',     'merchants/{id}/bank_account',                    'MerchantController@postBankAccount'                                ],
+        'merchant_bank_account_change_status'     => ['get',      'merchants/{id}/bank_account_change/status',      'MerchantController@getBankAccountChangeStatus'                     ],
         'merchant_fetch_bank_account'             => ['get',      'merchants/{id}/bank_account',                    'MerchantController@getBankAccount'                                 ],
         'merchant_generate_test_bank_acnt'        => ['post',     'merchants/bank_account/generate/test',           'MerchantController@postGenerateTestBankAccounts'                   ],
         'merchant_create_terminal'                => ['post',     'merchants/{id}/terminals',                       'MerchantController@postCreateTerminal'                             ],
@@ -194,6 +195,7 @@ final class Route
         'bank_transfer_strip_payer_accounts'      => ['put',      'bank_transfers/payer_bank_account/strip',        'BankTransferController@stripPayerBankAccounts'                     ],
         'bank_transfer_insert'                    => ['post',     'bank_transfers/{provider}',                      'BankTransferController@insertBankTransfer'                         ],
         'fund_transfer_attempt_bulk_update'       => ['patch',    'fund_transfer_attempts',                         'FundTransferAttemptController@bulkUpdate'                          ],
+        'fund_transfer_attempt_null_utr_report'   => ['get',      'fund_transfer_attempts/null_utr_report',         'FundTransferAttemptController@sendNullUtrReport'                   ],
         'fund_transfer_attempt_reconcile'         => ['post',     'fund_transfer_attempts/reconcile/{channel}',     'FundTransferAttemptController@reconcileFundTransfers',             ],
         'fund_transfer_attempt_process'           => ['post',     'fund_transfer_attempts/initiate/{channel}',      'FundTransferAttemptController@initiateFundTransfers',              ],
         'gateway_payment_callback_bharatqr'       => ['post',     'payment/callback/bharatqr',                      'BharatQrController@processBharatQrPayment'                         ],
@@ -977,6 +979,7 @@ final class Route
         'emi_generate_excel',
         'entity_tax_update',
         'fund_transfer_attempt_reconcile',
+        'fund_transfer_attempt_null_utr_report',
         'gateway_file_create',
         'gateway_validate_unknown_refund',
         'geoip_update',
@@ -1169,6 +1172,7 @@ final class Route
         'dispute_edit',
         'merchant_get_tags',
         'account_fetch',
+        'merchant_add_bank_account',
     ];
 
     // These will run on internal auth with the assurance
@@ -1349,7 +1353,6 @@ final class Route
         'merchant_activate',
         'merchant_activation_update',
         'merchant_activation_upload_file_admin',
-        'merchant_add_bank_account',
         'merchant_beneficiary_file',
         'merchant_create',
         'merchant_create_terminal',
@@ -1710,6 +1713,19 @@ final class Route
         'shield_rules_evaluate'                  => Permission::EVALUATE_SHIELD_RULES,
         'user_fetch_admin'                       => '*',
         'batch_create'                           => '*',
+        'reporting_config_get'                   => '*',
+        'reporting_config_list'                  => '*',
+        'reporting_config_create'                => '*',
+        'reporting_config_edit'                  => '*',
+        'reporting_config_delete'                => '*',
+        'reporting_log_get'                      => '*',
+        'reporting_log_list'                     => '*',
+        'reporting_log_create'                   => '*',
+        'reporting_schedule_get'                 => '*',
+        'reporting_schedule_list'                => '*',
+        'reporting_schedule_create'              => '*',
+        'reporting_schedule_delete'              => '*',
+        'ufh_get_file_signed_url'                => '*',
     ];
 
     public static $direct = [
@@ -1862,6 +1878,7 @@ final class Route
             'merchant_payout_mail',
             'geoip_update',
             'fund_transfer_attempt_reconcile',
+            'fund_transfer_attempt_null_utr_report',
             'admin_lock_old_accounts',
             'fund_transfer_attempt_process',
         ],

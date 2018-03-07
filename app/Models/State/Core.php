@@ -6,24 +6,25 @@ use RZP\Models\Base;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Workflow\Action\Entity as Action;
 use RZP\Models\Base\PublicEntity as PublicEntity;
-use RZP\Models\Merchant\Detail\Entity as MerchantDetailEntity;
 
 class Core extends Base\Core
 {
     /**
      * @param array        $input
-     * @param Admin\Entity $admin
-     * @param  Action      $action
+     * @param PublicEntity $maker
+     * @param PublicEntity $entity
      *
      * @return Entity $state
      */
-    public function createForWorkflowAction(array $input, Admin\Entity $admin, Action $action): Entity
+    public function createForMakerAndEntity(array $input, PublicEntity $maker, PublicEntity $entity): Entity
     {
         $state = $this->create($input);
 
-        $state->admin()->associate($admin);
+        $makerEntityName = $maker->getEntity();
 
-        $state->entity()->associate($action);
+        $state->$makerEntityName()->associate($maker);
+
+        $state->entity()->associate($entity);
 
         $this->repo->saveOrFail($state);
 
@@ -44,32 +45,7 @@ class Core extends Base\Core
             Entity::NAME       => $state,
         ];
 
-        $this->createForWorkflowAction($input, $admin, $action);
-    }
-
-    /**
-     * @param array $input
-     * @param MerchantDetailEntity $merchantDetails
-     * @param Entity $maker [Admin/Merchant Entity]
-     *
-     * @return Entity $state
-     */
-    public function createForActivation(
-        array $input,
-        MerchantDetailEntity $merchantDetails,
-        PublicEntity $maker): Entity
-    {
-        $state = $this->create($input);
-
-        $makerEntityName = $maker->getEntity();
-
-        $state->$makerEntityName()->associate($maker);
-
-        $state->entity()->associate($merchantDetails);
-
-        $this->repo->saveOrFail($state);
-
-        return $state;
+        $this->createForMakerAndEntity($input, $admin, $action);
     }
 
     /**

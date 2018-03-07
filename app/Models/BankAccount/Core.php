@@ -4,6 +4,7 @@ namespace RZP\Models\BankAccount;
 
 use Mail;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
@@ -74,7 +75,7 @@ class Core extends Base\Core
      * This takes the oldBank Account as it's last parameter
      *
      * @param  array              $input Input Array with new bank account details
-     * @param  Merchant\Entity    $merchant
+     * @param  MerchantEntity     $merchant
      * @param  BankAccount\Entity $oldBankAccount
      *
      * @return mixed
@@ -89,9 +90,32 @@ class Core extends Base\Core
 
         $newBankAccount->generateBeneficiaryCode();
 
+        $oldBankAccountArray = $oldBankAccount->toArrayPublic();
+        $newBankAccountArray = $newBankAccount->toArrayPublic();
+
+        // add code for check of Bank File here and change the entities
+        // Upload the file and get the file id
+        if (isset($input[Detail\Entity::ADDRESS_PROOF_URL]) === true)
+        {
+            // upload the file and then add the file id in the array
+            if (is_object($input[Detail\Entity::ADDRESS_PROOF_URL]) === true)
+            {
+                $input = $this->uploadAddressProof($merchant, $input);
+            }
+
+            $newBankAccountArray[Detail\Entity::ADDRESS_PROOF_URL] = $input[Detail\Entity::ADDRESS_PROOF_URL];
+
+            $oldBankAccountArray[Detail\Entity::ADDRESS_PROOF_URL] = (new Detail\Core())
+                ->getMerchantDetails($merchant)
+                ->getAddressProofFile();
+
+            // to replace the file with file id in request for workflow payload
+            $this->app['request']->replace($input);
+        }
+
         $this->app['workflow']
              ->setEntityAndId($oldBankAccount->getEntity(), $oldBankAccount->getId())
-             ->handle($oldBankAccount, $newBankAccount);
+             ->handle($oldBankAccountArray, $newBankAccountArray);
 
         return $this->repo->transaction(
             function() use ($merchant, $oldBankAccount, $input, $detail)
@@ -106,6 +130,10 @@ class Core extends Base\Core
 
                 if ($merchantDetails !== null)
                 {
+                    // Doing a fill only for ADDRESS_PROOF_URL because Details\Validator
+                    // expects it to be a file object where as we're passing a File ID.
+                    $merchantDetails->fill($input);
+
                     $merchantDetails->edit($detail);
 
                     $this->repo->merchant_detail->saveOrFail($merchantDetails);
@@ -113,6 +141,33 @@ class Core extends Base\Core
 
                 return $ba;
             });
+    }
+
+    protected function uploadAddressProof($merchant, $input)
+    {
+        $merchantDetailService = new Detail\Service();
+
+        $merchantDetails = $merchantDetailService->core()->getMerchantDetails($merchant);
+
+        $fileInputs = [
+            Detail\Entity::ADDRESS_PROOF_URL => $input[Detail\Entity::ADDRESS_PROOF_URL]
+        ];
+
+        $uploadedFileIds = $merchantDetailService->storeActivationFile(
+            $merchantDetails,
+            $fileInputs);
+
+        if ((is_array($uploadedFileIds) === false) or
+            (isset($uploadedFileIds[Detail\Entity::ADDRESS_PROOF_URL]) === false))
+        {
+            throw new Exception\ServerErrorException(
+                'Address Proof URL upload failed.',
+                ErrorCode::SERVER_ERROR);
+        }
+
+        $input[Detail\Entity::ADDRESS_PROOF_URL] = $uploadedFileIds[Detail\Entity::ADDRESS_PROOF_URL];
+
+        return $input;
     }
 
     public function updateBeneficiaryCodes()
