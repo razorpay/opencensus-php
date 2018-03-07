@@ -189,11 +189,16 @@ class Throttler
         // Payload for trace and exception extra data
         $payload  = compact('key', 'leakRateValue', 'leakRateDuration', 'maxBucketSize', 'response');
 
-        // Only throttle if it is not in mock mode(early release)
-        $mock = $this->settings[K::GLOBAL]['mock'] ?? '1';
-        if (($response->allowed === false) and ($mock === '0'))
+        if ($response->allowed === false)
         {
-            throw new ThrottleException($response->retryAfter, $payload);
+            // Only throttle if it is not in mock mode(early release)
+            $mock = $this->settings[K::GLOBAL]['mock'] ?? '1';
+            if ($mock === '0')
+            {
+                throw new ThrottleException($response->retryAfter, $payload);
+            }
+
+            $this->trace->critical(TraceCode::THROTTLE_REQUEST_THROTTLED, $payload);
         }
     }
 
