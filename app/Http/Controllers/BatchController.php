@@ -71,7 +71,7 @@ class BatchController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function getStatsOfBatch(string $id)
+    public function getStats(string $id)
     {
         $response = $this->service()->fetchStatsOfBatch($id);
 

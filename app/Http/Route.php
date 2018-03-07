@@ -62,7 +62,7 @@ final class Route
         'batch_process_by_id'                     => ['post',     'batches/{id}/process',                           'BatchController@processBatch'                                      ],
         'batch_retry_output_file'                 => ['post',     'batches/{id}/retry_output_file',                 'BatchController@retryBatchOutputFile'                              ],
         'batch_download_file'                     => ['get',      'batches/{id}/download',                          'BatchController@downloadBatch'                                     ],
-        'batch_stats'                             => ['get',      'batch/{id}/stats',                               'BatchController@getStatsOfBatch'                                   ],
+        'batch_stats'                             => ['get',      'batch/{id}/stats',                               'BatchController@getStats'                                          ],
         'payment_capture'                         => ['post',     'payments/{id}/capture',                          'PaymentController@postCapture'                                     ],
         'payment_bulk_capture'                    => ['post',     'payments/capture/bulk',                          'PaymentController@postBulkCapture'                                 ],
         'payment_fetch_transfers'                 => ['get',      'payments/{id}/transfers',                        'PaymentController@getTransfers'                                    ],

@@ -802,17 +802,17 @@ class Core extends Base\Core
 
         $stats = [];
 
-        $invoices->each(function ($item) use (& $stats) {
+        $invoices->each(function (Entity $item) use (& $stats) {
 
             $content = $item->getOriginal();
 
-            $stats[$content['status']]  = (int) $content['count'];
+            $stats[$content['status']] = (int) $content['count'];
         });
 
         $response += [
-                    Entity::ISSUED_COUNT      => $stats[Status::ISSUED] ?? 0,
-                    Entity::PAID_COUNT      => $stats[Status::PAID] ?? 0,
-                    Entity::EXPIRED_COUNT   => $stats[Status::EXPIRED] ?? 0,
+            Entity::ISSUED_COUNT      => $stats[Status::ISSUED] ?? 0,
+            Entity::PAID_COUNT      => $stats[Status::PAID] ?? 0,
+            Entity::EXPIRED_COUNT   => $stats[Status::EXPIRED] ?? 0,
         ];
 
         return $response;

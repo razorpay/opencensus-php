@@ -151,7 +151,6 @@ class Entity extends Base\PublicEntity
 
     // -------------------------- Stats Keys -------------------------
 
-    const STATS                    = 'stats';
     const TOTAL_COUNT              = 'batch_total';
     const ISSUED_COUNT             = 'invoice_issued';
     const PAID_COUNT               = 'invoice_paid';
