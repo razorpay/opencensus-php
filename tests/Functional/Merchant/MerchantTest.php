@@ -10,6 +10,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Cache\Events\CacheHit;
 use Illuminate\Cache\Events\KeyWritten;
 use Illuminate\Cache\Events\CacheMissed;
+use Illuminate\Cache\Events\KeyForgotten;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
 use RZP\Models\Key;
@@ -21,8 +22,8 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\BankAccount\Entity as BankAccount;
 use RZP\Mail\Merchant\Activation as ActivationMail;
-use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Helpers\Schedule\ScheduleTrait;
@@ -375,11 +376,24 @@ class MerchantTest extends TestCase
 
     public function testEditMerchantEmail()
     {
-        $this->createMerchant();
+        $content = $this->createMerchant();
 
         $this->ba->adminAuth();
 
+        Event::fake(false);
+
         $this->startTest();
+
+        Event::assertDispatched(KeyForgotten::class, function ($e) use ($content)
+        {
+            $expectedTags = [
+                'merchant_' . $content['id'],
+            ];
+
+            $this->assertArraySelectiveEquals($expectedTags, $e->tags);
+
+            return true;
+        });
     }
 
     public function testEditMerchantWhitelistedIpsLive()
@@ -1811,7 +1825,7 @@ class MerchantTest extends TestCase
     {
         config(['app.query_cache.mock' => false]);
 
-        Event::fake();
+        Event::fake(false);
 
         $this->ba->proxyAuthTest();
 
@@ -1823,6 +1837,17 @@ class MerchantTest extends TestCase
         // Expires default key
         //
         $content = $this->runRequestResponseFlow($testData);
+
+        Event::assertDispatched(KeyForgotten::class, function ($e) use ($content)
+        {
+            $expectedTags = [
+                'key_TheTestAuthKey',
+            ];
+
+            $this->assertArraySelectiveEquals($expectedTags, $e->tags);
+
+            return true;
+        });
 
         $newKey = $content['new']['id'];
 
