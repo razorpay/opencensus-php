@@ -88,36 +88,56 @@ const getPieData = ({
     csvData = [],
     csvGrandTotal = 0;
 
-  const groupedData = groupByPlatform(data);
+  const valueReducer = (sum, item) => sum + item.value,
+        groupedData  = groupByPlatform(data);
 
-  Object.keys(groupedData).forEach((groupName, index) => {
-    const groupTitle =
-        groupTitleMap[groupName] || globalGroupTitleMap[groupName] || groupName,
-      groupCSVData = [];
+  Object.keys(groupedData)
+        // sorting groups by share of contribution in desc order
+        .sort((groupName1, groupName2) => {
 
-    labels.push(groupTitle);
-    groupCSVData.push(groupTitle);
+          let group2Value = groupedData[groupName2],
+              group1Value = groupedData[groupName1];
 
-    let value = groupedData[groupName].reduce(
-      (result, item) => result + item.value,
-      0
-    ),
-        displayValue = isCurrency
-                         ? paiseToRupees(value)
-                         : value;
+          if (Array.isArray(group2Value)) {
+          
+            group2Value = groupedData[groupName2]
+                        = group2Value.reduce(valueReducer, 0);
+          }
 
-    datasets.data.push(displayValue);
-    groupCSVData.push(value);
+          if (Array.isArray(group1Value)) {
+          
+            group1Value = groupedData[groupName1]
+                        = group1Value.reduce(valueReducer, 0);
+          }
 
-    legendData.push({
-      color: colors[index % colors.length],
-      label: groupTitle,
-      value: displayValue,
-    });
+          return group2Value - group1Value;
+        })
+        .forEach((groupName, index) => {
+          const groupTitle   = groupTitleMap[groupName]       ||
+                               globalGroupTitleMap[groupName] ||
+                               groupName,
+                groupCSVData = [];
 
-    csvData.push(groupCSVData);
-    csvGrandTotal += value;
-  });
+          labels.push(groupTitle);
+          groupCSVData.push(groupTitle);
+
+          let value        = groupedData[groupName],
+              displayValue = isCurrency
+                               ? paiseToRupees(value)
+                               : value;
+
+          datasets.data.push(displayValue);
+          groupCSVData.push(value);
+
+          legendData.push({
+            color: colors[index % colors.length],
+            label: groupTitle,
+            value: displayValue,
+          });
+
+          csvData.push(groupCSVData);
+          csvGrandTotal += value;
+        });
 
   csvData = csvData.map(row => {
 

@@ -20,12 +20,12 @@ const dateFormat = 'Do MMM YYYY';
 const defaultGroupingVals = [
   {
     value: 'method',
-    text: 'By Payment Method',
+    text : 'By Payment Method',
     query: ['method'],
   },
   {
     value: 'platform',
-    text: 'By Platforms',
+    text : 'By Platforms',
     query: platformGroupingVals,
   },
 ];
@@ -381,19 +381,15 @@ export const getTimelineData = ({
     const groupLabel =
         groupTitleMap[groupName] ||
         globalGroupTitleMap[groupName] ||
-        (groupByColumnName === 'platform' ? groupName : titleCase(groupName)),
-      groupColor = colors[index % colors.length];
+        (groupByColumnName === 'platform' ? groupName : titleCase(groupName));
 
     const dataset = {
       label: groupLabel,
-      backgroundColor: groupColor,
-      borderColor: groupColor,
-      data: [],
+      data: []
     };
 
     const aggregate = {
       label: groupLabel,
-      color: groupColor,
       value: 0,
     };
 
@@ -414,7 +410,9 @@ export const getTimelineData = ({
         groupMap =
           timelineGroupMap[timestamp] || (timelineGroupMap[timestamp] = {});
 
-      groupMap[groupName] = item[valueKey];
+      // for platform desktop , there will be multiple values for the same
+      // timestamp. If value already exists , add to it
+      groupMap[groupName] = (groupMap[groupName] || 0) + item[valueKey];
 
       otherGroups.forEach(groupName => {
         groupMap[groupName] = groupMap[groupName] || 0;
@@ -597,6 +595,29 @@ export const getTimelineData = ({
 
   csvData.unshift(csvHeader);
   csvData.push(csvFooter);
+
+  // sorting aggregates by their value in descending order
+  const orderedGroups = aggregates.sort((item1, item2) => {
+
+                           return item2.value - item1.value;
+                        }).reduce((result, item, index) => {
+                        
+                          result[item.label] = index;
+                          item.color = colors[index % colors.length];
+                          return result;
+                        }, {});
+
+  // sorting datasets according to the order of aggregates
+  datasets.sort(({label:label1}, {label:label2}) => {
+  
+    return orderedGroups[label1] - orderedGroups[label2];
+  }).forEach((item, index) => {
+  
+    const groupColor = colors[index % colors.length];
+
+    item.backgroundColor = groupColor;
+    item.borderColor     = groupColor;
+  });
 
   return {
     labels: timestamps,
