@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Request;
 
+use RZP\Trace\TraceCode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Traits\TestsThrottle;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -25,16 +26,22 @@ class ThrottleTest extends TestCase
 
     public function testNonexistentRoute()
     {
+        $this->mockTraceAndExpectNoError();
+
         $this->startTest();
     }
 
     public function testFetchOrdersWhenNotThrottled()
     {
+        $this->mockTraceAndExpectNoError();
+
         $this->startTest();
     }
 
     public function testGetOrderWhenThrottledSecondTime()
     {
+        $this->mockTraceAndExpectNoError();
+
         // Sets max bucket size for specific test mid and for private auth
         // to 1 and expects the first request to pass and second requests to be throttled.
         $this->setRedisIdLevelSettings('10000000000000', ['test:private:0:order_fetch:mbs' => 1]);
@@ -48,6 +55,8 @@ class ThrottleTest extends TestCase
      */
     public function testGetOrderWhenRedisSettingsMissing()
     {
+        $this->mockTraceAndExpectCriticalError(TraceCode::THROTTLE_SETTINGS_MISSING);
+
         $this->setRedisGlobalSettings([]);
 
         $this->startTest();

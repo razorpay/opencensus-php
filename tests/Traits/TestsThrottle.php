@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Traits;
 
+use Razorpay\Trace\Facades\Trace;
 use Illuminate\Support\Facades\Redis;
 
 use RZP\Http\Throttle\Constant as K;
@@ -76,5 +77,16 @@ trait TestsThrottle
     protected function flushRedis()
     {
         $this->redis->flushall();
+    }
+
+    protected function mockTraceAndExpectCriticalError(string $code)
+    {
+        Trace::shouldReceive('critical')->once()->with($code);
+    }
+
+    protected function mockTraceAndExpectNoError()
+    {
+        Trace::shouldReceive('info', 'debug', 'addRecord')->zeroOrMoreTimes();
+        Trace::shouldReceive('critical', 'error', 'traceException')->never();
     }
 }

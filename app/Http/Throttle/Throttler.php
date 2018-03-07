@@ -5,7 +5,7 @@ namespace RZP\Http\Throttle;
 use App;
 use Predis\Pipeline\Pipeline;
 use Illuminate\Routing\Router;
-use Jitendra\PhpValve\LeakyBucket;
+use Razorpay\Hodor\LeakyBucket;
 use Illuminate\Redis\RedisManager;
 use Razorpay\Trace\Logger as Trace;
 use Illuminate\Support\Facades\Redis;

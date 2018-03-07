@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "6b61cba700d22004e26c1d1bcc9bc9ca",
+    "content-hash": "38085ebbf561fd1d53da77031d4b835b",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -2121,44 +2121,6 @@
                 "tokenizer"
             ],
             "time": "2016-12-07T09:37:55+00:00"
-        },
-        {
-            "name": "jitendra/php-valve",
-            "version": "dev-hash",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/jitendra-1217/php-valve.git",
-                "reference": "c0093bad8802261cdc392fec05ddb763ff5d9c16"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/jitendra-1217/php-valve/zipball/c0093bad8802261cdc392fec05ddb763ff5d9c16",
-                "reference": "c0093bad8802261cdc392fec05ddb763ff5d9c16",
-                "shasum": ""
-            },
-            "require": {
-                "php": "^7.0",
-                "predis/predis": "^1.1"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "^6.5"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Jitendra\\PhpValve\\": "src/",
-                    "Jitendra\\PhpValveTests\\": "tests/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "description": "Resource or API rate limiting/throttling",
-            "keywords": [
-                "api-throttling",
-                "php",
-                "rate-limiting",
-                "redis"
-            ],
-            "time": "2018-03-06T12:40:00+00:00"
         },
         {
             "name": "jms/metadata",
@@ -5197,6 +5159,47 @@
             ],
             "description": "This tool is a rewrite of the EC2 Instance Metadata API for PHP.",
             "time": "2016-11-05T11:01:59+00:00"
+        },
+        {
+            "name": "razorpay/hodor",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "git@github.com:razorpay/hodor.git",
+                "reference": "cc3b5fa77ae5b01992e693fcc99828aa1f1cccac"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/razorpay/hodor/zipball/cc3b5fa77ae5b01992e693fcc99828aa1f1cccac",
+                "reference": "cc3b5fa77ae5b01992e693fcc99828aa1f1cccac",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.0",
+                "predis/predis": "^1.1"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^6.5"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Razorpay\\Hodor\\": "src/",
+                    "Razorpay\\HodorTests\\": "tests/"
+                }
+            },
+            "description": "Resource or API rate limiting/throttling",
+            "keywords": [
+                "api-throttling",
+                "php",
+                "rate-limiting",
+                "redis"
+            ],
+            "support": {
+                "source": "https://github.com/razorpay/hodor/tree/master",
+                "issues": "https://github.com/razorpay/hodor/issues"
+            },
+            "time": "2018-03-06T17:24:48+00:00"
         },
         {
             "name": "razorpay/ifsc",
@@ -9347,7 +9350,7 @@
         "graham-campbell/throttle": 20,
         "razorpay/oauth": 20,
         "razorpay/ufh-sdk-php": 20,
-        "jitendra/php-valve": 20,
+        "razorpay/hodor": 20,
         "codacy/coverage": 20,
         "symfony/phpunit-bridge": 20
     },
