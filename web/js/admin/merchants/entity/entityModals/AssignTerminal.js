@@ -54,7 +54,7 @@ const gatewayAcquirerMapping = {
   axis: 'Axis',
   icic: 'ICICI',
   ratn: 'RBL',
-  barb: 'BOB',
+  barb: 'Bank of Baroda',
   fss: 'FSS',
 };
 
