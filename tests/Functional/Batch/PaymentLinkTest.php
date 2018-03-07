@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Batch;
 
 use Mail;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Queue;
 
 use RZP\Constants\Mode;
@@ -195,15 +196,7 @@ class PaymentLinkTest extends TestCase
 
     public function testBatchCreateForUploadedFile()
     {
-        $entries = $this->getDefaultPaymentLinkFileEntries();
-
-        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
-
-        $responseFileUpload = $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
-
-        $testdata = $this->testData[__FUNCTION__ . 'AfterFileUpload'];
-
-        $testdata['request']['content']['file_id'] = $responseFileUpload['file_id'];
+        $testdata = $this->prepareStateFromValidateApi();
 
         $response = $this->runRequestResponseFlow($testdata);
 
@@ -235,6 +228,47 @@ class PaymentLinkTest extends TestCase
         $this->assertNull($inputFile['entity_type']);
         $this->assertNull($inputFile['entity_id']);
         $this->assertTrue(str_contains($inputFile['location'], 'batch/upload'));
+    }
+
+    protected function prepareStateFromValidateApi(): array
+    {
+        // Creating input and validated file fixtures
+
+        $attributeInputFile = [
+
+            'type'          => 'batch_input',
+            'entity_type'   => null,
+            'name'          => 'batch/upload/10000000000001',
+            'location'      => 'batch/upload/10000000000001.xlsx',
+        ];
+
+        $attributeValidatedFile = [
+
+            'type'          => 'batch_validated',
+            'entity_type'   => null,
+            'name'          => 'batch/validated/10000000000002',
+            'location'      => 'batch/validated/10000000000002.xlsx',
+        ];
+
+        $inputFile = $this->fixtures->create('file_store', $attributeInputFile);
+
+        $validatedFile = $this->fixtures->create('file_store', $attributeValidatedFile);
+
+        // Move validated test file copy to validated folder
+
+        $originalFile = $this->createUploadedFile('storage/files/filestore/batch/test_files/validated.xlsx');
+
+        copy($originalFile, 'storage/files/filestore/batch/validated/10000000000002.xlsx');
+
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+
+        $name = $testDataKey ?? $trace[1]['function'];
+
+        $testdata = &$this->testData[$name];
+
+        $testdata['request']['content']['file_id'] = $validatedFile->getPublicId();
+
+        return $testdata;
     }
 
     protected function getDefaultPaymentLinkFileEntries()
@@ -272,5 +306,24 @@ class PaymentLinkTest extends TestCase
                 Header::PARTIAL_PAYMENT  => null,
             ],
         ];
+    }
+
+    protected function createUploadedFile(string $filePath, string $mimeType = null, int $fileSize = -1)
+    {
+        $this->assertFileExists($filePath);
+
+        $mimeType = $mimeType ?: 'image/png';
+
+        $fileSize = ($fileSize === -1) ? filesize($filePath) : $fileSize;
+
+        $uploadedFile = new UploadedFile(
+            $filePath,
+            $filePath,
+            $mimeType,
+            $fileSize,
+            null,
+            true);
+
+        return $uploadedFile;
     }
 }
