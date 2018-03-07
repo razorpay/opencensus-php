@@ -4103,7 +4103,7 @@ trait Authorize
 
         $magicEnabledForMerchant = $this->merchant->isMagicEnabled();
 
-        $iinEntity = $this->payment->card->iinRelation;
+        $iinEntity = (empty($this->payment->card) == true) ? null : $this->payment->card->iinRelation;
 
         return (($MagicEnabledGlobally === true) and
                 ($magicEnabledForMerchant === true) and
