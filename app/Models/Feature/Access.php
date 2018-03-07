@@ -48,11 +48,20 @@ class Access
     /**
      * Checks if the accessed route is a feature route, if yes
      * checks if the merchant has access to the feature
+     * $authReturn will either be null or store an error object
      *
+     * Null return indicates available access
+     * @param  mixed  $authReturn
+     * @param  string $bearerToken
      * @return null
      */
-    public function verifyFeatureAccessByApplication()
+    public function verifyFeatureAccess($authReturn, string $bearerToken = '')
     {
+        if ($authReturn !== null)
+        {
+            return $authReturn;
+        }
+
         $routeFeatures = $this->ba->getCurrentRouteFeatures();
 
         // The current route does not require any feature to be present. Allow access.
@@ -62,44 +71,26 @@ class Access
         }
 
         $routeFeaturesAvailableWithMerchant = $this->getMerchantRouteFeatures($routeFeatures);
+
+        if (empty($bearerToken) === true)
+        {
+            //
+            // If the merchant is directly accessing the resource, allow if it
+            // has any of the route features required to access the resource.
+            //
+            if (empty($routeFeaturesAvailableWithMerchant) === false)
+            {
+                return null;
+            }
+
+            return ApiResponse::routeNotFound();
+        }
 
         $allowAccess = $this->allowApplicationToAccessFeatureRoute(
                             $routeFeatures,
                             $routeFeaturesAvailableWithMerchant);
 
         if ($allowAccess === true)
-        {
-            return null;
-        }
-
-        return ApiResponse::routeNotFound();
-    }
-
-    /**
-     * Checks if the accessed route is a feature route, if yes
-     * checks if the merchant has access to the feature.
-     *
-     * A return value of null indicates success.
-     *
-     * @return null
-     */
-    public function verifyFeatureAccessByMerchant()
-    {
-        $routeFeatures = $this->ba->getCurrentRouteFeatures();
-
-        // The current route does not require any feature to be present. Allow access.
-        if (empty($routeFeatures) === true)
-        {
-            return null;
-        }
-
-        $routeFeaturesAvailableWithMerchant = $this->getMerchantRouteFeatures($routeFeatures);
-
-        //
-        // If the merchant is directly accessing the resource, allow if it
-        // has any of the route features required to access the resource.
-        //
-        if (empty($routeFeaturesAvailableWithMerchant) === false)
         {
             return null;
         }

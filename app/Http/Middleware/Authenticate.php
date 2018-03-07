@@ -11,9 +11,7 @@ use RZP\Http\Route;
 use RZP\Http\OAuth;
 use RZP\Http\Throttle;
 use RZP\Models\Feature;
-use RZP\Http\BasicAuth\Type;
 use RZP\Http\BasicAuth\BasicAuth;
-use RZP\Models\Base\PublicCollection;
 
 class Authenticate
 {
@@ -82,16 +80,8 @@ class Authenticate
             $ret = $this->authenticateBasicAuth($route);
         }
 
-        if (empty($bearerToken) === true)
-        {
-            // Post process after authentication completes for a merchant
-            $ret = $this->postMerchantAuthenticationProcessing($ret);
-        }
-        else
-        {
-            // Post process after authentication completes for an application
-            $ret = $this->postApplicationAuthenticationProcessing($ret);
-        }
+        // Post process after authentication completes
+        $ret = (new Feature\Access)->verifyFeatureAccess($ret, $bearerToken);
 
         // non-null value indicates failure flow
         if ($ret !== null)
@@ -203,47 +193,6 @@ class Authenticate
     protected function authenticateOAuthPublicToken()
     {
         return $this->oauth->resolvePublicToken();
-    }
-
-    /**
-     * Post process after auth completes
-     * Function returns non-null value for failure flow
-     *
-     * @return mixed
-     */
-    protected function postApplicationAuthenticationProcessing($authReturn)
-    {
-        if ($authReturn !== null)
-        {
-            return $authReturn;
-        }
-
-        $featureCheck = (new Feature\Access)->verifyFeatureAccessByApplication();
-
-        if ($featureCheck !== null)
-        {
-            return $featureCheck;
-        }
-
-        return null;
-    }
-
-    /**
-     * Post process after auth completes
-     * Function returns non-null value for failure flow
-     *
-     * @return mixed
-     */
-    protected function postMerchantAuthenticationProcessing($authReturn)
-    {
-        if ($authReturn !== null)
-        {
-            return $authReturn;
-        }
-
-        $featureCheck = (new Feature\Access)->verifyFeatureAccessByMerchant();
-
-        return $featureCheck;
     }
 
     private function getBearerTokenFromHeaders($request)
