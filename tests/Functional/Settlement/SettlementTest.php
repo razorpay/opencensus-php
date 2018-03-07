@@ -500,6 +500,9 @@ class SettlementTest extends TestCase
 
         $content = $this->initiateDailySettlements();
 
+        $txn = $this->getEntityById('transaction', $paymentTxns['items'][0]['id'], true);
+        $this->assertEquals($tomorrow->addDay()->getTimestamp(), $txn['settled_at']);
+
         $this->assertEquals(2, $content[$channel]['count']);
         $this->assertEquals(4, $content[$channel]['txnCount']);
 

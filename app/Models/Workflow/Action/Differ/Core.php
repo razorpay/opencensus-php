@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\FileStore;
 use RZP\Models\Base\EsDao;
 use RZP\Events\DifferEvent;
 use RZP\Models\Workflow\Action;
@@ -71,6 +72,29 @@ class Core extends Base\Core
         if (array_key_exists(Entity::DIFF, $esResponse[0]['_source']))
         {
             $diff = $esResponse[0]['_source'][Entity::DIFF];
+        }
+
+        $diff["old"] = $this->transformFileIdsToUrls($diff["old"]);
+        $diff["new"] = $this->transformFileIdsToUrls($diff["new"]);
+
+        return $diff;
+    }
+
+    // code for getting the expiring URLs for the files
+    // transforming those urls inline
+    private function transformFileIdsToUrls($diff)
+    {
+        $fileStoreCore = new FileStore\Core;
+
+        foreach ($diff as $key => $value)
+        {
+            if (Files::exists($key) === true)
+            {
+                $diff[$key] = (function($value) use ($fileStoreCore)
+                {
+                    return $fileStoreCore->getSignedUrlForFileId($value);
+                })($value);
+            }
         }
 
         return $diff;
@@ -191,7 +215,7 @@ class Core extends Base\Core
                     $oldEntityData = [];
 
                     $entityClass = ConstantsEntity::getEntityClass($entity);
-                    
+
                     $newEntity = new $entityClass;
 
                     // Run validator
@@ -370,7 +394,7 @@ class Core extends Base\Core
         }
     }
 
-    protected function createRelationDiff(    
+    protected function createRelationDiff(
         $oldIds,
         $newIds,
         $relatedEntityName)

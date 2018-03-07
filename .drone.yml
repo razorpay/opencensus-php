@@ -60,7 +60,6 @@ pipeline:
         Link: {{build.link}}
     when:
       event:
-        exclude: [deployment, pull_request]
         include: [push]
 services:
   livedb:
@@ -68,20 +67,40 @@ services:
     environment:
       - MYSQL_DATABASE=api
       - MYSQL_ROOT_PASSWORD=root
+    when:
+      event:
+        exclude: [deployment, pull_request]
+        include: [push]
   testdb:
     image: mysql
     environment:
       - MYSQL_DATABASE=api_test
       - MYSQL_ROOT_PASSWORD=root
+    when:
+      event:
+        exclude: [deployment, pull_request]
+        include: [push]
   authdb:
     image: mysql
     environment:
       - MYSQL_DATABASE=auth
       - MYSQL_ROOT_PASSWORD=root
+    when:
+      event:
+        exclude: [deployment, pull_request]
+        include: [push]
   redis:
     image: redis
+    when:
+      event:
+        exclude: [deployment, pull_request]
+        include: [push]
   elasticsearch:
     image: elasticsearch:5.2-alpine
+    when:
+      event:
+        exclude: [deployment, pull_request]
+        include: [push]
 pipeline:
   deploy-qa-func:
     image: razorpay/drone-kubernetes
@@ -95,9 +114,9 @@ pipeline:
       - client_key_qa
     user: drone
     cluster: qa
+    auth_mode: client-cert
     deployment: api
     repo: razorpay/api
-    container: api
     namespace: func
     tag:
       - ${DRONE_REPO_BRANCH}-${DRONE_COMMIT_SHA}
@@ -118,9 +137,9 @@ pipeline:
       - client_key_stage
     user: drone
     cluster: stage
+    auth_mode: client-cert
     deployment: api
     repo: razorpay/api
-    container: api
     namespace: echo
     tag:
       - ${DRONE_REPO_BRANCH}-${DRONE_COMMIT_SHA}

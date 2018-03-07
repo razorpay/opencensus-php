@@ -278,7 +278,7 @@ class Orchestrator extends Base\Core
 
         $this->updateBatchConfigParamsIfPresent($params);
 
-        $batch = $this->batchCore->create($this->sharedMerchant, $params);
+        $batch = $this->batchCore->create($params, $this->sharedMerchant);
 
         return $batch;
     }
