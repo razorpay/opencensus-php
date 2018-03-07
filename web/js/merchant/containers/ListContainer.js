@@ -18,7 +18,8 @@ export default class ListContainer extends Component {
 
     if (searchString) {
       const params = getURLQueryParams(searchString);
-      this.searchFilters = params;
+
+      this.searchFilters = this.removeBlacklistedParams(params, props);
     }
 
     this.state = {
@@ -26,11 +27,39 @@ export default class ListContainer extends Component {
     };
   }
 
+  removeBlacklistedParams (params, props=this.props) {
+
+    const{blacklistQueryParams=[]} = props,
+         // helps sending un wanted parameters to send to api
+         hasBlacklistQueryParams = blacklistQueryParams.length > 0;
+
+    if (!hasBlacklistQueryParams) {
+    
+      return params;
+    }
+
+    return Object.keys(params)
+                 .reduce((result, paramKey) => {
+                 
+                   const isParamBlacklisted = (
+                     blacklistQueryParams.indexOf(paramKey) >= 0 
+                   );
+
+                   if (!isParamBlacklisted) {
+                   
+                     result[paramKey] = params[paramKey];
+                   }
+
+                   return result;
+                 }, {});
+  }
+
   defaultSearch(queryString) {
     let params = null;
 
     if (queryString) {
       params = getURLQueryParams(queryString);
+      params = this.removeBlacklistedParams(params);
     }
 
     this.fetchAll(params);
@@ -47,11 +76,11 @@ export default class ListContainer extends Component {
     }
   }
 
-  fetchAll = (params = {}) => {
+  fetchAll = (params={}) => {
+
     params = { ...this.getDefaultPageParams(), ...params };
-    if (params) {
-      this.setState(params);
-    }
+    params = this.removeBlacklistedParams(params);
+    this.setState(params);
 
     // props.fetchAll is available only when model is implemented. Addons doesn't have model hence calling 'fetchList' class fn.
     if (!this.props.fetchAll && this.fetchList) {

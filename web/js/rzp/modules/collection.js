@@ -103,7 +103,12 @@ export const makeActionCollectionReducer = (
 // TODO: Below things should be moved to individual files
 
 export const fetchPayments = params => fetchAll(params, Payment, 'PAYMENTS');
-export const paymentsReducer = makeCollectionReducer('PAYMENTS');
+export const paymentsReducer = makeCollectionReducer(
+  'PAYMENTS',
+  {},
+  // ignore( do not send to API ) "ref" param if seen present the url
+  {...defaultInitialState, blacklistQueryParams:["ref"]}
+);
 
 export const fetchOrders = params => fetchAll(params, Order, 'ORDERS');
 export const ordersReducer = makeCollectionReducer('ORDERS');
@@ -121,7 +126,12 @@ export const fetchMarketplacePayments = params => {
 export const mpPaymentsReducer = makeCollectionReducer('MP_PAYMENTS');
 
 export const fetchRefunds = params => fetchAll(params, Refund, 'REFUNDS');
-export const refundsReducer = makeCollectionReducer('REFUNDS');
+export const refundsReducer = makeCollectionReducer(
+  'REFUNDS',
+  {},
+  // ignore( do not send to API ) "ref" param if seen present the url
+  {...defaultInitialState, blacklistQueryParams:["ref"]}
+);
 
 export const fetchLinkBatches = params =>
   fetchAll(params, LinkBatch, 'BATCHLINKS');
