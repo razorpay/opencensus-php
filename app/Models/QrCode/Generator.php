@@ -146,6 +146,8 @@ class Generator extends Base\Core
     {
         $renderer = new Renderer\Image\Png;
 
+        $renderer->setMargin(0);
+
         $renderer->setHeight(Constants::QR_CODE_HEIGHT);
 
         $renderer->setWidth(Constants::QR_CODE_WIDTH);
@@ -155,6 +157,19 @@ class Generator extends Base\Core
         $localFilePath = $this->getLocalSaveDir() . '/' . $this->qrCode->getId() . '.' . self::QR_CODE_EXTENSION;
 
         $writer->writeFile($this->qrCode->getQrString(), $localFilePath);
+
+        $logoImage = imagecreatefrompng(public_path().'/img/qr.png');
+
+        $qrCodeImage = imagecreatefrompng($localFilePath);
+
+        imagecopymerge($logoImage, $qrCodeImage, 40, 350, 0, 0,
+                Constants::QR_CODE_WIDTH, Constants::QR_CODE_HEIGHT, 100);
+
+        imagepng($logoImage, $localFilePath);
+
+        imagedestroy($logoImage);
+
+        imagedestroy($qrCodeImage);
 
         return $localFilePath;
     }
