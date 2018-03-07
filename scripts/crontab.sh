@@ -67,6 +67,9 @@ add_cron "30 22 * * 1-6"   "settlement_recon_test"     POST "$BASE_URL/settlemen
 add_cron "30 0 * * 1-6"    "beneficiary_gen_live"      POST "$BASE_URL/merchants/beneficiary/file/bank"  ""                              $LIVE_AUTH
 add_cron "1 5-18 * * 1-6"  "payouts_prod_live"         POST "$BASE_URL/payouts/initiate/kotak"           ""                              $LIVE_AUTH
 
+# Settlements Report
+add_cron "5 0 * * *"        "fund_transfer_attempt_null_utr_report" GET     "$BASE_URLfund_transfer_attempts/null_utr_report"   ""       $LIVE_AUTH
+
 # Verify
 add_cron "* * * * *"       "payment_verify_prod_live"  POST "$BASE_URL/payments/verify/payments_failed"  ""                              $LIVE_AUTH
 add_cron "1-59/2 * * * *"  "pymnt_verify_prod_created" POST "$BASE_URL/payments/verify/payments_created" ""                              $LIVE_AUTH

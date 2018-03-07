@@ -14,6 +14,7 @@ use RZP\Mail\Settlement\Report as ReportEmail;
 class Report extends Base\Core
 {
     const REPORT_HEADER = [
+        'Channel',
         'Attempt ID',
         'Source',
         'Source ID',
@@ -39,6 +40,11 @@ class Report extends Base\Core
         parent::__construct();
     }
 
+    public function __destruct()
+    {
+        unlink($this->fileName);
+    }
+
     protected function init()
     {
         $this->count = 0;
@@ -52,18 +58,18 @@ class Report extends Base\Core
     {
         $channels = Channel::getChannels();
 
+        $this->init();
+
         foreach ($channels as $channel)
         {
             $this->channel = $channel;
 
-            $this->init();
-
             $this->createReport();
-
-            $this->sendNotification();
-
-            unlink($this->fileName);
         }
+
+        fclose($this->fileHandler);
+
+        $this->sendEmail();
     }
 
     protected function initiateFilehandler()
@@ -85,6 +91,8 @@ class Report extends Base\Core
 
         $offset    = 0;
 
+        $recordCount = 0;
+
         do
         {
             $records = $this->repo
@@ -102,14 +110,31 @@ class Report extends Base\Core
 
             $count = count($records);
 
+            $recordCount += $count;
+
             $this->count += $count;
 
         } while ($count === $limit);
 
-        fclose($this->fileHandler);
+        $this->notify($recordCount);
     }
 
-    protected function sendNotification()
+    protected function notify(int $count)
+    {
+        if ($count === 0)
+        {
+            return;
+        }
+
+        (new SlackNotification)->success(
+            'null_utr_report',
+            [
+                'channel' => $this->channel,
+                'count' => $count
+            ]);
+    }
+
+    protected function sendEmail()
     {
         if ($this->count === 0)
         {
@@ -118,18 +143,10 @@ class Report extends Base\Core
 
         $data = [
             'file'      => $this->fileName,
-            'channel'   => $this->channel,
             'date'      => Carbon::yesterday(Timezone::IST)->format('Y-m-d')
         ];
 
         $reportEmail = new ReportEmail($data);
-
-        (new SlackNotification)->success(
-            'null_utr_report',
-            [
-                'channel' => $this->channel,
-                'count' => $this->count
-            ]);
 
         Mail::send($reportEmail);
 
@@ -142,7 +159,7 @@ class Report extends Base\Core
 
         $date = Carbon::yesterday(Timezone::IST)->format('Y-M-d');
 
-        return $dir . DIRECTORY_SEPARATOR . $this->channel . '_' . $date . '.csv';
+        return $dir . DIRECTORY_SEPARATOR . 'null_utr_report_' . $date . '.csv';
     }
 
     protected function createOrUpdateFile($records)
@@ -150,6 +167,7 @@ class Report extends Base\Core
         foreach ($records as $record)
         {
             $data = [
+                $this->channel,
                 $record->getId(),
                 $record->getSourceType(),
                 $record->getSourceId(),

@@ -6,25 +6,23 @@ use RZP\Constants\MailTags;
 
 class Report extends Base
 {
+    public function __construct(array $data)
+    {
+        parent::__construct($data);
+
+        $this->data['body']    = 'PFA';
+    }
+
     protected function getFromHeader()
     {
-        return $this->data['channel'] . ' NULL UTR Report';
+        return 'Settlement UTR Alert';
     }
 
-    protected function getSubject()
+    protected function addSubject()
     {
-        $subject = ' NULL UTR Report | ' . ucfirst($this->data['channel']) . ' for ' . $this->data['date'];
+        $subject = 'No UTR Report for ' . $this->data['date'];
 
-        return $subject;
-    }
-
-    protected function addMailData()
-    {
-        $this->data['body']    = 'Please find the file attached for the null utr records from yesterday.';
-
-        $this->data['subject'] = $this->getSubject();
-
-        $this->with($this->data);
+        $this->subject($subject);
 
         return $this;
     }
@@ -36,7 +34,7 @@ class Report extends Base
 
     protected function addAttachments()
     {
-        $this->attach($this->data['file']);
+        $this->attach($this->data['file'], ['as' => 'report.csv']);
 
         return $this;
     }
