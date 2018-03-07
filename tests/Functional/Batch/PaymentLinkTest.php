@@ -256,7 +256,7 @@ class PaymentLinkTest extends TestCase
 
         // Move validated test file copy to validated folder
 
-        $originalFile = $this->createUploadedFile('storage/files/filestore/batch/test_files/validated.xlsx');
+        $originalFile = $this->createUploadedFile('tests/Functional/Batch/test_files/validated.xlsx');
 
         copy($originalFile, 'storage/files/filestore/batch/validated/10000000000002.xlsx');
 
