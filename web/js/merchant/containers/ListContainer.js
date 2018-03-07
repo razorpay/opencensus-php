@@ -30,7 +30,6 @@ export default class ListContainer extends Component {
   removeBlacklistedParams (params, props=this.props) {
 
     const{blacklistQueryParams=[]} = props,
-         // helps sending un wanted parameters to send to api
          hasBlacklistQueryParams = blacklistQueryParams.length > 0;
 
     if (!hasBlacklistQueryParams) {

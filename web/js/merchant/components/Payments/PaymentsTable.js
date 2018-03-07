@@ -14,7 +14,6 @@ import {
 import EntityTable from 'merchant/components/EntityTable';
 import rowClass from 'merchant/utils/activeRow';
 
-
 const getOrderId = ({ notes }) => {
   // Merchant's custom defined order IDs
   // First, we look for whole match. If that fails, we try `order_id` suffix
