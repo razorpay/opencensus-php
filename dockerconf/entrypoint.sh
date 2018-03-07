@@ -11,8 +11,6 @@ else
   $ALOHOMORA_BIN cast --region ap-south-1 --env $APP_MODE --app dashboard "environment/.env.vault.j2" "environment/env.php.j2"
 fi
 
-cp dockerconf/dashboard.conf /etc/nginx/conf.d/dashboard.conf
-
 echo "$(date) DB Migrate"
 echo "$(date) Seeding live db"
 php artisan migrate --seed

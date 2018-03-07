@@ -10,7 +10,9 @@ RUN apk add --update lsof && \
     apk add --virtual nodejs-deps nodejs-current nodejs-npm && \
     chown -R nginx.nginx /app
 
-COPY ./dockerconf/entrypoint.sh /entrypoint.sh
+COPY dockerconf/entrypoint.sh /entrypoint.sh
+
+COPY dockerconf/dashboard.conf /etc/nginx/conf.d/default.conf
 
 WORKDIR /app
 
