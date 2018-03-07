@@ -410,7 +410,9 @@ export const getTimelineData = ({
         groupMap =
           timelineGroupMap[timestamp] || (timelineGroupMap[timestamp] = {});
 
-      groupMap[groupName] = item[valueKey];
+      // for platform desktop , there will be multiple values for the same
+      // timestamp. If value already exists , add to it
+      groupMap[groupName] = (groupMap[groupName] || 0) + item[valueKey];
 
       otherGroups.forEach(groupName => {
         groupMap[groupName] = groupMap[groupName] || 0;
