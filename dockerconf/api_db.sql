@@ -4,6 +4,8 @@ CREATE DATABASE IF NOT EXISTS api_testing_live;
 CREATE DATABASE IF NOT EXISTS api_testing_test;
 CREATE DATABASE IF NOT EXISTS auth;
 CREATE DATABASE IF NOT EXISTS auth_test;
+DROP USER 'api_user'@'%';
+FLUSH PRIVILEGES;
 CREATE USER 'api_user'@'%' identified by '123';
 GRANT ALL PRIVILEGES ON api_live.* TO 'api_user'@'%';
 GRANT ALL PRIVILEGES ON api_test.* TO 'api_user'@'%';
