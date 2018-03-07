@@ -3264,4 +3264,4 @@ ALTER TABLE line_items
     ADD COLUMN sac_code VARCHAR(20) DEFAULT NULL AFTER hsn_code;
 
 ALTER TABLE orders
-    ADD COLUMN discount TINYINT(4) NOT NULL DEFAULT 0 AFTER merchant_id;
+    ADD COLUMN discount TINYINT(4) NOT NULL DEFAULT 0 AFTER offer_id;
