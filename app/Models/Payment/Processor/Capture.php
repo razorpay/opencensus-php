@@ -299,6 +299,8 @@ trait Capture
      */
     protected function capturePayment(Payment\Entity $payment, int $captureAmount, string $currency)
     {
+        $this->modifyCaptureAmountForDiscountedOrder($payment, $captureAmount);
+
         //
         // If the fee bearer is customer then please to adjust input amount
         // with the available fee for the payment.
@@ -366,6 +368,23 @@ trait Capture
         $this->captureOnGateway($data);
 
         return $payment;
+    }
+
+    protected function modifyCaptureAmountForDiscountedOrder(Payment\Entity $payment, int & $captureAmount)
+    {
+        if ($payment->order === null)
+        {
+            return;
+        }
+
+        $order = $payment->order;
+
+        if ($order->isDiscountApplicable() === false)
+        {
+            return;
+        }
+
+        $captureAmount = $order->offer->getDiscountedAmount($order->getAmount());
     }
 
     /**

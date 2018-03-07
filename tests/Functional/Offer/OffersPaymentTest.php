@@ -36,10 +36,45 @@ class OffersPaymentTest extends TestCase
 
         $payment = $this->getOfferPaymentArray($order);
 
-        $this->doAuthAndCapturePayment($payment);
+        $this->doAuthAndCapturePayment($payment, $order->getAmount());
 
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals(90000, $payment['amount']);
+        $this->assertEquals('captured', $payment['status']);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals(100000, $order['amount']);
+
+        $offer = $this->getLastEntity('offer', true);
+
+        $discount = $this->getLastEntity('discount', true);
+        $this->assertEquals(10000, $discount['amount']);
+        $this->assertEquals($payment['id'], $discount['payment_id']);
+        $this->assertEquals($order['id'], $discount['order_id']);
+        $this->assertEquals($offer['id'], $discount['offer_id']);
+    }
+
+    public function testOfferPaymentCustomerFeeBearer()
+    {
+        $this->fixtures->merchant->setFeeBearer('customer');
+
+        $offer = $this->fixtures->create('offer');
+
+        $order = $this->fixtures->create('order:with_offer_applied', [
+            'offer_id' => $offer->getId()
+        ]);
+
+        $payment = $this->getOfferPaymentArray($order);
+
+        $feesArray = $this->createAndGetFeesForPayment($payment);
+        $amount = $payment['amount'];
+        $payment['amount'] = $payment['amount'] + $feesArray['input']['fee'];
+        $payment['fee'] = $feesArray['input']['fee'];
+
+        $this->doAuthAndCapturePayment($payment, $order->getAmount());
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals(91800, $payment['amount']);
         $this->assertEquals('captured', $payment['status']);
 
         $order = $this->getLastEntity('order', true);
