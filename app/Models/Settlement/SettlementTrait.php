@@ -238,6 +238,9 @@ trait SettlementTrait
     protected function updateSettlementIdInTransfer(\Illuminate\Support\Collection $txns)
     {
         $filteredTxnIds = [];
+
+        $startTime = microtime(true);
+
         foreach ($txns as $txn)
         {
             if (($txn->isTypePayment() === true) and ($txn->merchant->isLinkedAccount() === true))
@@ -254,6 +257,7 @@ trait SettlementTrait
         try
         {
             $relations = ['source', 'source.transfer'];
+
             $filteredTxns = $this->repo->transaction->findManyWithRelations($filteredTxnIds, $relations);
 
             foreach ($filteredTxns as $txn)
@@ -272,6 +276,9 @@ trait SettlementTrait
                 $this->repo->saveOrFail($transfer);
             }
 
+            $timeTaken = microtime(true) - $startTime;
+
+            $this->trace->info(TraceCode::RECIPIENT_SETTLEMENT_UPDATE_TIME_TAKEN, ['time_taken' => $timeTaken]);
         }
         catch (\Throwable $ex)
         {
@@ -453,6 +460,8 @@ trait SettlementTrait
     protected function increaseAllowedSystemLimits()
     {
         RuntimeManager::setMemoryLimit('1024M');
-        RuntimeManager::setTimeLimit(300);
+
+        // Time limit of 9 mins
+        RuntimeManager::setTimeLimit(540);
     }
 }
