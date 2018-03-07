@@ -3,11 +3,16 @@ import { Line } from 'react-chartjs-2';
 import LoaderDots from 'rzp/ui/LoaderDots';
 
 export default ({ title, data, loading, error, yLabel, xLabel }) => {
+
+  if (!data) {
+    error = true;
+  }
+
   return (
     <div class="panel">
       <div class="panel-body">
         <h4 class="text-muted">{title}</h4>
-        {loading || !data.datasets[0].data.length || error ? (
+        {loading || error || !data.datasets[0].data.length ? (
           <div class="centered">
             {do {
               if (loading) {
