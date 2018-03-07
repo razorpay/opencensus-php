@@ -478,16 +478,16 @@ class Merchant extends Base
         return $this->edit($id, ['pricing_plan_id' => $planId]);
     }
 
-    public function enableTPV($id = '10000000000000')
+    public function enableMagic($id = '10000000000000')
     {
-        $this->addFeatures(['tpv'], $id);
+        $this->addFeatures(['magic'], $id);
 
         return true;
     }
 
-    public function enableMagic($id = '10000000000000')
+    public function enableTPV($id = '10000000000000')
     {
-        $this->addFeatures(['magic'], $id);
+        $this->addFeatures(['tpv'], $id);
 
         return true;
     }

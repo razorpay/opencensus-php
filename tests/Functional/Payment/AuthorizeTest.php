@@ -58,6 +58,11 @@ class AuthorizeTest extends TestCase
 
     public function testMagicKeyFalseMerchantDisabled()
     {
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
         Cache::shouldReceive('get')
            ->once()
            ->with(ConfigKey::ENABLE_MAGIC)
@@ -68,6 +73,10 @@ class AuthorizeTest extends TestCase
 
     public function testMagicKeySet()
     {
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
         $this->fixtures->merchant->enableMagic();
 
          Cache::shouldReceive('get')
@@ -78,8 +87,12 @@ class AuthorizeTest extends TestCase
         $content = $this->startTest();
     }
 
-    public function testMagicKeyFalseDisabledIIn()
+    public function testMagicKeyFalseDisabledIin()
     {
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
         $this->fixtures->merchant->enableMagic();
 
         Cache::shouldReceive('get')
@@ -87,13 +100,15 @@ class AuthorizeTest extends TestCase
            ->with(ConfigKey::ENABLE_MAGIC)
            ->andReturn(true);
 
-        $content= $this->startTest();
-
-        $this->assertFalse($content['magic_key']);
+        $this->startTest();
     }
 
     public function testMagicKeyFalseDisabledGlobally()
     {
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
         $this->fixtures->merchant->enableMagic();
 
         Cache::shouldReceive('get')

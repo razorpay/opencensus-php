@@ -37,13 +37,13 @@ return [
         ],
         'response' => [
             'content' => [
-                'magic_key' => true,
+                'magic' => true,
             ]
         ],
         'jsonp' => true
     ],
 
-    'testMagicKeyFalseDisabledIIn' => [
+    'testMagicKeyFalseDisabledIin' => [
         'request' => [
             'method' => 'GET',
             'url' => '/payments/create/jsonp',
@@ -57,7 +57,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'magic_key' => false,
+                'magic' => false,
             ]
         ],
         'jsonp' => true
@@ -78,7 +78,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'magic_key' => false,
+                'magic' => false,
             ]
         ],
         'jsonp' => true
@@ -98,26 +98,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'magic_key' => false,
-            ]
-        ],
-        'jsonp' => true
-    ],
-
-    'testMagickeyFalsewhenDisabledIIn' => [
-        'request' => [
-            'method' => 'GET',
-            'url' => '/payments/create/jsonp',
-            'content' => [
-                'card' => [
-                    'number' => '4005559876540'
-                ],
-                'callback' => 'abcdefghijkl',
-                '_' => '',
-            ]
-        ],
-        'response' => [
-            'content' => [
+                'magic' => false,
             ]
         ],
         'jsonp' => true
