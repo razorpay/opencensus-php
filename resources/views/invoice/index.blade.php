@@ -781,6 +781,17 @@
                                     <div class="val">{{date('M d, Y (h:m A)', $data['invoice']['expire_by'])}} </div>
                                 </div>
                               @endif
+                              @if($data['invoice']['customer_details']['customer_name'] or $data['invoice']['customer_details']['customer_email'])
+                                <div class="info">
+                                  ISSUED TO
+                                  @if($data['invoice']['customer_details']['customer_name'])
+                                    <div class="val">{{$data['invoice']['customer_details']['customer_name']}}</div>
+                                  @endif
+                                  @if($data['invoice']['customer_details']['customer_email'])
+                                    <div class="val">{{$data['invoice']['customer_details']['customer_email']}}</div>
+                                  @endif
+                                </div>
+                              @endif
                           </div>
                       </div>
                       <div id="cancelled-invoice">
