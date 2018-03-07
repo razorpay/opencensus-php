@@ -195,8 +195,6 @@ class Throttler
         {
             throw new ThrottleException($response->retryAfter, $payload);
         }
-
-        $this->trace->debug(TraceCode::THROTTLE_ATTEMPT_RESPONSE, $payload);
     }
 
     protected function getIdSettingsKey(): string
