@@ -1,4 +1,3 @@
-import DataTable from 'rzp/ui/Table/DataTable';
 import { Link } from 'react-router-dom';
 
 import {
@@ -12,6 +11,7 @@ import {
   status,
 } from 'rzp/ui/item/pair';
 
+import EntityTable from 'merchant/components/EntityTable';
 import rowClass from 'merchant/utils/activeRow';
 
 const getOrderId = ({ notes }) => {
@@ -61,6 +61,7 @@ const mapRzpOrders = payments =>
   }, {});
 
 export default props => {
+
   let paymentColumns = [paymentId, amount, email, contact, createdAt, status];
 
   let orders = mapOrders(props.items);
@@ -76,5 +77,7 @@ export default props => {
     paymentColumns.splice(1, 0, rzpPaymentOrder(rzpOrders));
   }
 
-  return <DataTable title="Payments" columns={paymentColumns} {...props} />;
+  return (
+    <EntityTable title="Payments" columns={paymentColumns} {...props}/>
+  );
 };
