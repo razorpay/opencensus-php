@@ -9,7 +9,9 @@ const dateFormat = "DD MMM YYYY";
 export default (props) => {
 
   const params               = getURLQueryParams(props.location.search),
-        hasNavigatedFromHome = params.ref === "home";
+        hasNavigatedFromHome = params.ref === "home",
+        hasFrom              = !!params.from,
+        hasTo                = !!params.to;
 
   const from       = moment(+params.from * 1e3),
         to         = moment(+params.to * 1e3),
@@ -18,7 +20,7 @@ export default (props) => {
 
   return (
     <div>
-      {!!(hasNavigatedFromHome && from && to) && (
+      {!!(hasNavigatedFromHome && hasFrom && hasTo) && (
         <Banner cta="View All" ctaUrl={`/${title}`}>
           <span>
             Showing {title}{' '}
