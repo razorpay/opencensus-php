@@ -29,7 +29,7 @@ return [
             'url' => '/payments/create/jsonp',
             'content' => [
                 'card' => [
-                    'number' => '5567630000002004'
+                    'number' => '4012001037167778'
                 ],
                 'callback' => 'abcdefghijkl',
                 '_' => '',
@@ -63,14 +63,13 @@ return [
         'jsonp' => true
     ],
 
-
     'testMagicKeyFalseDisabledGlobally' => [
         'request' => [
             'method' => 'GET',
             'url' => '/payments/create/jsonp',
             'content' => [
                 'card' => [
-                    'number' => '5567630000002004'
+                    'number' => '4012001037167778'
                 ],
                 'callback' => 'abcdefghijkl',
                 '_' => '',
@@ -90,7 +89,7 @@ return [
             'url' => '/payments/create/jsonp',
             'content' => [
                 'card' => [
-                    'number' => '5567630000002004'
+                    'number' => '4012001037167778'
                 ],
                 'callback' => 'abcdefghijkl',
                 '_' => '',

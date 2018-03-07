@@ -196,20 +196,6 @@ class Iin extends Base
                 'emi'           => 1,
                 'trivia'        => 'random trivia'
             ],
-            [
-                'iin'           => '556763',
-                'category'      => 'PLATINUM',
-                'network'       => 'MasterCard',
-                'type'          => 'credit',
-                'country'       => 'IN',
-                'issuer_name'   => 'YES Bank',
-                'issuer'        => 'YESB',
-                'emi'           => 1,
-                'flows'         => [
-                    'magic' => 1,
-                ],
-                'trivia'        => 'random trivia'
-           ],
         ];
 
     public function createDefaultIins()
