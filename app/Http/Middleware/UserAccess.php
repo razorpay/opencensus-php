@@ -50,7 +50,7 @@ class UserAccess
      * route basis his own role that comes in the dashboard header as well.
      *
      * This way we're able to implement ACL on dashboard for merchant users.
-     * 
+     *
      * Note: If the mapping doesn't contain role for the current route
      * then all the users of the merchant will get access to that specific route.
      * Also the entire logic is application on proxy auth (but not admin auth).
@@ -64,7 +64,8 @@ class UserAccess
      */
     public function handle($request, Closure $next)
     {
-        if ($this->ba->isAdminAuth() === false)
+        if (($this->ba->isAdminAuth() === false) and
+            ($this->ba->isStrictPrivateAuth() === false))
         {
             $route = $this->router->currentRouteName();
 
@@ -78,7 +79,7 @@ class UserAccess
                 return $routePolicyResponse;
             }
 
-            // User role validation will happen on proxy auth
+            // User role validation will only happen on proxy auth
             // when merchant (not admin) is hitting the route
             if ($this->ba->isProxyAuth() === true)
             {

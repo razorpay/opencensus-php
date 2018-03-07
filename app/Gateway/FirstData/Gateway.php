@@ -336,6 +336,14 @@ class Gateway extends Base\Gateway
         if ($input['refund']['reverse'] === true)
         {
             parent::action($input, Action::VERIFY_REVERSE);
+
+            //
+            // Temporary hack. FirstData verifyReverse needs to be
+            // refactored to use a different gateway API, since it
+            // is currently timing out regularly.
+            //
+
+            throw new Exception\LogicException('Temporarily blocking verifyRefund');
         }
 
         if ($this->isUnprocessedRefund($input) === true)

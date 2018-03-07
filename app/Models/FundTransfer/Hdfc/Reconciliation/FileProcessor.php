@@ -51,7 +51,7 @@ class FileProcessor extends BaseProcessor
      *
      * @throws LogicException
      */
-    protected function getFileExtension(string $filePath): string
+    protected function getFileExtensionForParsing(string $filePath): string
     {
         $extension = pathinfo($filePath, PATHINFO_EXTENSION);
 

@@ -53,6 +53,7 @@ class Netbanking
         IFSC::INDB,
         IFSC::PUNB,
         IFSC::CSBK,
+        self::PUNB_R,
         self::BARB_R,
     ];
 
@@ -84,7 +85,7 @@ class Netbanking
         IFSC::JAKA,
         IFSC::KKBK,
         IFSC::MAHB,
-        IFSC::PUNB,
+        self::PUNB_R,
         IFSC::UBIN,
         IFSC::UTIB,
         IFSC::VIJB,
@@ -262,8 +263,6 @@ class Netbanking
 
     protected static $defaultDisabled = [
         IFSC::AIRP,
-        IFSC::PUNB,
-        IFSC::BARB
     ];
 
     protected static $ebsTPV = [];

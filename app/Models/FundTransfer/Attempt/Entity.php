@@ -29,6 +29,7 @@ class Entity extends Base\PublicEntity
     const FAILURE_REASON         = 'failure_reason';
     const TXT_FILE_ID            = 'txt_file_id';
     const EXCEL_FILE_ID          = 'excel_file_id';
+    const INITIATE_AT            = 'initiate_at';
 
     protected $entity = 'fund_transfer_attempt';
 
@@ -42,6 +43,7 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::REMARKS,
         self::FAILURE_REASON,
+        self::INITIATE_AT,
     ];
 
     protected $visible = [
@@ -64,6 +66,7 @@ class Entity extends Base\PublicEntity
         self::FAILURE_REASON,
         self::TXT_FILE_ID,
         self::EXCEL_FILE_ID,
+        self::INITIATE_AT,
         self::CREATED_AT,
         self::UPDATED_AT
     ];
@@ -165,6 +168,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ENTITY_ID);
     }
 
+    public function getSourceId()
+    {
+        return $this->getAttribute(self::SOURCE_ID);
+    }
+
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);
@@ -178,6 +186,11 @@ class Entity extends Base\PublicEntity
     public function getBatchFundTransferId()
     {
         return $this->getAttribute(self::BATCH_FUND_TRANSFER_ID);
+    }
+
+    public function getInitiateAt()
+    {
+        return $this->getAttribute(self::INITIATE_AT);
     }
 
     public function getMode()
@@ -235,6 +248,11 @@ class Entity extends Base\PublicEntity
     public function setDateTime($dateTime)
     {
         $this->setAttribute(self::DATE_TIME, $dateTime);
+    }
+
+    public function setInitiateAt($initiateAt)
+    {
+        $this->setAttribute(self::INITIATE_AT, $initiateAt);
     }
 
     // ------------------------------ modifiers --------------------------------

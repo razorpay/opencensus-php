@@ -359,53 +359,6 @@ class AdminTest extends TestCase
         $this->startTest();
     }
 
-    public function testGetMerchantIds()
-    {
-        $grp = $this->fixtures->create(
-            'group', ['org_id' => $this->orgId]);
-        $subGrp = $this->fixtures->create(
-            'group', ['org_id' => $this->orgId]);
-
-        $subGrp->parents()->attach($grp);
-
-        $merchantsGrp = $this->fixtures->create(
-            'merchant', ['org_id' => $this->orgId]);
-        $merchantsSubGrp = $this->fixtures->create(
-            'merchant', ['org_id' => $this->orgId]);
-
-        $grp->merchants()->attach($merchantsGrp);
-        $subGrp->merchants()->attach($merchantsSubGrp);
-
-        $adminGrp = $this->fixtures->create(
-            'admin', ['org_id' => $this->orgId]);
-        $adminSubGrp = $this->fixtures->create(
-            'admin', ['org_id' => $this->orgId]);
-
-        $adminGrp->merchants()->attach($merchantsGrp);
-        $adminSubGrp->merchants()->attach($merchantsSubGrp);
-
-        $grp->admins()->attach($adminGrp);
-        $subGrp->admins()->attach($adminSubGrp);
-
-        $merchantsAdminGrp = $this->fixtures->create(
-            'merchant', ['org_id' => $this->orgId]);
-        $merchantsAdminSubGrp = $this->fixtures->create(
-            'merchant', ['org_id' => $this->orgId]);
-
-        $adminGrp->merchants()->attach($merchantsAdminGrp);
-        $adminSubGrp->merchants()->attach($merchantsAdminSubGrp);
-
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId(), $adminGrp->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
-        $result = $this->startTest();
-
-        $this->assertEquals(count($result), 4);
-    }
-
     public function testLoginUserDoesNotExist()
     {
         $this->ba->appAuth();

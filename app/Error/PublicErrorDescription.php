@@ -378,6 +378,8 @@ class PublicErrorDescription
     const BAD_REQUEST_ORDER_BANK_INVALID                                        = 'Bank code provided is invalid.';
     const BAD_REQUEST_ORDER_BANK_DOES_NOT_MATCH_PAYMENT_BANK                    = 'Bank code provided does not match order bank.';
     const BAD_REQUEST_PAYMENT_METHOD_DOES_NOT_MATCH_ORDER_METHOD                = 'Payment method provided does not match order method.';
+    const BAD_REQUEST_ORDER_RECEIPT_REQUIRED                                    = 'The receipt field is required.';
+    const BAD_REQUEST_ORDER_RECEIPT_NOT_UNIQUE                                  = 'Receipt should be unique.';
 
     const BAD_REQUEST_CUSTOMER_ALREADY_EXISTS                                   = 'Customer already exists for the merchant';
     const BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED                                 = 'Customer contact number is not set';
@@ -424,6 +426,8 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_ALREADY_UNDER_DISPUTE                             = 'Payment already has an open dispute';
     const BAD_REQUEST_DISPUTE_AMOUNT_GREATER_THAN_PAYMENT_AMOUNT                = 'Disputed amount cannot be greater than payment amount';
     const BAD_REQUEST_CANNOT_UPDATE_CLOSED_DISPUTE                              = 'This dispute is already closed and cannot be updated';
+
+    const BAD_REQUEST_REPORTING_INTEGRATION                                     = 'Issue with Reporting Integration';
 
     // batch processor related error codes
     const BAD_REQUEST_BATCH_FILE_INVALID_TYPE                                   = 'Incorrect type is used for the uploaded file';

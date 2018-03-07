@@ -134,6 +134,7 @@ class Entity extends Base\PublicEntity
 
     const METADATA              = 'metadata';
 
+    const AADHAAR               = 'aadhaar';
     const BANK_ACCOUNT          = 'bank_account';
     const NAME                  = 'name';
     const IFSC                  = 'ifsc';
@@ -1052,6 +1053,11 @@ class Entity extends Base\PublicEntity
     public function getOnHoldUntil()
     {
         return $this->getAttribute(self::ON_HOLD_UNTIL);
+    }
+
+    public function getCapturedAt()
+    {
+        return $this->getAttribute(self::CAPTURED_AT);
     }
 
 // ----------------------- Accessor Ends ---------------------------------------

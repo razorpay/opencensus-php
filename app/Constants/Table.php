@@ -36,6 +36,7 @@ class Table
     const FEATURE               = 'features';
     const DISPUTE               = 'disputes';
     const ADDRESS               = 'addresses';
+    const DISCOUNT              = 'discounts';
     const MERCHANT              = 'merchants';
 
     // Account entity is currently pointing to the 'merchants' table.

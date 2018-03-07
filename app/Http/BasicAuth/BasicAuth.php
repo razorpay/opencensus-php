@@ -1154,7 +1154,7 @@ class BasicAuth
     {
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-        $this->merchant = $merchant;
+        $this->setMerchant($merchant);
     }
 
     public function setAccessTokenId(string $tokenId)
@@ -1169,6 +1169,11 @@ class BasicAuth
 
     public function setMerchant($merchant)
     {
+        if ($merchant !== null)
+        {
+            $this->setOrgId($merchant->org->getPublicId());
+        }
+
         $this->merchant = $merchant;
     }
 
@@ -1226,6 +1231,11 @@ class BasicAuth
         return ($this->type === Type::PRIVATE_AUTH);
     }
 
+    public function isStrictPrivateAuth()
+    {
+        return (($this->isPrivateAuth() === true) and ($this->isProxyAuth() === false));
+    }
+
     public function isPrivilegeAuth()
     {
         return ($this->type === Type::PRIVILEGE_AUTH);
@@ -1280,7 +1290,9 @@ class BasicAuth
     {
         $merchantId = $key->getMerchantId();
 
-        $this->merchant = $this->repo->merchant->findOrFail($merchantId);
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $this->setMerchant($merchant);
 
         $this->checkMerchantActivatedForLive();
 
@@ -1319,7 +1331,7 @@ class BasicAuth
             return $this->invalidAccountId($this->getAccountId());
         }
 
-        $this->merchant = $account;
+        $this->setMerchant($account);
     }
 
     public function checkMerchantActivatedForLive()

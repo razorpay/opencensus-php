@@ -50,6 +50,11 @@ class VirtualAccountTest extends TestCase
         $this->assertArraySelectiveEquals($expectedResponse, $response);
     }
 
+    public function testCreateVirtualAccountInvalidReceiverTypes()
+    {
+        $this->startTest();
+    }
+
     public function testCreateVirtualAccountCrypto()
     {
         $this->fixtures->merchant->edit('10000000000000', ['category2' => 'cryptocurrency']);

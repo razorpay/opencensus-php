@@ -324,6 +324,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::LOCKED, $locked);
     }
 
+    public function getWebsite()
+    {
+        return $this->getAttribute(self::BUSINESS_WEBSITE);
+    }
+
     public function isSubmitted()
     {
         return ($this->getAttribute(self::SUBMITTED) === true);

@@ -10,6 +10,8 @@ use RZP\Gateway;
 use RZP\Exception;
 use RZP\Base\Fetch;
 use RZP\Trace\TraceCode;
+use RZP\Models\Base\Observer as BaseObserver;
+use RZP\Models\Base\QueryCache\Constants as QueryCacheConstants;
 
 class Entity
 {
@@ -46,6 +48,7 @@ class Entity
     const PAYMENT               = 'payment';
     const PRICING               = 'pricing';
     const WEBHOOK               = 'webhook';
+    const DISCOUNT              = 'discount';
     const EMI_PLAN              = 'emi_plan';
     const CUSTOMER              = 'customer';
     const MERCHANT              = 'merchant';
@@ -170,6 +173,25 @@ class Entity
     // Tax and Tax Groups
     const TAX                   = 'tax';
     const TAX_GROUP             = 'tax_group';
+
+    /**
+     * Defines a map of entites which are currently
+     * being cached and associated cache version prefixes
+     * and the specific cache ttl for any entities.
+     */
+    const CACHED_ENTITIES = [
+        self::KEY      => [
+            QueryCacheConstants::VERSION => 'v1',
+        ],
+        self::MERCHANT => [
+            QueryCacheConstants::VERSION => 'v1',
+            QueryCacheConstants::TTL     => 1,
+        ],
+        self::ACCOUNT  => [
+            QueryCacheConstants::VERSION => 'v1',
+            QueryCacheConstants::TTL     => 1,
+        ],
+    ];
 
     public static $namespace = [
         self::IIN                   => \RZP\Models\Card\IIN::class,
@@ -366,6 +388,25 @@ class Entity
         $class = $ns . '\Entity';
 
         return $class;
+    }
+
+    /**
+     * Returns the observer class for a given entity
+     * If no observer class is defined for the entity,
+     * we return the Base Observer class
+     *
+     * @param  string $entity
+     * @return string
+     */
+    public static function getEntityObserverClass(string $entity): string
+    {
+        $entityNamespace = self::getEntityNamespace($entity);
+
+        $entityObserverClass = $entityNamespace . '\\Observer';
+
+        return (class_exists($entityObserverClass) === true) ?
+            $entityObserverClass :
+            BaseObserver::class;
     }
 
     public static function getEntityObject($entity)

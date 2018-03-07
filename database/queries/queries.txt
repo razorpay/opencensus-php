@@ -2983,3 +2983,34 @@ ALTER TABLE bank_transfers
 
 ALTER TABLE virtual_accounts
     ADD INDEX virtual_accounts_updated_at_index (updated_at);
+
+ALTER TABLE fund_transfer_attempts
+    ADD COLUMN initiate_at INT(11) AFTER batch_fund_transfer_id;
+
+ALTER TABLE merchant_access_map
+    DROP FOREIGN KEY merchant_access_map_merchant_id_foreign,
+    DROP INDEX merchant_access_map_merchant_id_entity_id_unique;
+
+ALTER TABLE merchant_access_map
+    ADD CONSTRAINT merchant_access_map_merchant_id_foreign FOREIGN KEY(merchant_id)
+        REFERENCES merchants(id);
+
+ALTER TABLE workflow_actions
+    ADD COLUMN `maker_id` char(14) NULL AFTER `admin_id`,
+    ADD COLUMN `maker_type` char(14) NULL AFTER `maker_id`,
+    ADD INDEX workflow_actions_maker_id_maker_type_index (maker_id, maker_type),
+    MODIFY `admin_id` CHAR(14) NULL DEFAULT NULL;
+
+# To run after the PR is merged.
+UPDATE `workflow_actions`
+    SET maker_id = admin_id , maker_type = 'admin'
+    WHERE maker_id IS NULL AND admin_id IS NOT NULL;
+
+ALTER TABLE `merchants`
+    ADD COLUMN `has_key_access` TINYINT(1) NOT NULL DEFAULT 0 after `linked_account_kyc`;
+
+ALTER TABLE tokens
+    ADD COLUMN aadhaar_number VARCHAR(255) DEFAULT NULL AFTER ifsc;
+
+ALTER TABLE schedules
+    MODIFY COLUMN `interval` INTEGER DEFAULT NULL;

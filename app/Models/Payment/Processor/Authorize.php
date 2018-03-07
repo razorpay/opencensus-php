@@ -1053,9 +1053,6 @@ trait Authorize
                 ]);
         }
 
-        // We ensure that the e_mandate feature has been enabled for the merchant
-        $this->verifyFeatureForMerchant($payment->merchant, Feature\Constants::E_MANDATE);
-
         //
         // TODO: This is broken still. We should not be accepting any token
         // in private auth also for first recurring. But, in private auth,
@@ -1119,6 +1116,13 @@ trait Authorize
             throw new Exception\BadRequestValidationFailureException(
                 'The auth_type field is required when method is ' . Method::EMANDATE
             );
+        }
+
+        if (($payment->getAuthType() === Payment\AuthType::AADHAAR) and
+            (empty($input[Payment\Entity::AADHAAR]['number']) === true))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The aadhaar[number] field is required.');
         }
 
         $bank = $payment->getBank();
@@ -2107,6 +2111,9 @@ trait Authorize
             $saveMethodInput[Token\Entity::IFSC] =
                     $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::IFSC] ?? null;
 
+            $saveMethodInput[Token\Entity::AADHAAR_NUMBER] =
+                    $input[Payment\Entity::AADHAAR]['number'] ?? null;
+
             $saveMethodInput[Token\Entity::EXPIRED_AT] =
                     $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::EXPIRE_BY] ?? null;
         }
@@ -2121,10 +2128,6 @@ trait Authorize
         try
         {
             $token = (new Token\Core)->create($customer, $saveMethodInput);
-        }
-        catch (Exception\RecoverableException $e)
-        {
-            // Ignore the exception, can be an already saved method
         }
         catch (\Exception $e)
         {
@@ -3812,7 +3815,7 @@ trait Authorize
 
     protected function validateIfIntentEnabled(Payment\Entity $payment)
     {
-        if ($payment->merchant->isFeatureEnabled(Feature\Constants::UPI_INTENT) === false)
+        if ($payment->merchant->isFeatureEnabled(Feature\Constants::DISABLE_UPI_INTENT) === true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'UPI intent is not enabled for the merchant');

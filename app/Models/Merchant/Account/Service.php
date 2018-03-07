@@ -6,7 +6,6 @@ use RZP\Exception;
 use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
 use RZP\Models\Merchant\Notify;
-use RZP\Models\Merchant\SlackActions as SlackActions;
 
 class Service extends Merchant\Service
 {
@@ -93,13 +92,12 @@ class Service extends Merchant\Service
      * @param array $input
      *
      * @return array
-     * @throws Exception\InvalidArgumentException
      */
     public function listLinkedAccounts(array $input)
     {
-        $input[Merchant\Entity::PARENT_ID] = $this->merchant->getId();
+        (new Validator)->validateInput('fetch', $input);
 
-        $accounts = $this->repo->merchant->fetch($input);
+        $accounts = $this->repo->account->getAccounts($this->merchant->getId(), $input);
 
         return $accounts->toArrayPublic();
     }

@@ -35,6 +35,7 @@ class Repository extends Base\Repository
         Entity::ORDER_ID           => 'sometimes|string|size:20',
         Entity::TRANSFERRED        => 'sometimes|boolean|in:0,1',
         self::EXPAND . '.*'        => 'filled|string|in:card',
+        Entity::CUSTOMER_ID        => 'sometimes|size:19|custom'
     ];
 
     // These are proxy allowed params to search on.
@@ -80,7 +81,20 @@ class Repository extends Base\Repository
         Entity::ORDER_ID,
         Entity::INVOICE_ID,
         Entity::SUBSCRIPTION_ID,
+        Entity::CUSTOMER_ID,
     ];
+
+
+    protected function validateCustomerId($attribute, $value)
+    {
+        $merchant = $this->merchant;
+
+        if ((empty($merchant) === false) and
+            (Merchant\Entity::hascustomerTransactionHistoryEnabled($merchant->getId()) === false))
+        {
+            throw new Exception\ExtraFieldsException($attribute);
+        }
+    }
 
     public function getRecentMerchantPaymentsForCheckoutId($checkoutId)
     {
@@ -1106,7 +1120,7 @@ class Repository extends Base\Repository
                     ->where(Entity::RECURRING_TYPE, RecurringType::AUTO)
                     ->where(Entity::STATUS, Status::CREATED)
                     ->where($paymentRecurringColumn, 1)
-                    ->where($paymentMethodColumn, Method::NETBANKING)
+                    ->where($paymentMethodColumn, Method::EMANDATE)
                     ->where(Entity::GATEWAY, $gateway)
                     ->with('merchant')
                     ->firstOrFail();

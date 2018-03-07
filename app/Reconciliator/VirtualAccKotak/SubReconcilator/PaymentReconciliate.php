@@ -29,6 +29,13 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     // 30 minutes
     const BUFFER_TIME = 1800;
 
+    public function __construct(string $gateway = null)
+    {
+        parent::__construct($gateway);
+
+        $this->messenger->setSkipSlack(true);
+    }
+
     /**
      * Identify the bank transfer using UTR, and thus find payment
      *
@@ -97,24 +104,28 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             'row'           => $row,
         ]);
 
-        // Don't alert for recent payments
-        if (($this->isRecentBankTransfer($row) === false) and
-            ($this->isAlreadyAlerted($row) === false))
-        {
-            $this->app['slack']->queue(
-                TraceCode::BANK_TRANSFER_UNEXPECTED,
-                $row,
-                [
-                    'channel'  => Config::get('slack.channels.virtual_accounts_log'),
-                    'username' => 'Scrooge',
-                    'icon'     => ':x:'
-                ]
-            );
+        //
+        //  Disabling slack alerts for now, for a single large VA recon file
+        //
 
-            $cacheKey = $this->getCacheKey($row);
+        // // Don't alert for recent payments
+        // if (($this->isRecentBankTransfer($row) === false) and
+        //     ($this->isAlreadyAlerted($row) === false))
+        // {
+        //     $this->app['slack']->queue(
+        //         TraceCode::BANK_TRANSFER_UNEXPECTED,
+        //         $row,
+        //         [
+        //             'channel'  => Config::get('slack.channels.virtual_accounts_log'),
+        //             'username' => 'Scrooge',
+        //             'icon'     => ':x:'
+        //         ]
+        //     );
 
-            Cache::put($cacheKey, $row[self::COLUMN_UTR], 360);
-        }
+        //     $cacheKey = $this->getCacheKey($row);
+
+        //     Cache::put($cacheKey, $row[self::COLUMN_UTR], 360);
+        // }
     }
 
     /**

@@ -2,8 +2,10 @@
 
 namespace RZP\Tests\Functional\FundTransfer;
 
+use Carbon\Carbon;
 use Mail;
 
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Constants\Entity;
 use RZP\Models\FundTransfer\Batch;
@@ -155,6 +157,7 @@ trait AttemptTrait
                     'purpose'                   => $purpose,
                     'status'                    => Attempt\Status::CREATED,
                     'source_type'               => Attempt\Type::PAYOUT,
+                    'initiate_at'               => Carbon::now(Timezone::IST)->getTimestamp(),
                 ]
             );
         }
