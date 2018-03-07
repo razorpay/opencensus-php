@@ -213,6 +213,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TERMINAL_USED_BEFORE                          = 'TERMINAL_USED_BEFORE';
 
     const REQUEST_THROTTLED                             = 'REQUEST_THROTTLED';
+    const THROTTLE_REQUEST_THROTTLED                    = 'THROTTLE_REQUEST_THROTTLED';
+    const THROTTLE_SETTINGS_MISSING                     = 'THROTTLE_SETTINGS_MISSING';
 
     const CARD_NETWORK_INVALID                          = 'CARD_NETWORK_INVALID';
 
