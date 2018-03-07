@@ -46,7 +46,7 @@ const gatewayMapping = {
   cybersource: 'Cybersource',
   hitachi: 'Hitachi',
   wallet_openwallet: 'RZP Open Wallet',
-  fss: 'FSS',
+  card_fss: 'Card FSS',
 };
 
 const gatewayAcquirerMapping = {
