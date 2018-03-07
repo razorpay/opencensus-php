@@ -59,9 +59,10 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     /**
-     * Variable used to determine if input file was uploaded
-     * in the request or passed as file_store entity id.
-     * Temporary entity property for backward compatibility of payment links
+     * Determines if batch entity was created in Create flow(has file upload)
+     * or Validate flow(has file id as input). In former case(old case) we need
+     * to throw validation errors whereas in later case we don't throw any
+     * validation error but save the errors in a file and return the file id.
      */
     protected $createdByFileUpload = false;
 
@@ -465,7 +466,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SUB_TYPE, $subType);
     }
 
-    public function setCreatedByFileUpload($createdByFileUpload)
+    public function setCreatedByFileUpload(bool $createdByFileUpload)
     {
         $this->createdByFileUpload = $createdByFileUpload;
     }

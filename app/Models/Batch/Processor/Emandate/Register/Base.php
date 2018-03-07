@@ -3,7 +3,6 @@
 namespace RZP\Models\Batch\Processor\Emandate\Register;
 
 use RZP\Exception;
-use RZP\Models\Batch;
 use RZP\Models\Customer\Token;
 use RZP\Models\Batch\Processor\Base as BaseProcessor;
 
@@ -69,8 +68,9 @@ class Base extends BaseProcessor
         throw new \BadMethodCallException();
     }
 
-    public function createSetOutputFileAndSave(array & $entries)
+    protected function createSetOutputFileAndSave(array & $entries)
     {
+        return;
     }
 
     protected function sendProcessedMail()

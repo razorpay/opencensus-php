@@ -188,10 +188,9 @@ class PaymentLinkTest extends TestCase
         $this->assertEquals($validatedFile['id'], $response['file_id']);
 
         // The validated file is supposed to be inside batch/validated folder
-        $this->assertEquals(storage_path('files/filestore/') . $validatedFile['location'],
-                            $response['signed_url']);
-        $this->assertEquals(true, (strpos($validatedFile['location'], 'batch/validated') !== false));
-        $this->assertEquals(true, (strpos($response['signed_url'], 'batch/validated') !== false));
+        $this->assertEquals(storage_path('files/filestore/') . $validatedFile['location'], $response['signed_url']);
+        $this->assertTrue(str_contains($validatedFile['location'], 'batch/validated'));
+        $this->assertTrue(str_contains($response['signed_url'], 'batch/validated'));
     }
 
     public function testBatchCreateForUploadedFile()
@@ -203,8 +202,6 @@ class PaymentLinkTest extends TestCase
         $responseFileUpload = $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
 
         $testdata = $this->testData[__FUNCTION__ . 'AfterFileUpload'];
-
-        $this->ba->proxyAuth('rzp_test_10000000000000');
 
         $testdata['request']['content']['file_id'] = $responseFileUpload['file_id'];
 
@@ -230,14 +227,14 @@ class PaymentLinkTest extends TestCase
         $validatedFile = $files['items'][1];
         $this->assertEquals('batch_validated', $validatedFile['type']);
         $this->assertEquals($response['id'], $validatedFile['entity_type'] . '_' . $validatedFile['entity_id']);
-        $this->assertTrue((strpos($validatedFile['location'], 'batch/validated') !== false));
+        $this->assertTrue(str_contains($validatedFile['location'], 'batch/validated'));
 
         // Check input file
         $inputFile = $files['items'][2];
         $this->assertEquals('batch_input', $inputFile['type']);
         $this->assertNull($inputFile['entity_type']);
         $this->assertNull($inputFile['entity_id']);
-        $this->assertTrue((strpos($inputFile['location'], 'batch/upload') !== false));
+        $this->assertTrue(str_contains($inputFile['location'], 'batch/upload'));
     }
 
     protected function getDefaultPaymentLinkFileEntries()

@@ -3,7 +3,6 @@
 namespace RZP\Models\Batch\Processor\Emandate\Debit;
 
 use RZP\Exception;
-use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Processor\Processor;
 use RZP\Gateway\Base\Action as GatewayAction;
@@ -141,8 +140,9 @@ class Base extends BaseProcessor
         throw new \BadMethodCallException();
     }
 
-    public function createSetOutputFileAndSave(array & $entries)
+    protected function createSetOutputFileAndSave(array & $entries)
     {
+        return;
     }
 
     protected function sendProcessedMail()
