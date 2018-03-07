@@ -180,6 +180,10 @@ class Base extends BaseModel\Core
 
         $response += $this->getFileIdAndSignedUrl($validatedUfhFile);
 
+        $this->deleteFile($this->inputFileLocalPath);
+
+        $this->deleteFile($this->validatedFileLocalPath);
+
         return $response;
     }
 
