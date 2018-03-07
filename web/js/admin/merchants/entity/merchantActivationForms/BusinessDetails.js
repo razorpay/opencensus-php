@@ -108,7 +108,7 @@ export default class BusinessDetails extends Component {
             </SelectField>
 
             <Field
-              label="Website Address"
+              label="Website/App URL"
               name="business_website"
               defaultValue={merchantDetails.business_website}
               disabled

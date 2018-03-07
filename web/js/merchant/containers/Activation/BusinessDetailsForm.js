@@ -296,7 +296,7 @@ export default class BusinessDetailsForm extends Component {
 
               <div class="form-group">
                 <label class="col-md-3 control-label label-required">
-                  Website Address
+                  Website/App URL
                 </label>
                 <div class="col-md-9">
                   <div class="RadioButton next">
