@@ -668,7 +668,7 @@ app
 
                 if (queryParams.next) {
                   var parser = document.createElement('a');
-                  parser.href = queryParams.next;
+                  parser.href = decodeURIComponent(queryParams.next);
 
                   var hostname = parser.hostname || window.location.hostname;
 
