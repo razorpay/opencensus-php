@@ -102,11 +102,16 @@ class Checkout
 
         $orderId = $input[Payment\Entity::ORDER_ID];
 
-        $this->order = $this->repo->order->findByPublicIdAndMerchant($orderId, $merchant);
+        $order = $this->setOrGetOrder($orderId, $merchant);
 
-        $data['order'] = (new Order\Core)->getFormattedDataForCheckout($this->order, $merchant);
+        $data['order'] = (new Order\Core)->getFormattedDataForCheckout($order, $merchant);
 
-        $this->resetMethodsIfValidBanksPresent($data, $this->order);
+        $this->resetMethodsIfValidBanksPresent($data, $order);
+    }
+
+    protected function setOrGetOrder(string $orderId, Merchant\Entity $merchant)
+    {
+        return $this->order ?? $this->repo->order->findByPublicIdAndMerchant($orderId, $merchant);
     }
 
     protected function resetMethodsIfValidBanksPresent(
@@ -551,7 +556,12 @@ class Checkout
 
     public function checkAndFillOfferDetails(Merchant\Entity $merchant, array $input, array & $data)
     {
-        $order = $this->order;
+        $order = null;
+
+        if (isset($input[Payment\Entity::ORDER_ID]) === true)
+        {
+            $order = $this->setOrGetOrder($input[Payment\Entity::ORDER_ID], $merchant);
+        }
 
         if (($order !== null) and
             ($order->offer !== null))

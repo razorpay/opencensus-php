@@ -396,7 +396,7 @@ class Validator extends Base\Validator
             (isset($input[Entity::OFFER_ID]) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
-                    'Discount without offer_id is currently not supported');
+                    'Discount without offer_id is not supported');
         }
     }
 }

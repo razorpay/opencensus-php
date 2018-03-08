@@ -347,16 +347,6 @@ class Entity extends Base\PublicEntity
         return $this->isAttributeNotNull(self::OFFER_ID);
     }
 
-    public function getOfferIfExists()
-    {
-        if ($this->hasOffer() === true)
-        {
-            return $this->offer;
-        }
-
-        return null;
-    }
-
     protected function setPublicOfferIdAttribute(array & $array)
     {
         $offerId = $this->getAttribute(self::OFFER_ID);
@@ -369,6 +359,10 @@ class Entity extends Base\PublicEntity
         if ($this->getAttribute(self::DISCOUNT) === true)
         {
             $array[self::DISCOUNT] = true;
+        }
+        else
+        {
+            unset($array[self::DISCOUNT]);
         }
     }
 }
