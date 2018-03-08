@@ -16,7 +16,7 @@ spec:
   template:
     metadata:
       annotations:
-        iam.amazonaws.com/role: iam-echo-dashboard
+        iam.amazonaws.com/role: func-dashboard
       labels:
         name: dashboard
     spec:
@@ -43,26 +43,26 @@ spec:
             mountPath: /app/storage/logs/
           - name: nginx
             mountPath: /var/log/nginx/
-#        readinessProbe:
-#          httpGet:
-#            path: /v1/status
-#            port: 80
-#            httpHeaders:
-#              - name: Host
-#                value: echo-dashboard.razorpay.in
-#          initialDelaySeconds: 60
-#          periodSeconds: 120
-#        livenessProbe:
-#          httpGet:
-#            path: /commit.txt
-#            port: 80
-#            httpHeaders:
-#              - name: Host
-#                value: echo-dashboard.razorpay.in
-#          initialDelaySeconds: 60
-#          periodSeconds: 2
-        lifecycle:
-          preStop:
+        readinessProbe:
+          httpGet:
+            path: /v1/status
+            port: 80
+            httpHeaders:
+              - name: Host
+                value: func-dashboard.razorpay.in
+          initialDelaySeconds: 60
+          periodSeconds: 120
+        livenessProbe:
+          httpGet:
+            path: /commit.txt
+            port: 80
+            httpHeaders:
+              - name: Host
+                value: func-dashboard.razorpay.in
+          initialDelaySeconds: 60
+          periodSeconds: 2
+          lifecycle:
+            preStop:
             exec:
               command: ["/bin/rm","-f","/app/public/commit.txt",";","sleep","5",";","/usr/sbin/nginx","-s","quit"]
       terminationGracePeriodSeconds: 60
