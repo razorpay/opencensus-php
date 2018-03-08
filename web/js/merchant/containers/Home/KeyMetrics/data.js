@@ -361,12 +361,11 @@ export const getTimelineData = ({
     groupAggregatesMap = {};
 
   let csvData = [],
-    csvHeader = ['#', 'Date'],
-    csvFooter = ['', 'Total'],
+    csvHeader = ['Date'],
     csvGrandTotal = 0;
 
   if (data.length === 0 || groups.length === 0) {
-    csvData = csvData.concat([csvHeader, csvFooter.concat([0])]);
+    csvData = csvData.concat([csvHeader]);
 
     return {
       labels: [],
@@ -572,7 +571,6 @@ export const getTimelineData = ({
       groupCsvData.push(yAxisVal);
     });
 
-    groupsCsvData[tsIndex].unshift(tsIndex + 1);
     groupsCsvData[tsIndex].push(totalAtTime);
 
     timestamps[tsIndex] = moment(timestamp);
@@ -582,7 +580,6 @@ export const getTimelineData = ({
 
   aggregates.forEach(aggregate => {
     csvHeader.push(aggregate.label);
-    csvFooter.push(aggregate.value);
 
     csvGrandTotal += aggregate.value;
     aggregate.value = isCurrency
@@ -590,11 +587,9 @@ export const getTimelineData = ({
       : aggregate.value;
   });
 
-  csvHeader.push(`Total${isCurrency ? '(Paise)' : ''}`);
-  csvFooter.push(csvGrandTotal);
+  csvHeader.push("Amount");
 
   csvData.unshift(csvHeader);
-  csvData.push(csvFooter);
 
   // sorting aggregates by their value in descending order
   const orderedGroups = aggregates.sort((item1, item2) => {

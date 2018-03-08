@@ -447,11 +447,10 @@ const getGroupingFactor = (groupKey, bankNames) => {
 };
 
 const makeCSVData = (data, bankNames, groupTitleMap) => {
-  const csvHeader = ['#']
+  const csvHeader = []
       .concat(paymentMethodsColumns.map(titleCase))
-      .concat(['Total(Paise)', '%Share']),
-    csvBody = [],
-    csvFooter = paymentMethodsColumns.map(i => '').concat(['Total']);
+      .concat(['Amount', '%Share']),
+    csvBody = [];
 
   let total = 0;
 
@@ -477,17 +476,13 @@ const makeCSVData = (data, bankNames, groupTitleMap) => {
     return body;
   });
 
-  csvFooter.push(total);
-
   rows.sort((item1, item2) => (item1[0] <= item2[0] ? -1 : 1));
 
   rows.forEach((row, index) => {
-    row.unshift(index + 1);
     row.push((row[row.length - 1] / total * 100).toFixed(2) + '%');
   });
 
   rows.unshift(csvHeader);
-  rows.push(csvFooter);
 
   return arrayToCsvDataUrl(rows);
 };
