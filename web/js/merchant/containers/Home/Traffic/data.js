@@ -83,8 +83,7 @@ const getPieData = ({
                },
     legendData = [];
 
-  let csvHeader = ['', `Total${isCurrency ? '(Paise)' : ''}`, '%Split'],
-    csvFooter = ['Total'],
+  let csvHeader = ["", "Amount", '%Split'],
     csvData = [],
     csvGrandTotal = 0;
 
@@ -148,10 +147,7 @@ const getPieData = ({
     return row;
   });
 
-  csvFooter.push(csvGrandTotal);
-
   csvData.unshift(csvHeader);
-  csvData.push(csvFooter);
 
   return {
     labels,
