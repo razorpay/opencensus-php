@@ -101,6 +101,12 @@ class AuthorizeTest extends TestCase
 
         $this->fixtures->edit('iin', 401200, ['flows' => ['magic' => '1']]);
 
+        $store = Cache::store();
+
+        Cache::shouldReceive('store')
+            ->withAnyArgs()
+            ->andReturn($store);
+
         Cache::shouldReceive('get')
             ->once()
             ->with(ConfigKey::DISABLE_MAGIC)
