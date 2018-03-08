@@ -746,7 +746,7 @@ class SettlementTest extends TestCase
         $lastSetl = $this->getLastEntity('settlement', true);
         $this->assertEquals($transfer['to_id'], $lastSetl['merchant_id']);
         $this->assertEquals(5000, $lastSetl['amount']);
-        
+
         // (1 payment txn + 1 transfer txn + 1 transfer payment txn)
         $this->assertEquals(3, $content[$channel]['txnCount']);
 
@@ -954,8 +954,6 @@ class SettlementTest extends TestCase
         $content = $this->initiateSettlements($channel);
 
         $this->assertEquals(1, $content[$channel]['txnCount']);
-
-        Carbon::setTestNow();
     }
 
     public function testSettlementForReversalOfDirectTransfer()
@@ -984,7 +982,7 @@ class SettlementTest extends TestCase
             ]);
 
         // Create one reversal, same day
-        $reversal = $this->fixtures->create(
+        $this->fixtures->create(
             'reversal',
             [
                 'entity_type' => 'transfer',
@@ -1005,7 +1003,6 @@ class SettlementTest extends TestCase
         // 1 reversal refund  (linked account)
         //
         $this->assertEquals(7, $content[$channel]['txnCount']);
-
 
         $lastSetl = $this->getLastEntity('settlement', true);
 
@@ -1033,9 +1030,6 @@ class SettlementTest extends TestCase
 
         // Reversal to be settled => 500
         $this->assertEquals(500, $lastSetl['amount']);
-
-        // Reset carbon time
-        Carbon::setTestNow();
     }
 
     public function testSettlementForReversalOfPaymentTransfer()
@@ -1070,20 +1064,20 @@ class SettlementTest extends TestCase
             ]);
 
         // Create one reversal, 5 days later.
-        Carbon::setTestNow(Carbon::today(Timezone::IST)->addDays(5));
+        $time = Carbon::today(Timezone::IST)->addDays(5);
+        Carbon::setTestNow($time);
         $this->fixtures->create(
             'reversal',
             [
                 'entity_type' => 'transfer',
                 'entity_id'   => $transfer->getId(),
                 'amount'      => 500,
-                'created_at'  => $createdAt + 10,
-                'updated_at'  => $createdAt + 20
+                'created_at'  => $time->getTimestamp(),
+                'updated_at'  => $time->getTimestamp(),
             ]);
 
         Carbon::setTestNow();
 
-        //sd($this->getEntities('transaction', ['settled' => 0], true));
         // Initiate immediate settlement, none should settle on the same day
         $content = $this->initiateSettlements($channel);
         $this->assertEquals(0, $content[$channel]['txnCount']);
@@ -1095,7 +1089,7 @@ class SettlementTest extends TestCase
 
         //
         // Try settlement after 3 days:
-        // Total expected 3 =>
+        // Total expected 4 =>
         // 1 payment, 1 transfer
         // 1 transfer payment (linked account)
         // 1 reversal refund (linked account)
@@ -1103,12 +1097,9 @@ class SettlementTest extends TestCase
         $content = $this->initiateSettlements($channel);
         $this->assertEquals(4, $content[$channel]['txnCount']);
 
-        Carbon::setTestNow($nextWorkingDay->addDays(3));
+        Carbon::setTestNow($nextWorkingDay->addDays(1));
         $content = $this->initiateSettlements($channel);
         $this->assertEquals(1, $content[$channel]['txnCount']);
-
-        // Reset carbon time
-        Carbon::setTestNow();
     }
 
     public function testSettlementWithDispute()

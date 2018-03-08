@@ -1623,7 +1623,7 @@ final class Route
         'feature_add'                            => '*',
         'feature_bulk_assign'                    => '*',
         'feature_bulk_remove'                    => '*',
-        'fund_transfer_attempt_bulk_update'      => '*',
+        'fund_transfer_attempt_bulk_update'      => Permission::FUND_TRANSFER_ATTEMPT_UPDATE,
         'gateway_add_priorities'                 => '*',
         'gateway_create_downtime'                => '*',
         'gateway_fetch_priorities'               => '*',
