@@ -37,29 +37,12 @@ class BatchNotify extends BaseJob implements ShouldQueue
      */
     protected $input;
 
-    /**
-     * Invoice's Core instance
-     *
-     * @var InvoiceModel\Core
-     */
-    protected $core;
-
     public function __construct(string $mode, string $batchId, array $input)
     {
         parent::__construct($mode);
 
         $this->batchId = $batchId;
         $this->input   = $input;
-    }
-
-    public function getBatchId(): string
-    {
-        return $this->batchId;
-    }
-
-    public function getInput(): array
-    {
-        return $this->input;
     }
 
     public function handle()
@@ -96,21 +79,18 @@ class BatchNotify extends BaseJob implements ShouldQueue
         }
     }
 
-    protected function notify(
-        InvoiceModel\Entity $invoice,
-        bool $smsNotify,
-        bool $emailNotify)
+    protected function notify(InvoiceModel\Entity $invoice, bool $smsNotify, bool $emailNotify)
     {
         // Updates invoice's sms and email status to pending
         // so Notifier picks them.
         if ($smsNotify === true)
         {
-            $invoice->setSmsStatus(InvoiceModel\NotifyStatus::SENT);
+            $invoice->setSmsStatus(InvoiceModel\NotifyStatus::PENDING);
         }
 
         if ($emailNotify === true)
         {
-            $invoice->setEmailStatus(InvoiceModel\NotifyStatus::SENT);
+            $invoice->setEmailStatus(InvoiceModel\NotifyStatus::PENDING);
         }
 
         try
@@ -132,12 +112,5 @@ class BatchNotify extends BaseJob implements ShouldQueue
                     'invoice_id' => $invoice->getId(),
                 ]);
         }
-    }
-
-    protected function init()
-    {
-        parent::init();
-
-        $this->core = new InvoiceModel\Core;
     }
 }

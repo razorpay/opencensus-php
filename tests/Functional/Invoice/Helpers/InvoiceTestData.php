@@ -3624,7 +3624,7 @@ return [
             ],
         ],
         'response' => [
-            'content' => [],
+            'content'     => [],
             'status_code' => 200,
         ],
     ],
