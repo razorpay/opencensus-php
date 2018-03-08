@@ -9,6 +9,13 @@ class Encryptor extends AESCrypto
     const KEY_VALUE_SEPARATOR = '~';
     const PAIRS_SEPARATOR     = '`';
 
+    public function __construct(int $mode, string $masterKey, string $initializationVector = '')
+    {
+        parent::__construct($mode, $masterKey, $initializationVector);
+
+        $this->aes->setKeyLength(256);
+    }
+
     public function encryptData(array $data)
     {
         $encoded = [];
