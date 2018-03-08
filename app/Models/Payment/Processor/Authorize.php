@@ -4103,14 +4103,42 @@ trait Authorize
 
         $magicDisabledGlobally = (bool) $cache->get(ConfigKey::DISABLE_MAGIC);
 
-        $magicEnabledForMerchant = $this->merchant->isMagicEnabled();
+        $isMagicEnabled = false;
 
-        $iinEntity = (empty($this->payment->card) == true) ? null : $this->payment->card->iinRelation;
+        switch (true)
+        {
+            case $magicDisabledGlobally:
+                $isMagicEnabled = false;
+                break;
 
-        return (($magicDisabledGlobally === false) and
-                ($magicEnabledForMerchant === true) and
-                (empty($iinEntity) === false) and
-                ($iinEntity->isMagicEnabled() === true)
-        );
+            case $this->isMagicDisabledForMerchant();
+                $isMagicEnabled = false;
+                break;
+
+            case $this->isMagicDisabledForIin():
+                $isMagicEnabled = false;
+                break;
+
+            default:
+                $isMagicEnabled = true;
+                break;
+        }
+        return $isMagicEnabled;
+    }
+
+    protected function isMagicDisabledForIin()
+    {
+        $card = $this->payment->card;
+
+        if ((empty($card) == true) or ($card->iinRelation->isMagicEnabled() === false))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    protected function isMagicDisabledForMerchant()
+    {
+        return ($this->merchant->isMagicEnabled() === false);
     }
 }
