@@ -7,6 +7,9 @@ use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Offer;
 use RZP\Models\Payment;
 
+/**
+ * @property Offer\Entity $offer
+ */
 class Entity extends Base\PublicEntity
 {
     use NotesTrait;

@@ -6,6 +6,11 @@ use RZP\Models\Base;
 
 class Calculator extends Base\Core
 {
+    /**
+     * @var Entity
+     */
+    protected $offer;
+
     public function __construct(Entity $offer)
     {
         parent::__construct();
