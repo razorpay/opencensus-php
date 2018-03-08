@@ -1,12 +1,12 @@
 const colors = [
-  '#042666', // very dark blue
+  '#1B3c97', // very dark blue
   '#136edc', // dark blue
-  '#00b1f1', // light blue
-  '#83c825', // green
+  '#00bbff', // light blue
+  '#85d01d', // green
   '#f1d447', // yellow
   '#f0a13f', // orange
   '#ada17e', // brown
-  '#e15353', // red
+  '#ee6880', // red
   'rgb(230, 126, 34)',
   'rgb(241, 196, 15)',
   'rgb(155, 89, 182)',
