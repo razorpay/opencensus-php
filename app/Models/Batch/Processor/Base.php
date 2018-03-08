@@ -87,14 +87,14 @@ class Base extends BaseModel\Core
      * - sending mails with attachment,
      * - unlinking post processing etc..
      */
-    protected $inputFileLocalPath = "";
-    protected $outputFileLocalPath = "";
-    protected $validatedFileLocalPath = "";
+    protected $inputFileLocalPath;
+    protected $outputFileLocalPath;
+    protected $validatedFileLocalPath;
 
     /**
      * Holds path where generated file must be saved
      */
-    protected $generatedFileDirectory = "";
+    protected $generatedFileDirectory;
 
     public function __construct(Batch\Entity $batch)
     {
@@ -179,6 +179,8 @@ class Base extends BaseModel\Core
         $response = $this->getValidatedEntriesStatsAndPreview($entries);
 
         $response += $this->getFileIdAndSignedUrl($validatedUfhFile);
+
+        $this->deleteLocalFiles();
 
         return $response;
     }
@@ -490,9 +492,7 @@ class Base extends BaseModel\Core
             $this->sendProcessedMail();
         }
 
-        $this->deleteFile($this->outputFileLocalPath);
-
-        $this->deleteFile($this->inputFileLocalPath);
+        $this->deleteLocalFiles();
     }
 
     /**
@@ -703,17 +703,26 @@ class Base extends BaseModel\Core
         Mail::send($mail);
     }
 
-    public function deleteFile(string $filePath)
+    protected function deleteLocalFiles()
     {
-        if (file_exists($filePath))
+        $this->deleteFile($this->inputFileLocalPath);
+        $this->deleteFile($this->outputFileLocalPath);
+        $this->deleteFile($this->validatedFileLocalPath);
+    }
+
+    protected function deleteFile(string $filePath = null)
+    {
+        if (($filePath !== null) and (file_exists($filePath) === true))
         {
             $success = unlink($filePath);
 
             if ($success === false)
             {
-                $this->trace->critical(TraceCode::BATCH_FILE_DELETE_ERROR, [
-                    'file_path' => $filePath
-                ]);
+                $this->trace->critical(
+                    TraceCode::BATCH_FILE_DELETE_ERROR,
+                    [
+                        'file_path' => $filePath,
+                    ]);
             }
         }
     }
