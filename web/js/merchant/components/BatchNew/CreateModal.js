@@ -1,5 +1,6 @@
 import { Component, Fragment } from 'react';
-import { Field, reduxForm } from 'redux-form';
+import { connect } from 'react-redux';
+import { Field, reduxForm, formValueSelector } from 'redux-form';
 
 import InputField from 'rzp/ui/Forms/InputField';
 import TableSlider from 'rzp/ui/TableSlider';
@@ -9,6 +10,14 @@ import AsyncButton from 'react-async-button';
 import { titleCase } from 'rzp/utils/rzp-utils';
 import { required } from 'rzp/utils/validators';
 
+const selector = formValueSelector('createBatch');
+
+@connect(state => {
+  return {
+    sms_notify: selector(state, 'sms_notify'),
+    email_notify: selector(state, 'email_notify'),
+  };
+}, null)
 @reduxForm({
   form: 'createBatch',
   initialValues: {
@@ -17,6 +26,18 @@ import { required } from 'rzp/utils/validators';
   },
 })
 export default class BatchCreateModal extends Component {
+  generateCtaText = () => {
+    let { sms_notify, email_notify } = this.props;
+    let ctaText = '';
+
+    if (sms_notify || email_notify) {
+      ctaText = 'Create & Send Payment Link';
+    } else {
+      ctaText = 'Create Payment Link';
+    }
+    return ctaText;
+  };
+
   render() {
     const {
       closeModal,
@@ -26,6 +47,7 @@ export default class BatchCreateModal extends Component {
       handleSubmit,
     } = this.props;
 
+    let ctaText = this.generateCtaText();
     return (
       <div class="modal-body">
         <p>This is how we are interpreting your data.</p>
@@ -90,7 +112,7 @@ export default class BatchCreateModal extends Component {
             <AsyncButton
               type="button"
               class="btn btn-primary"
-              text="Create & Send Payment Links"
+              text={ctaText}
               pendingText="Creating..."
               onClick={handleSubmit(onCreateBatch)}
             />
