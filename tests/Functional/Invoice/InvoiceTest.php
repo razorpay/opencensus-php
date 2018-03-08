@@ -1411,22 +1411,7 @@ class InvoiceTest extends TestCase
 
     public function testInvoiceNotifyForBatch()
     {
-        $this->fixtures->create(
-            'batch',
-            [
-                'id'          => '00000000000001',
-                'type'        => 'payment_link',
-                'total_count' => 2,
-            ]);
-
-        $attributes = $this->testData['testInvoiceNotifyForBatchInputData']['attributes'];
-
-        foreach ($attributes as $attribute)
-        {
-            $this->createInvoice($attribute['invoiceAttributes'], $attribute['orderAttributes']);
-        }
-
-        $this->ba->proxyAuth();
+        $this->createBatchInvoices();
 
         $this->startTest();
 
@@ -1440,22 +1425,7 @@ class InvoiceTest extends TestCase
 
     public function testInvoiceSmsNotifyForBatch()
     {
-        $this->fixtures->create(
-            'batch',
-            [
-                'id'          => '00000000000001',
-                'type'        => 'payment_link',
-                'total_count' => 2,
-            ]);
-
-        $attributes = $this->testData['testInvoiceNotifyForBatchInputData']['attributes'];
-
-        foreach ($attributes as $attribute)
-        {
-            $this->createInvoice($attribute['invoiceAttributes'], $attribute['orderAttributes']);
-        }
-
-        $this->ba->proxyAuth();
+        $this->createBatchInvoices();
 
         $this->startTest();
 
@@ -1466,7 +1436,6 @@ class InvoiceTest extends TestCase
         $this->assertNull($invoices[1]['email_status']);
         $this->assertEquals('sent', $invoices[1]['sms_status']);
     }
-
 
     // -------------------------------------------------------------------------
     // Following tests asserts working of es fetch in various cases.
@@ -2413,6 +2382,25 @@ class InvoiceTest extends TestCase
                 'id'       => '1000007invoice',
                 'order_id' => $order->getId(),
             ]);
+    }
 
+    protected function createBatchInvoices()
+    {
+        $attributes = $this->testData['testInvoiceNotifyForBatchInputData']['attributes'];
+
+        $this->fixtures->create(
+            'batch',
+            [
+                'id'          => '00000000000001',
+                'type'        => 'payment_link',
+                'total_count' => count($attributes),
+            ]);
+
+        $this->ba->proxyAuth();
+
+        foreach ($attributes as $attribute)
+        {
+            $this->createInvoice($attribute['invoiceAttributes'], $attribute['orderAttributes']);
+        }
     }
 }
