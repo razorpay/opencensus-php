@@ -1,10 +1,12 @@
 import {
   titleCase,
-  getFormattedAmountNew,
   paiseToRupees,
   arrayToCsvDataUrl,
 } from 'rzp/utils/rzp-utils';
-import { humanReadableIndianCurrency } from 'rzp/utils/numerals';
+import {
+  humanReadableIndian,
+  humanReadableIndianCurrency
+} from 'rzp/utils/numerals';
 import { default as chartColors } from 'rzp/utils/chart/colors';
 
 import { paymentMethodsColumns } from 'merchant/containers/Home/PaymentMethods/data';
@@ -24,6 +26,7 @@ function main(
   node,
   o,
   data,
+  isCurrency,
   d3,
   onTransition,
   onShowTooltip,
@@ -32,7 +35,11 @@ function main(
 ) {
   var root,
     opts = { ...defaults, ...o },
-    formatNumber = getFormattedAmountNew,
+    formatNumber = isCurrency
+                     ? (value) => humanReadableIndianCurrency(
+                                    paiseToRupees(value)
+                                  )
+                     : humanReadableIndian,
     rname = opts.rootname,
     margin = opts.margin;
 
@@ -219,7 +226,7 @@ function main(
         onShowTooltip({
           amount: d.value,
           percent: d.percent,
-          label: d.displayText,
+          label: d.displayText
         });
 
         if (canBeZoomed(d)) {
@@ -277,7 +284,7 @@ function main(
       .style('font-size', '1em')
       .attr('dx', '1em')
       .text(function(d) {
-        return humanReadableIndianCurrency(paiseToRupees(d.value));
+        return formatNumber(d.value);
       })
       .append('tspan')
       .attr('class', 'amount-percent')
@@ -490,6 +497,7 @@ const makeCSVData = (data, bankNames, groupTitleMap) => {
 export default function renderTreemap(
   node,
   res,
+  isCurrency,
   d3,
   onTransition,
   onShowTooltip,
@@ -536,6 +544,7 @@ export default function renderTreemap(
     node,
     { width: node.clientWidth },
     { key: 'All Methods', values: res },
+    isCurrency,
     d3,
     onTransition,
     onShowTooltip,

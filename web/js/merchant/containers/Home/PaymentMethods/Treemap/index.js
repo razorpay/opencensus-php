@@ -2,7 +2,10 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
 import Tooltip from 'rzp/ui/Tooltip';
-import { getFormattedAmountNew } from 'rzp/utils/rzp-utils';
+import {
+  getFormattedNumber,
+  getFormattedAmountNew
+} from 'rzp/utils/rzp-utils';
 import { globalGroupTitleMap as groupTitleMap } from "rzp/utils/pokedex";
 
 import { bankNames } from '../data';
@@ -75,10 +78,11 @@ export default class Treemap extends Component {
     return typeof onLevelChange === 'function' && onLevelChange(d);
   }
 
-  renderTreemap(data) {
+  renderTreemap(data, isCurrency) {
     this.treemapApi = renderTreemap(
       this.node,
       data,
+      isCurrency,
       window.d3,
       this.onTransition,
       this.onShowTooltip,
@@ -107,7 +111,7 @@ export default class Treemap extends Component {
     this.node.style.width = parent.clientWidth + 'px';
 
     timer = window.setTimeout(() => {
-      this.renderTreemap(this.props.data);
+      this.renderTreemap(this.props.data, this.props.isCurrency);
     }, 250);
   }
 
@@ -118,7 +122,7 @@ export default class Treemap extends Component {
 
     return (
       this.props.data &&
-      this.renderTreemap(this.props.data)
+      this.renderTreemap(this.props.data, this.props.isCurrency)
     );
   }
 
@@ -127,7 +131,7 @@ export default class Treemap extends Component {
 
     if (data !== nextProps.data) {
 
-      return this.renderTreemap(nextProps.data);
+      return this.renderTreemap(nextProps.data, nextProps.isCurrency);
     } else if (
       !this.isNewData &&
       currentLevel &&
@@ -143,7 +147,11 @@ export default class Treemap extends Component {
 
   render() {
     const { tooltip } = this.state,
-      amount = getFormattedAmountNew(tooltip.data.amount, true);
+          { isCurrency } = this.props,
+      amount = (isCurrency
+                  ? getFormattedAmountNew
+                  : getFormattedNumber
+               )(tooltip.data.amount, true);
 
     return (
       <div>
