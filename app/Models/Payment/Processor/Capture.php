@@ -522,6 +522,8 @@ trait Capture
         $this->eventOrderPaid();
 
         $this->eventInvoicePaid();
+
+        $this->eventVirtualAccountCredited();
     }
 
     /**
@@ -597,6 +599,22 @@ trait Capture
         ];
 
         $this->app['events']->fire($event, $eventPayload);
+    }
+
+    protected function eventVirtualAccountCredited()
+    {
+        $payment = $this->payment;
+
+        if ($payment->isBankTransfer() === false)
+        {
+            return;
+        }
+
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $payment
+        ];
+
+        $this->app['events']->fire('api.virtual_account.credited', $eventPayload);
     }
 
     protected function eventPaymentCaptured()
