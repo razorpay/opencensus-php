@@ -196,11 +196,9 @@ class PaymentLinkTest extends TestCase
 
     public function testBatchCreateForUploadedFile()
     {
-        $testdata = $this->prepareStateFromValidateApi();
+        $this->prepareStateFromValidateApi();
 
-        $response = $this->runRequestResponseFlow($testdata);
-
-        $this->assertArraySelectiveEquals($testdata['response']['content'], $response);
+        $response = $this->startTest();
 
         // Check invoices
         $invoices = $this->getEntities('invoice', [], true);
@@ -230,10 +228,16 @@ class PaymentLinkTest extends TestCase
         $this->assertTrue(str_contains($inputFile['location'], 'batch/upload'));
     }
 
-    protected function prepareStateFromValidateApi(): array
+    /**
+     * Helper method to accompany testBatchCreateForUploadedFile() test.
+     * It creates an state(db, file wise) which would have been there if
+     * /validate api was called prior to /create api call. We could have triggered
+     * /validated api call first followed by /create api call in same tests
+     * but we are avoiding doing multiple api calls in same test.
+     */
+    protected function prepareStateFromValidateApi()
     {
         // Creating input and validated file fixtures
-
         $attributeInputFile = [
 
             'type'          => 'batch_input',
@@ -255,20 +259,13 @@ class PaymentLinkTest extends TestCase
         $validatedFile = $this->fixtures->create('file_store', $attributeValidatedFile);
 
         // Move validated test file copy to validated folder
+        copy('tests/Functional/Batch/files/validated.xlsx',
+            'storage/files/filestore/batch/validated/10000000000002.xlsx');
 
-        $originalFile = $this->createUploadedFile('tests/Functional/Batch/test_files/validated.xlsx');
+        $trace    = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+        $name     = $testDataKey ?? $trace[1]['function'];
 
-        copy($originalFile, 'storage/files/filestore/batch/validated/10000000000002.xlsx');
-
-        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
-
-        $name = $testDataKey ?? $trace[1]['function'];
-
-        $testdata = &$this->testData[$name];
-
-        $testdata['request']['content']['file_id'] = $validatedFile->getPublicId();
-
-        return $testdata;
+        $this->testData[$name]['request']['content']['file_id'] = $validatedFile->getPublicId();
     }
 
     protected function getDefaultPaymentLinkFileEntries()
@@ -306,24 +303,5 @@ class PaymentLinkTest extends TestCase
                 Header::PARTIAL_PAYMENT  => null,
             ],
         ];
-    }
-
-    protected function createUploadedFile(string $filePath, string $mimeType = null, int $fileSize = -1)
-    {
-        $this->assertFileExists($filePath);
-
-        $mimeType = $mimeType ?: 'image/png';
-
-        $fileSize = ($fileSize === -1) ? filesize($filePath) : $fileSize;
-
-        $uploadedFile = new UploadedFile(
-            $filePath,
-            $filePath,
-            $mimeType,
-            $fileSize,
-            null,
-            true);
-
-        return $uploadedFile;
     }
 }
