@@ -130,7 +130,8 @@ const customToolTip = function(tooltipModel) {
         )
       ),
       dateFormat = getDateFormat(startDate, endDate),
-      url = `${externalUrl}?from=${startDate.unix()}&to=${endDate.unix()}`;
+      url = `${externalUrl}?from=${startDate.unix()}&to=${endDate.unix()}`+
+            `&ref=home`;
 
     let formattedDate = startDate.format(dateFormat);
 

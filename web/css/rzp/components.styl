@@ -306,6 +306,25 @@ a.breadcrumb__backNav--link {
   [type='checkbox']:disabled + label {
     cursor: not-allowed;
   }
+
+  &.next {
+    label::before {
+      border-color: #5f73cf !important;
+    }
+    [type='checkbox']:checked + label::before {
+      border-color: #cfdadd !important;
+      background-color: #fff9e9 !important;
+    }
+
+    label::after {
+      color: #27c24c !important;
+    }
+    label {
+      span {
+        margin-left: 4px;
+      }
+    }
+  }
 }
 
 @keyframes luminate {

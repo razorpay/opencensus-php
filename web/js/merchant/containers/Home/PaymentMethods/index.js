@@ -247,7 +247,8 @@ class PaymentMethods extends Component {
           <div className="pull-right">
             <Link
               target="_blank"
-              to={`/payments?from=${startDate.unix()}&to=${endDate.unix()}`}
+              to={`/payments?from=${
+                    startDate.unix()}&to=${endDate.unix()}&ref=home`}
               onClick={() => trackGoToLinks('Payments', sectionTitle)}
             >
               View these Payments <i className="i i-chevron-right"></i>

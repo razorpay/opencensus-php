@@ -105,6 +105,14 @@ export default class App extends Component {
         currentMode = 'test';
       }
       if (user && user.user) {
+
+        if (window.setRavenContext) {
+
+          window.setRavenContext({
+            mode: currentMode
+          });
+        }
+
         window.rzpAnalytics({
           name: 'set_dimensions',
           dimensions: {

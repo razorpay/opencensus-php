@@ -9,7 +9,10 @@ import BatchUploads from 'merchant/containers/Refunds/BatchList';
 import OrdersList from 'merchant/containers/Orders/List';
 import DisputesList from 'merchant/containers/Disputes/List';
 
-export default function TransactionsContainer() {
+import {getURLQueryParams} from 'rzp/utils/rzp-utils';
+
+export default function TransactionsContainer(props) {
+
   return (
     <tabbed-container>
       <header id="transactions-header">
