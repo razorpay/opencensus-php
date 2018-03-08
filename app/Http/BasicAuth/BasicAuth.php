@@ -460,16 +460,10 @@ class BasicAuth
     {
         $handler = new KeylessPublicAuth;
 
-        // Try to retrieve merchant using LIVE mode
-        $merchant = $handler->setModeAndRetrieveMerchant(Mode::LIVE);
+        // Try to retrieve merchant
+        $merchant = $handler->retrieveMerchant();
 
-        // If we fail to retrieve merchant, try using TEST mode
-        if (is_null($merchant) === true)
-        {
-            $merchant = $handler->setModeAndRetrieveMerchant(Mode::TEST);
-        }
-
-        // If we still fail to retrive merchant, return http auth expected exception
+        // If we fail to retrieve merchant, return http auth expected exception
         if (is_null($merchant) === true)
         {
             return ApiResponse::httpAuthExpected();

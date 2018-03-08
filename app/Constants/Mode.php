@@ -11,9 +11,7 @@ class Mode
 
     public static function exists(string $mode = null): bool
     {
-        $key = __CLASS__ . '::' . strtoupper($mode);
-
-        return ((defined($key) === true) and (constant($key) === $mode));
+        return (($mode === self::TEST) or ($mode === self::LIVE));
     }
 
     /**

@@ -8,6 +8,8 @@ use RZP\Http\Route;
 use RZP\Constants\Mode;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
+use RZP\Models\Order;
+use RZP\Models\Plan\Subscription;
 use RZP\Models\Merchant;
 use RZP\Constants\Entity as E;
 use RZP\Error\ErrorCode;
@@ -29,16 +31,8 @@ use RZP\Exception\BadRequestException;
  */
 final class KeylessPublicAuth
 {
-    /**
-     * Map of input parameter and respective entity.
-     * Ref: retrieveMerchantByDefaultLogic() for usage.
-     */
-    const INPUT_ENTITY_MAP = [
-        Payment\Entity::ORDER_ID        => E::ORDER,
-        Payment\Entity::INVOICE_ID      => E::INVOICE,
-        Invoice\Entity::PAYMENT_ID      => E::PAYMENT,
-        Invoice\Entity::SUBSCRIPTION_ID => E::SUBSCRIPTION,
-    ];
+    const X_ENTITY_ID_QUERY_KEY  = 'x_entity_id';
+    const X_ENTITY_ID_HEADER_KEY = 'X-Entity-Id';
 
     protected $request;
     protected $route;
@@ -53,22 +47,50 @@ final class KeylessPublicAuth
     }
 
     /**
-     * Sets mode and retrieves merchant entity to be set in BasicAuth for the request context.
+     * This function returns the entity name from sign
+     * Currently we handle only the following entities [Order, Invoice, Payment, Subscription]
+     *
+     * @param string $sign
+     *
+     * @return $entity|null
+     */
+    protected function getEntityFromSign(string $sign)
+    {
+        $entity = null;
+
+        if ($sign === Order\Entity::getSign())
+        {
+            $entity = E::ORDER;
+        }
+        else if ($sign === Invoice\Entity::getSign())
+        {
+            $entity = E::INVOICE;
+        }
+        else if ($sign === Payment\Entity::getSign())
+        {
+            $entity = E::PAYMENT;
+        }
+        else if ($sign === Subscription\Entity::getSign())
+        {
+            $entity = E::SUBSCRIPTION;
+        }
+
+        return $entity;
+    }
+
+    /**
+     * Retrieves merchant entity to be set in BasicAuth for the request context.
      *
      * Approach:
      * - We check if there is a handler defined for the route, we call that.
      * - Else, we call a method with some default logic to find the merchant
      *
-     * @param $mode string
-     *
      * @return Merchant\Entity|null
      *
      * @throws \RZP\Exception\BadRequestException
      */
-    public function setModeAndRetrieveMerchant(string $mode)
+    public function retrieveMerchant()
     {
-        $this->ba->setModeAndDbConnection($mode);
-
         $route = $this->route->getCurrentRouteName();
 
         $handler = 'retrieveMerchantFor' . studly_case($route);
@@ -84,12 +106,48 @@ final class KeylessPublicAuth
     }
 
     /**
+     * This function retrieves the signed entity_id from the request
+     * - We check for x_entity_id key passed in query params
+     * - Else we check for x_entity_id passed as route param
+     * - Else we check for X-Entity-Id header in request headers
+     *
+     * At last if we are not able to find entityId from the above cases, we just return null
+     *
+     * @return $entityId|null
+     */
+    protected function retrieveSignedEntityId()
+    {
+        // fetch entity id from query param
+        if ($this->request->has(self::X_ENTITY_ID_QUERY_KEY) === true)
+        {
+            $entityId = $this->request->get(self::X_ENTITY_ID_QUERY_KEY);
+
+            $this->request->query->remove(self::X_ENTITY_ID_QUERY_KEY);
+            $this->request->request->remove(self::X_ENTITY_ID_QUERY_KEY);
+        }
+        // fetch entity id from route param
+        else if (is_null($this->request->route(self::X_ENTITY_ID_QUERY_KEY)) === false)
+        {
+            $entityId = $this->request->route(self::X_ENTITY_ID_QUERY_KEY);
+        }
+        // fetch entity id from request header
+        else
+        {
+            $entityId = $this->request->headers->get(self::X_ENTITY_ID_HEADER_KEY);
+
+            $this->request->headers->remove(self::X_ENTITY_ID_HEADER_KEY);
+        }
+
+        return $entityId;
+    }
+
+    /**
      * Approach:
-     * - If the route falls in pattern of </some-entity-name-in-plural/{id}/>,
-     *   we just find the entity with given id and set the merchant.
-     * - Else for routes like /checkout/preferences etc. we just assumes there
-     *   would be some query or form data params such as order_id, invoice_id
-     *   using which we set the merchant.
+     * We try to retrieve signed entity_id from the request either as a
+     * query param or route param or in request header.
+     * We find the entity with obtained entity_id and set the merchant of basic auth instance.
+     *
+     * As for mode we try with live mode first and then try test mode.
      *
      * At last if we are not able to do so, we just return null to caller(
      * BasicAuth) and there it'll follow expected 401 response.
@@ -100,40 +158,45 @@ final class KeylessPublicAuth
      */
     protected function retrieveMerchantByDefaultLogic()
     {
-        $route           = $this->route->getCurrentRouteName();
-        $routeParameters = Route::getApiRoute($route);
-        $matches         = [];
+        $signedEntityId = $this->retrieveSignedEntityId();
 
-        if (preg_match(
-                '/([a-zA-Z_]+)(\/)({id})(.*)/',
-                $routeParameters[1],
-                $matches) === 1)
-        {
-            $id = $this->request->route('id');
-            $entity = str_singular($matches[1]);
-
-            return $this->retrieveMerchantForEntity($entity, $id);
-        }
-
-        $input = $this->request->all();
-
-        foreach (self::INPUT_ENTITY_MAP as $key => $entity)
-        {
-            if (array_key_exists($key, $input) === true)
-            {
-                return $this->retrieveMerchantForEntity($entity, $input[$key]);
-            }
-        }
-    }
-
-    protected function retrieveMerchantForEntity(
-        string $entity,
-        string $id)
-    {
-        if (E::isValidEntity($entity) === false)
+        if (is_null($signedEntityId) === true)
         {
             return null;
         }
+
+        // Ideal retrieved signed entityId will be of format entitySign_{entityId}
+        // E.g. inv_{invoiceId}, pay_{paymentId}.
+        $entityInfo = explode('_', $signedEntityId);
+
+        $entity = $this->getEntityFromSign($entityInfo[0]);
+
+        $entityId = $entityInfo[1] ?? null;
+
+        if ((E::isValidEntity($entity) === false) or
+            (is_null($entityId) === true))
+        {
+            return null;
+        }
+
+        // Try to retrieve merchant using LIVE mode
+        $merchant = $this->setModeAndRetrieveMerchantForEntity($entity, $entityId, Mode::LIVE);
+
+        // If we fail to retrieve merchant, try using TEST mode
+        if (is_null($merchant) === true)
+        {
+            $merchant = $this->setModeAndRetrieveMerchantForEntity($entity, $entityId, Mode::TEST);
+        }
+
+        return $merchant;
+    }
+
+    protected function setModeAndRetrieveMerchantForEntity(
+        string $entity,
+        string $id,
+        string $mode)
+    {
+        $this->ba->setModeAndDbConnection($mode);
 
         $entityClass = E::getEntityClass($entity);
         $repoClass   = E::getEntityRepository($entity);
@@ -154,11 +217,10 @@ final class KeylessPublicAuth
         }
         catch (BadRequestException $ex)
         {
-            /**
-             * As we will be querying in the LIVE mode first and then in the TEST mode,
-             * catch exception for bad request invalid id incase of LIVE mode and
-             * throw same exception incase of TEST mode or any other exception.
-             */
+            // As we will be querying in the LIVE mode first and then in the TEST mode,
+            // catch exception for bad request invalid id incase of LIVE mode and
+            // throw same exception incase of TEST mode or any other exception.
+
             if (($ex->getCode() !== ErrorCode::BAD_REQUEST_INVALID_ID) or
                 ($this->ba->getMode() === Mode::TEST))
             {
