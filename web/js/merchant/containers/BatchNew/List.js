@@ -6,12 +6,15 @@ import DataTable from 'rzp/ui/Table/DataTable';
 import { Link } from 'react-router-dom';
 import HeaderAction from 'rzp/ui/HeaderAction';
 import BatchListFilter from 'merchant/components/BatchNew/ListFilter';
-import { batchId, totalCount, status, batchName } from 'rzp/ui/item/pair';
-import { batchDownload } from 'merchant/modules/batches';
+import { batchId, totalCount, batchName } from 'rzp/ui/item/pair';
 import { openModal } from 'rzp/modules/modals';
+import { BatchUploadStatusLabel } from 'merchant/components/StatusLabel';
+
 import { luminateRow } from 'merchant/modules/app';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import BatchUpload from './Upload';
+
+import { batchDownload, fetchBatch } from 'merchant/modules/batches';
 
 function batchActions({
   mode,
@@ -71,6 +74,7 @@ function batchActions({
 
 @connect(null, {
   batchDownload,
+  fetchBatch,
   openModal,
   luminateRow,
   ...NotificationsActions,
@@ -106,6 +110,10 @@ export default class BatchList extends Component {
     });
   };
 
+  refetchBatchDetails = batchId => {
+    this.props.fetchBatch(batchId);
+  };
+
   render() {
     let {
       mode,
@@ -121,6 +129,7 @@ export default class BatchList extends Component {
       issuableIdList,
     } = this.props;
     let handleDownloadClick = this.dowload;
+
     return (
       <div class="content-wrapper batch-upload-wrapper">
         <HeaderAction>
@@ -155,7 +164,7 @@ export default class BatchList extends Component {
             batchIdLink,
             batchName,
             totalCount,
-            status,
+            batchStatus(this.refetchBatchDetails),
             batchActions({
               mode,
               viewAll,
@@ -205,4 +214,25 @@ const EmptyComponent = (uploadUrl, openModalFunc) => {
       </button>
     </div>
   );
+};
+
+/**
+ * Render customized `Status Pill` label for batches.
+ * Add refresh btn if the batch has just been created.
+ */
+const batchStatus = handleClick => {
+  return {
+    title: 'Status',
+    value: item => (
+      <span>
+        <BatchUploadStatusLabel status={item.status} />
+        {item.status === 'created' && (
+          <i
+            class="i i-refresh m-l fetch-batch-btn"
+            onClick={() => handleClick(item.id)}
+          />
+        )}
+      </span>
+    ),
+  };
 };

@@ -54,7 +54,7 @@ export default class BatchDetailsContainer extends Component {
     Promise.all(requests)
       .then(([batch, stats, invoices]) => {
         this.setState({
-          batch: batch.data,
+          batch: batch,
           invoices: invoices.data.items,
           stats: stats.data,
           isLoading: false,

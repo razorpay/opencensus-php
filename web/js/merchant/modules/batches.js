@@ -2,6 +2,7 @@ import { set } from 'rzp/utils/immutable';
 import ajax from 'merchant/utils/ajax';
 import {
   getActionName,
+  updateEntityInList,
   makeCollectionReducer,
   makeActionCollectionReducer,
 } from 'rzp/modules/collection';
@@ -163,7 +164,9 @@ export const batchDownload = batchId => {
 export const fetchBatch = batchId => {
   return {
     type: FETCH_BATCH,
-    payload: merchantFetch(`batches/${batchId}`),
+    payload: merchantFetch(`batches/${batchId}`).then(
+      response => response.data
+    ),
   };
 };
 
@@ -197,7 +200,10 @@ export const refundBatchesReducer = makeCollectionReducer(REFUND);
 
 //List Reducer
 export const paymentLinkBatchesReducer = makeActionCollectionReducer(
-  PAYMENT_LINK
+  PAYMENT_LINK,
+  {
+    [`${FETCH_BATCH}::SUCCESS`]: updateEntityInList,
+  }
 );
 
 let paymentBatchIdsInitialState = {
