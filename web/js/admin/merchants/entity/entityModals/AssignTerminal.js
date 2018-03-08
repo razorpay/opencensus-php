@@ -46,6 +46,7 @@ const gatewayMapping = {
   cybersource: 'Cybersource',
   hitachi: 'Hitachi',
   wallet_openwallet: 'RZP Open Wallet',
+  card_fss: 'Card FSS',
 };
 
 const gatewayAcquirerMapping = {
@@ -53,6 +54,8 @@ const gatewayAcquirerMapping = {
   axis: 'Axis',
   icic: 'ICICI',
   ratn: 'RBL',
+  barb: 'Bank of Baroda',
+  fss: 'FSS',
 };
 
 export default class TerminalForm extends Component {
