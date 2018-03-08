@@ -146,7 +146,7 @@ class Entity extends Base\PublicEntity
 
     public function isMagicEnabled()
     {
-        return Flow::isApplicable(Flow::MAGIC, $this->getFlows());
+        return $this->supports(Flow::MAGIC);
     }
 
     protected function getNetworkCodeAttribute()

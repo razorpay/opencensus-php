@@ -4099,13 +4099,15 @@ trait Authorize
 
     protected function isMagicEnabled()
     {
-        $MagicEnabledGlobally = (bool) Cache::get(ConfigKey::ENABLE_MAGIC);
+        $cache = Cache::getFacadeRoot();
+
+        $magicDisabledGlobally = (bool) $cache->get(ConfigKey::DISABLE_MAGIC);
 
         $magicEnabledForMerchant = $this->merchant->isMagicEnabled();
 
         $iinEntity = (empty($this->payment->card) == true) ? null : $this->payment->card->iinRelation;
 
-        return (($MagicEnabledGlobally === true) and
+        return (($magicDisabledGlobally === false) and
                 ($magicEnabledForMerchant === true) and
                 (empty($iinEntity) === false) and
                 ($iinEntity->isMagicEnabled() === true)

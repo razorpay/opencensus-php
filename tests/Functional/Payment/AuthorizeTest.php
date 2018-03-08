@@ -62,12 +62,7 @@ class AuthorizeTest extends TestCase
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
-        $this->fixtures->edit('iin', 401200, ['flows' => ['magic' => 1]]);
-
-        Cache::shouldReceive('get')
-            ->once()
-            ->with(ConfigKey::ENABLE_MAGIC)
-            ->andReturn(true);
+        $this->fixtures->edit('iin', 401200, ['flows' => ['magic' => '1']]);
 
         $this->startTest();
     }
@@ -80,12 +75,7 @@ class AuthorizeTest extends TestCase
 
         $this->fixtures->merchant->enableMagic();
 
-        $this->fixtures->edit('iin', 401200, ['flows' => ['magic' => 1]]);
-
-        Cache::shouldReceive('get')
-           ->once()
-           ->with(ConfigKey::ENABLE_MAGIC)
-           ->andReturn(true);
+        $this->fixtures->edit('iin', 401200, ['flows' => ['magic' => '1']]);
 
         $this->startTest();
     }
@@ -98,11 +88,6 @@ class AuthorizeTest extends TestCase
 
         $this->fixtures->merchant->enableMagic();
 
-        Cache::shouldReceive('get')
-            ->once()
-            ->with(ConfigKey::ENABLE_MAGIC)
-            ->andReturn(true);
-
         $this->startTest();
     }
 
@@ -114,12 +99,12 @@ class AuthorizeTest extends TestCase
 
         $this->fixtures->merchant->enableMagic();
 
-        $this->fixtures->edit('iin', 401200, ['flows' => ['magic' => 1]]);
+        $this->fixtures->edit('iin', 401200, ['flows' => ['magic' => '1']]);
 
         Cache::shouldReceive('get')
             ->once()
-            ->with(ConfigKey::ENABLE_MAGIC)
-            ->andReturn(false);
+            ->with(ConfigKey::DISABLE_MAGIC)
+            ->andReturn(true);
 
         $this->startTest();
     }

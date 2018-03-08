@@ -38,6 +38,6 @@ class Validator extends Base\Validator
         ConfigKey::GATEWAY_UNPROCESSED_REFUNDS          => 'filled|array',
         ConfigKey::SKIP_SLAVE                           => 'filled|boolean',
         ConfigKey::BLOCK_BANK_TRANSFERS_FOR_CRYPTO      => 'filled|boolean',
-        ConfigKey::ENABLE_MAGIC                         => 'filled|boolean',
+        ConfigKey::DISABLE_MAGIC                       => 'filled|boolean',
     ];
 }
