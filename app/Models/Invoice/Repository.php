@@ -3,6 +3,7 @@
 namespace RZP\Models\Invoice;
 
 use Carbon\Carbon;
+
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Batch;
@@ -377,13 +378,34 @@ class Repository extends Base\Repository
                 })->toArray();
     }
 
-    public function getInvoiceForBatch(Batch\Entity $batch): Base\PublicCollection
+    /**
+     * Gets aggregate invoice stats per status for a given batch.
+     *
+     * @param  Batch\Entity $batch
+     * @return array
+     */
+    public function getInvoiceStatsForBatch(Batch\Entity $batch): array
     {
-        return $this->newQuery()
-                    ->selectRaw(Entity::STATUS . ', COUNT(*) AS count')
-                    ->where(Entity::BATCH_ID, '=', $batch->getId())
-                    ->groupBy(Entity::STATUS)
-                    ->get();
+        $collection = $this->newQuery()
+                           ->selectRaw(Entity::STATUS . ', COUNT(*) AS count')
+                           ->where(Entity::BATCH_ID, '=', $batch->getId())
+                           ->groupBy(Entity::STATUS)
+                           ->get();
+
+        //  Converts collection results to needed format:
+        //  {
+        //      'draft': 10,
+        //      'issued': 10,
+        //      'paid': 5,
+        //      'expired': 1
+        //  }
+        return $collection->map(
+                function ($entity, $key)
+                {
+                    return [$entity->status => $entity->count];
+                })
+                ->collapse()
+                ->all();
     }
 
     protected function addQueryParamPaymentId(BuilderEx $query, array $params)

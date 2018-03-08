@@ -723,8 +723,6 @@ class Core extends Base\Core
      *
      * @param  Batch\Entity $batch
      * @param  array        $input
-     *
-     * @return array
      */
     public function notifyInvoicesOfBatch(Batch\Entity $batch, array $input)
     {
@@ -796,26 +794,14 @@ class Core extends Base\Core
 
     public function fetchStatsOfBatch(Batch\Entity $batch): array
     {
-        $response = [Entity::TOTAL_COUNT => $batch->getTotalCount()];
+        $stats = $this->repo->invoice->getInvoiceStatsForBatch($batch);
 
-        $invoices = $this->repo->invoice->getInvoiceForBatch($batch);
-
-        $stats = [];
-
-        $invoices->each(function (Entity $item) use (& $stats) {
-
-            $content = $item->getOriginal();
-
-            $stats[$content['status']] = (int) $content['count'];
-        });
-
-        $response += [
-            Entity::ISSUED_COUNT      => $stats[Status::ISSUED] ?? 0,
-            Entity::PAID_COUNT      => $stats[Status::PAID] ?? 0,
-            Entity::EXPIRED_COUNT   => $stats[Status::EXPIRED] ?? 0,
+        return [
+            Entity::TOTAL_COUNT   => $batch->getTotalCount(),
+            Entity::ISSUED_COUNT  => $stats[Status::ISSUED] ?? 0,
+            Entity::PAID_COUNT    => $stats[Status::PAID] ?? 0,
+            Entity::EXPIRED_COUNT => $stats[Status::EXPIRED] ?? 0,
         ];
-
-        return $response;
     }
 
     // -------------------- Protected methods --------------------
