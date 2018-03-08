@@ -242,7 +242,7 @@ class PaymentLinkTest extends TestCase
         $this->assertTrue((strpos($inputFile['location'], 'batch/upload') !== false));
     }
 
-    public function testInvoiceStatsByBatch()
+    public function testPaymentLinkStatsOfBatch()
     {
         $this->fixtures->create(
             'batch',
@@ -258,8 +258,6 @@ class PaymentLinkTest extends TestCase
         {
             $this->createInvoice($attribute['invoiceAttributes'], $attribute['orderAttributes']);
         }
-
-        $this->ba->proxyAuth();
 
         $this->startTest();
     }

@@ -273,7 +273,7 @@ return [
         ],
     ],
 
-    'testInvoiceStatsByBatch' => [
+    'testPaymentLinkStatsOfBatch' => [
         'request' => [
             'url'     => '/batches/batch_00000000000001/stats',
             'method'  => 'get',
@@ -291,7 +291,7 @@ return [
         ],
     ],
 
-    'testInvoiceStatsByBatchInputData'  => [
+    'testPaymentLinkStatsOfBatchInputData'  => [
         'attributes' => [
             [
                 'invoiceAttributes' => [

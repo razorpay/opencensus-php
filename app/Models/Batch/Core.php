@@ -116,8 +116,8 @@ class Core extends Base\Core
     public function fetchStatsOfBatch(Entity $batch): array
     {
         $response = [
-            Entity::ID      => $batch->getPublicId(),
-            Entity::TYPE    => $batch->getType(),
+            Entity::ID   => $batch->getPublicId(),
+            Entity::TYPE => $batch->getType(),
         ];
 
         switch ($batch->getType())
@@ -125,6 +125,7 @@ class Core extends Base\Core
             case Type::PAYMENT_LINK:
                 $response[Entity::STATS] = (new Invoice\Core)->fetchStatsOfBatch($batch);
                 break;
+
             default:
                 throw new BadRequestException(
                     BAD_REQUEST_BATCH_STATS_NOT_SUPPORTED_FOR_TYPE,

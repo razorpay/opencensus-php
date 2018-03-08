@@ -14,7 +14,6 @@ use RZP\Jobs\Invoice\Job as InvoiceJob;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Mail\Invoice\Issued as InvoiceIssuedMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Tests\Unit\Models\Invoice\Traits\CreatesInvoice;
 use RZP\Mail\Invoice\Payment\Captured as InvoiceCapturedMail;
 use RZP\Mail\Invoice\Payment\Authorized as InvoiceAuthorizedMail;
 
@@ -24,7 +23,6 @@ use RZP\Mail\Invoice\Payment\Authorized as InvoiceAuthorizedMail;
 class InvoiceTest extends TestCase
 {
     use InvoiceTestTrait;
-    use CreatesInvoice;
     use PaymentTrait;
     use MocksDnsTrait;
 
