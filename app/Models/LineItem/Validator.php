@@ -23,16 +23,12 @@ class Validator extends Base\Validator
         Entity::UNIT_AMOUNT         => 'required_without_all:amount,item_id|mysql_unsigned_int|min:100',
         Entity::CURRENCY            => 'required_without:item_id|size:3|in:INR|custom',
         Entity::UNIT                => 'sometimes|nullable|string|max:512',
-        Entity::HSN_CODE            => 'sometimes|nullable|string|max:8',
-        Entity::SAC_CODE            => 'sometimes|nullable|string|max:8',
         Entity::TYPE                => 'filled|string|max:16|custom',
         Entity::TAX_INCLUSIVE       => 'filled|boolean',
+        Entity::HSN_CODE            => 'sometimes|nullable|string|max:8',
+        Entity::SAC_CODE            => 'sometimes|nullable|string|max:8',
         Entity::TAX_ID              => 'sometimes|nullable|public_id|size:18',
         Entity::TAX_GROUP_ID        => 'sometimes|nullable|public_id|size:19',
-    ];
-
-    protected static $createValidators = [
-        self::TAX_CODES,
     ];
 
     protected static $createManyRules = [
@@ -48,21 +44,25 @@ class Validator extends Base\Validator
         Entity::AMOUNT              => 'filled|mysql_unsigned_int|min:100',
         Entity::UNIT_AMOUNT         => 'filled|mysql_unsigned_int|min:100',
         Entity::CURRENCY            => 'sometimes|nullable|size:3|in:INR|custom',
-        Entity::HSN_CODE            => 'sometimes|nullable|string|max:8',
-        Entity::SAC_CODE            => 'sometimes|nullable|string|max:8',
         Entity::TYPE                => 'filled|string|max:16|custom',
         Entity::UNIT                => 'sometimes|nullable|string|max:512',
         Entity::TAX_INCLUSIVE       => 'sometimes|nullable|boolean',
+        Entity::HSN_CODE            => 'sometimes|nullable|string|max:8',
+        Entity::SAC_CODE            => 'sometimes|nullable|string|max:8',
         Entity::TAX_ID              => 'sometimes|nullable|public_id|size:18',
         Entity::TAX_GROUP_ID        => 'sometimes|nullable|public_id|size:19',
     ];
 
-    protected static $editValidators = [
+    protected static $removeManyRules = [
+        Entity::IDS                 => 'required|array|min:1|max:10',
+    ];
+
+    protected static $createValidators = [
         self::TAX_CODES,
     ];
 
-    protected static $removeManyRules = [
-        Entity::IDS                 => 'required|array|min:1|max:10',
+    protected static $editValidators = [
+        self::TAX_CODES,
     ];
 
     public function validateType($attribute, $value)

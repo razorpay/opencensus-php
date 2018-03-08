@@ -2,7 +2,6 @@
 
 namespace RZP\Tests\Functional\Invoice;
 
-use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
@@ -15,7 +14,6 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 class InvoiceTaxesTest extends TestCase
 {
     use InvoiceTestTrait;
-    use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
 
     public function setUp()

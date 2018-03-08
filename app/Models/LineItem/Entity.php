@@ -27,9 +27,9 @@ class Entity extends Base\PublicEntity
     const NET_AMOUNT       = 'net_amount';
     const CURRENCY         = 'currency';
     const TYPE             = 'type';
+    const TAX_INCLUSIVE    = 'tax_inclusive';
     const HSN_CODE         = 'hsn_code';
     const SAC_CODE         = 'sac_code';
-    const TAX_INCLUSIVE    = 'tax_inclusive';
     const UNIT             = 'unit';
     const QUANTITY         = 'quantity';
     const DELETED_AT       = 'deleted_at';
@@ -61,12 +61,12 @@ class Entity extends Base\PublicEntity
     protected $defaults = [
         self::QUANTITY      => 1,
         self::DESCRIPTION   => null,
-        self::HSN_CODE      => null,
-        self::SAC_CODE      => null,
         self::TYPE          => Item\Type::INVOICE,
         self::REF_ID        => null,
         self::REF_TYPE      => null,
         self::TAX_INCLUSIVE => false,
+        self::HSN_CODE      => null,
+        self::SAC_CODE      => null,
     ];
 
     protected $visible = [
@@ -86,10 +86,10 @@ class Entity extends Base\PublicEntity
         self::TAX_AMOUNT,
         self::NET_AMOUNT,
         self::CURRENCY,
-        self::HSN_CODE,
-        self::SAC_CODE,
         self::TYPE,
         self::TAX_INCLUSIVE,
+        self::HSN_CODE,
+        self::SAC_CODE,
         self::UNIT,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -110,10 +110,10 @@ class Entity extends Base\PublicEntity
         self::TAX_AMOUNT,
         self::NET_AMOUNT,
         self::CURRENCY,
-        self::HSN_CODE,
-        self::SAC_CODE,
         self::TYPE,
         self::TAX_INCLUSIVE,
+        self::HSN_CODE,
+        self::SAC_CODE,
         self::UNIT,
         self::QUANTITY,
         self::TAXES,
@@ -124,10 +124,10 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION,
         self::AMOUNT,
         self::CURRENCY,
-        self::HSN_CODE,
-        self::SAC_CODE,
         self::TYPE,
         self::TAX_INCLUSIVE,
+        self::HSN_CODE,
+        self::SAC_CODE,
         self::UNIT,
         self::QUANTITY,
     ];
@@ -162,11 +162,11 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION,
         self::AMOUNT,
         self::CURRENCY,
-        self::HSN_CODE,
-        self::SAC_CODE,
         self::UNIT,
         self::TYPE,
         self::TAX_INCLUSIVE,
+        self::HSN_CODE,
+        self::SAC_CODE,
         self::TAX_ID,
         self::TAX_GROUP_ID,
     ];
@@ -198,6 +198,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CURRENCY);
     }
 
+    public function isTaxInclusive()
+    {
+        return $this->getAttribute(self::TAX_INCLUSIVE);
+    }
+
     public function getHsnCode()
     {
         return $this->getAttribute(self::HSN_CODE);
@@ -206,11 +211,6 @@ class Entity extends Base\PublicEntity
     public function getSacCode()
     {
         return $this->getAttribute(self::SAC_CODE);
-    }
-
-    public function isTaxInclusive()
-    {
-        return $this->getAttribute(self::TAX_INCLUSIVE);
     }
 
     public function getQuantity()
@@ -309,9 +309,7 @@ class Entity extends Base\PublicEntity
      * @param \RZP\Base\BuilderEx $query
      * @param Base\PublicEntity   $entity
      */
-    public function scopeEntity(
-        \RZP\Base\BuilderEx $query,
-        Base\PublicEntity $entity)
+    public function scopeEntity(\RZP\Base\BuilderEx $query, Base\PublicEntity $entity)
     {
         $query->where(Entity::ENTITY_ID, '=', $entity->getId())
               ->where(Entity::ENTITY_TYPE, '=', $entity->getEntity());

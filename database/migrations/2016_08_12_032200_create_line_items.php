@@ -49,17 +49,17 @@ class CreateLineItems extends Migration
 
             $table->char(Entity::CURRENCY, 3);
 
-            $table->string(Entity::HSN_CODE, 20)
-                  ->nullable();
-
-            $table->string(Entity::SAC_CODE, 20)
-                  ->nullable();
-
             $table->char(Entity::TYPE, 16)
                   ->default(Item\Type::INVOICE);
 
             $table->tinyInteger(Entity::TAX_INCLUSIVE)
                   ->default(0);
+
+            $table->string(Entity::HSN_CODE, 20)
+                  ->nullable();
+
+            $table->string(Entity::SAC_CODE, 20)
+                  ->nullable();
 
             $table->string(Entity::UNIT, 512)
                   ->nullable();

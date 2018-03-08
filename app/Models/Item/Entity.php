@@ -63,11 +63,11 @@ class Entity extends Base\PublicEntity
         self::ACTIVE        => 1,
         self::DESCRIPTION   => null,
         self::TYPE          => Type::INVOICE,
+        self::UNIT          => null,
         self::TAX_INCLUSIVE => false,
         self::HSN_CODE      => null,
         self::SAC_CODE      => null,
         self::TAX_RATE      => null,
-        self::UNIT          => null,
         self::TAX_ID        => null,
         self::TAX_GROUP_ID  => null,
     ];
