@@ -156,11 +156,11 @@ class Generator extends Base\Core
 
         $localFilePath = $this->getLocalSaveDir() . '/' . $this->qrCode->getId() . '.' . self::QR_CODE_EXTENSION;
 
-        $writer->writeFile($this->qrCode->getQrString(), $localFilePath);
+        $qrCodeString = $writer->writeString($this->qrCode->getQrString());
 
         $logoImage = imagecreatefrompng(public_path().'/img/qr.png');
 
-        $qrCodeImage = imagecreatefrompng($localFilePath);
+        $qrCodeImage = imagecreatefromstring($qrCodeString);
 
         imagecopymerge($logoImage, $qrCodeImage, 40, 350, 0, 0,
                 Constants::QR_CODE_WIDTH, Constants::QR_CODE_HEIGHT, 100);
