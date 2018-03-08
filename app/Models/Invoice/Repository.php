@@ -402,7 +402,7 @@ class Repository extends Base\Repository
         return $collection->map(
                 function ($entity, $key)
                 {
-                    return [$entity->status => $entity->count];
+                    return [$entity->status => (int) $entity->count];
                 })
                 ->collapse()
                 ->all();

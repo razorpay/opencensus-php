@@ -10,6 +10,7 @@ use RZP\Models\FileStore;
 use RZP\Base\RuntimeManager;
 use RZP\Jobs\DispatchRouter;
 use RZP\Jobs\Batch as BatchJob;
+use RZP\Exception\BadRequestException;
 
 class Core extends Base\Core
 {
@@ -114,17 +115,24 @@ class Core extends Base\Core
 
     public function fetchStatsOfBatch(Entity $batch): array
     {
+        $response = [
+            Entity::ID      => $batch->getPublicId(),
+            Entity::TYPE    => $batch->getType(),
+        ];
+
         switch ($batch->getType())
         {
             case Type::PAYMENT_LINK:
-                return (new Invoice\Core)->fetchStatsOfBatch($batch);
-
+                $response[Entity::STATS] = (new Invoice\Core)->fetchStatsOfBatch($batch);
+                break;
             default:
                 throw new BadRequestException(
                     BAD_REQUEST_BATCH_STATS_NOT_SUPPORTED_FOR_TYPE,
                     Entity::TYPE,
                     [Entity::TYPE => $batch->getType()]);
         }
+
+        return $response;
     }
 
     public function processBatchAsync(Entity $batch, array $input = []): Entity

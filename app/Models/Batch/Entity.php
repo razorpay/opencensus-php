@@ -52,6 +52,11 @@ class Entity extends Base\PublicEntity
     const VALIDATED_FILE_PREFIX     = 'batch/validated/';
     const CONFIG                    = 'config';
 
+    /**
+     * Constants used for batch stats api
+     */
+    const STATS                     = 'stats';
+
     protected static $sign = 'batch';
 
     protected $entity = 'batch';

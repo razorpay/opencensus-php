@@ -8,7 +8,6 @@ use Carbon\Carbon;
 
 use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
-use RZP\Jobs\Invoice\BatchNotify;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
@@ -2280,28 +2279,6 @@ class InvoiceTest extends TestCase
 
                 return true;
             });
-    }
-
-    public function testInvoiceStatsByBatch()
-    {
-        $this->fixtures->create(
-            'batch',
-            [
-                'id'          => '00000000000001',
-                'type'        => 'payment_link',
-                'total_count' => 4,
-            ]);
-
-        $attributes = $this->testData[__FUNCTION__ . 'InputData']['attributes'];
-
-        foreach ($attributes as $attribute)
-        {
-            $this->createInvoice($attribute['invoiceAttributes'], $attribute['orderAttributes']);
-        }
-
-        $this->ba->proxyAuth();
-
-        $this->startTest();
     }
 
     // -------------------- Protected methods --------------------
