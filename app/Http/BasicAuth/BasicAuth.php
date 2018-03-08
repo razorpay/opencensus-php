@@ -1135,8 +1135,6 @@ class BasicAuth
 
     public function setMode(string $mode)
     {
-        Mode::validate($mode);
-
         $this->mode = $mode;
         $this->app['rzp.mode'] = $mode;
     }
