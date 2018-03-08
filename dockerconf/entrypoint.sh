@@ -15,7 +15,6 @@ echo "$(date) DB Migrate"
 echo "$(date) Seeding live db"
 php artisan migrate --seed
 
-echo "$(date) Starting Nginx"
 export PATH=$PATH:/app/
 
 echo "$(date) Starting Nginx"

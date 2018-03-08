@@ -23,8 +23,6 @@ RUN chown -R nginx.nginx /app && \
     cd web && npm install && cd .. && \
     npm run build && \
     rm -rf .composer && \
-#   Skipping tests till deploy to QA
-#   npm test && \
     apk del nodejs-deps
 
 EXPOSE 80
