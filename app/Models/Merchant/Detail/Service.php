@@ -156,6 +156,11 @@ class Service extends Base\Service
             $admin->hasMerchantActionPermissionOrFail($action);
         }
 
+        if (isset($input[Entity::ISSUE_FIELDS]) === true)
+        {
+            $input[Entity::ISSUE_FIELDS] = json_encode($input[Entity::ISSUE_FIELDS]);
+        }
+
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         $merchantDetails = (new Core)->getMerchantDetails($merchant);

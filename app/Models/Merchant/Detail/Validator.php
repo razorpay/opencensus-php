@@ -146,8 +146,11 @@ class Validator extends Base\Validator
         Entity::LOCKED                          => 'sometimes|boolean',
         Entity::COMMENT                         => 'sometimes|max:255',
         Entity::SUBMIT                          => 'sometimes|boolean',
-        Entity::ACTIVATION_STATUS               => 'sometimes|max:255',
-        Entity::CLARIFICATION_MODE              => 'sometimes|max:255',
+        Entity::ACTIVATION_STATUS               => 'sometimes|max:30',
+        Entity::CLARIFICATION_MODE              => 'sometimes|max:15',
+        Entity::ISSUE_FIELDS                    => 'sometimes|json',
+        Entity::ISSUE_FIELDS_REASON             => 'sometimes|string',
+        Entity::NOTES                           => 'sometimes|string',
     ];
 
     protected static $preSignupRules = [
@@ -165,8 +168,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $activationStatusRules = [
-        Entity::ACTIVATION_STATUS               => 'required|string|max:255',
-        Entity::CLARIFICATION_MODE              => 'filled|string|max:255',
+        Entity::ACTIVATION_STATUS               => 'required|string|max:30',
+        Entity::CLARIFICATION_MODE              => 'filled|string|max:15',
         Entity::REJECTION_REASONS               => 'filled|array',
     ];
 
