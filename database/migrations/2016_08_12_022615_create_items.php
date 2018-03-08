@@ -39,6 +39,15 @@ class CreateItems extends Migration
 
             $table->char(Entity::CURRENCY, 3);
 
+            $table->char(Entity::TYPE, 16)
+                  ->default(Type::INVOICE);
+
+            $table->string(Entity::UNIT, 512)
+                  ->nullable();
+
+            $table->tinyInteger(Entity::TAX_INCLUSIVE)
+                  ->default(0);
+
             $table->string(Entity::HSN_CODE, 20)
                   ->nullable();
 
@@ -48,15 +57,6 @@ class CreateItems extends Migration
             $table->integer(Entity::TAX_RATE)
                   ->unsigned()
                   ->nullable();
-
-            $table->char(Entity::TYPE, 16)
-                  ->default(Type::INVOICE);
-
-            $table->string(Entity::UNIT, 512)
-                  ->nullable();
-
-            $table->tinyInteger(Entity::TAX_INCLUSIVE)
-                  ->default(0);
 
             $table->char(Entity::TAX_ID, Entity::ID_LENGTH)
                   ->nullable();
