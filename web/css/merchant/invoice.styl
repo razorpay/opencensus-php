@@ -5,6 +5,17 @@ $muted = rgba(0, 0, 0, 0.27)
   max-width: 1110px;
   margin: auto;
 
+  .datepicker-container {
+    .SingleDatePicker {
+      opacity: 0;
+    }
+    &.datepicker--focused {
+      .SingleDatePicker {
+        opacity: 1;
+      }
+    }
+  }
+
   .form-control[disabled] {
 
     background-color: transparent;
