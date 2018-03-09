@@ -55,7 +55,7 @@ class GSTIN
     const UT = 'UT';
     const WB = 'WB';
 
-    protected static $stateTinIdMap = [
+    protected static $gstinToStateCodeMap = [
         '35' => self::AN,
         '28' => self::AP,
         '37' => self::AD,
@@ -95,7 +95,7 @@ class GSTIN
         '19' => self::WB,
     ];
 
-    protected static $stateNames = [
+    protected static $nameToStateCodeMap = [
         'Andaman and Nicobar Islands' => self::AN,
         'Andhra Pradesh'              => self::AP,
         'Andhra Pradesh (New)'        => self::AD,
@@ -142,22 +142,21 @@ class GSTIN
         $stateCode = $matches[1] ?? '00';
 
         //
-        // Regex is valid and
-        // state code is valid as per list in `$stateCodes`
+        // - Regex is valid and
+        // - state code is valid as per list in `$stateCodes`
         //
-        return (($valid === 1) and
-                (array_key_exists($stateCode, static::$stateTinIdMap) === true));
+        return (($valid === 1) and (array_key_exists($stateCode, static::$gstinToStateCodeMap) === true));
     }
 
     public static function getStatesToTinIdMap(): array
     {
-        $tinMap = array_flip(self::$stateTinIdMap);
+        $stateCodeToGstinMap = array_flip(self::$gstinToStateCodeMap);
 
-        $states = self::$stateNames;
+        $states = self::$nameToStateCodeMap;
 
-        array_walk($states, function(& $code, $name) use ($tinMap)
+        array_walk($states, function(& $code, $name) use ($stateCodeToGstinMap)
         {
-            $code = (string) $tinMap[$code];
+            $code = (string) $stateCodeToGstinMap[$code];
         });
 
         return $states;

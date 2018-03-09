@@ -18,10 +18,14 @@ class TaxController extends Controller
     {
         $data = $this->service()->getMetaGstTaxes();
 
-
         return ApiResponse::json($data);
     }
 
+    /**
+     * Gets map of states name and GSTIN.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function getMetaStates()
     {
         $data = $this->service()->getMetaStates();

@@ -34,6 +34,6 @@ class Service extends Base\Service
     {
         $data = ['state_tins' => GSTIN::getStatesToTinIdMap()];
 
-        return Base\PublicCollection::make($data)->toArrayWithItems();
+        return (new Base\PublicCollection($data))->toArrayWithItems();
     }
 }
