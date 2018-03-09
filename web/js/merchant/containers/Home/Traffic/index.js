@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Pie } from 'react-chartjs-2';
+import { Doughnut } from 'react-chartjs-2';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
@@ -17,7 +17,11 @@ import GroupingDropdown from 'merchant/containers/Home/GroupingDropdown';
 import Legend from 'merchant/components/Home/Legend';
 import LastUpdated from 'merchant/components/Home/LastUpdated';
 import MoreOptionsButton from 'merchant/containers/Home/MoreOptionsButton';
-import { API_ERROR, API_INVALID_RESP } from 'merchant/components/Home/data';
+import {
+  API_ERROR,
+  API_INVALID_RESP,
+  getPlatformColor
+} from 'merchant/components/Home/data';
 import {
   trackError,
   trackGoToLinks,
@@ -118,6 +122,7 @@ class Traffic extends Component {
           groupByColumnName: meta.groupBy,
           isCurrency: meta.isCurrency,
           groupTitleMap: { Mobile: 'mWeb' },
+          getColor: getPlatformColor
         });
 
         if (labels.length === 0) {
@@ -276,7 +281,7 @@ class Traffic extends Component {
                 ref={node => (this.chartContent = node)}
               >
                 {!groupState.loading &&
-                  chartData && <Pie options={chartOptions} data={chartData} />}
+                  chartData && <Doughnut options={chartOptions} data={chartData} />}
               </div>
             </div>
             <div className="column">

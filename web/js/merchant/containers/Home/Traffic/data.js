@@ -18,7 +18,7 @@ const groupValues = ['transactionVolume', 'noTransactions'];
 
 const groupMeta = {
   [groupValues[0]]: {
-    title: 'By Transaction Volume',
+    title: 'By Payment Volume',
     aggType: 'sum',
     column: 'base_amount',
     groupBy: 'platform',
@@ -26,7 +26,7 @@ const groupMeta = {
     value: groupValues[0],
   },
   [groupValues[1]]: {
-    title: 'By Number of Transactions',
+    title: 'By Number of Payments',
     aggType: 'count',
     groupBy: 'platform',
     value: groupValues[1],
@@ -58,6 +58,7 @@ const getQuery = ({ startTime, endTime, group }) => {
 const getPieData = ({
   data,
   groupByColumnName,
+  getColor,
   groupTitleMap = {},
   isCurrency,
 }) => {
@@ -77,9 +78,7 @@ const getPieData = ({
 
   const labels = [],
     datasets = {
-                 data: [],
-                 backgroundColor: colors,
-                 hoverBackgroundColor: colors
+                 data: []
                },
     legendData = [];
 
@@ -87,8 +86,9 @@ const getPieData = ({
     csvData = [],
     csvGrandTotal = 0;
 
-  const valueReducer = (sum, item) => sum + item.value,
-        groupedData  = groupByPlatform(data);
+  const valueReducer   = (sum, item) => sum + item.value,
+        groupedData    = groupByPlatform(data),
+        colorsToBeUsed = [];
 
   Object.keys(groupedData)
         // sorting groups by share of contribution in desc order
@@ -115,7 +115,10 @@ const getPieData = ({
           const groupTitle   = groupTitleMap[groupName]       ||
                                globalGroupTitleMap[groupName] ||
                                groupName,
-                groupCSVData = [];
+                groupCSVData = [],
+                color        = getColor
+                                 ? getColor(groupTitle)
+                                 : colors[index % colors.length];
 
           labels.push(groupTitle);
           groupCSVData.push(groupTitle);
@@ -129,14 +132,19 @@ const getPieData = ({
           groupCSVData.push(value);
 
           legendData.push({
-            color: colors[index % colors.length],
+            color,
             label: groupTitle,
             value: displayValue,
           });
 
+          colorsToBeUsed.push(color);
+
           csvData.push(groupCSVData);
           csvGrandTotal += value;
         });
+
+  datasets.backgroundColor      = colorsToBeUsed;
+  datasets.hoverBackgroundColor = colorsToBeUsed;
 
   csvData = csvData.map(row => {
 

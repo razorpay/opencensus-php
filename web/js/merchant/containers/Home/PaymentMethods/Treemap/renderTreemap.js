@@ -1,12 +1,14 @@
 import {
   titleCase,
-  getFormattedAmountNew,
   paiseToRupees,
   arrayToCsvDataUrl,
 } from 'rzp/utils/rzp-utils';
-import { humanReadableIndianCurrency } from 'rzp/utils/numerals';
-import { default as chartColors } from 'rzp/utils/chart/colors';
+import {
+  humanReadableIndian,
+  humanReadableIndianCurrency
+} from 'rzp/utils/numerals';
 
+import { getPaymentMethodColor} from 'merchant/components/Home/data';
 import { paymentMethodsColumns } from 'merchant/containers/Home/PaymentMethods/data';
 
 import { trackTreemapClick } from '../ga';
@@ -24,6 +26,7 @@ function main(
   node,
   o,
   data,
+  isCurrency,
   d3,
   onTransition,
   onShowTooltip,
@@ -32,7 +35,11 @@ function main(
 ) {
   var root,
     opts = { ...defaults, ...o },
-    formatNumber = getFormattedAmountNew,
+    formatNumber = isCurrency
+                     ? (value) => humanReadableIndianCurrency(
+                                    paiseToRupees(value)
+                                  )
+                     : humanReadableIndian,
     rname = opts.rootname,
     margin = opts.margin;
 
@@ -99,8 +106,8 @@ function main(
     .sort((item1, item2) => {
       return item2.value - item1.value;
     })
-    .forEach((item, index) => {
-      colors[item.key] = chartColors[index];
+    .forEach(({key}, index) => {
+      colors[key] = getPaymentMethodColor(key);
     });
 
   Object.keys(aliases).forEach(key => {
@@ -219,7 +226,7 @@ function main(
         onShowTooltip({
           amount: d.value,
           percent: d.percent,
-          label: d.displayText,
+          label: d.displayText
         });
 
         if (canBeZoomed(d)) {
@@ -277,7 +284,7 @@ function main(
       .style('font-size', '1em')
       .attr('dx', '1em')
       .text(function(d) {
-        return humanReadableIndianCurrency(paiseToRupees(d.value));
+        return formatNumber(d.value);
       })
       .append('tspan')
       .attr('class', 'amount-percent')
@@ -490,6 +497,7 @@ const makeCSVData = (data, bankNames, groupTitleMap) => {
 export default function renderTreemap(
   node,
   res,
+  isCurrency,
   d3,
   onTransition,
   onShowTooltip,
@@ -536,6 +544,7 @@ export default function renderTreemap(
     node,
     { width: node.clientWidth },
     { key: 'All Methods', values: res },
+    isCurrency,
     d3,
     onTransition,
     onShowTooltip,
