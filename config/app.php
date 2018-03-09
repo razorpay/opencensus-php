@@ -224,7 +224,6 @@ return array(
         'Crypt'           => Illuminate\Support\Facades\Crypt::class,
         'DB'              => Illuminate\Support\Facades\DB::class,
         'Eloquent'        => Illuminate\Database\Eloquent\Model::class,
-        'Event'           => Illuminate\Support\Facades\Event::class,
         'File'            => Illuminate\Support\Facades\File::class,
         'Gate'            => Illuminate\Support\Facades\Gate::class,
         'Hash'            => Illuminate\Support\Facades\Hash::class,
@@ -254,6 +253,7 @@ return array(
         'Excel'           => Maatwebsite\Excel\Facades\Excel::class,
         'AWS'             => Aws\Laravel\AwsFacade::class,
         'Slack'           => Razorpay\Slack\Laravel\Facade::class,
+        'Event'           => RZP\Events\Facade::class,
         'Mail'            => RZP\Mail\Facade::class,
         'Workflow'        => RZP\Services\Workflow\Facade::class,
         'Throttle'        => GrahamCampbell\Throttle\Facades\Throttle::class,
@@ -297,4 +297,7 @@ return array(
         'nocaptcha_secret' => env('NOCAPTCHA_SECRET', ''),
     ],
 
+    'query_cache' => [
+        'mock' => env('QUERY_CACHE_MOCK', false),
+    ],
 );

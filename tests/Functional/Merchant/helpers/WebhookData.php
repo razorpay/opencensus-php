@@ -28,6 +28,55 @@ return [
         ]
     ],
 
+    'testCreateWebhookWhenAlreadyCreated' => [
+        'request' => [
+            'url' => '/webhooks',
+            'content' => [
+                'url' => 'http://example.com',
+                'events' => [
+                    'payment.authorized' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Webhook already created.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateAppWebhook' => [
+        'request' => [
+            'url' => '/oauth/applications/10000000000App/webhooks',
+            'content' => [
+                'url' => 'http://example.com',
+                'events' => [
+                    'payment.authorized' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'url'            => 'http://example.com',
+                'events'         => [
+                    'payment.authorized' => true,
+                ],
+                'active'         => true,
+                'application_id' => '10000000000App'
+            ]
+        ],
+    ],
+
     'testCreateWebhookWithLargerSecret' => [
         'request' => [
             'url' => '/webhooks',
@@ -178,6 +227,29 @@ return [
         ]
     ],
 
+    'testGetAppWebhooks' => [
+        'request' => [
+            'url'    => '/webhooks?application_id=10000000000App',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'url'            => 'http://example.com/v1/dummy/route',
+                        'events'         => [
+                            'payment.authorized' => true
+                        ],
+                        'active'         => true,
+                        'application_id' => '10000000000App',
+                    ]
+                ]
+            ]
+        ]
+    ],
+
     'testRecreateWebhook' => [
         'request' => [
             'url' => '/webhooks',
@@ -199,6 +271,32 @@ return [
         ],
         'exception' => [
             'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateAppWebhookInvalidAppId' => [
+        'request'  => [
+            'url'     => '/oauth/applications/10000000000Appp/webhooks',
+            'content' => [
+                'url'    => 'http://example.com',
+                'events' => [
+                    'payment.authorized' => '1',
+                ],
+            ],
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The entity id must be 14 characters.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
@@ -307,6 +405,93 @@ return [
                         'amount_refunded'   => 0,
                         'refund_status'     => null,
                         'captured'          => true,
+                        'description'       => 'random description',
+                        'email'             => 'a@b.com',
+                        'contact'           => '+919918899029',
+                        'notes'             => ['merchant_order_id' => 'random order id'],
+                        'error_code'        => null,
+                        'error_description' => null,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testAppWebhookData' => [
+        'url'     => 'http://example.com/v1/dummy/route',
+        'method'  => 'post',
+        'content' => [
+            'entity'   => 'event',
+            'event'    => 'payment.authorized',
+            'contains' => ['payment'],
+            'payload'  => [
+                'payment' => [
+                    'entity' => [
+                        'entity'            => 'payment',
+                        'amount'            => 50000,
+                        'currency'          => 'INR',
+                        'status'            => 'authorized',
+                        'amount_refunded'   => 0,
+                        'refund_status'     => null,
+                        'captured'          => false,
+                        'description'       => 'random description',
+                        'email'             => 'a@b.com',
+                        'contact'           => '+919918899029',
+                        'notes'             => ['merchant_order_id' => 'random order id'],
+                        'error_code'        => null,
+                        'error_description' => null,
+                    ],
+                ],
+            ],
+        ]
+    ],
+
+    'testApp2WebhookData' => [
+        'url'     => 'http://exampleapp.com/v1/dummy/route',
+        'method'  => 'post',
+        'content' => [
+            'entity'   => 'event',
+            'event'    => 'payment.authorized',
+            'contains' => ['payment'],
+            'payload'  => [
+                'payment' => [
+                    'entity' => [
+                        'entity'            => 'payment',
+                        'amount'            => 50000,
+                        'currency'          => 'INR',
+                        'status'            => 'authorized',
+                        'amount_refunded'   => 0,
+                        'refund_status'     => null,
+                        'captured'          => false,
+                        'description'       => 'random description',
+                        'email'             => 'a@b.com',
+                        'contact'           => '+919918899029',
+                        'notes'             => ['merchant_order_id' => 'random order id'],
+                        'error_code'        => null,
+                        'error_description' => null,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testMerchantWebhookData' => [
+        'url'     => 'http://sample.com/v1/dummy/route',
+        'method'  => 'post',
+        'content' => [
+            'entity'   => 'event',
+            'event'    => 'payment.authorized',
+            'contains' => ['payment'],
+            'payload'  => [
+                'payment' => [
+                    'entity' => [
+                        'entity'            => 'payment',
+                        'amount'            => 50000,
+                        'currency'          => 'INR',
+                        'status'            => 'authorized',
+                        'amount_refunded'   => 0,
+                        'refund_status'     => null,
+                        'captured'          => false,
                         'description'       => 'random description',
                         'email'             => 'a@b.com',
                         'contact'           => '+919918899029',
@@ -575,4 +760,22 @@ return [
         ],
         // 'webhook_id' => '4WVwsVEmeO3wwp',
     ],
+
+    'testTransferSettlementWebhook' => [
+        'event' => [
+            'entity'     => 'event',
+            'event'      => 'settlement.processed',
+            'contains'   => [
+                'settlement'
+            ],
+            'payload'    => [
+                'settlement' => [
+                    'entity' => [
+                        'entity' => 'settlement',
+                        'amount' => 2500
+                    ]
+                ]
+            ],
+        ]
+    ]
 ];

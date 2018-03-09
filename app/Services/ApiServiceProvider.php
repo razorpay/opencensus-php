@@ -8,6 +8,7 @@ use Http\Mock\Client as MockHttplug;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 
+use RZP\Models\Key;
 use RZP\Models\Batch;
 use RZP\Models\Payout;
 use RZP\Models\Dispute;
@@ -21,13 +22,13 @@ use RZP\Models\Promotion;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Models\BankAccount;
+use RZP\Constants\Entity as E;
 use RZP\Models\Admin as Admin;
-use RZP\Models\Workflow\Action;
 use RZP\Gateway\GatewayManager;
+use RZP\Models\Workflow\Action;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Plan\Subscription\Addon;
 use RZP\Models\Gateway\File as GatewayFile;
-
 
 class ApiServiceProvider extends BaseServiceProvider
 {
@@ -37,6 +38,21 @@ class ApiServiceProvider extends BaseServiceProvider
      * @var bool
      */
     protected $defer = true;
+
+    /**
+     * Registering observers for eloquent events here.
+     * Used for invalidating cached entities on update
+     */
+    public function boot()
+    {
+        foreach (E::CACHED_ENTITIES as $entity => $_)
+        {
+            $entityClass = E::getEntityClass($entity);
+            $entityObserverClass = E::getEntityObserverClass($entity);
+
+            $entityClass::observe($entityObserverClass);
+        }
+    }
 
     /**
      * Register the service provider.
@@ -128,10 +144,24 @@ class ApiServiceProvider extends BaseServiceProvider
             return new HarvesterClient($app);
         });
 
+        $this->app->singleton('ufh.service', function ($app)
+        {
+            $ufhServiceMock = $app['config']->get('applications.ufh.mock');
+
+            if ($ufhServiceMock === true)
+            {
+                return new Mock\UfhService($app);
+            }
+
+            return new UfhService($app);
+        });
+
         $this->app->singleton('gateway_file', function($app)
         {
             return new GatewayFileManager($app);
         });
+
+        $this->registerShield();
 
         $this->registerApiMutex();
 
@@ -158,6 +188,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerHttplugMockClient();
 
         $this->registerGeolocation();
+
+        $this->registerPincodeSearch();
     }
 
     /**
@@ -189,6 +221,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'workflow',
             'authservice',
             'sns',
+            'pincodesearch',
         ];
     }
 
@@ -400,5 +433,29 @@ class ApiServiceProvider extends BaseServiceProvider
         $apiProcessor = new RZP\Trace\ApiTraceProcessor($this->app);
 
         $this->app['trace']->pushProcessor($apiProcessor);
+    }
+
+    protected function registerPincodeSearch()
+    {
+        $this->app->singleton('pincodesearch', function($app)
+        {
+            $mock = $app['config']->get('applications.pincodesearch.mock');
+
+            $implementation = $mock ? Mock\PincodeSearch::class : PincodeSearch::class;
+
+            return new $implementation($app);
+        });
+    }
+
+    protected function registerShield()
+    {
+        $this->app->singleton('shield', function($app)
+        {
+            $mock = $app['config']->get('applications.shield.mock');
+
+            $implementation = $mock ? Mock\ShieldClient::class : ShieldClient::class;
+
+            return new $implementation($app);
+        });
     }
 }

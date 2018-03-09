@@ -12,6 +12,8 @@ class Channel
     const ICICI     = 'icici';
     const AXIS      = 'axis';
     const YESBANK   = 'yesbank';
+    const HDFC      = 'hdfc';
+    const RBL       = 'rbl';
 
     public static $gateways = [
         self::KOTAK => [
@@ -48,6 +50,20 @@ class Channel
             self::KOTAK,
             self::YESBANK,
             self::AXIS,
+            self::ICICI,
+            self::HDFC
+        ];
+    }
+
+    /**
+     * Channels for which balance API is available
+     *
+     * @return array
+     */
+    public static function getChannelsWithFetchBalance(): array
+    {
+        return [
+            self::KOTAK,
         ];
     }
 
@@ -71,6 +87,6 @@ class Channel
 
     public static function exists($channel)
     {
-        return defined(get_class() . '::' . strtolower($channel));
+        return defined(get_class() . '::' . strtoupper($channel));
     }
 }

@@ -64,6 +64,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo(Merchant\Entity::class);
     }
 
+    public function account()
+    {
+        return $this->belongsTo(Merchant\Entity::class, Entity::MERCHANT_ID);
+    }
+
     public function entity()
     {
         return $this->morphTo();

@@ -244,6 +244,7 @@ class AirtelmoneyGatewayTest extends TestCase
     public function testRefundExcelFileForAParticularMonth()
     {
         $knownDate = Carbon::create(2016, 5, 21);
+
         Carbon::setTestNow($knownDate);
 
         $defaultPayment = $this->getDefaultWalletPaymentArray('airtelmoney');
@@ -258,19 +259,15 @@ class AirtelmoneyGatewayTest extends TestCase
 
         $refunds = $this->getEntities('refund', [], true);
 
-        // Convert the created_at dates to yesterday's so that they are picked
-        // up during refund excel generation
-        foreach ($refunds['items'] as $refund)
-        {
-            $createdAt = Carbon::yesterday(Timezone::IST)->timestamp + 5;
-            $this->fixtures->edit('refund', $refund['id'], [
-                'created_at' => $createdAt,
-                'updated_at' => $createdAt
-            ]);
-        }
-
         $payment = $this->doAuthAndCapturePayment($defaultPayment);
-        $this->refundPayment($payment['id']);
+        $refund = $this->refundPayment($payment['id']);
+
+        $createdAt = Carbon::today(Timezone::IST)->addMonth(1)->timestamp + 5;
+
+        $this->fixtures->edit('refund', $refund['id'], [
+            'created_at' => $createdAt,
+            'updated_at' => $createdAt
+        ]);
 
         $data = $this->generateRefundsExcelForAirtelmoneyWallet(true);
 
@@ -302,22 +299,4 @@ class AirtelmoneyGatewayTest extends TestCase
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function runPaymentCallbackFlowWalletAirtelmoney($response, &$callback = null)
-    {
-        $mock = $this->isGatewayMocked();
-
-        list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
-
-        if ($mock)
-        {
-            $requestUrl = $this->makeFirstGatewayPaymentMockRequest($url, $method, $content);
-
-            // It's a redirect url. Airtelmoney use callback flow for payment authorization.
-            $request = [
-                'url' => $requestUrl,
-            ];
-
-            return $this->submitPaymentCallbackRequest($request);
-        }
-    }
 }

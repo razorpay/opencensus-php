@@ -15,6 +15,7 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Payment\Refund;
+use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Exception;
 use RZP\Models\Transaction;
 use Razorpay\Trace\Logger as Trace;
@@ -78,15 +79,17 @@ class Service extends Base\Service
                 // Please refer POST /reconciliate
                 unset($gateways[IFSC::KKBK]);
                 unset($gateways[IFSC::CORP]);
-                unset($gateways[IFSC::UTIB]);
-                unset($gateways[IFSC::FDRL]);
                 unset($gateways[IFSC::RATN]);
-                unset($gateways[IFSC::INDB]);
+                unset($gateways[Netbanking::BARB_R]);
 
                 // These banks refund files have been moved to gateway_file, so
                 // unsetting it here
                 unset($gateways[IFSC::HDFC]);
                 unset($gateways[IFSC::ICIC]);
+                unset($gateways[IFSC::FDRL]);
+                unset($gateways[IFSC::INDB]);
+                unset($gateways[IFSC::UTIB]);
+
                 break;
 
             case Payment\Method::WALLET:
@@ -248,6 +251,7 @@ class Service extends Base\Service
                 $dt = Carbon::createFromFormat('Y-m-d', $input['on'], Timezone::IST);
 
                 $from = $dt->startOfMonth()->getTimestamp();
+
                 $to   = $dt->endOfMonth()->addDay()->getTimestamp() - 1;
             }
             else
@@ -297,7 +301,7 @@ class Service extends Base\Service
         return $refunds->toArrayPublic();
     }
 
-    public function verify($ids)
+    public function verifyMultiple($ids)
     {
         $refundIds = explode(',', $ids);
 
@@ -690,8 +694,7 @@ class Service extends Base\Service
             TraceCode::REFUND_RETRY_INITIATED,
             $input);
 
-        // Adding a lock for 15 minutes to avoid race conditions on the cron.
-        // This cron is only executed once a day for now.
+        // Adding a lock for 60 minutes to avoid race conditions on the cron.
         $summary = $this->mutex->acquireAndRelease(
             'refund_retry_failed',
             function() use ($input)
@@ -745,7 +748,7 @@ class Service extends Base\Service
                     'status'        => $status,
                 ];
             },
-            900,
+            3600,
             ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
 
         $this->trace->info(
@@ -768,6 +771,33 @@ class Service extends Base\Service
         return [
             'refund_id' => $id,
             'status'    => $refundStatus
+        ];
+    }
+
+    public function verify(string $id)
+    {
+        $refund = $this->repo->refund->findByPublicId($id);
+
+        $verifySuccess = $this->getNewProcessor($refund->merchant)->verifyRefund($refund);
+
+        return [
+            'refund_id'      => $id,
+            'verify_success' => $verifySuccess
+        ];
+    }
+
+    public function editStatus($refundId, array $input)
+    {
+        Refund\Entity::verifyIdAndStripSign($refundId);
+
+        $refund = $this->repo->refund->findOrFailPublic($refundId);
+
+        $refund->edit($input, 'editStatus');
+
+        $this->repo->saveOrFail($refund);
+
+        return [
+            'status' => $refund->getStatus(),
         ];
     }
 }

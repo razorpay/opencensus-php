@@ -15,9 +15,10 @@ class Cycle
     const WEEKLY  = 'weekly';
     const DAILY   = 'daily';
 
-    const ONE_YEAR          = 1;
-    const MONTHS_IN_YEAR    = Carbon::MONTHS_PER_YEAR;
-    const WEEKS_IN_YEAR     = Carbon::WEEKS_PER_YEAR;
+    const DAILY_MIN_INTERVAL   = 7;
+    const DEFAULT_MIN_INTERVAL = 1;
+    const MONTHS_IN_YEAR       = Carbon::MONTHS_PER_YEAR;
+    const WEEKS_IN_YEAR        = Carbon::WEEKS_PER_YEAR;
     // TODO: This can be 366 too. Fix.
     const DAYS_IN_YEAR      = 365;
 
@@ -25,11 +26,15 @@ class Cycle
         self::YEARLY,
         self::MONTHLY,
         self::WEEKLY,
-        // self::DAILY,
+        self::DAILY,
+    ];
+
+    protected static $allowedMinInterval = [
+        self::DAILY => self::DAILY_MIN_INTERVAL,
     ];
 
     protected static $allowedMaxInterval = [
-        self::YEARLY  => self::ONE_YEAR * Subscription\Entity::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION,
+        self::YEARLY  => Subscription\Entity::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION,
         self::MONTHLY => self::MONTHS_IN_YEAR * Subscription\Entity::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION,
         self::WEEKLY  => self::WEEKS_IN_YEAR * Subscription\Entity::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION,
         self::DAILY   => self::DAYS_IN_YEAR * Subscription\Entity::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION,
@@ -92,6 +97,16 @@ class Cycle
         return self::$allowedMaxInterval[$period];
     }
 
+    public static function getMinAllowedInterval(string $period): int
+    {
+        if (isset(self::$allowedMinInterval[$period]) === true)
+        {
+            return self::$allowedMinInterval[$period];
+        }
+
+        return self::DEFAULT_MIN_INTERVAL;
+    }
+
     public static function getTotalCountForOneYear(Entity $plan)
     {
         $maxAllowedTotalCount = self::getMaxAllowedTotalCount($plan);
@@ -121,7 +136,7 @@ class Cycle
 
         while ($nextRun < $end)
         {
-            $nextRun = Library::computeFutureRun($schedule, $start, $start, false);
+            $nextRun = Library::computeFutureRun($schedule, $start);
 
             $start = $nextRun;
 
@@ -136,6 +151,7 @@ class Cycle
         $schedule = $subscription->schedule;
 
         $start = $subscription->getStartAt();
+
         $totalCount = $subscription->getTotalCount();
 
         $start = Carbon::createFromTimestamp($start, Timezone::IST);
@@ -148,7 +164,7 @@ class Cycle
         //
         foreach (range(1, $totalCount - 1) as $i)
         {
-            $nextRun = Library::computeFutureRun($schedule, $start, $start, false);
+            $nextRun = Library::computeFutureRun($schedule, $start);
 
             $start = $nextRun;
         }

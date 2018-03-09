@@ -6,8 +6,6 @@ use Crypt;
 use Config;
 use ApiResponse;
 
-use Illuminate\Routing\Router;
-use RZP\Base\RepositoryManager;
 use RZP\Exception;
 use RZP\Http\Route;
 use RZP\Models\Key;
@@ -16,6 +14,9 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use Illuminate\Routing\Router;
+use RZP\Base\RepositoryManager;
+use RZP\Models\User\Entity as User;
 
 /**
  * Class BasicAuth
@@ -227,15 +228,22 @@ class BasicAuth
      *
      * @var array
      */
-    protected static $validKeyLengths = [
+    public static $validKeyLengths = [
         8, 14, 23, 33
     ];
 
-    protected $adminOrgId = null;
+    protected $adminOrgId  = null;
 
-    protected $orgId      = null;
+    protected $orgId       = null;
 
     protected $orgHostName = null;
+
+    /**
+     * User is set from the id received in X-Dashboard-User-Id header.
+     *
+     * @var \RZP\Models\User\Entity | null
+     */
+    protected $user        = null;
 
     public function __construct($app)
     {
@@ -370,6 +378,8 @@ class BasicAuth
             $this->setDashboardHeaders();
 
             $this->setProxyTrue();
+
+            $this->setAdminAuthIfApplicable();
 
             return $this->checkAndSetAccountScope();
         }
@@ -679,7 +689,7 @@ class BasicAuth
     {
         try
         {
-            Merchant\AccountEntity::verifyIdAndSilentlyStripSign($accountId);
+            Merchant\Account\Entity::verifyIdAndSilentlyStripSign($accountId);
         }
         catch (\Exception $e)
         {
@@ -895,7 +905,7 @@ class BasicAuth
 
         // If '*' is present in the app's routes, then all routes
         // are allowed
-        if (in_array('*', $appRoutes))
+        if (in_array('*', $appRoutes, true) === true)
         {
             return true;
         }
@@ -946,7 +956,7 @@ class BasicAuth
     {
         $headers = $this->request->headers;
 
-        $this->dashboardHeaders =[
+        $this->dashboardHeaders = [
             // String 'true' or null
             'dashboard' => $headers->get('X-Dashboard'),
         ];
@@ -1144,7 +1154,7 @@ class BasicAuth
     {
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-        $this->merchant = $merchant;
+        $this->setMerchant($merchant);
     }
 
     public function setAccessTokenId(string $tokenId)
@@ -1159,6 +1169,11 @@ class BasicAuth
 
     public function setMerchant($merchant)
     {
+        if ($merchant !== null)
+        {
+            $this->setOrgId($merchant->org->getPublicId());
+        }
+
         $this->merchant = $merchant;
     }
 
@@ -1216,6 +1231,11 @@ class BasicAuth
         return ($this->type === Type::PRIVATE_AUTH);
     }
 
+    public function isStrictPrivateAuth()
+    {
+        return (($this->isPrivateAuth() === true) and ($this->isProxyAuth() === false));
+    }
+
     public function isPrivilegeAuth()
     {
         return ($this->type === Type::PRIVILEGE_AUTH);
@@ -1270,7 +1290,9 @@ class BasicAuth
     {
         $merchantId = $key->getMerchantId();
 
-        $this->merchant = $this->repo->merchant->findOrFail($merchantId);
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $this->setMerchant($merchant);
 
         $this->checkMerchantActivatedForLive();
 
@@ -1309,10 +1331,10 @@ class BasicAuth
             return $this->invalidAccountId($this->getAccountId());
         }
 
-        $this->merchant = $account;
+        $this->setMerchant($account);
     }
 
-    protected function checkMerchantActivatedForLive()
+    public function checkMerchantActivatedForLive()
     {
         $mode = $this->getMode();
 
@@ -1512,5 +1534,46 @@ class BasicAuth
     public function getOrgHostName()
     {
         return $this->orgHostName;
+    }
+
+    /**
+     * Sets User Entity
+     *
+     * @param \RZP\Models\User\Entity $user
+     *
+     * @return $this
+     */
+    public function setUser(User $user)
+    {
+        $this->user = $user;
+
+        return $this;
+    }
+
+    /**
+     * Returns User or null based on the X-Dashboard-User-Id header
+     *
+     * @return null|\RZP\Models\User\Entity
+     */
+    public function getUser()
+    {
+        return $this->user;
+    }
+
+    /**
+     * Verifies and sets user from the headers.
+     */
+    public function verifyAndSetUser()
+    {
+        $dashboardHeaders = $this->getDashboardHeaders();
+
+        $userId = $dashboardHeaders['user_id'] ?? null;
+
+        if (empty($userId) === false)
+        {
+            $user = $this->repo->user->findOrFailPublic($userId);
+
+            $this->setUser($user);
+        }
     }
 }

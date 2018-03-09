@@ -4,6 +4,7 @@ namespace RZP\Models\Settlement;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Models\Payment;
 use RZP\Models\FundTransfer\Rbl\RequestConstants;
 
 class Validator extends Base\Validator
@@ -18,11 +19,14 @@ class Validator extends Base\Validator
 
     protected static $batchFetchRules = [
         Entity::BATCH_FUND_TRANSFER_ID => 'required|alpha_num|size:14',
+        'h2h'                          => 'required|in:0,1',
     ];
 
     protected static $nodalTransferRules = [
-        Entity::AMOUNT  => 'required|integer|min:100|max:10000000000',
-        Entity::CHANNEL => 'required|string'
+        Entity::GATEWAY     => 'sometimes|filled|string|max:32|custom',
+        Entity::AMOUNT      => 'required_without:gateway|integer|min:100|max:100000000000',
+        Entity::CHANNEL     => 'required_without:gateway|string|max:32|custom',
+        Entity::DESTINATION => 'required|string|max:32|custom'
     ];
 
     protected static $rblAddBeneficiaryRules = [
@@ -40,7 +44,7 @@ class Validator extends Base\Validator
 
     protected static $updateChannelRules = [
         'settlement_ids'   => 'required|array',
-        'settlement_ids.*' => 'required|alpha_dash|max:20',
+        'settlement_ids.*' => 'required|alpha_dash|max:19',
         Entity::CHANNEL    => 'required|string|custom',
     ];
 
@@ -50,6 +54,15 @@ class Validator extends Base\Validator
         'ignore_time_limit' => 'sometimes',
     ];
 
+    protected static $canFetchBalanceRules = [
+        'balance_' . Entity::CHANNEL    => 'required|string|custom',
+    ];
+
+    protected function validateGateway($attribute, $value)
+    {
+        Payment\Gateway::validateGateway($value);
+    }
+
     protected function validateChannel($attribute, $value)
     {
         if (in_array($value, Channel::getChannels()) === false)
@@ -58,4 +71,23 @@ class Validator extends Base\Validator
                 'Invalid Channel: ' . $value);
         }
     }
+
+    protected function validateBalanceChannel($attribute, $value)
+    {
+        if (in_array($value, Channel::getChannelsWithFetchBalance()) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid Channel: ' . $value);
+        }
+    }
+
+    protected function validateDestination($attribute, $value)
+    {
+        if (in_array($value, Channel::getChannels()) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid Channel: ' . $value);
+        }
+    }
+
 }

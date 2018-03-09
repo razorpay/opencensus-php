@@ -2,10 +2,8 @@
 
 namespace RZP\Models\Merchant\Webhook;
 
-use RZP\Constants\Entity;
-use RZP\Exception;
-use RZP\Models\Base;
 use RZP\Models\Feature;
+use RZP\Constants\Entity;
 
 /**
  * The events whether they are enabled or disabled are store in bit format.
@@ -17,6 +15,7 @@ class Event
     const PAYMENT_AUTHORIZED        = 'payment.authorized';
     const PAYMENT_FAILED            = 'payment.failed';
     const PAYMENT_CAPTURED          = 'payment.captured';
+    const PAYMENT_DISPUTE_CREATED   = 'payment.dispute.created';
     const ORDER_PAID                = 'order.paid';
     const INVOICE_PAID              = 'invoice.paid';
     const INVOICE_PARTIALLY_PAID    = 'invoice.partially_paid';
@@ -34,11 +33,13 @@ class Event
     // const SUBSCRIPTION_EXPIRED      = 'subscription.expired';
     const TOKEN_CONFIRMED           = 'token.confirmed';
     const TOKEN_REJECTED            = 'token.rejected';
+    const SETTLEMENT_PROCESSED      = 'settlement.processed';
 
     protected static $events = [
         self::PAYMENT_AUTHORIZED,
         self::PAYMENT_FAILED,
         self::PAYMENT_CAPTURED,
+        self::PAYMENT_DISPUTE_CREATED,
         self::ORDER_PAID,
         self::INVOICE_PARTIALLY_PAID,
         self::INVOICE_PAID,
@@ -56,28 +57,7 @@ class Event
         // self::SUBSCRIPTION_EXPIRED,
         self::TOKEN_CONFIRMED,
         self::TOKEN_REJECTED,
-    ];
-
-    protected static $bitMap = [
-        self::PAYMENT_AUTHORIZED        => 0x1,
-        self::PAYMENT_FAILED            => 0x2,
-        self::PAYMENT_CAPTURED          => 0x3,
-        self::ORDER_PAID                => 0x4,
-        self::INVOICE_PAID              => 0x5,
-        self::VPA_EDITED                => 0x6,
-        self::P2P_CREATED               => 0x7,
-        self::P2P_REJECTED              => 0x8,
-        self::SUBSCRIPTION_ACTIVATED    => 0x9,
-        self::SUBSCRIPTION_PENDING      => 0x10,
-        self::SUBSCRIPTION_HALTED       => 0x11,
-        self::SUBSCRIPTION_CHARGED      => 0x12,
-        self::SUBSCRIPTION_CANCELLED    => 0x13,
-        self::SUBSCRIPTION_COMPLETED    => 0x14,
-        // self::SUBSCRIPTION_EXPIRED      => 0x15,
-        self::INVOICE_EXPIRED           => 0x16,
-        self::INVOICE_PARTIALLY_PAID    => 0x17,
-        self::TOKEN_CONFIRMED           => 0x18,
-        self::TOKEN_REJECTED            => 0x19,
+        self::SETTLEMENT_PROCESSED
     ];
 
     /**
@@ -89,6 +69,7 @@ class Event
         self::PAYMENT_AUTHORIZED,
         self::PAYMENT_FAILED,
         self::PAYMENT_CAPTURED,
+        self::PAYMENT_DISPUTE_CREATED,
         self::ORDER_PAID,
         self::INVOICE_PARTIALLY_PAID,
         self::INVOICE_PAID,
@@ -106,6 +87,7 @@ class Event
         // self::SUBSCRIPTION_EXPIRED,
         self::TOKEN_CONFIRMED,
         self::TOKEN_REJECTED,
+        self::SETTLEMENT_PROCESSED
     ];
 
     protected static $bitPosition = [
@@ -129,6 +111,8 @@ class Event
         self::INVOICE_PARTIALLY_PAID    => 18,
         self::TOKEN_CONFIRMED           => 19,
         self::TOKEN_REJECTED            => 20,
+        self::SETTLEMENT_PROCESSED      => 21,
+        self::PAYMENT_DISPUTE_CREATED   => 22,
     ];
 
     /**
@@ -140,6 +124,7 @@ class Event
         self::PAYMENT_AUTHORIZED,
         self::PAYMENT_FAILED,
         self::PAYMENT_CAPTURED,
+        self::PAYMENT_DISPUTE_CREATED,
         self::ORDER_PAID,
         self::INVOICE_PAID,
         self::INVOICE_PARTIALLY_PAID,
@@ -157,10 +142,11 @@ class Event
         // self::SUBSCRIPTION_EXPIRED,
         self::TOKEN_CONFIRMED,
         self::TOKEN_REJECTED,
+        self::SETTLEMENT_PROCESSED,
     ];
 
     /**
-     * Defines the mapping to entity for respective event and also
+     * Defines the mapping to main entity for respective event and also
      * the field description to be set in mail content for webhook related mails
      *
      * @var array
@@ -169,6 +155,7 @@ class Event
         self::PAYMENT_AUTHORIZED        => Entity::PAYMENT,
         self::PAYMENT_CAPTURED          => Entity::PAYMENT,
         self::PAYMENT_FAILED            => Entity::PAYMENT,
+        self::PAYMENT_DISPUTE_CREATED   => Entity::PAYMENT,
         self::INVOICE_PAID              => Entity::INVOICE,
         self::INVOICE_PARTIALLY_PAID    => Entity::INVOICE,
         self::INVOICE_EXPIRED           => Entity::INVOICE,
@@ -182,6 +169,7 @@ class Event
         // self::SUBSCRIPTION_EXPIRED      => Entity::SUBSCRIPTION,
         self::TOKEN_CONFIRMED           => Entity::TOKEN,
         self::TOKEN_REJECTED            => Entity::TOKEN,
+        self::SETTLEMENT_PROCESSED      => Entity::SETTLEMENT,
     ];
 
     public static $eventsToFeatureMap = [

@@ -15,6 +15,7 @@ use RZP\Models\FileStore\Format;
 use RZP\Models\Merchant\Account;
 use RZP\Reconciliator\FileProcessor;
 use RZP\Models\Base\PublicCollection;
+use RZP\Reconciliator\RequestProcessor;
 
 class Orchestrator extends Base\Core
 {
@@ -273,12 +274,23 @@ class Orchestrator extends Base\Core
             Batch\Entity::TYPE          => Batch\Type::RECONCILIATION,
             Batch\Entity::GATEWAY       => $this->gateway,
             Batch\Entity::FILE          => $file,
-            Batch\Entity::INPUT_DETAILS => $this->inputDetails,
         ];
+
+        $this->updateBatchConfigParamsIfPresent($params);
 
         $batch = $this->batchCore->create($params, $this->sharedMerchant);
 
         return $batch;
+    }
+
+    protected function updateBatchConfigParamsIfPresent(array & $params)
+    {
+        $batchConfig = array_filter(array_only($this->inputDetails, RequestProcessor\Base::CONFIG_PARAMS));
+
+        if (empty($batchConfig) === false)
+        {
+            $params[Batch\Entity::CONFIG] = $batchConfig;
+        }
     }
 
     protected function handleBatchCreationError(
@@ -364,7 +376,7 @@ class Orchestrator extends Base\Core
         // If sheetNames returned is empty, ensure that the gateway does not perform
         // any operation based on the sheet name.
         //
-        $sheetNames = $this->gatewayReconciliator->getSheetNames();
+        $sheetNames = $this->gatewayReconciliator->getSheetNames($fileDetails);
 
         $startRow = $this->gatewayReconciliator->getStartRow($fileDetails);
 

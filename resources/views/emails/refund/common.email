@@ -243,12 +243,11 @@ depends on your payment cycle with your bank.
                           <tr>
                             <td class="center lighttext">
                               <hr class="wide">
-                              <center>
-                                Please note that successful refunds will
-                                reflect in your bank account in the next
-                                4-5 days.
+                              <center style="font-size: 10px;">
+                                If you do not receive a credit in your account
+                                after 10 working days, please visit our <a title="Razorpay" href="https://razorpay.com">website</a>
                                 <br>
-                                Please <a title="Click to send us a mail" href="mailto:contact@razorpay.com">contact us</a> in case of any discrepancy.
+                                and follow the instructions on the chat window.
                               </center>
                             </td>
                             <td class="expander"></td>
@@ -261,7 +260,7 @@ depends on your payment cycle with your bank.
               </td>
             </tr>
           </table>
-          @include('emails.partials.footer', ['message'=>$message])
+          @include('emails.partials.footer', ['message'=>$message, 'showContact' => false])
         </td>
       </tr>
     </table>

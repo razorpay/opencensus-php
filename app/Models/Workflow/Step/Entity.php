@@ -2,10 +2,13 @@
 
 namespace RZP\Models\Workflow\Step;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Workflow\Base;
 
 class Entity extends Base\Entity
 {
+    use SoftDeletes;
+
     const ID             = 'id';
     const WORKFLOW_ID    = 'workflow_id';
     const LEVEL          = 'level';
@@ -13,7 +16,9 @@ class Entity extends Base\Entity
     const REVIEWER_COUNT = 'reviewer_count';
     const OP_TYPE        = 'op_type';
 
+    //
     const WORKFLOW       = 'workflow';
+    const STEP_ID        = 'step_id';
 
     const OP_TYPE_AND    = 'and';
     const OP_TYPE_OR     = 'or';
@@ -75,6 +80,11 @@ class Entity extends Base\Entity
     public function role()
     {
         return $this->belongsTo('RZP\Models\Admin\Role\Entity');
+    }
+
+    public function checkers()
+    {
+        return $this->hasMany('RZP\Models\Workflow\Action\Checker\Entity', self::STEP_ID);
     }
 
     public function getOpType()

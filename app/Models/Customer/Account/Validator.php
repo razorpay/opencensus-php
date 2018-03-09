@@ -12,44 +12,83 @@ use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
-    protected static $createRules = array(
+    /**
+     * Regular expression for valid names:
+     * - Must start with a-z/A-Z/0-9
+     * - Must end with a-z/A-Z/0-9/./)
+     * - Can have anything from a-z/A-Z/0-9/'/-/–/./_/(/)/space in between
+     */
+    const NAME_REGEX = '/(^[a-zA-Z0-9][a-zA-Z0-9-&\'._()\s–]+[a-zA-Z0-9.)]$)/';
+
+    protected static $createRules = [
         Entity::CONTACT             => 'sometimes|nullable|contact_syntax',
-        Entity::NAME                => 'sometimes|regex:(^[a-zA-Z. 0-9\'()]+$)|max:50|nullable',
+        Entity::NAME                => 'sometimes|string|max:50|nullable|custom',
         Entity::EMAIL               => 'sometimes|nullable|email',
         Entity::NOTES               => 'sometimes|notes',
         Entity::SHIPPING_ADDRESS    => 'sometimes',
         Entity::BILLING_ADDRESS     => 'sometimes',
-    );
+    ];
 
-    protected static $editRules = array(
+    protected static $editRules = [
         Entity::CONTACT         => 'sometimes|contact_syntax',
-        Entity::NAME            => 'sometimes|regex:(^[a-zA-Z. 0-9\'()]+$)|max:50',
+        Entity::NAME            => 'sometimes|string|max:50|nullable|custom',
         Entity::ACTIVE          => 'sometimes|in:0,1',
-        Entity::EMAIL           => 'sometimes|email',
-    );
+    ];
 
-    protected static $globalCreateRules = array(
+    protected static $globalCreateRules = [
         Entity::CONTACT         => 'required|contact_syntax|phone:AUTO,LENIENT,IN,mobile,fixed_line',
-        Entity::EMAIL           => 'required|email',
+        Entity::EMAIL           => 'sometimes|email',
         'otp'                   => 'required|string|regex:"^\d{4,8}$"',
         'device_token'          => 'sometimes|string|max:14',
         '_'                     => 'sometimes|array'
-    );
+    ];
 
-    protected static $contactRules = array(
+    protected static $contactRules = [
         Entity::CONTACT         => 'required|contact_syntax|phone:AUTO,LENIENT,IN,mobile,fixed_line'
-    );
+    ];
 
-    protected static $paymentRules = array(
+    protected static $paymentRules = [
         'skip'                  => 'sometimes|integer'
-    );
+    ];
 
     protected static $walletAppCreateRules = [
         Entity::CONTACT         => 'required|contact_syntax',
         Entity::EMAIL           => 'sometimes|email',
-        Entity::NAME            => 'sometimes|string|max:50',
+        Entity::NAME            => 'sometimes|string|max:50|nullable|custom',
         'otp'                   => 'required|string|regex:"^\d{4,8}$"',
     ];
+
+   protected static $globalCreateValidators = [
+       Entity::EMAIL,
+   ];
+
+    public function __construct($entity = null)
+    {
+        parent::__construct($entity);
+
+        $app = App::getFacadeRoot();
+
+        $this->merchant = $app['basicauth']->getMerchant();
+    }
+
+    protected function validateEmail($input)
+    {
+        if (($this->merchant->isEmailOptional() !== true) and
+            (empty($input[Entity::EMAIL]) === true))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The Email field is required.',
+                Entity::EMAIL);
+        }
+    }
+
+    protected function validateName($attribute, $value)
+    {
+        if (preg_match(self::NAME_REGEX, trim($value)) !== 1)
+        {
+            throw new Exception\BadRequestValidationFailureException('The name format is invalid.');
+        }
+    }
 
     /**
      * - Validates given contact string using contact rules
@@ -131,7 +170,7 @@ class Validator extends Base\Validator
 
     public static function validateGlobalCustomerCreateInput($input)
     {
-        (new static)->validateInput('global_create', $input);
+        (new static)->validateInput('globalCreate', $input);
     }
 
     public static function validateWalletAppCustomerCreateInput($input)

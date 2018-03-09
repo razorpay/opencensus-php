@@ -11,7 +11,6 @@ use RZP\Models\Payment;
 use RZP\Gateway\Utility;
 use RZP\Trace\TraceCode;
 use phpseclib\Crypt\RSA;
-use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Upi\Base;
 use RZP\Constants\Timezone;
@@ -20,8 +19,6 @@ use RZP\Gateway\Upi\Base\Entity;
 use RZP\Gateway\Base\VerifyResult;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Gateway\Base\AuthorizeFailed;
-use RZP\Gateway\Upi\Base\ProviderCode;
-use RZP\Gateway\Upi\Icici\ResponseCodeMap;
 use RZP\Models\Payment\Verify\Action as VerifyAction;
 
 class Gateway extends Base\Gateway
@@ -172,13 +169,13 @@ class Gateway extends Base\Gateway
     protected function getIntentRequest($input, $response)
     {
         $content = [
-            IntentParams::PAYEE_ADDRESS => $input['terminal']->getGatewayMerchantId2() ?? self::DEFAULT_PAYEE_VPA,
-            IntentParams::PAYEE_NAME    => preg_replace('/\s+/', '', $input['merchant']->getFilteredDba()),
-            IntentParams::TXN_REF_ID    => $response['refId'],
-            IntentParams::TXN_NOTE      => $this->getPaymentRemark($input),
-            IntentParams::TXN_AMOUNT    => $input['payment']['amount'] / 100,
-            IntentParams::TXN_CURRENCY  => 'INR',
-            IntentParams::MCC           => '5411',
+            Base\IntentParams::PAYEE_ADDRESS => $input['terminal']->getGatewayMerchantId2() ?? self::DEFAULT_PAYEE_VPA,
+            Base\IntentParams::PAYEE_NAME    => preg_replace('/\s+/', '', $input['merchant']->getFilteredDba()),
+            Base\IntentParams::TXN_REF_ID    => $response['refId'],
+            Base\IntentParams::TXN_NOTE      => $this->getPaymentRemark($input),
+            Base\IntentParams::TXN_AMOUNT    => $input['payment']['amount'] / 100,
+            Base\IntentParams::TXN_CURRENCY  => 'INR',
+            Base\IntentParams::MCC           => '5411',
         ];
 
         $query = str_replace(' ', '', urldecode(http_build_query($content)));
@@ -257,12 +254,7 @@ class Gateway extends Base\Gateway
     {
         return number_format($amount / 100, 2, '.', '');
     }
-
-    /**
-     * The Merchant ID doesn't change for different
-     * merchants since this is the master merchant Id
-     * @return string (numeric merchant id)
-     */
+    
     protected function getMerchantId(): string
     {
         if ($this->mode === Mode::TEST)
@@ -270,7 +262,7 @@ class Gateway extends Base\Gateway
             return $this->config['test_merchant_id'];
         }
 
-        return $this->config['live_merchant_id'];
+        return $this->input['terminal']['gateway_merchant_id'];
     }
 
     /**
@@ -398,7 +390,7 @@ class Gateway extends Base\Gateway
             Fields::NOTE             => $this->getPaymentRemark($input),
             // sub-merchant name field only supports alphanumeric
             // hence replacing all the spaces to empty string here.
-            Fields::SUBMERCHANT_NAME => preg_replace('/\s+/', '', $input['merchant']->getFilteredDba()),
+            Fields::SUBMERCHANT_NAME => $this->getSubMerchantName($input),
             Fields::PAYER_VA_REQ     => $input['payment']['vpa'],
             Fields::SUBMERCHANT_ID   => $this->getSubMerchantId($input),
             Fields::TERMINAL_ID      => $this->getTerminalId($input),
@@ -477,6 +469,13 @@ class Gateway extends Base\Gateway
         $description = $input['merchant']->getFilteredDba() . ' ' . $filteredPaymentDescription;
 
         return ($description ? substr($description, 0, 50) : 'Pay via Razorpay');
+    }
+
+    protected function getSubMerchantName(array $input): string
+    {
+        $dba = preg_replace('/\s+/', '', $input['merchant']->getFilteredDba());
+
+        return ($dba ? substr($dba, 0, 30) : 'Razorpay');
     }
 
     /**
@@ -654,11 +653,14 @@ class Gateway extends Base\Gateway
 
     protected function verifyPayment(Verify $verify): string
     {
-        $this->checkResponseAndThrowExceptionIfRequired($verify);
+        // Removing this for now because verify becomes successful after
+        // some delay on 5000 response
+        //$this->checkResponseAndThrowExceptionIfRequired($verify);
 
         $content = $verify->verifyResponseContent;
 
-        if ($content['success'] !== 'true')
+        if (($content['success'] !== 'true') and
+            ($content[Fields::RESPONSE] !== '5006'))
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
@@ -698,6 +700,11 @@ class Gateway extends Base\Gateway
 
         return $status;
     }
+
+    /**
+     * We need to implement alreadyRefunded
+     * @see https://github.com/razorpay/api/issues/6984
+     */
 
     public function verifyRefund(array $input)
     {
@@ -816,6 +823,11 @@ class Gateway extends Base\Gateway
         assertTrue($content[Fields::MERCHANT_ID] === $gatewayPayment->getMerchantId());
         assertTrue($content[Fields::MERCHANT_TRAN_ID] === $gatewayPayment->getPaymentId());
 
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $actualAmount   = number_format($content[Fields::PAYER_AMOUNT], 2, '.', '');
+
+        $this->assertAmount($expectedAmount, $actualAmount);
+
         if ($status !== Status::SUCCESS)
         {
             $message = "Payment Failed during callback";
@@ -890,7 +902,7 @@ class Gateway extends Base\Gateway
             Fields::ORIGINAL_MERCHANT_TRAN_ID       => $payment['id'],
             Fields::REFUND_AMOUNT                   => $this->formatAmount($refund['amount']),
             Fields::NOTE                            => 'Razorpay Refund ' . $refund['id'],
-            Fields::ONLINE_REFUND                   => 'Y',
+            Fields::ONLINE_REFUND                   => $this->isOnlineRefund($refund),
         ];
 
         $content = $this->transformRequestArrayToContent($data);
@@ -906,6 +918,23 @@ class Gateway extends Base\Gateway
             ]);
 
         return $request;
+    }
+
+    /**
+     * This is done in order to fix refund retry
+     * if refund fails in first attempt
+     * refund is retried with offline mode
+     *
+     * @return string
+     */
+    protected function isOnlineRefund(array $refund)
+    {
+        if (empty($refund['attempts']) === true)
+        {
+            return 'Y';
+        }
+
+        return 'N';
     }
 
     /**

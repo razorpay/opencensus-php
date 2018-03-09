@@ -25,7 +25,9 @@ class NetbankingAxisEMandateTest extends TestCase
 
     protected $payment;
 
-    const ACCOUNT_NUMBER = '914010009305862';
+    const ACCOUNT_NUMBER    = '914010009305862';
+    const IFSC              = 'UTIB0002766';
+    const NAME              = 'Test account';
 
     public function setUp()
     {
@@ -35,17 +37,23 @@ class NetbankingAxisEMandateTest extends TestCase
 
         parent::setUp();
 
-        $this->fixtures->create('terminal:shared_netbanking_axis_recurring_terminal');
+        $this->fixtures->create('terminal:shared_emandate_axis_terminal');
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $this->fixtures->create('customer');
 
-        $this->fixtures->merchant->addFeatures(['charge_at_will', 'e_mandate']);
+        $this->fixtures->merchant->addFeatures(['charge_at_will']);
 
-        $this->payment = $this->getNetbankingRecurringPaymentArray('UTIB');
+        $this->fixtures->merchant->enableEmandate('10000000000000');
 
-        $this->payment['account_number'] = self::ACCOUNT_NUMBER;
+        $this->payment = $this->getEmandateNetbankingRecurringPaymentArray('UTIB');
+
+        $this->payment['bank_account'] = [
+                                            'account_number'    => self::ACCOUNT_NUMBER,
+                                            'ifsc'              => self::IFSC,
+                                            'name'              => self::NAME,
+                                         ];
 
         unset($this->payment[Entity::CARD]);
     }
@@ -54,13 +62,220 @@ class NetbankingAxisEMandateTest extends TestCase
     {
         $payment = $this->payment;
 
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 0]);
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = 0;
+
         $this->doAuthPayment($payment);
 
-        $this->assertEMandateEntities();
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+
+        $this->assertEquals(0, $payment['amount']);
+        $this->assertEquals('captured', $payment['status']);
+    }
+
+    public function testRefundEmandateInitialPaymentWithFeeCredit()
+    {
+        $this->fixtures->create('credits', [
+            'type'        => 'fee',
+            'value'       => 10000,
+        ]);
+
+        $this->fixtures->merchant->editFeeCredits('10000', '10000000000000');
+
+        $payment = $this->payment;
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 0]);
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = 0;
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+
+        $this->assertEquals(0, $payment['amount']);
+        $this->assertEquals('captured', $payment['status']);
+
+        $paymentTxn = $this->getLastEntity(Entity::TRANSACTION, true);
+
+        $this->assertEquals(0, $paymentTxn['credit']);
+        $this->assertEquals(1180, $paymentTxn['fee']);
+        $this->assertEquals(180, $paymentTxn['tax']);
+        $this->assertEquals('payment', $paymentTxn['type']);
+        $this->assertEquals('prepaid', $paymentTxn['fee_model']);
+        $this->assertEquals('fee', $paymentTxn['credit_type']);
+
+        $merchantBalance = $this->getEntityById(Entity::BALANCE, '10000000000000', true);
+
+        $this->assertEquals(8820, $merchantBalance['fee_credits']);
+
+        $this->refundPayment($payment['id']);
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+
+        $this->assertEquals(0, $payment['amount_refunded']);
+        $this->assertEquals('refunded', $payment['status']);
+
+        $refundTxn = $this->getLastEntity(Entity::TRANSACTION, true);
+
+        $this->assertEquals(0, $refundTxn['debit']);
+        $this->assertEquals(0, $refundTxn['fee']);
+        $this->assertEquals(0, $refundTxn['tax']);
+        $this->assertEquals('refund', $refundTxn['type']);
+        $this->assertEquals('na', $refundTxn['fee_model']);
+    }
+
+    //
+    // This test is to ensure that amount credit flow is not executed for
+    // zero ruppee payments
+    //
+    public function testRefundEmandateInitialPaymentWithAmountCredit()
+    {
+        $credit = $this->fixtures->create('credits', [
+               'type'        => 'amount',
+               'value'       => 10000,
+           ]);
+
+        $payment = $this->payment;
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 0]);
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = 0;
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+
+        $this->assertEquals(0, $payment['amount']);
+        $this->assertEquals('captured', $payment['status']);
+
+        $paymentTxn = $this->getLastEntity(Entity::TRANSACTION, true);
+
+        $this->assertEquals(0, $paymentTxn['credit']);
+        $this->assertEquals(1180, $paymentTxn['fee']);
+        $this->assertEquals(180, $paymentTxn['tax']);
+        $this->assertEquals('payment', $paymentTxn['type']);
+        $this->assertEquals('prepaid', $paymentTxn['fee_model']);
+        $this->assertEquals('default', $paymentTxn['credit_type']);
+
+        $merchantBalance = $this->getEntityById(Entity::BALANCE, '10000000000000', true);
+
+        $this->assertEquals(998820, $merchantBalance['balance']);
+
+        $this->refundPayment($payment['id']);
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+
+        $this->assertEquals(0, $payment['amount_refunded']);
+        $this->assertEquals('refunded', $payment['status']);
+
+        $refundTxn = $this->getLastEntity(Entity::TRANSACTION, true);
+
+        $this->assertEquals(0, $refundTxn['debit']);
+        $this->assertEquals(0, $refundTxn['fee']);
+        $this->assertEquals(0, $refundTxn['tax']);
+        $this->assertEquals('refund', $refundTxn['type']);
+        $this->assertEquals('na', $refundTxn['fee_model']);
+    }
+
+    public function testRefundEmandateInitialPaymentWithNormalPricing()
+    {
+        $payment = $this->payment;
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 0]);
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = 0;
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+
+        $this->assertEquals(0, $payment['amount']);
+        $this->assertEquals('captured', $payment['status']);
+
+        $paymentTxn = $this->getLastEntity(Entity::TRANSACTION, true);
+
+        $this->assertEquals(0, $paymentTxn['credit']);
+        $this->assertEquals(1180, $paymentTxn['fee']);
+        $this->assertEquals(180, $paymentTxn['tax']);
+        $this->assertEquals('payment', $paymentTxn['type']);
+        $this->assertEquals('prepaid', $paymentTxn['fee_model']);
+        $this->assertEquals('default', $paymentTxn['credit_type']);
+
+        $merchantBalance = $this->getEntityById(Entity::BALANCE, '10000000000000', true);
+
+        $this->assertEquals(998820, $merchantBalance['balance']);
+
+        $this->refundPayment($payment['id']);
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+
+        $this->assertEquals(0, $payment['amount_refunded']);
+        $this->assertEquals('refunded', $payment['status']);
+
+        $refundTxn = $this->getLastEntity(Entity::TRANSACTION, true);
+
+        $this->assertEquals(0, $refundTxn['debit']);
+        $this->assertEquals(0, $refundTxn['fee']);
+        $this->assertEquals(0, $refundTxn['tax']);
+        $this->assertEquals('refund', $refundTxn['type']);
+        $this->assertEquals('na', $refundTxn['fee_model']);
+    }
+
+    public function testEmandateDifferentPricing()
+    {
+        $payment = $this->payment;
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 0]);
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = 0;
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+
+        $this->assertEquals(0, $payment['amount']);
+        $this->assertEquals('captured', $payment['status']);
+
+        $paymentTxn = $this->getLastEntity(Entity::TRANSACTION, true);
+
+        $this->assertEquals(0, $paymentTxn['credit']);
+        $this->assertEquals(1180, $paymentTxn['fee']);
+        $this->assertEquals(180, $paymentTxn['tax']);
+        $this->assertEquals('payment', $paymentTxn['type']);
+        $this->assertEquals('prepaid', $paymentTxn['fee_model']);
+        $this->assertEquals('default', $paymentTxn['credit_type']);
+
+        $merchantBalance = $this->getEntityById(Entity::BALANCE, '10000000000000', true);
+
+        $this->assertEquals(998820, $merchantBalance['balance']);
+
+        $token = $this->getLastEntity('token', true);
+
+        $payment = $this->payment;
+
+        $payment[Payment\Entity::TOKEN] = $token['id'];
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 200]);
+        $payment['amount'] = 200;
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->doS2SRecurringPayment($payment);
+
+        $debitPayment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(200, $debitPayment['amount']);
+        $this->assertEquals('created', $debitPayment['status']);
     }
 
     public function testEmandateInitialPaymentFailure()
     {
+        $payment = $this->payment;
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 0]);
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = 0;
+
         $this->mockServerContentFunction(function (& $content, $action = null)
         {
             if ($action === 'emandateauth')
@@ -71,17 +286,23 @@ class NetbankingAxisEMandateTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function()
+        $this->runRequestResponseFlow($data, function() use ($payment)
         {
-            $this->doAuthPayment($this->payment);
+            $this->doAuthPayment($payment);
         });
     }
 
     public function testPaymentVerify()
     {
-        $payment = $this->doAuthPayment($this->payment);
+        $payment = $this->payment;
 
-        $verify = $this->verifyPayment($payment['razorpay_payment_id']);
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 0]);
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = 0;
+
+        $response = $this->doAuthPayment($payment);
+
+        $verify = $this->verifyPayment($response['razorpay_payment_id']);
 
         assert($verify['payment']['verified'] === 1);
 
@@ -98,7 +319,13 @@ class NetbankingAxisEMandateTest extends TestCase
 
     public function testPaymentVerifyFailure()
     {
-        $payment = $this->doAuthPayment($this->payment);
+        $payment = $this->payment;
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 0]);
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = 0;
+
+        $response = $this->doAuthPayment($payment);
 
         $this->mockServerContentFunction(function (& $content, $action = null)
         {
@@ -110,15 +337,21 @@ class NetbankingAxisEMandateTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() use ($payment)
+        $this->runRequestResponseFlow($data, function() use ($response)
         {
-            $this->verifyPayment($payment['razorpay_payment_id']);
+            $this->verifyPayment($response['razorpay_payment_id']);
         });
     }
 
     public function testPaymentVerifyAmountMismatch()
     {
-        $payment = $this->doAuthPayment($this->payment);
+        $payment = $this->payment;
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 0]);
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = 0;
+
+        $response = $this->doAuthPayment($payment);
 
         $this->mockServerContentFunction(function (& $content, $action = null)
         {
@@ -131,9 +364,9 @@ class NetbankingAxisEMandateTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() use ($payment)
+        $this->runRequestResponseFlow($data, function() use ($response)
         {
-            $this->verifyPayment($payment['razorpay_payment_id']);
+            $this->verifyPayment($response['razorpay_payment_id']);
         });
     }
 
@@ -141,17 +374,25 @@ class NetbankingAxisEMandateTest extends TestCase
     {
         $payment = $this->payment;
 
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 0]);
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = 0;
+
         $this->doAuthPayment($payment);
 
         $token = $this->getLastEntity('token', true);
 
         $payment[Payment\Entity::TOKEN] = $token['id'];
 
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 200]);
+        $payment['amount'] = 200;
+        $payment['order_id'] = $order->getPublicId();
+
         $this->doS2SRecurringPayment($payment);
 
         $debitPayment = $this->getLastEntity('payment', true);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         Mail::fake();
 

@@ -14,6 +14,7 @@ class Method
     const TRANSFER      = 'transfer';
     const BANK_TRANSFER = 'bank_transfer';
     const AEPS          = 'aeps';
+    const EMANDATE      = 'emandate';
 
     protected static $methods = [
         self::CARD          => 'Card',
@@ -24,6 +25,13 @@ class Method
         self::EMI           => 'EMI',
         self::TRANSFER      => 'Marketplace Transfer',
         self::BANK_TRANSFER => 'Bank Transfer',
+        self::EMANDATE      => 'E-Mandate',
+    ];
+
+    public static $bankMethods = [
+        self::NETBANKING,
+        self::AEPS,
+        self::EMANDATE
     ];
 
     protected static $asynchronous = [

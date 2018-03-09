@@ -32,6 +32,9 @@ return [
                 'authorized'    => env('AWS_WEBHOOKS_TEST_QUEUE'),
                 'captured'      => env('AWS_WEBHOOKS_TEST_QUEUE'),
                 'failed'        => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'dispute'       => [
+                    'created'   => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                ],
             ],
             'order' => [
                 'paid'          => env('AWS_WEBHOOKS_TEST_QUEUE'),
@@ -54,13 +57,19 @@ return [
                 'expired'       => env('AWS_WEBHOOKS_TEST_QUEUE'),
                 'cancelled'     => env('AWS_WEBHOOKS_TEST_QUEUE'),
                 'completed'     => env('AWS_WEBHOOKS_TEST_QUEUE'),
-            ]
+            ],
+            'settlement' => [
+                'processed'     => env('AWS_WEBHOOKS_TEST_QUEUE'),
+            ],
         ],
         'live' => [
             'payment' => [
                 'authorized'    => env('AWS_WEBHOOKS_LIVE_QUEUE'),
                 'captured'      => env('AWS_WEBHOOKS_LIVE_QUEUE'),
                 'failed'        => env('AWS_WEBHOOKS_FAILURE_QUEUE'),
+                'dispute'       => [
+                    'created'   => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                ],
             ],
             'order' => [
                 'paid'          => env('AWS_WEBHOOKS_LIVE_QUEUE'),
@@ -83,7 +92,10 @@ return [
                 'expired'       => env('AWS_WEBHOOKS_LIVE_QUEUE'),
                 'cancelled'     => env('AWS_WEBHOOKS_LIVE_QUEUE'),
                 'completed'     => env('AWS_WEBHOOKS_LIVE_QUEUE'),
-            ]
+            ],
+            'settlement' => [
+                'processed'     => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+            ],
         ],
     ],
 

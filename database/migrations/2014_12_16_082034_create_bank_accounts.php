@@ -82,7 +82,7 @@ class CreateBankAccounts extends Migration
             $table->integer(BankAccount::DELETED_AT)
                   ->nullable();
 
-            $table->index(BankAccount::ENTITY_ID);
+            $table->index([BankAccount::ENTITY_ID, BankAccount::TYPE]);
 
             $table->index(BankAccount::TYPE);
 

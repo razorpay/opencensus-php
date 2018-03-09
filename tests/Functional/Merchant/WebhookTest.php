@@ -2,31 +2,35 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use Mail;
 use Closure;
 use Mockery;
-use Mail;
-
-use RZP\Mail\Merchant\Webhook as WebhookMail;
-use Http\Mock\Client;
-use RZP\Jobs\WebHook;
-use RZP\Tests\Functional\TestCase;
-use Http\Discovery\MessageFactoryDiscovery;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Tests\Functional\Helpers\MocksDnsTrait;
-use RZP\Models\Merchant\Webhook\Inferno;
-use Psr\Http\Message\ResponseInterface;
+use Carbon\Carbon;
 use Psr\Http\Message\RequestInterface;
-use Http\Discovery\HttpClientDiscovery;
-use Http\Discovery\Strategy\MockClientStrategy;
+use Psr\Http\Message\ResponseInterface;
+
+use RZP\Models\Settlement;
+use RZP\Constants\Timezone;
+use RZP\Tests\Functional\TestCase;
+use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\Merchant\Webhook\Inferno;
+use Http\Discovery\MessageFactoryDiscovery;
+use RZP\Mail\Merchant\Webhook as WebhookMail;
+use RZP\Tests\Functional\Helpers\WebhookTrait;
+use RZP\Tests\Functional\Helpers\MocksDnsTrait;
+use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use Http\Client\Common\Exception\ClientErrorException;
+use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
 
 /**
  * @group dns-sensitive
  */
 class WebhookTest extends TestCase
 {
-    use PaymentTrait;
+    use AttemptTrait;
+    use AttemptReconcileTrait;
     use MocksDnsTrait;
+    use WebhookTrait;
 
     public function setUp()
     {
@@ -40,6 +44,18 @@ class WebhookTest extends TestCase
     }
 
     public function testCreateWebhook()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateWebhookWhenAlreadyCreated()
+    {
+        $this->fixtures->create('webhook');
+
+        $this->startTest();
+    }
+
+    public function testCreateAppWebhook()
     {
         $this->startTest();
     }
@@ -80,6 +96,11 @@ class WebhookTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateAppWebhookInvalidAppId()
+    {
+        $this->startTest();
+    }
+
     public function testEditWebhook()
     {
         $webhook = $this->createWebhook();
@@ -93,17 +114,34 @@ class WebhookTest extends TestCase
     {
         $this->createWebhook();
 
+        // Adding this to ensure only merchant webhooks are returned and no
+        // application webhooks.
+        $this->createApplicationWebhook('10000000000App');
+
+        $response = $this->startTest();
+
+        $this->assertNotContains('application_id', $response);
+    }
+
+    public function testGetAppWebhooks()
+    {
+        $this->createWebhook();
+
+        $this->createApplicationWebhook('10000000000App');
+
+        $this->createApplicationWebhook('1000000000App2');
+
         $this->startTest();
     }
 
     public function testCreateWebhookWrongUrl()
     {
-        $data = $this->startTest();
+        $this->startTest();
     }
 
     public function testWebhookEventData()
     {
-        $webhook = $this->createWebhook();
+        $this->createWebhook();
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -331,11 +369,112 @@ class WebhookTest extends TestCase
         $this->doAuthAndCapturePayment();
     }
 
+    public function testAppAndMerchantWebhook()
+    {
+        $this->fixtures->create('merchant_access_map');
+
+        // 1 app and 1 merchant webhook. Should fire 2.
+        $this->createApplicationWebhook('10000000000App', false);
+
+        $this->createMerchantWebhook();
+
+        $eventDataKeys = ['testMerchantWebhookData', 'testAppWebhookData'];
+
+        $this->setClientTriggerAndVerifyRequests($eventDataKeys);
+    }
+
+    public function testAppWebhookWithInactiveMerchantWebhook()
+    {
+        $this->fixtures->create('merchant_access_map');
+
+        // 1 active app webhook
+        $this->createApplicationWebhook('10000000000App', false);
+
+        $input = ['active' => 0];
+
+        // 1 inactive merchant webhook. Should fire 1.
+        $this->createMerchantWebhook($input);
+
+        $eventDataKeys = ['testAppWebhookData'];
+
+        $this->setClientTriggerAndVerifyRequests($eventDataKeys);
+    }
+
+    public function testMerchantWebhookWithInactiveAppWebhook()
+    {
+        $this->fixtures->create('merchant_access_map');
+
+        $input = ['active' => 0];
+
+        // 1 inactive app webhook and active merchant webhook. Should fire 1.
+        $this->createApplicationWebhook('10000000000App', false, $input);
+
+        $this->createMerchantWebhook();
+
+        $eventDataKeys = ['testMerchantWebhookData'];
+
+        $this->setClientTriggerAndVerifyRequests($eventDataKeys);
+    }
+
+    public function testMultipleAppWebhooks()
+    {
+        $this->fixtures->create('merchant_access_map');
+
+        $this->fixtures->create('merchant_access_map', ['entity_id' => '10000000001App']);
+
+        // 2 active app webhooks. Should fire 2.
+        $this->createApplicationWebhook('10000000000App', false);
+
+        $input = ['url' => 'http://exampleapp.com/v1/dummy/route'];
+
+        $this->createApplicationWebhook('10000000001App', false, $input);
+
+        $eventDataKeys = ['testAppWebhookData', 'testApp2WebhookData'];
+
+        $this->setClientTriggerAndVerifyRequests($eventDataKeys);
+    }
+
+    public function testMultipleAppWebhooksWithInactiveWebhook()
+    {
+        $this->fixtures->create('merchant_access_map');
+
+        $this->fixtures->create('merchant_access_map', ['entity_id' => '10000000001App']);
+
+        // 1 active and 1 inactive app webhook. Should fire 1.
+        $this->createApplicationWebhook('10000000000App', false);
+
+        $input = ['active' => 0, 'url' => 'http://exampleapp.com/v1/dummy/route'];
+
+        $this->createApplicationWebhook('10000000001App', false, $input);
+
+        $eventDataKeys = ['testAppWebhookData'];
+
+        $this->setClientTriggerAndVerifyRequests($eventDataKeys);
+    }
+
     public function testWebhookShouldNotFireWhenInactive()
     {
         $webhook = $this->createWebhook();
 
         $this->fixtures->edit('webhook', $webhook['id'], ['active' => 0]);
+
+        $inferno = $this->mockInferno();
+
+        $inferno->shouldNotReceive('fire');
+
+        $this->doAuthPayment();
+    }
+
+    public function testAppWebhookShouldNotFireWhenInactive()
+    {
+        $this->fixtures->create('merchant_access_map');
+
+        $input = ['active' => 0];
+
+        // 1 inactive app webhook and 1 inactive merchant webhook. Should fire 0.
+        $webhook = $this->fixtures->create('webhook', $input);
+
+        $this->createApplicationWebhook('10000000000App', false, $input);
 
         $inferno = $this->mockInferno();
 
@@ -572,6 +711,105 @@ class WebhookTest extends TestCase
         self::fail();
     }
 
+    /**
+     * Tests if a webhook is triggered to the merchant when a settlement is processed.
+     */
+    public function testTransferSettlementWebhook()
+    {
+        $this->ba->privateAuth();
+
+        $channel = Settlement\Channel::ICICI;
+
+        $this->fixtures->merchant->edit('10000000000000', ['channel' => $channel]);
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $payment = $this->createPaymentEntities(1);
+
+        $account2 = $this->fixtures->create('merchant:marketplace_account', ['id' => '10000000000002']);
+        $this->fixtures->merchant->edit('10000000000002', ['channel' => $channel]);
+
+        $this->createTransferEntity($payment, $account2);
+
+        $account3 = $this->fixtures->create('merchant:marketplace_account', ['id' => '10000000000003']);
+        $this->fixtures->merchant->edit('10000000000003', ['channel' => $channel]);
+
+        $this->createTransferEntity($payment, $account3);
+
+        $this->createWebhook(
+            [
+                'events' => [
+                    'settlement.processed' => '1',
+                ]
+            ]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->mockInfernoFire(function ($data) use ($testData)
+        {
+            $data['event'] = json_decode($data['event'], true);
+
+            $this->assertArrayHasKey('account_id', $data['event']);
+
+            $this->assertEquals('settlement.processed', $data['event']['event']);
+
+            $this->assertArraySelectiveEquals($testData, $data);
+
+            return true;
+        }, 2);
+
+        $this->initiateSettlements($channel);
+
+        $content = $this->initiateTransfer($channel, Attempt\Purpose::SETTLEMENT);
+
+        $setlFile = $content[$channel]['file']['local_file_path'];
+
+        $this->reconcileSettlementsForChannel($setlFile, $channel, false);
+
+        $this->reconcileEntitiesForChannel($channel);
+
+        $this->reconcileEntitiesForChannel($channel);
+    }
+
+    public function testWebhookOnSettlementFailure()
+    {
+        $channel = Settlement\Channel::ICICI;
+
+        $this->fixtures->merchant->edit('10000000000000', ['channel' => $channel]);
+
+        $this->createPaymentAndRefundEntities(2);
+
+        $this->initiateSettlements($channel);
+
+        $content = $this->initiateTransfer($channel, Attempt\Purpose::SETTLEMENT);
+
+        $setlFile = $content[$channel]['file']['local_file_path'];
+
+        $this->reconcileSettlementsForChannel($setlFile, $channel, true);
+
+        $this->mockInfernoFire(function () { }, 0);
+
+        $this->reconcileEntitiesForChannel($channel);
+    }
+
+    protected function createTransferEntity($payment, $account)
+    {
+        $createdAt = Carbon::today(Timezone::IST)->subDays(20)->timestamp + 5;
+
+        $this->fixtures->create('transfer:to_account',
+            [
+                'account'       => $account,
+                'source_id'     => $payment->getId(),
+                'source_type'   => 'payment',
+                'amount'        => 2500,
+                'currency'      => 'INR',
+                'on_hold'       => '0',
+                'on_hold_until' => Carbon::today(Timezone::IST)->timestamp - 600,
+                'created_at'    => $createdAt,
+                'updated_at'    => $createdAt + 10
+            ]);
+    }
+
     protected function mockInfernoWithResponseStatusCode($statusCode, $method = 'makeRequest')
     {
         $inferno = $this->mockInferno();
@@ -636,5 +874,44 @@ class WebhookTest extends TestCase
             $requestData['content']);
 
         return $request;
+    }
+
+    protected function createApplicationWebhook(
+        string $appId,
+        bool $defaultMerchant = true,
+        array $params = [])
+    {
+        $input = [
+            'entity_type' => 'application',
+            'entity_id'   => $appId,
+            'url'         => 'http://example.com/v1/dummy/route',
+        ];
+
+        if ($defaultMerchant === false)
+        {
+            $input['merchant_id'] = '100000Razorpay';
+        }
+
+        $input = array_merge($input, $params);
+
+        $this->fixtures->create('webhook', $input);
+    }
+
+    protected function createMerchantWebhook(array $params = [])
+    {
+        $input = ['url' => 'http://sample.com/v1/dummy/route'];
+
+        $input = array_merge($input, $params);
+
+        $this->fixtures->create('webhook', $input);
+    }
+
+    protected function setClientTriggerAndVerifyRequests(array $eventDataKeys)
+    {
+        $client = $this->setInfernoMockClient();
+
+        $this->doAuthPayment();
+
+        $this->verifyRequestsData($client, $eventDataKeys);
     }
 }

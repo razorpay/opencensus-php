@@ -24,7 +24,6 @@ class PaymentCreateController extends Controller
             $this->trace->info(
                 TraceCode::PAYMENT_CREATE_ON_PUBLIC,
                 ['merchant_id' => $this->app['basicauth']->getMerchantId()]);
-
         }
 
         $ret = $this->createPayment();
@@ -157,9 +156,22 @@ class PaymentCreateController extends Controller
     {
         $input = Request::all();
 
+        // @todo: Add flow in the payment entity
+        if (isset($input['flow']) === true)
+        {
+            $input['_']['flow'] = $input['flow'];
+
+            unset($input['flow']);
+        }
+
         $data = $this->service(E::PAYMENT)->processUpi($input);
 
         $response = ['razorpay_payment_id' => $data['payment_id']];
+
+        if (isset($data['data']['intent_url']) === true)
+        {
+            $response['link'] = $data['data']['intent_url'];
+        }
 
         return ApiResponse::json($response);
     }
@@ -334,12 +346,21 @@ class PaymentCreateController extends Controller
             else if (($data['type'] === 'async') or
                      ($data['type'] === 'intent'))
             {
+                $templateData = [
+                    'data' => $data,
+                    'api'  => $this->config->get('url.api.production')
+                ];
                 return View::make('gateway.gatewayAsyncForm')
-                           ->with('data', $data);
+                           ->with('data', $templateData);
             }
             else if ($data['type'] === 'wallet')
             {
                 return View::make('gateway.gatewayWalletForm')
+                           ->with('data', $data);
+            }
+            else if ($data['type'] === 'emandate')
+            {
+                return View::make('emandate.form')
                            ->with('data', $data);
             }
             else

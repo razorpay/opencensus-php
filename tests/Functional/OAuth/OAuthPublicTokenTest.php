@@ -4,12 +4,12 @@ namespace RZP\Tests\Functional\OAuth;
 
 use Razorpay\OAuth\Token;
 
-use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class OAuthPublicTokenTest extends OAuthTestCase
 {
     use OAuthTrait;
-    use RequestResponseFlowTrait;
+    use PaymentTrait;
 
     /**
      * @var string
@@ -32,6 +32,17 @@ class OAuthPublicTokenTest extends OAuthTestCase
         $this->ba->oauthPublicTokenAuth($this->publicToken);
 
         $this->startTest();
+    }
+
+    public function testCreatePaymentOAuth()
+    {
+        $this->generateOAuthAccessToken(['public_token' => 'TheTestAuthKey']);
+
+        $this->ba->oauthPublicTokenAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->doAuthPaymentOAuth($payment);
     }
 
     public function testOAuthPublicTokenPrivateRoute()

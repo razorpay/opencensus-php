@@ -16,6 +16,7 @@ use RZP\Models\Admin\Action;
 use RZP\Models\Admin\AdminLead;
 use RZP\Models\Admin\Permission;
 use RZP\Models\BankAccount;
+use RZP\Models\Emi;
 use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Models\Merchant;
@@ -25,6 +26,7 @@ use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Transaction;
 use RZP\Models\User;
 use RZP\Trace\TraceCode;
+use RZP\Models\Base\PublicCollection;
 use RZP\Mail\Payout\Payout as PayoutMail;
 
 class Core extends Base\Core
@@ -70,7 +72,19 @@ class Core extends Base\Core
         return $merchant;
     }
 
-    public function createSubMerchant($input, $aggregatorMerchant, $linkedAccount = true): Entity
+    /**
+     * @param array     $input
+     * @param Entity    $aggregatorMerchant
+     * @param bool      $linkedAccount
+     * @param bool      $accountEntity
+     *
+     * @return Entity|Account\Entity
+     */
+    public function createSubMerchant(
+        array $input,
+        Entity $aggregatorMerchant,
+        bool $linkedAccount = true,
+        bool $accountEntity = false)
     {
         // We only check for email uniqueness if the email
         // address is provided
@@ -89,7 +103,16 @@ class Core extends Base\Core
 
         (new Validator)->validateInput('edit_name', $merchantData);
 
-        $subMerchant = (new Merchant\Entity)->build($input);
+        if ($accountEntity === true)
+        {
+            $entity = new Account\Entity;
+        }
+        else
+        {
+            $entity = new Entity;
+        }
+
+        $subMerchant = $entity->build($input);
 
         $subMerchant->setAuditAction(Action::CREATE_SUBMERCHANT);
 
@@ -194,7 +217,13 @@ class Core extends Base\Core
 
         (new Methods\Core)->validateInternationalPricingForMerchant($merchant, $plan);
 
-        $this->saveAndNotify($merchant);
+        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $input)
+        {
+            // This is used to sync fields transaction_report_email and website in merchant and merchantDetail
+            (new Detail\Core)->editMerchantDetailFields($merchant, $input);
+
+            $this->saveAndNotify($merchant);
+        });
 
         $this->syncHeimdallRelatedEntities($merchant, $input);
 
@@ -304,9 +333,15 @@ class Core extends Base\Core
      */
     protected function saveAndNotify($merchant)
     {
-        $data = $this->getEditedMerchantDifference($merchant);
-
         $this->repo->saveOrFail($merchant);
+
+        // Dont notify for linked account changes
+        if ($merchant->isLinkedAccount() === true)
+        {
+            return;
+        }
+
+        $data = $this->getEditedMerchantDifference($merchant);
 
         if (empty($data) === false)
         {
@@ -389,6 +424,45 @@ class Core extends Base\Core
         return $merchant;
     }
 
+    /**
+     * This function is used for getting the activation status change log of a merchant
+     * @param Entity $merchant
+     *
+     * @return PublicCollection
+     */
+    public function getActivationStatusChangeLog(Entity $merchant): PublicCollection
+    {
+        return $merchant->getActivationStatusChangeLog();
+    }
+
+    /**
+     * This function is used for updating key access of a merchant
+     * @param Entity $merchant
+     * @param array $input
+     *
+     * @return Entity
+     */
+    public function updateKeyAccess(Entity $merchant, array $input): Entity
+    {
+        $merchant->getValidator()->validateInput('keyAccess', $input);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_UPDATE_KEY_ACCESS,
+            ['input' => $input]);
+
+        $oldMerchant = clone $merchant;
+
+        $merchant->setHasKeyAccess($input[Entity::HAS_KEY_ACCESS]);
+
+        $this->app['workflow']
+             ->setEntity($merchant->getEntity())
+             ->handle($oldMerchant, $merchant);
+
+        $this->repo->saveOrFail($merchant);
+
+        return $merchant;
+    }
+
     public function markGratisTransactionPostpaid(string $merchantId, int $from)
     {
         $merchant =  $this->repo->merchant->findOrFail($merchantId);
@@ -415,21 +489,47 @@ class Core extends Base\Core
         }
     }
 
-    public function validateFilterAttributesAndAddMerchantId($merchantId, $input)
+    public function processMerchantAnalyticsQuery(string $merchantId, array $input): array
     {
-        $filters = $input[Entity::FILTERS];
-
-        $validator = new AnalyticsValidator();
-
-        foreach ($filters as $key => $filter)
+        if (isset($input[Entity::FILTERS]) === false)
         {
-            array_push($input[Entity::FILTERS][$key], [Entity::KEY_MERCHANT_ID => $merchantId]);
+            $input = $this->addDefaultAnalyticsFilter($merchantId, $input);
 
-            foreach ($filter as $attributes)
+            return $input;
+        }
+
+        //
+        // Iterates through input filters and
+        // - If one filter is empty, adds one sub filter with merchant id clause
+        // - If there are sub filters, adds merchant id clause in each of them
+        //
+        $filters = & $input[Entity::FILTERS];
+
+        foreach ($filters as & $filter)
+        {
+            if (empty($filter) === true)
             {
-                $validator->validateAnalyticsInputFilter($attributes);
+                $filter[] = [Entity::KEY_MERCHANT_ID => $merchantId];
+            }
+            else
+            {
+                foreach ($filter as & $subFilter)
+                {
+                    $subFilter[Entity::KEY_MERCHANT_ID] = $merchantId;
+                }
             }
         }
+
+        return $input;
+    }
+
+    protected function addDefaultAnalyticsFilter(string $merchantId, array $input = []): array
+    {
+        $defaultFilter[] = [Entity::KEY_MERCHANT_ID => $merchantId];
+
+        $input[Entity::FILTERS] = [Entity::DEFAULT_FILTER => $defaultFilter];
+
+        return $input;
     }
 
     /**
@@ -637,5 +737,20 @@ class Core extends Base\Core
 
             (new User\Core)->edit($selfUser, $userData);
         }
+    }
+
+    public function enableEmiMerchantSubvention(Entity $merchant, Emi\Entity $emiPlan, array $input)
+    {
+        $emiMerchantSub = (new EmiPlans\Entity)->build($input);
+
+        $emiMerchantSub->merchant()->associate($merchant);
+
+        $emiMerchantSub->emiPlan()->associate($emiPlan);
+
+        $emiMerchantSub->generateId();
+
+        $this->repo->saveOrFail($emiMerchantSub);
+
+        return $emiMerchantSub->toArray();
     }
 }

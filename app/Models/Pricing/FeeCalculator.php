@@ -106,8 +106,10 @@ class FeeCalculator
 
         $totalFees = $fees + $totalTaxes;
 
-        // In case the merchant is customer fee bearer, we shouldn't check $amount < $totalFees
-        if ($this->entity->merchant->isFeeBearerCustomer() === false)
+        // In case the merchant is customer fee bearer, we shouldn't check
+        // $amount < $totalFees because amount is already inclusive of the fees.
+        if (($this->entity->merchant->isFeeBearerCustomer() === false) and
+            ($amount !== 0))
         {
             if ($totalFees > $amount)
             {
@@ -247,6 +249,10 @@ class FeeCalculator
         {
             $rule = $this->getRelevantPricingRuleForAeps($rules);
         }
+        else if ($method === Payment\Method::EMANDATE)
+        {
+            $rule = $this->getRelevantPricingRuleForEmandate($rules);
+        }
         else if ($method === Payment\Method::EMI)
         {
             $rule = $this->getRelevantPricingRuleForEmi($rules);
@@ -289,6 +295,37 @@ class FeeCalculator
 
     protected function getRelevantPricingRuleForAeps($rules)
     {
+        return $this->applyAmountRangeFilterAndReturnOneRule($rules);
+    }
+
+    protected function getRelevantPricingRuleForEmandate($rules)
+    {
+        // All the rules for the current pricing plan will be put
+        // through various filters till the right pricing rule
+        // for the current case remains.
+
+        $payment = $this->entity;
+
+        $bank = $payment->getBank();
+
+        $authType = $payment->getGlobalOrLocalTokenEntity()->getAuthType();
+
+        $recurringType = $payment->getRecurringType();
+
+        // Current Implementation
+        // * Filter based on AmountRange
+        // * Choose based on Amount
+        // * Choose based on Authentication type
+        // * Choose based on Recurring type
+
+        $filters = [
+            [Pricing\Entity::PAYMENT_NETWORK,     $bank,          true, null],
+            [Pricing\Entity::PAYMENT_METHOD_TYPE, $authType,      true, null],
+            [Pricing\Entity::PAYMENT_ISSUER,      $recurringType, true, null],
+        ];
+
+        $rules = $this->applyFiltersOnRules($rules, $filters);
+
         return $this->applyAmountRangeFilterAndReturnOneRule($rules);
     }
 
@@ -353,7 +390,6 @@ class FeeCalculator
         $filters = [
             [Pricing\Entity::PAYMENT_NETWORK, $bank, true, null],
         ];
-
 
         $rules = $this->applyFiltersOnRules($rules, $filters);
 
@@ -613,7 +649,7 @@ class FeeCalculator
     }
 
     protected function traceAllRules($rules)
-     {
+    {
          $verbose = $this->isVerboseLogEnabled();
 
          if ($verbose === false)
@@ -721,7 +757,7 @@ class FeeCalculator
                 $taxValue = 2 * ((int) round(($calculationPercentage * $fee) / 10000));
             }
 
-            $taxValue = ($eligibleForGst === true) ? $taxValue: 0;
+            $taxValue = ($eligibleForGst === true) ? $taxValue : 0;
 
             $totalTaxes += $taxValue;
 

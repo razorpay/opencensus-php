@@ -8,7 +8,7 @@ return [
     'testCreateKey' => [
         'request' => [
             'method' => 'POST',
-            'url' => '/merchants/1X4hRFHFx4UiXt/keys',
+            'url' => '/keys',
             'content' => [
             ]
         ],
@@ -20,10 +20,95 @@ return [
         ]
     ],
 
+    'testEditBulkMerchantAttributes' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'url'     => '/merchants/bulk',
+            'content' => [
+                'merchant_ids' => ['10000000000044', '10000000000055'],
+                'attributes'   => [
+                    'hold_funds'           => 1,
+                    'whitelisted_ips_live' => ['1.1.1.1', '2.2.2.2']
+                ],
+            ],
+            'server'  => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'total'     => 2,
+                'success'   => 2,
+                'failed'    => 0,
+                'failedIds' => [],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testEditBulkMerchantAction' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'url'     => '/merchants/bulk',
+            'content' => [
+                'merchant_ids' => ['10000000000044', '10000000000055'],
+                'action'       => 'hold_funds',
+            ],
+            'server'  => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'total'     => 2,
+                'success'   => 2,
+                'failed'    => 0,
+                'failedIds' => [],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testFailedBulkMerchant' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'url'     => '/merchants/bulk',
+            'content' => [
+                'merchant_ids' => ['10000000000044', '10000000000055'],
+                'action'       => 'hold_funds',
+                'attributes'   => [
+                    'whitelisted_ips_live' => ['1.1.1.1', '2.2.2.2']
+                ],
+            ],
+            'server'  => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Both Action and Attributes should not be sent.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreateKeyForNonActivatedMerchant' => [
         'request' => [
             'method' => 'POST',
-            'url' => '/merchants/1X4hRFHFx4UiXt/keys',
+            'url' => '/keys',
             'content' => [
             ]
         ],
@@ -113,7 +198,7 @@ return [
         'request' => [
             'content' => [
             ],
-            'url' => '/merchants/10000000000000/keys',
+            'url' => '/keys',
             'method' => 'get'
         ],
         'response' => [
@@ -133,7 +218,7 @@ return [
         'request' => [
             'content' => [
             ],
-            'url' => '/merchants/10000000000000/keys/rzp_test_TheTestAuthKey',
+            'url' => '/keys/rzp_test_TheTestAuthKey',
             'method' => 'PUT',
         ],
         'response' => [
@@ -151,7 +236,7 @@ return [
             'content' => [
                 'delay_roll' => '1'
             ],
-            'url' => '/merchants/10000000000000/keys/rzp_test_TheTestAuthKey',
+            'url' => '/keys/rzp_test_TheTestAuthKey',
             'method' => 'PUT',
         ],
         'response' => [
@@ -168,7 +253,7 @@ return [
         'request' => [
             'content' => [
             ],
-            'url' => '/merchants/10000000000000/keys/rzp_test_TheTestAuthKey',
+            'url' => '/keys/rzp_test_TheTestAuthKey',
             'method' => 'PUT',
         ],
         'response' => [
@@ -190,7 +275,7 @@ return [
         'request' => [
             'content' => [
             ],
-            'url' => '/merchants/10000000000000/keys/rzp_test_1DP5mmOlF5G5ag',
+            'url' => '/keys/rzp_test_1DP5mmOlF5G5ag',
             'method' => 'PUT',
         ],
         'response' => [
@@ -314,6 +399,215 @@ return [
         'exception' => [
             'class' => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testMerchantWhitelistedIpsLive' => [
+        'request' => [
+            'url'     => '/payments',
+            'method'  => 'get',
+            'server' => [
+                'HTTP_X-Forwarded-For' => '1.1.1.1',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 0,
+                'items' => []
+            ]
+        ]
+    ],
+
+    'testMerchantFailedWhitelistedIpsLive' => [
+        'request'   => [
+            'url'    => '/payments',
+            'method' => 'get',
+            'server' => [
+                'HTTP_X-Forwarded-For' => '4.3.2.1',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Access Denied',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testMerchantWhitelistedIpsTest' => [
+        'request' => [
+            'url'     => '/payments',
+            'method'  => 'get',
+            'server' => [
+                'HTTP_X-Forwarded-For' => '1.1.1.1',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 0,
+                'items' => []
+            ]
+        ]
+    ],
+
+    'testMerchantFailedWhitelistedIpsTest' => [
+        'request'   => [
+            'url'    => '/payments',
+            'method' => 'get',
+            'server' => [
+                'HTTP_X-Forwarded-For' => '4.3.2.1',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Access Denied',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testEditMerchantWhitelistedIpsLive' => [
+        'request'  => [
+            'content' => [
+                'whitelisted_ips_live' => [
+                    '1.1.1.1',
+                    '2.2.2.2'
+                ],
+            ],
+            'url'     => '/merchants/1X4hRFHFx4UiXt',
+            'method'  => 'put',
+            'server'  => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'             => '1X4hRFHFx4UiXt',
+                'entity'         => 'merchant',
+                'whitelisted_ips_live' => [
+                    '1.1.1.1',
+                    '2.2.2.2'
+                ],
+            ]
+        ]
+    ],
+
+    'testEditMerchantInvalidWhitelistedIpsLive' => [
+        'request'   => [
+            'content' => [
+                'whitelisted_ips_live' => [
+                    'abc.def.ghi.ekl',
+                    '1.1.1.1'
+                ],
+            ],
+            'url'     => '/merchants/1X4hRFHFx4UiXt',
+            'method'  => 'put',
+            'server'  => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'One or more IPs in the input are invalid',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testEditMerchantWhitelistedIpsTest' => [
+        'request'  => [
+            'content' => [
+                'whitelisted_ips_test' => [
+                    '1.1.1.1',
+                    '2.2.2.2'
+                ],
+            ],
+            'url'     => '/merchants/1X4hRFHFx4UiXt',
+            'method'  => 'put',
+            'server'  => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'             => '1X4hRFHFx4UiXt',
+                'entity'         => 'merchant',
+                'whitelisted_ips_test' => [
+                    '1.1.1.1',
+                    '2.2.2.2'
+                ],
+            ]
+        ]
+    ],
+
+    'testEditMerchantInvalidWhitelistedIpsTest' => [
+        'request'  => [
+            'content' => [
+                'whitelisted_ips_test' => [
+                    'abc.def.ghi.ekl',
+                    '1.1.1.1'
+                ],
+            ],
+            'url'     => '/merchants/1X4hRFHFx4UiXt',
+            'method'  => 'put',
+            'server'  => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'One or more IPs in the input are invalid',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testMerchantWhitelistedIpsMode' => [
+        'request'   => [
+            'url'    => '/payments',
+            'method' => 'get',
+            'server' => [
+                'HTTP_X-Forwarded-For' => '4.3.2.1',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Access Denied',
+                ],
+            ],
+            'status_code' => 400,
         ],
     ],
 
@@ -600,6 +894,21 @@ return [
         'exception' => [
             'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOT_LIVE_ACTION_DENIED,
+        ],
+    ],
+
+    'testMerchantUpdateKeyAccess' => [
+        'request' => [
+            'content' => [
+                'has_key_access' => true,
+            ],
+            'url'     => '/merchants/%s/update_key_access',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'has_key_access' => true,
+            ],
         ],
     ],
 
@@ -939,7 +1248,7 @@ return [
         'jsonp' => true
     ],
 
-    'testGetBanksByAppAuth' => [
+    'testGetBanksByAdminAuth' => [
         'request' => [
             'url' => '/merchants/10000000000000/banks',
             'method' => 'GET',
@@ -1008,6 +1317,30 @@ return [
         ],
         'response' => [
             'content' => [
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesForMagicEnabledMerchant' => [
+        'request'  => [
+            'url'    => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'magic' => true,
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesForMagicDisabledMerchant' => [
+        'request'  => [
+            'url'    => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'magic' => false,
             ],
         ],
     ],
@@ -1250,7 +1583,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 30,
+                'count' => 29,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -1438,13 +1771,6 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer' => 'BARB_R',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
                             'issuer' => 'BARB_C',
                         ],
                     ],
@@ -1475,7 +1801,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 31,
+                'count' => 30,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -1664,13 +1990,6 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'TNSC',
-                        ],
-                    ],
-                    [
-                        'method' => 'netbanking',
-                        'severity' => 'low',
-                        'instrument' => [
-                            'issuer' => 'BARB_R',
                         ],
                     ],
                     [
@@ -1913,7 +2232,6 @@ return [
                                 'SYNB',
                                 'TMBL',
                                 'TNSC',
-                                'BARB_R',
                                 'BARB_C',
                                 'PUNB_C',
                                 'LAVB_C'
@@ -2112,6 +2430,37 @@ return [
         ],
         'response' => [
             'content' => [
+            ],
+        ],
+    ],
+
+    'testGetCheckoutRouteWithMerchantSubEmi' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'methods' => [
+                    'emi_options' => [
+                        'HDFC' => [
+                            [
+                                'duration'   => 9,
+                                'interest'   => 12,
+                                'subvention' => 'customer',
+                                'min_amount' => 500000
+                            ],
+                            [
+                                'duration'   => 9,
+                                'interest'   => 0,
+                                'subvention' => 'merchant',
+                                'min_amount' => 527315
+                            ]
+                        ]
+                    ]
+                ]
             ],
         ],
     ],
@@ -2346,7 +2695,7 @@ return [
             'content' => [
                 'action' => 'archive'
             ],
-            'url' => '/merchants/1cXSLlUU8V9sXl/action',
+            'url' => '/merchants/%s/action',
             'method' => 'PUT',
         ],
         'response' => [
@@ -2362,7 +2711,7 @@ return [
             'content' => [
                 'action' => 'archive'
             ],
-            'url' => '/merchants/1cXSLlUU8V9sXl/action',
+            'url' => '/merchants/%s/action',
             'method' => 'PUT',
         ],
         'response' => [
@@ -2385,7 +2734,7 @@ return [
             'content' => [
                 'action' => 'archive'
             ],
-            'url' => '/merchants/1cXSLlUU8V9sXl/action',
+            'url' => '/merchants/%s/action',
             'method' => 'PUT',
         ],
         'response' => [
@@ -2408,7 +2757,7 @@ return [
             'content' => [
                 'action' => 'unarchive'
             ],
-            'url' => '/merchants/1cXSLlUU8V9sXl/action',
+            'url' => '/merchants/%s/action',
             'method' => 'PUT',
         ],
         'response' => [
@@ -2447,7 +2796,7 @@ return [
             'content' => [
                 'action' => 'suspend'
             ],
-            'url' => '/merchants/1cXSLlUU8V9sXl/action',
+            'url' => '/merchants/%s/action',
             'method' => 'PUT',
         ],
         'response' => [
@@ -2465,7 +2814,7 @@ return [
             'content' => [
                 'action' => 'suspend'
             ],
-            'url' => '/merchants/1cXSLlUU8V9sXl/action',
+            'url' => '/merchants/%s/action',
             'method' => 'PUT',
         ],
         'response' => [
@@ -2488,7 +2837,7 @@ return [
             'content' => [
                 'action' => 'unsuspend'
             ],
-            'url' => '/merchants/1cXSLlUU8V9sXl/action',
+            'url' => '/merchants/%s/action',
             'method' => 'PUT',
         ],
         'response' => [

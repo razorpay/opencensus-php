@@ -16,12 +16,20 @@ class Entity extends Base\PublicEntity
     const MERCHANT_ID        = 'merchant_id';
     const URL                = 'url';
     const EVENTS             = 'events';
+    const ENTITY_TYPE        = 'entity_type';
+    const ENTITY_ID          = 'entity_id';
     const FAILURE_COUNT      = 'failure_count';
     const ACTIVE             = 'active';
     const CREATED_AT         = 'created_at';
     const UPDATED_AT         = 'updated_at';
     const SECRET             = 'secret';
     const LAST_SUCCESSFUL_AT = 'last_successful_at';
+
+    // public response const
+    const APPLICATION_ID     = 'application_id';
+
+    // for oauth flow checks
+    const APPLICATION        = 'application';
 
     protected $entity       = 'webhook';
 
@@ -38,7 +46,15 @@ class Entity extends Base\PublicEntity
         self::URL,
         self::ACTIVE,
         self::EVENTS,
-        self::SECRET
+        self::SECRET,
+        /*
+         * Entity type and id are fillable as in case
+         * of OAuth application, `application` and
+         * `application_id` are from a different db (auth)
+         * and cannot be associated as relations.
+         */
+        self::ENTITY_TYPE,
+        self::ENTITY_ID
     ];
 
     protected $visible = [
@@ -51,7 +67,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::SECRET,
-        self::LAST_SUCCESSFUL_AT
+        self::LAST_SUCCESSFUL_AT,
     ];
 
     protected $public = [
@@ -62,13 +78,15 @@ class Entity extends Base\PublicEntity
         self::ACTIVE,
         self::CREATED_AT,
         self::UPDATED_AT,
-        self::LAST_SUCCESSFUL_AT
+        self::LAST_SUCCESSFUL_AT,
+        self::APPLICATION_ID,
     ];
 
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
         self::EVENTS,
+        self::APPLICATION_ID,
     ];
 
     public function edit(array $input = array(), $operation = 'edit')
@@ -137,6 +155,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::LAST_SUCCESSFUL_AT);
     }
 
+    public function getEntityId()
+    {
+        return $this->getAttribute(self::ENTITY_ID);
+    }
+
+    public function getEntityType()
+    {
+        return $this->getAttribute(self::ENTITY_TYPE);
+    }
+
     public function getTimeDifferenceFromLastSuccessInHour()
     {
         $lastActive = $this->getAttribute(self::LAST_SUCCESSFUL_AT);
@@ -200,6 +228,14 @@ class Entity extends Base\PublicEntity
             {
                 unset($array[self::EVENTS][$event]);
             }
+        }
+    }
+
+    public function setPublicApplicationIdAttribute(array & $array)
+    {
+        if ($this->getEntityType() === self::APPLICATION)
+        {
+            $array[self::APPLICATION_ID] = $this->getEntityId();
         }
     }
 

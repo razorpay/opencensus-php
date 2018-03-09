@@ -266,7 +266,6 @@ class NetbankingAxisGatewayTest extends TestCase
      */
     public function testOldPaymentVerify()
     {
-
         $this->doAuthAndCapturePayment($this->payment);
 
         $payment = $this->getLastEntity('payment', true);
@@ -291,6 +290,8 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
+        $this->assertNotNull($verifyResponseContent['PAYEEID']);
+        $this->assertNotNull($verifyResponseContent['PRN']);
         $this->assertEquals($gatewayPayment['caps_payment_id'], $verifyResponseContent['ITC']);
 
         $this->assertEquals('Y', $gatewayPayment['status']);
@@ -340,7 +341,7 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $this->createRefundForFileGeneration($payments);
 
-        $data = $this->generateRefundsExcelForNB('UTIB');
+        $data = $this->generateRefundsExcelForNb('UTIB');
 
         $this->checkRefundTextData($data);
 

@@ -1,0 +1,79 @@
+<?php
+
+namespace RZP\Models\Merchant\Account;
+
+use RZP\Models\Merchant\Detail as MerchantDetail;
+
+/**
+ * Class Formatter
+ *
+ * @todo: Remove the implementation of this class
+ * Core functions should not be called from Entity or any other helper class
+ * used through the entity. Currently, it has been implemented, as some of the
+ * attributes are computed on the fly, using the Core class.
+ *
+ * @package RZP\Models\Merchant\Account
+ */
+class Formatter
+{
+    protected static $instance;
+
+    protected $core;
+
+    public  function  __construct()
+    {
+        $this->core = new MerchantDetail\Core;
+    }
+
+    /**
+     * Helps in maintaining the class as Singleton
+     *
+     * @return Formatter
+     */
+    public static function get(): Formatter
+    {
+        if (self::$instance !== null)
+        {
+            return self::$instance;
+        }
+
+        self::$instance = new Formatter();
+
+        return self::$instance;
+    }
+
+    /**
+     * Returns custom public attributes.
+     * This cannot be handled in the Entity class as some of the params are
+     * computed on the fly, using the Core class.
+     *
+     * @param Entity $entity
+     * @param        $response
+     *
+     * @return array
+     */
+    public function computeAndSetAdditionalPublicAttributes(Entity $entity, array & $response)
+    {
+        $merchantDetails = $entity->merchantDetail;
+
+        $detailsResponse = $this->core->createResponse($merchantDetails);
+
+        $activationDetails = Entity::ACTIVATION_DETAILS;
+
+        $response[$activationDetails][Entity::CAN_SUBMIT] = $detailsResponse[MerchantDetail\Entity::CAN_SUBMIT];
+
+        $verificationDetails = $detailsResponse[MerchantDetail\Entity::VERIFICATION];
+
+        $fieldsPending = [];
+
+        if (isset($verificationDetails[MerchantDetail\Entity::REQUIRED_FIELDS]) === true)
+        {
+            $fieldsPending = $verificationDetails[MerchantDetail\Entity::REQUIRED_FIELDS];
+        }
+
+        $response[$activationDetails][Entity::FIELDS_PENDING] = $fieldsPending;
+
+        return $response;
+    }
+
+}

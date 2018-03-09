@@ -3,17 +3,14 @@
 namespace RZP\Models\Settlement;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
+
+use RZP\Exception;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base;
-use RZP\Models\FundTransfer\Axis;
-use RZP\Models\FundTransfer\Icici;
 use RZP\Models\FundTransfer\Kotak;
-use RZP\Models\Payment;
 use RZP\Models\Report\Types\BasicEntityReport;
 use RZP\Models\Settlement;
-use RZP\Models\Transaction;
-use RZP\Exception;
 
 class Service extends Base\Service
 {
@@ -27,6 +24,13 @@ class Service extends Base\Service
     public function processFailedSettlements($input)
     {
         $data = (new Settlement\Processor)->processFailedSettlements($input);
+
+        return $data;
+    }
+
+    public function processDailySettlements($input)
+    {
+        $data = (new Settlement\Processor)->processDailySettlements($input);
 
         return $data;
     }
@@ -63,9 +67,15 @@ class Service extends Base\Service
                                 ['source', 'source.merchant', 'source.merchant.bankAccount']);
         }
 
-        $urls = (new Kotak\Service)->generateSettlementFile($entities);
+        $channel = $batch->getChannel();
 
-        return $urls;
+        $nodalAccountClass = 'RZP\\Models\\FundTransfer\\' . ucwords($channel). '\\NodalAccount';
+
+        $h2h = (bool)($input['h2h']);
+
+        $fileCreator = (new $nodalAccountClass)->generateFundTransferFile($entities, $h2h);
+
+        return $fileCreator->get();
     }
 
     public function fetch($id)
@@ -104,7 +114,7 @@ class Service extends Base\Service
         return $settlements->toArrayPublic();
     }
 
-    public function getSettlementTransactions($id)
+    public function fetchSettlementTransactions($id)
     {
         $setl = $this->repo->settlement->findByPublicIdAndMerchant($id, $this->merchant);
 
@@ -113,14 +123,18 @@ class Service extends Base\Service
         return $txns->toArrayPublic();
     }
 
-    public function reconcileSettlements($input)
+    public function reconcileSettlements($input, string $channel)
     {
-        return (new Kotak\Service)->reconcileSettlements($input);
+        $reconNamepsace = 'RZP\\Models\\FundTransfer\\' . ucwords($channel). '\\Reconciliation\\FileProcessor';
+
+        return (new $reconNamepsace)->process($input);
     }
 
-    public function reconcileH2HSettlements($input)
+    public function reconcileH2HSettlements($input, string $channel)
     {
-        return (new Kotak\Service)->reconcileH2HSettlements($input);
+        $reconNamepsace = 'RZP\\Models\\FundTransfer\\' . ucwords($channel). '\\Reconciliation\\FileProcessor';
+
+        return (new $reconNamepsace)->process($input);
     }
 
     public function reconcileSettlementsInTestMode($input)
@@ -128,9 +142,13 @@ class Service extends Base\Service
         return (new Kotak\ReconciliationGenerator)->reconcileSettlementsInTestMode($input);
     }
 
-    public function generateSettlementReconciliation($input)
+    public function generateSettlementReconciliation($input, string $channel)
     {
-        return (new Kotak\Service)->generateSettlementReconciliation($input);
+        $reconGeneratorNamespace = '\\RZP\\Models\FundTransfer\\' . ucfirst($channel) . '\\ReconciliationGenerator';
+
+        $filename = (new $reconGeneratorNamespace)->generateReconcileFile($input);
+
+        return ['setlReconciliationFile' => $filename];
     }
 
     public function generateSettlementReturn($input)
@@ -152,57 +170,12 @@ class Service extends Base\Service
 
     public function updateChannelForMultipleSettlements($input)
     {
-        (new Validator)->validateInput('updateChannel', $input);
-
         $this->trace->info(
             TraceCode::SETTLEMENTS_CHANNEL_BULK_UPDATE_REQUEST,
             $input
         );
 
-        $settlementIds = $input['settlement_ids'];
-
-        $channel = $input['channel'];
-
-        $successCount = $failedCount = 0;
-
-        $txns = $failedIds = [];
-
-        foreach ($settlementIds as $settlementId)
-        {
-            try
-            {
-                $this->repo
-                     ->settlement
-                     ->updateChannel($settlementId, $channel);
-
-                $txns[$settlementId] = $this->repo
-                                            ->transaction
-                                            ->updateChannel($settlementId, $channel);
-
-                $successCount++;
-            }
-            catch (\Exception $ex)
-            {
-                $this->trace->traceException($ex);
-
-                $failedCount++;
-
-                $failedIds[] = $settlementId;
-            }
-        }
-
-        $response = [
-            'total'        => count($settlementIds),
-            'success'      => $successCount,
-            'failed'       => $failedCount,
-            'failedIds'    => $failedIds,
-            'transactions' => $txns,
-        ];
-
-        $this->trace->info(
-            TraceCode::SETTLEMENTS_CHANNEL_BULK_UPDATE_RESPONSE,
-            $response
-        );
+        $response = (new Core)->updateChannel($input);
 
         return $response;
     }
@@ -223,6 +196,29 @@ class Service extends Base\Service
     public function addBeneficiary(string $channel, array $input): array
     {
         $response = (new Core)->addBeneficiary($channel, $input);
+
+        return $response;
+    }
+
+    /**
+     * Gets account balance of Nodal Account
+     *
+     * @param string $channel channel for which the balance has to be fetched
+     *
+     * @return array
+     * [
+     *  account_number => account_balance,
+     * ]
+     */
+    public function getAccountBalance(string $channel): array
+    {
+        $channelAttributeKey = 'balance_' . Entity::CHANNEL;
+
+        (new Validator)->validateInput('canFetchBalance', [
+            $channelAttributeKey => $channel
+        ]);
+
+        $response = (new Core)->getAccountBalance($channel);
 
         return $response;
     }

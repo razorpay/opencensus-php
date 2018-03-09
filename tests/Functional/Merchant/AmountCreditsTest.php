@@ -17,8 +17,10 @@ class AmountCreditsTest extends TestCase
 
         parent::setUp();
 
+        $this->ba->getAdmin()->merchants()->attach('10000000000000');
+
         // All API calls to Credits have to be through admin account.
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
     }
 
     public function testCreateCreditsLog()
@@ -36,7 +38,7 @@ class AmountCreditsTest extends TestCase
     {
         $creditsLog = $this->fixtures->create('credits');
 
-        $this->testData[__FUNCTION__]['request']['url'] .= $creditsLog->getId();
+        $this->testData[__FUNCTION__]['request']['url'] .= $creditsLog->getPublicId();
         $this->testData[__FUNCTION__]['response']['content']['id'] = $creditsLog->getPublicId();
 
         $this->ba->proxyAuth();

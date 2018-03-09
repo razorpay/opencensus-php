@@ -16,6 +16,7 @@ use RZP\Models\Payout;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Pricing;
 use RZP\Models\Transaction;
+use RZP\Models\Settlement;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Schedule\Library as ScheduleLibrary;
@@ -25,6 +26,7 @@ use RZP\Models\Transfer;
 use RZP\Models\Feature;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Merchant\FeeModel;
+use RZP\Models\Merchant\RefundSource;
 use RZP\Constants\Entity as E;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
@@ -317,8 +319,20 @@ class Core extends Base\Core
             list($credit, $fee, $tax, $feesSplit) = $this->calculatePostpaidFee($txn);
         }
 
-        $txn->setCredit($credit);
+        $txn->setCredit(0);
         $txn->setDebit(0);
+
+        if ($credit >= 0)
+        {
+            $txn->setCredit($credit);
+        }
+        else
+        {
+            $debit = -1 * $credit;
+
+            $txn->setDebit($debit);
+        }
+
         $txn->setFee($fee);
         $txn->setTax($tax);
 
@@ -343,12 +357,15 @@ class Core extends Base\Core
 
         list($fee, $tax, $feesSplit) = $this->calculateMerchantFees($transaction);
 
+        $entity = $transaction->source;
+
         switch (true)
         {
             case ($transaction->isFeeBearerCustomer()):
                 return $this->calculateFeeForPrepaidDefault($transaction);
 
-            case ($amountCredits > 0):
+            // @todo: Need to rethink this.
+            case (($amountCredits > 0) and ($entity->getAmount() !== 0)):
                 return $this->calculateFeeForAmountCredit($transaction);
 
             case ($feeCredits >= $fee):
@@ -376,9 +393,11 @@ class Core extends Base\Core
 
         list($fee, $tax, $feesSplit) = $this->calculateMerchantFees($transaction);
 
+        $entity = $transaction->source;
+
         switch (true)
         {
-            case ($amountCredits > 0):
+            case (($amountCredits > 0) and ($entity->getAmount() !== 0)):
                 return $this->calculateFeeForAmountCredit($transaction);
 
             case ($feeCredits >= $fee):
@@ -444,7 +463,7 @@ class Core extends Base\Core
         $credit = $amount;
         $feeCredits = $fee;
 
-        $transaction->setFeeCredits($feeCredits);
+        $transaction->setCredits($feeCredits);
         $transaction->setCreditType(Transaction\CreditType::FEE);
 
         return [$credit, $fee, $tax, $feesSplit];
@@ -519,7 +538,7 @@ class Core extends Base\Core
         $txnData[Transaction\Entity::GATEWAY_FEE] = $fee;
         $txnData[Transaction\Entity::API_FEE] = 0;
 
-        $channel = Transaction\Channel::ATOM;
+        $channel = Settlement\Channel::ATOM;
 
         if ($payment->terminal->isShared() === true)
         {
@@ -535,94 +554,62 @@ class Core extends Base\Core
 
     public function createFromRefund(Refund\Entity $refund)
     {
+        // refund's payment must have transaction
         $payment = $refund->payment;
 
         assert ($payment->hasTransaction() === true);
 
-        $settledAt = 1;
+        $merchant = $refund->merchant;
 
-        $txnData = array(
+        // create Transaction
+        $txn = new Transaction\Entity;
+
+        $txn->generateId();
+
+        $txn->sourceAssociate($refund);
+
+        $txn->merchant()->associate($merchant);
+
+        $settledAt = $this->getSettledAtTimestampForRefund($refund);
+
+        $txnData = [
             Transaction\Entity::AMOUNT          => $refund->getBaseAmount(),
             Transaction\Entity::TYPE            => Transaction\Type::REFUND,
             Transaction\Entity::FEE             => 0,
             Transaction\Entity::TAX             => 0,
             Transaction\Entity::DEBIT           => $refund->getBaseAmount(),
             Transaction\Entity::CREDIT          => 0,
-            Transaction\Entity::CURRENCY        => Currency\Currency::INR);
+            Transaction\Entity::CURRENCY        => Currency\Currency::INR,
+            Transaction\Entity::CHANNEL         => $merchant->getChannel(),
+            Transaction\Entity::SETTLED_AT      => $settledAt
+        ];
 
-        $gateway = $refund->getGateway();
-
-        if ($gateway === Payment\Gateway::ATOM)
+        if ($merchant->getRefundSource() === RefundSource::CREDITS)
         {
-            $txnData[Transaction\Entity::RECONCILED_AT] = time();
+            $txnData[Transaction\Entity::DEBIT] = 0;
+
+            $txnData[Transaction\Entity::CREDITS] = $refund->getBaseAmount();
+
+            $txnData[Transaction\Entity::CREDIT_TYPE] = CreditType::REFUND;
         }
 
-        $channel = $payment->transaction->getChannel();
-
-        if ($payment->hasBeenCaptured())
-        {
-            $paymentTxn = $payment->transaction;
-
-            if ($paymentTxn->isSettled() === true)
-            {
-                $txnData[Transaction\Entity::SETTLED_AT] = $settledAt;
-            }
-            else
-            {
-                $paymentSettledAt = $paymentTxn->getSettledAt();
-
-                $txnData[Transaction\Entity::SETTLED_AT] = $paymentSettledAt;
-            }
-        }
-
-        $txnData[Transaction\Entity::CHANNEL] = $channel;
-
-        $txn = new Transaction\Entity($txnData);
-        $txn->generateId();
-
-        $txn->sourceAssociate($refund);
-        $txn->merchant()->associate($refund->merchant);
+        $txn->fill($txnData);
 
         $paymentStatus = $payment->getStatus();
 
-        switch($paymentStatus)
+        if ($payment->getStatus() === Payment\Status::CAPTURED)
         {
-            case Payment\Status::AUTHORIZED:
-                // When refunding authorized payments, we do not charge merchants
-                //$this->updateNodalBalance($txn);
+            // TODO : merge all balance and credits update in updateBalances
+            if ($merchant->getRefundSource() === RefundSource::CREDITS)
+            {
+                // transaction has to be saved as we create associated credit log
+                // transaction inside the updateCredits method.
+                $this->repo->saveOrFail($txn);
 
-                break;
+                $this->updateCredits($txn, $refund);
+            }
 
-            case Payment\Status::CAPTURED:
-                $this->updateBalances($txn);
-
-                break;
-
-            case Payment\Status::REFUNDED:
-                //
-                // We are creating refund transaction via recon also.
-                // For this, we don't have to verify on gateway whether
-                // it has already been refunded or not. Irrespective of
-                // that, we will always create a refund through recon
-                // wherever applicable (payment transaction is present)
-                //
-
-                // Payment\Refund\Validator::validateVerifyInternalRefundAllowed($payment->getGateway());
-
-                //$this->updateNodalBalance($txn);
-
-                break;
-
-            default:
-                throw new Exception\LogicException(
-                    'Should not have reached here',
-                    null,
-                    [
-                        'refund_id'         => $refund->getId(),
-                        'payment_id'        => $payment->getId(),
-                        'status'            => $paymentStatus,
-                        'transaction_id'    => $txn->getId(),
-                    ]);
+            $this->updateBalances($txn);
         }
 
         return $txn;
@@ -657,7 +644,7 @@ class Core extends Base\Core
             Transaction\Entity::TAX             => 0,
             Transaction\Entity::AMOUNT          => abs($amount),
             Transaction\Entity::TYPE            => Transaction\Type::ADJUSTMENT,
-            Transaction\Entity::CHANNEL         => $adj->merchant->getChannel(),
+            Transaction\Entity::CHANNEL         => $adj->getChannel(),
         );
 
         $txn->fillAndGenerateId($values);
@@ -683,11 +670,13 @@ class Core extends Base\Core
     {
         $txn = new Transaction\Entity;
 
+        $merchant = $transfer->merchant;
+
         $txn->generateId();
 
         $txn->sourceAssociate($transfer);
 
-        $txn->merchant()->associate($transfer->merchant);
+        $txn->merchant()->associate($merchant);
 
         $amount = $transfer->getAmount();
 
@@ -701,6 +690,15 @@ class Core extends Base\Core
         $txn->setTax($tax);
 
         $settledAt = time();
+
+        //
+        // We're checking for available balance here and not earlier because
+        // fees needs to be calculated first. Unlike payments, in the case of
+        // transfers, amount+fee is what will be debited from the merchant balance
+        //
+        $merchantBalance = $this->repo->balance->getMerchantBalance($merchant);
+
+        $transfer->getValidator()->validateMerchantBalanceForTransfer($merchantBalance);
 
         //
         // For transfers from a payment, if the source payment is not
@@ -757,17 +755,19 @@ class Core extends Base\Core
 
     /**
      * Create transaction and update balances for a reversal
+     * with entity=`transfer`
      *
      * @param  Reversal\Entity   $reversal
      * @return Entity
      */
-    public function createFromReversal($reversal)
+    public function createFromTransferReversal(Reversal\Entity $reversal)
     {
         $txn = new Transaction\Entity;
 
         $amount = $reversal->getAmount();
 
-        $nowTimestamp = time();
+        // Compute the `settled_at` timestamp
+        $settleTimestamp = $this->getTransferReversalSettledAtTimestamp($reversal);
 
         $data = [
             Transaction\Entity::DEBIT         => 0,
@@ -775,9 +775,9 @@ class Core extends Base\Core
             Transaction\Entity::CURRENCY      => Currency\Currency::INR,
             Transaction\Entity::GATEWAY_FEE   => 0,
             Transaction\Entity::API_FEE       => 0,
-            Transaction\Entity::RECONCILED_AT => $nowTimestamp,
+            Transaction\Entity::RECONCILED_AT => $settleTimestamp,
             Transaction\Entity::SETTLED       => 0,
-            Transaction\Entity::SETTLED_AT    => $nowTimestamp,
+            Transaction\Entity::SETTLED_AT    => $settleTimestamp,
             Transaction\Entity::FEE           => 0,
             Transaction\Entity::TAX           => 0,
             Transaction\Entity::AMOUNT        => $amount,
@@ -824,6 +824,36 @@ class Core extends Base\Core
         $txn->sourceAssociate($dispute);
 
         $this->updateBalances($txn);
+
+        return $txn;
+    }
+
+    public function createFromSettlement(Settlement\Entity $settlement)
+    {
+        $txn = new Transaction\Entity;
+
+        $amount = $settlement->getAmount();
+
+        $values = array(
+            Transaction\Entity::DEBIT       => $amount,
+            Transaction\Entity::CREDIT      => 0,
+            Transaction\Entity::CURRENCY    => 'INR',
+            Transaction\Entity::GATEWAY_FEE => 0,
+            Transaction\Entity::API_FEE     => 0,
+            Transaction\Entity::SETTLED     => 1,
+            Transaction\Entity::SETTLED_AT  => time(),
+            Transaction\Entity::FEE         => 0,
+            Transaction\Entity::AMOUNT      => $amount,
+            Transaction\Entity::CHANNEL     => $settlement->getChannel(),
+        );
+
+        $txn->fillAndGenerateId($values);
+
+        $txn->merchant()->associate($settlement->merchant);
+
+        $this->updateBalances($txn);
+
+        $txn->sourceAssociate($settlement);
 
         return $txn;
     }
@@ -973,7 +1003,8 @@ class Core extends Base\Core
     public function updateFeeCredits(Transaction\Entity $txn)
     {
         // While filling the txn fees and amount, we have not used fee credits.
-        if ($txn->getFeeCredits() === 0)
+        if (($txn->isFeeCredits() === false) or
+            ($txn->getCredits() === 0))
         {
             return;
         }
@@ -1010,6 +1041,42 @@ class Core extends Base\Core
 
         // // Nodal balance needs to be saved because of amount credit update
         // $this->repo->balance->updateBalance($nodalBalance);
+    }
+
+    public function updateRefundCredits(Transaction\Entity $txn)
+    {
+        // While filling the txn fees and amount, we have not used fee credits.
+        if (($txn->isTypeRefund() === false) or
+            ($txn->isRefundCredits() === false))
+        {
+            return;
+        }
+
+        $amount = $txn->getAmount();
+
+        $merchantBalance = $this->getBalanceLockForUpdate($txn->merchant);
+
+        $merchantId = $merchantBalance->merchant->getId();
+
+        $refundCredits = $this->getMerchantCreditsOfType($merchantBalance, Credits\Type::REFUND);
+
+        if ($refundCredits < $amount)
+        {
+            throw new Exception\LogicException(
+                'Refund Credits should be higher or equal to the refund amount',
+                null,
+                [
+                    'transaction_id'    => $txn->getId(),
+                    'merchant_id'       => $merchantId,
+                    'refund_credits'    => $refundCredits,
+                    'amount'            => $amount,
+                ]);
+        }
+
+        $merchantBalance->subtractRefundCredits($amount);
+
+        //create a credit transaction for the same
+        $this->createCreditTransaction($amount, $txn, Credits\Type::REFUND);
     }
 
     protected function getNodalBalanceLockForUpdate($channel)
@@ -1069,6 +1136,20 @@ class Core extends Base\Core
         return $returnTime;
     }
 
+    protected function getSettledAtTimestampForRefund(Refund\Entity $refund)
+    {
+        $payment = $refund->payment;
+
+        if ($payment->hasBeenCaptured())
+        {
+            $paymentTxn = $payment->transaction;
+
+            return ($paymentTxn->isSettled() ? 1 : $paymentTxn->getSettledAt());
+        }
+
+        return null;
+    }
+
     public function calculateSettledAtTimestamp($timestamp, $addDays, $ignoreBankHolidays = false)
     {
         $capturedAt = Carbon::createFromTimestamp($timestamp, Timezone::IST);
@@ -1084,9 +1165,13 @@ class Core extends Base\Core
         {
             $this->updateAmountCredits($txn, $entity);
         }
-        else if ($txn->getFeeCredits() > 0)
+        else if ($txn->isFeeCredits() === true)
         {
             $this->updateFeeCredits($txn);
+        }
+        else if ($txn->isRefundCredits() === true)
+        {
+            $this->updateRefundCredits($txn);
         }
     }
 
@@ -1101,6 +1186,10 @@ class Core extends Base\Core
             if ($type === Credits\Type::FEE)
             {
                 $credits = $merchantBalance->getFeeCredits();
+            }
+            else if ($type === Credits\Type::REFUND)
+            {
+                $credits = $merchantBalance->getRefundCredits();
             }
             else
             {
@@ -1190,6 +1279,73 @@ class Core extends Base\Core
                 $transaction->setCreditType(Transaction\CreditType::DEFAULT);
 
                 return [$debit, $fee, $tax, $feesSplit];
+        }
+    }
+
+    /**
+     * Compute and return the settled_at timestamp for a transfer
+     * reversal transaction
+     *
+     * @param Reversal\Entity $reversal
+     *
+     * @return int
+     * @throws Exception\LogicException
+     */
+    protected function getTransferReversalSettledAtTimestamp(Reversal\Entity $reversal): int
+    {
+        $scheduleTaskCore = new ScheduleTask\Core;
+
+        $nextSettlementTime = Carbon::tomorrow(Timezone::IST)->getTimestamp();
+
+        //
+        // `source` will always be `Transfer/Entity` since this flow
+        // is invoked only on Transfer Reversal creation
+        //
+        $transfer = $reversal->entity;
+
+        if ($transfer->isPaymentTransfer() === true)
+        {
+            //
+            // For payment transfers, the transfer txn's `settled_at` is
+            // already set to at-least the payment's settlement timestamp,
+            // (refer `createFromTransfer()` above) and is hence delayed to
+            // after the merchant settlement schedule
+            //
+            // Therefore: Delay the reversal txn to the max of
+            // - Transfer txn settled_at OR
+            // - Next available settlement slot as per schedule
+            //
+            $transferSettledAt = $transfer->transaction->getSettledAt();
+
+            return max($transferSettledAt, $nextSettlementTime);
+        }
+        else
+        {
+            if ($transfer->isDirectTransfer() === true)
+            {
+                //
+                // For direct transfers, there's no source payment to look at.
+                // Hence, we look at the transfer created_at timestamp and add
+                // the merchants settlement schedule to it (calling this -
+                // `transferDelayTime`)
+                //
+                // We then set the reversal txn settled_at to the max of either
+                // - transferDelayTime OR
+                // - Next available settlement slot as per schedule
+                //
+                $transferCreatedAt = $transfer->getCreatedAt();
+
+                $transferDelayTime = $scheduleTaskCore->getNextApplicableTimeForMerchant(
+                    $transferCreatedAt,
+                    $reversal->merchant);
+
+                return max($transferDelayTime, $nextSettlementTime);
+            }
+            else
+            {
+                // Invalid case
+                throw new Exception\LogicException('Invalid transfer type', null, ['transfer' => $transfer]);
+            }
         }
     }
 }

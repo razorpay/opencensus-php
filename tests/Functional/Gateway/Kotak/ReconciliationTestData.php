@@ -7,21 +7,10 @@ use RZP\Models\FundTransfer\Attempt\Status as AttemptStatus;
 use RZP\Models\Settlement\Status as SettlementStatus;
 
 return [
-    'fetchAndMatchBatchDataSettlement' => [
-        'channel'           => 'kotak',
-        'amount'            => 4382000,
-        'fees'              => 118000,
-        'tax'               => 18000,
-        'api_fee'           => 0,
-        'gateway_fee'       => 0,
-        'total_count'       => 1,
-        'transaction_count' => 10,
-    ],
-
     'fetchAndMatchBatchDataPayout' => [
         'type'              => 'payout',
         'entity'            => 'batch_fund_transfer',
-        'channel'           => 'kotak',
+        'channel'           => 'axis',
         'amount'            => 5000,
         'fees'              => 3010,
         'tax'               => 460,
@@ -29,16 +18,6 @@ return [
         'gateway_fee'       => 0,
         'total_count'       => 5,
         'transaction_count' => 5,
-    ],
-
-    'fetchAndMatchSettlementsForReconSuccess' => [
-        'channel'           => "kotak",
-        'merchant_id'       => '10000000000000',
-        'amount'            => 4382000,
-        'fees'              => 118000,
-        'tax'               => 18000,
-        'failure_reason'    => null,
-        'attempts'          => 1,
     ],
 
     'fetchAndMatchSettlementsForRetryReconSuccess' => [
@@ -49,53 +28,6 @@ return [
         'tax'               => 18000,
         'failure_reason'    => null,
         'attempts'          => 2,
-    ],
-
-    'fetchAndMatchSettlementsForReconFailure' => [
-        'channel'           => "kotak",
-        'merchant_id'       => '10000000000000',
-        'amount'            => 4382000,
-        'fees'              => 118000,
-        'tax'               => 18000,
-        'failure_reason'    => 'Reconciliation',
-        'status'            => SettlementStatus::FAILED,
-        'attempts'          => 1,
-        'remarks'           => 'This is a string which test characters count limit. This is a string which test characters count limit. This is a string which test characters count limit. This is a string which test characters count limit. This is a string which test characters count li',
-    ],
-
-    'matchSummaryForReconFailure' => [
-        'total_count'                   => 1,
-        'unprocessed_ids'               => '',
-        'failures_count'                => 1,
-        'settlement_failure_amount'     => 4382000,
-        'settlement_failure_count'      => 1,
-        'settlement_failure_remarks'    => 'All settlements failed.',
-    ],
-
-    'matchSummaryForReconSuccess' => [
-        'total_count'                   => 1,
-        'unprocessed_ids'               => '',
-        'failures_count'                => 0,
-        'settlement_failure_amount'     => 0,
-    ],
-
-    // status is not matched as we keep it created till 10pm
-    'matchSettlementAttemptForReconSuccess' => [
-        'channel'           => 'kotak',
-        'version'           => 'V3',
-        'bank_status_code'  => 'P',
-        //'status'            => 'created',
-        'remarks'           => '',
-        'failure_reason'    => null,
-    ],
-
-    'matchSettlementAttemptForReconFailure' => [
-        'channel'          => 'kotak',
-        'version'          => 'V3',
-        'bank_status_code' => 'P',
-        'status'           => AttemptStatus::FAILED,
-        'remarks'          => 'This is a string which test characters count limit. This is a string which test characters count limit. This is a string which test characters count limit. This is a string which test characters count limit. This is a string which test characters count li',
-        'failure_reason'   => 'Reconciliation',
     ],
 
     'testRetryRecon' => [

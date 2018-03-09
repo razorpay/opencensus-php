@@ -14,19 +14,30 @@ use RZP\Models\Transaction;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Models\Payment;
+use RZP\Models\Feature\Constants as FConstants;
+use RZP\Models\Merchant\Preferences;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 
 trait SettlementTrait
 {
-    protected function filterTransactionsForSettlement($txns)
+    /**
+     * @param $txns
+     *
+     * @return array
+     * Returns array keyed by merchant id, and
+     * the values are the filtered transactions for that merchant
+     */
+    protected function filterTransactionsForSettlement($txns): array
     {
-        $filteredTxns = new Base\PublicCollection;
+        $filterGroupedTxns = [];
 
         foreach ($txns as $txn)
         {
+            $merchant = $txn->merchant;
+
             // skip if txn not to be settled
-            if ($this->shouldSettle($txn->merchant) === false)
+            if ($this->shouldSettle($merchant) === false)
             {
                 continue;
             }
@@ -52,10 +63,14 @@ trait SettlementTrait
                 continue;
             }
 
-            $filteredTxns->push($txn);
+            $merchantId = $merchant->getId();
+
+            $filterGroupedTxns[$merchantId] = ($filterGroupedTxns[$merchantId] ?? (new Base\PublicCollection));
+
+            $filterGroupedTxns[$merchantId]->push($txn);
         }
 
-        return $filteredTxns;
+        return $filterGroupedTxns;
     }
 
     protected function skipForRefundAuthTxn($txn): bool
@@ -112,7 +127,12 @@ trait SettlementTrait
         $isSubMerchantOfMf = false;
 
         // Mutual Fund Marketplace Merchant ids
-        $mfMids = ['7BfRNg10LH7N6T', '8ytYezIThlseJd'];
+        $mfMids = [
+            Preferences::MID_GOALWISE_TPV,
+            Preferences::MID_GOALWISE_NON_TPV,
+            Preferences::MID_WEALTHAPP,
+            Preferences::MID_WEALTHY,
+        ];
 
         if (($txn->isTypePayment() === true) and
             ($txn->merchant->isLinkedAccount() === true) and
@@ -127,9 +147,21 @@ trait SettlementTrait
 
             $onePm = Carbon::today(Timezone::IST)->hour(13)->getTimestamp();
 
+            $oneThirtyPm = Carbon::today(Timezone::IST)->hour(13)->minute(30)->getTimestamp();
+
             $twoPm = Carbon::today(Timezone::IST)->hour(14)->getTimestamp();
 
             $twoTenPm = Carbon::today(Timezone::IST)->hour(14)->minute(10)->getTimestamp();
+
+            //
+            // Wealthy does not want any settlements to happen outside their given window,
+            // i.e. after 1pm. TODO: Better way to implement this.
+            //
+            if (($txn->merchant->getParentId() === Preferences::MID_WEALTHY) and
+                ($now > $oneThirtyPm))
+            {
+                return true;
+            }
 
             //
             // Settle transaction which needed to be settled before 2 pm today
@@ -153,85 +185,45 @@ trait SettlementTrait
         return false;
     }
 
-    protected function createSettlementsFromTxns($txns, $channel): array
+    protected function createSettlementsFromTxns($txns, string $channel): array
     {
-        $settlements = new Base\PublicCollection;
-        $setlAttempts = new Base\PublicCollection;
-        $txnsSettledCount = 0;
+        $merchant = $txns->first()->merchant;
 
-        $i = 0;
-        $txnsCount = $txns->count();
+        list($setlAmount, $setlFee, $setlApiFee, $tax) = $this->getSettlementAmountsForMerchant($txns);
 
-        while ($i < $txnsCount)
+        $balance = $merchant->balance->getBalance();
+
+        if (($setlAmount <= 100) or ($setlAmount > $balance))
         {
-            $merchant = $txns[$i]->merchant;
+            $this->trace->info(TraceCode::SETTLEMENT_SKIPPED,
+                [
+                    'merchant'   => $merchant->getId(),
+                    'setlAmount' => $setlAmount,
+                ]);
 
-            // Settlement amount
-            list($setlTxns, $setlAmount, $setlFee, $setlApiFee, $tax, $setlGatewayFee) =
-                $this->getSettlementAmountsForMerchant($txns, $i, $txnsCount, $merchant);
-
-            //
-            // settle only if settlement amount is more than INR 1 and greater than
-            // merchants account balance
-            //
-            $balance = $merchant->balance->getBalance();
-
-            if (($setlAmount <= 100) or ($setlAmount > $balance))
-            {
-                $this->trace->info(TraceCode::SETTLEMENT_SKIPPED,
-                    [
-                        'merchant'   => $merchant->getId(),
-                        'setlAmount' => $setlAmount,
-                        'balance'    => $balance
-                    ]);
-
-                continue;
-            }
-
-            list($setl, $bankTransferAtpt) = $this->settleForMerchant(
-                $merchant, $channel, $setlTxns, $setlAmount, $setlFee, $setlApiFee, $tax);
-
-            $txnsSettledCount += $setlTxns->count();
-
-            $settlements->push($setl);
-
-            $setlAttempts->push($bankTransferAtpt);
+            return [null, null];
         }
 
-        $this->updateSettlementIdInTransfer($txns);
+        list($setl, $bankTransferAtpt) = $this->settleForMerchant(
+            $merchant, $channel, $txns, $setlAmount, $setlFee, $setlApiFee, $tax);
 
-        return [$settlements, $txnsSettledCount, $setlAttempts];
+        return [$setl, $bankTransferAtpt];
     }
 
-    protected function getSettlementAmountsForMerchant($txns, & $i, $txnsCount, $merchant): array
+    protected function getSettlementAmountsForMerchant($txns): array
     {
-        $setlAmount = $setlGatewayFee = $setlApiFee = 0;
+        $setlAmount = $setlApiFee = 0;
         $setlFee = $tax = 0;
 
-        $setlTxns = new Base\PublicCollection;
-
-        assert($txns[$i]->merchant !== null);
-
-        $merchantId = $merchant->getId();
-
-        // Since transactions are ordered by the merchant id,
-        // we can do the following operation in O(n) instead of O(n^2)
-        while (($i < $txnsCount) and
-               ($txns[$i]->getMerchantId() === $merchantId))
+        foreach ($txns as $txn)
         {
-            $txn = $txns[$i];
-
             $setlAmount     += $txn->getCredit() - $txn->getDebit();
-            $setlGatewayFee += $txn->getGatewayFee();
             $setlApiFee     += $txn->getApiFee();
             $setlFee        += $txn->getFee();
             $tax            += $txn->getTax();
-
-            $setlTxns->push($txn);
-            $i++;
         }
 
-        return [$setlTxns, $setlAmount, $setlFee, $setlApiFee, $tax, $setlGatewayFee];
+        return [$setlAmount, $setlFee, $setlApiFee, $tax];
     }
 
     /**
@@ -241,11 +233,14 @@ trait SettlementTrait
      *  from master merchant to the linked account) are settled, the settlement_id of those
      *  transactions will be updated for the transfer entity that initiated these payments.
      *
-     * @param Base\PublicCollection $txns
+     * @param $txns
      */
-    protected function updateSettlementIdInTransfer(Base\PublicCollection $txns)
+    protected function updateSettlementIdInTransfer(\Illuminate\Support\Collection $txns)
     {
         $filteredTxnIds = [];
+
+        $startTime = microtime(true);
+
         foreach ($txns as $txn)
         {
             if (($txn->isTypePayment() === true) and ($txn->merchant->isLinkedAccount() === true))
@@ -262,6 +257,7 @@ trait SettlementTrait
         try
         {
             $relations = ['source', 'source.transfer'];
+
             $filteredTxns = $this->repo->transaction->findManyWithRelations($filteredTxnIds, $relations);
 
             foreach ($filteredTxns as $txn)
@@ -280,6 +276,9 @@ trait SettlementTrait
                 $this->repo->saveOrFail($transfer);
             }
 
+            $timeTaken = microtime(true) - $startTime;
+
+            $this->trace->info(TraceCode::RECIPIENT_SETTLEMENT_UPDATE_TIME_TAKEN, ['time_taken' => $timeTaken]);
         }
         catch (\Throwable $ex)
         {
@@ -291,54 +290,57 @@ trait SettlementTrait
     protected function settleForMerchant(
         $merchant, $channel, $setlTxns, $setlAmount, $setlFee, $setlApiFee, $tax): array
     {
-        // create settlement and update batch settlement entity in transaction
-        $merchantSettler = new Merchant($merchant, $channel, $this->repo);
+        $settlement = null;
 
-        $setlDetailAmounts = $merchantSettler->calculateSettlementDetailAmounts($setlTxns);
+        $bankTransferAtpt = null;
 
-        list($setl, $bankTransferAtpt) = $this->repo->transaction(
-            function() use (
-                $merchantSettler,
-                $setlTxns,
-                $setlAmount,
-                $setlFee,
-                $setlApiFee,
-                $tax,
-                $setlDetailAmounts)
+        try
+        {
+            // create settlement and attempt
+            $merchantSettler = new Merchant($merchant, $channel, $this->repo);
+
+            $setlDetailAmounts = $merchantSettler->calculateSettlementDetailAmounts($setlTxns);
+
+            $settlement = $merchantSettler->settle(
+                                $setlTxns,
+                                $setlAmount,
+                                $setlFee,
+                                $setlApiFee,
+                                $tax,
+                                $this->setlTime,
+                                $setlDetailAmounts);
+
+            $merchantSettler->createTransaction($settlement);
+
+            $bankTransferAtpt = $merchantSettler->createSettlementAttempt();
+        }
+        catch (\Throwable $ex)
+        {
+            $traceData = [
+                'merchant'      => $merchant->getId(),
+                'setlAmount'    => $setlAmount,
+            ];
+
+            if ($settlement !== null)
             {
-                list($setl, $bankTransferAtpt) = $merchantSettler->settle(
-                                                    $setlTxns,
-                                                    $setlAmount,
-                                                    $setlFee,
-                                                    $setlApiFee,
-                                                    $tax,
-                                                    $this->setlTime,
-                                                    $setlDetailAmounts);
+                $traceData['settlement_id'] = $settlement->getId();
 
-                list($setl, $bankTransferAtpt) = $this->createAndupdateBatchEntities(
-                                                    $setl,
-                                                    $setlTxns->count(),
-                                                    $bankTransferAtpt);
+                //
+                // Mark it failed anyway, so that it can be retried
+                //
+                $settlement->setStatus(Status::FAILED);
 
-                return [$setl, $bankTransferAtpt];
-            });
+                $this->repo->saveOrFail($settlement);
+            }
 
-        return [$setl, $bankTransferAtpt];
-    }
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::SETTLEMENT_SKIPPED,
+                $traceData);
+        }
 
-    protected function createAndupdateBatchEntities($setl, int $setlTxnsCount, $bankTransferAtpt): array
-    {
-        $this->createOrUpdateBatchFundTransferForEntity($setl, $setlTxnsCount);
-
-        $bankTransferAtpt->batchFundTransfer()->associate($this->batchFundTransfer);
-
-        $setl->batchFundTransfer()->associate($this->batchFundTransfer);
-
-        $this->repo->saveOrFail($setl);
-
-        $this->repo->saveOrFail($bankTransferAtpt);
-
-        return [$setl, $bankTransferAtpt];
+        return [$settlement, $bankTransferAtpt];
     }
 
     /**
@@ -359,10 +361,13 @@ trait SettlementTrait
         // is merged
         //
         $skipMerchantIds = [
-            '8ytYezIThlseJd', // Goalwise Non-TPV
-            '7BfRNg10LH7N6T', // Goalwise TPV
-            '8hXTLsmoM3F6PH', // Moneyview
-            '8lv4idBRY4C9c0', // Wealthy
+            Preferences::MID_GOALWISE_NON_TPV,
+            Preferences::MID_GOALWISE_TPV,
+            Preferences::MID_MONEYVIEW,
+            Preferences::MID_WEALTHY,
+            Preferences::MID_PIGGY,
+            Preferences::MID_PAISABAZAAR,
+            Preferences::MID_BPCL,
         ];
 
         if (in_array($merchant->getId(), $skipMerchantIds, true) === true)
@@ -370,9 +375,16 @@ trait SettlementTrait
             return false;
         }
 
-        $shouldSettle = true;
-
         $today = Carbon::today(Timezone::IST);
+
+        // Do not settle for Wealthy's sub-merchants on Saturday
+        if (($merchant->getParentId() === Preferences::MID_WEALTHY) and
+            ($today->dayOfWeek === Carbon::SATURDAY))
+        {
+            return false;
+        }
+
+        $shouldSettle = true;
 
         $lastWorkingDay = Holidays::getPreviousWorkingDay($today);
 
@@ -431,6 +443,10 @@ trait SettlementTrait
 
     /**
      * Returns the list of all channels for which settlments needs to be done
+     *
+     * @param string|null $channel
+     *
+     * @return array
      */
     protected function getArrayedChannels($channel = null)
     {
@@ -449,6 +465,8 @@ trait SettlementTrait
     protected function increaseAllowedSystemLimits()
     {
         RuntimeManager::setMemoryLimit('1024M');
-        RuntimeManager::setTimeLimit(300);
+
+        // Time limit of 9 mins
+        RuntimeManager::setTimeLimit(540);
     }
 }

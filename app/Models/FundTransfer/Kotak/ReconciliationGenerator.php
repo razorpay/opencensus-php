@@ -52,11 +52,13 @@ class ReconciliationGenerator
                                       ->getAttemptsBetweenTimestampsWithStatus(
                                             $startTimestamp,
                                             $endTimestamp,
-                                            FundTransfer\Attempt\Status::PENDING_RECONCILIATION);
+                                            FundTransfer\Attempt\Status::PENDING_RECONCILIATION,
+                                            Settlement\Channel::KOTAK);
 
         // get batch id of all above attempts
         $batchIds = $nonReconciledAttempts->pluck(FundTransfer\Attempt\Entity::BATCH_FUND_TRANSFER_ID)
                                           ->toArray();
+
         // non-reconciled batches
         $nonReconciledBatches = $this->repo->batch_fund_transfer->findManyByPublicIds($batchIds);
 
@@ -78,7 +80,9 @@ class ReconciliationGenerator
 
             $file = new UploadedFile($reconFile, basename($reconFile));
 
-            $data = (new Settlement\Service)->reconcileH2HSettlements(['file' => $file]);
+            $data = (new Settlement\Service)->reconcileH2HSettlements(
+                        ['file' => $file],
+                        Settlement\Channel::KOTAK);
 
             $response[] = $data;
         }
@@ -200,10 +204,7 @@ class ReconciliationGenerator
 
         if ($generateFailedReconciliations === true)
         {
-            $data[Headings::REMARKS]  = 'This is a string which test characters count limit.' .
-                ' This is a string which test characters count limit. This is a string which' .
-                ' test characters count limit. This is a string which test characters count limit.' .
-                ' This is a string which test characters count limit.';
+            $data[Headings::REMARKS]  = 'Some failure.';
         }
 
         return $data;

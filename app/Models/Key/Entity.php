@@ -4,12 +4,16 @@ namespace RZP\Models\Key;
 
 use App;
 use Crypt;
+
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
-use RZP\Exception;
+use RZP\Models\Base\QueryCache\Cacheable;
 
 class Entity extends Base\PublicEntity
 {
+    use Cacheable;
+
     const ID            = 'id';
     const MERCHANT_ID   = 'merchant_id';
     const SECRET        = 'secret';
@@ -21,12 +25,13 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = true;
 
-    protected $public = array(
+    protected $public = [
         self::ID,
         self::ENTITY,
         self::CREATED_AT,
         self::UPDATED_AT,
-        self::EXPIRED_AT);
+        self::EXPIRED_AT
+    ];
 
     /**
      * 86400 sec or more accurately 24 hours.
@@ -35,11 +40,13 @@ class Entity extends Base\PublicEntity
      */
     const DEFAULT_KEY_EXPIRY_TIME_ON_ROLL = 86400;
 
-    protected $hidden = array(
-        self::SECRET);
+    protected $hidden = [
+        self::SECRET
+    ];
 
-    protected $defaults = array(
-        self::EXPIRED_AT => null);
+    protected $defaults = [
+        self::EXPIRED_AT => null
+    ];
 
     public function merchant()
     {

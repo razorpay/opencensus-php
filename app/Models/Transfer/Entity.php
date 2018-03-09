@@ -14,6 +14,9 @@ use RZP\Constants\Entity as E;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Merchant\Entity as Merchant;
 
+/**
+ * @property Merchant $merchant
+ */
 class Entity extends Base\PublicEntity
 {
     use NotesTrait;
@@ -338,6 +341,21 @@ class Entity extends Base\PublicEntity
 
     // -------------------- End Setters ---------------------------
 
+    /**
+     * Is this a direct transfer? i.e. No source payment
+     *
+     * @return bool
+     */
+    public function isDirectTransfer(): bool
+    {
+        return ($this->getSourceType() === E::MERCHANT);
+    }
+
+    public function isPaymentTransfer(): bool
+    {
+        return ($this->getSourceType() === E::PAYMENT);
+    }
+
     public function reverseAmount(int $amount)
     {
         $amountUnreversed = $this->getAmountUnreversed();
@@ -417,7 +435,7 @@ class Entity extends Base\PublicEntity
 
         if ($toType === 'merchant')
         {
-            $entity = 'RZP\Models\Merchant\AccountEntity';
+            $entity = 'RZP\Models\Merchant\Account\Entity';
         }
 
         $attributes[self::RECIPIENT] = $entity::getSignedId($toId);
@@ -433,7 +451,7 @@ class Entity extends Base\PublicEntity
 
         if ($sourceType === 'merchant')
         {
-            $entity = 'RZP\Models\Merchant\AccountEntity';
+            $entity = 'RZP\Models\Merchant\Account\Entity';
         }
 
         $attributes[self::SOURCE] = $entity::getSignedId($sourceId);

@@ -5,6 +5,7 @@ namespace RZP\Models\Order;
 use RZP\Models\Base;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Offer;
+use RZP\Models\Payment;
 
 class Entity extends Base\PublicEntity
 {
@@ -135,6 +136,7 @@ class Entity extends Base\PublicEntity
     protected $entity = 'order';
 
     /** Related Models */
+
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');

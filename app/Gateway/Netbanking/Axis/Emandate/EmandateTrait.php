@@ -39,6 +39,7 @@ trait EmandateTrait
 
         return $request;
     }
+
     /**
      * This method creates the recurring payment request data
      * We pass the token ID as customer reference number
@@ -48,14 +49,16 @@ trait EmandateTrait
      */
     protected function getRecurringPaymentData(array $input): array
     {
+        $maxAmount = $this->formatAmount($input['token']['max_amount']);
+
         $ppiArray = [
             $input['payment'][Payment\Entity::ID],
             Constants::PPI_AMOUNT_TYPE,
             Frequency::ADHOC,
             $input['token'][Token\Entity::ACCOUNT_NUMBER],
             Carbon::now(Timezone::IST)->format('m/d/Y'),
-            Carbon::now(Timezone::IST)->addYears(30)->format('m/d/Y'),
-            $this->formatAmount($input['payment']['amount']),
+            Carbon::createFromTimestamp($input['token']['expired_at'], Timezone::IST)->format('m/d/Y'),
+            $maxAmount,
         ];
 
         $data = [
@@ -65,7 +68,7 @@ trait EmandateTrait
             RequestFields::REQUEST_ID      => $input['payment'][Payment\Entity::ID],
             RequestFields::CUSTOMER_REF_NO => $input['token']->getId(),
             RequestFields::CURRENCY        => Currency::INR,
-            RequestFields::AMOUNT          => $this->formatAmount($input['payment']['amount']),
+            RequestFields::AMOUNT          => $maxAmount,
             RequestFields::RETURN_URL      => $input['callbackUrl'],
             RequestFields::PRE_POP_INFO    => implode('|', $ppiArray),
             RequestFields::RESERVE_FIELD_1 => Constants::NO_MODIFICATION,
@@ -83,8 +86,7 @@ trait EmandateTrait
                 'gateway'         => $this->gateway,
                 'payment_id'      => $input['payment'][Payment\Entity::ID],
                 'data_before_enc' => $data
-            ]
-        );
+            ]);
 
         $content = [
             RequestFields::DATA => $this->getEmandateEncryptedData($data)
@@ -118,8 +120,7 @@ trait EmandateTrait
                 'gateway'            => $this->gateway,
                 'decrypted_response' => $content,
                 'payment_id'         => $input['payment'][Payment\Entity::ID]
-            ]
-        );
+            ]);
 
         $this->validateCallbackChecksum($content);
 
@@ -128,8 +129,14 @@ trait EmandateTrait
             $content[ResponseFields::REQUEST_ID]
         );
 
+        //
+        // In the auth request, we send max_amount in the amount field.
+        // In the callback, we receive the same amount. That's why we
+        // check for token's max_amount here and not payment's amount.
+        // Payment's amount is 0.
+        //
         $this->assertAmount(
-            $this->formatAmount($input['payment'][Payment\Entity::AMOUNT]),
+            $this->formatAmount($input['token']['max_amount']),
             $content[ResponseFields::AMOUNT]
         );
 
@@ -168,7 +175,7 @@ trait EmandateTrait
             Netbanking\Entity::REFERENCE1      => $mandateNumber,
 
             // SI registration specific callback attributes
-            Netbanking\Entity::SI_TOKEN        => $content[ResponseFields::CUSTOMER_REF_NO],
+            Netbanking\Entity::SI_TOKEN        => $mandateNumber,
             Netbanking\Entity::SI_STATUS       => $statusCode,
             Netbanking\Entity::SI_MSG          => $content[ResponseFields::REMARKS],
         ];
@@ -293,7 +300,7 @@ trait EmandateTrait
 
         $verify->match = ($status === VerifyResult::STATUS_MATCH);
 
-        $this->setRecurrringVerifyAmountMismatch($verify);
+        $this->setRecurringVerifyAmountMismatch($verify);
     }
 
     protected function checkVerifyGatewaySuccess(Verify $verify)
@@ -310,12 +317,20 @@ trait EmandateTrait
         }
     }
 
-    protected function setRecurrringVerifyAmountMismatch(Verify $verify)
+    protected function setRecurringVerifyAmountMismatch(Verify $verify)
     {
-        $paymentAmount = $this->formatAmount($verify->input['payment'][Payment\Entity::AMOUNT]);
+        $payment = $verify->input['payment'];
+        $token = $verify->input['token'];
 
-        $verify->amountMismatch =
-            ($paymentAmount !== $verify->verifyResponseContent[ResponseFields::AMOUNT]);
+        $paymentAmount = ($payment[Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL) ?
+                                                                        $token[Token\Entity::MAX_AMOUNT] :
+                                                                        $payment[Payment\Entity::AMOUNT];
+
+        $paymentAmount = $this->formatAmount($paymentAmount);
+
+        $verifyAmount = $verify->verifyResponseContent[ResponseFields::AMOUNT] ?: '0';
+
+        $verify->amountMismatch = ($paymentAmount !== $verifyAmount);
     }
 
     protected function saveEmandateVerifyResponseIfNeeded(Verify $verify)
@@ -419,8 +434,7 @@ trait EmandateTrait
                 [
                     'gateway'    => $this->gateway,
                     'payment_id' => $input['payment'][Payment\Entity::ID]
-                ]
-            );
+                ]);
         }
 
         return $output;
@@ -438,7 +452,6 @@ trait EmandateTrait
         return [
             RequestFields::AMOUNT          => $this->formatAmount($input['payment']['amount']),
             RequestFields::REQUEST_ID      => $input['payment'][Payment\Entity::ID],
-            RequestFields::CUSTOMER_REF_NO => $input['token']->getId()
         ];
     }
 
@@ -469,8 +482,7 @@ trait EmandateTrait
                     'payment_id' => $this->input['payment'][Payment\Entity::ID],
                     'action'     => $this->action,
                     'gateway'    => $this->gateway,
-                ]
-            );
+                ]);
         }
     }
 

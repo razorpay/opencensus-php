@@ -21,7 +21,9 @@ class Gateway extends Base\Gateway
 
     const ACQUIRER = 'hdfc';
 
-    protected $gateway = 'upi_mindgate';
+    protected $gateway = Payment\Gateway::UPI_MINDGATE;
+
+    protected $response;
 
     const BANK = 'hdfc';
 
@@ -37,12 +39,12 @@ class Gateway extends Base\Gateway
 
     const PAY = 'PAY';
 
-    // Expiry timeout in minutes
-    const EXPIRY_TIMEOUT = 5;
-
     protected $map = [
         Entity::VPA                       => Entity::VPA,
+        Entity::RECEIVED                  => Entity::RECEIVED,
+        Entity::EXPIRY_TIME               => Entity::EXPIRY_TIME,
         ResponseFields::PAYER_VA          => Entity::VPA,
+        ResponseFields::PAYER_NAME        => Entity::NAME,
         ResponseFields::STATUS            => Entity::STATUS_CODE,
         // This is a 5 digit number that is the reference ID on the HDFC side
         ResponseFields::UPI_TXN_ID        => Entity::GATEWAY_PAYMENT_ID,
@@ -52,8 +54,9 @@ class Gateway extends Base\Gateway
 
     /**
      * Authorizes a payment using UPI Gateway
-     * @param  array  $input
-     * @return null
+     * @param array $input
+     * @return array
+     * @throws Exception\GatewayErrorException
      */
     public function authorize(array $input)
     {
@@ -63,25 +66,21 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->createGatewayPaymentEntity($attributes);
 
+        $this->validateVpa($input);
+
+        parent::action($input, Action::AUTHORIZE);
+
         $request =  $this->getAuthorizeRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);
 
         $response = $this->parseGatewayResponse($response->body);
 
-        $this->updateGatewayEntityResponse($gatewayPayment, $response);
+        $response[Entity::RECEIVED] = 1;
 
-        $status = $response[ResponseFields::STATUS];
+        $this->updateGatewayPaymentEntity($gatewayPayment, $response);
 
-        if ($status !== Status::SUCCESS)
-        {
-            $errorCode = ResponseCodeMap::getApiErrorCode($status);
-
-            throw new Exception\GatewayErrorException(
-                $errorCode,
-                $status,
-                ResponseCode::getResponseMessage($status));
-        }
+        $this->checkResponseStatus($response[ResponseFields::STATUS]);
 
         $vpa = $this->terminal->getGatewayMerchantId2() ?? self::DEFAULT_PAYEE_VPA;
 
@@ -90,6 +89,36 @@ class Gateway extends Base\Gateway
                 'vpa'   => $vpa
             ]
         ];
+    }
+
+    /**
+     * We need to validate that the user's VPA is valid before proceeding with the payment
+     * @param array $input
+     */
+    private function validateVpa(array $input)
+    {
+        parent::action($input, Action::VALIDATE_VPA);
+
+        $request = $this->getValidateVpaRequestArray($input);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $response = $this->parseGatewayResponse($response->body, Action::VALIDATE_VPA);
+
+        $this->checkResponseStatus($response[ResponseFields::VPA_STATUS], Status::VPA_AVAILABLE);
+    }
+
+    private function checkResponseStatus(string $status, string $successStatus = Status::SUCCESS)
+    {
+        if ($status !== $successStatus)
+        {
+            $errorCode = ResponseCodeMap::getApiErrorCode($status);
+
+            throw new Exception\GatewayErrorException(
+                $errorCode,
+                $status,
+                ResponseCode::getResponseMessage($status));
+        }
     }
 
     /**
@@ -114,6 +143,11 @@ class Gateway extends Base\Gateway
             $attrs[Entity::REFUND_ID] = $input['refund']['id'];
         }
 
+        if ($action === Action::AUTHORIZE)
+        {
+            $attrs[Entity::EXPIRY_TIME] = $input['upi']['expiry_time'];
+        }
+
         return $attrs;
     }
 
@@ -131,9 +165,10 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * @param  string $response
-     * @param  string $type type of request
-     * @see https://drive.google.com/drive/u/1/folders/0B1MTSXtR53PfN2dIWmE0REI3eWs
+     * @param $responseBody
+     * @param string $type
+     * @return array
+     * @see https://drive.google.com/drive/u/0/folders/0B1MTSXtR53PfYldqNUIyLXlnSjA
      */
     protected function parseGatewayResponse($responseBody, $type = Action::COLLECT)
     {
@@ -145,6 +180,8 @@ class Gateway extends Base\Gateway
         ]);
 
         $response = $this->decrypt($responseBody);
+
+        $this->trace->info(TraceCode::GATEWAY_RESPONSE, [$response]);
 
         $type = strtoupper($type);
 
@@ -181,24 +218,21 @@ class Gateway extends Base\Gateway
 
         $content = $input['gateway'];
 
-        $status = $content[ResponseFields::STATUS];
-
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
 
         assertTrue($content[ResponseFields::UPI_TXN_ID] === $gatewayPayment->getGatewayPaymentId());
 
-        if ($status !== Status::SUCCESS)
-        {
-            $message = "Payment Failed during callback";
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $actualAmount   = number_format($content[ResponseFields::AMOUNT], 2, '.', '');
 
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-                $status,
-                $message);
-        }
+        $this->assertAmount($expectedAmount, $actualAmount);
+
+        $this->checkResponseStatus($content[ResponseFields::STATUS]);
 
         // Authorization was successful
-        $this->updateGatewayEntityResponse($gatewayPayment, $content);
+        $content[Entity::RECEIVED] = 1;
+
+        $this->updateGatewayPaymentEntity($gatewayPayment, $content);
 
         // Gateways must return array in callback
         return [];
@@ -235,12 +269,7 @@ class Gateway extends Base\Gateway
      */
     protected function getEncryptionKey()
     {
-        if ($this->mode === Mode::LIVE)
-        {
-            return $this->terminal['gateway_terminal_password'];
-        }
-
-        return $this->config['test_merchant_key'];
+        return $this->config['gateway_encryption_key'];
     }
 
     /**
@@ -292,7 +321,7 @@ class Gateway extends Base\Gateway
             $payment['vpa'],
             $this->formatAmount($payment['amount']),
             $this->getPaymentRemark($input),
-            self::EXPIRY_TIMEOUT,
+            $input['upi']['expiry_time'],
             $this->getMerchantCategoryCode($input),
         ];
 
@@ -397,18 +426,6 @@ class Gateway extends Base\Gateway
         return json_encode($json);
     }
 
-    protected function updateGatewayEntityResponse(Entity $upiEntity, array $response)
-    {
-        $attr = $this->getMappedAttributes($response);
-
-        // To mark that we have received a response for this request
-        $attr[Entity::RECEIVED] = 1;
-
-        $upiEntity->fill($attr);
-
-        $upiEntity->saveOrFail();
-    }
-
     public function refund(array $input)
     {
         parent::refund($input);
@@ -423,17 +440,11 @@ class Gateway extends Base\Gateway
 
         $response = $this->parseGatewayResponse($response->body, Action::REFUND);
 
-        $this->updateGatewayEntityResponse($refund, $response);
+        $response[Entity::RECEIVED] = 1;
 
-        $status = $response[ResponseFields::STATUS];
+        $this->updateGatewayPaymentEntity($refund, $response);
 
-        if ($response[ResponseFields::STATUS] !== Status::REFUND_SUCCESS)
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED,
-                $status,
-                $response[ResponseFields::STATUS_DESCRIPTION]);
-        }
+        $this->checkResponseStatus($response[ResponseFields::STATUS], Status::REFUND_SUCCESS);
     }
 
     public function verify(array $input)
@@ -466,12 +477,12 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    protected function getValidateVpaRequestArray(string $vpa): array
+    protected function getValidateVpaRequestArray(array $input): array
     {
         $data = [
             $this->getMerchantId(),
             random_alpha_string(10),
-            $vpa,
+            $input['payment']['vpa'],
             'T'
         ];
 
@@ -573,30 +584,13 @@ class Gateway extends Base\Gateway
 
     protected function verifyPayment($verify)
     {
-        $payment = $verify->payment;
         $content = $verify->verifyResponseContent;
 
+        $this->checkApiSuccess($verify);
+
+        $this->checkGatewaySuccess($verify);
+
         $status = VerifyResult::STATUS_MATCH;
-
-        $verify->apiSuccess = true;
-        $verify->gatewaySuccess = false;
-
-        $attr = [];
-
-        if ($content[ResponseFields::STATUS] === Status::SUCCESS)
-        {
-            $verify->gatewaySuccess = true;
-        }
-
-        $input = $verify->input;
-
-        // If payment status is either failed or created,
-        // this is an api failure
-        if (($input['payment']['status'] === 'failed') or
-            ($input['payment']['status'] === 'created'))
-        {
-            $verify->apiSuccess = false;
-        }
 
         // If both don't match we have a status mis match
         if ($verify->gatewaySuccess !== $verify->apiSuccess)
@@ -604,9 +598,33 @@ class Gateway extends Base\Gateway
             $status = VerifyResult::STATUS_MISMATCH;
         }
 
-        $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
+        $verify->match = ($status === VerifyResult::STATUS_MATCH);
 
-        $verify->verifyResponseContent = $this->getMappedAttributes($content);
+        $content[Entity::RECEIVED] = 1;
+
+        $this->updateGatewayPaymentEntity($verify->payment, $content);
+    }
+
+    public function verifyRefund(array $input)
+    {
+        if ($this->isUnprocessedRefund($input) === true)
+        {
+            return false;
+        }
+
+        if ($this->isProcessedRefund($input) === true)
+        {
+            return true;
+        }
+
+        parent::verifyRefund($input);
+    }
+
+    private function checkGatewaySuccess(Verify $verify)
+    {
+        $content = $verify->verifyResponseContent;
+
+        $verify->gatewaySuccess = ($content[ResponseFields::STATUS] === Status::SUCCESS);
     }
 
     /**

@@ -244,6 +244,16 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
+        if ($this->isUnprocessedRefund($input) === true)
+        {
+            return false;
+        }
+
+        if ($this->isProcessedRefund($input) === true)
+        {
+            return true;
+        }
+
         $content = $this->sendRefundVerifyRequest($input);
 
         $refundReplies = $this->fetchRefundGatewayReplyFromContent($content);
@@ -910,7 +920,7 @@ class Gateway extends Base\Gateway
             E::CV_CODE                  => $ccAuthReply[F::CV_CODE] ?? null,
             E::MERCHANT_ADVICE_CODE     => $ccAuthReply[F::MERCHANT_ADVICE_CODE] ?? null,
             E::GATEWAY_TRANSACTION_ID   => $ccAuthReply[F::PAYMENT_NETWORK_TXN_ID] ?? null,
-            E::PROCESSOR_RESPONSE       => $ccAuthReply[F::PROCESSOR_RESPONSE],
+            E::PROCESSOR_RESPONSE       => $ccAuthReply[F::PROCESSOR_RESPONSE] ?? null,
             E::STATUS                   => Status::AUTHORIZED,
             E::RECEIVED                 => true
         ];
@@ -921,9 +931,10 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            // We are doing this because paymentNetworkTransactionId should
-            // be present if payment is successful.
+            // We are doing this because paymentNetworkTransactionId and
+            // ProcessorResponse should be present if payment is successful.
             $attributes[E::GATEWAY_TRANSACTION_ID] = $ccAuthReply[F::PAYMENT_NETWORK_TXN_ID];
+            $attributes[E::PROCESSOR_RESPONSE] = $ccAuthReply[F::PROCESSOR_RESPONSE];
         }
 
         return $attributes;
@@ -1546,9 +1557,25 @@ class Gateway extends Base\Gateway
 
     protected function xmlToArray($data)
     {
-        $xml_values = simplexml_load_string($data);
+        try
+        {
+            $xml = simplexml_load_string(trim($data));
 
-        return json_decode(json_encode($xml_values), true);
+            return json_decode(json_encode($xml), true);
+        }
+        catch (\ErrorException $e)
+        {
+            // We know that if gateway returns HTML message, it always
+            // because of server failure at their end with message
+            if (str_contains($data, '<!DOCTYPE HTML') === true)
+            {
+                throw new Exception\GatewayTimeoutException('An error has occurred. Please try again.' .
+                                'If you continue to receive an error, please contact Customer Support.');
+            }
+
+            // Otherwise it a new error we need to debug manually
+            throw new Exception\GatewayRequestException($e->getMessage());
+        }
     }
 
     protected function isSequentialArray($array)

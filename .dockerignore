@@ -6,7 +6,6 @@ Homestead.json
 .env
 .env.*
 !environment/.env.wercker
-!environment/.env.distelli
 !environment/.env.defaults
 !environment/.env.production
 !environment/.env.beta

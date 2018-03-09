@@ -136,31 +136,57 @@ return array(
     |
     */
 
-    'redis' => array(
+    'redis' => [
 
         'cluster' => false,
 
         'default' => [
-            'host'                  => env('REDIS_HOST'),
-            'port'                  => env('REDIS_PORT'),
-            'database'              => env('REDIS_DB'),
-            'timeout'               => 30,
+            'host'     => env('REDIS_HOST'),
+            'port'     => env('REDIS_PORT'),
+            'database' => env('REDIS_DB'),
+            'timeout'  => 30,
         ],
 
         'secure' => [
-            'host'                  => env('SECURE_REDIS_HOST'),
-            'port'                  => env('SECURE_REDIS_PORT'),
-            'database'              => env('SECURE_REDIS_DB'),
-            'timeout'               => 30,
+            'host'     => env('SECURE_REDIS_HOST'),
+            'port'     => env('SECURE_REDIS_PORT'),
+            'database' => env('SECURE_REDIS_DB'),
+            'timeout'  => 30,
         ],
 
+        /**
+         * @deprecated
+         */
         'throttle_redis' => [
-            'host'                  => env('REDIS_HOST'),
-            'port'                  => env('REDIS_PORT'),
-            'database'              => env('THROTTLE_REDIS_DB'),
-            'timeout'               => 30,
-        ]
-    ),
+            'host'               => env('REDIS_HOST'),
+            'port'               => env('REDIS_PORT'),
+            'database'           => env('THROTTLE_REDIS_DB'),
+            'timeout'            => 5,
+            'read_write_timeout' => 5,
+        ],
+
+        'throttle' => [
+            'host'               => env('REDIS_HOST'),
+            'port'               => env('REDIS_PORT'),
+            'database'           => env('THROTTLE_V2_REDIS_DB'),
+            'timeout'            => 5,
+            'read_write_timeout' => 5,
+        ],
+
+        'query_cache_test' => [
+            'host'     => env('REDIS_HOST'),
+            'port'     => env('REDIS_PORT'),
+            'database' => env('QUERY_CACHE_TEST_REDIS_DB'),
+            'timeout'  => 30,
+        ],
+
+        'query_cache_live' => [
+            'host'     => env('REDIS_HOST'),
+            'port'     => env('REDIS_PORT'),
+            'database' => env('QUERY_CACHE_LIVE_REDIS_DB'),
+            'timeout'  => 30,
+        ],
+    ],
 
     /*
     |--------------------------------------------------------------------------

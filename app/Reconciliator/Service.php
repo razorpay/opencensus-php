@@ -16,11 +16,22 @@ use RZP\Reconciliator\RequestProcessor;
 class Service extends Base\Service
 {
     /**
-     * List og gateways where we are doing recon processing via batch.
+     * List of gateways where we are doing recon processing via batch.
      */
     const BATCH_RECON_GATEWAYS = [
         RequestProcessor\Base::JIOMONEY,
         RequestProcessor\Base::FIRST_DATA,
+        RequestProcessor\Base::HITACHI,
+        RequestProcessor\Base::VIRTUAL_ACC_KOTAK,
+        RequestProcessor\Base::VIRTUAL_ACC_YESBANK,
+    ];
+
+    /**
+     * List of gateways where we skips the batch summary slack post
+     */
+    const BATCH_SUMMARY_SKIP_GATEWAYS = [
+        RequestProcessor\Base::VIRTUAL_ACC_KOTAK,
+        RequestProcessor\Base::VIRTUAL_ACC_YESBANK,
     ];
 
     public function initiateReconciliationProcess(array $input)
@@ -136,7 +147,7 @@ class Service extends Base\Service
         $orchestrator = new Orchestrator($gateway, $gatewayReconciliator);
 
         //
-        // This is a temporary logic. Plan is to move all gateay reconciliation
+        // This is a temporary logic. Plan is to move all gateway reconciliation
         // to batch once it is stable
         //
         if (in_array($gateway, self::BATCH_RECON_GATEWAYS, true) === true)

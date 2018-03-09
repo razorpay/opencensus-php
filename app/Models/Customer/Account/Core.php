@@ -172,7 +172,6 @@ class Core extends Base\Core
 
     public function verifyOtp($input, $merchant)
     {
-        // Currently, the validator does not have any mandatory field.
         Customer\Validator::validateGlobalCustomerCreateInput($input);
 
         // Parse contact
@@ -211,7 +210,7 @@ class Core extends Base\Core
             //
 
             // TODO: Uncomment this when we use charge_at_will for global flow
-            // $tokens = (new Token\Core)->removeNetbankingRecurringTokens($tokens);
+            // $tokens = (new Token\Core)->removeEmandateRecurringTokens($tokens);
 
             $response['tokens'] = $tokens->toArrayPublic();
         }
@@ -306,7 +305,8 @@ class Core extends Base\Core
     protected function getOrCreateGlobalCustomer($input)
     {
         $contact = $input[Customer\Entity::CONTACT];
-        $email = $input[Customer\Entity::EMAIL];
+
+        $email = $input[Customer\Entity::EMAIL] ?? null;
 
         $customer = $this->repo->customer->findByContactAndMerchant(
             $contact,
@@ -400,14 +400,13 @@ class Core extends Base\Core
         // In case of internal auth/ crons,
         // there will not be any app_token.
         // Also, in case of subscriptions, we have a charge route (in test mode)
-        // (which is generally used by our crons)
+        // (which is generally used by our crons) and also
+        // manual invoice charge route (for subscriptions)
         // which is hit from the dashboard. We do not expect to
         // have app_token here just like how we don't expect in
         // privilege (cron) auth.
         //
-        if ((($ba->isProxyAuth() === true) and
-             ($this->mode === Mode::TEST)) or
-            ($ba->isPrivilegeAuth() === true))
+        if ($ba->isProxyOrPrivilegeAuth() === true)
         {
             return [$customer, null];
         }

@@ -79,7 +79,8 @@ class CybersourceGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() use ($payment) {
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
             $this->doAuthPayment($payment);
         });
     }
@@ -91,7 +92,8 @@ class CybersourceGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() use ($payment) {
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
             $this->doAuthPayment($payment);
         });
     }
@@ -377,7 +379,7 @@ class CybersourceGatewayTest extends TestCase
 
         $this->assertEquals($refund['amount'], $actualRefund['amount']);
         $this->assertEquals('processed', $actualRefund['status']);
-        $this->assertEquals(2, $actualRefund['attempts']);
+        $this->assertEquals(1, $actualRefund['attempts']);
         $this->assertEquals(true, $actualRefund['gateway_refunded']);
     }
 
@@ -508,7 +510,7 @@ class CybersourceGatewayTest extends TestCase
 
         $this->assertEquals($refund['amount'], $actualRefund['amount']);
         $this->assertEquals('processed', $actualRefund['status']);
-        $this->assertEquals(2, $actualRefund['attempts']);
+        $this->assertEquals(1, $actualRefund['attempts']);
         $this->assertEquals(true, $actualRefund['gateway_refunded']);
 
         $response = $this->retryFailedRefunds();
@@ -650,7 +652,8 @@ class CybersourceGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() use ($payment) {
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
             $this->doAuthPayment($payment);
         });
     }
@@ -693,7 +696,29 @@ class CybersourceGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() use ($payment) {
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testGatewayVerifyAuthResponseFailure()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->mockServerContentFunction(function(&$content)
+        {
+            $content['reasonCode'] = 202;
+            $content['decision'] = 'REJECT';
+            $content['ccAuthReply'] = [
+                'reasonCode' => 202
+            ];
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
             $this->doAuthPayment($payment);
         });
     }
@@ -709,7 +734,8 @@ class CybersourceGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() use ($payment) {
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
             $this->doAuthPayment($payment);
         });
     }
@@ -785,7 +811,7 @@ class CybersourceGatewayTest extends TestCase
             ]
         ];
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $this->runRequestResponseFlow($data);
 
@@ -900,5 +926,59 @@ class CybersourceGatewayTest extends TestCase
                 }
             }
         });
+    }
+
+    public function testGatewayAuthorizedPaymentVerifyFailure()
+    {
+        $payment = $this->doAuthPayment();
+
+        $this->fixtures->base->editEntity(
+            'payment', $payment['razorpay_payment_id'], ['authorized_at' => strtotime('-1 min')]);
+
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            if ($action === 'verify_xml')
+            {
+                $content = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+    <head>
+        <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+        <META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE">
+        <META HTTP-EQUIV="EXPIRES" CONTENT="0">
+
+        <title>Cybersource Business Center - System Error</title>
+        <link rel="shortcut icon" href="/ebc/images/favicon.ico;JSESSIONID=499B1A0350391B448EDE9BDC1A39DF8C.localhost_bc" type="image/x-icon" />
+        <link rel="STYLESHEET" type="text/css" href="/ebc/css/ubc_style.css.jsp;JSESSIONID=499B1A0350391B448EDE9BDC1A39DF8C.localhost_bc">
+    </head>
+
+    <body>
+
+<table width="95%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <td class="pagetitle" id="systemErrorPageTitle">System Error</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td id="systemErrorMessage">An error has occurred. Please try again. If you continue to receive an error, please contact Customer Support.</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+
+    </body>
+</html> ';
+            }
+        });
+
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment['razorpay_payment_id']);
+            },
+            \RZP\Exception\GatewayTimeoutException::class);
     }
 }

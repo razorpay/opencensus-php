@@ -13,7 +13,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_GATEWAY_PAYMENT_ID  = 'fldBankRefNbr';
     const COLUMN_BANK_ACCOUNT_NUMBER = 'AccountNo.';
 
-    protected function getPaymentId($row)
+    protected function getPaymentId(array $row)
     {
         return $row[self::COLUMN_PAYMENT_ID];
     }
@@ -31,10 +31,10 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     );
     }
 
-    protected function getNbAccountDetails($row)
+    protected function getAccountDetails($row)
     {
         return [
-            Base\Reconciliate::ACCOUNT_NUMBER => $row[self::COLUMN_BANK_ACCOUNT_NUMBER]
+            Base\Reconciliate::ACCOUNT_NUMBER => trim($row[self::COLUMN_BANK_ACCOUNT_NUMBER])
         ];
     }
 

@@ -2,17 +2,48 @@
 
 namespace RZP\Tests\Functional\Settlement;
 
-use RZP\Models\FileStore\Storage\AwsS3\Handler;
-use RZP\Models\FundTransfer\Attempt;
-use RZP\Models\Settlement\Holidays;
-
-use Symfony\Component\HttpFoundation\File\UploadedFile;
-use AWS;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
+use RZP\Models\Settlement\Holidays;
 
 trait SettlementTrait
 {
+    protected function createPaymentAndRefundEntities(int $count = 5, $dt = null)
+    {
+        $prEntities = [];
+
+        $r = range(1, $count);
+
+        if ($dt === null)
+        {
+            $dt = Carbon::today(Timezone::IST)->subDays(20);
+        }
+
+        $createdAt = $dt->timestamp + 5;
+        $capturedAt = $dt->timestamp + 10;
+
+        foreach ($r as $i)
+        {
+            $payment = $this->fixtures->create('payment:captured',
+                ['captured_at' => $capturedAt,
+                    'created_at' => $createdAt,
+                    'updated_at' => $createdAt + 10]);
+
+            $attrs = [
+                'payment' => $payment,
+                'amount' => '100000',
+                'created_at' => $createdAt + 20,
+                'updated_at' => $createdAt + 20];
+
+            $refund = $this->fixtures->create('refund:from_payment', $attrs);
+
+            array_push($prEntities, $payment);
+            array_push($prEntities, $refund);
+        }
+
+        return $prEntities;
+    }
+
     /**
      * Days used for testing creating a payment on settlement holiday
      **/
@@ -41,8 +72,8 @@ trait SettlementTrait
         $paymentCreatedOn = $prevWorkingDay->copy();
 
         return [
-           'payment_settlement_on'    => $prevWorkingDay->addHours(7)->format('j M Y'),
-           'payment_created_at' => $paymentCreatedOn->subDays(8)->format('j M Y h:i:s'),
+            'payment_settlement_on' => $prevWorkingDay->addHours(7)->format('j M Y'),
+            'payment_created_at'    => $paymentCreatedOn->subDays(8)->format('j M Y h:i:s'),
         ];
     }
 
@@ -53,7 +84,7 @@ trait SettlementTrait
             '/settlements/file/reconcile',
         ];
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         // Delete setl files first in case they already exist
         foreach ($deleteUrls as $deleteUrl)
@@ -81,7 +112,7 @@ trait SettlementTrait
         return $content;
     }
 
-    protected function initiateSettlements($channel = 'kotak', $testTimeStamp = null)
+    protected function initiateSettlements($channel, $testTimeStamp = null)
     {
         $content = ['all' => 1];
 
@@ -96,7 +127,21 @@ trait SettlementTrait
             'content' => $content,
         ];
 
-        $this->ba->appAuthMode();
+        $this->ba->appAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
+    protected function initiateDailySettlements()
+    {
+        $request = [
+            'url'       => '/settlements/initiate_daily',
+            'method'    => 'POST'
+        ];
+
+        $this->ba->appAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 
@@ -120,6 +165,36 @@ trait SettlementTrait
         return $content;
     }
 
+    protected function createPaymentEntities(int $count = 5, $merchantId = null, $dt = null)
+    {
+        if ($dt === null)
+        {
+            $dt = Carbon::today(Timezone::IST)->subDays(50);
+        }
+
+        $createdAt = $dt->timestamp + 5;
+        $capturedAt = $dt->timestamp + 10;
+
+        $attrs = [
+            'captured_at' => $capturedAt,
+            'method'      => 'card',
+            'created_at'  => $createdAt,
+            'updated_at'  => $createdAt + 10
+        ];
+
+        if ($merchantId !== null)
+        {
+            $attrs['merchant_id'] = $merchantId;
+        }
+
+        $payments = $this->fixtures->times($count)->create(
+            'payment:captured',
+            $attrs
+        );
+
+        return $payments;
+    }
+
     protected function generateDailyReport()
     {
         $request = [
@@ -135,109 +210,10 @@ trait SettlementTrait
         return $content;
     }
 
-    protected function generateSetlReconciliationFile(
-        $setlFile, $generateFailedReconciliations = false, $prevAttemptId = null)
-    {
-        $uploadedFile = $this->createUploadedFile($setlFile);
-
-        $request = [
-            'url' => '/settlements/reconcile/generate',
-            'files' => [
-                'file' => $uploadedFile,
-            ],
-            'content' => [
-                'failed_recons'     => $generateFailedReconciliations,
-                'prev_attempt_id'   => $prevAttemptId,
-            ]
-        ];
-
-        $this->ba->appAuth();
-
-        $content = $this->makeRequestAndGetContent($request);
-
-        $this->assertArrayHasKey('setlReconciliationFile', $content);
-
-        // $this->assertFileNotExists($setlFile);
-
-        return $content['setlReconciliationFile'];
-    }
-
-    protected function reconcileSettlements($setlReconciliationFile)
-    {
-        $uploadedFile = $this->createUploadedFile($setlReconciliationFile);
-
-        $request = [
-            'url' => '/settlements/h2hreconcile',
-            'files' => [
-                'file' => $uploadedFile
-            ],
-        ];
-
-        $content = $this->makeRequestAndGetContent($request);
-
-        $this->assertFileNotExists($setlReconciliationFile);
-
-        return $content;
-    }
-
     protected function unlinkFile($file)
     {
          $this->assertTrue(
             unlink($file),
             'Could not delete file generated during testing. Filename: ' . $file);
-    }
-
-    protected function createUploadedFile($file, $mimeType = 'text/plain')
-    {
-        $defaultMime = 'text/plain';
-
-        $awsConfig = $this->app['config']->get('aws');
-
-        $s3mock = $awsConfig['mock'];
-
-        if (($s3mock === false) and
-            ($mimeType === $defaultMime))
-        {
-            $key = $this->getKeyForUrl($file);
-
-            $bucket = $awsConfig['settlement_bucket'];
-
-            $s3 = Handler::getClient();
-
-            $this->assertEquals(true, $s3->doesObjectExist($bucket, $key));
-
-            $file = storage_path('files/tmp/'.random_alpha_string(10));
-
-            $res = fopen($file, 'w');
-
-            $result = $s3->getObject(array(
-                'Bucket' => $bucket,
-                'Key'    => $key,
-                'SaveAs' => $res)
-            );
-        }
-        else
-        {
-            $this->assertFileExists($file);
-        }
-
-        $uploadedFile = new UploadedFile(
-                                $file,
-                                $file,
-                                $mimeType,
-                                filesize($file),
-                                null,
-                                true);
-
-        return $uploadedFile;
-    }
-
-    protected function getKeyForUrl($url)
-    {
-        $ix = strrpos($url, '/');
-
-        $key = substr($url, $ix+1);
-
-        return $key;
     }
 }

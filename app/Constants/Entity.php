@@ -10,6 +10,8 @@ use RZP\Gateway;
 use RZP\Exception;
 use RZP\Base\Fetch;
 use RZP\Trace\TraceCode;
+use RZP\Models\Base\Observer as BaseObserver;
+use RZP\Models\Base\QueryCache\Constants as QueryCacheConstants;
 
 class Entity
 {
@@ -46,9 +48,11 @@ class Entity
     const PAYMENT               = 'payment';
     const PRICING               = 'pricing';
     const WEBHOOK               = 'webhook';
+    const DISCOUNT              = 'discount';
     const EMI_PLAN              = 'emi_plan';
     const CUSTOMER              = 'customer';
     const MERCHANT              = 'merchant';
+    const ACCOUNT               = 'account';
     const REVERSAL              = 'reversal';
     const SCHEDULE              = 'schedule';
     const TERMINAL              = 'terminal';
@@ -68,6 +72,7 @@ class Entity
     const GATEWAY_FILE          = 'gateway_file';
     const BANK_ACCOUNT          = 'bank_account';
     const FILE_HANDLER          = 'file_handler';
+    const DISPUTE_FILE          = 'dispute_file';
     const SUBSCRIPTION          = 'subscription';
     const GATEWAY_TOKEN         = 'gateway_token';
     const BANK_TRANSFER         = 'bank_transfer';
@@ -84,7 +89,9 @@ class Entity
     const MERCHANT_PROMOTION    = 'merchant_promotion';
     const CREDIT_TRANSACTION    = 'credit_transaction';
     const MERCHANT_INVOICE      = 'merchant_invoice';
+    const MERCHANT_EMI_PLANS    = 'merchant_emi_plans';
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
+    const MERCHANT_ACCESS_MAP   = 'merchant_access_map';
     const BATCH_FUND_TRANSFER   = 'batch_fund_transfer';
     const CUSTOMER_TRANSACTION  = 'customer_transaction';
     const FUND_TRANSFER_ATTEMPT = 'fund_transfer_attempt';
@@ -133,6 +140,7 @@ class Entity
     const UPI_NPCI               = 'upi_npci';
     const AXIS_MIGS              = 'axis_migs';
     const FIRST_DATA             = 'first_data';
+    const CARD_FSS               = 'card_fss';
     const AXIS_GENIUS            = 'axis_genius';
     const NETBANKING             = 'netbanking';
     const CYBERSOURCE            = 'cybersource';
@@ -165,6 +173,26 @@ class Entity
     const TAX                   = 'tax';
     const TAX_GROUP             = 'tax_group';
 
+    /**
+     * Defines a map of entites which are currently
+     * being cached and associated cache version prefixes
+     * and the specific cache ttl for any entities.
+     */
+    const CACHED_ENTITIES = [
+        self::KEY      => [
+            QueryCacheConstants::VERSION => 'v1',
+            QueryCacheConstants::TTL     => 30,
+        ],
+        self::MERCHANT => [
+            QueryCacheConstants::VERSION => 'v1',
+            QueryCacheConstants::TTL     => 10,
+        ],
+        self::ACCOUNT  => [
+            QueryCacheConstants::VERSION => 'v1',
+            QueryCacheConstants::TTL     => 1,
+        ],
+    ];
+
     public static $namespace = [
         self::IIN                   => \RZP\Models\Card\IIN::class,
         self::P2P                   => \RZP\Models\P2p::class,
@@ -194,6 +222,7 @@ class Entity
         self::CUSTOMER              => \RZP\Models\Customer::class,
         self::EMI_PLAN              => \RZP\Models\Emi::class,
         self::MERCHANT              => \RZP\Models\Merchant::class,
+        self::ACCOUNT               => \RZP\Models\Merchant\Account::class,
         self::SCHEDULE              => \RZP\Models\Schedule::class,
         self::APP_TOKEN             => \RZP\Models\Customer\AppToken::class,
         self::INVITATION            => \RZP\Models\Invitation::class,
@@ -201,6 +230,7 @@ class Entity
         self::FEE_BREAKUP           => \RZP\Models\Transaction\FeeBreakup::class,
         self::BANK_ACCOUNT          => \RZP\Models\BankAccount::class,
         self::SUBSCRIPTION          => \RZP\Models\Plan\Subscription::class,
+        self::DISPUTE_FILE          => \RZP\Models\Dispute\File::class,
         self::GATEWAY_TOKEN         => \RZP\Models\Customer\GatewayToken::class,
         self::SCHEDULE_TASK         => \RZP\Models\Schedule\Task::class,
         self::DISPUTE_REASON        => \RZP\Models\Dispute\Reason::class,
@@ -214,8 +244,10 @@ class Entity
         self::CREDIT_TRANSACTION    => \RZP\Models\Merchant\Credits\Transaction::class,
         self::MERCHANT_PROMOTION    => \RZP\Models\Merchant\Promotion::class,
         self::MERCHANT_INVOICE      => \RZP\Models\Merchant\Invoice::class,
+        self::MERCHANT_EMI_PLANS    => \RZP\Models\Merchant\EmiPlans::class,
         self::SETTLEMENT_DETAILS    => \RZP\Models\Settlement\Details::class,
         self::TERMINAL_ANALYTICS    => \RZP\Models\Payment\TerminalAnalytics::class,
+        self::MERCHANT_ACCESS_MAP   => \RZP\Models\Merchant\AccessMap::class,
         self::BATCH_FUND_TRANSFER   => \RZP\Models\FundTransfer\Batch::class,
         self::CUSTOMER_TRANSACTION  => \RZP\Models\Customer\Transaction::class,
         self::FUND_TRANSFER_ATTEMPT => \RZP\Models\FundTransfer\Attempt::class,
@@ -242,6 +274,7 @@ class Entity
         self::NETBANKING             => \RZP\Gateway\Netbanking\Base::class,
         self::AXIS_GENIUS            => \RZP\Gateway\AxisGenius::class,
         self::CYBERSOURCE            => \RZP\Gateway\Cybersource::class,
+        self::CARD_FSS               => \RZP\Gateway\Card\Fss::class,
         self::WALLET_PAYZAPP         => \RZP\Gateway\Wallet\Payzapp::class,
         self::WALLET_OLAMONEY        => \RZP\Gateway\Wallet\Olamoney::class,
         self::WALLET_JIOMONEY        => \RZP\Gateway\Wallet\Jiomoney::class,
@@ -324,6 +357,7 @@ class Entity
         self::MERCHANT,
         self::USER,
         self::SCHEDULE,
+        self::MERCHANT_ACCESS_MAP,
     ];
 
     public static function getAllEntities()
@@ -352,6 +386,25 @@ class Entity
         $class = $ns . '\Entity';
 
         return $class;
+    }
+
+    /**
+     * Returns the observer class for a given entity
+     * If no observer class is defined for the entity,
+     * we return the Base Observer class
+     *
+     * @param  string $entity
+     * @return string
+     */
+    public static function getEntityObserverClass(string $entity): string
+    {
+        $entityNamespace = self::getEntityNamespace($entity);
+
+        $entityObserverClass = $entityNamespace . '\\Observer';
+
+        return (class_exists($entityObserverClass) === true) ?
+            $entityObserverClass :
+            BaseObserver::class;
     }
 
     public static function getEntityObject($entity)

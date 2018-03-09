@@ -71,15 +71,14 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Deleting/Updating a workflow is not' .
-                                     ' possible if an action is in still in progress',
+                    'description' => 'Updating or Deleting a workflow is not allowed when there are open actions',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_WORKFLOW_DELETE_NOT_ALLOWED,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_WORKFLOW_UPDATE_OR_DELETE_NOT_ALLOWED,
         ],
     ],
     'testEditWorkflow' => [
@@ -114,7 +113,7 @@ return [
         ],
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_WORKFLOW_DELETE_NOT_ALLOWED,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_WORKFLOW_UPDATE_OR_DELETE_NOT_ALLOWED,
         ],
     ],
     'testGetWorkflow' => [

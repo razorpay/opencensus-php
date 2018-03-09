@@ -311,7 +311,7 @@ class AuthorizeTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = '/payments/fix_authorized_at';
         $this->testData[__FUNCTION__]['request']['content']['payment_ids'] = [$payment->getPublicId()];
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
@@ -351,13 +351,15 @@ class AuthorizeTest extends TestCase
 
         $tokenId = $token['id'];
 
+        // TODO: Figure out how to write the test cases here!
+
         // Should timeout
         $payment2 = $this->fixtures->create('payment:status_created',
             [
                 'created_at'        => time() - (60 * 100),
                 'gateway'           => PaymentModel\Gateway::NETBANKING_HDFC,
                 'bank'              => IFSC::HDFC,
-                'method'            => PaymentModel\Method::NETBANKING,
+                'method'            => PaymentModel\Method::EMANDATE,
                 'token_id'          => $tokenId,
                 'recurring'         => 1,
                 'recurring_type'    => PaymentModel\RecurringType::INITIAL,
@@ -369,7 +371,7 @@ class AuthorizeTest extends TestCase
                 'created_at'        => time() - (60 * 100),
                 'gateway'           => PaymentModel\Gateway::NETBANKING_HDFC,
                 'bank'              => IFSC::HDFC,
-                'method'            => PaymentModel\Method::NETBANKING,
+                'method'            => PaymentModel\Method::EMANDATE,
                 'token_id'          => $tokenId,
                 'recurring'         => 1,
                 'recurring_type'    => PaymentModel\RecurringType::AUTO,
@@ -382,7 +384,7 @@ class AuthorizeTest extends TestCase
                 'gateway'           => PaymentModel\Gateway::NETBANKING_HDFC,
                 'bank'              => IFSC::HDFC,
                 'token_id'          => $tokenId,
-                'method'            => PaymentModel\Method::NETBANKING,
+                'method'            => PaymentModel\Method::EMANDATE,
                 'recurring'         => 1,
                 'recurring_type'    => PaymentModel\RecurringType::AUTO,
             ]);
@@ -555,6 +557,8 @@ class AuthorizeTest extends TestCase
 
     public function testPayumoneyPaymentViaWalletS2S()
     {
+        $this->markTestSkipped();
+
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_payumoney_terminal');
 
         $this->fixtures->merchant->addFeatures(['s2swallet']);
@@ -566,6 +570,30 @@ class AuthorizeTest extends TestCase
         $content = $this->startTest();
 
         $this->assertArrayHasKey('url', $content['request']);
+    }
+
+    public function testIciciPaymentViaUpiS2S()
+    {
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_icici_terminal');
+
+        $this->fixtures->merchant->addFeatures(['s2supi']);
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $this->ba->privateAuth();
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content['refId'] = 'ICICIRefId';
+            }
+        }, 'upi_icici');
+
+        $content = $this->startTest();
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+        $this->assertArrayHasKey('link', $content);
     }
 
     public function testMobikwikPaymentViaWalletS2S()

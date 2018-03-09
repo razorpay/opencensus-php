@@ -18,7 +18,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         $this->netbankingRepo = $this->repo->netbanking;
     }
 
-    protected function getPaymentId($row)
+    protected function getPaymentId(array $row)
     {
         if (empty($row[ReconciliationFields::PAYMENT_ID]) === false)
         {
@@ -37,7 +37,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                                                                      $status);
     }
 
-    protected function getNbAccountDetails($row)
+    protected function getAccountDetails($row)
     {
         return [
             Base\Reconciliate::ACCOUNT_NUMBER => $this->getDebitAccountNumber($row)

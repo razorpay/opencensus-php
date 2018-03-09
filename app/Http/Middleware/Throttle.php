@@ -3,43 +3,43 @@
 namespace RZP\Http\Middleware;
 
 use App;
-use ApiResponse;
-
 use Closure;
-use RZP\Error\ErrorCode;
-use RZP\Exception\LogicException;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Router;
+use Illuminate\Foundation\Application;
+use GrahamCampbell\Throttle\Facades\Throttle as ThrottleFacade;
+
 use RZP\Http;
-use Carbon\Carbon;
+use ApiResponse;
 use RZP\Http\Route;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger;
 use RZP\Constants\Timezone;
 use RZP\Http\BasicAuth\Type;
-use Illuminate\Routing\Router;
-use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Exception\ThrottleException;
-use Illuminate\Foundation\Application;
-use GrahamCampbell\Throttle\Facades\Throttle as ThrottleFacade;
 
+/**
+ * @deprecated Please use ThrottleV2 middleware.
+ */
 class Throttle
 {
-    /**
-     * Application instance
-     *
-     * @var Application
-     */
-    protected $app;
-
-    /**
-     * @var BasicAuth
-     */
-    protected $ba;
+    const STATIC_PRIVATE_IP = '1.1.1.1';
 
     /**
      * @var Router
      */
     protected $router;
+
+    /**
+     * @var Request
+     */
+    protected $request;
+
+    /**
+     * @var Logger
+     */
+    protected $trace;
 
     /**
      * Throttle configs
@@ -55,15 +55,6 @@ class Throttle
      */
     protected $applicationsConfig;
 
-    protected $request;
-
-    /**
-     * @var Logger
-     */
-    protected $trace;
-
-    const STATIC_PRIVATE_IP = '1.1.1.1';
-
     /**
      * Create a new filter instance.
      *
@@ -71,22 +62,18 @@ class Throttle
      */
     public function __construct(Application $app)
     {
-        $this->router = $app['router'];
-
-        $this->request = $app['request'];
-
-        $this->throttleConfig = $app['config']->get('throttle');
-
+        $this->router             = $app['router'];
+        $this->request            = $app['request'];
+        $this->trace              = $app['trace'];
+        $this->throttleConfig     = $app['config']->get('throttle');
         $this->applicationsConfig = $app['config']->get('applications');
-
-        $this->trace = $app['trace'];
     }
 
     /**
      * Handle an incoming request
      *
-     * @param \Illuminate\Http\Request  $request
-     * @param Closure  $next
+     * @param Request $request
+     * @param Closure $next
      *
      * @return mixed
      */
@@ -291,9 +278,7 @@ class Throttle
     {
         $routeName = $this->request->route()->getName();
 
-        $minute = Carbon::now(Timezone::IST)->minute;
-
-        $identifier = $mode . $routeName . ':' . $minute;
+        $identifier = $mode . $routeName;
 
         switch ($auth)
         {
@@ -336,7 +321,7 @@ class Throttle
             // against one dashboard instance
             //
             case Type::PROXY_AUTH:
-                $resource = $this->request->header(Http\RequestHeader::X_DASHBOARD_USER_ID);
+                $resource = $this->request->header(Http\RequestHeader::X_DASHBOARD_USER_ID, $this->getKeyId($auth));
                 break;
 
             //

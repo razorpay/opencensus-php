@@ -71,13 +71,22 @@ class Server extends Base\Mock\Server
 
         $cardNo = CardNumber::getCardNumberFromAccId($acctId);
 
-        switch($cardNo)
+        switch ($cardNo)
         {
             case CardNumber::VALID_ENROLL_NUMBER:
                 $content['Message']['PARes'] = $responseClass->enrolledValidResponse($content);
                 break;
+            case CardNumber::INTERNATIONAL_VISA:
+                $content['Message']['PARes'] = $responseClass->internationalVisaResponse($content);
+                break;
+            case CardNumber::INTERNATIONAL_MASTER:
+            case CardNumber::INTERNATIONAL_MAESTRO:
+                $content['Message']['PARes'] = $responseClass->internationalMasterResponse($content);
+                break;
+            case CardNumber::INVALID_ECI:
+                $content['Message']['PARes'] = $responseClass->invalidEci($content);
+                break;
         }
-
         unset($content['Message']['PAReq']);
 
         return $content;
@@ -97,11 +106,16 @@ class Server extends Base\Mock\Server
 
         switch($cardNo)
         {
+            case CardNumber::INTERNATIONAL_VISA:
             case CardNumber::VALID_ENROLL_NUMBER:
+            case CardNumber::INTERNATIONAL_MASTER:
+            case CardNumber::INTERNATIONAL_MAESTRO:
+            case CardNumber::INVALID_ECI:
                 $content['Message']['VERes'] = $responseClass->enrolledValidResponse($paymentId, $cardNo);
 
                 break;
             case CardNumber::VALID_NOT_ENROLL_NUMBER:
+            case CardNumber::VALID_VISA_NOT_ENROLLED:
                 $content['Message']['VERes'] =  $responseClass->notEnrolledValidResponse($paymentId, $cardNo);
 
                 break;

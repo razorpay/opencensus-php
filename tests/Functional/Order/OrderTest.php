@@ -46,6 +46,70 @@ class OrderTest extends TestCase
         return $order;
     }
 
+    public function testUniqueReceiptFeatureWithNoReceipt()
+    {
+        $this->fixtures->merchant->addFeatures(['order_receipt_unique']);
+
+        $this->startTest();
+    }
+
+    public function testUniqueReceiptFeatureWithValidReceipt()
+    {
+        $this->fixtures->merchant->addFeatures(['order_receipt_unique']);
+
+        $this->startTest();
+    }
+
+    public function testUniqueReceiptFeatureWithDuplicateReceipt()
+    {
+        $order = $this->fixtures->create('order', [
+            'amount'   => 50000,
+            'currency' => 'INR',
+            'receipt'  => 'rcptid42',
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['order_receipt_unique']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['response']['content']['error']['field']['order_ids'] = [$order->getId()];
+
+        $this->startTest();
+    }
+
+    /**
+     * Checks if two orders can be created each having receipt as null when the order_receipt_unique feature is not
+     * added.
+     *
+     * @return array
+     */
+    public function testCreateOrderWithTwoNullReceipts()
+    {
+        $this->fixtures->create('order', [
+            'amount'   => 50000,
+            'currency' => 'INR',
+        ]);
+
+        $this->startTest();
+    }
+
+    /**
+     * Checks if two orders can be created each having the same receipt when the order_receipt_unique feature is not
+     * added.
+     *
+     * @return array
+     */
+    public function testCreateOrderWithTwoValidReceipts()
+    {
+        $this->fixtures->create('order', [
+            'amount'   => 50000,
+            'currency' => 'INR',
+            'receipt'  => 'rcptid42',
+        ]);
+
+        $this->startTest();
+    }
+
     public function testCreateOrderWithNegativeAmount()
     {
         $this->startTest();
@@ -71,6 +135,36 @@ class OrderTest extends TestCase
     }
 
     public function testCreateOrderWithBank()
+    {
+        $order = $this->startTest();
+
+        return $order;
+    }
+
+    public function testEMandateOrderWithCustomerFeeBearer()
+    {
+        $this->fixtures->merchant->enableConvenienceFeeModel();
+
+        $this->startTest();
+    }
+
+    public function testEmandateRegistrationOrderWithZeroRupee()
+    {
+        $order = $this->startTest();
+
+        return $order;
+    }
+
+    public function testEmandateRegistrationOrderWithoutZeroRupee()
+    {
+        $this->markTestSkipped('No non-zero ruppee flow available');
+
+        $order = $this->startTest();
+
+        return $order;
+    }
+
+    public function testEmandateRegistrationOrderWithInvalidBank()
     {
         $order = $this->startTest();
 
@@ -389,7 +483,9 @@ class OrderTest extends TestCase
 
     public function testCreateOrderWithNotApplicableOffer()
     {
-        $offer = $this->fixtures->create('offer:card');
+        $offer = $this->fixtures->create('offer:card', [
+            'active' => false,
+        ]);
 
         $this->testData[__FUNCTION__]['request']['content']['offer_id'] = $offer->getPublicId();
 
@@ -431,12 +527,6 @@ class OrderTest extends TestCase
 
     public function testPaymentWithFailedOfferCheck()
     {
-        //
-        // Mobikwik MID was unexpectedly disabled
-        // https://github.com/razorpay/incidents/issues/157
-        //
-        $this->markTestSkipped('Mobikwik temporarily disabled.');
-
         $this->fixtures->merchant->enableMobikwik();
 
         $this->testCreateOrderWithOffer();
@@ -1001,5 +1091,15 @@ class OrderTest extends TestCase
         }
 
         return $feesArray;
+    }
+
+    protected function addOrderReceiptUniqueFeature()
+    {
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_id' => '10000000000000',
+                'name' => 'order_receipt_unique'
+            ]);
     }
 }

@@ -50,6 +50,7 @@ return [
         'wallet_sbibuddy',
         'wallet_openwallet',
         'wallet_mpesa',
+        'card_fss',
     ],
 
     'mock_amex'                   => env('AMEX_MOCK'),
@@ -90,6 +91,7 @@ return [
     'mock_aeps_icici'             => env('AEPS_ICICI_MOCK'),
     'mock_wallet_freecharge'      => env('FREECHARGE_MOCK'),
     'mock_wallet_mpesa'           => env('MPESA_MOCK'),
+    'mock_card_fss'               => env('FSS_MOCK'),
 
     'certificate_path'            => env('CERTIFICATE_DIR_PATH'),
 
@@ -107,10 +109,12 @@ return [
     ],
 
     'hitachi' => [
-        'test_merchant_id'  => env('HITACHI_GATEWAY_TEST_MERCHANT_ID'),
-        'test_terminal_id'  => env('HITACHI_GATEWAY_TEST_TERMINAL_ID'),
-        'test_hash_secret'  => env('HITACHI_GATEWAY_TEST_HASH_SECRET'),
-        'test_hash_secret2' => env('HITACHI_GATEWAY_TEST_HASH_SECRET2'),
+        'gateway_salt'       => env('HITACHI_GATEWAY_LIVE_HASH_SECRET'),
+        'gateway_salt2'      => env('HITACHI_GATEWAY_LIVE_HASH_SECRET2'),
+        'test_merchant_id'   => env('HITACHI_GATEWAY_TEST_MERCHANT_ID'),
+        'test_terminal_id'   => env('HITACHI_GATEWAY_TEST_TERMINAL_ID'),
+        'test_hash_secret'   => env('HITACHI_GATEWAY_TEST_HASH_SECRET'),
+        'test_hash_secret2'  => env('HITACHI_GATEWAY_TEST_HASH_SECRET2'),
     ],
 
     'first_data' => [
@@ -193,6 +197,19 @@ return [
         'test_hash_secret' => env('EBS_GATEWAY_TEST_HASH_SECRET', 'secret'),
     ],
 
+    'card_fss' => [
+        'barb' => [
+            'test_hash_secret'  => env('FSS_BOB_GATEWAY_TEST_HASH_SECRET', 'secret'),
+            'merchant_id'       => env('FSS_BOB_GATEWAY_MERCHANT_ID', '123'),
+            'terminal_password' => env('FSS_BOB_GATEWAY_TERMINAL_PASSWORD', 'password'),
+        ],
+        'fss' => [
+            'merchant_id'      => env('FSS_GATEWAY_MERCHANT_ID', '144'),
+            'test_hash_secret' => env('FSS_GATEWAY_TEST_HASH_SECRET', 'secret'),
+            'bank_code'        => env('FSS_GATEWAY_BANK_CODE', '12345678'),
+        ]
+    ],
+
     'mobikwik' => [
         'test_hash_secret'  => env('MOBIKWIK_GATEWAY_TEST_HASH_SECRET'),
         'test_merchant_id'  => 'MBK9002',
@@ -244,7 +261,7 @@ return [
 
     'upi_mindgate' => [
         'test_merchant_id'       => env('UPI_MINDGATE_TEST_MERCHANT_ID'),
-        'test_merchant_key'      => env('UPI_MINDGATE_TEST_MERCHANT_KEY'),
+        'gateway_encryption_key' => env('UPI_MINDGATE_GATEWAY_SECURE_SECRET'),
     ],
 
     'upi_sbi' => [
@@ -421,6 +438,7 @@ return [
     'bharat_qr' => [
         'visa_acquirer_code'       => env('BHARAT_QR_VISA_ACQUIRER_CODE'),
         'mastercard_acquirer_code' => env('BHARAT_QR_MASTERCARD_ACQUIRER_CODE'),
+        'rupay_acquirer_code'      => env('BHARAT_QR_RUPAY_ACQUIRER_CODE'),
         'identifier_padding'       => env('BHARAT_QR_IDENTIFIER_PADDING'),
     ],
 

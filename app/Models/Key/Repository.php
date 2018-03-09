@@ -3,14 +3,17 @@
 namespace RZP\Models\Key;
 
 use RZP\Models\Base;
+use RZP\Models\Base\QueryCache\CacheQueries;
 
 class Repository extends Base\Repository
 {
+    use CacheQueries;
+
     protected $entity = 'key';
 
-    protected $appFetchParamRules = array(
-        Entity::MERCHANT_ID     => 'sometimes|alpha_num',
-    );
+    protected $appFetchParamRules = [
+        Entity::MERCHANT_ID => 'sometimes|alpha_num',
+    ];
 
     public function getKeysForMerchant($merchantId, $expired = false)
     {

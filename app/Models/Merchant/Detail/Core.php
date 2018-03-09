@@ -17,6 +17,7 @@ use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\State\Reason;
+use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Base\PublicEntity as PublicEntity;
@@ -24,6 +25,7 @@ use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
 use RZP\Mail\Merchant\NotifyActivationSubmission as NotifyMerchant;
+use RZP\Mail\Admin\NotifyWebsiteDetailSubmission as NotifyAdminWebsiteDetailSubmission;
 
 class Core extends Base\Core
 {
@@ -52,6 +54,12 @@ class Core extends Base\Core
 
             if ($this->canSubmit($input, $response) === true)
             {
+                // If a merchant does not have website or app, we would need to activate them
+                // only with PLs, Invoices and should not get API keys in live mode. Merchant's has_key_access
+                // should be set to true only if one submits website details, there by will be able to
+                // generate/access keys.
+                $this->checkAndMarkHasKeyAccess($merchantDetails);
+
                 $this->markSubmitted($merchantDetails);
 
                 $activationStatusData = [
@@ -105,6 +113,63 @@ class Core extends Base\Core
         return $merchantDetails;
     }
 
+    /**
+     * This function is used to sync fields transaction_report_email and website
+     * in both merchant and merchantDetail entities
+     *
+     * @param Merchant\Entity $merchant
+     * @param array $input
+     *
+     * @return Entity
+     */
+    public function editMerchantDetailFields(Merchant\Entity $merchant, array $input): Entity
+    {
+        $merchantDetails = $merchant->merchantDetail;
+
+        $data = [];
+
+        if (isset($input[Merchant\Entity::TRANSACTION_REPORT_EMAIL]) === true)
+        {
+            $data[Entity::TRANSACTION_REPORT_EMAIL] = implode(',', $input[Entity::TRANSACTION_REPORT_EMAIL]);
+        }
+
+        if (isset($input[Merchant\Entity::WEBSITE]) === true)
+        {
+            $data[Entity::BUSINESS_WEBSITE] = $input[Merchant\Entity::WEBSITE];
+        }
+
+        if (empty($data) === false)
+        {
+            $merchantDetails->edit($data);
+
+            $this->repo->saveOrFail($merchantDetails);
+        }
+
+        return $merchantDetails;
+    }
+
+    /**
+     * Fills up dummy file IDs, required fields for merchant activation
+     * Use with caution
+     *
+     * @param Merchant\Entity $merchant
+     */
+    public function saveDummyActivationFiles(Merchant\Entity $merchant)
+    {
+        $merchantDetails = $merchant->merchantDetail;
+
+        $params = [
+            Entity::ADDRESS_PROOF_URL    => '100000000Dummy',
+            Entity::BUSINESS_PAN_URL     => '100000000Dummy',
+            Entity::BUSINESS_PROOF_URL   => '100000000Dummy',
+            Entity::PROMOTER_ADDRESS_URL => '100000000Dummy',
+        ];
+
+        $merchantDetails->fill($params);
+
+        $this->repo->saveOrFail($merchantDetails);
+    }
+
     public function createMerchantDetails(Merchant\Entity $merchant, array $input = [])
     {
         $merchantDetail = (new Entity)->build($input);
@@ -119,7 +184,7 @@ class Core extends Base\Core
 
             $this->trace->info(
                 TraceCode::CREATE_MERCHANT_DETAIL,
-                [ 'merchant_id'   => $merchant->getId()]);
+                ['merchant_id' => $merchant->getId()]);
         }
         catch (\Throwable $e)
         {
@@ -230,11 +295,45 @@ class Core extends Base\Core
         Mail::queue($notifyAdminMail);
     }
 
+    /**
+     * This function is used to notify admins through email about merchant's website details update
+     * @param Entity $merchantDetails
+     */
+    protected function adminNotifyWebsiteDetailsUpdate(Entity $merchantDetails)
+    {
+        $data = $merchantDetails->toArray();
+
+        $notifyAdminWebsiteDetailSubmissionMail = new NotifyAdminWebsiteDetailSubmission($data);
+
+        Mail::queue($notifyAdminWebsiteDetailSubmissionMail);
+    }
+
     protected function canSubmit($input, $response)
     {
         return (($response['can_submit'] === true) and
                 (isset($input[Entity::SUBMIT]) === true) and
                 ($input[Entity::SUBMIT] === '1'));
+    }
+
+    /**
+     * This function checks and sets has_key_access to true if merchant has submitted
+     * wesbite details
+     *
+     * @param Entity $merchantDetails
+     */
+    protected function checkAndMarkHasKeyAccess(Entity $merchantDetails)
+    {
+        $merchant = $merchantDetails->merchant;
+
+        if ((empty($merchantDetails->getWebsite()) === true) or
+            ($merchant->getHasKeyAccess() === true))
+        {
+            return;
+        }
+
+        $merchant->setHasKeyAccess(true);
+
+        $this->repo->saveOrFail($merchant);
     }
 
     protected function markSubmitted(Entity $merchantDetails)
@@ -275,9 +374,18 @@ class Core extends Base\Core
             $archivedAt = Carbon::now(Timezone::IST)->getTimestamp();
         }
 
+        $routePermission = Permission\Name::$actionMap[$archiveAction];
+
+        $oldMerchantDetails = clone $merchantDetails;
+
         $merchantDetails->setArchivedAt($archivedAt);
 
+        $this->app['workflow']->setPermission($routePermission)->handle(
+            $oldMerchantDetails, $merchantDetails);
+
         $this->repo->saveOrFail($merchantDetails);
+
+        $this->logActionToSlack($merchantDetails->merchant, $archiveAction);
 
         return $merchantDetails;
     }
@@ -343,13 +451,21 @@ class Core extends Base\Core
                 (new Merchant\Activate)->activate($merchantDetails->merchant, true);
             }
 
+            if ($input[Entity::ACTIVATION_STATUS] === Status::REJECTED)
+            {
+                $this->triggerWorkflowForRejectionActivationStatusChange(
+                    $oldMerchantDetails,
+                    $newMerchantDetails,
+                    $rejectionReasons);
+            }
+
             $this->repo->saveOrFail($merchantDetails);
 
             $stateData = [
                 State\Entity::NAME => $input[Entity::ACTIVATION_STATUS],
             ];
 
-            $state = (new State\Core)->createForActivation($stateData, $merchantDetails, $maker);
+            $state = (new State\Core)->createForMakerAndEntity($stateData, $maker, $merchantDetails);
 
             if (empty($rejectionReasons) === false)
             {
@@ -368,6 +484,72 @@ class Core extends Base\Core
         $bankData = $bankCore->buildBankAccountArrayFromMerchantDetail($merchantDetails);
 
         $bankCore->createOrChangeBankAccount($bankData, $merchantDetails->merchant);
+    }
+
+    /**
+     * Triggers workflow when activation status is changed to rejected
+     * @param Entity $oldMerchantDetails
+     * @param Entity $newMerchantDetails
+     * @param array $rejectionReasons
+     */
+    protected function triggerWorkflowForRejectionActivationStatusChange(
+        Entity $oldMerchantDetails,
+        Entity $newMerchantDetails,
+        array $rejectionReasons)
+    {
+        $oldMerchantDetailsArray = $oldMerchantDetails->toArray();
+
+        $newMerchantDetailsArray = $newMerchantDetails->toArray();
+
+        $rejectionReasonDescriptions = [];
+
+        foreach ($rejectionReasons as $rejectionReason)
+        {
+            $rejectionReasonCode = $rejectionReason[Reason\Entity::REASON_CODE] ?? "";
+
+            $rejectionReasonDescriptions[] = RejectionReasons::getReasonDescriptionByReasonCode($rejectionReasonCode);
+        }
+
+        $newMerchantDetailsArray[Entity::REJECTION_REASONS] = $rejectionReasonDescriptions;
+
+        $workflow = $this->app['workflow']
+                         ->setEntity($newMerchantDetails->getEntity())
+                         ->handle($oldMerchantDetailsArray, $newMerchantDetailsArray);
+    }
+
+    /**
+     * This function is used for updating merchant website details
+     * @param Entity $merchantDetails
+     * @param array $input
+     *
+     * @return Entity
+     */
+    public function updateWebsiteDetails(Entity $merchantDetails, array $input): Entity
+    {
+        $merchantDetails->getValidator()->validateInput('websiteDetails', $input);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_UPDATE_WEBSITE_DETAILS,
+            ['input' => $input]);
+
+        $merchantDetails->edit($input);
+
+        $this->repo->transactionOnLiveAndTest(function() use ($merchantDetails, $input)
+        {
+            $this->repo->saveOrFail($merchantDetails);
+
+            $merchant = $merchantDetails->merchant;
+
+            // website is being synced to merchant entity as well
+            $merchant->setWebsiteAttribute($input[Entity::BUSINESS_WEBSITE]);
+
+            $this->repo->saveOrFail($merchant);
+
+            // admin must be notified through email about the website details update
+            $this->adminNotifyWebsiteDetailsUpdate($merchantDetails);
+        });
+
+        return $merchantDetails;
     }
 
     /**
@@ -421,6 +603,13 @@ class Core extends Base\Core
         $requiredFields = [];
 
         $validationFields = ValidationFields::DASHBOARD_FIELDS;
+
+        if ($merchantDetails->getBusinessType() === BusinessType::NGO)
+        {
+            $ngoValidationFields = ValidationFields::NGO_MERCHANT_FIELDS;
+
+            $validationFields = array_merge($validationFields, $ngoValidationFields);
+        }
 
         $merchant = $merchantDetails->merchant;
 

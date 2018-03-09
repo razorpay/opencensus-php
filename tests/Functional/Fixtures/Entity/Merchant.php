@@ -131,7 +131,16 @@ class Merchant extends Base
 
         $this->fixtures->on('test')->create('bank_account', ['merchant_id' => $accountId, 'entity_id' => $accountId]);
 
-        $this->fixtures->create('merchant:schedule_task', ['merchant_id' => $accountId]);
+        $this->fixtures->create(
+            'merchant:schedule_task',
+            [
+                'merchant_id' => $accountId,
+                'schedule'    => [
+                    'interval' => 1,
+                    'delay'    => 3,
+                    'hour'     => 0,
+                ],
+            ]);
 
         return $merchant;
     }
@@ -235,6 +244,9 @@ class Merchant extends Base
 
     public function createScheduleTask(array $attributes = array())
     {
+        // TODO: To check for better ways of solving this issue
+        $mode = Config::get('database.default');
+
         $scheduleAttributes = [];
 
         if (isset($attributes['schedule']) === true)
@@ -244,13 +256,13 @@ class Merchant extends Base
             unset ($attributes['schedule']);
         }
 
-        $schedule = $this->fixtures->create('schedule', $scheduleAttributes);
+        $schedule = $this->fixtures->on($mode)->create('schedule', $scheduleAttributes);
 
         $defaultValues = ['schedule_id' => $schedule->getId()];
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        return $this->fixtures->create('schedule_task', $attributes);
+        return $this->fixtures->on($mode)->create('schedule_task', $attributes);
     }
 
     public function activate($id = '10000000000000')
@@ -296,6 +308,16 @@ class Merchant extends Base
     public function disablePaytm($id = '10000000000000')
     {
         return $this->fixtures->edit('methods', $id, ['paytm' => false]);
+    }
+
+    public function enableUpi($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['upi' => true]);
+    }
+
+    public function disableUpi($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['upi' => false]);
     }
 
     public function enableCard($id = '10000000000000')
@@ -353,6 +375,21 @@ class Merchant extends Base
         return $this->fixtures->edit('methods', $id, ['mobikwik' => false]);
     }
 
+    public function enableEmandate($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['emandate' => true]);
+    }
+
+    public function disableEmandate($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['emandate' => false]);
+    }
+
+    public function editBalance(int $amount, string $id = '10000000000000')
+    {
+        return $this->fixtures->edit('balance', $id, ['balance' => $amount]);
+    }
+
     public function editCredits($credits, $id = '10000000000000')
     {
         return $this->fixtures->edit('balance', $id, ['credits' => $credits]);
@@ -361,6 +398,11 @@ class Merchant extends Base
     public function editFeeCredits($credits, $id = '10000000000000')
     {
         return $this->fixtures->edit('balance', $id, ['fee_credits' => $credits]);
+    }
+
+    public function editRefundCredits($credits, $id = '10000000000000')
+    {
+        return $this->fixtures->edit('balance', $id, ['refund_credits' => $credits]);
     }
 
     public function editCreditsforNodalAccount($credits, $type = Credits\Type::AMOUNT)
@@ -383,6 +425,16 @@ class Merchant extends Base
     public function disableConvenienceFeeModel($id = '10000000000000')
     {
         return $this->edit($id, ['fee_bearer' => 'platform']);
+    }
+
+    public function editWhitelistedIpsLive($id = '10000000000000', $ips = [])
+    {
+        return $this->edit($id, ['whitelisted_ips_live' => $ips]);
+    }
+
+    public function editWhitelistedIpsTest($id = '10000000000000', $ips = [])
+    {
+        return $this->edit($id, ['whitelisted_ips_test' => $ips]);
     }
 
     public function enableInternational($id = '10000000000000')

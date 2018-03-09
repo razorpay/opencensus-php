@@ -28,6 +28,8 @@ class Gateway extends Base\Gateway
     protected $secureCacheDriver;
 
     const CACHE_KEY = 'hitachi_%s_card_details';
+    const CACHE_TTL = 20;
+
 
     const TIME_FORMAT = 'His';
     const DATE_FORMAT = 'md';
@@ -42,6 +44,11 @@ class Gateway extends Base\Gateway
     public function authorize(array $input)
     {
         parent::authorize($input);
+
+        if ($this->isSecondRecurringPaymentRequest($input) === true)
+        {
+            return $this->authorizeRecurring($input);
+        }
 
         $authResponse = $this->callAuthenticationGateway($input);
 
@@ -161,6 +168,21 @@ class Gateway extends Base\Gateway
             $this->mode);
     }
 
+    protected function authorizeRecurring(array $input)
+    {
+        $request = $this->getAuthorizeRequestArrayForRecurring($input);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->traceGatewayPaymentResponse($response, $input, TraceCode::GATEWAY_RECURRING_AUTH_RESPONSE);
+
+        $attributes = $this->getAttributesFromAuthResponse($response);
+
+        $this->createGatewayPaymentEntity($input, $attributes, Base\Action::AUTHORIZE);
+
+        $this->checkErrorsAndThrowException($response);
+    }
+
     protected function authorizeNotEnrolled(array $input)
     {
         $request = $this->getAuthorizeRequestArrayForNotEnrolled($input);
@@ -204,6 +226,21 @@ class Gateway extends Base\Gateway
         $this->traceGatewayPaymentResponse($response, $input, TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE);
 
         $verify->verifyResponseContent = $response;
+    }
+
+    public function verifyRefund(array $input)
+    {
+        if ($this->isUnprocessedRefund($input) === true)
+        {
+            return false;
+        }
+
+        if ($this->isProcessedRefund($input) === true)
+        {
+            return true;
+        }
+
+        parent::verifyRefund($input);
     }
 
     protected function verifyPayment(Verify $verify)
@@ -263,7 +300,7 @@ class Gateway extends Base\Gateway
         {
             $content[RequestFields::CAVV2] = $authResponse[Blade\Entity::CAVV];
         }
-        else if ($network === Card\Network::MC)
+        else if (($network === Card\Network::MC) or ($network === Card\Network::MAES))
         {
             $content[RequestFields::UCAF] = $authResponse[Blade\Entity::CAVV];
         }
@@ -273,32 +310,90 @@ class Gateway extends Base\Gateway
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_TYPE_INVALID);
         }
 
+        $traceContent = $content;
+
+        $content += $this->getCardDataForAuthorizeRequestArray($input);
+
+        $request = $traceRequest = $this->getStandardRequestArray($content);
+
+        $traceRequest['content'] = $traceContent;
+
         $this->trace->info(TraceCode::GATEWAY_AUTHORIZE_REQUEST,
             [
-                'request'    => $content,
+                'request'    => $traceRequest,
                 'gateway'    => 'hitachi',
                 'payment_id' => $input['payment']['id'],
             ]);
 
+        return $request;
+    }
+
+    protected function getAuthorizeRequestArrayForRecurring(array $input)
+    {
+        $content = $this->getDefaultAuthorizeRequestArray($input);
+
+        $content[RequestFields::TRANSACTION_TYPE] = 'SI';
+
+        $network = Network::getCode($input['card']['network']);
+
+        if ($network === Card\Network::VISA)
+        {
+            $content[RequestFields::ECI] = '02';
+        }
+        else
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_TYPE_INVALID);
+        }
+
+        $traceContent = $content;
+
         $content += $this->getCardDataForAuthorizeRequestArray($input);
 
-        return $this->getStandardRequestArray($content);
+        $request = $traceRequest = $this->getStandardRequestArray($content);
+
+        $traceRequest['content'] = $traceContent;
+
+        $this->trace->info(TraceCode::GATEWAY_RECURRING_AUTH_REQUEST,
+            [
+                'request'    => $traceRequest,
+                'gateway'    => 'hitachi',
+                'payment_id' => $input['payment']['id'],
+            ]);
+
+        return $request;
     }
 
     protected function getAuthorizeRequestArrayForNotEnrolled(array $input)
     {
         $content = $this->getDefaultAuthorizeRequestArray($input);
 
+        $networkCode  = Network::getCode($input['card']['network']);
+
+        $eciValues = [
+            Card\Network::VISA => '07',
+            Card\Network::MAES => '00',
+            Card\Network::MC   => '00',
+        ];
+
+        $content[RequestFields::ECI] = $eciValues[$networkCode];
+
+        $traceContent = $content;
+
+        $content += $this->getCardDataForAuthorizeRequestArray($input);
+
+        $request = $traceRequest = $this->getStandardRequestArray($content);
+
+        $traceRequest['content'] = $traceContent;
+
         $this->trace->info(TraceCode::GATEWAY_AUTHORIZE_REQUEST,
             [
-                'request'    => $content,
+                'request'    => $traceRequest,
                 'gateway'    => 'hitachi',
                 'payment_id' => $input['payment']['id'],
             ]);
 
-        $content += $this->getCardDataForAuthorizeRequestArray($input);
-
-        return $this->getStandardRequestArray($content);
+        return $request;
     }
 
     protected function traceGatewayPaymentResponse(
@@ -323,7 +418,7 @@ class Gateway extends Base\Gateway
 
         $content = [
             RequestFields::TRANSACTION_TYPE    => TransactionType::AUTH,
-            RequestFields::TRANSACTION_AMOUNT  => str_pad($input['payment']['amount'], 10, 0, STR_PAD_LEFT),
+            RequestFields::TRANSACTION_AMOUNT  => $this->getFormattedAmount($input['payment']['amount']),
             RequestFields::TRANSACTION_TIME    => $time,
             RequestFields::TRANSACTION_DATE    => $date,
             RequestFields::MERCHANT_ID         => $this->getMerchantId(),
@@ -345,11 +440,17 @@ class Gateway extends Base\Gateway
 
         $expiry = substr($card['expiry_year'], 2) . str_pad($card['expiry_month'], 2, '0', STR_PAD_LEFT);
 
-        return [
+        $data = [
             RequestFields::CARD_NUMBER         => $input['card']['number'],
-            RequestFields::CVV2                => $input['card']['cvv'],
             RequestFields::EXPIRY_DATE         => $expiry,
         ];
+
+        if ($this->isSecondRecurringPaymentRequest($input) === false)
+        {
+            $data[RequestFields::CVV2] = $input['card']['cvv'];
+        }
+
+        return $data;
     }
 
     protected function getCaptureRequestArray(array $input, Entity $gatewayPayment)
@@ -377,7 +478,7 @@ class Gateway extends Base\Gateway
         $createdAt = Carbon::createFromTimestamp($input['payment']['created_at'], Timezone::IST);
 
         $time = $createdAt->format(self::TIME_FORMAT);
-        $date = $createdAt->format('mdY');
+        $date = $createdAt->format('dmY');
 
         $content = [
             RequestFields::TRANSACTION_TYPE    => TransactionType::REFUND,
@@ -387,7 +488,7 @@ class Gateway extends Base\Gateway
             RequestFields::RETRIEVAL_REF_NUM   => $gatewayPayment->getRrn(),
             RequestFields::MERCHANT_ID         => $this->getMerchantId(),
             RequestFields::TERMINAL_ID         => $this->getTerminalId(),
-            RequestFields::MERCHANT_REF_NUMBER => $input['payment']['id'],
+            RequestFields::MERCHANT_REF_NUMBER => $input['refund']['id'],
             RequestFields::REQUEST_ID          => UniqueIdEntity::generateUniqueId(),
         ];
 
@@ -659,9 +760,14 @@ class Gateway extends Base\Gateway
         return $terminalId;
     }
 
+    protected function getLiveSecret()
+    {
+        return $this->config['gateway_salt'];
+    }
+
     protected function getSecret2()
     {
-        $secret2 = $this->input['terminal']['gateway_terminal_password'];
+        $secret2 = $this->config['gateway_salt2'];
 
         if ($this->mode === Mode::TEST)
         {

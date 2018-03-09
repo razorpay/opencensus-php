@@ -6,6 +6,7 @@ use DB;
 use Carbon\Carbon;
 
 use RZP\Exception;
+use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Order;
@@ -33,17 +34,19 @@ class Repository extends Base\Repository
         Entity::EMAIL              => 'sometimes|email',
         Entity::ORDER_ID           => 'sometimes|string|size:20',
         Entity::TRANSFERRED        => 'sometimes|boolean|in:0,1',
-        self::EXPAND . '.*'        => 'string|in:card',
+        self::EXPAND . '.*'        => 'filled|string|in:card',
+        Entity::CUSTOMER_ID        => 'sometimes|size:19|custom'
     ];
 
     // These are proxy allowed params to search on.
     protected $proxyFetchParamRules = [
-        Entity::EMAIL              => 'sometimes',
-        Entity::STATUS             => 'sometimes|string',
-        Entity::NOTES              => 'sometimes|string|max:500',
-        Entity::INVOICE_ID         => 'sometimes|string|min:14|max:18',
-        Entity::SUBSCRIPTION_ID    => 'sometimes|string|min:14|max:18',
-        self::EXPAND . '.*'        => 'string|in:card,emi_plan',
+        Entity::EMAIL           => 'sometimes',
+        Entity::STATUS          => 'sometimes|string',
+        Entity::NOTES           => 'sometimes|string|max:500',
+        Entity::INVOICE_ID      => 'sometimes|string|min:14|max:18',
+        Entity::SUBSCRIPTION_ID => 'sometimes|string|min:14|max:18',
+        Entity::BANK_REFERENCE  => 'sometimes|alpha_num|max:22',
+        self::EXPAND . '.*'     => 'filled|string|in:card,emi_plan,disputes',
     ];
 
     // These are admin allowed params to search on.
@@ -78,7 +81,20 @@ class Repository extends Base\Repository
         Entity::ORDER_ID,
         Entity::INVOICE_ID,
         Entity::SUBSCRIPTION_ID,
+        Entity::CUSTOMER_ID,
     ];
+
+
+    protected function validateCustomerId($attribute, $value)
+    {
+        $merchant = $this->merchant;
+
+        if ((empty($merchant) === false) and
+            (Merchant\Entity::hascustomerTransactionHistoryEnabled($merchant->getId()) === false))
+        {
+            throw new Exception\ExtraFieldsException($attribute);
+        }
+    }
 
     public function getRecentMerchantPaymentsForCheckoutId($checkoutId)
     {
@@ -509,25 +525,30 @@ class Repository extends Base\Repository
         $terminalRepo = $this->repo->terminal;
 
         $pTableName = $this->getTableName();
+
         $tTablename = $terminalRepo->getTableName();
 
-        $pGateway = $this->dbColumn(Entity::GATEWAY);
-        $pStatus = $this->dbColumn(Entity::STATUS);
+        $pGateway = $terminalRepo->dbColumn(Terminal\Entity::GATEWAY);
+
         $pTerminalId = $this->dbColumn(Entity::TERMINAL_ID);
+
         $tId = $terminalRepo->dbColumn(Terminal\Entity::ID);
-        $pCreatedAt = $this->dbColumn(Entity::CREATED_AT);
-        $pStatus = $this->dbColumn(Entity::STATUS);
+
+        $pAuthorizedAt = $this->dbColumn(Entity::AUTHORIZED_AT);
+
         $tCorp = $terminalRepo->dbColumn(Terminal\Entity::CORPORATE);
 
+        $authorizedAt = $this->dbColumn(Entity::AUTHORIZED_AT);
+
         return $this->newQuery()
-                    ->select($paymentAttrs)
-                    ->join($tTablename, $pTerminalId, '=', $tId)
-                    ->where($pCreatedAt, '>=', $from)
-                    ->where($pCreatedAt, '<=', $to)
-                    ->where($pGateway, $gateway)
-                    ->whereIn($pStatus, $statuses)
-                    ->where($tCorp, $corporate)
-                    ->get();
+            ->select($paymentAttrs)
+            ->join($tTablename, $pTerminalId, '=', $tId)
+            ->where($pAuthorizedAt, '>=', $from)
+            ->where($pAuthorizedAt, '<=', $to)
+            ->where($pGateway, $gateway)
+            ->whereNotNull($authorizedAt)
+            ->where($tCorp, $corporate)
+            ->get();
     }
 
     public function fetchReconciledPaymentsForTpv($from, $to, $gateway, $status, $tpvEnabled = false)
@@ -1013,7 +1034,7 @@ class Repository extends Base\Repository
                         })
                     ->where(Entity::RECURRING_TYPE, '=', RecurringType::INITIAL)
                     ->where($paymentRecurringColumn, '=', 1)
-                    ->where($paymentMethodColumn, '=', Method::NETBANKING)
+                    ->where($paymentMethodColumn, '=', Method::EMANDATE)
                     ->where(Entity::GATEWAY, '=', $gateway)
                     ->whereBetween($paymentCreatedAtColumn, [$from, $to])
                     ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::INITIATED)
@@ -1049,7 +1070,7 @@ class Repository extends Base\Repository
                     ->where(Entity::RECURRING_TYPE, '=', RecurringType::AUTO)
                     ->where(Entity::STATUS, '=', Status::CREATED)
                     ->where($paymentRecurringColumn, '=', 1)
-                    ->where($paymentMethodColumn, '=', Method::NETBANKING)
+                    ->where($paymentMethodColumn, '=', Method::EMANDATE)
                     ->where(Entity::GATEWAY, '=', $gateway)
                     ->whereBetween($paymentCreatedAtColumn, [$from, $to])
                     ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::CONFIRMED)
@@ -1099,9 +1120,42 @@ class Repository extends Base\Repository
                     ->where(Entity::RECURRING_TYPE, RecurringType::AUTO)
                     ->where(Entity::STATUS, Status::CREATED)
                     ->where($paymentRecurringColumn, 1)
-                    ->where($paymentMethodColumn, Method::NETBANKING)
+                    ->where($paymentMethodColumn, Method::EMANDATE)
                     ->where(Entity::GATEWAY, $gateway)
                     ->with('merchant')
                     ->firstOrFail();
+    }
+
+    protected function addQueryParamBankReference($query, $params)
+    {
+        $this->joinQueryBankTransfer($query);
+
+        $bankReference = $this->repo->bank_transfer->dbColumn(BankTransfer\Entity::UTR);
+
+        $query->where($bankReference, '=', $params[BankTransfer\Entity::BANK_REFERENCE]);
+
+        $query->select($this->getTableName() . '.*');
+    }
+
+    protected function joinQueryBankTransfer($query)
+    {
+        $joins = $query->getQuery()->joins;
+
+        $joins = $joins ?: [];
+
+        $bankTransferTable = Table::getTableNameForEntity(Constants\Entity::BANK_TRANSFER);
+
+        foreach ($joins as $join)
+        {
+            if ($join->table === $bankTransferTable)
+            {
+                return;
+            }
+        }
+
+        $paymentId = $this->dbColumn(Entity::ID);
+        $bankTransferPaymentId = $this->repo->bank_transfer->dbColumn(BankTransfer\Entity::PAYMENT_ID);
+
+        $query->join($bankTransferTable, $paymentId, '=', $bankTransferPaymentId);
     }
 }

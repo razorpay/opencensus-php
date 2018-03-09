@@ -91,21 +91,9 @@ class Receiver extends Base\Core
 
     public function buildQrCode(Entity $virtualAccount): QrCode\Entity
     {
-        $qrCode = new QrCode\Entity;
-
         $input = $this->getQrCodeEntityParams($virtualAccount);
 
-        $qrCode = $qrCode->build($input);
-
-        $qrCode->generateId();
-
-        $qrCode->merchant()->associate($this->merchant);
-
-        $qrCode->source()->associate($virtualAccount);
-
-        $qrCode = $qrCode->generateQrString();
-
-        $this->repo->saveOrFail($qrCode);
+        $qrCode = (new QrCode\Generator($this->merchant))->generate($input, $virtualAccount);
 
         return $qrCode;
     }
@@ -123,11 +111,11 @@ class Receiver extends Base\Core
 
     protected function generateBankAccountInput(array $options): array
     {
+        $this->setBankAccountOptions($options);
+
         $provider = $this->selectProvider();
 
         $details = Provider::DEFAULT_DETAILS[$provider];
-
-        $this->setBankAccountOptions($options);
 
         $accountNumber = $this->generateAccountNumberForProvider($provider);
 
@@ -182,8 +170,10 @@ class Receiver extends Base\Core
     {
         $provider = Provider::KOTAK;
 
-        // Kotak does not support crypto merchants
-        if ($this->merchant->isCategory2Cryptocurrency() === true)
+        // The objective is to shift all new VAs to YesBank, but
+        // YesBank hasn't given us an alphanumeric prefix yet, so
+        // we can only do this when the request is for a numeric account.
+        if ($this->numeric === true)
         {
             $provider = Provider::YESBANK;
         }

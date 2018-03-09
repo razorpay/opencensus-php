@@ -3,8 +3,8 @@
 namespace RZP\Models\Batch;
 
 use RZP\Models\Base;
-use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Base\RuntimeManager;
 use RZP\Jobs\DispatchRouter;
@@ -22,7 +22,7 @@ class Core extends Base\Core
 
         $processor = Processor\Factory::get($batch);
 
-        $processor->storeInputFileAndSaveBatch($input);
+        $processor->storeInputFileAndSaveBatchWithSettings($input);
 
         $this->trace->info(TraceCode::BATCH_CREATED, $batch->toArrayPublic());
 

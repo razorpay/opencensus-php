@@ -2,18 +2,19 @@
 
 namespace RZP\Models\FundTransfer\Icici;
 
-use Carbon\Carbon;
-use RZP\Constants\Timezone;
 use Mail;
-use phpseclib\Crypt;
+use Carbon\Carbon;
+use phpseclib\Crypt\AES;
 
-use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Encryption\Type;
 use RZP\Models\FileStore;
-use RZP\Constants\MailTags;
+use RZP\Models\BankAccount;
+use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer\Mode;
-use RZP\Models\FundTransfer\Base as NodalBase;
+use RZP\Encryption\AESEncryption;
 use RZP\Mail\Settlement as SettlementMail;
+use RZP\Models\FundTransfer\Base as NodalBase;
 
 class NodalAccount extends NodalBase\NodalAccount
 {
@@ -22,24 +23,13 @@ class NodalAccount extends NodalBase\NodalAccount
 
     const SIGNED_URL_DURATION = '1440';
 
-    const HEADINGS = [
-        "Payment Mode",
-        "Beneficiary Name",
-        "Beneficiary Bank A/c No",
-        "Beneficiary Bank IFSC Code",
-        "Instrument Amount",
-        "Payment Date",
-        "Debit Account No",
-        "Credit Narration",
-        "Instrument Reference",
-        "Dummy",
-        "Dummy2",
-    ];
+    const DEBIT_ACCOUNT_NO = '000205025290';
 
     const MODE_MAPPING = [
         Mode::NEFT    => 'N',
         Mode::RTGS    => 'R',
-        Mode::IMPS    => 'I',
+        Mode::IMPS    => 'M',
+        Mode::IFT     => 'I',
     ];
 
     protected $date = null;
@@ -54,66 +44,100 @@ class NodalAccount extends NodalBase\NodalAccount
     {
         parent::__construct();
 
-        $this->date = Carbon::today(Timezone::IST);
+        $this->date = Carbon::today(Timezone::IST)->format('d/m/Y');
 
         $this->id = Base\UniqueIdEntity::generateUniqueId();
     }
 
-    public function initiateTransfer($amount)
+    public function generateFundTransferFile($entities, $h2h = true): FileStore\Creator
     {
-        $plainText = $this->getPlainText($amount);
+        $rows = $this->getRows($entities);
 
-        $encryptedText = $this->getEncryptedText($plainText);
+        $txt = $this->getTxtFromRows($rows);
 
-        $fileData = $this->createFile($encryptedText);
+        $file = $this->createFile($txt);
+
+        $fileData = $this->getFileData($file);
 
         $this->sendIciciTransferMail($fileData);
 
-        return ['file' => $fileData['file_path']];
+        return $file;
     }
 
-    protected function getPlainText($amount)
+    protected function getTxtFromRows(array $rows): string
     {
+        $txt = '';
+
+        $totalElements = count($rows);
+
+        foreach ($rows as $index => $row)
+        {
+            $txt .= implode(',', $row);
+
+            // Don't add newline for the last line
+            if ($index < $totalElements - 1)
+            {
+                //
+                // Double quote is required to suggest new line
+                // Single quote will NOT work
+                //
+                $txt .= "\r\n";
+            }
+        }
+
+        return $txt;
+    }
+
+    protected function getRows(Base\PublicCollection $entities): array
+    {
+        $rows = [];
+
+        foreach ($entities as $entity)
+        {
+            $amount = $entity->source->getAmount() / 100;
+
+            $ba = $entity->bankAccount;
+
+            $mode = $this->getPaymentType($ba, $amount);
+
+            $mode = self::MODE_MAPPING[$mode];
+
+            $rows[] = [
+                Headings::PAYMENT_MODE              => $mode,
+                Headings::BENEFICIARY_NAME          => $ba->getBeneficiaryName(),
+                Headings::BENEFICIARY_ACCOUNT_NO    => $ba->getAccountNumber(),
+                Headings::BENEFICIARY_IFSC          => $ba->getIfscCode(),
+                Headings::AMOUNT                    => $this->formatAmount($amount),
+                Headings::PAYMENT_DATE              => $this->date,
+                Headings::DEBIT_ACCOUNT_NO          => self::DEBIT_ACCOUNT_NO,
+                Headings::CREDIT_NARRATION          => '',
+                Headings::INSTRUMENT_REFERENCE      => $entity->getId(),
+                Headings::DUMMY                     => '',
+                Headings::DUMMY2                    => '',
+                Headings::BENEFICIARY_CODE          => $ba->getId(),
+            ];
+        }
+
+        return $rows;
+    }
+
+    protected function getPaymentType(BankAccount\Entity $ba, $amount)
+    {
+        $ifsc = $ba->getIfscCode();
+
+        $ifscFirstFour = substr($ifsc, 0, 4);
+
+        if ($ifscFirstFour === 'ICIC')
+        {
+            return Mode::IFT;
+        }
+
         $mode = $this->getTransferMode($amount);
 
-        $this->mode = self::MODE_MAPPING[$mode];
-
-        $values = [
-            $this->mode,
-            "Razorpay Software Pvt Ltd",
-            "7911547334",
-            "KKBK0000958",
-            sprintf('%0.2f', $amount),
-            $this->date->format('d/m/Y'),
-            "000205025290",
-            "Nodal Nodal Transfer",
-            $this->id,
-            "",
-            ""
-        ];
-
-        $this->data = array_combine(self::HEADINGS, $values);
-
-        $csv = implode(',', $values);
-
-        return $csv;
+        return $mode;
     }
 
-    protected function getEncryptedText($plainText)
-    {
-        // create AES instance in ECB encryption mode
-        $mode = Crypt\AES::MODE_ECB;
-
-        $cipher = new Crypt\AES($mode);
-
-        $cipher->setKey(self::ENCRYPTION_KEY);
-
-        $encryptedText = $cipher->encrypt($plainText);
-
-        return $encryptedText;
-    }
-
-    protected function createFile($text)
+    protected function createFile($txt): FileStore\Creator
     {
         $fileName = 'icici/outgoing/NRPSS_NRPSSUPLDNEW_' . $this->id;
 
@@ -122,14 +146,26 @@ class NodalAccount extends NodalBase\NodalAccount
         $creator = new FileStore\Creator;
 
         $file = $creator->extension(FileStore\Format::ENC)
-                        ->content($text)
+                        ->content($txt)
                         ->name($fileName)
                         ->store(FileStore\Store::S3)
                         ->type(FileStore\Type::FUND_TRANSFER_H2H)
                         ->id($this->id)
+                        ->headers(false)
                         ->metadata($metadata)
+                        ->encrypt(
+                            Type::AES_ENCRYPTION,
+                            [
+                                AESEncryption::MODE   => AES::MODE_ECB,
+                                AESEncryption::SECRET => self::ENCRYPTION_KEY
+                            ])
                         ->save();
 
+        return $file;
+    }
+
+    protected function getFileData(FileStore\Creator $file): array
+    {
         $fileInstance = $file->get();
 
         $signedFileUrl = $file->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
@@ -153,14 +189,24 @@ class NodalAccount extends NodalBase\NodalAccount
         ];
     }
 
-    protected function sendIciciTransferMail(array $fileData)
+    protected function sendIciciTransferMail(array $fileData, array $rows = null)
     {
-        $data['body'] = json_encode($this->data, JSON_PRETTY_PRINT);
+        $data['body'] = 'PFA ICICI Settlement file';
+        
+        if ($rows !== null)
+        {
+            $data['body'] = json_encode($rows, JSON_PRETTY_PRINT);
+        }
 
         $data['file_data'] = $fileData;
 
         $iciciSettlementMail = new SettlementMail\IciciSettlement($data);
 
         Mail::queue($iciciSettlementMail);
+    }
+
+    protected function formatAmount($amount)
+    {
+        return sprintf('%0.2f', $amount);
     }
 }

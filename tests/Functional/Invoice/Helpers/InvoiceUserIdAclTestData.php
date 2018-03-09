@@ -11,7 +11,6 @@ return [
             'url'    => '/invoices',
             'method' => 'post',
             'server' => [
-                'HTTP_X-Dashboard-User-Id'   => '10000000UserId',
                 'HTTP_X-Dashboard-User-Role' => 'sellerapp',
             ],
             'content' => [

@@ -54,9 +54,10 @@ class Reconciliate extends Base\Reconciliate
      * Some excel files have sheets that should not be considered for
      * reconciliation.
      *
+     * @param array $fileDetails
      * @return array
      */
-    public function getSheetNames()
+    public function getSheetNames(array $fileDetails = [])
     {
         return self::ACCEPTED_SHEET_NAMES;
     }
@@ -99,7 +100,7 @@ class Reconciliate extends Base\Reconciliate
             return self::START_ROW;
         }
         else if (($fileDetails[FileProcessor::EXTENSION] === Format::XLSX) and
-                ($fileDetails[FileProcessor::FILE_NAME] === 'razorpay.xlsx'))
+                 ($fileDetails[FileProcessor::FILE_NAME] === 'razorpay.xlsx'))
         {
             return self::XLSX_START_ROW;
         }

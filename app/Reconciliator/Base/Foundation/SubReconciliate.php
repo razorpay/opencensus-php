@@ -50,6 +50,15 @@ class SubReconciliate extends Base\Core
      */
     protected $failUnprocessedRow = true;
 
+    protected $gateway;
+
+    public function __construct(string $gateway = null)
+    {
+        parent::__construct();
+
+        $this->gateway = $gateway;
+    }
+
     public function getTotal(): array
     {
         return $this->total;
@@ -178,7 +187,7 @@ class SubReconciliate extends Base\Core
 
         $transaction->setGatewaySettledAt($gatewaySettledAt);
 
-        $transaction->saveOrFail();
+        $this->repo->saveOrFail($transaction);
     }
 
     protected function checkIfAlreadyReconciled($entity)
@@ -312,6 +321,8 @@ class SubReconciliate extends Base\Core
                 'gateway' => get_called_class(),
                 'row'     => $row,
             ]);
+
+        $this->setSummaryCount(self::TOTAL_SUMMARY, head($row));
 
         if ($this->failUnprocessedRow === true)
         {

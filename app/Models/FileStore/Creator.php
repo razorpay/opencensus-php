@@ -141,6 +141,14 @@ class Creator extends Base\Core
      */
     protected $shouldDeleteLocalFile = false;
 
+    /**
+     * The sheet name used when creating an excel file.
+     * Sheet 1 is the default name used to generate the excel sheet.
+     *
+     * @var string
+     */
+    protected $sheetName = 'Sheet 1';
+
     const DEFAULT_STORE    = 's3';
 
     const COMMAND_FOR_ZIPPING = 'zip --junk-paths --move';
@@ -172,6 +180,19 @@ class Creator extends Base\Core
     public function name(string $name)
     {
         $this->file->setName($name);
+
+        return $this;
+    }
+
+    /**
+     * Set the name of the sheet of the excel file to be created.
+     *
+     * @param string $sheetName
+     * @return $this
+     */
+    public function sheetName(string $sheetName)
+    {
+        $this->sheetName = $sheetName;
 
         return $this;
     }
@@ -386,6 +407,11 @@ class Creator extends Base\Core
     {
         $this->file->entity()->associate($entity);
 
+        if ($entity->hasRelation('merchant'))
+        {
+            $this->merchant = $entity->merchant;
+        }
+
         return $this;
     }
 
@@ -490,7 +516,6 @@ class Creator extends Base\Core
 
         return $this;
     }
-
 
     protected function deleteLocalFileIfRequired()
     {
@@ -630,7 +655,7 @@ class Creator extends Base\Core
         $bucketConfig = $this->storageHandler->getBucketConfig(
             $this->file->getType(), $this->env);
 
-        $fileName = $this->file->getName() . '.' . $this->file->getExtension();
+        $fileName = $this->getFullFileName();
 
         $fileDetails = [
             'key'       => $fileName,
@@ -665,6 +690,9 @@ class Creator extends Base\Core
             case Format::TXT:
             case Format::ENC:
             case Format::PDF:
+            // When the extension of the file which need to be created has no standerd extension (in case of ASCII file)
+            // we dont set the extestion while creating it, then `NONE` will match with it and process it as text file
+            case Format::NONE:
                 $this->writeTextFile();
                 break;
 
@@ -761,7 +789,7 @@ class Creator extends Base\Core
 
     protected function writeTextFile()
     {
-        $fileName = $this->file->getName() . '.' . $this->file->getExtension();
+        $fileName = $this->getFullFileName();
 
         $fullPath = $this->getFullFilePath();
 
@@ -782,7 +810,8 @@ class Creator extends Base\Core
             $this->columnFormat,
             $this->headers,
             $this->file->getExtension(),
-            $this->getStorageDir());
+            $this->getStorageDir(),
+            $this->sheetName);
 
         $this->createUploadedFile($fileMetadata['full'], $fileMetadata['file']);
     }
@@ -854,12 +883,21 @@ class Creator extends Base\Core
 
     protected function getFullFileName()
     {
-        return $this->file->getName() . '.' . $this->file->getExtension();
+        $extension = $this->file->getExtension();
+
+        $fileName  = $this->file->getName();
+
+        if ($extension !== null)
+        {
+            $fileName .= ('.' . $extension);
+        }
+
+        return $fileName;
     }
 
     public function getFullFilePath()
     {
-        return $this->getStorageDir() . $this->file->getName() . '.' . $this->file->getExtension();
+        return $this->getStorageDir() . $this->getFullFileName();
     }
 
     public function getCompressedFileFullPath()

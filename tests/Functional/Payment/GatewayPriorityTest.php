@@ -20,7 +20,7 @@ class GatewayPriorityTest extends TestCase
 
         parent::setUp();
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
     }
 
     public function testSaveGatewayPriority()

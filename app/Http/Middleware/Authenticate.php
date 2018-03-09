@@ -137,7 +137,14 @@ class Authenticate
         }
         else if (in_array($route, Route::$publicCallback, true) === true)
         {
-            $ret = $this->ba->publicCallbackAuth();
+            if ($this->oauth->hasOAuthPublicToken() === true)
+            {
+                $ret = $this->authenticateOAuthPublicToken();
+            }
+            else
+            {
+                $ret = $this->ba->publicCallbackAuth();
+            }
         }
         else if (in_array($route, Route::$proxy, true) === true)
         {
@@ -149,7 +156,7 @@ class Authenticate
         }
         else if (in_array($route, Route::$direct, true) === true)
         {
-            // $ret = $this->ba->proxyAuth();
+            $ret = $this->ba->directAuth();
         }
         else
         {

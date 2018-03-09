@@ -113,7 +113,9 @@ class Repository extends Base\Repository
     }
 
     public function toggleWorkflowOnOrgForPermissions(
-        string $orgId, array $permissionIds, bool $enabled)
+        string $orgId,
+        array $permissionIds,
+        bool $enabled)
     {
         DB::table(Table::PERMISSION_MAP)
                 ->where('entity_id', '=', $orgId)

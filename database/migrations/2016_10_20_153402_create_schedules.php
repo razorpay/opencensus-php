@@ -30,7 +30,7 @@ class CreateSchedules extends Migration
 
             $table->string(Schedule::PERIOD, 15);
 
-            $table->tinyInteger(Schedule::INTERVAL)
+            $table->integer(Schedule::INTERVAL)
                   ->nullable();
 
             $table->integer(Schedule::ANCHOR)
@@ -49,6 +49,7 @@ class CreateSchedules extends Migration
                   ->unsigned()
                   ->nullable();
 
+            $table->index(Schedule::NAME);
             $table->index(Schedule::CREATED_AT);
 
             $table->foreign(Schedule::MERCHANT_ID)

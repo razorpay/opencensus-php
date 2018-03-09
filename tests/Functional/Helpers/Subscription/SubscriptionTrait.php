@@ -15,6 +15,9 @@ trait SubscriptionTrait
     {
         $paymentRequest = $this->getDefaultRecurringPaymentArray();
 
+        // This is not required since we add it implicitly.
+        unset($paymentRequest['recurring']);
+
         // For subscription, we get the customer ID from the subscription entity itself.
         unset($paymentRequest['customer_id']);
 
@@ -203,9 +206,9 @@ trait SubscriptionTrait
         return $subscriptionResponse;
     }
 
-    protected function doAuthTxnForNewSubscription(bool $startAt = true)
+    protected function doAuthTxnForNewSubscription(bool $startAt = true, $planAttributes = [])
     {
-        $subscription = $this->createSubscription($startAt);
+        $subscription = $this->createSubscription($startAt, $planAttributes);
 
         $authAmount = null;
 

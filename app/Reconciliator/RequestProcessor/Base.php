@@ -25,7 +25,9 @@ class Base extends Core
     /**
      * These field can be force updated with passed with request
      */
-    const REFUND_ARN = 'refund_arn';
+    const REFUND_ARN            = 'refund_arn';
+    const PAYMENT_ARN           = 'payment_arn';
+    const PAYMENT_AUTH_CODE     = 'payment_auth_code';
 
     /******************
      * Gateway constants
@@ -49,11 +51,15 @@ class Base extends Core
     const NETBANKING_PNB         = 'NetbankingPnb';
     const NETBANKING_BOB         = 'NetbankingBob';
     const VIRTUAL_ACC_KOTAK      = 'VirtualAccKotak';
+    const VIRTUAL_ACC_YESBANK    = 'VirtualAccYesBank';
     const JIOMONEY               = 'Jiomoney';
     const UPI_SBI                = 'UpiSbi';
+    const PAYUMONEY              = 'PayuMoney';
     const EBS                    = 'Ebs';
     const FIRST_DATA             = 'FirstData';
+    const UPI_ICICI              = 'UpiIcici';
     const ADMIN                  = 'admin';
+    const HITACHI                = 'Hitachi';
 
     /**
      * The gateway names should be the same name as the directories present under 'reconciliator'
@@ -76,15 +82,27 @@ class Base extends Core
         self::NETBANKING_RBL      => ['internetbanking@rblbank.com'],
         self::NETBANKING_INDUSIND => [],
         self::NETBANKING_PNB      => [],
-        self::NETBANKING_BOB      => [],
+        self::NETBANKING_BOB      => ['billpay@bankofbaroda.com'],
         self::JIOMONEY            => [],
         self::EBS                 => [],
         self::FIRST_DATA          => ['customer.care@icici.mailserv.in'],
+        self::UPI_ICICI           => ['eazypay@icicibank.com'],
         self::VIRTUAL_ACC_KOTAK   => ['kmb.reports@kotak.com'],
+        self::VIRTUAL_ACC_YESBANK => [],
         self::UPI_SBI             => [],
+        self::PAYUMONEY           => [],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
         self::ADMIN               => ['saurav.chowdhury@razorpay.com'],
+        self::HITACHI             => []
+    ];
+
+    /**
+     * Set of attributes, which act as configuration for recon processing
+     * and can be optionally passed in the request.
+     */
+    const CONFIG_PARAMS = [
+        self::FORCE_UPDATE
     ];
 
     protected $validator;
@@ -121,7 +139,7 @@ class Base extends Core
         $gatewayReconciliatorClassName = 'RZP\\Reconciliator' . '\\' .
             $this->gateway . '\\' . 'Reconciliate';
 
-        $this->gatewayReconciliator = new $gatewayReconciliatorClassName;
+        $this->gatewayReconciliator = new $gatewayReconciliatorClassName($this->gateway);
     }
 
     /**

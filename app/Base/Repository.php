@@ -3,8 +3,10 @@
 namespace RZP\Base;
 
 use DB;
+use Config;
 use Illuminate\Support\Facades\App;
 
+use Database\Connection;
 use RZP\Models;
 use RZP\Exception;
 use RZP\Jobs\EsSync;
@@ -92,6 +94,8 @@ class Repository extends \Razorpay\Spine\Repository
         $this->auth = $this->app['basicauth'];
 
         $this->repo = $this->app['repo'];
+
+        $this->merchant = $this->app['basicauth']->getMerchant();
 
         $this->entityFetch = E::getEntityFetch($this->entity);
     }
@@ -250,6 +254,23 @@ class Repository extends \Razorpay\Spine\Repository
         $entity->timestamps = false;
 
         return $entity->setConnection($this->connection)->newQuery();
+    }
+
+    /**
+     * Overwritng this here, as we want to reuse the find method overriden
+     * in certain repository classes (required for query caching). We want to execurte find and throw exception
+     * if the entity is not found.
+     *
+     * TODO: Move this to spine
+     * @param  string $id
+     * @param  array  $columns
+     * @return RZP\Models\Base\Entity
+     */
+    public function findOrFail($id, $columns = array('*'))
+    {
+        if ( ! is_null($model = $this->find($id, $columns))) return $model;
+
+        $this->processDbQueryFailure('find', array('id' => $id, 'columns' => $columns));
     }
 
     protected function processDbQueryFailure($operation, $attributes = null)
@@ -590,8 +611,6 @@ class Repository extends \Razorpay\Spine\Repository
 
         try
         {
-            $this->trace->debug(TraceCode::ES_SYNC_PUSH_PAYLOAD, $tracePayload);
-
             $job = (new EsSync(
                         $mode,
                         $action,
@@ -718,7 +737,7 @@ class Repository extends \Razorpay\Spine\Repository
 
         $relations = camel_case_array($expands);
 
-        return array_values(array_unique($relations));
+        return array_values(array_filter(array_unique($relations)));
     }
 
     /**
@@ -770,6 +789,20 @@ class Repository extends \Razorpay\Spine\Repository
 
     protected function hasEntityFetch(): bool
     {
-        return ((empty($this->entityFetch) === false) and ($this->entityFetch->isEnabled() === true));
+        return (empty($this->entityFetch) === false);
+    }
+
+    protected function getSlaveConnection(string $mode = null)
+    {
+        if ($this->app['env'] === 'testing')
+        {
+            return Config::get('database.default');
+        }
+
+        $mode = $mode ?? $this->app['rzp.mode'];
+
+        $connection = ($mode === MODE::TEST) ? Connection::SLAVE_TEST : Connection::SLAVE_LIVE;
+
+        return $connection;
     }
 }

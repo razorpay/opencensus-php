@@ -92,7 +92,26 @@ class Service extends Base\Service
 
         $merchantDetails->edit($input);
 
+        $params = $this->storeActivationFile($merchantDetails, $input);
+
+        $merchantDetails->fill($params);
+
+        $response = $core->createResponse($merchantDetails);
+
+        $merchantDetails->setActivationProgress($response['verification']['activation_progress']);
+
+        $this->repo->saveOrFail($merchantDetails);
+
+        return $response;
+    }
+
+    public function storeActivationFile(
+        Merchant\Detail\Entity $merchantDetails,
+        array $input)
+    {
         $params = [];
+
+        $merchant = $merchantDetails->merchant;
 
         foreach ($input as $key => $value)
         {
@@ -111,15 +130,7 @@ class Service extends Base\Service
             $params[$key] = FileStore\Entity::verifyIdAndSilentlyStripSign($file['id']);
         }
 
-        $merchantDetails->fill($params);
-
-        $response = $core->createResponse($merchantDetails);
-
-        $merchantDetails->setActivationProgress($response['verification']['activation_progress']);
-
-        $this->repo->saveOrFail($merchantDetails);
-
-        return $response;
+        return $params;
     }
 
     public function editMerchantDetails($id, array $input)
@@ -191,13 +202,12 @@ class Service extends Base\Service
 
     protected function getSignedUrl(string $fileStoreId, string $merchantId)
     {
-        $accessor = new FileStore\Accessor;
+        $core = new FileStore\Core;
 
-        $signedUrls = $accessor->id($fileStoreId)
-                               ->merchantId($merchantId)
-                               ->getSignedUrl();
+        // [ id1 => url1, id2 => url2, ... ]
+        $signedUrls = $core->getSignedUrl($fileStoreId, $merchantId);
 
-        return $signedUrls[$fileStoreId];
+        return $signedUrls;
     }
 
     private function getFieldsToStepMap() : array
@@ -277,6 +287,36 @@ class Service extends Base\Service
         $admin = $this->app['basicauth']->getAdmin();
 
         $merchantDetails = (new Core)->updateActivationStatus($merchantDetails, $input, $admin);
+
+        return $merchantDetails->toArrayPublic();
+    }
+
+    /**
+     * This function is used for getting the activation status change log of a merchant
+     * @param string $merchantId
+     *
+     * @return array
+     */
+    public function getActivationStatusChangeLog(string $merchantId): array
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $activationStatusChangeLog = (new Merchant\Core)->getActivationStatusChangeLog($merchant);
+
+        return $activationStatusChangeLog->toArrayPublic();
+    }
+
+    /**
+     * This function is used for updating website details of a merchant
+     * @param array $input
+     *
+     * @return array
+     */
+    public function updateWebsiteDetails(array $input): array
+    {
+        $merchantDetails = $this->merchant->merchantDetail;
+
+        $merchantDetails = (new Core)->updateWebsiteDetails($merchantDetails, $input);
 
         return $merchantDetails->toArrayPublic();
     }
@@ -407,8 +447,10 @@ class Service extends Base\Service
 
     private function getZapierData($merchant, $input)
     {
+        $this->merchant->reload();
+
         // This is the same format we'll set in the google spreadsheet
-        $timestamp = Carbon::createFromTimeStamp(time(), Timezone::IST)->format('j/m/Y');
+        $timestamp = Carbon::createFromTimeStamp(time(), Timezone::IST)->format('Y-m-d\TH:i:s+05:30');
 
         $userName = $input['contact_name'] ?? '';
 
@@ -426,19 +468,23 @@ class Service extends Base\Service
 
         $referrer = $merchant->referrer ?? '';
 
-        return [
+        $data = [
             Entity::ID                 => $merchant->id,
             Merchant\Entity::EMAIL     => $merchant->email,
             Constants::INDIVIDUAL      => $userName,
             Merchant\Entity::NAME      => $merchant->name,
             Constants::REF             => $referrer,
-            Constants::TIMESTAMP       => $timestamp,
+            Constants::SIGNUP_DATE     => $timestamp,
             Constants::CONTACT         => $phoneNumber,
             Entity::BUSINESS_TYPE      => $businessType,
             Entity::TRANSACTION_VOLUME => $transactionVolume,
             Entity::ROLE               => $role,
             Entity::DEPARTMENT         => $department,
         ];
+
+        (new User\Service)->addUtmParameters($data);
+
+        return $data;
     }
 
     /**

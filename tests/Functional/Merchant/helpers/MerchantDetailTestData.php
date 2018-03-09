@@ -265,6 +265,28 @@ return [
         ],
     ],
 
+    'testGetMerchantActivationStatusChangeLog' => [
+        'request' => [
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        'entity_type' => 'merchant_detail',
+                        'name'        => 'under_review',
+                    ],
+                    [
+                        'entity_type' => 'merchant_detail',
+                        'name'        => 'activated',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testMerchantFormArchive' => [
         'request' => [
             'content' => [
@@ -289,6 +311,21 @@ return [
         'response' => [
             'content' => [
                 'activation_status'  => 'under_review',
+            ],
+        ],
+    ],
+
+    'testMerchantUpdateWebsiteDetails' => [
+        'request' => [
+            'content' => [
+                'business_website' => 'https://www.example.com',
+            ],
+            'url'     => '/merchant/activation/update_website_details',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'business_website' => 'https://www.example.com'
             ],
         ],
     ],
@@ -463,7 +500,7 @@ return [
                     'verification'          => [
                         'status'                => 'disabled',
                         'disabled_reason'       => 'required_fields',
-                        'activation_progress'   => 3,
+                        'activation_progress'   => 4,
                     ],
                 ],
                 'auto_capture_late_auth'    => false,

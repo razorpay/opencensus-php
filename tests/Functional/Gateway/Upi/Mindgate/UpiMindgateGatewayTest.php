@@ -2,14 +2,30 @@
 
 namespace RZP\Tests\Functional\Gateway\Upi\Mindgate;
 
-use Closure;
-use Carbon\Carbon;
+use RZP\Constants\Entity as ConstantsEntity;
+use RZP\Gateway\Upi\Base\Entity;
+use RZP\Models\Merchant\Account;
+use RZP\Models\Payment\Gateway;
+use RZP\Models\Payment\Method;
+use RZP\Models\Payment\Status;
+use RZP\Tests\Functional\Fixtures\Entity\Terminal;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class UpiMindgateGatewayTest extends TestCase
 {
     use PaymentTrait;
+
+    /**
+     * @var Terminal
+     */
+    protected $sharedTerminal;
+
+    /**
+     * Payment array
+     * @var array
+     */
+    protected $payment;
 
     public function setUp()
     {
@@ -18,18 +34,20 @@ class UpiMindgateGatewayTest extends TestCase
         parent::setUp();
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_mindgate_terminal', [
-            'gateway'   => 'upi_mindgate'
+            'gateway'   => Gateway::UPI_MINDGATE
         ]);
 
-        $this->gateway = 'upi_mindgate';
+        $this->gateway = Gateway::UPI_MINDGATE;
 
-        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+        $this->fixtures->merchant->enableMethod(Account::TEST_ACCOUNT, Method::UPI);
 
         $this->payment = $this->getDefaultUpiPaymentArray();
     }
 
     /**
      * Tests the happy-flow of a complete payment
+     * @param string $status
+     * @return mixed
      */
     public function testPayment($status = 'created')
     {
@@ -65,6 +83,49 @@ class UpiMindgateGatewayTest extends TestCase
         $this->capturePayment($paymentId, $payment['amount']);
 
         return $payment;
+    }
+
+    public function testUpiAmountCap()
+    {
+        $this->payment['vpa'] = 'vishnu@upi';
+
+        $payment = $this->payment;
+
+        $payment['amount'] = 2100000;
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthPaymentViaAjaxRoute($payment);
+            });
+    }
+
+    public function testFailedVpaValidation()
+    {
+        $this->payment['vpa'] = 'invalidvpa@hdfcbank';
+
+        $payment = $this->payment;
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthPaymentViaAjaxRoute($payment);
+            });
+
+        $upiEntity = $this->getLastEntity(ConstantsEntity::UPI, true);
+
+        $payment = $this->getLastEntity(ConstantsEntity::PAYMENT, true);
+        $this->assertEquals(Status::FAILED, $payment['status']);
+
+        $this->assertEquals('invalidvpa@hdfcbank', $upiEntity[Entity::VPA]);
+        $this->assertNull($upiEntity[Entity::GATEWAY_PAYMENT_ID]);
+        $this->assertNull($upiEntity[Entity::NPCI_REFERENCE_ID]);
     }
 
     /**
@@ -117,7 +178,7 @@ class UpiMindgateGatewayTest extends TestCase
     // Gateway = success
     public function testVerificationFailure()
     {
-        $payment = $this->getDefaultUpiPaymentArray();
+        $this->getDefaultUpiPaymentArray();
 
         $response = $this->doAuthPayment($this->payment);
 
@@ -127,7 +188,7 @@ class UpiMindgateGatewayTest extends TestCase
 
         $this->runRequestResponseFlow($data, function() use ($paymentId)
         {
-            $this->payment = $this->verifyPayment($paymentId);
+            $this->verifyPayment($paymentId);
         });
     }
 
@@ -157,12 +218,31 @@ class UpiMindgateGatewayTest extends TestCase
 
         $this->runRequestResponseFlow($data, function() use ($content)
         {
-            $response = $this->makeS2SCallbackAndGetContent($content);
+            $this->makeS2SCallbackAndGetContent($content);
         });
 
         $payment = $this->getEntityById('payment', $paymentId, true);
 
         $this->assertEquals('failed', $payment['status']);
+    }
+
+    public function testPaymentWithExpiryPrivateAuth()
+    {
+        $this->fixtures->merchant->addFeatures(['s2supi']);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['upi']['expiry_time'] = 10;
+
+        $response = $this->doS2SUpiPayment($payment);
+
+        $paymentId = $response['razorpay_payment_id'];
+
+        $this->checkPaymentStatus($paymentId, 'created');
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $this->assertEquals(10, $upiEntity['expiry_time']);
     }
 
     public function testRefundSuccess()

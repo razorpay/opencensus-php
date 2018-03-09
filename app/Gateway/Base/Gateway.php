@@ -380,7 +380,10 @@ class Gateway
     {
         $response[Payment\Entity::TWO_FACTOR_AUTH] = Payment\TwoFactorAuth::PASSED;
 
-        if ($input['payment'][Payment\Entity::METHOD] === Payment\Method::NETBANKING)
+        // Keeping this same for eMandate. However, this needs
+        // to be updated for different authentication type
+        if (($input['payment'][Payment\Entity::METHOD] === Payment\Method::NETBANKING) or
+            ($input['payment'][Payment\Entity::METHOD] === Payment\Method::EMANDATE))
         {
             $response[Payment\Entity::TWO_FACTOR_AUTH] = Payment\TwoFactorAuth::UNAVAILABLE;
         }
@@ -950,9 +953,23 @@ class Gateway
         return $this->gateway . '_' . $input['payment']['id'];
     }
 
+    protected function isProcessedRefund($input)
+    {
+        $processedRefunds = $this->getProcessedRefunds();
+
+        return (in_array($input['refund']['id'], $processedRefunds) === true);
+    }
+
+    protected function isUnprocessedRefund($input)
+    {
+        $unprocessedRefunds = $this->getUnprocessedRefunds();
+
+        return (in_array($input['refund']['id'], $unprocessedRefunds) === true);
+    }
+
     protected function getProcessedRefunds()
     {
-        $refunds =  $this->cache->get('GATEWAY_PROCESSED_REFUNDS');
+        $refunds = $this->cache->get('GATEWAY_PROCESSED_REFUNDS');
 
         if (empty($refunds) === true)
         {

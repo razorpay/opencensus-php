@@ -46,8 +46,6 @@ return [
             'content' => [
                 'amount'         => 1000,
                 'merchant_id'    => '10000000000000',
-                'customer_id'    => 'cust_100000customer',
-                'destination_id' => 'ba_1000000lcustba',
             ],
         ],
         'response' => [
@@ -55,9 +53,7 @@ return [
                 'entity'      => 'payout',
                 'amount'      => 1000,
                 'currency'    => 'INR',
-                'customer_id' => 'cust_100000customer',
                 'method'      => 'fund_transfer',
-                'destination' => 'ba_1000000lcustba',
                 'tax'         => 92,
                 'fees'        => 602,
                 'notes'       => []
@@ -72,8 +68,6 @@ return [
             'content' => [
                 'amount'         => 1200,
                 'merchant_id'    => '10000000000000',
-                'customer_id'    => 'cust_100000customer',
-                'destination_id' => 'ba_1000000lcustba',
                 'modulo'         => 1000
             ],
         ],
@@ -82,9 +76,7 @@ return [
                 'entity'      => 'payout',
                 'amount'      => 1000,
                 'currency'    => 'INR',
-                'customer_id' => 'cust_100000customer',
                 'method'      => 'fund_transfer',
-                'destination' => 'ba_1000000lcustba',
                 'tax'         => 92,
                 'fees'        => 602,
                 'notes'       => []
@@ -99,16 +91,22 @@ return [
             'content' => [
                 'amount'         => 2200,
                 'merchant_id'    => '10000000000000',
-                'customer_id'    => 'cust_100000customer',
-                'destination_id' => 'ba_1000000lcustba',
                 'min_amount'     => 3000,
                 'modulo'         => 1000
             ],
         ],
         'response' => [
             'content' => [
-                'message' => 'amount to be transferred is less than 3000'
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'amount is less than min amount',
+                ],
             ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
@@ -119,9 +117,8 @@ return [
             'content' => [
                 'amount'      => 1000000,
                 'currency'    => 'INR',
-                'customer_id' => 'cust_100000customer',
                 'method'      => 'fund_transfer',
-                'destination' => 'ba_1000000lcustba',
+                'destination' => 'ba_9LfZofLRJIpwrH',
                 'notes'       => [
                     'abc' => 'xyz',
                 ],
@@ -354,17 +351,17 @@ return [
     ],
 
     'testPayoutAttemptSuccess' => [
-        'channel' => 'kotak',
+        'channel' => 'axis',
         'version' => 'V3',
-        'status' => FundTransferAttemptStatus::INITIATED,
+        'status' => FundTransferAttemptStatus::CREATED,
         'utr' => NULL,
         'remarks' => NULL,
         'failure_reason' => NULL,
     ],
 
-    'testPayoutInitiateSuccess' => [
-        'channel' => 'kotak',
-        'status' => PayoutStatus::INITIATED,
+    'testPayoutEntitySuccess' => [
+        'channel' => 'axis',
+        'status' => PayoutStatus::CREATED,
         'utr' => NULL,
         'remarks' => NULL,
         'failure_reason' => NULL,
@@ -373,8 +370,9 @@ return [
     ],
 
     'testPayoutAttemptReconSuccess' => [
-        'channel' => 'kotak',
+        'channel' => 'axis',
         'version' => 'V3',
         'bank_status_code'  => 'P',
+        'status'  => FundTransferAttemptStatus::INITIATED,
     ],
 ];

@@ -9,68 +9,77 @@ use Carbon\Carbon;
 use Lib\PhoneBook;
 
 use RZP\Base;
+use RZP\Constants\Timezone;
 use RZP\Exception;
-use RZP\Constants\Mode;
-use RZP\Error\ErrorCode;
-use RZP\Models\Upi;
-use RZP\Models\Card;
-use RZP\Models\Currency\Currency;
 use RZP\Models\Payment;
+use Razorpay\IFSC\IFSC;
+use RZP\Constants\Mode;
+use RZP\Models\Feature;
 use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
+use RZP\Models\Customer\Token;
+use RZP\Models\Currency\Currency;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\Payment\Processor\Wallet;
 
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        'amount'                     => 'required|integer',
-        'currency'                   => 'required|string|size:3',
-        'method'                     => 'required|string|custom',
-        'vpa'                        => 'sometimes_if:method,upi|string|max:100|custom',
-        'aadhaar'                    => 'required_if:method,aeps|array',
-        'aadhaar.number'             => 'required_if:method,aeps|size:12|string',
-        'aadhaar.fingerprint'        => 'required_if:method,aeps|max:999|string',
-        'aadhaar.session_key'        => 'sometimes_if:method,aeps|size:344|string',
-        'aadhaar.hmac'               => 'sometimes_if:method,aeps|size:64|string',
-        'aadhaar.cert_expiry'        => 'sometimes_if:method,aeps|size:8|string',
-        'card'                       => 'sometimes',
-        'bank'                       => 'required_if:method,netbanking,aeps',
-        'wallet'                     => 'required_if:method,wallet|custom',
-        'emi_duration'               => 'required_if:method,emi|integer|in:3,6,9,12,18,24',
-        'description'                => 'sometimes|string|max:255|utf8',
-        'email'                      => 'sometimes|nullable|email',
-        'contact'                    => 'sometimes|nullable|contact_syntax',
-        'signature'                  => 'sometimes|nullable|string',
-        'notes'                      => 'sometimes|notes',
-        'notes.merchant_order_id'    => 'required_with:signature',
-        'callback_url'               => 'sometimes|url',
-        'order_id'                   => 'sometimes|filled',
-        'customer_id'                => 'sometimes|public_id|filled',
-        'subscription_id'            => 'sometimes|public_id',
-        'app_token'                  => 'sometimes',
-        'token'                      => 'sometimes',
-        'save'                       => 'sometimes|in:0,1',
-        'recurring'                  => 'sometimes_if:method,card,netbanking|in:0,1',
-        'fee'                        => 'sometimes|filled|integer|max:50000000',
-        Entity::TAX                  => 'sometimes|filled|integer|max:50000000',
-        'on_hold'                    => 'sometimes_if:method,transfer|boolean',
-        'on_hold_until'              => 'sometimes_if:method,transfer|nullable|epoch',
-        'ip'                         => 'sometimes|ip',
-        'referer'                    => 'sometimes|string|max:2083',
-        'user_agent'                 => 'sometimes|string',
-        '_'                          => 'sometimes|array',
-        'test_success'               => 'sometimes|boolean',
-        'subscription_card_change'   => 'sometimes|boolean',
-        'account_number'             => 'filled|alpha_num|between:5,20',
-        'upi'                        => 'sometimes_if:method,upi|array',
-        'upi.expiry_time'            => 'sometimes_if:method,upi|integer|between:5,30|filled',
+        'amount'                        => 'required|integer',
+        'currency'                      => 'required|string|size:3',
+        'method'                        => 'required|string|custom',
+        'vpa'                           => 'sometimes_if:method,upi|string|filled|max:100|custom',
+        'aadhaar'                       => 'required_if:method,aeps|array',
+        'aadhaar.number'                => 'required_if:method,aeps|size:12|string',
+        'aadhaar.fingerprint'           => 'required_if:method,aeps|max:999|string',
+        'aadhaar.session_key'           => 'sometimes_if:method,aeps|size:344|string',
+        'aadhaar.hmac'                  => 'sometimes_if:method,aeps|size:64|string',
+        'aadhaar.cert_expiry'           => 'sometimes_if:method,aeps|size:8|string',
+        'card'                          => 'sometimes',
+        'bank'                          => 'required_if:method,netbanking,aeps,emandate|string|between:4,6',
+        'wallet'                        => 'required_if:method,wallet|custom',
+        'emi_duration'                  => 'required_if:method,emi|integer|in:3,6,9,12,18,24',
+        'description'                   => 'sometimes|string|max:255|utf8',
+        'email'                         => 'sometimes|nullable|email',
+        'contact'                       => 'sometimes|nullable|contact_syntax',
+        'signature'                     => 'sometimes|nullable|string',
+        'notes'                         => 'sometimes|notes',
+        'notes.merchant_order_id'       => 'required_with:signature',
+        'callback_url'                  => 'sometimes|url',
+        'order_id'                      => 'sometimes|filled',
+        'customer_id'                   => 'sometimes|public_id|filled',
+        'subscription_id'               => 'sometimes|public_id',
+        'app_token'                     => 'sometimes',
+        'token'                         => 'sometimes',
+        'save'                          => 'sometimes|in:0,1',
+        'recurring'                     => 'sometimes_if:method,card,emandate|in:1',
+        'fee'                           => 'sometimes|filled|integer|max:50000000',
+        Entity::TAX                     => 'sometimes|filled|integer|max:50000000',
+        'on_hold'                       => 'sometimes_if:method,transfer|boolean',
+        'on_hold_until'                 => 'sometimes_if:method,transfer|nullable|epoch',
+        'ip'                            => 'sometimes|ip',
+        'referer'                       => 'sometimes|string|max:2083',
+        'user_agent'                    => 'sometimes|string',
+        '_'                             => 'sometimes|array',
+        'test_success'                  => 'sometimes|boolean',
+        'subscription_card_change'      => 'sometimes|boolean',
+        'upi'                           => 'sometimes_if:method,upi|array',
+        'upi.expiry_time'               => 'sometimes_if:method,upi|integer|between:5,30|filled',
+        'auth_type'                     => 'sometimes_if:method,emandate|string|max:10|filled|in:netbanking,aadhaar',
+        'bank_account'                  => 'sometimes_if:method,emandate|associative_array|filled',
+        'bank_account.account_number'   => 'required_with:bank_account|filled|alpha_num|between:5,20',
+        'bank_account.ifsc'             => 'required_with:bank_account|filled|alpha_num|size:11',
+        'bank_account.name'             => 'required_with:bank_account|filled|alpha_space_num|between:4,120',
+        'recurring_token'               => 'sometimes_if:method,emandate|associative_array|filled',
+        'recurring_token.max_amount'    => 'sometimes_if:method,emandate|filled|integer|min:500',
+        'recurring_token.expire_by'     => 'sometimes_if:method,emandate|filled|epoch',
     ];
 
     protected static $editRules = [
         Entity::VPA                  => 'sometimes|string|max:100',
         Entity::APPROVAL_CODE        => 'sometimes|string|max:6',
-        Entity::REFERENCE1           => 'sometimes|string',
-        Entity::REFERENCE2           => 'sometimes|string',
+        Entity::REFERENCE1           => 'sometimes|nullable|string',
+        Entity::REFERENCE2           => 'sometimes|nullable|string',
     ];
 
     protected static $captureRules = [
@@ -104,6 +113,10 @@ class Validator extends Base\Validator
         'transfers.*.on_hold_until'  => 'sometimes|epoch',
     ];
 
+    protected static $pspAmountLimit = [
+        'upi'       => 2000000,
+    ];
+
     protected static $createValidators = [
         'card_key',
         'amount',
@@ -115,30 +128,74 @@ class Validator extends Base\Validator
         'hold_parameters',
         'customer_id',
         'test_success',
-        'account_number',
         'upi_expiry_time',
         'upi_vpa',
+        'recurring',
+        // Ideally, we should be using custom. But
+        // due to dot notation, we cannot use it.
+        'ifsc',
+        'order_id',
+        // Ideally, we should be using custom. But
+        // due to dot notation, we cannot use it.
+        'token_max_amount',
+        'token_expire_by',
     ];
 
-    protected function validateAccountNumber(array $input)
+    protected function validateIfsc(array $input)
     {
-        if (isset($input['account_number']) === false)
+        if (isset($input[Entity::BANK_ACCOUNT][Entity::IFSC]) === false)
         {
             return;
         }
 
-        if ($input[Entity::METHOD] !== Method::NETBANKING)
+        $ifsc = $input[Entity::BANK_ACCOUNT][Entity::IFSC];
+
+        if (IFSC::validate($ifsc) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Account Number passed for invalid method: ' . $input[Entity::METHOD]);
+                'Invalid IFSC Code in Bank Account');
+        }
+    }
+
+    protected function validateTokenMaxAmount(array $input)
+    {
+        if (isset($input[Entity::RECURRING_TOKEN][Entity::MAX_AMOUNT]) === false)
+        {
+            return;
         }
 
-        $recurring = $input[Entity::RECURRING] ?? null;
+        $tokenMaxAmount = $input[Entity::RECURRING_TOKEN][Entity::MAX_AMOUNT];
 
-        if ($recurring !== '1')
+        if ($tokenMaxAmount > Token\Entity::DEFAULT_MAX_AMOUNT)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Account Number passed for non-recurring payment');
+                'token_max_amount exceeds maximum amount allowed.',
+                'token_max_amount',
+                ['token_max_amount' => $tokenMaxAmount]);
+        }
+    }
+
+    protected function validateTokenExpireBy(array $input)
+    {
+        if (isset($input[Entity::RECURRING_TOKEN][Entity::EXPIRE_BY]) === false)
+        {
+            return;
+        }
+
+        $tokenExpireBy = $input[Entity::RECURRING_TOKEN][Entity::EXPIRE_BY];
+
+        $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+        if ($tokenExpireBy <= $currentTime)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'recurring_token.expire_by should be greater than the current time',
+                null,
+                [
+                    'expire_by'         => $tokenExpireBy,
+                    'current_time'      => $currentTime,
+                    'payment_id'        => $this->entity->getId(),
+                ]);
         }
     }
 
@@ -169,6 +226,20 @@ class Validator extends Base\Validator
                 throw new Exception\BadRequestValidationFailureException(
                     'The vpa field is required when method is upi.');
             }
+        }
+    }
+
+    protected function validateOrderId(array $input)
+    {
+        $merchant = $this->entity->merchant;
+
+        $feature = Feature\Constants::ORDER_ID_MANDATORY;
+
+        if (($merchant->isFeatureEnabled($feature) === true) and
+            (isset($input[Payment\Entity::ORDER_ID]) === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED_MISSING_ORDER_ID);
         }
     }
 
@@ -226,15 +297,8 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateVpa($attribute, $vpa, $parameter)
+    protected function validateVpa($attribute, $vpa)
     {
-        if ((isset($this->data['_']['flow']) === true) and
-            ($this->data['_']['flow'] === 'intent'))
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'The vpa field is not required and not shouldn\'t be sent.');
-        }
-
         $vpaParts = explode('@', $vpa);
 
         if ((count($vpaParts) !== 2) or
@@ -244,6 +308,18 @@ class Validator extends Base\Validator
             // Invalid VPA
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA);
+        }
+    }
+
+    protected function validateRecurring(array $input)
+    {
+        if ($input['method'] === Payment\Method::EMANDATE)
+        {
+            if (isset($input['recurring']) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'The recurring field should be 1 when payment method is eMandate.');
+            }
         }
     }
 
@@ -283,13 +359,16 @@ class Validator extends Base\Validator
 
     protected function validateAmount(array $input)
     {
-        $amount = $input['amount'];
+        $amount = (int) $input['amount'];
 
-        if ($amount < 100)
+        if ($input['method'] !== Payment\Method::EMANDATE)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT,
-                'amount');
+            if ($amount < 100)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT,
+                    'amount');
+            }
         }
 
         if (($input['method'] === Payment\Method::WALLET) and
@@ -312,6 +391,35 @@ class Validator extends Base\Validator
         if ($input['method'] === Payment\Method::BANK_TRANSFER)
         {
             return;
+        }
+
+        if ($input['method'] === Payment\Method::UPI)
+        {
+            if ($amount > 10000000)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Amount for UPI payment cannot be greater than 100000000');
+            }
+
+            if ((isset($input['_']['flow']) === true) and
+                ($input['_']['flow'] === 'intent'))
+            {
+                return;
+            }
+
+            if (isset($input['vpa']) === true)
+            {
+                $vpa = $input['vpa'];
+
+                $handle = substr($vpa, strpos($vpa, '@') + 1);
+
+                if ((isset(self::$pspAmountLimit[$handle]) === true) and
+                    ($amount > self::$pspAmountLimit[$handle]))
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Maximum amount for UPI payment can be Rs ' . (self::$pspAmountLimit[$handle] / 100));
+                }
+            }
         }
 
         $maxAmountAllowed = $this->entity->merchant->getMaxPaymentAmount();
@@ -379,7 +487,8 @@ class Validator extends Base\Validator
 
     protected function validateBank($input)
     {
-        if ($input['method'] !== Payment\Method::NETBANKING)
+        if (($input['method'] !== Payment\Method::NETBANKING) and
+            ($input['method'] !== Payment\Method::EMANDATE))
         {
             return;
         }
@@ -390,6 +499,9 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_PAYMENT_BANK_NOT_PROVIDED);
         }
 
+        //
+        // The bank is validated for emandate in `validateInitialRecurringForEmandate`
+        //
         if (Payment\Processor\Netbanking::isSupportedBank($input['bank']) === false)
         {
             throw new Exception\BadRequestException(

@@ -43,6 +43,7 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_ID                                                = 'The id provided does not exist';
     const BAD_REQUEST_INVALID_IDS                                               = 'One or more of the ids provided does not exist';
     const BAD_REQUEST_NO_RECORDS_FOUND                                          = 'No db records found.';
+    const BAD_REQUEST_INVALID_BANK_FOR_EMANDATE                                 = 'Invalid bank passed for E-mandate payment';
     const BAD_REQUEST_PAYMENT_FAILED                                            = 'Payment failed';
     const BAD_REQUEST_PAYMENT_CANCELLED_BY_USER                                 = 'Payment processing cancelled by user';
     const BAD_REQUEST_PAYMENT_CANCELLED_BY_PRESSING_BACK_ON_ANDROID             = 'Payment processing cancelled by pressing back button on android';
@@ -90,6 +91,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_EMI_NOT_ENABLED_FOR_MERCHANT                      = 'Emi transactions are not enabled for the merchant';
     const BAD_REQUEST_PAYMENT_EMI_NOT_AVAILABLE_ON_CARD                         = 'Emi is not available for the card used in the transaction';
     const BAD_REQUEST_PAYMENT_AEPS_NOT_ENABLED_FOR_MERCHANT                     = 'Aeps transactions are not enabled for the merchant';
+    const BAD_REQUEST_PAYMENT_EMANDATE_NOT_ENABLED_FOR_MERCHANT                 = 'E-Mandate transactions are not enabled for the merchant';
     const BAD_REQUEST_PAYMENT_UPI_NOT_ENABLED_FOR_MERCHANT                      = 'UPI transactions are not enabled for the merchant';
     const BAD_REQUEST_PAYMENT_BANK_TRANSFER_NOT_ENABLED_FOR_MERCHANT            = 'Bank transfers are not enabled for the merchant';
     const BAD_REQUEST_PAYMENT_BHARAT_QR_NOT_ENABLED_FOR_MERCHANT                = 'Bharat Qr is not enabled for merchant';
@@ -172,6 +174,7 @@ class PublicErrorDescription
     const BAD_REQUEST_REFUND_FAILED                                             = 'Refund failed';
     const BAD_REQUEST_PAYMENT_ALREADY_REFUNDED                                  = 'Refund failed';
     const BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE                                 = 'Your account does not have enough balance to carry out the refund operation. You can add funds to your account from your Razorpay dashboard or capture new payments.';
+    const BAD_REQUEST_REFUND_NOT_ENOUGH_CREDITS                                 = 'Your account does not have enough credits to carry out the refund operation.';
     const BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE                                 = 'Your account does not have enough balance to carry out the payout operation. You can add funds to your account from your Razorpay dashboard or capture new payments.';
     const BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD                                    = 'This operation is not allowed. Please contact Razorpay support for details.';
     const BAD_REQUEST_MERCHANT_FUNDS_ALREADY_ON_HOLD                            = 'The merchant funds are already on hold';
@@ -197,6 +200,7 @@ class PublicErrorDescription
     const BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY                              = 'The api key provided is invalid';
     const BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET                           = 'The api secret provided is invalid';
     const BAD_REQUEST_UNAUTHORIZED_INVALID_ACCOUNT_ID                           = 'The Account ID provided is invalid';
+    const BAD_REQUEST_UNAUTHORIZED_USER_ROLE_MISSING                            = 'Unauthorized Action';
     const BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED                          = 'Please provide api secret';
     const BAD_REQUEST_UNAUTHORIZED_SECRET_SENT_ON_PUBLIC_ROUTE                  = 'Please do not provide your secret on public sided requests';
     const BAD_REQUEST_UNAUTHORIZED_API_KEY_NOT_PROVIDED                         = 'Please provide your Razorpay Api Key Id';
@@ -204,6 +208,7 @@ class PublicErrorDescription
     const BAD_REQUEST_UNAUTHORIZED                                              = 'Authentication failed';
     const BAD_REQUEST_UNAUTHORIZED_OAUTH_TOKEN_INVALID                          = 'The OAuth token used in the request was invalid or had expired';
     const BAD_REQUEST_UNAUTHORIZED_OAUTH_SCOPE_INVALID                          = 'The OAuth token used does not have sufficient permissions for this request';
+    const BAD_REQUEST_UNAUTHORIZED_OAUTH_MERCHANT_NOT_ACTIVATED                 = 'The Merchant is not activated';
     const BAD_REQUEST_PRICING_ID_REQURED                                        = 'Pricing plan id is required';
     const BAD_REQUEST_PRICING_RATE_NOT_DEFINED                                  = 'One of percent_rate and fixed_rate must be present';
     const BAD_REQUEST_PRICING_GATEWAY_REQUIRED                                  = 'This plan has a gateway set. Please provide it in input';
@@ -272,6 +277,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_NO_RESPONSE_RECEIVED_FROM_BANK                    = 'Payment declined due to not receiving timely response from bank';
     const BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR                                 = 'Payment failed due to error in the bank system';
     const BAD_REQUEST_PAYMENT_FAILED_MAYBE_DUE_TO_INVALID_INPUT                 = 'Payment processing failed most probably due to invalid card input';
+    const BAD_REQUEST_PAYMENT_FAILED_MISSING_ORDER_ID                           = 'Payment processing failed due to missing order id';
     const BAD_REQUEST_PAYMENT_FAILED_DUE_TO_INVALID_BIN                         = 'Payment processing failed most probably due to invalid card input';
     const BAD_REQUEST_PAYMENT_CANCELLED                                         = 'Payment processing cancelled';
     const BAD_REQUEST_PAYMENT_DECLINED_CONTACT_ISSUING_BANK                     = 'Payment processing declined by card issuing bank. Please contact issuing bank to determine reason.';
@@ -292,7 +298,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CARD_TYPE_INVALID                                 = 'Invalid card type.';
     const BAD_REQUEST_PAYMENT_INVALID_AMOUNT_OR_CURRENCY                        = 'Invalid amount or currency.';
     const BAD_REQUEST_PAYMENT_INVALID_CAPTURE                                   = 'No approved preauth transaction was found.';
-    const BAD_REQUEST_PAYMENT_INVALID_FORMAT                                    = 'Format error.';
+    const BAD_REQUEST_PAYMENT_INVALID_FORMAT                                    = 'Payment Failed.';
     const BAD_REQUEST_PAYMENT_INVALID_STATUS                                    = 'Payment status is not valid for the operation';
     const BAD_REQUEST_PAYMENT_INVALID_TRANSACTION_DATE                          = 'Invalid transaction date.';
     const BAD_REQUEST_PAYMENT_MAX_TRANSACTIONS_PER_ORDER_EXCEEDED               = 'The maximum number of transactions per order has been exceeded';
@@ -310,8 +316,9 @@ class PublicErrorDescription
     const BAD_REQUEST_ORDER_INVALID_OFFER                                       = 'Offer applied not valid for order';
     const BAD_REQUEST_UNSUPPORTED_CHARACTER_SET                                 = 'Error occurred because of invalid data';
     const BAD_REQUEST_UNAUTHORIZED_INVALID_HASH                                 = 'Hash Data is invalid.';
-    const BAD_REQUEST_NB_TOKEN_PASSED_IN_FIRST_RECURRING                        = 'Token should not be passed in first netbanking recurring payment';
-    const BAD_REQUEST_NB_UNCONFIRMED_TOKEN_PASSED_IN_SECOND_RECURRING           = 'Token is not confirmed for recurring payments';
+    const BAD_REQUEST_EMANDATE_TOKEN_PASSED_IN_FIRST_RECURRING                  = 'Token should not be passed in first E-mandate recurring payment';
+    const BAD_REQUEST_UNCONFIRMED_TOKEN_PASSED_IN_SECOND_RECURRING              = 'Token is not confirmed for recurring payments';
+    const BAD_REQUEST_VALIDATION_FAILURE                                        = 'Validation Failure';
 
     const BAD_REQUEST_GATEWAY_REFUND_ABSENT                                     = 'Refund not done on the gateway side.';
     const BAD_REQUEST_INVALID_GATEWAY                                           = 'Invalid gateway provided for the request';
@@ -370,6 +377,9 @@ class PublicErrorDescription
     const BAD_REQUEST_ORDER_ACCOUNT_NUMBER_INCORRECT_LENGTH                     = 'Account number is of incorrect length for this bank.';
     const BAD_REQUEST_ORDER_BANK_INVALID                                        = 'Bank code provided is invalid.';
     const BAD_REQUEST_ORDER_BANK_DOES_NOT_MATCH_PAYMENT_BANK                    = 'Bank code provided does not match order bank.';
+    const BAD_REQUEST_PAYMENT_METHOD_DOES_NOT_MATCH_ORDER_METHOD                = 'Payment method provided does not match order method.';
+    const BAD_REQUEST_ORDER_RECEIPT_REQUIRED                                    = 'The receipt field is required.';
+    const BAD_REQUEST_ORDER_RECEIPT_NOT_UNIQUE                                  = 'Receipt should be unique.';
 
     const BAD_REQUEST_CUSTOMER_ALREADY_EXISTS                                   = 'Customer already exists for the merchant';
     const BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED                                 = 'Customer contact number is not set';
@@ -417,6 +427,8 @@ class PublicErrorDescription
     const BAD_REQUEST_DISPUTE_AMOUNT_GREATER_THAN_PAYMENT_AMOUNT                = 'Disputed amount cannot be greater than payment amount';
     const BAD_REQUEST_CANNOT_UPDATE_CLOSED_DISPUTE                              = 'This dispute is already closed and cannot be updated';
 
+    const BAD_REQUEST_REPORTING_INTEGRATION                                     = 'Issue with Reporting Integration';
+
     // batch processor related error codes
     const BAD_REQUEST_BATCH_FILE_INVALID_TYPE                                   = 'Incorrect type is used for the uploaded file';
     const BAD_REQUEST_BATCH_FILE_INVALID_PAYMENT_ID                             = 'Payment Id is not set in the uploaded file';
@@ -435,7 +447,7 @@ class PublicErrorDescription
 
     const BAD_REQUEST_INVALID_MERCHANT_INVOICE_NUMBER                           = 'Invalid Invoice Number.';
 
-    const BAD_REQUEST_PAYOUT_ANOTHER_OPERATION_IN_PROGRESS                      = 'Request failed because another payout operation in progress';
+    const BAD_REQUEST_FUND_TRANSFER_ANOTHER_OPERATION_IN_PROGRESS               = 'Request failed because another fund transfer operation in progress';
 
     const BAD_REQUEST_PERMISSION_ERROR                                          = 'Permissions not found for this request/route';
     const BAD_REQUEST_INVALID_MAILGUN_WEBHOOK_TYPE                              = 'Invalid type specified for callback';
@@ -468,12 +480,12 @@ class PublicErrorDescription
 
     const BAD_REQUEST_PAYMENT_TRANSFER_AMOUNT_GREATER_THAN_CAPTURED             = 'The sum of amount requested for transfer is greater than the captured amount';
     const BAD_REQUEST_PAYMENT_TRANSFER_AMOUNT_GREATER_THAN_UNTRANSFERRED        = 'The total transfer amount provided is greater than the amount not transferred';
-    const BAD_REQUEST_PAYMENT_TRANSFER_NOT_ENOUGH_BALANCE                       = 'Your account does not have enough balance to carry out the transfer operation. You can add funds to your account from your Razorpay dashboard or capture new payments.';
     const BAD_REQUEST_PAYMENT_TRANSFER_ENTITIES_NOT_SET                         = 'Payment transfer entities provided are invalid or not set';
     const BAD_REQUEST_PAYMENT_TRANSFER_MORE_THAN_ONE_CUSTOMER                   = 'Payment cannot be transferred to more than one customer';
     const BAD_REQUEST_PAYMENT_TRANSFER_MULTIPLE_ENTITY_TYPES_GIVEN              = 'Payment cannot be transferred to multiple types of entities';
     const BAD_REQUEST_PAYMENT_TRANSFER_CURRENCY_MISMATCH                        = 'Transfer request currency must be same as payment currency';
 
+    const BAD_REQUEST_TRANSFER_INSUFFICIENT_BALANCE                             = 'Your account does not have enough balance to carry out the transfer operation. You can add funds to your account from your Razorpay dashboard or capture new payments.';
     const BAD_REQUEST_TRANSFER_INVALID_ACCOUNT_ID                               = 'Account ID provided for transfer is invalid';
     const BAD_REQUEST_TRANSFER_ACCOUNT_NOT_ACTIVATED                            = 'The account needs to be activated by Razorpay before you can make transfers in live mode';
     const BAD_REQUEST_TRANSFER_REVERSAL_AMOUNT_GREATER_THAN_TRANSFERRED         = 'The reversal amount provided is greater than amount transferred';
@@ -539,7 +551,7 @@ class PublicErrorDescription
     const BAD_REQUEST_WORKFLOW_ACTION_CLOSED                                    = 'The workflow action is closed.';
     const BAD_REQUEST_ACTION_NOT_APPROVED                                       = 'The requested action is not in approved state';
     const BAD_REQUEST_ACTION_ALREADY_EXECUTED                                   = 'The requested action has already been executed';
-    const BAD_REQUEST_WORKFLOW_DELETE_NOT_ALLOWED                               = 'Deleting/Updating a workflow is not possible if an action is in still in progress';
+    const BAD_REQUEST_WORKFLOW_UPDATE_OR_DELETE_NOT_ALLOWED                     = 'Updating or Deleting a workflow is not allowed when there are open actions';
     const BAD_REQUEST_WORKFLOW_STEP_LEVEL_SEQUENCE                              = 'The levels in the steps should be increment of one';
     const BAD_REQUEST_WORKFLOW_STEP_ROLE_LEVEL_UNIQUE                           = 'The role and level combination should be unique';
     const BAD_REQUEST_WORKFLOW_PERMISSIONS_CANNOT_BE_REMOVED                    = 'Permissions associated with a workflow cannot be removed';
@@ -549,8 +561,8 @@ class PublicErrorDescription
     const BAD_REQUEST_WORKFLOW_STEP_OP_MISMATCH                                 = 'The op type does not match with other steps in the same level';
     const BAD_REQUEST_WORKFLOW_ACTION_CLOSE_UNAUTHORIZED                        = 'An action can only be closed by maker';
     const BAD_REQUEST_ACTION_NOT_IN_OPEN_STATES                                 = 'Workflow action is not in any open state';
-    const BAD_REQUEST_WORKFLOW_STEPS_CANNOT_BE_EDITED                           = 'Workflow steps cannot be edited';
     const BAD_REQUEST_WORKFLOW_DUTY_TYPE_INVALID                                = 'Workflow requests listing duty/type params are invalid';
+    const BAD_REQUEST_WORKFLOW_ENTITY_VALIDATOR_RULE_NOT_FOUND                  = 'Workflow entity validator not found';
     const BAD_REQUEST_INVALID_STATE                                             = 'Invalid state passed in query parameters';
 
     const BAD_REQUEST_SUPERADMIN_ACCESS_REQUIRED                                = 'This service can only be accessed by superadmins';

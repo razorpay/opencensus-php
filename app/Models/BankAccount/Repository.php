@@ -3,10 +3,11 @@
 namespace RZP\Models\BankAccount;
 
 use RZP\Exception;
-use RZP\Models\BankAccount;
 use RZP\Models\Base;
-use RZP\Models\VirtualAccount;
 use RZP\Constants\Table;
+use RZP\Models\BankAccount;
+use RZP\Models\VirtualAccount;
+use RZP\Models\Base\PublicCollection;
 
 class Repository extends Base\Repository
 {
@@ -15,6 +16,7 @@ class Repository extends Base\Repository
     const WITH_TRASHED = 'deleted';
 
     protected $appFetchParamRules = array(
+        Entity::ACCOUNT_NUMBER  => 'sometimes|alpha_num',
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
         self::WITH_TRASHED      => 'sometimes|in:0,1',
         Entity::TYPE            => 'sometimes|in:customer,merchant',
@@ -27,6 +29,21 @@ class Repository extends Base\Repository
                     ->where(Entity::ENTITY_ID, '=', $merchant->getId())
                     ->where(Entity::TYPE, '=', Type::MERCHANT)
                     ->first();
+    }
+
+    /**
+     * Returns an array of all the bank accounts for a merchant
+     *
+     * @param $merchant
+     *
+     * @return PublicCollection
+     */
+    public function getAllBankAccounts($merchant): PublicCollection
+    {
+        return $this->newQuery()
+                    ->where(Entity::ENTITY_ID, '=', $merchant->getId())
+                    ->where(Entity::TYPE, '=', Type::MERCHANT)
+                    ->get();
     }
 
     public function getBankAccountsForCustomer($customer, $ifsc = null)

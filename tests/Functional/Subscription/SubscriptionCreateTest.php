@@ -2,16 +2,18 @@
 
 namespace RZP\Tests\Functional\Subscription;
 
-use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\Helpers\Subscription\SubscriptionTrait;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use Mockery;
 use Carbon\Carbon;
+use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\Subscription\SubscriptionTrait;
 
 class SubscriptionCreateTest extends TestCase
 {
     use PaymentTrait;
     use SubscriptionTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -22,6 +24,11 @@ class SubscriptionCreateTest extends TestCase
         $this->ba->privateAuth();
 
         $this->fixtures->merchant->addFeatures(['subscriptions']);
+
+        // This is set to 10 Jan 2018
+        // Because in test cases subsription start date is set
+        // to 20 Jan 2018 and it should always be in future
+        Carbon::setTestNow("10-1-2018 3:00:00");
     }
 
     // TODO: Add test cases for total_count and end_at generation logic.
@@ -63,6 +70,11 @@ class SubscriptionCreateTest extends TestCase
     {
         $this->fixtures->item->createPlanType();
 
+        $this->startTest();
+    }
+
+    public function testCreateDailyPlan()
+    {
         $this->startTest();
     }
 
@@ -287,10 +299,10 @@ class SubscriptionCreateTest extends TestCase
 
         $invoice = $this->getLastEntity('invoice', true);
 
-        $schedule = $this->getLastEntity('schedule', true);
+        $schedule = $this->getDbLastEntityPublic('schedule');
         $addon = $this->getLastEntity('addon', true);
         $lineItems = $this->getEntities('line_item', [], true);
-        $scheduleTask = $this->getLastEntity('schedule_task', true);
+        $scheduleTask = $this->getDbLastEntityPublic('schedule_task');
         $subscription = $this->getLastEntity('subscription', true);
         $plan = $this->getLastEntity('plan', true);
         $planItem = $this->getLastEntity('item', true);
@@ -360,8 +372,8 @@ class SubscriptionCreateTest extends TestCase
         $subscription = $this->getLastEntity('subscription', true);
         $plan = $this->getLastEntity('plan', true);
         $planItem = $this->getLastEntity('item', true);
-        $schedule = $this->getLastEntity('schedule', true);
-        $scheduleTask = $this->getLastEntity('schedule_task', true);
+        $schedule = $this->getDbLastEntityPublic('schedule');
+        $scheduleTask = $this->getDbLastEntityPublic('schedule_task');
         $invoice = $this->getLastEntity('invoice', true);
         $lineItem = $this->getLastEntity('line_item', true);
         $addon = $this->getLastEntity('addon', true);
@@ -396,8 +408,8 @@ class SubscriptionCreateTest extends TestCase
         $subscription = $this->getLastEntity('subscription', true);
         $plan = $this->getLastEntity('plan', true);
         $planItem = $this->getLastEntity('item', true);
-        $schedule = $this->getLastEntity('schedule', true);
-        $scheduleTask = $this->getLastEntity('schedule_task', true);
+        $schedule = $this->getDbLastEntityPublic('schedule');
+        $scheduleTask = $this->getDbLastEntityPublic('schedule_task');
 
         $this->assertEquals($schedule['id'], $subscription['schedule_id']);
 

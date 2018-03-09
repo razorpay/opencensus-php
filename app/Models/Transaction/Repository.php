@@ -2,10 +2,12 @@
 
 namespace RZP\Models\Transaction;
 
+use Carbon\Carbon;
 use DB;
 
 use RZP\Constants\Table;
 use RZP\Constants\Entity as E;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Gateway\Billdesk;
 use RZP\Models\Base;
@@ -29,7 +31,7 @@ class Repository extends Base\Repository
     protected $appFetchParamRules = array(
         Entity::SETTLED         => 'sometimes|in:0,1',
         Entity::ON_HOLD         => 'sometimes|in:0,1',
-        Entity::TYPE            => 'sometimes|in:payment,refund,settlement,adjustment',
+        Entity::TYPE            => 'sometimes|in:payment,refund,settlement,adjustment,reversal,transfer',
         Entity::SETTLEMENT_ID   => 'sometimes|alpha_dash|min:14|max:19',
         Entity::ENTITY_ID       => 'sometimes|alpha_dash|min:14',
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
@@ -61,7 +63,8 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchUnsettledTransactions($timestamp, $channel)
+    public function fetchUnsettledTransactions(
+        $timestamp, string $channel, array $inMerchantIds = [], array $notInMerchantIds = [])
     {
         $merchantId = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
 
@@ -80,49 +83,67 @@ class Repository extends Base\Repository
         $transactionDebit       = $this->dbColumn(Entity::DEBIT);
         $transactionTax         = $this->dbColumn(Entity::TAX);
         $transactionFee         = $this->dbColumn(Entity::FEE);
-        $transactionFeeCredits  = $this->dbColumn(Entity::FEE_CREDITS);
+        $transactionFeeCredits  = $this->dbColumn(Entity::CREDITS);
+        $transactionCreditsType = $this->dbColumn(Entity::CREDIT_TYPE);
+        $transactionCreatedAt   = $this->dbColumn(Entity::CREATED_AT);
 
-        $txns = $this->newQuery()
-                    ->select(
-                        $transactionId,
-                        $transactionMerchantId,
-                        $transactionBalance,
-                        $transactionType,
-                        $transactionSourceId,
-                        $transactionSettledAt,
-                        $transactionSettled,
-                        $transactionAmount,
-                        $transactionCredit,
-                        $transactionDebit,
-                        $transactionTax,
-                        $transactionFee,
-                        $transactionFeeCredits
-                    )
-                    ->join(Table::MERCHANT, $merchantId, '=', $transactionMerchantId)
-                    ->where(Entity::SETTLED_AT, '<', $timestamp)
-                    ->where(Entity::ON_HOLD, 0)
-                    ->where(Entity::SETTLED, '=', 0)
-                    ->where($transactionChannel, '=', $channel)
-                    ->where(Entity::TYPE, '!=', Type::SETTLEMENT)
-                    ->where(Merchant\Entity::HOLD_FUNDS, '=', 0)
-                    ->with('merchant', 'merchant.bankAccount', 'merchant.balance')
-                    ->orderBy($transactionMerchantId)
-                    ->orderBy($transactionId)
-                    ->get();
+        $txnFetchStartTime = microtime(true);
 
-        return $txns;
+        $query = $this->newQuery()
+                      ->select(
+                          $transactionId,
+                          $transactionMerchantId,
+                          $transactionBalance,
+                          $transactionType,
+                          $transactionSourceId,
+                          $transactionSettledAt,
+                          $transactionSettled,
+                          $transactionAmount,
+                          $transactionCredit,
+                          $transactionDebit,
+                          $transactionTax,
+                          $transactionFee,
+                          $transactionFeeCredits,
+                          $transactionCreditsType,
+                          $transactionCreatedAt
+                      )
+                      ->join(Table::MERCHANT, $merchantId, '=', $transactionMerchantId)
+                      ->where(Entity::SETTLED_AT, '<', $timestamp)
+                      ->where(Entity::ON_HOLD, 0)
+                      ->where(Entity::SETTLED, 0)
+                      ->where($transactionChannel, $channel)
+                      ->where(Entity::TYPE, '!=', Type::SETTLEMENT)
+                      ->where(Merchant\Entity::HOLD_FUNDS, 0)
+                      ->with('merchant', 'merchant.bankAccount', 'merchant.balance');
+
+        if (empty($inMerchantIds) === false)
+        {
+            $query = $query->whereIn($merchantId, $inMerchantIds);
+        }
+
+        if (empty($notInMerchantIds) === false)
+        {
+            $query = $query->whereNotIn($merchantId, $notInMerchantIds);
+        }
+
+        $results = $query->get();
+
+        $txnFetchTimeTaken = microtime(true) - $txnFetchStartTime;
+
+        $this->trace->info(TraceCode::SETTLEMENT_TXN_FETCH_TIME_TAKEN, ['time_taken' => $txnFetchTimeTaken]);
+
+        return $results;
     }
 
-    public function fetchUnsettledTransactionsForMerchant($timestamp, $merchant)
+    public function fetchUnsettledTransactionsForMerchantUpdate($merchantId)
     {
-        return $this->newQuery()
-                    ->where(Transaction\Entity::ON_HOLD, 0)
-                    ->where(Transaction\Entity::SETTLED_AT, '<', $timestamp)
-                    ->where(Transaction\Entity::SETTLED, '=', 0)
-                    ->where(Transaction\Entity::TYPE, '!=', Type::SETTLEMENT)
-                    ->merchantId($merchant->getId())
-                    ->orderBy(Transaction\Entity::ID)
-                    ->get();
+        $query = $this->newQuery()
+                      ->select(['id'])
+                      ->where(Transaction\Entity::SETTLED, '=', 0)
+                      ->where(Transaction\Entity::TYPE, '!=', Type::SETTLEMENT)
+                      ->merchantId($merchantId);
+
+        return $query->get();
     }
 
     public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip, $entityToRelationFetchMap = [])
@@ -338,7 +359,9 @@ class Repository extends Base\Repository
 
         $ids = $txns->getIds();
 
-        $batchedIds = array_chunk($ids, 20000);
+        $batchedIds = array_chunk($ids, 1000);
+
+        $startTime = microtime(true);
 
         foreach ($batchedIds as $batch)
         {
@@ -359,6 +382,10 @@ class Repository extends Base\Repository
                     ]);
             }
         }
+
+        $timeTaken = microtime(true) - $startTime;
+
+        $this->trace->info(TraceCode::SETTLEMENT_TXN_UPDATE_TIME_TAKEN, ['time_taken' => $timeTaken]);
 
         return $txnCount;
     }
@@ -395,31 +422,54 @@ class Repository extends Base\Repository
         return $count;
     }
 
-    public function updateAttributes($merchantId, $transactionIds, $oldSettledAt, $attributes)
+    /**
+     * Update channel for unsettled transactions
+     *
+     * @param string $merchantId
+     * @param array $transactionIds
+     * @param string $channel
+     * @return mixed
+     */
+    public function bulkChannelUpdateForMerchantTransactions(
+        string $merchantId, array $transactionIds, string $channel)
     {
-        $query = $this->newQuery()
-                    ->where(Transaction\Entity::MERCHANT_ID, $merchantId)
-                    ->whereIn(Transaction\Entity::ID, $transactionIds)
-                    ->whereNull(Transaction\Entity::SETTLEMENT_ID);
+        $attributes = [Entity::CHANNEL => $channel];
 
-        if ($oldSettledAt !== null)
+        $batchedIds = array_chunk($transactionIds, 5000);
+
+        $count = 0;
+
+        foreach ($batchedIds as $batch)
         {
-            $between = [$oldSettledAt['start'], $oldSettledAt['end']];
+            $query = $this->newQuery()
+                            ->where(Entity::MERCHANT_ID, $merchantId)
+                            ->whereIn(Entity::ID, $batch);
 
-            $query->whereBetween(Transaction\Entity::SETTLED_AT, $between);
+            $updated = $query->update($attributes);
+
+            $count += $updated;
         }
 
-        return $query->update($attributes);
+        return $count;
     }
 
-    public function updateChannel($settlementId, $channel)
+    /**
+     * Use this method with caution.
+     * It updates channel for all transactions that belong to given settlement_id.
+     * It should be run only for a settlement that is in Failed status.
+     *
+     * @param $settlementId
+     * @param $transactionIds
+     * @param $channel
+     * @return mixed
+     */
+    public function updateChannelForSettlement($settlementId, $transactionIds, $channel)
     {
         $values = [Transaction\Entity::CHANNEL => $channel];
 
         $count = $this->newQuery()
                       ->where(Transaction\Entity::SETTLEMENT_ID, $settlementId)
-                      ->where(Transaction\Entity::SETTLED, false)
-                      ->whereNull(Transaction\Entity::RECONCILED_AT)
+                      ->whereIn(Transaction\Entity::ID, $transactionIds)
                       ->update($values);
 
         return $count;

@@ -46,10 +46,39 @@ class IciciGatewayTest extends TestCase
         return $paymentId;
     }
 
+    public function testIntentDisabledPayment()
+    {
+        $this->fixtures->merchant->addFeatures(['disable_upi_intent']);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        unset($payment['description']);
+        unset($payment['vpa']);
+
+        $payment['_']['flow'] = 'intent';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content['refId'] = 'ICICIRefId';
+            }
+            else
+            {
+                $content['PayerVA'] = 'crims0n@icici';
+            }
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPaymentViaAjaxRoute($payment);
+        });
+    }
+
     public function testIntentPayment()
     {
-        $this->fixtures->merchant->addFeatures(['upi_intent']);
-
         unset($this->payment['description']);
         unset($this->payment['vpa']);
 
@@ -88,6 +117,37 @@ class IciciGatewayTest extends TestCase
         $payment = $this->getEntityById('payment', $paymentId, true);
 
         $this->assertEquals($payment['vpa'], 'crims0n@icici');
+    }
+
+    public function testIntentPaymentWithVpa()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['vpa'] = 'dontencrypt@icici';
+
+        unset($payment['description']);
+
+        $payment['_']['flow'] = 'intent';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content['refId'] = 'ICICIRefId';
+            }
+            else
+            {
+                $content['PayerVA'] = 'crims0n@icici';
+            }
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPaymentViaAjaxRoute($payment);
+        });
+
     }
 
     public function testPaymentWithExpiryPublicAuth()
@@ -615,8 +675,6 @@ EOT;
      */
     public function testVerifyMissingPayment()
     {
-        $data = $this->testData[__FUNCTION__];
-
         $payment = $this->getDefaultUpiPaymentArray();
 
         // TODO: Stop using notes for status
@@ -632,15 +690,12 @@ EOT;
         $upiEntity = $this->getLastEntity('upi', true);
         $payment = $this->getEntityById('payment', $authPayment['payment_id'], true);
 
-        $this->runRequestResponseFlow($data, function () use ($payment)
-        {
-            $this->verifyPayment($payment['id']);
-        });
+        $this->payment = $this->verifyPayment($payment['id']);
 
         $payment = $this->getEntityById('payment', $payment['id'], true);
 
         // This will be updated if ran via cron
-        $this->assertSame($payment['verified'], null);
+        $this->assertSame($payment['verified'], 1);
     }
 
     public function testVerifyPaymentWithEncryptedResponse()

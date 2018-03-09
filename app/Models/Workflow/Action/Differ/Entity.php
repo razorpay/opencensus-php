@@ -47,7 +47,8 @@ class Entity extends Base\Entity
     const ID            = 'id';
     const ENTITY_NAME   = 'entity_name';
     const ENTITY_ID     = 'entity_id';
-    const ADMIN_ID      = 'admin_id';
+    const MAKER_ID      = 'maker_id';
+    const MAKER_TYPE    = 'maker_type';
     const MAKER         = 'maker';
     const TYPE          = 'type';
     const URL           = 'url';
@@ -71,7 +72,8 @@ class Entity extends Base\Entity
     protected $fillable = [
         self::ENTITY_NAME,
         self::ENTITY_ID,
-        self::ADMIN_ID,
+        self::MAKER_ID,
+        self::MAKER_TYPE,
         self::MAKER,
         self::TYPE,
         self::URL,
@@ -92,7 +94,8 @@ class Entity extends Base\Entity
         self::ID,
         self::ENTITY_NAME,
         self::ENTITY_ID,
-        self::ADMIN_ID,
+        self::MAKER_ID,
+        self::MAKER_TYPE,
         self::MAKER,
         self::TYPE,
         self::URL,
@@ -113,7 +116,8 @@ class Entity extends Base\Entity
         self::ID,
         self::ENTITY_NAME,
         self::ENTITY_ID,
-        self::ADMIN_ID,
+        self::MAKER_ID,
+        self::MAKER_TYPE,
         self::MAKER ,
         self::TYPE,
         self::URL,
@@ -145,7 +149,7 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::ENTITY_NAME);
     }
 
-    public function getEntityId() : string
+    public function getEntityId()
     {
         return $this->getAttribute(self::ENTITY_ID);
     }

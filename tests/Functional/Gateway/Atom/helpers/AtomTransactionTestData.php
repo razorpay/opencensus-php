@@ -36,7 +36,7 @@ return [
         // 'escrow_balance' => 998562,
         'merchant_id' => '10000000000000',
         'pricing_rule_id' => null,
-        'channel' => 'atom',
+        'channel' => 'axis',
     ],
 
     'txnDataAfterPaymentOnSharedTerminal' => [
@@ -52,7 +52,7 @@ return [
         'currency' => 'INR',
         'balance' => 48524,
         // 'escrow_balance' => 1048562,
-        'channel' => 'kotak',
+        'channel' => 'axis',
         'settled' => false,
         'settlement_id' => null,
         'entity' => 'transaction',

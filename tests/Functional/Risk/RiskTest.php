@@ -116,7 +116,7 @@ class RiskTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['content']['payment_id'] = $authPayment['razorpay_payment_id'];
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $this->startTest();
     }

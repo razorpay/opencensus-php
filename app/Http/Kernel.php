@@ -27,13 +27,8 @@ class Kernel extends HttpKernel
             \RZP\Http\Middleware\EncryptCookies::class,
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
             \Illuminate\Session\Middleware\StartSession::class,
-            \RZP\Http\Middleware\EventTracker::class,
             // \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             // \RZP\Http\Middleware\VerifyCsrfToken::class,
-        ],
-        'api' => [
-            // 'throttle:60,1',
-            \RZP\Http\Middleware\EventTracker::class
         ],
     ];
 
@@ -43,9 +38,14 @@ class Kernel extends HttpKernel
      * @var array
      */
     protected $routeMiddleware = [
-        'throttle'     => \RZP\Http\Middleware\Throttle::class,
-        'auth'         => \RZP\Http\Middleware\Authenticate::class,
-        'admin_access' => \RZP\Http\Middleware\AdminAccess::class,
-        'workflow'     => \RZP\Http\Middleware\Workflow::class,
+        // throttle: old implementation not to be used, to remove later
+        // 'throttle'           => \RZP\Http\Middleware\Throttle::class,
+        'throttle_v2'        => \RZP\Http\Middleware\ThrottleV2::class,
+        'auth'               => \RZP\Http\Middleware\Authenticate::class,
+        'admin_access'       => \RZP\Http\Middleware\AdminAccess::class,
+        'user_access'        => \RZP\Http\Middleware\UserAccess::class,
+        'workflow'           => \RZP\Http\Middleware\Workflow::class,
+        'merchant_ip_filter' => \RZP\Http\Middleware\MerchantIpFilter::class,
+        'event_tracker'      => \RZP\Http\Middleware\EventTracker::class,
     ];
 }

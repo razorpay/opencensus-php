@@ -2,18 +2,16 @@
 
 namespace RZP\Base;
 
-use RZP\Constants;
 use RZP\Constants\Es;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
-use RZP\Models\Customer;
 use RZP\Constants\Entity as E;
-use RZP\Models\Base\EsRepository;
-use RZP\Models\Base\PublicEntity;
-use RZP\Models\Base\PublicCollection;
-use RZP\Exception\InvalidArgumentException;
-use RZP\Models\Base\Traits\Es\Hydrator as EsHydrator;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Exception\InvalidArgumentException;
+use RZP\Models\Base\EsRepository;
+use RZP\Models\Base\PublicCollection;
+use RZP\Models\Base\PublicEntity;
+use RZP\Models\Base\Traits\Es\Hydrator as EsHydrator;
 
 /**
  * Trait RepositoryFetch
@@ -638,7 +636,17 @@ trait RepositoryFetch
         $entity = $query->merchantId($merchant->getId())
                         ->findOrFailPublic($id);
 
-        $entity->merchant()->associate($merchant);
+        //
+        // Most of the entities can be filtered on Merchant ID. They have the
+        // merchant() relation. But a few entities do not have this relation defined
+        // and we have overridden scopeMerchantId() to filter on different column.
+        // Eg: Merchant\Account\Entity applies the filter on column: parent_id.
+        // Merchant\Account\Entity does not have merchant() relation defined. So skip it.
+        //
+        if (method_exists($entity, 'merchant') === true)
+        {
+            $entity->merchant()->associate($merchant);
+        }
 
         return $entity;
     }
@@ -738,8 +746,7 @@ trait RepositoryFetch
 
         if ($merchantId !== null)
         {
-            $attr = static::dbColumn(Common::MERCHANT_ID);
-            $query = $query->where($attr, '=', $merchantId);
+            $query = $query->merchantId($merchantId);
         }
 
         //
@@ -771,7 +778,8 @@ trait RepositoryFetch
 
     protected function addQueryOrder($query)
     {
-        $query->orderBy(Common::ID, 'desc');
+        $query->orderBy(Common::CREATED_AT, 'desc')
+              ->orderBy(Common::ID, 'desc');
     }
 
     protected function addForceIndexForNestaway($query)

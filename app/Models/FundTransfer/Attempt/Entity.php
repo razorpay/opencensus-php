@@ -5,6 +5,7 @@ namespace RZP\Models\FundTransfer\Attempt;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base;
 use RZP\Models\BankAccount;
+use RZP\Models\Settlement\Channel;
 
 class Entity extends Base\PublicEntity
 {
@@ -12,6 +13,7 @@ class Entity extends Base\PublicEntity
     const SOURCE_TYPE            = 'source_type';
     const SOURCE_ID              = 'source_id';
     const MERCHANT_ID            = 'merchant_id';
+    const PURPOSE                = 'purpose';
     const BANK_ACCOUNT_ID        = 'bank_account_id';
     const BATCH_FUND_TRANSFER_ID = 'batch_fund_transfer_id';
     const CHANNEL                = 'channel';
@@ -27,10 +29,12 @@ class Entity extends Base\PublicEntity
     const FAILURE_REASON         = 'failure_reason';
     const TXT_FILE_ID            = 'txt_file_id';
     const EXCEL_FILE_ID          = 'excel_file_id';
+    const INITIATE_AT            = 'initiate_at';
 
     protected $entity = 'fund_transfer_attempt';
 
     protected $fillable = [
+        self::PURPOSE,
         self::CHANNEL,
         self::VERSION,
         self::STATUS,
@@ -39,12 +43,14 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::REMARKS,
         self::FAILURE_REASON,
+        self::INITIATE_AT,
     ];
 
     protected $visible = [
         self::ID,
         self::SOURCE,
         self::MERCHANT_ID,
+        self::PURPOSE,
         self::BANK_ACCOUNT_ID,
         self::BATCH_FUND_TRANSFER_ID,
         self::CHANNEL,
@@ -60,6 +66,7 @@ class Entity extends Base\PublicEntity
         self::FAILURE_REASON,
         self::TXT_FILE_ID,
         self::EXCEL_FILE_ID,
+        self::INITIATE_AT,
         self::CREATED_AT,
         self::UPDATED_AT
     ];
@@ -77,6 +84,32 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::SOURCE,
     ];
+
+    /**
+     * Generate ID with all characters in upper-case
+     * for ICICI, because their Recon file has the ID
+     * in upper-case. If we do not create it this way,
+     * when we query on this ID during reconciliation,
+     * we'd need to do a case-insensitive search
+     * which will do a full-table scan.
+     * To avoid a case-insensitive search on the table,
+     * we save the ID in upper-case.
+     */
+    public function generateId()
+    {
+        $id = static::generateUniqueId();
+
+        $channel = $this->getAttribute(self::CHANNEL);
+
+        if ($channel === Channel::ICICI)
+        {
+            $id = strtoupper($id);
+        }
+
+        $this->setAttribute(self::ID, $id);
+
+        return $this;
+    }
 
     public function source()
     {
@@ -105,6 +138,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REMARKS);
     }
 
+    public function getFailureReason()
+    {
+        return $this->getAttribute(self::FAILURE_REASON);
+    }
+
     public function getNarration()
     {
         return $this->getAttribute(self::NARRATION);
@@ -120,9 +158,19 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::VERSION);
     }
 
+    public function getBankStatusCode()
+    {
+        return $this->getAttribute(self::BANK_STATUS_CODE);
+    }
+
     public function getEntityId()
     {
         return $this->getAttribute(self::ENTITY_ID);
+    }
+
+    public function getSourceId()
+    {
+        return $this->getAttribute(self::SOURCE_ID);
     }
 
     public function getStatus()
@@ -140,9 +188,19 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BATCH_FUND_TRANSFER_ID);
     }
 
+    public function getInitiateAt()
+    {
+        return $this->getAttribute(self::INITIATE_AT);
+    }
+
     public function getMode()
     {
         return $this->getAttribute(self::MODE);
+    }
+
+    public function isRefund()
+    {
+        return ($this->getAttribute(self::PURPOSE) === Purpose::REFUND);
     }
 
     // ------------------------------- setters ---------------------------------
@@ -192,6 +250,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::DATE_TIME, $dateTime);
     }
 
+    public function setInitiateAt($initiateAt)
+    {
+        $this->setAttribute(self::INITIATE_AT, $initiateAt);
+    }
+
     // ------------------------------ modifiers --------------------------------
 
     protected function setRemarksAttribute($remarks)
@@ -229,13 +292,16 @@ class Entity extends Base\PublicEntity
     /**
      * One attempt has one source
      * One source has many attempts, created incrementally
+     *
      * @return boolean
      */
-    public function isLatest()
+    public function isBatchSameAsSource(): bool
     {
-        $attempts = $this->source->fundTransferAttempts;
+        $ftaBatchId = $this->getBatchFundTransferId();
 
-        if ($attempts->last()->getId() === $this->getId())
+        $sourceBatchId  = $this->source->getBatchFundTransferId();
+
+        if ($ftaBatchId === $sourceBatchId)
         {
             return true;
         }

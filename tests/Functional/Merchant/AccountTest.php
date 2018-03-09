@@ -1,0 +1,185 @@
+<?php
+
+namespace RZP\Tests\Functional\Merchant;
+
+use Mail;
+
+use RZP\Constants\Mode;
+use RZP\Models\Merchant\Account;
+use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
+
+class AccountTest extends TestCase
+{
+    use RequestResponseFlowTrait;
+    use DbEntityFetchTrait;
+
+    public function setUp()
+    {
+        $this->testDataFilePath = __DIR__.'/helpers/AccountTestData.php';
+
+        parent::setUp();
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $this->ba->privateAuth();
+    }
+
+    public function testCreateLinkedAccountForInactiveMerchantInTestMode()
+    {
+        $this->createLinkedAccount(Mode::TEST, false);
+    }
+
+    public function testCreateLinkedAccountForActiveMerchantInTestMode()
+    {
+        $this->createLinkedAccount(Mode::TEST, true);
+    }
+
+    public function testCreateLinkedAccountForActiveMerchantInLiveMode()
+    {
+        $this->createLinkedAccount(Mode::LIVE, true);
+    }
+
+    public function testCreateLinkedAccountValidationFailure()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateLinkedAccountInvalidBusinessType()
+    {
+        $this->startTest();
+    }
+
+    public function testRetrieveAccount()
+    {
+        $merchant = $this->fixtures->create('merchant:marketplace_account');
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => $merchant['id'],
+                'submitted'   => true,
+                'locked'      => true
+            ]);
+
+        $this->startTest();
+    }
+
+    public function testRetrieveAccounts()
+    {
+        $merchant = $this->fixtures->create('merchant:marketplace_account');
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => $merchant['id'],
+                'submitted'   => true,
+                'locked'      => true
+            ]);
+
+        $this->startTest();
+    }
+
+    public function testRetrieveLinkedAccounts()
+    {
+        $merchant = $this->fixtures->create('merchant:marketplace_account');
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => $merchant['id'],
+                'submitted'   => true,
+                'locked'      => true
+            ]);
+
+        $this->ba->proxyAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['email'] = $merchant->getEmail();
+
+        $this->startTest($testData);
+    }
+
+    public function testSettlementDestinations()
+    {
+        $merchant = $this->fixtures->create('merchant:marketplace_account');
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => $merchant['id'],
+                'submitted'   => true,
+                'locked'      => true
+            ]);
+
+        $accountId = Account\Entity::getSignedId($merchant['id']);
+
+        Mail::fake();
+
+        $testData = $this->testData['addSettlementDestination'];
+
+        $testData['request']['url'] = '/beta/accounts/' . $accountId . '/bank_accounts';
+
+        $this->startTest($testData);
+
+        Mail::assertNotSent(BankAccountChangeMail::class);
+
+        $testData = $this->testData['fetchSettlementDestinations'];
+
+        $testData['request']['url'] = '/beta/accounts/' . $accountId . '/settlement_destinations';
+
+        $this->startTest($testData);
+    }
+
+    protected function createLinkedAccount(string $mode, bool $activate)
+    {
+        //
+        // The fixture for ScheduleTask entity in Test mode is already seeded.
+        // When a merchant is created through the API, ScheduleTask entity is
+        // created in both the modes.
+        //
+        $this->fixtures->on('live')->create('merchant:schedule_task',
+            [
+                'merchant_id' => '10000000000000',
+                'schedule'    => [
+                    'interval' => 1,
+                    'delay'    => 2,
+                    'hour'     => 0,
+                ],
+            ]);
+
+        if ($mode === Mode::LIVE)
+        {
+            // The merchant account must be activated to make requests in the Live mode
+            $this->fixtures->merchant->activate('10000000000000');
+
+            $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+        }
+        else
+        {
+            if ($activate === true)
+            {
+                $this->fixtures->merchant->activate('10000000000000');
+            }
+
+            $this->ba->privateAuth();
+        }
+
+        $account = $this->startTest();
+
+        $lastAccount = $this->getDbLastEntityPublic('merchant');
+
+        $accountId = Account\Entity::getSignedId($lastAccount['id']);
+
+        $this->assertEquals($account['id'], $accountId);
+
+        $this->assertEquals('10000000000000', $lastAccount['parent_id']);
+
+        $this->assertNotNull($account['fund_transfer']['destination']);
+
+        $bankAccount = $this->getDbLastEntity('bank_account', 'test');
+        $this->assertEquals('RZPB0000000', $bankAccount['ifsc_code']);
+
+        $bankAccount = $this->getDbLastEntity('bank_account', 'live');
+        $this->assertEquals('0002020000304030434', $bankAccount['account_number']);
+    }
+}

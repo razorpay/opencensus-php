@@ -132,6 +132,7 @@ class AmexGatewayTest extends TestCase
         $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
 
         $testData = $this->testData[__FUNCTION__];
+
         $this->runRequestResponseFlow($testData, function()
         {
             $methods = ['amex' => 1];

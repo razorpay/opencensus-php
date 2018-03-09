@@ -4,12 +4,12 @@ namespace RZP\Models\Adjustment;
 
 use RZP\Base;
 use RZP\Error\ErrorCode;
-use RZP\Exception\BadRequestException;
+use RZP\Exception;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Merchant;
 use RZP\Models\Dispute\Entity as DisputeEntity;
 use RZP\Models\Merchant\Invoice as MerchantInvoice;
-use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Settlement\Channel as SettlementChannel;
 
 class Validator extends Base\Validator
 {
@@ -17,6 +17,7 @@ class Validator extends Base\Validator
 
     protected static $createRules = [
         Entity::AMOUNT        => 'required|integer',
+        Entity::CHANNEL       => 'sometimes|string|max:32|custom',
         Entity::CURRENCY      => 'required|in:INR',
         Entity::DESCRIPTION   => 'required|min:10|max:255',
         Entity::SETTLEMENT_ID => 'sometimes|size:14',
@@ -44,7 +45,8 @@ class Validator extends Base\Validator
             isset($input[MerchantInvoice\Entity::TAX]) === true and
             isset($input['fees']) === true)
         {
-            throw new BadRequestValidationFailureException('Either amount OR tax/fees should be passed');
+            throw new Exception\BadRequestValidationFailureException(
+                'Either amount OR tax/fees should be passed');
         }
 
         // Throw exception when none of the keys are present
@@ -52,7 +54,8 @@ class Validator extends Base\Validator
             isset($input[MerchantInvoice\Entity::TAX]) === false and
             isset($input['fees']) === false)
         {
-            throw new BadRequestValidationFailureException('Atleast one out of amount OR tax/fees should be passed');
+            throw new Exception\BadRequestValidationFailureException(
+                'Atleast one out of amount OR tax/fees should be passed');
         }
     }
 
@@ -87,8 +90,18 @@ class Validator extends Base\Validator
                 'entity_id'             => $entity->getId(),
             ];
 
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE_FOR_ADJUSTMENT,
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE_FOR_ADJUSTMENT,
                 $traceData);
+        }
+    }
+
+    protected function validateChannel($attribute, $channel)
+    {
+        if (SettlementChannel::exists($channel) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid channel name: ' . $channel);
         }
     }
 }

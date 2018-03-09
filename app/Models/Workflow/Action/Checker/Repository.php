@@ -26,9 +26,10 @@ class Repository extends Base\Repository
     public function fetchCountByActionIdForStep($actionId, $stepId)
     {
         return $this->newQuery()
+                    // Important to filter by ACTION_ID because there can
+                    // be multiple checkers with the same STEP_ID (related to workflow entity)
                     ->where(Entity::ACTION_ID, '=', $actionId)
                     ->where(Entity::STEP_ID, '=', $stepId)
-                    // ->whereNotNull(Entity::APPROVED)
                     ->count();
     }
 
@@ -44,13 +45,6 @@ class Repository extends Base\Repository
                     ->whereIn(Entity::STEP_ID, $stepIds)
                     ->where(Entity::APPROVED, '=', 1) // checked
                     ->groupBy(Entity::STEP_ID)
-                    ->get();
-    }
-
-    public function findManyByStepIds(array $stepIds)
-    {
-        return $this->newQuery()
-                    ->whereIn(Entity::STEP_ID, $stepIds)
                     ->get();
     }
 }

@@ -143,23 +143,20 @@ class NetbankingReconciliationTest extends TestCase
 
         $netbanking = $this->createNetbanking($payment['id'], 'PUNB', 'S');
 
-        $this->mockReconContentFunction(function(& $content, $action = null)
-        {
-            if ($action === 'claims_data')
-            {
-                $content['0']['account_number'] = self::ACCOUNT_NUMBER;
-            }
-        });
-
         $fileContents = $this->generateFile('pnb', []);
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
 
         $this->reconcile('NetbankingPnb', $uploadedFile);
 
-        $gatewayEntity = $this->getLastEntity('netbanking', true);
+        $transactionEntity = $this->getLastEntity('transaction', true);
 
-        $this->assertEquals(self::ACCOUNT_NUMBER, $gatewayEntity['account_number']);
+        $this->assertTrue($transactionEntity['reconciled_at'] !== null);
+
+        $netbankingentity = $this->getLastEntity('netbanking', true);
+
+        $this->assertEquals($netbankingentity['bank_payment_id'], 99999);
+
     }
 
     public function testPnbFailedPaymentReconciliation()
@@ -212,6 +209,8 @@ class NetbankingReconciliationTest extends TestCase
 
     protected function reconcile($gateway, $uploadedFile)
     {
+        $this->ba->appAuth();
+
         $input = [
             'manual'           => true,
             'gateway'          => $gateway,
@@ -299,6 +298,8 @@ class NetbankingReconciliationTest extends TestCase
             'content' => $input,
             'method'  => 'POST'
         ];
+
+        $this->ba->adminAuth();
 
         $response = $this->makeRequestAndGetContent($request);
 

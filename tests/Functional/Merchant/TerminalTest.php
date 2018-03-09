@@ -15,7 +15,7 @@ class TerminalTest extends TestCase
 
         parent::setUp();
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
     }
 
     public function testAssignTerminal()
@@ -29,6 +29,26 @@ class TerminalTest extends TestCase
     }
 
     public function testAssignTerminalWithInvalidGatewayAcquirer()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $url = '/merchants/'.$merchant->getKey().'/terminals';
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testAssignHitachiTerminal()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $url = '/merchants/'.$merchant->getKey().'/terminals';
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testAssignHitachiTerminalWithInvalidGatewayAcquirer()
     {
         $merchant = $this->fixtures->create('merchant');
 
@@ -84,6 +104,8 @@ class TerminalTest extends TestCase
                          ->create('merchant_fluid', ['id' => '10abcdefghsdfs'])
                          ->addTerminal('atom', ['id' => 'testatomrandom'])
                          ->get();
+
+        $this->ba->getAdmin()->merchants()->attach($merchant);
 
         $content = $this->startTest();
     }

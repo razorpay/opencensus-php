@@ -8,7 +8,9 @@ use RZP\Base\Luhn;
 use RZP\Exception;
 use RZP\Models\QrCode;
 use RZP\Constants\Mode;
-use RZP\Models\BharatQr;
+use RZP\Models\BharatQr\Tags;
+use RZP\Models\BharatQr\Lengths;
+use RZP\Models\BharatQr\Constants;
 use RZP\Models\Card\NetworkName;
 use RZP\Models\BankAccount\Entity as BankAccount;
 
@@ -47,11 +49,10 @@ class Provider
     // Standard root is used when handle is set.
     const ROOT = [
         self::YESBANK => [
-            // Todo
             'numeric' => [
-                'default' => '222444',
-                'handle'  => '222444',
-                'special' => '222444',
+                'default' => '222333',
+                'handle'  => '222333',
+                'special' => '222333',
             ],
             'alpha_numeric' => [
                 'default' => null,
@@ -109,7 +110,7 @@ class Provider
         '139913' => '00',
         '139914' => '0',
         // YesBank
-        '222444' => '00',
+        '222333' => '00',
     ];
 
     const PRIVILEGED_NUMERIC_HANDLE_MAPPING = [
@@ -189,13 +190,9 @@ class Provider
         return false;
     }
 
+    //
     // Blocks test providers for making live requests
     //
-    // Unused right now because Kotak is making changes in their
-    // format, and IMPS testing is ongoing, so we need to use
-    // Dashboard to make corrective requests occasionally.
-    //
-    // TODO: Use in validateProvider when changes are stable
     public static function validateMode(string $provider, string $mode)
     {
         $isLiveProvider = (in_array($provider, self::TEST_PROVIDERS, true) === false);
@@ -234,31 +231,43 @@ class Provider
 
     protected function getBharatQrCode($qrCode)
     {
+        $pointOfInitiation = $this->getPointOfInitiation($qrCode);
+
         $visaIdentifier = $this->generateBharatQrMerchantIdentifier(NetworkName::VISA);
 
         $masterCardIdentifier =  $this->generateBharatQrMerchantIdentifier(NetworkName::MC);
 
-        $visaTlv = BharatQr\Constants::VISA_TAG . strlen($visaIdentifier) . $visaIdentifier;
+        $rupayIdentifier = $this->generateBharatQrMerchantIdentifier(NetworkName::RUPAY);
 
-        $masterCardTlv = BharatQr\Constants::MASTERCARD_TAG . strlen($masterCardIdentifier) . $masterCardIdentifier;
+        $visaTlv = Tags::VISA . $this->getLengthAndValue($visaIdentifier);
+
+        $masterCardTlv = Tags::MASTERCARD . $this->getLengthAndValue($masterCardIdentifier);
+
+        $rupayCardTlv = Tags::RUPAY . $this->getLengthAndValue($rupayIdentifier);
 
         $tagArray = [
-            BharatQr\Constants::VERSION_TLV,
+            Tags::VERSION . $this->getLengthAndValue(Constants::VERSION),
+            Tags::POINT_OF_INITIATION . $this->getLengthAndValue($pointOfInitiation),
             $visaTlv,
             $masterCardTlv,
-            BharatQr\Constants::MERCHANT_CATEGORY_TLV,
-            BharatQr\Constants::CURRENCY_CODE_TLV,
+            $rupayCardTlv,
+            $this->getBharatQrUpiTlv(),
+            // This tag is not supported by UPI ICICI
+            // $this->getBharatQrDynamicUpiTlv($qrCode),
+            Tags::MERCHANT_CATEGORY .$this->getLengthAndValue(Constants::MERCHANT_CATEGORY),
+            Tags::CURRENCY_CODE . $this->getLengthAndValue(Constants::CURRENCY_CODE),
             $this->getBharatQrAmountTlv($qrCode),
-            BharatQr\Constants::COUNTRY_CODE_TLV,
-            BharatQr\Constants::MERCHANT_NAME_TLV,
-            BharatQr\Constants::MERCHANT_CITY_TLV,
+            Tags::COUNTRY_CODE . $this->getLengthAndValue(Constants::COUNTRY_CODE),
+            Tags::MERCHANT_NAME . $this->getLengthAndValue(Constants::MERCHANT_NAME),
+            Tags::MERCHANT_CITY . $this->getLengthAndValue(Constants::MERCHANT_CITY),
+            Tags::MERCHANT_PIN_CODE . $this->getLengthAndValue(Constants::MERCHANT_PINCODE),
             $this->getBharatQrAdditionalDetailTlv($qrCode),
         ];
 
         $qrString =  implode('', $tagArray);
 
-        // This is the CRC TL
-        $qrString .= BharatQr\Constants::CRC_TL;
+        // This is the CRC TL. Length of CRC is always 4
+        $qrString .= Tags::CRC . '04';
 
         $crc = (new CRC16)->calculateCrc($qrString);
 
@@ -267,13 +276,44 @@ class Provider
         return $qrString;
     }
 
+    protected function getPointOfInitiation($qrCode)
+    {
+        if (empty($qrCode->getAmount()) === true)
+        {
+            return Constants::STATIC_POI;
+        }
+
+        // Dynamic code always have amount tag
+        return Constants::DYNAMIC_POI;
+    }
+
+    protected function getBharatQrUpiTlv()
+    {
+        $rupayRidTlv = Tags::UPI_VPA_RUPAY_RID . $this->getLengthAndValue(Constants::RUPAY_RID);
+        $merchantVpaTlv = Tags::UPI_VPA_MERCHANT_VPA . $this->getLengthAndValue(Constants::MERCHANT_VPA);
+
+        $upiString = $rupayRidTlv . $merchantVpaTlv;
+
+        return Tags::UPI_VPA . strlen($upiString) . $upiString;
+    }
+
+    protected function getBharatQrDynamicUpiTlv(QrCode\Entity $qrCode)
+    {
+        $rupayRidTlv = Tags::UPI_VPA_RUPAY_RID . $this->getLengthAndValue(Constants::RUPAY_RID);
+        $transactionReferenceTlv = Tags::UPI_VPA_REFERENCE_TR . $this->getLengthAndValue($qrCode->getId());
+
+        $upiString = $rupayRidTlv . $transactionReferenceTlv;
+
+        return Tags::UPI_VPA_REFERENCE . strlen($upiString) . $upiString;
+    }
+
     protected function getBharatQrAdditionalDetailTlv(QrCode\Entity $qrCode)
     {
-        $idTlv = BharatQr\Constants::ID_TL . $qrCode->getId();
+        $idTlv = Tags::ADDITIONAL_DETAIL_ID . $this->getLengthAndValue($qrCode->getId());
 
         $additionalDetailsString = $idTlv;
 
-        return BharatQr\Constants::ADDITIONAL_DETAIL_TAG . strlen($additionalDetailsString) . $additionalDetailsString;
+        return Tags::ADDITIONAL_DETAIL . strlen($additionalDetailsString) . $additionalDetailsString;
     }
 
     protected function getBharatQrAmountTlv(QrCode\Entity $qrCode)
@@ -285,7 +325,12 @@ class Provider
             return '';
         }
 
-        return BharatQr\Constants::AMOUNT_TAG . str_pad(strlen($amount), 2, '0', STR_PAD_LEFT) . $amount;
+        return Tags::AMOUNT . $this->getLengthAndValue($amount);
+    }
+
+    protected function getLengthAndValue(string $str)
+    {
+        return str_pad(strlen($str), 2, '0', STR_PAD_LEFT) . $str;
     }
 
     /**
@@ -301,7 +346,7 @@ class Provider
 
         $identifierPadding = Config::get('gateway.bharat_qr.identifier_padding');
 
-        $identifier  = $acquirerCode . '0' . str_pad(strlen($identifierPadding), 8, '0', STR_PAD_LEFT);
+        $identifier = $acquirerCode . '0' . str_pad(strlen($identifierPadding), 8, '0', STR_PAD_LEFT);
 
         return $identifier . Luhn::computeCheckDigit($identifier);
     }

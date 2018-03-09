@@ -13,6 +13,7 @@ class Repository extends Base\Repository
         Entity::MERCHANT_ID             => 'sometimes|alpha_dash|max:20',
         Entity::METHOD                  => 'sometimes|string|max:20',
         Entity::SCHEDULE_ID             => 'sometimes|alpha_dash|max:20',
+        Entity::TYPE                    => 'sometimes|alpha|max:12',
     );
 
     /**
@@ -83,6 +84,13 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::ENTITY_ID, '=', $entity->getId())
                     ->merchantId($merchant->getId())
+                    ->first();
+    }
+
+    public function fetchByEntity(string $entityId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ENTITY_ID, '=', $entityId)
                     ->first();
     }
 

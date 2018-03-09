@@ -606,6 +606,23 @@ class AdminFetch
                 ],
             ],
 
+            Entity::HITACHI => [
+                'payment_id' => Fetch::FIELD_PAYMENT_ID,
+                'refund_id'  => Fetch::FIELD_REFUND_ID,
+                'action'     => [
+                    Fetch::LABEL => 'Action',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'pRequestId' => [
+                    Fetch::LABEL => 'Request ID',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'pRRN'       => [
+                    Fetch::LABEL => 'RRN',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+            ],
+
             Entity::IIN => [
                 'emi' => [
                     Fetch::LABEL  => 'Emi',

@@ -23,10 +23,10 @@ class Gateway
     const BILLDESK               = 'billdesk';
     const BLADE                  = 'blade';
     const CYBERSOURCE            = 'cybersource';
-    const HITACHI                = 'hitachi';
     const EBS                    = 'ebs';
     const FIRST_DATA             = 'first_data';
     const HDFC                   = 'hdfc';
+    const HITACHI                = 'hitachi';
     const MOBIKWIK               = 'mobikwik';
     const NETBANKING_AIRTEL      = 'netbanking_airtel';
     const NETBANKING_AXIS        = 'netbanking_axis';
@@ -46,6 +46,8 @@ class Gateway
     const UPI_ICICI              = 'upi_icici';
     const AEPS_ICICI             = 'aeps_icici';
 
+    const CARD_FSS               = 'card_fss';
+
     const WALLET_AIRTELMONEY = 'wallet_airtelmoney';
     const WALLET_FREECHARGE  = 'wallet_freecharge';
     const WALLET_JIOMONEY    = 'wallet_jiomoney';
@@ -60,6 +62,9 @@ class Gateway
     const ACQUIRER_ICIC      = 'icic';
     const ACQUIRER_AXIS      = 'axis';
     const ACQUIRER_AMEX      = 'amex';
+    const ACQUIRER_FSS       = 'fss';
+    const ACQUIRER_RATN      = 'ratn';
+    const ACQUIRER_BARB      = 'barb';
 
     const NOT_SUPPORTED      = 'not_supported';
     const SUPPORTED          = 'supported';
@@ -71,6 +76,8 @@ class Gateway
         self::FIRST_DATA  => [self::ACQUIRER_ICIC],
         self::AMEX        => [self::ACQUIRER_AMEX],
         self::AEPS_ICICI  => [self::ACQUIRER_ICIC],
+        self::CARD_FSS    => [self::ACQUIRER_FSS, self::ACQUIRER_BARB],
+        self::HITACHI     => [self::ACQUIRER_RATN],
     ];
 
     const POWER_WALLETS = [
@@ -111,6 +118,11 @@ class Gateway
         self::WALLET_FREECHARGE
     ];
 
+    const MCC_FILTER_GATEWAYS = [
+        self::HDFC,
+        self::HITACHI,
+    ];
+
     /**
     * Gateways for which we may need to force authorize payments
     * since their verify API's stop working after a certain time
@@ -121,6 +133,7 @@ class Gateway
         self::NETBANKING_RBL,
         self::NETBANKING_INDUSIND,
         self::NETBANKING_PNB,
+        self::WALLET_OPENWALLET,
     ];
 
     /**
@@ -147,6 +160,11 @@ class Gateway
         Payment\Gateway::UPI_ICICI,
         Payment\Gateway::WALLET_PAYZAPP,
         Payment\Gateway::WALLET_MPESA,
+        Payment\Gateway::CARD_FSS,
+        Payment\Gateway::WALLET_PAYUMONEY,
+        Payment\Gateway::WALLET_FREECHARGE,
+        Payment\Gateway::UPI_MINDGATE,
+        Payment\Gateway::HITACHI,
     ];
 
     public static $channels = [
@@ -204,6 +222,7 @@ class Gateway
             self::FIRST_DATA,
             self::BLADE,
             self::HITACHI,
+            self::CARD_FSS,
         ],
 
         Method::NETBANKING => [
@@ -222,6 +241,22 @@ class Gateway
             self::NETBANKING_INDUSIND,
             self::NETBANKING_PNB,
         ],
+
+        //
+        // We cannot add this here as generateMethod()
+        // in terminal entity uses it to fill the method
+        // attribute in the entity. Keeping this here will
+        // set both netbanking and emandate attributes,
+        // which is not the intended flow.
+        // Hence, we will ensure that it gets explicitly set
+        // during the terminal creation, so that it does not
+        // go via generator method.
+        //
+        // Method::EMANDATE    => [
+        //     self::NETBANKING_ICICI,
+        //     self::NETBANKING_HDFC,
+        //     self::NETBANKING_AXIS,
+        // ],
 
         Method::WALLET => [
             self::MOBIKWIK,
@@ -370,12 +405,17 @@ class Gateway
         self::HITACHI => [
             Network::MC,
             Network::VISA,
+            Network::MAES,
         ],
         self::FIRST_DATA => [
             Network::MC,
             Network::VISA,
             Network::MAES,
             Network::RUPAY,
+        ],
+        self::CARD_FSS => [
+            Network::MC,
+            Network::VISA,
         ],
     ];
 
@@ -404,6 +444,7 @@ class Gateway
         self::ACQUIRER_ICIC => IFSC::ICIC,
         self::ACQUIRER_AXIS => IFSC::UTIB,
         self::ACQUIRER_AMEX => Network::AMEX,
+        self::ACQUIRER_RATN => IFSC::RATN,
     ];
 
     /**
@@ -457,15 +498,122 @@ class Gateway
         Gateway::FIRST_DATA,
         Gateway::AXIS_MIGS,
         Gateway::HDFC,
+        Gateway::HITACHI,
         Gateway::NETBANKING_ICICI,
         Gateway::NETBANKING_AXIS,
         Gateway::NETBANKING_HDFC,
     ];
 
-    public static $eMandateBanks = [
-        IFSC::ICIC,
+    public static $recurringCardNetworks = [
+        Network::MC,
+        Network::VISA,
+    ];
+
+    /**
+     * List of ALL auth types and the corresponding
+     * banks supported by that auth type.
+     *
+     * @var array
+     */
+    public static $emandateBanks = [
+        AuthType::NETBANKING => [
+            IFSC::ICIC,
+            IFSC::UTIB,
+            IFSC::HDFC,
+        ],
+        AuthType::AADHAAR => [
+            IFSC::ABHY,
+            IFSC::ANDB,
+            IFSC::UTIB,
+            IFSC::BKID,
+            IFSC::MAHB,
+            IFSC::BCBM,
+            IFSC::BCBX,
+            IFSC::CNRB,
+            IFSC::CBIN,
+            IFSC::CITI,
+            IFSC::DCBL,
+            IFSC::FDRL,
+            IFSC::HDFC,
+            IFSC::ICIC,
+            IFSC::IBKL,
+            IFSC::IDFB,
+            IFSC::INDB,
+            IFSC::KKBK,
+            IFSC::ORBC,
+            IFSC::PUNB,
+            IFSC::RATN,
+            IFSC::SRCB,
+            IFSC::SCBL,
+            IFSC::SVCB,
+            IFSC::SYNB,
+            IFSC::ADCC,
+            IFSC::COSB,
+            IFSC::HSBC,
+            IFSC::SUTB,
+            IFSC::UCBA,
+            IFSC::UBIN,
+            IFSC::YESB,
+            IFSC::DBSS,
+            IFSC::BGBX,
+            IFSC::CORP,
+            IFSC::VARA,
+            IFSC::KVBL,
+        ]
+    ];
+
+    public static $authTypeToEmandateGatewayMap = [
+        AuthType::NETBANKING => [
+            Gateway::NETBANKING_AXIS,
+            Gateway::NETBANKING_ICICI,
+            Gateway::NETBANKING_HDFC,
+        ],
+        AuthType::AADHAAR => [],
+    ];
+
+    /**
+     * @todo: https://razorpay.atlassian.net/projects/GL/issues/GL-315
+     *
+     * @var array
+     */
+    public static $zeroRupeeEmandateBanks = [
+        IFSC::ABHY,
+        IFSC::ANDB,
         IFSC::UTIB,
+        IFSC::BKID,
+        IFSC::MAHB,
+        IFSC::BCBM,
+        IFSC::BCBX,
+        IFSC::CNRB,
+        IFSC::CBIN,
+        IFSC::CITI,
+        IFSC::DCBL,
+        IFSC::FDRL,
         IFSC::HDFC,
+        IFSC::ICIC,
+        IFSC::IBKL,
+        IFSC::IDFB,
+        IFSC::INDB,
+        IFSC::KKBK,
+        IFSC::ORBC,
+        IFSC::PUNB,
+        IFSC::RATN,
+        IFSC::SRCB,
+        IFSC::SCBL,
+        IFSC::SVCB,
+        IFSC::SYNB,
+        IFSC::ADCC,
+        IFSC::COSB,
+        IFSC::HSBC,
+        IFSC::SUTB,
+        IFSC::UCBA,
+        IFSC::UBIN,
+        IFSC::YESB,
+        IFSC::DBSS,
+        IFSC::BGBX,
+        IFSC::CORP,
+        IFSC::VARA,
+        IFSC::KVBL,
     ];
 
     /**
@@ -480,11 +628,6 @@ class Gateway
         Gateway::NETBANKING_ICICI   => [IFSC::ICIC],
         Gateway::NETBANKING_AXIS    => [IFSC::UTIB],
         Gateway::NETBANKING_HDFC    => [IFSC::HDFC],
-    ];
-
-    public static $recurringCardNetworks = [
-        Network::MC,
-        Network::VISA,
     ];
 
     /**
@@ -551,7 +694,7 @@ class Gateway
         IFSC::FDRL,
         IFSC::RATN,
         IFSC::INDB,
-        IFSC::PUNB,
+        Netbanking::PUNB_R,
     ];
 
     /**
@@ -579,17 +722,17 @@ class Gateway
         Netbanking::UTIB_C => Gateway::NETBANKING_AXIS,
 
         // retail banks
-        IFSC::ICIC => Gateway::NETBANKING_ICICI,
-        IFSC::HDFC => Gateway::NETBANKING_HDFC,
-        IFSC::BARB => Gateway::NETBANKING_BOB,
-        IFSC::CORP => Gateway::NETBANKING_CORPORATION,
-        IFSC::AIRP => Gateway::NETBANKING_AIRTEL,
-        IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
-        IFSC::INDB => Gateway::NETBANKING_INDUSIND,
-        IFSC::KKBK => Gateway::NETBANKING_KOTAK,
-        IFSC::UTIB => Gateway::NETBANKING_AXIS,
-        IFSC::RATN => Gateway::NETBANKING_RBL,
-        IFSC::PUNB => Gateway::NETBANKING_PNB,
+        IFSC::ICIC         => Gateway::NETBANKING_ICICI,
+        IFSC::HDFC         => Gateway::NETBANKING_HDFC,
+        IFSC::CORP         => Gateway::NETBANKING_CORPORATION,
+        IFSC::AIRP         => Gateway::NETBANKING_AIRTEL,
+        IFSC::FDRL         => Gateway::NETBANKING_FEDERAL,
+        IFSC::INDB         => Gateway::NETBANKING_INDUSIND,
+        IFSC::KKBK         => Gateway::NETBANKING_KOTAK,
+        IFSC::UTIB         => Gateway::NETBANKING_AXIS,
+        IFSC::RATN         => Gateway::NETBANKING_RBL,
+        Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
+        Netbanking::BARB_R => Gateway::NETBANKING_BOB,
     ];
 
     /**
@@ -605,10 +748,11 @@ class Gateway
         IFSC::KKBK => Gateway::NETBANKING_KOTAK,
         IFSC::UTIB => Gateway::NETBANKING_AXIS,
         IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
-        IFSC::BARB => Gateway::NETBANKING_BOB,
         IFSC::RATN => Gateway::NETBANKING_RBL,
         IFSC::INDB => Gateway::NETBANKING_INDUSIND,
-        IFSC::PUNB => Gateway::NETBANKING_PNB,
+
+        Netbanking::PUNB_R => Gateway::NETBANKING_PNB,
+        Netbanking::BARB_R => Gateway::NETBANKING_BOB,
     ];
 
     /**
@@ -654,6 +798,10 @@ class Gateway
         Gateway::AXIS_MIGS
     ];
 
+    public static $upiIntentGateways = [
+        Gateway::UPI_ICICI
+    ];
+
     public static function getAcquirerName(string $acquirer)
     {
         $code = self::$acquirerToCodeMap[$acquirer];
@@ -685,6 +833,16 @@ class Gateway
         return in_array($gateway, self::$recurringGateways, true);
     }
 
+    public static function isZeroRupeeFlowSupported($bank): bool
+    {
+        return in_array($bank, self::$zeroRupeeEmandateBanks, true);
+    }
+
+    public static function isUpiIntentFlowSupported($gateway): bool
+    {
+        return in_array($gateway, self::$upiIntentGateways, true);
+    }
+
     /**
      * Checks whether the bank requires a file-based system to register for eMandate
      *
@@ -707,16 +865,57 @@ class Gateway
         return (in_array($gateway, self::$fileBasedEMandateDebitGateways) === true);
     }
 
-    /**
-     * @param string $bank
-     *
-     * @return bool
-     */
-    public static function isRecurringSupportedOnBank(string $bank) : bool
+    public static function getAllEMandateBanks(): array
     {
-        $gateway = self::$netbankingToGatewayMap[$bank];
+        $banks = [];
 
-        return self::isRecurringGateway($gateway);
+        foreach (self::$emandateBanks as $emandateBanks)
+        {
+            $banks = array_merge($banks, $emandateBanks);
+        }
+
+        return array_values(array_unique($banks));
+    }
+
+    public static function getZeroRupeeEmandateBanks(): array
+    {
+        return self::$zeroRupeeEmandateBanks;
+    }
+
+    public static function getAvailableEmandateBanksForAuthType(string $authType): array
+    {
+        $banks = [];
+
+        if (isset(self::$emandateBanks[$authType]) === true)
+        {
+            $banks = self::$emandateBanks[$authType];
+        }
+
+        return $banks;
+    }
+
+    public static function getEmandateGatewaysForAuthType(string $authType): array
+    {
+        $gateways = [];
+
+        if (isset(self::$authTypeToEmandateGatewayMap[$authType]) === true)
+        {
+            $gateways = self::$authTypeToEmandateGatewayMap[$authType];
+        }
+
+        return $gateways;
+    }
+
+    public static function getAvailableEmandateBanks()
+    {
+        $emandateBanks = [];
+
+        foreach (self::$emandateBanks as $authType => $banks)
+        {
+            $emandateBanks = array_merge($emandateBanks, $banks);
+        }
+
+        return array_values(array_unique($emandateBanks));
     }
 
     public static function getChannel($gateway)
