@@ -119,7 +119,8 @@ class Validator extends Base\Validator
 
     protected static $updateMerchantsBulkRules = [
         'merchant_ids' => 'required|sequential_array',
-        'attributes'   => 'required|associative_array',
+        'attributes'   => 'sometimes|associative_array',
+        'action'       => 'sometimes',
     ];
 
     protected static $keyAccessRules = [

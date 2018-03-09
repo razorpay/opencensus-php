@@ -22,6 +22,7 @@ use RZP\Models\Base;
 use RZP\Models\Coupon;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
+use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 use RZP\Models\Merchant\Webhook;
 use RZP\Models\Offer;
@@ -659,6 +660,29 @@ class Service extends Base\Service
         return $ba->toArray();
     }
 
+    public function getBankAccountChangeStatus($id)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        $oldBankAccount = $this->repo->bank_account->getBankAccount($merchant);
+
+        $entityId = PublicEntity::stripDefaultSign($oldBankAccount->getId());
+
+        $actions = (new \RZP\Models\Workflow\Action\Core)->fetchOpenActionOnEntityOperation(
+            $entityId, $oldBankAccount->getEntity(), Permission::EDIT_MERCHANT_BANK_DETAIL);
+
+        $actions = $actions->toArray();
+
+        // If there are any action in progress
+        if (empty($actions) === false)
+        {
+            return true;
+        }
+
+        return false;
+
+    }
+
     public function getBankAccount($id)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
@@ -947,9 +971,18 @@ class Service extends Base\Service
             $input
         );
 
+        if((isset($input['attributes']) === true) and
+           (isset($input['action']) === true))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Both Action and Attributes should not be sent.');
+        }
+
         (new Validator)->validateInput('updateMerchantsBulk', $input);
 
         $merchantIds = $input['merchant_ids'];
+
+        unset($input['merchant_ids']);
 
         $successCount = $failedCount = 0;
 
@@ -959,7 +992,14 @@ class Service extends Base\Service
         {
             try
             {
-                $this->edit($merchantId, $input['attributes']);
+                if(isset($input['attributes']) === true)
+                {
+                    $this->edit($merchantId, $input['attributes']);
+                }
+                else
+                {
+                    $this->action($merchantId, $input);
+                }
 
                 $successCount++;
             }

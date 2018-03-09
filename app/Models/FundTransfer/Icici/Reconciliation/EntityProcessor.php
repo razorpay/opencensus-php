@@ -26,7 +26,7 @@ class EntityProcessor extends BaseEntityProcessor
         $failureReason = null;
 
         if (in_array($bankStatusCode,
-                [Status::PAID, Status::PENDING, Status::AWAITING], true) == true)
+                Status::SUCCESS_STATUS, true) == true)
         {
             $status = Attempt\Status::PROCESSED;
 

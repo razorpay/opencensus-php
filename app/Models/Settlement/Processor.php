@@ -124,6 +124,8 @@ class Processor extends Base\Core
 
             foreach ($channels as $channel)
             {
+                $this->traceSetlInitiating($channel);
+
                 $setlResponse = $this->createSettlements($channel);
 
                 $response[$channel]['count']    += $setlResponse['settlement_count'];
@@ -232,6 +234,8 @@ class Processor extends Base\Core
      *              'txnCount' => 'some integer'
      *          ]
      *      ]
+     *
+     * @throws SettlementFailureException
      */
     protected function createDailySettlements(): array
     {
@@ -245,7 +249,7 @@ class Processor extends Base\Core
 
             $merchants = $this->repo->merchant->findMany($mids);
 
-            $settlementTimestamp = Carbon::tomorrow(Timezone::IST)->getTimestamp();
+            $this->setlTime = Carbon::tomorrow(Timezone::IST)->getTimestamp();
 
             foreach ($merchants as $merchant)
             {
@@ -260,7 +264,7 @@ class Processor extends Base\Core
 
                 // Get all transactions due settlement till yesterday end of day
                 $txns = $this->repo->transaction->fetchUnsettledTransactions(
-                            $settlementTimestamp, $channel, [$mid]);
+                            $this->setlTime, $channel, [$mid]);
 
                 $filteredTxns = $this->filterTransactionsForSettlement($txns);
 

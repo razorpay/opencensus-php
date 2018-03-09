@@ -785,4 +785,19 @@ class Service extends Base\Service
             'verify_success' => $verifySuccess
         ];
     }
+
+    public function editStatus($refundId, array $input)
+    {
+        Refund\Entity::verifyIdAndStripSign($refundId);
+
+        $refund = $this->repo->refund->findOrFailPublic($refundId);
+
+        $refund->edit($input, 'editStatus');
+
+        $this->repo->saveOrFail($refund);
+
+        return [
+            'status' => $refund->getStatus(),
+        ];
+    }
 }

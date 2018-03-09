@@ -16,10 +16,12 @@ use RZP\Models\Terminal;
 use RZP\Models\Invitation;
 use RZP\Models\Settlement;
 use Conner\Tagging\Taggable;
+use RZP\Models\Workflow\Action;
 use RZP\Models\Merchant\Detail;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Base\QueryCache\Cacheable;
+
 
 /**
  * @property Detail\Entity $merchantDetail
@@ -603,7 +605,19 @@ class Entity extends Base\PublicEntity
             'RZP\Models\Transaction\Entity');
     }
 
-    public function webhook()
+    /**
+     * This used to be a hasOne relation but with the introduction of entity_type
+     * and entity_id columns and webhooks being created for different entites for
+     * a merchant, this changed to hasMany. But this is not a correct representation
+     * as the webhooks against a merchant for other entities are not fired for that
+     * merchant's events but rather for merchant's using those entities (eg. oauth
+     * app webhook created by merch1 who owns the app, will be fired for merch2's
+     * events who is using that app)
+     *
+     * This needs to be fixed/redone as per this issue -
+     * https://razorpay.atlassian.net/browse/TF-142
+     */
+    public function webhooks()
     {
         return $this->hasMany(
             'RZP\Models\Merchant\Webhook\Entity');
@@ -617,6 +631,11 @@ class Entity extends Base\PublicEntity
     public function transfers()
     {
         return $this->morphMany('RZP\Models\Transfer\Entity', 'to');
+    }
+
+    public function workflows()
+    {
+        return $this->morphMany(Action\Entity::class, Action\Entity::MAKER);
     }
 
     public function merchantDetail()
@@ -969,7 +988,7 @@ class Entity extends Base\PublicEntity
 
     public function setWebsiteAttribute($website)
     {
-        $this->attributes[self::WEBSITE] = mb_strtolower($website);
+        $this->attributes[self::WEBSITE] = $website;
     }
 
     protected function setTransactionReportEmailAttribute($emails)

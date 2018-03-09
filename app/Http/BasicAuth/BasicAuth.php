@@ -228,7 +228,7 @@ class BasicAuth
      *
      * @var array
      */
-    protected static $validKeyLengths = [
+    public static $validKeyLengths = [
         8, 14, 23, 33
     ];
 
@@ -1154,7 +1154,7 @@ class BasicAuth
     {
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-        $this->merchant = $merchant;
+        $this->setMerchant($merchant);
     }
 
     public function setAccessTokenId(string $tokenId)
@@ -1169,6 +1169,11 @@ class BasicAuth
 
     public function setMerchant($merchant)
     {
+        if ($merchant !== null)
+        {
+            $this->setOrgId($merchant->org->getPublicId());
+        }
+
         $this->merchant = $merchant;
     }
 
@@ -1285,7 +1290,9 @@ class BasicAuth
     {
         $merchantId = $key->getMerchantId();
 
-        $this->merchant = $this->repo->merchant->findOrFail($merchantId);
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $this->setMerchant($merchant);
 
         $this->checkMerchantActivatedForLive();
 
@@ -1324,7 +1331,7 @@ class BasicAuth
             return $this->invalidAccountId($this->getAccountId());
         }
 
-        $this->merchant = $account;
+        $this->setMerchant($account);
     }
 
     public function checkMerchantActivatedForLive()

@@ -24,6 +24,8 @@ class Constants
     const DISPUTES      = 'disputes';
     const NOREPLY       = 'noreply';
 
+    const SETTLEMENT_ALERTS = 'settlement_alert';
+
     const MAIL_ADDRESSES = [
         self::SUPPORT       => 'support@razorpay.com',
         self::SCORECARD     => 'scorecard@razorpay.com',
@@ -44,6 +46,8 @@ class Constants
         self::EMANDATE      => 'emandate@razorpay.com',
         self::DISPUTES      => 'disputes@razorpay.com',
         self::NOREPLY       => 'no-reply@razorpay.com',
+
+        self::SETTLEMENT_ALERTS     => 'settlement.alerts@razorpay.com'
     ];
 
     const HEADERS = [

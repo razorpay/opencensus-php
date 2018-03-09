@@ -60,7 +60,6 @@ pipeline:
         Link: {{build.link}}
     when:
       event:
-        exclude: [deployment, pull_request]
         include: [push]
 services:
   livedb:
@@ -68,20 +67,40 @@ services:
     environment:
       - MYSQL_DATABASE=api
       - MYSQL_ROOT_PASSWORD=root
+    when:
+      event:
+        exclude: [deployment, pull_request]
+        include: [push]
   testdb:
     image: mysql
     environment:
       - MYSQL_DATABASE=api_test
       - MYSQL_ROOT_PASSWORD=root
+    when:
+      event:
+        exclude: [deployment, pull_request]
+        include: [push]
   authdb:
     image: mysql
     environment:
       - MYSQL_DATABASE=auth
       - MYSQL_ROOT_PASSWORD=root
+    when:
+      event:
+        exclude: [deployment, pull_request]
+        include: [push]
   redis:
     image: redis
+    when:
+      event:
+        exclude: [deployment, pull_request]
+        include: [push]
   elasticsearch:
     image: elasticsearch:5.2-alpine
+    when:
+      event:
+        exclude: [deployment, pull_request]
+        include: [push]
 pipeline:
   deploy-qa-func:
     image: razorpay/drone-kubernetes
@@ -95,9 +114,22 @@ pipeline:
       - client_key_qa
     user: drone
     cluster: qa
-    deployment: api
+    auth_mode: client-cert
+    deployment:
+      - api-web
+      - api-sqs-batch
+      - api-sqs-emails
+      - api-sqs-es-sync
+      - api-sqs-gen-live
+      - api-sqs-gen-test
+      - api-sqs-invoice-email
+      - api-sqs-invoice-reports
+      - api-sqs-main
+      - api-sqs-subscription-charge
+      - api-sqs-webhooks-failure
+      - api-sqs-webhooks-live
+      - api-sqs-webhooks-test
     repo: razorpay/api
-    container: api
     namespace: func
     tag:
       - ${DRONE_REPO_BRANCH}-${DRONE_COMMIT_SHA}
@@ -118,9 +150,22 @@ pipeline:
       - client_key_stage
     user: drone
     cluster: stage
-    deployment: api
+    auth_mode: client-cert
+    deployment:
+      - api-web
+      - api-sqs-batch
+      - api-sqs-emails
+      - api-sqs-es-sync
+      - api-sqs-gen-live
+      - api-sqs-gen-test
+      - api-sqs-invoice-email
+      - api-sqs-invoice-reports
+      - api-sqs-main
+      - api-sqs-subscription-charge
+      - api-sqs-webhooks-failure
+      - api-sqs-webhooks-live
+      - api-sqs-webhooks-test
     repo: razorpay/api
-    container: api
     namespace: echo
     tag:
       - ${DRONE_REPO_BRANCH}-${DRONE_COMMIT_SHA}
@@ -130,4 +175,4 @@ pipeline:
         exclude: [push]
         include: [deployment]
 branches:
-  include: [ master, drone-tests, qakube ]
+  include: [ master ]

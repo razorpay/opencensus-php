@@ -87,6 +87,8 @@ class Repository extends Base\Repository
         $transactionCreditsType = $this->dbColumn(Entity::CREDIT_TYPE);
         $transactionCreatedAt   = $this->dbColumn(Entity::CREATED_AT);
 
+        $txnFetchStartTime = microtime(true);
+
         $query = $this->newQuery()
                       ->select(
                           $transactionId,
@@ -124,7 +126,13 @@ class Repository extends Base\Repository
             $query = $query->whereNotIn($merchantId, $notInMerchantIds);
         }
 
-        return $query->get();
+        $results = $query->get();
+
+        $txnFetchTimeTaken = microtime(true) - $txnFetchStartTime;
+
+        $this->trace->info(TraceCode::SETTLEMENT_TXN_FETCH_TIME_TAKEN, ['time_taken' => $txnFetchTimeTaken]);
+
+        return $results;
     }
 
     public function fetchUnsettledTransactionsForMerchantUpdate($merchantId)
@@ -353,6 +361,8 @@ class Repository extends Base\Repository
 
         $batchedIds = array_chunk($ids, 1000);
 
+        $startTime = microtime(true);
+
         foreach ($batchedIds as $batch)
         {
             $count = $this->newQuery()
@@ -372,6 +382,10 @@ class Repository extends Base\Repository
                     ]);
             }
         }
+
+        $timeTaken = microtime(true) - $startTime;
+
+        $this->trace->info(TraceCode::SETTLEMENT_TXN_UPDATE_TIME_TAKEN, ['time_taken' => $timeTaken]);
 
         return $txnCount;
     }
