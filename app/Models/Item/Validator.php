@@ -79,24 +79,24 @@ class Validator extends Base\Validator
      */
     public function validateTaxInputs(array $input)
     {
-        $taxId = array_key_exists(Entity::TAX_ID, $input) ?
-                    $input[Entity::TAX_ID] : $this->entity->getTaxId();
-
+        $taxId      = array_key_exists(Entity::TAX_ID, $input) ?
+                        $input[Entity::TAX_ID] : $this->entity->getTaxId();
         $taxGroupId = array_key_exists(Entity::TAX_GROUP_ID, $input) ?
                         $input[Entity::TAX_GROUP_ID] : $this->entity->getTaxGroupId();
 
         if ((empty($taxId) === false) and (empty($taxGroupId) === false))
         {
-            throw new BadRequestValidationFailureException(
-                'Both tax_id and tax_group_id cannot be present');
+            throw new BadRequestValidationFailureException('Both tax_id and tax_group_id cannot be present');
         }
+
     }
 
     public function validateTaxCodes(array $input)
     {
-        $hsnCode = $input[Entity::HSN_CODE] ?? $this->entity->getHsnCode();
-
-        $sacCode = $input[Entity::SAC_CODE] ?? $this->entity->getSacCode();
+        $hsnCode = array_key_exists(Entity::HSN_CODE, $input) ?
+                    $input[Entity::HSN_CODE] : $this->entity->getHsnCode();
+        $sacCode = array_key_exists(Entity::SAC_CODE, $input) ?
+                    $input[Entity::SAC_CODE] : $this->entity->getSacCode();
 
         if ((empty($hsnCode) === false) and (empty($sacCode) === false))
         {

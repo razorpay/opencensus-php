@@ -131,9 +131,10 @@ class Validator extends Base\Validator
      */
     public function validateTaxCodes(array $input)
     {
-        $hsnCode = $input[Entity::HSN_CODE] ?? $this->entity->getHsnCode();
-
-        $sacCode = $input[Entity::SAC_CODE] ?? $this->entity->getSacCode();
+        $hsnCode = array_key_exists(Entity::HSN_CODE, $input) ?
+                    $input[Entity::HSN_CODE] : $this->entity->getHsnCode();
+        $sacCode = array_key_exists(Entity::SAC_CODE, $input) ?
+                    $input[Entity::SAC_CODE] : $this->entity->getSacCode();
 
         if ((empty($hsnCode) === false) and (empty($sacCode) === false))
         {

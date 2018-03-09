@@ -28,7 +28,7 @@ return [
                         'description'   => 'Some item description',
                         'amount'        => 100000,
                         'hsn_code'      => '00110022'
-                    ]
+                    ],
                 ],
             ],
         ],
