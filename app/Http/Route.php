@@ -1664,6 +1664,7 @@ final class Route
         'shield_rules_delete'                    => Permission::DELETE_SHIELD_RULES,
         'shield_rules_evaluate'                  => Permission::EVALUATE_SHIELD_RULES,
         'user_fetch_admin'                       => '*',
+        'virtual_account_create'                 => '*',
     ];
 
     public static $direct = [

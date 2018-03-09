@@ -940,21 +940,30 @@ class Processor
      */
     protected function callGatewayFunction($action, array $gatewayData)
     {
-        $terminal = $this->repo->terminal->fetchForPayment($this->payment);
-
-        if ($terminal === null)
-        {
-            throw new Exception\LogicException(
-                'Terminal should not be null here',
-                null,
-                ['payment_id' => $this->payment->getId()]);
-        }
+        $terminalId = $this->payment->getTerminalId();
 
         $gateway = $this->payment->getGateway();
+
+        $terminal = null;
+
+        if (($terminalId !== null) or
+            (in_array($gateway, Payment\Gateway::$noTerminalGateways, true) === false))
+        {
+            $terminal = $this->repo->terminal->fetchForPayment($this->payment);
+
+            if ($terminal === null) {
+                throw new Exception\LogicException(
+                    'Terminal should not be null here',
+                    null,
+                    ['payment_id' => $this->payment->getId()]);
+            }
+        }
 
         $gatewayData['terminal'] = $terminal;
 
         $gatewayData['merchant'] = $this->payment->merchant;
+
+        $gatewayData['bharat_qr'] = $this->repo->bharat_qr->findByPaymentId($this->payment->getId());
 
         $eventCode = TraceCode::PAYMENT_CALL_GATEWAY_FUNC . '::' . strtoupper($action);
 

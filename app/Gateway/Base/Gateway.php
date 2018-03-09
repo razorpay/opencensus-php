@@ -1113,4 +1113,14 @@ class Gateway
 
         return $gatewayPayment;
     }
+
+    protected function isBharatQrPayment()
+    {
+        if ($this->input['bharat_qr'] === null)
+        {
+            return false;
+        }
+
+        return true;
+    }
 }

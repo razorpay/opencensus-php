@@ -528,6 +528,14 @@ class Gateway
         ]
     ];
 
+    // List of all gateways that support
+    // payments with no terminals like
+    // Bharat Qr Payments
+    public static $noTerminalGateways = [
+        self::UPI_ICICI,
+        self::HITACHI,
+    ];
+
     /**
      * TODO: This needs to be removed after we migrate all the gateways to
      *

@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use ErrorException;
 use RZP\Constants\Mode;
+use RZP\Gateway\Base\Flow;
 use RZP\Models\Payment;
 use RZP\Gateway\Utility;
 use RZP\Trace\TraceCode;
@@ -259,6 +260,11 @@ class Gateway extends Base\Gateway
     
     protected function getMerchantId(): string
     {
+        if ($this->isBharatQrPayment() === true)
+        {
+            return $this->config['bharatqr_merchant_id'];
+        }
+
         if ($this->mode === Mode::TEST)
         {
             return $this->config['test_merchant_id'];
@@ -299,7 +305,7 @@ class Gateway extends Base\Gateway
      */
     protected function getPrivateKey(): string
     {
-        $key = $this->config['live_private_key'];
+        $key = $this->config['test_private_key'];
 
         if ($this->mode === Mode::TEST)
         {
@@ -579,6 +585,8 @@ class Gateway extends Base\Gateway
         $repo = $this->getRepository();
 
         $gatewayPayment = $repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
+
+        $this->flow = $gatewayPayment['flow'];
 
         $data = [
             'merchantId'        => $this->getMerchantId(),
@@ -865,7 +873,7 @@ class Gateway extends Base\Gateway
 
         if (empty($input['payment']) === false)
         {
-            $this->createGatewayPaymentEntity($input);
+            $this->createGatewayPaymentEntity($input, Action::AUTHORIZE);
         }
 
         $qrData = [

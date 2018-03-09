@@ -286,7 +286,7 @@ class Provider
     protected function getBharatQrDynamicUpiTlv(QrCode\Entity $qrCode)
     {
         $rupayRidTlv = Tags::UPI_VPA_RUPAY_RID . $this->getLengthAndValue(Constants::RUPAY_RID);
-        $transactionReferenceTlv = Tags::UPI_VPA_REFERENCE_TR . $this->getLengthAndValue("PIL" . $qrCode->getId());
+        $transactionReferenceTlv = Tags::UPI_VPA_REFERENCE_TR . $this->getLengthAndValue('PIL' . $qrCode->getId());
 
         $upiString = $rupayRidTlv . $transactionReferenceTlv;
 

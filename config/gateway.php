@@ -228,6 +228,7 @@ return [
         'live_merchant_id'       => env('UPI_ICICI_GATEWAY_LIVE_MERCHANT_ID'),
         'live_public_key'        => env('UPI_ICICI_LIVE_PUBLIC_KEY'),
         'live_private_key'       => env('UPI_ICICI_LIVE_PRIVATE_KEY'),
+        'bharatqr_merchant_id'   => env('UPI_ICICI_BHARATQR_KEY'),
     ],
 
     'aeps_icici' => [

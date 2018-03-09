@@ -45,7 +45,7 @@ class Service extends Base\Service
 
         $this->determineAndSetModeForQr($qrCodeId);
 
-        $gatewayInput = $this->callGatewayFunction($gateway, $input);
+        $gatewayInput = $this->callGatewayQrNotification($gateway, $input);
 
         $gatewayInput[Entity::GATEWAY] = $gateway;
 
@@ -55,18 +55,16 @@ class Service extends Base\Service
 
         $input['payment'] = $payment;
 
-        $this->callGatewayFunction($gateway, $input);
+        $this->callGatewayQrNotification($gateway, $input);
 
         $response = $this->getResponse($valid);
 
         return $response;
     }
 
-    protected function callGatewayFunction(string $gateway, array $gatewayInput)
+    protected function callGatewayQrNotification(string $gateway, array $gatewayInput)
     {
-        $action = Action::QR_NOTIFICATION;
-
-        return $this->app['gateway']->call($gateway, $action, $gatewayInput, null);
+        return $this->app['gateway']->call($gateway, Action::QR_NOTIFICATION, $gatewayInput, null);
     }
 
     protected function getBharatQrInputParams(array $gatewayInput)
@@ -107,7 +105,7 @@ class Service extends Base\Service
 
         if ($mode === null)
         {
-            $mode = Mode::LIVE;
+            $mode = Mode::TEST;
         }
 
         $this->app['basicauth']->setModeAndDbConnection($mode);

@@ -121,13 +121,13 @@ class Processor extends VirtualAccount\Processor
 
                             $bharatQr->payment()->associate($payment);
 
-
                             $payment->setGatewayBharatQr($gatewayInput[Entity::GATEWAY]);
-
 
                             $bharatQr->virtualAccount()->associate($this->virtualAccount);
 
                             $this->repo->saveOrFail($bharatQr);
+
+                            $this->repo->saveOrFail($payment);
 
                             $this->updateVirtualAccount($bharatQr);
 
@@ -193,7 +193,7 @@ class Processor extends VirtualAccount\Processor
 
         $checksum = Luhn::computeCheckDigitWithPart($part1, $part2);
 
-        $finalCardNumber =  $firstSix . self::RANDOM_CARD_PADDING . $checksum . $lastFour ;
+        $finalCardNumber =  $firstSix . self::RANDOM_CARD_PADDING . $checksum . $lastFour;
 
         return $finalCardNumber;
     }
@@ -204,7 +204,7 @@ class Processor extends VirtualAccount\Processor
             Payment\Entity::CURRENCY    => Currency::INR,
             Payment\Entity::METHOD      => $gatewayInput[Entity::METHOD],
             Payment\Entity::AMOUNT      => $gatewayInput[Entity::AMOUNT],
-            Payment\Entity::DESCRIPTION => "Bharat Qr Payment",
+            Payment\Entity::DESCRIPTION => 'Bharat Qr Payment',
         ];
 
         // TODO: find a better method to do this. This is done in order to bypass validation

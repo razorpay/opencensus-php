@@ -130,6 +130,39 @@ class BharatQrPaymentTest extends TestCase
         $this->assertEquals($bharatQr['expected'], true);
     }
 
+    public function testUpiVerifyAndRefundPayment()
+    {
+        $this->qrCode = $this->createVirtualAccount();
+
+        $this->ba->directAuth();
+
+        $request = $this->testData['testUpiQrPaymentProcess'];
+
+        $qrCode = $this->getLastEntity('qr_code', true);
+
+        $qrCodeId = substr($qrCode['id'], 3);
+
+        $request['content']['merchantTranId'] = $qrCodeId;
+
+        $content = $this->getMockServer('upi_icici')->getAsyncCallbackContentForBharatQr($request['content']);
+
+        $request['raw'] = $content;
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $xmlResponse = $response['original'];
+
+        $response = $this->parseResponseXml($xmlResponse);
+
+        $this->assertEquals('OK', $response[0]);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->verifyPayment($payment['id']);
+
+        $this->refundPayment($payment['id']);
+    }
+
     public function testFailedPayment()
     {
         $this->markTestSkipped('We wont be getting notifications for failed payments');
