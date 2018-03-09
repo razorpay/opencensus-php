@@ -157,7 +157,7 @@ return array(
         'throttle' => [
             'host'               => env('REDIS_HOST'),
             'port'               => env('REDIS_PORT'),
-            'database'           => env('THROTTLE_V2_REDIS_DB'),
+            'database'           => env('THROTTLE_REDIS_DB'),
             'timeout'            => 5,
             'read_write_timeout' => 5,
         ],

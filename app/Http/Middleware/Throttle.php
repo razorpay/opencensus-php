@@ -4,7 +4,7 @@ namespace RZP\Http\Middleware;
 
 use RZP\Http\Throttle\Throttler;
 
-final class ThrottleV2
+final class Throttle
 {
     public function handle($request, \Closure $next)
     {

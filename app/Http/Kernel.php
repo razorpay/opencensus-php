@@ -38,7 +38,7 @@ class Kernel extends HttpKernel
      * @var array
      */
     protected $routeMiddleware = [
-        'throttle_v2'        => \RZP\Http\Middleware\ThrottleV2::class,
+        'throttle'           => \RZP\Http\Middleware\Throttle::class,
         'auth'               => \RZP\Http\Middleware\Authenticate::class,
         'admin_access'       => \RZP\Http\Middleware\AdminAccess::class,
         'user_access'        => \RZP\Http\Middleware\UserAccess::class,
