@@ -45,7 +45,9 @@ export default class GenericEntity extends Component {
     let { type, id } = this.params;
 
     fetch(
-      { url: `/admin/api/${mode}/admin/${type}/${id}` },
+      {
+        url: `/admin/api/${mode}/admin/${type}/${id}`,
+      },
       suppressDefaultError
     ).then(data => {
       if (!data.errors && data) {
@@ -75,7 +77,6 @@ export default class GenericEntity extends Component {
   render() {
     let { id, type, mode = null } = this.params;
     let { data, loading } = this.state;
-    console.log('LOADING..', loading);
 
     return (
       <div class="entity-page">

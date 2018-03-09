@@ -138,7 +138,7 @@ class RawApiRequest
                 $this->setApiCredentials($input['mode']);
 
                 // Admin should be able to hit any internal route
-                // which means we have to skip sending admin token
+                // which means we have to *skip* sending admin token
                 unset($this->params['headers']['X-Admin-Token']);
                 break;
 

@@ -12,6 +12,7 @@ use App\Http\AppResponse;
 use Illuminate\Http\Request;
 use App\Mailers\ContactFormMailer;
 use App\Mailers\MiscMailer;
+use App\Admin\ApiRequestAny;
 
 class MerchantController extends Controller
 {
@@ -222,5 +223,36 @@ class MerchantController extends Controller
         $mailer->sendFeedbackToSupport($input['email'], $input['subject'], $input['message'])->queueAndDeliver();
 
         return AppResponse::jsonResponse([], ['success' => true]);
+    }
+
+    public function downloadReport(string $logId)
+    {
+        $request = new \App\Admin\ApiRequestAny(['client_type' => 'merchant']);
+
+        list($error, $data) = $request->send("reporting/logs/$logId", 'GET');
+
+        if ((empty($error) === true) and
+            (empty($data) === false) and
+            (empty($data['file_id']) === false))
+        {
+            $fileId = $data['file_id'];
+
+            // Re-create to avoid any GC-related bugs
+            $request = new \App\Admin\ApiRequestAny(['client_type' => 'merchant']);
+
+            list($error, $data) = $request->send("ufh/file/$fileId/get-signed-url", 'GET');
+
+            // Trigger download
+            if ((empty($error) === true) and
+                (empty($data) === false))
+            {
+                if (isset($data['signed_url']))
+                {
+                    return redirect($data['signed_url']);
+                }
+            }
+        }
+
+        return AppResponse::jsonResponse("Some error occurred.", null);
     }
 }

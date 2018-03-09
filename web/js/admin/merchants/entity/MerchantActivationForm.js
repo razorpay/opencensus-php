@@ -11,7 +11,6 @@ import EntityRow from 'ui/EntityRow';
 import TabsContainer from 'ui/Tabs';
 
 import ContactDetails from './merchantActivationForms/ContactDetails';
-import WebsiteDetails from './merchantActivationForms/WebsiteDetails';
 import BankAccountDetails from './merchantActivationForms/BankAccountDetails';
 import DocumentDetails from './merchantActivationForms/DocumentDetails';
 import ProductOnboarding from './merchantActivationForms/ProductOnboarding';
@@ -141,8 +140,7 @@ export default class MerchantActivationForm extends Component {
             >
               <ContactDetails {...details} title={tabNames[0]} />
               <BusinessDetails {...details} title={tabNames[1]} />
-              <WebsiteDetails {...details} title={tabNames[2]} />
-              <BankAccountDetails {...details} title={tabNames[3]} />
+              <BankAccountDetails {...details} title={tabNames[2]} />
               <DocumentDetails
                 merchantId={this.merchantId}
                 {...details}
@@ -206,7 +204,6 @@ function _getOverviewFields(details) {
 const tabNames = [
   'Contact Details',
   'Business Details',
-  'Website details',
   'Bank Account Details',
   'Document Uploads',
   'Product Onboading',

@@ -9,7 +9,7 @@ import Form from 'ui/Form';
 import Field, { SelectField, CheckField } from 'ui/Field';
 
 // iin Actions
-export default ({ entity, updateEntity }) => {
+export default ({ entity, updateEntity, mode }) => {
   function updateIIN(body) {
     const iin = {
       category: body.category,
@@ -29,7 +29,10 @@ export default ({ entity, updateEntity }) => {
       }
     }
 
-    return adminPut(`iins/${body.iin}`)
+    return adminPut({
+      url: `${mode}/iins/${body.iin}`,
+      data: iin,
+    })
       .then(data => {
         if (data) {
           notifySuccess('IIN is updated successfully');

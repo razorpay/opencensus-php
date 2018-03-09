@@ -22,6 +22,7 @@ const activationStepMap = {
     'business_name',
     'business_dba',
     'business_international',
+    'business_website',
     'business_paymentdetails',
     'business_model',
     'business_registered_address',
@@ -41,16 +42,6 @@ const activationStepMap = {
     'company_pan_name',
   ],
   3: [
-    'business_website',
-    'website_about',
-    'website_contact',
-    'website_privacy',
-    'website_terms',
-    'website_refund',
-    'website_pricing',
-    'website_login',
-  ],
-  4: [
     'bank_branch_ifsc',
     'bank_account_number',
     'bank_account_name',
@@ -62,7 +53,7 @@ const activationStepMap = {
     'bank_beneficiary_pin',
     'bank_branch',
   ],
-  5: [
+  4: [
     'business_proof_url',
     'business_pan_url',
     'address_proof_url',
@@ -85,10 +76,10 @@ const accountStepMapWithKYC = {
   3: ['address_proof_url', 'promoter_pan_url'],
 };
 
-// We use only the first four keys from the activationStepMap
-// the fifth key consists the file fields
+// We use only the keys except the last one from the activationStepMap
+// the last key consists the file fields
 const activationFields = Object.keys(activationStepMap).reduce((prev, curr) => {
-  if (curr < 5) {
+  if (curr < Object.keys(activationStepMap).length) {
     prev.push(...activationStepMap[curr]);
   }
   return prev;
@@ -187,10 +178,9 @@ export default class Activation extends Entity {
 
   saveActivation(data) {
     // Auto add 'http' if not filled by user
-
-    activationStepMap[3].forEach(key => {
-      data[key] = autoPrefixUrls(data[key]);
-    });
+    if (data.business_website) {
+      data.business_website = autoPrefixUrls(data.business_website);
+    }
 
     return merchantFetch({
       url: 'merchant/activation',

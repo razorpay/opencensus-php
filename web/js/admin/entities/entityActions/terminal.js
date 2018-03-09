@@ -119,7 +119,7 @@ export default ({ entity, mode, updateEntity }) => {
 
   function deleteTerminal() {
     return fetch({
-      url: `${mode}/terminals/${entity.id}`,
+      url: `/admin/api/${mode}/terminals/${entity.id}`,
       method: 'delete',
     })
       .then(data => {
@@ -142,6 +142,13 @@ export default ({ entity, mode, updateEntity }) => {
     return adminPut({
       url: `${mode}/terminals/${entity.id}/toggle`,
       data: { toggle: isEnabled ? 0 : 1 },
+    }).then(data => {
+      if (data && (typeof data.success === 'undefined' || data.success)) {
+        notifySuccess(
+          `Terminal is successfully ${isEnabled ? 'disabled' : 'enabled'}`
+        );
+        updateEntity(data);
+      }
     });
   }
 

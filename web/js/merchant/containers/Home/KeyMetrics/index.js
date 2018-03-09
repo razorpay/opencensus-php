@@ -20,14 +20,25 @@ import { showNotification } from 'rzp/modules/notifications';
 import { groupBy } from 'rzp/utils/pokedex';
 
 import { fetch } from 'merchant/modules/pokedex';
-import { API_ERROR, API_INVALID_RESP } from 'merchant/components/Home/data';
-import { trackNoData } from 'merchant/containers/Home/ga';
+import {
+  API_ERROR,
+  API_INVALID_RESP,
+  getPlatformColor,
+  getPaymentMethodColor
+} from 'merchant/components/Home/data';
+import {
+  trackNoData,
+  trackError
+} from 'merchant/containers/Home/ga';
 import Tooltip from 'merchant/components/Home/Tooltip';
 
 import {
   NUM_TRANSACTIONS,
+  TRANSACTION_VOLUME,
+  REFUNDS,
   SAVED_CARDS,
   SUCCESS_RATE,
+  PLATFORM,
   tabsOrder,
   tabsMeta,
   getQuery,
@@ -195,7 +206,14 @@ class KeyMetricsContainer extends Component {
     const { tabsState, selectedTab } = this.state,
       tabState = tabsState[selectedTab],
       { selectedGrouping, selectedFilters } = tabState,
-      { startDate, endDate, mode, sectionTitle, isAdmin } = this.props;
+      {
+        startDate,
+        endDate,
+        mode,
+        sectionTitle,
+        isAdmin,
+        analyticsFetch
+      } = this.props;
 
     let filterBy = null;
 
@@ -227,7 +245,7 @@ class KeyMetricsContainer extends Component {
 
     const requestId = ++this.requestId;
 
-    return fetch(query, mode)
+    return (analyticsFetch || fetch)(query, mode)
       .then(resp => {
         if (requestId !== this.requestId) {
           return null;
@@ -296,7 +314,8 @@ class KeyMetricsContainer extends Component {
           // Timeline data
           const histogram = resp.data[`${tabName}Histogram`];
           if (histogram) {
-            const { labels, datasets, aggregates, csv } = getTimelineData({
+
+            const options = {
               data: histogram.result,
               groupByColumnName:
                 typeof tabMeta.groupByColumnName === "undefined"
@@ -309,7 +328,24 @@ class KeyMetricsContainer extends Component {
               isCurrency,
               valueKey,
               noGrouping
-            });
+            };
+
+            if ([NUM_TRANSACTIONS, TRANSACTION_VOLUME , REFUNDS].indexOf(
+              selectedTab
+            ) >= 0) {
+            
+              options.getColor = (selectedGrouping &&
+                                  selectedGrouping.value === PLATFORM)
+                                    ? getPlatformColor
+                                    : getPaymentMethodColor;
+            }
+
+            const {
+              labels,
+              datasets,
+              aggregates,
+              csv
+            } = getTimelineData(options);
 
             // track in GA that no data found in this section for 
             // given daterange
@@ -373,9 +409,14 @@ class KeyMetricsContainer extends Component {
         }
 
         if (data.error) {
+
+          trackError(`Error while fetching data for Keymetrics - ${
+                      selectedTab}`);
+
           this.props.showNotification({
             type: 'error',
             message: data.error,
+            hidePrevious: true
           });
         }
 
@@ -411,7 +452,8 @@ class KeyMetricsContainer extends Component {
     oldestTransactionDate =
       oldestTransactionDate || this.props.oldestTransactionDate;
 
-    const { startDate, endDate, value } = oldestTransactionDate;
+    const { analyticsFetch } = this.props,
+          { startDate, endDate, value } = oldestTransactionDate;
 
     if (
       oldestTransactionDate.error ||
@@ -450,7 +492,7 @@ class KeyMetricsContainer extends Component {
       countsOnly: true,
     });
 
-    return fetch(query, this.props.mode)
+    return (analyticsFetch || fetch)(query, this.props.mode)
       .then(data => {
         if (trendRequestID !== this.trendRequestID) {
           return null;
@@ -513,9 +555,13 @@ class KeyMetricsContainer extends Component {
 
           return;
         } else {
+
+          trackError(`Error while fetching prev data for all tabs`);
+
           this.props.showNotification({
             type: 'error',
             message: data.error,
+            hidePrevious: true
           });
 
           tabsOrder.forEach(tabName => {

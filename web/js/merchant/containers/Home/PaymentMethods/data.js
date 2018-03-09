@@ -4,7 +4,19 @@ const paymentMethodsColumns = [
   'method', 'bank', 'issuer', 'network', 'wallet', 'type'
 ];
 
-const getQuery = ({ startTime, endTime }) => ({
+const aggTypes = [
+  {
+    value     : "sum",
+    text      : "By Payment Volume",
+    isCurrency: true
+  },
+  {
+    value : "count",
+    text  : "By Number of Payments"
+  }
+];
+
+const getQuery = ({ startTime, endTime, aggType=aggTypes[0].value}) => ({
   filters: {
     default: [
       getDefaultPaymentFilter(startTime, endTime) 
@@ -12,10 +24,10 @@ const getQuery = ({ startTime, endTime }) => ({
   },
   aggregations: {
     agg: {
-      agg_type: 'sum',
-      details: {
-        index: 'payments',
-        column: 'base_amount',
+      agg_type: aggType,
+      details : {
+        index   : 'payments',
+        column  : 'base_amount',
         group_by: paymentMethodsColumns,
       },
     },
@@ -27,4 +39,10 @@ const bankNames = {"AIRP":"Airtel Payments Bank","ALLA":"Allahabad Bank","ANDB":
 
 const getBankName = (bankCode) => bankNames[bankCode] || "Unknown";
 
-export { getQuery, paymentMethodsColumns, bankNames, getBankName };
+export {
+  getQuery,
+  aggTypes,
+  bankNames,
+  getBankName,
+  paymentMethodsColumns,
+};

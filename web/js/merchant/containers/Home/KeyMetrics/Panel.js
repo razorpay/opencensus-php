@@ -287,7 +287,7 @@ class Panel extends Component {
             <Link
               target="_blank"
               to={`/${this.meta
-                .index}?from=${startDate.unix()}&to=${endDate.unix()}`}
+                .index}?from=${startDate.unix()}&to=${endDate.unix()}&ref=home`}
               onClick={() =>
                 trackGoToLinks(
                   titleCase(this.meta.index),

@@ -1,0 +1,17 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: traefik
+  generation: 1
+  name: dashboard
+  namespace: echo
+spec:
+  rules:
+  - host: echo-dashboard.razorpay.in
+    http:
+      paths:
+      - backend:
+          serviceName: dashboard
+          servicePort: 80
+      path: /

@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { Component } from 'react';
 import moment from 'moment';
 import 'react-dates/initialize';
@@ -31,7 +32,7 @@ import {
   sourceFilterVals
 } from './pokedexData';
 
-pokeConfig.merchantId = window.rzp_user.id;
+const merchantId = pokeConfig.merchantId = window.rzp_user.id;
 
 @connect(state => state.session, {
   ...SessionActions,
@@ -54,6 +55,15 @@ class App extends Component {
     this.onFilterChange = this.onFilterChange.bind(this);
   }
 
+  analyticsFetch (query) {
+  
+    return axios({
+      url: `/admin/api/live_${merchantId}/merchant/analytics`,
+      method: "post",
+      data: query,
+    }).then((data) => data.data);
+  }
+
   onFirstTxnDate (firstTxnDate) {
   
     firstTxnDate = firstTxnDate || 0;
@@ -65,7 +75,7 @@ class App extends Component {
 
     delete query.filters.default[0].authorized_at;
 
-    fetch(query).then((resp) => {
+    this.analyticsFetch(query).then((resp) => {
    
       if (!resp.data || !resp.data.agg) {
       
@@ -110,6 +120,7 @@ class App extends Component {
                     tabsMeta={tabsMeta}
                     onFirstTxnDate={this.onFirstTxnDate}
                     onFilterChange={this.onFilterChange}
+                    analyticsFetch={this.analyticsFetch}
                     isAdmin={true}/>
   }
 

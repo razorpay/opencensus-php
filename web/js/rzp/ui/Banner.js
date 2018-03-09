@@ -11,8 +11,8 @@ import { Link } from 'react-router-dom';
  * (https://getbootstrap.com/docs/3.3/components/#alerts) , but takes an argument
  * called `cta`(Call to Action). when cta is a function , the function is called
  * and the return value will be embedded as cta (can be used to put components),
- * when `cta` is a dictionary, the following props are must to display cta -
- * "ctaText" and one of "ctaUrl" or "ctaOnClick", otherwise cta will not be displayed
+ * when `cta` is a string( cta text) -
+ * one of "ctaUrl" or "ctaOnClick", otherwise cta will not be displayed
  *
  * Example:
  * <Banner message="my message" cta="Action" ctaUrl="http://example.com/"/>

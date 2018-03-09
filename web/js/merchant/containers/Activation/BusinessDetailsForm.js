@@ -11,12 +11,16 @@ import {
   validatePincodeLength,
   validatePANCard,
   validateCIN,
+  lenientUrl,
 } from 'rzp/utils/validators';
 import { states } from 'rzp/utils/constants';
 
 import { getPincodeDetails } from 'merchant/modules/activation';
 
 const selector = formValueSelector('activationBusinessDetails');
+
+const appUrlDomains = ['itunes.apple', 'play.google'];
+
 @connect(state => {
   return {
     business_type: selector(state, 'business_type'),
@@ -28,14 +32,27 @@ const selector = formValueSelector('activationBusinessDetails');
     business_operation_state: selector(state, 'business_operation_state'),
     business_operation_city: selector(state, 'business_operation_city'),
     business_operation_pin: selector(state, 'business_operation_pin'),
+    business_website: selector(state, 'business_website'),
   };
 }, null)
 export default class BusinessDetailsForm extends Component {
   state = {
     or_same: true,
+    url_type: 'web',
   };
 
   componentWillMount() {
+    const { business_website } = this.props;
+
+    if (business_website) {
+      const found = appUrlDomains.some(domain => {
+        return business_website.indexOf(domain) > -1;
+      });
+      if (found) {
+        this.setState({ url_type: 'app' });
+      }
+    }
+
     this.verifySameAddress();
   }
 
@@ -107,6 +124,10 @@ export default class BusinessDetailsForm extends Component {
       this.props.change(`business_${code}_state`, state);
       this.updateOperationalAddress();
     });
+  };
+
+  onUrlTypeChange = e => {
+    this.setState({ url_type: e.target.value });
   };
 
   render() {
@@ -225,7 +246,6 @@ export default class BusinessDetailsForm extends Component {
                   </Field>
                 </div>
               </div>
-
               <div class="form-group">
                 <label class="col-md-3 control-label label-required">
                   Business Model
@@ -260,16 +280,102 @@ export default class BusinessDetailsForm extends Component {
                       type="checkbox"
                       disabled={locked}
                     />
-                    <label for="business_international" class="icon i-check" />
-                    <span class="left-label label-required">
-                      International Payments Required?
-                    </span>
+                    <label for="business_international" class="icon i-check">
+                      <span>International Payments Required?</span>
+                    </label>
                   </div>
                   <small class="help-block">
-                    <i class="icon icon-info-circle" />
+                    <i class="i i-info-circle" />
                     <span>
                       Please note that applications for international
                       transactions take longer time to process.
+                    </span>
+                  </small>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="col-md-3 control-label label-required">
+                  Website/App URL
+                </label>
+                <div class="col-md-9">
+                  <div class="RadioButton next">
+                    <label>
+                      <input
+                        type="radio"
+                        name="url_type"
+                        value="web"
+                        checked={this.state.url_type === 'web'}
+                        onChange={this.onUrlTypeChange}
+                      />
+                      <div>
+                        <div class="RadioButton__button" />
+                        <div class="RadioButton__label">
+                          <div>
+                            <span>Website</span>
+                          </div>
+                        </div>
+                      </div>
+                    </label>
+                  </div>
+
+                  <div class="RadioButton next">
+                    <label>
+                      <input
+                        type="radio"
+                        name="url_type"
+                        value="app"
+                        checked={this.state.url_type === 'app'}
+                        onChange={this.onUrlTypeChange}
+                      />
+                      <div>
+                        <div class="RadioButton__button" />
+                        <div class="RadioButton__label">
+                          <div>
+                            <span>App</span>
+                          </div>
+                        </div>
+                      </div>
+                    </label>
+                  </div>
+                  <Field
+                    name="business_website"
+                    component={InputField}
+                    class="form-control"
+                    autoFocus={true}
+                    validate={[
+                      required(),
+                      lenientUrl('Please enter a valid URL'),
+                    ]}
+                  />
+                  <small class="help-block">
+                    <i class="i i-info-circle" />
+                    <span>
+                      The entered App/Website should contain{' '}
+                      <strong>
+                        About Us, Contact Us,{' '}
+                        <a
+                          class="btn-link"
+                          href="https://docs.google.com/document/d/1yqqWTE_jfC8F_u9UV9nLq3AUZR2wwpQGJigRJV3YQvg/pub"
+                          target="_blank"
+                        >
+                          Privacy Policy
+                        </a>,{' '}
+                        <a
+                          class="btn-link"
+                          href="https://docs.google.com/document/d/1bCwt0WccF7oDMBGAGRxtPgUfzqGzkUjtLnnE1JlL2dg/pub"
+                          target="_blank"
+                        >
+                          Terms & Conditions
+                        </a>,{' '}
+                        <a
+                          class="btn-link"
+                          href="https://docs.google.com/document/d/1xYM1QHm9S5phnkzyENqJ3KXv37schlsiTp0Id_4IMwE/pub"
+                          target="_blank"
+                        >
+                          Cancellation/Refund Policies
+                        </a>
+                      </strong>. (Refer these links for sample pages)
                     </span>
                   </small>
                 </div>
@@ -359,10 +465,11 @@ export default class BusinessDetailsForm extends Component {
                         onChange={this.handleSameAddressCheck}
                         checked={this.state.or_same}
                       />
-                      <label htmlFor="or_same" class="icon i-check" />
-                      <span class="left-label">
-                        Operational Address same as Registered Address
-                      </span>
+                      <label htmlFor="or_same" class="icon i-check">
+                        <span>
+                          Operational Address same as Registered Address
+                        </span>
+                      </label>
                     </div>
                     <small class="help-block">
                       <i class="i i-info-circle" />

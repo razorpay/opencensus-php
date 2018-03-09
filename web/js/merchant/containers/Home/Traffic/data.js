@@ -18,7 +18,7 @@ const groupValues = ['transactionVolume', 'noTransactions'];
 
 const groupMeta = {
   [groupValues[0]]: {
-    title: 'By Transaction Volume',
+    title: 'By Payment Volume',
     aggType: 'sum',
     column: 'base_amount',
     groupBy: 'platform',
@@ -26,7 +26,7 @@ const groupMeta = {
     value: groupValues[0],
   },
   [groupValues[1]]: {
-    title: 'By Number of Transactions',
+    title: 'By Number of Payments',
     aggType: 'count',
     groupBy: 'platform',
     value: groupValues[1],
@@ -58,6 +58,7 @@ const getQuery = ({ startTime, endTime, group }) => {
 const getPieData = ({
   data,
   groupByColumnName,
+  getColor,
   groupTitleMap = {},
   isCurrency,
 }) => {
@@ -77,47 +78,73 @@ const getPieData = ({
 
   const labels = [],
     datasets = {
-                 data: [],
-                 backgroundColor: colors,
-                 hoverBackgroundColor: colors
+                 data: []
                },
     legendData = [];
 
-  let csvHeader = ['', `Total${isCurrency ? '(Paise)' : ''}`, '%Split'],
-    csvFooter = ['Total'],
+  let csvHeader = ["", "Amount", '%Split'],
     csvData = [],
     csvGrandTotal = 0;
 
-  const groupedData = groupByPlatform(data);
+  const valueReducer   = (sum, item) => sum + item.value,
+        groupedData    = groupByPlatform(data),
+        colorsToBeUsed = [];
 
-  Object.keys(groupedData).forEach((groupName, index) => {
-    const groupTitle =
-        groupTitleMap[groupName] || globalGroupTitleMap[groupName] || groupName,
-      groupCSVData = [];
+  Object.keys(groupedData)
+        // sorting groups by share of contribution in desc order
+        .sort((groupName1, groupName2) => {
 
-    labels.push(groupTitle);
-    groupCSVData.push(groupTitle);
+          let group2Value = groupedData[groupName2],
+              group1Value = groupedData[groupName1];
 
-    let value = groupedData[groupName].reduce(
-      (result, item) => result + item.value,
-      0
-    ),
-        displayValue = isCurrency
-                         ? paiseToRupees(value)
-                         : value;
+          if (Array.isArray(group2Value)) {
+          
+            group2Value = groupedData[groupName2]
+                        = group2Value.reduce(valueReducer, 0);
+          }
 
-    datasets.data.push(displayValue);
-    groupCSVData.push(value);
+          if (Array.isArray(group1Value)) {
+          
+            group1Value = groupedData[groupName1]
+                        = group1Value.reduce(valueReducer, 0);
+          }
 
-    legendData.push({
-      color: colors[index % colors.length],
-      label: groupTitle,
-      value: displayValue,
-    });
+          return group2Value - group1Value;
+        })
+        .forEach((groupName, index) => {
+          const groupTitle   = groupTitleMap[groupName]       ||
+                               globalGroupTitleMap[groupName] ||
+                               groupName,
+                groupCSVData = [],
+                color        = getColor
+                                 ? getColor(groupTitle)
+                                 : colors[index % colors.length];
 
-    csvData.push(groupCSVData);
-    csvGrandTotal += value;
-  });
+          labels.push(groupTitle);
+          groupCSVData.push(groupTitle);
+
+          let value        = groupedData[groupName],
+              displayValue = isCurrency
+                               ? paiseToRupees(value)
+                               : value;
+
+          datasets.data.push(displayValue);
+          groupCSVData.push(value);
+
+          legendData.push({
+            color,
+            label: groupTitle,
+            value: displayValue,
+          });
+
+          colorsToBeUsed.push(color);
+
+          csvData.push(groupCSVData);
+          csvGrandTotal += value;
+        });
+
+  datasets.backgroundColor      = colorsToBeUsed;
+  datasets.hoverBackgroundColor = colorsToBeUsed;
 
   csvData = csvData.map(row => {
 
@@ -128,10 +155,7 @@ const getPieData = ({
     return row;
   });
 
-  csvFooter.push(csvGrandTotal);
-
   csvData.unshift(csvHeader);
-  csvData.push(csvFooter);
 
   return {
     labels,

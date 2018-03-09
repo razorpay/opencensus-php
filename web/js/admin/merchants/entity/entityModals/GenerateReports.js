@@ -1,11 +1,13 @@
 import React, { Component } from 'react';
 import BaseModal from 'ui/BaseModal';
+import { saveAs } from 'file-saver';
 
 import { notifyError, notifySuccess } from 'common/modal';
 
 import Form from 'ui/Form';
 import { Field, RadioField, SelectField, DateField } from 'ui/Field';
 import fetch, { adminFetch } from 'common/fetch';
+import { prefixEntityValue } from 'common/data';
 import AsyncButton from 'ui/AsyncButton';
 import { PowerSelect, TypeAhead } from 'react-power-select';
 
@@ -28,7 +30,7 @@ export default class GenerateReports extends Component {
     const isMarketplaceEnabled = details.tags.indexOf('Marketplace') !== -1;
 
     if (isMarketplaceEnabled && false) {
-      // Feature to be used only when Merchant Dash
+      // TODO: Feature to be used only in Merchant Dash, so being ignored in admin dashboard right now.
       fetch({ url: 'live/accounts' })
         .then(response => {
           if (response) {
@@ -214,7 +216,7 @@ export default class GenerateReports extends Component {
     };
 
     if (isMarketplaceEnabled && account_id !== details.current) {
-      data.account_id = 'acc_' + account_id; // It will be handled at api level later
+      data.account_id = prefixEntityValue('account', account_id); // It will be handled at api level later
     }
 
     if (entity === 'broking') {

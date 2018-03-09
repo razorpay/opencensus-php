@@ -17,15 +17,30 @@ import { platformGroupingVals } from 'rzp/utils/pokedex';
 
 const dateFormat = 'Do MMM YYYY';
 
+const TRANSACTION_VOLUME = 'transactionVolume',
+  NUM_TRANSACTIONS = 'numTransactions',
+  REFUNDS = 'refunds',
+  SAVED_CARDS = 'savedCards',
+  SUCCESS_RATE = 'successRate',
+  PLATFORM = 'platform';
+
+export {
+  TRANSACTION_VOLUME,
+  NUM_TRANSACTIONS,
+  SAVED_CARDS,
+  REFUNDS,
+  PLATFORM
+};
+
 const defaultGroupingVals = [
   {
     value: 'method',
-    text: 'By Payment Method',
+    text : 'By Payment Method',
     query: ['method'],
   },
   {
-    value: 'platform',
-    text: 'By Platforms',
+    value: PLATFORM,
+    text : 'By Platforms',
     query: platformGroupingVals,
   },
 ];
@@ -57,14 +72,6 @@ export const breakdownVals = [
     title: 'Monthly',
   },
 ];
-
-const TRANSACTION_VOLUME = 'transactionVolume',
-  NUM_TRANSACTIONS = 'numTransactions',
-  REFUNDS = 'refunds',
-  SAVED_CARDS = 'savedCards',
-  SUCCESS_RATE = 'successRate';
-
-export { TRANSACTION_VOLUME, NUM_TRANSACTIONS, SAVED_CARDS, REFUNDS };
 
 export const tabsOrder = [
   TRANSACTION_VOLUME,
@@ -296,6 +303,7 @@ export const getTimelineData = ({
   startTime,
   endTime,
   noGrouping,
+  getColor,
   valueKey = 'value',
   breakdown = 'daily',
   groupTitleMap = {},
@@ -361,12 +369,11 @@ export const getTimelineData = ({
     groupAggregatesMap = {};
 
   let csvData = [],
-    csvHeader = ['#', 'Date'],
-    csvFooter = ['', 'Total'],
+    csvHeader = ['Date'],
     csvGrandTotal = 0;
 
   if (data.length === 0 || groups.length === 0) {
-    csvData = csvData.concat([csvHeader, csvFooter.concat([0])]);
+    csvData = csvData.concat([csvHeader]);
 
     return {
       labels: [],
@@ -381,19 +388,15 @@ export const getTimelineData = ({
     const groupLabel =
         groupTitleMap[groupName] ||
         globalGroupTitleMap[groupName] ||
-        (groupByColumnName === 'platform' ? groupName : titleCase(groupName)),
-      groupColor = colors[index % colors.length];
+        (groupByColumnName === 'platform' ? groupName : titleCase(groupName));
 
     const dataset = {
       label: groupLabel,
-      backgroundColor: groupColor,
-      borderColor: groupColor,
-      data: [],
+      data: []
     };
 
     const aggregate = {
       label: groupLabel,
-      color: groupColor,
       value: 0,
     };
 
@@ -414,7 +417,9 @@ export const getTimelineData = ({
         groupMap =
           timelineGroupMap[timestamp] || (timelineGroupMap[timestamp] = {});
 
-      groupMap[groupName] = item[valueKey];
+      // for platform desktop , there will be multiple values for the same
+      // timestamp. If value already exists , add to it
+      groupMap[groupName] = (groupMap[groupName] || 0) + item[valueKey];
 
       otherGroups.forEach(groupName => {
         groupMap[groupName] = groupMap[groupName] || 0;
@@ -574,7 +579,6 @@ export const getTimelineData = ({
       groupCsvData.push(yAxisVal);
     });
 
-    groupsCsvData[tsIndex].unshift(tsIndex + 1);
     groupsCsvData[tsIndex].push(totalAtTime);
 
     timestamps[tsIndex] = moment(timestamp);
@@ -584,7 +588,6 @@ export const getTimelineData = ({
 
   aggregates.forEach(aggregate => {
     csvHeader.push(aggregate.label);
-    csvFooter.push(aggregate.value);
 
     csvGrandTotal += aggregate.value;
     aggregate.value = isCurrency
@@ -592,11 +595,35 @@ export const getTimelineData = ({
       : aggregate.value;
   });
 
-  csvHeader.push(`Total${isCurrency ? '(Paise)' : ''}`);
-  csvFooter.push(csvGrandTotal);
+  csvHeader.push("Amount");
 
   csvData.unshift(csvHeader);
-  csvData.push(csvFooter);
+
+  // sorting aggregates by their value in descending order
+  const orderedGroups = aggregates.sort((item1, item2) => {
+
+                           return item2.value - item1.value;
+                        }).reduce((result, item, index) => {
+                        
+                          result[item.label] = index;
+                          item.color = getColor
+                                         ? getColor(item.label)
+                                         : colors[index % colors.length];
+                          return result;
+                        }, {});
+
+  // sorting datasets according to the order of aggregates
+  datasets.sort(({label:label1}, {label:label2}) => {
+  
+    return orderedGroups[label1] - orderedGroups[label2];
+  }).forEach((item, index) => {
+ 
+    // getting the color assigned in the aggregate value
+    const groupColor = aggregates[orderedGroups[item.label]].color;
+
+    item.backgroundColor = groupColor;
+    item.borderColor     = groupColor;
+  });
 
   return {
     labels: timestamps,

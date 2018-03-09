@@ -2,7 +2,7 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
-import DataTable from 'rzp/ui/Table/DataTable';
+import EntityTable from 'merchant/components/EntityTable';
 import ListContainer from 'merchant/containers/ListContainer';
 import RefundsListFilter from 'merchant/components/Refunds/RefundsListFilter';
 import { fetchRefunds as fetchAll } from 'rzp/modules/collection';
@@ -48,7 +48,7 @@ export default class RefundsListContainer extends ListContainer {
           onClearAnalytics={this.onClearAnalytics}
         />
 
-        <DataTable
+        <EntityTable
           title="Refunds"
           columns={[refundId, paymentId, amount, createdAt]}
           count={this.state.count}

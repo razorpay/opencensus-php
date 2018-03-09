@@ -68,7 +68,7 @@ const WebhooksList = props => {
             <tr class="action-row">
               <td class="text-center" colSpan="4">
                 <button
-                  class="btn btn-primary"
+                  class="btn btn-primary m-t"
                   onClick={() => props.onSetupWebhookClick(webhooks[0])}
                 >
                   {webhooks.length
