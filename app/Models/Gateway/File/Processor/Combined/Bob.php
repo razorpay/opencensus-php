@@ -26,7 +26,7 @@ class Bob extends Base
             'total'   => 0
         ];
 
-        $refundsFile= [];
+        $refundsFile = $claimsFile = [];
 
         if (isset($data['refunds']) === true)
         {
@@ -56,6 +56,8 @@ class Bob extends Base
             $amount['claims'] = $amount['claims'] / 100;
 
             $count['claims'] = count($data['claims']);
+
+            $claimsFile = $this->getFileData(FileStore\Type::BOB_NETBANKING_CLAIMS);
         }
 
         $amount['total'] = $amount['claims'] - $amount['refunds'];
@@ -69,6 +71,7 @@ class Bob extends Base
             'amount'      => $amount,
             'count'       => $count,
             'refundsFile' => $refundsFile,
+            'claimsFile'  => $claimsFile,
             'date'        => $date,
             'emails'      => $this->gatewayFile->getRecipients(),
         ];

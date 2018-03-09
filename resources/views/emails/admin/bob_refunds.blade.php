@@ -16,15 +16,15 @@
             <div class="content" style="font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; display: block; max-width: 600px; margin: 0 auto; padding: 0;">
                 <table style="font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; width: 100%; margin: 0; padding: 0;"><tr style="font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; margin: 0; padding: 0;">
                         <td style="font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; margin: 0; padding: 0;">
-                            <p>PFA Refund file.</p>
+                            <p>PFA refund file and claims file.</p>
                             <table style="border: 1px solid grey;">
                                 <thead>
                                 <tr style="border: 1px solid grey">
                                     <th style="border: 1px solid grey">Date</th>
-                                    <th style="border: 1px solid grey">No. Of Txn</th>
-                                    <th style="border: 1px solid grey">Transaction Amt</th>
-                                    <th style="border: 1px solid grey">No. Of Txn</th>
-                                    <th style="border: 1px solid grey">Refund Amt</th>
+                                    <th style="border: 1px solid grey">No. Of Txns</th>
+                                    <th style="border: 1px solid grey">Total Transaction Amt</th>
+                                    <th style="border: 1px solid grey">No. Of Refund Txns</th>
+                                    <th style="border: 1px solid grey">Total Refunds Amt</th>
                                     <th style="border: 1px solid grey">Net Amt</th>
                                 </tr>
                                 </thead>
