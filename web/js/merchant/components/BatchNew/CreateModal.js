@@ -9,6 +9,7 @@ import AsyncButton from 'react-async-button';
 
 import { titleCase } from 'rzp/utils/rzp-utils';
 import { required } from 'rzp/utils/validators';
+import { email } from '../../../rzp/utils/validators';
 
 const selector = formValueSelector('createBatch');
 
@@ -20,10 +21,6 @@ const selector = formValueSelector('createBatch');
 }, null)
 @reduxForm({
   form: 'createBatch',
-  initialValues: {
-    sms_notify: 0,
-    email_notify: 0,
-  },
 })
 export default class BatchCreateModal extends Component {
   generateCtaText = () => {

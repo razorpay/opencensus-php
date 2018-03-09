@@ -34,7 +34,10 @@ export default class BatchValidate extends Component {
         .then(response => {
           this.handleStateChange('success');
           setTimeout(() => {
-            this.props.onValidation(response.data);
+            this.props.onValidation(
+              response.data,
+              file.name.replace(/\.[^/.]+$/, '')
+            );
           }, 1000);
         })
         .catch(error => {

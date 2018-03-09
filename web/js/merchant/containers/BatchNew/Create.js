@@ -8,6 +8,11 @@ import { createPaymentLinkBatch as createBatch } from 'merchant/modules/batches'
 
 @connect(state => state.session, { createBatch, showNotification })
 export default class BatchCreate extends Component {
+  formInitialValues = {
+    sms_notify: 0,
+    email_notify: 0,
+    name: this.props.batchName,
+  };
   handleBatchCreate = props => {
     let data = { ...props };
 
@@ -36,6 +41,7 @@ export default class BatchCreate extends Component {
         parsedEntries={this.props.batch.parsed_entries}
         batchType={this.props.batchType}
         onCreateBatch={this.handleBatchCreate}
+        initialValues={this.formInitialValues}
       />
     );
   }

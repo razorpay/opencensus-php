@@ -14,13 +14,15 @@ import BatchCreate from './Create';
 @connect(null, { closeModal, openModal })
 export default class BatchUpload extends Component {
   state = {
+    batchName: '',
     currentStatus: 'validate',
     batch: null,
   };
 
-  handleValidation = batch => {
+  handleValidation = (batch, batchName) => {
     this.setState({
       batch,
+      batchName,
       currentStatus: 'create',
     });
   };
@@ -55,6 +57,7 @@ export default class BatchUpload extends Component {
               return (
                 <BatchCreate
                   onCreation={this.handleCreation}
+                  batchName={this.state.batchName}
                   batch={this.state.batch}
                   batchType={this.props.batchType}
                 />
@@ -78,14 +81,14 @@ export default class BatchUpload extends Component {
 
 const BatchSuccess = ({ success_count, total_count, name }) => (
   <div class="modal-body">
-    The batch{' '}
+    The batch file named{' '}
     {name ? (
       <span>
         titled <strong>{name}</strong>{' '}
       </span>
     ) : null}{' '}
-    is created succesfully. A total of {success_count} rows were processed out
-    of {total_count}. You can try processing the remaining rows by uploading a
-    new batch file.
+    has been created successfully. You can download the output file from the
+    batch detail view to check payment links generated. For the links that could
+    not be generated due to some issues, please upload a new batch file.
   </div>
 );
