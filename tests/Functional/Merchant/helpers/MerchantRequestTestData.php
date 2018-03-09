@@ -9,9 +9,9 @@ use RZP\Models\Merchant\Detail\RejectionReasons as RejectionReasons;
 return [
 
     'testGetMerchantRequestDetails' => [
-        'request' => [
-            'url' => '/merchant/requests/%s',
-            'method' => 'GET'
+        'request'  => [
+            'url'    => '/merchant/requests/%s',
+            'method' => 'GET',
         ],
         'response' => [
             'content' => [
@@ -22,68 +22,68 @@ return [
     ],
 
     'testChangeMerchantRequestStatusToNeedsClarification' => [
-        'request' => [
-            'url' => '/merchant/requests/%s',
-            'method' => 'PATCH',
+        'request'  => [
+            'url'     => '/merchant/requests/%s',
+            'method'  => 'PATCH',
             'content' => [
-                'status'  => 'needs_clarification',
+                'status'           => 'needs_clarification',
                 'internal_comment' => 'test',
             ],
         ],
         'response' => [
             'content' => [
-                'status'      => 'needs_clarification',
-                'merchant_id' => '10000000000000',
-                'internal_comment'     => 'test',
+                'status'           => 'needs_clarification',
+                'merchant_id'      => '10000000000000',
+                'internal_comment' => 'test',
             ],
         ],
     ],
 
     'testChangeMerchantRequestStatusToRejectedWithRejectionReasons' => [
-        'request' => [
-            'url' => '/merchant/requests/%s',
-            'method' => 'PATCH',
+        'request'  => [
+            'url'     => '/merchant/requests/%s',
+            'method'  => 'PATCH',
             'content' => [
                 'status'            => 'rejected',
-                'internal_comment'           => 'test',
+                'internal_comment'  => 'test',
                 'rejection_reasons' => [
                     [
                         "reason_code"     => "duplicate_or_errenous_creation",
                         "reason_category" => "others",
-                    ]
+                    ],
                 ],
             ],
         ],
         'response' => [
             'content' => [
-                'status'      => 'rejected',
-                'merchant_id' => '10000000000000',
+                'status'           => 'rejected',
+                'merchant_id'      => '10000000000000',
                 'internal_comment' => 'test',
-                'states' => [
-                    'entity'    => 'collection',
-                    'items'     => [
+                'states'           => [
+                    'entity' => 'collection',
+                    'items'  => [
                         [
-                            'name' => 'under_review'
+                            'name' => 'under_review',
                         ],
                         [
-                            'name' => 'rejected'
-                        ]
-                    ]
+                            'name' => 'rejected',
+                        ],
+                    ],
                 ],
             ],
         ],
     ],
 
     'testChangeMerchantRequestStatusWithException' => [
-        'request' => [
-            'url' => '/merchant/requests/%s',
-            'method' => 'PATCH',
+        'request'   => [
+            'url'     => '/merchant/requests/%s',
+            'method'  => 'PATCH',
             'content' => [
-                'status' => 'activated'
+                'status' => 'activated',
             ],
         ],
-        'response' => [
-            'content' => [
+        'response'  => [
+            'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Invalid status change',
@@ -92,15 +92,15 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'                 => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code'   => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
     'testGetMerchantRequestStatusLog' => [
-        'request' => [
-            'url' => '/merchant/requests/%s/status_log',
-            'method' => 'GET'
+        'request'  => [
+            'url'    => '/merchant/requests/%s/status_log',
+            'method' => 'GET',
         ],
         'response' => [
             'content' => [
@@ -110,15 +110,15 @@ return [
                     [
                         'entity_type' => 'merchant_request',
                         'entity_id'   => MerchantRequest::DEFAULT_MERCHANT_REQUEST_ID,
-                        'name'        => 'under_review'
+                        'name'        => 'under_review',
                     ],
-                 ],
+                ],
             ],
         ],
     ],
 
     'testCreateMerchantRequest' => [
-        'request' => [
+        'request'  => [
             'url'     => '/merchant/requests',
             'method'  => 'POST',
             'content' => [
@@ -132,39 +132,39 @@ return [
         ],
         'response' => [
             'content' => [
-                'status' => 'under_review',
-                'name' => 'marketplace',
+                'status'      => 'under_review',
+                'name'        => 'marketplace',
                 'submissions' => [
                     'settling_to' => 'Myself',
                     'use_case'    => 'Some new dummy use case if you care',
                 ],
-                'merchant' => [
-                    'id' => '10000000000000'
+                'merchant'    => [
+                    'id' => '10000000000000',
                 ],
-                'states' => [
-                    'entity'    => 'collection',
-                    'items'     => [
+                'states'      => [
+                    'entity' => 'collection',
+                    'items'  => [
                         [
-                            'name' => 'under_review'
-                        ]
-                    ]
-                ]
+                            'name' => 'under_review',
+                        ],
+                    ],
+                ],
             ],
         ],
     ],
 
     'testBulkUpdateMerchantRequests' => [
-        'request' => [
+        'request'  => [
             'url'     => '/merchant/requests/bulk',
             'method'  => 'PUT',
             'content' => [
                 '10000000000000' => [
                     [
-                        'name'        => 'marketplace',
-                        'type'        => 'product',
-                        'status'      => 'rejected',
+                        'name'   => 'marketplace',
+                        'type'   => 'product',
+                        'status' => 'rejected',
                     ],
-                ]
+                ],
             ],
         ],
         'response' => [
@@ -177,17 +177,17 @@ return [
     ],
 
     'testBulkUpdateMerchantRequestsWithErrors' => [
-        'request' => [
+        'request'  => [
             'url'     => '/merchant/requests/bulk',
             'method'  => 'PUT',
             'content' => [
                 '10000000000001' => [
                     [
-                        'name'        => 'marketplace',
-                        'type'        => 'product',
-                        'status'      => 'rejected',
+                        'name'   => 'marketplace',
+                        'type'   => 'product',
+                        'status' => 'rejected',
                     ],
-                ]
+                ],
             ],
         ],
         'response' => [
@@ -201,22 +201,22 @@ return [
                         'status'      => 'rejected',
                         'merchant_id' => '10000000000001',
                         'error'       => 'Unknown Merchant, hence feature not updated',
-                    ]
+                    ],
                 ],
             ],
         ],
     ],
 
     'testFetchMerchantRequests' => [
-        'request' => [
-            'url'     => '/merchant/requests?type=product',
-            'method'  => 'GET',
+        'request'  => [
+            'url'    => '/merchant/requests?type=product',
+            'method' => 'GET',
         ],
         'response' => [
             'content' => [
-                'entity'    => 'collection',
-                'count'     => 2,
-                'items'     => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
                     [
                         'status' => 'under_review',
                         'name'   => 'subscriptions',
@@ -225,15 +225,15 @@ return [
                         'name'   => 'marketplace',
                         'status' => 'under_review',
                     ],
-                ]
+                ],
             ],
         ],
     ],
 
     'testGetForFeatureTypeAndName' => [
-        'request' => [
-            'url'     => '/merchant/requests/product/subscriptions',
-            'method'  => 'GET',
+        'request'  => [
+            'url'    => '/merchant/requests/product/subscriptions',
+            'method' => 'GET',
         ],
         'response' => [
             'content' => [
@@ -245,23 +245,108 @@ return [
 
                     ],
                 ],
-            ]
-        ]
+            ],
+        ],
     ],
 
     'testGetForFeatureTypeAndNameWhichDoesNotExist' => [
-        'request' => [
-            'url'     => '/merchant/requests/product/marketplace',
-            'method'  => 'GET',
+        'request'  => [
+            'url'    => '/merchant/requests/product/marketplace',
+            'method' => 'GET',
         ],
         'response' => [
             'content' => [
                 'questions' => [
                     'marketplace' => [
 
-                    ]
+                    ],
                 ],
-            ]
-        ]
+            ],
+        ],
+    ],
+
+    'testCreateMerchantRequestWithErrors' => [
+        'request'   => [
+            'url'     => '/merchant/requests',
+            'method'  => 'POST',
+            'content' => [
+                'name' => 'marketplace',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The type field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testUpdateMerchantRequest' => [
+        'request'  => [
+            'url'     => '/merchant/requests/%s',
+            'method'  => 'PATCH',
+            'content' => [
+                'internal_comment' => 'test internal comment',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'      => '10000000000000',
+                'internal_comment' => 'test internal comment',
+            ],
+        ],
+    ],
+
+    'testUpdateMerchantRequestWithSubmissions' => [
+        'request'  => [
+            'url'     => '/merchant/requests/%s',
+            'method'  => 'PATCH',
+            'content' => [
+                'internal_comment' => 'test internal comment',
+                'submissions'      => [
+                    'settling_to' => 'Someone else',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'      => '10000000000000',
+                'internal_comment' => 'test internal comment',
+                'submissions'      => [
+                    'settling_to' => 'Someone else',
+                ],
+            ],
+        ],
+    ],
+
+    'testUpdateMerchantRequestWithErrors' => [
+        'request'   => [
+            'url'     => '/merchant/requests/%s',
+            'method'  => 'PATCH',
+            'content' => [
+                'status'            => 'rejected',
+                'rejection_reasons' => [],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The rejection reasons field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
     ],
 ];

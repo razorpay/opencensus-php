@@ -472,6 +472,7 @@ class Core extends Base\Core
         {
             $fileId = $response[$featureName][$question];
 
+            // TODO :: replace its usage with the one from FileStore\Core
             $fileUrl = $this->getSignedUrl($fileId, $merchant->getId());
 
             $response[$featureName][$question] = $fileUrl;

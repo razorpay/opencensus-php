@@ -3,7 +3,6 @@
 namespace RZP\Models\State;
 
 use RZP\Models\Base;
-use RZP\Models\Comment;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Workflow\Action;

@@ -18,7 +18,16 @@ class Service extends Base\Service
             Entity::TYPE => $type,
         ];
 
-        return (new Core)->fetch($input, $merchantId, true);
+        $request = (new Core)->fetch($input, $merchantId, true);
+
+        if (isset($request[Entity::ID]) === true)
+        {
+            $id = $request[Entity::ID];
+
+            return $this->get($id);
+        }
+
+        return $request;
     }
 
     public function getAll(array $input)
@@ -50,13 +59,16 @@ class Service extends Base\Service
      *
      * @param array $input
      *
-     * @return Entity
+     * @return array
+     * @throws \RZP\Exception\BadRequestValidationFailureException
      */
     public function create(array $input)
     {
-        $request = (new Core)->createMerchantRequest($input);
+        $core = new Core;
 
-        return (new Core)->getMerchantRequestDetails($request->getId());
+        $request = $core->createMerchantRequest($input);
+
+        return $core->getMerchantRequestDetails($request->getId());
     }
 
     public function update(string $id, array $input)

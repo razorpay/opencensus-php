@@ -695,7 +695,7 @@ final class Route
         'merchant_requests_list'                  => ['get',      'merchant/requests',                              'MerchantRequestController@getAll'                                  ],
         'merchant_requests_create'                => ['post',     'merchant/requests',                              'MerchantRequestController@create'                                  ],
         'merchant_requests_update'                => ['patch',    'merchant/requests/{id}',                         'MerchantRequestController@update'                                  ],
-        'merchant_requests_bulk_update'           => ['put',      'merchant/requests/bulk',                         'MerchantRequestController@bulkUpdate'                                  ],
+        'merchant_requests_bulk_update'           => ['put',      'merchant/requests/bulk',                         'MerchantRequestController@bulkUpdate'                              ],
 
         'onboarding_features_fetch_details'       => ['get',      'onboarding/features',                            'FeatureController@getOnboardingDetails'                            ],
         'onboarding_features_fetch_submission'    => ['get',      'onboarding/features/{feature}',                  'FeatureController@getOnboardingSubmissions'                        ],

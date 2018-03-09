@@ -6,8 +6,11 @@ use RZP\Models\Merchant\Detail as MerchantDetail;
 
 class Constants
 {
-    const EXPAND   = 'expand';
-    const MERCHANT = 'merchant';
+    const EXPAND            = 'expand';
+    const MERCHANT          = 'merchant';
+    const QUESTIONS         = 'questions';
+    const SUBMISSIONS       = 'submissions';
+    const REJECTION_REASONS = 'rejection_reasons';
 
     /*
      * Need this map to map onboarding statuses to merchant request statuses to
@@ -19,7 +22,7 @@ class Constants
         MerchantDetail\Entity::REJECTED => Status::REJECTED,
     ];
 
-    public static function mapOnboardingStatusToRequestStatus(string $onboardingStatus)
+    public static function getRequestStatusForOnboardingStatus(string $onboardingStatus)
     {
         if (isset(self::ONBOARDING_REQUEST_MAP[$onboardingStatus]) === true)
         {

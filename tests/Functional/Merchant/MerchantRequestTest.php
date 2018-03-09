@@ -96,7 +96,7 @@ class MerchantRequestTest extends TestCase
 
         $request = $testData['request'];
 
-        $request['content'][Request\Entity::SUBMISSIONS][Feature\Constants::VENDOR_AGREEMENT] = $uploadedFile;
+        $request['content'][Request\Constants::SUBMISSIONS][Feature\Constants::VENDOR_AGREEMENT] = $uploadedFile;
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -105,7 +105,41 @@ class MerchantRequestTest extends TestCase
         $this->assertArraySelectiveEquals($this->testData[__FUNCTION__]['response']['content'], $response);
 
         $this->assertEquals($fileStoreData['id'],
-                            'file_'.$response[Request\Entity::SUBMISSIONS][Feature\Constants::VENDOR_AGREEMENT]);
+                            'file_'. $response[Request\Constants::SUBMISSIONS][Feature\Constants::VENDOR_AGREEMENT]);
+    }
+
+    public function testCreateMerchantRequestWithErrors()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testUpdateMerchantRequest()
+    {
+        $this->ba->adminAuth();
+
+        $this->setDefaultMerchantRequestIdInUrl();
+
+        $this->startTest();
+    }
+
+    public function testUpdateMerchantRequestWithSubmissions()
+    {
+        $this->ba->adminAuth();
+
+        $this->setDefaultMerchantRequestIdInUrl();
+
+        $this->startTest();
+    }
+
+    public function testUpdateMerchantRequestWithErrors()
+    {
+        $this->ba->adminAuth();
+
+        $this->setDefaultMerchantRequestIdInUrl();
+
+        $this->startTest();
     }
 
     public function testBulkUpdateMerchantRequests()

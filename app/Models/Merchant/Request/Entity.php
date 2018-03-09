@@ -13,12 +13,9 @@ class Entity extends Base\PublicEntity
     const STATES            = 'states';
     const STATUS            = 'status';
     const MERCHANT          = 'merchant';
-    const QUESTIONS         = 'questions';
-    const SUBMISSIONS       = 'submissions';
     const MERCHANT_ID       = 'merchant_id';
     const PUBLIC_MESSAGE    = 'public_message';
     const INTERNAL_COMMENT  = 'internal_comment';
-    const REJECTION_REASONS = 'rejection_reasons';
 
     protected $entity = 'merchant_request';
 

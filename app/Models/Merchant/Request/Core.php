@@ -27,9 +27,9 @@ class Core extends Base\Core
      */
     public function create(array $input)
     {
-        $submissions = $input[Entity::SUBMISSIONS] ?? [];
+        $submissions = $input[Constants::SUBMISSIONS] ?? [];
 
-        unset($input[Entity::SUBMISSIONS]);
+        unset($input[Constants::SUBMISSIONS]);
 
         $request = new Entity();
 
@@ -39,11 +39,12 @@ class Core extends Base\Core
 
         $this->transaction(function() use($request, $input, $submissions)
         {
-            $this->createState(Status::UNDER_REVIEW, $request, $request->merchant);
-
             $this->repo->saveOrFail($request);
 
-            if ($request->isProductRequest() === true and empty($submissions) === false)
+            $this->createState(Status::UNDER_REVIEW, $request, $request->merchant);
+
+            if (($request->isProductRequest() === true) and
+                (empty($submissions) === false))
             {
                 (new Feature\Core)->postOnboardingSubmissions($request->merchant, $submissions, $input[Entity::NAME]);
             }
@@ -115,9 +116,9 @@ class Core extends Base\Core
             $request->getValidator()->validateActivationStatusChange($request->getStatus(), $input[Entity::STATUS]);
         }
 
-        $rejectionReasons = $input[Entity::REJECTION_REASONS] ?? [];
+        $rejectionReasons = $input[Constants::REJECTION_REASONS] ?? [];
 
-        unset($input[Entity::REJECTION_REASONS]);
+        unset($input[Constants::REJECTION_REASONS]);
 
         $oldRequestDetails = clone $request;
 
@@ -138,25 +139,27 @@ class Core extends Base\Core
             $rejectionReasons,
             $useWorkflow)
         {
+            if ($useWorkflow === true)
+            {
+                $this->triggerWorkflowOnNewStatus(
+                    $request,
+                    $status,
+                    $oldRequestDetails,
+                    $newRequestDetails,
+                    $rejectionReasons
+                );
+            }
+
+            $this->repo->saveOrFail($request);
+
             if ($status === Status::ACTIVATED)
             {
                 $this->addFeatureIfNotEnabled($request);
             }
 
-            $this->triggerWorkflowOnNewStatus(
-                $request,
-                $status,
-                $useWorkflow,
-                $oldRequestDetails,
-                $newRequestDetails,
-                $rejectionReasons
-            );
-
             $stateEntity = $this->createState($status, $request, $admin);
 
             (new Reason\Core)->addRejectionReasons($rejectionReasons, $stateEntity);
-
-            $this->repo->saveOrFail($request);
         });
 
         return $request;
@@ -167,32 +170,26 @@ class Core extends Base\Core
      *
      * @param Entity $request
      * @param string $status
-     * @param bool   $useWorkflow
      * @param Entity $oldRequestDetails
      * @param Entity $newRequestDetails
      * @param array  $rejectionReasons
      *
      * @throws \RZP\Exception\BadRequestValidationFailureException
      */
-    protected function triggerWorkflowOnNewStatus(Entity $request,
-                                                     string $status,
-                                                     bool $useWorkflow,
-                                                     Entity $oldRequestDetails,
-                                                     Entity $newRequestDetails,
-                                                     array $rejectionReasons)
+    protected function triggerWorkflowOnNewStatus(
+        Entity $request,
+        string $status,
+        Entity $oldRequestDetails,
+        Entity $newRequestDetails,
+        array $rejectionReasons)
     {
-        if ($useWorkflow === false)
-        {
-            return;
-        }
-
         if ($status === Status::ACTIVATED)
         {
             $this->app['workflow']
-                ->setEntity($request->getEntity())
-                ->setOriginal($oldRequestDetails)
-                ->setDirty($newRequestDetails)
-                ->handle();
+                 ->setEntity($request->getEntity())
+                 ->setOriginal($oldRequestDetails)
+                 ->setDirty($newRequestDetails)
+                 ->handle();
         }
 
         if ($status === Status::REJECTED)
@@ -222,7 +219,6 @@ class Core extends Base\Core
                 Feature\Entity::NAME        => $request->getName()
             ];
 
-            // Adds to live mode
             (new Feature\Core)->create($params, true);
         }
     }
@@ -239,22 +235,21 @@ class Core extends Base\Core
         Merchant\Entity $merchant,
         array $input)
     {
+        $fetchInput = [
+            Entity::NAME => $input[Entity::NAME],
+            Entity::TYPE => $input[Entity::TYPE]
+        ];
+
         $request = $this->repo
                         ->merchant_request
-                        ->fetch(
-                            [
-                                Entity::NAME => $input[Entity::NAME],
-                                Entity::TYPE => $input[Entity::TYPE]
-                            ],
-                            $merchant->getId()
-                        )
+                        ->fetch($fetchInput, $merchant->getId())
                         ->first();
 
         if (empty($request) === true)
         {
             $input[Entity::MERCHANT_ID] = $merchant->getId();
 
-            $input[Entity::STATUS] = Status::UNDER_REVIEW;
+            $input[Entity::STATUS]      = Status::UNDER_REVIEW;
 
             $request = $this->create($input);
         }
@@ -278,9 +273,11 @@ class Core extends Base\Core
         string $type,
         string $onboardingStatus)
     {
-        $requestStatus = Constants::mapOnboardingStatusToRequestStatus($onboardingStatus);
+        $requestStatus = Constants::getRequestStatusForOnboardingStatus($onboardingStatus);
 
-        return $this->forceUpsertMerchantRequest($merchant, $feature, $type, $requestStatus);
+        $response = $this->forceUpsertMerchantRequest($merchant, $feature, $type, $requestStatus);
+
+        return $response;
     }
 
     /**
@@ -295,10 +292,11 @@ class Core extends Base\Core
      *
      * @return Entity
      */
-    public function forceUpsertMerchantRequest(Merchant\Entity $merchant,
-                                                  string $feature,
-                                                  string $type,
-                                                  string $requestStatus)
+    public function forceUpsertMerchantRequest(
+        Merchant\Entity $merchant,
+        string $feature,
+        string $type,
+        string $requestStatus)
     {
         $request = $this->findOrCreateMerchantRequest($merchant, [Entity::NAME => $feature, Entity::TYPE => $type]);
 
@@ -338,11 +336,11 @@ class Core extends Base\Core
             $rejectionReasonDescriptions[] = RejectionReasons::getReasonDescriptionByReasonCode($rejectionReasonCode);
         }
 
-        $newMerchantDetailsArray[Entity::REJECTION_REASONS] = $rejectionReasons;
+        $newMerchantDetailsArray[Constants::REJECTION_REASONS] = $rejectionReasons;
 
         $this->app['workflow']
-            ->setEntity($newDetails->getEntity())
-            ->handle($oldMerchantDetailsArray, $newMerchantDetailsArray);
+             ->setEntity($newDetails->getEntity())
+             ->handle($oldMerchantDetailsArray, $newMerchantDetailsArray);
     }
 
     /**
@@ -352,7 +350,7 @@ class Core extends Base\Core
      * @param string|null $merchantId
      * @param bool        $fetchFirst
      *
-     * @return mixed
+     * @return array
      */
     public function fetch(array $input, string $merchantId = null, bool $fetchFirst = false)
     {
@@ -372,11 +370,12 @@ class Core extends Base\Core
             $response = [];
         }
 
-        if ((isset($input[Entity::TYPE]) === true) and ($input[Entity::TYPE] === Type::PRODUCT))
+        if ((isset($input[Entity::TYPE]) === true) and
+            ($input[Entity::TYPE] === Type::PRODUCT))
         {
             if (isset($input[Entity::NAME]) === true)
             {
-                $response[Entity::QUESTIONS] = (new Feature\Core)->getOnboardingQuestions([$input[Entity::NAME]]);
+                $response[Constants::QUESTIONS] = (new Feature\Core)->getOnboardingQuestions([$input[Entity::NAME]]);
             }
         }
 
@@ -386,7 +385,7 @@ class Core extends Base\Core
     /**
      * @param string $id
      *
-     * @return mixed
+     * @return array
      */
     public function getMerchantRequestDetails(string $id)
     {
@@ -396,11 +395,13 @@ class Core extends Base\Core
 
         if ($merchantRequest->isProductRequest() === true)
         {
-            $returnData[Entity::SUBMISSIONS] = (new Feature\Core)->getOnboardingSubmissions(
+            $featureCore = new Feature\Core;
+
+            $returnData[Constants::SUBMISSIONS] = $featureCore->getOnboardingSubmissions(
                 $merchantRequest->merchant,
                 $merchantRequest->getName());
 
-            $returnData[Entity::QUESTIONS] = (new Feature\Core)->getOnboardingQuestions(
+            $returnData[Constants::QUESTIONS] = $featureCore->getOnboardingQuestions(
                 [$merchantRequest->getName()]);
         }
 
@@ -423,23 +424,28 @@ class Core extends Base\Core
         $this->transaction(function() use($request, $input) {
 
             // Check form submissions on update
-            if (($request->isProductRequest() === true) and (isset($input[Entity::SUBMISSIONS]) === true))
+            if (($request->isProductRequest() === true) and
+                (isset($input[Constants::SUBMISSIONS]) === true))
             {
-                $submissions = $input[Entity::SUBMISSIONS];
+                $submissions = $input[Constants::SUBMISSIONS];
 
-                unset($input[Entity::SUBMISSIONS]);
+                unset($input[Constants::SUBMISSIONS]);
 
-                (new Feature\Service)->updateOnboardingSubmissions($submissions, $request->getName());
+                (new Feature\Core)->processOnboardingSubmissions(
+                    Feature\Constants::UPDATE,
+                    [$request->getName() => $submissions],
+                    $request->merchant);
             }
 
-            if ($input[Entity::STATUS] !== $request->getStatus())
+            if ((isset($input[Entity::STATUS]) === true) and
+                ($input[Entity::STATUS] !== $request->getStatus()))
             {
                 $statusChangeInput = [
-                    Entity::STATUS            => $input[Entity::STATUS],
-                    Entity::REJECTION_REASONS => $input[Entity::REJECTION_REASONS] ?? [],
+                    Entity::STATUS               => $input[Entity::STATUS],
+                    Constants::REJECTION_REASONS => $input[Constants::REJECTION_REASONS] ?? [],
                 ];
 
-                unset($input[Entity::REJECTION_REASONS]);
+                unset($input[Constants::REJECTION_REASONS]);
 
                 $this->changeStatus($request, $statusChangeInput, true);
             }
@@ -451,8 +457,11 @@ class Core extends Base\Core
     }
 
     /**
-     * Validate submissions in case of product request, and check for valid product feature. If all is good, then
-     * find or create the required Merchant Request.
+     * This function does the following :
+     * 1. Validates input to create the merchant request
+     * 2. Validates the submissions if the request is for a product feature
+     * 3. Validates the type-product combination
+     * 4. Finds or creates the merchant request
      *
      * @param array $input
      *
@@ -461,24 +470,30 @@ class Core extends Base\Core
      */
     public function createMerchantRequest(array $input): Entity
     {
-        (new Validator)->validateSubmissions($input[Entity::TYPE], $input);
+        $validator = new Validator;
 
-        (new Validator)->validateTypeAndProduct($input[Entity::TYPE], $input[Entity::NAME]);
+        $validator->validateInput('create_merchant_request', $input);
+
+        $validator->validateSubmissionsForProductType($input);
+
+        $validator->validateTypeAndProduct($input[Entity::TYPE], $input[Entity::NAME]);
 
         return $this->findOrCreateMerchantRequest($this->merchant, $input);
     }
 
     /**
-     * Accepts a merchant map (merchantId => [[name, type, status], ...]) and updates the status
-     *
-     * @param array  $merchantMap
+     * @param array $merchantMap
      *
      * @return array
+     * @throws Exception\BadRequestValidationFailureException
      */
     public function bulkUpdateMerchantRequests(array $merchantMap): array
     {
         $success = 0;
+
         $failedItems  = [];
+
+        (new Validator)->validateBulkUpdateMerchantRequests($merchantMap);
 
         foreach ($merchantMap as $merchantId => $requests)
         {
