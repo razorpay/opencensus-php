@@ -1091,7 +1091,7 @@ class Gateway
 
         if (($supported === true) and
             ($recurring === true) and
-            (array_key_exists($gateway, self::$cardNetworkRecurringMap)))
+            (isset(self::$cardNetworkRecurringMap[$gateway]) === true))
         {
             $supported = in_array($network, self::$cardNetworkRecurringMap[$gateway]);
         }

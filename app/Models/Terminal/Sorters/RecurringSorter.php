@@ -15,7 +15,8 @@ class RecurringSorter extends Terminal\Sorter
     {
         $payment = $this->input['payment'];
 
-        $gatewayTokens = $this->input['gateway_tokens'];
+        // gateway_tokens is set only if it's a recurring payment
+        $gatewayTokens = $this->input['gateway_tokens'] ?? [];
 
         if (($payment->isSecondRecurring(true, $gatewayTokens) === false) or
             ($payment->isCard() === false))
