@@ -213,7 +213,7 @@ class Selector extends Base\Core
         // Find all those terminals and gather all their merchant IDs
         //
         // Now query for appropriate terminals (type check)
-        // that are assigned to any of thesed gathered merchants.
+        // that are assigned to any of these gathered merchants.
 
         $addTerminals = $this->repo
                              ->terminal

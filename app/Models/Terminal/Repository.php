@@ -55,7 +55,7 @@ class Repository extends Base\Repository
     public function getByTypeAndMerchantIds($type, $merchantIds)
     {
         return $this->newQuery()
-                    ->type($type)
+                    ->type([$type])
                     ->whereIn(Entity::MERCHANT_ID, $merchantIds)
                     ->enabled()
                     ->get();

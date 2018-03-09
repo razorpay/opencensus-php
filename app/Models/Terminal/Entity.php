@@ -590,18 +590,25 @@ class Entity extends Base\PublicEntity
      * and AND it with type. The result is 0100.
      *
      * @param  BuilderEx $query
-     * @param  string $type Single type being queried
+     * @param array      $types
+     *
+     * @return BuilderEx|null
      */
-    public function scopeType($query, $type)
+    public function scopeType($query, array $types)
     {
-        if (in_array($type, Type::getValidTypes(), true) === false)
+        $bitComparator = 0;
+
+        foreach ($types as $type)
         {
-            return;
+            if (in_array($type, Type::getValidTypes(), true) === false)
+            {
+                return null;
+            }
+
+            $position = Type::getBitPosition($type);
+
+            $bitComparator += (1 << ($position - 1));
         }
-
-        $position = Type::getBitPosition($type);
-
-        $bitComparator = (1 << ($position - 1));
 
         $typeColumn = $this->dbColumn(Entity::TYPE);
 
