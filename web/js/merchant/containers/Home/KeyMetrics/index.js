@@ -43,6 +43,7 @@ import {
   tabsMeta,
   getQuery,
   breakdownVals,
+  breakdownValsMap,
   getTimelineData,
 } from './data';
 import {
@@ -152,7 +153,7 @@ class KeyMetricsContainer extends Component {
         }, {});
       }
 
-      tabState.selectedBreakdown = breakdownVals[0].value;
+      tabState.selectedBreakdown = breakdownValsMap.daily.value;
 
       tabState.data = {
         loading: false,
@@ -685,14 +686,17 @@ class KeyMetricsContainer extends Component {
       tabsOrder.forEach((tabName) => {
 
         const tabState = tabsState[tabName],
-              selectedBreakdown = tabState.selectedBreakdown;
+              selectedBreakdown = tabState.selectedBreakdown,
+              {hourly, weekly, monthly} = breakdownValsMap;
 
         if (selectedBreakdown !== 'daily') {
 
-          const showWeekly = !startDate.isSame(endDate, 'week'),
-                showMonthly = !startDate.isSame(endDate, 'month');
+          const showHourly  = hourly.isEnabled(startDate, endDate),
+                showWeekly  = weekly.isEnabled(startDate, endDate),
+                showMonthly = monthly.isEnabled(startDate, endDate);
 
-          if (selectedBreakdown === 'weekly'  && !showWeekly  ||
+          if (selectedBreakdown === 'hourly'  && !showHourly  ||
+              selectedBreakdown === 'weekly'  && !showWeekly  ||
               selectedBreakdown === 'monthly' && !showMonthly   ) {
 
             /*

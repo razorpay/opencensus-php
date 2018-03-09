@@ -26,7 +26,7 @@ tooltips.intersect = false;
 global.hover.mode = 'index';
 global.hover.intersect = false;
 
-export const timeScale = ({ xLabel, yLabel }) => {
+export const timeScale = ({ xLabel, yLabel, breakdown }) => {
   let scalesObj = {
     scales: {
       xAxes: [
@@ -41,7 +41,6 @@ export const timeScale = ({ xLabel, yLabel }) => {
               week: 'MMM YYYY',
               second: 'MMM D',
               millisecond: 'MMM D',
-              hour: 'MMM D',
             },
             tooltipFormat: 'ddd DD MMM YYYY',
           },
@@ -55,6 +54,25 @@ export const timeScale = ({ xLabel, yLabel }) => {
             fontColor: 'rgba(45, 48, 51, 0.5)',
             maxRotation: 0,
             autoSkipPadding: 21,
+            callback: (value, index, values) => {
+
+              if (breakdown !== "hourly") {
+              
+                return value;
+              }
+
+              // make sure only days are displayed if 
+              // the breakdown in hourly
+              const prevValue = values[index - 1],
+                    currValue = values[index];
+
+              if (prevValue && moment(prevValue.value)
+                                 .isSame(currValue.value, 'day')) {
+                return null;
+              }
+
+              return moment(currValue.value).format('MMM D');
+            }
           },
         },
       ],
