@@ -31,6 +31,8 @@ final class Constant
      */
     const KEYID_MID_KEY_PREFIX     = 't:km:';
 
+    const SKIP                     = 'skip';
+    const MOCK                     = 'mock';
     const LEAK_RATE_VALUE          = 'lrv';
     const LEAK_RATE_DURATION       = 'lrd';
     const MAX_BUCKET_SIZE          = 'mbs';

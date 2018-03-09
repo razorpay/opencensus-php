@@ -83,11 +83,6 @@ class Throttler
      */
     protected $isRunningUnitTests;
 
-    /**
-     * @var bool
-     */
-    protected $skip;
-
     public function __construct()
     {
         /** @var $app Application */
@@ -99,13 +94,12 @@ class Throttler
         $this->router             = $app['router'];
         $this->repo               = $app['repo'];
         $this->isRunningUnitTests = $app->runningUnitTests();
-        $this->skip               = ($this->config['skip'] === true);
     }
 
     public function throttle($request)
     {
-        // Usually in local or test ENV we skip basis local configuration
-        if ($this->skip === true)
+        // For local and test env, we skip basis local configuration
+        if ($this->config['skip'] === true)
         {
             return;
         }
@@ -139,19 +133,12 @@ class Throttler
     {
         $settings = $this->loadSettingsFromRedis();
 
-        list($this->settings[K::GLOBAL], $this->settings[K::ID_LEVEL]) = $settings;
-
-        // If settings is not found raise an alert and enable skip flag.
-        if (empty($this->settings[K::GLOBAL]) === true)
+        if (empty(array_filter($settings)) === true)
         {
             $this->trace->critical(TraceCode::THROTTLE_SETTINGS_MISSING);
-            $this->skip = true;
         }
-        // Else set skip appropriately basis redis settings
-        else
-        {
-            $this->skip = (($this->settings[K::GLOBAL]['skip'] ?? '0') === '1');
-        }
+
+        list($this->settings[K::GLOBAL], $this->settings[K::ID_LEVEL]) = $settings;
     }
 
     protected function loadSettingsFromRedis(): array
@@ -167,13 +154,10 @@ class Throttler
 
     protected function attemptThrottleIfApplicable()
     {
-        // Throttling and blocking may be temporarily skipped via remote configuration(Redis)
-        if ($this->skip === true)
+        if ($this->getThrottleSkipValue() === false)
         {
-            return;
+            $this->attemptThrottle();
         }
-
-        $this->attemptThrottle();
     }
 
     protected function attemptThrottle()
@@ -191,9 +175,7 @@ class Throttler
 
         if ($response->allowed === false)
         {
-            // Only throttle if it is not in mock mode(early release)
-            $mock = $this->settings[K::GLOBAL]['mock'] ?? '1';
-            if ($mock === '0')
+            if ($this->getThrottleMockValue() === false)
             {
                 throw new ThrottleException($response->retryAfter, $payload);
             }
@@ -226,6 +208,16 @@ class Throttler
         return implode(':', $args);
     }
 
+    protected function getThrottleSkipValue(): bool
+    {
+        return $this->getThrottleValue(K::SKIP, true);
+    }
+
+    protected function getThrottleMockValue(): bool
+    {
+        return $this->getThrottleValue(K::MOCK, true);
+    }
+
     protected function getThrottleRateValue(): int
     {
         return $this->getThrottleValue(K::LEAK_RATE_VALUE, 2);
@@ -244,20 +236,38 @@ class Throttler
     protected function getThrottleValue(string $key, int $default): int
     {
         //
-        // Redis data structures:
+        // Redis data structures which is used in cascading fashion to get
+        // values for given request context.
         //
         // Key: t
         // Value: {
-        //      skip:                       1
-        //      mock:                       1
+        //      // Globals
+        //      skip:                               1
+        //      mock:                               1
+        //      lrv:                                2
+        //      lrd:                                1
+        //      mbs:                                30
         //
-        //      <mode>:<auth>:lrv:          2
-        //      <mode>:<auth>:lrd:          1
-        //      <mode>:<auth>:mbs:          30
+        //      // Per mode
+        //      <mode>:skip:                        1
+        //      <mode>:mock:                        1
+        //      <mode>:lrv:                         2
+        //      <mode>:lrd:                         1
+        //      <mode>:mbs:                         30
         //
-        //      <mode>:<auth>:<route>:lrv:  2
-        //      <mode>:<auth>:<route>:lrd:  1
-        //      <mode>:<auth>:<route>:mbs:  30
+        //      // Per auth
+        //      <mode>:<auth>:<proxy>:skip:         0
+        //      <mode>:<auth>:<proxy>:mock:         0
+        //      <mode>:<auth>:<proxy>:lrv:          2
+        //      <mode>:<auth>:<proxy>:lrd:          1
+        //      <mode>:<auth>:<proxy>:mbs:          30
+        //
+        //      // Per auth, per route
+        //      <mode>:<auth>:<proxy>:<route>:skip: 0
+        //      <mode>:<auth>:<proxy>:<route>:mock: 0
+        //      <mode>:<auth>:<proxy>:<route>:lrv:  2
+        //      <mode>:<auth>:<proxy>:<route>:lrd:  1
+        //      <mode>:<auth>:<proxy>:<route>:mbs:  30
         // }
         //
         // Key: t:i:<mid>
@@ -279,10 +289,19 @@ class Throttler
         return $this->settings[K::ID_LEVEL]["{$this->mode}:{$this->auth}:{$proxy}:{$this->route}:{$key}"] ??
                 // Value for given mid/application id, mode & auth
                 $this->settings[K::ID_LEVEL]["{$this->mode}:{$this->auth}:{$proxy}:{$key}"] ??
+                // Value for given mid/application id & mode
+                $this->settings[K::ID_LEVEL]["{$this->mode}:{$key}"] ??
+                // Value for given mid/application id
+                $this->settings[K::ID_LEVEL]["{$key}"] ??
                 // Value for given mode, auth & route
                 $this->settings[K::GLOBAL]["{$this->mode}:{$this->auth}:{$proxy}:{$this->route}:{$key}"] ??
                 // Value for given mode & auth
                 $this->settings[K::GLOBAL]["{$this->mode}:{$this->auth}:{$proxy}:{$key}"] ??
+                // Value for given mode
+                $this->settings[K::GLOBAL]["{$this->mode}:{$key}"] ??
+                // Finally, global default value
+                $this->settings[K::GLOBAL]["{$key}"] ??
+                // Again finally, the default by callee :)
                 $default;
     }
 
