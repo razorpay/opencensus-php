@@ -6,7 +6,6 @@ use RZP\Base;
 use RZP\Models\Invoice;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
-use RZP\Models\Batch\Header;
 use RZP\Exception\BaseException;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Feature\Constants as Feature;

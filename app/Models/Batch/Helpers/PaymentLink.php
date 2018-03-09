@@ -18,7 +18,6 @@ class PaymentLink
      * @param array $params
      *
      * @return array
-     *
      */
     public static function getEntityInput(array & $entry, array & $params): array
     {

@@ -284,6 +284,7 @@ class Type
             self::ICICI_EMI_FILE_MAIL,
             self::BATCH_INPUT,
             self::BATCH_OUTPUT,
+            self::BATCH_VALIDATED,
             self::PNB_NETBANKING_REFUND,
             self::PNB_NETBANKING_CLAIMS,
             self::UPI_ICICI_FAILED_REFUND,

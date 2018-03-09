@@ -46,7 +46,7 @@ trait BatchTestTrait
         return $this->assertFileExistsForBatchOfType($id, FileStore\Type::BATCH_OUTPUT);
     }
 
-    public function assertErrorFileExistsForBatch(string $id)
+    public function assertValidatedFileExistsForBatch(string $id)
     {
         return $this->assertFileExistsForBatchOfType($id, FileStore\Type::BATCH_VALIDATED);
     }
