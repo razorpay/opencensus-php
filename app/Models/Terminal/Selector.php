@@ -11,9 +11,9 @@ use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
-use RZP\Constants\Entity as Constants;
 use RZP\Models\Gateway\Rule;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Constants\Entity as Constants;
 
 class Selector extends Base\Core
 {

@@ -589,10 +589,10 @@ class Entity extends Base\PublicEntity
      * shift 1 so that it gives a comparator with only the 3rd bit set (0100),
      * and AND it with type. The result is 0100.
      *
-     * @param  BuilderEx $query
+     * @param BuilderEx $query
      * @param array      $types
      *
-     * @return BuilderEx|null
+     * @return BuilderEx
      */
     public function scopeType($query, array $types)
     {
@@ -602,12 +602,12 @@ class Entity extends Base\PublicEntity
         {
             if (in_array($type, Type::getValidTypes(), true) === false)
             {
-                return null;
+                return $query;
             }
 
             $position = Type::getBitPosition($type);
 
-            $bitComparator += (1 << ($position - 1));
+            $bitComparator |= (1 << ($position - 1));
         }
 
         $typeColumn = $this->dbColumn(Entity::TYPE);
