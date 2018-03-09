@@ -177,6 +177,19 @@ class DefaultPlan
                 'created_at'     => time(),
                 'updated_at'     => time()
             ],
+
+            [
+                'id'             => '1Otj9JcY6dYB9Z',
+                'plan_id'        => '1In3Yh5Mluj605',
+                'plan_name'      => 'Promotional Price',
+                'feature'        => 'payment',
+                'payment_method' => 'transfer',
+                'percent_rate'   => '0',
+                'fixed_rate'     => '0',
+                'expired_at'     => null,
+                'created_at'     => time(),
+                'updated_at'     => time()
+            ],
         ];
     }
 

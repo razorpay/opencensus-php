@@ -1557,9 +1557,25 @@ class Gateway extends Base\Gateway
 
     protected function xmlToArray($data)
     {
-        $xml_values = simplexml_load_string($data);
+        try
+        {
+            $xml = simplexml_load_string(trim($data));
 
-        return json_decode(json_encode($xml_values), true);
+            return json_decode(json_encode($xml), true);
+        }
+        catch (\ErrorException $e)
+        {
+            // We know that if gateway returns HTML message, it always
+            // because of server failure at their end with message
+            if (str_contains($data, '<!DOCTYPE HTML') === true)
+            {
+                throw new Exception\GatewayTimeoutException('An error has occurred. Please try again.' .
+                                'If you continue to receive an error, please contact Customer Support.');
+            }
+
+            // Otherwise it a new error we need to debug manually
+            throw new Exception\GatewayRequestException($e->getMessage());
+        }
     }
 
     protected function isSequentialArray($array)

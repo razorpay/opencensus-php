@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "3a951b4db6180055d0640f62769e48f3",
+    "content-hash": "38085ebbf561fd1d53da77031d4b835b",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -5161,6 +5161,47 @@
             "time": "2016-11-05T11:01:59+00:00"
         },
         {
+            "name": "razorpay/hodor",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "git@github.com:razorpay/hodor.git",
+                "reference": "cc3b5fa77ae5b01992e693fcc99828aa1f1cccac"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/razorpay/hodor/zipball/cc3b5fa77ae5b01992e693fcc99828aa1f1cccac",
+                "reference": "cc3b5fa77ae5b01992e693fcc99828aa1f1cccac",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.0",
+                "predis/predis": "^1.1"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^6.5"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Razorpay\\Hodor\\": "src/",
+                    "Razorpay\\HodorTests\\": "tests/"
+                }
+            },
+            "description": "Resource or API rate limiting/throttling",
+            "keywords": [
+                "api-throttling",
+                "php",
+                "rate-limiting",
+                "redis"
+            ],
+            "support": {
+                "source": "https://github.com/razorpay/hodor/tree/master",
+                "issues": "https://github.com/razorpay/hodor/issues"
+            },
+            "time": "2018-03-06T17:24:48+00:00"
+        },
+        {
             "name": "razorpay/ifsc",
             "version": "1.0.15",
             "source": {
@@ -9309,6 +9350,7 @@
         "graham-campbell/throttle": 20,
         "razorpay/oauth": 20,
         "razorpay/ufh-sdk-php": 20,
+        "razorpay/hodor": 20,
         "codacy/coverage": 20,
         "symfony/phpunit-bridge": 20
     },
