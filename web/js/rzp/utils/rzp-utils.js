@@ -423,9 +423,9 @@ export const autoPrefixUrls = url => {
   tempUrl = url.toLowerCase();
 
   if (!regex.test(tempUrl)) {
-    tempUrl = 'http://' + tempUrl;
+    url = 'http://' + url;
   }
-  return tempUrl;
+  return url;
 };
 
 export { acronyms, shortenText };

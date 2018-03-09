@@ -7,6 +7,8 @@ import moment from 'moment';
 import { TypeAhead } from 'react-power-select';
 import { withRouter } from 'react-router-dom';
 
+import { prefixEntityValue } from 'common/data';
+
 import Alert from 'rzp/ui/Forms/Alert';
 import DatePickerField from 'rzp/ui/Forms/DatePickerField';
 import InputField from 'rzp/ui/Forms/InputField';
@@ -143,7 +145,7 @@ export default class TransferNew extends Component {
       id: this.props.paymentId,
       transfers: [
         {
-          account: `acc_${accountId}`,
+          account: prefixEntityValue('account', accountId),
           amount: rupeesToPaise(amount),
           notes: transformedNotes,
           currency: 'INR',

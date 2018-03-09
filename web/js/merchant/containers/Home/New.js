@@ -20,14 +20,12 @@ import {
 } from 'rzp/utils/pokedex';
 
 import { fetch } from 'merchant/modules/pokedex';
-import OpenDisputeAlert from 'merchant/containers/Home/OpenDisputeAlert';
 import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
 import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
 import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
 import Traffic from 'merchant/containers/Home/Traffic';
 import RecentActivity from 'merchant/containers/Home/RecentActivity';
 import {
-  OLDEST_TXN_ERROR,
   API_ERROR,
   API_INVALID_RESP,
   isMobileDevice,
@@ -35,6 +33,7 @@ import {
 import GenericPanel, { PanelBody } from 'merchant/components/Home/GenericPanel';
 
 import {
+  trackError,
   trackDatesChange,
   trackPresetChange,
   trackSettlementsClick,
@@ -121,7 +120,7 @@ class HomeContainer extends Component {
     // or not
 
     const { startDate, endDate } = this.state,
-      { isAdmin } = this.props;
+      { isAdmin, analyticsFetch } = this.props;
 
     const query = {
       filters: {
@@ -138,7 +137,7 @@ class HomeContainer extends Component {
       },
     };
 
-    return fetch(query, this.props.mode)
+    return (analyticsFetch || fetch)(query, this.props.mode)
       .then(data => {
         if (!data.success) {
           return API_ERROR;
@@ -159,9 +158,13 @@ class HomeContainer extends Component {
       })
       .then(data => {
         if (data.error) {
+
+          trackError(`While Fetching Txns Grouped by Ptfm`);
+
           return this.props.showNotification({
             type: 'error',
             message: data.error,
+            hidePrevious: true
           });
         }
 
@@ -213,7 +216,7 @@ class HomeContainer extends Component {
   fetchOldestTransactionDate() {
     let { oldestTransactionDate, dateRangePresets } = this.state;
 
-    const { onFirstTxnDate } = this.props;
+    const { onFirstTxnDate, analyticsFetch } = this.props;
 
     var oldestTxnReqId = ++this.oldestTxnReqId;
 
@@ -226,14 +229,16 @@ class HomeContainer extends Component {
       oldestTransactionDate: { ...oldestTransactionDate },
     });
 
-    return fetch(oldestTransactionQuery, this.props.mode)
-      .then(data => {
+    return (analyticsFetch || fetch)(
+        oldestTransactionQuery,
+        this.props.mode
+      ).then(data => {
         if (oldestTxnReqId !== this.oldestTxnReqId) {
           return null;
         }
 
         if (!data.success) {
-          return OLDEST_TXN_ERROR;
+          return API_ERROR;
         }
 
         if (!data.data || !data.data.records) {
@@ -248,7 +253,7 @@ class HomeContainer extends Component {
       .catch(err => {
         console.error(err);
 
-        return OLDEST_TXN_ERROR;
+        return API_ERROR;
       })
       .then(data => {
         oldestTransactionDate.loading = false;
@@ -257,9 +262,12 @@ class HomeContainer extends Component {
           if (data.error) {
             oldestTransactionDate.error = data.error;
 
+            trackError(`While Fetching Oldest txn date`);
+
             this.props.showNotification({
               type: 'error',
               message: data.error,
+              hidePrevious: true
             });
           }
 
@@ -330,6 +338,7 @@ class HomeContainer extends Component {
       current_balance,
       tabsMeta,
       isAdmin,
+      analyticsFetch,
       onFilterChange,
     } = this.props;
 
@@ -344,7 +353,6 @@ class HomeContainer extends Component {
     return (
       <div class="react-root dashboard-home">
         <Sticky stickWhen={0} stickAt={50}>
-          <OpenDisputeAlert customClass="analytics-dash-banner" />
           <Header className="clearfix" title="" showMode={false}>
             <div className="pull-left date-range-container">
               <DateRangePicker
@@ -391,6 +399,7 @@ class HomeContainer extends Component {
                 sectionTitle={keymetricsSectionTitle}
                 tabsMeta={tabsMeta}
                 isAdmin={isAdmin}
+                analyticsFetch={analyticsFetch}
                 onFilterChange={onFilterChange}
               />
             </div>
@@ -405,6 +414,7 @@ class HomeContainer extends Component {
                 startDate={startDate}
                 endDate={endDate}
                 mode={mode}
+                analyticsFetch={analyticsFetch}
                 sectionTitle={paymentInsightsTitle}
               />
             </div>
@@ -426,6 +436,7 @@ class HomeContainer extends Component {
                       startDate={startDate}
                       endDate={endDate}
                       mode={mode}
+                      analyticsFetch={analyticsFetch}
                       sectionTitle={trafficSectionTitle}
                     />
                   </div>

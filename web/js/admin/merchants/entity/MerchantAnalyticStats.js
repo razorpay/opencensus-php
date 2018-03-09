@@ -225,7 +225,6 @@ export default class MerchantAnalyticStats extends Component {
       },
     };
 
-    // TODO: TEST if live mode needs to be sent as earlier we never sent
     adminPost({
       url: `live_${this.merchantId}/merchant/analytics`,
       data: requestData,
@@ -257,7 +256,6 @@ export default class MerchantAnalyticStats extends Component {
               defaultValue={moment().subtract(7, 'days')}
               allowToday={true}
             />
-            />
             <ToField
               label="To"
               format="DD/MM/YYYY"
@@ -265,7 +263,6 @@ export default class MerchantAnalyticStats extends Component {
               onChange={val => this.onDateChange('toDate', val)}
               defaultValue={moment()}
               allowToday={true}
-            />
             />
             <AsyncButton
               text="Fetch Stats"

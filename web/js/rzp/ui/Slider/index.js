@@ -62,6 +62,7 @@ export default class ModalSlider extends Component {
         overlayClassName={className}
         class="ModalSlider__Content"
         contentLabel="SliderModal"
+        ariaHideApp={false}
       >
         <button type="button" class="close close-primary" onClick={this.close}>
           <i class="i i-close" />

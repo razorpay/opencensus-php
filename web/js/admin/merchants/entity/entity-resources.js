@@ -310,6 +310,8 @@ const _getMethods = {
   sbibuddy: 'SBI Buddy',
   upi: 'UPI',
   emi: 'EMI',
+  emandate: 'e-Mandate',
+  mpesa: 'Mpesa',
 };
 
 export const beneficiaryStateMap = {
@@ -388,8 +390,7 @@ export function getDetailsViewMap(model) {
     },
     {
       label: 'Tags',
-      value:
-        details && details.tags ? details.tags.join(', ') : '',
+      value: details && details.tags ? details.tags.join(', ') : '',
     },
     {
       label: 'Features',

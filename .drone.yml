@@ -1,0 +1,68 @@
+pipeline:
+  build:
+    image: plugins/docker
+    repo: razorpay/dashboard
+    secrets: [docker_username, docker_password, git_token]
+    build_args_from_env: [git_token]
+    build_args:
+     - GIT_COMMIT_HASH=${DRONE_COMMIT_SHA}
+    tags: ${DRONE_REPO_BRANCH}-${DRONE_COMMIT_SHA}
+    when:
+      status: [success]
+      event:
+        exclude: [deployment]
+        include: [push]
+  deploy-stage-echo:
+    image: razorpay/drone-kubernetes
+    pull: true
+    secrets:
+      - docker_username
+      - docker_password
+      - server_url_stage
+      - server_cert_stage
+      - client_cert_stage
+      - client_key_stage
+    user: drone
+    cluster: stage
+    auth_mode: client-cert
+    deployment: dashboard
+    repo: razorpay/dashboard
+    namespace: echo
+    tag:
+      - ${DRONE_REPO_BRANCH}-${DRONE_COMMIT_SHA}
+    when:
+      environment: stage-echo
+      event:
+        exclude: [push]
+        include: [deployment]
+  build-notify:
+    image: plugins/slack
+    secrets: [slack_webhook]
+    channel: tech_builds
+    username: drone
+    icon_url: https://avatars2.githubusercontent.com/u/2181346?s=200&v=4
+    template: >
+      {{#success build.status}}
+        Build succeeded.
+      {{else}}
+        Build failed.
+      {{/success}}
+        Build No:{{build.number}}
+        Branch: {{build.branch}}
+        Commit: {{build.commit}}
+        Author: {{build.author}}
+        Started at: {{build.started}}
+        Time taken: {{since build.started}}
+        Link: {{build.link}}
+    when:
+      event:
+        exclude: [deployment]
+        include: [push, tag]
+  build-falcon-notify:
+    image: plugins/webhook
+    urls:
+      - https://falcon.razorpay.com/update
+    secrets:
+      - plugin_headers
+    when:
+      status: [ success, failure ]

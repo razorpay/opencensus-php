@@ -15,8 +15,10 @@ const CustomTag = ({ tag, tagIcon }) => {
 
 const AccountItem = ({ account, hideTagInfo }) => (
   <div className="rzp-account-item">
-    <b>{account.name}</b>
-    <span>- {account.id}</span>
+    <b class={`account-name ${account.tag ? '' : 'tag-invisible'}`}>
+      {account.name}
+    </b>
+    <span class="account-id"> - {account.id}</span>
     {!hideTagInfo && <CustomTag tag={account.tag} tagIcon={account.tagIcon} />}
   </div>
 );
@@ -33,9 +35,7 @@ const AccountsList = ({ accounts, selectedAccount, onChange }) => {
           typeAheadSkin = el;
         }}
       >
-        {!!selectedAccount && (
-          <AccountItem account={selectedAccount} />
-        )}
+        {!!selectedAccount && <AccountItem account={selectedAccount} />}
       </div>
 
       <TypeAhead

@@ -18,7 +18,9 @@ import SubmitFeedback from 'merchant/containers/Header/SubmitFeedback';
 export default class ProfileDropdown extends Component {
   logout = () => {
     this.props.analytics && this.props.analytics('Log Out');
-    return this.props.logout().then(() => {
+    return this.props.logout().catch((e) => {
+      console.error(e);
+    }).then(() => {
       window.location.reload();
     });
   };

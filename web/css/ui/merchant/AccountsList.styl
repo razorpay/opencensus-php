@@ -11,8 +11,35 @@
 .rzp-account-item {
 
   margin-right: 5px;
+  max-width: 500px;
+
+
+  .account-name {
+
+    text-overflow: ellipsis;
+    overflow: hidden;
+    max-width: 30%;
+    white-space: nowrap;
+    display: inline-block;
+    vertical-align: top;
+
+    &.tag-invisible {
+
+      max-width: 50%;
+    }
+  }
+
+  .account-id {
+
+    vertical-align: top;
+  }
+
 
   .custom-tag {
+    font-size: 12px;
+    & > span.text {
+      vertical-align: top;
+    }
 
     &:before {
 

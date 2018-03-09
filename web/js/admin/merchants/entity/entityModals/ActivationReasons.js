@@ -21,7 +21,7 @@ export class RejectActivation extends Component {
 
   componentWillMount() {
     this.selectedStatus = this.props.status;
-    adminFetch('merchant/activation/rejection_reasons').then(response => {
+    adminFetch('live/merchant/activation/rejection_reasons').then(response => {
       if (response) {
         this.allReasons = response;
         this.setState({
@@ -116,7 +116,7 @@ export class RejectActivation extends Component {
       <BaseModal
         header={
           <div>
-            "Change status to: Rejected"
+            Change status to: Rejected
             <AsyncButton
               onSubmit={this.save}
               text="Save"

@@ -19,6 +19,8 @@ const defaultFilters = {
   merchant_id: '100000Razorpay',
 };
 
+let gateway_url = 'admin/gateway_rule';
+
 @observer
 export default class GatewayRuleList extends Component {
   state = {
@@ -27,10 +29,10 @@ export default class GatewayRuleList extends Component {
   // TODO: TEST check what mode to pass
   collection = new Collection({
     data: {
-      url: 'test/admin/gateway_rule',
+      url: `live/${gateway_url}`, // default mode is live
     },
     extraFields: {
-      mode: 'test',
+      mode: 'live',
     },
     model: Model,
     filters: defaultFilters,
@@ -45,7 +47,9 @@ export default class GatewayRuleList extends Component {
 
   onSubmit = filters => {
     this.collection.extraFields.mode = filters.mode;
-    delete filters.mode;
+    this.collection.data.url = `${filters.mode}/${gateway_url}`;
+    delete filters.mode; // mode need to be sent now
+
     this.collection.applyFilters(filters);
   };
 
@@ -95,7 +99,7 @@ export default class GatewayRuleList extends Component {
                 </option>
               ))}
             </SelectField>
-            <SelectMode defaultValue={defaultFilters.mode} />
+            <SelectMode defaultValue={'live'} />
             <button>Search</button>
           </Form>
         </div>

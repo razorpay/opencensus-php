@@ -46,7 +46,7 @@ export default ({ entity, mode, updateEntity }) => {
     }
 
     return fetch({
-      url: `${mode}_${entity.merchant_id}/offers/${entity.id}`,
+      url: `/admin/api/${mode}_${entity.merchant_id}/offers/${entity.id}`,
       method: 'patch',
       data: body,
     })

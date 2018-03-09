@@ -5,10 +5,16 @@ export const formatNumberWithCommas = value =>
     currency: 'INR',
   });
 
+const HundredCr = 1000000000;
+const ThousandCr = HundredCr * 10;
 export const humanReadableIndian = (num, noOfVisibleDigits = 3) => {
-  const maxWithoutReadable = Math.pow(10, Math.max(noOfVisibleDigits, 3));
   if (num < Math.pow(10, Math.max(noOfVisibleDigits, 3)))
     return formatNumberWithCommas(num);
+
+  if (num >= HundredCr) {
+    const numOfDecimals = num >= ThousandCr ? 0 : 1;
+    return `${(num / (HundredCr / 100)).toFixed(numOfDecimals)}Cr`;
+  }
 
   const formattedNumberArr = formatNumberWithCommas(num.toFixed()).split(',');
   const suffix = suffixes[Math.min(2, formattedNumberArr.length - 2)] || '',

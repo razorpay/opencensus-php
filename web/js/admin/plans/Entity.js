@@ -96,7 +96,7 @@ const fields = [
         ...sharedNetworks.get()[item.payment_method],
       }) || 'Any',
   ],
-  ['Issuer', item => item.selectField('payment_issuer') || 'Any'],
+  ['Issuer', item => item.issuerField() || 'Any'],
   ['Amount Range', item => item.selectField('amount_range') || 'None'],
   [
     'Rate (%)',

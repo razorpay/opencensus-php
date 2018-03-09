@@ -147,7 +147,7 @@ export default class EditOrg extends Component {
       }
 
       return fetch({
-        url: 'live/orgs',
+        url: '/admin/api/live/orgs',
         method: 'post',
         data: body,
       }).then(data => {

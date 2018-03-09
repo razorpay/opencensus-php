@@ -46,6 +46,7 @@ const gatewayMapping = {
   cybersource: 'Cybersource',
   hitachi: 'Hitachi',
   wallet_openwallet: 'RZP Open Wallet',
+  card_fss: 'Card FSS',
 };
 
 const gatewayAcquirerMapping = {
@@ -53,6 +54,8 @@ const gatewayAcquirerMapping = {
   axis: 'Axis',
   icic: 'ICICI',
   ratn: 'RBL',
+  barb: 'Bank of Baroda',
+  fss: 'FSS',
 };
 
 export default class TerminalForm extends Component {
@@ -61,6 +64,16 @@ export default class TerminalForm extends Component {
   // Creates terminal
   handleCreate = body => {
     let file;
+
+    if (
+      body['gateway_terminal_password'] &&
+      body['gateway_terminal_password_confirmation'] !==
+        body['gateway_terminal_password']
+    ) {
+      notifyError('Password and confirmation password entered do not match');
+    } else {
+      delete body['gateway_terminal_password_confirmation'];
+    }
 
     for (let key in body.type) {
       if (body.type[key] == '0') {
@@ -91,6 +104,12 @@ export default class TerminalForm extends Component {
 
     let mode = body.mode;
     delete body.mode;
+
+    if (!body.terminal_mode) {
+      delete body.mode;
+    }
+
+    delete body.terminal_mode;
 
     return adminFormUpload2(
       body,
@@ -349,11 +368,9 @@ export default class TerminalForm extends Component {
             onSubmit={handleEdit ? handleEdit : this.handleCreate}
             class="btn"
             pendingClass="small spinner"
-            confirm={
-              handleEdit
-                ? 'Are you sure you want to edit this terminal?'
-                : 'Any previously assigned plan for the merchant will be replace with selected.'
-            }
+            confirm={`Are you sure you want to ${
+              handleEdit ? 'edit' : 'assign'
+            } this terminal?`}
           >
             Ok
           </AsyncButton>

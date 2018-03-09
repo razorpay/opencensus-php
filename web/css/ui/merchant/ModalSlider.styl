@@ -70,6 +70,7 @@ $slider-width = 500px
 .ModalSlider__Content {
   min-height: 100%;
   transform: none;
+  position: relative;
 
   button.close {
     padding: 10px;
@@ -80,17 +81,20 @@ $slider-width = 500px
     z-index: 2;
   }
 
+  .rzp-error-boundary, .content-wrapper {
+    position: absolute
+    top: 0
+    bottom: 0
+    width: 100%
+  }
+
   .content-wrapper {
     overflow: auto;
     max-width: none
     margin: 0
     min-height: 0;
     padding: 0
-    position: absolute
-    top: 0
-    bottom: 0
     background: #fff
-    width: 100%
     @media (max-width: 1279px) {
       &+.content-wrapper {
         animation: slideLeft 600ms cubic-bezier(0.25, 0.1, 0.25, 1) forwards;

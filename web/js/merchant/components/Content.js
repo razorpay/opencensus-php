@@ -208,14 +208,18 @@ export default class Content extends Component {
     if (DetailView) {
       DetailView = BaseView ? (
         <Slider closeUrl={this.baseLocation}>
-          {' '}
-          <DetailView
-            {...this.detailProps}
-            closeUrl={this.baseLocation.pathname}
-          />{' '}
+          <ErrorBoundary resetOnProps location={this.baseLocation}>
+            {' '}
+            <DetailView
+              {...this.detailProps}
+              closeUrl={this.baseLocation.pathname}
+            />{' '}
+          </ErrorBoundary>
         </Slider>
       ) : (
-        <DetailView {...this.detailProps} />
+        <ErrorBoundary resetOnProps location={this.baseLocation}>
+          <DetailView {...this.detailProps} />
+        </ErrorBoundary>
       );
     }
 

@@ -122,7 +122,7 @@ export default class RequestEntity extends Component {
             <div class="box container">
               {/* Header */}
               <div class="heading">
-                {data.admin.name && <strong>{data.admin.name}</strong>}
+                {data.maker.name && <strong>{data.maker.name}</strong>}
                 {data.created_at ? (
                   <span class="secondary-label">
                     {` performed this action on `}

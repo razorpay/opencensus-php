@@ -1,6 +1,6 @@
   <script src="https://cdn.razorpay.com/static/analytics/bundle.js"></script>
   <script tyoe="text/javascript">
-    if (window.location.hostname=="dashboard.razorpay.com") {
+    if (window.location.hostname=="dashboard.razorpay.com" && window.analytics) {
         analytics.init(['ga', 'fb'], {
           ga: 'UA-53341507-2'
         });
