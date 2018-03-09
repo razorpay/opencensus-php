@@ -148,7 +148,7 @@ class Validator extends Base\Validator
         Entity::SUBMIT                          => 'sometimes|boolean',
         Entity::ACTIVATION_STATUS               => 'sometimes|max:30',
         Entity::CLARIFICATION_MODE              => 'sometimes|max:15',
-        Entity::ISSUE_FIELDS                    => 'sometimes|json',
+        Entity::ISSUE_FIELDS                    => 'sometimes|string',
         Entity::ISSUE_FIELDS_REASON             => 'sometimes|string',
         Entity::NOTES                           => 'sometimes|string',
     ];

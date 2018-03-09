@@ -316,7 +316,6 @@ class Entity extends Base\PublicEntity
     protected $publicSetters = [
         self::ARCHIVED_AT,
         self::ALLOWED_NEXT_ACTIVATION_STATUSES,
-        self::ISSUE_FIELDS,
     ];
 
     public function merchant()
@@ -373,11 +372,6 @@ class Entity extends Base\PublicEntity
         }
 
         $array[self::ALLOWED_NEXT_ACTIVATION_STATUSES] = $allowedNextActivationStatuses;
-    }
-
-    protected function setPublicIssueFieldsAttribute(array & $array)
-    {
-        $array[self::ISSUE_FIELDS] = json_decode($array[self::ISSUE_FIELDS], true);
     }
 
     public function getActivationStatus()
