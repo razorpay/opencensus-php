@@ -51,18 +51,23 @@ window.addEventListener('scroll', () => {
 });
 
 const breakdownMap = {
+  hourly: 'hour',
   daily: 'day',
   weekly: 'isoWeek',
   monthly: 'month',
 };
 
-const getDateFormat = (startDate, endDate) => {
+const getDateFormat = (startDate, endDate, breakdown) => {
   let format = 'ddd, Do MMM';
 
   const isSameYear = startDate.isSame(moment(), 'year');
 
   if (!isSameYear) {
     format += ' YYYY';
+  }
+
+  if (breakdown === 'hourly') {
+    format += ' HH:mm';
   }
 
   return format;
@@ -129,13 +134,15 @@ const customToolTip = function(tooltipModel) {
           graphEndDate
         )
       ),
-      dateFormat = getDateFormat(startDate, endDate),
+      dateFormat = getDateFormat(startDate, endDate, breakdown),
       url = `${externalUrl}?from=${startDate.unix()}&to=${endDate.unix()}`+
             `&ref=home`;
 
     let formattedDate = startDate.format(dateFormat);
 
-    if (breakdown === 'weekly' || breakdown === 'monthly') {
+    if (breakdown === 'weekly'  ||
+        breakdown === 'monthly' ||
+        breakdown === 'hourly'    ) {
       formattedDate += ' - ' + endDate.format(dateFormat);
     }
 

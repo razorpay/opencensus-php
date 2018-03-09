@@ -55,22 +55,34 @@ function getGroupQuery(value) {
   return (groupObj && groupObj.query) || [];
 }
 
-export const breakdownVals = [
-  {
+export const breakdownValsMap = {
+  hourly: {
+    value: 'hourly',
+    isEnabled: (startDate, endDate) => endDate.diff(startDate, 'days') <= 3,
+    title: 'Hourly'
+  },
+  daily: {
     value: 'daily',
     isEnabled: (startDate, endDate) => !startDate.isSame(endDate, 'day'),
     title: 'Daily',
   },
-  {
+  weekly: {
     value: 'weekly',
     isEnabled: (startDate, endDate) => !startDate.isSame(endDate, 'isoWeek'),
     title: 'Weekly',
   },
-  {
+  monthly: {
     value: 'monthly',
     isEnabled: (startDate, endDate) => !startDate.isSame(endDate, 'month'),
     title: 'Monthly',
-  },
+  }
+};
+
+export const breakdownVals = [
+  breakdownValsMap.hourly,
+  breakdownValsMap.daily,
+  breakdownValsMap.weekly,
+  breakdownValsMap.monthly
 ];
 
 export const tabsOrder = [
@@ -287,11 +299,13 @@ export const getQuery = options => {
 };
 
 const momentDurationFuncMap = {
+    hourly: 'asHours',
     daily: 'asDays',
     weekly: 'asWeeks',
     monthly: 'asMonths',
   },
   momentDurationMap = {
+    hourly: 'hours',
     daily: 'days',
     weekly: 'weeks',
     monthly: 'months',
@@ -439,7 +453,24 @@ export const getTimelineData = ({
     firstMs = Number(timestamps[0]),
     lastMs = Number(timestamps[timestamps.length - 1]);
 
-  if (breakdown === 'daily') {
+  if (breakdown === 'hourly') {
+  
+    const firstHour = moment(firstMs).startOf('hour').toDate(),
+          lastHour = moment(endTime).startOf('hour').toDate();
+
+    startMs = moment(startMs).startOf("day").toDate();
+    endMs = moment().isSame(endMs, "day")
+              ? moment().startOf("hour").toDate()
+              : moment(endMs).endOf("day").startOf("hour").toDate();
+
+    if (firstHour > startMs) {
+      timestamps.unshift(startMs.getTime());
+    }
+
+    if (lastHour < endMs) {
+      timestamps.push(endMs.getTime());
+    }
+  } else if (breakdown === 'daily') {
     const firstDayStart = moment(firstMs)
         .startOf('day')
         .toDate(),
@@ -465,21 +496,17 @@ export const getTimelineData = ({
     // momentjs start of week is sunday, whereas
     // pokedex start of week is monday, so adding 1 day
     const firstWeekStart = moment(firstMs)
-        .startOf('week')
-        .add(1, 'days')
+        .startOf('isoWeek')
         .toDate(),
       lastWeekStart = moment(lastMs)
-        .startOf('week')
-        .add(1, 'days')
+        .startOf('isoWeek')
         .toDate();
 
     startMs = moment(startMs)
-      .startOf('week')
-      .add(1, 'days')
+      .startOf('isoWeek')
       .toDate();
     endMs = moment(endMs)
-      .startOf('week')
-      .add(1, 'days')
+      .startOf('isoWeek')
       .toDate();
 
     if (firstWeekStart > startMs) {
@@ -564,7 +591,14 @@ export const getTimelineData = ({
         yAxisVal = timelineGroupMap[timestamp][groupName],
         groupCsvData =
           groupsCsvData[tsIndex] ||
-          (groupsCsvData[tsIndex] = [moment(timestamp).format(dateFormat)]);
+          (groupsCsvData[tsIndex] = [
+                                     moment(timestamp)
+                                       .format(`${dateFormat}${
+                                         breakdown === "hourly"
+                                           ? " HH:mm"
+                                           : ""
+                                       }`)
+                                    ]);
 
       // `datasets` variable will get populated due to reference
       groupData.push({

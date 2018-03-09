@@ -35,7 +35,7 @@ import { trackGoToLinks } from './ga';
 
 Chart.Tooltip.positioners.custom = positioner;
 
-const chartOptions = {
+const globalChartOptions = {
   ...timeScale({}),
   layout: {
     padding: {
@@ -147,6 +147,16 @@ class Panel extends Component {
           ? trend.previousCount !== 0 ? 100 : 0
           : getPercentage(currentCount, trendAbsValue)) +
         '%)';
+    }
+
+    let chartOptions = {...globalChartOptions};
+
+    if (selectedBreakdown === "hourly") {
+    
+      chartOptions = {
+        ...chartOptions,
+        ...timeScale({breakdown: selectedBreakdown})
+      };
     }
 
     // following chart options will be used by cutomTooltip.js
