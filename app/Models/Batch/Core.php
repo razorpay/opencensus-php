@@ -15,6 +15,14 @@ use RZP\Exception\BadRequestException;
 
 class Core extends Base\Core
 {
+    /**
+     * Create flow: Creates new batch entity against given file id or against
+     * given file(by first storing it).
+     *
+     * @param  array           $input
+     * @param  Merchant\Entity $merchant
+     * @return Entity
+     */
     public function create(array $input, Merchant\Entity $merchant): Entity
     {
         $this->trace->info(TraceCode::BATCH_CREATE_REQUEST, $input);
@@ -34,6 +42,13 @@ class Core extends Base\Core
         return $batch;
     }
 
+    /**
+     * Validate flow: Stores and validates uploaded input file.
+     *
+     * @param  array           $input
+     * @param  Merchant\Entity $merchant
+     * @return array
+     */
     public function storeAndValidateInputFile(array $input, Merchant\Entity $merchant): array
     {
         $this->trace->info(TraceCode::BATCH_FILE_VALIDATE_REQUEST, $input);

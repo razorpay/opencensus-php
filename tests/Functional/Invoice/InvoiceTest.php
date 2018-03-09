@@ -14,6 +14,7 @@ use RZP\Jobs\Invoice\Job as InvoiceJob;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Mail\Invoice\Issued as InvoiceIssuedMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Unit\Models\Invoice\Traits\CreatesInvoice;
 use RZP\Mail\Invoice\Payment\Captured as InvoiceCapturedMail;
 use RZP\Mail\Invoice\Payment\Authorized as InvoiceAuthorizedMail;
 
@@ -23,6 +24,7 @@ use RZP\Mail\Invoice\Payment\Authorized as InvoiceAuthorizedMail;
 class InvoiceTest extends TestCase
 {
     use InvoiceTestTrait;
+    use CreatesInvoice;
     use PaymentTrait;
     use MocksDnsTrait;
 
@@ -1405,30 +1407,32 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
-    public function testInvoiceSmsNotifyByBatch()
+    public function testInvoiceNotifyForBatch()
     {
-        $this->testCreateDraftInvoiceWithSomeData();
-
-        $invoice = $this->getLastEntity('invoice');
-
-        $this->fixtures->create(
-            'batch',
-            [
-                'id'          => '00000000000001',
-                'type'        => 'payment_link',
-                'total_count' => 1,
-            ]);
-
-        $this->fixtures->invoice->edit($invoice['id'], ['batch_id' => '00000000000001', 'status' => 'issued']);
-
-        $this->ba->proxyAuth();
+        $this->createBatchInvoices();
 
         $this->startTest();
 
-        $invoice = $this->getLastEntity('invoice',true);
+        $invoices = $this->getEntities('invoice', [], true)['items'];
 
-        $this->assertEquals('sent', $invoice['email_status']);
-        $this->assertEquals('sent', $invoice['sms_status']);
+        $this->assertEquals('sent', $invoices[0]['email_status']);
+        $this->assertEquals('sent', $invoices[0]['sms_status']);
+        $this->assertEquals('sent', $invoices[1]['email_status']);
+        $this->assertEquals('sent', $invoices[1]['sms_status']);
+    }
+
+    public function testInvoiceSmsNotifyForBatch()
+    {
+        $this->createBatchInvoices();
+
+        $this->startTest();
+
+        $invoices = $this->getEntities('invoice', [], true)['items'];
+
+        $this->assertNull($invoices[0]['email_status']);
+        $this->assertEquals('sent', $invoices[0]['sms_status']);
+        $this->assertNull($invoices[1]['email_status']);
+        $this->assertEquals('sent', $invoices[1]['sms_status']);
     }
 
     // -------------------------------------------------------------------------
@@ -2376,6 +2380,25 @@ class InvoiceTest extends TestCase
                 'id'       => '1000007invoice',
                 'order_id' => $order->getId(),
             ]);
+    }
 
+    protected function createBatchInvoices()
+    {
+        $attributes = $this->testData['testInvoiceNotifyForBatchInputData']['attributes'];
+
+        $this->fixtures->create(
+            'batch',
+            [
+                'id'          => '00000000000001',
+                'type'        => 'payment_link',
+                'total_count' => count($attributes),
+            ]);
+
+        $this->ba->proxyAuth();
+
+        foreach ($attributes as $attribute)
+        {
+            $this->createInvoice($attribute['invoiceAttributes'], $attribute['orderAttributes']);
+        }
     }
 }

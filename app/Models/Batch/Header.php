@@ -11,7 +11,6 @@ class Header
 {
     const INPUT             = 'input';
     const OUTPUT            = 'output';
-    const ERROR             = 'error';
 
     //
     // Refund Headers
@@ -487,8 +486,8 @@ class Header
     ];
 
     /**
-     * Headers added against each entry detailing the
-     * type of error and its description, if any.
+     * Additional headers added against each entry detailing the type of error
+     * and its description, if any. Used in Validated file output.
      */
     const VALIDATED_HEADERS = [
         self::ERROR_CODE,

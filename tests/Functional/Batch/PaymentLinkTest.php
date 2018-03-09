@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Batch;
 
 use Mail;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Queue;
 
 use RZP\Constants\Mode;
@@ -190,29 +191,16 @@ class PaymentLinkTest extends TestCase
         $this->assertEquals($validatedFile['id'], $response['file_id']);
 
         // The validated file is supposed to be inside batch/validated folder
-        $this->assertEquals(storage_path('files/filestore/') . $validatedFile['location'],
-                            $response['signed_url']);
-        $this->assertEquals(true, (strpos($validatedFile['location'], 'batch/validated') !== false));
-        $this->assertEquals(true, (strpos($response['signed_url'], 'batch/validated') !== false));
+        $this->assertEquals(storage_path('files/filestore/') . $validatedFile['location'], $response['signed_url']);
+        $this->assertTrue(str_contains($validatedFile['location'], 'batch/validated'));
+        $this->assertTrue(str_contains($response['signed_url'], 'batch/validated'));
     }
 
     public function testBatchCreateForUploadedFile()
     {
-        $entries = $this->getDefaultPaymentLinkFileEntries();
+        $this->prepareStateFromValidateApi();
 
-        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
-
-        $responseFileUpload = $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
-
-        $testdata = $this->testData[__FUNCTION__ . 'AfterFileUpload'];
-
-        $this->ba->proxyAuth('rzp_test_10000000000000');
-
-        $testdata['request']['content']['file_id'] = $responseFileUpload['file_id'];
-
-        $response = $this->runRequestResponseFlow($testdata);
-
-        $this->assertArraySelectiveEquals($testdata['response']['content'], $response);
+        $response = $this->startTest();
 
         // Check invoices
         $invoices = $this->getEntities('invoice', [], true);
@@ -232,14 +220,54 @@ class PaymentLinkTest extends TestCase
         $validatedFile = $files['items'][1];
         $this->assertEquals('batch_validated', $validatedFile['type']);
         $this->assertEquals($response['id'], $validatedFile['entity_type'] . '_' . $validatedFile['entity_id']);
-        $this->assertTrue((strpos($validatedFile['location'], 'batch/validated') !== false));
+        $this->assertTrue(str_contains($validatedFile['location'], 'batch/validated'));
 
         // Check input file
         $inputFile = $files['items'][2];
         $this->assertEquals('batch_input', $inputFile['type']);
         $this->assertNull($inputFile['entity_type']);
         $this->assertNull($inputFile['entity_id']);
-        $this->assertTrue((strpos($inputFile['location'], 'batch/upload') !== false));
+        $this->assertTrue(str_contains($inputFile['location'], 'batch/upload'));
+    }
+
+    /**
+     * Helper method to accompany testBatchCreateForUploadedFile() test.
+     * It creates an state(db, file wise) which would have been there if
+     * /validate api was called prior to /create api call. We could have triggered
+     * /validated api call first followed by /create api call in same tests
+     * but we are avoiding doing multiple api calls in same test.
+     */
+    protected function prepareStateFromValidateApi()
+    {
+        // Creating input and validated file fixtures
+        $attributeInputFile = [
+
+            'type'          => 'batch_input',
+            'entity_type'   => null,
+            'name'          => 'batch/upload/10000000000001',
+            'location'      => 'batch/upload/10000000000001.xlsx',
+        ];
+
+        $attributeValidatedFile = [
+
+            'type'          => 'batch_validated',
+            'entity_type'   => null,
+            'name'          => 'batch/validated/10000000000002',
+            'location'      => 'batch/validated/10000000000002.xlsx',
+        ];
+
+        $inputFile = $this->fixtures->create('file_store', $attributeInputFile);
+
+        $validatedFile = $this->fixtures->create('file_store', $attributeValidatedFile);
+
+        // Move validated test file copy to validated folder
+        copy('tests/Functional/Batch/files/validated.xlsx',
+            'storage/files/filestore/batch/validated/10000000000002.xlsx');
+
+        $trace    = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+        $name     = $testDataKey ?? $trace[1]['function'];
+
+        $this->testData[$name]['request']['content']['file_id'] = $validatedFile->getPublicId();
     }
 
     public function testPaymentLinkStatsOfBatch()
