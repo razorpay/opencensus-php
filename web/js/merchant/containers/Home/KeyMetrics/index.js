@@ -20,14 +20,25 @@ import { showNotification } from 'rzp/modules/notifications';
 import { groupBy } from 'rzp/utils/pokedex';
 
 import { fetch } from 'merchant/modules/pokedex';
-import { API_ERROR, API_INVALID_RESP } from 'merchant/components/Home/data';
-import { trackNoData } from 'merchant/containers/Home/ga';
+import {
+  API_ERROR,
+  API_INVALID_RESP,
+  getPlatformColor,
+  getPaymentMethodColor
+} from 'merchant/components/Home/data';
+import {
+  trackNoData,
+  trackError
+} from 'merchant/containers/Home/ga';
 import Tooltip from 'merchant/components/Home/Tooltip';
 
 import {
   NUM_TRANSACTIONS,
+  TRANSACTION_VOLUME,
+  REFUNDS,
   SAVED_CARDS,
   SUCCESS_RATE,
+  PLATFORM,
   tabsOrder,
   tabsMeta,
   getQuery,
@@ -39,7 +50,6 @@ import {
   trackBreakdownChange,
   trackSavedCardsHidden
 } from './ga';
-import { trackError } from 'merchant/containers/Home/ga';
 import Panel from './Panel';
 
 const csvDateFormat = 'DD-MM-YYYY';
@@ -304,7 +314,8 @@ class KeyMetricsContainer extends Component {
           // Timeline data
           const histogram = resp.data[`${tabName}Histogram`];
           if (histogram) {
-            const { labels, datasets, aggregates, csv } = getTimelineData({
+
+            const options = {
               data: histogram.result,
               groupByColumnName:
                 typeof tabMeta.groupByColumnName === "undefined"
@@ -317,7 +328,24 @@ class KeyMetricsContainer extends Component {
               isCurrency,
               valueKey,
               noGrouping
-            });
+            };
+
+            if ([NUM_TRANSACTIONS, TRANSACTION_VOLUME , REFUNDS].indexOf(
+              selectedTab
+            ) >= 0) {
+            
+              options.getColor = (selectedGrouping &&
+                                  selectedGrouping.value === PLATFORM)
+                                    ? getPlatformColor
+                                    : getPaymentMethodColor;
+            }
+
+            const {
+              labels,
+              datasets,
+              aggregates,
+              csv
+            } = getTimelineData(options);
 
             // track in GA that no data found in this section for 
             // given daterange
