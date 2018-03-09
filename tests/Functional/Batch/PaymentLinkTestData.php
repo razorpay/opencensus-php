@@ -274,9 +274,9 @@ return [
     ],
 
     'testPaymentLinkStatsOfBatch' => [
-        'request' => [
-            'url'     => '/batches/batch_00000000000001/stats',
-            'method'  => 'get',
+        'request'  => [
+            'url'    => '/batches/batch_00000000000001/stats',
+            'method' => 'get',
         ],
         'response' => [
             'content' => [
@@ -337,6 +337,26 @@ return [
                     'id'                    => '100000004order'
                 ],
             ],
+        ],
+    ],
+
+    'testGetStatsOfInvalidType' => [
+        'request'   => [
+            'url'    => '/batches/batch_00000000000001/stats',
+            'method' => 'get',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Batch stats are not available for this batch type',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_BATCH_STATS_NOT_SUPPORTED_FOR_TYPE,
         ],
     ],
 ];

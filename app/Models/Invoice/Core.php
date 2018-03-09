@@ -798,9 +798,9 @@ class Core extends Base\Core
 
         return [
             Entity::TOTAL_COUNT   => $batch->getTotalCount(),
-            Entity::ISSUED_COUNT  => $stats[Status::ISSUED] ?? 0,
-            Entity::PAID_COUNT    => $stats[Status::PAID] ?? 0,
-            Entity::EXPIRED_COUNT => $stats[Status::EXPIRED] ?? 0,
+            Entity::ISSUED_COUNT  => (int) ($stats[Status::ISSUED] ?? 0),
+            Entity::PAID_COUNT    => (int) ($stats[Status::PAID] ?? 0),
+            Entity::EXPIRED_COUNT => (int) ($stats[Status::EXPIRED] ?? 0),
         ];
     }
 

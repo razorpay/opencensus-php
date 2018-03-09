@@ -262,6 +262,18 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetStatsOfInvalidType()
+    {
+        $this->fixtures->create(
+            'batch',
+            [
+                'id'   => '00000000000001',
+                'type' => 'linked_account'
+            ]);
+
+        $this->startTest();
+    }
+
     protected function getDefaultPaymentLinkFileEntries()
     {
         return [

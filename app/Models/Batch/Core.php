@@ -4,6 +4,7 @@ namespace RZP\Models\Batch;
 
 use RZP\Models\Base;
 use RZP\Models\Invoice;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
@@ -115,23 +116,24 @@ class Core extends Base\Core
 
     public function fetchStatsOfBatch(Entity $batch): array
     {
-        $response = [
-            Entity::ID   => $batch->getPublicId(),
-            Entity::TYPE => $batch->getType(),
-        ];
-
         switch ($batch->getType())
         {
             case Type::PAYMENT_LINK:
-                $response[Entity::STATS] = (new Invoice\Core)->fetchStatsOfBatch($batch);
+                $stats = (new Invoice\Core)->fetchStatsOfBatch($batch);
                 break;
 
             default:
                 throw new BadRequestException(
-                    BAD_REQUEST_BATCH_STATS_NOT_SUPPORTED_FOR_TYPE,
+                    ErrorCode::BAD_REQUEST_BATCH_STATS_NOT_SUPPORTED_FOR_TYPE,
                     Entity::TYPE,
                     [Entity::TYPE => $batch->getType()]);
         }
+
+        $response = [
+            Entity::ID    => $batch->getPublicId(),
+            Entity::TYPE  => $batch->getType(),
+            Entity::STATS => $stats,
+        ];
 
         return $response;
     }

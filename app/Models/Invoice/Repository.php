@@ -381,31 +381,28 @@ class Repository extends Base\Repository
     /**
      * Gets aggregate invoice stats per status for a given batch.
      *
+     * Returns an array like:
+     *  {
+     *      'draft': 10,
+     *      'issued': 10,
+     *      'paid': 5,
+     *      'expired': 1
+     *  }
+     *
      * @param  Batch\Entity $batch
+     *
      * @return array
      */
     public function getInvoiceStatsForBatch(Batch\Entity $batch): array
     {
+        /** @var Base\PublicCollection $collection */
         $collection = $this->newQuery()
                            ->selectRaw(Entity::STATUS . ', COUNT(*) AS count')
                            ->where(Entity::BATCH_ID, '=', $batch->getId())
                            ->groupBy(Entity::STATUS)
-                           ->get();
+                           ->pluck('count', Entity::STATUS);
 
-        //  Converts collection results to needed format:
-        //  {
-        //      'draft': 10,
-        //      'issued': 10,
-        //      'paid': 5,
-        //      'expired': 1
-        //  }
-        return $collection->map(
-                function ($entity, $key)
-                {
-                    return [$entity->status => (int) $entity->count];
-                })
-                ->collapse()
-                ->all();
+        return $collection->all();
     }
 
     protected function addQueryParamPaymentId(BuilderEx $query, array $params)
