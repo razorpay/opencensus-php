@@ -6,9 +6,13 @@ import DataTable from 'rzp/ui/Table/DataTable';
 import { Link } from 'react-router-dom';
 import HeaderAction from 'rzp/ui/HeaderAction';
 import BatchListFilter from 'merchant/components/BatchNew/ListFilter';
+import {
+  EmptyComponent,
+  BatchStatus,
+  BatchNavLink,
+} from 'merchant/components/BatchNew/ListAddons';
 import { batchId, totalCount, batchName } from 'rzp/ui/item/pair';
 import { openModal } from 'rzp/modules/modals';
-import { BatchUploadStatusLabel } from 'merchant/components/StatusLabel';
 
 import { luminateRow } from 'merchant/modules/app';
 import * as NotificationsActions from 'rzp/modules/notifications';
@@ -190,49 +194,22 @@ export default class BatchList extends Component {
 
 const batchIdLink = {
   title: 'Batch ID',
-  value: batch => (
-    <NavLink to={`/${batch.type.split('_').join('')}s/batch/${batch.id}`}>
-      <code>{batch.id}</code>
-    </NavLink>
-  ),
-};
-
-/**
- * Render this component when there are not batch row.
- */
-const EmptyComponent = (uploadUrl, openModalFunc) => {
-  return (
-    <div class="empty-table-message">
-      <h3>No Batch Files Found</h3>
-      <h5 class="helper">
-        A Batch file consists of a group of payment links can be generated in
-        bulk. Simply upload a file containing all the information and accept
-        payments instantly.
-      </h5>
-      <button class="btn btn-default" onClick={openModalFunc}>
-        Start Uploading
-      </button>
-    </div>
-  );
+  value: batch => <BatchNavLink batchId={batch.id} batchType={batch.type} />,
 };
 
 /**
  * Render customized `Status Pill` label for batches.
  * Add refresh btn if the batch has just been created.
  */
-const batchStatus = handleClick => {
+const batchStatus = refetchBatchDetails => {
   return {
     title: 'Status',
     value: item => (
-      <span>
-        <BatchUploadStatusLabel status={item.status} />
-        {item.status === 'created' && (
-          <i
-            class="i i-refresh m-l fetch-batch-btn"
-            onClick={() => handleClick(item.id)}
-          />
-        )}
-      </span>
+      <BatchStatus
+        id={item.id}
+        status={item.status}
+        onRefetchBatchDetails={refetchBatchDetails}
+      />
     ),
   };
 };
