@@ -1603,20 +1603,58 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REFERENCE2);
     }
 
-    public function isSecondRecurring()
+    /**
+     * @param array $gatewayTokens
+     * @param bool  $accessCheck For terminal selection, we need to ensure that it's either private
+     *                           auth or privilege auth. If it's public auth, terminal selection
+     *                           logic needs to treat it as first recurring only because in public
+     *                           auth, it always needs to go via 2fa terminal.
+     *
+     * @return bool
+     * @throws Exception\LogicException
+     */
+    public function isSecondRecurring($accessCheck = false, $gatewayTokens = [])
     {
         $app = \App::getFacadeRoot();
 
-        $token = $this->getGlobalOrLocalTokenEntity();
+        if ($accessCheck === true)
+        {
+            $basicAuth = $app['basicauth'];
+
+            $access = (($basicAuth->isPrivateAuth() === true) or
+                       ($basicAuth->isPrivilegeAuth() === true));
+
+            if ($access === false)
+            {
+                return false;
+            }
+        }
 
         if ($this->isRecurring() === false)
         {
             return false;
         }
 
-        $reference = $this->getReferenceForGatewayToken();
+        $token = $this->getGlobalOrLocalTokenEntity();
 
-        $existingGatewayTokens = $app['repo']->gateway_token->findByTokenAndReference($token, $reference);
+        // Recurring payments should always have a token!
+        if ($token === null)
+        {
+            throw new Exception\LogicException(
+                'Token absent for recurring payment',
+                ErrorCode::SERVER_ERROR_TOKEN_ABSENT_RECURRING_PAYMENT,
+                [
+                    'payment_id'    => $this->getId(),
+                    'access_check'   => $accessCheck,
+                ]);
+        }
+
+        if (empty($gatewayTokens) === true)
+        {
+            $reference = $this->getReferenceForGatewayToken();
+
+            $gatewayTokens = $app['repo']->gateway_token->findByTokenAndReference($token, $reference);
+        }
 
         //
         // We can have multiple gateway_tokens for a single token.
@@ -1625,7 +1663,7 @@ class Entity extends Base\PublicEntity
         // gateway_token has already been created for the given token.
         // The token can now be used without 2FA.
         //
-        return ($existingGatewayTokens->count() > 0);
+        return ($gatewayTokens->count() > 0);
     }
 
     public function isEmiMerchantSubvented()

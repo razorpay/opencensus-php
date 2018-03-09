@@ -3,10 +3,11 @@
 namespace RZP\Models\Terminal;
 
 use RZP\Exception;
-use RZP\Error\ErrorCode;
-use RZP\Constants\Mode;
-use RZP\Trace\TraceCode;
 use RZP\Models\Base;
+use RZP\Models\Payment;
+use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 
 class Core extends Base\Core
@@ -218,6 +219,59 @@ class Core extends Base\Core
         $this->repo->saveOrFail($terminal);
 
         return $terminal;
+    }
+
+    /**
+     * This function is primarily used for terminal selection (filters and sorters)
+     *
+     * @param                $terminal
+     * @param Payment\Entity $payment
+     *
+     * @param array          $gatewayTokens
+     *
+     * @return bool
+     * @throws Exception\LogicException
+     */
+    public function hasApplicableGatewayTokens($terminal, Payment\Entity $payment, $gatewayTokens)
+    {
+        //
+        // This function should be called only for second recurring payments!
+        //
+        if ($payment->isSecondRecurring(true, $gatewayTokens) === false)
+        {
+            throw new Exception\LogicException(
+                'Invalid function call!',
+                ErrorCode::SERVER_ERROR_INVALID_FUNCTION_CALL,
+                [
+                    'payment_id'    => $payment->getId(),
+                    'terminal_id'   => $terminal->getId(),
+                ]);
+        }
+
+        //
+        // For second recurring payment, ensure that we select a terminal
+        // of the same gateway as for the first recurring payment and also
+        // of the same merchant (shared, direct)
+        //
+        $validGatewayTokens = $gatewayTokens->filter(
+                                function($gatewayToken) use ($terminal)
+                                {
+                                    return (($gatewayToken->getGateway() === $terminal->getGateway()) and
+                                            ($gatewayToken->terminal->getMerchantId() === $terminal->getMerchantId()));
+                                });
+
+        //
+        // We check if we have one valid gateway_token for the
+        // terminal being selected. If yes, we return back true.
+        // If we don't have even one valid gateway_token for the
+        // terminal being selected, we return back false.
+        //
+        // The check is again 1 exactly because for a given gateway,
+        // there should not be more than one terminal. We don't support
+        // more than 1 set of terminals for a merchant (direct/shared).
+        // If it's greater than 1, there's something wrong and should fail.
+        //
+        return ($validGatewayTokens->count() === 1);
     }
 
     protected function validateExistingTerminalGatewayMerchantId($terminal)

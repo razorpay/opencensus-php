@@ -130,13 +130,7 @@ class Repository extends Base\Repository
 
         $query = $this->newQuery()
                       ->enabled()
-                      ->type($types)
-                      // TODO: This is a temporary hard-code. Remove it later!
-                      ->whereIn(Entity::GATEWAY, [
-                                    Payment\Gateway::AXIS_MIGS,
-                                    Payment\Gateway::HDFC,
-                                    Payment\Gateway::HITACHI
-                      ]);
+                      ->type($types);
 
         $this->addMerchantWhereCondition($query, $merchantIds);
 
