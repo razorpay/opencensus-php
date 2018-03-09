@@ -16,15 +16,19 @@ import GenericPanel, {
   PanelBody,
   PanelFooter,
 } from 'merchant/components/Home/GenericPanel';
-import { API_ERROR, API_INVALID_RESP } from 'merchant/components/Home/data';
+import {
+  API_ERROR,
+  API_INVALID_RESP
+} from 'merchant/components/Home/data';
 import {
   trackGoToLinks,
   trackNoData,
   trackError
 } from 'merchant/containers/Home/ga';
+import GroupingDropdown from 'merchant/components/Home/GroupingDropdown';
 
 import { trackBreadcrumbClick } from './ga';
-import { getQuery, sampleData } from './data';
+import { getQuery, aggTypes } from './data';
 
 function getLevels(hierarchy, levels = []) {
   if (hierarchy.parent) {
@@ -47,35 +51,41 @@ class PaymentMethods extends Component {
     super(props);
 
     this.state = {
-      data: null,
-      levels: [],
+      data        : null,
+      levels      : [],
       currentLevel: null,
-      csvData: null,
-      isLoading: false,
-      error: '',
-      hierarchy: { values: [] },
+      csvData     : null,
+      isLoading   : false,
+      error       : '',
+      hierarchy   : { values: [] },
+      selectedAgg : aggTypes[0]
     };
 
     this.requestId = 0;
-    this.onLevelChange = ::this.onLevelChange;
-    this.onCSVData = ::this.onCSVData;
+
+    this.onLevelChange   = ::this.onLevelChange;
+    this.onCSVData       = ::this.onCSVData;
     this.openReportModal = ::this.openReportModal;
+    this.onAggChange     = ::this.onAggChange;
   }
 
-  fetchData(startDate, endDate) {
+  fetchData(startDate, endDate, aggType) {
+
     this.setState({
       isLoading: true,
-      error: '',
+      error    : '',
     });
 
-    const {sectionTitle, analyticsFetch} = this.props;
+    const {selectedAgg}                  = this.state,
+          {sectionTitle, analyticsFetch} = this.props;
 
     const requestId = ++this.requestId;
 
     (analyticsFetch || fetch)(
       getQuery({
         startTime: startDate.unix(),
-        endTime: endDate.unix(),
+        endTime  : endDate.unix(),
+        aggType  : aggType || selectedAgg.value
       }),
       this.props.mode
     )
@@ -103,7 +113,7 @@ class PaymentMethods extends Component {
         }
 
         this.setState({
-          data: agg.result,
+          data         : agg.result,
           lastUpdatedAt: agg.last_updated_at,
         });
 
@@ -142,13 +152,16 @@ class PaymentMethods extends Component {
   }
 
   onCSVData(csvUrl) {
-    const { startDate, endDate } = this.props;
+    const { startDate, endDate } = this.props,
+          { selectedAgg } = this.state;
 
     this.setState({
       csvData: {
         name: `Payment Insights, ${moment(startDate).format(
           csvDateFormat
-        )} to ${moment(endDate).format(csvDateFormat)}(Razorpay).csv`,
+        )} to ${moment(endDate).format(csvDateFormat)} ${
+          selectedAgg.text
+        }(Razorpay).csv`,
         url: csvUrl,
       },
     });
@@ -160,6 +173,16 @@ class PaymentMethods extends Component {
       currentLevel: hierarchy,
       hierarchy,
     });
+  }
+
+  onAggChange({option}) {
+    const { startDate, endDate } = this.props;
+
+    this.setState({
+      selectedAgg: option
+    });
+
+    this.fetchData(startDate, endDate, option.value);
   }
 
   componentWillMount() {
@@ -189,7 +212,14 @@ class PaymentMethods extends Component {
   }
 
   render() {
-    const { levels, csvData, isLoading, data, error } = this.state,
+    const {
+        data,
+        error,
+        levels,
+        csvData,
+        isLoading,
+        selectedAgg
+      } = this.state,
       { startDate, endDate, sectionTitle } = this.props,
       levelsLength = levels.length,
       hasNoData = !data || data.length === 0;
@@ -225,6 +255,12 @@ class PaymentMethods extends Component {
           </div>
           <div className="panel-actions pull-right">
             <div className="panel-action-item">
+              <GroupingDropdown
+                grouping={aggTypes}
+                onGroupChange={this.onAggChange}
+                selectedGrouping={selectedAgg}/>
+            </div>
+            <div className="panel-action-item">
               <MoreOptionsButton
                 csvData={csvData}
                 sectionTitle={sectionTitle}
@@ -235,6 +271,7 @@ class PaymentMethods extends Component {
         <PanelBody>
           <Treemap
             data={this.state.data}
+            isCurrency={"isCurrency" in selectedAgg}
             onLevelChange={this.onLevelChange}
             currentLevel={this.state.currentLevel}
             onCSVData={this.onCSVData}
