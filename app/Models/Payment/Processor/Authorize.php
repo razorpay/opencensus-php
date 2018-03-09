@@ -1641,7 +1641,7 @@ trait Authorize
 
             $type = Payment\RecurringType::AUTO;
 
-            if ($subscription->isCreated() === true)
+            if ($subscription->hasBeenAuthenticated() === false)
             {
                 $type = Payment\RecurringType::INITIAL;
             }
