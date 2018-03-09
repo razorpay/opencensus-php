@@ -102,7 +102,9 @@ class Selector extends Base\Core
                 //
                 $filteredTerminals = $this->repo
                                           ->terminal
-                                          ->getDirectRecurringTerminalsOfType($this->input['merchant'], 6)
+                                          ->getDirectRecurringTerminalsOfType(
+                                                    $this->input['merchant'],
+                                                    [Type::RECURRING_3DS, Type::RECURRING_NON_3DS])
                                           ->all();
             }
         }
