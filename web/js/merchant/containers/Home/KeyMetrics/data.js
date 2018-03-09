@@ -296,6 +296,7 @@ export const getTimelineData = ({
   startTime,
   endTime,
   noGrouping,
+  getColor,
   valueKey = 'value',
   breakdown = 'daily',
   groupTitleMap = {},
@@ -598,7 +599,9 @@ export const getTimelineData = ({
                         }).reduce((result, item, index) => {
                         
                           result[item.label] = index;
-                          item.color = colors[index % colors.length];
+                          item.color = getColor
+                                         ? getColor(item.label)
+                                         : colors[index % colors.length];
                           return result;
                         }, {});
 
@@ -607,8 +610,9 @@ export const getTimelineData = ({
   
     return orderedGroups[label1] - orderedGroups[label2];
   }).forEach((item, index) => {
-  
-    const groupColor = colors[index % colors.length];
+ 
+    // getting the color assigned in the aggregate value
+    const groupColor = aggregates[orderedGroups[item.label]].color;
 
     item.backgroundColor = groupColor;
     item.borderColor     = groupColor;

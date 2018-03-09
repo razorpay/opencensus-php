@@ -20,8 +20,15 @@ import { showNotification } from 'rzp/modules/notifications';
 import { groupBy } from 'rzp/utils/pokedex';
 
 import { fetch } from 'merchant/modules/pokedex';
-import { API_ERROR, API_INVALID_RESP } from 'merchant/components/Home/data';
-import { trackNoData } from 'merchant/containers/Home/ga';
+import {
+  API_ERROR,
+  API_INVALID_RESP,
+  getPaymentMethodColor
+} from 'merchant/components/Home/data';
+import {
+  trackNoData,
+  trackError
+} from 'merchant/containers/Home/ga';
 import Tooltip from 'merchant/components/Home/Tooltip';
 
 import {
@@ -39,7 +46,6 @@ import {
   trackBreakdownChange,
   trackSavedCardsHidden
 } from './ga';
-import { trackError } from 'merchant/containers/Home/ga';
 import Panel from './Panel';
 
 const csvDateFormat = 'DD-MM-YYYY';
@@ -316,7 +322,8 @@ class KeyMetricsContainer extends Component {
               groupTitleMap: tabMeta.groupTitleMap || { Mobile: 'mWeb' },
               isCurrency,
               valueKey,
-              noGrouping
+              noGrouping,
+              getColor: getPaymentMethodColor
             });
 
             // track in GA that no data found in this section for 

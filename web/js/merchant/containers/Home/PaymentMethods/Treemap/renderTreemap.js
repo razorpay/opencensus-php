@@ -7,8 +7,8 @@ import {
   humanReadableIndian,
   humanReadableIndianCurrency
 } from 'rzp/utils/numerals';
-import { default as chartColors } from 'rzp/utils/chart/colors';
 
+import { getPaymentMethodColor} from 'merchant/components/Home/data';
 import { paymentMethodsColumns } from 'merchant/containers/Home/PaymentMethods/data';
 
 import { trackTreemapClick } from '../ga';
@@ -106,8 +106,8 @@ function main(
     .sort((item1, item2) => {
       return item2.value - item1.value;
     })
-    .forEach((item, index) => {
-      colors[item.key] = chartColors[index];
+    .forEach(({key}, index) => {
+      colors[key] = getPaymentMethodColor(key);
     });
 
   Object.keys(aliases).forEach(key => {
