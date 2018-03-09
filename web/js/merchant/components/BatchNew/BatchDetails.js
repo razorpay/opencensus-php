@@ -56,20 +56,20 @@ export default function BatchDetails(props) {
                       </td>
                       <td class="td-info">
                         <span class="td-heading">Payment Links Sent</span>
-                        <span class="td-value">{stats.invoice_issued}</span>
+                        <span class="td-value">{stats.issued_count}</span>
                       </td>
                     </tr>
                     <tr>
                       <td class="td-info">
                         <span class="td-heading">Paid</span>
                         <span class="td-value text-success">
-                          {stats.invoice_paid}
+                          {stats.paid_count}
                         </span>
                       </td>
                       <td class="td-info">
                         <span class="td-heading">Expired</span>
                         <span class="td-value text-danger">
-                          {stats.invoice_expired}
+                          {stats.expired_count}
                         </span>
                       </td>
                     </tr>

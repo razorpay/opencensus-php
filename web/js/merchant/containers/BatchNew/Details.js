@@ -56,7 +56,7 @@ export default class BatchDetailsContainer extends Component {
         this.setState({
           batch: batch,
           invoices: invoices.data.items,
-          stats: stats.data,
+          stats: stats.data.stats,
           isLoading: false,
         });
       })
