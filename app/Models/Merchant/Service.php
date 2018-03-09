@@ -971,9 +971,18 @@ class Service extends Base\Service
             $input
         );
 
+        if((isset($input['attributes']) === true) and
+           (isset($input['action']) === true))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Both Action and Attributes should not be sent.');
+        }
+
         (new Validator)->validateInput('updateMerchantsBulk', $input);
 
         $merchantIds = $input['merchant_ids'];
+
+        unset($input['merchant_ids']);
 
         $successCount = $failedCount = 0;
 
@@ -983,7 +992,14 @@ class Service extends Base\Service
         {
             try
             {
-                $this->edit($merchantId, $input['attributes']);
+                if(isset($input['attributes']) === true)
+                {
+                    $this->edit($merchantId, $input['attributes']);
+                }
+                else
+                {
+                    $this->action($merchantId, $input);
+                }
 
                 $successCount++;
             }

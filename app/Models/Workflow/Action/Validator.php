@@ -59,13 +59,35 @@ class Validator extends Base\Validator
     {
         $action = $this->entity;
 
-        if (
-            ($action->getMakerType() === MakerType::ADMIN) and
-            (($action->getMakerId() !== $admin->getId()) or ($admin->isSuperAdmin() === false))
-            or
-            ($action->getMakerType() === MakerType::MERCHANT)
-        )
+        $makerType = $action->getMakerType();
 
+        $canCloseAction = false;
+
+        // If maker of action is an admin
+        if ($makerType === MakerType::ADMIN)
+        {
+            // If admin is the creator of action
+            // or admin is SuperAdmin then close should be allowed
+            if (($action->getMakerId() === $admin->getId()) or
+                ($admin->isSuperAdmin() === true))
+            {
+                $canCloseAction = true;
+            }
+        }
+        // If maker of action is a merchant
+        else if ($makerType === MakerType::MERCHANT)
+        {
+            // Only SuperAdmin can close for now.
+            // Other admins should just reject, we'll see
+            // later if they want any admin to be able to close
+            // or not.
+            if ($admin->isSuperAdmin() === true)
+            {
+                $canCloseAction = true;
+            }
+        }
+
+        if ($canCloseAction === false)
         {
             $data = [
                 'action_admin_id' => $action->getMakerId(),

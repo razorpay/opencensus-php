@@ -64,6 +64,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::NOTES,
         self::RECEIPT,
+        self::STATUS,
     ];
 
     protected $visible = [

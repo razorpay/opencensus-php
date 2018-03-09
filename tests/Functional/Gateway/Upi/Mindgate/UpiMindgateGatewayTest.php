@@ -226,6 +226,25 @@ class UpiMindgateGatewayTest extends TestCase
         $this->assertEquals('failed', $payment['status']);
     }
 
+    public function testPaymentWithExpiryPrivateAuth()
+    {
+        $this->fixtures->merchant->addFeatures(['s2supi']);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['upi']['expiry_time'] = 10;
+
+        $response = $this->doS2SUpiPayment($payment);
+
+        $paymentId = $response['razorpay_payment_id'];
+
+        $this->checkPaymentStatus($paymentId, 'created');
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $this->assertEquals(10, $upiEntity['expiry_time']);
+    }
+
     public function testRefundSuccess()
     {
         $payment = $this->testPayment();

@@ -17,6 +17,7 @@ use RZP\Models\Schedule\Task\Type as ScheduleTaskType;
 use RZP\Models\Settlement;
 use RZP\Models\Settlement\Details as SetlDetails;
 use RZP\Models\Settlement\Details\Component as SetlComponent;
+use RZP\Trace\TraceCode;
 
 class Merchant
 {
@@ -50,6 +51,8 @@ class Merchant
         $this->repo = $repo;
 
         $this->ba = $app['basicauth'];
+
+        $this->trace = $app['trace'];
 
         // Get merchant bank account
         $this->attachMerchantBankAccount();
@@ -132,7 +135,13 @@ class Merchant
     {
         assert($this->setl->hasTransaction(), true);
 
+        $startTime = microtime(true);
+
         $initiateAt = $this->txns->max(Transaction\Entity::SETTLED_AT);
+
+        $timeTaken = microtime(true) - $startTime;
+
+        $this->trace->info(TraceCode::SETTLEMENT_MAX_SETTLED_AT_TIME_TAKEN, ['time_taken' => $timeTaken]);
 
         $this->createSettlementAttemptEntity($initiateAt);
 
