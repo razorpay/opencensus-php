@@ -32,10 +32,12 @@ class Bob extends Base
         {
             $amount['refunds'] = array_reduce($data['refunds'], function ($sum, $item)
             {
-                $sum += ($item['refund']['amount'] / 100);
+                $sum += $item['refund']['amount'];
 
                 return $sum;
             });
+
+            $amount['refunds'] = $amount['refunds'] / 100;
 
             $count['refunds'] = count($data['refunds']);
 
@@ -46,10 +48,12 @@ class Bob extends Base
         {
             $amount['claims'] = array_reduce($data['claims'], function ($sum, $item)
             {
-                $sum += ($item['payment']->getAmount() / 100);
+                $sum += $item['payment']->getAmount();
 
                 return $sum;
             });
+
+            $amount['claims'] = $amount['claims'] / 100;
 
             $count['claims'] = count($data['claims']);
         }
