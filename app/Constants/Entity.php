@@ -329,6 +329,7 @@ class Entity
         self::NETBANKING_KOTAK       => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_RBL         => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_PNB         => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_BOB         => \RZP\Gateway\Netbanking\Base::class,
 
         self::UPI_MINDGATE          => \RZP\Gateway\Upi\Base::class,
         self::UPI_SBI               => \RZP\Gateway\Upi\Base::class,
