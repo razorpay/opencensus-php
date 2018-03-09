@@ -2,10 +2,7 @@
 
 namespace Lib;
 
-use RZP\Constants\IndianStates as State;
-use RZP\Exception\BadRequestValidationFailureException;
-
-class GSTIN
+class Gstin
 {
     /**
      * Details here: https://cleartax.in/s/know-your-gstin#struct

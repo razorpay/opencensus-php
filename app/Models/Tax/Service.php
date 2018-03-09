@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Tax;
 
-use Lib\GSTIN;
+use Lib\Gstin;
 use RZP\Models\Base;
 
 class Service extends Base\Service
@@ -32,7 +32,7 @@ class Service extends Base\Service
 
     public function getMetaStates(): Base\PublicCollection
     {
-        $data = GSTIN::getStatesToTinIdMap();
+        $data = Gstin::getStatesToTinIdMap();
 
         return (new Base\PublicCollection($data))->toArrayWithItems();
     }

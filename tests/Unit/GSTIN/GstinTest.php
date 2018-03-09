@@ -2,14 +2,14 @@
 
 namespace RZP\Tests\Unit\GSTIN;
 
-use Lib\GSTIN;
+use Lib\Gstin;
 use RZP\Tests\TestCase;
 
-class GSTINTest extends TestCase
+class GstinTest extends TestCase
 {
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__ . '/GSTINTestData.php';
+        $this->testDataFilePath = __DIR__ . '/GstinTestData.php';
 
         parent::setUp();
     }
@@ -20,7 +20,7 @@ class GSTINTest extends TestCase
 
         foreach ($list as $gstin)
         {
-            $this->assertTrue(GSTIN::isValid($gstin), 'Failed validity test for GSTIN: '. $gstin);
+            $this->assertTrue(Gstin::isValid($gstin), 'Failed validity test for GSTIN: ' . $gstin);
         }
     }
 
@@ -30,7 +30,7 @@ class GSTINTest extends TestCase
 
         foreach ($list as $gstin)
         {
-            $this->assertFalse(GSTIN::isValid($gstin), 'Failed invalid test for GSTIN: '. $gstin);
+            $this->assertFalse(Gstin::isValid($gstin), 'Failed invalid test for GSTIN: ' . $gstin);
         }
     }
 
@@ -44,7 +44,7 @@ class GSTINTest extends TestCase
     {
         $expected = $this->testData[__FUNCTION__];
 
-        $actual = GSTIN::getStatesToTinIdMap();
+        $actual = Gstin::getStatesToTinIdMap();
 
         $this->assertEquals($expected, $actual);
     }

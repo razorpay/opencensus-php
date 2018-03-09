@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Base;
 
-use Lib\GSTIN;
+use Lib\Gstin;
 use Lib\PhoneBook;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -405,18 +405,10 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
         return true;
     }
 
-    protected function validateGstin(string $attribute, $value)
+    protected function validateGstin($attribute, $value)
     {
-        if ((empty($value) === false) and (is_string($value) === true))
-        {
-            if (GSTIN::isValid($value) === false)
-            {
-                throw new BadRequestValidationFailureException("The $attribute is invalid",
-                    $attribute,
-                    $value);
-            }
-        }
+        $isString = $this->validateString($attribute, $value);
 
-        return true;
+        return (($isString === true) and (Gstin::isValid($value) === true));
     }
 }

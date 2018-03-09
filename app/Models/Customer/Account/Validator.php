@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Customer;
 
-use Lib\GSTIN;
+use Lib\Gstin;
 use Lib\PhoneBook;
 use libphonenumber\PhoneNumberFormat;
 
@@ -25,7 +25,7 @@ class Validator extends Base\Validator
         Entity::CONTACT             => 'sometimes|nullable|contact_syntax',
         Entity::NAME                => 'sometimes|string|max:50|nullable|custom',
         Entity::EMAIL               => 'sometimes|nullable|email',
-        Entity::GSTIN               => 'filled|string|gstin',
+        Entity::GSTIN               => 'filled|gstin',
         Entity::NOTES               => 'sometimes|notes',
         Entity::SHIPPING_ADDRESS    => 'sometimes',
         Entity::BILLING_ADDRESS     => 'sometimes',
