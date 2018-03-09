@@ -3,8 +3,14 @@
     .helper
       width: 60%
       margin: 20px auto
-  .fetch-batch-btn
+  .refetch-batch-btn
+    display: inline-block
     cursor: pointer
+    transition: 0.5s ease-out
+    margin-left: 5px
+    &.spin
+      transform: rotate(360deg)
+
 .batch-upload-modal
   background: #fff
   &.success
