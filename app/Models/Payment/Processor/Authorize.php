@@ -4103,8 +4103,6 @@ trait Authorize
 
         $magicDisabledGlobally = (bool) $cache->get(ConfigKey::DISABLE_MAGIC);
 
-        $isMagicEnabled = false;
-
         switch (true)
         {
             case $magicDisabledGlobally:
@@ -4130,7 +4128,7 @@ trait Authorize
     {
         $card = $this->payment->card;
 
-        if ((empty($card) == true) or ($card->iinRelation->isMagicEnabled() === false))
+        if ((empty($card) === true) or ($card->iinRelation->isMagicEnabled() === false))
         {
             return true;
         }
