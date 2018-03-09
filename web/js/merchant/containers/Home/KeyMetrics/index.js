@@ -23,6 +23,7 @@ import { fetch } from 'merchant/modules/pokedex';
 import {
   API_ERROR,
   API_INVALID_RESP,
+  getPlatformColor,
   getPaymentMethodColor
 } from 'merchant/components/Home/data';
 import {
@@ -33,8 +34,11 @@ import Tooltip from 'merchant/components/Home/Tooltip';
 
 import {
   NUM_TRANSACTIONS,
+  TRANSACTION_VOLUME,
+  REFUNDS,
   SAVED_CARDS,
   SUCCESS_RATE,
+  PLATFORM,
   tabsOrder,
   tabsMeta,
   getQuery,
@@ -310,7 +314,8 @@ class KeyMetricsContainer extends Component {
           // Timeline data
           const histogram = resp.data[`${tabName}Histogram`];
           if (histogram) {
-            const { labels, datasets, aggregates, csv } = getTimelineData({
+
+            const options = {
               data: histogram.result,
               groupByColumnName:
                 typeof tabMeta.groupByColumnName === "undefined"
@@ -322,9 +327,25 @@ class KeyMetricsContainer extends Component {
               groupTitleMap: tabMeta.groupTitleMap || { Mobile: 'mWeb' },
               isCurrency,
               valueKey,
-              noGrouping,
-              getColor: getPaymentMethodColor
-            });
+              noGrouping
+            };
+
+            if ([NUM_TRANSACTIONS, TRANSACTION_VOLUME , REFUNDS].indexOf(
+              selectedTab
+            ) >= 0) {
+            
+              options.getColor = (selectedGrouping &&
+                                  selectedGrouping.value === PLATFORM)
+                                    ? getPlatformColor
+                                    : getPaymentMethodColor;
+            }
+
+            const {
+              labels,
+              datasets,
+              aggregates,
+              csv
+            } = getTimelineData(options);
 
             // track in GA that no data found in this section for 
             // given daterange

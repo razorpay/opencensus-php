@@ -1,4 +1,4 @@
-import colors from 'rzp/utils/chart/colors';
+import colors, { namedColors } from 'rzp/utils/chart/colors';
 
 const API_ERROR = {
     error: 'An error occured while fetching data from the server',
@@ -14,11 +14,18 @@ const API_ERROR = {
 const paymentMethodsOrder = [
     "card",
     "netbanking",
-    "wallet",
     "upi",
+    "wallet",
     "bank transfer",
     "emi",
   ],
+  platformColorMap = {
+    "desktop": namedColors.blue,
+    "mweb": namedColors.orange,
+    "android": namedColors.androidGreen,
+    "ios": namedColors.lightBlue,
+    "others": namedColors.red
+  },
   paymentMethodsColorMap = paymentMethodsOrder.reduce(
     (result, method, index) => {
       result[method] = colors[index];
@@ -27,6 +34,7 @@ const paymentMethodsOrder = [
     {}
   ),
   extraColors = colors.slice(paymentMethodsOrder.length);
+
 
 let extraColorsUsed = 0;
 
@@ -49,10 +57,16 @@ const getPaymentMethodColor = (paymentMethod) => {
   return color;
 };
 
+const getPlatformColor = (platform) => {
+
+  return platformColorMap[platform.toLowerCase()];
+};
+
 export {
   API_ERROR,
   API_INVALID_RESP,
   OLDEST_TXN_ERROR,
   isMobileDevice,
+  getPlatformColor,
   getPaymentMethodColor
 };

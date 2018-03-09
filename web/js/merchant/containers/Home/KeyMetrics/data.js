@@ -17,6 +17,21 @@ import { platformGroupingVals } from 'rzp/utils/pokedex';
 
 const dateFormat = 'Do MMM YYYY';
 
+const TRANSACTION_VOLUME = 'transactionVolume',
+  NUM_TRANSACTIONS = 'numTransactions',
+  REFUNDS = 'refunds',
+  SAVED_CARDS = 'savedCards',
+  SUCCESS_RATE = 'successRate',
+  PLATFORM = 'platform';
+
+export {
+  TRANSACTION_VOLUME,
+  NUM_TRANSACTIONS,
+  SAVED_CARDS,
+  REFUNDS,
+  PLATFORM
+};
+
 const defaultGroupingVals = [
   {
     value: 'method',
@@ -24,7 +39,7 @@ const defaultGroupingVals = [
     query: ['method'],
   },
   {
-    value: 'platform',
+    value: PLATFORM,
     text : 'By Platforms',
     query: platformGroupingVals,
   },
@@ -57,14 +72,6 @@ export const breakdownVals = [
     title: 'Monthly',
   },
 ];
-
-const TRANSACTION_VOLUME = 'transactionVolume',
-  NUM_TRANSACTIONS = 'numTransactions',
-  REFUNDS = 'refunds',
-  SAVED_CARDS = 'savedCards',
-  SUCCESS_RATE = 'successRate';
-
-export { TRANSACTION_VOLUME, NUM_TRANSACTIONS, SAVED_CARDS, REFUNDS };
 
 export const tabsOrder = [
   TRANSACTION_VOLUME,
