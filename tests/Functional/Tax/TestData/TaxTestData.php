@@ -7,7 +7,7 @@ use RZP\Error\PublicErrorCode;
 
 return [
     'testGetTax' => [
-        'request' => [
+        'request'  => [
             'url'     => '/taxes/tax_00000000000001',
             'method'  => 'get',
             'content' => [],
@@ -24,7 +24,7 @@ return [
     ],
 
     'testGetMultipleTaxes' => [
-        'request' => [
+        'request'  => [
             'url'     => '/taxes',
             'method'  => 'get',
             'content' => [],
@@ -54,12 +54,12 @@ return [
     ],
 
     'testCreateTax' => [
-        'request' => [
+        'request'  => [
             'url'     => '/taxes',
             'method'  => 'post',
             'content' => [
-                'name'      => 'New tax',
-                'rate'      => 1020,
+                'name' => 'New tax',
+                'rate' => 1020,
             ],
         ],
         'response' => [
@@ -73,7 +73,7 @@ return [
     ],
 
     'testCreateTaxWithInvalidPercentageRateValue' => [
-        'request' => [
+        'request'   => [
             'url'     => '/taxes',
             'method'  => 'post',
             'content' => [
@@ -82,8 +82,8 @@ return [
                 'rate'      => 10200,
             ],
         ],
-        'response' => [
-            'content' => [
+        'response'  => [
+            'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'rate should be between 0 to 10000 if rate_type is percentage',
@@ -98,7 +98,7 @@ return [
     ],
 
     'testUpdateTax' => [
-        'request' => [
+        'request'  => [
             'url'     => '/taxes/tax_00000000000001',
             'method'  => 'patch',
             'content' => [
@@ -119,15 +119,15 @@ return [
     ],
 
     'testUpdateTaxWithInvalidRateTypeAndValueCombination' => [
-        'request' => [
+        'request'   => [
             'url'     => '/taxes/tax_00000000000001',
             'method'  => 'patch',
             'content' => [
                 'rate_type' => 'percentage',
             ],
         ],
-        'response' => [
-            'content' => [
+        'response'  => [
+            'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'rate should be between 0 to 10000 if rate_type is percentage',
@@ -142,7 +142,7 @@ return [
     ],
 
     'testDeleteTax' => [
-        'request' => [
+        'request'  => [
             'url'     => '/taxes/tax_00000000000001',
             'method'  => 'delete',
             'content' => [],
@@ -163,7 +163,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'gst_tax_slabs'   => [
+                'gst_tax_slabs'  => [
                     0,
                     500,
                     1200,
@@ -203,6 +203,58 @@ return [
                     "UTGST_1400" => "tax_9nDpYz26oaOHgI",
                     "UTGST_1800" => "tax_9nDpYznDzU7NKP",
                     "UTGST_2800" => "tax_9nDpZ0hEw4vZky",
+                ],
+            ],
+        ],
+    ],
+
+    'testGetTaxMetaStates' => [
+        'request'  => [
+            'url'    => '/taxes/meta/states',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 37,
+                'items'  => [
+                    'Andaman and Nicobar Islands' => '35',
+                    'Andhra Pradesh'              => '28',
+                    'Andhra Pradesh (New)'        => '37',
+                    'Arunachal Pradesh'           => '12',
+                    'Assam'                       => '18',
+                    'Bihar'                       => '10',
+                    'Chandigarh'                  => '04',
+                    'Chattisgarh'                 => '22',
+                    'Dadra and Nagar Haveli'      => '26',
+                    'Daman and Diu'               => '25',
+                    'Delhi'                       => '07',
+                    'Goa'                         => '30',
+                    'Gujarat'                     => '24',
+                    'Haryana'                     => '06',
+                    'Himachal Pradesh'            => '02',
+                    'Jammu and Kashmir'           => '01',
+                    'Jharkhand'                   => '20',
+                    'Karnataka'                   => '29',
+                    'Kerala'                      => '32',
+                    'Lakshadweep Islands'         => '31',
+                    'Madhya Pradesh'              => '23',
+                    'Maharashtra'                 => '27',
+                    'Manipur'                     => '14',
+                    'Meghalaya'                   => '17',
+                    'Mizoram'                     => '15',
+                    'Nagaland'                    => '13',
+                    'Odisha'                      => '21',
+                    'Pondicherry'                 => '34',
+                    'Punjab'                      => '03',
+                    'Rajasthan'                   => '08',
+                    'Sikkim'                      => '11',
+                    'Tamil Nadu'                  => '33',
+                    'Telangana'                   => '36',
+                    'Tripura'                     => '16',
+                    'Uttar Pradesh'               => '09',
+                    'Uttarakhand'                 => '05',
+                    'West Bengal'                 => '19',
                 ],
             ],
         ],

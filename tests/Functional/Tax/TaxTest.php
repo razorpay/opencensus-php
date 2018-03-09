@@ -95,4 +95,11 @@ class TaxTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testGetTaxMetaStates()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
 }

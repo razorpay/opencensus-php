@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Tests\Unit\Fetch;
+namespace RZP\Tests\Unit\GSTIN;
 
 use Lib\GSTIN;
 use RZP\Tests\TestCase;
