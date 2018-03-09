@@ -21,6 +21,7 @@ class Preferences
     const MID_ENDURANCE        = ['9YAQd3b47mdIQY', '9ZO8jNaR0OORNH'];
     const MID_SHELL            = '9LMdTQdjgMJ6uR';
     const MID_PAISABAZAAR      = '9dhe2WRR0XCQz6';
+    const MID_BPCL             = '9C04GG1wPzKCUP';
     const DEMO_ACCOUNT         = '100DemoAccount';
 
     /**
