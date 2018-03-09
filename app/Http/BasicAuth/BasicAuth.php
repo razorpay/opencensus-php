@@ -405,28 +405,25 @@ class BasicAuth
         $hasKeyInQueryParams = $this->request->has('key_id');
         $hasKeyInBasicAuth   = $this->request->getUser() !== null;
 
-        if (($hasKeyInQueryParams === false) and
-            ($hasKeyInBasicAuth === false))
+        // If no key provided for public route, attempts key less authentication.
+        if (($hasKeyInQueryParams === false) and ($hasKeyInBasicAuth === false))
         {
             return $this->keylessPublicAuth();
         }
-        else if ($hasKeyInQueryParams === true)
+
+        // Otherwise continue with public authentication flow
+        if ($hasKeyInQueryParams === true)
         {
             $res = $this->setKeyFromQueryParams();
-
-            if ($res !== null)
-            {
-                return $res;
-            }
         }
         else
         {
             $res = $this->setCredentials();
+        }
 
-            if ($res !== null)
-            {
-                return $res;
-            }
+        if ($res !== null)
+        {
+            return $res;
         }
 
         $response = $this->verifyKeyExistence();
@@ -436,35 +433,21 @@ class BasicAuth
             return $response;
         }
 
-        if (($this->getSecret() !== '') and
-            ($this->getSecret() !== null))
+        if (($this->getSecret() !== '') and ($this->getSecret() !== null))
         {
-            return ApiResponse::generateErrorResponse(
-                ErrorCode::BAD_REQUEST_UNAUTHORIZED_SECRET_SENT_ON_PUBLIC_ROUTE);
+            return ApiResponse::generateErrorResponse(ErrorCode::BAD_REQUEST_UNAUTHORIZED_SECRET_SENT_ON_PUBLIC_ROUTE);
         }
 
         $this->fetchMerchantOfKey($this->key);
     }
 
-    /**
-     * If key was not provided we try to check if there is any
-     * identifier in request input with which we can set merchant
-     * instance variable.
-     *
-     * Also we try to detect mode from identifiers by querying both databases
-     *
-     * If we're not able to retrieve merchant then we just throw 401 which
-     * would have happened otherwise.
-     */
     public function keylessPublicAuth()
     {
-        $handler = new KeylessPublicAuth;
-
-        // Try to retrieve merchant
-        $merchant = $handler->retrieveMerchant();
+        // Attempts to retrieve merchant via key less public auth approach
+        $merchant = (new KeylessPublicAuth)->retrieveMerchant();
 
         // If we fail to retrieve merchant, return http auth expected exception
-        if (is_null($merchant) === true)
+        if ($merchant === null)
         {
             return ApiResponse::httpAuthExpected();
         }

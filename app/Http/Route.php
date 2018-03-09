@@ -2433,13 +2433,16 @@ final class Route
 
     public function getUrlWithPublicCallbackAuth(array $parameters = [], $key = '', $route = 'payment_callback_with_key_post')
     {
+        // If key is not passed, we get the same from basic auth instance
         if ($key === '')
         {
             $key = $this->ba->getPublicKey();
         }
 
-        if (($key === '') and
-            (in_array($route, self::$publicCallback, true) === true))
+        // For public callback routes, if key is not available(case of key less flow)
+        // we use the non-key corresponding route, which would work anyway with key less flow
+        // because the route has payment id.
+        if (($key === '') and (in_array($route, self::$publicCallback, true) === true))
         {
             $route = str_replace('with_key_', '', $route);
         }

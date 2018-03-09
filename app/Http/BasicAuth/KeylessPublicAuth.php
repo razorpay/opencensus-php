@@ -77,37 +77,43 @@ final class KeylessPublicAuth
      * BasicAuth) and there it'll follow expected 401 response.
      *
      * @return Merchant\Entity|null
-     *
-     * @throws \RZP\Exception\BadRequestException
+     * @throws BadRequestException
      */
     public function retrieveMerchant()
     {
-        $input = $this->request->all();
+        $info = $this->retrieveEntityAndSignedId();
 
+        if ($info !== null)
+        {
+            list($entity, $signedId) = $info;
+            return $this->retrieveMerchantForEntity($entity, $signedId);
+        }
+    }
+
+    /**
+     * @return array|null
+     */
+    protected function retrieveEntityAndSignedId()
+    {
+        // If found in request input against available map, returns that.
+        $input = $this->request->all();
         foreach (self::INPUT_ENTITY_MAP as $key => $entity)
         {
             if (array_key_exists($key, $input) === true)
             {
-                return $this->retrieveMerchantForEntity($entity, $input[$key]);
+                return [$entity, $input[$key]];
             }
         }
 
-        $signedEntityId = $this->retrieveSignedEntityId();
-
-        if (is_null($signedEntityId) === true)
+        // Else tries to find X-Entity-Id in route, query or headers
+        $signedId = $this->retrieveXEntityId();
+        if ($signedId !== null)
         {
-            return null;
+            $sign = explode('_', $signedId)[0];
+            $entity = $this->getEntityFromSign($sign);
+
+            return [$entity, $signedId];
         }
-
-        // Ideal retrieved signed entityId will be of format entitySign_{entityId}
-        // E.g. inv_{invoiceId}, pay_{paymentId}.
-        $entityInfo = explode('_', $signedEntityId);
-
-        $entity = $this->getEntityFromSign($entityInfo[0]);
-
-        $entityId = $entityInfo[1] ?? null;
-
-        return $this->retrieveMerchantForEntity($entity, $entityId);
     }
 
     /**
@@ -118,40 +124,36 @@ final class KeylessPublicAuth
      *
      * At last if we are not able to find entityId from the above cases, we just return null
      *
-     * @return $entityId|null
+     * @return string|null
      */
-    protected function retrieveSignedEntityId()
+    protected function retrieveXEntityId()
     {
-        // fetch entity id from route param
-        if (is_null($this->request->route(self::X_ENTITY_ID_QUERY_KEY)) === false)
+        // Fetch entity id from route param
+        if ($this->request->route(self::X_ENTITY_ID_QUERY_KEY) !== null)
         {
-            $entityId = $this->request->route(self::X_ENTITY_ID_QUERY_KEY);
+            $signedId = $this->request->route(self::X_ENTITY_ID_QUERY_KEY);
         }
-        // fetch entity id from query param
+        // Fetch entity id from query param
         else if ($this->request->has(self::X_ENTITY_ID_QUERY_KEY) === true)
         {
-            $entityId = $this->request->get(self::X_ENTITY_ID_QUERY_KEY);
+            $signedId = $this->request->get(self::X_ENTITY_ID_QUERY_KEY);
 
             // unset x_entity_id from query param
             $this->request->query->remove(self::X_ENTITY_ID_QUERY_KEY);
             $this->request->request->remove(self::X_ENTITY_ID_QUERY_KEY);
         }
-        // fetch entity id from request header
+        // Fetch entity id from request header
         else
         {
-            $entityId = $this->request->headers->get(self::X_ENTITY_ID_HEADER_KEY);
+            $signedId = $this->request->headers->get(self::X_ENTITY_ID_HEADER_KEY);
         }
 
-        return $entityId;
+        return $signedId;
     }
 
     /**
-     * This function returns the entity name from sign
-     * Currently we handle only the following entities [Order, Invoice, Payment, Subscription]
-     *
-     * @param string $sign
-     *
-     * @return $entity|null
+     * @param string       $sign
+     * @return string|null
      */
     protected function getEntityFromSign(string $sign)
     {
@@ -178,69 +180,54 @@ final class KeylessPublicAuth
     }
 
     /**
-     * This function validates and retrieves merchant for entity.
-     * As for mode we try with live mode first and then try test mode.
-     *
-     * @param $entity
-     * @param $id
-     *
-     * @return $merchant|null
-     *
-     * @throws \RZP\Exception\BadRequestException
+     * @param  string               $entity
+     * @param  string               $signedId
+     * @return Merchant\Entity|null
+     * @throws BadRequestException
      */
-    protected function retrieveMerchantForEntity($entity, $id)
+    protected function retrieveMerchantForEntity(string $entity, string $signedId)
     {
-        if ((E::isValidEntity($entity) === false) or
-            (is_null($id) === true))
+        if (E::isValidEntity($entity) === false)
         {
             return null;
         }
 
         $entityClass = E::getEntityClass($entity);
 
-        $entityClass::verifyIdAndSilentlyStripSign($id);
+        $entityClass::verifyIdAndSilentlyStripSign($signedId);
 
         // Try to retrieve merchant using LIVE mode
-        $merchant = $this->setModeAndRetrieveMerchantForEntity($entity, $id, Mode::LIVE);
-
+        $merchant = $this->setModeAndRetrieveMerchantForEntity($entity, $signedId, Mode::LIVE);
         // If we fail to retrieve merchant, try using TEST mode
-        if (is_null($merchant) === true)
+        if ($merchant === null)
         {
-            $merchant = $this->setModeAndRetrieveMerchantForEntity($entity, $id, Mode::TEST);
+            $merchant = $this->setModeAndRetrieveMerchantForEntity($entity, $signedId, Mode::TEST);
         }
 
         return $merchant;
     }
 
     /**
-     * This function sets mode and retrieves merchant for entity.
-     *
-     * @param string $entity
-     * @param string $id
-     * @param string $mode
-     *
-     * @return $merchant|null
-     *
-     * @throws \RZP\Exception\BadRequestException
+     * @param  string               $entity
+     * @param  string               $signedId
+     * @param  string               $mode
+     * @return Merchant\Entity|null
+     * @throws BadRequestException
      */
-    protected function setModeAndRetrieveMerchantForEntity(
-        string $entity,
-        string $id,
-        string $mode)
+    protected function setModeAndRetrieveMerchantForEntity(string $entity, string $signedId, string $mode)
     {
         $this->ba->setModeAndDbConnection($mode);
 
         $repoClass = E::getEntityRepository($entity);
-
         $repo = new $repoClass;
 
         try
         {
-            $entity = $repo->findOrFailPublic($id);
+            $model = $repo->findOrFailPublic($signedId);
 
-            if (is_null($entity->getMerchantId()) === false)
+            if ($model->getMerchantId() !== null)
             {
-                return $entity->merchant;
+                return $model->merchant;
             }
         }
         catch (BadRequestException $ex)
@@ -248,9 +235,7 @@ final class KeylessPublicAuth
             // As we will be querying in the LIVE mode first and then in the TEST mode,
             // catch exception for bad request invalid id incase of LIVE mode and
             // throw same exception incase of TEST mode or any other exception.
-
-            if (($ex->getCode() !== ErrorCode::BAD_REQUEST_INVALID_ID) or
-                ($this->ba->getMode() === Mode::TEST))
+            if (($ex->getCode() !== ErrorCode::BAD_REQUEST_INVALID_ID) or ($this->ba->getMode() === Mode::TEST))
             {
                 throw $ex;
             }
