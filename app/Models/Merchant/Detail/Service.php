@@ -92,7 +92,26 @@ class Service extends Base\Service
 
         $merchantDetails->edit($input);
 
+        $params = $this->storeActivationFile($merchantDetails, $input);
+
+        $merchantDetails->fill($params);
+
+        $response = $core->createResponse($merchantDetails);
+
+        $merchantDetails->setActivationProgress($response['verification']['activation_progress']);
+
+        $this->repo->saveOrFail($merchantDetails);
+
+        return $response;
+    }
+
+    public function storeActivationFile(
+        Merchant\Detail\Entity $merchantDetails,
+        array $input)
+    {
         $params = [];
+
+        $merchant = $merchantDetails->merchant;
 
         foreach ($input as $key => $value)
         {
@@ -111,15 +130,7 @@ class Service extends Base\Service
             $params[$key] = FileStore\Entity::verifyIdAndSilentlyStripSign($file['id']);
         }
 
-        $merchantDetails->fill($params);
-
-        $response = $core->createResponse($merchantDetails);
-
-        $merchantDetails->setActivationProgress($response['verification']['activation_progress']);
-
-        $this->repo->saveOrFail($merchantDetails);
-
-        return $response;
+        return $params;
     }
 
     public function editMerchantDetails($id, array $input)
@@ -191,13 +202,12 @@ class Service extends Base\Service
 
     protected function getSignedUrl(string $fileStoreId, string $merchantId)
     {
-        $accessor = new FileStore\Accessor;
+        $core = new FileStore\Core;
 
-        $signedUrls = $accessor->id($fileStoreId)
-                               ->merchantId($merchantId)
-                               ->getSignedUrl();
+        // [ id1 => url1, id2 => url2, ... ]
+        $signedUrls = $core->getSignedUrl($fileStoreId, $merchantId);
 
-        return $signedUrls[$fileStoreId];
+        return $signedUrls;
     }
 
     private function getFieldsToStepMap() : array
@@ -294,6 +304,21 @@ class Service extends Base\Service
         $activationStatusChangeLog = (new Merchant\Core)->getActivationStatusChangeLog($merchant);
 
         return $activationStatusChangeLog->toArrayPublic();
+    }
+
+    /**
+     * This function is used for updating website details of a merchant
+     * @param array $input
+     *
+     * @return array
+     */
+    public function updateWebsiteDetails(array $input): array
+    {
+        $merchantDetails = $this->merchant->merchantDetail;
+
+        $merchantDetails = (new Core)->updateWebsiteDetails($merchantDetails, $input);
+
+        return $merchantDetails->toArrayPublic();
     }
 
     public function getRejectionReasons()

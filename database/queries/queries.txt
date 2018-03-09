@@ -2897,7 +2897,6 @@ ALTER TABLE hitachi
 ALTER TABLE iins
     ADD COLUMN flows INTEGER UNSIGNED DEFAULT 1 AFTER otp_read;
 
-
 ALTER TABLE payments Change token emi_subvention varchar(14);
 
 ALTER TABLE atom
@@ -2917,6 +2916,12 @@ ALTER TABLE workflow_permissions
 ALTER TABLE migrations
     ADD UNIQUE INDEX migrations_migration_unique (migration);
 
+ALTER TABLE workflow_actions
+    ADD COLUMN `state_changer_id` char(14) COLLATE utf8_bin  NULL AFTER `admin_id`,
+    ADD COLUMN `state_changer_role_id` char(14) COLLATE utf8_bin  NULL AFTER `admin_id`,
+    ADD CONSTRAINT `workflow_actions_state_changer_id_foreign` FOREIGN KEY (`state_changer_id`) REFERENCES `admins` (`id`),
+    ADD CONSTRAINT `workflow_actions_state_changer_role_id_foreign` FOREIGN KEY (`state_changer_role_id`) REFERENCES `roles` (`id`);
+
 ALTER TABLE transactions
     DROP INDEX transactions_settled_index,
     ADD INDEX transactions_settled_channel_on_hold_index (settled, channel, on_hold);
@@ -2927,3 +2932,88 @@ ALTER TABLE payments
 
 ALTER TABLE payments
     ADD INDEX payments_recurring_index (recurring);
+
+ALTER TABLE files modify extension varchar(255) default null;
+
+ALTER TABLE terminals
+    ADD COLUMN emandate TINYINT(1) DEFAULT 0 NOT NULL AFTER upi;
+
+ALTER TABLE tokens
+    ADD COLUMN `auth_type` VARCHAR(14) DEFAULT NULL after gateway_token2;
+
+ALTER TABLE merchant_banks
+    ADD COLUMN emandate TINYINT(1) DEFAULT 0 NOT NULL AFTER upi;
+
+ALTER TABLE payments
+    DROP INDEX payments_merchant_id_foreign;
+
+ALTER TABLE coupons
+    DROP INDEX coupons_code_index;
+
+ALTER TABLE devices
+    DROP INDEX devices_verification_token_index;
+
+ALTER TABLE invoices
+    ADD INDEX invoices_updated_at_index (updated_at),
+    DROP INDEX invoices_merchant_id_foreign;
+
+ALTER TABLE merchant_users
+    DROP INDEX merchant_users_merchant_id_foreign;
+
+ALTER TABLE orders
+    DROP INDEX orders_merchant_id_foreign;
+
+ALTER TABLE orgs
+    DROP INDEX custom_code,
+    DROP INDEX custom_code_2,
+    ADD UNIQUE KEY orgs_custom_code_unique (custom_code);
+
+ALTER TABLE refunds
+    DROP INDEX refunds_merchant_id_foreign;
+
+ALTER TABLE settlements
+    DROP INDEX settlements_merchant_id_foreign;
+
+ALTER TABLE transactions
+    DROP INDEX transactions_settled_at_index,
+    DROP INDEX transactions_merchant_id_foreign;
+
+ALTER TABLE webhooks
+    DROP INDEX webhooks_merchant_id_foreign;
+
+ALTER TABLE bank_transfers
+    ADD INDEX bank_transfers_updated_at_index (updated_at);
+
+ALTER TABLE virtual_accounts
+    ADD INDEX virtual_accounts_updated_at_index (updated_at);
+
+ALTER TABLE fund_transfer_attempts
+    ADD COLUMN initiate_at INT(11) AFTER batch_fund_transfer_id;
+
+ALTER TABLE merchant_access_map
+    DROP FOREIGN KEY merchant_access_map_merchant_id_foreign,
+    DROP INDEX merchant_access_map_merchant_id_entity_id_unique;
+
+ALTER TABLE merchant_access_map
+    ADD CONSTRAINT merchant_access_map_merchant_id_foreign FOREIGN KEY(merchant_id)
+        REFERENCES merchants(id);
+
+ALTER TABLE workflow_actions
+    ADD COLUMN `maker_id` char(14) NULL AFTER `admin_id`,
+    ADD COLUMN `maker_type` char(14) NULL AFTER `maker_id`,
+    ADD INDEX workflow_actions_maker_id_maker_type_index (maker_id, maker_type),
+    MODIFY `admin_id` CHAR(14) NULL DEFAULT NULL;
+
+# To run after the PR is merged.
+UPDATE `workflow_actions`
+    SET maker_id = admin_id , maker_type = 'admin'
+    WHERE maker_id IS NULL AND admin_id IS NOT NULL;
+
+ALTER TABLE `merchants`
+    ADD COLUMN `has_key_access` TINYINT(1) NOT NULL DEFAULT 0 after `linked_account_kyc`;
+
+ALTER TABLE tokens
+    ADD COLUMN aadhaar_number VARCHAR(255) DEFAULT NULL AFTER ifsc;
+
+ALTER TABLE schedules
+    MODIFY COLUMN `interval` INTEGER DEFAULT NULL;

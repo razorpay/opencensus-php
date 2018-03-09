@@ -20,7 +20,11 @@ class MailTags
     const AXIS_SETTLEMENT_FILES            = 'axis_settlement_files';
     const AXIS_BENEFICIARY_MAIL            = 'axis_beneficiary_mail';
 
+    const HDFC_SETTLEMENT_FILES            = 'hdfc_settlement_files';
+
     const SETTLEMENT_FAILURE_EMAIL         = 'settlement_failure_email';
+
+    const NULL_UTR_REPORT                  = 'null_utr_report';
 
     const CORPORATION_NETBANKING_REFUNDS_MAIL   = 'corporation_netbanking_refunds_mail';
     const HDFC_NETBANKING_REFUNDS_MAIL          = 'hdfc_netbanking_refunds_mail';
@@ -102,6 +106,9 @@ class MailTags
     // Merchant Activation Email Tags
     const NOTIFY_ACTIVATION_SUBMISSION     = 'notify_activation_submission';
     const CONFIRM_ACTIVATION_SUBMISSION    = 'confirm_activation_submission';
+
+    // Merchant website details update email tags
+    const NOTIFY_WEBSITE_DETAIL_SUBMISSION = 'notify_website_detail_submission';
 
     // OAuth email tags
     const OAUTH_APP_AUTHORIZED             = 'oauth_app_authorized';

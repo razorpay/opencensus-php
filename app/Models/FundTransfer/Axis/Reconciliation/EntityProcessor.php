@@ -35,7 +35,7 @@ class EntityProcessor extends BaseEntityProcessor
                 $status = $this->fta->getStatus();
             }
         }
-        else if ($bankStatusCode === Status::REJECTED)
+        else if (in_array($bankStatusCode, [Status::CANCELLED, Status::REJECTED], true) === true)
         {
             $status = Attempt\Status::FAILED;
 
@@ -47,6 +47,16 @@ class EntityProcessor extends BaseEntityProcessor
 
     protected function isMerchantLevelError(): bool
     {
+        $status         = $this->fta->getStatus();
+
+        $bankStatusCode = $this->fta->getBankStatusCode();
+
+        if (($status === Attempt\Status::FAILED) and
+            ($bankStatusCode === Status::RETURNSETTLED))
+        {
+            return true;
+        }
+
         return false;
     }
 }

@@ -19,6 +19,9 @@ use RZP\Constants\Timezone;
 use RZP\Http\BasicAuth\Type;
 use RZP\Exception\ThrottleException;
 
+/**
+ * @deprecated Please use ThrottleV2 middleware.
+ */
 class Throttle
 {
     const STATIC_PRIVATE_IP = '1.1.1.1';

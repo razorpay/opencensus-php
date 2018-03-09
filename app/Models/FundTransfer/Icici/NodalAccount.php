@@ -110,7 +110,7 @@ class NodalAccount extends NodalBase\NodalAccount
                 Headings::AMOUNT                    => $this->formatAmount($amount),
                 Headings::PAYMENT_DATE              => $this->date,
                 Headings::DEBIT_ACCOUNT_NO          => self::DEBIT_ACCOUNT_NO,
-                Headings::CREDIT_NARRATION          => 'RAZORPAY SETTLEMENT',
+                Headings::CREDIT_NARRATION          => '',
                 Headings::INSTRUMENT_REFERENCE      => $entity->getId(),
                 Headings::DUMMY                     => '',
                 Headings::DUMMY2                    => '',

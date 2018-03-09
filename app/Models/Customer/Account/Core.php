@@ -172,7 +172,6 @@ class Core extends Base\Core
 
     public function verifyOtp($input, $merchant)
     {
-        // Currently, the validator does not have any mandatory field.
         Customer\Validator::validateGlobalCustomerCreateInput($input);
 
         // Parse contact
@@ -211,7 +210,7 @@ class Core extends Base\Core
             //
 
             // TODO: Uncomment this when we use charge_at_will for global flow
-            // $tokens = (new Token\Core)->removeNetbankingRecurringTokens($tokens);
+            // $tokens = (new Token\Core)->removeEmandateRecurringTokens($tokens);
 
             $response['tokens'] = $tokens->toArrayPublic();
         }
@@ -306,7 +305,8 @@ class Core extends Base\Core
     protected function getOrCreateGlobalCustomer($input)
     {
         $contact = $input[Customer\Entity::CONTACT];
-        $email = $input[Customer\Entity::EMAIL];
+
+        $email = $input[Customer\Entity::EMAIL] ?? null;
 
         $customer = $this->repo->customer->findByContactAndMerchant(
             $contact,

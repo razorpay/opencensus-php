@@ -14,6 +14,8 @@ class IrctcRefund extends Base
 {
     protected function processEntry(array & $entry)
     {
+        $entry[Batch\Header::MERCHANT_REFERENCE] = str_replace("\xEF\xBB\xBF", '',  $entry[Batch\Header::MERCHANT_REFERENCE]);
+
         $paymentId = trim($entry[Batch\Header::PAYMENT_ID]);
 
         $payment = $this->repo->payment->findByPublicId($paymentId);

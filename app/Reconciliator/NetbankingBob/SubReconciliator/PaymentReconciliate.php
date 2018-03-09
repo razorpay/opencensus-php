@@ -31,10 +31,10 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     );
     }
 
-    protected function getNbAccountDetails($row)
+    protected function getAccountDetails($row)
     {
         return [
-            Base\Reconciliate::ACCOUNT_NUMBER => $row[self::COLUMN_BANK_ACCOUNT_NUMBER]
+            Base\Reconciliate::ACCOUNT_NUMBER => trim($row[self::COLUMN_BANK_ACCOUNT_NUMBER])
         ];
     }
 

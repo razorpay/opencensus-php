@@ -593,17 +593,8 @@ class Repository extends Base\Repository
                     ->whereIn($pGateway, $gateways)
                     ->where($rLastAttemptedAt, '<', $timeLimit)
                     ->with(['payment','payment.terminal'])
+                    ->inRandomOrder()
                     ->limit(100);
-
-        if ((count($gateways) === 1) and
-            ($gateways[0] === 'first_data'))
-        {
-            $query->orderBy('updated_at');
-        }
-        else
-        {
-            $query->inRandomOrder();
-        }
 
         return $query->get();
     }

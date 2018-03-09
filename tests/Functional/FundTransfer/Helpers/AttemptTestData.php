@@ -6,6 +6,8 @@ use RZP\Models\Settlement\Status as SettlementStatus;
 use RZP\Models\FundTransfer\Attempt\Status as AttemptStatus;
 use RZP\Models\FundTransfer\Icici\Reconciliation\Status as IciciStatus;
 use RZP\Models\FundTransfer\Kotak\Reconciliation\Status as KotakStatus;
+use RZP\Models\FundTransfer\Hdfc\Reconciliation\Status as HdfcStatus;
+use RZP\Models\FundTransfer\Axis\Reconciliation\Status as AxisStatus;
 
 return [
     'testFileCreationSettlement' => [
@@ -45,6 +47,20 @@ return [
         'failure_reason'    => null,
     ],
 
+    'matchAttemptForReconSuccessHdfc' => [
+        'version'           => 'V3',
+        'bank_status_code'  => 'E',
+        'status'            => AttemptStatus::INITIATED,
+        'failure_reason'    => null,
+    ],
+
+    'matchAttemptForReconSuccessAxis' => [
+        'version'           => 'V3',
+        'bank_status_code'  => 'Settled',
+        'status'            => AttemptStatus::INITIATED,
+        'failure_reason'    => null,
+    ],
+
     'matchSummaryForReconFile' => [
         'total_count'           => 1,
         'unprocessed_count'     => 0,
@@ -62,6 +78,20 @@ return [
         'channel'           => Channel::ICICI,
         'version'           => 'V3',
         'bank_status_code'  => IciciStatus::CANCELLED,
+        'status'            => AttemptStatus::INITIATED,
+    ],
+
+    'matchAttemptForReconFailureHdfc' => [
+        'channel'           => Channel::HDFC,
+        'version'           => 'V3',
+        'bank_status_code'  => HdfcStatus::CANCELLED,
+        'status'            => AttemptStatus::INITIATED,
+    ],
+
+    'matchAttemptForReconFailureAxis' => [
+        'channel'           => Channel::AXIS,
+        'version'           => 'V3',
+        'bank_status_code'  => AxisStatus::REJECTED,
         'status'            => AttemptStatus::INITIATED,
     ],
 
@@ -112,6 +142,22 @@ return [
         'channel'          => Channel::ICICI,
         'version'          => 'V3',
         'bank_status_code' => IciciStatus::CANCELLED,
+        'status'           => AttemptStatus::FAILED,
+        'failure_reason'   => 'Reconciliation',
+    ],
+
+    'matchSettlementAttemptForReconFailureHdfc' => [
+        'channel'          => Channel::HDFC,
+        'version'          => 'V3',
+        'bank_status_code' => HdfcStatus::CANCELLED,
+        'status'           => AttemptStatus::FAILED,
+        'failure_reason'   => 'Reconciliation',
+    ],
+
+    'matchSettlementAttemptForReconFailureAxis' => [
+        'channel'          => Channel::AXIS,
+        'version'          => 'V3',
+        'bank_status_code' => AxisStatus::REJECTED,
         'status'           => AttemptStatus::FAILED,
         'failure_reason'   => 'Reconciliation',
     ],

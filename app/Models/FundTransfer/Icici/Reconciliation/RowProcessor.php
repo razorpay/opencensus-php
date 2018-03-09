@@ -18,13 +18,13 @@ class RowProcessor extends BaseRowProcessor
 
     protected function parseRow()
     {
-        $bankStatus = $this->row[Headings::STATUS];
+        $bankStatus = $this->getNullOnEmpty(Headings::STATUS);
 
-        $mode = trim($this->row[Headings::PAYMENT_MODE]) ?? null;
+        $mode       = $this->getNullOnEmpty(Headings::PAYMENT_MODE);
 
-        $remarks = trim($this->row[Headings::REMARKS] ?? null);
+        $remarks    = $this->getNullOnEmpty(Headings::REMARKS);
 
-        $cmsRefNo = trim($this->row[Headings::CMS_REF_NO] ?? null);
+        $cmsRefNo   = $this->getNullOnEmpty(Headings::CMS_REF_NO);
 
         $utr = null;
 
@@ -41,11 +41,11 @@ class RowProcessor extends BaseRowProcessor
         }
 
         $this->parsedData = [
-            self::PAYMENT_REF_NO    => trim($this->row[Headings::PAYMENT_REF_NO] ?? null),
+            self::PAYMENT_REF_NO    => $this->getNullOnEmpty(Headings::PAYMENT_REF_NO),
             self::UTR               => $utr,
             self::BANK_STATUS_CODE  => $bankStatus,
             self::REMARKS           => $remarks,
-            self::PAYMENT_DATE      => trim($this->row[Headings::PAYMENT_DATE] ?? null),
+            self::PAYMENT_DATE      => $this->getNullOnEmpty(Headings::PAYMENT_DATE),
             self::CMS_REF_NO        => $cmsRefNo,
         ];
 
@@ -60,7 +60,7 @@ class RowProcessor extends BaseRowProcessor
 
         $currentStatus = $this->reconEntity->getStatus();
 
-        if (($currentBankStatusCode === Status::PAID) and
+        if ((in_array($currentBankStatusCode, Status::SUCCESS_STATUS, true) === true) and
             ($newBankStatusCode === Status::CANCELLED))
         {
             $this->reconEntity->setStatus(Attempt\Status::INITIATED);

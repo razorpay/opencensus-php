@@ -85,6 +85,24 @@ class UpiMindgateGatewayTest extends TestCase
         return $payment;
     }
 
+    public function testUpiAmountCap()
+    {
+        $this->payment['vpa'] = 'vishnu@upi';
+
+        $payment = $this->payment;
+
+        $payment['amount'] = 2100000;
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthPaymentViaAjaxRoute($payment);
+            });
+    }
+
     public function testFailedVpaValidation()
     {
         $this->payment['vpa'] = 'invalidvpa@hdfcbank';
@@ -206,6 +224,25 @@ class UpiMindgateGatewayTest extends TestCase
         $payment = $this->getEntityById('payment', $paymentId, true);
 
         $this->assertEquals('failed', $payment['status']);
+    }
+
+    public function testPaymentWithExpiryPrivateAuth()
+    {
+        $this->fixtures->merchant->addFeatures(['s2supi']);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['upi']['expiry_time'] = 10;
+
+        $response = $this->doS2SUpiPayment($payment);
+
+        $paymentId = $response['razorpay_payment_id'];
+
+        $this->checkPaymentStatus($paymentId, 'created');
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $this->assertEquals(10, $upiEntity['expiry_time']);
     }
 
     public function testRefundSuccess()

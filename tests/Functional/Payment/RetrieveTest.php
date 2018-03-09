@@ -379,7 +379,7 @@ class PaymentRetrieveTest extends TestCase
                ->with($expectedSearchParams)
                ->willReturn($expectedSearchRes);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $this->startTest();
     }

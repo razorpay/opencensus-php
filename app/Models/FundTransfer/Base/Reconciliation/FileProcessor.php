@@ -74,9 +74,35 @@ abstract class FileProcessor extends Base\Core
         return $data;
     }
 
-    protected function parseFile($filePath)
+    /**
+     * Checks the reverse file extension is same as specified by the bank
+     *
+     * @param string $filePath
+     *
+     * @return string
+     *
+     * @throws LogicException
+     */
+    protected function getFileExtensionForParsing(string $filePath): string
     {
-        $ext = pathinfo($filePath, PATHINFO_EXTENSION);
+        $extension = pathinfo($filePath, PATHINFO_EXTENSION);
+
+        if (in_array($extension, static::$fileExtensions, true) === true)
+        {
+            return $extension;
+        }
+
+        throw new LogicException(
+            "Extension not handled: {$extension}"
+            , null
+            , [
+                'file_path' => $filePath
+            ]);
+    }
+
+    protected function parseFile(string $filePath)
+    {
+        $ext = $this->getFileExtensionForParsing($filePath);
 
         switch ($ext)
         {
@@ -84,14 +110,11 @@ abstract class FileProcessor extends Base\Core
             case FileStore\Format::XLS:
                 return $this->parseExcelSheets($filePath);
 
-            case FileStore\Format::TXT:
-                return $this->parseTextFile($filePath, static::$delimiter);
-
             case FileStore\Format::CSV:
                 return $this->parseTextFile($filePath, ',');
 
             default:
-                throw new LogicException("Extension not handled: {$ext}");
+                return $this->parseTextFile($filePath, static::$delimiter);
         }
     }
 

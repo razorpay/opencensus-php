@@ -87,7 +87,7 @@ class OAuthApplicationTest extends TestCase
 
         $this->setAuthServiceMockDetail(
                                     'applications/8ckeirnw84ifke',
-                                    'DELETE',
+                                    'PUT',
                                     $requestParams);
 
         $this->startTest();

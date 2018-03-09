@@ -105,7 +105,10 @@ class BankTransferTest extends TestCase
         $this->assertStringEndsWith($utr, $attempt['narration']);
 
         $content = $this->initiateTransferViaFileAndAssertSuccess(
-            Channel::AXIS, Attempt\Purpose::REFUND, 1, Attempt\Type::REFUND);
+            Channel::AXIS,
+            Attempt\Purpose::REFUND,
+            1,
+            Attempt\Type::REFUND);
 
         $attempt = $this->getLastEntity('fund_transfer_attempt', true);
         $this->assertEquals('NEFT', $attempt['mode']);
@@ -347,7 +350,6 @@ class BankTransferTest extends TestCase
     public function testBankTransferRefundRetryManual()
     {
         $channel = Channel::AXIS;
-
         $accountNumber = $this->bankAccount['account_number'];
         $ifsc = $this->bankAccount['ifsc'];
 
@@ -441,7 +443,6 @@ class BankTransferTest extends TestCase
     public function testBankTransferRefundRetryToDifferentAccount()
     {
         $channel = Channel::AXIS;
-
         $accountNumber = $this->bankAccount['account_number'];
         $ifsc = $this->bankAccount['ifsc'];
 
@@ -593,7 +594,7 @@ class BankTransferTest extends TestCase
             ],
         ];
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -910,6 +911,7 @@ class BankTransferTest extends TestCase
 
         $this->fixtures->merchant->edit('10000000000000', ['category2' => 'cryptocurrency']);
 
+        $this->ba->adminAuth();
         $this->makeRequestAndGetContent([
             'method'  => 'PUT',
             'url'     => '/config/keys',
@@ -1189,7 +1191,6 @@ class BankTransferTest extends TestCase
         $channel = Channel::ICICI;
 
         $this->fixtures->merchant->edit('10000000000000', ['channel' => $channel]);
-
         $accountNumber = $this->bankAccount['account_number'];
         $ifsc = $this->bankAccount['ifsc'];
 
@@ -1220,6 +1221,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals(Refund\Status::PROCESSED, $refund['status']);
         $this->assertEquals(1, $refund['attempts']);
         $this->assertEquals($attempt['utr'], $refund['arn']);
+
     }
 
     public function testBankTransferInsert()
@@ -1233,6 +1235,7 @@ class BankTransferTest extends TestCase
 
         $request['content']['payee_ifsc'] = $ifsc;
 
+        $this->ba->adminAuth();
         $response = $this->makeRequestAndGetContent($request);
 
         $utr = $response['transaction_id'];

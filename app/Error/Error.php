@@ -244,6 +244,8 @@ class Error extends Support\Fluent
             case ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_ACCOUNT_ID:
             case ErrorCode::BAD_REQUEST_UNAUTHORIZED_OAUTH_TOKEN_INVALID:
             case ErrorCode::BAD_REQUEST_UNAUTHORIZED_OAUTH_SCOPE_INVALID:
+            case ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED:
+            case ErrorCode::BAD_REQUEST_UNAUTHORIZED_USER_ROLE_MISSING:
                 $httpStatusCode = 401;
                 break;
             case ErrorCode::BAD_REQUEST_ONLY_HTTPS_ALLOWED:

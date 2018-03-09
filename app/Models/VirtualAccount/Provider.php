@@ -10,8 +10,10 @@ use RZP\Models\QrCode;
 use RZP\Constants\Mode;
 use RZP\Models\BharatQr\Tags;
 use RZP\Models\BharatQr\Lengths;
-use RZP\Models\BharatQr\Constants;
+use RZP\Models\Merchant\Account;
 use RZP\Models\Card\NetworkName;
+use RZP\Models\BharatQr\Constants;
+use RZP\Models\Merchant\Preferences;
 use RZP\Models\BankAccount\Entity as BankAccount;
 
 class Provider
@@ -114,10 +116,10 @@ class Provider
     ];
 
     const PRIVILEGED_NUMERIC_HANDLE_MAPPING = [
-        // Zebpay gets 2224449
-        '8iMbVsEnv1HCo0' => '9',
+        // BPCL gets 2223339
+        Preferences::MID_BPCL => '9',
         // Tests
-        '10000000000000' => '9',
+        Account::TEST_ACCOUNT => '9',
     ];
 
     const IFSC = [
@@ -190,13 +192,9 @@ class Provider
         return false;
     }
 
+    //
     // Blocks test providers for making live requests
     //
-    // Unused right now because Kotak is making changes in their
-    // format, and IMPS testing is ongoing, so we need to use
-    // Dashboard to make corrective requests occasionally.
-    //
-    // TODO: Use in validateProvider when changes are stable
     public static function validateMode(string $provider, string $mode)
     {
         $isLiveProvider = (in_array($provider, self::TEST_PROVIDERS, true) === false);
@@ -235,6 +233,8 @@ class Provider
 
     protected function getBharatQrCode($qrCode)
     {
+        $pointOfInitiation = $this->getPointOfInitiation($qrCode);
+
         $visaIdentifier = $this->generateBharatQrMerchantIdentifier(NetworkName::VISA);
 
         $masterCardIdentifier =  $this->generateBharatQrMerchantIdentifier(NetworkName::MC);
@@ -249,7 +249,7 @@ class Provider
 
         $tagArray = [
             Tags::VERSION . $this->getLengthAndValue(Constants::VERSION),
-            Tags::POINT_OF_INITIATION . $this->getLengthAndValue(Constants::POINT_OF_INITIATION),
+            Tags::POINT_OF_INITIATION . $this->getLengthAndValue($pointOfInitiation),
             $visaTlv,
             $masterCardTlv,
             $rupayCardTlv,
@@ -276,6 +276,17 @@ class Provider
         $qrString .= $crc;
 
         return $qrString;
+    }
+
+    protected function getPointOfInitiation($qrCode)
+    {
+        if (empty($qrCode->getAmount()) === true)
+        {
+            return Constants::STATIC_POI;
+        }
+
+        // Dynamic code always have amount tag
+        return Constants::DYNAMIC_POI;
     }
 
     protected function getBharatQrUpiTlv()

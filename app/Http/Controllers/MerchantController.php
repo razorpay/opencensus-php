@@ -247,6 +247,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getBankAccountChangeStatus($id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->getBankAccountChangeStatus($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getBankAccount($id)
     {
         $data = $this->service()->getBankAccount($id);
@@ -389,16 +398,14 @@ class MerchantController extends Controller
 
     public function getWebhooks()
     {
-        $data = $this->service()->getWebhooks();
+        $data = $this->service()->getWebhooks($this->input);
 
         return ApiResponse::json($data);
     }
 
     public function postOAuthApplicationWebhook(string $appId)
     {
-        $input = Request::all();
-
-        $data = $this->service()->createOAuthAppWebhook($appId, $input);
+        $data = $this->service()->createOAuthAppWebhook($appId, $this->input);
 
         return ApiResponse::json($data);
     }
@@ -542,11 +549,11 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function updateHoldFundsForMultipleMerchants()
+    public function updateMerchantsBulk()
     {
         $input = Request::all();
 
-        $data = $this->service()->updateHoldFundsForMultipleMerchants($input);
+        $data = $this->service()->updateMerchantsBulk($input);
 
         return ApiResponse::json($data);
     }
@@ -707,9 +714,9 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function getUsers($id)
+    public function getUsers()
     {
-        $data = $this->service()->getUsers($id);
+        $data = $this->service()->getUsers();
 
         return ApiResponse::json($data);
     }
@@ -751,6 +758,24 @@ class MerchantController extends Controller
     public function getActivationStatusChangeLog(string $id)
     {
         $response = $this->service(E::MERCHANT_DETAIL)->getActivationStatusChangeLog($id);
+
+        return ApiResponse::json($response);
+    }
+
+    public function updateWebsiteDetails()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->updateWebsiteDetails($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function updateKeyAccess(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->updateKeyAccess($id, $input);
 
         return ApiResponse::json($response);
     }

@@ -2,11 +2,12 @@
 
 namespace RZP\Models\Merchant\Account;
 
+use RZP\Base\Fetch;
 use RZP\Models\Merchant;
 
 class Validator extends Merchant\Validator
 {
-     protected static $createRules = [
+    protected static $createRules = [
          Entity::NAME                                          => 'required|alpha_space_num|max:200',
          Entity::EMAIL                                         => 'required|email',
          Entity::TNC_ACCEPTED                                  => 'required|boolean|in:1',
@@ -19,4 +20,10 @@ class Validator extends Merchant\Validator
          // Sub keys are validated in respective validators.
          Entity::BANK_ACCOUNT                                  => 'required|array',
      ];
+
+    protected static $fetchRules = [
+        Entity::EMAIL => 'sometimes|email',
+        Fetch::SKIP   => 'sometimes|integer',
+        Fetch::COUNT  => 'sometimes|integer',
+    ];
 }

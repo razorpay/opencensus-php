@@ -168,7 +168,7 @@ class OrgTest extends TestCase
 
     public function testGetOrg()
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $org = $this->fixtures->create('org', ['email' => 'sreeram12@gmail.com']);
 

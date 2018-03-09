@@ -16,7 +16,7 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::INITIATE_FUND_TRANSFER, $input);
 
-        $data = (new Core)->initiateFundTransfers($input, $channel);
+        $data = (new Initiator)->initiateFundTransfers($input, $channel);
 
         return $data;
     }
@@ -165,5 +165,12 @@ class Service extends Base\Service
         }
 
         return false;
+    }
+
+    public function sendNullUtrReport()
+    {
+        $data = (new Report)->sendNullUtrReport();
+
+        return $data;
     }
 }

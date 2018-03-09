@@ -16,6 +16,7 @@ class Constants
     const COUNT                               = 'count';
     const FILE                                = 'file';
     const REJECTED_VPA                        = 'rejectedcollect@sbi';
+    const CBS_DOWN_VPA                        = 'cbsdown@sbi';
     const FAILED_VPA                          = 'failedcollect@sbi';
     const VALIDATION_FAIL_VPA                 = 'failedvalidate@sbi';
     const PAYMENT_ID                          = 'payment_id';

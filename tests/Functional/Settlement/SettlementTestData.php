@@ -1,7 +1,5 @@
 <?php
 
-use Carbon\Carbon;
-
 use RZP\Models\FundTransfer\Attempt\Status as AttemptStatus;
 use RZP\Models\Settlement\Status as SettlementStatus;
 
@@ -35,5 +33,13 @@ return [
             'count'     => 2,
             'txnCount'  => 4,
         ]
+    ],
+
+    'testSettlementForReversalOfDirectTransfer' => [
+        'method'  => 'POST',
+        'url'     => '/schedules/update_next_run/',
+        'content' => [
+            'type' => 'settlement',
+        ],
     ],
 ];

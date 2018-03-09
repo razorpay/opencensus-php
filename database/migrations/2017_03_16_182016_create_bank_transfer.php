@@ -90,6 +90,7 @@ class CreateBankTransfer extends Migration
             $table->index(BankTransfer::PAYER_ACCOUNT);
             $table->index(BankTransfer::PAYEE_ACCOUNT);
             $table->index(BankTransfer::CREATED_AT);
+            $table->index(BankTransfer::UPDATED_AT);
         });
     }
 

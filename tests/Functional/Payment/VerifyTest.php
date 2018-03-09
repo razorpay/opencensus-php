@@ -339,7 +339,7 @@ class VerifyTest extends TestCase
             }
         );
 
-        $payment = $this->getLastEntity('payment', true);
+        $payment = $this->getDbLastEntityPublic('payment');
 
         $this->resetMockServer();
 
@@ -392,7 +392,7 @@ class VerifyTest extends TestCase
             }
         );
 
-        $payment = $this->getLastEntity('payment', true);
+        $payment = $this->getDbLastEntityPublic('payment');
 
         $prevBucket = $payment['verify_bucket'];
 
@@ -413,7 +413,7 @@ class VerifyTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $payment = $this->getLastEntity('payment', true);
+        $payment = $this->getDbLastEntityPublic('payment');
 
         $newBucket = $payment['verify_bucket'];
 
@@ -463,7 +463,7 @@ class VerifyTest extends TestCase
             }
         );
 
-        $payment = $this->getLastEntity('payment', true);
+        $payment = $this->getDbLastEntityPublic('payment');
 
         $this->getTimeoutInVerify();
 
@@ -514,7 +514,7 @@ class VerifyTest extends TestCase
             'filter'  => 'verify_error'
         ];
 
-        $payment = $this->getLastEntity('payment', true);
+        $payment = $this->getDbLastEntityPublic('payment');
 
         $this->assertEquals($payment['verify_bucket'], 0);
 
@@ -535,7 +535,7 @@ class VerifyTest extends TestCase
 
         $this->assertContent($content, $resultData);
 
-        $payment = $this->getLastEntity('payment', true);
+        $payment = $this->getDbLastEntityPublic('payment');
 
         $this->assertEquals($payment['status'], 'authorized');
 
@@ -653,7 +653,7 @@ class VerifyTest extends TestCase
             }
         );
 
-        $payment = $this->getLastEntity('payment', true);
+        $payment = $this->getDbLastEntityPublic('payment');
 
         $prevBucket = $payment['verify_bucket'];
 
@@ -674,7 +674,7 @@ class VerifyTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $payment = $this->getLastEntity('payment', true);
+        $payment = $this->getDbLastEntityPublic('payment');
 
         $newBucket = $payment['verify_bucket'];
 
@@ -685,6 +685,8 @@ class VerifyTest extends TestCase
         $time->addMinutes(30);
 
         Carbon::setTestNow($time);
+
+        $this->ba->cronAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 
@@ -718,7 +720,7 @@ class VerifyTest extends TestCase
             }
         );
 
-        $payment = $this->getLastEntity('payment', true);
+        $payment = $this->getDbLastEntityPublic('payment');
 
         $prevBucket = $payment['verify_bucket'];
 
@@ -739,7 +741,7 @@ class VerifyTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $payment = $this->getLastEntity('payment', true);
+        $payment = $this->getDbLastEntityPublic('payment');
 
         $newBucket = $payment['verify_bucket'];
 
@@ -750,6 +752,8 @@ class VerifyTest extends TestCase
         $time->addMinutes(30);
 
         Carbon::setTestNow($time);
+
+        $this->ba->cronAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 
@@ -792,7 +796,7 @@ class VerifyTest extends TestCase
             }
         );
 
-        $payment = $this->getLastEntity('payment', true);
+        $payment = $this->getDbLastEntityPublic('payment');
 
         $prevBucket = $payment['verify_bucket'];
 
@@ -820,7 +824,7 @@ class VerifyTest extends TestCase
 
         $this->assertContent($content, $resultData);
 
-        $payment = $this->getLastEntity('payment', true);
+        $payment = $this->getDbLastEntityPublic('payment');
 
         $newBucket = $payment['verify_bucket'];
 
@@ -869,6 +873,8 @@ class VerifyTest extends TestCase
 
         $payment = $this->createFailedPayment($data);
 
+        $this->ba->cronAuth();
+
         $content = $this->makeRequestAndGetContent($request);
 
         $resultData = ['filter'  => 'payments_failed'];
@@ -878,6 +884,8 @@ class VerifyTest extends TestCase
         $time->addMinutes(25);
 
         Carbon::setTestNow($time);
+
+        $this->ba->cronAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 
@@ -1175,7 +1183,7 @@ class VerifyTest extends TestCase
             }
         );
 
-        $payment = $this->getLastEntity('payment', true);
+        $payment = $this->getDbLastEntityPublic('payment');
 
         $this->resetMockServer();
 

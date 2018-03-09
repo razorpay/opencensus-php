@@ -18,6 +18,12 @@ class Preferences
     const MID_MONEYVIEW        = '8hXTLsmoM3F6PH';
     const MID_WEALTHY          = '8lv4idBRY4C9c0';
     const MID_PIGGY            = '9IjdEkLQb0j2ro';
+    const MID_ENDURANCE        = ['9YAQd3b47mdIQY', '9ZO8jNaR0OORNH'];
+    const MID_SHELL            = '9LMdTQdjgMJ6uR';
+    const MID_PAISABAZAAR      = '9dhe2WRR0XCQz6';
+    const MID_BPCL             = '9C04GG1wPzKCUP';
+    const MID_SRI_CHAITANYA    = '8f9o3YjPGZEcdU';
+    const DEMO_ACCOUNT         = '100DemoAccount';
 
     /**
      * This needs to go in DB, for hotfix we are keeping it here
@@ -35,6 +41,11 @@ class Preferences
             Gateway::AXIS_MIGS,
             Gateway::FIRST_DATA,
         ],
+    ];
+
+    const CUSTOMER_TRANSACTION_HISTORY_ENABLED_MID = [
+        self::MID_SHELL,
+        self::DEMO_ACCOUNT,
     ];
 
     public static $merchantSharedTerminalsBlackList = [

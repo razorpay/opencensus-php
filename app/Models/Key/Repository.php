@@ -3,25 +3,17 @@
 namespace RZP\Models\Key;
 
 use RZP\Models\Base;
+use RZP\Models\Base\QueryCache\CacheQueries;
 
 class Repository extends Base\Repository
 {
-    // Cache TTL defined in minutes
-    const CACHE_TTL = 5;
+    use CacheQueries;
 
     protected $entity = 'key';
 
     protected $appFetchParamRules = [
         Entity::MERCHANT_ID => 'sometimes|alpha_num',
     ];
-
-    public function find($id, $columns = ['*'])
-    {
-        return $this->newQuery()
-                    ->remember(self::CACHE_TTL)
-                    ->cacheTags(['v1', 'key_'. $id])
-                    ->find($id, $columns);
-    }
 
     public function getKeysForMerchant($merchantId, $expired = false)
     {

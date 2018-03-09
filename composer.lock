@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "710a9e400d1f7411d2b9c444b69e748f",
+    "content-hash": "38085ebbf561fd1d53da77031d4b835b",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -132,7 +132,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2017-07-26T22:05:53+00:00"
+            "time": "2017-08-11T21:16:28+00:00"
         },
         {
             "name": "aws/aws-sdk-php-laravel",
@@ -1333,16 +1333,16 @@
         },
         {
             "name": "giggsey/libphonenumber-for-php",
-            "version": "8.8.10",
+            "version": "8.8.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/giggsey/libphonenumber-for-php.git",
-                "reference": "df46f26492f88fb6d226929cadf60d3111f868ce"
+                "reference": "919d24a13ff772b6af07d0f3ffefe8963cfb635c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/df46f26492f88fb6d226929cadf60d3111f868ce",
-                "reference": "df46f26492f88fb6d226929cadf60d3111f868ce",
+                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/919d24a13ff772b6af07d0f3ffefe8963cfb635c",
+                "reference": "919d24a13ff772b6af07d0f3ffefe8963cfb635c",
                 "shasum": ""
             },
             "require": {
@@ -1397,7 +1397,7 @@
                 "phonenumber",
                 "validation"
             ],
-            "time": "2018-01-24T14:12:25+00:00"
+            "time": "2018-02-07T11:27:18+00:00"
         },
         {
             "name": "giggsey/locale",
@@ -1995,7 +1995,7 @@
                 "crawlerdetect",
                 "php crawler detect"
             ],
-            "time": "2017-07-03T20:56:40+00:00"
+            "time": "2017-08-07T18:48:00+00:00"
         },
         {
             "name": "jenssegers/agent",
@@ -2451,7 +2451,7 @@
                 "framework",
                 "laravel"
             ],
-            "time": "2017-07-19T19:26:19+00:00"
+            "time": "2017-08-03T12:59:42+00:00"
         },
         {
             "name": "laravel/tinker",
@@ -2515,6 +2515,151 @@
                 "psysh"
             ],
             "time": "2017-06-01T16:31:26+00:00"
+        },
+        {
+            "name": "layershifter/tld-database",
+            "version": "1.0.54",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/layershifter/TLDDatabase.git",
+                "reference": "b1050b811532cffec44715bb27a0001ba4e6c5ba"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/layershifter/TLDDatabase/zipball/b1050b811532cffec44715bb27a0001ba4e6c5ba",
+                "reference": "b1050b811532cffec44715bb27a0001ba4e6c5ba",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*",
+                "layershifter/tld-support": "^1.0.0",
+                "php": "^5.5.0 || ^7.0"
+            },
+            "require-dev": {
+                "codeclimate/php-test-reporter": "dev-master",
+                "mikey179/vfsstream": "^1.6",
+                "phpmd/phpmd": "@stable",
+                "phpunit/phpunit": "^4.8 || ^5.0",
+                "squizlabs/php_codesniffer": "~2.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "LayerShifter\\TLDDatabase\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "Alexander Fedyashov",
+                    "email": "a@fedyashov.com"
+                }
+            ],
+            "description": "Database abstraction for Public Suffix List",
+            "keywords": [
+                "PSL",
+                "Public Suffix List",
+                "domain database",
+                "tld database"
+            ],
+            "time": "2018-02-25T12:56:28+00:00"
+        },
+        {
+            "name": "layershifter/tld-extract",
+            "version": "1.2.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/layershifter/TLDExtract.git",
+                "reference": "e570f7a2390a96d00e5b1d871ed2b248f886f93f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/layershifter/TLDExtract/zipball/e570f7a2390a96d00e5b1d871ed2b248f886f93f",
+                "reference": "e570f7a2390a96d00e5b1d871ed2b248f886f93f",
+                "shasum": ""
+            },
+            "require": {
+                "layershifter/tld-database": "^1.0",
+                "layershifter/tld-support": "^1.1",
+                "php": "^5.5.0 || ^7.0",
+                "true/punycode": "^2.1.1"
+            },
+            "require-dev": {
+                "phpmd/phpmd": "@stable",
+                "phpunit/phpunit": "^4.8 || ^5.0",
+                "squizlabs/php_codesniffer": "~2.0"
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "src/static.php"
+                ],
+                "psr-4": {
+                    "LayerShifter\\TLDExtract\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "Alexander Fedyashov",
+                    "email": "a@fedyashov.com"
+                }
+            ],
+            "description": "TLDExtract, library for extracting parts of domain, e.q. domain parser",
+            "keywords": [
+                "TLDExtract",
+                "domain parser"
+            ],
+            "time": "2017-11-18T19:32:25+00:00"
+        },
+        {
+            "name": "layershifter/tld-support",
+            "version": "1.1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/layershifter/TLDSupport.git",
+                "reference": "9b9eb2350db82239289f4e6eb250a2fe4865b0db"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/layershifter/TLDSupport/zipball/9b9eb2350db82239289f4e6eb250a2fe4865b0db",
+                "reference": "9b9eb2350db82239289f4e6eb250a2fe4865b0db",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.5",
+                "symfony/polyfill-mbstring": "^1.2"
+            },
+            "require-dev": {
+                "codeclimate/php-test-reporter": "dev-master",
+                "phpmd/phpmd": "@stable",
+                "phpunit/phpunit": "4.8.*",
+                "squizlabs/php_codesniffer": "2.*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "LayerShifter\\TLDSupport\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "Alexander Fedyashov",
+                    "email": "a@fedyashov.com"
+                }
+            ],
+            "description": "Support package for TLDDatabase and TLDExtract",
+            "time": "2016-06-18T12:28:04+00:00"
         },
         {
             "name": "lcobucci/jwt",
@@ -2705,7 +2850,7 @@
                 "sftp",
                 "storage"
             ],
-            "time": "2017-04-28T10:15:08+00:00"
+            "time": "2017-08-06T17:41:04+00:00"
         },
         {
             "name": "league/oauth2-server",
@@ -3628,7 +3773,7 @@
                 "parser",
                 "php"
             ],
-            "time": "2017-06-28T20:53:48+00:00"
+            "time": "2017-07-28T14:45:09+00:00"
         },
         {
             "name": "paragonie/random_compat",
@@ -3855,7 +4000,7 @@
                 "message",
                 "psr7"
             ],
-            "time": "2017-03-02T06:56:00+00:00"
+            "time": "2017-08-03T10:12:53+00:00"
         },
         {
             "name": "php-http/guzzle6-adapter",
@@ -4479,16 +4624,16 @@
         },
         {
             "name": "phpseclib/phpseclib",
-            "version": "2.0.9",
+            "version": "2.0.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpseclib/phpseclib.git",
-                "reference": "c9a3fe35e20eb6eeaca716d6a23cde03f52d1558"
+                "reference": "d305b780829ea4252ed9400b3f5937c2c99b51d4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/c9a3fe35e20eb6eeaca716d6a23cde03f52d1558",
-                "reference": "c9a3fe35e20eb6eeaca716d6a23cde03f52d1558",
+                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/d305b780829ea4252ed9400b3f5937c2c99b51d4",
+                "reference": "d305b780829ea4252ed9400b3f5937c2c99b51d4",
                 "shasum": ""
             },
             "require": {
@@ -4496,7 +4641,7 @@
             },
             "require-dev": {
                 "phing/phing": "~2.7",
-                "phpunit/phpunit": "~4.0",
+                "phpunit/phpunit": "^4.8.35|^5.7|^6.0",
                 "sami/sami": "~2.0",
                 "squizlabs/php_codesniffer": "~2.0"
             },
@@ -4567,7 +4712,7 @@
                 "x.509",
                 "x509"
             ],
-            "time": "2017-11-29T06:38:08+00:00"
+            "time": "2018-02-19T04:29:13+00:00"
         },
         {
             "name": "predis/predis",
@@ -4896,7 +5041,7 @@
                 "interactive",
                 "shell"
             ],
-            "time": "2017-07-22T15:14:19+00:00"
+            "time": "2017-07-29T19:30:02+00:00"
         },
         {
             "name": "ramsey/uuid",
@@ -4978,7 +5123,7 @@
                 "identifier",
                 "uuid"
             ],
-            "time": "2017-03-26T20:37:53+00:00"
+            "time": "2017-08-04T13:39:04+00:00"
         },
         {
             "name": "razorpay/ec2-metadata",
@@ -5016,17 +5161,58 @@
             "time": "2016-11-05T11:01:59+00:00"
         },
         {
-            "name": "razorpay/ifsc",
-            "version": "1.0.14",
+            "name": "razorpay/hodor",
+            "version": "dev-master",
             "source": {
                 "type": "git",
-                "url": "https://github.com/razorpay/ifsc.git",
-                "reference": "7dc6f1dc5fd646d4de121bdac1d915164103de81"
+                "url": "git@github.com:razorpay/hodor.git",
+                "reference": "cc3b5fa77ae5b01992e693fcc99828aa1f1cccac"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/7dc6f1dc5fd646d4de121bdac1d915164103de81",
-                "reference": "7dc6f1dc5fd646d4de121bdac1d915164103de81",
+                "url": "https://api.github.com/repos/razorpay/hodor/zipball/cc3b5fa77ae5b01992e693fcc99828aa1f1cccac",
+                "reference": "cc3b5fa77ae5b01992e693fcc99828aa1f1cccac",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.0",
+                "predis/predis": "^1.1"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^6.5"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Razorpay\\Hodor\\": "src/",
+                    "Razorpay\\HodorTests\\": "tests/"
+                }
+            },
+            "description": "Resource or API rate limiting/throttling",
+            "keywords": [
+                "api-throttling",
+                "php",
+                "rate-limiting",
+                "redis"
+            ],
+            "support": {
+                "source": "https://github.com/razorpay/hodor/tree/master",
+                "issues": "https://github.com/razorpay/hodor/issues"
+            },
+            "time": "2018-03-06T17:24:48+00:00"
+        },
+        {
+            "name": "razorpay/ifsc",
+            "version": "1.0.15",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/razorpay/ifsc.git",
+                "reference": "8a2904bb10d8bd3b0ba17a478dfecfe927dd5556"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/8a2904bb10d8bd3b0ba17a478dfecfe927dd5556",
+                "reference": "8a2904bb10d8bd3b0ba17a478dfecfe927dd5556",
                 "shasum": ""
             },
             "require": {
@@ -5060,7 +5246,7 @@
                 }
             ],
             "description": "Razorpay IFSC Codes Library",
-            "time": "2018-01-22T12:34:27+00:00"
+            "time": "2018-02-08T18:52:15+00:00"
         },
         {
             "name": "razorpay/oauth",
@@ -5169,7 +5355,7 @@
                 "php",
                 "razorpay"
             ],
-            "time": "2017-07-17T20:11:53+00:00"
+            "time": "2017-08-03T11:25:15+00:00"
         },
         {
             "name": "razorpay/slack",
@@ -5325,16 +5511,16 @@
         },
         {
             "name": "razorpay/trace",
-            "version": "2.0.6",
+            "version": "2.0.10",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/trace.git",
-                "reference": "f8193bf83378007a4a8d8a41464b29678752885e"
+                "reference": "81e4aaaf903ae4ff6c8352db4fe5a2e55352c8bd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/trace/zipball/f8193bf83378007a4a8d8a41464b29678752885e",
-                "reference": "f8193bf83378007a4a8d8a41464b29678752885e",
+                "url": "https://api.github.com/repos/razorpay/trace/zipball/81e4aaaf903ae4ff6c8352db4fe5a2e55352c8bd",
+                "reference": "81e4aaaf903ae4ff6c8352db4fe5a2e55352c8bd",
                 "shasum": ""
             },
             "require": {
@@ -5384,10 +5570,10 @@
                 "trace"
             ],
             "support": {
-                "source": "https://github.com/razorpay/trace/tree/2.0.6",
+                "source": "https://github.com/razorpay/trace/tree/2.0.10",
                 "issues": "https://github.com/razorpay/trace/issues"
             },
-            "time": "2017-10-24T13:59:57+00:00"
+            "time": "2018-03-02T04:42:10+00:00"
         },
         {
             "name": "razorpay/ufh-sdk-php",
@@ -5905,7 +6091,7 @@
             ],
             "description": "Symfony Console Component",
             "homepage": "https://symfony.com",
-            "time": "2017-07-03T13:19:36+00:00"
+            "time": "2017-07-29T21:27:59+00:00"
         },
         {
             "name": "symfony/css-selector",
@@ -6014,7 +6200,7 @@
             ],
             "description": "Symfony Debug Component",
             "homepage": "https://symfony.com",
-            "time": "2017-07-05T13:02:37+00:00"
+            "time": "2017-07-28T15:27:31+00:00"
         },
         {
             "name": "symfony/event-dispatcher",
@@ -6661,7 +6847,7 @@
                 "uri",
                 "url"
             ],
-            "time": "2017-06-24T09:29:48+00:00"
+            "time": "2017-07-21T17:43:13+00:00"
         },
         {
             "name": "symfony/translation",
@@ -6794,7 +6980,7 @@
                 "debug",
                 "dump"
             ],
-            "time": "2017-07-10T14:18:27+00:00"
+            "time": "2017-07-28T06:06:09+00:00"
         },
         {
             "name": "symfony/yaml",
@@ -6897,6 +7083,52 @@
             "description": "CssToInlineStyles is a class that enables you to convert HTML-pages/files into HTML-pages/files with inline styles. This is very useful when you're sending emails.",
             "homepage": "https://github.com/tijsverkoyen/CssToInlineStyles",
             "time": "2016-09-20T12:50:39+00:00"
+        },
+        {
+            "name": "true/punycode",
+            "version": "v2.1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/true/php-punycode.git",
+                "reference": "a4d0c11a36dd7f4e7cd7096076cab6d3378a071e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/true/php-punycode/zipball/a4d0c11a36dd7f4e7cd7096076cab6d3378a071e",
+                "reference": "a4d0c11a36dd7f4e7cd7096076cab6d3378a071e",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0",
+                "symfony/polyfill-mbstring": "^1.3"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "~4.7",
+                "squizlabs/php_codesniffer": "~2.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "TrueBV\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Renan Gonçalves",
+                    "email": "renan.saddam@gmail.com"
+                }
+            ],
+            "description": "A Bootstring encoding of Unicode for Internationalized Domain Names in Applications (IDNA)",
+            "homepage": "https://github.com/true/php-punycode",
+            "keywords": [
+                "idna",
+                "punycode"
+            ],
+            "time": "2016-11-16T10:37:54+00:00"
         },
         {
             "name": "vlucas/phpdotenv",
@@ -7143,7 +7375,7 @@
             ],
             "description": "Sends PHP test coverage information to Codacy.",
             "homepage": "https://github.com/codacy/php-codacy-coverage",
-            "time": "2017-04-05T13:51:33+00:00"
+            "time": "2017-08-09T14:23:33+00:00"
         },
         {
             "name": "fzaninotto/faker",
@@ -9118,6 +9350,7 @@
         "graham-campbell/throttle": 20,
         "razorpay/oauth": 20,
         "razorpay/ufh-sdk-php": 20,
+        "razorpay/hodor": 20,
         "codacy/coverage": 20,
         "symfony/phpunit-bridge": 20
     },

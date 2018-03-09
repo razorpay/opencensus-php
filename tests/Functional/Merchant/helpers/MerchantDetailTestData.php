@@ -315,6 +315,21 @@ return [
         ],
     ],
 
+    'testMerchantUpdateWebsiteDetails' => [
+        'request' => [
+            'content' => [
+                'business_website' => 'https://www.example.com',
+            ],
+            'url'     => '/merchant/activation/update_website_details',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'business_website' => 'https://www.example.com'
+            ],
+        ],
+    ],
+
     'testCommentMerchant' => [
         'request' => [
             'content' => [
@@ -485,7 +500,7 @@ return [
                     'verification'          => [
                         'status'                => 'disabled',
                         'disabled_reason'       => 'required_fields',
-                        'activation_progress'   => 3,
+                        'activation_progress'   => 4,
                     ],
                 ],
                 'auto_capture_late_auth'    => false,

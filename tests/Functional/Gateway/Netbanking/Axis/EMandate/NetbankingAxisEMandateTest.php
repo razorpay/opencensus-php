@@ -37,13 +37,15 @@ class NetbankingAxisEMandateTest extends TestCase
 
         parent::setUp();
 
-        $this->fixtures->create('terminal:shared_netbanking_axis_recurring_terminal');
+        $this->fixtures->create('terminal:shared_emandate_axis_terminal');
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $this->fixtures->create('customer');
 
-        $this->fixtures->merchant->addFeatures(['charge_at_will', 'e_mandate']);
+        $this->fixtures->merchant->addFeatures(['charge_at_will']);
+
+        $this->fixtures->merchant->enableEmandate('10000000000000');
 
         $this->payment = $this->getEmandateNetbankingRecurringPaymentArray('UTIB');
 
@@ -74,12 +76,10 @@ class NetbankingAxisEMandateTest extends TestCase
 
     public function testRefundEmandateInitialPaymentWithFeeCredit()
     {
-        $this->createNetbankingRecurringPricingPlan();
-
         $this->fixtures->create('credits', [
-                       'type'        => 'fee',
-                       'value'       => 10000,
-                   ]);
+            'type'        => 'fee',
+            'value'       => 10000,
+        ]);
 
         $this->fixtures->merchant->editFeeCredits('10000', '10000000000000');
 
@@ -99,15 +99,15 @@ class NetbankingAxisEMandateTest extends TestCase
         $paymentTxn = $this->getLastEntity(Entity::TRANSACTION, true);
 
         $this->assertEquals(0, $paymentTxn['credit']);
-        $this->assertEquals(12, $paymentTxn['fee']);
-        $this->assertEquals(2, $paymentTxn['tax']);
+        $this->assertEquals(1180, $paymentTxn['fee']);
+        $this->assertEquals(180, $paymentTxn['tax']);
         $this->assertEquals('payment', $paymentTxn['type']);
         $this->assertEquals('prepaid', $paymentTxn['fee_model']);
         $this->assertEquals('fee', $paymentTxn['credit_type']);
 
         $merchantBalance = $this->getEntityById(Entity::BALANCE, '10000000000000', true);
 
-        $this->assertEquals(9988, $merchantBalance['fee_credits']);
+        $this->assertEquals(8820, $merchantBalance['fee_credits']);
 
         $this->refundPayment($payment['id']);
 
@@ -131,8 +131,6 @@ class NetbankingAxisEMandateTest extends TestCase
     //
     public function testRefundEmandateInitialPaymentWithAmountCredit()
     {
-        $this->createNetbankingRecurringPricingPlan();
-
         $credit = $this->fixtures->create('credits', [
                'type'        => 'amount',
                'value'       => 10000,
@@ -154,15 +152,15 @@ class NetbankingAxisEMandateTest extends TestCase
         $paymentTxn = $this->getLastEntity(Entity::TRANSACTION, true);
 
         $this->assertEquals(0, $paymentTxn['credit']);
-        $this->assertEquals(12, $paymentTxn['fee']);
-        $this->assertEquals(2, $paymentTxn['tax']);
+        $this->assertEquals(1180, $paymentTxn['fee']);
+        $this->assertEquals(180, $paymentTxn['tax']);
         $this->assertEquals('payment', $paymentTxn['type']);
         $this->assertEquals('prepaid', $paymentTxn['fee_model']);
         $this->assertEquals('default', $paymentTxn['credit_type']);
 
         $merchantBalance = $this->getEntityById(Entity::BALANCE, '10000000000000', true);
 
-        $this->assertEquals(999988, $merchantBalance['balance']);
+        $this->assertEquals(998820, $merchantBalance['balance']);
 
         $this->refundPayment($payment['id']);
 
@@ -182,8 +180,6 @@ class NetbankingAxisEMandateTest extends TestCase
 
     public function testRefundEmandateInitialPaymentWithNormalPricing()
     {
-        $this->createNetbankingRecurringPricingPlan();
-
         $payment = $this->payment;
 
         $order = $this->fixtures->create('order:emandate_order', ['amount' => 0]);
@@ -200,15 +196,15 @@ class NetbankingAxisEMandateTest extends TestCase
         $paymentTxn = $this->getLastEntity(Entity::TRANSACTION, true);
 
         $this->assertEquals(0, $paymentTxn['credit']);
-        $this->assertEquals(12, $paymentTxn['fee']);
-        $this->assertEquals(2, $paymentTxn['tax']);
+        $this->assertEquals(1180, $paymentTxn['fee']);
+        $this->assertEquals(180, $paymentTxn['tax']);
         $this->assertEquals('payment', $paymentTxn['type']);
         $this->assertEquals('prepaid', $paymentTxn['fee_model']);
         $this->assertEquals('default', $paymentTxn['credit_type']);
 
         $merchantBalance = $this->getEntityById(Entity::BALANCE, '10000000000000', true);
 
-        $this->assertEquals(999988, $merchantBalance['balance']);
+        $this->assertEquals(998820, $merchantBalance['balance']);
 
         $this->refundPayment($payment['id']);
 
@@ -224,6 +220,52 @@ class NetbankingAxisEMandateTest extends TestCase
         $this->assertEquals(0, $refundTxn['tax']);
         $this->assertEquals('refund', $refundTxn['type']);
         $this->assertEquals('na', $refundTxn['fee_model']);
+    }
+
+    public function testEmandateDifferentPricing()
+    {
+        $payment = $this->payment;
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 0]);
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = 0;
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+
+        $this->assertEquals(0, $payment['amount']);
+        $this->assertEquals('captured', $payment['status']);
+
+        $paymentTxn = $this->getLastEntity(Entity::TRANSACTION, true);
+
+        $this->assertEquals(0, $paymentTxn['credit']);
+        $this->assertEquals(1180, $paymentTxn['fee']);
+        $this->assertEquals(180, $paymentTxn['tax']);
+        $this->assertEquals('payment', $paymentTxn['type']);
+        $this->assertEquals('prepaid', $paymentTxn['fee_model']);
+        $this->assertEquals('default', $paymentTxn['credit_type']);
+
+        $merchantBalance = $this->getEntityById(Entity::BALANCE, '10000000000000', true);
+
+        $this->assertEquals(998820, $merchantBalance['balance']);
+
+        $token = $this->getLastEntity('token', true);
+
+        $payment = $this->payment;
+
+        $payment[Payment\Entity::TOKEN] = $token['id'];
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 200]);
+        $payment['amount'] = 200;
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->doS2SRecurringPayment($payment);
+
+        $debitPayment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(200, $debitPayment['amount']);
+        $this->assertEquals('created', $debitPayment['status']);
     }
 
     public function testEmandateInitialPaymentFailure()
@@ -350,7 +392,7 @@ class NetbankingAxisEMandateTest extends TestCase
 
         $debitPayment = $this->getLastEntity('payment', true);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         Mail::fake();
 
@@ -405,24 +447,6 @@ class NetbankingAxisEMandateTest extends TestCase
             return ($mail->hasFrom('emandate@razorpay.com') and
                 ($mail->hasTo(EmailConstants::RECIPIENT_EMAILS_MAP[$key])));
         });
-    }
-
-    protected function createNetbankingRecurringPricingPlan()
-    {
-        $pricingPlan = [
-            'plan_id'             => '1hDYlICobzOCYt',
-            'plan_name'           => 'testDefaultPlan',
-            'feature'             => 'recurring',
-            'payment_method'      => 'netbanking',
-            'payment_method_type' => null,
-            'payment_network'     => 'UTIB',
-            'payment_issuer'      => null,
-            'percent_rate'        => 0,
-            'fixed_rate'          => 10,
-            'international'       => 0,
-        ];
-
-        $this->fixtures->create('pricing', $pricingPlan);
     }
 
     protected function assertEmandateEntities()

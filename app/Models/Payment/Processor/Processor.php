@@ -247,15 +247,16 @@ class Processor
             return null;
         }
 
-        $methods = [];
+        $emandateMethods = [];
 
-        (new Methods\Core)->addRecurringEmandateToMethodsIfApplicable($this->merchant, $methods);
+        (new Methods\Core)->addRecurringEmandateToMethodsIfApplicable(
+                                $this->merchant, $this->methods, $emandateMethods);
 
         //
         // This can happen when the required features are not enabled
         // or when there's not a single bank for any auth type.
         //
-        if (empty($methods) === true)
+        if (empty($emandateMethods) === true)
         {
             return null;
         }
@@ -269,7 +270,7 @@ class Processor
         // not come up in the methods API now, then most likely someone
         // is tampering with the request on the frontend.
         //
-        if (isset($methods['emandate'][$bank]) === false)
+        if (isset($emandateMethods['emandate'][$bank]) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_BANK_FOR_EMANDATE,
@@ -286,14 +287,13 @@ class Processor
                 'method'  => 'POST',
                 'content' => [
                     'input' => $input,
-                    'bank_details' => $methods['emandate'][$input[Payment\Entity::BANK]],
+                    'bank_details' => $emandateMethods['emandate'][$input[Payment\Entity::BANK]],
                 ]
             ],
             'version' => '1',
         ];
 
         return $coproto;
-
     }
 
     protected function preProcessPaymentInputsForWallet(array $input, Payment\Entity $payment)
@@ -433,15 +433,6 @@ class Processor
             }
 
             $tokenMethod = $token->getMethod();
-
-            //
-            // TODO: Remove this after we move netbanking recurring to emandate method
-            // We have to start storing method as `emandate` in token entity for this.
-            //
-            if ($tokenMethod === Payment\Method::NETBANKING)
-            {
-                $tokenMethod = Payment\Method::EMANDATE;
-            }
 
             $input[Payment\Entity::METHOD] = $tokenMethod;
 
@@ -882,8 +873,12 @@ class Processor
     {
         $payment = $this->payment;
 
-        // For Netbanking payments two_factor_auth was set to NOT_APPLICABLE on authorize itself
-        if ($payment->isNetbanking() === true)
+        //
+        // For Netbanking and emandate payments two_factor_auth
+        // was set to NOT_APPLICABLE on authorize itself
+        //
+        if (($payment->isNetbanking() === true) or
+            ($payment->isEmandate() === true))
         {
             $twoFactorAuth = Payment\TwoFactorAuth::UNAVAILABLE;
         }
@@ -1290,7 +1285,8 @@ class Processor
         }
 
         // TODO: Following is not testable in cases. Ref: BankTransferBatchTest
-        if ($this->app['basicauth']->isAppAuth() === false)
+        if (($this->app['basicauth']->isAppAuth() === false) and
+            (Route::currentRouteName() !== 'bank_transfer_process_test'))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid payment method given: ' . $payment->getMethod());

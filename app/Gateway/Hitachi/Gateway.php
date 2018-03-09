@@ -28,6 +28,8 @@ class Gateway extends Base\Gateway
     protected $secureCacheDriver;
 
     const CACHE_KEY = 'hitachi_%s_card_details';
+    const CACHE_TTL = 20;
+
 
     const TIME_FORMAT = 'His';
     const DATE_FORMAT = 'md';

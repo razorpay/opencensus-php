@@ -2,15 +2,17 @@
 
 namespace RZP\Tests\Functional\Settlement;
 
+use Mail;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
-use Mail;
 
-use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Feature\Constants;
 use RZP\Models\Settlement\Channel;
-use RZP\Models\Settlement\Entity as SettlementEntity;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Settlement\Holidays;
+use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\Settlement\Entity as SettlementEntity;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 
@@ -27,6 +29,13 @@ class SettlementTest extends TestCase
         parent::setUp();
 
         $this->ba->publicAuth();
+    }
+
+    public function tearDown()
+    {
+        parent::tearDown();
+
+        Carbon::setTestNow();
     }
 
     public function testSettlement()
@@ -115,6 +124,7 @@ class SettlementTest extends TestCase
         $this->assertSame($content['count'], 0);
     }
 
+
     // Random settlement holiday - Test for live mode
     public function testSettlementOnHolidayInLiveMode()
     {
@@ -142,6 +152,7 @@ class SettlementTest extends TestCase
 
         $this->assertEquals('Today is a holiday! Happy holidays :)', $content['message']);
 
+
         // Reset test params
         Carbon::setTestNow();
         $this->ba->publicAuth();
@@ -168,7 +179,6 @@ class SettlementTest extends TestCase
         Carbon::setTestNow($setDate);
 
         $channel = Channel::AXIS;
-
         // Generate settlements for above transactions
         $content = $this->initiateSettlements($channel);
 
@@ -196,7 +206,6 @@ class SettlementTest extends TestCase
         Carbon::setTestNow($setDate);
 
         $channel = Channel::AXIS;
-
         // Generate settlements for above transactions
         $content = $this->initiateSettlements($channel);
 
@@ -222,7 +231,6 @@ class SettlementTest extends TestCase
         Carbon::setTestNow($setDate);
 
         $channel = Channel::AXIS;
-
         // Generate settlements for above transactions
         $content = $this->initiateSettlements($channel);
 
@@ -248,7 +256,6 @@ class SettlementTest extends TestCase
             ]);
 
         $channel = Channel::AXIS;
-
         // Generate settlements for above transactions
         $content = $this->initiateSettlements($channel);
 
@@ -288,8 +295,11 @@ class SettlementTest extends TestCase
         $content = $this->initiateSettlements(Channel::AXIS);
 
         $setl = $this->getLastEntity('settlement', true);
+
         $setlAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
         $this->assertEquals($setlAttempt['source'], $setl['id']);
+
 
         $content = $this->getEntities('settlement_details', ['settlement_id' => $setl['id']], true);
 
@@ -344,6 +354,7 @@ class SettlementTest extends TestCase
 
     public function testMerchantSettlementV2YesBank()
     {
+
         $this->ba->adminAuth();
 
         $channel = Channel::YESBANK;
@@ -353,6 +364,7 @@ class SettlementTest extends TestCase
 
     public function testMerchantSettlementV2Axis()
     {
+
         $this->ba->adminAuth();
 
         $channel = Channel::AXIS;
@@ -362,6 +374,7 @@ class SettlementTest extends TestCase
 
     public function testMerchantSettlementV2Icici()
     {
+
         $this->ba->adminAuth();
 
         $channel = Channel::ICICI;
@@ -369,8 +382,18 @@ class SettlementTest extends TestCase
         $this->initiateAndverifySettlementEntitiesForChannel($channel);
     }
 
+    public function testMerchantSettlementV2Hdfc()
+    {
+        $this->ba->adminAuth();
+
+        $channel = Channel::HDFC;
+
+        $this->initiateAndverifySettlementEntitiesForChannel($channel);
+    }
+
     public function testMerchantSettlementV2Kotak()
     {
+
         $this->ba->adminAuth();
 
         $channel = Channel::KOTAK;
@@ -421,6 +444,108 @@ class SettlementTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function testSeparateSettlement1()
+    {
+        Carbon::setTestNow(Carbon::now(Timezone::IST));
+
+        $channel = Channel::ICICI;
+
+        $this->fixtures->merchant->addFeatures([Constants::DAILY_SETTLEMENT]);
+
+        $this->fixtures->merchant->edit('10000000000000', ['channel' => $channel]);
+
+        $today = Carbon::today(Timezone::IST);
+
+        // Create payment with captured at as 26th Jan
+        $entities = $this->createPaymentAndRefundEntities(1, $today);
+
+        $txns = $this->getEntities('transaction', [], true);
+
+        $settledAt1 = $today->addHours(10);
+
+        $tomorrow = Carbon::tomorrow(Timezone::IST);
+
+        // Create payment with captured at as 27th Jan
+        $entities = $this->createPaymentAndRefundEntities(1, $tomorrow);
+
+        $settledAt2 = $tomorrow->addHours(10);
+
+        // Mark payments eligible for settlement
+        $paymentTxns = $this->getEntities('transaction', ['type' => 'payment'], true);
+
+        $this->fixtures->transaction->edit($paymentTxns['items'][0]['id'],
+            ['settled_at' => $settledAt1->getTimestamp()]);
+
+        $this->fixtures->transaction->edit($paymentTxns['items'][1]['id'],
+            ['settled_at' => $settledAt2->getTimestamp()]);
+
+        // Mark refunds eligible for settlement
+        $refundTxns = $this->getEntities('transaction', ['type' => 'refund'], true);
+
+        $this->fixtures->transaction->edit($refundTxns['items'][0]['id'],
+            ['settled_at' => 1, 'created_at' => $today->getTimestamp() + 100]);
+
+        $this->fixtures->transaction->edit($refundTxns['items'][1]['id'],
+            ['settled_at' => 1, 'created_at' => $tomorrow->getTimestamp() + 100]);
+
+        // Normal settlement route must not settle to Airtel
+        $content = $this->initiateSettlements($channel);
+
+        $this->assertEquals(0, $content[$channel]['count']);
+        $this->assertEquals(0, $content[$channel]['txnCount']);
+
+        // Set time to day after tomorrow
+        $tomorrow = Carbon::tomorrow(Timezone::IST);
+
+        Carbon::setTestNow($tomorrow);
+
+        $content = $this->initiateDailySettlements();
+
+        $txn = $this->getEntityById('transaction', $paymentTxns['items'][0]['id'], true);
+        $this->assertEquals($tomorrow->addDay()->getTimestamp(), $txn['settled_at']);
+
+        $this->assertEquals(2, $content[$channel]['count']);
+        $this->assertEquals(4, $content[$channel]['txnCount']);
+
+        $ftas = ($this->getEntities('fund_transfer_attempt', [], true))['items'];
+
+        $this->assertEquals($settledAt1->getTimestamp(), $ftas[0]['initiate_at']);
+        $this->assertEquals($settledAt2->getTimestamp(), $ftas[1]['initiate_at']);
+    }
+
+    /**
+     * Tests the case when settlement entity gets created,
+     * but the transaction creation for it fails because
+     * the merchant's balance was less than the amount to be settled.
+     * This test then adjusts the balance, and
+     * verifies that retry of the settlement creates the transaction.
+     */
+    public function testSettlementRetryWhenNoTransaction()
+    {
+        $channel = Channel::ICICI;
+
+        $this->ba->adminAuth();
+
+        $this->fixtures->merchant->edit('10000000000000', ['channel' => $channel]);
+
+        $this->createPaymentEntities(1);
+
+        // Setting the balance to a value less than expected settlement
+        // for above entitties, so that balance update fails because of
+        // going negavative. So transaction creation for settlement
+        // will fail.
+        $this->fixtures->balance->edit('10000000000000', ['balance' => 100]);
+
+        $setlResponse = $this->initiateSettlements($channel);
+
+        $this->assertEquals(0, $setlResponse[$channel]['count']);
+        $this->assertEquals(0, $setlResponse[$channel]['txnCount']);
+
+        $setl = $this->getLastEntity('settlement', true);
+
+        $this->assertNull($setl);
+    }
+
     public function testSettlementForMultipleMerchants()
     {
         $this->ba->appAuth();
@@ -463,6 +588,7 @@ class SettlementTest extends TestCase
         }
 
         $setlResponse = $this->initiateSettlements(Channel::AXIS);
+
         $this->assertTestResponse($setlResponse);
 
         // Verifiy settlement amounts
@@ -512,6 +638,7 @@ class SettlementTest extends TestCase
         {
             $this->assertEquals($txn['settled'], false);
         }
+
     }
 
     public function testNodalTransferWithGateway()
@@ -540,6 +667,8 @@ class SettlementTest extends TestCase
                 'destination' => 'kotak'
             ]
         ];
+
+        $this->ba->cronAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 
@@ -616,9 +745,8 @@ class SettlementTest extends TestCase
         // Generate settlements
         $content = $this->initiateSettlements($channel);
 
-        $lastSetl = $this->getLastEntity('settlement', true);
-
         // Assert linked account settlement
+        $lastSetl = $this->getLastEntity('settlement', true);
         $this->assertEquals($transfer['to_id'], $lastSetl['merchant_id']);
         $this->assertEquals(5000, $lastSetl['amount']);
 
@@ -681,7 +809,6 @@ class SettlementTest extends TestCase
     public function testSettlementAccountTransferOnHold()
     {
         $channel = Channel::AXIS;
-
         $payment = $this->createPaymentEntities(1);
 
         $createdAt = Carbon::today(Timezone::IST)->subDays(10)->timestamp + 5;
@@ -715,7 +842,6 @@ class SettlementTest extends TestCase
     public function testSettlementAccountTransferOnHoldUntil()
     {
         $channel = Channel::AXIS;
-
         $payment = $this->createPaymentEntities(1);
 
         $createdAt = Carbon::today(Timezone::IST)->subDays(10)->timestamp + 5;
@@ -769,39 +895,53 @@ class SettlementTest extends TestCase
         $this->assertEquals(250000, $account->balance->reload()->getBalance());
     }
 
-    public function testSettlementForTransferReversal()
+    public function testSettlementForReversalOfDirectTransfer()
     {
-        $payment = $this->createPaymentEntities(1);
+        $channel = Channel::AXIS;
 
-        $createdAt = Carbon::today(Timezone::IST)->subDays(10)->timestamp + 5;
+        $this->createPaymentEntities(2);
 
+        // Get a timestamp of 2 days ago
+        $createdAt = Carbon::today(Timezone::IST)->subDays(5)->getTimestamp() + 5;
+
+        // Create a linked account
         $account = $this->fixtures->create('merchant:marketplace_account', ['balance' => 250000]);
 
+        // Create 2 direct transfers to the linked account
         $transfer = $this->fixtures->times(2)->create(
             'transfer:to_account',
             [
                 'account'     => $account,
-                'source_id'   => $payment->getId(),
-                'source_type' => 'payment',
+                'source_id'   => $account->getId(),
+                'source_type' => 'merchant',
                 'amount'      => 1000,
                 'currency'    => 'INR',
                 'created_at'  => $createdAt,
                 'updated_at'  => $createdAt + 10
             ]);
 
-        $channel = Channel::AXIS;
-
-        $reversal = $this->fixtures->create(
+        // Create one reversal, same day
+        $this->fixtures->create(
             'reversal',
             [
-                'entity_type'   => 'transfer',
-                'entity_id'     => $transfer[1]->getId(),
-                'amount'        => 90,
-                'created_at'    => $createdAt + 10,
-                'updated_at'    => $createdAt + 20
+                'entity_type' => 'transfer',
+                'entity_id'   => $transfer[1]->getId(),
+                'amount'      => 500,
+                'created_at'  => $createdAt + 10,
+                'updated_at'  => $createdAt + 20
             ]);
 
-        $content = $this->initiateSettlements($channel);
+        // Initiate immediate settlement, Reversal should not be settled
+        $content = $this->initiateSettlements($channel, Carbon::tomorrow(Timezone::IST)->getTimestamp());
+
+        //
+        // Total 7. Following transactions should have settled:
+        // 2 payment txns
+        // 2 transfers
+        // 2 transfer payment (linked account)
+        // 1 reversal refund  (linked account)
+        //
+        $this->assertEquals(7, $content[$channel]['txnCount']);
 
         $lastSetl = $this->getLastEntity('settlement', true);
 
@@ -809,18 +949,96 @@ class SettlementTest extends TestCase
         $this->assertEquals($transfer[1]['to_id'], $lastSetl['merchant_id']);
 
         //
-        // transfer 1 -> credit 1000 + transfer 2 -> credit 1000
-        // reverse transfer 1 -> debit 1000
-        // total => 1000
+        // transfer payment 1 -> credit 1000 + transfer payment 2 -> credit 1000
+        // reversal refund -> debit 500
+        // total => 1500
         //
-        $this->assertEquals(1000, $lastSetl['amount']);
+        $this->assertEquals(1500, $lastSetl['amount']);
+
+        // Set time to 3 working days from now and initiate settlements
+        $settlementAfterT3 = Carbon::createFromTimestamp($createdAt, Timezone::IST)->addDays(3);
+        $nextWorkingDay = Holidays::getNthWorkingDayFrom($settlementAfterT3, 3);
+        Carbon::setTestNow($nextWorkingDay->setTime(8, 0));
+
+        $content = $this->initiateSettlements($channel);
+        $this->assertEquals(1, $content[Channel::AXIS]['txnCount']);
+
+        // Assert master account settlement
+        $lastSetl = $this->getLastEntity('settlement', true);
+        $this->assertEquals($transfer[1]['merchant_id'], $lastSetl['merchant_id']);
+
+        // Reversal to be settled => 500
+        $this->assertEquals(500, $lastSetl['amount']);
+    }
+
+    public function testSettlementForReversalOfPaymentTransfer()
+    {
+        $channel = Channel::AXIS;
+
+        $createdAt = Carbon::today(Timezone::IST)->getTimestamp() + 5;
+
+        $payment = $this->fixtures->create(
+            'payment:captured',
+            [
+                'captured_at' => $createdAt + 10,
+                'method'      => 'card',
+                'created_at'  => $createdAt,
+                'updated_at'  => $createdAt + 10
+            ]
+        );
+
+        // Create a linked account
+        $account = $this->fixtures->create('merchant:marketplace_account', ['balance' => 250000]);
+
+        $transfer = $this->fixtures->create(
+            'transfer:to_account',
+            [
+                'account'     => $account,
+                'source_id'   => $payment->getId(),
+                'source_type' => 'payment',
+                'amount'      => 5000,
+                'currency'    => 'INR',
+                'created_at'  => $createdAt,
+                'updated_at'  => $createdAt + 10
+            ]);
+
+        // Create one reversal, 5 days later.
+        $time = Carbon::today(Timezone::IST)->addDays(5);
+        Carbon::setTestNow($time);
+        $this->fixtures->create(
+            'reversal',
+            [
+                'entity_type' => 'transfer',
+                'entity_id'   => $transfer->getId(),
+                'amount'      => 500,
+                'created_at'  => $time->getTimestamp(),
+                'updated_at'  => $time->getTimestamp(),
+            ]);
+
+        Carbon::setTestNow();
+
+        // Initiate immediate settlement, none should settle on the same day
+        $content = $this->initiateSettlements($channel);
+        $this->assertEquals(0, $content[$channel]['txnCount']);
+
+        // Set time to 3 working days from now and initiate settlements
+        $settlementAfterT3 = Carbon::today(Timezone::IST);
+        $nextWorkingDay = Holidays::getNthWorkingDayFrom($settlementAfterT3, 3);
+        Carbon::setTestNow($nextWorkingDay->setTime(8, 0));
 
         //
-        // (1 payment txn +
-        //  2 transfer txn + 2 transfer payment txn +
-        //  1 transfer payment refund txn + 1 reversal txn)
+        // Try settlement after 3 days:
+        // Total expected 4 =>
+        // 1 payment, 1 transfer
+        // 1 transfer payment (linked account)
+        // 1 reversal refund (linked account)
         //
-        $this->assertEquals(7, $content[$channel]['txnCount']);
+        $content = $this->initiateSettlements($channel);
+        $this->assertEquals(4, $content[$channel]['txnCount']);
+
+        Carbon::setTestNow($nextWorkingDay->addDays(1));
+        $content = $this->initiateSettlements($channel);
+        $this->assertEquals(1, $content[$channel]['txnCount']);
     }
 
     public function testSettlementWithDispute()
@@ -842,7 +1060,6 @@ class SettlementTest extends TestCase
             ]);
 
         $channel = Channel::AXIS;
-
         // Generate settlements
         $content = $this->initiateSettlements($channel);
 
