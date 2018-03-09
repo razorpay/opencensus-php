@@ -17,7 +17,11 @@ import GroupingDropdown from 'merchant/containers/Home/GroupingDropdown';
 import Legend from 'merchant/components/Home/Legend';
 import LastUpdated from 'merchant/components/Home/LastUpdated';
 import MoreOptionsButton from 'merchant/containers/Home/MoreOptionsButton';
-import { API_ERROR, API_INVALID_RESP } from 'merchant/components/Home/data';
+import {
+  API_ERROR,
+  API_INVALID_RESP,
+  getPaymentMethodColor
+} from 'merchant/components/Home/data';
 import {
   trackError,
   trackGoToLinks,
@@ -118,6 +122,7 @@ class Traffic extends Component {
           groupByColumnName: meta.groupBy,
           isCurrency: meta.isCurrency,
           groupTitleMap: { Mobile: 'mWeb' },
+          getColor: getPaymentMethodColor
         });
 
         if (labels.length === 0) {
