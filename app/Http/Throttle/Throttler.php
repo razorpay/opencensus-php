@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Redis;
 use RZP\Trace\TraceCode;
 use RZP\Foundation\Application;
 use RZP\Base\RepositoryManager;
+use RZP\Exception\BlockException;
 use RZP\Exception\ThrottleException;
 use RZP\Http\Throttle\Constant as K;
 use RZP\Exception\BadRequestException;
@@ -110,6 +111,7 @@ class Throttler
             $this->initRedisConnection();
             $this->setMidIfApplicable();
             $this->initThrottleSettings();
+            $this->blockIfApplicable();
             $this->attemptThrottleIfApplicable();
         }
         catch (\Throwable $e)
@@ -150,6 +152,14 @@ class Throttler
                 $pipe->hgetall(K::GLOBAL_SETTINGS_KEY);
                 $pipe->hgetall(K::ID_SETTINGS_KEY_PREFIX . $this->getIdSettingsKey());
             });
+    }
+
+    protected function blockIfApplicable()
+    {
+        if ($this->isBlocked() === true)
+        {
+            throw new BlockException();
+        }
     }
 
     protected function attemptThrottleIfApplicable()
@@ -208,6 +218,11 @@ class Throttler
         return implode(':', $args);
     }
 
+    protected function isBlocked(): bool
+    {
+        return $this->getThrottleValue(K::BLOCK, false);
+    }
+
     protected function isThrottleSkipped(): bool
     {
         return $this->getThrottleValue(K::SKIP, K::DEFAULT_SKIP);
@@ -242,32 +257,34 @@ class Throttler
         // Key: t
         // Value: {
         //      // Globals
-        //      skip:                               1
-        //      mock:                               1
-        //      lrv:                                2
-        //      lrd:                                1
-        //      mbs:                                30
+        //      skip:                                1
+        //      mock:                                1
+        //      lrv:                                 2
+        //      lrd:                                 1
+        //      mbs:                                 30
         //
         //      // Per mode
-        //      <mode>:skip:                        1
-        //      <mode>:mock:                        1
-        //      <mode>:lrv:                         2
-        //      <mode>:lrd:                         1
-        //      <mode>:mbs:                         30
+        //      <mode>:skip:                         1
+        //      <mode>:mock:                         1
+        //      <mode>:lrv:                          2
+        //      <mode>:lrd:                          1
+        //      <mode>:mbs:                          30
         //
         //      // Per auth
-        //      <mode>:<auth>:<proxy>:skip:         0
-        //      <mode>:<auth>:<proxy>:mock:         0
-        //      <mode>:<auth>:<proxy>:lrv:          2
-        //      <mode>:<auth>:<proxy>:lrd:          1
-        //      <mode>:<auth>:<proxy>:mbs:          30
+        //      <mode>:<auth>:<proxy>:skip:          0
+        //      <mode>:<auth>:<proxy>:mock:          0
+        //      <mode>:<auth>:<proxy>:block:         1 (Block)
+        //      <mode>:<auth>:<proxy>:lrv:           2
+        //      <mode>:<auth>:<proxy>:lrd:           1
+        //      <mode>:<auth>:<proxy>:mbs:           30
         //
         //      // Per auth, per route
-        //      <mode>:<auth>:<proxy>:<route>:skip: 0
-        //      <mode>:<auth>:<proxy>:<route>:mock: 0
-        //      <mode>:<auth>:<proxy>:<route>:lrv:  2
-        //      <mode>:<auth>:<proxy>:<route>:lrd:  1
-        //      <mode>:<auth>:<proxy>:<route>:mbs:  30
+        //      <mode>:<auth>:<proxy>:<route>:skip:  0
+        //      <mode>:<auth>:<proxy>:<route>:mock:  0
+        //      <mode>:<auth>:<proxy>:<route>:block: 0 (Block)
+        //      <mode>:<auth>:<proxy>:<route>:lrv:   2
+        //      <mode>:<auth>:<proxy>:<route>:lrd:   1
+        //      <mode>:<auth>:<proxy>:<route>:mbs:   30
         // }
         //
         // Key: t:i:<mid>
