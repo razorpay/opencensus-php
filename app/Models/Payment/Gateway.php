@@ -1086,14 +1086,14 @@ class Gateway
      */
     public static function isCardNetworkSupported($network, $gateway, $recurring = false)
     {
-        $supported = ((array_key_exists($gateway, self::$cardNetworkMap)) and
-                      (in_array($network, self::$cardNetworkMap[$gateway])));
+        $supported = ((array_key_exists($gateway, self::$cardNetworkMap) === true) and
+                      (in_array($network, self::$cardNetworkMap[$gateway], true) === true));
 
         if (($supported === true) and
             ($recurring === true) and
             (isset(self::$cardNetworkRecurringMap[$gateway]) === true))
         {
-            $supported = in_array($network, self::$cardNetworkRecurringMap[$gateway]);
+            $supported = (in_array($network, self::$cardNetworkRecurringMap[$gateway], true) === true);
         }
 
         return $supported;

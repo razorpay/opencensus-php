@@ -71,18 +71,20 @@ class Selector extends Base\Core
     {
         $payment = $this->input['payment'];
 
-        if ($payment->isRecurring() === false)
-        {
-            return;
-        }
-
         $token = $payment->getGlobalOrLocalTokenEntity();
 
-        $reference = $payment->getReferenceForGatewayToken();
+        if (empty($token) === true)
+        {
+            $this->input['gateway_tokens'] = new Base\PublicCollection();
+        }
+        else
+        {
+            $reference = $payment->getReferenceForGatewayToken();
 
-        $this->input['gateway_tokens'] = $this->repo
-                                              ->gateway_token
-                                              ->findByTokenAndReference($token, $reference, [Constants::TERMINAL]);
+            $this->input['gateway_tokens'] = $this->repo
+                                                  ->gateway_token
+                                                  ->findByTokenAndReference($token, $reference, [Constants::TERMINAL]);
+        }
     }
 
     public function select()
@@ -174,35 +176,27 @@ class Selector extends Base\Core
 
         $payment = $this->input['payment'];
 
-        // gateway_tokens is set only if it's a recurring payment
-        $gatewayTokens = $this->input['gateway_tokens'] ?? [];
-
-        if ($payment->isSecondRecurring(true, $gatewayTokens) === true)
+        //
+        // For second recurring payments, the payment must go through a designated
+        // terminal, even if the merchant has since been unassigned from it. This
+        // is achieved by referring to the gateway token, the original terminal of
+        // that gateway token, and finding other usable terminals assigned to the
+        // same primary merchant
+        //
+        if ($payment->isSecondRecurring(true, $this->input['gateway_tokens']) === true)
         {
-            //
-            // For second recurring payments, the payment must go through a designated
-            // terminal, even if the merchant has since been unassigned from it. This
-            // is achieved by referring to the gateway token, the original terminal of
-            // that gateway token, and finding other usable terminals assigned to the
-            // same primary merchant
-            //
-            $possibleApplicableTerminals = $this->getTerminalsForSecondRecurringPayment($gatewayTokens);
+            $possibleApplicableTerminals = $this->getTerminalsForSecondRecurringPayment();
 
-            $fallbackTerminals = [];
-
-            if ($payment->isCard() === true)
-            {
-                $fallbackTerminals = $this->getFallbackSecondRecurringTerminals();
-            }
-
-            $merchantTerminals = $merchantTerminals->merge($possibleApplicableTerminals, $fallbackTerminals);
+            $merchantTerminals = $merchantTerminals->merge($possibleApplicableTerminals);
         }
 
         return $merchantTerminals->all();
     }
 
-    protected function getTerminalsForSecondRecurringPayment($gatewayTokens)
+    protected function getTerminalsForSecondRecurringPayment()
     {
+        $gatewayTokens = $this->input['gateway_tokens'];
+
         $merchantIdsForGatewayTokenTerminals = $gatewayTokens->pluck('terminal.merchant_id')
                                                              ->toArray();
 
@@ -219,24 +213,6 @@ class Selector extends Base\Core
                                     $merchantIdsForGatewayTokenTerminals);
 
         return $addTerminals;
-    }
-
-    protected function getFallbackSecondRecurringTerminals()
-    {
-        $types = [
-            Type::RECURRING_3DS,
-            Type::RECURRING_NON_3DS,
-        ];
-
-        //
-        // For fallback, we need to get direct terminals which
-        // support both recurring 3DS and recurring non-3DS
-        // on a single terminal. These terminals usually allow
-        // payments without 2FA first.
-        //
-        return $this->repo
-                    ->terminal
-                    ->getDirectRecurringTerminalsOfType($this->input['merchant'], $types);
     }
 
     protected function filterTerminals(array $terminals, Base\PublicCollection $rules, bool $verbose = false): array

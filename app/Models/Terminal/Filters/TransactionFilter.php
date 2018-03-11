@@ -245,6 +245,11 @@ class TransactionFilter extends Terminal\Filter
             return false;
         }
 
+        $applicableTypes = [
+            Terminal\Type::RECURRING_3DS,
+            Terminal\Type::RECURRING_NON_3DS,
+        ];
+
         //
         // If the terminal supports both recurring 3ds and recurring non-3ds,
         // we don't care about gateway tokens. We care about gateway tokens
@@ -253,12 +258,14 @@ class TransactionFilter extends Terminal\Filter
         // hence, we don't need to too. We can just use this terminal without
         // worrying about whether we have a gateway token for this or not.
         //
-        if (Terminal\Type::areApplicable(
-                        $terminal->getType(),
-                        [
-                            Terminal\Type::RECURRING_NON_3DS,
-                            Terminal\Type::RECURRING_NON_3DS
-                        ]))
+        // Also, we would be doing this only for direct terminals and for card
+        // payments. Though, it would be applicable for shared terminals also,
+        // we don't want to fallback on that just yet.
+        //
+        // NOTE: It should be weak check only because array_diff returns back an array.
+        if ((array_diff($applicableTypes, $terminal->getType()) == false) and
+            ($terminal->isShared() === false) and
+            ($payment->isCard() === true))
         {
             return true;
         }

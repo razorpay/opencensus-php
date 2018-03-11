@@ -124,19 +124,6 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
-    public function getDirectRecurringTerminalsOfType(Merchant\Entity $merchant, array $types)
-    {
-        $merchantIds = [$merchant->getId()];
-
-        $query = $this->newQuery()
-                      ->enabled()
-                      ->type($types);
-
-        $this->addMerchantWhereCondition($query, $merchantIds);
-
-        return $query->get();
-    }
-
     protected function addMerchantWhereCondition($query, array $merchantIds)
     {
         $query->where(

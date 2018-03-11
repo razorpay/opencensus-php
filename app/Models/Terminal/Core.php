@@ -224,15 +224,18 @@ class Core extends Base\Core
     /**
      * This function is primarily used for terminal selection (filters and sorters)
      *
-     * @param                $terminal
-     * @param Payment\Entity $payment
+     * @param Entity                $terminal
+     * @param Payment\Entity        $payment
      *
-     * @param array          $gatewayTokens
+     * @param Base\PublicCollection $gatewayTokens
      *
      * @return bool
      * @throws Exception\LogicException
      */
-    public function hasApplicableGatewayTokens($terminal, Payment\Entity $payment, $gatewayTokens)
+    public function hasApplicableGatewayTokens(
+        Entity $terminal,
+        Payment\Entity $payment,
+        Base\PublicCollection $gatewayTokens)
     {
         //
         // This function should be called only for second recurring payments!
@@ -260,6 +263,8 @@ class Core extends Base\Core
                                             ($gatewayToken->terminal->getMerchantId() === $terminal->getMerchantId()));
                                 });
 
+        $validGatewayTokensCount = $validGatewayTokens->count();
+
         //
         // We check if we have one valid gateway_token for the
         // terminal being selected. If yes, we return back true.
@@ -271,7 +276,26 @@ class Core extends Base\Core
         // more than 1 set of terminals for a merchant (direct/shared).
         // If it's greater than 1, there's something wrong and should fail.
         //
-        return ($validGatewayTokens->count() === 1);
+        if ($validGatewayTokens === 1)
+        {
+            return true;
+        }
+        else
+        {
+            if ($validGatewayTokens > 0)
+            {
+                $this->trace->warning(
+                    TraceCode::GATEWAY_TOKEN_TOO_MANY_PRESENT,
+                    [
+                        'count'             => $validGatewayTokensCount,
+                        'gateway_tokens'    => $validGatewayTokens->toArray(),
+                        'terminal_id'       => $terminal->getId(),
+                        'payment_id'        => $payment->getId(),
+                    ]);
+            }
+
+            return false;
+        }
     }
 
     protected function validateExistingTerminalGatewayMerchantId($terminal)

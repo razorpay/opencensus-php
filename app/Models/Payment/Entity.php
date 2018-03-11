@@ -1604,35 +1604,34 @@ class Entity extends Base\PublicEntity
     }
 
     /**
-     * @param array $gatewayTokens
-     * @param bool  $accessCheck For terminal selection, we need to ensure that it's either private
-     *                           auth or privilege auth. If it's public auth, terminal selection
-     *                           logic needs to treat it as first recurring only because in public
-     *                           auth, it always needs to go via 2fa terminal.
+     * @param bool                  $accessCheck For terminal selection, we need to ensure that it's either private
+     *                                           auth or privilege auth. If it's public auth, terminal selection
+     *                                           logic needs to treat it as first recurring only because in public
+     *                                           auth, it always needs to go via 2fa terminal.
+     *
+     * @param Base\PublicCollection $gatewayTokens
      *
      * @return bool
      * @throws Exception\LogicException
      */
-    public function isSecondRecurring($accessCheck = false, $gatewayTokens = [])
+    public function isSecondRecurring($accessCheck = false, Base\PublicCollection $gatewayTokens = null)
     {
+        if ($this->isRecurring() === false)
+        {
+            return false;
+        }
+
         $app = \App::getFacadeRoot();
 
         if ($accessCheck === true)
         {
             $basicAuth = $app['basicauth'];
 
-            $access = (($basicAuth->isPrivateAuth() === true) or
-                       ($basicAuth->isPrivilegeAuth() === true));
-
-            if ($access === false)
+            if (($basicAuth->isPrivateAuth() === false) and
+                ($basicAuth->isPrivilegeAuth() === false))
             {
                 return false;
             }
-        }
-
-        if ($this->isRecurring() === false)
-        {
-            return false;
         }
 
         $token = $this->getGlobalOrLocalTokenEntity();
@@ -1645,11 +1644,16 @@ class Entity extends Base\PublicEntity
                 ErrorCode::SERVER_ERROR_TOKEN_ABSENT_RECURRING_PAYMENT,
                 [
                     'payment_id'    => $this->getId(),
-                    'access_check'   => $accessCheck,
+                    'access_check'  => $accessCheck,
                 ]);
         }
 
-        if (empty($gatewayTokens) === true)
+        //
+        // We use null check and not count here because gatewayTokens collection passed
+        // might have 0 items. In this case, we don't need to run the query again. The
+        // query would have already been run and the result could have been 0 items.
+        //
+        if ($gatewayTokens === null)
         {
             $reference = $this->getReferenceForGatewayToken();
 

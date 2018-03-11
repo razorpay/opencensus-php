@@ -203,7 +203,7 @@ class RecurringPaymentTest extends TestCase
 
         $this->ba->privateAuth();
 
-        $content = $this->doS2sRecurringPayment($payment);
+        $content = $this->doS2SRecurringPayment($payment);
 
         $paymentEntity = $this->getLastEntity('payment', true);
 
@@ -253,7 +253,7 @@ class RecurringPaymentTest extends TestCase
 
         $this->ba->privateAuth();
 
-        $content = $this->doS2sRecurringPayment($payment);
+        $content = $this->doS2SRecurringPayment($payment);
 
         $paymentEntity = $this->getLastEntity('payment', true);
 
@@ -378,11 +378,11 @@ class RecurringPaymentTest extends TestCase
                 'terminal_id' => '1000CybrsTrmnl'
             ]);
 
-        $content = $this->doS2sRecurringPayment($payment);
+        $content = $this->doS2SRecurringPayment($payment);
 
         $payment[Payment::CARD] = [];
 
-        $content = $this->doS2sRecurringPayment($payment);
+        $content = $this->doS2SRecurringPayment($payment);
 
         $paymentEntity = $this->getLastEntity('payment', true);
 
@@ -575,7 +575,7 @@ class RecurringPaymentTest extends TestCase
         $data = $this->testData[__FUNCTION__];
 
         $this->runRequestResponseFlow($data, function() use ($payment) {
-            $this->doS2sRecurringPayment($payment);
+            $this->doS2SRecurringPayment($payment);
         });
 
         $this->fixtures->terminal->enableTerminal($firstDataTerminal2['id']);
@@ -633,7 +633,7 @@ class RecurringPaymentTest extends TestCase
         $data = $this->testData[__FUNCTION__];
 
         $this->runRequestResponseFlow($data, function() use ($payment) {
-            $this->doS2sRecurringPayment($payment);
+            $this->doS2SRecurringPayment($payment);
         });
 
         $this->ba->publicAuth();
