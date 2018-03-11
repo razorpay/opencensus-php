@@ -50,6 +50,10 @@ class ThrottleTest extends TestCase
         $this->startTest($this->testData[__FUNCTION__.'2']);
     }
 
+    public function testGetOrderWhenThrottledForSpecificMerchant()
+    {
+    }
+
     /**
      * If redis setting is missing, no throttle happens and an alert is raised.
      */

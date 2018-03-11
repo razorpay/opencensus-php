@@ -154,7 +154,7 @@ class Throttler
 
     protected function attemptThrottleIfApplicable()
     {
-        if ($this->getThrottleSkipValue() === false)
+        if ($this->isThrottleSkipped() === false)
         {
             $this->attemptThrottle();
         }
@@ -163,8 +163,8 @@ class Throttler
     protected function attemptThrottle()
     {
         $key              = $this->getThrottleKey();
-        $leakRateValue    = $this->getThrottleRateValue();
-        $leakRateDuration = $this->getThrottleRateDuration();
+        $leakRateValue    = $this->getThrottleLeakRateValue();
+        $leakRateDuration = $this->getThrottleLeakRateDuration();
         $maxBucketSize    = $this->getThrottleMaxBucketSize();
 
         $limiter  = new LeakyBucket\Redis($maxBucketSize, $leakRateValue, $leakRateDuration, $this->redis);
@@ -175,7 +175,7 @@ class Throttler
 
         if ($response->allowed === false)
         {
-            if ($this->getThrottleMockValue() === false)
+            if ($this->isThrottleMocked() === false)
             {
                 throw new ThrottleException($response->retryAfter, $payload);
             }
@@ -208,22 +208,22 @@ class Throttler
         return implode(':', $args);
     }
 
-    protected function getThrottleSkipValue(): bool
+    protected function isThrottleSkipped(): bool
     {
         return $this->getThrottleValue(K::SKIP, true);
     }
 
-    protected function getThrottleMockValue(): bool
+    protected function isThrottleMocked(): bool
     {
         return $this->getThrottleValue(K::MOCK, true);
     }
 
-    protected function getThrottleRateValue(): int
+    protected function getThrottleLeakRateValue(): int
     {
         return $this->getThrottleValue(K::LEAK_RATE_VALUE, 2);
     }
 
-    protected function getThrottleRateDuration(): int
+    protected function getThrottleLeakRateDuration(): int
     {
         return $this->getThrottleValue(K::LEAK_RATE_DURATION, 1);
     }

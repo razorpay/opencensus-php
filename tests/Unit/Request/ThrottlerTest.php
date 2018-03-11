@@ -156,8 +156,8 @@ class ThrottlerTest extends TestCase
                 // values would be picked for given requests.
                 $throttlerMock->initThrottleSettings();
                 $this->assertEquals($expectedSettings[K::MAX_BUCKET_SIZE], $throttlerMock->getThrottleMaxBucketSize());
-                $this->assertEquals($expectedSettings[K::LEAK_RATE_VALUE], $throttlerMock->getThrottleRateValue());
-                $this->assertEquals($expectedSettings[K::LEAK_RATE_DURATION], $throttlerMock->getThrottleRateDuration());
+                $this->assertEquals($expectedSettings[K::LEAK_RATE_VALUE], $throttlerMock->getThrottleLeakRateValue());
+                $this->assertEquals($expectedSettings[K::LEAK_RATE_DURATION], $throttlerMock->getThrottleLeakRateDuration());
             }
         }
     }
