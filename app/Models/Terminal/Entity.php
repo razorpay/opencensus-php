@@ -6,6 +6,7 @@ use Crypt;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
+use RZP\Base\BuilderEx;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
@@ -573,6 +574,45 @@ class Entity extends Base\PublicEntity
     public function scopeEnabled($query)
     {
         return $query->where(Entity::ENABLED, '=', '1');
+    }
+
+    /**
+     * Used to query by type, which is a bitwise column.
+     *
+     * The objective is to check if a specific bit is set. We find the bit in position,
+     * create a comparator that has only that bit set and nothing else, and perform a
+     * logical AND with type. If the result is the same comparator, then the bit is set.
+     * If not set, the result would have given 0.
+     *
+     * Example: A terminal that support recurring, both 3DS and N3DS, has type set
+     * to 0110, i.e. 6. To check if it support N3DS, we find bit position of N3DS (3),
+     * shift 1 so that it gives a comparator with only the 3rd bit set (0100),
+     * and AND it with type. The result is 0100.
+     *
+     * @param BuilderEx $query
+     * @param array      $types
+     *
+     * @return BuilderEx
+     */
+    public function scopeType($query, array $types)
+    {
+        $bitComparator = 0;
+
+        foreach ($types as $type)
+        {
+            if (in_array($type, Type::getValidTypes(), true) === false)
+            {
+                return $query;
+            }
+
+            $position = Type::getBitPosition($type);
+
+            $bitComparator |= (1 << ($position - 1));
+        }
+
+        $typeColumn = $this->dbColumn(Entity::TYPE);
+
+        return $query->whereRaw($typeColumn . " & " . $bitComparator . " = " . $bitComparator);
     }
 
     // ---------------------- END SCOPES ----------------------
