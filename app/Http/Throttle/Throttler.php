@@ -220,7 +220,7 @@ class Throttler
 
     protected function isBlocked(): bool
     {
-        return $this->getThrottleValue(K::BLOCK, false);
+        return $this->getThrottleValue(K::BLOCK, K::DEFAULT_BLOCK);
     }
 
     protected function isThrottleSkipped(): bool

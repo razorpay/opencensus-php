@@ -78,4 +78,16 @@ class ThrottleTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testGetOrderWhenBlockedForTestMerchant()
+    {
+        // Case 1: Blocks GET /invoice route for test mid, so GET /orders should pass
+
+        $this->setRedisIdLevelSettings('10000000000000', ['test:private:0:invoice_fetch_multiple:block' => 1]);
+        $this->startTest($this->testData[__FUNCTION__.'1']);
+
+        // Case 2: Blocks GET /orders route too for test mid, so GET /orders should error
+        $this->setRedisIdLevelSettings('10000000000000', ['test:private:0:order_fetch:block' => 1]);
+        $this->startTest($this->testData[__FUNCTION__.'2']);
+    }
 }

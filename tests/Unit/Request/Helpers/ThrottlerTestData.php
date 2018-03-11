@@ -41,6 +41,13 @@ return [
             ],
             [],
         ],
+        // Case: Blocks an specific route in live mode for all merchants
+        'global_4'   => [
+            [
+                'live:private:0:invoice_fetch_multiple:block' => 1,
+            ],
+            [],
+        ],
         // Id level settings for live mode for private auth
         'id_level_1' => [
             [],
@@ -66,6 +73,13 @@ return [
                 'test:private:0:invoice_fetch_multiple:mbs' => 100,
                 'test:private:0:invoice_fetch_multiple:lrv' => 10,
                 'test:private:0:invoice_fetch_multiple:lrd' => 2,
+            ],
+        ],
+        // Case: Blocks and specific route in test and live mode for specific mid
+        'id_level_4' => [
+            [],
+            [
+                'test:private:0:invoice_fetch_multiple:block' => 1,
             ],
         ],
         // Global and id level settings for test mode for private auth
@@ -154,6 +168,9 @@ return [
                 K::LEAK_RATE_VALUE    => 10,
                 K::LEAK_RATE_DURATION => 2,
             ],
+            'id_level_4'  => [
+                K::BLOCK              => true,
+            ],
             'global_id_1' => [
                 K::MAX_BUCKET_SIZE    => 100,
                 K::LEAK_RATE_VALUE    => 10,
@@ -173,6 +190,9 @@ return [
                 K::MAX_BUCKET_SIZE    => 50,
                 K::LEAK_RATE_VALUE    => 5,
                 K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_4'    => [
+                K::BLOCK              => true,
             ],
             'id_level_1'  => [
                 K::MAX_BUCKET_SIZE    => 50,
