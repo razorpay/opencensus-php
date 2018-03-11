@@ -210,27 +210,27 @@ class Throttler
 
     protected function isThrottleSkipped(): bool
     {
-        return $this->getThrottleValue(K::SKIP, true);
+        return $this->getThrottleValue(K::SKIP, K::DEFAULT_SKIP);
     }
 
     protected function isThrottleMocked(): bool
     {
-        return $this->getThrottleValue(K::MOCK, true);
+        return $this->getThrottleValue(K::MOCK, K::DEFAULT_MOCK);
     }
 
     protected function getThrottleLeakRateValue(): int
     {
-        return $this->getThrottleValue(K::LEAK_RATE_VALUE, 2);
+        return $this->getThrottleValue(K::LEAK_RATE_VALUE, K::DEFAULT_LEAK_RATE_VALUE);
     }
 
     protected function getThrottleLeakRateDuration(): int
     {
-        return $this->getThrottleValue(K::LEAK_RATE_DURATION, 1);
+        return $this->getThrottleValue(K::LEAK_RATE_DURATION, K::DEFAULT_LEAK_RATE_DURATION);
     }
 
     protected function getThrottleMaxBucketSize(): int
     {
-        return $this->getThrottleValue(K::MAX_BUCKET_SIZE, 30);
+        return $this->getThrottleValue(K::MAX_BUCKET_SIZE, K::DEFAULT_MAX_BUCKET_SIZE);
     }
 
     protected function getThrottleValue(string $key, int $default): int

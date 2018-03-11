@@ -29,7 +29,7 @@ class ThrottlerTest extends TestCase
     {
         $this->expectException(ThrottleException::class);
 
-        $this->setRedisGlobalSettings(['skip' => 0, 'mock' => 0, 'test:private:0:mbs' => 0]);
+        $this->setRedisGlobalSettings(['test:private:0:mbs' => 0]);
 
         $requestMock = $this->invokeRequestCase('privateRoute');
 
@@ -55,7 +55,7 @@ class ThrottlerTest extends TestCase
      */
     public function testAttemptThrottleWhenSkipped()
     {
-        $this->setRedisGlobalSettings(['skip' => 1]);
+        $this->setRedisGlobalSettings([K::SKIP => 1]);
 
         $requestMock = $this->invokeRequestCase('privateRoute');
 
@@ -64,6 +64,44 @@ class ThrottlerTest extends TestCase
                       ->method('attemptThrottle');
 
         $throttlerMock->throttle($requestMock);
+    }
+
+    public function testAttemptThrottleWhenSkippedForSpecificMerchant()
+    {
+        $this->setRedisIdLevelSettings('10000000000000', [K::SKIP => 1]);
+
+        $requestMock = $this->invokeRequestCase('privateRoute');
+
+        $throttlerMock = $this->createThrottlerMock(['attemptThrottle']);
+        $throttlerMock->expects($this->never())
+                      ->method('attemptThrottle');
+
+        $throttlerMock->throttle($requestMock);
+    }
+
+    public function testAttemptThrottleWhenMocked()
+    {
+        // Sets global mock as true. Also, sets mbs as 0 so first request gets throttled itself.
+        $this->setRedisGlobalSettings([K::MOCK => 1, 'test:private:0:mbs' => 0]);
+
+        $requestMock = $this->invokeRequestCase('privateRoute');
+
+        // Just shouldn't throw any exception.
+        (new Throttler)->throttle($requestMock);
+        $this->assertTrue(true);
+    }
+
+    public function testAttemptThrottleWhenMockedForSpecificMerchant()
+    {
+        // Sets mbs as 0 so first request gets throttled itself.
+        $this->setRedisGlobalSettings(['test:private:0:mbs' => 0]);
+        $this->setRedisIdLevelSettings('10000000000000', [K::MOCK => 1]);
+
+        $requestMock = $this->invokeRequestCase('privateRoute');
+
+        // Just shouldn't throw any exception.
+        (new Throttler)->throttle($requestMock);
+        $this->assertTrue(true);
     }
 
     /**
@@ -136,11 +174,10 @@ class ThrottlerTest extends TestCase
 
             $requestMock = $this->invokeRequestCase($case);
 
-            $consecutiveReturns = array_values(array_only($settings, array_keys($expected['settings'])));
             $throttlerMock = $this->createThrottlerMock(['loadSettingsFromRedis']);
-            $throttlerMock->expects($this->exactly(count($consecutiveReturns)))
+            $throttlerMock->expects($this->exactly(count($settings)))
                           ->method('loadSettingsFromRedis')
-                          ->will($this->onConsecutiveCalls(...$consecutiveReturns));
+                          ->will($this->onConsecutiveCalls(...array_values($settings)));
 
             $throttlerMock->initRequestContextVars($requestMock);
             $throttlerMock->initRedisConnection();
@@ -149,15 +186,25 @@ class ThrottlerTest extends TestCase
             $this->assertEquals($expected['id_settings_key'], $throttlerMock->getIdSettingsKey());
             $this->assertEquals($expected['throttle_key'], $throttlerMock->getThrottleKey());
 
-            foreach ($expected['settings'] as $idx => $expectedSettings)
+            foreach (array_keys($settings) as $key)
             {
                 // We reset throttle settings every iteration and assert that if
                 // the new returned(mocked ^) value were settings what throttle
                 // values would be picked for given requests.
                 $throttlerMock->initThrottleSettings();
-                $this->assertEquals($expectedSettings[K::MAX_BUCKET_SIZE], $throttlerMock->getThrottleMaxBucketSize());
-                $this->assertEquals($expectedSettings[K::LEAK_RATE_VALUE], $throttlerMock->getThrottleLeakRateValue());
-                $this->assertEquals($expectedSettings[K::LEAK_RATE_DURATION], $throttlerMock->getThrottleLeakRateDuration());
+
+                $expectedSettings         = $expected['settings'][$key] ?? [];
+                $expectedSkip             = $expectedSettings[K::SKIP] ?? K::DEFAULT_SKIP;
+                $expectedMock             = $expectedSettings[K::MOCK] ?? K::DEFAULT_MOCK;
+                $expectedMaxBucketSize    = $expectedSettings[K::MAX_BUCKET_SIZE] ?? K::DEFAULT_MAX_BUCKET_SIZE;
+                $expectedLeakRateValue    = $expectedSettings[K::LEAK_RATE_VALUE] ?? K::DEFAULT_LEAK_RATE_VALUE;
+                $expectedLeakRateDuration = $expectedSettings[K::LEAK_RATE_DURATION] ?? K::DEFAULT_LEAK_RATE_DURATION;
+
+                $this->assertEquals($expectedSkip, $throttlerMock->isThrottleSkipped());
+                $this->assertEquals($expectedMock, $throttlerMock->isThrottleMocked());
+                $this->assertEquals($expectedMaxBucketSize, $throttlerMock->getThrottleMaxBucketSize());
+                $this->assertEquals($expectedLeakRateValue, $throttlerMock->getThrottleLeakRateValue());
+                $this->assertEquals($expectedLeakRateDuration, $throttlerMock->getThrottleLeakRateDuration());
             }
         }
     }
