@@ -198,7 +198,7 @@ class Throttler
     {
         return $this->internalAppName ?:
                 $this->adminEmail ?:
-                $this->oauthAppId ?:
+                $this->oauthClientId ?:
                 $this->mid ?:
                 '';
     }
@@ -214,7 +214,7 @@ class Throttler
         $ip = ($this->isPublicAuth() or $this->isDirectAuth()) ? $this->request->ip() : '';
 
         // E.g.: payments_create:live:private:0::10000000000000:
-        $args = [$this->route, $this->mode, $this->auth, (int) $this->proxy, $this->oauthAppId, $id, $ip];
+        $args = [$this->route, $this->mode, $this->auth, (int) $this->proxy, $this->oauthClientId, $id, $ip];
         return implode(':', $args);
     }
 
@@ -292,7 +292,7 @@ class Throttler
         //      -- Same setting as above - across or per route
         // }
         //
-        // Key: t:i:<oauthappid>
+        // Key: t:i:<oauthClientId>
         // Value: {
         //      -- Same setting as above - across or per route
         //      (Applies to the application + mid combination)
