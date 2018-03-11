@@ -152,7 +152,6 @@ class SettlementTest extends TestCase
 
         $this->assertEquals('Today is a holiday! Happy holidays :)', $content['message']);
 
-
         // Reset test params
         Carbon::setTestNow();
         $this->ba->publicAuth();
@@ -299,7 +298,6 @@ class SettlementTest extends TestCase
         $setlAttempt = $this->getLastEntity('fund_transfer_attempt', true);
 
         $this->assertEquals($setlAttempt['source'], $setl['id']);
-
 
         $content = $this->getEntities('settlement_details', ['settlement_id' => $setl['id']], true);
 
@@ -975,7 +973,8 @@ class SettlementTest extends TestCase
     {
         $channel = Channel::AXIS;
 
-        $createdAt = Carbon::today(Timezone::IST)->getTimestamp() + 5;
+        //  Thursday, 8 March 2018 00:00:05 GMT+05:30
+        $createdAt = 1520447405;
 
         $payment = $this->fixtures->create(
             'payment:captured',
@@ -1003,7 +1002,7 @@ class SettlementTest extends TestCase
             ]);
 
         // Create one reversal, 5 days later.
-        $time = Carbon::today(Timezone::IST)->addDays(5);
+        $time = Carbon::createFromTimestamp(1520447400, Timezone::IST)->addDays(5);
         Carbon::setTestNow($time);
         $this->fixtures->create(
             'reversal',
@@ -1022,7 +1021,7 @@ class SettlementTest extends TestCase
         $this->assertEquals(0, $content[$channel]['txnCount']);
 
         // Set time to 3 working days from now and initiate settlements
-        $settlementAfterT3 = Carbon::today(Timezone::IST);
+        $settlementAfterT3 = Carbon::createFromTimestamp(1520447400, Timezone::IST);
         $nextWorkingDay = Holidays::getNthWorkingDayFrom($settlementAfterT3, 3);
         Carbon::setTestNow($nextWorkingDay->setTime(8, 0));
 
