@@ -2438,7 +2438,8 @@ class Entity extends Base\PublicEntity
         }
 
         return (($this->card->isInternational() === true) or
-                ($this->card->isAmex() === true));
+                ($this->card->isAmex() === true) or
+                ($this->card->isRuPay() === true));
     }
 
     public static function getFilteredDescription(string $description = null)
