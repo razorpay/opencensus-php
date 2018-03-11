@@ -60,6 +60,28 @@ class Selector extends Base\Core
         $this->input = $input;
 
         $this->options = $options;
+
+        $this->setGatewayTokensInInputIfApplicable();
+    }
+
+    protected function setGatewayTokensInInputIfApplicable()
+    {
+        $payment = $this->input['payment'];
+
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
+        if (empty($token) === true)
+        {
+            $this->input['gateway_tokens'] = new Base\PublicCollection();
+        }
+        else
+        {
+            $reference = $payment->getReferenceForGatewayToken();
+
+            $this->input['gateway_tokens'] = $this->repo
+                                                  ->gateway_token
+                                                  ->findByTokenAndReference($token, $reference, [Constants::TERMINAL]);
+        }
     }
 
     public function select()
@@ -178,7 +200,9 @@ class Selector extends Base\Core
         $merchantTerminals = $this->repo
                                   ->terminal
                                   ->getTerminalsForMerchantAndSharedMerchant(
-                                        $this->input['merchant']);
+                                                        $this->input['merchant']);
+
+        $payment = $this->input['payment'];
 
         //
         // For second recurring payments, the payment must go through a designated
@@ -187,11 +211,11 @@ class Selector extends Base\Core
         // that gateway token, and finding other usable terminals assigned to the
         // same primary merchant
         //
-        if ($this->input['payment']->isSecondRecurring() === true)
+        if ($payment->isSecondRecurring(true, $this->input['gateway_tokens']) === true)
         {
-            $addTerminals = $this->getTerminalsForSecondRecurringPayment();
+            $possibleApplicableTerminals = $this->getTerminalsForSecondRecurringPayment();
 
-            $merchantTerminals = $merchantTerminals->merge($addTerminals);
+            $merchantTerminals = $merchantTerminals->merge($possibleApplicableTerminals);
         }
 
         return $merchantTerminals->all();
@@ -199,15 +223,10 @@ class Selector extends Base\Core
 
     protected function getTerminalsForSecondRecurringPayment()
     {
-        $token = $this->input['payment']->getGlobalOrLocalTokenEntity();
+        $gatewayTokens = $this->input['gateway_tokens'];
 
-        $reference = $this->input['payment']->getReferenceForGatewayToken();
-
-        $merchantIdsForGatewayTokenTerminals = $this->repo
-                                                    ->gateway_token
-                                                    ->findByTokenAndReference($token, $reference, [Constants::TERMINAL])
-                                                    ->pluck('terminal.merchant_id')
-                                                    ->toArray();
+        $merchantIdsForGatewayTokenTerminals = $gatewayTokens->pluck('terminal.merchant_id')
+                                                             ->toArray();
 
         // Many gateway tokens, each associated with a terminal
         // Find all those terminals and gather all their merchant IDs
@@ -217,7 +236,9 @@ class Selector extends Base\Core
 
         $addTerminals = $this->repo
                              ->terminal
-                             ->getByTypeAndMerchantIds(Type::RECURRING_NON_3DS, $merchantIdsForGatewayTokenTerminals);
+                             ->getByTypeAndMerchantIds(
+                                    Type::RECURRING_NON_3DS,
+                                    $merchantIdsForGatewayTokenTerminals);
 
         return $addTerminals;
     }
