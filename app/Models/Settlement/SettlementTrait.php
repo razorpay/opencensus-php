@@ -367,6 +367,8 @@ trait SettlementTrait
             Preferences::MID_WEALTHY,
             Preferences::MID_PIGGY,
             Preferences::MID_PAISABAZAAR,
+            Preferences::MID_BPCL,
+            Preferences::MID_SRI_CHAITANYA,
         ];
 
         if (in_array($merchant->getId(), $skipMerchantIds, true) === true)
@@ -442,6 +444,10 @@ trait SettlementTrait
 
     /**
      * Returns the list of all channels for which settlments needs to be done
+     *
+     * @param string|null $channel
+     *
+     * @return array
      */
     protected function getArrayedChannels($channel = null)
     {
