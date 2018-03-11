@@ -171,21 +171,25 @@ trait HasRequestContext
         $isPublicRoute         = in_array($this->route, Route::$public, true);
         $isPublicCallbackRoute = in_array($this->route, Route::$publicCallback, true);
 
-        if (($isPublicRoute === true) and
-            ($this->isKeyOAuthPublicToken() === true))
+        // Route belongs neither to public or public callback group
+        if (($isPublicRoute === false) and ($isPublicCallbackRoute === false))
+        {
+            return false;
+        }
+
+        // Route belongs to one of 2 groups and accessed via oauth public token
+        if ($this->isKeyOAuthPublicToken() === true)
         {
             // Further excludes "oauth_" part
             $this->oauthPublicToken = substr($this->keyWithoutPrefix, 6);
-            return true;
         }
-        else if (($isPublicRoute === true) or
-                 ($isPublicCallbackRoute === true))
+        // Route belongs to one of 2 groups and accessed normally via key id
+        else
         {
             $this->keyId = $this->keyWithoutPrefix;
-            return true;
         }
 
-        return false;
+        return true;
     }
 
     protected function setAdditionalVarsForPrivateAuth()

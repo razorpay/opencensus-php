@@ -197,6 +197,11 @@ class Selector extends Base\Core
     {
         $gatewayTokens = $this->input['gateway_tokens'];
 
+        if ($gatewayTokens->count() === 0)
+        {
+            return [];
+        }
+
         $merchantIdsForGatewayTokenTerminals = $gatewayTokens->pluck('terminal.merchant_id')
                                                              ->toArray();
 

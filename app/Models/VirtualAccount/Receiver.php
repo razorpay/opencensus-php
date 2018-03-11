@@ -150,6 +150,26 @@ class Receiver extends Base\Core
 
         $handle = $this->merchant->getHandle();
 
+        //
+        // We currently don't have any alphanumeric prefixes, and don't
+        // want to give alphanumeric account with the numeric ones.
+        //
+        // This check ensures that even merchants with set
+        // handles cannot create non-numeric accounts.
+        //
+        // Why are we setting handles at all then?
+        //
+        // Because we use that to identify privileged account
+        // (see isPrivilegedAccount), for other features like
+        // using descriptor with numeric accounts.
+        //
+        if (($this->numeric === false) and
+            ($this->mode === Mode::LIVE))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Alphanumeric accounts are temporarily blocked.');
+        }
+
         if (($this->numeric === true) and
             ($this->descriptor !== null) and
             ($this->isPrivilegedAccount() === false))

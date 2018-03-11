@@ -573,7 +573,7 @@ class Terminal extends Base
     public function createDirectFirstDataRecurringTerminals($inputAttrs)
     {
         $attributes = [
-            'id'                        => 'FDRcrgTrmnl3DS',
+            'id'                        => 'FDRcrDTrmnl3DS',
             'merchant_id'               => '10000000000000',
             'gateway'                   => 'first_data',
             'gateway_acquirer'          => 'icic',
@@ -590,7 +590,7 @@ class Terminal extends Base
         $terminal1 = $this->createEntityInTestAndLive('terminal', $attributes);
 
         $attributes = [
-            'id'                        => 'FDRcrgTrmlN3DS',
+            'id'                        => 'FDRcrDTrmlN3DS',
             'merchant_id'               => '10000000000000',
             'gateway'                   => 'first_data',
             'gateway_acquirer'          => 'icic',

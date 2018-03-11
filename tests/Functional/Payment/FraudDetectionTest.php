@@ -14,7 +14,7 @@ class FraudDetectionTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/helpers/FraudDetectionTestData.php';
+        $this->testDataFilePath = __DIR__ . '/helpers/FraudDetectionTestData.php';
 
         parent::setUp();
 
@@ -30,14 +30,14 @@ class FraudDetectionTest extends TestCase
         $this->fixtures->create(
             'iin',
             [
-                'iin' => 521729,
+                'iin'     => 521729,
                 'network' => 'MasterCard',
-                'type' => 'debit',
+                'type'    => 'debit',
                 'country' => null,
                 'enabled' => 0
             ]);
 
-        $payment = $this->getDefaultPaymentArray();
+        $payment                   = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '5217294025032720';
 
         $data = $this->testData[__FUNCTION__];
@@ -63,13 +63,61 @@ class FraudDetectionTest extends TestCase
         $this->assertEquals('payment_analytics', $paymentAnalytic['entity']);
     }
 
+    public function testRupayBin()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create(
+            'iin',
+            [
+                'iin'     => 607261,
+                'network' => 'Rupay',
+                'type'    => 'debit',
+                'country' => null,
+                'enabled' => 1
+            ]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '6072614025032721';
+
+        $response = $this->doAuthPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+    }
+
+    public function testFailedRupayBin()
+    {
+        $this->mockMaxmind();
+
+        $payment                   = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '6070764025032726';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $riskEntity = $this->getLastEntity('risk', true);
+
+        $this->assertEquals($payment['id'], $riskEntity['payment_id']);
+
+        $this->assertEquals(
+            'PAYMENT_SUSPECTED_FRAUD_BY_MAXMIND', $riskEntity['reason']);
+
+        $this->assertNotNull($riskEntity['risk_score']);
+    }
+
     public function testFraudDetected()
     {
         $this->mockMaxmind();
 
-        $this->fixtures->merchant->enableInternational();
-
         $payment = $this->getDefaultPaymentArray();
+
         $payment['card']['number'] = '4012010000000007';
 
         $data = $this->testData[__FUNCTION__];
@@ -98,6 +146,7 @@ class FraudDetectionTest extends TestCase
         $this->fixtures->merchant->enableInternational();
 
         $payment = $this->getDefaultPaymentArray();
+
         $payment['card']['number'] = '5105105105105100';
 
         $response = $this->doAuthPayment($payment);
@@ -115,7 +164,7 @@ class FraudDetectionTest extends TestCase
 
         $this->ba->publicAuth();
 
-        $payment = $this->getDefaultRecurringPaymentArray();
+        $payment                   = $this->getDefaultRecurringPaymentArray();
         $payment['card']['number'] = '5105105105105100';
 
         $this->doAuthAndCapturePayment($payment);
@@ -138,8 +187,8 @@ class FraudDetectionTest extends TestCase
     {
         $this->fixtures->merchant->enableInternational();
 
-        $payment = $this->getDefaultPaymentArray();
-        $payment['email'] = 'test@razorpay.xtm';
+        $payment                   = $this->getDefaultPaymentArray();
+        $payment['email']          = 'test@razorpay.xtm';
         $payment['card']['number'] = '4012010000000007';
 
         $data = $this->testData[__FUNCTION__];
