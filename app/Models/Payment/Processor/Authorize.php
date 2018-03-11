@@ -2362,7 +2362,7 @@ trait Authorize
 
         $data['image'] = $payment->merchant->getFullLogoUrlWithSize(Merchant\Logo::MEDIUM_SIZE);
 
-        $data['magic'] = $this->isMagicEnabled();
+        $data['magic'] = $this->isMagicEnabled($payment);
 
         $segmentData = $data;
 
@@ -4097,46 +4097,24 @@ trait Authorize
         }
     }
 
-    protected function isMagicEnabled()
+    protected function isMagicEnabled(Payment\Entity $payment)
     {
+        if ($payment->isMethodCardOrEmi() === false)
+        {
+            return false;
+        }
+
         $cache = Cache::getFacadeRoot();
 
         $magicDisabledGlobally = (bool) $cache->get(ConfigKey::DISABLE_MAGIC);
 
-        switch (true)
-        {
-            case $magicDisabledGlobally:
-                $isMagicEnabled = false;
-                break;
-
-            case $this->isMagicDisabledForMerchant();
-                $isMagicEnabled = false;
-                break;
-
-            case $this->isMagicDisabledForIin():
-                $isMagicEnabled = false;
-                break;
-
-            default:
-                $isMagicEnabled = true;
-                break;
-        }
-        return $isMagicEnabled;
-    }
-
-    protected function isMagicDisabledForIin()
-    {
-        $card = $this->payment->card;
-
-        if ((empty($card) === true) or ($card->iinRelation->isMagicEnabled() === false))
+        if (($magicDisabledGlobally === true) and
+            ($this->merchant->isMagicEnabled() === true) and
+            ($payment->card->isMagicEnabled() === true))
         {
             return true;
         }
-        return false;
-    }
 
-    protected function isMagicDisabledForMerchant()
-    {
-        return ($this->merchant->isMagicEnabled() === false);
+        return false;
     }
 }
