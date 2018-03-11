@@ -226,7 +226,7 @@ class RecurringPaymentTest extends TestCase
         ]);
 
         // Okay now the first one is yours
-        $response = $this->assignSubMerchant('FDRcrgTrmnl3DS', '10000000000000');
+        $response = $this->assignSubMerchant('FDRcrDTrmnl3DS', '10000000000000');
 
         $this->ba->publicAuth();
 
@@ -241,7 +241,7 @@ class RecurringPaymentTest extends TestCase
         $tokenEntity   = $this->getLastEntity('token', true);
 
         // Looks like the first one really is yours
-        $this->assertEquals('FDRcrgTrmnl3DS', $paymentEntity[Payment::TERMINAL_ID]);
+        $this->assertEquals('FDRcrDTrmnl3DS', $paymentEntity[Payment::TERMINAL_ID]);
 
         $this->assertEquals(true, $tokenEntity[Token::RECURRING]);
 
@@ -258,25 +258,9 @@ class RecurringPaymentTest extends TestCase
         $paymentEntity = $this->getLastEntity('payment', true);
 
         // OMG the second one is yours too, what is this sorcery
-        $this->assertEquals('FDRcrgTrmlN3DS', $paymentEntity[Payment::TERMINAL_ID]);
+        $this->assertEquals('FDRcrDTrmlN3DS', $paymentEntity[Payment::TERMINAL_ID]);
 
         $this->assertEquals('skipped', $paymentEntity[Payment::TWO_FACTOR_AUTH]);
-    }
-
-    protected function assignSubMerchant(string $tid, string $mid)
-    {
-        $url = '/terminals/' . $tid . '/merchants/' . $mid;
-
-        $request = [
-            'url'    => $url,
-            'method' => 'PUT',
-        ];
-
-        $this->ba->adminAuth();
-
-        $this->ba->getAdmin()->merchants()->attach('10000000000000');
-
-        return $this->makeRequestAndGetContent($request);
     }
 
     public function testRecurringPaymentCreatePrivateAuth()
@@ -637,5 +621,21 @@ class RecurringPaymentTest extends TestCase
         });
 
         $this->ba->publicAuth();
+    }
+
+    protected function assignSubMerchant(string $tid, string $mid)
+    {
+        $url = '/terminals/' . $tid . '/merchants/' . $mid;
+
+        $request = [
+            'url'    => $url,
+            'method' => 'PUT',
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->ba->getAdmin()->merchants()->attach('10000000000000');
+
+        return $this->makeRequestAndGetContent($request);
     }
 }
