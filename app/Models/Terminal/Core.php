@@ -276,13 +276,13 @@ class Core extends Base\Core
         // more than 1 set of terminals for a merchant (direct/shared).
         // If it's greater than 1, there's something wrong and should fail.
         //
-        if ($validGatewayTokens === 1)
+        if ($validGatewayTokensCount === 1)
         {
             return true;
         }
         else
         {
-            if ($validGatewayTokens > 0)
+            if ($validGatewayTokensCount > 0)
             {
                 $this->trace->warning(
                     TraceCode::GATEWAY_TOKEN_TOO_MANY_PRESENT,
