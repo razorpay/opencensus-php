@@ -10,6 +10,7 @@ use Illuminate\Redis\RedisManager;
 use Razorpay\Trace\Logger as Trace;
 use Illuminate\Support\Facades\Redis;
 
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Foundation\Application;
 use RZP\Base\RepositoryManager;
@@ -301,21 +302,23 @@ class Throttler
 
         // Boolean value doesn't get type-casted to string properly
         $proxy = (int) $this->proxy;
+        // If mode is not available at this layer just pick live mode settings
+        $mode  = $this->mode ?: Mode::LIVE;
 
                 // Value for given mid/application id, mode, auth & route
-        return $this->settings[K::ID_LEVEL]["{$this->mode}:{$this->auth}:{$proxy}:{$this->route}:{$key}"] ??
+        return $this->settings[K::ID_LEVEL]["{$mode}:{$this->auth}:{$proxy}:{$this->route}:{$key}"] ??
                 // Value for given mid/application id, mode & auth
-                $this->settings[K::ID_LEVEL]["{$this->mode}:{$this->auth}:{$proxy}:{$key}"] ??
+                $this->settings[K::ID_LEVEL]["{$mode}:{$this->auth}:{$proxy}:{$key}"] ??
                 // Value for given mid/application id & mode
-                $this->settings[K::ID_LEVEL]["{$this->mode}:{$key}"] ??
+                $this->settings[K::ID_LEVEL]["{$mode}:{$key}"] ??
                 // Value for given mid/application id
                 $this->settings[K::ID_LEVEL]["{$key}"] ??
                 // Value for given mode, auth & route
-                $this->settings[K::GLOBAL]["{$this->mode}:{$this->auth}:{$proxy}:{$this->route}:{$key}"] ??
+                $this->settings[K::GLOBAL]["{$mode}:{$this->auth}:{$proxy}:{$this->route}:{$key}"] ??
                 // Value for given mode & auth
-                $this->settings[K::GLOBAL]["{$this->mode}:{$this->auth}:{$proxy}:{$key}"] ??
+                $this->settings[K::GLOBAL]["{$mode}:{$this->auth}:{$proxy}:{$key}"] ??
                 // Value for given mode
-                $this->settings[K::GLOBAL]["{$this->mode}:{$key}"] ??
+                $this->settings[K::GLOBAL]["{$mode}:{$key}"] ??
                 // Finally, global default value
                 $this->settings[K::GLOBAL]["{$key}"] ??
                 // Again finally, the default by callee :)

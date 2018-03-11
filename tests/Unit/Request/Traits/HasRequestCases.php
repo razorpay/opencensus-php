@@ -3,6 +3,7 @@
 namespace RZP\Tests\Unit\Request\Traits;
 
 use Illuminate\Http\Request;
+
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 
@@ -16,17 +17,18 @@ trait HasRequestCases
 
     // Some static hard coded keys and configs for tests
 
-    public static $testKey         = 'rzp_test_TheTestAuthKey';
-    public static $liveKey         = 'rzp_live_TheLiveAuthKey';
-    public static $testSecret      = 'TheKeySecretForTests';
-    public static $liveSecret      = 'TheKeySecretForTestsLive';
-    public static $testMidKey      = 'rzp_test_10000000000000';
-    public static $testUserId      = User::MERCHANT_USER_ID;
-    public static $testOrgId       = Org::RZP_ORG_SIGNED;
-    public static $testAdminToken  = Org::DEFAULT_TOKEN . Org::DEFAULT_TOKEN_PRINCIPAL;
-    public static $testHostname    = 'dashboard.razorpay.in';
-    public static $testAdminEmail  = 'test@test.com';
-    public static $testDeviceToken = 'authentication_token';
+    public static $testKey              = 'rzp_test_TheTestAuthKey';
+    public static $liveKey              = 'rzp_live_TheLiveAuthKey';
+    public static $testSecret           = 'TheKeySecretForTests';
+    public static $liveSecret           = 'TheKeySecretForTestsLive';
+    public static $testMidKey           = 'rzp_test_10000000000000';
+    public static $testUserId           = User::MERCHANT_USER_ID;
+    public static $testOrgId            = Org::RZP_ORG_SIGNED;
+    public static $testAdminToken       = Org::DEFAULT_TOKEN . Org::DEFAULT_TOKEN_PRINCIPAL;
+    public static $testHostname         = 'dashboard.razorpay.in';
+    public static $testAdminEmail       = 'test@test.com';
+    public static $testDeviceToken      = 'authentication_token';
+    public static $testOauthPublicToken = 'rzp_test_oauth_100OAuthPublic';
 
     /**
      * Invokes mocker method for given request case.
@@ -76,10 +78,17 @@ trait HasRequestCases
     }
 
     protected function mockPublicRouteWithOAuthPublicToken(
-        string $name = '',
-        string $path = ''): Request
+        string $name = 'invoice_get_status',
+        string $path = 'invoices/inv_1000000invoice/status'): Request
     {
-        // TODO
+        return $this->mockRouteRequest($name, $path, [], [self::$testOauthPublicToken]);
+    }
+
+    protected function mockPublicCallbackRouteWithOAuthPublicToken(
+        string $name = 'payment_callback_with_key_get',
+        string $path = 'payments/pay_10000000000000/callback/hash/rzp_test_oauth_100OAuthPublic'): Request
+    {
+        return $this->mockRouteRequest($name, $path);
     }
 
     protected function mockPrivateRoute(
@@ -104,10 +113,12 @@ trait HasRequestCases
     }
 
     protected function mockPrivateRouteWithOAuthBearerToken(
-        string $name = '',
-        string $path = ''): Request
+        string $name = 'invoice_fetch_multiple',
+        string $path = 'invoices'): Request
     {
-        // TODO
+        $token = file_get_contents(__DIR__ . '/../Helpers/test_oauth_bearer_token.txt');
+
+        return $this->mockRouteRequest($name, $path, [], [], [], [], ['HTTP_Authorization' => 'Bearer ' . $token]);
     }
 
     protected function mockPrivateRouteWithProxyAuth(
