@@ -46,19 +46,6 @@ class Type
         return ((($hexType >> ($pos - 1)) & 1) === 1);
     }
 
-    public static function areApplicable($hexType, array $types)
-    {
-        foreach ($types as $type)
-        {
-            if (self::isApplicable($hexType, $type) === false)
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     public static function isApplicableType($types, $type)
     {
         if ((isset($types[$type]) === true) and
