@@ -20,7 +20,11 @@ export default class BatchCreate extends Component {
     data.email_notify = data.email_notify | 0;
 
     data.file_id = this.props.batch.file_id;
-
+    data.draft = 0; //for backward compatibility
+    data.config = {
+      sms_notify: data.sms_notify,
+      email_notify: data.email_notify,
+    };
     return this.props
       .createBatch(data)
       .then(response => {

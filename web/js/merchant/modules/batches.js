@@ -19,6 +19,7 @@ const CREATE_BATCH = 'PAYMENT_LINK_BATCH_CREATE';
 const FETCH_BATCH = 'FETCH_BATCH';
 const FETCH_BATCH_STATS = 'FETCH_BATCH_STATS';
 const FETCH_BATCH_INVOICES = 'FETCH_BATCH_INVOICES';
+const NOTIFY_BATCH = 'NOTIFY_BATCH';
 
 const fetchBatchAjax = id => {
   return merchantFetch(`batches/${id}`).then(response => {
@@ -112,11 +113,6 @@ const createBatch = (actionType, batchType) => data => {
       data: {
         type: batchType,
         ...data,
-        draft: 0, //for backward compatibility
-        config: {
-          sms_notify: data.sms_notify,
-          email_notify: data.email_notify,
-        },
       },
     }).then(response => response.data),
   };
@@ -184,6 +180,17 @@ export const fetchBatchInvoices = batchId => {
   return {
     type: FETCH_BATCH_INVOICES,
     payload: merchantFetch(`invoices?batch_id=${batchId}`),
+  };
+};
+
+export const notifyBatch = (batchId, data) => {
+  return {
+    type: NOTIFY_BATCH,
+    payload: merchantFetch({
+      url: `invoices/batch/${batchId}/notify`,
+      method: 'put',
+      data,
+    }),
   };
 };
 

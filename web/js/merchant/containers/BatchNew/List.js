@@ -20,16 +20,8 @@ import BatchUpload from './Upload';
 
 import { batchDownload, fetchBatch } from 'merchant/modules/batches';
 
-function batchActions({
-  mode,
-  viewAll,
-  issueAll,
-  onDownloadClick,
-  issuableIdList,
-}) {
+function batchActions({ mode, sendAll, onDownloadClick, issuableIdList }) {
   return {
-    viewAll,
-    issueAll,
     title: 'Actions',
     value: item => (
       <div class="btn-toolbar">
@@ -39,38 +31,13 @@ function batchActions({
         >
           <i class="i i-download" /> Download
         </button>
-        {do {
-          if (item.type === 'payment_link') {
-            if (viewAll) {
-              <button
-                class="btn btn-default btn-xs"
-                onClick={_ => viewAll(item)}
-              >
-                view all links
-              </button>;
-            }
-
-            {
-              /*issuableIdList is present only in case of Payment Links*/
-            }
-            if (
-              issueAll &&
-              item.status === 'processed' &&
-              (!issuableIdList || issuableIdList.indexOf(item.id) > -1)
-            ) {
-              <button
-                class="btn btn-default btn-xs"
-                onClick={_ => issueAll(item)}
-              >
-                Send all links
-              </button>;
-            } else {
-              <button class="btn btn-default btn-xs" disabled={true}>
-                All Links Sent
-              </button>;
-            }
-          }
-        }}
+        <button
+          class="btn btn-default btn-xs"
+          onClick={_ => sendAll(item)}
+          disabled={item.status === 'created'}
+        >
+          Send all links
+        </button>
       </div>
     ),
   };
@@ -128,9 +95,7 @@ export default class BatchList extends Component {
       onSubmit,
       uploadUrl,
       sampleUrl,
-      viewAll,
-      issueAll,
-      issuableIdList,
+      sendAll,
     } = this.props;
     let handleDownloadClick = this.dowload;
 
@@ -171,10 +136,8 @@ export default class BatchList extends Component {
             batchStatus(this.refetchBatchDetails),
             batchActions({
               mode,
-              viewAll,
-              issueAll,
+              sendAll,
               onDownloadClick: handleDownloadClick,
-              issuableIdList,
             }),
           ]}
           count={count}
