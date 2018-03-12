@@ -25,7 +25,7 @@ export const EmptyComponent = (uploadUrl, openModalFunc) => {
 /**
  *  Render customized status pill for batch
  */
-export class BatchStatus extends Component {
+class BatchStatus extends Component {
   state = {
     shouldSpin: false,
   };
@@ -58,8 +58,28 @@ export class BatchStatus extends Component {
 /**
  * Render NavLink of batch
  */
-export const BatchNavLink = ({ batchType, batchId }) => (
+const BatchNavLink = ({ batchType, batchId }) => (
   <NavLink to={`/${batchType.split('_').join('')}s/batch/${batchId}`}>
     <code>{batchId}</code>
   </NavLink>
 );
+
+// Pairs
+
+export const batchIdLink = {
+  title: 'Batch ID',
+  value: batch => <BatchNavLink batchId={batch.id} batchType={batch.type} />,
+};
+
+export const batchStatus = refetchBatchDetails => {
+  return {
+    title: 'Status',
+    value: item => (
+      <BatchStatus
+        id={item.id}
+        status={item.status}
+        onRefetchBatchDetails={refetchBatchDetails}
+      />
+    ),
+  };
+};

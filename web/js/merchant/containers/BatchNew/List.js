@@ -8,8 +8,8 @@ import HeaderAction from 'rzp/ui/HeaderAction';
 import BatchListFilter from 'merchant/components/BatchNew/ListFilter';
 import {
   EmptyComponent,
-  BatchStatus,
-  BatchNavLink,
+  batchStatus,
+  batchIdLink,
 } from 'merchant/components/BatchNew/ListAddons';
 import { batchId, totalCount, batchName } from 'rzp/ui/item/pair';
 import { openModal } from 'rzp/modules/modals';
@@ -191,25 +191,3 @@ export default class BatchList extends Component {
     );
   }
 }
-
-const batchIdLink = {
-  title: 'Batch ID',
-  value: batch => <BatchNavLink batchId={batch.id} batchType={batch.type} />,
-};
-
-/**
- * Render customized `Status Pill` label for batches.
- * Add refresh btn if the batch has just been created.
- */
-const batchStatus = refetchBatchDetails => {
-  return {
-    title: 'Status',
-    value: item => (
-      <BatchStatus
-        id={item.id}
-        status={item.status}
-        onRefetchBatchDetails={refetchBatchDetails}
-      />
-    ),
-  };
-};
