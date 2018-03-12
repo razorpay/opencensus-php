@@ -1556,3 +1556,9 @@ UPDATE `merchants` m
 JOIN `merchant_details` md ON m.`id` = md.`merchant_id`
 SET m.`has_key_access` = 1
 WHERE m.`parent_id` IS NULL AND md.`submitted_at` IS NOT NULL;
+
+# Delete workflow for 'delete workflow'
+UPDATE workflows SET deleted_at = UNIX_TIMESTAMP(NOW()) WHERE id = '9R2zfkFxFdMDH4';
+
+# Undo deleted merchant_suspend workflow
+UPDATE workflows SET deleted_at = NULL WHERE id = '8VdlpVWnbPoqwK';

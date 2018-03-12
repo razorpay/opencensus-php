@@ -705,6 +705,28 @@ class Terminal extends Base
         $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createHitachiRecurringTerminalWithBothRecurringTypes(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                        => 'HitcRcg3DSN3DS',
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'hitachi',
+            'gateway_acquirer'          => 'ratn',
+            'card'                      => 1,
+            'type'                      => [
+                Type::RECURRING_NON_3DS => '1',
+                Type::RECURRING_3DS => '1'
+            ],
+            'gateway_merchant_id'       => 'random',
+            'gateway_terminal_id'       => 'recurring_random',
+            'gateway_terminal_password' => 'razorpay_password',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedCybersourceAxisTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::CYBERSOURCE_AXIS_TERMINAL;
