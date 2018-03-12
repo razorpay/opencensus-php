@@ -142,7 +142,8 @@ class Server extends Base\Mock\Server
             'message'           => $message,
             'merchantTranId'    => $input['merchantTranId'],
             'OriginalBankRRN'   => (string) random_int(1111111111, 9999999999),
-            'status'            => $status
+            'status'            => $status,
+            'amount'            => number_format($payment['amount'] / 100, 2, '.', ''),
         ];
 
         $this->content($response, 'verify');
