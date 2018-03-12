@@ -20,13 +20,13 @@ class Base extends BaseProcessor
         //
         $parsedData = $this->getDataFromRow($entry);
 
-        $gatewayToken = $parsedData['gateway_token'];
+        $tokenId = $parsedData['token_id'];
 
         $accountNumber = $parsedData['account_number'];
 
         $remark = $parsedData['remark'];
 
-        $token = $this->repo->token->getTokenByGatewayTokenAndAccountNumber($gatewayToken, $accountNumber);
+        $token = $this->repo->token->getTokenByIdAndAccountNumber($tokenId, $accountNumber);
 
         $currentRecurringStatus = $token->getRecurringStatus();
 

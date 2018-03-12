@@ -55,7 +55,7 @@ class Base extends BaseProcessor
     {
         $paymentId = $parsedData['payment_id'];
 
-        $gatewayPayment = $this->repo->enach->findByPaymentIdAndActionOrFail(
+        $gatewayPayment = $this->repo->netbanking->findByPaymentIdAndActionOrFail(
             $paymentId, GatewayAction::AUTHORIZE);
 
         $attrs = $this->getGatewayAttributes($parsedData);
