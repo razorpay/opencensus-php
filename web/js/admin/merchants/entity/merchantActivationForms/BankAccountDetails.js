@@ -27,7 +27,7 @@ export default ({
           <CheckField
             label="Has Issue"
             side="right"
-            issuename="bank_name"
+            data-issuename="bank_name"
             onChange={onIssueSelection}
             defaultValue={false}
           />
@@ -44,7 +44,7 @@ export default ({
           <CheckField
             label="Has Issue"
             side="right"
-            issuename="bank_account_number"
+            data-issuename="bank_account_number"
             onChange={onIssueSelection}
             defaultValue={false}
           />
@@ -61,7 +61,7 @@ export default ({
           <CheckField
             label="Has Issue"
             side="right"
-            issuename="bank_account_name"
+            data-issuename="bank_account_name"
             onChange={onIssueSelection}
             defaultValue={false}
           />
@@ -78,7 +78,7 @@ export default ({
           <CheckField
             label="Has Issue"
             side="right"
-            issuename="bank_beneficiary_address1"
+            data-issuename="bank_beneficiary_address1"
             onChange={onIssueSelection}
             defaultValue={false}
           />
@@ -95,7 +95,7 @@ export default ({
           <CheckField
             label="Has Issue"
             side="right"
-            issuename="bank_beneficiary_address2"
+            data-issuename="bank_beneficiary_address2"
             onChange={onIssueSelection}
             defaultValue={false}
           />
@@ -112,7 +112,7 @@ export default ({
           <CheckField
             label="Has Issue"
             side="right"
-            issuename="bank_beneficiary_address3"
+            data-issuename="bank_beneficiary_address3"
             onChange={onIssueSelection}
             defaultValue={false}
           />
@@ -128,7 +128,7 @@ export default ({
           <CheckField
             label="Has Issue"
             side="right"
-            issuename="bank_beneficiary_city"
+            data-issuename="bank_beneficiary_city"
             onChange={onIssueSelection}
             defaultValue={false}
           />
@@ -150,7 +150,7 @@ export default ({
           <CheckField
             label="Has Issue"
             side="right"
-            issuename="bank_beneficiary_state"
+            data-issuename="bank_beneficiary_state"
             onChange={onIssueSelection}
             defaultValue={false}
           />
@@ -166,7 +166,7 @@ export default ({
           <CheckField
             label="Has Issue"
             side="right"
-            issuename="bank_beneficiary_pin"
+            data-issuename="bank_beneficiary_pin"
             onChange={onIssueSelection}
             defaultValue={false}
           />
@@ -183,7 +183,7 @@ export default ({
           <CheckField
             label="Has Issue"
             side="right"
-            issuename="bank_branch_ifsc"
+            data-issuename="bank_branch_ifsc"
             onChange={onIssueSelection}
             defaultValue={false}
           />

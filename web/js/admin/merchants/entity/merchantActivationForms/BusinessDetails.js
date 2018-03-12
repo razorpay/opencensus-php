@@ -85,7 +85,7 @@ export default class BusinessDetails extends Component {
               <CheckField
                 label="Has Issue"
                 side="right"
-                issuename="business_type"
+                data-issuename="business_type"
                 onChange={onIssueSelection}
                 defaultValue={false}
               />
@@ -101,7 +101,7 @@ export default class BusinessDetails extends Component {
               <CheckField
                 label="Has Issue"
                 side="right"
-                issuename="business_name"
+                data-issuename="business_name"
                 onChange={onIssueSelection}
                 defaultValue={false}
               />
@@ -122,7 +122,7 @@ export default class BusinessDetails extends Component {
               <CheckField
                 label="Has Issue"
                 side="right"
-                issuename="business_dba"
+                data-issuename="business_dba"
                 onChange={onIssueSelection}
                 defaultValue={false}
               />
@@ -143,7 +143,7 @@ export default class BusinessDetails extends Component {
               <CheckField
                 label="Has Issue"
                 side="right"
-                issuename="business_international"
+                data-issuename="business_international"
                 onChange={onIssueSelection}
                 defaultValue={false}
               />
@@ -159,7 +159,7 @@ export default class BusinessDetails extends Component {
               <CheckField
                 label="Has Issue"
                 side="right"
-                issuename="business_website"
+                data-issuename="business_website"
                 onChange={onIssueSelection}
                 defaultValue={false}
               />
@@ -175,7 +175,7 @@ export default class BusinessDetails extends Component {
               <CheckField
                 label="Has Issue"
                 side="right"
-                issuename="business_paymentdetails"
+                data-issuename="business_paymentdetails"
                 onChange={onIssueSelection}
                 defaultValue={false}
               />
@@ -192,7 +192,7 @@ export default class BusinessDetails extends Component {
               <CheckField
                 label="Has Issue"
                 side="right"
-                issuename="business_model"
+                data-issuename="business_model"
                 onChange={onIssueSelection}
                 defaultValue={false}
               />
@@ -208,7 +208,7 @@ export default class BusinessDetails extends Component {
               <CheckField
                 label="Has Issue"
                 side="right"
-                issuename="business_registered_address"
+                data-issuename="business_registered_address"
                 onChange={onIssueSelection}
                 defaultValue={false}
               />
@@ -224,7 +224,7 @@ export default class BusinessDetails extends Component {
               <CheckField
                 label="Has Issue"
                 side="right"
-                issuename="business_registered_state"
+                data-issuename="business_registered_state"
                 onChange={onIssueSelection}
                 defaultValue={false}
               />
@@ -240,7 +240,7 @@ export default class BusinessDetails extends Component {
               <CheckField
                 label="Has Issue"
                 side="right"
-                issuename="business_registered_city"
+                data-issuename="business_registered_city"
                 onChange={onIssueSelection}
                 defaultValue={false}
               />
@@ -256,7 +256,7 @@ export default class BusinessDetails extends Component {
               <CheckField
                 label="Has Issue"
                 side="right"
-                issuename="business_registered_pin"
+                data-issuename="business_registered_pin"
                 onChange={onIssueSelection}
                 defaultValue={false}
               />
@@ -272,7 +272,7 @@ export default class BusinessDetails extends Component {
               <CheckField
                 label="Has Issue"
                 side="right"
-                issuename="or_same"
+                data-issuename="or_same"
                 onChange={onIssueSelection}
                 defaultValue={false}
               />
@@ -288,7 +288,7 @@ export default class BusinessDetails extends Component {
               <CheckField
                 label="Has Issue"
                 side="right"
-                issuename="business_operation_address"
+                data-issuename="business_operation_address"
                 onChange={onIssueSelection}
                 defaultValue={false}
               />
@@ -304,7 +304,7 @@ export default class BusinessDetails extends Component {
               <CheckField
                 label="Has Issue"
                 side="right"
-                issuename="business_operation_state"
+                data-issuename="business_operation_state"
                 onChange={onIssueSelection}
                 defaultValue={false}
               />
@@ -320,7 +320,7 @@ export default class BusinessDetails extends Component {
               <CheckField
                 label="Has Issue"
                 side="right"
-                issuename="business_operation_city"
+                data-issuename="business_operation_city"
                 onChange={onIssueSelection}
                 defaultValue={false}
               />
@@ -336,7 +336,7 @@ export default class BusinessDetails extends Component {
               <CheckField
                 label="Has Issue"
                 side="right"
-                issuename="business_operation_pin"
+                data-issuename="business_operation_pin"
                 onChange={onIssueSelection}
                 defaultValue={false}
               />
@@ -362,7 +362,7 @@ export default class BusinessDetails extends Component {
               <CheckField
                 label="Has Issue"
                 side="right"
-                issuename="company_cin"
+                data-issuename="company_cin"
                 onChange={onIssueSelection}
                 defaultValue={false}
               />
@@ -401,7 +401,7 @@ export default class BusinessDetails extends Component {
                 <CheckField
                   label="Has Issue"
                   side="right"
-                  issuename="company_info"
+                  data-issuename="company_info"
                   onChange={onIssueSelection}
                   defaultValue={false}
                 />
@@ -421,7 +421,7 @@ export default class BusinessDetails extends Component {
                 <CheckField
                   label="Has Issue"
                   side="right"
-                  issuename="company_info_signatories"
+                  data-issuename="company_info_signatories"
                   onChange={onIssueSelection}
                   defaultValue={false}
                 />
@@ -449,7 +449,7 @@ export default class BusinessDetails extends Component {
               <CheckField
                 label="Has Issue"
                 side="right"
-                issuename="company_pan"
+                data-issuename="company_pan"
                 onChange={onIssueSelection}
                 defaultValue={false}
               />
@@ -470,7 +470,7 @@ export default class BusinessDetails extends Component {
               <CheckField
                 label="Has Issue"
                 side="right"
-                issuename="company_pan_name"
+                data-issuename="company_pan_name"
                 onChange={onIssueSelection}
                 defaultValue={false}
               />
@@ -491,7 +491,7 @@ export default class BusinessDetails extends Component {
               <CheckField
                 label="Has Issue"
                 side="right"
-                issuename="promoter_pan"
+                data-issuename="promoter_pan"
                 onChange={onIssueSelection}
                 defaultValue={false}
               />
@@ -511,7 +511,7 @@ export default class BusinessDetails extends Component {
               <CheckField
                 label="Has Issue"
                 side="right"
-                issuename="promoter_pan_name"
+                data-issuename="promoter_pan_name"
                 onChange={onIssueSelection}
                 defaultValue={false}
               />
@@ -536,7 +536,7 @@ export default class BusinessDetails extends Component {
               <CheckField
                 label="Has Issue"
                 side="right"
-                issuename="pan_verified"
+                data-issuename="pan_verified"
                 onChange={onIssueSelection}
                 defaultValue={false}
               />

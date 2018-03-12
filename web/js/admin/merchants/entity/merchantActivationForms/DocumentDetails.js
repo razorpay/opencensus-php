@@ -69,7 +69,7 @@ export default class DocumentDetails extends Component {
                     <CheckField
                       label="Has Issue"
                       side="right"
-                      issuename="business_proof"
+                      data-issuename="business_proof"
                     />
                   </div>
                 )}
@@ -108,7 +108,7 @@ export default class DocumentDetails extends Component {
                     <CheckField
                       label="Has Issue"
                       side="right"
-                      issuename="business_operation_proof"
+                      data-issuename="business_operation_proof"
                     />
                   </div>
                 )}
@@ -136,7 +136,7 @@ export default class DocumentDetails extends Component {
                     <CheckField
                       label="Has Issue"
                       side="right"
-                      issuename="business_pan_proof"
+                      data-issuename="business_pan_proof"
                     />
                   </div>
                 )}
@@ -167,7 +167,7 @@ export default class DocumentDetails extends Component {
                     <CheckField
                       label="Has Issue"
                       side="right"
-                      issuename="address_proof"
+                      data-issuename="address_proof"
                     />
                   </div>
                 )}
@@ -192,7 +192,7 @@ export default class DocumentDetails extends Component {
                     <CheckField
                       label="Has Issue"
                       side="right"
-                      issuename="promoter_proof"
+                      data-issuename="promoter_proof"
                     />
                   </div>
                 )}
@@ -222,7 +222,7 @@ export default class DocumentDetails extends Component {
                     <CheckField
                       label="Has Issue"
                       side="right"
-                      issuename="promoter_pan_proof"
+                      data-issuename="promoter_pan_proof"
                     />
                   </div>
                 )}
@@ -255,7 +255,7 @@ export default class DocumentDetails extends Component {
                     <CheckField
                       label="Has Issue"
                       side="right"
-                      issuename="promoter_address_proof"
+                      data-issuename="promoter_address_proof"
                     />
                   </div>
                 )}
@@ -281,7 +281,7 @@ export default class DocumentDetails extends Component {
                     <CheckField
                       label="Has Issue"
                       side="right"
-                      issuename="form_12a_url"
+                      data-issuename="form_12a_url"
                     />
                   </div>
                 )}
@@ -307,7 +307,7 @@ export default class DocumentDetails extends Component {
                     <CheckField
                       label="Has Issue"
                       side="right"
-                      issuename="form_80g_url"
+                      data-issuename="form_80g_url"
                     />
                   </div>
                 )}

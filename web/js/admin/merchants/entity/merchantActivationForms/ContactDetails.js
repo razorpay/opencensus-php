@@ -24,7 +24,7 @@ export default ({
           <CheckField
             label="Has Issue"
             side="right"
-            issuename="contact_name"
+            data-issuename="contact_name"
             onChange={onIssueSelection}
             defaultValue={false}
           />
@@ -40,7 +40,7 @@ export default ({
           <CheckField
             label="Has Issue"
             side="right"
-            issuename="contact_email"
+            data-issuename="contact_email"
             onChange={onIssueSelection}
             defaultValue={false}
           />
@@ -55,7 +55,7 @@ export default ({
           <CheckField
             label="Has Issue"
             side="right"
-            issuename="contact_mobile"
+            data-issuename="contact_mobile"
             onChange={onIssueSelection}
             defaultValue={false}
           />

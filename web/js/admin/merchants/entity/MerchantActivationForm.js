@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 import { toJS } from 'mobx';
 
-import fetch, { adminFetch, adminPatch } from 'common/fetch';
+import fetch, { adminFetch, adminPatch, adminPut } from 'common/fetch';
 import { closeModal, confirm, notifySuccess } from 'common/modal';
 import { isWorkflow } from 'common/util';
 
@@ -16,6 +16,7 @@ import DocumentDetails from './merchantActivationForms/DocumentDetails';
 import ProductOnboarding from './merchantActivationForms/ProductOnboarding';
 import BusinessDetails from './merchantActivationForms/BusinessDetails';
 import ActivationDetails from './merchantActivationForms/ActivationDetails';
+import ReviewNotesDetails from './merchantActivationForms/ReviewNotesDetails';
 
 import { statusPill } from 'common/data';
 
@@ -118,8 +119,19 @@ export default class MerchantActivationForm extends Component {
     );
   }
 
-  handleIssueSelection = e => {
-    this.model.editIssuesList(e.target.issuename);
+  handleIssueSelection = (e, resolvedIssue) => {
+    this.model.editIssuesList(resolvedIssue || e.target.dataset.issuename);
+  };
+
+  handleIssuesSubmition = body => {
+    const issues = this.model.activationIssuesList.peek();
+
+    body.issue_fields = issues.join(',');
+
+    return adminPut({
+      url: `merchant/activation/${this.merchantId}/update`,
+      data: body,
+    });
   };
 
   render() {
@@ -160,13 +172,19 @@ export default class MerchantActivationForm extends Component {
               <DocumentDetails
                 merchantId={this.merchantId}
                 {...details}
-                title={tabNames[4]}
+                title={tabNames[3]}
                 onIssueSelection={this.handleIssueSelection}
               />
               <ProductOnboarding
                 merchantId={this.merchantId}
+                title={tabNames[4]}
+                onIssueSelection={this.handleIssueSelection}
+              />
+              <ReviewNotesDetails
                 title={tabNames[5]}
                 onIssueSelection={this.handleIssueSelection}
+                onIssuesSubmition={this.handleIssuesSubmition}
+                issues={this.model.activationIssuesList.peek()}
               />
             </TabsContainer>
           }
@@ -225,4 +243,5 @@ const tabNames = [
   'Bank Account Details',
   'Document Uploads',
   'Product Onboading',
+  'Review Notes',
 ];
