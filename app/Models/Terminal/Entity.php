@@ -541,7 +541,7 @@ class Entity extends Base\PublicEntity
     {
         $type = $this->attributes[self::TYPE];
 
-        return Type::getEnabledType($type);
+        return Type::getEnabledTypes($type);
     }
 
     protected function modifyInternational(& $input)
