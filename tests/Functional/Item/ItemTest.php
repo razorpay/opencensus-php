@@ -41,6 +41,11 @@ class ItemTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateItemWithInvalidTaxRate()
+    {
+        $this->startTest();
+    }
+
     public function testCreateItemWithTaxId()
     {
         $this->startTest();
@@ -58,6 +63,13 @@ class ItemTest extends TestCase
 
     public function testCreateItemWithHsnAndSacCode()
     {
+        $this->startTest();
+    }
+
+    public function testUpdateItemToContainBothHsnAndSacCode()
+    {
+        $this->fixtures->create('item', ['id' => '1000000001item', 'hsn_code' => '01010101']);
+
         $this->startTest();
     }
 
