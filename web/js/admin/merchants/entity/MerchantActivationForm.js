@@ -118,6 +118,10 @@ export default class MerchantActivationForm extends Component {
     );
   }
 
+  handleIssueSelection = e => {
+    this.model.editIssuesList(e.target.name);
+  };
+
   render() {
     const { details } = this.model.merchant;
     return (
@@ -138,17 +142,31 @@ export default class MerchantActivationForm extends Component {
                 toJS(details.merchant_details.steps_finished)
               }
             >
-              <ContactDetails {...details} title={tabNames[0]} />
-              <BusinessDetails {...details} title={tabNames[1]} />
-              <BankAccountDetails {...details} title={tabNames[2]} />
+              <ContactDetails
+                {...details}
+                title={tabNames[0]}
+                onIssueSelection={this.handleIssueSelection}
+              />
+              <BusinessDetails
+                {...details}
+                title={tabNames[1]}
+                onIssueSelection={this.handleIssueSelection}
+              />
+              <BankAccountDetails
+                {...details}
+                title={tabNames[2]}
+                onIssueSelection={this.handleIssueSelection}
+              />
               <DocumentDetails
                 merchantId={this.merchantId}
                 {...details}
                 title={tabNames[4]}
+                onIssueSelection={this.handleIssueSelection}
               />
               <ProductOnboarding
                 merchantId={this.merchantId}
                 title={tabNames[5]}
+                onIssueSelection={this.handleIssueSelection}
               />
             </TabsContainer>
           }

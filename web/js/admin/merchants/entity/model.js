@@ -24,6 +24,8 @@ export default class Model extends BaseModel {
     adminsMap: {},
   };
 
+  activationIssuesList = observable.array([]);
+
   constructor({ merchantId, fetchFn }) {
     super();
     this.fetchFn = fetchFn;
@@ -338,5 +340,18 @@ export default class Model extends BaseModel {
         }
       }
     });
+  }
+
+  @action
+  editIssuesList(selectedIssue) {
+    const foundIndex = this.activationIssuesList.findIndex(
+      issue => issue === selectedIssue
+    );
+
+    if (foundIndex > -1) {
+      this.activationIssuesList.remove(selectedIssue);
+    } else {
+      this.activationIssuesList.push(selectedIssue);
+    }
   }
 }
