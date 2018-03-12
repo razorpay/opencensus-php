@@ -13,6 +13,13 @@ use RZP\Models\Settlement;
 use RZP\Models\Transaction;
 use RZP\Models\Payment\Refund;
 
+/**
+ * Class Entity
+ *
+ * @package RZP\Models\Transaction
+ *
+ * @property Merchant\Entity    $merchant
+ */
 class Entity extends Base\PublicEntity
 {
     const ID                  = 'id';
