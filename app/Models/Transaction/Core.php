@@ -1264,8 +1264,6 @@ class Core extends Base\Core
 
         list($fee, $tax, $feesSplit) = $this->calculateMerchantFees($transaction);
 
-        $isPrepaid = $merchant->isPrepaid();
-
         $transaction->setFeeModel($merchant->getFeeModel());
 
         switch (true)
@@ -1277,7 +1275,8 @@ class Core extends Base\Core
                 return $this->calculateFeeForFeeCredit($transaction);
 
             default:
-                $amount = $transaction->getAmount();
+                $amount    = $transaction->getAmount();
+                $isPrepaid = $merchant->isPrepaid();
 
                 // Add fee to debit only for prepaid merchants
                 $debit  = ($isPrepaid === true) ? abs($amount + $fee) : $amount;
