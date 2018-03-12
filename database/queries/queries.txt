@@ -3018,4 +3018,4 @@ ALTER TABLE schedules
 ALTER TABLE `merchant_details`
     ADD COLUMN `issue_fields` TEXT DEFAULT NULL AFTER `archived_at`,
     ADD COLUMN `issue_fields_reason` TEXT DEFAULT NULL AFTER `issue_fields`,
-    ADD COLUMN `notes` TEXT DEFAULT NULL AFTER `issue_fields_reason`;
+    ADD COLUMN `internal_notes` TEXT DEFAULT NULL AFTER `issue_fields_reason`;

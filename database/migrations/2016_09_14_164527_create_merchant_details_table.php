@@ -233,7 +233,7 @@ class CreateMerchantDetailsTable extends Migration
             $table->text(MerchantDetail::ISSUE_FIELDS_REASON)
                   ->nullable();
 
-            $table->text(MerchantDetail::NOTES)
+            $table->text(MerchantDetail::INTERNAL_NOTES)
                   ->nullable();
 
             $table->string(MerchantDetail::MARKETPLACE_ACTIVATION_STATUS, 30)
