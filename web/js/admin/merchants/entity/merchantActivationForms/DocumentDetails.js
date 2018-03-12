@@ -4,7 +4,7 @@ import { notifyError } from 'common/modal';
 
 import fetch, { adminFetch } from 'common/fetch';
 import EntityRow from 'ui/EntityRow';
-
+import { CheckField } from 'ui/Field';
 export default class DocumentDetails extends Component {
   state = { files: null };
 
@@ -66,6 +66,11 @@ export default class DocumentDetails extends Component {
                         }
                       }}
                     </div>
+                    <CheckField
+                      label="Has Issue"
+                      side="right"
+                      issuename="business_proof"
+                    />
                   </div>
                 )}
               />
@@ -100,6 +105,11 @@ export default class DocumentDetails extends Component {
                         }
                       }}
                     </div>
+                    <CheckField
+                      label="Has Issue"
+                      side="right"
+                      issuename="business_operation_proof"
+                    />
                   </div>
                 )}
               />
@@ -123,6 +133,11 @@ export default class DocumentDetails extends Component {
                         }
                       }}
                     </div>
+                    <CheckField
+                      label="Has Issue"
+                      side="right"
+                      issuename="business_pan_proof"
+                    />
                   </div>
                 )}
               />
@@ -149,6 +164,11 @@ export default class DocumentDetails extends Component {
                         }
                       }}
                     </div>
+                    <CheckField
+                      label="Has Issue"
+                      side="right"
+                      issuename="address_proof"
+                    />
                   </div>
                 )}
               />
@@ -169,6 +189,11 @@ export default class DocumentDetails extends Component {
                         }
                       }}
                     </div>
+                    <CheckField
+                      label="Has Issue"
+                      side="right"
+                      issuename="promoter_proof"
+                    />
                   </div>
                 )}
               />
@@ -194,6 +219,11 @@ export default class DocumentDetails extends Component {
                         }
                       }}
                     </div>
+                    <CheckField
+                      label="Has Issue"
+                      side="right"
+                      issuename="promoter_pan_proof"
+                    />
                   </div>
                 )}
               />
@@ -222,6 +252,11 @@ export default class DocumentDetails extends Component {
                         }
                       }}
                     </div>
+                    <CheckField
+                      label="Has Issue"
+                      side="right"
+                      issuename="promoter_address_proof"
+                    />
                   </div>
                 )}
               />
@@ -243,6 +278,11 @@ export default class DocumentDetails extends Component {
                         }
                       }}
                     </div>
+                    <CheckField
+                      label="Has Issue"
+                      side="right"
+                      issuename="form_12a_url"
+                    />
                   </div>
                 )}
               />
@@ -264,6 +304,11 @@ export default class DocumentDetails extends Component {
                         }
                       }}
                     </div>
+                    <CheckField
+                      label="Has Issue"
+                      side="right"
+                      issuename="form_80g_url"
+                    />
                   </div>
                 )}
               />
