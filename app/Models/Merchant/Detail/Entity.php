@@ -82,6 +82,9 @@ class Entity extends Base\PublicEntity
     const ACTIVATION_STATUS                  = 'activation_status';
     const CLARIFICATION_MODE                 = 'clarification_mode';
     const ARCHIVED_AT                        = 'archived_at';
+    const ISSUE_FIELDS                       = 'issue_fields';
+    const ISSUE_FIELDS_REASON                = 'issue_fields_reason';
+    const INTERNAL_NOTES                     = 'internal_notes';
     const MARKETPLACE_ACTIVATION_STATUS      = 'marketplace_activation_status';
     const VIRTUAL_ACCOUNTS_ACTIVATION_STATUS = 'virtual_accounts_activation_status';
     const SUBSCRIPTIONS_ACTIVATION_STATUS    = 'subscriptions_activation_status';
@@ -180,6 +183,9 @@ class Entity extends Base\PublicEntity
         self::ACTIVATION_STATUS,
         self::CLARIFICATION_MODE,
         self::ARCHIVED_AT,
+        self::ISSUE_FIELDS,
+        self::ISSUE_FIELDS_REASON,
+        self::INTERNAL_NOTES,
         self::MARKETPLACE_ACTIVATION_STATUS,
         self::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS,
         self::SUBSCRIPTIONS_ACTIVATION_STATUS,
@@ -232,6 +238,9 @@ class Entity extends Base\PublicEntity
         self::CLARIFICATION_MODE,
         self::ARCHIVED,
         self::ALLOWED_NEXT_ACTIVATION_STATUSES,
+        self::ISSUE_FIELDS,
+        self::ISSUE_FIELDS_REASON,
+        self::INTERNAL_NOTES,
         self::MARKETPLACE_ACTIVATION_STATUS,
         self::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS,
         self::SUBSCRIPTIONS_ACTIVATION_STATUS,
