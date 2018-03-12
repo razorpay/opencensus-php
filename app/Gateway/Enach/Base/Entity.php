@@ -12,6 +12,7 @@ class Entity extends Base\Entity
     const REFUND_ID             = 'refund_id';
     const ACQUIRER              = 'acquirer';
     const ACTION                = 'action';
+    const BANK                  = 'bank';
     const AMOUNT                = 'amount';
     const STATUS                = 'status';
     const RECEIVED              = 'received';
@@ -28,6 +29,7 @@ class Entity extends Base\Entity
         self::PAYMENT_ID,
         self::REFUND_ID,
         self::ACTION,
+        self::BANK,
         self::AMOUNT,
         self::STATUS,
         self::GATEWAY_REFERENCE_ID,
@@ -83,6 +85,11 @@ class Entity extends Base\Entity
     public function setAcquirer(string $acquirer)
     {
         $this->setAttribute(self::ACQUIRER, $acquirer);
+    }
+
+    public function setBank(string $bank)
+    {
+        $this->setAttribute(self::BANK, $bank);
     }
 
     public function getReceived()

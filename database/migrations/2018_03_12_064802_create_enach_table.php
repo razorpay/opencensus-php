@@ -32,6 +32,8 @@ class CreateEnachTable extends Migration
 
             $table->string(Enach::ACQUIRER);
 
+            $table->char(Enach::BANK, 10);
+
             $table->integer(Enach::AMOUNT);
 
             $table->string(Enach::STATUS)
@@ -60,6 +62,7 @@ class CreateEnachTable extends Migration
                   ->on_delete('restrict');
 
             $table->index(Enach::UMRN);
+            $table->index(Enach::GATEWAY_REFERENCE_ID);
             $table->index(Enach::CREATED_AT);
         });
     }
