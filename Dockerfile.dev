@@ -13,6 +13,7 @@ WORKDIR /app
 RUN npm install && \
     cd web && npm install && cd .. && \
     npm run build && \
+    echo $GIT_COMMIT_HASH > public/commit.txt && \
 #   Skipping tests till deploy to QA
 #   npm test && \
     apk del nodejs-deps

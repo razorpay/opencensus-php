@@ -45,20 +45,14 @@ spec:
             mountPath: /var/log/nginx/
         readinessProbe:
           httpGet:
-            path: /v1/status
+            path: /status
             port: 80
-            httpHeaders:
-              - name: Host
-                value: perf-dashboard.razorpay.in
           initialDelaySeconds: 60
           periodSeconds: 120
         livenessProbe:
           httpGet:
             path: /commit.txt
             port: 80
-            httpHeaders:
-              - name: Host
-                value: perf-dashboard.razorpay.in
           initialDelaySeconds: 60
           periodSeconds: 2
         lifecycle:
