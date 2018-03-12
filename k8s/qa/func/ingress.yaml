@@ -4,14 +4,14 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: traefik
   generation: 1
-  name: func
+  name: dashboard
   namespace: func
 spec:
   rules:
   - host: func-dashboard.razorpay.in
     http:
       paths:
-      - backend:
-          serviceName: func
+      - path: /
+        backend:
+          serviceName: dashboard
           servicePort: 80
-      path: /

@@ -21,7 +21,7 @@ spec:
         name: dashboard
     spec:
       nodeSelector:
-        node-role.kubernetes.io/node-services: ""
+        node-role.kubernetes.io/qa: ""
       imagePullSecrets:
       - name: registry
       containers:
@@ -61,8 +61,8 @@ spec:
                 value: func-dashboard.razorpay.in
           initialDelaySeconds: 60
           periodSeconds: 2
-          lifecycle:
-            preStop:
+        lifecycle:
+          preStop:
             exec:
               command: ["/bin/rm","-f","/app/public/commit.txt",";","sleep","5",";","/usr/sbin/nginx","-s","quit"]
       terminationGracePeriodSeconds: 60
