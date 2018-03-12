@@ -56,14 +56,14 @@ class Core extends Base\Core
     }
 
     /**
+     * Below function is used to create token in payment flow where we
+     * already have a card_id
+     *
      * @param Customer\Entity  $customer
      * @param array            $input
      * @param Card\Entity|null $card
      *
-     * @return Entity Below function is used to create token in payment flow where we
-     *
-     * Below function is used to create token in payment flow where we
-     * already have a card_id
+     * @return Entity
      */
     public function create($customer, $input, Card\Entity $card = null)
     {

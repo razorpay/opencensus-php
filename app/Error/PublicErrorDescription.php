@@ -502,6 +502,7 @@ class PublicErrorDescription
     const BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID                                   = 'Token Expired or Not a valid token';
     const BAD_REQUEST_OLD_PASSWORD_MISMATCH                                     = 'Old Password mismatch';
     const BAD_REQUEST_CAPTCHA_FAILED                                            = 'Captcha Failed';
+    const BAD_REQUEST_TOKEN_ABSENT_FOR_RECURRING_PAYMENT                        = 'Token absent for recurring payment';
 
     const BAD_REQUEST_SUBUSER_CREATION_NOT_ALLOWED                              = 'Sub user creation is not allowed for this role';
     const BAD_REQUEST_ACTION_NOT_ALLOWED_FOR_SELF_USER                          = 'Action not allowed for self user';

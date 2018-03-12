@@ -10,8 +10,10 @@ use RZP\Models\QrCode;
 use RZP\Constants\Mode;
 use RZP\Models\BharatQr\Tags;
 use RZP\Models\BharatQr\Lengths;
-use RZP\Models\BharatQr\Constants;
+use RZP\Models\Merchant\Account;
 use RZP\Models\Card\NetworkName;
+use RZP\Models\BharatQr\Constants;
+use RZP\Models\Merchant\Preferences;
 use RZP\Models\BankAccount\Entity as BankAccount;
 
 class Provider
@@ -114,10 +116,10 @@ class Provider
     ];
 
     const PRIVILEGED_NUMERIC_HANDLE_MAPPING = [
-        // Zebpay gets 2224449
-        '8iMbVsEnv1HCo0' => '9',
+        // BPCL gets 2223339
+        Preferences::MID_BPCL => '9',
         // Tests
-        '10000000000000' => '9',
+        Account::TEST_ACCOUNT => '9',
     ];
 
     const IFSC = [

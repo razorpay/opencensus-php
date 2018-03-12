@@ -867,13 +867,17 @@ trait Authorize
 
         $token = $payment->getGlobalOrLocalTokenEntity();
 
-        // TODO: Throw a bad request exception if token is null.
-        // For recurring payments, there should always be a token.
-
-        if ($token !== null)
+        if ($token === null)
         {
-            $this->assertTokenIsRecurring($payment, $token);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_TOKEN_ABSENT_FOR_RECURRING_PAYMENT,
+                null,
+                [
+                    'payment_id'    => $payment->getId(),
+                ]);
         }
+
+        $this->assertTokenIsRecurring($payment, $token);
 
         //
         // If payment type is card, validate that the card supports recurring
