@@ -119,7 +119,7 @@ export default class MerchantActivationForm extends Component {
   }
 
   handleIssueSelection = e => {
-    this.model.editIssuesList(e.target.name);
+    this.model.editIssuesList(e.target.issuename);
   };
 
   render() {

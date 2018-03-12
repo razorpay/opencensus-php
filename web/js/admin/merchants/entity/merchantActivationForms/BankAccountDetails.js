@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import { beneficiaryStateMap } from '../entity-resources';
 
 import Form from 'ui/Form';
-import Field, { SelectField } from 'ui/Field';
+import Field, { SelectField, CheckField } from 'ui/Field';
 
 export default ({ merchant_details: merchantDetails, title }) => (
   <div class="container">
@@ -12,13 +12,16 @@ export default ({ merchant_details: merchantDetails, title }) => (
       <div class="spinner center m-t" />
     ) : (
       <Form class="full-span full-elements limited">
-        <Field
-          label="Name of Bank"
-          name="bank_name"
-          defaultValue={merchantDetails.bank_name}
-          helpMsg="Do not panic if this is empty or incorrect. We don't ask this field any more."
-          disabled
-        />
+        <div class="some">
+          <Field
+            label="Name of Bank"
+            name="bank_name"
+            defaultValue={merchantDetails.bank_name}
+            helpMsg="Do not panic if this is empty or incorrect. We don't ask this field any more."
+            disabled
+          />
+          <CheckField label="Has Issue" />
+        </div>
 
         <Field
           label="Bank Account Number"

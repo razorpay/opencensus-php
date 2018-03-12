@@ -273,6 +273,17 @@ input[type=checkbox]:not(.ui-checkbox)
   box-shadow: none !important
 
 .mulitple-fields-group
+  display: table
+  margin: 8px auto
+  width: 100%
   .field
-    label
-      display: inline-block
+    display: table-cell
+    &:first-child
+      width: 70%
+    &:last-child
+      width: 30%
+      vertical-align: top
+      label
+        line-height: 30px
+        margin-left: 5px
+

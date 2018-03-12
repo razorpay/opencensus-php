@@ -13,7 +13,7 @@ export default ({
     {!merchantDetails ? (
       <div class="spinner center m-t" />
     ) : (
-      <Form class="limited">
+      <Form class="full-span full-elements limited">
         <div class="mulitple-fields-group">
           <Field
             label="Contact Name"
@@ -24,7 +24,7 @@ export default ({
           <CheckField
             label="Has Issue"
             side="right"
-            name="contact_name_issue"
+            issuename="contact_name"
             onChange={onIssueSelection}
             defaultValue={false}
           />
@@ -40,7 +40,7 @@ export default ({
           <CheckField
             label="Has Issue"
             side="right"
-            name="contact_email_issue"
+            issuename="contact_email"
             onChange={onIssueSelection}
             defaultValue={false}
           />
@@ -55,7 +55,7 @@ export default ({
           <CheckField
             label="Has Issue"
             side="right"
-            name="contact_mobile_issue"
+            issuename="contact_mobile"
             onChange={onIssueSelection}
             defaultValue={false}
           />
