@@ -195,6 +195,8 @@ export default class MerchantActivationForm extends Component {
                 onIssueSelection={this.handleIssueSelection}
                 onIssuesSubmition={this.handleIssuesSubmition}
                 issues={this.model.activationIssuesList.peek()}
+                parentProps={this.model}
+                merchantId={this.merchantId}
               />
             </TabsContainer>
           }
