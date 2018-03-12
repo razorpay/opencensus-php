@@ -50,6 +50,7 @@ export default class BusinessDetails extends Component {
       merchant_details: merchantDetails,
       title,
       onIssueSelection,
+      doesIssueExist,
     } = this.props;
 
     return (
@@ -87,7 +88,7 @@ export default class BusinessDetails extends Component {
                 side="right"
                 data-issuename="business_type"
                 onChange={onIssueSelection}
-                defaultValue={false}
+                checked={doesIssueExist('business_type')}
               />
             </div>
 
@@ -103,7 +104,7 @@ export default class BusinessDetails extends Component {
                 side="right"
                 data-issuename="business_name"
                 onChange={onIssueSelection}
-                defaultValue={false}
+                checked={doesIssueExist('business_name')}
               />
             </div>
 
@@ -124,7 +125,7 @@ export default class BusinessDetails extends Component {
                 side="right"
                 data-issuename="business_dba"
                 onChange={onIssueSelection}
-                defaultValue={false}
+                checked={doesIssueExist('business_dba')}
               />
             </div>
 
@@ -145,7 +146,7 @@ export default class BusinessDetails extends Component {
                 side="right"
                 data-issuename="business_international"
                 onChange={onIssueSelection}
-                defaultValue={false}
+                checked={doesIssueExist('business_international')}
               />
             </div>
 
@@ -161,7 +162,7 @@ export default class BusinessDetails extends Component {
                 side="right"
                 data-issuename="business_website"
                 onChange={onIssueSelection}
-                defaultValue={false}
+                checked={doesIssueExist('business_website')}
               />
             </div>
 
@@ -177,7 +178,7 @@ export default class BusinessDetails extends Component {
                 side="right"
                 data-issuename="business_paymentdetails"
                 onChange={onIssueSelection}
-                defaultValue={false}
+                checked={doesIssueExist('business_paymentdetails')}
               />
             </div>
 
@@ -194,7 +195,7 @@ export default class BusinessDetails extends Component {
                 side="right"
                 data-issuename="business_model"
                 onChange={onIssueSelection}
-                defaultValue={false}
+                checked={doesIssueExist('business_model')}
               />
             </div>
 
@@ -210,7 +211,7 @@ export default class BusinessDetails extends Component {
                 side="right"
                 data-issuename="business_registered_address"
                 onChange={onIssueSelection}
-                defaultValue={false}
+                checked={doesIssueExist('business_registered_address')}
               />
             </div>
 
@@ -226,7 +227,7 @@ export default class BusinessDetails extends Component {
                 side="right"
                 data-issuename="business_registered_state"
                 onChange={onIssueSelection}
-                defaultValue={false}
+                checked={doesIssueExist('business_registered_state')}
               />
             </div>
 
@@ -242,7 +243,7 @@ export default class BusinessDetails extends Component {
                 side="right"
                 data-issuename="business_registered_city"
                 onChange={onIssueSelection}
-                defaultValue={false}
+                checked={doesIssueExist('business_registered_city')}
               />
             </div>
 
@@ -258,7 +259,7 @@ export default class BusinessDetails extends Component {
                 side="right"
                 data-issuename="business_registered_pin"
                 onChange={onIssueSelection}
-                defaultValue={false}
+                checked={doesIssueExist('business_registered_pin')}
               />
             </div>
 
@@ -274,7 +275,7 @@ export default class BusinessDetails extends Component {
                 side="right"
                 data-issuename="or_same"
                 onChange={onIssueSelection}
-                defaultValue={false}
+                checked={doesIssueExist('or_same')}
               />
             </div>
 
@@ -290,7 +291,7 @@ export default class BusinessDetails extends Component {
                 side="right"
                 data-issuename="business_operation_address"
                 onChange={onIssueSelection}
-                defaultValue={false}
+                checked={doesIssueExist('business_operation_address')}
               />
             </div>
 
@@ -306,7 +307,7 @@ export default class BusinessDetails extends Component {
                 side="right"
                 data-issuename="business_operation_state"
                 onChange={onIssueSelection}
-                defaultValue={false}
+                checked={doesIssueExist('business_operation_state')}
               />
             </div>
 
@@ -322,7 +323,7 @@ export default class BusinessDetails extends Component {
                 side="right"
                 data-issuename="business_operation_city"
                 onChange={onIssueSelection}
-                defaultValue={false}
+                checked={doesIssueExist('business_operation_city')}
               />
             </div>
 
@@ -338,7 +339,7 @@ export default class BusinessDetails extends Component {
                 side="right"
                 data-issuename="business_operation_pin"
                 onChange={onIssueSelection}
-                defaultValue={false}
+                checked={doesIssueExist('business_operation_pin')}
               />
             </div>
 
@@ -364,7 +365,7 @@ export default class BusinessDetails extends Component {
                 side="right"
                 data-issuename="company_cin"
                 onChange={onIssueSelection}
-                defaultValue={false}
+                checked={doesIssueExist('company_cin')}
               />
             </div>
 
@@ -403,7 +404,7 @@ export default class BusinessDetails extends Component {
                   side="right"
                   data-issuename="company_info"
                   onChange={onIssueSelection}
-                  defaultValue={false}
+                  checked={doesIssueExist('company_info')}
                 />
               </div>
             )}
@@ -423,7 +424,7 @@ export default class BusinessDetails extends Component {
                   side="right"
                   data-issuename="company_info_signatories"
                   onChange={onIssueSelection}
-                  defaultValue={false}
+                  checked={doesIssueExist('company_info_signatories')}
                 />
               </div>
             )}
@@ -451,7 +452,7 @@ export default class BusinessDetails extends Component {
                 side="right"
                 data-issuename="company_pan"
                 onChange={onIssueSelection}
-                defaultValue={false}
+                checked={doesIssueExist('company_pan')}
               />
             </div>
 
@@ -472,7 +473,7 @@ export default class BusinessDetails extends Component {
                 side="right"
                 data-issuename="company_pan_name"
                 onChange={onIssueSelection}
-                defaultValue={false}
+                checked={doesIssueExist('company_pan_name')}
               />
             </div>
 
@@ -493,7 +494,7 @@ export default class BusinessDetails extends Component {
                 side="right"
                 data-issuename="promoter_pan"
                 onChange={onIssueSelection}
-                defaultValue={false}
+                checked={doesIssueExist('promoter_pan')}
               />
             </div>
 
@@ -513,7 +514,7 @@ export default class BusinessDetails extends Component {
                 side="right"
                 data-issuename="promoter_pan_name"
                 onChange={onIssueSelection}
-                defaultValue={false}
+                checked={doesIssueExist('promoter_pan_name')}
               />
             </div>
             <div class="mulitple-fields-group">
@@ -538,7 +539,7 @@ export default class BusinessDetails extends Component {
                 side="right"
                 data-issuename="pan_verified"
                 onChange={onIssueSelection}
-                defaultValue={false}
+                checked={doesIssueExist('pan_verified')}
               />
             </div>
           </Form>

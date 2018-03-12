@@ -134,6 +134,12 @@ export default class MerchantActivationForm extends Component {
     });
   };
 
+  handleIssueExistence = currIssue => {
+    const issues = this.model.activationIssuesList.peek();
+    const found = issues.findIndex(issue => currIssue === issue);
+    return found > -1;
+  };
+
   render() {
     const { details } = this.model.merchant;
     return (
@@ -158,22 +164,26 @@ export default class MerchantActivationForm extends Component {
                 {...details}
                 title={tabNames[0]}
                 onIssueSelection={this.handleIssueSelection}
+                doesIssueExist={this.handleIssueExistence}
               />
               <BusinessDetails
                 {...details}
                 title={tabNames[1]}
                 onIssueSelection={this.handleIssueSelection}
+                doesIssueExist={this.handleIssueExistence}
               />
               <BankAccountDetails
                 {...details}
                 title={tabNames[2]}
                 onIssueSelection={this.handleIssueSelection}
+                doesIssueExist={this.handleIssueExistence}
               />
               <DocumentDetails
                 merchantId={this.merchantId}
                 {...details}
                 title={tabNames[3]}
                 onIssueSelection={this.handleIssueSelection}
+                doesIssueExist={this.handleIssueExistence}
               />
               <ProductOnboarding
                 merchantId={this.merchantId}

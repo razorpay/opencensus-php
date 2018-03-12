@@ -7,10 +7,15 @@ import { snakeToTitleCase } from 'common/util';
 import AsyncButton from 'ui/AsyncButton';
 
 export default ({ title, issues, onIssuesSubmition }) => (
-  <div class="container">
-    <header class="m-b">Issues</header>
+  <div class="review-notes entity-container">
+    <header class="m-b">Issues:</header>
     <Form class="full-span full-elements limited">
-      <Table animateRow={false} fields={fields} items={issues} />
+      <Table
+        animateRow={false}
+        fields={fields}
+        items={issues}
+        customClass="table-bordered"
+      />
       <TextAreaField
         label="Public Comment"
         name="issue_fields_reason"
@@ -32,9 +37,9 @@ export default ({ title, issues, onIssuesSubmition }) => (
 );
 
 const fields = [
-  ['Field', issue => snakeToTitleCase(issue)],
+  ['Issue', issue => snakeToTitleCase(issue)],
   [
-    '',
+    'Action',
     issue => (
       <Fragment>
         <div

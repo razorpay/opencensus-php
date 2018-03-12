@@ -23,6 +23,7 @@ export default class DocumentDetails extends Component {
 
   render() {
     const { files } = this.state;
+    const { onIssueSelection, doesIssueExist } = this.props;
 
     return (
       <div class="container">
@@ -70,6 +71,8 @@ export default class DocumentDetails extends Component {
                       label="Has Issue"
                       side="right"
                       data-issuename="business_proof"
+                      onChange={onIssueSelection}
+                      value={doesIssueExist('business_proof')}
                     />
                   </div>
                 )}
@@ -109,6 +112,8 @@ export default class DocumentDetails extends Component {
                       label="Has Issue"
                       side="right"
                       data-issuename="business_operation_proof"
+                      onChange={onIssueSelection}
+                      value={doesIssueExist('business_operation_proof')}
                     />
                   </div>
                 )}
@@ -137,6 +142,8 @@ export default class DocumentDetails extends Component {
                       label="Has Issue"
                       side="right"
                       data-issuename="business_pan_proof"
+                      onChange={onIssueSelection}
+                      value={doesIssueExist('business_pan_proof')}
                     />
                   </div>
                 )}
@@ -168,6 +175,8 @@ export default class DocumentDetails extends Component {
                       label="Has Issue"
                       side="right"
                       data-issuename="address_proof"
+                      onChange={onIssueSelection}
+                      value={doesIssueExist('address_proof')}
                     />
                   </div>
                 )}
@@ -193,6 +202,8 @@ export default class DocumentDetails extends Component {
                       label="Has Issue"
                       side="right"
                       data-issuename="promoter_proof"
+                      onChange={onIssueSelection}
+                      value={doesIssueExist('promoter_proof')}
                     />
                   </div>
                 )}
@@ -223,6 +234,8 @@ export default class DocumentDetails extends Component {
                       label="Has Issue"
                       side="right"
                       data-issuename="promoter_pan_proof"
+                      onChange={onIssueSelection}
+                      value={doesIssueExist('promoter_pan_proof')}
                     />
                   </div>
                 )}
@@ -256,6 +269,8 @@ export default class DocumentDetails extends Component {
                       label="Has Issue"
                       side="right"
                       data-issuename="promoter_address_proof"
+                      onChange={onIssueSelection}
+                      value={doesIssueExist('promoter_address_proof')}
                     />
                   </div>
                 )}
@@ -282,6 +297,8 @@ export default class DocumentDetails extends Component {
                       label="Has Issue"
                       side="right"
                       data-issuename="form_12a_url"
+                      onChange={onIssueSelection}
+                      value={doesIssueExist('form_12a_url')}
                     />
                   </div>
                 )}
@@ -308,6 +325,8 @@ export default class DocumentDetails extends Component {
                       label="Has Issue"
                       side="right"
                       data-issuename="form_80g_url"
+                      onChange={onIssueSelection}
+                      value={doesIssueExist('form_80g_url')}
                     />
                   </div>
                 )}

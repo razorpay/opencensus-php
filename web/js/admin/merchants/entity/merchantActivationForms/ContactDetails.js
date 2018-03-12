@@ -7,6 +7,7 @@ export default ({
   merchant_details: merchantDetails,
   title,
   onIssueSelection,
+  doesIssueExist,
 }) => (
   <div class="container">
     <header class="m-b">{title}</header>
@@ -26,7 +27,7 @@ export default ({
             side="right"
             data-issuename="contact_name"
             onChange={onIssueSelection}
-            defaultValue={false}
+            checked={doesIssueExist('contact_name')}
           />
         </div>
         <div class="mulitple-fields-group">
@@ -42,6 +43,7 @@ export default ({
             side="right"
             data-issuename="contact_email"
             onChange={onIssueSelection}
+            checked={doesIssueExist('contact_email')}
             defaultValue={false}
           />
         </div>
@@ -57,7 +59,7 @@ export default ({
             side="right"
             data-issuename="contact_mobile"
             onChange={onIssueSelection}
-            defaultValue={false}
+            checked={doesIssueExist('contact_mobile')}
           />
         </div>
       </Form>

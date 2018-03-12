@@ -9,6 +9,7 @@ export default ({
   merchant_details: merchantDetails,
   title,
   onIssueSelection,
+  doesIssueExist,
 }) => (
   <div class="container">
     <header class="m-b">{title}</header>
@@ -29,7 +30,7 @@ export default ({
             side="right"
             data-issuename="bank_name"
             onChange={onIssueSelection}
-            defaultValue={false}
+            checked={doesIssueExist('bank_name')}
           />
         </div>
 
@@ -46,7 +47,7 @@ export default ({
             side="right"
             data-issuename="bank_account_number"
             onChange={onIssueSelection}
-            defaultValue={false}
+            checked={doesIssueExist('bank_account_number')}
           />
         </div>
 
@@ -63,7 +64,7 @@ export default ({
             side="right"
             data-issuename="bank_account_name"
             onChange={onIssueSelection}
-            defaultValue={false}
+            checked={doesIssueExist('bank_account_name')}
           />
         </div>
 
@@ -80,7 +81,7 @@ export default ({
             side="right"
             data-issuename="bank_beneficiary_address1"
             onChange={onIssueSelection}
-            defaultValue={false}
+            checked={doesIssueExist('bank_beneficiary_address1')}
           />
         </div>
 
@@ -97,7 +98,7 @@ export default ({
             side="right"
             data-issuename="bank_beneficiary_address2"
             onChange={onIssueSelection}
-            defaultValue={false}
+            checked={doesIssueExist('bank_beneficiary_address2')}
           />
         </div>
 
@@ -114,7 +115,7 @@ export default ({
             side="right"
             data-issuename="bank_beneficiary_address3"
             onChange={onIssueSelection}
-            defaultValue={false}
+            checked={doesIssueExist('bank_beneficiary_address3')}
           />
         </div>
 
@@ -130,7 +131,7 @@ export default ({
             side="right"
             data-issuename="bank_beneficiary_city"
             onChange={onIssueSelection}
-            defaultValue={false}
+            checked={doesIssueExist('bank_beneficiary_city')}
           />
         </div>
 
@@ -152,7 +153,7 @@ export default ({
             side="right"
             data-issuename="bank_beneficiary_state"
             onChange={onIssueSelection}
-            defaultValue={false}
+            checked={doesIssueExist('bank_beneficiary_state')}
           />
         </div>
 
@@ -168,7 +169,7 @@ export default ({
             side="right"
             data-issuename="bank_beneficiary_pin"
             onChange={onIssueSelection}
-            defaultValue={false}
+            checked={doesIssueExist('bank_beneficiary_pin')}
           />
         </div>
 
@@ -185,7 +186,7 @@ export default ({
             side="right"
             data-issuename="bank_branch_ifsc"
             onChange={onIssueSelection}
-            defaultValue={false}
+            checked={doesIssueExist('bank_branch_ifsc')}
           />
         </div>
       </Form>
