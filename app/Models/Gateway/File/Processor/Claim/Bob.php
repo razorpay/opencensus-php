@@ -10,9 +10,9 @@ use Carbon\Carbon;
 
 class Bob extends Base
 {
-    const GATEWAY = 'netbanking_bob';
-
     use FileHandler;
+
+    const GATEWAY = 'netbanking_bob';
 
     const HEADERS = [
         'Razorpay Payment ID',

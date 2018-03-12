@@ -30,7 +30,7 @@ class Bob extends Base
         {
             $amount['refunds'] = array_reduce($data['refunds'], function ($sum, $item)
             {
-                $sum += $item['refund']->getAmount();
+                $sum += $item['refund']['amount'];
 
                 return $sum;
             });
