@@ -55,14 +55,14 @@ class Base extends BaseProcessor
     {
         $paymentId = $parsedData['payment_id'];
 
-        $gatewayPayment = $this->repo->netbanking->findByPaymentIdAndActionOrFail(
+        $gatewayPayment = $this->repo->enach->findByPaymentIdAndActionOrFail(
             $paymentId, GatewayAction::AUTHORIZE);
 
         $attrs = $this->getGatewayAttributes($parsedData);
 
         $gatewayPayment->fill($attrs);
 
-        $this->repo->netbanking->saveOrFail($gatewayPayment);
+        $this->repo->saveOrFail($gatewayPayment);
 
         return $gatewayPayment;
     }
@@ -148,6 +148,6 @@ class Base extends BaseProcessor
 
     protected function sendProcessedMail()
     {
-        return ;
+        return;
     }
 }

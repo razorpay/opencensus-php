@@ -57,6 +57,11 @@ class Entity extends Base\Entity
         self::REGISTRATION_STATUS   => null,
     ];
 
+    public function payment()
+    {
+        return $this->hasOne('RZP\Models\Payment\Entity');
+    }
+
     protected function setSignedXmlAttribute($signedXml)
     {
         if ($signedXml !== null)

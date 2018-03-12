@@ -33,12 +33,14 @@ class Validator extends Base\Validator
                                     . 'application/vnd.oasis.opendocument.spreadsheet,'
                                     . 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,'
                                     . 'application/octet-stream,'
+                                    . 'application/xml,'
                                     . 'text/csv,'
                                     . 'text/plain'
                                 . '|mimes:'
                                     . 'zip,'
                                     . 'xlsx,'
                                     . 'xls,'
+                                    . 'xml,'
                                     . 'csv,'
                                     . 'txt';
 

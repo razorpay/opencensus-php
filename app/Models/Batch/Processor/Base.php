@@ -456,7 +456,6 @@ class Base extends BaseModel\Core
         $this->batch->setFailureCount($failureCount);
     }
 
-
     /**
      * Indicates if a batch should be marked as processed even if it has partial
      * failures. This we do as partial failures in most types requires action and
@@ -830,6 +829,9 @@ class Base extends BaseModel\Core
 
             case FileStore\Format::CSV:
                 return $this->parseTextFile($filePath, ',');
+
+            case FileStore\Format::XML:
+                return $this->parseXmlFile($filePath);
 
             default:
                 throw new LogicException("Extension not handled: {$ext}");

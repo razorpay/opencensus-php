@@ -397,6 +397,45 @@ class Header
             ],
         ],
 
+        'emandate_acknowledge_enach_rbl' => [
+            self::INPUT => [
+                'data'
+            ],
+        ],
+
+        'emandate_register_enach_rbl' => [
+            self::INPUT => [
+                'SRNO',
+                'MANDATE_DATE',
+                'MANDATE_ID',
+                'UMRN',
+                'CUST_REFNO',
+                'SCH_REFNO',
+                'CUST_NAME',
+                'BANK',
+                'BRANCH',
+                'BANK_CODE',
+                'AC_TYPE',
+                'ACNO',
+                'UPDATE_DATE',
+                'AMOUNT',
+                'FREQUENCY',
+                'COLLECTION_TYPE',
+                'START_DATE',
+                'END_DATE',
+                'TEL_NO',
+                'MOBILE_NO',
+                'MAIL_ID',
+                'UPLOAD_BATCH',
+                'UPLOAD_DATE',
+                'RESPONSE_DATE',
+                'UTILITY_CODE',
+                'UTILITY_NAME',
+                'NODAL_ACNO',
+                'STATUS'
+            ],
+        ],
+
         Type::PAYOUT => [
             self::INPUT => [
                 self::PAYOUT_CUSTOMER_NAME,
