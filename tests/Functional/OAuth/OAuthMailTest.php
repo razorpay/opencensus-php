@@ -50,7 +50,7 @@ class OAuthMailTest extends OAuthTestCase
 
         $this->startTest();
 
-        Mail::assertSent(OAuthAppAuthorizedMail::class, function ($mail) use ($user, $application)
+        Mail::assertQueued(OAuthAppAuthorizedMail::class, function ($mail) use ($user, $application)
         {
             $this->assertEquals($user->getPublicId(), $mail->viewData['user']['id']);
 

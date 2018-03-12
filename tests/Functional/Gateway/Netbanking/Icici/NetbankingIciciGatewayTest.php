@@ -366,7 +366,7 @@ class NetbankingIciciGatewayTest extends TestCase
 
     protected function checkMailQueue()
     {
-        Mail::assertSent(RefundFileMail::class, function ($mail)
+        Mail::assertQueued(RefundFileMail::class, function ($mail)
         {
             $body = 'Please forward the ICICI Netbanking refunds file to UBPS operations team';
 

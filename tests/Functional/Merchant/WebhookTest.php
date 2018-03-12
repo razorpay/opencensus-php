@@ -646,7 +646,7 @@ class WebhookTest extends TestCase
 
         $this->doAuthPayment();
 
-        Mail::assertSent(WebhookMail::class);
+        Mail::assertQueued(WebhookMail::class);
     }
 
     public function testSecretValueInWebhookEventDataJustBeforeFiring()

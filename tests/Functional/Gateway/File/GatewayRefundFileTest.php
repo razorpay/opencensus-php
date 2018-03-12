@@ -63,7 +63,7 @@ class GatewayRefundFileTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
 
-        Mail::assertSent(RefundFileMail::class);
+        Mail::assertQueued(RefundFileMail::class);
     }
 
     public function testProcessRefundFileAsync()
@@ -145,7 +145,7 @@ class GatewayRefundFileTest extends TestCase
         $this->assertNull($content[File\Entity::FAILED_AT]);
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
-        Mail::assertSent(RefundFileMail::class);
+        Mail::assertQueued(RefundFileMail::class);
     }
 
     public function testProcessRefundFileWithNoRefundData()
@@ -268,7 +268,7 @@ class GatewayRefundFileTest extends TestCase
         $this->assertNotNull($content[File\Entity::FAILED_AT]);
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
-        Mail::assertSent(RefundFileMail::class);
+        Mail::assertQueued(RefundFileMail::class);
 
         $file = $this->getLastEntity('file_store', true);
 
@@ -301,7 +301,7 @@ class GatewayRefundFileTest extends TestCase
         $this->assertNotNull($content[File\Entity::FAILED_AT]);
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
-        Mail::assertSent(RefundFileMail::class);
+        Mail::assertQueued(RefundFileMail::class);
 
         $file = $this->getLastEntity('file_store', true);
 

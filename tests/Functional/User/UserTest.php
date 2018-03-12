@@ -377,7 +377,7 @@ class UserTest extends TestCase
 
         $this->startTest();
 
-        Mail::assertSent(AccountVerification::class, function ($mail)
+        Mail::assertQueued(AccountVerification::class, function ($mail)
         {
             $viewData = $mail->viewData;
 

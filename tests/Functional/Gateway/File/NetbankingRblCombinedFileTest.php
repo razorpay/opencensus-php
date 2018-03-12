@@ -75,7 +75,7 @@ class NetbankingRblCombinedFileTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedFilesContent, $files);
 
-        Mail::assertSent(DailyFileMail::class, function ($mail)
+        Mail::assertQueued(DailyFileMail::class, function ($mail)
         {
             $date = Carbon::today(Timezone::IST)->format('d-m-Y');
 

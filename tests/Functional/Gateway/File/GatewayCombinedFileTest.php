@@ -67,7 +67,7 @@ class GatewayCombinedFileTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedFilesContent, $files);
 
-        Mail::assertSent(DailyFileMail::class);
+        Mail::assertQueued(DailyFileMail::class);
     }
 
     public function testGenerateCombinedFileWithNoRefundOrClaims()
@@ -85,7 +85,7 @@ class GatewayCombinedFileTest extends TestCase
         $this->assertNull($content[File\Entity::FAILED_AT]);
         $this->assertNotNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
-        Mail::assertNotSent(DailyFileMail::class);
+        Mail::assertNotQueued(DailyFileMail::class);
     }
 
     public function testGenerateCombinedFileWithClaimsLessThanRefunds()
