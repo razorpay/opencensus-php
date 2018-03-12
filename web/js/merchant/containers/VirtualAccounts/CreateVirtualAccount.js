@@ -262,25 +262,9 @@ export default class CreateVirtualAccount extends Component {
                 </small>
               </div>
 
-              {handle && (
-                <div class="form-group checkbox rzpCheckbox">
-                  <Field
-                    name="numeric"
-                    id="numeric"
-                    class="form-control"
-                    component="input"
-                    type="checkbox"
-                    normalize={value => Number(value)}
-                  />
-                  <label for="numeric" class="icon i-check">
-                    Numeric
-                  </label>
-                </div>
-              )}
-
-              {handle && !numeric ? (
+              {!!handle && (
                 <div class="form-group">
-                  <label>Descriptor</label>
+                  <label>Descriptor (Optional)</label>
                   <Field
                     name="descriptor"
                     component="input"
@@ -305,7 +289,7 @@ export default class CreateVirtualAccount extends Component {
                     Descriptor will be a part of the account number generated.
                   </small>
                 </div>
-              ) : null}
+              )}
 
               <div class="Modal__actions clearfix">
                 <AsyncButton
