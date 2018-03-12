@@ -43,7 +43,7 @@ class IndexCreate extends Command
      */
     protected $reindex;
 
-    public function fire()
+    public function handle()
     {
         $this->setOptions();
 

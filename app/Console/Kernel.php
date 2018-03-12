@@ -9,26 +9,10 @@ use RZP\Console\Commands\ImportCards;
 
 class Kernel extends ConsoleKernel
 {
-    /**
-     * The Artisan commands provided by your application.
-     *
-     * @var array
-     */
-    protected $commands = [
-        Commands\Index::class,
-        Commands\Inspire::class,
-        Commands\AddDbData::class,
-        Commands\IinImport::class,
-        Commands\IndexCreate::class,
-        Commands\RzpDbRefresh::class,
-        Commands\VerifyUpiProviders::class,
-        Commands\UidCheckDigitVerify::class,
-        Commands\VerifyTopLevelDomain::class,
-        Commands\GenerateEmailTemplates::class,
-        \Laravel\Tinker\Console\TinkerCommand::class,
-        Commands\ImportCards::class,
-        Commands\ExportCustomers::class,
-    ];
+    protected function commands()
+    {
+        $this->load(__DIR__.'/Commands');
+    }
 
     /**
      * Define the application's command schedule.
