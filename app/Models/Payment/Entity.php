@@ -706,9 +706,12 @@ class Entity extends Base\PublicEntity
      * @param $type
      * @throws Exception\InvalidArgumentException
      */
-    public function setRecurringType($type)
+    public function setRecurringType(string $type = null)
     {
-        RecurringType::validateRecurringType($type);
+        if ($type !== null)
+        {
+            RecurringType::validateRecurringType($type);
+        }
 
         $this->setAttribute(self::RECURRING_TYPE, $type);
     }
@@ -721,6 +724,11 @@ class Entity extends Base\PublicEntity
     public function isRecurringTypeInitial()
     {
         return ($this->getAttribute(self::RECURRING_TYPE) === RecurringType::INITIAL);
+    }
+
+    public function isRecurringTypeCardChange()
+    {
+        return ($this->getAttribute(self::RECURRING_TYPE) === RecurringType::CARD_CHANGE);
     }
 
     public function setSigned($signed = true)
