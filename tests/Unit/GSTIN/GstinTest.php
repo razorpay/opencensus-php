@@ -44,7 +44,7 @@ class GstinTest extends TestCase
     {
         $expected = $this->testData[__FUNCTION__];
 
-        $actual = Gstin::getStatesToTinIdMap();
+        $actual = Gstin::getGstinStateMetadata();
 
         $this->assertEquals($expected, $actual);
     }

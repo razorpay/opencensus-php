@@ -32,7 +32,7 @@ class Service extends Base\Service
 
     public function getMetaStates(): Base\PublicCollection
     {
-        $data = Gstin::getStatesToTinIdMap();
+        $data = Gstin::getGstinStateMetadata();
 
         return (new Base\PublicCollection($data))->toArrayWithItems();
     }

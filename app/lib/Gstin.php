@@ -145,17 +145,20 @@ class Gstin
         return (($valid === 1) and (array_key_exists($stateCode, static::$gstinToStateCodeMap) === true));
     }
 
-    public static function getStatesToTinIdMap(): array
+    public static function getGstinStateMetadata(): array
     {
-        $stateCodeToGstinMap = array_flip(self::$gstinToStateCodeMap);
+        $stateToTinCodeMap = array_flip(self::$gstinToStateCodeMap);
 
-        $states = self::$nameToStateCodeMap;
+        $data = [];
 
-        array_walk($states, function(& $code, $name) use ($stateCodeToGstinMap)
+        foreach (self::$nameToStateCodeMap as $name => $stateCode)
         {
-            $code = (string) $stateCodeToGstinMap[$code];
-        });
+            $data[] = [
+                'name' => $name,
+                'code' => (string) $stateToTinCodeMap[$stateCode],
+            ];
+        }
 
-        return $states;
+        return $data;
     }
 }
