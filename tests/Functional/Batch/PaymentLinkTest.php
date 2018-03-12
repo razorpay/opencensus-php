@@ -68,7 +68,7 @@ class PaymentLinkTest extends TestCase
         $this->assertInputFileExistsForBatch($response[Entity::ID]);
         $this->assertOutputFileExistsForBatch($response[Entity::ID]);
 
-        Mail::assertQueued(BatchPaymentLinkFileMail::class);
+        Mail::assertSent(BatchPaymentLinkFileMail::class);
 
         // TODO:
         // - Open and verify output file contents with expectations

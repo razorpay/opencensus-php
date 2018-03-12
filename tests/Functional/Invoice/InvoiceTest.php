@@ -331,7 +331,7 @@ class InvoiceTest extends TestCase
         $order = $this->getLastEntity('order', true);
         $this->assertNotNull($order);
 
-        Mail::assertQueued(InvoiceIssuedMail::class, function ($mail)
+        Mail::assertSent(InvoiceIssuedMail::class, function ($mail)
         {
             return $mail->hasTo('test@rzp.com');
         });

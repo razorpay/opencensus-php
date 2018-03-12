@@ -68,7 +68,7 @@ class NetbankingIndusindCombinedFileTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedFilesContent, $files);
 
-        Mail::assertQueued(DailyFileMail::class, function ($mail)
+        Mail::assertSent(DailyFileMail::class, function ($mail)
         {
             $testData = [
                 'count' => [

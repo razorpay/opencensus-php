@@ -103,7 +103,7 @@ class RefundTest extends TestCase
         $this->assertEquals('batch/download/' . $batch->getFileKeyWithExt(), $file->getLocation());
         $this->assertEquals('batch/download/' . $batch->getFileKey(), $file->getName());
 
-        Mail::assertQueued(BatchRefundFileMail::class);
+        Mail::assertSent(BatchRefundFileMail::class);
     }
 
     public function testProcessRefundFileWithInvalidFile()
