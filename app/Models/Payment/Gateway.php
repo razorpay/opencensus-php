@@ -24,6 +24,8 @@ class Gateway
     const BLADE                  = 'blade';
     const CYBERSOURCE            = 'cybersource';
     const EBS                    = 'ebs';
+    const ESIGNER_DIGIO          = 'esigner_digio';
+    const ENACH_RBL              = 'enach_rbl';
     const FIRST_DATA             = 'first_data';
     const HDFC                   = 'hdfc';
     const HITACHI                = 'hitachi';
@@ -78,6 +80,7 @@ class Gateway
         self::AEPS_ICICI  => [self::ACQUIRER_ICIC],
         self::CARD_FSS    => [self::ACQUIRER_FSS, self::ACQUIRER_BARB],
         self::HITACHI     => [self::ACQUIRER_RATN],
+        self::ENACH_RBL   => [self::ACQUIRER_RATN],
     ];
 
     const POWER_WALLETS = [
@@ -175,6 +178,7 @@ class Gateway
         self::BLADE               => Settlement\Channel::KOTAK,
         self::BILLDESK            => Settlement\Channel::KOTAK,
         self::EBS                 => Settlement\Channel::KOTAK,
+        self::ENACH_RBL           => Settlement\Channel::KOTAK,
         self::HDFC                => Settlement\Channel::KOTAK,
         self::MOBIKWIK            => Settlement\Channel::KOTAK,
         self::PAYTM               => Settlement\Channel::KOTAK,
@@ -492,6 +496,7 @@ class Gateway
         self::WALLET_OPENWALLET,
         self::NETBANKING_RBL,
         self::UPI_ICICI,
+        self::ENACH_RBL,
     ];
 
     /**
@@ -508,6 +513,8 @@ class Gateway
         Gateway::NETBANKING_ICICI,
         Gateway::NETBANKING_AXIS,
         Gateway::NETBANKING_HDFC,
+        Gateway::ESIGNER_DIGIO,
+        Gateway::ENACH_RBL,
     ];
 
     public static $recurringCardNetworks = [
@@ -574,7 +581,11 @@ class Gateway
             Gateway::NETBANKING_ICICI,
             Gateway::NETBANKING_HDFC,
         ],
-        AuthType::AADHAAR => [],
+        // Esigner Digio is added here just for test cases
+        AuthType::AADHAAR => [
+            Gateway::ESIGNER_DIGIO,
+            Gateway::ENACH_RBL,
+        ],
     ];
 
     /**
@@ -634,6 +645,50 @@ class Gateway
         Gateway::NETBANKING_ICICI   => [IFSC::ICIC],
         Gateway::NETBANKING_AXIS    => [IFSC::UTIB],
         Gateway::NETBANKING_HDFC    => [IFSC::HDFC],
+        // This is added here just for test cases
+        // We are using UTIB in test cases
+        Gateway::ESIGNER_DIGIO      => [
+            IFSC::UTIB,
+        ],
+        Gateway::ENACH_RBL      => [
+            IFSC::ABHY,
+            IFSC::ANDB,
+            IFSC::UTIB,
+            IFSC::BKID,
+            IFSC::MAHB,
+            IFSC::BCBM,
+            IFSC::BCBX,
+            IFSC::CNRB,
+            IFSC::CBIN,
+            IFSC::CITI,
+            IFSC::DCBL,
+            IFSC::FDRL,
+            IFSC::HDFC,
+            IFSC::ICIC,
+            IFSC::IBKL,
+            IFSC::IDFB,
+            IFSC::INDB,
+            IFSC::KKBK,
+            IFSC::ORBC,
+            IFSC::PUNB,
+            IFSC::RATN,
+            IFSC::SRCB,
+            IFSC::SCBL,
+            IFSC::SVCB,
+            IFSC::SYNB,
+            IFSC::ADCC,
+            IFSC::COSB,
+            IFSC::HSBC,
+            IFSC::SUTB,
+            IFSC::UCBA,
+            IFSC::UBIN,
+            IFSC::YESB,
+            IFSC::DBSS,
+            IFSC::BGBX,
+            IFSC::CORP,
+            IFSC::VARA,
+            IFSC::KVBL,
+        ],
     ];
 
     /**
@@ -644,6 +699,7 @@ class Gateway
     public static $fileBasedEMandateDebitGateways = [
         Gateway::NETBANKING_HDFC,
         Gateway::NETBANKING_AXIS,
+        Gateway::ENACH_RBL,
     ];
 
     /**
@@ -653,6 +709,7 @@ class Gateway
      */
     public static $fileBasedEMandateRegistrationGateways = [
         Gateway::NETBANKING_HDFC,
+        Gateway::ENACH_RBL,
     ];
 
     /**
