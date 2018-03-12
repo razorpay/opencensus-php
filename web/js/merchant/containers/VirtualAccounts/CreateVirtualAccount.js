@@ -66,12 +66,10 @@ const selector = formValueSelector('createVirtualAccount');
     const customers = state.customers.items;
     return {
       descriptor: selector(state, 'descriptor'),
-      numeric: selector(state, 'numeric'),
       customers,
       customersLoading: state.customers.loading,
       customer: findBy(customers, 'id', selector(state, 'customer_id')),
       initialValues: {
-        numeric: true,
         receivers: {
           types: ['bank_account'],
         },
@@ -121,10 +119,9 @@ export default class CreateVirtualAccount extends Component {
         ...props,
         receivers: {
           ...receivers,
-          bank_account: !numeric
+          bank_account: descriptor
             ? {
-                numeric,
-                descriptor: descriptor || undefined,
+                descriptor
               }
             : undefined,
         },
@@ -181,7 +178,6 @@ export default class CreateVirtualAccount extends Component {
       untouch,
       handle = '',
       descriptor = '',
-      numeric,
       customersLoading,
       customers = [],
       onCopy = () => {},
