@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "38085ebbf561fd1d53da77031d4b835b",
+    "content-hash": "7466dba5954c2441806fd3ea82eda58d",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -1503,81 +1503,6 @@
                 "xsd"
             ],
             "time": "2017-05-05T14:58:17+00:00"
-        },
-        {
-            "name": "graham-campbell/throttle",
-            "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/jitendra-1217/Laravel-Throttle.git",
-                "reference": "945c41792189db62486afa44d9ff00a9044276c7"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/jitendra-1217/Laravel-Throttle/zipball/945c41792189db62486afa44d9ff00a9044276c7",
-                "reference": "945c41792189db62486afa44d9ff00a9044276c7",
-                "shasum": ""
-            },
-            "require": {
-                "illuminate/cache": "5.1.*|5.2.*|5.3.*|5.4.*|5.5.*",
-                "illuminate/contracts": "5.1.*|5.2.*|5.3.*|5.4.*|5.5.*",
-                "illuminate/http": "5.1.*|5.2.*|5.3.*|5.4.*|5.5.*",
-                "illuminate/support": "5.1.*|5.2.*|5.3.*|5.4.*|5.5.*",
-                "php": "^7.0"
-            },
-            "require-dev": {
-                "graham-campbell/analyzer": "^2.0",
-                "graham-campbell/testbench": "^4.0|^5.0",
-                "mockery/mockery": "^1.0",
-                "phpunit/phpunit": "^6.5"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "6.0-dev"
-                },
-                "laravel": {
-                    "providers": [
-                        "GrahamCampbell\\Throttle\\ThrottleServiceProvider"
-                    ]
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "GrahamCampbell\\Throttle\\": "src/"
-                }
-            },
-            "autoload-dev": {
-                "psr-4": {
-                    "GrahamCampbell\\Tests\\Throttle\\": "tests/"
-                }
-            },
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Graham Campbell",
-                    "email": "graham@alt-three.com"
-                }
-            ],
-            "description": "Throttle Is A Rate Limiter For Laravel 5",
-            "keywords": [
-                "Graham Campbell",
-                "GrahamCampbell",
-                "Laravel Throttle",
-                "Laravel-Throttle",
-                "Throttle",
-                "framework",
-                "laravel",
-                "rate limit",
-                "throttle",
-                "throttling"
-            ],
-            "support": {
-                "source": "https://github.com/jitendra-1217/Laravel-Throttle/tree/master"
-            },
-            "time": "2018-02-01T19:48:04+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
@@ -9347,7 +9272,6 @@
         "razorpay/razorpay": 20,
         "razorpay/spine": 20,
         "razorpay/upi-clients": 20,
-        "graham-campbell/throttle": 20,
         "razorpay/oauth": 20,
         "razorpay/ufh-sdk-php": 20,
         "razorpay/hodor": 20,

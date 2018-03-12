@@ -2141,16 +2141,6 @@ final class Route
     ];
 
     /**
-     * This will not be needed once we have rate limiting on all routes.
-     * Adding now to test throttling on just a few routes at a time.
-     *
-     * @var array
-     */
-    public static $throttledRoutes = [
-        'dummy_route',
-    ];
-
-    /**
      * A route can belong to multiple features, mapped here
      */
     public static $routeNameToFeaturesMap = [
