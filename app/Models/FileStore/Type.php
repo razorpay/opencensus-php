@@ -168,6 +168,8 @@ class Type
             self::HDFC_FSS_FAILED_REFUND,
             self::MOCK_RECONCILIATION_FILE,
             self::GATEWAY_FAILED_REFUNDS,
+            self::RBL_ENACH_REGISTRATION_FILE_SFTP,
+            self::RBL_ENACH_DEBIT_FILE_SFTP,
         ],
 
         Constants\Entity::BATCH => [
@@ -190,10 +192,6 @@ class Type
 
         Constants\Entity::INVOICE => [
             self::INVOICE_PDF,
-        ],
-
-        Constants\Entity::TOKEN => [
-            self::RBL_ENACH_REGISTRATION_FILE_SFTP,
         ],
 
         Constants\Entity::QR_CODE => [

@@ -17,8 +17,6 @@ class Gateway extends Base\Gateway
 {
     protected $gateway = 'enach_rbl';
 
-    const FILE_NAME_FORMAT = 'MMS-CREATE-RATN-{$loginId}-{$datestr}-ESIGN{$count}-INP';
-
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -33,8 +31,6 @@ class Gateway extends Base\Gateway
         parent::callback($input);
 
         $authResponse = $this->callAuthenticationGateway($input);
-
-        $content = $this->createFile($input, $authResponse);
 
         $data = [];
 
@@ -55,47 +51,6 @@ class Gateway extends Base\Gateway
         return $recurringData;
     }
 
-    protected function createFile(array $input, array $response)
-    {
-        $fileName = 'rbl-enach/outgoing/' . $this->getFormattedFileName($input);
-
-        $metadata = $this->getH2HMetadata();
-
-        $content = $response['mandate'];
-
-        $creator = new FileStore\Creator;
-
-        $file = $creator->extension(FileStore\Format::XML)
-                        ->content($content)
-                        ->name($fileName)
-                        ->store(FileStore\Store::S3)
-                        ->entity($input['token'])
-                        ->merchant($input['merchant'])
-                        ->type(FileStore\Type::RBL_ENACH_REGISTRATION_FILE_SFTP)
-                        ->metadata($metadata)
-                        ->save();
-    }
-
-    protected function getH2HMetadata()
-    {
-        return [
-            'gid'   => '10000',
-            'uid'   => '10006',
-            'mtime' => Carbon::now()->getTimestamp(),
-            'mode'  => '33188'
-        ];
-    }
-
-    // @todo: Validate if encryption is required
-    protected function encryptSignedBlock(array $input, array $response)
-    {
-        $xml = $response['mandate'];
-
-        $encryptor = new AESCrypto(AES::MODE_CBC, $input['terminal']->getSecureSecret());
-
-        return $encryptor->encrypt($xml);
-    }
-
     protected function getGatewayInput(array $input)
     {
         return [
@@ -109,17 +64,6 @@ class Gateway extends Base\Gateway
         $currentTs = $input['payment']['created_at'];
 
         return Carbon::createFromTimestamp($currentTs, Timezone::IST);
-    }
-
-    protected function getFormattedFileName(array $input)
-    {
-        $replacePair = [
-            '{$loginId}' => $this->getGatewayTerminalId(),
-            '{$datestr}' => $this->getNextWorkingDate($input)->format('dmY'),
-            '{$count}'   => str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT)
-        ];
-
-        return strtr(static::FILE_NAME_FORMAT, $replacePair);
     }
 
     protected function getGatewayTerminalId()
