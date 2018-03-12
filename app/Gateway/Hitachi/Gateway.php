@@ -806,6 +806,11 @@ class Gateway extends Base\Gateway
 
     protected function getTerminalId()
     {
+        if ($this->isBharatQrPayment() == true)
+        {
+            return $this->config['bharatqr_merchant_id'];
+        }
+
         $terminalId = $this->terminal['gateway_terminal_id'];
 
         if ($this->mode === Mode::TEST)
