@@ -10,8 +10,6 @@ class Bob extends Base
 {
     const BANK_NAME = 'Bob';
 
-//    const GATEWAY = 'netbanking';
-
     protected function formatDataForMail(array $data)
     {
         $amount = [
