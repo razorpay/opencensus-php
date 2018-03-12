@@ -61,15 +61,9 @@ class Entity extends Base\PublicEntity
 
     /**
      * We use this to set the max amount of the token entity.
-     * By default, we have chosen 10000000 paise
+     * By default, we have chosen ₹ 99,999
      */
-    const DEFAULT_MAX_AMOUNT    = 10000000;
-
-    /**
-     * We use this to set the max amount of the token entity for the aadhaar auth.
-     * For Aadhaar auth, it is different as it supports only ₹ 99,999
-     */
-    const DEFAULT_AADHAAR_MAX_AMOUNT  = 9999900;
+    const DEFAULT_MAX_AMOUNT    = 9999900;
 
     /**
      * We use this to set the number of years after which the
@@ -409,11 +403,6 @@ class Entity extends Base\PublicEntity
             ($this->getMethod() === Payment\Method::EMANDATE))
         {
             $maxAmount = self::DEFAULT_MAX_AMOUNT;
-
-            if ($this->getAuthType() === Payment\AuthType::AADHAAR)
-            {
-                $maxAmount = self::DEFAULT_AADHAAR_MAX_AMOUNT;
-            }
         }
 
         $this->attributes[self::MAX_AMOUNT] = $maxAmount;

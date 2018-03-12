@@ -10,10 +10,11 @@ class Entity extends Base\Entity
     const ID                    = 'id';
     const PAYMENT_ID            = 'payment_id';
     const ACTION                = 'action';
-    const BANK                  = 'bank';
     const RECEIVED              = 'received';
     const SIGNED_XML            = 'signed_xml';
     const UMRN                  = 'umrn';
+    const ACKNOWLEDGE_STATUS    = 'acknowledge_status';
+    const REGISTRATION_STATUS   = 'registration_status';
 
     protected $entity = 'enach';
 
@@ -21,20 +22,23 @@ class Entity extends Base\Entity
         self::ID,
         self::PAYMENT_ID,
         self::ACTION,
-        self::BANK,
         self::RECEIVED,
         self::SIGNED_XML,
         self::UMRN,
     ];
 
     protected $fillable = [
-        self::BANK,
         self::RECEIVED,
         self::SIGNED_XML,
+        self::UMRN,
+        self::ACKNOWLEDGE_STATUS,
+        self::REGISTRATION_STATUS,
     ];
 
     protected $defaults = [
-        self::UMRN => null,
+        self::UMRN                  => null,
+        self::ACKNOWLEDGE_STATUS    => null,
+        self::REGISTRATION_STATUS   => null,
     ];
 
     protected function setSignedXmlAttribute($signedXml)
@@ -55,11 +59,6 @@ class Entity extends Base\Entity
         }
 
         return Crypt::decrypt($signedXml);
-    }
-
-    public function setBank($bank)
-    {
-        $this->setAttribute(self::BANK, $bank);
     }
 
     public function setUmrn(string $umrn)

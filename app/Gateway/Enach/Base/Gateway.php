@@ -18,8 +18,6 @@ class Gateway extends \RZP\Gateway\Base\Gateway
 
         $gatewayPayment->setAction($this->action);
 
-        $gatewayPayment->setBank($this->input['payment']['bank']);
-
         $gatewayPayment->fill($attributes);
 
         $gatewayPayment->saveOrFail();

@@ -166,15 +166,7 @@ class Validator extends Base\Validator
 
         $tokenMaxAmount = $input[Entity::RECURRING_TOKEN][Entity::MAX_AMOUNT];
 
-        $defaultMaxAmount = Token\Entity::DEFAULT_MAX_AMOUNT;
-
-        if ((isset($input[Entity::AUTH_TYPE]) === true) and
-            ($input[Entity::AUTH_TYPE] === AuthType::AADHAAR))
-        {
-            $defaultMaxAmount = Token\Entity::DEFAULT_AADHAAR_MAX_AMOUNT;
-        }
-
-        if ($tokenMaxAmount > $defaultMaxAmount)
+        if ($tokenMaxAmount > Token\Entity::DEFAULT_MAX_AMOUNT)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'token_max_amount exceeds maximum amount allowed.',

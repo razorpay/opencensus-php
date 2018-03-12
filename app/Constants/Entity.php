@@ -336,21 +336,23 @@ class Entity
         self::NETBANKING_RBL         => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_PNB         => \RZP\Gateway\Netbanking\Base::class,
 
-        self::UPI_MINDGATE          => \RZP\Gateway\Upi\Base::class,
-        self::UPI_SBI               => \RZP\Gateway\Upi\Base::class,
-        self::UPI_ICICI             => \RZP\Gateway\Upi\Base::class,
-        self::UPI_NPCI              => \RZP\Gateway\Upi\Base::class,
+        self::ENACH_RBL              => \RZP\Gateway\Enach\Base::class,
 
-        self::AEPS_ICICI            => \RZP\Gateway\Aeps\Base::class,
+        self::UPI_MINDGATE           => \RZP\Gateway\Upi\Base::class,
+        self::UPI_SBI                => \RZP\Gateway\Upi\Base::class,
+        self::UPI_ICICI              => \RZP\Gateway\Upi\Base::class,
+        self::UPI_NPCI               => \RZP\Gateway\Upi\Base::class,
 
-        self::WALLET_AIRTELMONEY    => \RZP\Gateway\Wallet\Base::class,
-        self::WALLET_FREECHARGE     => \RZP\Gateway\Wallet\Base::class,
-        self::WALLET_JIOMONEY       => \RZP\Gateway\Wallet\Base::class,
-        self::WALLET_SBIBUDDY       => \RZP\Gateway\Wallet\Base::class,
-        self::WALLET_MPESA          => \RZP\Gateway\Wallet\Base::class,
-        self::WALLET_OLAMONEY       => \RZP\Gateway\Wallet\Base::class,
-        self::WALLET_PAYUMONEY      => \RZP\Gateway\Wallet\Base::class,
-        self::WALLET_PAYZAPP        => \RZP\Gateway\Wallet\Base::class,
+        self::AEPS_ICICI             => \RZP\Gateway\Aeps\Base::class,
+
+        self::WALLET_AIRTELMONEY     => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_FREECHARGE      => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_JIOMONEY        => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_SBIBUDDY        => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_MPESA           => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_OLAMONEY        => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_PAYUMONEY       => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_PAYZAPP         => \RZP\Gateway\Wallet\Base::class,
     ];
 
     protected static $syncedInLiveAndTest = [

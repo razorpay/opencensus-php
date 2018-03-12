@@ -27,11 +27,15 @@ class CreateEnachTable extends Migration
 
             $table->string(Enach::ACTION);
 
-            $table->string(Enach::BANK);
-
             $table->longText(Enach::SIGNED_XML);
 
             $table->string(Enach::UMRN)
+                  ->nullable();
+
+            $table->string(Enach::ACKNOWLEDGE_STATUS)
+                  ->nullable();
+
+            $table->string(Enach::REGISTRATION_STATUS)
                   ->nullable();
 
             $table->integer(Enach::CREATED_AT);
