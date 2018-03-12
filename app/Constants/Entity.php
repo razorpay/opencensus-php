@@ -130,6 +130,7 @@ class Entity
     const AMEX                   = 'amex';
     const BLADE                  = 'blade';
     const ATOM                   = 'atom';
+    const ENACH                  = 'enach';
     const HDFC                   = 'hdfc';
     const HITACHI                = 'hitachi';
     const PAYTM                  = 'paytm';
@@ -277,6 +278,7 @@ class Entity
         self::AXIS_GENIUS            => \RZP\Gateway\AxisGenius::class,
         self::CYBERSOURCE            => \RZP\Gateway\Cybersource::class,
         self::CARD_FSS               => \RZP\Gateway\Card\Fss::class,
+        self::ENACH                  => \RZP\Gateway\Enach\Base::class,
         self::ENACH_RBL              => \RZP\Gateway\Enach\Rbl::class,
         self::ESIGNER_DIGIO          => \RZP\Gateway\Esigner\Digio::class,
         self::WALLET_PAYZAPP         => \RZP\Gateway\Wallet\Payzapp::class,

@@ -14,6 +14,7 @@ class Shared
     const BILLDESK_RAZORPAY_TERMINAL         = '1000BdeskTrmnl';
     const BLADE_RAZORPAY_TERMINAL            = '1000BladeTrmnl';
     const DIGIO_RAZORPAY_TERMINAL            = '1000DigioTrmnl';
+    const ENACH_RBL_RAZORPAY_TERMINAL        = '1000EnachRblTl';
     const EBS_RAZORPAY_TERMINAL              = '100000EbsTrmnl';
     const HDFC_RAZORPAY_TERMINAL             = '1000HdfcShared';
     const MOBIKWIK_RAZORPAY_TERMINAL         = '1000MobiKwikTl';
@@ -67,6 +68,7 @@ class Shared
         self::BLADE_RAZORPAY_TERMINAL,
         self::DIGIO_RAZORPAY_TERMINAL,
         self::EBS_RAZORPAY_TERMINAL,
+        self::ENACH_RBL_RAZORPAY_TERMINAL,
         self::HDFC_RAZORPAY_TERMINAL,
         self::MOBIKWIK_RAZORPAY_TERMINAL,
         self::OLAMONEY_RAZORPAY_TERMINAL,

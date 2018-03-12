@@ -63,7 +63,7 @@ class Gateway extends Base\Gateway
         $mandateXml = $response->body;
 
         $content = [
-            'mandate' => $mandateXml
+            'signed_xml' => $mandateXml
         ];
 
         return $content;
@@ -156,7 +156,7 @@ class Gateway extends Base\Gateway
         $bankCode = $this->getTerminalAccessCode($input);
 
         $content = [
-            'mandate_request_id'            => $input['token']->getId(),
+            'mandate_request_id'            => $input['payment']['id'],
             'mandate_creation_date_time'    => $nextWorkingDt->toIso8601String(),
             'sponsor_bank_id'               => $bankCode,
             'sponsor_bank_name'             => BankName::getName($bankCode),

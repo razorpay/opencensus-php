@@ -5,12 +5,11 @@ namespace RZP\Gateway\Enach\Rbl;
 use RZP\Error;
 use Carbon\Carbon;
 use RZP\Exception;
-use RZP\Gateway\Base;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use phpseclib\Crypt\AES;
-use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Gateway\Enach\Base;
 use RZP\Models\Customer\Token;
 
 class Gateway extends Base\Gateway
@@ -31,6 +30,8 @@ class Gateway extends Base\Gateway
         parent::callback($input);
 
         $authResponse = $this->callAuthenticationGateway($input);
+
+        $this->createGatewayPaymentEntity($authResponse);
 
         $data = [];
 
@@ -95,10 +96,5 @@ class Gateway extends Base\Gateway
             $this->action,
             $input,
             $this->mode);
-    }
-
-    protected function getRepository()
-    {
-        return;
     }
 }
