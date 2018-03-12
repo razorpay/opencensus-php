@@ -335,6 +335,7 @@ class Entity
         self::NETBANKING_KOTAK       => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_RBL         => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_PNB         => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_BOB         => \RZP\Gateway\Netbanking\Base::class,
 
         self::ENACH_RBL              => \RZP\Gateway\Enach\Base::class,
 
