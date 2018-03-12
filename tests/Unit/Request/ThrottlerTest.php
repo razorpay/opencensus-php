@@ -39,6 +39,7 @@ class ThrottlerTest extends TestCase
     /**
      * When requested with incorrect key id, throttler:
      * - Must fail with BadRequestException
+     *   (This is because with correct mode available it attempts to get corresponding mid)
      */
     public function testAttemptThrottleWhenInvalidKeyId()
     {
@@ -47,6 +48,22 @@ class ThrottlerTest extends TestCase
         $requestMock = $this->invokeRequestCase('privateRouteWithInvalidKey');
 
         (new Throttler)->throttle($requestMock);
+    }
+
+    /**
+     * When requested with incorrect key prefix (e.g. rzp_PQRS_{14 char}):
+     * - Must not attempt to get mid corresponding to this key, because db
+     *   connection is incorrect.
+     * - Must not throw any exception and let basic auth take over and error out
+     *   with invalid key too.
+     */
+    public function testAttemptThrottleWhenInvalidModeInKey()
+    {
+        $requestMock = $this->mockRouteRequest('invoice_get_status', 'invoices/inv_1000000invoice/status', [], ['rzp_ORPBLICKEY']);
+
+        (new Throttler)->throttle($requestMock);
+
+        $this->assertTrue(true);
     }
 
     /**

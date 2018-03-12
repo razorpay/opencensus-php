@@ -328,7 +328,7 @@ class Throttler
      */
     protected function setMidIfApplicable()
     {
-        if (empty($this->keyId) === true)
+        if ((empty($this->keyId) === true) or (empty($this->mode) === true))
         {
             return;
         }
