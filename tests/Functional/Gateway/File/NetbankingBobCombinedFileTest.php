@@ -15,7 +15,6 @@ class NetbankingBobCombinedFileTest extends TestCase
 {
     use PaymentTrait;
 
-
     protected $terminal;
 
     protected $bank = 'BARB_R';
