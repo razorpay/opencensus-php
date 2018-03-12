@@ -3,13 +3,14 @@
     "description": "The Razorpay API Backend",
     "keywords": ["api", "razorpay"],
     "require": {
-        "laravel/framework": "5.5.*",
         "rmccue/requests": ">=1.0",
+        "laravel/framework": "5.5.*",
         "razorpay/razorpay": "dev-master",
         "razorpay/spine": "dev-master",
         "maatwebsite/excel": "~2.1.0",
         "mailgun/mailgun-php": "~2.0",
         "aws/aws-sdk-php-laravel": "3.1.0",
+        "symfony/event-dispatcher": "~2.2",
         "cebe/markdown": "~1.0.1",
         "elasticsearch/elasticsearch": "^5.2",
         "razorpay/ifsc": "~1.0",
@@ -43,8 +44,9 @@
         "watson/rememberable": "^2.0",
         "layershifter/tld-extract": "^1.2",
         "razorpay/hodor": "dev-master",
-        "razorpay/trace": "2.0.10",
-        "razorpay/oauth": "dev-laravel_5.5"
+        "razorpay/trace": "^2.0",
+        "razorpay/oauth": "dev-laravel_5.5",
+        "fideloper/proxy": "~3.0"
     },
     "repositories": [
         {
@@ -79,18 +81,17 @@
     ],
     "require-dev": {
         "filp/whoops": "~2.0",
-        "phpunit/phpunit": "6.3",
         "kint-php/kint": "1.*",
         "laracasts/testdummy": "2.*",
         "mockery/mockery": "*",
         "codacy/coverage": "dev-master",
         "tijsverkoyen/css-to-inline-styles": "2.*",
-        "orchestra/testbench": "3.*",
         "php-http/mock-client": "^0.3.3",
         "symfony/dom-crawler": "3.*",
         "phpunit/phpunit": "^6.2",
         "symfony/phpunit-bridge": "3.3.*@dev",
-        "codedungeon/phpunit-result-printer": "^0.5.4"
+        "codedungeon/phpunit-result-printer": "^0.5.4",
+        "orchestra/testbench": "^3.5"
     },
     "autoload": {
         "classmap": ["database", "tests", "app/Models/Customer"],
