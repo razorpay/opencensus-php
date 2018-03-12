@@ -668,13 +668,11 @@ app
 
                 if (queryParams.next) {
                   var parser = document.createElement('a');
-                  parser.href = queryParams.next;
+                  parser.href = decodeURIComponent(queryParams.next);
 
                   var hostname = parser.hostname || window.location.hostname;
 
-                  if (
-                    /razorpay\.(com|dev|in)$/.test(hostname)
-                  ) {
+                  if (/razorpay\.(com|dev|in)$/.test(hostname)) {
                     window.location.href = parser.href;
                     return false;
                   }
