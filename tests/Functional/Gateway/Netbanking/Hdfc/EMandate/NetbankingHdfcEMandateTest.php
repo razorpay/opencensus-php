@@ -197,7 +197,6 @@ class NetbankingHdfcEMandateTest extends TestCase
 
     public function testEMandateDebit()
     {
-        $this->markTestSkipped();
         $this->doDebitPayment();
 
         $debitPayment = $this->getLastEntity('payment', true);

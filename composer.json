@@ -79,6 +79,7 @@
     ],
     "require-dev": {
         "filp/whoops": "~2.0",
+        "phpunit/phpunit": "6.3",
         "kint-php/kint": "1.*",
         "laracasts/testdummy": "2.*",
         "mockery/mockery": "*",
@@ -108,7 +109,8 @@
         ]
     },
     "config": {
-        "preferred-install": "dist"
+        "preferred-install": "dist",
+        "optimize-autoloader": true
     },
     "minimum-stability": "stable"
 }
