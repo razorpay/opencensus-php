@@ -1266,6 +1266,8 @@ class Core extends Base\Core
 
         $isPrepaid = $merchant->isPrepaid();
 
+        $transaction->setFeeModel($merchant->getFeeModel());
+
         switch (true)
         {
             case ($amountCredits > 0):
