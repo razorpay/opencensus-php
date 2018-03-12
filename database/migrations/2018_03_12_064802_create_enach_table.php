@@ -26,7 +26,8 @@ class CreateEnachTable extends Migration
 
             $table->char(Enach::PAYMENT_ID, Payment::ID_LENGTH);
 
-            $table->char(Enach::REFUND_ID, Refund::ID_LENGTH);
+            $table->char(Enach::REFUND_ID, Refund::ID_LENGTH)
+                  ->nullable();
 
             $table->string(Enach::ACTION);
 
@@ -39,7 +40,8 @@ class CreateEnachTable extends Migration
             $table->string(Enach::STATUS)
                   ->nullable();
 
-            $table->longText(Enach::SIGNED_XML);
+            $table->longText(Enach::SIGNED_XML)
+                  ->nullable();
 
             $table->string(Enach::UMRN)
                   ->nullable();

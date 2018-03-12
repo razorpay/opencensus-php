@@ -62,6 +62,12 @@ class Gateway extends Base\Gateway
 
         $mandateXml = $response->body;
 
+        if (empty($mandateXml) === true)
+        {
+            throw new Exception\GatewayErrorException(
+                Error\ErrorCode::GATEWAY_ERROR_MANDATE_CREATION_FAILED);
+        }
+
         $content = [
             'signed_xml' => $mandateXml
         ];

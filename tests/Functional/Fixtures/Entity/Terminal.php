@@ -298,6 +298,7 @@ class Terminal extends Base
             'id'                        => $termId,
             'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'enach_rbl',
+            'gateway_acquirer'          => 'ratn',
             'card'                      => 0,
             'emandate'                  => 1,
             'type'                      => [

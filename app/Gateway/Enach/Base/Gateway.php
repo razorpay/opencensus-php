@@ -10,8 +10,10 @@ use RZP\Gateway\Base\Action;
 
 class Gateway extends \RZP\Gateway\Base\Gateway
 {
-    protected function createGatewayPaymentEntity($attributes)
+    protected function createGatewayPaymentEntity($attributes, $action = null)
     {
+        $action = $action ?: $this->action;
+
         $gatewayPayment = $this->getNewGatewayPaymentEntity();
 
         $gatewayPayment->setPaymentId($this->input['payment']['id']);
@@ -22,7 +24,7 @@ class Gateway extends \RZP\Gateway\Base\Gateway
 
         $gatewayPayment->setBank($this->input['payment']['bank']);
 
-        $gatewayPayment->setAction($this->action);
+        $gatewayPayment->setAction($action);
 
         $gatewayPayment->fill($attributes);
 

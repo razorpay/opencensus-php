@@ -87,6 +87,11 @@ class Entity extends Base\Entity
         $this->setAttribute(self::ACQUIRER, $acquirer);
     }
 
+    public function setAmount(string $amount)
+    {
+        $this->setAttribute(self::AMOUNT, $amount);
+    }
+
     public function setBank(string $bank)
     {
         $this->setAttribute(self::BANK, $bank);

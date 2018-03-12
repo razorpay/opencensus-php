@@ -31,7 +31,7 @@ class Gateway extends Base\Gateway
 
         $authResponse = $this->callAuthenticationGateway($input);
 
-        $this->createGatewayPaymentEntity($authResponse);
+        $this->createGatewayPaymentEntity($authResponse, 'authorize');
 
         $data = [];
 

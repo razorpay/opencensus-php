@@ -45,6 +45,14 @@ class EnachRblGatewayTest extends TestCase
         $payment['order_id'] = $order->getPublicId();
 
         $this->doAuthPayment($payment);
+
+        $enach = $this->getLastEntity('enach', true);
+
+        $this->assertEquals('authorize', $enach['action']);
+        $this->assertEquals('UTIB', $enach['bank']);
+        $this->assertEquals('ratn', $enach['acquirer']);
+        $this->assertEquals(0, $enach['amount']);
+        $this->assertNotNull($enach['signed_xml']);
     }
 
     protected function runPaymentCallbackFlowEnachRbl($response, &$callback = null)
