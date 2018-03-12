@@ -158,7 +158,7 @@ class Throttler
     {
         if ($this->isBlocked() === true)
         {
-            throw new BlockException();
+            throw new BlockException(null, ['key' => $this->getThrottleKey()]);
         }
     }
 
