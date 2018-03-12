@@ -267,6 +267,53 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedDigioTerminal(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::DIGIO_RAZORPAY_TERMINAL;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'esigner_digio',
+            'card'                      => 0,
+            'emandate'                  => 1,
+            'type'                      => [
+                Type::RECURRING_3DS => '1',
+                Type::RECURRING_NON_3DS => '1',
+            ],
+            'shared'                    => 1,
+            'gateway_merchant_id'       => 'random',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedEnachRblTerminal(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::ENACH_RBL_RAZORPAY_TERMINAL;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'enach_rbl',
+            'gateway_acquirer'          => 'ratn',
+            'card'                      => 0,
+            'emandate'                  => 1,
+            'type'                      => [
+                Type::RECURRING_3DS => '1',
+                Type::RECURRING_NON_3DS => '1',
+            ],
+            'shared'                    => 1,
+            'gateway_merchant_id'       => 'random',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedPayzappTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::PAYZAPP_RAZORPAY_TERMINAL;

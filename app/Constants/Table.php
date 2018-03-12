@@ -132,6 +132,7 @@ class Table
     const ATOM                  = 'atom';
     const HDFC                  = 'hdfc';
     const MIGS                  = 'axis';
+    const ENACH                 = 'enach';
     const PAYTM                 = 'paytm';
     const WALLET                = 'wallet';
     const BILLDESK              = 'billdesk';

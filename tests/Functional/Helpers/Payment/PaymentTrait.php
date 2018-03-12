@@ -1054,11 +1054,17 @@ trait PaymentTrait
         $payment = $this->getDefaultNetbankingPaymentArray($bank);
 
         $payment['method'] = Payment\Method::EMANDATE;
+        $payment['bank'] = $bank;
         $payment['amount'] = $amount;
         $payment['auth_type'] = $authType;
         $payment['recurring'] = true;
 
         $payment['customer_id'] = 'cust_100000customer';
+
+        if ($authType === Payment\AuthType::AADHAAR)
+        {
+            $payment['aadhaar']['number'] = '123123123123';
+        }
 
         return $payment;
     }
