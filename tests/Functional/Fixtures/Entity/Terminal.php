@@ -570,6 +570,46 @@ class Terminal extends Base
         return [$terminal1, $terminal2];
     }
 
+    public function createDirectFirstDataRecurringTerminals($inputAttrs)
+    {
+        $attributes = [
+            'id'                        => 'FDRcrDTrmnl3DS',
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'first_data',
+            'gateway_acquirer'          => 'icic',
+            'card'                      => 1,
+            'type'                      => [
+                Type::NON_RECURRING => '1',
+                Type::RECURRING_3DS => '1'
+            ],
+            'gateway_merchant_id'       => '3ds_gateway_merchant_id',
+        ];
+
+        $attributes = array_merge($attributes, $inputAttrs);
+
+        $terminal1 = $this->createEntityInTestAndLive('terminal', $attributes);
+
+        $attributes = [
+            'id'                        => 'FDRcrDTrmlN3DS',
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'first_data',
+            'gateway_acquirer'          => 'icic',
+            'card'                      => 1,
+            'type'                      => [
+                Type::RECURRING_NON_3DS => '1'
+            ],
+            'mode'                      => Mode::PURCHASE,
+            'gateway_merchant_id'       => 'non_3ds_gateway_merchant_id',
+            'gateway_merchant_id2'      => '3ds_gateway_merchant_id',
+        ];
+
+        $attributes = array_merge($attributes, $inputAttrs);
+
+        $terminal2 = $this->createEntityInTestAndLive('terminal', $attributes);
+
+        return [$terminal1, $terminal2];
+    }
+
     public function createSharedMigsRecurringTerminals()
     {
         $attributes = [
@@ -604,6 +644,28 @@ class Terminal extends Base
             'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'axis_migs',
             'gateway_acquirer'          => 'axis',
+            'card'                      => 1,
+            'type'                      => [
+                Type::RECURRING_NON_3DS => '1',
+                Type::RECURRING_3DS => '1'
+            ],
+            'gateway_merchant_id'       => 'random',
+            'gateway_terminal_id'       => 'recurring_random',
+            'gateway_terminal_password' => 'razorpay_password',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createHitachiRecurringTerminalWithBothRecurringTypes(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                        => 'HitcRcg3DSN3DS',
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'hitachi',
+            'gateway_acquirer'          => 'ratn',
             'card'                      => 1,
             'type'                      => [
                 Type::RECURRING_NON_3DS => '1',

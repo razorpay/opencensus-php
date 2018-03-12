@@ -16,7 +16,10 @@ class Repository extends Base\Repository
         Entity::REFERENCE   => 'sometimes|alpha_num',
     ];
 
-    public function findByTokenAndReference(Token\Entity $token, $reference)
+    public function findByTokenAndReference(
+        Token\Entity $token,
+        $reference,
+        $relations = [])
     {
         return $this->newQuery()
                     ->where(Entity::TOKEN_ID, '=', $token->getId())
@@ -33,6 +36,7 @@ class Repository extends Base\Repository
                         $q->where(Entity::REFERENCE, '=', $reference)
                           ->orWhereNull(Entity::REFERENCE);
                     })
+                    ->with($relations)
                     ->get();
     }
 }

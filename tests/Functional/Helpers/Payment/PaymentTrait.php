@@ -430,7 +430,7 @@ trait PaymentTrait
         return $content;
     }
 
-    protected function doS2sPrivateAuthAndCapturePayment($payment = null)
+    protected function doS2SPrivateAuthAndCapturePayment($payment = null)
     {
         $paymentAuth = $this->doS2SPrivateAuthPayment($payment);
 
@@ -1544,7 +1544,8 @@ trait PaymentTrait
                     $binRiskMapping = [
                         '510510' => '22.0',
                         '401201' => '15.3',
-                        '555555' => '2.4'
+                        '555555' => '2.4',
+                        '607076' => '10',
                     ];
 
                     if (isset($binRiskMapping[$bin]) === true)

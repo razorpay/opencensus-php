@@ -168,7 +168,6 @@ return array(
         Maatwebsite\Excel\ExcelServiceProvider::class,
         Http\Httplug\HttplugServiceProvider::class,
         Schuppo\PasswordStrength\PasswordStrengthServiceProvider::class,
-        GrahamCampbell\Throttle\ThrottleServiceProvider::class,
         Razorpay\Trace\ServiceProvider::class,
         anlutro\LaravelSettings\ServiceProvider::class,
 
@@ -256,7 +255,6 @@ return array(
         'Event'           => RZP\Events\Facade::class,
         'Mail'            => RZP\Mail\Facade::class,
         'Workflow'        => RZP\Services\Workflow\Facade::class,
-        'Throttle'        => GrahamCampbell\Throttle\Facades\Throttle::class,
         'LaravelSettings' => anlutro\LaravelSettings\Facade::class,
     ],
 
