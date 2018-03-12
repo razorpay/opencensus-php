@@ -229,10 +229,10 @@ trait PaymentTrait
         return hash_hmac(BasicAuth::HMAC_ALGO, $str, $secret);
     }
 
-    protected function getPaymentJsonFromCallback($content, $text = 'Callback data')
+    protected function getPaymentJsonFromCallback($content)
     {
         $start = 'var data = ';
-        $end = '// ' . $text . ' //';
+        $end = '// Callback data //';
 
         $data = getTextBetweenStrings($content, $start, $end);
 

@@ -16,6 +16,10 @@ class Gateway extends \RZP\Gateway\Base\Gateway
 
         $gatewayPayment->setPaymentId($this->input['payment']['id']);
 
+        $gatewayPayment->setAmount($this->input['payment']['amount']);
+
+        $gatewayPayment->setAcquirer($this->input['terminal']['gateway_acquirer']);
+
         $gatewayPayment->setAction($this->action);
 
         $gatewayPayment->fill($attributes);

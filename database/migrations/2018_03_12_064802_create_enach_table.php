@@ -7,6 +7,7 @@ use Illuminate\Database\Migrations\Migration;
 use RZP\Constants\Table;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Gateway\Enach\Base\Entity as Enach;
+use RZP\Models\Payment\Refund\Entity as Refund;
 
 class CreateEnachTable extends Migration
 {
@@ -25,11 +26,23 @@ class CreateEnachTable extends Migration
 
             $table->char(Enach::PAYMENT_ID, Payment::ID_LENGTH);
 
+            $table->char(Enach::REFUND_ID, Refund::ID_LENGTH);
+
             $table->string(Enach::ACTION);
+
+            $table->string(Enach::ACQUIRER);
+
+            $table->integer(Enach::AMOUNT);
+
+            $table->string(Enach::STATUS)
+                  ->nullable();
 
             $table->longText(Enach::SIGNED_XML);
 
             $table->string(Enach::UMRN)
+                  ->nullable();
+
+            $table->string(Enach::GATEWAY_REFERENCE_ID)
                   ->nullable();
 
             $table->string(Enach::ACKNOWLEDGE_STATUS)
