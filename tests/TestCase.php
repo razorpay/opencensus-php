@@ -43,8 +43,6 @@ class TestCase extends IlluminateTestCase
         $app = require __DIR__.'/../bootstrap/app.php';
 
         $app->make(\Illuminate\Contracts\Console\Kernel::class)->bootstrap();
-        // Skip throttle for test cases
-        $app['config']->set('throttle.skip', true);
 
         return $app;
     }

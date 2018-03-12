@@ -9,7 +9,6 @@ use Illuminate\Support\Str;
 use ApiResponse;
 use RZP\Http\Route;
 use RZP\Http\OAuth;
-use RZP\Http\Throttle;
 use RZP\Http\BasicAuth\Type;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Base\PublicCollection;
@@ -102,12 +101,6 @@ class Authenticate
     protected function authenticateBasicAuth(string $route)
     {
         $ret = null;
-
-        //
-        // TODO: This is not very ideal.
-        // In Throttle middleware also, we have very similar conditions.
-        // We should try to merge these or move out to a common function.
-        //
 
         if ((in_array($route, Route::$internal, true) === true) or
             (in_array($route, Route::$admin, true) === true))
