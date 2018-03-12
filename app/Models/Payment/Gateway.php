@@ -480,12 +480,12 @@ class Gateway
         self::WALLET_JIOMONEY,
         self::WALLET_SBIBUDDY,
         self::WALLET_MPESA,
-        self::UPI_ICICI,
     ];
 
     public static $verifyDisabled = [
         self::WALLET_OPENWALLET,
         self::NETBANKING_RBL,
+        self::UPI_ICICI,
     ];
 
     /**
