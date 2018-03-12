@@ -38,7 +38,7 @@ class Processor extends VirtualAccount\Processor
      */
     public function process(Base\PublicEntity $bharatQr, array $gatewayInput = null)
     {
-        $isDuplicateNotification = $this->checkIfDuplicateNotification($bharatQr);
+        $isDuplicateNotification = $this->checkIfDuplicateNotification($bharatQr, $gatewayInput);
 
         if ($isDuplicateNotification === true)
         {
@@ -55,7 +55,7 @@ class Processor extends VirtualAccount\Processor
 
         if ($isPaymentExpected === false)
         {
-            $this->createAndSetVirtualAccount($bharatQr->getAmount());
+            $this->createAndSetVirtualAccount($gatewayInput[GatewayResponseParams::AMOUNT]);
         }
 
         $this->processBharatQr($bharatQr, $gatewayInput);
@@ -86,9 +86,9 @@ class Processor extends VirtualAccount\Processor
         ];
     }
 
-    protected function checkIfDuplicateNotification(Base\PublicEntity $bharatQr)
+    protected function checkIfDuplicateNotification(Base\PublicEntity $bharatQr, $gatewayInput)
     {
-        $providerReferenceId = $bharatQr->getProviderReferenceId();
+        $providerReferenceId = $gatewayInput[GatewayResponseParams::PROVIDER_REFERENCE_ID];
 
         $bharatQrEntity = $this->repo->bharat_qr->findByProviderReferenceId($providerReferenceId);
 
@@ -183,9 +183,9 @@ class Processor extends VirtualAccount\Processor
      */
     protected function getLuhnValidCardNumberFromBharatQr(array $gatewayInput)
     {
-        $firstSix = $gatewayInput[Entity::CARD_FIRST6];
+        $firstSix = $gatewayInput[GatewayResponseParams::CARD_FIRST6];
 
-        $lastFour = $gatewayInput[Entity::CARD_LAST4];
+        $lastFour = $gatewayInput[GatewayResponseParams::CARD_LAST4];
 
         $part1 = $firstSix . self::RANDOM_CARD_PADDING;
 
@@ -202,8 +202,8 @@ class Processor extends VirtualAccount\Processor
     {
         $paymentArray = [
             Payment\Entity::CURRENCY    => Currency::INR,
-            Payment\Entity::METHOD      => $gatewayInput[Entity::METHOD],
-            Payment\Entity::AMOUNT      => $gatewayInput[Entity::AMOUNT],
+            Payment\Entity::METHOD      => $gatewayInput[GatewayResponseParams::METHOD],
+            Payment\Entity::AMOUNT      => $gatewayInput[GatewayResponseParams::AMOUNT],
             Payment\Entity::DESCRIPTION => 'Bharat Qr Payment',
         ];
 
@@ -214,7 +214,7 @@ class Processor extends VirtualAccount\Processor
         }
         else
         {
-            $paymentArray['vpa'] = $gatewayInput[Entity::VPA];
+            $paymentArray['vpa'] = $gatewayInput[GatewayResponseParams::VPA];
         }
 
         if ($this->virtualAccount->hasCustomer() === true)

@@ -167,12 +167,12 @@ class Gateway extends Base\Gateway
         }
 
         $qrData = [
-            BharatQr\Entity::AMOUNT                => $this->getIntegerFormattedAmount($input[ResponseFields::F004]),
-            BharatQr\Entity::CARD_FIRST6           => substr($input[ResponseFields::F002], 0, 6),
-            BharatQr\Entity::CARD_LAST4            => substr($input[ResponseFields::F002], 12, 4),
-            BharatQr\Entity::METHOD                => Payment\Method::CARD,
-            BharatQr\Entity::MERCHANT_REFERENCE    => $input[ResponseFields::PURCHASE_ID],
-            BharatQr\Entity::PROVIDER_REFERENCE_ID => $input[ResponseFields::F038],
+            BharatQr\GatewayResponseParams::AMOUNT                => $this->getIntegerFormattedAmount($input[ResponseFields::F004]),
+            BharatQr\GatewayResponseParams::CARD_FIRST6           => substr($input[ResponseFields::F002], 0, 6),
+            BharatQr\GatewayResponseParams::CARD_LAST4            => substr($input[ResponseFields::F002], 12, 4),
+            BharatQr\GatewayResponseParams::METHOD                => Payment\Method::CARD,
+            BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => $input[ResponseFields::PURCHASE_ID],
+            BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => $input[ResponseFields::F038],
         ];
 
         return $qrData;

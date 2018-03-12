@@ -13,8 +13,6 @@ class Entity extends Base\PublicEntity
     const EXPECTED              = 'expected';
     const VIRTUAL_ACCOUNT_ID    = 'virtual_account_id';
     const GATEWAY               = 'gateway';
-    const CARD_FIRST6           = 'card_first6';
-    const CARD_LAST4            = 'card_last4';
     const GATEWAY_MERCHANT_ID   = 'gateway_merchant_id';
     //card or upi
     const METHOD                = 'method';
@@ -43,11 +41,8 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
         self::AMOUNT,
-        self::GATEWAY,
         self::METHOD,
         self::VPA,
-        self::CARD_FIRST6,
-        self::CARD_LAST4,
         self::PROVIDER_REFERENCE_ID,
         self::MERCHANT_REFERENCE,
     ];
@@ -56,13 +51,10 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::EXPECTED,
         self::AMOUNT,
-        self::GATEWAY,
         self::PAYMENT_ID,
         self::VIRTUAL_ACCOUNT_ID,
         self::METHOD,
         self::VPA,
-        self::CARD_FIRST6,
-        self::CARD_LAST4,
         self::PROVIDER_REFERENCE_ID,
         self::MERCHANT_REFERENCE,
     ];

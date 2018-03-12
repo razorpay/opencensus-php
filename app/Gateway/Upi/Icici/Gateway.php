@@ -1,5 +1,4 @@
 <?php
-
 namespace RZP\Gateway\Upi\Icici;
 
 use Request;
@@ -7,13 +6,11 @@ use Carbon\Carbon;
 use RZP\Exception;
 use ErrorException;
 use RZP\Constants\Mode;
-use RZP\Gateway\Base\Flow;
 use RZP\Models\Payment;
 use RZP\Gateway\Utility;
 use RZP\Trace\TraceCode;
 use phpseclib\Crypt\RSA;
 use RZP\Error\ErrorCode;
-use RZP\Models\BharatQr;
 use RZP\Gateway\Upi\Base;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Verify;
@@ -21,6 +18,7 @@ use RZP\Gateway\Upi\Base\Entity;
 use RZP\Gateway\Base\VerifyResult;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Models\BharatQr;
 use RZP\Models\Payment\Verify\Action as VerifyAction;
 
 class Gateway extends Base\Gateway
@@ -586,8 +584,6 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
 
-        $this->flow = $gatewayPayment['flow'];
-
         $data = [
             'merchantId'        => $this->getMerchantId(),
             'merchantTranId'    => $gatewayPayment['merchant_reference'] ?? $input['payment']['id'],
@@ -877,11 +873,11 @@ class Gateway extends Base\Gateway
         }
 
         $qrData = [
-            BharatQr\Entity::AMOUNT                => $this->getIntegerFormattedAmount($input[Fields::PAYER_AMOUNT]),
-            BharatQr\Entity::VPA                   => $input[Fields::PAYER_VA],
-            BharatQr\Entity::METHOD                => Payment\Method::UPI,
-            BharatQr\Entity::MERCHANT_REFERENCE    => $input[Fields::MERCHANT_TRAN_ID],
-            BharatQr\Entity::PROVIDER_REFERENCE_ID => (string) $input[Fields::BANK_RRN],
+            BharatQr\GatewayResponseParams::AMOUNT                => $this->getIntegerFormattedAmount($input[Fields::PAYER_AMOUNT]),
+            BharatQr\GatewayResponseParams::VPA                   => $input[Fields::PAYER_VA],
+            BharatQr\GatewayResponseParams::METHOD                => Payment\Method::UPI,
+            BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => $input[Fields::MERCHANT_TRAN_ID],
+            BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => (string) $input[Fields::BANK_RRN],
         ];
 
         return $qrData;
