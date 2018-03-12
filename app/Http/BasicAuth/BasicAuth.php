@@ -228,7 +228,7 @@ class BasicAuth
      *
      * @var array
      */
-    protected static $validKeyLengths = [
+    public static $validKeyLengths = [
         8, 14, 23, 33
     ];
 

@@ -34,4 +34,12 @@ return [
             'txnCount'  => 4,
         ]
     ],
+
+    'testSettlementForReversalOfDirectTransfer' => [
+        'method'  => 'POST',
+        'url'     => '/schedules/update_next_run/',
+        'content' => [
+            'type' => 'settlement',
+        ],
+    ],
 ];

@@ -17,7 +17,6 @@ class Library
         // schedules, this is set to zero, but settlement time is pushed forward
         // by an hour anyway to avoid race conditions.
         //
-
         $settledAt = self::getMinimumDelayedTime($currentTime, $schedule);
 
         $nextRun = Carbon::createFromTimestamp($nextRunAt, Timezone::IST);

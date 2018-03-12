@@ -605,7 +605,19 @@ class Entity extends Base\PublicEntity
             'RZP\Models\Transaction\Entity');
     }
 
-    public function webhook()
+    /**
+     * This used to be a hasOne relation but with the introduction of entity_type
+     * and entity_id columns and webhooks being created for different entites for
+     * a merchant, this changed to hasMany. But this is not a correct representation
+     * as the webhooks against a merchant for other entities are not fired for that
+     * merchant's events but rather for merchant's using those entities (eg. oauth
+     * app webhook created by merch1 who owns the app, will be fired for merch2's
+     * events who is using that app)
+     *
+     * This needs to be fixed/redone as per this issue -
+     * https://razorpay.atlassian.net/browse/TF-142
+     */
+    public function webhooks()
     {
         return $this->hasMany(
             'RZP\Models\Merchant\Webhook\Entity');

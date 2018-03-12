@@ -124,6 +124,8 @@ class Processor extends Base\Core
 
             foreach ($channels as $channel)
             {
+                $this->traceSetlInitiating($channel);
+
                 $setlResponse = $this->createSettlements($channel);
 
                 $response[$channel]['count']    += $setlResponse['settlement_count'];

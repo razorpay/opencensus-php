@@ -90,6 +90,7 @@ final class Route
         'payment_capture_gateway_manual'          => ['post',     'payments/{id}/gateway/capture',                  'PaymentController@postManualGatewayCapture'                        ],
         'payment_authorize_time_out'              => ['post',     'payments/authorize/timeout/{ids}',               'PaymentController@postAuthorizeLockTimeOut'                        ],
         'refund_create'                           => ['post',     'refunds',                                        'RefundController@postRefundCreate'                                 ],
+        'refund_edit_status'                      => ['put',      'refunds/{id}/status',                            'RefundController@putRefundStatus'                                        ],
         'refund_fetch_by_id'                      => ['get',      'refunds/{id}',                                   'RefundController@getRefund'                                        ],
         'refund_fetch_multiple'                   => ['get',      'refunds',                                        'RefundController@getRefunds'                                       ],
         'refund_generate_excel'                   => ['post',     'refunds/excel',                                  'RefundController@generateRefunds'                                  ],
@@ -1214,6 +1215,7 @@ final class Route
         'permission_edit',
         'permission_delete',
         'auditlog_search',
+        'refund_edit_status',
         'admin_logout',
         'schedule_create',
         'schedule_delete',
@@ -1708,6 +1710,7 @@ final class Route
         'shield_rules_delete'                    => Permission::DELETE_SHIELD_RULES,
         'shield_rules_evaluate'                  => Permission::EVALUATE_SHIELD_RULES,
         'user_fetch_admin'                       => '*',
+        'refund_edit_status'                     => '*',
         'batch_create'                           => '*',
         'reporting_config_get'                   => '*',
         'reporting_config_list'                  => '*',
@@ -2135,16 +2138,6 @@ final class Route
         'merchant_public_get_banks',
         'merchant_methods',
         'merchant_methods_downtime',
-    ];
-
-    /**
-     * This will not be needed once we have rate limiting on all routes.
-     * Adding now to test throttling on just a few routes at a time.
-     *
-     * @var array
-     */
-    public static $throttledRoutes = [
-        'dummy_route',
     ];
 
     /**

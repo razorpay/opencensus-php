@@ -2,10 +2,12 @@
 
 namespace RZP\Models\Transaction;
 
+use Carbon\Carbon;
 use DB;
 
 use RZP\Constants\Table;
 use RZP\Constants\Entity as E;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Gateway\Billdesk;
 use RZP\Models\Base;
@@ -29,7 +31,7 @@ class Repository extends Base\Repository
     protected $appFetchParamRules = array(
         Entity::SETTLED         => 'sometimes|in:0,1',
         Entity::ON_HOLD         => 'sometimes|in:0,1',
-        Entity::TYPE            => 'sometimes|in:payment,refund,settlement,adjustment',
+        Entity::TYPE            => 'sometimes|in:payment,refund,settlement,adjustment,reversal,transfer',
         Entity::SETTLEMENT_ID   => 'sometimes|alpha_dash|min:14|max:19',
         Entity::ENTITY_ID       => 'sometimes|alpha_dash|min:14',
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
@@ -85,6 +87,8 @@ class Repository extends Base\Repository
         $transactionCreditsType = $this->dbColumn(Entity::CREDIT_TYPE);
         $transactionCreatedAt   = $this->dbColumn(Entity::CREATED_AT);
 
+        $txnFetchStartTime = microtime(true);
+
         $query = $this->newQuery()
                       ->select(
                           $transactionId,
@@ -122,7 +126,13 @@ class Repository extends Base\Repository
             $query = $query->whereNotIn($merchantId, $notInMerchantIds);
         }
 
-        return $query->get();
+        $results = $query->get();
+
+        $txnFetchTimeTaken = microtime(true) - $txnFetchStartTime;
+
+        $this->trace->info(TraceCode::SETTLEMENT_TXN_FETCH_TIME_TAKEN, ['time_taken' => $txnFetchTimeTaken]);
+
+        return $results;
     }
 
     public function fetchUnsettledTransactionsForMerchantUpdate($merchantId)
@@ -351,6 +361,8 @@ class Repository extends Base\Repository
 
         $batchedIds = array_chunk($ids, 1000);
 
+        $startTime = microtime(true);
+
         foreach ($batchedIds as $batch)
         {
             $count = $this->newQuery()
@@ -370,6 +382,10 @@ class Repository extends Base\Repository
                     ]);
             }
         }
+
+        $timeTaken = microtime(true) - $startTime;
+
+        $this->trace->info(TraceCode::SETTLEMENT_TXN_UPDATE_TIME_TAKEN, ['time_taken' => $timeTaken]);
 
         return $txnCount;
     }

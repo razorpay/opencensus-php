@@ -181,10 +181,11 @@ class Entity
     const CACHED_ENTITIES = [
         self::KEY      => [
             QueryCacheConstants::VERSION => 'v1',
+            QueryCacheConstants::TTL     => 30,
         ],
         self::MERCHANT => [
             QueryCacheConstants::VERSION => 'v1',
-            QueryCacheConstants::TTL     => 1,
+            QueryCacheConstants::TTL     => 10,
         ],
         self::ACCOUNT  => [
             QueryCacheConstants::VERSION => 'v1',
