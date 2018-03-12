@@ -217,7 +217,13 @@ class Core extends Base\Core
 
         (new Methods\Core)->validateInternationalPricingForMerchant($merchant, $plan);
 
-        $this->saveAndNotify($merchant);
+        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $input)
+        {
+            // This is used to sync fields transaction_report_email and website in merchant and merchantDetail
+            (new Detail\Core)->editMerchantDetailFields($merchant, $input);
+
+            $this->saveAndNotify($merchant);
+        });
 
         $this->syncHeimdallRelatedEntities($merchant, $input);
 
@@ -427,6 +433,34 @@ class Core extends Base\Core
     public function getActivationStatusChangeLog(Entity $merchant): PublicCollection
     {
         return $merchant->getActivationStatusChangeLog();
+    }
+
+    /**
+     * This function is used for updating key access of a merchant
+     * @param Entity $merchant
+     * @param array $input
+     *
+     * @return Entity
+     */
+    public function updateKeyAccess(Entity $merchant, array $input): Entity
+    {
+        $merchant->getValidator()->validateInput('keyAccess', $input);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_UPDATE_KEY_ACCESS,
+            ['input' => $input]);
+
+        $oldMerchant = clone $merchant;
+
+        $merchant->setHasKeyAccess($input[Entity::HAS_KEY_ACCESS]);
+
+        $this->app['workflow']
+             ->setEntity($merchant->getEntity())
+             ->handle($oldMerchant, $merchant);
+
+        $this->repo->saveOrFail($merchant);
+
+        return $merchant;
     }
 
     public function markGratisTransactionPostpaid(string $merchantId, int $from)

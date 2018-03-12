@@ -9,7 +9,6 @@ use Illuminate\Support\Str;
 use ApiResponse;
 use RZP\Http\Route;
 use RZP\Http\OAuth;
-use RZP\Http\Throttle;
 use RZP\Http\BasicAuth\Type;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Base\PublicCollection;
@@ -103,12 +102,6 @@ class Authenticate
     {
         $ret = null;
 
-        //
-        // TODO: This is not very ideal.
-        // In Throttle middleware also, we have very similar conditions.
-        // We should try to merge these or move out to a common function.
-        //
-
         if ((in_array($route, Route::$internal, true) === true) or
             (in_array($route, Route::$admin, true) === true))
         {
@@ -137,7 +130,14 @@ class Authenticate
         }
         else if (in_array($route, Route::$publicCallback, true) === true)
         {
-            $ret = $this->ba->publicCallbackAuth();
+            if ($this->oauth->hasOAuthPublicToken() === true)
+            {
+                $ret = $this->authenticateOAuthPublicToken();
+            }
+            else
+            {
+                $ret = $this->ba->publicCallbackAuth();
+            }
         }
         else if (in_array($route, Route::$proxy, true) === true)
         {

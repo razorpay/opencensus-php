@@ -42,10 +42,11 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->gateway = Gateway::NETBANKING_ICICI;
 
         $this->fixtures->create('terminal:shared_emandate_icici_terminal');
+        $this->fixtures->create('terminal:shared_emandate_axis_terminal');
 
         $this->fixtures->create(Entity::CUSTOMER);
 
-        $this->fixtures->merchant->addFeatures([Constants::CHARGE_AT_WILL, Constants::E_MANDATE]);
+        $this->fixtures->merchant->addFeatures([Constants::CHARGE_AT_WILL]);
 
         $this->fixtures->merchant->enableEmandate();
 
@@ -651,6 +652,7 @@ class NetbankingIciciEMandateTest extends TestCase
         // The used_at does not get updated. Need to fix this!
         // $this->assertEquals($payment[Payment::CREATED_AT], $token[Token::USED_AT]);
         $this->assertEquals($payment[Payment::MERCHANT_ID], $token[Token::MERCHANT_ID]);
+        $this->assertEquals('NIcRecurringTl', $payment[Payment::TERMINAL_ID]);
         $this->assertEquals($payment[Payment::TERMINAL_ID], $token[Token::TERMINAL_ID]);
         $this->assertEquals($payment[Payment::CUSTOMER_ID], 'cust_' . $token[Token::CUSTOMER_ID]);
         $this->assertEquals(IFSC::ICIC, $payment[Payment::BANK]);

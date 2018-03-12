@@ -7,7 +7,8 @@ class Constants
     const VERSION               = '01';
     // TODO: Accept this from input
     // issue: https://github.com/razorpay/api/issues/7054
-    const POINT_OF_INITIATION   = '12';
+    const STATIC_POI            = '11';
+    const DYNAMIC_POI           = '12';
     const MERCHANT_CATEGORY     = '5399';
     const CURRENCY_CODE         = '356';
     const COUNTRY_CODE          = 'IN';

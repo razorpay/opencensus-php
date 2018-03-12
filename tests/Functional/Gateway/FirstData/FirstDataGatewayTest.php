@@ -273,6 +273,8 @@ class FirstDataGatewayTest extends TestCase
 
     public function testVerifyReverse()
     {
+        $this->markTestSkipped();
+
         $payment = $this->doAuthPayment();
 
         $this->getErrorInReturn();

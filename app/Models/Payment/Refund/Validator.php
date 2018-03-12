@@ -21,6 +21,10 @@ class Validator extends Base\Validator
         'reversals.*.notes'     => 'sometimes|notes',
     ];
 
+    protected static $editStatusRules = [
+        Entity::STATUS          => 'required|string|in:initiated|custom',
+    ];
+
     protected static $createValidators = [
         'paymentStatus',
         'paymentRefundStatus',
@@ -54,6 +58,16 @@ class Validator extends Base\Validator
     public function setPayment($payment)
     {
         $this->payment = $payment;
+    }
+
+    protected function validateStatus($input)
+    {
+        if ($this->entity->getStatus() === Status::PROCESSED)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Status cannot be updated to initiated from processed.',
+                'status');
+        }
     }
 
     protected function validatePaymentStatus()

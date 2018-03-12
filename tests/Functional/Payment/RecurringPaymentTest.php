@@ -212,6 +212,57 @@ class RecurringPaymentTest extends TestCase
         $this->assertEquals($paymentEntity[Payment::TWO_FACTOR_AUTH], 'skipped');
     }
 
+    /**
+     * A test to ensure that 2nd recurring payments can pass through a terminal
+     * even if it isn't assigned to the merchant, as long as the first recurring
+     * payment went through a terminal that was assigned to the merchant
+     * Uses gateway token relations.
+     */
+    public function testRecurringSecondPaymentUnassignedTerminal()
+    {
+        // A pair of recurring terminals exist, but they aren't yours
+        $this->fixtures->create('terminal:direct_first_data_recurring_terminals', [
+            'merchant_id' => '1ApiFeeAccount',
+        ]);
+
+        // Okay now the first one is yours
+        $response = $this->assignSubMerchant('FDRcrDTrmnl3DS', '10000000000000');
+
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $tokenEntity   = $this->getLastEntity('token', true);
+
+        // Looks like the first one really is yours
+        $this->assertEquals('FDRcrDTrmnl3DS', $paymentEntity[Payment::TERMINAL_ID]);
+
+        $this->assertEquals(true, $tokenEntity[Token::RECURRING]);
+
+        $tokenId = $paymentEntity[Payment::TOKEN_ID];
+
+        unset($payment[Payment::CARD]);
+
+        $payment[Payment::TOKEN] = $tokenId;
+
+        $this->ba->privateAuth();
+
+        $content = $this->doS2sRecurringPayment($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        // OMG the second one is yours too, what is this sorcery
+        $this->assertEquals('FDRcrDTrmlN3DS', $paymentEntity[Payment::TERMINAL_ID]);
+
+        $this->assertEquals('skipped', $paymentEntity[Payment::TWO_FACTOR_AUTH]);
+    }
+
     public function testRecurringPaymentCreatePrivateAuth()
     {
         $this->markTestSkipped('Mark skipped. Fix it');
@@ -570,5 +621,21 @@ class RecurringPaymentTest extends TestCase
         });
 
         $this->ba->publicAuth();
+    }
+
+    protected function assignSubMerchant(string $tid, string $mid)
+    {
+        $url = '/terminals/' . $tid . '/merchants/' . $mid;
+
+        $request = [
+            'url'    => $url,
+            'method' => 'PUT',
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->ba->getAdmin()->merchants()->attach('10000000000000');
+
+        return $this->makeRequestAndGetContent($request);
     }
 }

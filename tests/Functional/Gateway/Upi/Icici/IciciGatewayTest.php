@@ -46,10 +46,39 @@ class IciciGatewayTest extends TestCase
         return $paymentId;
     }
 
+    public function testIntentDisabledPayment()
+    {
+        $this->fixtures->merchant->addFeatures(['disable_upi_intent']);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        unset($payment['description']);
+        unset($payment['vpa']);
+
+        $payment['_']['flow'] = 'intent';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content['refId'] = 'ICICIRefId';
+            }
+            else
+            {
+                $content['PayerVA'] = 'crims0n@icici';
+            }
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPaymentViaAjaxRoute($payment);
+        });
+    }
+
     public function testIntentPayment()
     {
-        $this->fixtures->merchant->addFeatures(['upi_intent']);
-
         unset($this->payment['description']);
         unset($this->payment['vpa']);
 
@@ -93,13 +122,11 @@ class IciciGatewayTest extends TestCase
 
     public function testIntentPaymentWithVpa()
     {
-        $this->fixtures->merchant->addFeatures(['upi_intent']);
-
         $payment = $this->getDefaultUpiPaymentArray();
 
         $payment['vpa'] = 'dontencrypt@icici';
 
-        unset($this->payment['description']);
+        unset($payment['description']);
 
         $payment['_']['flow'] = 'intent';
 

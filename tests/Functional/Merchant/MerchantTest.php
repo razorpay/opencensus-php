@@ -10,6 +10,8 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Cache\Events\CacheHit;
 use Illuminate\Cache\Events\KeyWritten;
 use Illuminate\Cache\Events\CacheMissed;
+use Illuminate\Cache\Events\KeyForgotten;
+use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
 use RZP\Models\Key;
 use RZP\Models\Merchant;
@@ -20,13 +22,13 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\BankAccount\Entity as BankAccount;
 use RZP\Mail\Merchant\Activation as ActivationMail;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Helpers\Schedule\ScheduleTrait;
 use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
 use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
-use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
 class MerchantTest extends TestCase
 {
@@ -35,6 +37,7 @@ class MerchantTest extends TestCase
     use SettlementTrait;
     use InteractsWithSession;
     use HeimdallTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -209,6 +212,80 @@ class MerchantTest extends TestCase
         $this->assertArrayNotHasKey('groups', $result);
     }
 
+    public function testEditBulkMerchantAttributes()
+    {
+        $this->createMerchant([
+                                  'id'    => '10000000000044',
+                                  'email' => 'test1@razorpay.com',
+                              ]);
+
+        $this->createMerchant([
+                                  'id'    => '10000000000055',
+                                  'email' => 'test2@razorpay.com',
+                              ]);
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('live');
+
+        $this->startTest();
+
+        $merchant1 = $this->getDbEntityById('merchant', '10000000000044');
+        $merchant2 = $this->getDbEntityById('merchant', '10000000000055');
+
+        foreach ([$merchant1, $merchant2] as $merchant)
+        {
+            $this->assertEquals(1, $merchant['hold_funds']);
+            $this->assertEquals(['1.1.1.1', '2.2.2.2'], $merchant['whitelisted_ips_live']);
+        }
+    }
+
+    public function testEditBulkMerchantAction()
+    {
+        $this->createMerchant([
+                                  'id'    => '10000000000044',
+                                  'email' => 'test1@razorpay.com',
+                              ]);
+
+        $this->createMerchant([
+                                  'id'    => '10000000000055',
+                                  'email' => 'test2@razorpay.com',
+                              ]);
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('live');
+
+        $this->startTest();
+
+        $merchant1 = $this->getDbEntityById('merchant', '10000000000044');
+        $merchant2 = $this->getDbEntityById('merchant', '10000000000055');
+
+        foreach ([$merchant1, $merchant2] as $merchant)
+        {
+            $this->assertEquals(1, $merchant['hold_funds']);
+        }
+    }
+
+    public function testFailedBulkMerchant()
+    {
+        $this->createMerchant([
+                                  'id'    => '10000000000044',
+                                  'email' => 'test1@razorpay.com',
+                              ]);
+
+        $this->createMerchant([
+                                  'id'    => '10000000000055',
+                                  'email' => 'test2@razorpay.com',
+                              ]);
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('live');
+
+        $this->startTest();
+    }
+
     public function testEditMerchantEditGroups()
     {
         $merchant = $this->createMerchant();
@@ -299,11 +376,24 @@ class MerchantTest extends TestCase
 
     public function testEditMerchantEmail()
     {
-        $this->createMerchant();
+        $content = $this->createMerchant();
 
         $this->ba->adminAuth();
 
+        Event::fake(false);
+
         $this->startTest();
+
+        Event::assertDispatched(KeyForgotten::class, function ($e) use ($content)
+        {
+            $expectedTags = [
+                'merchant_' . $content['id'],
+            ];
+
+            $this->assertArraySelectiveEquals($expectedTags, $e->tags);
+
+            return true;
+        });
     }
 
     public function testEditMerchantWhitelistedIpsLive()
@@ -495,6 +585,27 @@ class MerchantTest extends TestCase
         $this->createMerchant();
 
         $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testMerchantUpdateKeyAccess()
+    {
+        $attribute = ['business_website' => 'https://www.example.com'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $url = $testData['request']['url'];
+
+        $url = sprintf($url, $merchantId);
+
+        $testData['request']['url'] = $url;
+
+        $this->ba->adminAuth('test', null, Org::RZP_ORG_SIGNED);
 
         $this->startTest();
     }
@@ -806,9 +917,9 @@ class MerchantTest extends TestCase
 
     public function testAddBankAccount()
     {
-        $this->ba->adminAuth();
-
         Mail::fake();
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
 
         $this->startTest();
 
@@ -824,9 +935,9 @@ class MerchantTest extends TestCase
 
     public function testAddBankAccountWithMerchantDetail()
     {
-        $this->ba->adminAuth();
-
         Mail::fake();
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
 
         $this->fixtures->create('merchant_detail',
                                                 [
@@ -860,7 +971,7 @@ class MerchantTest extends TestCase
 
     public function testAddBankAccountWithInvalidIFSC()
     {
-        $this->ba->adminAuth();
+        $this->ba->proxyAuth('rzp_test_10000000000000');
 
         $this->startTest();
     }
@@ -868,6 +979,8 @@ class MerchantTest extends TestCase
     public function testGetBankAccount()
     {
         $this->testAddBankAccount();
+
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
@@ -1622,7 +1735,7 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
-    public function testQueryCacheHitForKey()
+    public function testQueryCacheHitForKeyAndMerchant()
     {
         config(['app.query_cache.mock' => false]);
 
@@ -1637,11 +1750,17 @@ class MerchantTest extends TestCase
         //
         Event::assertDispatched(CacheMissed::class, function ($e)
         {
-            $expectedTags = [
-                'key_TheTestAuthKey',
-            ];
-
-            $this->assertArraySelectiveEquals($expectedTags, $e->tags);
+            foreach ($e->tags as $tag)
+            {
+                if (starts_with($tag, 'key') === true)
+                {
+                    $this->assertEquals('key_TheTestAuthKey', $tag);
+                }
+                else if (starts_with($tag, 'merchant') === true)
+                {
+                    $this->assertEquals('merchant_10000000000000', $tag);
+                }
+            }
 
             return true;
         });
@@ -1651,13 +1770,21 @@ class MerchantTest extends TestCase
         //
         Event::assertDispatched(KeyWritten::class, function ($e)
         {
-            $expectedTags = [
-                'key_TheTestAuthKey',
-            ];
+            foreach ($e->tags as $tag)
+            {
+                if (starts_with($tag, 'key') === true)
+                {
+                    $this->assertEquals('key_TheTestAuthKey', $tag);
 
-            $this->assertArraySelectiveEquals($expectedTags, $e->tags);
+                    $this->assertEquals('TheTestAuthKey', $e->value[0]->id);
+                }
+                else if (starts_with($tag, 'merchant') === true)
+                {
+                    $this->assertEquals('merchant_10000000000000', $tag);
 
-            $this->assertEquals('TheTestAuthKey', $e->value[0]->id);
+                    $this->assertEquals('10000000000000', $e->value[0]->id);
+                }
+            }
 
             return true;
         });
@@ -1674,23 +1801,31 @@ class MerchantTest extends TestCase
         //
         Event::assertDispatched(CacheHit::class, function ($e)
         {
-            $expectedTags = [
-                'key_TheTestAuthKey',
-            ];
+            foreach ($e->tags as $tag)
+            {
+                if (starts_with($tag, 'key') === true)
+                {
+                    $this->assertEquals('key_TheTestAuthKey', $tag);
 
-            $this->assertArraySelectiveEquals($expectedTags, $e->tags);
+                    $this->assertEquals('TheTestAuthKey', $e->value[0]->id);
+                }
+                else if (starts_with($tag, 'merchant') === true)
+                {
+                    $this->assertEquals('merchant_10000000000000', $tag);
 
-            $this->assertEquals('TheTestAuthKey', $e->value[0]->id);
+                    $this->assertEquals('10000000000000', $e->value[0]->id);
+                }
+            }
 
             return true;
         });
     }
 
-    public function testQueryCacheFlushForKey()
+    public function testQueryCacheFlushForKeyAndMerchant()
     {
         config(['app.query_cache.mock' => false]);
 
-        Event::fake();
+        Event::fake(false);
 
         $this->ba->proxyAuthTest();
 
@@ -1702,6 +1837,17 @@ class MerchantTest extends TestCase
         // Expires default key
         //
         $content = $this->runRequestResponseFlow($testData);
+
+        Event::assertDispatched(KeyForgotten::class, function ($e) use ($content)
+        {
+            $expectedTags = [
+                'key_TheTestAuthKey',
+            ];
+
+            $this->assertArraySelectiveEquals($expectedTags, $e->tags);
+
+            return true;
+        });
 
         $newKey = $content['new']['id'];
 
@@ -1715,29 +1861,41 @@ class MerchantTest extends TestCase
         //
         Event::assertDispatched(CacheMissed::class, function ($e) use ($newKey)
         {
-            $expectedTags = [
-                'key_' . $newKey,
-            ];
-
-            $this->assertArraySelectiveEquals($expectedTags, $e->tags);
+            foreach ($e->tags as $tag)
+            {
+                if (starts_with($tag, 'key') === true)
+                {
+                    $this->assertEquals('key_' . $newKey, $tag);
+                }
+                else if (starts_with($tag, 'merchant') === true)
+                {
+                    $this->assertEquals('merchant_10000000000000', $tag);
+                }
+            }
 
             return true;
         });
 
         Event::assertDispatched(KeyWritten::class, function ($e) use ($newKey)
         {
-            $expectedTags = [
-                'key_' . $newKey,
-            ];
+            foreach ($e->tags as $tag)
+            {
+                if (starts_with($tag, 'key') === true)
+                {
+                    $this->assertEquals('key_' . $newKey, $tag);
 
-            $this->assertArraySelectiveEquals($expectedTags, $e->tags);
+                    $this->assertEquals($newKey, $e->value[0]->id);
+                }
+                else if (starts_with($tag, 'merchant') === true)
+                {
+                    $this->assertEquals('merchant_10000000000000', $tag);
 
-            $this->assertEquals($newKey, $e->value[0]->id);
+                    $this->assertEquals('10000000000000', $e->value[0]->id);
+                }
+            }
 
             return true;
         });
-
-        Event::assertNotDispatched(CacheHit::class);
     }
 
     public function testBeneficiaryRegisterKotak()
@@ -1903,17 +2061,17 @@ class MerchantTest extends TestCase
         return $this->runRequestResponseFlow($testData);
     }
 
-    protected function createMerchant()
+    protected function createMerchant($attributes = [])
     {
         $this->ba->adminAuth();
 
-        $id = '1X4hRFHFx4UiXt';
-
-        $merchant = [
-            'id'    => $id,
+        $defaultAttributes = [
+            'id'    => '1X4hRFHFx4UiXt',
             'name'  => 'Tester 2',
             'email' => 'liveandtest@localhost.com'
         ];
+
+        $merchant = array_merge($defaultAttributes, $attributes);
 
         $request = [
             'content' => $merchant,
@@ -1923,7 +2081,7 @@ class MerchantTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->merchantAssignPricingPlan('1hDYlICobzOCYt', $id);
+        $this->merchantAssignPricingPlan('1hDYlICobzOCYt', $merchant['id']);
 
         $this->ba->appAuth();
 

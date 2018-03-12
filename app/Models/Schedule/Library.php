@@ -17,7 +17,6 @@ class Library
         // schedules, this is set to zero, but settlement time is pushed forward
         // by an hour anyway to avoid race conditions.
         //
-
         $settledAt = self::getMinimumDelayedTime($currentTime, $schedule);
 
         $nextRun = Carbon::createFromTimestamp($nextRunAt, Timezone::IST);
@@ -28,17 +27,51 @@ class Library
         //
         if ($settledAt > $nextRun)
         {
-            $nextRun = self::computeFutureRun($schedule, $settledAt, $nextRun);
+            if ($schedule->getAnchor() != null)
+            {
+                $refTime = $settledAt;
+
+                //
+                // minTime is not needed because in anchored
+                // schedules, we know exactly when to charge next.
+                // The next_run is fixed without any dependency.
+                //
+                $minTime = null;
+            }
+            else
+            {
+                $refTime = $nextRun;
+
+                $minTime = $settledAt;
+            }
+
+            $nextRun = self::computeFutureRun($schedule, $refTime, $minTime, true);
         }
 
         return $nextRun->getTimestamp();
     }
 
+    /**
+     * @param  Entity $schedule
+     * @param  Carbon $referenceTime    This is used to calculate the next_run_at.
+     *                                  The calculation happens from this timestamp.
+     *                                  This would generally be the current time.
+     *                                  But it can be a time in the future also
+     *                                  from where we want to calculate the next_run_at.
+     * @param  Carbon $minTime          The minimum time that needs to pass from the
+     *                                  referenceTime to get the next_run. This field
+     *                                  does not apply to anchored schedules.
+     * @param  bool   $considerHolidays
+     *
+     * @return Carbon
+     *
+     * @throws LogicException
+     */
     public static function computeFutureRun(
         Entity $schedule,
         Carbon $referenceTime,
-        Carbon $lastRun,
-        bool $considerHolidays = true)
+        Carbon $minTime = null,
+        bool $considerHolidays = false)
     {
         if ($schedule->getAnchor() !== null)
         {
@@ -57,7 +90,7 @@ class Library
             // of time. For example, settlements that happen N days after their
             // corresponding payments, or settlements that happen every N hours.
             //
-            $futureRun = self::resolveUnAnchored($schedule, $referenceTime, $lastRun);
+            $futureRun = self::resolveUnAnchored($schedule, $referenceTime, $minTime);
         }
 
         if ($considerHolidays === true)
@@ -144,8 +177,8 @@ class Library
         foreach (range(1, $interval) as $i)
         {
             //
-            // Since hourly schedules can't be anchored,
-            // time no longer matters.
+            // Since hourly schedules can't be
+            // anchored, time no longer matters.
             //
             $nextRun = $refTime->addDay()->startOfDay();
 
@@ -164,7 +197,7 @@ class Library
         return $nextRun;
     }
 
-    protected static function resolveUnAnchored(Entity $schedule, Carbon $refTime, Carbon $lastRun)
+    protected static function resolveUnAnchored(Entity $schedule, Carbon $refTime, Carbon $minTime = null)
     {
         $period = $schedule->getPeriod();
 
@@ -177,7 +210,7 @@ class Library
                     'period' => $period,
                     'schedule_id' => $schedule->getId(),
                     'ref_time' => $refTime->getTimestamp(),
-                    'last_run' => $lastRun->getTimestamp(),
+                    'min_time' => $minTime->getTimestamp(),
                 ]);
         }
 
@@ -186,13 +219,44 @@ class Library
 
         $interval = $schedule->getInterval();
 
-        // Increment by interval until we cross minimum delay time.
-        while ($refTime > $lastRun)
+        //
+        // Problem: Some services (settlements) have a concept of `minTime` and some services (subscriptions) don't.
+        // `minTime` is basically the minimum time that should be passed while calculating
+        // the next run from a given time (`refTime`). If there was no `minTime`, we could just directly
+        // do `refTime->addDays(3)`.
+        // ---
+        // Requirements:
+        // 1. If minTime = 29th Jan 12am, refTime = 20th Jan 12am, we need the nextRun to be 29th Jan 12am.
+        // 2. If minTime = null, refTime = 20th Jan 12am, we need the nextRun to be 23rd Jan 12am.
+        //    This is the case where the service (like subscriptions) doesn't have any concept of minTime and just
+        //    needs the nextRun to be calculated from the given refTime.
+        // 3. If minTime = 20th Jan 12am, refTime = 20th Jan 12am, we need the nextRun to be 20th Jan 12am.
+        //    This is a requirement for settlements.
+        //    The case where minTime = refTime and minTime != null:
+        //    refTime (time when the cron is supposed to run next): 21st Jan 12am
+        //    captured_at: 20th Jan 9am
+        //    delay: 1 day
+        //    hour: 0 (this is the default one)
+        //    minTime (captured_at + delay): 21st Jan 12am
+        // ---
+        // Solution:
+        // - If minTime = null, just add the interval to refTime directly.
+        // - If minTime is not null, keep adding the interval
+        //   to refTime until the minTime is equal or crossed.
+        //
+        if ($minTime === null)
         {
-            $lastRun->$step($interval);
+            $refTime->$step($interval);
+        }
+        else
+        {
+            while ($minTime > $refTime)
+            {
+                $refTime->$step($interval);
+            }
         }
 
-        return $lastRun;
+        return $refTime;
     }
 
     protected static function checkAnchor(Carbon $time, Entity $schedule)
@@ -216,7 +280,6 @@ class Library
      * @param Entity $schedule
      *
      * @return bool
-     * @throws LogicException
      */
     protected static function checkAnchorForNonLast(Carbon $time, Entity $schedule): bool
     {

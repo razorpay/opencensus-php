@@ -56,10 +56,11 @@ class Constants
     const ALLOW_DC_RECURRING            = 'allow_dc_recurring';
     const SKIP_HOLD_FUNDS_ON_PAYOUT     = 'skip_hold_funds_on_payout';
     const REPORT_V2                     = 'report_v2';
-    const UPI_INTENT                    = 'upi_intent';
     const CORPORATE_BANKS               = 'corporate_banks';
     const MAGIC                         = 'magic';
     const NEW_ANALYTICS                 = 'new_analytics';
+    const DAILY_SETTLEMENT              = 'daily_settlement';
+    const DISABLE_UPI_INTENT            = 'disable_upi_intent';
 
     // Orders
     const ORDER_ID_MANDATORY            = 'order_id_mandatory';
@@ -133,19 +134,24 @@ class Constants
         self::ALLOW_DC_RECURRING            => true,
         self::SKIP_HOLD_FUNDS_ON_PAYOUT     => true,
         self::REPORT_V2                     => true,
-        self::UPI_INTENT                    => true,
         self::CORPORATE_BANKS               => true,
         self::ORDER_ID_MANDATORY            => true,
         self::ORDER_RECEIPT_UNIQUE          => true,
         self::MAGIC                         => true,
         self::NEW_ANALYTICS                 => true,
+        self::DAILY_SETTLEMENT              => true,
+        self::DISABLE_UPI_INTENT            => true,
     ];
+
+    // Entity type constants
+    const ACCOUNT                       = 'account';
+    const MERCHANT                      = 'merchant';
+    const APPLICATION                   = 'application';
 
     // Keys used in the feature on-boarding workflow
     const STATUS                        = 'status';
     const PRODUCT                       = 'product';
     const FEATURES                      = 'features';
-    const MERCHANT                      = 'merchant';
     const ONBOARDING                    = 'onboarding';
     const ONBOARDING_SUBMISSIONS_FETCH  = 'onboarding_submissions_fetch';
     const ONBOARDING_SUBMISSIONS_UPSERT = 'onboarding_submissions_upsert';

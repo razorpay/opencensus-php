@@ -20,6 +20,9 @@ class Preferences
     const MID_PIGGY            = '9IjdEkLQb0j2ro';
     const MID_ENDURANCE        = ['9YAQd3b47mdIQY', '9ZO8jNaR0OORNH'];
     const MID_SHELL            = '9LMdTQdjgMJ6uR';
+    const MID_PAISABAZAAR      = '9dhe2WRR0XCQz6';
+    const MID_BPCL             = '9C04GG1wPzKCUP';
+    const MID_SRI_CHAITANYA    = '8f9o3YjPGZEcdU';
     const DEMO_ACCOUNT         = '100DemoAccount';
 
     /**

@@ -14,6 +14,8 @@ class Core extends Base\Core
     {
         $merchantMapping = (new Entity)->build($input);
 
+        $merchantMapping->generateId();
+
         $merchantMapping->merchant()->associate($merchant);
 
         if (empty($entity) === false)
@@ -42,12 +44,12 @@ class Core extends Base\Core
         $merchantId = $merchant->getId();
 
         $accessMapping = $this->repo
-                               ->merchant_access_map
-                               ->getMerchantAccessEntityMapping(
-                                    $merchantId,
-                                    $input[Entity::APPLICATION_ID],
-                                    Entity::APPLICATION
-                               );
+                              ->merchant_access_map
+                              ->findMerchantAccessMapOnEntityId(
+                                  $merchantId,
+                                  $input[Entity::APPLICATION_ID],
+                                  Entity::APPLICATION
+                              );
 
         if ($accessMapping !== null)
         {
@@ -76,12 +78,12 @@ class Core extends Base\Core
         $merchantId = $merchant->getId();
 
         $mapping = $this->repo
-            ->merchant_access_map
-            ->getMerchantAccessEntityMapping(
-                $merchantId,
-                $appId,
-                Entity::APPLICATION
-            );
+                        ->merchant_access_map
+                        ->findMerchantAccessMapOnEntityId(
+                            $merchantId,
+                            $appId,
+                            Entity::APPLICATION
+                        );
 
         if (empty($mapping) === false)
         {

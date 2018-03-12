@@ -315,6 +315,21 @@ return [
         ],
     ],
 
+    'testMerchantUpdateWebsiteDetails' => [
+        'request' => [
+            'content' => [
+                'business_website' => 'https://www.example.com',
+            ],
+            'url'     => '/merchant/activation/update_website_details',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'business_website' => 'https://www.example.com'
+            ],
+        ],
+    ],
+
     'testCommentMerchant' => [
         'request' => [
             'content' => [
