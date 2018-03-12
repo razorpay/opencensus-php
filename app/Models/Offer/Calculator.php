@@ -11,6 +11,8 @@ class Calculator extends Base\Core
      */
     protected $offer;
 
+    const MIN_PAYMENT_AMOUNT = 100;
+
     public function __construct(Entity $offer)
     {
         parent::__construct();
@@ -22,7 +24,19 @@ class Calculator extends Base\Core
     {
         $discount = $this->calculateDiscount($amount);
 
-        return max(0, ($amount - $discount));
+        $discountedAmount = ($amount - $discount);
+
+        //
+        // Needs to be handled better later. Maybe return the original
+        // amount, maybe handle zero-rupee payment in auth flow. Not
+        // doing any of that right now. When in doubt, throw an exception.
+        //
+        if ($discountedAmount < self::MIN_PAYMENT_AMOUNT)
+        {
+            throw new Exception\LogicException("Discounted amount less than minimum payment amount");
+        }
+
+        return $discountedAmount;
     }
 
     public function calculateDiscount(int $amount)
