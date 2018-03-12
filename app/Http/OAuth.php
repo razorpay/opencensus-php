@@ -62,7 +62,7 @@ class OAuth
         $key = $keyParam ?? $this->request->getUser();
         // For callback routes, gets the key from route parameter
         $route = $this->router->currentRouteName();
-        if ((empty($key) == true) and (in_array($route, Route::$publicCallback, true) === true))
+        if ((empty($key) === true) and (in_array($route, Route::$publicCallback, true) === true))
         {
             $key = $this->router->current()->parameter('key');
         }

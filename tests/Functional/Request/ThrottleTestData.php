@@ -64,6 +64,35 @@ return [
         ],
     ],
 
+    'testGetOrderWhenThrottledWithoutMockForSpecificMerchant1' => [
+        'request' => [
+            'method' => 'get',
+            'url'    => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'count' => 0,
+                'items' => [],
+            ],
+        ],
+    ],
+
+    'testGetOrderWhenThrottledWithoutMockForSpecificMerchant2' => [
+        'request' => [
+            'method' => 'get',
+            'url'    => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Request failed. Please try after sometime.',
+                ],
+            ],
+            'status_code' => 429,
+        ],
+    ],
+
     'testGetOrderWhenRedisSettingsMissing' => [
         'request' => [
             'method' => 'get',

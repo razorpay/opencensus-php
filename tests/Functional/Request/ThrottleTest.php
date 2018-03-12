@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Request;
 use RZP\Trace\TraceCode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Traits\TestsThrottle;
+use RZP\Http\Throttle\Constant as K;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 /**
@@ -47,6 +48,22 @@ class ThrottleTest extends TestCase
         $this->setRedisIdLevelSettings('10000000000000', ['test:private:0:order_fetch:mbs' => 1]);
 
         $this->startTest($this->testData[__FUNCTION__.'1']);
+        $this->startTest($this->testData[__FUNCTION__.'2']);
+    }
+
+    public function testGetOrderWhenThrottledWithoutMockForSpecificMerchant()
+    {
+        // Makes global settings mock to true, Also makes max bucket size as 0 for making
+        // all request throttle for test purposes
+        $this->setRedisGlobalSettings([K::SKIP => 0, K::MOCK => 1, K::MAX_BUCKET_SIZE => 0]);
+
+        // This first request would get throttled but will be mocked
+        $this->startTest($this->testData[__FUNCTION__.'1']);
+
+        // Now makes a specific route UN-mocked for specific merchant
+        $this->setRedisIdLevelSettings('10000000000000', ['test:private:0:order_fetch:mock' => 0]);
+
+        // This second request would get throttled for real
         $this->startTest($this->testData[__FUNCTION__.'2']);
     }
 
