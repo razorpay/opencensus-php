@@ -9,6 +9,13 @@ use RZP\Exception\LogicException;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 
+/**
+ * Class Validator
+ *
+ * @package RZP\Models\LineItem
+ *
+ * @property Entity     $entity
+ */
 class Validator extends Base\Validator
 {
     const TAX_CODES  = 'tax_codes';
@@ -97,7 +104,6 @@ class Validator extends Base\Validator
         $lineItem        = $this->entity;
         $morphEntity     = $lineItem->entity;
         $morphEntityName = $morphEntity->getEntity();
-
 
         $traceData = [
             Entity::ID          => $lineItem->getId(),

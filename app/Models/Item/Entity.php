@@ -187,17 +187,17 @@ class Entity extends Base\PublicEntity
 
     public function getHsnCode()
     {
-        $this->getAttribute(self::HSN_CODE);
+        return $this->getAttribute(self::HSN_CODE);
     }
 
     public function getSacCode()
     {
-        $this->getAttribute(self::SAC_CODE);
+        return $this->getAttribute(self::SAC_CODE);
     }
 
     public function getTaxRate()
     {
-        $this->getAttribute(self::TAX_RATE);
+        return $this->getAttribute(self::TAX_RATE);
     }
 
     public function getTaxId()

@@ -421,6 +421,7 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
     protected function validateIntPercentage($attribute, $value)
     {
         $isInteger = $this->validateInteger($attribute, $value);
+
         $isInRange = $this->validateBetween(
             $attribute,
             $value,

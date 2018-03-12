@@ -48,7 +48,7 @@ class Validator extends Base\Validator
         Entity::TAX_INCLUSIVE       => 'filled|boolean',
         Entity::HSN_CODE            => 'filled|string|max:8',
         Entity::SAC_CODE            => 'filled|string|max:8',
-        Entity::TAX_RATE            => 'sometimes|int_percentage',
+        Entity::TAX_RATE            => 'sometimes|nullable|int_percentage',
         Entity::TAX_ID              => 'sometimes|nullable|public_id|size:18',
         Entity::TAX_GROUP_ID        => 'sometimes|nullable|public_id|size:19',
     ];
