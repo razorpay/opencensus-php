@@ -51,6 +51,9 @@ class Selector extends Base\Core
 
         // Sorting based on gateway downtimes
         Sorters\GatewayDowntimeSorter::class,
+
+        // Boosts terminals with gateway tokens over fallback terminal (without gateway tokens)
+        Sorters\RecurringSorter::class
     ];
 
     public function __construct(array $input, Terminal\Options $options)
@@ -97,37 +100,6 @@ class Selector extends Base\Core
         $filteredTerminals = $this->filterTerminals($allTerminals, $applicableRules, $verbose);
 
         $payment = $this->input['payment'];
-
-        if (empty($filteredTerminals) === true)
-        {
-            $basicAuth = $this->app['basicauth'];
-
-            $access = (($basicAuth->isPrivateAuth() === true) or
-                       ($basicAuth->isPrivilegeAuth() === true));
-
-            $token = $payment->getGlobalOrLocalTokenEntity();
-
-            //
-            // We are doing this only for second recurring
-            // card payments made via private/privilege auth
-            //
-            if (($payment->isCard() === true) and ($payment->isRecurring() === true) and
-                ($token !== null) and
-                ($token->isRecurring() === true) and
-                ($access === true))
-            {
-                //
-                // For fallback, we need to get direct terminals which
-                // support both recurring 3DS and recurring non-3DS
-                // on a single terminal. These terminals usually allow
-                // payments without 2FA first.
-                //
-                $filteredTerminals = $this->repo
-                                          ->terminal
-                                          ->getDirectRecurringTerminalsOfType($this->input['merchant'], 6)
-                                          ->all();
-            }
-        }
 
         $sortedTerminals = $this->sortTerminals($filteredTerminals, $applicableRules, $verbose);
 

@@ -430,7 +430,7 @@ trait PaymentTrait
         return $content;
     }
 
-    protected function doS2sPrivateAuthAndCapturePayment($payment = null)
+    protected function doS2SPrivateAuthAndCapturePayment($payment = null)
     {
         $paymentAuth = $this->doS2SPrivateAuthPayment($payment);
 
