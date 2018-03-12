@@ -381,6 +381,8 @@ class Gateway extends Base\Gateway
             $actualAmount = number_format($input['gateway']['amt'], 2, '.', '');
 
             $this->assertAmount($expectedAmount, $actualAmount);
+
+            $this->verify($input);
         }
         else
         {
