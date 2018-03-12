@@ -419,6 +419,12 @@ class Gateway
         ],
     ];
 
+    public static $cardNetworkRecurringMap = [
+        self::HITACHI => [
+            Network::VISA,
+        ],
+    ];
+
     public static $walletToGatewayMap = [
         Wallet::OLAMONEY    => Gateway::WALLET_OLAMONEY,
         Wallet::PAYTM       => Gateway::PAYTM,
@@ -1063,10 +1069,34 @@ class Gateway
         return (in_array($gateway, self::TOPUP_GATEWAYS));
     }
 
-    public static function isCardNetworkSupported($network, $gateway)
+    /**
+     * - If the gateway is not present in the cardNetworkMap OR if gateway
+     *   is present but does not support the network, [supported = false]
+     * - If supported = true AND recurring = true and if gateway is present in cardNetworkRecurringMap,
+     *     - supported = true/false based on whether the gateway supports the network.
+     *   The reason why we let it be true even if the gateway is not present in cardNetworkRecurringMap
+     *   is because there are very few gateways which would have a different set of networks for
+     *   supporting recurring. Most gateways support the same set of networks as present in cardNetworkMap.
+     *
+     * @param      $network
+     * @param      $gateway
+     * @param bool $recurring
+     *
+     * @return bool
+     */
+    public static function isCardNetworkSupported(string $network, string $gateway, bool $recurring = false)
     {
-        return ((array_key_exists($gateway, self::$cardNetworkMap)) and
-                (in_array($network, self::$cardNetworkMap[$gateway])));
+        $supported = ((array_key_exists($gateway, self::$cardNetworkMap) === true) and
+                      (in_array($network, self::$cardNetworkMap[$gateway], true) === true));
+
+        if (($supported === true) and
+            ($recurring === true) and
+            (isset(self::$cardNetworkRecurringMap[$gateway]) === true))
+        {
+            $supported = (in_array($network, self::$cardNetworkRecurringMap[$gateway], true) === true);
+        }
+
+        return $supported;
     }
 
     public static function getExclusiveNetworksForGateway(string $gateway)
