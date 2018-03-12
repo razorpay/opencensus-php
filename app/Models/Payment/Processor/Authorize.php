@@ -4108,7 +4108,7 @@ trait Authorize
 
         $magicDisabledGlobally = (bool) $cache->get(ConfigKey::DISABLE_MAGIC);
 
-        if (($magicDisabledGlobally === true) and
+        if (($magicDisabledGlobally === false) and
             ($this->merchant->isMagicEnabled() === true) and
             ($payment->card->isMagicEnabled() === true))
         {
