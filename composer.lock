@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "eb64ac8d2ddb4512303540a37e68e4a7",
+    "content-hash": "105c16753aada7d4b38a3e663711d84e",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -5652,16 +5652,16 @@
         },
         {
             "name": "razorpay/trace",
-            "version": "2.0.10",
+            "version": "dev-laravel_55",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/trace.git",
-                "reference": "81e4aaaf903ae4ff6c8352db4fe5a2e55352c8bd"
+                "reference": "ee7e77f92ea9d305d674e332a042e7c8dff3c3a4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/trace/zipball/81e4aaaf903ae4ff6c8352db4fe5a2e55352c8bd",
-                "reference": "81e4aaaf903ae4ff6c8352db4fe5a2e55352c8bd",
+                "url": "https://api.github.com/repos/razorpay/trace/zipball/ee7e77f92ea9d305d674e332a042e7c8dff3c3a4",
+                "reference": "ee7e77f92ea9d305d674e332a042e7c8dff3c3a4",
                 "shasum": ""
             },
             "require": {
@@ -5679,6 +5679,16 @@
                 "zendframework/zend-diactoros": "dev-master"
             },
             "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Razorpay\\Trace\\ServiceProvider"
+                    ],
+                    "aliases": {
+                        "Trace": "Razorpay\\Trace\\Facades\\Trace"
+                    }
+                }
+            },
             "autoload": {
                 "psr-4": {
                     "Razorpay\\Trace\\": [
@@ -5711,10 +5721,10 @@
                 "trace"
             ],
             "support": {
-                "source": "https://github.com/razorpay/trace/tree/2.0.10",
+                "source": "https://github.com/razorpay/trace/tree/laravel_55",
                 "issues": "https://github.com/razorpay/trace/issues"
             },
-            "time": "2018-03-02T04:42:10+00:00"
+            "time": "2018-03-09T13:16:47+00:00"
         },
         {
             "name": "razorpay/ufh-sdk-php",
@@ -9721,6 +9731,7 @@
         "razorpay/upi-clients": 20,
         "razorpay/ufh-sdk-php": 20,
         "razorpay/hodor": 20,
+        "razorpay/trace": 20,
         "razorpay/oauth": 20,
         "codacy/coverage": 20,
         "symfony/phpunit-bridge": 20

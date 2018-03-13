@@ -168,7 +168,6 @@ return array(
         Maatwebsite\Excel\ExcelServiceProvider::class,
         Http\Httplug\HttplugServiceProvider::class,
         Schuppo\PasswordStrength\PasswordStrengthServiceProvider::class,
-        Razorpay\Trace\ServiceProvider::class,
         anlutro\LaravelSettings\ServiceProvider::class,
 
         /**
@@ -245,7 +244,6 @@ return array(
 
         // Application Facades
         'ApiResponse'     => RZP\Http\Response\Facade::class,
-        'Trace'           => Razorpay\Trace\Facades\Trace::class,
 
         // Custom Facades
         'Excel'           => Maatwebsite\Excel\Facades\Excel::class,
