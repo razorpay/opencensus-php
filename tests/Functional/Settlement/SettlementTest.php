@@ -971,6 +971,8 @@ class SettlementTest extends TestCase
 
     public function testSettlementForReversalOfPaymentTransfer()
     {
+        $this->markTestSkipped();
+
         $channel = Channel::AXIS;
 
         //  Thursday, 8 March 2018 00:00:05 GMT+05:30
