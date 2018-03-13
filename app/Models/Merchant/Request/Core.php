@@ -11,6 +11,7 @@ use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\State\Reason;
 use RZP\Models\Base\PublicEntity;
+use RZP\Mail\Merchant\RequestRejection;
 use RZP\Models\Merchant\Detail\RejectionReasons;
 
 class Core extends Base\Core
@@ -572,5 +573,38 @@ class Core extends Base\Core
         ];
 
         return $response;
+    }
+
+    /**
+     * @param Merchant\Entity $merchant
+     * @param Entity          $request
+     */
+    public function sendRejectionEmail(Merchant\Entity $merchant, Entity $request)
+    {
+        $merchantEmail  = $merchant->getEmail();
+
+        $merchantId     = $merchant->getId();
+
+        $featureName    = $request->getName();
+
+        if ($request->isProductRequest() === false)
+        {
+            return;
+        }
+
+        $visibleFeatures = Feature\Constants::$visibleFeaturesMap;
+
+        $data = [
+            'feature'       => $visibleFeatures[$featureName]['display_name'],
+            'documentation' => $visibleFeatures[$featureName]['documentation'],
+            'contact_name'  => $merchant->getName(),
+            'contact_email' => $merchantEmail,
+            'merchant_id'   => $merchantId,
+            //'reason_code'   => $reason_code,
+        ];
+
+        $requestRejectionEmail = new RequestRejection($data);
+
+        Mail::queue($requestRejectionEmail);
     }
 }

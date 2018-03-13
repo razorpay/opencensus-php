@@ -118,6 +118,9 @@ class MailTags
     // Merchant feature tags
     const FEATURE_ENABLED                  = 'feature_enabled';
 
+    // Merchant Requwst tags
+    const MERCHANT_REQUEST_REJECTED        = 'merchant_request_rejected';
+
     // Dispute tags
     const DISPUTE_CREATED                  = 'dispute_created';
 
