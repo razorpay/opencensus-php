@@ -157,8 +157,6 @@ return [
                         Header::DESCRIPTION      => 'test payment link',
                         Header::EXPIRE_BY        => null,
                         Header::PARTIAL_PAYMENT  => null,
-                        Header::ERROR_CODE       => null,
-                        Header::ERROR_DESCRIPTION=> null,
                     ],
                     // Duplicate receipt number will not get detected in the validation api
                     [
@@ -170,8 +168,6 @@ return [
                         Header::DESCRIPTION      => 'test payment link - 2',
                         Header::EXPIRE_BY        => null,
                         Header::PARTIAL_PAYMENT  => 0,
-                        Header::ERROR_CODE       => null,
-                        Header::ERROR_DESCRIPTION=> null,
                     ],
                     [
                         Header::INVOICE_NUMBER   => '#3',
@@ -182,8 +178,6 @@ return [
                         Header::DESCRIPTION      => 'test payment link - 3',
                         Header::EXPIRE_BY        => null,
                         Header::PARTIAL_PAYMENT  => null,
-                        Header::ERROR_CODE       => null,
-                        Header::ERROR_DESCRIPTION=> null,
                     ],
                 ],
             ],
