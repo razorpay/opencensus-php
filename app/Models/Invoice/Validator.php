@@ -167,10 +167,11 @@ class Validator extends Base\Validator
      * @var array
      */
     protected static $editCustomerDetailsRules = [
-        Customer\Entity::NAME               => 'sometimes|regex:(^[a-zA-Z. 0-9\']+$)|max:50|nullable',
-        Customer\Entity::EMAIL              => 'sometimes|email',
-        Customer\Entity::CONTACT            => 'sometimes|contact_syntax',
-        Customer\Entity::BILLING_ADDRESS_ID => 'sometimes|public_id|size:19|nullable',
+        Customer\Entity::NAME                => 'sometimes|regex:(^[a-zA-Z. 0-9\']+$)|max:50|nullable',
+        Customer\Entity::EMAIL               => 'sometimes|email',
+        Customer\Entity::CONTACT             => 'sometimes|contact_syntax',
+        Customer\Entity::BILLING_ADDRESS_ID  => 'sometimes|public_id|size:19|nullable',
+        Customer\Entity::SHIPPING_ADDRESS_ID => 'sometimes|public_id|size:19|nullable',
     ];
 
     protected static $issueBatchRules = [
