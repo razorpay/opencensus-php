@@ -99,7 +99,7 @@ export default ({
         </ShowWhen>
       </div>
       <header class="m-b">Issues:</header>
-      <div style={styles.issuesSection}>
+      <div class="issue-section">
         <Table
           animateRow={false}
           fields={fields}
@@ -107,7 +107,7 @@ export default ({
           customClass="table-bordered"
         />
       </div>
-      <div style={styles.issuesSection}>
+      <div class="issue-section">
         <Form class="full-span full-elements limited">
           <TextAreaField
             label="Public Comment"
@@ -148,11 +148,3 @@ const fields = [
     ),
   ],
 ];
-
-const styles = {
-  issuesSection: {
-    width: '50%',
-    display: 'inline-block',
-    verticalAlign: 'top',
-  },
-};

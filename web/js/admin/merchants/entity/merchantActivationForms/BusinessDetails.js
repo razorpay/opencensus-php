@@ -254,21 +254,6 @@ export default class BusinessDetails extends Component {
 
             <div class="mulitple-fields-group">
               <Field
-                label="Operation Address same as Registered Address"
-                name="or_same"
-                defaultValue={merchantDetails.or_same}
-                disabled
-              />
-              <CheckField
-                label="Has Issue"
-                data-issuename="or_same"
-                onChange={onIssueSelection}
-                checked={doesIssueExist('or_same')}
-              />
-            </div>
-
-            <div class="mulitple-fields-group">
-              <Field
                 label="Operation Address"
                 name="business_operation_address"
                 defaultValue={merchantDetails.business_operation_address}
@@ -353,59 +338,41 @@ export default class BusinessDetails extends Component {
             </div>
 
             {this.state.companyInfo && (
-              <div class="mulitple-fields-group">
-                <div class="field">
-                  {Object.keys(this.state.companyInfo.company).map(key => {
-                    let className = 'pill pill-wrap';
-                    if (key === 'defaulter') {
-                      if (this.state.companyInfo.company[key]) {
-                        className += ' label-danger';
-                      } else {
-                        className += ' label-success';
-                      }
+              <div class="field only-field">
+                {Object.keys(this.state.companyInfo.company).map(key => {
+                  let className = 'pill pill-wrap';
+                  if (key === 'defaulter') {
+                    if (this.state.companyInfo.company[key]) {
+                      className += ' label-danger';
                     } else {
-                      className += ' label-semi-muted';
+                      className += ' label-success';
                     }
-                    return (
-                      <EntityRow
-                        class="info-block no-padding m-t m-b"
-                        key={key}
-                        label={`${titleCase(key)}:`}
-                        value={() => (
-                          <span class={className}>
-                            {JSON.stringify(
-                              this.state.companyInfo.company[key]
-                            )}
-                          </span>
-                        )}
-                      />
-                    );
-                  })}
-                </div>
-                <CheckField
-                  label="Has Issue"
-                  data-issuename="company_info"
-                  onChange={onIssueSelection}
-                  checked={doesIssueExist('company_info')}
-                />
+                  } else {
+                    className += ' label-semi-muted';
+                  }
+                  return (
+                    <EntityRow
+                      class="info-block no-padding m-t m-b"
+                      key={key}
+                      label={`${titleCase(key)}:`}
+                      value={() => (
+                        <span class={className}>
+                          {JSON.stringify(this.state.companyInfo.company[key])}
+                        </span>
+                      )}
+                    />
+                  );
+                })}
               </div>
             )}
 
             {this.state.companyInfo && (
-              <div class="mulitple-fields-group">
-                <div class="field">
-                  <label>Signatories:</label>
-                  <Table
-                    customClass="custom-table"
-                    items={this.state.companyInfo.signatories}
-                    fields={_getCompanyInfoFields()}
-                  />
-                </div>
-                <CheckField
-                  label="Has Issue"
-                  data-issuename="company_info_signatories"
-                  onChange={onIssueSelection}
-                  checked={doesIssueExist('company_info_signatories')}
+              <div class="field only-field">
+                <label>Signatories:</label>
+                <Table
+                  customClass="custom-table"
+                  items={this.state.companyInfo.signatories}
+                  fields={_getCompanyInfoFields()}
                 />
               </div>
             )}
@@ -494,29 +461,21 @@ export default class BusinessDetails extends Component {
                 checked={doesIssueExist('promoter_pan_name')}
               />
             </div>
-            <div class="mulitple-fields-group">
-              <div class="field">
-                <label>Signatory PAN Verified</label>
-                <i
-                  class={`i ${
-                    this.state.panVerified
-                      ? 'i-yes text-success'
-                      : 'i-no text-danger'
-                  }`}
-                />
-                <div class="info-block">
-                  <i class="i i-info-circle" />
-                  This only verifies if the Signatory PAN Number and Name on the
-                  Card provided here matches an entry in the signatory table
-                  above.
-                </div>
-              </div>
-              <CheckField
-                label="Has Issue"
-                data-issuename="pan_verified"
-                onChange={onIssueSelection}
-                checked={doesIssueExist('pan_verified')}
+            <div class="field only-field">
+              <label>Signatory PAN Verified</label>
+              <i
+                class={`i ${
+                  this.state.panVerified
+                    ? 'i-yes text-success'
+                    : 'i-no text-danger'
+                }`}
               />
+              <div class="info-block">
+                <i class="i i-info-circle" />
+                This only verifies if the Signatory PAN Number and Name on the
+                Card provided here matches an entry in the signatory table
+                above.
+              </div>
             </div>
           </Form>
         )}

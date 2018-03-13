@@ -150,7 +150,7 @@ export default class MerchantActivationForm extends Component {
   render() {
     const { details } = this.model.merchant;
     return (
-      <div class="entity-container">
+      <div class="entity-container activation-form">
         <header class="heading">Activation Form</header>
         {this.getOverview()}
 
