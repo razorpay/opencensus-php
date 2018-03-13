@@ -154,6 +154,20 @@ return [
         ],
     ],
 
+    'publicRouteWithOAuthPublicToken' => [
+        'id_settings_key' => '',
+        'throttle_key'    => 'invoice_get_status:test:public:0::100OAuthPublic:1.1.1.1',
+        'settings'        => [
+        ],
+    ],
+
+    'publicCallbackRouteWithOAuthPublicToken' => [
+        'id_settings_key' => '',
+        'throttle_key'    => 'payment_callback_with_key_get:test:public:0::100OAuthPublic:1.1.1.1',
+        'settings'        => [
+        ],
+    ],
+
     'privateRoute' => [
         'id_settings_key' => '10000000000000',
         'throttle_key'    => 'invoice_fetch_multiple:test:private:0::10000000000000:',
@@ -193,6 +207,31 @@ return [
             ],
             'global_4'    => [
                 K::BLOCK              => true,
+            ],
+            'id_level_1'  => [
+                K::MAX_BUCKET_SIZE    => 50,
+                K::LEAK_RATE_VALUE    => 5,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_id_1' => [
+                K::MAX_BUCKET_SIZE    => 50,
+                K::LEAK_RATE_VALUE    => 5,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+        ],
+    ],
+
+    'privateRouteWithOAuthBearerToken' => [
+        'id_settings_key' => '100OAuthClient',
+        'throttle_key'    => 'invoice_fetch_multiple::private:0:100OAuthClient:10000000000000:',
+        'settings'        => [
+            'global_1'    => [
+                K::MAX_BUCKET_SIZE    => 50,
+                K::LEAK_RATE_VALUE    => 5,
+                K::LEAK_RATE_DURATION => 1,
+            ],
+            'global_4'    => [
+                K::BLOCK              => 1,
             ],
             'id_level_1'  => [
                 K::MAX_BUCKET_SIZE    => 50,

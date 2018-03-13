@@ -82,9 +82,10 @@ trait HasRequestContext
     protected $mid;
 
     /**
+     * Every oauth application has dev & prod clients.
      * @var string
      */
-    protected $oauthAppId;
+    protected $oauthClientId;
 
     /**
      * @var string
@@ -203,9 +204,9 @@ trait HasRequestContext
         if (($isPrivateRoute === true) and
             (empty($token = $this->getBearerToken()) === false))
         {
-            $parsed           = (new Parser)->parse($token);
-            $this->oauthAppId = $parsed->getClaim('aud');
-            $this->mid        = $parsed->getClaim('merchant_id');
+            $parsed              = (new Parser)->parse($token);
+            $this->oauthClientId = $parsed->getClaim('aud');
+            $this->mid           = $parsed->getClaim('merchant_id');
             return true;
         }
         else if ((($isPrivateRoute === true) and ($this->isDashboard() === true)) or
