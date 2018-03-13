@@ -162,6 +162,7 @@ export default props => {
                 <EntityDetailRow
                   label="Summary"
                   value={invoice.description || '--'}
+                  style={{ whiteSpace: 'pre' }}
                 />
                 <EntityDetailRow label="Receipt" value={invoice.receipt} />
                 <EntityDetailRow label="Customer Details">
