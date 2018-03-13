@@ -221,10 +221,14 @@ class Base extends BaseModel\Core
             return (isset($entry[Batch\Header::ERROR_CODE]) === false);
         });
 
+        $parsedData = array_slice($correctEntries, 0, self::MAX_PARSED_ROWS);
+
+        $this->removeErrorColumnsFromEntries($parsedData);
+
         $response = [
             Constants::PROCESSABLE_COUNT     => count($correctEntries),
             Constants::ERROR_COUNT           => count($entries) - count($correctEntries),
-            Constants::PARSED_ENTRIES        => array_slice($correctEntries, 0, self::MAX_PARSED_ROWS),
+            Constants::PARSED_ENTRIES        => $parsedData,
         ];
 
         return $response;
