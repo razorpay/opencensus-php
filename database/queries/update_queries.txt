@@ -1562,3 +1562,17 @@ UPDATE workflows SET deleted_at = UNIX_TIMESTAMP(NOW()) WHERE id = '9R2zfkFxFdMD
 
 # Undo deleted merchant_suspend workflow
 UPDATE workflows SET deleted_at = NULL WHERE id = '8VdlpVWnbPoqwK';
+
+# Update recipient_settlement_id in transfers table
+UPDATE transfers as tr
+    JOIN payments
+        ON payments.transfer_id = tr.id
+    JOIN transactions as txn
+        ON txn.entity_id = payments.id
+    JOIN settlements
+        ON txn.settlement_id = settlements.id
+SET tr.recipient_settlement_id = settlements.id
+WHERE payments.transfer_id IS NOT NULL
+AND txn.settled = 1
+AND txn.type='payment'
+AND tr.recipient_settlement_id IS NULL
