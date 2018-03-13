@@ -105,4 +105,33 @@ return [
             ],
         ],
     ],
+
+    'testGetOrderWhenBlockedForTestMerchant1' => [
+        'request' => [
+            'method' => 'get',
+            'url'    => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'count' => 0,
+                'items' => [],
+            ],
+        ],
+    ],
+
+    'testGetOrderWhenBlockedForTestMerchant2' => [
+        'request' => [
+            'method' => 'get',
+            'url'    => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Request failed. Please try after sometime.',
+                ],
+            ],
+            'status_code' => 429,
+        ],
+    ],
 ];

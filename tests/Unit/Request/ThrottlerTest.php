@@ -194,12 +194,14 @@ class ThrottlerTest extends TestCase
                 $throttlerMock->initThrottleSettings();
 
                 $expectedSettings         = $expected['settings'][$key] ?? [];
+                $expectedBlock            = $expectedSettings[K::BLOCK] ?? K::DEFAULT_BLOCK;
                 $expectedSkip             = $expectedSettings[K::SKIP] ?? K::DEFAULT_SKIP;
                 $expectedMock             = $expectedSettings[K::MOCK] ?? K::DEFAULT_MOCK;
                 $expectedMaxBucketSize    = $expectedSettings[K::MAX_BUCKET_SIZE] ?? K::DEFAULT_MAX_BUCKET_SIZE;
                 $expectedLeakRateValue    = $expectedSettings[K::LEAK_RATE_VALUE] ?? K::DEFAULT_LEAK_RATE_VALUE;
                 $expectedLeakRateDuration = $expectedSettings[K::LEAK_RATE_DURATION] ?? K::DEFAULT_LEAK_RATE_DURATION;
 
+                $this->assertEquals($expectedBlock, $throttlerMock->isBlocked());
                 $this->assertEquals($expectedSkip, $throttlerMock->isThrottleSkipped());
                 $this->assertEquals($expectedMock, $throttlerMock->isThrottleMocked());
                 $this->assertEquals($expectedMaxBucketSize, $throttlerMock->getThrottleMaxBucketSize());
