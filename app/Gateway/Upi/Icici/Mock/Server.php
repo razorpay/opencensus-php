@@ -117,8 +117,6 @@ class Server extends Base\Mock\Server
         $status = 'SUCCESS';
         $message = 'Transaction Successful';
 
-        $amount = number_format($payment['amount'] / 100, 2, '.', '');
-
         if (isset($payment['notes']['status']) === true)
         {
             if ($payment['notes']['status'] === 'created')
@@ -133,14 +131,6 @@ class Server extends Base\Mock\Server
             }
         }
 
-        if (isset($payment['notes']['amount']) === true)
-        {
-            if ($payment['notes']['amount'] === 'mismatch')
-            {
-                $amount = '12';
-            }
-        }
-
         $responseCode = $this->getVerifyResponseCode($payment['vpa']);
 
         $response = [
@@ -152,8 +142,7 @@ class Server extends Base\Mock\Server
             'message'           => $message,
             'merchantTranId'    => $input['merchantTranId'],
             'OriginalBankRRN'   => (string) random_int(1111111111, 9999999999),
-            'status'            => $status,
-            'Amount'            => $amount,
+            'status'            => $status
         ];
 
         $this->content($response, 'verify');
