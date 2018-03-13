@@ -33,7 +33,7 @@ export default ({ type, ...otherProps }) => {
       <div class="form-group list-filter-item">
         <label>Dispute Type</label>
         <Field name="phase" component="select" class="form-control input-sm">
-          <option value=""> </option>
+          <option value="">All</option>
           {phases.map(phase => (
             <option key={phase} value={phase}>
               {titleCase(phase)}
@@ -45,7 +45,7 @@ export default ({ type, ...otherProps }) => {
       <div class="form-group list-filter-item">
         <label>Dispute State</label>
         <Field name="status" component="select" class="form-control input-sm">
-          <option value=""> </option>
+          <option value="">All</option>
           {statues.map(status => (
             <option key={status} value={status}>
               {titleCase(status)}
