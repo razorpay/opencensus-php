@@ -192,7 +192,7 @@
         box-shadow: 0 0 20px rgba(0,0,0,0.08);
         border: 1px solid #dfdfdf;
         border-radius: 4px;
-        min-height: 300px;
+        min-height: 270px;
       }
 
       .inv-details {
@@ -337,8 +337,8 @@
       .bg-svg {
           position: absolute;
           z-index: -100;
-          left: -330px;
           top: -35px;
+          width: 100%;
       }
 
       #payment-container--mob {
@@ -638,11 +638,11 @@
           @if (isset($data['invoice']) && $data['invoice']['type'] !== 'invoice')
             <div id="desktop-container">
                 <div>
+                  <svg class="bg-svg" width="1665px" height="665px" viewBox="0 0 1665 665" preserveAspectRatio="none">
+                      <polygon fill="#fafafa" points="40 50 1665 210 1665 346 220 545 -150 150"></polygon>
+                      <polygon fill="#f5f5f5" transform="translate(0, -40)" points="-40 215 1865 0 1965 450 1550 690 0 655"></polygon>
+                  </svg>
                   <div id="payment-container">
-                    <svg class="bg-svg" width="1665px" height="665px" viewBox="0 0 1665 665" preserveAspectRatio="none">
-                        <polygon fill="#fafafa" transform="translate(750, 300) scale(1, -1) translate(-810, -274.0)" points="0 200 1665 3 1665 346 220 545 0 475"></polygon>
-                        <polygon fill="#f5f5f5" transform="translate(0, -40)" points="-40 200 1465 0 1665 450 1300 670 0 635"></polygon>
-                    </svg>
 
                       <div class="table-box" id="inv-info-par">
                           <div id="inv-info-box">
