@@ -111,6 +111,8 @@ export const options = {
     '100000-200000': '100000-200000',
     '0-200000': '0-200000',
     '200000-1000000000': '200000-1000000000',
+    '0-10000000': '0 - 1 lac',
+    '10000000-': '1 lac+'
   },
   emi_duration: {
     '': 'All',
@@ -156,7 +158,8 @@ class Rule extends CollectionItem {
       let range = data.amount_range.split('-');
       data.amount_range_active = 1;
       data.amount_range_min = range[0];
-      data.amount_range_max = range[1];
+      // if the max not specified its 2cr
+      data.amount_range_max = range[1] || 1000000000;
     }
     delete data.amount_range;
 
