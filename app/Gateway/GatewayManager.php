@@ -87,11 +87,14 @@ class GatewayManager extends \Illuminate\Support\Manager
 
     protected function isMock($driver)
     {
-          if (($this->app->environment('production') === false) and
+        $mode = $this->getMode();
+
+        if (($mode === Mode::TEST) and
             (in_array($driver, $this->getMockDrivers())))
         {
             return true;
         }
+
         return false;
     }
 
