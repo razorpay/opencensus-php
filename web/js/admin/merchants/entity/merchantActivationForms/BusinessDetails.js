@@ -85,7 +85,6 @@ export default class BusinessDetails extends Component {
               </SelectField>
               <CheckField
                 label="Has Issue"
-                side="right"
                 data-issuename="business_type"
                 onChange={onIssueSelection}
                 checked={doesIssueExist('business_type')}
@@ -101,7 +100,6 @@ export default class BusinessDetails extends Component {
               />
               <CheckField
                 label="Has Issue"
-                side="right"
                 data-issuename="business_name"
                 onChange={onIssueSelection}
                 checked={doesIssueExist('business_name')}
@@ -122,7 +120,6 @@ export default class BusinessDetails extends Component {
               />
               <CheckField
                 label="Has Issue"
-                side="right"
                 data-issuename="business_dba"
                 onChange={onIssueSelection}
                 checked={doesIssueExist('business_dba')}
@@ -143,7 +140,6 @@ export default class BusinessDetails extends Component {
               </SelectField>
               <CheckField
                 label="Has Issue"
-                side="right"
                 data-issuename="business_international"
                 onChange={onIssueSelection}
                 checked={doesIssueExist('business_international')}
@@ -159,7 +155,6 @@ export default class BusinessDetails extends Component {
               />
               <CheckField
                 label="Has Issue"
-                side="right"
                 data-issuename="business_website"
                 onChange={onIssueSelection}
                 checked={doesIssueExist('business_website')}
@@ -175,7 +170,6 @@ export default class BusinessDetails extends Component {
               />
               <CheckField
                 label="Has Issue"
-                side="right"
                 data-issuename="business_paymentdetails"
                 onChange={onIssueSelection}
                 checked={doesIssueExist('business_paymentdetails')}
@@ -192,7 +186,6 @@ export default class BusinessDetails extends Component {
               />
               <CheckField
                 label="Has Issue"
-                side="right"
                 data-issuename="business_model"
                 onChange={onIssueSelection}
                 checked={doesIssueExist('business_model')}
@@ -208,7 +201,6 @@ export default class BusinessDetails extends Component {
               />
               <CheckField
                 label="Has Issue"
-                side="right"
                 data-issuename="business_registered_address"
                 onChange={onIssueSelection}
                 checked={doesIssueExist('business_registered_address')}
@@ -224,7 +216,6 @@ export default class BusinessDetails extends Component {
               />
               <CheckField
                 label="Has Issue"
-                side="right"
                 data-issuename="business_registered_state"
                 onChange={onIssueSelection}
                 checked={doesIssueExist('business_registered_state')}
@@ -240,7 +231,6 @@ export default class BusinessDetails extends Component {
               />
               <CheckField
                 label="Has Issue"
-                side="right"
                 data-issuename="business_registered_city"
                 onChange={onIssueSelection}
                 checked={doesIssueExist('business_registered_city')}
@@ -256,7 +246,6 @@ export default class BusinessDetails extends Component {
               />
               <CheckField
                 label="Has Issue"
-                side="right"
                 data-issuename="business_registered_pin"
                 onChange={onIssueSelection}
                 checked={doesIssueExist('business_registered_pin')}
@@ -272,7 +261,6 @@ export default class BusinessDetails extends Component {
               />
               <CheckField
                 label="Has Issue"
-                side="right"
                 data-issuename="or_same"
                 onChange={onIssueSelection}
                 checked={doesIssueExist('or_same')}
@@ -288,7 +276,6 @@ export default class BusinessDetails extends Component {
               />
               <CheckField
                 label="Has Issue"
-                side="right"
                 data-issuename="business_operation_address"
                 onChange={onIssueSelection}
                 checked={doesIssueExist('business_operation_address')}
@@ -304,7 +291,6 @@ export default class BusinessDetails extends Component {
               />
               <CheckField
                 label="Has Issue"
-                side="right"
                 data-issuename="business_operation_state"
                 onChange={onIssueSelection}
                 checked={doesIssueExist('business_operation_state')}
@@ -320,7 +306,6 @@ export default class BusinessDetails extends Component {
               />
               <CheckField
                 label="Has Issue"
-                side="right"
                 data-issuename="business_operation_city"
                 onChange={onIssueSelection}
                 checked={doesIssueExist('business_operation_city')}
@@ -336,7 +321,6 @@ export default class BusinessDetails extends Component {
               />
               <CheckField
                 label="Has Issue"
-                side="right"
                 data-issuename="business_operation_pin"
                 onChange={onIssueSelection}
                 checked={doesIssueExist('business_operation_pin')}
@@ -362,7 +346,6 @@ export default class BusinessDetails extends Component {
               />
               <CheckField
                 label="Has Issue"
-                side="right"
                 data-issuename="company_cin"
                 onChange={onIssueSelection}
                 checked={doesIssueExist('company_cin')}
@@ -401,7 +384,6 @@ export default class BusinessDetails extends Component {
                 </div>
                 <CheckField
                   label="Has Issue"
-                  side="right"
                   data-issuename="company_info"
                   onChange={onIssueSelection}
                   checked={doesIssueExist('company_info')}
@@ -421,7 +403,6 @@ export default class BusinessDetails extends Component {
                 </div>
                 <CheckField
                   label="Has Issue"
-                  side="right"
                   data-issuename="company_info_signatories"
                   onChange={onIssueSelection}
                   checked={doesIssueExist('company_info_signatories')}
@@ -449,7 +430,6 @@ export default class BusinessDetails extends Component {
               />
               <CheckField
                 label="Has Issue"
-                side="right"
                 data-issuename="company_pan"
                 onChange={onIssueSelection}
                 checked={doesIssueExist('company_pan')}
@@ -470,7 +450,6 @@ export default class BusinessDetails extends Component {
               />
               <CheckField
                 label="Has Issue"
-                side="right"
                 data-issuename="company_pan_name"
                 onChange={onIssueSelection}
                 checked={doesIssueExist('company_pan_name')}
@@ -491,7 +470,6 @@ export default class BusinessDetails extends Component {
               />
               <CheckField
                 label="Has Issue"
-                side="right"
                 data-issuename="promoter_pan"
                 onChange={onIssueSelection}
                 checked={doesIssueExist('promoter_pan')}
@@ -511,7 +489,6 @@ export default class BusinessDetails extends Component {
               />
               <CheckField
                 label="Has Issue"
-                side="right"
                 data-issuename="promoter_pan_name"
                 onChange={onIssueSelection}
                 checked={doesIssueExist('promoter_pan_name')}
@@ -536,7 +513,6 @@ export default class BusinessDetails extends Component {
               </div>
               <CheckField
                 label="Has Issue"
-                side="right"
                 data-issuename="pan_verified"
                 onChange={onIssueSelection}
                 checked={doesIssueExist('pan_verified')}

@@ -106,16 +106,11 @@ export function RadioField({ label, value, defaultValue, ...props }) {
   );
 }
 
-export function CheckField({ label, children, side = 'left', ...props }) {
+export function CheckField({ label, children, ...props }) {
   return (
     <div class="field">
-      {side === 'left' && (
-        <label class={props.required ? 'required' : ''}>{label}</label>
-      )}
+      <label class={props.required ? 'required' : ''}>{label}</label>
       <input class="ui-checkbox" {...props} type="checkbox" />
-      {side === 'right' && (
-        <label class={props.required ? 'required' : ''}>{label}</label>
-      )}
       {children}
     </div>
   );

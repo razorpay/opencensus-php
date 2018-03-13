@@ -69,7 +69,6 @@ export default class DocumentDetails extends Component {
                     </div>
                     <CheckField
                       label="Has Issue"
-                      side="right"
                       data-issuename="business_proof"
                       onChange={onIssueSelection}
                       value={doesIssueExist('business_proof')}
@@ -110,7 +109,6 @@ export default class DocumentDetails extends Component {
                     </div>
                     <CheckField
                       label="Has Issue"
-                      side="right"
                       data-issuename="business_operation_proof"
                       onChange={onIssueSelection}
                       value={doesIssueExist('business_operation_proof')}
@@ -140,7 +138,6 @@ export default class DocumentDetails extends Component {
                     </div>
                     <CheckField
                       label="Has Issue"
-                      side="right"
                       data-issuename="business_pan_proof"
                       onChange={onIssueSelection}
                       value={doesIssueExist('business_pan_proof')}
@@ -173,7 +170,6 @@ export default class DocumentDetails extends Component {
                     </div>
                     <CheckField
                       label="Has Issue"
-                      side="right"
                       data-issuename="address_proof"
                       onChange={onIssueSelection}
                       value={doesIssueExist('address_proof')}
@@ -200,7 +196,6 @@ export default class DocumentDetails extends Component {
                     </div>
                     <CheckField
                       label="Has Issue"
-                      side="right"
                       data-issuename="promoter_proof"
                       onChange={onIssueSelection}
                       value={doesIssueExist('promoter_proof')}
@@ -232,7 +227,6 @@ export default class DocumentDetails extends Component {
                     </div>
                     <CheckField
                       label="Has Issue"
-                      side="right"
                       data-issuename="promoter_pan_proof"
                       onChange={onIssueSelection}
                       value={doesIssueExist('promoter_pan_proof')}
@@ -267,7 +261,6 @@ export default class DocumentDetails extends Component {
                     </div>
                     <CheckField
                       label="Has Issue"
-                      side="right"
                       data-issuename="promoter_address_proof"
                       onChange={onIssueSelection}
                       value={doesIssueExist('promoter_address_proof')}
@@ -295,7 +288,6 @@ export default class DocumentDetails extends Component {
                     </div>
                     <CheckField
                       label="Has Issue"
-                      side="right"
                       data-issuename="form_12a_url"
                       onChange={onIssueSelection}
                       value={doesIssueExist('form_12a_url')}
@@ -323,7 +315,6 @@ export default class DocumentDetails extends Component {
                     </div>
                     <CheckField
                       label="Has Issue"
-                      side="right"
                       data-issuename="form_80g_url"
                       onChange={onIssueSelection}
                       value={doesIssueExist('form_80g_url')}

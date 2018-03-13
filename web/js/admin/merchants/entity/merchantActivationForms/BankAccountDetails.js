@@ -27,7 +27,6 @@ export default ({
           />
           <CheckField
             label="Has Issue"
-            side="right"
             data-issuename="bank_name"
             onChange={onIssueSelection}
             checked={doesIssueExist('bank_name')}
@@ -44,7 +43,6 @@ export default ({
           />
           <CheckField
             label="Has Issue"
-            side="right"
             data-issuename="bank_account_number"
             onChange={onIssueSelection}
             checked={doesIssueExist('bank_account_number')}
@@ -61,7 +59,6 @@ export default ({
           />
           <CheckField
             label="Has Issue"
-            side="right"
             data-issuename="bank_account_name"
             onChange={onIssueSelection}
             checked={doesIssueExist('bank_account_name')}
@@ -78,7 +75,6 @@ export default ({
           />
           <CheckField
             label="Has Issue"
-            side="right"
             data-issuename="bank_beneficiary_address1"
             onChange={onIssueSelection}
             checked={doesIssueExist('bank_beneficiary_address1')}
@@ -95,7 +91,6 @@ export default ({
           />
           <CheckField
             label="Has Issue"
-            side="right"
             data-issuename="bank_beneficiary_address2"
             onChange={onIssueSelection}
             checked={doesIssueExist('bank_beneficiary_address2')}
@@ -112,7 +107,6 @@ export default ({
           />
           <CheckField
             label="Has Issue"
-            side="right"
             data-issuename="bank_beneficiary_address3"
             onChange={onIssueSelection}
             checked={doesIssueExist('bank_beneficiary_address3')}
@@ -128,7 +122,6 @@ export default ({
           />
           <CheckField
             label="Has Issue"
-            side="right"
             data-issuename="bank_beneficiary_city"
             onChange={onIssueSelection}
             checked={doesIssueExist('bank_beneficiary_city')}
@@ -150,7 +143,6 @@ export default ({
           </SelectField>
           <CheckField
             label="Has Issue"
-            side="right"
             data-issuename="bank_beneficiary_state"
             onChange={onIssueSelection}
             checked={doesIssueExist('bank_beneficiary_state')}
@@ -166,7 +158,6 @@ export default ({
           />
           <CheckField
             label="Has Issue"
-            side="right"
             data-issuename="bank_beneficiary_pin"
             onChange={onIssueSelection}
             checked={doesIssueExist('bank_beneficiary_pin')}
@@ -183,7 +174,6 @@ export default ({
           />
           <CheckField
             label="Has Issue"
-            side="right"
             data-issuename="bank_branch_ifsc"
             onChange={onIssueSelection}
             checked={doesIssueExist('bank_branch_ifsc')}
