@@ -680,10 +680,15 @@ class Gateway extends Base\Gateway
 
         $input = $verify->input;
 
-        $paymentAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
-        $actualAmount  = number_format($content[Fields::VERIFY_AMOUNT], 2, '.', '');
+        if (empty($content[Fields::VERIFY_AMOUNT]) === false)
+        {
+            $paymentAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
 
-        $verify->amountMismatch = ($paymentAmount !== $actualAmount);
+            $actualAmount  = number_format($content[Fields::VERIFY_AMOUNT], 2, '.', '');
+
+            $verify->amountMismatch = ($paymentAmount !== $actualAmount);
+
+        }
 
         // If payment status is either failed or created,
         // this is an api failure
