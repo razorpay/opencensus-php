@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { observer } from 'mobx-react';
 
 import EntityRow from 'ui/EntityRow';
 import AsyncButton from 'ui/AsyncButton';
@@ -10,6 +11,7 @@ import Form from 'ui/Form';
 import Field, { SelectField, TextAreaField, CheckField } from 'ui/Field';
 import Table from 'ui/Table';
 
+@observer
 export default class BusinessDetails extends Component {
   state = { panVerified: false, companyInfo: null };
 

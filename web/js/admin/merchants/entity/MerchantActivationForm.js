@@ -124,7 +124,7 @@ export default class MerchantActivationForm extends Component {
   };
 
   handleIssuesSubmition = body => {
-    const issues = this.model.activationIssuesList.peek();
+    const issues = this.model.activationReview.issue_fields;
 
     body.issue_fields = issues.join(',');
 
@@ -137,12 +137,16 @@ export default class MerchantActivationForm extends Component {
       url: `live/merchant/activation/${this.merchantId}/update`,
       data: body,
     }).then(response => {
+      this.model.activationReview.issue_fields_reason =
+        body.issue_fields_reason;
+      this.model.activationReview.internal_notes = body.internal_notes;
+
       notifySuccess('Review updated successfully.');
     });
   };
 
   handleIssueExistence = currIssue => {
-    const issues = this.model.activationIssuesList.peek();
+    const issues = this.model.activationReview.issue_fields;
     const found = issues.findIndex(issue => currIssue === issue);
     return found > -1;
   };
@@ -201,7 +205,7 @@ export default class MerchantActivationForm extends Component {
                 title={tabNames[5]}
                 onIssueSelection={this.handleIssueSelection}
                 onIssuesSubmition={this.handleIssuesSubmition}
-                issues={this.model.activationIssuesList.peek()}
+                activationReview={this.model.activationReview}
                 parentProps={this.model}
                 merchantId={this.merchantId}
               />

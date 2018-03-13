@@ -1,10 +1,13 @@
 import React, { Component } from 'react';
+import { observer } from 'mobx-react';
 
 import { notifyError } from 'common/modal';
 
 import fetch, { adminFetch } from 'common/fetch';
 import EntityRow from 'ui/EntityRow';
 import { CheckField } from 'ui/Field';
+
+@observer
 export default class DocumentDetails extends Component {
   state = { files: null };
 
