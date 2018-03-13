@@ -7,6 +7,7 @@ import moment from 'moment';
 import { Redirect } from 'react-router-dom';
 
 import Amount from 'rzp/ui/Amount';
+import Banner from 'rzp/ui/Banner';
 import Sticky from 'rzp/ui/Sticky';
 import Group, { GroupItem } from 'rzp/ui/Group';
 import { showNotification } from 'rzp/modules/notifications';
@@ -352,7 +353,10 @@ class HomeContainer extends Component {
 
     return (
       <div class="react-root dashboard-home">
-        <Sticky stickWhen={0} stickAt={50}>
+        <Banner>
+          This page is down for a bit of <b>maintenance</b>. It will be back up soon.
+        </Banner>
+        <Sticky stickWhen={0} stickAt={102}>
           <Header className="clearfix" title="" showMode={false}>
             <div className="pull-left date-range-container">
               <DateRangePicker
@@ -484,5 +488,5 @@ export default props =>
   isMobileDevice ? (
     (trackForceOldDashboard(), <Redirect to="/dashboard" />)
   ) : (
-    <HomeContainer {...props} />
+    <HomeContainer {...props} analyticsFetch={() => Promise.reject()}/>
   );
