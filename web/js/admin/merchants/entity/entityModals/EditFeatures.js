@@ -44,7 +44,7 @@ export default class EditFeatures extends Component {
         if (response) {
           notifySuccess('Merchant features updated successfully.');
           closeModal();
-          if (body.shouldSync === 1) {
+          if (body.shouldSync == 1) {
             props.updateFeatures('live', selectedFeatures);
             props.updateFeatures('test', selectedFeatures);
           } else {
