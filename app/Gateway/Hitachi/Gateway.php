@@ -217,6 +217,20 @@ class Gateway extends Base\Gateway
     {
         $input = $verify->input;
 
+        $gatewayPayment = $verify->payment;
+
+        if ((empty($gatewayPayment->getRRN()) === true) and
+            ($gatewayPayment->getResponseCode() === '30'))
+        {
+            $verify->apiStatus = false;
+
+            $verify->gatewayStatus = false;
+
+            $verify->match = true;
+
+            return [];
+        }
+
         $request = $this->getVerifyRequestArray($input);
 
         $this->traceGatewayPaymentRequest($request, $input, TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST);
