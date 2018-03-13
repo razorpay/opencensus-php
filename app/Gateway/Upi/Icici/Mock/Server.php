@@ -117,6 +117,8 @@ class Server extends Base\Mock\Server
         $status = 'SUCCESS';
         $message = 'Transaction Successful';
 
+        $amount = number_format($payment['amount'] / 100, 2, '.', '');
+
         if (isset($payment['notes']['status']) === true)
         {
             if ($payment['notes']['status'] === 'created')
@@ -128,6 +130,14 @@ class Server extends Base\Mock\Server
             {
                 $status = 'FAILURE';
                 $message = 'Transaction failed';
+            }
+        }
+
+        if (isset($payment['notes']['amount']) === true)
+        {
+            if ($payment['notes']['amount'] === 'mismatch')
+            {
+                $amount = '12';
             }
         }
 
@@ -143,7 +153,7 @@ class Server extends Base\Mock\Server
             'merchantTranId'    => $input['merchantTranId'],
             'OriginalBankRRN'   => (string) random_int(1111111111, 9999999999),
             'status'            => $status,
-            'amount'            => number_format($payment['amount'] / 100, 2, '.', ''),
+            'amount'            => $amount,
         ];
 
         $this->content($response, 'verify');
