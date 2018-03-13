@@ -681,7 +681,7 @@ class Gateway extends Base\Gateway
         $input = $verify->input;
 
         $paymentAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
-        $actualAmount   = number_format($content[Fields::AMOUNT], 2, '.', '');
+        $actualAmount   = number_format($content[Fields::VERIFY_AMOUNT], 2, '.', '');
 
         $verify->amountMismatch = ($paymentAmount !== $actualAmount);
 
