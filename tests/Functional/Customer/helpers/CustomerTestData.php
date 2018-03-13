@@ -277,7 +277,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The gstin is invalid',
+                    'description' => 'The gstin field is invalid',
                 ],
             ],
             'status_code' => 400,

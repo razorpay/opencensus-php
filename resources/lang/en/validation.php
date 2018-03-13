@@ -90,6 +90,8 @@ return array(
      | Defined by user application
      */
 
+    'gstin'     => 'The :attribute field is invalid',
+
     /*
     |--------------------------------------------------------------------------
     | Custom Validation Language Lines
