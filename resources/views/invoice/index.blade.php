@@ -653,7 +653,7 @@
                                   <div id="inv-details-main">
                                       <div class="info">
                                           PAYMENT FOR
-                                          <div class="val">{{$data['invoice']['description']}}</div>
+                                          <div class="val" style="white-space: pre">{{$data['invoice']['description']}}</div>
                                       </div>
 
                                       @if($data['invoice']['expire_by'])
@@ -756,7 +756,7 @@
                           <div id="inv-details-main">
                               <div class="info">
                                   PAYMENT FOR
-                                  <div class="val">{{$data['invoice']['description']}}</div>
+                                  <div class="val" style="white-space: pre">{{$data['invoice']['description']}}</div>
                               </div>
 
                               <div class="info">
