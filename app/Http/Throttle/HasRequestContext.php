@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 
 use RZP\Http\OAuth;
 use RZP\Http\Route;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Http\RequestHeader;
 use RZP\Http\BasicAuth\Type;
@@ -134,8 +135,10 @@ trait HasRequestContext
 
         $this->key              = $key;
         $this->keyWithoutPrefix = substr($key, 9) ?: null;
-        $this->mode             = substr($key, 4, 4) ?: null;
         $this->secret           = $this->request->getPassword();
+
+        $mode       = substr($key, 4, 4) ?: null;
+        $this->mode = Mode::exists($mode) ? $mode : null;
     }
 
     protected function setAdditionalVars()
