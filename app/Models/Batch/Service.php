@@ -80,4 +80,13 @@ class Service extends Base\Service
 
         return $response;
     }
+
+    public function fetchStatsOfBatch(string $id): array
+    {
+        $batch = $this->repo->batch->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $response = (new Core)->fetchStatsOfBatch($batch);
+
+        return $response;
+    }
 }
