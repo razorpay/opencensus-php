@@ -6,12 +6,10 @@ use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Order;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Base\BuilderEx;
 use RZP\Models\Merchant;
-use RZP\Models\Customer;
 use RZP\Models\LineItem;
 use RZP\Error\ErrorCode;
 use RZP\Models\Plan\Subscription;
@@ -378,6 +376,33 @@ class Repository extends Base\Repository
                 {
                     return $entity->getAttributes();
                 })->toArray();
+    }
+
+    /**
+     * Gets aggregate invoice stats per status for a given batch.
+     *
+     * Returns an array like:
+     *  {
+     *      'draft': 10,
+     *      'issued': 10,
+     *      'paid': 5,
+     *      'expired': 1
+     *  }
+     *
+     * @param  Batch\Entity $batch
+     *
+     * @return array
+     */
+    public function getInvoiceStatsForBatch(Batch\Entity $batch): array
+    {
+        /** @var Base\PublicCollection $collection */
+        $collection = $this->newQuery()
+                           ->selectRaw(Entity::STATUS . ', COUNT(*) AS count')
+                           ->where(Entity::BATCH_ID, '=', $batch->getId())
+                           ->groupBy(Entity::STATUS)
+                           ->pluck('count', Entity::STATUS);
+
+        return $collection->all();
     }
 
     protected function addQueryParamPaymentId(BuilderEx $query, array $params)

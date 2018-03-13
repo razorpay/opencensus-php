@@ -792,6 +792,18 @@ class Core extends Base\Core
         $invoice->getValidator()->validateMaxAllowedAmount($grossAmount);
     }
 
+    public function fetchStatsOfBatch(Batch\Entity $batch): array
+    {
+        $stats = $this->repo->invoice->getInvoiceStatsForBatch($batch);
+
+        return [
+            Entity::TOTAL_COUNT   => $batch->getTotalCount(),
+            Entity::ISSUED_COUNT  => (int) ($stats[Status::ISSUED] ?? 0),
+            Entity::PAID_COUNT    => (int) ($stats[Status::PAID] ?? 0),
+            Entity::EXPIRED_COUNT => (int) ($stats[Status::EXPIRED] ?? 0),
+        ];
+    }
+
     // -------------------- Protected methods --------------------
 
     protected function updateDraftInvoice(

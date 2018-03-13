@@ -13,11 +13,13 @@ use RZP\Models\Batch\Header;
 use RZP\Models\Batch\Entity;
 use RZP\Jobs\Batch as BatchJob;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Unit\Models\Invoice\Traits\CreatesInvoice;
 use RZP\Mail\Batch\PaymentLink as BatchPaymentLinkFileMail;
 
 class PaymentLinkTest extends TestCase
 {
     use BatchTestTrait;
+    use CreatesInvoice;
 
     public function setUp()
     {
@@ -266,6 +268,38 @@ class PaymentLinkTest extends TestCase
         $name     = $testDataKey ?? $trace[1]['function'];
 
         $this->testData[$name]['request']['content']['file_id'] = $validatedFile->getPublicId();
+    }
+
+    public function testPaymentLinkStatsOfBatch()
+    {
+        $this->fixtures->create(
+            'batch',
+            [
+                'id'          => '00000000000001',
+                'type'        => 'payment_link',
+                'total_count' => 4,
+            ]);
+
+        $attributes = $this->testData[__FUNCTION__ . 'InputData']['attributes'];
+
+        foreach ($attributes as $attribute)
+        {
+            $this->createInvoice($attribute['invoiceAttributes'], $attribute['orderAttributes']);
+        }
+
+        $this->startTest();
+    }
+
+    public function testGetStatsOfInvalidType()
+    {
+        $this->fixtures->create(
+            'batch',
+            [
+                'id'   => '00000000000001',
+                'type' => 'linked_account'
+            ]);
+
+        $this->startTest();
     }
 
     protected function getDefaultPaymentLinkFileEntries()
