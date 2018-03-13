@@ -678,12 +678,12 @@ class Entity extends Base\PublicEntity
 
     public function hasCustomerBillingAddress(): bool
     {
-        return ($this->getAttribute(self::CUSTOMER_BILLING_ADDR_ID) !== null);
+        return $this->isAttributeNotNull(self::CUSTOMER_BILLING_ADDR_ID);
     }
 
     public function hasCustomerShippingAddress(): bool
     {
-        return ($this->getAttribute(self::CUSTOMER_SHIPPING_ADDR_ID) !== null);
+        return $this->isAttributeNotNull(self::CUSTOMER_SHIPPING_ADDR_ID);
     }
 
     public function isTypeLink(): bool

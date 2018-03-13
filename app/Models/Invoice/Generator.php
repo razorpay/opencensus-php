@@ -16,8 +16,6 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
 use RZP\Models\Plan\Subscription;
-use RZP\Services\Elfin\Service as Elfin;
-use RZP\Exception\BadRequestValidationFailureException;
 
 class Generator extends Base\Core
 {
@@ -423,9 +421,16 @@ class Generator extends Base\Core
     {
         $this->invoice->getValidator()->validateInput('editCustomerDetails', $details);
 
+        $customerDetails = array_except(
+            $details,
+            [
+                Customer\Entity::BILLING_ADDRESS_ID,
+                Customer\Entity::SHIPPING_ADDRESS_ID,
+            ]);
+
         $this->processCustomerAddressDetails($details);
 
-        foreach ($details as $attribute => $value)
+        foreach ($customerDetails as $attribute => $value)
         {
             $setter = 'setCustomer' . studly_case($attribute);
 
@@ -433,18 +438,18 @@ class Generator extends Base\Core
         }
     }
 
-    protected function processCustomerAddressDetails(array & $details)
+    protected function processCustomerAddressDetails(array $details)
     {
-        if (isset($details[Customer\Entity::BILLING_ADDRESS_ID]) === true)
+        if (array_key_exists(Customer\Entity::BILLING_ADDRESS_ID, $details) === true)
         {
-            $billingAddressId = array_pull($details, Customer\Entity::BILLING_ADDRESS_ID);
+            $billingAddressId = $details[Customer\Entity::BILLING_ADDRESS_ID];
 
             $this->associateCustomerAddressById(Address\Type::BILLING_ADDRESS, $billingAddressId);
         }
 
-        if (isset($details[Customer\Entity::SHIPPING_ADDRESS_ID]) === true)
+        if (array_key_exists(Customer\Entity::SHIPPING_ADDRESS_ID, $details) === true)
         {
-            $shippingAddressId = array_pull($details, Customer\Entity::SHIPPING_ADDRESS_ID);
+            $shippingAddressId = $details[Customer\Entity::SHIPPING_ADDRESS_ID];
 
             $this->associateCustomerAddressById(Address\Type::SHIPPING_ADDRESS, $shippingAddressId);
         }
