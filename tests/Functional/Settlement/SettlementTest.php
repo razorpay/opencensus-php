@@ -1016,8 +1016,6 @@ class SettlementTest extends TestCase
                 'updated_at'  => $time->getTimestamp(),
             ]);
 
-        Carbon::setTestNow();
-
         // Initiate immediate settlement, none should settle on the same day
         $content = $this->initiateSettlements($channel);
         $this->assertEquals(0, $content[$channel]['txnCount']);
