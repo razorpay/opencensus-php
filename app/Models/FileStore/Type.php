@@ -69,6 +69,7 @@ class Type
 
     const BATCH_INPUT                       = 'batch_input';
     const BATCH_OUTPUT                      = 'batch_output';
+    const BATCH_VALIDATED                   = 'batch_validated';
     const RECONCILIATION_BATCH_INPUT        = 'reconciliation_batch_input';
 
     const BLANK                             = 'blank';
@@ -172,6 +173,7 @@ class Type
         Constants\Entity::BATCH => [
             self::BATCH_INPUT,
             self::BATCH_OUTPUT,
+            self::BATCH_VALIDATED,
             self::RECONCILIATION_BATCH_INPUT,
         ],
 
@@ -287,6 +289,7 @@ class Type
             self::ICICI_EMI_FILE_MAIL,
             self::BATCH_INPUT,
             self::BATCH_OUTPUT,
+            self::BATCH_VALIDATED,
             self::PNB_NETBANKING_REFUND,
             self::PNB_NETBANKING_CLAIMS,
             self::UPI_ICICI_FAILED_REFUND,

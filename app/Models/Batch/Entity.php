@@ -7,6 +7,7 @@ use RZP\Models\FileStore;
 
 class Entity extends Base\PublicEntity
 {
+    const NAME                      = 'name';
     const STATUS                    = 'status';
     const PROCESSING                = 'processing';
     const TOTAL_COUNT               = 'total_count';
@@ -43,17 +44,32 @@ class Entity extends Base\PublicEntity
      * Additional constants
      */
     const FILE                      = 'file';
+    const FILE_ID                   = 'file_id';
     const FILES                     = 'files';
     const URL                       = 'url';
     const INPUT_FILE_PREFIX         = 'batch/upload/';
     const OUTPUT_FILE_PREFIX        = 'batch/download/';
+    const VALIDATED_FILE_PREFIX     = 'batch/validated/';
     const CONFIG                    = 'config';
+
+    /**
+     * Constants used for batch stats api
+     */
+    const STATS                     = 'stats';
 
     protected static $sign = 'batch';
 
     protected $entity = 'batch';
 
     protected $generateIdOnCreate = true;
+
+    /**
+     * Determines if batch entity was created in Create flow(has file upload)
+     * or Validate flow(has file id as input). In former case(old case) we need
+     * to throw validation errors whereas in later case we don't throw any
+     * validation error but save the errors in a file and return the file id.
+     */
+    protected $createdByFileUpload = false;
 
     /**
      * Generators
@@ -67,6 +83,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $fillable = [
+        self::NAME,
         self::TYPE,
         self::GATEWAY,
         self::SUB_TYPE,
@@ -75,6 +92,7 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ID,
         self::ENTITY,
+        self::NAME,
         self::TYPE,
         self::STATUS,
         self::TOTAL_COUNT,
@@ -99,6 +117,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY             => null,
         self::FAILURE_REASON      => null,
         self::SUB_TYPE            => null,
+        self::NAME                => null,
         self::COMMENT             => null,
         self::PROCESSED_AT        => null,
     ];
@@ -206,6 +225,21 @@ class Entity extends Base\PublicEntity
     }
 
     /**
+     * The file which our processor creates with validation
+     * results only. This is available to user to download.
+     * Currently available only for payment_links.
+     *
+     * @return FileStore\Entity
+     */
+    public function validatedFile()
+    {
+        return $this->files()
+                    ->where(FileStore\Entity::TYPE, FileStore\Type::BATCH_VALIDATED)
+                    ->latest()
+                    ->first();
+    }
+
+    /**
      * Returns the latest file associated with this batch, be output/input type.
      *
      * @return FileStore\Entity
@@ -216,6 +250,11 @@ class Entity extends Base\PublicEntity
     }
 
     // ----------------------- Getters -------------------------------
+
+    public function getName()
+    {
+        return $this->getAttribute(self::NAME);
+    }
 
     public function getAmount()
     {
@@ -347,9 +386,18 @@ class Entity extends Base\PublicEntity
         return $this->getLocalSaveDir($prefix) . $this->getFileKeyWithExt();
     }
 
+    public function isCreatedByFileUpload(): bool
+    {
+        return $this->createdByFileUpload;
+    }
+
     // ----------------------- End  Getters --------------------------
 
     // ----------------------- Setters -------------------------------
+    public function setName(string $name)
+    {
+        $this->setAttribute(self::NAME, $name);
+    }
 
     public function setSuccessCount($count)
     {
@@ -421,6 +469,11 @@ class Entity extends Base\PublicEntity
     public function setSubType(string $subType)
     {
         $this->setAttribute(self::SUB_TYPE, $subType);
+    }
+
+    public function setCreatedByFileUpload(bool $createdByFileUpload)
+    {
+        $this->createdByFileUpload = $createdByFileUpload;
     }
 
     // ----------------------- End Setters ---------------------------

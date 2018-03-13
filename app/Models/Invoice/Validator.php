@@ -6,10 +6,12 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
 use RZP\Base;
+use RZP\Models\Batch;
 use RZP\Models\Feature;
 use RZP\Models\Customer;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\Settings;
 use RZP\Exception\LogicException;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -39,6 +41,12 @@ class Validator extends Base\Validator
      * issue and expired by timestamps.
      */
     const MIN_EXPIRY_SECS = 900;
+
+    /**
+     * With this constant there is validation rule for
+     * "notify invoices of batch" request.
+     */
+    const NOTIFY_INVOICES_OF_BATCH = 'notify_invoices_of_batch';
 
     protected static $createRules = [
         Entity::SMS_NOTIFY          => 'sometimes|boolean',
@@ -158,6 +166,11 @@ class Validator extends Base\Validator
         Entity::PARTIAL_PAYMENT     => 'filled|boolean|custom',
         Entity::CALLBACK_URL        => 'sometimes|url|nullable',
         Entity::CALLBACK_METHOD     => 'required_with:callback_url|sometimes|string|in:get|nullable',
+    ];
+
+    protected static $notifyInvoicesOfBatchRules = [
+        Entity::SMS_NOTIFY          => 'required|boolean',
+        Entity::EMAIL_NOTIFY        => 'required|boolean',
     ];
 
     /**
@@ -651,6 +664,30 @@ class Validator extends Base\Validator
                             'max_allowed_line_items'  => self::MAX_ALLOWED_LINE_ITEMS,
                             'actual_line_items_count' => $count,
                         ]);
+        }
+    }
+
+    public function validateNotifyInvoicesOfBatch(
+        Settings\Accessor $settingsAccessor,
+        Batch\Entity $batch,
+        array $input)
+    {
+        // 1. Validates the input
+        $this->validateInput(Validator::NOTIFY_INVOICES_OF_BATCH, $input);
+
+        // 2. Validates that batch notification request was already sent or not
+        $smsNotified      = $settingsAccessor->get(Entity::SMS_NOTIFY);
+        $emailNotified    = $settingsAccessor->get(Entity::EMAIL_NOTIFY);
+
+        if (($smsNotified === true) or ($emailNotified === true))
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_BATCH_NOTIFICATIONS_SENT_ALREADY,
+                Entity::BATCH_ID,
+                [
+                    Entity::BATCH_ID => $batch->getId(),
+                    'input'          => $input,
+                ]);
         }
     }
 
