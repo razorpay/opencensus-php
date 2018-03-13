@@ -87,4 +87,9 @@ class Entity extends Base\Entity
     {
         return $this->getAttribute(self::AUTH_ID);
     }
+
+    public function getResponseCode()
+    {
+        return $this->getAttribute(self::RESPONSE_CODE);
+    }
 }

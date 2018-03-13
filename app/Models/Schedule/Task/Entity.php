@@ -3,15 +3,18 @@
 namespace RZP\Models\Schedule\Task;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
-
 use Carbon\Carbon;
+
 use RZP\Models\Base;
-use RZP\Constants\Mode;
 use RZP\Models\Schedule;
 use RZP\Constants\Timezone;
 use RZP\Models\Plan\Subscription;
 
 /**
+ * Class Entity
+ *
+ * @package RZP\Models\Schedule\Task
+ *
  * @property Schedule\Entity $schedule
  */
 class Entity extends Base\PublicEntity
@@ -303,7 +306,7 @@ class Entity extends Base\PublicEntity
      * @param bool                $retry
      * @throws \RZP\Exception\LogicException
      */
-    public function updateForSubscription(Subscription\Entity $subscription, string $mode , $retry = false)
+    public function updateForSubscription(Subscription\Entity $subscription, string $mode, $retry = false)
     {
         if ($retry === true)
         {

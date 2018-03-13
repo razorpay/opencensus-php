@@ -52,7 +52,6 @@ class RefundTest extends TestCase
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
 
         $this->mockDashboardRequest();
-//        $this->mockRefundEmail();
 
         $refund = $this->startTest($payment['id'], (string) $payment['amount']);
 
@@ -65,6 +64,78 @@ class RefundTest extends TestCase
         $this->assertEquals(true, $refund['gateway_refunded']);
 
         Mail::assertSent(RefundedMail::class);
+    }
+
+    public function testRefundEditStatus()
+    {
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $refund = $this->refund(
+            [
+                'payment_id' => $payment['id'],
+                'notes'      => ['a' => 'b'],
+                'receipt'    => '2544325',
+            ]);
+
+        $this->fixtures->base->editEntity('refund', $refund['id'], ['gateway_refunded' => false, 'status' => 'created']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/refunds/' . $refund['id'] . '/status';
+
+        $this->ba->adminAuth('test');
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('initiated', $refund['status']);
+    }
+
+    public function testRefundEditInvalidStatus()
+    {
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $refund = $this->refund(
+            [
+                'payment_id' => $payment['id'],
+                'notes'      => ['a' => 'b'],
+                'receipt'    => '2544325',
+            ]);
+
+        $this->fixtures->base->editEntity('refund', $refund['id'], ['gateway_refunded' => false, 'status' => 'created']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/refunds/' . $refund['id'] . '/status';
+
+        $this->ba->adminAuth('test');
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+    }
+
+    public function testRefundEditStatusFailed()
+    {
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $refund = $this->refund(
+            [
+                'payment_id' => $payment['id'],
+                'notes'      => ['a' => 'b'],
+                'receipt'    => '2544325',
+            ]);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/refunds/' . $refund['id'] . '/status';
+
+        $this->ba->adminAuth('test');
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('processed', $refund['status']);
     }
 
     public function testRefundDisputedPayment()

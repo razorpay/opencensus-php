@@ -202,6 +202,8 @@ class HdfcGatewayTest extends TestCase
 
     public function testRupayCard()
     {
+        $this->markTestSkipped();
+
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '6073849700004947';
 

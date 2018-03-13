@@ -39,12 +39,10 @@ class Gateway extends Base\Gateway
 
     const PAY = 'PAY';
 
-    // Expiry timeout in minutes
-    const EXPIRY_TIMEOUT = 5;
-
     protected $map = [
         Entity::VPA                       => Entity::VPA,
         Entity::RECEIVED                  => Entity::RECEIVED,
+        Entity::EXPIRY_TIME               => Entity::EXPIRY_TIME,
         ResponseFields::PAYER_VA          => Entity::VPA,
         ResponseFields::PAYER_NAME        => Entity::NAME,
         ResponseFields::STATUS            => Entity::STATUS_CODE,
@@ -143,6 +141,11 @@ class Gateway extends Base\Gateway
         if ($action === Action::REFUND)
         {
             $attrs[Entity::REFUND_ID] = $input['refund']['id'];
+        }
+
+        if ($action === Action::AUTHORIZE)
+        {
+            $attrs[Entity::EXPIRY_TIME] = $input['upi']['expiry_time'];
         }
 
         return $attrs;
@@ -318,7 +321,7 @@ class Gateway extends Base\Gateway
             $payment['vpa'],
             $this->formatAmount($payment['amount']),
             $this->getPaymentRemark($input),
-            self::EXPIRY_TIMEOUT,
+            $input['upi']['expiry_time'],
             $this->getMerchantCategoryCode($input),
         ];
 

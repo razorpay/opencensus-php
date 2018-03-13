@@ -115,7 +115,20 @@ pipeline:
     user: drone
     cluster: qa
     auth_mode: client-cert
-    deployment: api
+    deployment:
+      - api-web
+      - api-sqs-batch
+      - api-sqs-emails
+      - api-sqs-es-sync
+      - api-sqs-gen-live
+      - api-sqs-gen-test
+      - api-sqs-invoice-email
+      - api-sqs-invoice-reports
+      - api-sqs-main
+      - api-sqs-subscription-charge
+      - api-sqs-webhooks-failure
+      - api-sqs-webhooks-live
+      - api-sqs-webhooks-test
     repo: razorpay/api
     namespace: func
     tag:
@@ -138,7 +151,20 @@ pipeline:
     user: drone
     cluster: stage
     auth_mode: client-cert
-    deployment: api
+    deployment:
+      - api-web
+      - api-sqs-batch
+      - api-sqs-emails
+      - api-sqs-es-sync
+      - api-sqs-gen-live
+      - api-sqs-gen-test
+      - api-sqs-invoice-email
+      - api-sqs-invoice-reports
+      - api-sqs-main
+      - api-sqs-subscription-charge
+      - api-sqs-webhooks-failure
+      - api-sqs-webhooks-live
+      - api-sqs-webhooks-test
     repo: razorpay/api
     namespace: echo
     tag:
@@ -149,4 +175,4 @@ pipeline:
         exclude: [push]
         include: [deployment]
 branches:
-  include: [ master, drone-tests, qakube ]
+  include: [ master ]

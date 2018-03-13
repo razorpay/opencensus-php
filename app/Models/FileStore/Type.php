@@ -19,6 +19,7 @@ class Type
     const CORPORATION_NETBANKING_REFUND     = 'corporation_netbanking_refund';
 
     const BOB_NETBANKING_REFUND             = 'bob_netbanking_refund';
+    const BOB_NETBANKING_CLAIMS             = 'bob_netbanking_claims';
 
     const ICICI_NETBANKING_REFUND           = 'icici_netbanking_refund';
 
@@ -134,6 +135,7 @@ class Type
             self::FEDERAL_NETBANKING_REFUND,
             self::CORPORATION_NETBANKING_REFUND,
             self::BOB_NETBANKING_REFUND,
+            self::BOB_NETBANKING_CLAIMS,
             self::RBL_NETBANKING_REFUND,
             self::INDUSIND_NETBANKING_REFUND,
             self::INDUSIND_NETBANKING_CLAIM,
@@ -227,6 +229,7 @@ class Type
         self::HDFC_EMANDATE_REGISTER,
         self::HDFC_EMANDATE_DEBIT,
         self::BOB_NETBANKING_REFUND,
+        self::BOB_NETBANKING_CLAIMS,
         self::CORPORATION_NETBANKING_REFUND,
         self::ICICI_NETBANKING_REFUND,
         self::AXIS_NETBANKING_REFUND,
@@ -265,6 +268,8 @@ class Type
             self::HDFC_NETBANKING_REFUND,
             self::HDFC_EMANDATE_REGISTER,
             self::HDFC_EMANDATE_DEBIT,
+            self::BOB_NETBANKING_REFUND,
+            self::BOB_NETBANKING_CLAIMS,
             self::AXIS_NETBANKING_REFUND,
             self::AXIS_NETBANKING_CLAIMS,
             self::AIRTELMONEY_WALLET_REFUND,
