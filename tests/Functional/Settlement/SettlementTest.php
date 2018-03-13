@@ -971,7 +971,7 @@ class SettlementTest extends TestCase
 
     public function testSettlementForReversalOfPaymentTransfer()
     {
-        $this->markTestSkipped('Skipping temporarily');
+        $this->markTestSkipped();
 
         $channel = Channel::AXIS;
 
@@ -1015,8 +1015,6 @@ class SettlementTest extends TestCase
                 'created_at'  => $time->getTimestamp(),
                 'updated_at'  => $time->getTimestamp(),
             ]);
-
-        Carbon::setTestNow();
 
         // Initiate immediate settlement, none should settle on the same day
         $content = $this->initiateSettlements($channel);

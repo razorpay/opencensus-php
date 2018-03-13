@@ -96,6 +96,8 @@ class Merchant
 
         $this->setlDetails = new Base\PublicCollection;
 
+        $startTime = microtime(true);
+
         $this->repo->transaction(function()
         {
             //create new settlement entity
@@ -113,6 +115,10 @@ class Merchant
             // Update transactions for settlement
             $this->updateTransactions();
         });
+
+        $timeTaken = microtime(true) - $startTime;
+
+        $this->trace->info(TraceCode::SETTLEMENT_MERCHANT_SETTLE_TIME_TAKEN, ['time_taken' => $timeTaken]);
 
         return $this->setl;
     }
@@ -135,13 +141,7 @@ class Merchant
     {
         assert($this->setl->hasTransaction(), true);
 
-        $startTime = microtime(true);
-
         $initiateAt = $this->txns->max(Transaction\Entity::SETTLED_AT);
-
-        $timeTaken = microtime(true) - $startTime;
-
-        $this->trace->info(TraceCode::SETTLEMENT_MAX_SETTLED_AT_TIME_TAKEN, ['time_taken' => $timeTaken]);
 
         $this->createSettlementAttemptEntity($initiateAt);
 

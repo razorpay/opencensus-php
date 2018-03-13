@@ -189,6 +189,8 @@ trait SettlementTrait
     {
         $merchant = $txns->first()->merchant;
 
+        $this->trace->info(TraceCode::SETTLEMENTS_CREATE_ENTITIES_FOR_MERCHANT, ['merchant' => $merchant->getId()]);
+
         list($setlAmount, $setlFee, $setlApiFee, $tax) = $this->getSettlementAmountsForMerchant($txns);
 
         $balance = $merchant->balance->getBalance();
