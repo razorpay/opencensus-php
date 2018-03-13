@@ -121,7 +121,6 @@ export default class MerchantEntity extends Component {
 const ActionsList = ({ model, merchantId, actions }) => {
   const merchant = model.merchant;
   const isDetailsLoading = !Object.keys(toJS(merchant.details)).length;
-  const isFeaturesLoading = !Object.keys(toJS(merchant.features)).length;
 
   /* Confirmation Messages */
   const toggleArchiveMerchantCM = function() {

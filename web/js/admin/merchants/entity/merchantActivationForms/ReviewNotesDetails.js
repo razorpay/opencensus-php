@@ -40,7 +40,7 @@ export default ({
   return (
     <div class="review-notes container">
       <header class="m-b">Activation Checklist: </header>
-      <div>
+      <div class="activation-actions-btns">
         <ShowWhen permission="edit_merchant_methods">
           <button onClick={isDetailsLoading ? null : actions.EditMethods}>
             Edit Methods
@@ -99,30 +99,34 @@ export default ({
         </ShowWhen>
       </div>
       <header class="m-b">Issues:</header>
-      <Form class="full-span full-elements limited">
+      <div style={styles.issuesSection}>
         <Table
           animateRow={false}
           fields={fields}
           items={issues}
           customClass="table-bordered"
         />
-        <TextAreaField
-          label="Public Comment"
-          name="issue_fields_reason"
-          placeholder="Please give a brief explanation for the reasons."
-        />
-        <TextAreaField
-          label="Internal notes"
-          name="internal_notes"
-          placeholder="Add an internal notes here."
-        />
-        <AsyncButton
-          text="Save"
-          class="btn"
-          pendingClass="small spinner"
-          onSubmit={onIssuesSubmition}
-        />
-      </Form>
+      </div>
+      <div style={styles.issuesSection}>
+        <Form class="full-span full-elements limited">
+          <TextAreaField
+            label="Public Comment"
+            name="issue_fields_reason"
+            placeholder="Please give a brief explanation for the reasons."
+          />
+          <TextAreaField
+            label="Internal notes"
+            name="internal_notes"
+            placeholder="Add an internal notes here."
+          />
+          <AsyncButton
+            text="Save"
+            class="btn"
+            pendingClass="small spinner"
+            onSubmit={onIssuesSubmition}
+          />
+        </Form>
+      </div>
     </div>
   );
 };
@@ -143,3 +147,11 @@ const fields = [
     ),
   ],
 ];
+
+const styles = {
+  issuesSection: {
+    width: '50%',
+    display: 'inline-block',
+    verticalAlign: 'top',
+  },
+};
