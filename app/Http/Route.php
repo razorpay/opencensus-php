@@ -299,6 +299,7 @@ final class Route
         'mock_mobikwik_payment'                   => ['post',     'gateway/mockmobikwik/payment',                   'MockGatewayController@postMobikwikPayment'                         ],
         'mock_billdesk_payment'                   => ['post',     'gateway/mockbilldesk/payment',                   'MockGatewayController@postBilldeskPayment'                         ],
         'mock_ebs_payment'                        => ['post',     'gateway/mockebs/payment',                        'MockGatewayController@postEbsPayment'                              ],
+        'mock_esigner_payment'                    => ['get',      'gateway/mock/esigner/{signer}',                  'MockGatewayController@postEsignerPayment'                          ],
         'mock_sharp_payment_post'                 => ['post',     'gateway/mocksharp/payment',                      'MockGatewayController@getSharpPayment'                             ],
         'mock_sharp_payment_get'                  => ['get',      'gateway/mocksharp/payment',                      'MockGatewayController@getSharpPayment'                             ],
         'mock_amex_payment'                       => ['post',     'gateway/mockamex/payment',                       'MockGatewayController@postAmexPayment'                             ],
@@ -1783,6 +1784,7 @@ final class Route
         'upi_npci_request',
         'upi_zero_call',
         'mock_billdesk_payment',
+        'mock_esigner_payment',
         'qr_code_download_live',
         'qr_code_download_test',
         'gateway_payment_callback_bharatqr',
@@ -2161,16 +2163,6 @@ final class Route
         'merchant_public_get_banks',
         'merchant_methods',
         'merchant_methods_downtime',
-    ];
-
-    /**
-     * This will not be needed once we have rate limiting on all routes.
-     * Adding now to test throttling on just a few routes at a time.
-     *
-     * @var array
-     */
-    public static $throttledRoutes = [
-        'dummy_route',
     ];
 
     /**
