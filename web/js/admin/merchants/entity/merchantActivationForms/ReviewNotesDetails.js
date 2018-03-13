@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 import { toJS } from 'mobx';
 
@@ -27,21 +27,24 @@ Object.keys(entityModals).map(key => {
 @observer
 export default class ReviewNotesDetails extends Component {
   fields = [
-    ['Issue', issue => snakeToTitleCase(issue)],
     [
-      'Action',
+      'Issue',
       issue => (
-        <Fragment>
-          <div
-            class="link"
-            onClick={() => this.props.onIssueSelection(null, issue)}
-          >
-            Resolve
-          </div>
-        </Fragment>
+        <div>
+          {snakeToTitleCase(issue)}{' '}
+          <i
+            class="pull-right delete i-trash"
+            data-issuename={issue}
+            onClick={this.handleDeleteOfIssue}
+          />
+        </div>
       ),
     ],
   ];
+
+  handleDeleteOfIssue = e => {
+    this.props.onIssueSelection(null, e.target.dataset.issuename);
+  };
 
   render() {
     const {
@@ -63,21 +66,30 @@ export default class ReviewNotesDetails extends Component {
         <header class="m-b">Activation Checklist: </header>
         <div class="activation-actions-btns">
           <ShowWhen permission="edit_merchant_methods">
-            <button onClick={isDetailsLoading ? null : actions.EditMethods}>
+            <button
+              class="btn-default"
+              onClick={isDetailsLoading ? null : actions.EditMethods}
+            >
               Edit Methods
               <i class="pull-right m-l i i-money" />
               {isDetailsLoading && <div class="dot-loader">.</div>}
             </button>
           </ShowWhen>
           <ShowWhen permission="edit_merchant">
-            <button onClick={isDetailsLoading ? null : actions.EditMerchant}>
+            <button
+              class="btn-default"
+              onClick={isDetailsLoading ? null : actions.EditMerchant}
+            >
               Edit Merchant
               <i class="pull-right m-l i i-edit-form" />
               {isDetailsLoading && <div class="dot-loader">.</div>}
             </button>
           </ShowWhen>
           <ShowWhen permission="edit_merchant_risk_threshold">
-            <button onClick={isDetailsLoading ? null : actions.EditFraudScore}>
+            <button
+              class="btn-default"
+              onClick={isDetailsLoading ? null : actions.EditFraudScore}
+            >
               Edit Fraud Score
               <i class="pull-right m-l i i-edit-form" />
               {isDetailsLoading && <div class="dot-loader">.</div>}
@@ -86,6 +98,7 @@ export default class ReviewNotesDetails extends Component {
 
           <ShowWhen permission="edit_merchant_pricing">
             <button
+              class="btn-default"
               onClick={isDetailsLoading ? null : actions.AssignPricingPlan}
             >
               Assign Pricing
@@ -94,28 +107,37 @@ export default class ReviewNotesDetails extends Component {
             </button>
           </ShowWhen>
           <ShowWhen permission="schedule_assign">
-            <button onClick={isDetailsLoading ? null : actions.AssignSchedule}>
+            <button
+              class="btn-default"
+              onClick={isDetailsLoading ? null : actions.AssignSchedule}
+            >
               Assign Schedule
               <i class="pull-right m-l i i-schedule" />
               {isDetailsLoading && <div class="dot-loader">.</div>}
             </button>
           </ShowWhen>
           <ShowWhen permission="edit_merchant_tags">
-            <button onClick={isDetailsLoading ? null : actions.EditTags}>
+            <button
+              class="btn-default"
+              onClick={isDetailsLoading ? null : actions.EditTags}
+            >
               Tag Merchant
               <i class="pull-right m-l i i-tag" />
               {isDetailsLoading && <div class="dot-loader">.</div>}
             </button>
           </ShowWhen>
           <ShowWhen permission="edit_merchant_features">
-            <button onClick={isFeaturesLoading ? null : actions.EditFeatures}>
+            <button
+              class="btn-default"
+              onClick={isFeaturesLoading ? null : actions.EditFeatures}
+            >
               Feature Merchant
               <i class="pull-right m-l i i-tag" />
               {isFeaturesLoading && <div class="dot-loader">.</div>}
             </button>
           </ShowWhen>
           <ShowWhen permission="add_merchant_credits">
-            <button onClick={actions.AddCredits}>
+            <button class="btn-default" onClick={actions.AddCredits}>
               Add Credits
               <i class="pull-right m-l i i-money" />
             </button>
