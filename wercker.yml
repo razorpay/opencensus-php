@@ -204,6 +204,11 @@ deploy-canary:
           channel: tech_bots
           username: wercker
           icon_url: https://cdn.rawgit.com/wantedly/step-pretty-slack-notify/master/icons/$WERCKER_RESULT.jpg
+      - slack-notifier:
+          url: $SLACK_URL
+          channel: tech_qa
+          username: wercker
+          icon_url: https://cdn.rawgit.com/wantedly/step-pretty-slack-notify/master/icons/$WERCKER_RESULT.jpg
       - script:
          name: post_deploy_notifier
          code: |

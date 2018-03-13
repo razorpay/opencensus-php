@@ -141,4 +141,13 @@ class RefundController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function putRefundStatus($id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->editStatus($id, $input);
+
+        return ApiResponse::json($data);
+    }
 }

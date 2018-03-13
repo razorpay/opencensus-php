@@ -30,6 +30,8 @@ class Repository extends Base\Repository
     {
         $webhook = $this->newQuery()
                         ->merchantId($merchant->getId())
+                        ->whereNull(Entity::ENTITY_TYPE)
+                        ->whereNull(Entity::ENTITY_ID)
                         ->first();
 
         if ($webhook !== null)
@@ -58,13 +60,6 @@ class Repository extends Base\Repository
         $webhook->saveOrFail();
     }
 
-    public function findByMerchantId($merchantId)
-    {
-        return $this->newQuery()
-                    ->merchantId($merchantId)
-                    ->first();
-    }
-
     public function resetFailureCount($webhook)
     {
         $webhook->resetFailureCount();
@@ -75,6 +70,16 @@ class Repository extends Base\Repository
     {
         $webhook->setLastSuccessfulAt();
         $webhook->saveOrFail();
+    }
+
+    public function findMultipleByApplicationIds(array $appIds)
+    {
+        $webhooks = $this->newQuery()
+                         ->where(Entity::ENTITY_TYPE, Entity::APPLICATION)
+                         ->whereIn(Entity::ENTITY_ID, $appIds)
+                         ->get();
+
+        return $webhooks;
     }
 
     protected function addQueryParamApplicationId(BuilderEx $query, array $params)

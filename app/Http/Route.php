@@ -90,6 +90,7 @@ final class Route
         'payment_capture_gateway_manual'          => ['post',     'payments/{id}/gateway/capture',                  'PaymentController@postManualGatewayCapture'                        ],
         'payment_authorize_time_out'              => ['post',     'payments/authorize/timeout/{ids}',               'PaymentController@postAuthorizeLockTimeOut'                        ],
         'refund_create'                           => ['post',     'refunds',                                        'RefundController@postRefundCreate'                                 ],
+        'refund_edit_status'                      => ['put',      'refunds/{id}/status',                            'RefundController@putRefundStatus'                                        ],
         'refund_fetch_by_id'                      => ['get',      'refunds/{id}',                                   'RefundController@getRefund'                                        ],
         'refund_fetch_multiple'                   => ['get',      'refunds',                                        'RefundController@getRefunds'                                       ],
         'refund_generate_excel'                   => ['post',     'refunds/excel',                                  'RefundController@generateRefunds'                                  ],
@@ -132,6 +133,7 @@ final class Route
         'merchant_assign_pricing'                 => ['post',     'merchants/{id}/pricing',                         'MerchantController@postAssignPricingPlan'                          ],
         'merchant_get_pricing'                    => ['get',      'merchants/{id}/pricing',                         'MerchantController@getPricingPlan'                                 ],
         'merchant_add_bank_account'               => ['post',     'merchants/{id}/bank_account',                    'MerchantController@postBankAccount'                                ],
+        'merchant_bank_account_change_status'     => ['get',      'merchants/{id}/bank_account_change/status',      'MerchantController@getBankAccountChangeStatus'                     ],
         'merchant_fetch_bank_account'             => ['get',      'merchants/{id}/bank_account',                    'MerchantController@getBankAccount'                                 ],
         'merchant_generate_test_bank_acnt'        => ['post',     'merchants/bank_account/generate/test',           'MerchantController@postGenerateTestBankAccounts'                   ],
         'merchant_create_terminal'                => ['post',     'merchants/{id}/terminals',                       'MerchantController@postCreateTerminal'                             ],
@@ -193,6 +195,7 @@ final class Route
         'bank_transfer_strip_payer_accounts'      => ['put',      'bank_transfers/payer_bank_account/strip',        'BankTransferController@stripPayerBankAccounts'                     ],
         'bank_transfer_insert'                    => ['post',     'bank_transfers/{provider}',                      'BankTransferController@insertBankTransfer'                         ],
         'fund_transfer_attempt_bulk_update'       => ['patch',    'fund_transfer_attempts',                         'FundTransferAttemptController@bulkUpdate'                          ],
+        'fund_transfer_attempt_null_utr_report'   => ['get',      'fund_transfer_attempts/null_utr_report',         'FundTransferAttemptController@sendNullUtrReport'                   ],
         'fund_transfer_attempt_reconcile'         => ['post',     'fund_transfer_attempts/reconcile/{channel}',     'FundTransferAttemptController@reconcileFundTransfers',             ],
         'fund_transfer_attempt_process'           => ['post',     'fund_transfer_attempts/initiate/{channel}',      'FundTransferAttemptController@initiateFundTransfers',              ],
         'gateway_payment_callback_bharatqr'       => ['post',     'payment/callback/bharatqr',                      'BharatQrController@processBharatQrPayment'                         ],
@@ -296,6 +299,7 @@ final class Route
         'mock_mobikwik_payment'                   => ['post',     'gateway/mockmobikwik/payment',                   'MockGatewayController@postMobikwikPayment'                         ],
         'mock_billdesk_payment'                   => ['post',     'gateway/mockbilldesk/payment',                   'MockGatewayController@postBilldeskPayment'                         ],
         'mock_ebs_payment'                        => ['post',     'gateway/mockebs/payment',                        'MockGatewayController@postEbsPayment'                              ],
+        'mock_esigner_payment'                    => ['get',      'gateway/mock/esigner/{signer}',                  'MockGatewayController@postEsignerPayment'                          ],
         'mock_sharp_payment_post'                 => ['post',     'gateway/mocksharp/payment',                      'MockGatewayController@getSharpPayment'                             ],
         'mock_sharp_payment_get'                  => ['get',      'gateway/mocksharp/payment',                      'MockGatewayController@getSharpPayment'                             ],
         'mock_amex_payment'                       => ['post',     'gateway/mockamex/payment',                       'MockGatewayController@postAmexPayment'                             ],
@@ -975,6 +979,7 @@ final class Route
         'emi_generate_excel',
         'entity_tax_update',
         'fund_transfer_attempt_reconcile',
+        'fund_transfer_attempt_null_utr_report',
         'gateway_file_create',
         'gateway_validate_unknown_refund',
         'geoip_update',
@@ -1165,6 +1170,7 @@ final class Route
         'dispute_edit',
         'merchant_get_tags',
         'account_fetch',
+        'merchant_add_bank_account',
     ];
 
     // These will run on internal auth with the assurance
@@ -1210,6 +1216,7 @@ final class Route
         'permission_edit',
         'permission_delete',
         'auditlog_search',
+        'refund_edit_status',
         'admin_logout',
         'schedule_create',
         'schedule_delete',
@@ -1345,7 +1352,6 @@ final class Route
         'merchant_activate',
         'merchant_activation_update',
         'merchant_activation_upload_file_admin',
-        'merchant_add_bank_account',
         'merchant_beneficiary_file',
         'merchant_create',
         'merchant_create_terminal',
@@ -1705,7 +1711,21 @@ final class Route
         'shield_rules_delete'                    => Permission::DELETE_SHIELD_RULES,
         'shield_rules_evaluate'                  => Permission::EVALUATE_SHIELD_RULES,
         'user_fetch_admin'                       => '*',
+        'refund_edit_status'                     => '*',
         'batch_create'                           => '*',
+        'reporting_config_get'                   => '*',
+        'reporting_config_list'                  => '*',
+        'reporting_config_create'                => '*',
+        'reporting_config_edit'                  => '*',
+        'reporting_config_delete'                => '*',
+        'reporting_log_get'                      => '*',
+        'reporting_log_list'                     => '*',
+        'reporting_log_create'                   => '*',
+        'reporting_schedule_get'                 => '*',
+        'reporting_schedule_list'                => '*',
+        'reporting_schedule_create'              => '*',
+        'reporting_schedule_delete'              => '*',
+        'ufh_get_file_signed_url'                => '*',
     ];
 
     public static $direct = [
@@ -1741,6 +1761,7 @@ final class Route
         'upi_npci_request',
         'upi_zero_call',
         'mock_billdesk_payment',
+        'mock_esigner_payment',
         'qr_code_download_live',
         'qr_code_download_test',
         'gateway_payment_callback_bharatqr',
@@ -1858,6 +1879,7 @@ final class Route
             'merchant_payout_mail',
             'geoip_update',
             'fund_transfer_attempt_reconcile',
+            'fund_transfer_attempt_null_utr_report',
             'admin_lock_old_accounts',
             'fund_transfer_attempt_process',
         ],
@@ -2118,16 +2140,6 @@ final class Route
         'merchant_public_get_banks',
         'merchant_methods',
         'merchant_methods_downtime',
-    ];
-
-    /**
-     * This will not be needed once we have rate limiting on all routes.
-     * Adding now to test throttling on just a few routes at a time.
-     *
-     * @var array
-     */
-    public static $throttledRoutes = [
-        'dummy_route',
     ];
 
     /**

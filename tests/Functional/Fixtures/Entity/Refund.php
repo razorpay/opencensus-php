@@ -47,16 +47,14 @@ class Refund extends Base
             $attributes['amount'] = $payment->getAmount();
         }
 
-        $attributes['payment_id'] = $payment->getId();
+        $attributes['payment_id']  = $payment->getId();
         $attributes['merchant_id'] = $payment->merchant->getId();
         $attributes['base_amount'] = $attributes['amount'];
-        $attributes['status'] = 'processed';
+        $attributes['status']      = 'processed';
 
         $refund = $this->build('refund', $attributes);
 
         $txn = $this->createTransactionOnRefund($refund);
-
-        $txn->setAttribute(Transaction\Entity::SETTLED_AT, $refund->getCreatedAt());
 
         $txn->saveOrFail();
 

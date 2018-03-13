@@ -58,7 +58,7 @@ trait TransactionTrait
     {
         return $this->transaction(function() use ($reversal)
         {
-            return (new TransactionCore)->createFromReversal($reversal);
+            return (new TransactionCore)->createFromTransferReversal($reversal);
         });
     }
 

@@ -319,6 +319,7 @@ class PublicErrorDescription
     const BAD_REQUEST_EMANDATE_TOKEN_PASSED_IN_FIRST_RECURRING                  = 'Token should not be passed in first E-mandate recurring payment';
     const BAD_REQUEST_UNCONFIRMED_TOKEN_PASSED_IN_SECOND_RECURRING              = 'Token is not confirmed for recurring payments';
     const BAD_REQUEST_VALIDATION_FAILURE                                        = 'Validation Failure';
+    const BAD_REQUEST_EMANDATE_REGISTRATION_FAILED                              = 'E-mandate registration failed';
 
     const BAD_REQUEST_GATEWAY_REFUND_ABSENT                                     = 'Refund not done on the gateway side.';
     const BAD_REQUEST_INVALID_GATEWAY                                           = 'Invalid gateway provided for the request';
@@ -502,6 +503,7 @@ class PublicErrorDescription
     const BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID                                   = 'Token Expired or Not a valid token';
     const BAD_REQUEST_OLD_PASSWORD_MISMATCH                                     = 'Old Password mismatch';
     const BAD_REQUEST_CAPTCHA_FAILED                                            = 'Captcha Failed';
+    const BAD_REQUEST_TOKEN_ABSENT_FOR_RECURRING_PAYMENT                        = 'Token absent for recurring payment';
 
     const BAD_REQUEST_SUBUSER_CREATION_NOT_ALLOWED                              = 'Sub user creation is not allowed for this role';
     const BAD_REQUEST_ACTION_NOT_ALLOWED_FOR_SELF_USER                          = 'Action not allowed for self user';

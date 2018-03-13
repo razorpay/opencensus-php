@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Helpers;
 
 use RZP\Jobs;
 use RZP\Models\Merchant\Webhook\Inferno;
+use Http\Discovery\MessageFactoryDiscovery;
 
 trait WebhookTrait
 {
@@ -60,5 +61,38 @@ trait WebhookTrait
         $infernoMock->expects($this->exactly($times))
                     ->method('fire')
                     ->withConsecutive(...$with);
+    }
+
+    protected function setInfernoMockClient()
+    {
+        $this->app['webhook.inferno']->setClient($this->app['httplug']->driver('mock'));
+
+        $messageFactory = MessageFactoryDiscovery::find();
+
+        $client = $this->app['webhook.inferno']->getClient();
+
+        $response = $messageFactory->createResponse(200);
+        $client->addResponse($response);
+
+        return $client;
+    }
+
+    protected function verifyRequestsData($client, array $requestsDataKeys)
+    {
+        $requests = $client->getRequests();
+
+        foreach ($requests as $index => $request)
+        {
+            $expectedData = $this->testData[$requestsDataKeys[$index]];
+
+            $this->assertEquals(['Razorpay-Webhook/v1'], $request->getHeader('User-Agent'));
+            $this->assertEquals(['application/json'], $request->getHeader('Content-Type'));
+            $this->assertEquals($expectedData['url'], (string) $request->getUri());
+
+            $body = (string) $request->getBody();
+            $decodedBody = json_decode($body, true);
+
+            $this->assertArraySelectiveEquals($expectedData['content'], $decodedBody);
+        }
     }
 }

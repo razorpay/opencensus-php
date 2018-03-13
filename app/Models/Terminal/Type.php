@@ -67,7 +67,7 @@ class Type
         return self::$bitPosition[$type];
     }
 
-    public static function getEnabledType($hex)
+    public static function getEnabledTypes($hex)
     {
         $types = [];
 

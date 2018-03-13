@@ -59,8 +59,13 @@ class OAuth
     public function hasOAuthPublicToken(): bool
     {
         $keyParam = $this->request->input('key_id');
-
         $key = $keyParam ?? $this->request->getUser();
+        // For callback routes, gets the key from route parameter
+        $route = $this->router->currentRouteName();
+        if ((empty($key) === true) and (in_array($route, Route::$publicCallback, true) === true))
+        {
+            $key = $this->router->current()->parameter('key');
+        }
 
         //
         // If the key was empty or null, return false and allow

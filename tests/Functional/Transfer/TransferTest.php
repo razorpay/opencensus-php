@@ -113,6 +113,37 @@ class TransferTest extends TestCase
         $this->checkTransferAndTxnRecords($transfer, $transferData, $txnData);
     }
 
+    public function testTransferToAccountPricingPostpaid()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['fee_model' => 'postpaid']);
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->editPricingPlanId(self::STANDARD_PRICING_PLAN_ID);
+
+        $transfer = $this->createTransfer('account');
+
+        $tax = 4;
+        $expectedFee = 20 + $tax;
+
+        $transferData = [
+            'fees'  => $expectedFee,
+            'tax'   => $tax
+        ];
+
+        $txnData = [
+            'amount'      => $transfer['amount'],
+            'fee'         => $expectedFee,
+            'tax'         => $tax,
+            'debit'       => $transfer['amount'],
+            'fee_model'   => 'postpaid',
+            'credit_type' => 'default',
+            'fee_credits' => 0,
+        ];
+
+        $this->checkTransferAndTxnRecords($transfer, $transferData, $txnData);
+    }
+
     public function testTransferToAccountWithFeeCredits()
     {
         $this->fixtures->create('pricing:standard_plan');
