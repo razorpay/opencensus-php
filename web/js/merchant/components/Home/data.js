@@ -7,24 +7,24 @@ const API_ERROR = {
     error: 'Got unexpected response from the server',
   },
   OLDEST_TXN_ERROR = {
-    error: 'Unable to get your first transaction date'
+    error: 'Unable to get your first transaction date',
   },
   isMobileDevice = window.outerWidth <= 768;
 
 const paymentMethodsOrder = [
-    "card",
-    "netbanking",
-    "upi",
-    "wallet",
-    "bank transfer",
-    "emi",
+    'card',
+    'netbanking',
+    'upi',
+    'wallet',
+    'bank transfer',
+    'emi',
   ],
   platformColorMap = {
-    "desktop": namedColors.blue,
-    "mweb": namedColors.orange,
-    "android": namedColors.androidGreen,
-    "ios": namedColors.lightBlue,
-    "others": namedColors.red
+    desktop: namedColors.blue,
+    mweb: namedColors.orange,
+    android: namedColors.androidGreen,
+    ios: namedColors.lightBlue,
+    others: namedColors.red,
   },
   paymentMethodsColorMap = paymentMethodsOrder.reduce(
     (result, method, index) => {
@@ -35,11 +35,9 @@ const paymentMethodsOrder = [
   ),
   extraColors = colors.slice(paymentMethodsOrder.length);
 
-
 let extraColorsUsed = 0;
 
-const getPaymentMethodColor = (paymentMethod) => {
-
+const getPaymentMethodColor = paymentMethod => {
   paymentMethod = paymentMethod.toLowerCase();
 
   // see if color exists for the payment method or assign one from
@@ -47,7 +45,6 @@ const getPaymentMethodColor = (paymentMethod) => {
   let color = paymentMethodsColorMap[paymentMethod];
 
   if (!color) {
- 
     color = extraColors[extraColorsUsed++ % extraColors.length];
 
     paymentMethodsOrder.push(paymentMethod);
@@ -57,8 +54,7 @@ const getPaymentMethodColor = (paymentMethod) => {
   return color;
 };
 
-const getPlatformColor = (platform) => {
-
+const getPlatformColor = platform => {
   return platformColorMap[platform.toLowerCase()];
 };
 
@@ -68,5 +64,5 @@ export {
   OLDEST_TXN_ERROR,
   isMobileDevice,
   getPlatformColor,
-  getPaymentMethodColor
+  getPaymentMethodColor,
 };

@@ -672,9 +672,7 @@ app
 
                   var hostname = parser.hostname || window.location.hostname;
 
-                  if (
-                    /razorpay\.(com|dev|in)$/.test(hostname)
-                  ) {
+                  if (/razorpay\.(com|dev|in)$/.test(hostname)) {
                     window.location.href = parser.href;
                     return false;
                   }
