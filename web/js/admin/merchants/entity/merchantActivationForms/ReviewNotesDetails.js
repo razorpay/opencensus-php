@@ -113,6 +113,7 @@ export default ({
             label="Public Comment"
             name="issue_fields_reason"
             placeholder="Please give a brief explanation for the reasons."
+            required={true}
           />
           <TextAreaField
             label="Internal notes"

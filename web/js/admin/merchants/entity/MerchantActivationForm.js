@@ -3,7 +3,7 @@ import { observer } from 'mobx-react';
 import { toJS } from 'mobx';
 
 import fetch, { adminFetch, adminPatch, adminPut } from 'common/fetch';
-import { closeModal, confirm, notifySuccess } from 'common/modal';
+import { closeModal, confirm, notifySuccess, notifyError } from 'common/modal';
 import { isWorkflow } from 'common/util';
 
 import Model from './model';
@@ -128,9 +128,16 @@ export default class MerchantActivationForm extends Component {
 
     body.issue_fields = issues.join(',');
 
+    if (!body.issue_fields_reason) {
+      notifyError('Please enter a public comment.');
+      return;
+    }
+
     return adminPut({
-      url: `merchant/activation/${this.merchantId}/update`,
+      url: `live/merchant/activation/${this.merchantId}/update`,
       data: body,
+    }).then(response => {
+      notifySuccess('Review updated successfully.');
     });
   };
 
