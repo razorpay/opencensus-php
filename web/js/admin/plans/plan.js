@@ -159,7 +159,7 @@ class Rule extends CollectionItem {
       data.amount_range_active = 1;
       data.amount_range_min = range[0];
       // if the max not specified its 2cr
-      data.amount_range_max = range[1] || 2000000000;
+      data.amount_range_max = range[1] || 1000000000;
     }
     delete data.amount_range;
 
