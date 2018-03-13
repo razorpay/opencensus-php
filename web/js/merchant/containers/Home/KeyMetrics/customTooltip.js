@@ -135,14 +135,17 @@ const customToolTip = function(tooltipModel) {
         )
       ),
       dateFormat = getDateFormat(startDate, endDate, breakdown),
-      url = `${externalUrl}?from=${startDate.unix()}&to=${endDate.unix()}`+
-            `&ref=home`;
+      url =
+        `${externalUrl}?from=${startDate.unix()}&to=${endDate.unix()}` +
+        `&ref=home`;
 
     let formattedDate = startDate.format(dateFormat);
 
-    if (breakdown === 'weekly'  ||
-        breakdown === 'monthly' ||
-        breakdown === 'hourly'    ) {
+    if (
+      breakdown === 'weekly' ||
+      breakdown === 'monthly' ||
+      breakdown === 'hourly'
+    ) {
       formattedDate += ' - ' + endDate.format(dateFormat);
     }
 
@@ -150,9 +153,11 @@ const customToolTip = function(tooltipModel) {
     innerHtml +=
       `<div class="tooltip-title">` +
       `<div>` +
-      `<div class="tooltip-amount">${isCurrency
-        ? getFormattedAmountNew(rupeesToPaise(sumOfAllDataPoints), true)
-        : getFormattedNumber(sumOfAllDataPoints)}</div>` +
+      `<div class="tooltip-amount">${
+        isCurrency
+          ? getFormattedAmountNew(rupeesToPaise(sumOfAllDataPoints), true)
+          : getFormattedNumber(sumOfAllDataPoints)
+      }</div>` +
       `<div class="sec-text tooltip-date">${formattedDate}</div>` +
       `</div>` +
       `<a href="${url}" class="ex-link deepdive-link"` +
@@ -181,9 +186,11 @@ const customToolTip = function(tooltipModel) {
 
       const labelValue =
         `<span class="label-value">` +
-        `${isCurrency
-          ? getFormattedAmountNew(rupeesToPaise(value), true)
-          : getFormattedNumber(value)}` +
+        `${
+          isCurrency
+            ? getFormattedAmountNew(rupeesToPaise(value), true)
+            : getFormattedNumber(value)
+        }` +
         `</span>`;
 
       // appending rows with each line

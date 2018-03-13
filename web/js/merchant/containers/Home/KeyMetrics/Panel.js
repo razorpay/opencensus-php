@@ -77,7 +77,7 @@ class Panel extends Component {
     return onGroupingChange && onGroupingChange(tabName, option);
   }
 
-  handleFilterChange (option) {
+  handleFilterChange(option) {
     const { tabName, onFilterChange } = this.props;
 
     return onFilterChange && onFilterChange(tabName, option);
@@ -149,13 +149,12 @@ class Panel extends Component {
         '%)';
     }
 
-    let chartOptions = {...globalChartOptions};
+    let chartOptions = { ...globalChartOptions };
 
-    if (selectedBreakdown === "hourly") {
-    
+    if (selectedBreakdown === 'hourly') {
       chartOptions = {
         ...chartOptions,
-        ...timeScale({breakdown: selectedBreakdown})
+        ...timeScale({ breakdown: selectedBreakdown }),
       };
     }
 
@@ -177,9 +176,9 @@ class Panel extends Component {
           {data.trend.show &&
             !data.trend.error && (
               <div
-                className={`pull-left ${data.trend.loading
-                  ? ' trend-loading'
-                  : ''}`}
+                className={`pull-left ${
+                  data.trend.loading ? ' trend-loading' : ''
+                }`}
               >
                 <div>
                   <Change value={trendValue}>
@@ -247,16 +246,15 @@ class Panel extends Component {
                 </div>
               )}
             {filters &&
-               filters.length > 0 && (
-            
-                 <div className="panel-action-item">
-                   <FilteringDropdown
-                     onFilterChange={this.handleFilterChange}
-                     filters={filters}
-                     selectedFilters={selectedFilters} />
-                 </div>
-               )
-            }
+              filters.length > 0 && (
+                <div className="panel-action-item">
+                  <FilteringDropdown
+                    onFilterChange={this.handleFilterChange}
+                    filters={filters}
+                    selectedFilters={selectedFilters}
+                  />
+                </div>
+              )}
             <div className="panel-action-item">
               <MoreOptionsButton
                 csvData={data.csv}
@@ -280,7 +278,8 @@ class Panel extends Component {
                   <Line options={chartOptions} data={data.histogram} />
                 )}
             </div>
-            {!this.meta.noGrouping && !data.loading &&
+            {!this.meta.noGrouping &&
+              !data.loading &&
               data.legendData && (
                 <div>
                   <Legend data={data.legendData} isCurrency={isCurrency} />
@@ -296,16 +295,18 @@ class Panel extends Component {
           <div className="pull-right">
             <Link
               target="_blank"
-              to={`/${this.meta
-                .index}?from=${startDate.unix()}&to=${endDate.unix()}&ref=home`}
+              to={`/${
+                this.meta.index
+              }?from=${startDate.unix()}&to=${endDate.unix()}&ref=home`}
               onClick={() =>
                 trackGoToLinks(
                   titleCase(this.meta.index),
                   sectionTitle + ' | ' + this.meta.title
-                )}
+                )
+              }
             >
               {`View these ${titleCase(this.meta.index)} `}
-              <i className="i i-chevron-right"></i>
+              <i className="i i-chevron-right" />
             </Link>
           </div>
         </PanelFooter>

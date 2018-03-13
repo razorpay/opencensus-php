@@ -2,11 +2,8 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
 import Tooltip from 'rzp/ui/Tooltip';
-import {
-  getFormattedNumber,
-  getFormattedAmountNew
-} from 'rzp/utils/rzp-utils';
-import { globalGroupTitleMap as groupTitleMap } from "rzp/utils/pokedex";
+import { getFormattedNumber, getFormattedAmountNew } from 'rzp/utils/rzp-utils';
+import { globalGroupTitleMap as groupTitleMap } from 'rzp/utils/pokedex';
 
 import { bankNames } from '../data';
 import renderTreemap from './renderTreemap';
@@ -104,7 +101,6 @@ export default class Treemap extends Component {
 
     // if resize is only vertical
     if (this.node.clientWidth === parent.clientWidth) {
-    
       return;
     }
 
@@ -130,7 +126,6 @@ export default class Treemap extends Component {
     const { data, currentLevel } = this.props;
 
     if (data !== nextProps.data) {
-
       return this.renderTreemap(nextProps.data, nextProps.isCurrency);
     } else if (
       !this.isNewData &&
@@ -147,11 +142,11 @@ export default class Treemap extends Component {
 
   render() {
     const { tooltip } = this.state,
-          { isCurrency } = this.props,
-      amount = (isCurrency
-                  ? getFormattedAmountNew
-                  : getFormattedNumber
-               )(tooltip.data.amount, true);
+      { isCurrency } = this.props,
+      amount = (isCurrency ? getFormattedAmountNew : getFormattedNumber)(
+        tooltip.data.amount,
+        true
+      );
 
     return (
       <div>

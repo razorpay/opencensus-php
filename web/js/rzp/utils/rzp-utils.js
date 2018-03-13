@@ -290,12 +290,39 @@ export const getCustomerDisplayName = ({ name, contact, email }) => {
 };
 
 /**
+ * Flattens an object.
+ * @param {Object} object
+ * @param {String} delimeter
+ */
+export const flattenObject = (object, delimeter = '.') => {
+  let keys = Object.keys(object);
+  let flat = {};
+  for (let i = 0; i < keys.length; i++) {
+    let key = keys[i];
+    let val = object[key];
+    if (typeof val === 'object') {
+      var _obj = flattenObject(val, delimeter);
+      var _keys = Object.keys(_obj);
+      for (var j = 0; j < _keys.length; j++) {
+        flat[key + delimeter + _keys[j]] = _obj[_keys[j]];
+      }
+    } else {
+      flat[key] = val;
+    }
+  }
+  return flat;
+};
+
+/**
  * Method to create a query string separated by | instead of &
  * @param {Object} params
  * @return {String}
  */
 export const stringifyQueryParamsWithPipe = params => {
   if (!params) return '';
+
+  params = flattenObject(params, '_');
+
   return JSON.stringify(params)
     .replace(/:/g, '=') // Replace : with =
     .replace(/{/g, '') // Remove {

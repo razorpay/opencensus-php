@@ -9,7 +9,7 @@ import {
   paiseToRupees,
   titleCase,
   getPercentage,
-  getFixedNumber
+  getFixedNumber,
 } from 'rzp/utils/rzp-utils';
 import {
   humanReadableIndian,
@@ -24,12 +24,9 @@ import {
   API_ERROR,
   API_INVALID_RESP,
   getPlatformColor,
-  getPaymentMethodColor
+  getPaymentMethodColor,
 } from 'merchant/components/Home/data';
-import {
-  trackNoData,
-  trackError
-} from 'merchant/containers/Home/ga';
+import { trackNoData, trackError } from 'merchant/containers/Home/ga';
 import Tooltip from 'merchant/components/Home/Tooltip';
 
 import {
@@ -49,16 +46,20 @@ import {
 import {
   trackTabClick,
   trackBreakdownChange,
-  trackSavedCardsHidden
+  trackSavedCardsHidden,
 } from './ga';
 import Panel from './Panel';
 
 const csvDateFormat = 'DD-MM-YYYY';
 
 const TabContent = ({
-  name, value, percent,
-  isCurrency, title, isLoading,
-  error
+  name,
+  value,
+  percent,
+  isCurrency,
+  title,
+  isLoading,
+  error,
 }) => {
   /*
    * Description:
@@ -67,7 +68,7 @@ const TabContent = ({
 
   let formattedValue = value;
 
-  if (typeof percent === "undefined") {
+  if (typeof percent === 'undefined') {
     formattedValue = isCurrency
       ? humanReadableIndianCurrency(paiseToRupees(value))
       : humanReadableIndian(value);
@@ -130,7 +131,7 @@ class KeyMetricsContainer extends Component {
 
     // Populating default value
     tabsOrder.forEach(tabName => {
-      const {grouping, filters} = tabsMeta[tabName],
+      const { grouping, filters } = tabsMeta[tabName],
         // assigment on R.H.S is intentional, puts value and declares
         // variable at the same time
         tabState = (this.state.tabsState[tabName] = {});
@@ -141,11 +142,9 @@ class KeyMetricsContainer extends Component {
       }
 
       if (filters && filters.length > 0) {
-      
         tabState.selectedFilters = filters.reduce((result, filter) => {
-        
           const filterName = filter.name,
-                firstFilter = filter.values[0];
+            firstFilter = filter.values[0];
 
           result[filterName] = firstFilter;
 
@@ -213,16 +212,13 @@ class KeyMetricsContainer extends Component {
         mode,
         sectionTitle,
         isAdmin,
-        analyticsFetch
+        analyticsFetch,
       } = this.props;
 
     let filterBy = null;
 
     if (selectedFilters) {
-    
-      filterBy = Object.keys(selectedFilters)
-                              .reduce((result, filterName) => {
-      
+      filterBy = Object.keys(selectedFilters).reduce((result, filterName) => {
         result[filterName] = selectedFilters[filterName].value;
 
         return result;
@@ -236,7 +232,7 @@ class KeyMetricsContainer extends Component {
       endTime: endDate.unix(),
       groupBy: selectedGrouping ? selectedGrouping.value : '',
       fetchHistogramForTab: selectedTab,
-      filterBy 
+      filterBy,
     });
 
     tabState.data.loading = true;
@@ -265,7 +261,7 @@ class KeyMetricsContainer extends Component {
               isPercent,
               title,
               noGrouping,
-              valueKey="value"
+              valueKey = 'value',
             } = tabMeta;
 
           // Main stat showin in the taib
@@ -300,13 +296,12 @@ class KeyMetricsContainer extends Component {
               }
             } else {
               const value = mainStat.result[0]
-                ? mainStat.result[0][tabMeta.valueKey || "value"]
+                ? mainStat.result[0][tabMeta.valueKey || 'value']
                 : 0;
 
               tabState.data.count = value;
 
               if (isPercent) {
-              
                 tabState.data.percent = value;
               }
             }
@@ -315,11 +310,10 @@ class KeyMetricsContainer extends Component {
           // Timeline data
           const histogram = resp.data[`${tabName}Histogram`];
           if (histogram) {
-
             const options = {
               data: histogram.result,
               groupByColumnName:
-                typeof tabMeta.groupByColumnName === "undefined"
+                typeof tabMeta.groupByColumnName === 'undefined'
                   ? selectedGrouping.value
                   : tabMeta.groupByColumnName,
               startTime: startDate.unix(),
@@ -328,33 +322,31 @@ class KeyMetricsContainer extends Component {
               groupTitleMap: tabMeta.groupTitleMap || { Mobile: 'mWeb' },
               isCurrency,
               valueKey,
-              noGrouping
+              noGrouping,
             };
 
-            if ([NUM_TRANSACTIONS, TRANSACTION_VOLUME , REFUNDS].indexOf(
-              selectedTab
-            ) >= 0) {
-            
-              options.getColor = (selectedGrouping &&
-                                  selectedGrouping.value === PLATFORM)
-                                    ? getPlatformColor
-                                    : getPaymentMethodColor;
+            if (
+              [NUM_TRANSACTIONS, TRANSACTION_VOLUME, REFUNDS].indexOf(
+                selectedTab
+              ) >= 0
+            ) {
+              options.getColor =
+                selectedGrouping && selectedGrouping.value === PLATFORM
+                  ? getPlatformColor
+                  : getPaymentMethodColor;
             }
 
-            const {
-              labels,
-              datasets,
-              aggregates,
-              csv
-            } = getTimelineData(options);
+            const { labels, datasets, aggregates, csv } = getTimelineData(
+              options
+            );
 
-            // track in GA that no data found in this section for 
+            // track in GA that no data found in this section for
             // given daterange
             if (labels.length === 0) {
               trackNoData(
-                `${tabMeta.title} in ${sectionTitle} from ${
-                 startDate.format(csvDateFormat)} to ${
-                 endDate.format(csvDateFormat)}`
+                `${tabMeta.title} in ${sectionTitle} from ${startDate.format(
+                  csvDateFormat
+                )} to ${endDate.format(csvDateFormat)}`
               );
             }
 
@@ -410,14 +402,14 @@ class KeyMetricsContainer extends Component {
         }
 
         if (data.error) {
-
-          trackError(`Error while fetching data for Keymetrics - ${
-                      selectedTab}`);
+          trackError(
+            `Error while fetching data for Keymetrics - ${selectedTab}`
+          );
 
           this.props.showNotification({
             type: 'error',
             message: data.error,
-            hidePrevious: true
+            hidePrevious: true,
           });
         }
 
@@ -454,7 +446,7 @@ class KeyMetricsContainer extends Component {
       oldestTransactionDate || this.props.oldestTransactionDate;
 
     const { analyticsFetch } = this.props,
-          { startDate, endDate, value } = oldestTransactionDate;
+      { startDate, endDate, value } = oldestTransactionDate;
 
     if (
       oldestTransactionDate.error ||
@@ -530,18 +522,16 @@ class KeyMetricsContainer extends Component {
                 { trend } = tabState.data;
 
               let previousCount = data[tabName].result[0]
-                    ? data[tabName].result[0].value
-                    : 0,
+                  ? data[tabName].result[0].value
+                  : 0,
                 currentCount = tabState.data.count;
 
               if (tabName === SAVED_CARDS) {
-              
-                const savedCardData = data[tabName]
-                                        .result
-                                        .filter(item => item.saved_card)[0];
+                const savedCardData = data[tabName].result.filter(
+                  item => item.saved_card
+                )[0];
 
-                previousCount = savedCardData
-                                  ? savedCardData.value : 0;
+                previousCount = savedCardData ? savedCardData.value : 0;
               }
 
               trend.loading = false;
@@ -556,13 +546,12 @@ class KeyMetricsContainer extends Component {
 
           return;
         } else {
-
           trackError(`Error while fetching prev data for all tabs`);
 
           this.props.showNotification({
             type: 'error',
             message: data.error,
-            hidePrevious: true
+            hidePrevious: true,
           });
 
           tabsOrder.forEach(tabName => {
@@ -610,23 +599,21 @@ class KeyMetricsContainer extends Component {
 
   onFilterChange(tabName, selectedFilter) {
     const { tabsState } = this.state,
-          { onFilterChange } = this.props,
-          tabState = tabsState[tabName];
+      { onFilterChange } = this.props,
+      tabState = tabsState[tabName];
 
     tabState.selectedFilters = {
-    
       ...tabState.selectedFilters,
-      [selectedFilter.filterName]: selectedFilter
+      [selectedFilter.filterName]: selectedFilter,
     };
 
     // Hardcoding, can not import these values as the code will
     // not be present in merchant dashboard
-    if (selectedFilter.filterName === "paymentMethods") {
-    
+    if (selectedFilter.filterName === 'paymentMethods') {
       tabState.selectedFilters.sources = {
-        filterName: "sources",
-        text: "All Sources",
-        value: "all"
+        filterName: 'sources',
+        text: 'All Sources',
+        value: 'all',
       };
     }
 
@@ -683,22 +670,21 @@ class KeyMetricsContainer extends Component {
 
       // check the daterange and correct the breakdown in each tab
       // if needed
-      tabsOrder.forEach((tabName) => {
-
+      tabsOrder.forEach(tabName => {
         const tabState = tabsState[tabName],
-              selectedBreakdown = tabState.selectedBreakdown,
-              {hourly, weekly, monthly} = breakdownValsMap;
+          selectedBreakdown = tabState.selectedBreakdown,
+          { hourly, weekly, monthly } = breakdownValsMap;
 
         if (selectedBreakdown !== 'daily') {
+          const showHourly = hourly.isEnabled(startDate, endDate),
+            showWeekly = weekly.isEnabled(startDate, endDate),
+            showMonthly = monthly.isEnabled(startDate, endDate);
 
-          const showHourly  = hourly.isEnabled(startDate, endDate),
-                showWeekly  = weekly.isEnabled(startDate, endDate),
-                showMonthly = monthly.isEnabled(startDate, endDate);
-
-          if (selectedBreakdown === 'hourly'  && !showHourly  ||
-              selectedBreakdown === 'weekly'  && !showWeekly  ||
-              selectedBreakdown === 'monthly' && !showMonthly   ) {
-
+          if (
+            (selectedBreakdown === 'hourly' && !showHourly) ||
+            (selectedBreakdown === 'weekly' && !showWeekly) ||
+            (selectedBreakdown === 'monthly' && !showMonthly)
+          ) {
             /*
              * if the changed daterange doesn't fit for the
              * selected breakdown switch to daily
@@ -728,9 +714,7 @@ class KeyMetricsContainer extends Component {
       );
 
     return (
-      <Tabs
-         className="keymetrics"
-         justified={true}>
+      <Tabs className="keymetrics" justified={true}>
         {visibleTabs.map((tabName, index) => {
           const tabData = tabsState[tabName].data,
             { isCurrency, title } = tabsMeta[tabName];

@@ -16,7 +16,6 @@ global.elements.arc.borderWidth = 0;
 global.elements.point.radius = 0;
 global.elements.point.hoverRadius = 0;
 
-
 const tooltips = global.tooltips;
 tooltips.mode = 'index';
 tooltips.multiKeyBackground = 'rgba(0, 0, 0, 0)';
@@ -55,24 +54,24 @@ export const timeScale = ({ xLabel, yLabel, breakdown }) => {
             maxRotation: 0,
             autoSkipPadding: 21,
             callback: (value, index, values) => {
-
-              if (breakdown !== "hourly") {
-              
+              if (breakdown !== 'hourly') {
                 return value;
               }
 
-              // make sure only days are displayed if 
+              // make sure only days are displayed if
               // the breakdown in hourly
               const prevValue = values[index - 1],
-                    currValue = values[index];
+                currValue = values[index];
 
-              if (prevValue && moment(prevValue.value)
-                                 .isSame(currValue.value, 'day')) {
+              if (
+                prevValue &&
+                moment(prevValue.value).isSame(currValue.value, 'day')
+              ) {
                 return null;
               }
 
               return moment(currValue.value).format('MMM D');
-            }
+            },
           },
         },
       ],
@@ -84,10 +83,9 @@ export const timeScale = ({ xLabel, yLabel, breakdown }) => {
             suggestedMax: 10,
             maxTicksLimit: 10,
             callback: value => {
-
               // if spaces are not added, the labels get
               // cut
-              return "    "  + humanReadableIndian(value);
+              return '    ' + humanReadableIndian(value);
             },
             fontColor: 'rgba(45, 48, 51, 0.5)',
           },

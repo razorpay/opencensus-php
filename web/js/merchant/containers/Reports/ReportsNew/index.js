@@ -242,14 +242,12 @@ export default class ReportsContainer extends Component {
       month = date.month() + 1, // Jan is 0 in moment library
       year = date.year(),
       titleForTracking = `${titleCase(type)} ${selectedConfig.label} Report`,
-      descForTracking = type === 'daily'
-                          ? `date=${day}-${month}-${year}`
-                          : `month=${month}`;
+      descForTracking =
+        type === 'daily' ? `date=${day}-${month}-${year}` : `month=${month}`;
 
     if (selectedConfig.value === 'monthlyInvoice') {
-
       const month = invoiceDate.month() + 1,
-            year  = invoiceDate.year();
+        year = invoiceDate.year();
 
       trackDownload(titleForTracking, `month=${month}-${year}`);
 
@@ -260,7 +258,6 @@ export default class ReportsContainer extends Component {
         '_blank'
       );
     } else {
-  
       trackDownload(titleForTracking, descForTracking);
 
       if (selectedConfig.type !== 'custom') {
@@ -277,21 +274,19 @@ export default class ReportsContainer extends Component {
         this.props.showNotification(downloadStartedMessage);
 
         const { user } = this.props,
-              selectedAccountId = ((selectedConfig.type in marketplaceConfigTypes)
-                                    ? selectedAccount.id
-                                    : this.defaultAccount.id).replace('acc_', ''),
-              isMerchantAccount = selectedAccountId === user.current,
-              reqData = {
-                config_id: selectedConfig._item.id,
-                generated_by: selectedAccountId,
-                start_time: startTime,
-                end_time: endTime,
-              };
+          selectedAccountId = (selectedConfig.type in marketplaceConfigTypes
+            ? selectedAccount.id
+            : this.defaultAccount.id
+          ).replace('acc_', ''),
+          isMerchantAccount = selectedAccountId === user.current,
+          reqData = {
+            config_id: selectedConfig._item.id,
+            generated_by: selectedAccountId,
+            start_time: startTime,
+            end_time: endTime,
+          };
 
-        return generateReportV2(
-          reqData,
-          isMerchantAccount
-        ).then(data => {
+        return generateReportV2(reqData, isMerchantAccount).then(data => {
           if (data.error) {
             return this.props.showNotification({
               type: 'error',
@@ -311,8 +306,8 @@ export default class ReportsContainer extends Component {
         entity = selectedConfig.value;
 
       let data = {
-        month, 
-        year
+        month,
+        year,
       };
 
       if (type === 'daily') {
