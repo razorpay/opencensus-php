@@ -733,8 +733,9 @@ trait RepositoryFetch
     }
 
     /**
-     * Filter fetch operation by merchantId. Super important for
-     * private auth calls.
+     * In Fetch merchant_id can also be injected from code.
+     * Method will add merchant id in the query even if it
+     * is not part of input.
      *
      * @param BuilderEx $query
      * @param string    $merchantId
@@ -837,8 +838,21 @@ trait RepositoryFetch
         }
     }
 
+    /**
+     * Add merchant_id dynamically to query after verify
+     * This way Entities only need to set access for it.
+     *
+     * Note: All the entities has set the rule to alpha_num.
+     *       Rather than changing and forcing correct rule
+     *       We are here validating before injecting in query.
+     *
+     * @param $query
+     * @param $params
+     */
     protected function addQueryParamMerchantId($query, $params)
     {
+        Merchant\Entity::verifyIdAndStripSign($params[Common::MERCHANT_ID]);
+
         $query->merchantId($params[Common::MERCHANT_ID]);
     }
 

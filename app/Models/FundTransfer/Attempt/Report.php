@@ -157,7 +157,7 @@ class Report extends Base\Core
 
         $data = [
             'file'      => $this->fileName,
-            'date'      => Carbon::yesterday(Timezone::IST)->format('Y-m-d')
+            'date'      => Carbon::today(Timezone::IST)->format('Y-m-d')
         ];
 
         $reportEmail = new ReportEmail($data);
@@ -171,7 +171,7 @@ class Report extends Base\Core
     {
         $dir  = storage_path('files/settlement');
 
-        $date = Carbon::yesterday(Timezone::IST)->format('Y-M-d');
+        $date = Carbon::today(Timezone::IST)->format('Y-M-d');
 
         return $dir . DIRECTORY_SEPARATOR . 'null_utr_report_' . $date . '.csv';
     }
