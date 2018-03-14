@@ -242,14 +242,13 @@ export default class ReportsContainer extends Component {
       month = date.month() + 1, // Jan is 0 in moment library
       year = date.year(),
       titleForTracking = `${titleCase(type)} ${selectedConfig.label} Report`,
-      descForTracking =
-        type === 'daily' ? `date=${day}-${month}-${year}` : `month=${month}`;
+      descForTracking = type === 'daily' ? `date` : `month`;
 
     if (selectedConfig.value === 'monthlyInvoice') {
       const month = invoiceDate.month() + 1,
         year = invoiceDate.year();
 
-      trackDownload(titleForTracking, `month=${month}-${year}`);
+      trackDownload(titleForTracking, `month`);
 
       return window.open(
         `/${this.props.mode}/reports/invoice` +

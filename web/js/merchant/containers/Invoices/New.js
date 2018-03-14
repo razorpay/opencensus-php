@@ -12,7 +12,7 @@ import AutoResizeTextarea from 'rzp/ui/Forms/AutoResizeTextarea';
 import TypeAhead from 'rzp/ui/Select/TypeAhead';
 import Spinner from 'rzp/ui/Spinner';
 import InlineField from 'rzp/ui/Forms/InlineField';
-import { findBy, stringifyQueryParamsWithPipe } from 'rzp/utils/rzp-utils';
+import { findBy, getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
 
 import LineItemTable from './LineItemTable';
@@ -277,7 +277,7 @@ export default class InvoicesNewContainer extends Component {
       window.rzpAnalytics({
         eventCategory: 'Dashboard - Invoice',
         eventAction: 'Save - Invoice',
-        eventLabel: stringifyQueryParamsWithPipe(props),
+        eventLabel: getKeysSeparatedByPipe(props),
       });
       this.props.showNotification({
         type: 'success',
@@ -297,7 +297,7 @@ export default class InvoicesNewContainer extends Component {
         window.rzpAnalytics({
           eventCategory: 'Dashboard - Invoice',
           eventAction: 'Issue - Invoice',
-          eventLabel: stringifyQueryParamsWithPipe(props),
+          eventLabel: getKeysSeparatedByPipe(props),
         });
         this.props.showNotification({
           type: 'success',
@@ -325,9 +325,7 @@ export default class InvoicesNewContainer extends Component {
           window.rzpAnalytics({
             eventCategory: 'Dashboard - Invoice',
             eventAction: 'Resend - Invoice',
-            eventLabel: `invoice_id=${
-              this.props.invoice.id
-            }|${stringifyQueryParamsWithPipe(props)}`,
+            eventLabel: getKeysSeparatedByPipe(props),
           });
           this.props.showNotification({
             type: 'success',
