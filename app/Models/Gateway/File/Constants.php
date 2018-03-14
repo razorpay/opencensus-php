@@ -12,6 +12,7 @@ class Constants
     const ICICI            = 'icici';
     const KOTAK            = 'kotak';
     const FEDERAL          = 'federal';
+    const BOB              = 'bob';
     const INDUSIND         = 'indusind';
     const RBL              = 'rbl';
     const SCBL             = 'scbl';
@@ -44,6 +45,7 @@ class Constants
             self::KOTAK,
             self::AXIS,
             self::FEDERAL,
+            self::BOB,
             self::RBL,
             self::INDUSIND,
         ],
@@ -87,6 +89,7 @@ class Constants
             self::KOTAK    => ['settlements@razorpay.com'],
             self::RBL      => ['rbl.netbanking.refunds@razorpay.com'],
             self::FEDERAL  => ['federal.netbanking.refunds@razorpay.com'],
+            self::BOB      => ['bob.netbanking.refunds@razorpay.com'],
             self::INDUSIND => ['indusind.netbanking.refunds@razorpay.com'],
         ],
 

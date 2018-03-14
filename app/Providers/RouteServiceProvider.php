@@ -73,14 +73,15 @@ class RouteServiceProvider extends ServiceProvider
         $routeGroupGlobalParams = [
             'prefix'        => 'v1',
             'namespace'     => $this->namespace,
-            'middleware'    => ['throttle',
-                                'auth',
-                                'admin_access',
-                                'user_access',
-                                'workflow',
-                                'merchant_ip_filter',
-                                'event_tracker',
-                               ],
+            'middleware'    => [
+                'throttle',
+                'auth',
+                'admin_access',
+                'user_access',
+                'workflow',
+                'merchant_ip_filter',
+                'event_tracker',
+            ],
         ];
 
         $router->group(

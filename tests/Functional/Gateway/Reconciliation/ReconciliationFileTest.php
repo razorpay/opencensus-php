@@ -492,8 +492,6 @@ class ReconciliationFileTest extends TestCase
         $this->assertTrue($updatedPayment1['gateway_captured']);
     }
 
-    /**
-     * Refund Recon is disabled temporary
     public function testHitachiReconRefundFile()
     {
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
@@ -517,6 +515,5 @@ class ReconciliationFileTest extends TestCase
 
         $this->assertEquals($entries[0][HitachiRefundRecon::COLUMN_ARN], $updatedRefund1['arn']);
     }
-    */
 
 }

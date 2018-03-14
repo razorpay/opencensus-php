@@ -1556,3 +1556,23 @@ UPDATE `merchants` m
 JOIN `merchant_details` md ON m.`id` = md.`merchant_id`
 SET m.`has_key_access` = 1
 WHERE m.`parent_id` IS NULL AND md.`submitted_at` IS NOT NULL;
+
+# Delete workflow for 'delete workflow'
+UPDATE workflows SET deleted_at = UNIX_TIMESTAMP(NOW()) WHERE id = '9R2zfkFxFdMDH4';
+
+# Undo deleted merchant_suspend workflow
+UPDATE workflows SET deleted_at = NULL WHERE id = '8VdlpVWnbPoqwK';
+
+# Update recipient_settlement_id in transfers table
+UPDATE transfers as tr
+    JOIN payments
+        ON payments.transfer_id = tr.id
+    JOIN transactions as txn
+        ON txn.entity_id = payments.id
+    JOIN settlements
+        ON txn.settlement_id = settlements.id
+SET tr.recipient_settlement_id = settlements.id
+WHERE payments.transfer_id IS NOT NULL
+AND txn.settled = 1
+AND txn.type='payment'
+AND tr.recipient_settlement_id IS NULL
