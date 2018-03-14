@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "105c16753aada7d4b38a3e663711d84e",
+    "content-hash": "4bae8f82ebb30b99eb2049f1d62f30c9",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -5652,16 +5652,16 @@
         },
         {
             "name": "razorpay/trace",
-            "version": "dev-laravel_55",
+            "version": "2.0.11",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/trace.git",
-                "reference": "ee7e77f92ea9d305d674e332a042e7c8dff3c3a4"
+                "reference": "3197dd6bcc32ab7f614c6a4b46bb52083816991d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/trace/zipball/ee7e77f92ea9d305d674e332a042e7c8dff3c3a4",
-                "reference": "ee7e77f92ea9d305d674e332a042e7c8dff3c3a4",
+                "url": "https://api.github.com/repos/razorpay/trace/zipball/3197dd6bcc32ab7f614c6a4b46bb52083816991d",
+                "reference": "3197dd6bcc32ab7f614c6a4b46bb52083816991d",
                 "shasum": ""
             },
             "require": {
@@ -5721,10 +5721,10 @@
                 "trace"
             ],
             "support": {
-                "source": "https://github.com/razorpay/trace/tree/laravel_55",
+                "source": "https://github.com/razorpay/trace/tree/2.0.11",
                 "issues": "https://github.com/razorpay/trace/issues"
             },
-            "time": "2018-03-09T13:16:47+00:00"
+            "time": "2018-03-14T07:28:59+00:00"
         },
         {
             "name": "razorpay/ufh-sdk-php",
@@ -7593,115 +7593,6 @@
             "description": "Sends PHP test coverage information to Codacy.",
             "homepage": "https://github.com/codacy/php-codacy-coverage",
             "time": "2017-08-09T14:23:33+00:00"
-        },
-        {
-            "name": "filp/whoops",
-            "version": "2.1.14",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/filp/whoops.git",
-                "reference": "c6081b8838686aa04f1e83ba7e91f78b7b2a23e6"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/filp/whoops/zipball/c6081b8838686aa04f1e83ba7e91f78b7b2a23e6",
-                "reference": "c6081b8838686aa04f1e83ba7e91f78b7b2a23e6",
-                "shasum": ""
-            },
-            "require": {
-                "php": "^5.5.9 || ^7.0",
-                "psr/log": "^1.0.1"
-            },
-            "require-dev": {
-                "mockery/mockery": "0.9.*",
-                "phpunit/phpunit": "^4.8.35 || ^5.7",
-                "symfony/var-dumper": "^2.6 || ^3.0"
-            },
-            "suggest": {
-                "symfony/var-dumper": "Pretty print complex values better with var-dumper available",
-                "whoops/soap": "Formats errors as SOAP responses"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "2.0-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Whoops\\": "src/Whoops/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Filipe Dobreira",
-                    "homepage": "https://github.com/filp",
-                    "role": "Developer"
-                }
-            ],
-            "description": "php error handling for cool kids",
-            "homepage": "https://filp.github.io/whoops/",
-            "keywords": [
-                "error",
-                "exception",
-                "handling",
-                "library",
-                "throwable",
-                "whoops"
-            ],
-            "time": "2017-11-23T18:22:44+00:00"
-        },
-        {
-            "name": "codedungeon/phpunit-result-printer",
-            "version": "0.5.4",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/mikeerickson/phpunit-pretty-result-printer.git",
-                "reference": "ce3b989eeb6d2b8cab367897275e120520bdca18"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/mikeerickson/phpunit-pretty-result-printer/zipball/ce3b989eeb6d2b8cab367897275e120520bdca18",
-                "reference": "ce3b989eeb6d2b8cab367897275e120520bdca18",
-                "shasum": ""
-            },
-            "require": {
-                "hassankhan/config": "^0.10.0",
-                "symfony/yaml": "^2.7|^3.0|^4.0"
-            },
-            "require-dev": {
-                "phpunit/phpunit": ">=5.2",
-                "spatie/phpunit-watcher": "^1.3"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Codedungeon\\PHPUnitPrettyResultPrinter\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Mike Erickson",
-                    "email": "codedungeon@gmail.com"
-                }
-            ],
-            "description": "PHPUnit Pretty Result Printer",
-            "keywords": [
-                "composer",
-                "package",
-                "phpunit",
-                "printer",
-                "result-printer"
-            ],
-            "time": "2018-01-24T00:13:26+00:00"
         },
         {
             "name": "fzaninotto/faker",
@@ -9731,7 +9622,6 @@
         "razorpay/upi-clients": 20,
         "razorpay/ufh-sdk-php": 20,
         "razorpay/hodor": 20,
-        "razorpay/trace": 20,
         "razorpay/oauth": 20,
         "codacy/coverage": 20,
         "symfony/phpunit-bridge": 20

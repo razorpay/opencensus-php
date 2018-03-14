@@ -44,7 +44,7 @@
         "watson/rememberable": "^2.0",
         "layershifter/tld-extract": "^1.2",
         "razorpay/hodor": "dev-master",
-        "razorpay/trace": "dev-laravel_55",
+        "razorpay/trace": "~2.0",
         "razorpay/oauth": "dev-laravel_5.5",
         "fideloper/proxy": "~3.0"
     },
@@ -80,7 +80,6 @@
         }
     ],
     "require-dev": {
-        "filp/whoops": "~2.0",
         "kint-php/kint": "1.*",
         "laracasts/testdummy": "2.*",
         "mockery/mockery": "*",
