@@ -14,7 +14,8 @@ class Repository extends Base\Repository
     const WITH_TRASHED = 'deleted';
 
     protected $appFetchParamRules = [
-        self::WITH_TRASHED => 'sometimes|in:0,1',
+        Entity::MERCHANT_ID     => 'sometimes|alpha_num|size:14',
+        self::WITH_TRASHED      => 'sometimes|in:0,1',
     ];
 
     public function getDailySettlementScheduleByDelay($delay)
