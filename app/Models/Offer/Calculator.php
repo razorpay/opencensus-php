@@ -74,11 +74,11 @@ class Calculator extends Base\Core
         }
         else if ($this->offer->getPercentRate() !== null)
         {
-            $percentDiscount = $this->offer->getPercentRate()/10000;
+            $discountFactor = $this->offer->getPercentRate() * $amount;
 
-            $discount = $percentDiscount * $amount;
+            $discount = $discountFactor / 10000;
         }
 
-        return intval($discount);
+        return round($discount);
     }
 }
