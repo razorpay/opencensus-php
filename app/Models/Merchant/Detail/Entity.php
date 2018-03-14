@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\Detail;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Admin\Admin;
 
 /**
  * Class Entity
@@ -85,6 +86,7 @@ class Entity extends Base\PublicEntity
     const ISSUE_FIELDS                       = 'issue_fields';
     const ISSUE_FIELDS_REASON                = 'issue_fields_reason';
     const INTERNAL_NOTES                     = 'internal_notes';
+    const REVIEWER_ID                        = 'reviewer_id';
     const MARKETPLACE_ACTIVATION_STATUS      = 'marketplace_activation_status';
     const VIRTUAL_ACCOUNTS_ACTIVATION_STATUS = 'virtual_accounts_activation_status';
     const SUBSCRIPTIONS_ACTIVATION_STATUS    = 'subscriptions_activation_status';
@@ -100,6 +102,7 @@ class Entity extends Base\PublicEntity
     const ALLOWED_NEXT_ACTIVATION_STATUSES = 'allowed_next_activation_statuses';
     const VERIFICATION                     = 'verification';
     const CAN_SUBMIT                       = 'can_submit';
+    const REVIEWER                         = 'reviewer';
 
     // fields_pending field is used in new Account APIs.
     const FIELDS_PENDING                   = 'fields_pending';
@@ -186,6 +189,7 @@ class Entity extends Base\PublicEntity
         self::ISSUE_FIELDS,
         self::ISSUE_FIELDS_REASON,
         self::INTERNAL_NOTES,
+        self::REVIEWER_ID,
         self::MARKETPLACE_ACTIVATION_STATUS,
         self::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS,
         self::SUBSCRIPTIONS_ACTIVATION_STATUS,
@@ -241,6 +245,7 @@ class Entity extends Base\PublicEntity
         self::ISSUE_FIELDS,
         self::ISSUE_FIELDS_REASON,
         self::INTERNAL_NOTES,
+        self::REVIEWER,
         self::MARKETPLACE_ACTIVATION_STATUS,
         self::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS,
         self::SUBSCRIPTIONS_ACTIVATION_STATUS,
@@ -321,6 +326,11 @@ class Entity extends Base\PublicEntity
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity', self::MERCHANT_ID, 'id');
+    }
+
+    public function reviewer()
+    {
+        return $this->belongsTo(Admin\Entity::class, self::REVIEWER_ID, 'id');
     }
 
     public function isLocked()

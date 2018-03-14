@@ -236,6 +236,9 @@ class CreateMerchantDetailsTable extends Migration
             $table->text(MerchantDetail::INTERNAL_NOTES)
                   ->nullable();
 
+            $table->char(MerchantDetail::REVIEWER_ID, MerchantDetail::ID_LENGTH)
+                  ->nullable();
+
             $table->string(MerchantDetail::MARKETPLACE_ACTIVATION_STATUS, 30)
                 ->nullable();
 
