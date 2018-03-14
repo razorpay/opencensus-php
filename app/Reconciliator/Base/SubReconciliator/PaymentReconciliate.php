@@ -327,7 +327,9 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
                 break;
 
-            default:
+            case VerifyResult::ERROR:
+            case VerifyResult::TIMEOUT:
+            case VerifyResult::UNKNOWN:
 
                 $this->messenger->raiseReconAlert(
                     [
@@ -339,6 +341,26 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                     ]);
 
                 $authorizeSuccess = false;
+
+                break;
+
+            // If payment is already being authorized by other thread
+            // or any unexpected gateway error comes, null is returned. No slack
+            // message in this case, happens for all the payments in the file.
+            default:
+
+                $this->trace->info(
+                    TraceCode::RECON_FAILED_VERIFY,
+                    [
+                        'message'       => 'Verify command failed or unable to recognize the response.',
+                        'payment_id'    => $this->payment->getId(),
+                        'gateway'       => get_called_class(),
+                        'verify_status' => $verifyResponse,
+                    ]);
+
+                $authorizeSuccess = false;
+
+                break;
         }
 
         return $authorizeSuccess;
