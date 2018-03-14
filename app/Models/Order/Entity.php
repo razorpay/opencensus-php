@@ -103,7 +103,10 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_DUE,
         self::CURRENCY,
         self::RECEIPT,
-        self::DISCOUNT,
+        // This is likely needed for the merchant,
+        // but still needs to be discussed.
+        // See setPublicDiscountAttribute
+        // self::DISCOUNT,
         self::OFFER_ID,
         self::STATUS,
         self::ATTEMPTS,
@@ -136,7 +139,9 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::OFFER_ID,
-        self::DISCOUNT,
+        // This is likely needed for the merchant,
+        // but still needs to be discussed.
+        // self::DISCOUNT,
     ];
 
     protected $dates = [

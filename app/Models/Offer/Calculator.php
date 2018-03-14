@@ -35,7 +35,7 @@ class Calculator extends Base\Core
         if ($discountedAmount < self::MIN_PAYMENT_AMOUNT)
         {
             throw new Exception\LogicException(
-                "Discounted amount less than minimum payment amount",
+                'Discounted amount less than minimum payment amount',
                 null,
                 [
                     'discounted_amount'  => $discountedAmount,
