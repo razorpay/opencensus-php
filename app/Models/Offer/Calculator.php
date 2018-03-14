@@ -3,6 +3,7 @@
 namespace RZP\Models\Offer;
 
 use RZP\Models\Base;
+use RZP\Exception;
 
 class Calculator extends Base\Core
 {
@@ -33,7 +34,13 @@ class Calculator extends Base\Core
         //
         if ($discountedAmount < self::MIN_PAYMENT_AMOUNT)
         {
-            throw new Exception\LogicException("Discounted amount less than minimum payment amount");
+            throw new Exception\LogicException(
+                "Discounted amount less than minimum payment amount",
+                null,
+                [
+                    'discounted_amount'  => $discountedAmount,
+                    'min_payment_amount' => self::MIN_PAYMENT_AMOUNT,
+                ]);
         }
 
         return $discountedAmount;
