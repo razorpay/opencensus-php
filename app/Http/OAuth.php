@@ -2,7 +2,6 @@
 
 namespace RZP\Http;
 
-use Illuminate;
 use ApiResponse;
 use Razorpay\OAuth\OAuthServer;
 use Razorpay\OAuth\Token\Entity as OAuthToken;

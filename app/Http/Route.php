@@ -2565,4 +2565,21 @@ final class Route
 
         return $features[$route] ?? [];
     }
+
+    /**
+     * Returns the array of features, one of which is required to
+     * access the current route.
+     *
+     * @return array
+     */
+    public function getCurrentRouteFeatures(): array
+    {
+        $currentRoute = $this->getCurrentRouteName();
+
+        //
+        // A route can belong to multiple features
+        // This fetches an array of all features mapped to the route
+        //
+        return self::getFeaturesForRoute($currentRoute);
+    }
 }

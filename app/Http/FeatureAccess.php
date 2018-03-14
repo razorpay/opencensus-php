@@ -1,14 +1,15 @@
 <?php
 
-namespace RZP\Models\Feature;
+namespace RZP\Http;
 
 use App;
 use ApiResponse;
 use Illuminate\Foundation\Application;
 
+use RZP\Models\Feature;
 use RZP\Base\RepositoryManager;
 
-class Access
+class FeatureAccess
 {
     /**
      * The application instance.
@@ -32,6 +33,13 @@ class Access
     protected $merchant;
 
     /**
+     * Api Route instance
+     *
+     * @var \RZP\Http\Route
+     */
+    protected $route;
+
+    /**
      * Access constructor.
      */
     public function __construct()
@@ -43,7 +51,10 @@ class Access
         $this->repo = $this->app['repo'];
 
         $this->merchant = $this->app['basicauth']->getMerchant();
+
+        $this->route = $this->app['api.route'];
     }
+
 
     /**
      * Checks if the accessed route is a feature route, if yes
@@ -51,18 +62,19 @@ class Access
      * $authReturn will either be null or store an error object
      *
      * Null return indicates available access
-     * @param  mixed  $authReturn
-     * @param  string $bearerToken
+     * @param $authReturn
+     * @param $bearerToken
+     *
      * @return null
      */
-    public function verifyFeatureAccess($authReturn, string $bearerToken = '')
+    public function verifyFeatureAccess($authReturn, $bearerToken = '')
     {
         if ($authReturn !== null)
         {
             return $authReturn;
         }
 
-        $routeFeatures = $this->ba->getCurrentRouteFeatures();
+        $routeFeatures = $this->route->getCurrentRouteFeatures();
 
         // The current route does not require any feature to be present. Allow access.
         if (empty($routeFeatures) === true)
@@ -157,17 +169,14 @@ class Access
         //    resource if the feature required is not a blacklisted feature.
         //
 
-        $appBlacklistedFeatures = Entity::$appBlacklistedFeatures;
+        $appBlacklistedFeatures = Feature\Entity::$appBlacklistedFeatures;
 
-        $routeFeaturesAvailableWithMerchantWhitelisted = array_diff(
-                                                            $routeFeaturesAvailableWithMerchant,
-                                                            $appBlacklistedFeatures);
+        //
+        // From the features available with the merchant, remove the features using
+        // which the applications should not be allowed to access the routes.
+        //
+        $merchantRouteFeaturesWhitelisted = array_diff($routeFeaturesAvailableWithMerchant, $appBlacklistedFeatures);
 
-        if (empty($routeFeaturesAvailableWithMerchantWhitelisted) === false)
-        {
-            return true;
-        }
-
-        return false;
+        return (empty($merchantRouteFeaturesWhitelisted) === false);
     }
 }

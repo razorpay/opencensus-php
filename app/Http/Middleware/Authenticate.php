@@ -10,7 +10,7 @@ use ApiResponse;
 use RZP\Http\Route;
 use RZP\Http\OAuth;
 use RZP\Http\Throttle;
-use RZP\Models\Feature;
+use RZP\Http\FeatureAccess;
 use RZP\Http\BasicAuth\BasicAuth;
 
 class Authenticate
@@ -81,7 +81,7 @@ class Authenticate
         }
 
         // Post process after authentication completes
-        $ret = (new Feature\Access)->verifyFeatureAccess($ret, $bearerToken);
+        $ret = (new FeatureAccess)->verifyFeatureAccess($ret, $bearerToken);
 
         // non-null value indicates failure flow
         if ($ret !== null)
@@ -195,6 +195,11 @@ class Authenticate
         return $this->oauth->resolvePublicToken();
     }
 
+    /**
+     * @param $request
+     *
+     * @return string|null
+     */
     private function getBearerTokenFromHeaders($request)
     {
         //
@@ -216,6 +221,7 @@ class Authenticate
 
         if ($this->app->runningUnitTests() === true)
         {
+            // Returns string or null
             return $request->bearerToken();
         }
 
