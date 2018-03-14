@@ -85,17 +85,6 @@ export default class ReviewNotesDetails extends Component {
               {isDetailsLoading && <div class="dot-loader">.</div>}
             </button>
           </ShowWhen>
-          <ShowWhen permission="edit_merchant_risk_threshold">
-            <button
-              class="btn-default"
-              onClick={isDetailsLoading ? null : actions.EditFraudScore}
-            >
-              Edit Fraud Score
-              <i class="pull-right m-l i i-edit-form" />
-              {isDetailsLoading && <div class="dot-loader">.</div>}
-            </button>
-          </ShowWhen>
-
           <ShowWhen permission="edit_merchant_pricing">
             <button
               class="btn-default"

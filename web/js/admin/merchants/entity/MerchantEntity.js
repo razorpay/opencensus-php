@@ -121,6 +121,7 @@ export default class MerchantEntity extends Component {
 const ActionsList = ({ model, merchantId, actions }) => {
   const merchant = model.merchant;
   const isDetailsLoading = !Object.keys(toJS(merchant.details)).length;
+  const isFeaturesLoading = !Object.keys(toJS(merchant.features)).length;
 
   /* Confirmation Messages */
   const toggleArchiveMerchantCM = function() {
@@ -405,6 +406,59 @@ const ActionsList = ({ model, merchantId, actions }) => {
           <Link to={`/merchants/${merchantId}/activation`}>
             See Activation Form Details
           </Link>
+        </ShowWhen>
+        <ShowWhen permission="edit_merchant_methods">
+          <div onClick={isDetailsLoading ? null : actions.EditMethods}>
+            Edit Methods
+            <i class="pull-right i i-money" />
+            {isDetailsLoading && <div class="dot-loader">.</div>}
+          </div>
+        </ShowWhen>
+        <ShowWhen permission="edit_merchant">
+          <div onClick={isDetailsLoading ? null : actions.EditMerchant}>
+            Edit Merchant
+            <i class="pull-right i i-edit-form" />
+            {isDetailsLoading && <div class="dot-loader">.</div>}
+          </div>
+        </ShowWhen>
+        <ShowWhen permission="edit_merchant_risk_threshold">
+          <div onClick={isDetailsLoading ? null : actions.EditFraudScore}>
+            Edit Fraud Score
+            <i class="pull-right i i-edit-form" />
+            {isDetailsLoading && <div class="dot-loader">.</div>}
+          </div>
+        </ShowWhen>
+
+        <ShowWhen permission="edit_merchant_pricing">
+          <div onClick={isDetailsLoading ? null : actions.AssignPricingPlan}>
+            Assign Pricing
+            <i class="pull-right i">%</i>
+            {isDetailsLoading && <div class="dot-loader">.</div>}
+          </div>
+        </ShowWhen>
+        <ShowWhen permission="schedule_assign">
+          <div onClick={isDetailsLoading ? null : actions.AssignSchedule}>
+            Assign Schedule
+            <i class="pull-right i i-schedule" />
+            {isDetailsLoading && <div class="dot-loader">.</div>}
+          </div>
+        </ShowWhen>
+        <ShowWhen permission="edit_merchant_tags">
+          <div onClick={isDetailsLoading ? null : actions.EditTags}>
+            Tag Merchant
+            <i class="pull-right i i-tag" />
+            {isDetailsLoading && <div class="dot-loader">.</div>}
+          </div>
+        </ShowWhen>
+        <ShowWhen permission="edit_merchant_features">
+          <div onClick={isFeaturesLoading ? null : actions.EditFeatures}>
+            Feature Merchant
+            <i class="pull-right i i-tag" />
+            {isFeaturesLoading && <div class="dot-loader">.</div>}
+          </div>
+        </ShowWhen>
+        <ShowWhen permission="add_merchant_credits">
+          <div onClick={actions.AddCredits}>Add Credits</div>
         </ShowWhen>
       </div>
 
