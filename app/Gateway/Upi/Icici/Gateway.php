@@ -680,14 +680,19 @@ class Gateway extends Base\Gateway
 
         $input = $verify->input;
 
-        if (empty($content[Fields::VERIFY_AMOUNT]) === false)
+        //
+        // If gatewaySuccess is false
+        // we don't need to check for amount
+        // also in case the gateway says merchant trans id
+        // not availble it doesn't give us amount
+        //
+        if ($verify->gatewaySuccess === true)
         {
             $paymentAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
 
             $actualAmount  = number_format($content[Fields::VERIFY_AMOUNT], 2, '.', '');
 
             $verify->amountMismatch = ($paymentAmount !== $actualAmount);
-
         }
 
         // If payment status is either failed or created,
