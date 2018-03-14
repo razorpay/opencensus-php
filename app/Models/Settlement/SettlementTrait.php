@@ -469,7 +469,7 @@ trait SettlementTrait
     {
         RuntimeManager::setMemoryLimit('1024M');
 
-        // Time limit of 9 mins
-        RuntimeManager::setTimeLimit(540);
+        // Time limit of 9 mins 55 seconds
+        RuntimeManager::setTimeLimit(599);
     }
 }
