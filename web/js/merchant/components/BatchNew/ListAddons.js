@@ -27,11 +27,11 @@ export const EmptyComponent = (uploadUrl, openModalFunc) => {
  */
 class BatchStatus extends Component {
   state = {
-    shouldSpin: false,
+    isLoading: false,
   };
   handleClick = () => {
     let { id } = this.props;
-    this.setState({ shouldSpin: true });
+    this.setState({ isLoading: true });
     setTimeout(() => {
       this.props.onRefetchBatchDetails(id);
     }, 1);
@@ -39,14 +39,14 @@ class BatchStatus extends Component {
 
   render() {
     const { id, status, onRefetchBatchDetails } = this.props;
-    const { shouldSpin } = this.state;
+    const { isLoading } = this.state;
 
     return (
       <span>
         <BatchUploadStatusLabel status={status} />
         {status === 'created' && (
           <i
-            class={`i i-refresh refetch-batch-btn${shouldSpin ? ' spin' : ''}`}
+            class={`i i-refresh refetch-batch-btn${isLoading ? ' spin' : ''}`}
             onClick={this.handleClick}
           />
         )}

@@ -15,10 +15,11 @@ import {
   InvoiceStatusLabel,
 } from 'merchant/components/StatusLabel';
 
+const MAX_INVOICE_COUNT = 4;
+
 export default function BatchDetails(props) {
   let { batch, stats, invoices, isLoading, onDownload } = props;
   let shouldShowAllInvoices = true;
-  const MAX_INVOICE_COUNT = 4;
 
   if (invoices && invoices.length >= MAX_INVOICE_COUNT) {
     invoices = invoices.slice(0, MAX_INVOICE_COUNT);
@@ -46,7 +47,7 @@ export default function BatchDetails(props) {
               </span>
             </Banner>
             <div class="panel-body">
-              <div class="stats-info">
+              <div class="stats-info equal-margin">
                 <table class="table">
                   <tbody>
                     <tr>
@@ -76,16 +77,18 @@ export default function BatchDetails(props) {
                   </tbody>
                 </table>
               </div>
-              <EntityDetailRow
-                label="Status"
-                value={() => <BatchUploadStatusLabel status={batch.status} />}
-              />
-              <EntityDetailRow
-                label="Created At"
-                value={() => <Time value={batch.created_at} />}
-              />
+              <div class="equal-margin">
+                <EntityDetailRow
+                  label="Status"
+                  value={() => <BatchUploadStatusLabel status={batch.status} />}
+                />
+                <EntityDetailRow
+                  label="Created At"
+                  value={() => <Time value={batch.created_at} />}
+                />
+              </div>
               <hr />
-              <div class="m-all" style={{ overflow: 'auto' }}>
+              <div class="m-all p-t" style={{ overflow: 'auto' }}>
                 <span class="pull-left">
                   <strong>{titleCase(batch.type)}</strong> created from this
                   batch.
@@ -99,8 +102,11 @@ export default function BatchDetails(props) {
                   </NavLink>
                 )}
               </div>
-              <div class="table-responsive p-all">
-                <table class="table table-hover">
+              <div class="invoice-list table-responsive p-t">
+                <table
+                  class={`table table-hover${invoices.length > 0 &&
+                    ' table-striped'}`}
+                >
                   <TableBody
                     isLoading={isLoading}
                     rows={invoices}

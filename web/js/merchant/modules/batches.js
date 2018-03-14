@@ -9,6 +9,8 @@ import {
 import { merchantFetch } from 'rzp/utils/ajax';
 
 const REFUND = 'REFUND_BATCHES';
+
+//Spelling it `batchs` instead of `batches` due to makeActionCollectionReducer use of singular namespace. see web/js/rzp/modules/collection.js
 const PAYMENT_LINK = 'PAYMENT_LINK_BATCHS';
 const BATCH_DOWNLOAD = 'BATCH_DOWNLOAD';
 const ISSUABLE_BATCHES = 'ISSUABLE_BATCHES';

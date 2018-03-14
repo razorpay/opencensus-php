@@ -20,7 +20,7 @@ import BatchUpload from './Upload';
 
 import { batchDownload, fetchBatch } from 'merchant/modules/batches';
 
-function batchActions({ mode, sendAll, onDownloadClick, issuableIdList }) {
+function batchActions({ mode, sendAll, onDownloadClick }) {
   return {
     title: 'Actions',
     value: item => (
