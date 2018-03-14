@@ -39,7 +39,7 @@ class Generator extends Base\Core
     protected $baseQrCodeUrl;
 
     // Qr code Extension
-    const QR_CODE_EXTENSION = FileStore\Format::PNG;
+    const QR_CODE_EXTENSION = FileStore\Format::JPEG;
 
     const SHORT_MODE_LIVE = 'l';
     const SHORT_MODE_TEST = 't';
@@ -158,14 +158,14 @@ class Generator extends Base\Core
 
         $qrCodeString = $writer->writeString($this->qrCode->getQrString());
 
-        $logoImage = imagecreatefrompng(public_path().'/img/qr.png');
+        $logoImage = imagecreatefromjpeg(public_path().'/img/qr.jpg');
 
         $qrCodeImage = imagecreatefromstring($qrCodeString);
 
-        imagecopymerge($logoImage, $qrCodeImage, 40, 350, 0, 0,
+        imagecopymerge($logoImage, $qrCodeImage, 30, 200, 0, 0,
                 Constants::QR_CODE_WIDTH, Constants::QR_CODE_HEIGHT, 100);
 
-        imagepng($logoImage, $localFilePath);
+        imagejpeg($logoImage, $localFilePath);
 
         imagedestroy($logoImage);
 
