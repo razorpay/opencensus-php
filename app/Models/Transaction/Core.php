@@ -755,17 +755,19 @@ class Core extends Base\Core
 
     /**
      * Create transaction and update balances for a reversal
+     * with entity=`transfer`
      *
      * @param  Reversal\Entity   $reversal
      * @return Entity
      */
-    public function createFromReversal($reversal)
+    public function createFromTransferReversal(Reversal\Entity $reversal)
     {
         $txn = new Transaction\Entity;
 
         $amount = $reversal->getAmount();
 
-        $nowTimestamp = time();
+        // Compute the `settled_at` timestamp
+        $settleTimestamp = $this->getTransferReversalSettledAtTimestamp($reversal);
 
         $data = [
             Transaction\Entity::DEBIT         => 0,
@@ -773,9 +775,9 @@ class Core extends Base\Core
             Transaction\Entity::CURRENCY      => Currency\Currency::INR,
             Transaction\Entity::GATEWAY_FEE   => 0,
             Transaction\Entity::API_FEE       => 0,
-            Transaction\Entity::RECONCILED_AT => $nowTimestamp,
+            Transaction\Entity::RECONCILED_AT => $settleTimestamp,
             Transaction\Entity::SETTLED       => 0,
-            Transaction\Entity::SETTLED_AT    => $nowTimestamp,
+            Transaction\Entity::SETTLED_AT    => $settleTimestamp,
             Transaction\Entity::FEE           => 0,
             Transaction\Entity::TAX           => 0,
             Transaction\Entity::AMOUNT        => $amount,
@@ -1262,6 +1264,8 @@ class Core extends Base\Core
 
         list($fee, $tax, $feesSplit) = $this->calculateMerchantFees($transaction);
 
+        $transaction->setFeeModel($merchant->getFeeModel());
+
         switch (true)
         {
             case ($amountCredits > 0):
@@ -1271,12 +1275,82 @@ class Core extends Base\Core
                 return $this->calculateFeeForFeeCredit($transaction);
 
             default:
-                $amount = $transaction->getAmount();
-                $debit = abs($amount + $fee);
+                $amount    = $transaction->getAmount();
+                $isPrepaid = $merchant->isPrepaid();
+
+                // Add fee to debit only for prepaid merchants
+                $debit  = ($isPrepaid === true) ? abs($amount + $fee) : $amount;
 
                 $transaction->setCreditType(Transaction\CreditType::DEFAULT);
 
                 return [$debit, $fee, $tax, $feesSplit];
+        }
+    }
+
+    /**
+     * Compute and return the settled_at timestamp for a transfer
+     * reversal transaction
+     *
+     * @param Reversal\Entity $reversal
+     *
+     * @return int
+     * @throws Exception\LogicException
+     */
+    protected function getTransferReversalSettledAtTimestamp(Reversal\Entity $reversal): int
+    {
+        $scheduleTaskCore = new ScheduleTask\Core;
+
+        $nextSettlementTime = Carbon::tomorrow(Timezone::IST)->getTimestamp();
+
+        //
+        // `source` will always be `Transfer/Entity` since this flow
+        // is invoked only on Transfer Reversal creation
+        //
+        $transfer = $reversal->entity;
+
+        if ($transfer->isPaymentTransfer() === true)
+        {
+            //
+            // For payment transfers, the transfer txn's `settled_at` is
+            // already set to at-least the payment's settlement timestamp,
+            // (refer `createFromTransfer()` above) and is hence delayed to
+            // after the merchant settlement schedule
+            //
+            // Therefore: Delay the reversal txn to the max of
+            // - Transfer txn settled_at OR
+            // - Next available settlement slot as per schedule
+            //
+            $transferSettledAt = $transfer->transaction->getSettledAt();
+
+            return max($transferSettledAt, $nextSettlementTime);
+        }
+        else
+        {
+            if ($transfer->isDirectTransfer() === true)
+            {
+                //
+                // For direct transfers, there's no source payment to look at.
+                // Hence, we look at the transfer created_at timestamp and add
+                // the merchants settlement schedule to it (calling this -
+                // `transferDelayTime`)
+                //
+                // We then set the reversal txn settled_at to the max of either
+                // - transferDelayTime OR
+                // - Next available settlement slot as per schedule
+                //
+                $transferCreatedAt = $transfer->getCreatedAt();
+
+                $transferDelayTime = $scheduleTaskCore->getNextApplicableTimeForMerchant(
+                    $transferCreatedAt,
+                    $reversal->merchant);
+
+                return max($transferDelayTime, $nextSettlementTime);
+            }
+            else
+            {
+                // Invalid case
+                throw new Exception\LogicException('Invalid transfer type', null, ['transfer' => $transfer]);
+            }
         }
     }
 }

@@ -146,7 +146,7 @@ class Header
     //
     const HDFC_EM_REGISTER_CLIENT_NAME                      = HdfcEMRegisterHeadings::CLIENT_NAME;
     const HDFC_EM_REGISTER_MERCHANT_UNIQUE_REFERENCE_NO     = HdfcEMRegisterHeadings::MERCHANT_UNIQUE_REFERENCE_NO;
-    const HDFC_EM_REGISTER_CUSTOMER_NAME                    = HdfcEMRegisterHeadings::CUSTOMER_NAME ;
+    const HDFC_EM_REGISTER_CUSTOMER_NAME                    = HdfcEMRegisterHeadings::CUSTOMER_NAME;
     const HDFC_EM_REGISTER_ACCOUNT_NUMBER                   = HdfcEMRegisterHeadings::CUSTOMER_ACCOUNT_NUMBER;
     const HDFC_EM_REGISTER_AMOUNT                           = HdfcEMRegisterHeadings::AMOUNT;
     const HDFC_EM_REGISTER_AMOUNT_TYPE                      = HdfcEMRegisterHeadings::AMOUNT_TYPE;
@@ -486,6 +486,15 @@ class Header
     ];
 
     /**
+     * Additional headers added against each entry detailing the type of error
+     * and its description, if any. Used in Validated file output.
+     */
+    const VALIDATED_HEADERS = [
+        self::ERROR_CODE,
+        self::ERROR_DESCRIPTION,
+    ];
+
+    /**
      * Validates headers of batch input file.
      *
      * @param string $headerKey
@@ -523,5 +532,10 @@ class Header
     public static function getOutputHeadersForType(string $type): array
     {
         return self::HEADER_MAP[$type][self::OUTPUT];
+    }
+
+    public static function getValidatedHeadersForType(string $type): array
+    {
+        return array_merge(self::HEADER_MAP[$type][self::INPUT], self::VALIDATED_HEADERS);
     }
 }

@@ -149,6 +149,14 @@ class Entity extends Base\PublicEntity
     const PAYMENTS                 = 'payments';
     const USER                     = 'user';
 
+    // -------------------------- Stats Keys -------------------------
+
+    const TOTAL_COUNT              = 'batch_total';
+    const ISSUED_COUNT             = 'issued_count';
+    const PAID_COUNT               = 'paid_count';
+    const EXPIRED_COUNT            = 'expired_count';
+
+
     // ------------------------ Other constants ----------------------
 
     const ALLOWED_LINE_ITEM_TYPES_INVOICE = [

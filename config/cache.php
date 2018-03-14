@@ -70,11 +70,6 @@ return [
             'connection' => 'secure'
         ],
 
-        'throttle_redis' => [
-            'driver' => 'redis',
-            'connection' => 'throttle_redis'
-        ],
-
         'query_cache_test' => [
             'driver'     => 'redis',
             'connection' => 'query_cache_test',

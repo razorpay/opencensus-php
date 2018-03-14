@@ -83,11 +83,13 @@ class TransactionFilter extends Terminal\Filter
     // Applicable only for card and emi
     public function networkFilter($terminal)
     {
-        if ($this->input['payment']->isMethodCardOrEmi())
-        {
-            $network = $this->input['payment']->card->getNetworkCode();
+        $payment = $this->input['payment'];
 
-            return Gateway::isCardNetworkSupported($network, $terminal->getGateway());
+        if ($payment->isMethodCardOrEmi() === true)
+        {
+            $network = $payment->card->getNetworkCode();
+
+            return Gateway::isCardNetworkSupported($network, $terminal->getGateway(), $payment->isRecurring());
         }
 
         return true;
@@ -221,20 +223,15 @@ class TransactionFilter extends Terminal\Filter
             return false;
         }
 
-        $basicAuth = $this->app['basicauth'];
+        $payment = $this->input['payment'];
 
-        $token = $payment->getGlobalOrLocalTokenEntity();
-
-        $access = (($basicAuth->isPrivateAuth() === true) or
-                   ($basicAuth->isPrivilegeAuth() === true));
+        $gatewayTokens = $this->input['gateway_tokens'];
 
         //
         // All first recurring payments or payments made via public
         // auth need to go via 3DS Recurring terminals only.
         //
-        if (($token === null) or
-            ($token->isRecurring() === false) or
-            ($access === false))
+        if ($payment->isSecondRecurring(true, $gatewayTokens) === false)
         {
             return ($terminal->is3DSRecurring() === true);
         }
@@ -248,56 +245,32 @@ class TransactionFilter extends Terminal\Filter
             return false;
         }
 
-        $reference = $payment->getReferenceForGatewayToken();
+        $applicableTypes = [
+            Terminal\Type::RECURRING_3DS,
+            Terminal\Type::RECURRING_NON_3DS,
+        ];
 
-        $gatewayTokens = $this->repo->gateway_token->findByTokenAndReference($token, $reference);
-
-        $gatewayTokensCount = $gatewayTokens->count();
-
-        if ($gatewayTokensCount > 0)
-        {
-            //
-            // For second recurring payment, ensure that we select a terminal
-            // of the same gateway as for the first recurring payment and also
-            // of the same merchant (shared, direct)
-            //
-            $validGatewayTokens = $gatewayTokens->filter(
-                                    function($gatewayToken) use ($terminal)
-                                    {
-                                        return (($gatewayToken->getGateway() === $terminal->getGateway()) and
-                                            ($gatewayToken->terminal->getMerchantId() === $terminal->getMerchantId()));
-                                    });
-
-            //
-            // We check if we have one valid gateway_token for the
-            // terminal being selected. If yes, we return back true.
-            // If we don't have even one valid gateway_token for the
-            // terminal being selected, we return back false.
-            //
-            // The check is again 1 exactly because for a given gateway,
-            // there should not be more than one terminal. We don't support
-            // more than 1 set of terminals for a merchant (direct/shared).
-            // If it's greater than 1, there's something wrong and should fail.
-            //
-            return ($validGatewayTokens->count() === 1);
-        }
         //
-        // If a token is present and is supposed to be subsequent charge,
-        // the corresponding gateway_token must always be present.
-        // If it's not present, there's something wrong somewhere!
+        // If the terminal supports both recurring 3ds and recurring non-3ds,
+        // we don't care about gateway tokens. We care about gateway tokens
+        // only because of 2fa. But if the terminal supports both 3ds and
+        // non-3ds, it means that the terminal does not care about 2fa and
+        // hence, we don't need to too. We can just use this terminal without
+        // worrying about whether we have a gateway token for this or not.
         //
-        else
+        // Also, we would be doing this only for direct terminals and for card
+        // payments. Though, it would be applicable for shared terminals also,
+        // we don't want to fallback on that just yet.
+        //
+        // NOTE: It should be weak check only because array_diff returns back an array.
+        if ((array_diff($applicableTypes, $terminal->getType()) == false) and
+            ($terminal->isShared() === false) and
+            ($payment->isCard() === true))
         {
-            throw new Exception\LogicException(
-                'Should have gotten at least 1 gateway token.',
-                ErrorCode::SERVER_ERROR_GATEWAY_TOKENS_INVALID_COUNT,
-                [
-                    'gateway_tokens_count'  => $gatewayTokensCount,
-                    'payment_id'            => $payment->getId(),
-                    'token_id'              => $token->getId(),
-                    'reference'             => $reference
-                ]);
+            return true;
         }
+
+        return (new Terminal\Core)->hasApplicableGatewayTokens($terminal, $payment, $gatewayTokens);
     }
 
     protected function upiFilter(Terminal\Entity $terminal)

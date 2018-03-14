@@ -551,16 +551,25 @@ trait Refund
 
             $gatewayRefunded = true;
         }
+        catch (Exception\BaseException $e)
+        {
+            $this->tracePaymentFailed(
+                $e->getError(),
+                TraceCode::PAYMENT_REFUND_FAILURE);
+        }
         catch (\Throwable $e)
         {
-            $this->app['segment']->trackPayment(
-                $this->payment, TraceCode::PAYMENT_REFUND_FAILURE);
+            $this->trace->traceException($e, null, TraceCode::PAYMENT_REFUND_FAILURE);
+        }
+        finally
+        {
+            if (isset($e) === true)
+            {
+                $this->app['segment']->trackPayment(
+                    $this->payment, TraceCode::PAYMENT_REFUND_FAILURE);
 
-            $this->tracePaymentFailed(
-                    $e->getError(),
-                    TraceCode::PAYMENT_REFUND_FAILURE);
-
-            $this->refund->setStatus(Payment\Refund\Status::FAILED);
+                $this->refund->setStatus(Payment\Refund\Status::FAILED);
+            }
         }
 
         return $gatewayRefunded;
@@ -578,16 +587,25 @@ trait Refund
 
             $reversed = true;
         }
-        catch (\Throwable $e)
+        catch (Exception\BaseException $e)
         {
-            $this->app['segment']->trackPayment(
-                $this->payment, TraceCode::PAYMENT_REVERSE_FAILURE);
-
             $this->tracePaymentFailed(
                     $e->getError(),
                     TraceCode::PAYMENT_REVERSE_FAILURE);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, null, TraceCode::PAYMENT_REVERSE_FAILURE);
+        }
+        finally
+        {
+            if (isset($e) === true)
+            {
+                $this->app['segment']->trackPayment(
+                    $this->payment, TraceCode::PAYMENT_REVERSE_FAILURE);
 
-            $this->refund->setStatus(Payment\Refund\Status::FAILED);
+                $this->refund->setStatus(Payment\Refund\Status::FAILED);
+            }
         }
 
         return $reversed;

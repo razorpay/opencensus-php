@@ -45,7 +45,7 @@ class Core extends Base\Core
 
         $accessMapping = $this->repo
                               ->merchant_access_map
-                              ->getMerchantAccessEntityMapping(
+                              ->findMerchantAccessMapOnEntityId(
                                   $merchantId,
                                   $input[Entity::APPLICATION_ID],
                                   Entity::APPLICATION
@@ -78,12 +78,12 @@ class Core extends Base\Core
         $merchantId = $merchant->getId();
 
         $mapping = $this->repo
-            ->merchant_access_map
-            ->getMerchantAccessEntityMapping(
-                $merchantId,
-                $appId,
-                Entity::APPLICATION
-            );
+                        ->merchant_access_map
+                        ->findMerchantAccessMapOnEntityId(
+                            $merchantId,
+                            $appId,
+                            Entity::APPLICATION
+                        );
 
         if (empty($mapping) === false)
         {

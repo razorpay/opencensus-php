@@ -5,6 +5,23 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
+    'testSaveGatewayPriority' => [
+        'request' => [
+            'content' => [
+                'axis_migs'   => '100',
+            ],
+            'url' => '/gateway/priorities/card',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'card' => [
+                    'axis_migs'   => '100',
+                ]
+            ]
+        ]
+    ],
+
     'testRecurringInternationalPaymentWhenNotAllowed' => [
         'response' => [
             'content' => [
@@ -133,4 +150,21 @@ return [
             'internal_error_code' => ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
         ],
     ],
+
+    'testRecurringPaymentCardNetworkNotSupported' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => ErrorCode::SERVER_ERROR,
+                    'description' => PublicErrorDescription::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'               => \RZP\Exception\RuntimeException::class,
+            'message'             => 'Terminal should not be null',
+            'internal_error_code' => ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
+        ],
+    ]
 ];
