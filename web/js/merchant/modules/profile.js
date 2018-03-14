@@ -5,13 +5,15 @@ import { set } from 'rzp/utils/immutable';
 const BANK_ACCOUNT_FETCH = 'BANK_ACCOUNT_FETCH';
 const GST_FETCH = 'GST_FETCH';
 const GST_SAVE = 'GST_SAVE';
+const BANK_ACCOUNT_CHANGE_STATUS_FETCH = 'BANK_ACCOUNT_CHANGE_STATUS_FETCH';
+const BANK_ACCOUNT_CHANGES_SAVE = 'BANK_ACCOUNT_CHANGES_SAVE';
 
 export const fetchBankAccount = () => {
   return {
     type: BANK_ACCOUNT_FETCH,
     payload: merchantFetch({
       url: 'account/bank_account',
-      mode: 'live'
+      mode: 'live',
     }),
   };
 };
@@ -80,6 +82,26 @@ export const saveGST = data => {
       url: 'merchant/gst',
       method: 'patch',
       mode: 'live',
+      data,
+    }),
+  };
+};
+
+export const fetchBankAccountChangeStatus = merchantId => {
+  return {
+    type: BANK_ACCOUNT_CHANGE_STATUS_FETCH,
+    payload: merchantFetch({
+      url: `merchants/${merchantId}/bank_account_change/status`,
+      mode: 'test',
+    }),
+  };
+};
+
+export const saveBankAccountChanges = (merchantId, data) => {
+  return {
+    type: BANK_ACCOUNT_CHANGES_SAVE,
+    payload: merchantFetch({
+      url: `merchants/${merchantId}/bank_account`,
       data,
     }),
   };

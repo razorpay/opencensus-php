@@ -12,6 +12,7 @@ import GST from 'merchant/containers/Profile/GST';
 import BankAccountDetails from 'merchant/components/Profile/BankAccountDetails';
 import LoggedInUserDetails from 'merchant/components/Profile/LoggedInUserDetails';
 import Invitations from 'merchant/components/Profile/Invitations';
+import BankAccountDetailsChange from './BankAccountDetailsChange';
 import { fetchUser } from 'merchant/modules/session';
 import PasswordForm from './PasswordForm';
 import UpgradeMerchantForm from './UpgradeMerchantForm';
@@ -28,6 +29,7 @@ import UpgradeMerchantForm from './UpgradeMerchantForm';
 export default class Profile extends Component {
   state = {
     loggedInUser: {},
+    isBankAccountChangeAllowed: true,
   };
 
   componentWillMount() {
@@ -42,6 +44,17 @@ export default class Profile extends Component {
     });
     this.props.fetchBankAccount();
     this.refreshUser(this.props.user);
+    //TODO: integrate API
+    this.props
+      .fetchBankAccountChangeStatus(this.props.user.id)
+      .then(response => {
+        console.log(response);
+        this.setState({
+          isBankAccountChangeAllowed: true,
+        }).catch(errors => {
+          console.log('Err: ', errors);
+        });
+      });
   }
 
   componentWillReceiveProps(nextProps) {
@@ -123,6 +136,33 @@ export default class Profile extends Component {
     });
   };
 
+  openChangeBankDetailsModal = bankAccount => {
+    let formValues = {
+      bank_branch_ifsc: bankAccount.ifsc,
+      bank_account_number: bankAccount.account_number,
+      bank_account_name: bankAccount.name,
+    };
+
+    this.props.openModal({
+      size: 'large',
+      component: (
+        <BankAccountDetailsChange
+          initialValues={formValues}
+          onSave={this.saveBankAccountChanges}
+        />
+      ),
+    });
+  };
+
+  saveBankAccountChanges = body => {
+    const { user } = this.props;
+
+    this.props.saveBankAccountChanges(user.id, body).then(response => {
+      //TODO: integrate API
+      console.log(body);
+    });
+  };
+
   render() {
     let { user, profile } = this.props;
     let { bankAccount } = profile;
@@ -158,7 +198,13 @@ export default class Profile extends Component {
           </ShowWhen>
 
           {bankAccount ? (
-            <BankAccountDetails bankAccount={bankAccount} />
+            <BankAccountDetails
+              bankAccount={bankAccount}
+              isBankAccountChangeAllowed={this.state.isBankAccountChangeAllowed}
+              onChangeBankAccountDetails={() =>
+                this.openChangeBankDetailsModal(bankAccount)
+              }
+            />
           ) : null}
 
           {this.state.merchantCount > 1 ||
