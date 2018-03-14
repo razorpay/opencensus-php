@@ -83,9 +83,43 @@ class OAuthBearerAuthTest extends OAuthTestCase
 
     /**
      * Tests that the route (feature route) is accessible if
-     *      the application hits the route on behalf of the merchant, and,
+     *      the app hits the route on behalf of the merchant, and,
      *      the app has the feature enabled
-     *      (and the feature is not an oauth application blacklisted feature)
+     *      the merchant has the feature enabled
+     *      (and the feature is not an oauth app blacklisted feature)
+     */
+    public function testDummyFeatureEnabledOnMerchantAndApp()
+    {
+        $client = factory(Client\Entity::class)->create();
+
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_id' => '10000000000000',
+                'name' => 'dummy'
+            ]);
+
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_type' => 'application',
+                'entity_id'   => $client->application_id,
+                'name' => 'dummy'
+            ]);
+
+        $accessToken = $this->generateOAuthAccessToken(['scopes' => ['dummy.read']]);
+
+        $this->ba->oauthBearerAuth($accessToken);
+
+        $this->startTest();
+    }
+
+    /**
+     * Tests that the route (feature route) is accessible if
+     *      the app hits the route on behalf of the merchant, and,
+     *      the app has the feature enabled
+     *      the merchant does not have the feature enabled
+     *      (and the feature is not an oauth app blacklisted feature)
      */
     public function testBearerAuthAllowAppFeaturesRouteAccess()
     {
@@ -112,11 +146,12 @@ class OAuthBearerAuthTest extends OAuthTestCase
 
     /**
      * Tests that the route (feature route) is not accessible if
-     *      the application hits the route on behalf of the merchant, and,
+     *      the app hits the route on behalf of the merchant, and,
+     *      the app does not have the feature enabled, and,
      *      the merchant has the feature enabled, and,
-     *      the feature is an oauth application blacklisted feature
+     *      the feature is an oauth app blacklisted feature
      */
-    public function testBearerAuthBlacklistedOAuthFeatureWithMerchant()
+    public function testAppBlacklistedFeatureEnabledOnMerchant()
     {
         $client = factory(Client\Entity::class)->create();
 
@@ -147,11 +182,12 @@ class OAuthBearerAuthTest extends OAuthTestCase
 
     /**
      * Tests that the route (feature route) is accessible if
-     *      the application hits the route on behalf of the merchant, and,
+     *      the app hits the route on behalf of the merchant, and,
      *      the app has the feature enabled, and,
-     *      the feature is an oauth application blacklisted feature
+     *      the merchant does not have the feature enabled, and,
+     *      the feature is an oauth app blacklisted feature
      */
-    public function testBearerAuthBlacklistedOAuthFeatureWithApp()
+    public function testAppBlacklistedFeatureEnabledOnApp()
     {
         $client = factory(Client\Entity::class)->create();
 
@@ -180,6 +216,68 @@ class OAuthBearerAuthTest extends OAuthTestCase
         $response = $this->startTest($testData);
 
         $this->assertArrayHasKey('razorpay_payment_id', $response);
+    }
+
+    /**
+     * Tests that the route (feature route) is accessible if
+     *      the app hits the route on behalf of the merchant, and,
+     *      the app has the feature enabled, and,
+     *      the merchant has the feature enabled, and,
+     *      the feature is an oauth app blacklisted feature
+     */
+    public function testAppBlacklistedFeatureEnabledOnAppAndMerchant()
+    {
+        $client = factory(Client\Entity::class)->create();
+
+        $accessToken = $this->generateOAuthAccessToken(
+            [
+                'scopes' => ['read_write'],
+                'client_id' => $client->getId()
+            ]);
+
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_type' => 'application',
+                'entity_id'   => $client->application_id,
+                'name'        => 's2s'
+            ]);
+
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000',
+                'name'        => 's2s'
+            ]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = $payment;
+
+        $this->ba->oauthBearerAuth($accessToken);
+
+        $response = $this->startTest($testData);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+    }
+
+    /**
+     * Tests that the route (feature route) is not accessible if
+     *      the app hits the route on behalf of the merchant, and,
+     *      the app does not have the feature enabled, and,
+     *      the merchant does not have the feature enabled, and,
+     *      the feature is not an oauth app blacklisted feature
+     */
+    public function testFeatureDisabledOnAppAndMerchant()
+    {
+        $accessToken = $this->generateOAuthAccessToken(['scopes' => ['dummy.read']]);
+
+        $this->ba->oauthBearerAuth($accessToken);
+
+        $this->startTest();
     }
 
     public function testBearerAuthWriteAccess()
