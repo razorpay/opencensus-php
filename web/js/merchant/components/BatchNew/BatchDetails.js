@@ -90,7 +90,7 @@ export default function BatchDetails(props) {
                   <strong>{titleCase(batch.type)}</strong> created from this
                   batch.
                 </span>
-                {!shouldShowAllInvoices && (
+                {invoices.length > 0 && (
                   <NavLink
                     to={`/paymentlinks?batch_id=${batch.id}`}
                     className="btn-link pull-right"
