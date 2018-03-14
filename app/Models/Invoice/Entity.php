@@ -1271,7 +1271,6 @@ class Entity extends Base\PublicEntity
         $report[self::CUSTOMER_NAME]    = $this->getCustomerName();
         $report[self::CUSTOMER_EMAIL]   = $this->getCustomerEmail();
         $report[self::CUSTOMER_CONTACT] = $this->getCustomerContact();
-        $report[self::CUSTOMER_GSTIN]   = $this->getCustomerGstin();
 
         return $report;
     }
