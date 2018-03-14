@@ -144,6 +144,9 @@ export default class Profile extends Component {
             {user.current && (
               <div class="panel-heading">
                 Merchant Id: <strong>{user.id}</strong>
+                <a class="pull-right" onClick={this.openChangePasswordModal}>
+                  Change Password
+                </a>
               </div>
             )}
 
@@ -175,15 +178,6 @@ export default class Profile extends Component {
           ) : null}
 
           {!this.state.hasMerchant ? <UpgradeMerchantForm /> : null}
-
-          <div class="text-center">
-            <button
-              class="btn btn-primary"
-              onClick={this.openChangePasswordModal}
-            >
-              Change Password
-            </button>
-          </div>
         </div>
       </div>
     );
