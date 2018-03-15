@@ -162,10 +162,7 @@ return array(
          * application service providers.
          */
         Aws\Laravel\AwsServiceProvider::class,
-        Jenssegers\Agent\AgentServiceProvider::class,
         Razorpay\Slack\Laravel\ServiceProvider::class,
-        Propaganistas\LaravelPhone\LaravelPhoneServiceProvider::class,
-        Maatwebsite\Excel\ExcelServiceProvider::class,
         Http\Httplug\HttplugServiceProvider::class,
         Schuppo\PasswordStrength\PasswordStrengthServiceProvider::class,
         anlutro\LaravelSettings\ServiceProvider::class,
@@ -246,7 +243,6 @@ return array(
         'ApiResponse'     => RZP\Http\Response\Facade::class,
 
         // Custom Facades
-        'Excel'           => Maatwebsite\Excel\Facades\Excel::class,
         'AWS'             => Aws\Laravel\AwsFacade::class,
         'Slack'           => Razorpay\Slack\Laravel\Facade::class,
         'Event'           => RZP\Events\Facade::class,
