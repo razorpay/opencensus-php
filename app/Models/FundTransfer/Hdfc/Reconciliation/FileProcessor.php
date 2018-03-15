@@ -55,8 +55,9 @@ class FileProcessor extends BaseProcessor
     {
         $extension = pathinfo($filePath, PATHINFO_EXTENSION);
 
-        // Sample extension format of reverse file is `r01`
-        if (preg_match('/^[a-z][0-9]{2}$/', $extension) === 1)
+        // Sample extension format of reverse file is `R715`.
+        // RegEx below matched 1 char followed by 2 or 3 digits
+        if (preg_match('/^[a-zA-Z]\d{2,3}$/', $extension) === 1)
         {
             return $extension;
         }

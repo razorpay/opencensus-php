@@ -106,13 +106,13 @@ class Reconciliation extends Base
         return $ufh;
     }
 
-    protected function validateInputFileAndUpdateBatch(string $filePath, array $input)
+    protected function validateInputFileEntries(string $filePath, array $input): array
     {
         //
         // Not doing anything here as in recon we don't need to validate / parse
         // entries at the time of saving the input file.
         //
-        return;
+        return [];
     }
 
     protected function performPreProcessingActions()

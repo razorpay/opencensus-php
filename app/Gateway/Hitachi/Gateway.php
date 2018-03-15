@@ -217,6 +217,20 @@ class Gateway extends Base\Gateway
     {
         $input = $verify->input;
 
+        $gatewayPayment = $verify->payment;
+
+        if ((empty($gatewayPayment->getRRN()) === true) and
+            ($gatewayPayment->getResponseCode() === '30'))
+        {
+            $verify->apiStatus = false;
+
+            $verify->gatewayStatus = false;
+
+            $verify->match = true;
+
+            return [];
+        }
+
         $request = $this->getVerifyRequestArray($input);
 
         $this->traceGatewayPaymentRequest($request, $input, TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST);
@@ -281,6 +295,41 @@ class Gateway extends Base\Gateway
         {
             $verify->gatewaySuccess = true;
         }
+    }
+
+    public function alreadyRefunded(array $input)
+    {
+        $paymentId = $input['payment_id'];
+        $refundAmount = $input['refund_amount'];
+        $refundId = $input['refund_id'];
+
+        $refundedEntities = $this->repo->findSuccessfulRefundByRefundId($refundId);
+
+        if ($refundedEntities->count() === 0)
+        {
+            return false;
+        }
+
+        $refundEntity = $refundedEntities->first();
+
+        $refundEntityPaymentId = $refundEntity->getPaymentId();
+        $refundEntityRefundAmount = $refundEntity->getAmount();
+
+        $this->trace->info(
+            TraceCode::GATEWAY_ALREADY_REFUNDED_INPUT,
+            [
+                'input'                 => $input,
+                'refund_payment_id'     => $refundEntityPaymentId,
+                'gateway_refund_amount' => $refundEntityRefundAmount
+            ]);
+
+        if (($refundEntityPaymentId !== $paymentId) or
+            ($refundEntityRefundAmount !== $refundAmount))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     // ----------------------------------------- Request Arrays --------------------------------------------------------

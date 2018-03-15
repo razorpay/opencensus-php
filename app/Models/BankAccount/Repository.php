@@ -146,6 +146,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where(BankAccount\Entity::TYPE, '=', BankAccount\Type::MERCHANT)
+                    ->with(['source', 'source.merchantDetail'])
                     ->oldest()
                     ->get();
     }
@@ -155,6 +156,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->whereBetween(BankAccount\Entity::CREATED_AT, array($from, $to))
                     ->where(Entity::TYPE, '=', Type::MERCHANT)
+                    ->with(['source', 'source.merchantDetail'])
                     ->oldest()
                     ->get();
     }

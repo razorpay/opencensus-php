@@ -3,6 +3,7 @@
 namespace RZP\Models\Batch\Processor\Emandate\Register;
 
 use RZP\Exception;
+use RZP\Models\FileStore;
 use RZP\Models\Customer\Token;
 use RZP\Models\Batch\Processor\Base as BaseProcessor;
 

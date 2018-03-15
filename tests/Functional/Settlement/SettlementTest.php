@@ -971,6 +971,8 @@ class SettlementTest extends TestCase
 
     public function testSettlementForReversalOfPaymentTransfer()
     {
+        $this->markTestSkipped();
+
         $channel = Channel::AXIS;
 
         //  Thursday, 8 March 2018 00:00:05 GMT+05:30
@@ -1013,8 +1015,6 @@ class SettlementTest extends TestCase
                 'created_at'  => $time->getTimestamp(),
                 'updated_at'  => $time->getTimestamp(),
             ]);
-
-        Carbon::setTestNow();
 
         // Initiate immediate settlement, none should settle on the same day
         $content = $this->initiateSettlements($channel);
