@@ -105,7 +105,7 @@ function main(
       return item2.value - item1.value;
     })
     .forEach(({ key }, index) => {
-      colors[key] = getPaymentMethodColor(key);
+      colors[key] = getPaymentMethodColor(titleCase(key));
     });
 
   Object.keys(aliases).forEach(key => {
