@@ -6,7 +6,7 @@
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
     <meta name="viewport" content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1">
     <?php date_default_timezone_set('Asia/Kolkata') ?>
-    <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700" rel="stylesheet" type="text/css"></link>
+    <link href="https://fonts.googleapis.com/css?family=Lato:300,400,600" rel="stylesheet" type="text/css"></link>
     <link rel="icon" href="https://razorpay.com/favicon.png" type="image/x-icon" />
     <?php
       $error_icon = '<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"><path d="M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm0-2c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm6 16.538l-4.592-4.548 4.546-4.587-1.416-1.403-4.545 4.589-4.588-4.543-1.405 1.405 4.593 4.552-4.547 4.592 1.405 1.405 4.555-4.596 4.591 4.55 1.403-1.416z"/></svg>';
@@ -134,7 +134,7 @@
         width: 100%;
         position: relative;
         max-width: 880px;
-        margin: 20px auto 0;
+        margin: 40px auto 0;
       }
 
       .table-box {
@@ -184,7 +184,6 @@
         min-height: 511px !important;
       }
 
-
       #inv-info-box {
         max-width: 600px;
         width: 100%;
@@ -198,11 +197,10 @@
       .inv-details {
         padding: 30px 40px;
         background-color: #fff;
-        /*min-height: 250px;*/
       }
 
       .inv-details .inv-for {
-        font-size: 16px;
+        font-size: 20px;
         font-weight: 600;
       }
 
@@ -212,9 +210,16 @@
 
       .inv-details .info {
         color: #747474;
-        margin-top: 16px;
         line-height: 22px;
         font-size: 13px;
+      }
+
+      #desktop-container .inv-details .info {
+        margin-top: 16px;
+      }
+
+      #mobile-container .inv-details .info {
+        margin-bottom: 16px;
       }
 
       .inv-details .info .val {
@@ -232,9 +237,9 @@
         }
 
       .inv-details .info #display-pay-amt {
-        font-weight: 600;
-        font-size: 24px;
-      }
+            font-weight: 600;
+            font-size: 20px;
+        }
 
       .inv-details .info #display-pay-amt > span {
         position: relative;
@@ -312,7 +317,7 @@
       }
 
       #footer {
-        margin: 28px auto;
+        margin: 40px auto 28px;
         max-width: 655px;
         width: 85%;
         padding: 15px 24px;
@@ -640,7 +645,7 @@
                 <div>
                   <svg class="bg-svg" width="1665px" height="665px" viewBox="0 0 1665 665" preserveAspectRatio="none">
                       <polygon fill="#fafafa" points="40 50 1665 210 1665 346 220 545 -150 150"></polygon>
-                      <polygon fill="#f5f5f5" transform="translate(0, -40)" points="-40 215 1865 0 1965 450 1550 690 0 655"></polygon>
+                      <polygon fill="#f5f5f5" transform="translate(0, -40)" points="-40 215 1865 0 1965 450 1550 730 0 680"></polygon>
                   </svg>
                   <div id="payment-container">
 
@@ -651,14 +656,14 @@
                                     Payment Request from {{$data['merchant']['organization']['business_name']}}
                                   </div>
                                   <div id="inv-details-main">
-                                      <div class="info">
+                                      <div class="info" style="margin-top: 28px;">
                                           PAYMENT FOR
-                                          <div class="val" style="white-space: pre">{{$data['invoice']['description']}}</div>
+                                          <div class="val" style="white-space: pre-wrap;word-wrap: break-word;">{{$data['invoice']['description']}}</div>
                                       </div>
 
                                       @if($data['invoice']['expire_by'])
                                           <div class="info">
-                                              REQUEST EXPIRES
+                                              EXPIRES BY
                                               <div class="val">{{date('M d, Y (H:i A)', $data['invoice']['expire_by'])}} </div>
                                           </div>
                                       @endif
@@ -752,11 +757,10 @@
                   </div>
                   <div id="inv-info-container">
                       <div class="inv-details">
-                          <div class="inv-for">Payment request from {{$data['merchant']['organization']['business_name']}}</div>
                           <div id="inv-details-main">
                               <div class="info">
                                   PAYMENT FOR
-                                  <div class="val" style="white-space: pre">{{$data['invoice']['description']}}</div>
+                                  <div class="val" style="white-space: pre-wrap;word-wrap: break-word;">{{$data['invoice']['description']}}</div>
                               </div>
 
                               <div class="info">
@@ -777,7 +781,7 @@
 
                               @if($data['invoice']['expire_by'])
                                 <div class="info">
-                                    REQUEST EXPIRES
+                                    EXPIRES BY
                                     <div class="val">{{date('M d, Y (h:m A)', $data['invoice']['expire_by'])}} </div>
                                 </div>
                               @endif
@@ -831,7 +835,7 @@
 
               function fullPaid() {
                   var amount = data['invoice']['amount'];
-                  document.getElementById('pay-title').innerHTML = 'AMOUNT PAID';
+                  document.getElementById('pay-title').innerHTML = 'AMOUNT PAYABLE';
                   document.getElementById('display-pay-amt').innerHTML = '<span> ₹' + (amount/100).toFixed(2) + '<span id="paid-tag">PAID</span></span>';
 
                   if (checkIsDesktop()) {
@@ -885,7 +889,7 @@
                   payBtn.style['display'] = 'block';
               }
 
-              if (data['invoice']['partial_payment']) {
+              if (data['invoice']['partial_payment'] && data['invoice']['status'] !== 'paid' && data['invoice']['amount_paid'] != 0) {
                   document.getElementById('partial-payment-info').style.display = 'block';
               }
 
@@ -963,6 +967,10 @@
                     if (checkIsDesktop()) {
                       options.parent = '#chkout-box';
                       razorpay = window.razorpay = Razorpay(options);
+
+                      var iframe = document.getElementsByClassName('razorpay-checkout-frame')[0];
+                      var iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                      iframeDoc.getElementById('next-button').style.transform = 'translateY(-55px)';
                     } else {
                         document.getElementById('mob-payment-btn').addEventListener('click', function() {
                             razorpay = window.razorpay = Razorpay(options);
