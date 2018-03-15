@@ -867,7 +867,7 @@ class Gateway
         IFSC::HSBC => Gateway::FIRST_DATA,
     ];
 
-    public static $debitPinGateways = [
+    public static $pinAuthGateways = [
         Gateway::CARD_FSS => [
             self::ACQUIRER_FSS => [
                 IFSC::UTIB,

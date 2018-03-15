@@ -2,13 +2,15 @@
 
 namespace RZP\Models\Payment;
 
-use RZP\Exception\InvalidArgumentException;
+use RZP\Exception;
+use RZP\Models\Feature;
 
 class AuthType
 {
     const NETBANKING    = 'netbanking';
     const AADHAAR       = 'aadhaar';
-    const DEBIT_PIN     = 'debit_pin';
+    const PIN           = 'pin';
+    const _3DS          = '3ds';
 
     public static $types = [
         Method::EMANDATE => [
@@ -16,8 +18,13 @@ class AuthType
             self::AADHAAR,
         ],
         Method::CARD    => [
-            self::DEBIT_PIN,
+            self::PIN,
+            self::_3DS
         ],
+    ];
+
+    public static $featureToAuthMap = [
+        self::PIN => Feature\Constant::ATM_PIN_AUTH,
     ];
 
     public static function isAuthTypeValid($type, $method): bool
@@ -34,12 +41,24 @@ class AuthType
     {
         if (self::isAuthTypeValid($type, $method) === false)
         {
-            throw new InvalidArgumentException(
+            throw new Exception\InvalidArgumentException(
                 'Invalid auth type',
                 [
                     'field'                 => Entity::AUTH_TYPE,
                     'auth_type'             => $type
                 ]);
+        }
+    }
+
+    public static function validateFeatureBasedAuth($merchant, $type)
+    {
+        if (isset(self::$featureToAuthMap[$type]) === true)
+        {
+            if ($merchant->isFeatureEnabled(self::$featureToAuthMap[$type]) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'The auth_type field is invalid');
+            }
         }
     }
 }

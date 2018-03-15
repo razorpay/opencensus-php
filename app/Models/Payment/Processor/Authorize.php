@@ -546,7 +546,7 @@ trait Authorize
 
         $this->validateRecurringIfApplicable($payment, $input);
 
-        $this->validateDebitPinIfApplicable($payment, $input);
+        $this->validateCardAuthenticationIfApplicable($payment, $input);
 
         $this->validateS2SIfApplicable($payment);
 
@@ -856,19 +856,20 @@ trait Authorize
         }
     }
 
-    protected function validateDebitPinIfApplicable(Payment\Entity $payment, array $input)
+    protected function validateCardAuthenticationIfApplicable(Payment\Entity $payment, array $input)
     {
         if ($payment->isMethodCardOrEmi() === false)
         {
             return;
         }
 
-        if ($payment->getAuthType() === Payment\AuthType::DEBIT_PIN)
+        if ($payment->getAuthType() === Payment\AuthType::PIN)
         {
-            if ($payment->card->iin->supports(IIN\Flows::DEBIT_PIN) === false)
+            if (($payment->card->iinRelation === null) or
+                ($payment->card->iinRelation->supports(IIN\Flows::PIN) === false))
             {
                 throw new BadRequestValidationFailureException(
-                    'The debit pin authentication type is not applicable on the given card');
+                    'The pin authentication type is not applicable on the given card');
             }
         }
     }

@@ -68,7 +68,6 @@ class Constants
 
     // Payment authentication
     const ATM_PIN_AUTH                  = 'atm_pin_auth';
-    const DEBIT_PIN                     = 'debit_pin';
 
     // Different actions for feature activation flow
     const CREATE           = 'create';
@@ -146,7 +145,6 @@ class Constants
         self::DAILY_SETTLEMENT              => true,
         self::DISABLE_UPI_INTENT            => true,
         self::ATM_PIN_AUTH                  => true,
-        self::DEBIT_PIN                     => true,
     ];
 
     // Entity type constants
