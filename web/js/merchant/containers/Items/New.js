@@ -91,6 +91,7 @@ export default class AddItem extends Component {
                   <span class="input-group-addon">INR</span>
                   <Field
                     name="amountInINR"
+                    type="number"
                     component={InputField}
                     class="form-control"
                     validate={required()}
