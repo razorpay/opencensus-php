@@ -622,6 +622,7 @@ final class Route
         'user_merchant_mapping_action'            => ['put',      'users/{id}/{action}',                            'UserController@updateUserMaping'                                   ],
 
         // Tax groups and taxes
+        'tax_get_meta_gst_taxes'                  => ['get',      'taxes/meta/gst_taxes',                           'TaxController@getMetaGstTaxes'                                     ],
         'tax_get'                                 => ['get',      'taxes/{id}',                                     'TaxController@get'                                                 ],
         'tax_list'                                => ['get',      'taxes',                                          'TaxController@list'                                                ],
         'tax_create'                              => ['post',     'taxes',                                          'TaxController@create'                                              ],
@@ -1177,6 +1178,7 @@ final class Route
         'merchant_get_tags',
         'account_fetch',
         'merchant_add_bank_account',
+        'tax_get_meta_gst_taxes',
     ];
 
     // These will run on internal auth with the assurance

@@ -20,4 +20,14 @@ class Service extends Base\Service
 
         $this->entityRepo = $this->repo->tax;
     }
+
+    public function getMetaGstTaxes(): array
+    {
+        $data = [
+            'slabs'   => Gst::getIndiaTaxSlabs(),
+            'tax_ids' => Gst::getIndiaTaxIds(),
+        ];
+
+        return $data;
+    }
 }
