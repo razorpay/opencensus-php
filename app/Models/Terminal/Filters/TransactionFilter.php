@@ -251,10 +251,10 @@ class TransactionFilter extends Terminal\Filter
         ];
 
         //
-        // If the terminal supports both recurring 3ds and recurring non-3ds,
+        // If the terminal supports both [recurring 3ds and recurring non-3ds] or [no-2fa],
         // we don't care about gateway tokens. We care about gateway tokens
-        // only because of 2fa. But if the terminal supports both 3ds and
-        // non-3ds, it means that the terminal does not care about 2fa and
+        // only because of 2fa. But if the terminal supports both [3ds and
+        // non-3ds] or [no-2fa], it means that the terminal does not care about 2fa and
         // hence, we don't need to too. We can just use this terminal without
         // worrying about whether we have a gateway token for this or not.
         //
@@ -263,11 +263,15 @@ class TransactionFilter extends Terminal\Filter
         // we don't want to fallback on that just yet.
         //
         // NOTE: It should be weak check only because array_diff returns back an array.
-        if ((array_diff($applicableTypes, $terminal->getType()) == false) and
-            ($terminal->isShared() === false) and
-            ($payment->isCard() === true))
+        //
+        if ((empty(array_diff($applicableTypes, $terminal->getType())) === true) or
+            ($terminal->isNo2Fa() === true))
         {
-            return true;
+            if (($terminal->isShared() === false) and
+                ($payment->isCard() === true))
+            {
+                return true;
+            }
         }
 
         return (new Terminal\Core)->hasApplicableGatewayTokens($terminal, $payment, $gatewayTokens);

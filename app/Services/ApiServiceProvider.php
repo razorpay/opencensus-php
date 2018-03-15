@@ -23,6 +23,7 @@ use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Models\BankAccount;
 use RZP\Constants\Entity as E;
+use RZP\Models\VirtualAccount;
 use RZP\Models\Admin as Admin;
 use RZP\Gateway\GatewayManager;
 use RZP\Models\Workflow\Action;
@@ -343,6 +344,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'payout'          => Payout\Entity::class,
 
             'bank_account'    => BankAccount\Entity::class,
+            'virtual_account' => VirtualAccount\Entity::class,
 
             'subscription'    => Subscription\Entity::class,
             'promotion'       => Promotion\Entity::class,
