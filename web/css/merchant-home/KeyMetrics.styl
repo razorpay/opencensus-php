@@ -158,6 +158,20 @@ placeholder () {
 
     padding-top: 8px;
   }
+
+  .time-breakdown button.btn[disabled] {
+
+    position: relative;
+
+    &:hover .rzp-tooltip {
+      opacity: 1;
+      position: absolute;
+      top: 0;
+      left: 0;
+      margin-top: -40px;
+      white-space: nowrap;
+    }
+  }
 }
 
 #chartjs-tooltip {

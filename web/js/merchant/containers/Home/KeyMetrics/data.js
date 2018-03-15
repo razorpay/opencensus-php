@@ -2,8 +2,9 @@ import moment from 'moment';
 
 import {
   titleCase,
-  arrayToCsvDataUrl,
+  isDefined,
   paiseToRupees,
+  arrayToCsvDataUrl,
 } from 'rzp/utils/rzp-utils';
 import colors from 'rzp/utils/chart/colors.js';
 import {
@@ -54,21 +55,24 @@ export const breakdownValsMap = {
     value: 'hourly',
     isEnabled: (startDate, endDate) => endDate.diff(startDate, 'days') <= 3,
     title: 'Hourly',
+    disabledText: "Unavailable for a date range longer than 3 days"
   },
   daily: {
     value: 'daily',
     isEnabled: (startDate, endDate) => !startDate.isSame(endDate, 'day'),
-    title: 'Daily',
+    title: 'Daily'
   },
   weekly: {
     value: 'weekly',
     isEnabled: (startDate, endDate) => !startDate.isSame(endDate, 'isoWeek'),
     title: 'Weekly',
+    disabledText: "Unavailable for a date range within the same Week"
   },
   monthly: {
     value: 'monthly',
     isEnabled: (startDate, endDate) => !startDate.isSame(endDate, 'month'),
     title: 'Monthly',
+    disabledText: "Unavailable for a date range within the same Month"
   },
 };
 
@@ -312,10 +316,11 @@ export const getTimelineData = ({
   endTime,
   noGrouping,
   getColor,
-  valueKey = 'value',
-  breakdown = 'daily',
-  groupTitleMap = {},
-  isCurrency = false,
+  groupOrder=null,
+  valueKey='value',
+  breakdown='daily',
+  groupTitleMap={},
+  isCurrency=false,
 }) => {
   /*
    * Pokedex data will be completely denormalized without any grouping
@@ -342,7 +347,7 @@ export const getTimelineData = ({
         ? groupByPlatform(data)
         : groupBy(data, groupByColumnName)
       : { [groupByColumnName]: data },
-    groups = Object.keys(groupedData).sort(),
+    groups = Object.keys(groupedData),
     /* `timelineGroupMap` is like
          * {
          *   "<timestamp1>": {
@@ -634,11 +639,43 @@ export const getTimelineData = ({
 
   csvData.unshift(csvHeader);
 
+  let groupOrderMap = null,
+      // default sorter is sort by value of the group
+      sorter = (item1, item2) => item2.value - item1.value;
+
+  // if an order of groups is specified as an array, the groups will be 
+  // sorted in the same order
+  if (groupOrder && Array.isArray(groupOrder)) {
+  
+    groupOrderMap = groupOrder.reduce((result, groupName, index) => {
+    
+      result[groupName] = index;
+      return result;
+    }, {});
+
+    // use this index as the index of group names not specified in 
+    // groupOrder, basically the group name would appear at the end 
+    // of the order
+    let outlierIndex = groupOrder.length;
+
+    sorter = (item1, item2) => {
+   
+      const item1Label = item1.label.toLowerCase(),
+            item2Label = item2.label.toLowerCase(),
+            item1Index = isDefined(groupOrderMap[item1Label])
+                           ? groupOrderMap[item1Label]
+                           : (groupOrderMap[item1Label] = outlierIndex++),
+            item2Index = isDefined(groupOrderMap[item2Label])
+                           ? groupOrderMap[item2Label]
+                           : (groupOrderMap[item2Label] = outlierIndex++);
+
+      return item1Index - item2Index;
+    }
+  }
+
   // sorting aggregates by their value in descending order
   const orderedGroups = aggregates
-    .sort((item1, item2) => {
-      return item2.value - item1.value;
-    })
+    .sort(sorter)
     .reduce((result, item, index) => {
       result[item.label] = index;
       item.color = getColor

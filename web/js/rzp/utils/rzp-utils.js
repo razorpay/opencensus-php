@@ -10,6 +10,11 @@ moment.updateLocale('en', {
   },
 });
 
+export function isDefined(value) {
+
+  return typeof value !== "undefined";
+}
+
 export function titleCase(sentence) {
   return (sentence || '')
     .split(/\s+|_/)
