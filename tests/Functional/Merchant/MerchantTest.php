@@ -1902,6 +1902,16 @@ class MerchantTest extends TestCase
     {
         Mail::fake();
 
+        $md = $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+                'business_registered_address'   => 'ksjdnfk akejnffn',
+                'business_registered_state'     => 'karnanata',
+                'business_registered_city'      => 'bengaluru',
+                'business_registered_pin'       => '12345457',
+                'contact_mobile'                => '124098598978',
+            ]);
+
         $this->ba->adminAuth();
 
         $request = [
@@ -1931,6 +1941,16 @@ class MerchantTest extends TestCase
         $ba1 = $this->fixtures->create('bank_account', ['created_at' => $thirdJan2017Timestamp - 2]);
         $ba2 = $this->fixtures->create('bank_account', ['created_at' => $thirdJan2017Timestamp - 10]);
         $ba3 = $this->fixtures->create('bank_account', ['created_at' => $thirdJan2017Timestamp + 50]);
+
+        $md = $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+                'business_registered_address'   => 'ksjdnfk akejnffn',
+                'business_registered_state'     => 'karnanata',
+                'business_registered_city'      => 'bengaluru',
+                'business_registered_pin'       => '12345457',
+                'contact_mobile'                => '124098598978',
+            ]);
 
         $this->ba->appAuth();
 
@@ -1963,6 +1983,16 @@ class MerchantTest extends TestCase
 
         $this->ba->adminAuth();
 
+        $md = $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+                'business_registered_address'   => 'ksjdnfk akejnffn',
+                'business_registered_state'     => 'karnanata',
+                'business_registered_city'      => 'bengaluru',
+                'business_registered_pin'       => '12345457',
+                'contact_mobile'                => '124098598978',
+            ]);
+
         $request = [
             'url'       => '/merchants/beneficiary/file/axis',
             'method'    => 'get',
@@ -1981,6 +2011,16 @@ class MerchantTest extends TestCase
         Mail::fake();
 
         $this->ba->adminAuth();
+
+        $md = $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+                'business_registered_address'   => 'ksjdnfk akejnffn',
+                'business_registered_state'     => 'karnanata',
+                'business_registered_city'      => 'bengaluru',
+                'business_registered_pin'       => '12345457',
+                'contact_mobile'                => '124098598978',
+            ]);
 
         $request = [
             'url'       => '/merchants/beneficiary/file/icici',

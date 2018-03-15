@@ -171,13 +171,7 @@ class Entity extends Base\PublicEntity
 
     public function source()
     {
-        $type = $this->getAttribute(self::TYPE);
-
-        Type::validateType($type);
-
-        $class = Type::getEntityClass($type);
-
-        return $this->belongsTo($class, self::ENTITY_ID);
+        return $this->morphTo('source', self::TYPE, self::ENTITY_ID);
     }
 
     public function payouts()
