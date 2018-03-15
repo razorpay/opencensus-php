@@ -4138,7 +4138,16 @@ trait Authorize
 
         $cache = Cache::getFacadeRoot();
 
-        $magicDisabledGlobally = (bool) $cache->get(ConfigKey::DISABLE_MAGIC);
+        try
+        {
+            $magicDisabledGlobally = (bool) $cache->get(ConfigKey::DISABLE_MAGIC);
+        }
+        catch(Throwable $e)
+        {
+            $magicDisabledGlobally = true;
+
+            $this->trace->traceException($e);
+        }
 
         if (($magicDisabledGlobally === false) and
             ($this->merchant->isMagicEnabled() === true) and
