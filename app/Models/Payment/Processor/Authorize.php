@@ -8,6 +8,7 @@ use Cache;
 use Crypt;
 use Config;
 use Route;
+use Throwable;
 use Carbon\Carbon;
 use Lib\PhoneBook;
 
@@ -4136,13 +4137,13 @@ trait Authorize
             return false;
         }
 
-        $cache = Cache::getFacadeRoot();
-
         try
         {
+            $cache = Cache::getFacadeRoot();
+
             $magicDisabledGlobally = (bool) $cache->get(ConfigKey::DISABLE_MAGIC);
         }
-        catch(Throwable $e)
+        catch (\Throwable $e)
         {
             $magicDisabledGlobally = true;
 
