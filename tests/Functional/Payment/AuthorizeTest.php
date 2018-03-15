@@ -592,7 +592,7 @@ class AuthorizeTest extends TestCase
 
     public function testPinAuthenticationPayment()
     {
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal', ['type' => ['pin' => '1']]);
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
@@ -621,6 +621,33 @@ class AuthorizeTest extends TestCase
 
         $this->assertEquals('pin', $payment['auth_type']);
         $this->assertEquals('sharp', $payment['gateway']);
+    }
+
+    public function testPinAuthenticationPaymentWithMultipleTerminals()
+    {
+        $this->fixtures->merchant->addFeatures(['atm_pin_auth']);
+
+         $this->fixtures->iin->create([
+            'iin'     => '414366',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'Visa',
+            'flows'   => [
+                '3ds'  => '1',
+                'pin'  => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4143667057540458';
+        $payment['auth_type'] = 'pin';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
     }
 
     public function testPinAuthenticationNotSupported()

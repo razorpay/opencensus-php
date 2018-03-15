@@ -504,17 +504,17 @@ class TransactionFilter extends Terminal\Filter
             return true;
         }
 
-        if (($payment->getAuthType() === Payment\AuthType::PIN) and
-            ($terminal->isPinAuth() === true))
+        if ($payment->getAuthType() === Payment\AuthType::PIN)
         {
             $pinAuthGateways = Gateway::$pinAuthGateways;
 
             $gateway = $terminal->getGateway();
-            $acquirer = $terminal->getAcquirer();
+            $acquirer = $terminal->getGatewayAcquirer();
 
             $iin = $payment->card->iinRelation;
 
-            if ((isset($pinAuthGateways[$gateway][$acquirer]) === true) and
+            if (($terminal->isPinAuth() === true) and
+                (isset($pinAuthGateways[$gateway][$acquirer]) === true) and
                 (in_array($iin->getIssuer(), $pinAuthGateways[$gateway][$acquirer], true) === true))
             {
                 return true;

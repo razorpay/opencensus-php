@@ -764,6 +764,22 @@ return [
         ]
     ],
 
+    'testPinAuthenticationPaymentWithMultipleTerminals' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => ErrorCode::SERVER_ERROR,
+                    'description' => PublicErrorDescription::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\RuntimeException',
+            'internal_error_code' => ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
+        ],
+    ],
+
     'testPinAuthenticationNotSupported' => [
         'response' => [
             'content' => [
