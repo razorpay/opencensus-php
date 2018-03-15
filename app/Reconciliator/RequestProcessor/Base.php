@@ -91,10 +91,10 @@ class Base extends Core
         self::VIRTUAL_ACC_YESBANK => [],
         self::UPI_SBI             => [],
         self::PAYUMONEY           => [],
+        self::HITACHI             => ['Reportsmailer@hitachi-payments.com'],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
-        self::ADMIN               => ['saurav.chowdhury@razorpay.com'],
-        self::HITACHI             => []
+        self::ADMIN               => ['saurav.chowdhury@razorpay.com']
     ];
 
     /**
