@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Seeder;
 
+use RZP\Models\Tax\Gst;
 use RZP\Constants\Table;
 use RZP\Models\Merchant\Account;
 
@@ -11,8 +12,7 @@ class TaxGroupAndTaxSeeder extends Seeder
     {
         Eloquent::unguard();
 
-        DB::transaction(function()
-        {
+        DB::transaction(function() {
             $this->seedTaxGroups();
             $this->seedTaxes();
             $this->seedTaxGroupTaxMap();
@@ -93,7 +93,7 @@ class TaxGroupAndTaxSeeder extends Seeder
 
                 // IGST
                 [
-                    'id'          => '9nDpYboKAK9j7t',
+                    'id'          => Gst::IGST_0,
                     'merchant_id' => Account::SHARED_ACCOUNT,
                     'name'        => 'IGST 0%',
                     'rate_type'   => 'flat',
@@ -103,7 +103,7 @@ class TaxGroupAndTaxSeeder extends Seeder
                     'deleted_at'  => null,
                 ],
                 [
-                    'id'          => '9nDpYciCWeNBzE',
+                    'id'          => Gst::IGST_500,
                     'merchant_id' => Account::SHARED_ACCOUNT,
                     'name'        => 'IGST 5%',
                     'rate_type'   => 'flat',
@@ -113,7 +113,7 @@ class TaxGroupAndTaxSeeder extends Seeder
                     'deleted_at'  => null,
                 ],
                 [
-                    'id'          => '9nDpYdbYNqD4Rw',
+                    'id'          => Gst::IGST_1200,
                     'merchant_id' => Account::SHARED_ACCOUNT,
                     'name'        => 'IGST 12%',
                     'rate_type'   => 'flat',
@@ -123,7 +123,7 @@ class TaxGroupAndTaxSeeder extends Seeder
                     'deleted_at'  => null,
                 ],
                 [
-                    'id'          => '9nDpYf1tTUs2Vh',
+                    'id'          => Gst::IGST_1800,
                     'merchant_id' => Account::SHARED_ACCOUNT,
                     'name'        => 'IGST 18%',
                     'rate_type'   => 'flat',
@@ -133,7 +133,7 @@ class TaxGroupAndTaxSeeder extends Seeder
                     'deleted_at'  => null,
                 ],
                 [
-                    'id'          => '9nDpYfqgnYW5Dx',
+                    'id'          => Gst::IGST_2800,
                     'merchant_id' => Account::SHARED_ACCOUNT,
                     'name'        => 'IGST 28%',
                     'rate_type'   => 'flat',
@@ -145,7 +145,7 @@ class TaxGroupAndTaxSeeder extends Seeder
 
                 // CGST
                 [
-                    'id'          => '9nDpYglSpU58lc',
+                    'id'          => Gst::CGST_0,
                     'merchant_id' => Account::SHARED_ACCOUNT,
                     'name'        => 'CGST 0%',
                     'rate_type'   => 'flat',
@@ -155,7 +155,7 @@ class TaxGroupAndTaxSeeder extends Seeder
                     'deleted_at'  => null,
                 ],
                 [
-                    'id'          => '9nDpYhZ0d60X7V',
+                    'id'          => Gst::CGST_250,
                     'merchant_id' => Account::SHARED_ACCOUNT,
                     'name'        => 'CGST 2.5%',
                     'rate_type'   => 'flat',
@@ -165,7 +165,7 @@ class TaxGroupAndTaxSeeder extends Seeder
                     'deleted_at'  => null,
                 ],
                 [
-                    'id'          => '9nDpYiArP6j0qT',
+                    'id'          => Gst::CGST_500,
                     'merchant_id' => Account::SHARED_ACCOUNT,
                     'name'        => 'CGST 5%',
                     'rate_type'   => 'flat',
@@ -175,7 +175,7 @@ class TaxGroupAndTaxSeeder extends Seeder
                     'deleted_at'  => null,
                 ],
                 [
-                    'id'          => '9nDpYivRHUQQV8',
+                    'id'          => Gst::CGST_600,
                     'merchant_id' => Account::SHARED_ACCOUNT,
                     'name'        => 'CGST 6%',
                     'rate_type'   => 'flat',
@@ -185,7 +185,7 @@ class TaxGroupAndTaxSeeder extends Seeder
                     'deleted_at'  => null,
                 ],
                 [
-                    'id'          => '9nDpYjuyZsOlMK',
+                    'id'          => Gst::CGST_900,
                     'merchant_id' => Account::SHARED_ACCOUNT,
                     'name'        => 'CGST 9%',
                     'rate_type'   => 'flat',
@@ -195,7 +195,7 @@ class TaxGroupAndTaxSeeder extends Seeder
                     'deleted_at'  => null,
                 ],
                 [
-                    'id'          => '9nDpYkng64GyTa',
+                    'id'          => Gst::CGST_1200,
                     'merchant_id' => Account::SHARED_ACCOUNT,
                     'name'        => 'CGST 12%',
                     'rate_type'   => 'flat',
@@ -205,7 +205,7 @@ class TaxGroupAndTaxSeeder extends Seeder
                     'deleted_at'  => null,
                 ],
                 [
-                    'id'          => '9nDpYlTs7cWM80',
+                    'id'          => Gst::CGST_1400,
                     'merchant_id' => Account::SHARED_ACCOUNT,
                     'name'        => 'CGST 14%',
                     'rate_type'   => 'flat',
@@ -215,7 +215,7 @@ class TaxGroupAndTaxSeeder extends Seeder
                     'deleted_at'  => null,
                 ],
                 [
-                    'id'          => '9nDpYmPK2K2mVi',
+                    'id'          => Gst::CGST_1800,
                     'merchant_id' => Account::SHARED_ACCOUNT,
                     'name'        => 'CGST 18%',
                     'rate_type'   => 'flat',
@@ -225,7 +225,7 @@ class TaxGroupAndTaxSeeder extends Seeder
                     'deleted_at'  => null,
                 ],
                 [
-                    'id'          => '9nDpYnFEoqJQ5v',
+                    'id'          => Gst::CGST_2800,
                     'merchant_id' => Account::SHARED_ACCOUNT,
                     'name'        => 'CGST 28%',
                     'rate_type'   => 'flat',
@@ -237,7 +237,7 @@ class TaxGroupAndTaxSeeder extends Seeder
 
                 // SGST
                 [
-                    'id'          => '9nDpYnvgiGXrZh',
+                    'id'          => Gst::SGST_0,
                     'merchant_id' => Account::SHARED_ACCOUNT,
                     'name'        => 'SGST 0%',
                     'rate_type'   => 'flat',
@@ -247,7 +247,7 @@ class TaxGroupAndTaxSeeder extends Seeder
                     'deleted_at'  => null,
                 ],
                 [
-                    'id'          => '9nDpYoeYBsXRvC',
+                    'id'          => Gst::SGST_250,
                     'merchant_id' => Account::SHARED_ACCOUNT,
                     'name'        => 'SGST 2.5%',
                     'rate_type'   => 'flat',
@@ -257,7 +257,7 @@ class TaxGroupAndTaxSeeder extends Seeder
                     'deleted_at'  => null,
                 ],
                 [
-                    'id'          => '9nDpYpMRZgJEgU',
+                    'id'          => Gst::SGST_500,
                     'merchant_id' => Account::SHARED_ACCOUNT,
                     'name'        => 'SGST 5%',
                     'rate_type'   => 'flat',
@@ -267,7 +267,7 @@ class TaxGroupAndTaxSeeder extends Seeder
                     'deleted_at'  => null,
                 ],
                 [
-                    'id'          => '9nDpYpuN72gdfY',
+                    'id'          => Gst::SGST_600,
                     'merchant_id' => Account::SHARED_ACCOUNT,
                     'name'        => 'SGST 6%',
                     'rate_type'   => 'flat',
@@ -277,7 +277,7 @@ class TaxGroupAndTaxSeeder extends Seeder
                     'deleted_at'  => null,
                 ],
                 [
-                    'id'          => '9nDpYqgYcqpr8q',
+                    'id'          => Gst::SGST_900,
                     'merchant_id' => Account::SHARED_ACCOUNT,
                     'name'        => 'SGST 9%',
                     'rate_type'   => 'flat',
@@ -287,7 +287,7 @@ class TaxGroupAndTaxSeeder extends Seeder
                     'deleted_at'  => null,
                 ],
                 [
-                    'id'          => '9nDpYrIMXQTtPd',
+                    'id'          => Gst::SGST_1200,
                     'merchant_id' => Account::SHARED_ACCOUNT,
                     'name'        => 'SGST 12%',
                     'rate_type'   => 'flat',
@@ -297,7 +297,7 @@ class TaxGroupAndTaxSeeder extends Seeder
                     'deleted_at'  => null,
                 ],
                 [
-                    'id'          => '9nDpYs1yK0pndD',
+                    'id'          => Gst::SGST_1400,
                     'merchant_id' => Account::SHARED_ACCOUNT,
                     'name'        => 'SGST 14%',
                     'rate_type'   => 'flat',
@@ -307,7 +307,7 @@ class TaxGroupAndTaxSeeder extends Seeder
                     'deleted_at'  => null,
                 ],
                 [
-                    'id'          => '9nDpYsoU7subph',
+                    'id'          => Gst::SGST_1800,
                     'merchant_id' => Account::SHARED_ACCOUNT,
                     'name'        => 'SGST 18%',
                     'rate_type'   => 'flat',
@@ -317,7 +317,7 @@ class TaxGroupAndTaxSeeder extends Seeder
                     'deleted_at'  => null,
                 ],
                 [
-                    'id'          => '9nDpYtb0S0JhMP',
+                    'id'          => Gst::SGST_2800,
                     'merchant_id' => Account::SHARED_ACCOUNT,
                     'name'        => 'SGST 28%',
                     'rate_type'   => 'flat',
@@ -329,7 +329,7 @@ class TaxGroupAndTaxSeeder extends Seeder
 
                 // UTGST
                 [
-                    'id'          => '9nDpYuFVNQcVaU',
+                    'id'          => Gst::UTGST_0,
                     'merchant_id' => Account::SHARED_ACCOUNT,
                     'name'        => 'UTGST 0%',
                     'rate_type'   => 'flat',
@@ -339,7 +339,7 @@ class TaxGroupAndTaxSeeder extends Seeder
                     'deleted_at'  => null,
                 ],
                 [
-                    'id'          => '9nDpYv53mqSsip',
+                    'id'          => Gst::UTGST_250,
                     'merchant_id' => Account::SHARED_ACCOUNT,
                     'name'        => 'UTGST 2.5%',
                     'rate_type'   => 'flat',
@@ -349,7 +349,7 @@ class TaxGroupAndTaxSeeder extends Seeder
                     'deleted_at'  => null,
                 ],
                 [
-                    'id'          => '9nDpYvgwu0p8WP',
+                    'id'          => Gst::UTGST_500,
                     'merchant_id' => Account::SHARED_ACCOUNT,
                     'name'        => 'UTGST 5%',
                     'rate_type'   => 'flat',
@@ -359,7 +359,7 @@ class TaxGroupAndTaxSeeder extends Seeder
                     'deleted_at'  => null,
                 ],
                 [
-                    'id'          => '9nDpYwRScK0Mz2',
+                    'id'          => Gst::UTGST_600,
                     'merchant_id' => Account::SHARED_ACCOUNT,
                     'name'        => 'UTGST 6%',
                     'rate_type'   => 'flat',
@@ -369,7 +369,7 @@ class TaxGroupAndTaxSeeder extends Seeder
                     'deleted_at'  => null,
                 ],
                 [
-                    'id'          => '9nDpYxMkO0LLhz',
+                    'id'          => Gst::UTGST_900,
                     'merchant_id' => Account::SHARED_ACCOUNT,
                     'name'        => 'UTGST 9%',
                     'rate_type'   => 'flat',
@@ -379,7 +379,7 @@ class TaxGroupAndTaxSeeder extends Seeder
                     'deleted_at'  => null,
                 ],
                 [
-                    'id'          => '9nDpYyC50acDzW',
+                    'id'          => Gst::UTGST_1200,
                     'merchant_id' => Account::SHARED_ACCOUNT,
                     'name'        => 'UTGST 12%',
                     'rate_type'   => 'flat',
@@ -389,7 +389,7 @@ class TaxGroupAndTaxSeeder extends Seeder
                     'deleted_at'  => null,
                 ],
                 [
-                    'id'          => '9nDpYz26oaOHgI',
+                    'id'          => Gst::UTGST_1400,
                     'merchant_id' => Account::SHARED_ACCOUNT,
                     'name'        => 'UTGST 14%',
                     'rate_type'   => 'flat',
@@ -399,7 +399,7 @@ class TaxGroupAndTaxSeeder extends Seeder
                     'deleted_at'  => null,
                 ],
                 [
-                    'id'          => '9nDpYznDzU7NKP',
+                    'id'          => Gst::UTGST_1800,
                     'merchant_id' => Account::SHARED_ACCOUNT,
                     'name'        => 'UTGST 18%',
                     'rate_type'   => 'flat',
@@ -409,7 +409,7 @@ class TaxGroupAndTaxSeeder extends Seeder
                     'deleted_at'  => null,
                 ],
                 [
-                    'id'          => '9nDpZ0hEw4vZky',
+                    'id'          => Gst::UTGST_2800,
                     'merchant_id' => Account::SHARED_ACCOUNT,
                     'name'        => 'UTGST 28%',
                     'rate_type'   => 'flat',
