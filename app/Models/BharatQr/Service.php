@@ -2,6 +2,7 @@
 
 namespace RZP\Models\BharatQr;
 
+use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\QrCode;
 use RZP\Constants\Mode;
@@ -47,21 +48,21 @@ class Service extends Base\Service
 
         $this->determineAndSetModeForQr($qrCodeId);
 
-        $qrData[Entity::GATEWAY] = $gateway;
+        $qrData[GatewayResponseParams::GATEWAY] = $gateway;
 
         $bharatQrInputParams = $this->getBharatQrInputParams($qrData);
 
-        list($valid, $payment) = $this->core->processPayment($bharatQrInputParams, $qrData);
+        list($valid, $bharatQr) = $this->core->processPayment($bharatQrInputParams, $qrData);
 
         //
         // In case of duplicate notification
         // we don't create new payment
         //
-        if ($payment !== null)
+        if ($bharatQr !== null)
         {
             $gatewayInput = $input['gateway_input'];
 
-            $gatewayInput['payment'] = $payment;
+            $gatewayInput['payment'] = $bharatQr->payment->toArray();
 
             $this->callGatewayAuthorize($gateway, $gatewayInput);
 
@@ -113,7 +114,7 @@ class Service extends Base\Service
     {
         (new QrCode\Entity)->stripSignWithoutValidation($merchantReference);
 
-        $mode = $this->app['repo']->determineLiveOrTestModeForEntity($merchantReference, 'qr_code');
+        $mode = $this->repo->determineLiveOrTestModeForEntity($merchantReference, Constants\Entity::QR_CODE);
 
         if ($mode === null)
         {

@@ -18,7 +18,7 @@ class Repository extends Base\Repository
     public function findByPaymentId(string $paymentId)
     {
         return $this->newQuery()
-            ->where(Entity::PAYMENT_ID, '=', $paymentId)
-            ->first();
+                    ->where(Entity::PAYMENT_ID, '=', $paymentId)
+                    ->first();
     }
 }

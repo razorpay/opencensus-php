@@ -11,6 +11,10 @@ class BharatQrController extends Controller
     {
         switch ($gateway)
         {
+            //
+            // in case of upi icici
+            // input is in form of text
+            //
             case 'icici' :
                 $input = Request::getContent();
 

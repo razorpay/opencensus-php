@@ -12,7 +12,6 @@ class Entity extends Base\PublicEntity
     const PAYMENT_ID            = 'payment_id';
     const EXPECTED              = 'expected';
     const VIRTUAL_ACCOUNT_ID    = 'virtual_account_id';
-    const GATEWAY               = 'gateway';
     const GATEWAY_MERCHANT_ID   = 'gateway_merchant_id';
     //card or upi
     const METHOD                = 'method';
@@ -54,7 +53,6 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_ID,
         self::VIRTUAL_ACCOUNT_ID,
         self::METHOD,
-        self::VPA,
         self::PROVIDER_REFERENCE_ID,
         self::MERCHANT_REFERENCE,
     ];
@@ -115,11 +113,6 @@ class Entity extends Base\PublicEntity
 
     // ----------------------- Getters -----------------------
 
-    public function getGateway()
-    {
-        return $this->getAttribute(self::GATEWAY);
-    }
-
     public function getProviderReferenceId()
     {
         return $this->getAttribute(self::PROVIDER_REFERENCE_ID);
@@ -138,21 +131,6 @@ class Entity extends Base\PublicEntity
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
-    }
-
-    public function getCardFirstSix()
-    {
-        return $this->getAttribute(self::CARD_FIRST6);
-    }
-
-    public function getCardLastFour()
-    {
-        return $this->getAttribute(self::CARD_LAST4);
-    }
-
-    public function getVpa()
-    {
-        return $this->getAttribute(self::VPA);
     }
 
     public function isExpected()

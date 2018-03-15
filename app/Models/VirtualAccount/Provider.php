@@ -301,6 +301,11 @@ class Provider
     protected function getBharatQrDynamicUpiTlv(QrCode\Entity $qrCode)
     {
         $rupayRidTlv = Tags::UPI_VPA_RUPAY_RID . $this->getLengthAndValue(Constants::RUPAY_RID);
+
+        //
+        // In case of upi payments we need to send reference with
+        // prefix. This is how they identify our payments
+        //
         $transactionReferenceTlv = Tags::UPI_VPA_REFERENCE_TR . $this->getLengthAndValue('PIL' . $qrCode->getId());
 
         $upiString = $rupayRidTlv . $transactionReferenceTlv;

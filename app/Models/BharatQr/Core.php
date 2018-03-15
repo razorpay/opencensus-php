@@ -30,29 +30,25 @@ class Core extends Base\Core
             $input
         );
 
-        $payment = null;
+        $bharatQr = null;
 
         try
         {
             $bharatQr = (new Entity)->build($input);
 
-            $payment = $this->mutex->acquireAndRelease(
+            $bharatQr = $this->mutex->acquireAndRelease(
                 $input[Entity::MERCHANT_REFERENCE],
                 function() use ($bharatQr, $gatewayInput)
                 {
-                    $bharatQr = (new Processor)->process($bharatQr, $gatewayInput);
+                    $bharatQr = (new Processor($gatewayInput))->process($bharatQr);
 
                     if ($bharatQr === null)
                     {
                         return null;
                     }
 
-                    $payment = $bharatQr->payment->toArray();
-
-                    return $payment;
-                },
-                Constants::MUTEX_TIMEOUT,
-                ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
+                    return $bharatQr;
+                });
 
             $valid = true;
         }
@@ -64,6 +60,6 @@ class Core extends Base\Core
             $valid = false;
         }
 
-        return [$valid, $payment];
+        return [$valid, $bharatQr];
     }
 }
