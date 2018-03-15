@@ -24,7 +24,7 @@ class AuthType
     ];
 
     public static $featureToAuthMap = [
-        self::PIN => Feature\Constant::ATM_PIN_AUTH,
+        self::PIN => Feature\Constants::ATM_PIN_AUTH,
     ];
 
     public static function isAuthTypeValid($type, $method): bool

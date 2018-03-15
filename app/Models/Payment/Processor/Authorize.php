@@ -866,9 +866,9 @@ trait Authorize
         if ($payment->getAuthType() === Payment\AuthType::PIN)
         {
             if (($payment->card->iinRelation === null) or
-                ($payment->card->iinRelation->supports(IIN\Flows::PIN) === false))
+                ($payment->card->iinRelation->supports(IIN\Flow::PIN) === false))
             {
-                throw new BadRequestValidationFailureException(
+                throw new Exception\BadRequestValidationFailureException(
                     'The pin authentication type is not applicable on the given card');
             }
         }

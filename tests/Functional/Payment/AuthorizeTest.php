@@ -590,6 +590,69 @@ class AuthorizeTest extends TestCase
         $this->assertContentTypeForResponse($contentType, $this->response);
     }
 
+    public function testPinAuthenticationPayment()
+    {
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->merchant->addFeatures(['atm_pin_auth']);
+
+         $this->fixtures->iin->create([
+            'iin'     => '414366',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'Visa',
+            'flows'   => [
+                '3ds'  => '1',
+                'pin'  => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4143667057540458';
+        $payment['auth_type'] = 'pin';
+
+        $response = $this->doAuthPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+
+        $payment = $this->getEntityById('payment', $response['razorpay_payment_id'], true);
+
+        $this->assertEquals('pin', $payment['auth_type']);
+        $this->assertEquals('sharp', $payment['gateway']);
+    }
+
+    public function testPinAuthenticationNotSupported()
+    {
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->merchant->addFeatures(['atm_pin_auth']);
+
+        $this->fixtures->iin->create([
+            'iin'     => '414366',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'Visa',
+            'flows'   => [
+                '3ds'  => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4143667057540458';
+        $payment['auth_type'] = 'pin';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
     public function testPaymentViaWalletS2SWoAuth()
     {
         // No Auth

@@ -868,6 +868,12 @@ class Gateway
     ];
 
     public static $pinAuthGateways = [
+        // This is done just for test cases
+        Gateway::SHARP => [
+            '' => [
+                IFSC::ICIC
+            ],
+        ],
         Gateway::CARD_FSS => [
             self::ACQUIRER_FSS => [
                 IFSC::UTIB,

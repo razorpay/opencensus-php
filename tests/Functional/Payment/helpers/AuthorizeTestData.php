@@ -764,6 +764,21 @@ return [
         ]
     ],
 
+    'testPinAuthenticationNotSupported' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
     'testPaymentViaWalletS2SWoAuth' => [
         'request' => [
             'url' => '/payments/create/wallet',
