@@ -67,6 +67,12 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
+        if ((isset($input['qr_notification']) === true) and
+            ($input['qr_notification'] === true))
+        {
+            return $this->createGatewayPaymentEntity($input);
+        }
+
         if ((isset($input['upi']['flow']) === true) and
             ($input['upi']['flow'] === 'intent'))
         {
@@ -793,7 +799,7 @@ class Gateway extends Base\Gateway
      * @param  String $body Request body
      * @return array
      */
-    public function preProcessServerCallback($body): array
+    public function preProcessServerCallback($body, $isBharatQr = false): array
     {
         $response = $this->parseGatewayResponse($body, true);
 
@@ -805,6 +811,22 @@ class Gateway extends Base\Gateway
                 'gateway'   => $this->gateway,
                 'data'      => $response
             ]);
+
+        if ($isBharatQr === true)
+        {
+            $qrData = [
+                BharatQr\GatewayResponseParams::AMOUNT                => $this->getIntegerFormattedAmount($response[Fields::PAYER_AMOUNT]),
+                BharatQr\GatewayResponseParams::VPA                   => $response[Fields::PAYER_VA],
+                BharatQr\GatewayResponseParams::METHOD                => Payment\Method::UPI,
+                BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => $response[Fields::MERCHANT_TRAN_ID],
+                BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => (string) $response[Fields::BANK_RRN],
+            ];
+
+            return [
+                'qr_data'       => $qrData,
+                'gateway_input' => $response,
+            ];
+        }
 
         return $response;
     }
@@ -856,31 +878,6 @@ class Gateway extends Base\Gateway
                 Payment\Entity::VPA => $gatewayPayment->getVpa()
             ]
         ];
-    }
-
-    public function getMerchantReferenceForQr(array $input)
-    {
-        return $input[Fields::MERCHANT_TRAN_ID];
-    }
-
-    public function qrNotification(array $input)
-    {
-        parent::qrNotification($input);
-
-        if (empty($input['payment']) === false)
-        {
-            $this->createGatewayPaymentEntity($input, Action::AUTHORIZE);
-        }
-
-        $qrData = [
-            BharatQr\GatewayResponseParams::AMOUNT                => $this->getIntegerFormattedAmount($input[Fields::PAYER_AMOUNT]),
-            BharatQr\GatewayResponseParams::VPA                   => $input[Fields::PAYER_VA],
-            BharatQr\GatewayResponseParams::METHOD                => Payment\Method::UPI,
-            BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => $input[Fields::MERCHANT_TRAN_ID],
-            BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => (string) $input[Fields::BANK_RRN],
-        ];
-
-        return $qrData;
     }
 
     public function refund(array $input)

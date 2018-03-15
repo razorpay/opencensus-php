@@ -46,6 +46,12 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
+        if ((isset($input['qr_notification']) === true) and
+            ($input['qr_notification'] === true))
+        {
+            return $this->createGatewayPaymentEntityForQr($input);
+        }
+
         if ($this->isSecondRecurringPaymentRequest($input) === true)
         {
             return $this->authorizeRecurring($input);
@@ -152,35 +158,31 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
-    public function getMerchantReferenceForQr(array $input)
+    public function preProcessServerCallback($input, $isBharatQr = false): array
     {
-        return $input[ResponseFields::PURCHASE_ID];
-    }
-
-    public function qrNotification(array $input)
-    {
-        parent::qrNotification($input);
-
-        if (empty($input['payment']) === false)
+        if ($isBharatQr === true)
         {
-            $this->createGatewayPaymentEntityForQr($input);
+            $qrData = [
+                BharatQr\GatewayResponseParams::AMOUNT                => $this->getIntegerFormattedAmount($input[ResponseFields::F004]),
+                BharatQr\GatewayResponseParams::CARD_FIRST6           => substr($input[ResponseFields::F002], 0, 6),
+                BharatQr\GatewayResponseParams::CARD_LAST4            => substr($input[ResponseFields::F002], 12, 4),
+                BharatQr\GatewayResponseParams::METHOD                => Payment\Method::CARD,
+                BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => $input[ResponseFields::PURCHASE_ID],
+                BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => $input[ResponseFields::F038],
+            ];
+
+            return [
+                'qr_data'       => $qrData,
+                'gateway_input' => $input,
+            ];
         }
 
-        $qrData = [
-            BharatQr\GatewayResponseParams::AMOUNT                => $this->getIntegerFormattedAmount($input[ResponseFields::F004]),
-            BharatQr\GatewayResponseParams::CARD_FIRST6           => substr($input[ResponseFields::F002], 0, 6),
-            BharatQr\GatewayResponseParams::CARD_LAST4            => substr($input[ResponseFields::F002], 12, 4),
-            BharatQr\GatewayResponseParams::METHOD                => Payment\Method::CARD,
-            BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => $input[ResponseFields::PURCHASE_ID],
-            BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => $input[ResponseFields::F038],
-        ];
-
-        return $qrData;
+        return $input;
     }
 
     protected function createGatewayPaymentEntityForQr($input)
     {
-       $attributes = $this->getAttributesForQrResponse($input);
+        $attributes = $this->getAttributesForQrResponse($input);
 
         $payment = $this->createGatewayPaymentEntity($input, $attributes);
 

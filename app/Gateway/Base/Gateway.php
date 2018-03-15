@@ -232,13 +232,6 @@ class Gateway
         $this->input = $input;
     }
 
-    public function qrNotification(array $input)
-    {
-        $this->input = $input;
-
-        $this->action = Action::AUTHORIZE;
-    }
-
     public function capture(array $input)
     {
         $this->input = $input;

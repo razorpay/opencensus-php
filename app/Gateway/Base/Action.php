@@ -12,5 +12,4 @@ class Action
     const VERIFY          = 'verify';
     const CALLBACK        = 'callback';
     const REVERSE         = 'reverse';
-    const QR_NOTIFICATION = 'qr_notification';
 }

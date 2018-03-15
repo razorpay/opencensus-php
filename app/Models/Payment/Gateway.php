@@ -570,6 +570,11 @@ class Gateway
         self::HITACHI,
     ];
 
+    public static $bharatQrGateways = [
+        self::UPI_ICICI,
+        self::HITACHI,
+    ];
+
     public static $authTypeToEmandateGatewayMap = [
         AuthType::NETBANKING => [
             Gateway::NETBANKING_AXIS,

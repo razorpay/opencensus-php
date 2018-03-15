@@ -39,32 +39,44 @@ class Service extends Base\Service
 
         $gatewayClass = $this->app['gateway']->gateway($gateway);
 
-        $input = $gatewayClass->preProcessServerCallback($input);
+        $input = $gatewayClass->preProcessServerCallback($input, true);
 
-        $qrCodeId = $gatewayClass->getMerchantReferenceForQr($input);
+        $qrData = $input['qr_data'];
+
+        $qrCodeId = $qrData[GatewayResponseParams::MERCHANT_REFERENCE];
 
         $this->determineAndSetModeForQr($qrCodeId);
 
-        $gatewayInput = $this->callGatewayQrNotification($gateway, $input);
+        $qrData[Entity::GATEWAY] = $gateway;
 
-        $gatewayInput[Entity::GATEWAY] = $gateway;
+        $bharatQrInputParams = $this->getBharatQrInputParams($qrData);
 
-        $bharatQrInputParams = $this->getBharatQrInputParams($gatewayInput);
+        list($valid, $payment) = $this->core->processPayment($bharatQrInputParams, $qrData);
 
-        list($valid, $payment) = $this->core->processPayment($bharatQrInputParams, $gatewayInput);
+        //
+        // In case of duplicate notification
+        // we don't create new payment
+        //
+        if ($payment !== null)
+        {
+            $gatewayInput = $input['gateway_input'];
 
-        $input['payment'] = $payment;
+            $gatewayInput['payment'] = $payment;
 
-        $this->callGatewayQrNotification($gateway, $input);
+            $this->callGatewayAuthorize($gateway, $gatewayInput);
+
+        }
 
         $response = $this->getResponse($valid);
 
         return $response;
     }
 
-    protected function callGatewayQrNotification(string $gateway, array $gatewayInput)
+    protected function callGatewayAuthorize(string $gateway, array $gatewayInput)
     {
-        return $this->app['gateway']->call($gateway, Action::QR_NOTIFICATION, $gatewayInput, null);
+        $gatewayInput['qr_notification'] = true;
+
+        return $this->app['gateway']->call($gateway, Action::AUTHORIZE, $gatewayInput, null);
     }
 
     protected function getBharatQrInputParams(array $gatewayInput)

@@ -963,7 +963,10 @@ class Processor
 
         $gatewayData['merchant'] = $this->payment->merchant;
 
-        $gatewayData['bharat_qr'] = $this->repo->bharat_qr->findByPaymentId($this->payment->getId());
+        if (in_array($this->payment->getGateway(), Payment\Gateway::$bharatQrGateways, true) === true)
+        {
+            $gatewayData['bharat_qr'] = $this->repo->bharat_qr->findByPaymentId($this->payment->getId());
+        }
 
         $eventCode = TraceCode::PAYMENT_CALL_GATEWAY_FUNC . '::' . strtoupper($action);
 
