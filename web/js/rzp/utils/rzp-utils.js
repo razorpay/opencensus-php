@@ -305,7 +305,9 @@ export const flattenObject = (object, delimeter = '.') => {
   for (let i = 0; i < keys.length; i++) {
     let key = keys[i];
     let val = object[key];
-    if (typeof val === 'object') {
+
+    // if the value is an object and not falsy (null)
+    if (typeof val === 'object' && !!val) {
       var _obj = flattenObject(val, delimeter);
       var _keys = Object.keys(_obj);
       for (var j = 0; j < _keys.length; j++) {
