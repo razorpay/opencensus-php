@@ -794,6 +794,11 @@ class Entity extends Base\PublicEntity
         return ($this->isTypeApplicable(Type::RECURRING_NON_3DS) === true);
     }
 
+    public function isNo2fa()
+    {
+        return ($this->isTypeApplicable(Type::NO_2FA) === true);
+    }
+
     public function isIvr()
     {
         return ($this->isTypeApplicable(Type::IVR) === true);
