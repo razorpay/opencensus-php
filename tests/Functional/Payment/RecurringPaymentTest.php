@@ -624,6 +624,8 @@ class RecurringPaymentTest extends TestCase
 
     public function testRecurringPaymentsWithMultipleNormalAndFallbackTerminals()
     {
+        $this->markTestSkipped('Not de-prioritizing fallback terminals for now');
+
         // - Create first data recurring terminals
         // - First payment to go via first data recurring terminal
         // - Create Axis recurring terminal with type 6
