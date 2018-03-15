@@ -55,7 +55,7 @@ export const breakdownValsMap = {
     value: 'hourly',
     isEnabled: (startDate, endDate) => endDate.diff(startDate, 'days') <= 3,
     title: 'Hourly',
-    disabledText: "Unavailable for a date range longer than 3 days"
+    disabledText: "Available for a date range within 3 days"
   },
   daily: {
     value: 'daily',
@@ -66,13 +66,13 @@ export const breakdownValsMap = {
     value: 'weekly',
     isEnabled: (startDate, endDate) => !startDate.isSame(endDate, 'isoWeek'),
     title: 'Weekly',
-    disabledText: "Unavailable for a date range within the same Week"
+    disabledText: "Available for a date range across multiple weeks"
   },
   monthly: {
     value: 'monthly',
     isEnabled: (startDate, endDate) => !startDate.isSame(endDate, 'month'),
     title: 'Monthly',
-    disabledText: "Unavailable for a date range within the same Month"
+    disabledText: "Available for a date range across multiple months"
   },
 };
 
