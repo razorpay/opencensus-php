@@ -149,6 +149,31 @@ placeholder () {
     }
   }
 
+  div.panel-actions .panel-action-item {
+
+    &.btn-group.time-breakdown button.btn[disabled] {
+
+      position: relative;
+      opacity: 1;
+      border-color: rgba(207, 218, 221, 0.6);
+      color: rgba(88, 102, 110, 0.6);
+
+      &:hover {
+
+        z-index: 1;
+
+        .rzp-tooltip {
+          opacity: 1;
+          position: absolute;
+          top: 0;
+          left: 0;
+          margin-top: -40px;
+          white-space: nowrap;
+        }
+      }
+    }
+  }
+
   div.chart-container {
 
     height: 248px;
@@ -157,21 +182,7 @@ placeholder () {
   .rzp-legend {
 
     padding-top: 8px;
-  }
-
-  .time-breakdown button.btn[disabled] {
-
-    position: relative;
-
-    &:hover .rzp-tooltip {
-      opacity: 1;
-      position: absolute;
-      top: 0;
-      left: 0;
-      margin-top: -40px;
-      white-space: nowrap;
-    }
-  }
+  } 
 }
 
 #chartjs-tooltip {
