@@ -660,16 +660,27 @@ class Service extends Base\Service
         return $ba->toArray();
     }
 
+    /**
+     * This function returns if there any open workflow actions associated with the current bank account entity of a
+     * merchant. @todo: Replace this with a more generic approach based on primary entity
+     *
+     * @param $id
+     *
+     * @return bool
+     */
     public function getBankAccountChangeStatus($id)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         $oldBankAccount = $this->repo->bank_account->getBankAccount($merchant);
 
-        $entityId = PublicEntity::stripDefaultSign($oldBankAccount->getId());
+        if (empty($oldBankAccount) === true)
+        {
+            return false;
+        }
 
         $actions = (new \RZP\Models\Workflow\Action\Core)->fetchOpenActionOnEntityOperation(
-            $entityId, $oldBankAccount->getEntity(), Permission::EDIT_MERCHANT_BANK_DETAIL);
+            $oldBankAccount->getId(), $oldBankAccount->getEntity(), Permission::EDIT_MERCHANT_BANK_DETAIL);
 
         $actions = $actions->toArray();
 
