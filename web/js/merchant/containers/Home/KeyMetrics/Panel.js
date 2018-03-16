@@ -7,6 +7,7 @@ import { PowerSelect } from 'react-power-select';
 import Definition from 'rzp/ui/Definition';
 import Change from 'rzp/ui/Change';
 import { BtnGroup, Btn } from 'rzp/ui/BtnGroup/index.js';
+import { namedColors } from 'rzp/utils/chart/colors';
 import { titleCase, paiseToRupees, getPercentage } from 'rzp/utils/rzp-utils';
 import { timeScale } from 'rzp/utils/chart/new.js';
 import takeScreenshot from 'rzp/utils/screenshot';
@@ -29,10 +30,11 @@ import GenericPanel, {
   PanelBody,
   PanelFooter,
 } from 'merchant/components/Home/GenericPanel';
-import customToolTip, { positioner } from './customTooltip';
 import Tooltip from 'merchant/components/Home/Tooltip';
+import { CUMULATIVE } from 'merchant/containers/Home/KeyMetrics/data';
 
 import { trackGoToLinks } from './ga';
+import customToolTip, { positioner } from './customTooltip';
 
 Chart.Tooltip.positioners.custom = positioner;
 
@@ -128,6 +130,10 @@ class Panel extends Component {
 
     const hasNoData = !histogram || histogram.datasets.length === 0;
 
+    const noGrouping = selectedGrouping &&
+	                   selectedGrouping.value === CUMULATIVE ||
+					   this.meta.noGrouping;
+
     let trendValue = 0,
       trendText = '',
       trendAbsValue = 0;
@@ -165,6 +171,36 @@ class Panel extends Component {
     chartOptions.breakdown = selectedBreakdown;
     chartOptions.graphStartDate = startDate.toDate();
     chartOptions.graphEndDate = endDate.toDate();
+    chartOptions.noGrouping = noGrouping;
+
+    const getChartData = (canvas) => {
+
+      if (!data.histogram ||
+          !selectedGrouping ||
+          selectedGrouping.value !== CUMULATIVE) {
+
+        return data.histogram;
+      }
+
+      const ctx      = canvas.getContext("2d"),
+            gradient = ctx.createLinearGradient(0,0,0,250),
+			// reducing opacity of primary color
+			startColor = namedColors.primaryColor.replace(/1\)$/, "0.5)");
+
+      gradient.addColorStop(0, startColor);
+      gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+      const { datasets } = data.histogram;
+
+      if (datasets && datasets[0]) {
+
+        datasets[0].backgroundColor = gradient;
+        datasets[0].borderColor = namedColors.primaryColor;
+		datasets[0].borderWidth = 2;
+      }
+
+      return data.histogram;
+    };
 
     return (
       <GenericPanel
@@ -286,10 +322,10 @@ class Panel extends Component {
             <div className="chart-container">
               {!data.loading &&
                 data.histogram && (
-                  <Line options={chartOptions} data={data.histogram} />
+                  <Line options={chartOptions} data={getChartData} />
                 )}
             </div>
-            {!this.meta.noGrouping &&
+            {!noGrouping &&
               !data.loading &&
               data.legendData && (
                 <div>

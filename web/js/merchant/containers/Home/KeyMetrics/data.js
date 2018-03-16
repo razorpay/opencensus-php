@@ -23,11 +23,24 @@ const TRANSACTION_VOLUME = 'transactionVolume',
   REFUNDS = 'refunds',
   SAVED_CARDS = 'savedCards',
   SUCCESS_RATE = 'successRate',
-  PLATFORM = 'platform';
+  PLATFORM = 'platform',
+  CUMULATIVE = 'Total';
 
-export { TRANSACTION_VOLUME, NUM_TRANSACTIONS, SAVED_CARDS, REFUNDS, PLATFORM };
+export {
+  TRANSACTION_VOLUME,
+  NUM_TRANSACTIONS,
+  SAVED_CARDS,
+  REFUNDS,
+  PLATFORM,
+  CUMULATIVE
+};
 
 const defaultGroupingVals = [
+  {
+    value: CUMULATIVE,
+    text: 'By Total Volume',
+    query: []
+  },
   {
     value: 'method',
     text: 'By Payment Method',

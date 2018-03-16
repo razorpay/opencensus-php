@@ -107,6 +107,7 @@ const customToolTip = function(tooltipModel) {
       breakdown,
       graphStartDate,
       graphEndDate,
+      noGrouping
     } = this._chart.options,
     datasets = this._chart.data.datasets;
 
@@ -171,35 +172,42 @@ const customToolTip = function(tooltipModel) {
     // variable to hold rows
     let rows = '';
 
-    var dataPoints = tooltipModel.dataPoints.sort((item1, item2) => {
-      return item1.datasetIndex - item2.datasetIndex;
-    });
+    if (!noGrouping) {
 
-    datasets.forEach((dataset, index) => {
-      const { backgroundColor, label, data } = dataset,
-        dataPoint = dataPoints[index],
-        value = dataPoint.yLabel;
+      tooltipDOM.className = "";
 
-      const labelIcon = `<span class="label-icon" style="background-color: ${backgroundColor}"></span>`;
+      var dataPoints = tooltipModel.dataPoints.sort((item1, item2) => {
+        return item1.datasetIndex - item2.datasetIndex;
+      });
 
-      const labelHTML = `<span class="label sec-text">${label}</span>`;
+      datasets.forEach((dataset, index) => {
+        const { backgroundColor, label, data } = dataset,
+          dataPoint = dataPoints[index],
+          value = dataPoint.yLabel;
 
-      const labelValue =
-        `<span class="label-value">` +
-        `${
-          isCurrency
-            ? getFormattedAmountNew(rupeesToPaise(value), true)
-            : getFormattedNumber(value)
-        }` +
-        `</span>`;
+        const labelIcon = `<span class="label-icon" style="background-color: ${backgroundColor}"></span>`;
 
-      // appending rows with each line
-      rows += `<div class="tooltip-row clearfix">${labelIcon}${labelHTML}${labelValue}</div>`;
-    });
+        const labelHTML = `<span class="label sec-text">${label}</span>`;
 
-    // adding rows to innerHtml
-    innerHtml += `<div class="tooltip-body">${rows}</div>`;
+        const labelValue =
+          `<span class="label-value">` +
+          `${
+            isCurrency
+              ? getFormattedAmountNew(rupeesToPaise(value), true)
+              : getFormattedNumber(value)
+          }` +
+          `</span>`;
 
+        // appending rows with each line
+        rows += `<div class="tooltip-row clearfix">${labelIcon}${labelHTML}${labelValue}</div>`;
+      });
+
+      // adding rows to innerHtml
+      innerHtml += `<div class="tooltip-body">${rows}</div>`;
+    } else {
+    
+      tooltipDOM.className = "no-grouping";
+    }
     // inserting innerHtml into inner div of chart js tooltip
     var innerTooltip = tooltipDOM.querySelector('.custom-tooltip-inner');
     innerTooltip.innerHTML = innerHtml;

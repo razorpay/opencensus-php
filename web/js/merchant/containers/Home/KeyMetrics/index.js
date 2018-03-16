@@ -39,6 +39,7 @@ import {
   SAVED_CARDS,
   SUCCESS_RATE,
   PLATFORM,
+  CUMULATIVE,
   tabsOrder,
   tabsMeta,
   getQuery,
@@ -349,20 +350,23 @@ class KeyMetricsContainer extends Component {
           }
 
           // Timeline data
-          const histogram = resp.data[`${tabName}Histogram`];
+          const histogram = resp.data[`${tabName}Histogram`],
+                groupByColumnName = !isDefined(tabMeta.groupByColumnName)
+                  ? selectedGrouping && selectedGrouping.value
+                  : tabMeta.groupByColumnName;
           if (histogram) {
             const options = {
               data: histogram.result,
-              groupByColumnName: !isDefined(tabMeta.groupByColumnName)
-                ? selectedGrouping && selectedGrouping.value
-                : tabMeta.groupByColumnName,
+              groupByColumnName,
               startTime: startDate.unix(),
               endTime: endDate.unix(),
               breakdown: tabState.selectedBreakdown,
               groupTitleMap: tabMeta.groupTitleMap || { Mobile: 'mWeb' },
               isCurrency,
               valueKey,
-              noGrouping,
+              noGrouping: isDefined(noGrouping) 
+                            ? noGrouping
+                            : groupByColumnName === CUMULATIVE,
             };
 
             if (
