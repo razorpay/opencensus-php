@@ -316,7 +316,7 @@ class KeyMetricsContainer extends Component {
             const options = {
               data: histogram.result,
               groupByColumnName:
-                typeof !isDefined(tabMeta.groupByColumnName)
+                !isDefined(tabMeta.groupByColumnName)
                   ? selectedGrouping && selectedGrouping.value
                   : tabMeta.groupByColumnName,
               startTime: startDate.unix(),
