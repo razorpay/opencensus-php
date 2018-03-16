@@ -37,57 +37,6 @@ export default ({ merchant_details: merchantDetails, title }) => (
         />
 
         <Field
-          label="Beneficiary Address Line 1"
-          name="bank_beneficiary_address1"
-          type="textarea"
-          defaultValue={merchantDetails.bank_beneficiary_address1}
-          disabled
-        />
-
-        <Field
-          label="Beneficiary Address Line 2"
-          name="bank_beneficiary_address2"
-          type="textarea"
-          defaultValue={merchantDetails.bank_beneficiary_address2}
-          disabled
-        />
-
-        <Field
-          label="Beneficiary Address Line 3"
-          name="bank_beneficiary_address3"
-          type="textarea"
-          defaultValue={merchantDetails.bank_beneficiary_address3}
-          disabled
-        />
-
-        <Field
-          label="Beneficiary Address City"
-          name="bank_beneficiary_city"
-          defaultValue={merchantDetails.bank_beneficiary_city}
-          disabled
-        />
-
-        <SelectField
-          label="Beneficiary State"
-          name="bank_beneficiary_state"
-          defaultValue={merchantDetails.bank_beneficiary_state}
-          disabled
-        >
-          {Object.keys(beneficiaryStateMap).map(key => (
-            <option key={key} value={key}>
-              {beneficiaryStateMap[key]}
-            </option>
-          ))}
-        </SelectField>
-
-        <Field
-          label="Beneficiary Address Pincode"
-          name="bank_beneficiary_pin"
-          defaultValue={merchantDetails.bank_beneficiary_pin}
-          disabled
-        />
-
-        <Field
           label="Branch IFSC Code"
           name="bank_branch_ifsc"
           defaultValue={merchantDetails.bank_branch_ifsc}
