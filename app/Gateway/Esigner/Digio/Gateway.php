@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use Lib\PhoneBook;
 use RZP\Gateway\Base;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Constants\Mode as BaseMode;
 use RZP\Models\Base\UniqueIdEntity;
@@ -24,6 +25,11 @@ class Gateway extends Base\Gateway
         $request = $this->getMandateCreationRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);
+
+        $this->trace->info(TraceCode::GATEWAY_MANDATE_RESPONSE, [
+            'gateway' => 'digio',
+            'payment_id' => $input['payment']['id'],
+            'response' => $response->body]);
 
         if ($response->status_code !== 200)
         {
@@ -161,7 +167,7 @@ class Gateway extends Base\Gateway
         $destinationBankIfsc = $input['token']->getIfsc();
         $bankCode = $this->getTerminalAccessCode($input);
 
-        $content = [
+        $traceContent = $content = [
             'mandate_request_id'            => $input['payment']['id'],
             'mandate_creation_date_time'    => $nextWorkingDt->toIso8601String(),
             'sponsor_bank_id'               => $bankCode,
@@ -184,6 +190,10 @@ class Gateway extends Base\Gateway
             'first_collection_date'         => $nextWorkingDt->addDay()->format('Y-m-d'),
             'final_collection_date'         => $finalCollection->format('Y-m-d'),
         ];
+
+        unset($traceContent['aadhaar'], $traceContent['customer_account_number']);
+
+        $this->trace->info(TraceCode::GATEWAY_MANDATE_CONTENT, $traceContent);
 
         return json_encode($content);
     }
