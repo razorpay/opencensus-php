@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Detail;
 
+use function Aws\or_chain;
 use RZP\Base;
 use RZP\Exception;
 use Razorpay\IFSC\IFSC;
@@ -9,12 +10,14 @@ use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
-    const INVALID_IFSC_CODE_MESSAGE                     = 'Invalid IFSC Code';
+    const INVALID_REVIEWER                              = 'Invalid reviewer';
+    const INVALID_MERCHANTS                             = 'Invalid merchants';
     const INVALID_STATUS_MESSAGE                        = 'Invalid status';
+    const INVALID_IFSC_CODE_MESSAGE                     = 'Invalid IFSC Code';
     const INVALID_STATUS_CHANGE_MESSAGE                 = 'Invalid status change';
     const INVALID_CLARIFICATION_MODE_MESSAGE            = 'Invalid clarification mode';
-    const INVALID_CLARIFICATION_MODE_FOR_STATUS_MESSAGE = 'Clarification mode should not be sent for this status';
     const INVALID_FILE_NON_NGO_ORGANISATION_TYPE        = 'Invalid file for non NGO organisation type';
+    const INVALID_CLARIFICATION_MODE_FOR_STATUS_MESSAGE = 'Clarification mode should not be sent for this status';
 
     protected static $createRules = [
         Entity::CONTACT_NAME                    => 'sometimes|alpha_space|max:255',
@@ -324,6 +327,42 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_FILE_TYPE);
+        }
+    }
+
+    /**
+     * Validate if the input contains the reviewer_id and merchants array which needs to be bulk assigned
+     * @param $input
+     *
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function validateBulkAssignReviewer($input)
+    {
+        if ((isset($input[Entity::REVIEWER_ID]) === false) or
+            (is_string($input[Entity::REVIEWER_ID]) === false) or
+            (strlen($input[Entity::REVIEWER_ID]) > 14))
+        {
+            $traceData = [
+                'reviewer' => $input[Entity::REVIEWER_ID]
+            ];
+
+            throw new Exception\BadRequestValidationFailureException(self::INVALID_REVIEWER, Entity::REVIEWER_ID, $traceData);
+        }
+
+        if ((isset($input[Entity::MERCHANTS]) === false) or
+            (is_array($input[Entity::MERCHANTS]) === false) or
+            (count($input[Entity::MERCHANTS]) === 0))
+        {
+            throw new Exception\BadRequestValidationFailureException(self::INVALID_MERCHANTS);
+        }
+
+        foreach($input[Entity::MERCHANTS] as $merchant)
+        {
+            if ((is_string($merchant) === false) or
+                (strlen($merchant) > 14))
+            {
+                throw new Exception\BadRequestValidationFailureException('Invalid Merchant : ' . $merchant);
+            }
         }
     }
 }

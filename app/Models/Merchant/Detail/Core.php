@@ -719,4 +719,44 @@ class Core extends Base\Core
 
         return $response;
     }
+
+    /**
+     * @param string $reviewerId
+     * @param array  $merchants
+     *
+     * @return array
+     */
+    public function bulkAssignReviewer(string $reviewerId, array $merchants): array
+    {
+        $success     = 0;
+
+        $failedItems = [];
+
+        foreach($merchants as $merchantId)
+        {
+            try
+            {
+                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                $this->editMerchantDetailFields($merchant, [Entity::REVIEWER_ID => $reviewerId]);
+
+                $success++;
+            }
+            catch (\Exception $e)
+            {
+                $failedItems[] = [
+                    Entity::MERCHANT_ID => $merchantId,
+                    'error'             => $e->getMessage()
+                ];
+            }
+        }
+
+        $response = [
+            'success'     => $success,
+            'failed'      => count($failedItems),
+            'failedItems' => $failedItems,
+        ];
+
+        return $response;
+    }
 }

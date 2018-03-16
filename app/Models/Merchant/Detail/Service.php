@@ -510,4 +510,21 @@ class Service extends Base\Service
             Constants::REF           => $merchant->referrer,
         ];
     }
+
+    /**
+     * @param array $input
+     *
+     * @return array
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     */
+    public function bulkAssignReviewer(array $input)
+    {
+        (new Validator)->validateBulkAssignReviewer($input);
+
+        $merchants  = $input[Entity::MERCHANTS];
+
+        $reviewerId = $input[Entity::REVIEWER_ID];
+
+        return (new Core)->bulkAssignReviewer($reviewerId, $merchants);
+    }
 }
