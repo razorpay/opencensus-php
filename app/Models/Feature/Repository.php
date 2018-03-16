@@ -78,13 +78,11 @@ class Repository extends BaseRepository
 
     public function getApplicationFeatures($applicationId): PublicCollection
     {
-        $application = Constants::APPLICATION;
-
         //
         // Fetch all the features of the application
         // that is trying to access the resource
         //
-        $applicationFeatures = $this->fetchByEntityTypeAndEntityId($application, $applicationId);
+        $applicationFeatures = $this->fetchByEntityTypeAndEntityId(Constants::APPLICATION, $applicationId);
 
         return $applicationFeatures;
     }

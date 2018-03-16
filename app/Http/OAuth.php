@@ -206,13 +206,19 @@ class OAuth
         //
         $this->ba->setMerchantById($response[OAuthToken::MERCHANT_ID]);
 
-        $this->ba->setPublicKey($response[OAuthToken::PUBLIC_TOKEN]);
-
         $mode = $response[OAuthToken::MODE];
 
         // Sets the mode for the request, and database connection
         $this->ba->setMode($mode);
         \Database\DefaultConnection::set($mode);
+
+        //
+        // Public key is used to generate the callback URL parameter that is
+        // being sent with the payment create request to the gateway.
+        //
+        $publicKey = 'rzp_' . $mode . '_oauth_' . $response[OAuthToken::PUBLIC_TOKEN];
+
+        $this->ba->setPublicKey($publicKey);
 
         try
         {

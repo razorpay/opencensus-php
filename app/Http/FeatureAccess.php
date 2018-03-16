@@ -82,7 +82,7 @@ class FeatureAccess
             return null;
         }
 
-        $routeFeaturesAvailableWithMerchant = $this->getMerchantRouteFeatures($routeFeatures);
+        $merchantRouteFeatures = $this->getMerchantRouteFeatures($routeFeatures);
 
         if (empty($bearerToken) === true)
         {
@@ -90,7 +90,7 @@ class FeatureAccess
             // If the merchant is directly accessing the resource, allow if it
             // has any of the route features required to access the resource.
             //
-            if (empty($routeFeaturesAvailableWithMerchant) === false)
+            if (empty($merchantRouteFeatures) === false)
             {
                 return null;
             }
@@ -100,7 +100,7 @@ class FeatureAccess
 
         $allowAccess = $this->allowApplicationToAccessFeatureRoute(
                             $routeFeatures,
-                            $routeFeaturesAvailableWithMerchant);
+                            $merchantRouteFeatures);
 
         if ($allowAccess === true)
         {
