@@ -1,31 +1,28 @@
 <?php
 
-namespace RZP\Http\Throttle;
+namespace RZP\Http;
 
 use Lcobucci\JWT\Parser;
 use Illuminate\Http\Request;
 
 use RZP\Http\OAuth;
 use RZP\Http\Route;
+use RZP\Models\Key;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Http\RequestHeader;
 use RZP\Http\BasicAuth\Type;
+use RZP\Foundation\Application;
+use RZP\Base\RepositoryManager;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Http\BasicAuth\AuthCreds;
 use RZP\Exception\BadRequestException;
 
 /**
- * Extracts various variables from request to be used
- * in throttling logic. This doesn't do any database/
- * redis calls etc.
- *
- * Keeping this outside of core throttle logic to maintain
- * clarity.
- *
- * TODO: Reuse this trait in BasicAuth class!
+ * Extracts and holds various variables from request to be used in throttling and subsequent middle-wares.
+ * This only does minimal database/redis calls, which is required even by throttle module.
  */
-trait HasRequestContext
+final class RequestContext
 {
     /**
      * @var string
@@ -36,6 +33,11 @@ trait HasRequestContext
      * @var Request
      */
     protected $request;
+
+    /**
+     * @var RepositoryManager
+     */
+    protected $repo;
 
     /**
      * @var string
@@ -50,17 +52,22 @@ trait HasRequestContext
     /**
      * @var string
      */
-    protected $bearerToken;
-
-    /**
-     * @var string
-     */
     protected $mode;
 
     /**
      * @var string
      */
     protected $auth;
+
+    /**
+     * @var bool
+     */
+    protected $isRunningUnitTests;
+
+    /**
+     * @var array
+     */
+    protected $applications;
 
     //
     // In one request some (and not all) of below identifiers are set. Further
@@ -76,6 +83,11 @@ trait HasRequestContext
      * @var string
      */
     protected $keyId;
+
+    /**
+     * @var Key\Entity
+     */
+    protected $keyEntity;
 
     /**
      * @var string
@@ -96,6 +108,11 @@ trait HasRequestContext
     /**
      * @var string
      */
+    protected $bearerToken;
+
+    /**
+     * @var string
+     */
     protected $internalAppName;
 
     /**
@@ -108,15 +125,135 @@ trait HasRequestContext
      */
     protected $proxy = false;
 
-    protected function initRequestContextVars(Request $request)
+    public function __construct(Application $app)
     {
-        $this->request = $request;
-        $this->route   = $request->route()->getName();
+        $this->request            = $app['request'];
+        $this->repo               = $app['repo'];
+
+        $this->route              = $this->request->route()->getName();
+        $this->isRunningUnitTests = $app->runningUnitTests();
+        $this->applications       = $app['config']->get('applications');
 
         $this->setAuthVars();
         $this->setAdditionalVars();
+        $this->resolveKeyIdIfApplicable();
     }
 
+    public function getRoute(): string
+    {
+        return $this->route;
+    }
+
+    public function getRequest(): Request
+    {
+        return $this->request;
+    }
+
+    public function getKey()
+    {
+        return $this->key;
+    }
+
+    public function getSecret()
+    {
+        return $this->secret;
+    }
+
+    public function getMode()
+    {
+        return $this->mode;
+    }
+
+    public function getAuth(): string
+    {
+        return $this->auth;
+    }
+
+    public function getKeyWithoutPrefix()
+    {
+        return $this->keyWithoutPrefix;
+    }
+
+    public function getKeyId()
+    {
+        return $this->keyId;
+    }
+
+    public function getMid()
+    {
+        return $this->mid;
+    }
+
+    public function getOauthClientId()
+    {
+        return $this->oauthClientId;
+    }
+
+    public function getOauthPublicToken()
+    {
+        return $this->oauthPublicToken;
+    }
+
+    public function getBearerToken()
+    {
+        return $this->bearerToken;
+    }
+
+    public function getInternalAppName()
+    {
+        return $this->internalAppName;
+    }
+
+    public function getAdminEmail()
+    {
+        return $this->adminEmail;
+    }
+
+    public function getProxy(): bool
+    {
+        return $this->proxy;
+    }
+
+    public function isDashboard(): bool
+    {
+        return ($this->internalAppName === 'dashboard');
+    }
+
+    public function isPublicAuth(): bool
+    {
+        return ($this->auth === Type::PUBLIC_AUTH);
+    }
+
+    public function isDirectAuth(): bool
+    {
+        return ($this->auth === Type::DIRECT_AUTH);
+    }
+
+    public function getBearerTokenFromRequest()
+    {
+        return $this->isRunningUnitTests ? $this->request->bearerToken() : $this->getBearerTokenFromRequestForApache();
+    }
+
+    public function getBearerTokenFromRequestForApache()
+    {
+        $headers = getallheaders()['Authorization'] ?? null;
+
+        return starts_with($headers, 'Bearer ') ? substr($headers, 7) : '';
+    }
+
+    public function isKeyOAuthPublicToken(): bool
+    {
+        return ((strlen($this->key) === OAuth::PUBLIC_TOKEN_LENGTH) and (substr($this->key, 8, 7) === '_oauth_'));
+    }
+
+
+    /**
+     * Protected Methods
+     */
+
+    /**
+     * Extracts user authentication information from request and sets corresponding instance variables.
+     */
     protected function setAuthVars()
     {
         // Key can come
@@ -143,6 +280,9 @@ trait HasRequestContext
         $this->mode = Mode::exists($mode) ? $mode : null;
     }
 
+    /**
+     * Extracts additional information from requests per route's auth group.
+     */
     protected function setAdditionalVars()
     {
         if ($this->setAdditionalVarsForPublicAuth() == true)
@@ -169,6 +309,20 @@ trait HasRequestContext
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
         }
+    }
+
+    /**
+     * Resolves $keyId and sets $key entity instance as well as $mid instance.
+     */
+    protected function resolveKeyIdIfApplicable()
+    {
+        if ((empty($this->keyId) === true) or (empty($this->mode) === true) or (Mode::exists($this->mode) === false))
+        {
+            return;
+        }
+
+        $this->keyEntity = $this->repo->key->connection($this->mode)->findOrFailPublic($this->keyId);
+        $this->mid       = $this->keyEntity->getMerchantId();
     }
 
     protected function setAdditionalVarsForPublicAuth()
@@ -202,16 +356,14 @@ trait HasRequestContext
         $isPrivateRoute = in_array($this->route, Route::$private, true);
         $isProxyRoute   = in_array($this->route, Route::$proxy, true);
 
-        if (($isPrivateRoute === true) and
-            (empty($token = $this->getBearerToken()) === false))
+        if (($isPrivateRoute === true) and (empty($token = $this->getBearerTokenFromRequest()) === false))
         {
             $parsed              = (new Parser)->parse($token);
             $this->oauthClientId = $parsed->getClaim('aud');
             $this->mid           = $parsed->getClaim('merchant_id');
             return true;
         }
-        else if ((($isPrivateRoute === true) and ($this->isDashboard() === true)) or
-                 ($isProxyRoute === true))
+        else if ((($isPrivateRoute === true) and ($this->isDashboard() === true)) or ($isProxyRoute === true))
         {
             $this->mid  = $this->keyWithoutPrefix;
             $this->proxy = true;
@@ -236,7 +388,7 @@ trait HasRequestContext
     {
         if (in_array($this->route, Route::$internal, true) === true)
         {
-            $this->internalAppName = $this->getInternalAppName();
+            $this->setInternalAppName();
             return true;
         }
         else if (in_array($this->route, Route::$admin, true) === true)
@@ -259,50 +411,16 @@ trait HasRequestContext
         return false;
     }
 
-    protected function getInternalAppName()
+    protected function setInternalAppName()
     {
         foreach ($this->applications as $name => $config)
         {
             if (($config['secret'] ?? '') === $this->secret)
             {
-                return $name;
+                $this->internalAppName = $name;
+                return;
             }
         }
-
-        return null;
-    }
-
-    protected function isDashboard(): bool
-    {
-        return ($this->getInternalAppName() === 'dashboard');
-    }
-
-    protected function isPublicAuth(): bool
-    {
-        return ($this->auth === Type::PUBLIC_AUTH);
-    }
-
-    protected function isDirectAuth(): bool
-    {
-        return ($this->auth === Type::DIRECT_AUTH);
-    }
-
-    protected function getBearerToken()
-    {
-        return $this->isRunningUnitTests ? $this->request->bearerToken() : $this->getBearerTokenForApache();
-    }
-
-    protected function getBearerTokenForApache()
-    {
-        $headers = getallheaders()['Authorization'] ?? null;
-
-        return starts_with($headers, 'Bearer ') ? substr($headers, 7) : '';
-    }
-
-    protected function isKeyOAuthPublicToken(): bool
-    {
-        return ((strlen($this->key) === OAuth::PUBLIC_TOKEN_LENGTH) and
-                (substr($this->key, 8, 7) === '_oauth_'));
     }
 
     protected function validateKeyLen(string $key)
