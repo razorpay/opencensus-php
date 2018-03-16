@@ -223,7 +223,7 @@
       }
 
       .inv-details .info .val {
-        color: #232323;
+        color: #414141;
         font-size: 14px;
         text-transform: capitalize;
       }
@@ -999,11 +999,16 @@
                             iframe.onload = function() {
                               var iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
 
+                              var steps = 1;
                               var pollContainer = setInterval(function(){
+                                if (steps === 100) {
+                                  clearInterval(pollContainer);
+                                }
                                 if (iframeDoc.getElementById('next-button')) {
                                   clearInterval(pollContainer);
                                   iframeDoc.getElementById('next-button').style.transform = 'translateY(-55px)';
                                 }
+                                steps ++;
                               }, 60);
                             };
                           }
