@@ -8,7 +8,6 @@ use Cache;
 use Crypt;
 use Config;
 use Route;
-use Throwable;
 use Carbon\Carbon;
 use Lib\PhoneBook;
 
