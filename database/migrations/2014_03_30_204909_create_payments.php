@@ -231,6 +231,9 @@ class CreatePayments extends Migration
             $table->string(Payment::AUTH_TYPE, 14)
                   ->nullable();
 
+            $table->integer(Payment::ACKNOWLEDGED_AT)
+                  ->nullable();
+
             // Adds created_at and updated_at columns to the table
             $table->integer(Payment::CREATED_AT);
             $table->integer(Payment::UPDATED_AT);

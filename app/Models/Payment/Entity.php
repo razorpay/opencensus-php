@@ -108,6 +108,7 @@ class Entity extends Base\PublicEntity
     const LATE_AUTHORIZED       = 'late_authorized';
     const CONVERT_CURRENCY      = 'convert_currency';
     const AUTH_TYPE             = 'auth_type';
+    const ACKNOWLEDGED_AT       = 'acknowledged_at';
 
     const MAX_AMOUNT            = 'max_amount';
     const EXPIRE_BY             = 'expire_by';
@@ -915,6 +916,11 @@ class Entity extends Base\PublicEntity
     public function setEmiSubvention(string $subvention)
     {
         $this->setAttribute(self::EMI_SUBVENTION, $subvention);
+    }
+
+    public function setAcknowledgedAt(int $timestamp)
+    {
+        $this->setAttribute(self::ACKNOWLEDGED_AT, $timestamp);
     }
 
     // ----------------------- Setters Ends-----------------------------------------
@@ -2538,5 +2544,20 @@ class Entity extends Base\PublicEntity
         $filteredDescription = preg_replace('/[^a-zA-Z0-9 ]+/', '', $description);
 
         return $filteredDescription;
+    }
+
+    public function getAcknowledgedAt()
+    {
+        return $this->getAttribute(self::ACKNOWLEDGED_AT);
+    }
+
+    /**
+     * Returns true if the payment success/failure has been acknowledged by the merchant.
+     *
+     * @return bool
+     */
+    public function isAcknowledged(): bool
+    {
+        return ($this->getAcknowledgedAt() !== null);
     }
 }

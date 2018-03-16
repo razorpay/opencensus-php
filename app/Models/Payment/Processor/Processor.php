@@ -1901,4 +1901,28 @@ class Processor
 
         $this->repo->saveOrFail($terminal);
     }
+
+    /**
+     * Marks the payment as acknowledged.
+     *
+     * @param Payment\Entity $payment
+     */
+    public function acknowledge(Payment\Entity $payment)
+    {
+        $currentTime = Carbon::now()->getTimestamp();
+
+        $this->mutex->acquireAndRelease($payment->getId(), function() use ($payment, $currentTime)
+        {
+            $payment->setAcknowledgedAt($currentTime);
+
+            $this->repo->saveOrFail($payment);
+        });
+
+        $this->trace->info(
+            TraceCode::PAYMENT_ACKNOWLEDGED,
+            [
+                Payment\Entity::ID              => $payment->getId(),
+                Payment\Entity::ACKNOWLEDGED_AT => $currentTime
+            ]);
+    }
 }
