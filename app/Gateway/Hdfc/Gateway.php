@@ -381,6 +381,8 @@ class Gateway extends Base\Gateway
             $actualAmount = number_format($input['gateway']['amt'], 2, '.', '');
 
             $this->assertAmount($expectedAmount, $actualAmount);
+
+            $this->verifyCallback($input);
         }
         else
         {
@@ -407,6 +409,54 @@ class Gateway extends Base\Gateway
         $acquirerData = $this->getAcquirerData($input, $this->model);
 
         return $this->getCallbackResponseData($input, $acquirerData);
+    }
+
+    protected function verifyCallback(array $input)
+    {
+        parent::verify($input);
+
+        // TODO: remove these after gateway manager driver are fixed
+
+        $this->inquiryRequest['data'] = [];
+        $this->inquiryRequest['xml'] = '';
+        $this->inquiryRequest['error'] = null;
+
+        $this->inquiryResponse['data'] = [];
+        $this->inquiryResponse['xml'] = '';
+        $this->inquiryResponse['error'] = null;
+
+        $this->error = false;
+
+        $verify = new Base\Verify($this->gateway, $input);
+
+        // This payment is the gateway entity payment.
+        // Also sets this gateway payment in the verify object's payment.
+        $gatewayPayment = $this->getPaymentToVerify($verify);
+
+        if (($gatewayPayment === null) and
+            ($this->shouldReturnIfPaymentNullInVerifyFlow($verify)))
+        {
+            $this->trace->warning(
+                TraceCode::GATEWAY_PAYMENT_VERIFY,
+                [
+                    'payment_id' => $verify->input['payment']['id'],
+                    'message'    => 'payment id not found in the gateway database',
+                    'gateway'    => $this->gateway
+                ]
+            );
+
+            return null;
+        }
+
+        $this->sendPaymentVerifyRequest($verify);
+
+        $this->verifyPayment($verify);
+
+        if ($verify->gatewaySuccess !== true)
+        {
+            throw new Exception\LogicException(
+                'Data tampering found.');
+        }
     }
 
     public function verify(array $input)

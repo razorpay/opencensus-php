@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use Mail;
 
+use RZP\Exception\RuntimeException;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -664,6 +665,29 @@ EOT;
 
         $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
         $response = $this->makeS2SCallbackAndGetContent($content);
+
+        $this->payment = $this->verifyPayment($payment['id']);
+
+        $this->assertSame($this->payment['payment']['verified'], 1);
+    }
+
+    public function testVerifyPaymentWithAmountMismatch()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['notes']['amount'] = 'mismatch';
+
+        $authPayment = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $upiEntity = $this->getLastEntity('upi', true);
+        $payment = $this->getEntityById('payment', $authPayment['payment_id'], true);
+
+        $payment['notes']['amount'] = 'mismatch';
+
+        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
+        $response = $this->makeS2SCallbackAndGetContent($content);
+
+        $this->expectException(RuntimeException::class);
 
         $this->payment = $this->verifyPayment($payment['id']);
 

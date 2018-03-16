@@ -2,9 +2,6 @@
 
 namespace RZP\Models\Event;
 
-use RZP\Models\Base;
-use RZP\Exception;
-
 /**
  * The events whether they are enabled or disabled are store in bit format.
  * See this link for a guide on bitwise operations:

@@ -33,7 +33,7 @@ pipeline:
     build_args_from_env: [git_token]
     build_args:
      - GIT_COMMIT_HASH=${DRONE_COMMIT_SHA}
-    tags: ${DRONE_REPO_BRANCH}-${DRONE_COMMIT_SHA}
+    tags: ${DRONE_COMMIT_SHA}
     when:
       status: [success]
       event:
@@ -115,11 +115,24 @@ pipeline:
     user: drone
     cluster: qa
     auth_mode: client-cert
-    deployment: api
+    deployment:
+      - api-web
+      - api-sqs-batch
+      - api-sqs-emails
+      - api-sqs-es-sync
+      - api-sqs-gen-live
+      - api-sqs-gen-test
+      - api-sqs-invoice-email
+      - api-sqs-invoice-reports
+      - api-sqs-main
+      - api-sqs-subscription-charge
+      - api-sqs-webhooks-failure
+      - api-sqs-webhooks-live
+      - api-sqs-webhooks-test
     repo: razorpay/api
     namespace: func
     tag:
-      - ${DRONE_REPO_BRANCH}-${DRONE_COMMIT_SHA}
+      - ${DRONE_COMMIT_SHA}
     when:
       environment: qa-func
       event:
@@ -130,7 +143,7 @@ pipeline:
     pull: true
     secrets:
       - docker_username
-      - docker_password
+      - docker_password 
       - server_url_stage
       - server_cert_stage
       - client_cert_stage
@@ -138,15 +151,26 @@ pipeline:
     user: drone
     cluster: stage
     auth_mode: client-cert
-    deployment: api
+    deployment:
+      - api-web
+      - api-sqs-batch
+      - api-sqs-emails
+      - api-sqs-es-sync
+      - api-sqs-gen-live
+      - api-sqs-gen-test
+      - api-sqs-invoice-email
+      - api-sqs-invoice-reports
+      - api-sqs-main
+      - api-sqs-subscription-charge
+      - api-sqs-webhooks-failure
+      - api-sqs-webhooks-live
+      - api-sqs-webhooks-test
     repo: razorpay/api
     namespace: echo
     tag:
-      - ${DRONE_REPO_BRANCH}-${DRONE_COMMIT_SHA}
+      - ${DRONE_COMMIT_SHA}
     when:
       environment: stage-echo
       event:
         exclude: [push]
         include: [deployment]
-branches:
-  include: [ master, drone-tests, qakube ]

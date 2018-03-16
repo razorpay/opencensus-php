@@ -121,7 +121,7 @@ trait SettlementTrait
 
     protected function skipForMutualFundsMarketplace($txn): bool
     {
-        // Settle only between 12pm and 1 pm
+        // Settle only between 1pm and 2pm
 
         // Is a submerchant of a mutual fund market place
         $isSubMerchantOfMf = false;
@@ -132,6 +132,17 @@ trait SettlementTrait
             Preferences::MID_GOALWISE_NON_TPV,
             Preferences::MID_WEALTHAPP,
             Preferences::MID_WEALTHY,
+            Preferences::MID_PAISABAZAAR,
+        ];
+
+        //
+        // Maps the mids that want to receive only 1 settlement per day,
+        // no matter what. They need all transactions till 1 pm to be
+        // settled by 3 pm.
+        //
+        $oneSetlPerDayMids = [
+            Preferences::MID_WEALTHY,
+            Preferences::MID_PAISABAZAAR,
         ];
 
         if (($txn->isTypePayment() === true) and
@@ -153,11 +164,7 @@ trait SettlementTrait
 
             $twoTenPm = Carbon::today(Timezone::IST)->hour(14)->minute(10)->getTimestamp();
 
-            //
-            // Wealthy does not want any settlements to happen outside their given window,
-            // i.e. after 1pm. TODO: Better way to implement this.
-            //
-            if (($txn->merchant->getParentId() === Preferences::MID_WEALTHY) and
+            if ((in_array($txn->merchant->getParentId(), $oneSetlPerDayMids, true) === true) and
                 ($now > $oneThirtyPm))
             {
                 return true;
@@ -188,6 +195,8 @@ trait SettlementTrait
     protected function createSettlementsFromTxns($txns, string $channel): array
     {
         $merchant = $txns->first()->merchant;
+
+        $this->trace->info(TraceCode::SETTLEMENTS_CREATE_ENTITIES_FOR_MERCHANT, ['merchant' => $merchant->getId()]);
 
         list($setlAmount, $setlFee, $setlApiFee, $tax) = $this->getSettlementAmountsForMerchant($txns);
 
@@ -238,6 +247,9 @@ trait SettlementTrait
     protected function updateSettlementIdInTransfer(\Illuminate\Support\Collection $txns)
     {
         $filteredTxnIds = [];
+
+        $startTime = microtime(true);
+
         foreach ($txns as $txn)
         {
             if (($txn->isTypePayment() === true) and ($txn->merchant->isLinkedAccount() === true))
@@ -254,6 +266,7 @@ trait SettlementTrait
         try
         {
             $relations = ['source', 'source.transfer'];
+
             $filteredTxns = $this->repo->transaction->findManyWithRelations($filteredTxnIds, $relations);
 
             foreach ($filteredTxns as $txn)
@@ -272,6 +285,9 @@ trait SettlementTrait
                 $this->repo->saveOrFail($transfer);
             }
 
+            $timeTaken = microtime(true) - $startTime;
+
+            $this->trace->info(TraceCode::RECIPIENT_SETTLEMENT_UPDATE_TIME_TAKEN, ['time_taken' => $timeTaken]);
         }
         catch (\Throwable $ex)
         {
@@ -360,6 +376,8 @@ trait SettlementTrait
             Preferences::MID_WEALTHY,
             Preferences::MID_PIGGY,
             Preferences::MID_PAISABAZAAR,
+            Preferences::MID_BPCL,
+            Preferences::MID_SRI_CHAITANYA,
         ];
 
         if (in_array($merchant->getId(), $skipMerchantIds, true) === true)
@@ -435,6 +453,10 @@ trait SettlementTrait
 
     /**
      * Returns the list of all channels for which settlments needs to be done
+     *
+     * @param string|null $channel
+     *
+     * @return array
      */
     protected function getArrayedChannels($channel = null)
     {
@@ -453,6 +475,8 @@ trait SettlementTrait
     protected function increaseAllowedSystemLimits()
     {
         RuntimeManager::setMemoryLimit('1024M');
-        RuntimeManager::setTimeLimit(300);
+
+        // Time limit of 9 mins 55 seconds
+        RuntimeManager::setTimeLimit(599);
     }
 }

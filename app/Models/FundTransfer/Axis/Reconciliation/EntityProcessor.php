@@ -47,6 +47,16 @@ class EntityProcessor extends BaseEntityProcessor
 
     protected function isMerchantLevelError(): bool
     {
+        $status         = $this->fta->getStatus();
+
+        $bankStatusCode = $this->fta->getBankStatusCode();
+
+        if (($status === Attempt\Status::FAILED) and
+            ($bankStatusCode === Status::RETURNSETTLED))
+        {
+            return true;
+        }
+
         return false;
     }
 }

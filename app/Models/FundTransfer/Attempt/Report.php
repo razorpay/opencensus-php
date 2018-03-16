@@ -6,6 +6,7 @@ use Mail;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Settlement\SlackNotification;
@@ -14,6 +15,7 @@ use RZP\Mail\Settlement\Report as ReportEmail;
 class Report extends Base\Core
 {
     const REPORT_HEADER = [
+        'Channel',
         'Attempt ID',
         'Source',
         'Source ID',
@@ -26,6 +28,8 @@ class Report extends Base\Core
         'Merchant Email'
     ];
 
+    const LIMIT             = 2000;
+
     protected $fileName     = null;
 
     protected $fileHandler  = null;
@@ -34,9 +38,18 @@ class Report extends Base\Core
 
     protected $count        = 0;
 
+    protected $startTime    = null;
+
+    protected $endTime      = null;
+
     public function __construct()
     {
         parent::__construct();
+    }
+
+    public function __destruct()
+    {
+        unlink($this->fileName);
     }
 
     protected function init()
@@ -46,31 +59,37 @@ class Report extends Base\Core
         $this->fileName    = $this->getFileNameForReport();
 
         $this->fileHandler = $this->initiateFileHandler();
+
+        $this->startTime = Carbon::today(Timezone::IST)->startOfDay()->getTimestamp();
+
+        $this->endTime   = Carbon::now(Timezone::IST)->subHour(3)->getTimestamp();
     }
 
     public function sendNullUtrReport()
     {
         $channels = Channel::getChannels();
 
+        $this->init();
+
+        $this->trace->info(TraceCode::NULL_UTR_REPORT_INITIATED, [
+            'start_time'    => $this->startTime,
+            'end_time'      => $this->endTime,
+        ]);
+
         foreach ($channels as $channel)
         {
             $this->channel = $channel;
 
-            $this->init();
-
             $this->createReport();
-
-            $this->sendEmail();
-
-            $data = [
-                'channel' => $this->channel,
-                'count' => $this->count
-            ];
-
-            (new SlackNotification)->success('null_utr_report', $data);
-
-            unlink($this->fileName);
         }
+
+        fclose($this->fileHandler);
+
+        $this->trace->info(TraceCode::NULL_UTR_REPORT_FILE_CREATED, [
+            'record_count'  => $this->count,
+        ]);
+
+        $this->sendEmail();
     }
 
     protected function initiateFilehandler()
@@ -84,13 +103,9 @@ class Report extends Base\Core
 
     protected function createReport()
     {
-        $startTime = Carbon::yesterday(Timezone::IST)->startOfDay()->timestamp;
-
-        $endTime   = Carbon::yesterday(Timezone::IST)->endOfDay()->timestamp;
-
-        $limit     = 2000;
-
         $offset    = 0;
+
+        $recordCount = 0;
 
         do
         {
@@ -98,22 +113,39 @@ class Report extends Base\Core
                             ->fund_transfer_attempt
                             ->getSettlementsWithNoUtr(
                                 $this->channel,
-                                $startTime,
-                                $endTime,
-                                $limit,
+                                $this->startTime,
+                                $this->endTime,
+                                self::LIMIT,
                                 $offset);
 
-            $offset += $limit;
+            $offset += self::LIMIT;
 
             $this->createOrUpdateFile($records);
 
             $count = count($records);
 
+            $recordCount += $count;
+
             $this->count += $count;
 
-        } while ($count === $limit);
+        } while ($count === self::LIMIT);
 
-        fclose($this->fileHandler);
+        $this->notify($recordCount);
+    }
+
+    protected function notify(int $count)
+    {
+        if ($count === 0)
+        {
+            return;
+        }
+
+        (new SlackNotification)->success(
+            'null_utr_report',
+            [
+                'channel' => $this->channel,
+                'count' => $count
+            ]);
     }
 
     protected function sendEmail()
@@ -125,13 +157,12 @@ class Report extends Base\Core
 
         $data = [
             'file'      => $this->fileName,
-            'channel'   => $this->channel,
-            'date'      => Carbon::yesterday(Timezone::IST)->format('Y-m-d')
+            'date'      => Carbon::today(Timezone::IST)->format('Y-m-d')
         ];
 
         $reportEmail = new ReportEmail($data);
 
-        Mail::queue($reportEmail);
+        Mail::send($reportEmail);
 
         return true;
     }
@@ -140,9 +171,9 @@ class Report extends Base\Core
     {
         $dir  = storage_path('files/settlement');
 
-        $date = Carbon::yesterday(Timezone::IST)->format('Y-M-d');
+        $date = Carbon::today(Timezone::IST)->format('Y-M-d');
 
-        return $dir . DIRECTORY_SEPARATOR . $this->channel . '_' . $date . '.csv';
+        return $dir . DIRECTORY_SEPARATOR . 'null_utr_report_' . $date . '.csv';
     }
 
     protected function createOrUpdateFile($records)
@@ -150,6 +181,7 @@ class Report extends Base\Core
         foreach ($records as $record)
         {
             $data = [
+                $this->channel,
                 $record->getId(),
                 $record->getSourceType(),
                 $record->getSourceId(),
