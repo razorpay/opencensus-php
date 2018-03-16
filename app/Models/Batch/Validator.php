@@ -50,15 +50,19 @@ class Validator extends Base\Validator
 
     protected static $defaultCreateRules = [
         Entity::TYPE                 => 'required|custom',
+        Entity::NAME                 => 'filled|string|max:255',
         Entity::FILE                 => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
     ];
 
     protected static $paymentLinkCreateRules = [
         Entity::TYPE                    => 'required|in:payment_link',
-        Entity::FILE                    => 'required|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::NAME                    => 'filled|string|max:255',
+        Entity::FILE                    => 'required_without:file_id|file|max:1024' . self::DEFAULT_MIME_RULE,
+        Entity::FILE_ID                 => 'required_without:file|public_id',
         Invoice\Entity::DRAFT           => 'filled|in:0,1',
         Invoice\Entity::SMS_NOTIFY      => 'filled|in:0,1',
         Invoice\Entity::EMAIL_NOTIFY    => 'filled|in:0,1',
+        Entity::CONFIG                  => 'filled|array',
     ];
 
     protected static $reconciliationCreateRules = [
@@ -266,8 +270,7 @@ class Validator extends Base\Validator
         // Associative array with index as input file's row index and values
         // as the error message.
 
-        $errors = [];
-        $errorEntries = [];
+        $errorCount = 0;
 
         foreach ($entries as $idx => $entry)
         {
@@ -290,33 +293,40 @@ class Validator extends Base\Validator
             try
             {
                 $invoice->getValidator()->validateInput($rule, $input);
+
+                $error = [
+                    Header::ERROR_CODE          => null,
+                    Header::ERROR_DESCRIPTION   => null,
+                ];
+
+                $entries[$idx] = ($entry + $error);
             }
             catch (BaseException $e)
             {
-                $idx++;
+                $errorCount++;
 
-                $errors[$idx]       = $e->getError()->getDescription();
-                $errorEntries[$idx] = $entry;
+                $error = [
+                    Header::ERROR_CODE          => $e->getError()->getPublicErrorCode(),
+                    Header::ERROR_DESCRIPTION   => $e->getError()->getDescription(),
+                ];
+
+                $entries[$idx] = ($entry + $error);
             }
             finally
             {
                 unset($invoice);
             }
-        }
 
-        $errorsCount = count($errors);
-
-        if ($errorsCount > 0)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_BATCH_PAYMENT_LINK_FILE_ERRORS,
-                Entity::FILE,
-                [
-                    'count'         => $errorsCount,
-                    'errors'        => $errors,
-                    'error_entries' => $errorEntries,
-                    'merchant_id'   => $merchant->getId(),
-                ]);
+            if (($errorCount > 0) and ($this->entity->isCreatedByFileUpload() === true))
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_BATCH_PAYMENT_LINK_FILE_ERRORS,
+                    Entity::FILE,
+                    [
+                        'count'         => $errorCount,
+                        'merchant_id'   => $merchant->getId(),
+                    ]);
+            }
         }
     }
 

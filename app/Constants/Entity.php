@@ -256,6 +256,7 @@ class Entity
         self::BATCH_FUND_TRANSFER   => \RZP\Models\FundTransfer\Batch::class,
         self::CUSTOMER_TRANSACTION  => \RZP\Models\Customer\Transaction::class,
         self::FUND_TRANSFER_ATTEMPT => \RZP\Models\FundTransfer\Attempt::class,
+        self::VIRTUAL_ACCOUNT       => \RZP\Models\VirtualAccount::class,
 
         // gateways
         self::EBS                    => \RZP\Gateway\Ebs::class,

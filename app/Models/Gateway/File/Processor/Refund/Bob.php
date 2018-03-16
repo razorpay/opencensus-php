@@ -45,7 +45,9 @@ class Bob extends Base
             $data[] = $this->getDataForRow(
                 $row['gateway']['account_number'],
                 $row['refund']['amount'],
-                $row['refund']['id']
+                $row['refund']['id'],
+                Constants::REFUND_CREDIT,
+                trim($row['gateway']['bank_payment_id'])
             );
 
             $totalAmount += $row['refund']['amount'];
@@ -64,7 +66,7 @@ class Bob extends Base
         return $this->generateText($data, '', true);
     }
 
-    protected function getDataForRow($accountNumber, $amount, $particulars, $type = Constants::REFUND_CREDIT)
+    protected function getDataForRow($accountNumber, $amount, $particulars, $type, $bankRefNumber = '')
     {
         $amt = $this->getFormattedAmountString($amount);
 
@@ -75,6 +77,7 @@ class Bob extends Base
             $type,
             $amt,
             $particulars,
+            $bankRefNumber
         ];
 
         return $data;
