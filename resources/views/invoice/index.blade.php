@@ -968,9 +968,48 @@
                       options.parent = '#chkout-box';
                       razorpay = window.razorpay = Razorpay(options);
 
-                      var iframe = document.getElementsByClassName('razorpay-checkout-frame')[0];
-                      var iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-                      iframeDoc.getElementById('next-button').style.transform = 'translateY(-55px)';
+                      if (data['invoice']['partial_payment']) {
+                          var poll, pollSteps = 1;
+
+                          // Gets exponential timer
+                          function getNextExpoTimeout(x) {
+                            var pollTime = Math.pow(1.1, x*10) + 150;
+                            return pollTime;
+                          }
+
+                          // Poller to check if iframe loaded
+                          function poller() {
+                            var iframes = document.getElementsByClassName('razorpay-checkout-frame');
+                            if (pollSteps == 100) {
+                                clearTimeout(poll)
+                            }
+                            if (iframes.length) {
+                                clearTimeout(poll);
+                                frameLoaded(iframes);
+                            } else {
+                                poll = setTimeout(poller, getNextExpoTimeout(pollSteps))
+                                pollSteps++;
+                            }
+                          }
+
+                          // Task to perform after frame is loaded
+                          function frameLoaded(iframes) {
+                            var iframe = iframes[0];
+
+                            iframe.onload = function() {
+                              var iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+
+                              var pollContainer = setInterval(function(){
+                                if (iframeDoc.getElementById('next-button')) {
+                                  clearInterval(pollContainer);
+                                  iframeDoc.getElementById('next-button').style.transform = 'translateY(-55px)';
+                                }
+                              }, 60);
+                            };
+                          }
+
+                          poll = setTimeout(poller, getNextExpoTimeout(pollSteps)); // Start poller
+                      }
                     } else {
                         document.getElementById('mob-payment-btn').addEventListener('click', function() {
                             razorpay = window.razorpay = Razorpay(options);
