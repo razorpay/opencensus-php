@@ -207,8 +207,11 @@ return [
 
     'testFetchMerchantRequests' => [
         'request'  => [
-            'url'    => '/merchant/requests?type=product',
-            'method' => 'GET',
+            'url'     => '/merchant/requests',
+            'method'  => 'GET',
+            'content' => [
+                'type' => 'product',
+            ],
         ],
         'response' => [
             'content' => [

@@ -16,7 +16,7 @@ class MerchantRequest extends Base
         $this->fixtures->create('merchant_request:default_merchant_request');
 
         $this->fixtures->on('live')->create('merchant_detail', [
-            'merchant_id' => '10000000000000',
+            'merchant_id' => self::DEFAULT_MERCHANT_ID,
             'submitted'   => true,
             'locked'      => false
         ]);

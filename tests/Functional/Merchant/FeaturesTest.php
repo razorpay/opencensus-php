@@ -459,9 +459,10 @@ class FeaturesTest extends TestCase
 
         $this->assertTrue($response);
 
-        $this->verifyMerchantRequest(Constants::SUBSCRIPTIONS,
-                                     MerchantRequest\Type::PRODUCT,
-                                     MerchantRequest\Status::UNDER_REVIEW);
+        $this->verifyMerchantRequest(
+            Constants::SUBSCRIPTIONS,
+            MerchantRequest\Type::PRODUCT,
+            MerchantRequest\Status::UNDER_REVIEW);
     }
 
     /**
@@ -702,6 +703,16 @@ class FeaturesTest extends TestCase
         });
     }
 
+    public function testOnboardingRequestStatusUpdateLeadingToMerchantRequestCreation()
+    {
+        $merchantId = $this->createMerchantDetails(self::ONBOARDING_MERCHANT_ID);
+
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
+
+        // Test update status API
+        $this->updateMarketplaceOnboardingResponseStatus($merchantId, 'rejected');
+    }
+
     /**
      * The feature onboarding request should not be approved if the feature is enabled on Test mode
      * Also, email should not be sent to the merchant
@@ -807,9 +818,10 @@ class FeaturesTest extends TestCase
 
         $this->assertTrue($response);
 
-        $this->verifyMerchantRequest(Constants::MARKETPLACE,
-                                     MerchantRequest\Type::PRODUCT,
-                                     MerchantRequest\Status::UNDER_REVIEW);
+        $this->verifyMerchantRequest(
+            Constants::MARKETPLACE,
+            MerchantRequest\Type::PRODUCT,
+            MerchantRequest\Status::UNDER_REVIEW);
     }
 
     /**
@@ -853,9 +865,10 @@ class FeaturesTest extends TestCase
 
         $this->fixtures->stripSign($fileStoreId);
 
-        $this->verifyMerchantRequest(Constants::MARKETPLACE,
-                                     MerchantRequest\Type::PRODUCT,
-                                     MerchantRequest\Status::UNDER_REVIEW);
+        $this->verifyMerchantRequest(
+            Constants::MARKETPLACE,
+            MerchantRequest\Type::PRODUCT,
+            MerchantRequest\Status::UNDER_REVIEW);
 
         return $fileStoreId;
     }
@@ -890,9 +903,10 @@ class FeaturesTest extends TestCase
 
         $this->startTest($testData);
 
-        $this->verifyMerchantRequest(Constants::MARKETPLACE,
-                                     MerchantRequest\Type::PRODUCT,
-                                     MerchantRequest\Status::REJECTED);
+        $this->verifyMerchantRequest(
+            Constants::MARKETPLACE,
+            MerchantRequest\Type::PRODUCT,
+            MerchantRequest\Constants::getRequestStatusForOnboardingStatus($status));
     }
 
     /**
