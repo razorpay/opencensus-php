@@ -9,7 +9,6 @@ use RZP\Base\Common;
 use RZP\Constants\Es;
 use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
-use RZP\Exception\LogicException;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\Detail\Status as DetailStatus;
@@ -42,6 +41,7 @@ class EsRepository extends Base\EsRepository
         DetailEntity::ARCHIVED_AT,
         DetailEntity::SUBMITTED_AT,
         DetailEntity::UPDATED_AT,
+        DetailEntity::REVIEWER_ID,
     ];
 
     protected $groupIndexedFields = [
@@ -71,6 +71,7 @@ class EsRepository extends Base\EsRepository
         Entity::ADMINS,
         Entity::ACCOUNT_STATUS,
         Entity::SUB_ACCOUNTS,
+        DetailEntity::REVIEWER_ID,
     ];
 
     /**
@@ -121,6 +122,23 @@ class EsRepository extends Base\EsRepository
 
     public function buildQueryForGroups(array & $query, array $value)
     {
+    }
+
+    public function buildQueryForReviewerId(array & $query, string $value)
+    {
+        $attribute = E::MERCHANT_DETAIL . '.' . DetailEntity::REVIEWER_ID;
+
+        switch ($value)
+        {
+            case 'none':
+
+                $this->addNullFilterForField($query, $attribute);
+
+                break;
+
+            default :
+                $this->addMust($query, $this->getTermQuery($attribute, $value));
+        }
     }
 
     public function buildQueryForAccountStatus(array & $query, string $value)
