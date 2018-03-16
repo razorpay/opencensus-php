@@ -2,22 +2,19 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
-use DB;
-use Illuminate\Http\UploadedFile;
-
 use RZP\Models\Feature;
 use RZP\Models\Merchant\Request;
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\Fixtures\Entity\Org;
-use RZP\Models\Admin\Admin\Entity as AdminEntity;
+use RZP\Tests\Functional\Helpers\FileUploadTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Fixtures\Entity\MerchantRequest as MerchantRequestFixture;
 
 class MerchantRequestTest extends TestCase
 {
-    use RequestResponseFlowTrait;
+    use FileUploadTrait;
     use DbEntityFetchTrait;
+    use RequestResponseFlowTrait;
 
     public function setUp()
     {
@@ -26,9 +23,6 @@ class MerchantRequestTest extends TestCase
         parent::setUp();
 
         $this->fixtures->merchant_request->setUp();
-
-        // Need this to enable SuperAdmin to make changes to features.
-        $this->fixtures->edit(AdminEntity::ADMIN, Org::SUPER_ADMIN, [AdminEntity::ALLOW_ALL_MERCHANTS => 1]);
     }
 
     public function testGetMerchantRequestDetails()
@@ -71,8 +65,10 @@ class MerchantRequestTest extends TestCase
     {
         $this->ba->adminAuth();
 
+        //
         // Assume the fixture's merchant_request is in needs_clarification status.
         // Then moving it to activated status is wrong.
+        //
         $this->fixtures->edit(
             'merchant_request',
             MerchantRequestFixture::DEFAULT_MERCHANT_REQUEST_ID,
@@ -160,9 +156,9 @@ class MerchantRequestTest extends TestCase
     {
         $this->ba->adminAuth();
 
-        $merchantRequest = $this->fixtures->create('merchant_request', [
+        $this->fixtures->create('merchant_request', [
             'merchant_id' => MerchantRequestFixture::DEFAULT_MERCHANT_ID,
-            'name'        => 'marketplace',
+            'name'        => Feature\Constants::MARKETPLACE,
             'status'      => Request\Status::UNDER_REVIEW,
             'type'        => Request\Type::PRODUCT,
         ]);
@@ -199,27 +195,4 @@ class MerchantRequestTest extends TestCase
         // Assign url
         $this->testData[$functionName]['request']['url'] = $url;
     }
-
-    /**
-     * @param string $file
-     *
-     * @return UploadedFile
-     */
-    protected function createUploadedFile(string $file): UploadedFile
-    {
-        $this->assertFileExists($file);
-
-        $mimeType = 'application/pdf';
-        $uploadedFile = new UploadedFile(
-            $file,
-            $file,
-            $mimeType,
-            filesize($file),
-            null,
-            true
-        );
-
-        return $uploadedFile;
-    }
-
 }

@@ -3,8 +3,6 @@
 use RZP\Tests\Functional\Fixtures\Entity\MerchantRequest;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
-use RZP\Error\PublicErrorDescription;
-use RZP\Models\Merchant\Detail\RejectionReasons as RejectionReasons;
 
 return [
 

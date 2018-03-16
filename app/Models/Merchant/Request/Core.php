@@ -152,14 +152,36 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($request);
 
+            $stateEntity = $this->createState($status, $request, $admin);
+
+            (new Reason\Core)->addRejectionReasons($rejectionReasons, $stateEntity);
+
+            //
+            // Adding this part in last of transaction block, since `addFeatureIfNotEnabled` involves saving on both
+            // live and test, and the functions called above act only on live mode. This may have lead to erroneous
+            // data in case we were updating synced entities in between unsynced ones and if some exception happened
+            // after the synced entities were internally committed.
+            // Elaborately :
+            //
+            // transactionOnLive {
+            //
+            //      // commands on live mode
+            //
+            //      transactionOnLiveAndTest {
+            //          //commands
+            //      }
+            //
+            //      // commands
+            //      // any exception thrown here will lead to rollback of only live mode and not the test mode
+            // queries since the enclosing connection is of live only.
+            //
+            // }
+            // @todo: A more generic solution to this needs to be discussed and fixed across codebase.
+            //
             if ($status === Status::ACTIVATED)
             {
                 $this->addFeatureIfNotEnabled($request);
             }
-
-            $stateEntity = $this->createState($status, $request, $admin);
-
-            (new Reason\Core)->addRejectionReasons($rejectionReasons, $stateEntity);
         });
 
         return $request;
