@@ -27,30 +27,23 @@ export default class ListContainer extends Component {
     };
   }
 
-  removeBlacklistedParams (params, props=this.props) {
-
-    const{blacklistQueryParams=[]} = props,
-         hasBlacklistQueryParams = blacklistQueryParams.length > 0;
+  removeBlacklistedParams(params, props = this.props) {
+    const { blacklistQueryParams = [] } = props,
+      hasBlacklistQueryParams = blacklistQueryParams.length > 0;
 
     if (!hasBlacklistQueryParams) {
-    
       return params;
     }
 
-    return Object.keys(params)
-                 .reduce((result, paramKey) => {
-                 
-                   const isParamBlacklisted = (
-                     blacklistQueryParams.indexOf(paramKey) >= 0 
-                   );
+    return Object.keys(params).reduce((result, paramKey) => {
+      const isParamBlacklisted = blacklistQueryParams.indexOf(paramKey) >= 0;
 
-                   if (!isParamBlacklisted) {
-                   
-                     result[paramKey] = params[paramKey];
-                   }
+      if (!isParamBlacklisted) {
+        result[paramKey] = params[paramKey];
+      }
 
-                   return result;
-                 }, {});
+      return result;
+    }, {});
   }
 
   defaultSearch(queryString) {
@@ -74,11 +67,27 @@ export default class ListContainer extends Component {
       this.defaultSearch(nextProps.location.search);
     }
   }
+  sanitizeParams(params) {
+    if (!params) {
+      throw 'Params must be an object';
+    }
 
-  fetchAll = (params={}) => {
+    const keys = Object.keys(params);
+    if (!keys.length) {
+      return;
+    }
 
+    keys.forEach(key => {
+      params[key] = encodeURIComponent(params[key]);
+    });
+  }
+
+  fetchAll = (params = {}) => {
     params = { ...this.getDefaultPageParams(), ...params };
     params = this.removeBlacklistedParams(params);
+
+    this.sanitizeParams(params);
+
     this.setState(params);
 
     // props.fetchAll is available only when model is implemented. Addons doesn't have model hence calling 'fetchList' class fn.
