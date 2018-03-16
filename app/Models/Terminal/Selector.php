@@ -53,7 +53,11 @@ class Selector extends Base\Core
         Sorters\GatewayDowntimeSorter::class,
 
         // Boosts terminals with gateway tokens over fallback terminal (without gateway tokens)
-        Sorters\RecurringSorter::class
+        // No fallback sorting. We are not giving priority
+        // to the actual terminals as such. We will let the
+        // normal sorter take care of it. [Discussed with Shk].
+        // UN-SKIP THE CORRESPONDING TEST TOO!
+        // Sorters\RecurringSorter::class
     ];
 
     public function __construct(array $input, Terminal\Options $options)
