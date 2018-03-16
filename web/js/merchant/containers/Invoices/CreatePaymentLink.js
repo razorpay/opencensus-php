@@ -9,7 +9,7 @@ import ReduxDatetime from 'rzp/ui/ReduxDatetime';
 import InputField from 'rzp/ui/Forms/InputField';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import Alert from 'rzp/ui/Forms/Alert';
-import { isBlank, stringifyQueryParamsWithPipe } from 'rzp/utils/rzp-utils';
+import { isBlank, getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 import { saveInvoice } from 'merchant/modules/invoices/list';
 import { required, phone, email, amount } from 'rzp/utils/validators';
 import { showNotification } from 'rzp/modules/notifications';
@@ -205,7 +205,7 @@ export default class CreatePaymentLink extends Component {
         window.rzpAnalytics({
           eventCategory: 'Dashboard - Payment Links',
           eventAction: `Submit Form - ${isEdit ? 'Edit' : 'New'} Payment Link`,
-          eventLabel: stringifyQueryParamsWithPipe(params),
+          eventLabel: getKeysSeparatedByPipe(params),
         });
 
         this.props.onSave(invoice);

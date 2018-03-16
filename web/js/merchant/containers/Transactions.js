@@ -9,10 +9,9 @@ import BatchUploads from 'merchant/containers/Refunds/BatchList';
 import OrdersList from 'merchant/containers/Orders/List';
 import DisputesList from 'merchant/containers/Disputes/List';
 
-import {getURLQueryParams} from 'rzp/utils/rzp-utils';
+import { getURLQueryParams } from 'rzp/utils/rzp-utils';
 
 export default function TransactionsContainer(props) {
-
   return (
     <tabbed-container>
       <header id="transactions-header">
@@ -35,10 +34,7 @@ export default function TransactionsContainer(props) {
           </NavLink>
         </ShowWhen>
         <NavLink to="/orders">Orders</NavLink>
-        <NavLink to="/disputes">
-          Disputes
-          <span class="badge bg-primary disputes-count">new</span>
-        </NavLink>
+        <NavLink to="/disputes">Disputes</NavLink>
       </header>
       <TestModeBanner />
       <content>

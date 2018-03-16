@@ -18,7 +18,7 @@ import PaymentTransferNew from 'merchant/containers/Marketplace/Transfers/New';
 import PaymentTransferDetails from 'merchant/containers/Marketplace/Transfers/Details';
 
 import {
-  stringifyQueryParamsWithPipe,
+  getKeysSeparatedByPipe,
   getEventCategoryFromPath,
 } from 'rzp/utils/rzp-utils';
 
@@ -248,7 +248,7 @@ export default class PaymentDetailsContainer extends Component {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Payments',
       eventAction: 'Refund - Payment',
-      eventLabel: stringifyQueryParamsWithPipe(label),
+      eventLabel: getKeysSeparatedByPipe(label),
       eventValue: amount,
     });
   };

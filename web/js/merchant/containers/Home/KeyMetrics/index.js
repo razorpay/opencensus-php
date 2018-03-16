@@ -6,9 +6,10 @@ import moment from 'moment';
 import Amount from 'rzp/ui/Amount';
 import Tabs, { Tab, TabPane } from 'rzp/ui/ReactTabs';
 import {
-  paiseToRupees,
   titleCase,
+  isDefined,
   getPercentage,
+  paiseToRupees,
   getFixedNumber,
 } from 'rzp/utils/rzp-utils';
 import {
@@ -25,6 +26,8 @@ import {
   API_INVALID_RESP,
   getPlatformColor,
   getPaymentMethodColor,
+  platformsOrder,
+  paymentMethodsOrder
 } from 'merchant/components/Home/data';
 import { trackNoData, trackError } from 'merchant/containers/Home/ga';
 import Tooltip from 'merchant/components/Home/Tooltip';
@@ -68,7 +71,7 @@ const TabContent = ({
 
   let formattedValue = value;
 
-  if (typeof percent === 'undefined') {
+  if (!isDefined(percent)) {
     formattedValue = isCurrency
       ? humanReadableIndianCurrency(paiseToRupees(value))
       : humanReadableIndian(value);
@@ -313,8 +316,8 @@ class KeyMetricsContainer extends Component {
             const options = {
               data: histogram.result,
               groupByColumnName:
-                typeof tabMeta.groupByColumnName === 'undefined'
-                  ? selectedGrouping.value
+                !isDefined(tabMeta.groupByColumnName)
+                  ? selectedGrouping && selectedGrouping.value
                   : tabMeta.groupByColumnName,
               startTime: startDate.unix(),
               endTime: endDate.unix(),
@@ -334,6 +337,14 @@ class KeyMetricsContainer extends Component {
                 selectedGrouping && selectedGrouping.value === PLATFORM
                   ? getPlatformColor
                   : getPaymentMethodColor;
+            }
+
+            if (options.groupByColumnName === "method") {
+            
+              options.groupOrder = paymentMethodsOrder;
+            } else if (options.groupByColumnName === "platform") {
+            
+              options.groupOrder = platformsOrder;
             }
 
             const { labels, datasets, aggregates, csv } = getTimelineData(

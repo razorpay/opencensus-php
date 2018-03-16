@@ -14,7 +14,7 @@ import NotesFieldArray from 'merchant/components/NotesFieldArray';
 import FormItem from 'merchant/components/FormItem';
 
 import {
-  stringifyQueryParamsWithPipe,
+  getKeysSeparatedByPipe,
   getEventCategoryFromPath,
 } from 'rzp/utils/rzp-utils';
 
@@ -89,7 +89,7 @@ export default class AddPlan extends Component {
           window.rzpAnalytics({
             eventCategory: eventCategory,
             eventAction: 'Submit Form - New Plan',
-            eventLabel: stringifyQueryParamsWithPipe(props),
+            eventLabel: getKeysSeparatedByPipe(props),
           });
         this.props.onSave(plan);
         this.props.history.push(`/plans/${plan[plan.resourceIdField]}`);
