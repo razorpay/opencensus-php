@@ -55,6 +55,8 @@ import Panel from './Panel';
 
 const csvDateFormat = 'DD-MM-YYYY';
 
+const gutterBetweenTabs = 24; // 24px
+
 const TabContent = ({
   name,
   value,
@@ -190,11 +192,47 @@ class KeyMetricsContainer extends Component {
       };
     });
 
+    this.state.tabWidth = 100 / tabsOrder.length + "%";
+
+    this.node = null;
+
     this.onGroupingChange = ::this.onGroupingChange;
     this.onFilterChange = ::this.onFilterChange;
     this.onBreakdownChange = ::this.onBreakdownChange;
     this.handleTabChange = ::this.handleTabChange;
     this.onScreenshot = ::this.onScreenshot;
+  }
+
+  setTabWidth() {
+  
+    if (!this.node) {
+    
+      return;
+    }
+
+    const nodeWidth = this.node.clientWidth,
+          numVisibleTabs = this.getVisibleTabs().length;
+
+    if (!numVisibleTabs) {
+    
+      return;
+    }
+
+    const tabWidth = (
+      (nodeWidth - gutterBetweenTabs * (numVisibleTabs - 1)) /
+      numVisibleTabs
+    );
+
+    this.setState({
+      tabWidth: tabWidth + "px"
+    });
+  } 
+
+  getVisibleTabs () {
+  
+    const {tabsState} = this.state;
+
+    return tabsOrder.filter(tabName => tabsState[tabName].data.showTab);
   }
 
   fetchData(fetchAllCounts) {
@@ -387,10 +425,7 @@ class KeyMetricsContainer extends Component {
         tabState.data.fetchData = false;
 
         this.setState(this.state, () => {
-          const { tabsState, selectedTab } = this.state,
-            tabState = tabsState[selectedTab];
-
-          this.setState(this.state);
+          this.setTabWidth();
         });
 
         return resp;
@@ -587,6 +622,11 @@ class KeyMetricsContainer extends Component {
     }
   }
 
+  componentDidMount() {
+ 
+    this.setTabWidth();
+  }
+
   handleTabChange(tabName) {
     this.setState(
       {
@@ -715,65 +755,70 @@ class KeyMetricsContainer extends Component {
   }
 
   render() {
-    const { tabsState, loading } = this.state,
+    const { tabsState, loading, tabWidth } = this.state,
       { startDate, endDate, showGrouping, sectionTitle } = this.props,
-      visibleTabs = tabsOrder.filter(
-        tabName => tabsState[tabName].data.showTab
-      );
+      visibleTabs = this.getVisibleTabs();
 
     return (
-      <Tabs className="keymetrics" justified={true}>
-        {visibleTabs.map((tabName, index) => {
-          const tabData = tabsState[tabName].data,
-            { isCurrency, title } = tabsMeta[tabName];
+      <div ref={node => this.node = node}>
+        <Tabs className="keymetrics"
+              justified={true}>
+          {visibleTabs.map((tabName, index) => {
+            const tabData = tabsState[tabName].data,
+              { isCurrency, title } = tabsMeta[tabName];
 
-          return (
-            <Tab
-              key={index}
-              onClick={() => this.handleTabChange(tabName)}
-              style={{ width: 100 / visibleTabs.length + '%' }}
-            >
-              <TabContent
-                value={tabData.count}
-                name={tabName}
-                isCurrency={isCurrency}
-                title={title}
-                isLoading={loading}
-                error={tabData.error}
-                percent={tabData.percent}
-              />
-            </Tab>
-          );
-        })}
+            return (
+              <Tab
+                key={index}
+                onClick={() => this.handleTabChange(tabName)}
+                style={{
+                  width: tabWidth,
+                  marginLeft: (index === 0 ? 0 : gutterBetweenTabs) + "px",
+                  marginBottom: gutterBetweenTabs + "px"
+                }}
+              >
+                <TabContent
+                  value={tabData.count}
+                  name={tabName}
+                  isCurrency={isCurrency}
+                  title={title}
+                  isLoading={loading}
+                  error={tabData.error}
+                  percent={tabData.percent}
+                />
+              </Tab>
+            );
+          })}
 
-        {visibleTabs.map((tabName, index) => {
-          const tabState = tabsState[tabName],
-            { isCurrency } = tabsMeta[tabName];
+          {visibleTabs.map((tabName, index) => {
+            const tabState = tabsState[tabName],
+              { isCurrency } = tabsMeta[tabName];
 
-          return (
-            <TabPane key={index}>
-              <Panel
-                tabName={tabName}
-                selectedBreakdown={tabState.selectedBreakdown}
-                onBreakdownChange={this.onBreakdownChange}
-                selectedGrouping={tabState.selectedGrouping}
-                selectedFilters={tabState.selectedFilters}
-                onGroupingChange={this.onGroupingChange}
-                onFilterChange={this.onFilterChange}
-                data={tabsState[tabName].data}
-                startDate={startDate}
-                endDate={endDate}
-                lastUpdatedAt={tabsState[tabName].lastUpdatedAt}
-                isCurrency={isCurrency}
-                onScreenshot={this.onScreenshot}
-                externalUrl={`/#/app/${tabsMeta[tabName].index}`}
-                showGrouping={showGrouping}
-                sectionTitle={sectionTitle}
-              />
-            </TabPane>
-          );
-        })}
-      </Tabs>
+            return (
+              <TabPane key={index}>
+                <Panel
+                  tabName={tabName}
+                  selectedBreakdown={tabState.selectedBreakdown}
+                  onBreakdownChange={this.onBreakdownChange}
+                  selectedGrouping={tabState.selectedGrouping}
+                  selectedFilters={tabState.selectedFilters}
+                  onGroupingChange={this.onGroupingChange}
+                  onFilterChange={this.onFilterChange}
+                  data={tabsState[tabName].data}
+                  startDate={startDate}
+                  endDate={endDate}
+                  lastUpdatedAt={tabsState[tabName].lastUpdatedAt}
+                  isCurrency={isCurrency}
+                  onScreenshot={this.onScreenshot}
+                  externalUrl={`/#/app/${tabsMeta[tabName].index}`}
+                  showGrouping={showGrouping}
+                  sectionTitle={sectionTitle}
+                />
+              </TabPane>
+            );
+          })}
+        </Tabs>
+      </div>
     );
   }
 }
