@@ -44,15 +44,15 @@ export default class Profile extends Component {
     });
     this.props.fetchBankAccount();
     this.refreshUser(this.props.user);
-    //TODO: integrate API
+
+    // fetch status whether the merchant can change their bank account details or not
     this.props
       .fetchBankAccountChangeStatus(this.props.user.id)
-      .then(response => {
-        console.log(response);
+      .then(({ data }) => {
         this.setState({
-          isBankAccountChangeAllowed: true,
+          isBankAccountChangeAllowed: data,
         }).catch(errors => {
-          console.log('Err: ', errors);
+          console.log('ERROR: Failed to fetch bank account change status');
         });
       });
   }
@@ -136,31 +136,44 @@ export default class Profile extends Component {
     });
   };
 
-  openChangeBankDetailsModal = bankAccount => {
-    let formValues = {
-      bank_branch_ifsc: bankAccount.ifsc,
-      bank_account_number: bankAccount.account_number,
-      bank_account_name: bankAccount.name,
-    };
-
+  openChangeBankDetailsModal = () => {
     this.props.openModal({
       size: 'large',
       component: (
-        <BankAccountDetailsChange
-          initialValues={formValues}
-          onSave={this.saveBankAccountChanges}
-        />
+        <BankAccountDetailsChange onSave={this.saveBankAccountChanges} />
       ),
     });
   };
 
-  saveBankAccountChanges = body => {
+  saveBankAccountChanges = data => {
     const { user } = this.props;
+    let body = { ...data };
+    let formdata = new FormData();
 
-    this.props.saveBankAccountChanges(user.id, body).then(response => {
-      //TODO: integrate API
-      console.log(body);
-    });
+    //not needed
+    delete body.account_number_confirmation;
+
+    for (let prop in body) {
+      if (body.hasOwnProperty(prop)) {
+        formdata.append(prop, body[prop]);
+      }
+    }
+
+    this.props
+      .saveBankAccountChanges(user.id, formdata)
+      .then(response => {
+        this.props.closeModal();
+        this.props.showNotification({
+          type: 'success',
+          message: 'Bank Account change request updated succesfully. ',
+        });
+      })
+      .catch(({ errors }) => {
+        this.props.showNotification({
+          type: 'error',
+          message: errors,
+        });
+      });
   };
 
   render() {

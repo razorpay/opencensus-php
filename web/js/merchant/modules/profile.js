@@ -97,12 +97,13 @@ export const fetchBankAccountChangeStatus = merchantId => {
   };
 };
 
-export const saveBankAccountChanges = (merchantId, data) => {
+export const saveBankAccountChanges = (merchantId, formdata) => {
   return {
     type: BANK_ACCOUNT_CHANGES_SAVE,
     payload: merchantFetch({
       url: `merchants/${merchantId}/bank_account`,
-      data,
+      method: 'post',
+      data: formdata,
     }),
   };
 };

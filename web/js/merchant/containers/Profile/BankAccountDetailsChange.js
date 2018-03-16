@@ -12,7 +12,7 @@ import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationsActions from 'rzp/modules/notifications';
 
 const verifyAccountNumber = (value, allValues, props) => {
-  return value !== allValues.bank_account_number
+  return value !== allValues.account_number
     ? "Bank Number doesn't match"
     : undefined;
 };
@@ -25,8 +25,34 @@ const verifyAccountNumber = (value, allValues, props) => {
   form: 'changeBankAccountDetails',
 })
 export default class BandAccountDetailsChange extends Component {
+  state = {
+    addressProof: null,
+  };
+
+  handleFileChange = event => {
+    if (event) {
+      this.setState({
+        file: event.target.files[0],
+      });
+    }
+  };
+
+  handleSubmission = body => {
+    if (!this.state.file) {
+      this.props.showNotification({
+        type: 'error',
+        message: 'Please upload address proof for Bank Account changes.',
+      });
+      return;
+    }
+
+    body.address_proof_url = this.state.file;
+
+    this.props.onSave(body);
+  };
+
   render() {
-    const { isBankAccountChangeAllowed, handleSubmit, onSave } = this.props;
+    const { isBankAccountChangeAllowed, handleSubmit } = this.props;
     return (
       <div class="bank-details-change">
         <ModalHeader
@@ -34,14 +60,17 @@ export default class BandAccountDetailsChange extends Component {
           onCloseClick={this.props.closeModal}
         />
         <div class="modal-body bank-details-change-content">
-          <form class="form-horizontal" onSubmit={handleSubmit(onSave)}>
+          <form
+            class="form-horizontal"
+            onSubmit={handleSubmit(this.handleSubmission)}
+          >
             <div class="form-group">
               <label class="col-md-3 control-label label-required">
                 Branch IFSC Code
               </label>
               <div class="col-md-9">
                 <Field
-                  name="bank_branch_ifsc"
+                  name="ifsc_code"
                   component={InputField}
                   class="form-control"
                   placeholder="IFSC Code of the Bank Branch"
@@ -57,7 +86,7 @@ export default class BandAccountDetailsChange extends Component {
               </label>
               <div class="col-md-9">
                 <Field
-                  name="bank_account_number"
+                  name="account_number"
                   component={InputField}
                   class={`form-control ${this.isWebkit ? 'webkit-sec' : ''}`}
                   placeholder="Bank Account Number"
@@ -74,7 +103,7 @@ export default class BandAccountDetailsChange extends Component {
               </label>
               <div class="col-md-9">
                 <Field
-                  name="bank_account_number_confirmation"
+                  name="account_number_confirmation"
                   component={InputField}
                   class="form-control"
                   placeholder="Re-enter your Bank Account Number"
@@ -89,7 +118,7 @@ export default class BandAccountDetailsChange extends Component {
               </label>
               <div class="col-md-9">
                 <Field
-                  name="bank_account_name"
+                  name="beneficiary_name"
                   component={InputField}
                   class="form-control"
                   placeholder="Account Holder Name"
@@ -102,17 +131,18 @@ export default class BandAccountDetailsChange extends Component {
               </div>
             </div>
 
-            {/* TODO: change texts here */}
             <div class="form-group">
               <label class="col-md-3 control-label label-required">
-                Bank Account Change Proof
+                Company's Bank Account Statement with Address
               </label>
               <div class="col-md-9">
                 <FileUploadInputButton
                   accept="image/jpeg,image/png,application/pdf,application/x-pdf"
-                  uploadedFileName={'SomeProff'}
                   maxSize="8000000"
-                  onChange={() => {}}
+                  uploadedFileName={this.state.file}
+                  onChange={event => {
+                    this.handleFileChange(event);
+                  }}
                 />
               </div>
             </div>
@@ -123,7 +153,7 @@ export default class BandAccountDetailsChange extends Component {
                     type="button"
                     class="btn btn-primary pull-right"
                     text="Save"
-                    onClick={handleSubmit(onSave)}
+                    onClick={handleSubmit(this.handleSubmission)}
                   />
                 </div>
               </div>
