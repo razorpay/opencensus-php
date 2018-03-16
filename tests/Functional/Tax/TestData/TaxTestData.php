@@ -163,14 +163,14 @@ return [
         ],
         'response' => [
             'content' => [
-                'slabs'   => [
+                'gst_tax_slabs'   => [
                     0,
                     500,
                     1200,
                     1800,
                     2800,
                 ],
-                'tax_ids' => [
+                'gst_tax_id_map' => [
                     "IGST_0"     => "tax_9nDpYboKAK9j7t",
                     "IGST_500"   => "tax_9nDpYciCWeNBzE",
                     "IGST_1200"  => "tax_9nDpYdbYNqD4Rw",

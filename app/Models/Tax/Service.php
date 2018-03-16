@@ -23,11 +23,9 @@ class Service extends Base\Service
 
     public function getMetaGstTaxes(): array
     {
-        $data = [
-            'slabs'   => Gst::getIndiaTaxSlabs(),
-            'tax_ids' => Gst::getIndiaTaxIds(),
+        return [
+            Entity::GST_TAX_SLABS  => Gst\Gst::TAX_SLABS,
+            Entity::GST_TAX_ID_MAP => Gst\GstTaxIdMap::get(),
         ];
-
-        return $data;
     }
 }

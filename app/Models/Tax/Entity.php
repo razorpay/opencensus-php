@@ -34,6 +34,10 @@ class Entity extends Base\PublicEntity
      */
     const RATE        = 'rate';
 
+    // Additional output keys
+    const GST_TAX_SLABS  = 'gst_tax_slabs';
+    const GST_TAX_ID_MAP = 'gst_tax_id_map';
+
     protected static $sign = 'tax';
 
     protected $entity = 'tax';
