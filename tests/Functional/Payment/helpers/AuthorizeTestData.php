@@ -795,6 +795,21 @@ return [
         ],
     ],
 
+    'test3dsPaymentWithPinTerminal' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\RuntimeException',
+            'internal_error_code' => ErrorCode::SERVER_ERROR_RUNTIME_ERROR
+        ],
+    ],
+
     'testPaymentViaWalletS2SWoAuth' => [
         'request' => [
             'url' => '/payments/create/wallet',

@@ -498,24 +498,20 @@ class TransactionFilter extends Terminal\Filter
     {
         $payment = $this->input['payment'];
 
-        if (($payment->getAuthType() === null) or
-            ($payment->isMethodCardOrEmi() === false))
+        if ($payment->isMethodCardOrEmi() === false)
         {
             return true;
         }
 
         if ($payment->getAuthType() === Payment\AuthType::PIN)
         {
-            $pinAuthGateways = Gateway::$pinAuthGateways;
-
             $gateway = $terminal->getGateway();
-            $acquirer = $terminal->getGatewayAcquirer();
+            $acquirer = $terminal->getGatewayAcquirer() ?: 'default';
 
-            $iin = $payment->card->iinRelation;
+            $issuer = $payment->card->iinRelation->getIssuer();
 
             if (($terminal->isPinAuth() === true) and
-                (isset($pinAuthGateways[$gateway][$acquirer]) === true) and
-                (in_array($iin->getIssuer(), $pinAuthGateways[$gateway][$acquirer], true) === true))
+                (Gateway::isIssuerSupportedForPinAuthType($issuer, $gateway, $acquirer) === true))
             {
                 return true;
             }
@@ -523,7 +519,13 @@ class TransactionFilter extends Terminal\Filter
             return false;
         }
 
-        return true;
+        // Default terminals should always be the one which supports 3DS
+        // Any other auth type terminals should be filtered out if `auth_type`
+        // is empty or null.
+        // In case, we have plan to add new auth in the filter, we will have to
+        // add a condition here to remove terminals of that auth type while
+        // ensuring that all other gateways are selected.
+        return ($terminal->isPinAuth() === false);
     }
 
     protected function isTerminalWithMerchantMccAbsent(
