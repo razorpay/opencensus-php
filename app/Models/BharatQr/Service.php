@@ -33,16 +33,25 @@ class Service extends Base\Service
             [
                 'input'   => $input,
                 'gateway' => $gateway,
-            ]
-        );
+            ]);
 
         $gateway = $this->gatewayMapping[$gateway];
 
         $gatewayClass = $this->app['gateway']->gateway($gateway);
 
-        $input = $gatewayClass->preProcessServerCallback($input, true);
+        try
+        {
+            $callbackData = $gatewayClass->preProcessServerCallback($input, true);
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException($ex);
 
-        $qrData = $input['qr_data'];
+            return $this->getResponse(false);
+        }
+
+        $qrData = $callbackData['qr_data'];
+        $gatewayInput = $callbackData['gateway_input'];
 
         $qrCodeId = $qrData[GatewayResponseParams::MERCHANT_REFERENCE];
 
@@ -60,12 +69,9 @@ class Service extends Base\Service
         //
         if ($bharatQr !== null)
         {
-            $gatewayInput = $input['gateway_input'];
-
             $gatewayInput['payment'] = $bharatQr->payment->toArray();
 
             $this->callGatewayAuthorize($gateway, $gatewayInput);
-
         }
 
         $response = $this->getResponse($valid);

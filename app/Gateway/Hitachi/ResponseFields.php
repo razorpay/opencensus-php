@@ -44,4 +44,5 @@ class ResponseFields
     const F102        = 'F102';
     const PURCHASE_ID = 'PurchaseID';
     const SENDER_NAME = 'SenderName';
+    const CHECKSUM    = 'CheckSum';
 }

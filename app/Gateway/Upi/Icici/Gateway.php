@@ -207,7 +207,11 @@ class Gateway extends Base\Gateway
 
     /**
      * @param  string $response
+     * @param bool    $forceDecryption
+     *
      * @return array response as associative array
+     * @throws Exception\GatewayErrorException
+     * @throws Exception\RuntimeException
      */
     protected function parseGatewayResponse(string $response, bool $forceDecryption = false): array
     {
@@ -262,7 +266,7 @@ class Gateway extends Base\Gateway
     {
         return number_format($amount / 100, 2, '.', '');
     }
-    
+
     protected function getMerchantId(): string
     {
         if ($this->isBharatQrPayment() === true)
@@ -797,8 +801,14 @@ class Gateway extends Base\Gateway
     /**
      * Takes in S2S request as a body string
      * and returns the parsed response as an array
+     *
      * @param  String $body Request body
+     *
+     * @param bool    $isBharatQr
+     *
      * @return array
+     * @throws Exception\GatewayErrorException
+     * @throws Exception\RuntimeException
      */
     public function preProcessServerCallback($body, $isBharatQr = false): array
     {
@@ -824,8 +834,8 @@ class Gateway extends Base\Gateway
             ];
 
             return [
-                'qr_data'       => $qrData,
                 'gateway_input' => $response,
+                'qr_data'       => $qrData
             ];
         }
 
@@ -834,8 +844,12 @@ class Gateway extends Base\Gateway
 
     /**
      * Handles the S2S callback
+     *
      * @param  array $input
-     * @return null
+     *
+     * @return array
+     * @throws Exception\GatewayErrorException
+     * @throws Exception\LogicException
      */
     public function callback(array $input)
     {

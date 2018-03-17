@@ -116,6 +116,7 @@ return [
         'test_hash_secret'     => env('HITACHI_GATEWAY_TEST_HASH_SECRET'),
         'test_hash_secret2'    => env('HITACHI_GATEWAY_TEST_HASH_SECRET2'),
         'bharatqr_terminal_id' => env('HITACHI_GATEWAY_BHARAT_QR_TERMINAL_ID'),
+        'bharatqr_salt'        => env('HITACHI_GATEWAY_BHARAT_QR_SALT'),
     ],
 
     'first_data' => [

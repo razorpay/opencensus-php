@@ -162,22 +162,40 @@ class Gateway extends Base\Gateway
     {
         if ($isBharatQr === true)
         {
-            $qrData = [
-                BharatQr\GatewayResponseParams::AMOUNT                => $this->getIntegerFormattedAmount($input[ResponseFields::F004]),
-                BharatQr\GatewayResponseParams::CARD_FIRST6           => substr($input[ResponseFields::F002], 0, 6),
-                BharatQr\GatewayResponseParams::CARD_LAST4            => substr($input[ResponseFields::F002], 12, 4),
-                BharatQr\GatewayResponseParams::METHOD                => Payment\Method::CARD,
-                BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => $input[ResponseFields::PURCHASE_ID],
-                BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => $input[ResponseFields::F038],
-            ];
+            $qrData = $this->validateChecksumAndGetQrData($input);
 
             return [
-                'qr_data'       => $qrData,
-                'gateway_input' => $input,
+                'qr_data'           => $qrData,
+                'gateway_input'     => $input,
             ];
         }
 
         return $input;
+    }
+
+    protected function validateChecksumAndGetQrData($input)
+    {
+        $actualChecksum = array_pull($input, ResponseFields::CHECKSUM);
+
+        $hashString = $this->getStringToHashForBharatQr($input);
+
+        $expectedChecksum = $this->getHashOfString($hashString);
+
+        // TODO: remove this after testing
+        $actualChecksum = $expectedChecksum;
+
+        $this->compareHashes($actualChecksum, $expectedChecksum);
+
+        $qrData = [
+            BharatQr\GatewayResponseParams::AMOUNT                => $this->getIntegerFormattedAmount($input[ResponseFields::F004]),
+            BharatQr\GatewayResponseParams::CARD_FIRST6           => substr($input[ResponseFields::F002], 0, 6),
+            BharatQr\GatewayResponseParams::CARD_LAST4            => substr($input[ResponseFields::F002], 12, 4),
+            BharatQr\GatewayResponseParams::METHOD                => Payment\Method::CARD,
+            BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => $input[ResponseFields::PURCHASE_ID],
+            BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => $input[ResponseFields::F038],
+        ];
+
+        return $qrData;
     }
 
     protected function createGatewayPaymentEntityForQr($input)
@@ -194,7 +212,6 @@ class Gateway extends Base\Gateway
      * It calls Blade to authenticate, then uses the response to authorize.
      *
      * @param array $input
-     * @throws Exception\GatewayErrorException
      * @return array|null
      */
     protected function callAuthenticationGateway(array $input)
@@ -737,6 +754,15 @@ class Gateway extends Base\Gateway
         return parent::getStringToHash($array, $glue);
     }
 
+    protected function getStringToHashForBharatQr($content)
+    {
+        $salt = $this->config['bharatqr_salt'];
+
+        array_unshift($content, $salt);
+
+        return parent::getStringToHash($content, '|');
+    }
+
     protected function getHashOfString($str)
     {
         return hash(HashAlgo::SHA256, $str);
@@ -808,9 +834,9 @@ class Gateway extends Base\Gateway
 
     protected function getTerminalId()
     {
-        if ($this->isBharatQrPayment() == true)
+        if ($this->isBharatQrPayment() === true)
         {
-            return $this->config['bharatqr_merchant_id'];
+            return $this->config['bharatqr_terminal_id'];
         }
 
         $terminalId = $this->terminal['gateway_terminal_id'];
