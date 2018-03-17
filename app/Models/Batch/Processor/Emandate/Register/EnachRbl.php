@@ -56,7 +56,9 @@ class EnachRbl extends Base
             if ($currentRecurringStatus !== $parsedStatus)
             {
                 throw new Exception\LogicException(
-                    'Token status mismatch: current_status: ' . $currentRecurringStatus . ', parsed_status: ' . $parsedStatus);
+                    'Token status mismatch: ' .
+                    PHP_EOL . 'current_status: ' .  $currentRecurringStatus .
+                    PHP_EOL . 'parsed_status: ' . $parsedStatus);
             }
 
             // If the token has already been updated with the correct value
