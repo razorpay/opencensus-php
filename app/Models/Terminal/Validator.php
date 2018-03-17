@@ -368,18 +368,18 @@ class Validator extends Base\Validator
 
     protected static $cardFssTerminalRules = [
         Entity::GATEWAY                     => 'required|in:card_fss',
-        Entity::GATEWAY_MERCHANT_ID         => 'required',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
-        Entity::GATEWAY_TERMINAL_ID         => 'sometimes',
+        Entity::GATEWAY_TERMINAL_ID         => 'sometimes|string',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes|string',
         Entity::TYPE                        => 'sometimes|array',
         Entity::MODE                        => 'sometimes|integer|in:2,3',
     ];
 
     protected static $cardFssEditTerminalRules = [
-        Entity::GATEWAY                     => 'sometimes|in:card_fss',
-        Entity::GATEWAY_MERCHANT_ID         => 'sometimes',
-        Entity::GATEWAY_TERMINAL_ID         => 'sometimes',
+        Entity::GATEWAY                     => 'required|in:card_fss',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::GATEWAY_TERMINAL_ID         => 'sometimes|string',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes|string',
         Entity::TYPE                        => 'sometimes|array',
         Entity::MODE                        => 'sometimes|integer|in:2,3',

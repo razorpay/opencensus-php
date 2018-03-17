@@ -764,7 +764,7 @@ return [
         ]
     ],
 
-    'testPinAuthenticationPaymentWithMultipleTerminals' => [
+    'testPinAuthenticationWithMultipleTerminals' => [
         'response' => [
             'content' => [
                 'error' => [

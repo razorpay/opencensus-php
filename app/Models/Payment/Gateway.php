@@ -2,9 +2,11 @@
 
 namespace RZP\Models\Payment;
 
+use App;
 use RZP\Exception;
 use Razorpay\IFSC\IFSC as BaseIFSC;
 
+use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Settlement;
@@ -868,12 +870,6 @@ class Gateway
     ];
 
     public static $pinAuthGateways = [
-        // This is done just for test cases
-        Gateway::SHARP => [
-            '' => [
-                IFSC::ICIC
-            ],
-        ],
         Gateway::CARD_FSS => [
             self::ACQUIRER_FSS => [
                 IFSC::UTIB,
@@ -885,6 +881,10 @@ class Gateway
                 IFSC::ICIC,
             ]
         ],
+    ];
+
+    public static $testPinAuthGateways = [
+        Gateway::SHARP
     ];
 
     public static $subscriptionOverOneYearGateways = [
@@ -935,6 +935,28 @@ class Gateway
     public static function isUpiIntentFlowSupported($gateway): bool
     {
         return in_array($gateway, self::$upiIntentGateways, true);
+    }
+
+    public static function isIssuerSupportedForPinAuthType($issuer, $gateway, $acquirer)
+    {
+        $pinAuthGateways = self::$pinAuthGateways;
+
+        if ((isset($pinAuthGateways[$gateway][$acquirer]) === true) and
+            (in_array($issuer, $pinAuthGateways[$gateway][$acquirer], true) === true))
+        {
+            return true;
+        }
+
+        $app = App::getFacadeRoot();
+
+        if ($app['rzp.mode'] === Mode::TEST)
+        {
+            $pinAuthGateways = self::$testPinAuthGateways;
+
+            return (in_array($gateway, $pinAuthGateways, true) === true);
+        }
+
+        return false;
     }
 
     /**

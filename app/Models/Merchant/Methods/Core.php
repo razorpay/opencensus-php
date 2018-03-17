@@ -184,7 +184,9 @@ class Core extends Base\Core
             return;
         }
 
-        foreach (Payment\AuthType::$types[Payment\Method::EMANDATE] as $authType)
+        $authTypes = Payment\AuthType::getAuthTypeForMethod(Payment\Method::EMANDATE);
+
+        foreach ($authTypes as $authType)
         {
             if ($this->isTestMode() === true)
             {

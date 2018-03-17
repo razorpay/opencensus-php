@@ -506,7 +506,7 @@ class TransactionFilter extends Terminal\Filter
         if ($payment->getAuthType() === Payment\AuthType::PIN)
         {
             $gateway = $terminal->getGateway();
-            $acquirer = $terminal->getGatewayAcquirer() ?: 'default';
+            $acquirer = $terminal->getGatewayAcquirer();
 
             $issuer = $payment->card->iinRelation->getIssuer();
 

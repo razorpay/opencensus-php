@@ -50,6 +50,11 @@ class AuthType
         }
     }
 
+    public static function getAuthTypeForMethod($method)
+    {
+        return self::$types[$method];
+    }
+
     public static function validateFeatureBasedAuth($merchant, $type)
     {
         if (isset(self::$featureToAuthMap[$type]) === true)

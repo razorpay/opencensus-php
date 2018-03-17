@@ -592,7 +592,13 @@ class AuthorizeTest extends TestCase
 
     public function testPinAuthenticationPayment()
     {
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal', ['type' => ['pin' => '1']]);
+        $terminal = $this->fixtures->create('terminal:shared_sharp_terminal', [
+            'id' => 'SharpTerminal1',
+            'type' => [
+                'pin' => '1',
+                'non_recurring' => '1',
+            ]
+        ]);
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
@@ -621,9 +627,10 @@ class AuthorizeTest extends TestCase
 
         $this->assertEquals('pin', $payment['auth_type']);
         $this->assertEquals('sharp', $payment['gateway']);
+        $this->assertEquals('SharpTerminal1', $payment['terminal_id']);
     }
 
-    public function testPinAuthenticationPaymentWithMultipleTerminals()
+    public function testPinAuthenticationWithMultipleTerminals()
     {
         $this->fixtures->merchant->addFeatures(['atm_pin_auth']);
 
