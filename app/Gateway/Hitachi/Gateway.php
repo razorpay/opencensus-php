@@ -667,7 +667,7 @@ class Gateway extends Base\Gateway
 
         $action = $action ?: $this->action;
 
-        if (isset($input['terminal']) === true)
+        if ($this->isBharatQrPayment() === false)
         {
             $acquirer = $input['terminal']->getGatewayAcquirer();
 
