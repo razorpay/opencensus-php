@@ -830,9 +830,6 @@ class Base extends BaseModel\Core
             case FileStore\Format::CSV:
                 return $this->parseTextFile($filePath, ',');
 
-            case FileStore\Format::XML:
-                return $this->parseXmlFile($filePath);
-
             default:
                 throw new LogicException("Extension not handled: {$ext}");
         }

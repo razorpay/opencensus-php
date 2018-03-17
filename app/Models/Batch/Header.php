@@ -160,6 +160,37 @@ class Header
     const HDFC_EM_REGISTER_REMARK                           = HdfcEMRegisterHeadings::REMARK;
 
     //
+    // eNach eMandate Register Response File Headers
+    //
+    const ENACH_REGISTER_SRNO               = 'SRNO';
+    const ENACH_REGISTER_MANDATE_DATE       = 'MANDATE_DATE';
+    const ENACH_REGISTER_MANDATE_ID         = 'MANDATE_ID';
+    const ENACH_REGISTER_UMRN               = 'UMRN';
+    const ENACH_REGISTER_CUST_REFNO         = 'CUST_REFNO';
+    const ENACH_REGISTER_SCH_REFNO          = 'SCH_REFNO';
+    const ENACH_REGISTER_CUST_NAME          = 'CUST_NAME';
+    const ENACH_REGISTER_BANK               = 'BANK';
+    const ENACH_REGISTER_BRANCH             = 'BRANCH';
+    const ENACH_REGISTER_BANK_CODE          = 'BANK_CODE';
+    const ENACH_REGISTER_AC_TYPE            = 'AC_TYPE';
+    const ENACH_REGISTER_ACNO               = 'ACNO';
+    const ENACH_REGISTER_UPDATE_DATE        = 'UPDATE_DATE';
+    const ENACH_REGISTER_AMOUNT             = 'AMOUNT';
+    const ENACH_REGISTER_FREQUENCY          = 'FREQUENCY';
+    const ENACH_REGISTER_COLLECTION_TYPE    = 'COLLECTION_TYPE';
+    const ENACH_REGISTER_START_DATE         = 'START_DATE';
+    const ENACH_REGISTER_END_DATE           = 'END_DATE';
+    const ENACH_REGISTER_TEL_NO             = 'TEL_NO';
+    const ENACH_REGISTER_MAIL_ID            = 'MAIL_ID';
+    const ENACH_REGISTER_UPLOAD_BATCH       = 'UPLOAD_BATCH';
+    const ENACH_REGISTER_UPLOAD_DATE        = 'UPLOAD_DATE';
+    const ENACH_REGISTER_RESPONSE_DATE      = 'RESPONSE_DATE';
+    const ENACH_REGISTER_UTILITY_CODE       = 'UTILITY_CODE';
+    const ENACH_REGISTER_UTILITY_NAME       = 'UTILITY_NAME';
+    const ENACH_REGISTER_NODAL_ACNO         = 'NODAL_ACNO';
+    const ENACH_REGISTER_STATUS             = 'STATUS';
+
+    //
     // Payout headers
     //
     const PAYOUT_CUSTOMER_ID         = 'customer_id';
@@ -405,34 +436,34 @@ class Header
 
         'emandate_register_enach_rbl' => [
             self::INPUT => [
-                'SRNO',
-                'MANDATE_DATE',
-                'MANDATE_ID',
-                'UMRN',
-                'CUST_REFNO',
-                'SCH_REFNO',
-                'CUST_NAME',
-                'BANK',
-                'BRANCH',
-                'BANK_CODE',
-                'AC_TYPE',
-                'ACNO',
-                'UPDATE_DATE',
-                'AMOUNT',
-                'FREQUENCY',
-                'COLLECTION_TYPE',
-                'START_DATE',
-                'END_DATE',
-                'TEL_NO',
-                'MOBILE_NO',
-                'MAIL_ID',
-                'UPLOAD_BATCH',
-                'UPLOAD_DATE',
-                'RESPONSE_DATE',
-                'UTILITY_CODE',
-                'UTILITY_NAME',
-                'NODAL_ACNO',
-                'STATUS'
+                self::ENACH_REGISTER_SRNO,
+                self::ENACH_REGISTER_MANDATE_DATE,
+                self::ENACH_REGISTER_MANDATE_ID,
+                self::ENACH_REGISTER_UMRN,
+                self::ENACH_REGISTER_CUST_REFNO,
+                self::ENACH_REGISTER_SCH_REFNO,
+                self::ENACH_REGISTER_CUST_NAME,
+                self::ENACH_REGISTER_BANK,
+                self::ENACH_REGISTER_BRANCH,
+                self::ENACH_REGISTER_BANK_CODE,
+                self::ENACH_REGISTER_AC_TYPE,
+                self::ENACH_REGISTER_ACNO,
+                self::ENACH_REGISTER_UPDATE_DATE,
+                self::ENACH_REGISTER_AMOUNT,
+                self::ENACH_REGISTER_FREQUENCY,
+                self::ENACH_REGISTER_COLLECTION_TYPE,
+                self::ENACH_REGISTER_START_DATE,
+                self::ENACH_REGISTER_END_DATE,
+                self::ENACH_REGISTER_TEL_NO,
+                self::ENACH_REGISTER_MOBILE_NO,
+                self::ENACH_REGISTER_MAIL_ID,
+                self::ENACH_REGISTER_UPLOAD_BATCH,
+                self::ENACH_REGISTER_UPLOAD_DATE,
+                self::ENACH_REGISTER_RESPONSE_DATE,
+                self::ENACH_REGISTER_UTILITY_CODE,
+                self::ENACH_REGISTER_UTILITY_NAME,
+                self::ENACH_REGISTER_NODAL_ACNO,
+                self::ENACH_REGISTER_STATUS
             ],
         ],
 
