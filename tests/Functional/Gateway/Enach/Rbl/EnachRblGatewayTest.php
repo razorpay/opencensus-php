@@ -384,6 +384,97 @@ class EnachRblGatewayTest extends TestCase
         });
     }
 
+    public function testDebitFileReconciliation()
+    {
+        $payment = $this->getEmandatePaymentArray('UTIB', 'aadhaar', 0);
+        $payment['bank_account'] = [
+            'account_number'    => '914010009305862',
+            'ifsc'              => 'UTIB0000123',
+            'name'              => 'Test account',
+        ];
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->doAuthPayment($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $tokenId = $paymentEntity[Payment::TOKEN_ID];
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 5000]);
+
+        $this->fixtures->edit(
+            'token',
+            $tokenId,
+            [
+                Token\Entity::GATEWAY_TOKEN => 'UTIB6000000005844847',
+                Token\Entity::RECURRING => 1,
+                Token\Entity::RECURRING_STATUS => Token\RecurringStatus::CONFIRMED
+            ]);
+
+        $payment = $this->getEmandatePaymentArray('UTIB', null, $order->getAmount());
+        $payment['token'] = $tokenId;
+        $payment['order_id'] = $order->getPublicId();
+
+        unset($payment['auth_type']);
+
+        $response = $this->doS2SRecurringPayment($payment);
+
+        $content = [
+            'sheet1' => [
+                'config' => [
+                    'start_cell' => 'A1',
+                ],
+                'items' => [
+                    [
+                        'SRNO'            => '1',
+                        'ECS_DATE'        => Carbon::today()->format('m/d/Y'),
+                        'SETTLEMENT_DATE' => Carbon::today()->format('m/d/Y'),
+                        'CUST_REFNO'      => '',
+                        'SCH_REFNO'       => '',
+                        'CUSTOMER_NAME'   => 'User name',
+                        'AMOUNT'          => $payment['amount'] / 100,
+                        'REFNO'           => substr($response['razorpay_payment_id'], 4),
+                        'UMRN'            => 'UTIB6000000005844847',
+                        'CLG_STATUS'      => 'SUCCESS',
+                    ],
+                ]
+            ]
+        ];
+
+        $data = $this->getExcelString('Debit MIS', $content);
+
+        $handle = tmpfile();
+        fwrite($handle, $data);
+        fseek($handle, 0);
+        $file = (new TestingFile('Debit MIS.xlsx', $handle));
+
+        $request = [
+            'url' => '/batches',
+            'method' => 'POST',
+            'content' => [
+                'type' => 'emandate',
+                'sub_type' => 'debit',
+                'gateway' => 'enach_rbl',
+            ],
+            'files' => [
+                'file' => $file,
+            ]
+        ];
+
+        $this->ba->proxyAuth('rzp_test_100000Razorpay');
+
+        $batch = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('emandate', $batch['type']);
+        $this->assertEquals('created', $batch['status']);
+
+        $payment = $this->getDbEntityById('payment', $response['razorpay_payment_id']);
+
+        $this->assertEquals('captured', $payment['status']);
+    }
+
     protected function getExcelString($name, $sheets)
     {
         $excel = Excel::create(
@@ -400,7 +491,6 @@ class EnachRblGatewayTest extends TestCase
                         }
                     );
                 }
-
             }
         );
 

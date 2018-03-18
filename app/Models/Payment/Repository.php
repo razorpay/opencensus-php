@@ -1127,7 +1127,7 @@ class Repository extends Base\Repository
     }
 
     public function fetchDebitEnachPaymentPendingAuth(
-        string $gateway, string $paymentId, string $umrn)
+        string $gateway, string $paymentId, string $gatewayToken)
     {
         $tokenIdColumn = $this->repo->token->dbColumn(Token\Entity::ID);
 
@@ -1163,7 +1163,7 @@ class Repository extends Base\Repository
                         $join->orOn(Entity::GLOBAL_TOKEN_ID, '=', $tokenIdColumn);
                       })
                     ->where($paymentIdColumn, $paymentId)
-                    ->where(Token\Entity::GATEWAY_TOKEN, $accountNo)
+                    ->where(Token\Entity::GATEWAY_TOKEN, $gatewayToken)
                     ->where(Entity::RECURRING_TYPE, RecurringType::AUTO)
                     ->where(Entity::STATUS, Status::CREATED)
                     ->where($paymentRecurringColumn, 1)

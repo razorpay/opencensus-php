@@ -19,7 +19,7 @@ class DebitFileHeadings
     const SETTLEMENT_DATE         = 'SETTLEMENT_DATE';
     const CUST_REFNO              = 'CUST_REFNO';
     const SCH_REFNO               = 'SCH_REFNO';
-    const CUSTOMER_NO             = 'CUSTOMER_NO';
+    const CUSTOMER_NAME           = 'CUSTOMER_NAME';
     const REFNO                   = 'REFNO';
     const CLG_STATUS              = 'CLG_STATUS';
 }

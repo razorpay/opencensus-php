@@ -200,7 +200,7 @@ class Header
     const ENACH_DEBIT_SETTLEMENT_DATE       = EnachRblDebitHeadings::SETTLEMENT_DATE;
     const ENACH_DEBIT_CUST_REFNO            = EnachRblDebitHeadings::CUST_REFNO;
     const ENACH_DEBIT_SCH_REFNO             = EnachRblDebitHeadings::SCH_REFNO;
-    const ENACH_DEBIT_CUSTOMER_NO           = EnachRblDebitHeadings::CUSTOMER_NO;
+    const ENACH_DEBIT_CUSTOMER_NAME         = EnachRblDebitHeadings::CUSTOMER_NAME;
     const ENACH_DEBIT_REFNO                 = EnachRblDebitHeadings::REFNO;
     const ENACH_DEBIT_CLG_STATUS            = EnachRblDebitHeadings::CLG_STATUS;
     const ENACH_DEBIT_AMOUNT                = EnachRblDebitHeadings::AMOUNT;
@@ -402,11 +402,11 @@ class Header
                 self::ENACH_DEBIT_SETTLEMENT_DATE,
                 self::ENACH_DEBIT_CUST_REFNO,
                 self::ENACH_DEBIT_SCH_REFNO,
-                self::ENACH_DEBIT_CUSTOMER_NO,
-                self::ENACH_DEBIT_REFNO,
-                self::ENACH_DEBIT_CLG_STATUS,
+                self::ENACH_DEBIT_CUSTOMER_NAME,
                 self::ENACH_DEBIT_AMOUNT,
+                self::ENACH_DEBIT_REFNO,
                 self::ENACH_DEBIT_UMRN,
+                self::ENACH_DEBIT_CLG_STATUS,
             ]
         ],
 
