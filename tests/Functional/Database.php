@@ -119,19 +119,25 @@ class Database
      */
     public function migrate()
     {
+        $this->createDatabases();
+
         \Artisan::call('migrate', ['--database' => 'live']);
         \Artisan::call('migrate', ['--database' => 'test']);
 
-        //
-        // Creating the auth database here, mainly for wercker.
-        // There isn't a straightforward way of creating multiple
-        // database on the wercker MySQL service
-        //
-        $authDb = env('DB_AUTH_DATABASE', 'auth_test');
-
-        $this->db->statement('CREATE DATABASE IF NOT EXISTS ' . $authDb);
-
+        // Run Auth DB migrations from the oauth package
         \Artisan::call('migrate', ['--database' => 'auth', '--path' => '/vendor/razorpay/oauth/database/migrations']);
+    }
+
+    protected function createDatabases()
+    {
+        $apiLiveDb = env('DB_LIVE_DATABASE', 'api_live');
+        $this->db->statement('CREATE DATABASE IF NOT EXISTS ' . $apiLiveDb);
+
+        $apiTestDb = env('DB_TEST_DATABASE', 'api_test');
+        $this->db->statement('CREATE DATABASE IF NOT EXISTS ' . $apiTestDb);
+
+        $authDb = env('DB_AUTH_DATABASE', 'auth_test');
+        $this->db->statement('CREATE DATABASE IF NOT EXISTS ' . $authDb);
     }
 
     protected function truncateTestingDatabaseIfRequired()
