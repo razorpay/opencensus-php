@@ -3,9 +3,13 @@
 namespace RZP\Tests\Functional;
 
 use Artisan;
+use Illuminate\Database\DatabaseManager;
 
 class Database
 {
+    /**
+     * @var DatabaseManager
+     */
     protected $db;
 
     protected $config;
@@ -130,14 +134,25 @@ class Database
 
     protected function createDatabases()
     {
+        $tempMysqlConf = [
+            'driver'   => env('DB_LIVE_DRIVER'),
+            'host'     => env('DB_LIVE_HOST'),
+            'port'     => env('DB_LIVE_POST'),
+            'database' => null,
+            'username' => env('DB_LIVE_USERNAME'),
+            'password' => env('DB_LIVE_PASSWORD'),
+        ];
+
+        $this->config->set('database.connections.mysql_init', $tempMysqlConf);
+
         $apiLiveDb = env('DB_LIVE_DATABASE', 'api_live');
-        $this->db->statement('CREATE DATABASE IF NOT EXISTS ' . $apiLiveDb);
+        $this->db->connection('mysql_init')->getPdo()->exec("CREATE DATABASE IF NOT EXISTS `{$apiLiveDb}`");
 
         $apiTestDb = env('DB_TEST_DATABASE', 'api_test');
-        $this->db->statement('CREATE DATABASE IF NOT EXISTS ' . $apiTestDb);
+        $this->db->connection('mysql_init')->getPdo()->exec("CREATE DATABASE IF NOT EXISTS `{$apiTestDb}`");
 
         $authDb = env('DB_AUTH_DATABASE', 'auth_test');
-        $this->db->statement('CREATE DATABASE IF NOT EXISTS ' . $authDb);
+        $this->db->connection('mysql_init')->getPdo()->exec("CREATE DATABASE IF NOT EXISTS `{$authDb}`");
     }
 
     protected function truncateTestingDatabaseIfRequired()
