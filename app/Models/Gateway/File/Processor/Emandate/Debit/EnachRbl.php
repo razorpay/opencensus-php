@@ -6,6 +6,7 @@ use RZP\Gateway\Enach;
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Models\Base\PublicCollection;
 use RZP\Gateway\Base\Action as GatewayAction;
 use RZP\Models\Terminal\Entity as TerminalEntity;
 use RZP\Gateway\Enach\Rbl\TransactionType;
@@ -21,7 +22,7 @@ class EnachRbl extends Base
 
     const FILE_TYPE = FileStore\Type::RBL_ENACH_DEBIT;
 
-    const FILE_NAME = 'rbl-enach/outgoing/ACH-DR-RNATA-RATNA0001-{$date}-NNNNNN-INP';
+    const FILE_NAME = 'rbl-enach/outgoing/ACH-DR-RNATA-RATNA0001-{$date}-000001-INP';
 
     const STEP      = 'debit';
 
@@ -44,15 +45,15 @@ class EnachRbl extends Base
             $token = $payment->getGlobalOrLocalTokenEntity();
 
             $row = [
-                Headings::UTILITY_CODE            => $payment->terminal->getGatewayMerchantId(),
-                Headings::TRANSACTION_TYPE        => TransactionType::DEBIT,
-                Headings::SETTLEMENT_DATE         => $debitDate,
+                Headings::UTILITYCODE             => $payment->terminal->getGatewayMerchantId(),
+                Headings::TRANSACTIONTYPE         => TransactionType::DEBIT,
+                Headings::SETTLEMENTDATE          => $debitDate,
                 Headings::BENEFICIARYACHOLDERNAME => $token->getBeneficiaryName(),
                 Headings::AMOUNT                  => $this->getFormattedAmount($payment->getAmount()),
                 Headings::DESTINATIONBANKCODE     => $token->getIfsc(),
                 Headings::BENEFICIARYACNO         => $token->getAccountNumber(),
                 Headings::TRANSACTIONREFERENCE    => $paymentId,
-                Headings::URMN                    => $token->getGatewayToken(),
+                Headings::UMRN                    => $token->getGatewayToken(),
             ];
 
             $rows[] = $row;
