@@ -58,6 +58,30 @@ class Hdfc extends Base
         ];
     }
 
+    protected function processFailedPayment(Payment\Entity $payment, NetbankingEntity $gatewayPayment)
+    {
+        $merchant = $payment->merchant;
+
+        $processor = new Processor($merchant);
+
+        $gatewayErrorDesc = $gatewayPayment->getErrorMessage();
+
+        $errorCode = $this->getApiErrorCode($gatewayErrorDesc);
+
+        $e = new Exception\GatewayErrorException(
+                $errorCode,
+                '',
+                $gatewayErrorDesc,
+                [
+                    'payment_id'         => $payment->getId(),
+                    'gateway_payment_id' => $gatewayPayment->getId(),
+                ]);
+
+        $processor = $processor->setPayment($payment);
+
+        return $processor->updatePaymentAuthFailed($e);
+    }
+
     protected function isAuthorized(NetbankingBase\Entity $gatewayPayment): bool
     {
         return ($gatewayPayment->getStatus() === self::PROCESS);

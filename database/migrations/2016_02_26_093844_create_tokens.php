@@ -102,6 +102,8 @@ class CreateTokens extends Migration
 
             $table->index(Token::ACCOUNT_NUMBER);
 
+            $table->index(Token::GATEWAY_TOKEN);
+
             $table->foreign(Token::CUSTOMER_ID)
                   ->references(Customer::ID)
                   ->on(Table::CUSTOMER)
