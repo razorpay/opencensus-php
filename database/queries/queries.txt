@@ -3452,3 +3452,7 @@ ALTER TABLE invoices
 
 ALTER TABLE tokens
     ADD INDEX tokens_recurring_status_index (recurring_status);
+
+ALTER TABLE payments
+    ADD COLUMN acknowledged_at INTEGER AFTER auth_type;
+
