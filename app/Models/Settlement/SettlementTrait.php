@@ -206,6 +206,7 @@ trait SettlementTrait
         {
             $this->trace->info(TraceCode::SETTLEMENT_SKIPPED,
                 [
+                    'balance'    => $balance,
                     'merchant'   => $merchant->getId(),
                     'setlAmount' => $setlAmount,
                 ]);
