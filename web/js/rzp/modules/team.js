@@ -1,3 +1,4 @@
+import request from 'rzp/utils/request';
 import { set, merge, unshift, remove } from 'rzp/utils/immutable';
 import { merchantFetch } from 'rzp/utils/ajax';
 
