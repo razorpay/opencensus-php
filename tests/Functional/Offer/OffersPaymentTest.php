@@ -36,6 +36,8 @@ class OffersPaymentTest extends TestCase
 
         $payment = $this->getOfferPaymentArray($order);
 
+        $payment['amount'] = 90000;
+
         $this->doAuthAndCapturePayment($payment, $order->getAmount());
 
         $payment = $this->getLastEntity('payment', true);
@@ -94,22 +96,8 @@ class OffersPaymentTest extends TestCase
         $payment = $this->getDefaultPaymentArray();
 
         $payment['order_id'] = $order->getPublicId();
-        $payment['amount']   = $this->getAmountForOrderWithDiscountApplied($order);
+        $payment['amount']   = $order->getAmount();
 
         return $payment;
-    }
-
-    protected function getAmountForOrderWithDiscountApplied($order)
-    {
-        $request = [
-            'url'    => '/preferences?order_id=' . $order->getPublicId(),
-            'method' => 'get',
-        ];
-
-        $this->ba->publicAuth();
-
-        $response = $this->makeRequestAndGetContent($request);
-
-        return $response['offers'][0]['amount'];
     }
 }

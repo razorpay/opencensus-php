@@ -103,14 +103,10 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_DUE,
         self::CURRENCY,
         self::RECEIPT,
-<<<<<<< HEAD
         // This is likely needed for the merchant,
         // but still needs to be discussed.
         // See setPublicDiscountAttribute
         // self::DISCOUNT,
-=======
-        self::DISCOUNT,
->>>>>>> [offers] Renames offer attr to discount
         self::OFFER_ID,
         self::STATUS,
         self::ATTEMPTS,
@@ -143,13 +139,9 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::OFFER_ID,
-<<<<<<< HEAD
         // This is likely needed for the merchant,
         // but still needs to be discussed.
         // self::DISCOUNT,
-=======
-        self::DISCOUNT,
->>>>>>> [offers] Renames offer attr to discount
     ];
 
     protected $dates = [
@@ -370,17 +362,12 @@ class Entity extends Base\PublicEntity
     protected function setPublicDiscountAttribute(array & $array)
     {
         if ($this->getAttribute(self::DISCOUNT) === true)
-<<<<<<< HEAD
         {
             $array[self::DISCOUNT] = true;
         }
         else
         {
             unset($array[self::DISCOUNT]);
-=======
-        {
-            $array[self::DISCOUNT] = true;
->>>>>>> [offers] Renames offer attr to discount
         }
     }
 }

@@ -43,7 +43,7 @@ class Calculator extends Base\Core
                 ]);
         }
 
-        return $discountedAmount;
+        return intval($discountedAmount);
     }
 
     public function calculateDiscount(int $amount)
