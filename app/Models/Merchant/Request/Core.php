@@ -92,7 +92,7 @@ class Core extends Base\Core
      * This function does the following :
      * 1. Updates Request Entity with the new status
      * 2. Add new State for Request
-     * 3. Save Rejection Reasons if any
+     * 3. Save Rejection Reason if any
      *
      * @param Entity $request
      * @param array  $input
@@ -116,9 +116,9 @@ class Core extends Base\Core
             $request->getValidator()->validateActivationStatusChange($request->getStatus(), $input[Entity::STATUS]);
         }
 
-        $rejectionReasons = $input[Constants::REJECTION_REASONS] ?? [];
+        $rejectionReason = $input[Constants::REJECTION_REASON] ?? [];
 
-        unset($input[Constants::REJECTION_REASONS]);
+        unset($input[Constants::REJECTION_REASON]);
 
         $oldRequestDetails = clone $request;
 
@@ -136,7 +136,7 @@ class Core extends Base\Core
             $newRequestDetails,
             $admin,
             $status,
-            $rejectionReasons,
+            $rejectionReason,
             $useWorkflow)
         {
             if ($useWorkflow === true)
@@ -146,15 +146,13 @@ class Core extends Base\Core
                     $status,
                     $oldRequestDetails,
                     $newRequestDetails,
-                    $rejectionReasons
+                    $rejectionReason
                 );
             }
 
             $this->repo->saveOrFail($request);
 
             $stateEntity = $this->createState($status, $request, $admin);
-
-            (new Reason\Core)->addRejectionReasons($rejectionReasons, $stateEntity);
 
             //
             // `addFeatureIfNotEnabled` involves saving on both live and test, and the functions called above act
@@ -180,9 +178,30 @@ class Core extends Base\Core
             // connections using `transactionOnLiveAndTest`, so that any rollback if it happens, happens on both the
             // connections.
             //
-            if ($status === Status::ACTIVATED)
+
+            // Perform actions based on respective status
+            switch ($status)
             {
-                $this->addFeatureIfNotEnabled($request);
+                case Status::REJECTED:
+
+                    if (empty($rejectionReason) === false)
+                    {
+                        (new Reason\Core)->addRejectionReasons([$rejectionReason], $stateEntity);
+
+                        $this->sendRejectionEmail($request, $rejectionReason);
+                    }
+
+                    break;
+
+                case Status::ACTIVATED:
+
+                    $this->addFeatureIfNotEnabled($request);
+
+                    break;
+
+                case Status::NEEDS_CLARIFICATION:
+                    // @todo:Send out a needs clarification email
+                    break;
             }
         });
 
@@ -196,7 +215,7 @@ class Core extends Base\Core
      * @param string $status
      * @param Entity $oldRequestDetails
      * @param Entity $newRequestDetails
-     * @param array  $rejectionReasons
+     * @param array  $rejectionReason
      *
      * @throws \RZP\Exception\BadRequestValidationFailureException
      */
@@ -205,7 +224,7 @@ class Core extends Base\Core
         string $status,
         Entity $oldRequestDetails,
         Entity $newRequestDetails,
-        array $rejectionReasons)
+        array $rejectionReason)
     {
         if ($status === Status::ACTIVATED)
         {
@@ -221,7 +240,7 @@ class Core extends Base\Core
             $this->triggerWorkflowForRejectionStatusChange(
                 $oldRequestDetails,
                 $newRequestDetails,
-                $rejectionReasons
+                $rejectionReason
             );
         }
     }
@@ -338,29 +357,24 @@ class Core extends Base\Core
      *
      * @param Entity $oldDetails
      * @param Entity $newDetails
-     * @param array  $rejectionReasons
+     * @param array  $rejectionReason
      *
      * @throws \RZP\Exception\BadRequestValidationFailureException
      */
     protected function triggerWorkflowForRejectionStatusChange(
         Entity $oldDetails,
         Entity $newDetails,
-        array $rejectionReasons)
+        array $rejectionReason)
     {
         $oldMerchantDetailsArray = $oldDetails->toArray();
 
         $newMerchantDetailsArray = $newDetails->toArray();
 
-        $rejectionReasonDescriptions = [];
+        $rejectionReasonCode = $rejectionReason[Reason\Entity::REASON_CODE] ?? "";
 
-        foreach ($rejectionReasons as $rejectionReason)
-        {
-            $rejectionReasonCode = $rejectionReason[Reason\Entity::REASON_CODE] ?? "";
+        $rejectionReasonDescription = RejectionReasons::getReasonDescriptionByReasonCode($rejectionReasonCode);
 
-            $rejectionReasonDescriptions[] = RejectionReasons::getReasonDescriptionByReasonCode($rejectionReasonCode);
-        }
-
-        $newMerchantDetailsArray[Constants::REJECTION_REASONS] = $rejectionReasons;
+        $newMerchantDetailsArray[Constants::REJECTION_REASON] = $rejectionReasonDescription;
 
         $this->app['workflow']
              ->setEntity($newDetails->getEntity())
@@ -465,11 +479,11 @@ class Core extends Base\Core
                 ($input[Entity::STATUS] !== $request->getStatus()))
             {
                 $statusChangeInput = [
-                    Entity::STATUS               => $input[Entity::STATUS],
-                    Constants::REJECTION_REASONS => $input[Constants::REJECTION_REASONS] ?? [],
+                    Entity::STATUS              => $input[Entity::STATUS],
+                    Constants::REJECTION_REASON => $input[Constants::REJECTION_REASON] ?? [],
                 ];
 
-                unset($input[Constants::REJECTION_REASONS]);
+                unset($input[Constants::REJECTION_REASON]);
 
                 $this->changeStatus($request, $statusChangeInput, true);
             }
@@ -575,11 +589,16 @@ class Core extends Base\Core
     }
 
     /**
-     * @param Merchant\Entity $merchant
+     * Sends out an email to the merchant with the particular message for rejection category specified in the
+     * rejection reason
+     *
      * @param Entity          $request
+     * @param array           $rejectionReason
      */
-    public function sendRejectionEmail(Merchant\Entity $merchant, Entity $request)
+    public function sendRejectionEmail(Entity $request, array $rejectionReason)
     {
+        $merchant = $request->merchant;
+
         $merchantEmail  = $merchant->getEmail();
 
         $merchantId     = $merchant->getId();
@@ -594,12 +613,12 @@ class Core extends Base\Core
         $visibleFeatures = Feature\Constants::$visibleFeaturesMap;
 
         $data = [
-            'feature'       => $visibleFeatures[$featureName]['display_name'],
-            'documentation' => $visibleFeatures[$featureName]['documentation'],
-            'contact_name'  => $merchant->getName(),
-            'contact_email' => $merchantEmail,
-            'merchant_id'   => $merchantId,
-            //'reason_code'   => $reason_code,
+            'feature'         => $visibleFeatures[$featureName]['display_name'],
+            'documentation'   => $visibleFeatures[$featureName]['documentation'],
+            'contact_name'    => $merchant->getName(),
+            'contact_email'   => $merchantEmail,
+            'merchant_id'     => $merchantId,
+            'reason_category' => $rejectionReason[Reason\Entity::REASON_CATEGORY],
         ];
 
         $requestRejectionEmail = new RequestRejection($data);

@@ -57,7 +57,7 @@ class RequestRejection extends Mailable
     {
 
         $subject = 'Update on your application for '. $this->data['feature'] . ' - ' . $this->data['contact_name'] .
-            '|' . $this->data['merchant_id'];
+            ' | ' . $this->data['merchant_id'];
 
         $this->subject($subject);
 

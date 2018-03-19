@@ -19,12 +19,20 @@
                 <br/>Thank you for your patience.
                 <br/>
                 <br/>
+                @if ($reason_category === 'unsupported_business_model')
                 We have reviewed your application for subscription activation for your account {{$merchant_id}}.
-                Unfortunately, your current business model is not supported for {{$feature}} and hence, we would not be able to enable/activate the feature at the moment.
+                Unfortunately, your current business model is not supported for {{$feature}} and hence, we would not be
+                able to enable/activate the feature at the moment.
+                @elseif ($reason_category === 'invalid_use_case')
+                We have reviewed your application for {{$feature}} activation for your account {{$merchant_id}}.
+                Unfortunately, your current use-case is not in accordance with our product and hence, we will not be
+                able to approve this request at the moment.
+                @else
+                We have reviewed your application for {{$feature}} activation for your account {{$merchant_id}}.
+                Unfortunately, we would not be able to enable/activate the feature at the moment.
                 <br/>
-                <br/>
-                We will reach out to you once we can support your use-case.
-                <br/>
+                We will reach out to you once we can support {{$feature}} for your business.
+                @endif
                 <br/>
                 <p>
                     Regards,
@@ -32,7 +40,6 @@
                     Team Razorpay
                 </p>
             </div>
-            <br/>
             <div class="container" style="border-spacing: 0; width: 80% !important; min-width:
             80%; -webkit-text-size-adjust: 80%; -ms-text-size-adjust: 80%; margin: 0 auto; word-break: break-word;
             hyphens: auto; border-collapse: collapse !important; vertical-align: top; color: #7c839a; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; text-align: center; padding: 20px; padding-bottom: 5px; font-size: 14px; line-height: 19px; background: #ffffff; background-color: #ffffff; padding: 20px; position: relative; border: 1px solid #e0e0e0; letter-spacing: 0.4px; margin-bottom: 20px">
