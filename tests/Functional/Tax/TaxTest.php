@@ -88,4 +88,11 @@ class TaxTest extends TestCase
 
         $this->assertNull($item['tax_id']);
     }
+
+    public function testGetTaxMetaTaxRates()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
 }

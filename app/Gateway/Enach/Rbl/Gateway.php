@@ -11,6 +11,7 @@ use phpseclib\Crypt\AES;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Enach\Base;
 use RZP\Models\Customer\Token;
+use RZP\Models\Settlement\Holidays;
 
 class Gateway extends Base\Gateway
 {
@@ -64,7 +65,10 @@ class Gateway extends Base\Gateway
     {
         $currentTs = $input['payment']['created_at'];
 
-        return Carbon::createFromTimestamp($currentTs, Timezone::IST);
+        $dt = Carbon::createFromTimestamp($currentTs, Timezone::IST);
+
+        // @todo: Move this to a holiday model
+        return Holidays::getNextWorkingDay($dt);
     }
 
     protected function getGatewayTerminalId()
