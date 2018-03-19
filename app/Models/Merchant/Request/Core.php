@@ -12,7 +12,6 @@ use RZP\Models\Merchant;
 use RZP\Models\State\Reason;
 use RZP\Models\Base\PublicEntity;
 use RZP\Mail\Merchant\RequestRejection;
-use RZP\Models\Merchant\Detail\RejectionReasons;
 
 class Core extends Base\Core
 {

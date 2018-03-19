@@ -88,4 +88,9 @@ class Service extends Base\Service
     {
         return (new Core)->bulkUpdateMerchantRequests($input);
     }
+
+    public function getRejectionReasons()
+    {
+        return RejectionReasons::REJECTION_REASONS_MAPPING;
+    }
 }
