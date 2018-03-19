@@ -8,7 +8,12 @@ import Definition from 'rzp/ui/Definition';
 import Change from 'rzp/ui/Change';
 import { BtnGroup, Btn } from 'rzp/ui/BtnGroup/index.js';
 import { namedColors } from 'rzp/utils/chart/colors';
-import { titleCase, paiseToRupees, getPercentage } from 'rzp/utils/rzp-utils';
+import {
+  isDefined,
+  titleCase,
+  paiseToRupees,
+  getPercentage
+} from 'rzp/utils/rzp-utils';
 import { timeScale } from 'rzp/utils/chart/new.js';
 import takeScreenshot from 'rzp/utils/screenshot';
 import Group, { GroupItem } from 'rzp/ui/Group';
@@ -31,7 +36,10 @@ import GenericPanel, {
   PanelFooter,
 } from 'merchant/components/Home/GenericPanel';
 import Tooltip from 'merchant/components/Home/Tooltip';
-import { CUMULATIVE } from 'merchant/containers/Home/KeyMetrics/data';
+import {
+  PLATFORM,
+  CUMULATIVE
+} from 'merchant/containers/Home/KeyMetrics/data';
 
 import { trackGoToLinks } from './ga';
 import customToolTip, { positioner } from './customTooltip';
@@ -68,10 +76,38 @@ class Panel extends Component {
     super(props);
 
     this.meta = tabsMeta[props.tabName];
+
+    this.state = {
+    
+      visibleGroups: this.getVisibleGroups(props.showGroupingByPtfm)
+    };
+
     this.handleGroupingChange = ::this.handleGroupingChange;
     this.handleBreakdownChange = ::this.handleBreakdownChange;
     this.handleImageExportClick = ::this.handleImageExportClick;
     this.handleFilterChange = ::this.handleFilterChange;
+  }
+
+  getVisibleGroups(showGroupingByPtfm) {
+
+    const {grouping=[]} = this.meta;
+
+    return showGroupingByPtfm || grouping.length === 0
+             ? grouping
+             : grouping.filter((groupItem) => {
+                 return groupItem.value !== PLATFORM
+               });
+  }
+
+  setVisibleGroups(showGroupingByPtfm)  {
+
+    showGroupingByPtfm = isDefined(showGroupingByPtfm)
+                           ? showGroupingByPtfm
+                           : this.props.showGroupingByPtfm;
+
+    this.setState({
+      visibleGroups: this.getVisibleGroups(showGroupingByPtfm)
+    });
   }
 
   handleGroupingChange({ option }) {
@@ -109,6 +145,14 @@ class Panel extends Component {
     }
   }
 
+  componentWillReceiveProps(nextProps) {
+  
+    if (nextProps.showGroupingByPtfm !== this.props.showGroupingByPtfm) {
+    
+      this.setVisibleGroups(nextProps.showGroupingByPtfm);
+    }
+  }
+
   render() {
     const {
         selectedGrouping,
@@ -120,12 +164,13 @@ class Panel extends Component {
         lastUpdatedAt,
         isCurrency,
         externalUrl,
-        showGrouping,
+        showGroupingByPtfm,
         tabName,
         sectionTitle,
       } = this.props,
+      { visibleGroups:grouping } = this.state,
       dateFormat = 'DD MMM YYYY',
-      { grouping, options, filters } = this.meta,
+      { options, filters } = this.meta,
       { loading, histogram, trend } = data;
 
     const hasNoData = !histogram || histogram.datasets.length === 0;
@@ -281,8 +326,7 @@ class Panel extends Component {
                 );
               })}
             </BtnGroup>
-            {showGrouping &&
-              grouping.length > 0 && (
+            {grouping.length > 0 && (
                 <div className="panel-action-item">
                   <GroupingDropdown
                     onGroupChange={this.handleGroupingChange}

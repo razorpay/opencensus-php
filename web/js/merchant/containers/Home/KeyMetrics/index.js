@@ -760,7 +760,7 @@ class KeyMetricsContainer extends Component {
 
   render() {
     const { tabsState, loading, tabWidth } = this.state,
-      { startDate, endDate, showGrouping, sectionTitle } = this.props,
+      { startDate, endDate, showGroupingByPtfm, sectionTitle } = this.props,
       visibleTabs = this.getVisibleTabs();
 
     return (
@@ -815,7 +815,7 @@ class KeyMetricsContainer extends Component {
                   isCurrency={isCurrency}
                   onScreenshot={this.onScreenshot}
                   externalUrl={`/#/app/${tabsMeta[tabName].index}`}
-                  showGrouping={showGrouping}
+                  showGroupingByPtfm={showGroupingByPtfm}
                   sectionTitle={sectionTitle}
                 />
               </TabPane>

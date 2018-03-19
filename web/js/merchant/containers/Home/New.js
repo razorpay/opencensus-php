@@ -108,7 +108,7 @@ class HomeContainer extends Component {
         ...getPreviousDates({ startDate, endDate }),
       },
       dateRangePresets,
-      showGrouping: false,
+      showGroupingByPtfm: false,
     };
 
     this.oldestTxnReqId = 0;
@@ -208,7 +208,7 @@ class HomeContainer extends Component {
         // this will show group by platform dropdowns and also
         // traffic graph
         this.setState({
-          showGrouping: true,
+          showGroupingByPtfm: true,
         });
       });
   }
@@ -347,7 +347,7 @@ class HomeContainer extends Component {
       endDate,
       oldestTransactionDate,
       dateRangePresets,
-      showGrouping,
+      showGroupingByPtfm,
     } = this.state;
 
     return (
@@ -395,7 +395,7 @@ class HomeContainer extends Component {
                 endDate={endDate}
                 oldestTransactionDate={oldestTransactionDate}
                 mode={mode}
-                showGrouping={showGrouping}
+                showGroupingByPtfm={showGroupingByPtfm}
                 sectionTitle={keymetricsSectionTitle}
                 tabsMeta={tabsMeta}
                 isAdmin={isAdmin}
@@ -423,10 +423,10 @@ class HomeContainer extends Component {
           <div className="row">
             <div
               className={`col-md-12 traffic-activity-row clearfix${
-                showGrouping ? '' : ' traffic-hidden'
+                showGroupingByPtfm ? '' : ' traffic-hidden'
               }`}
             >
-              {showGrouping && (
+              {showGroupingByPtfm && (
                 <div className="traffic-container">
                   <p className="content-title section-title">
                     {trafficSectionTitle}
