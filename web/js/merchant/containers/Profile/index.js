@@ -29,7 +29,7 @@ import UpgradeMerchantForm from './UpgradeMerchantForm';
 export default class Profile extends Component {
   state = {
     loggedInUser: {},
-    isBankAccountChangeAllowed: true,
+    isBankAccountChangeAllowed: false,
   };
 
   componentWillMount() {
@@ -152,6 +152,10 @@ export default class Profile extends Component {
 
     //not needed
     delete body.account_number_confirmation;
+
+    //required fields for api
+    body.beneficiary_email = this.props.user.email;
+    body.beneficiary_mobile = this.props.user.contact_mobile;
 
     for (let prop in body) {
       if (body.hasOwnProperty(prop)) {

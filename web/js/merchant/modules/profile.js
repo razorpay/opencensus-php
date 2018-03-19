@@ -103,6 +103,7 @@ export const saveBankAccountChanges = (merchantId, formdata) => {
     payload: merchantFetch({
       url: `merchants/${merchantId}/bank_account`,
       method: 'post',
+      mode: 'live',
       data: formdata,
     }),
   };
