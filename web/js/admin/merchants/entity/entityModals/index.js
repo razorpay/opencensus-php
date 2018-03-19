@@ -18,7 +18,7 @@ export EditFeatures from './EditFeatures';
 export MerchantBatchUpload from './MerchantBatchUpload';
 export UploadScreenshots from './UploadScreenshots';
 export AddCredits from './AddCredits';
-export GenerateReports from './GenerateReports';
+export GenerateReports from './GenerateReports/index';
 export ViewTeam from './ViewTeam';
 export EditFraudScore from './EditFraudScore';
 export EditWhiteListIps from './EditWhiteListIps';
