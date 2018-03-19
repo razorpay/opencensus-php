@@ -232,7 +232,7 @@ class Repository extends Base\Repository
             'amount'                => $request['amt'],
             'currency'              => $request['currencycode'],
             'error_code'            => $error['code'],
-            'error_text'            => $error['result'],
+            'error_text'            => $error['text'],
             'status'                => Payment\Status::AUTH_RECURRING_FAILED
          ];
 

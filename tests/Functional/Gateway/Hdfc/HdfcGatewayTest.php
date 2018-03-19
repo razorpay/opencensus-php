@@ -8,12 +8,14 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Models\Payment\Entity as Payment;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 
 class HdfcGatewayTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -138,6 +140,39 @@ class HdfcGatewayTest extends TestCase
         $hdfcData = $this->testData['testHdfcPaymentEntity'];
 
         $this->assertArraySelectiveEquals($hdfcData, $hdfcCaptured);
+    }
+
+    public function testFailureInRecurringPayment()
+    {
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $paymentEntity = $this->getDbLastPayment();
+
+        $payment[Payment::TOKEN] = $paymentEntity->toArrayAdmin()[Payment::TOKEN_ID];
+
+        unset($payment[Payment::CARD]);
+
+        $this->ba->privateAuth();
+
+        $this->hdfcPaymentMockResultCode('NOT APPROVED', 'authorize');
+
+        $this->makeRequestAndCatchException(
+            function() use ($payment)
+            {
+                $this->doS2SRecurringPayment($payment);
+            },
+            Exception\GatewayErrorException::class);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertTrue($payment->isFailed());
+
+        $hdfc = $this->getDbEntities('hdfc');
+
+        $this->assertCount(3, $hdfc);
+        $this->assertSame('auth_recurring_failed', $hdfc[2]->getStatus());
     }
 
     public function testInternationalUSDPaymentOnApi()
