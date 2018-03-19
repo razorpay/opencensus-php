@@ -40,27 +40,6 @@ class MpesaGatewayTest extends TestCase
         $this->setOtp(self::OTP);
     }
 
-    public function testOtpPayment()
-    {
-        $testData = $this->testData[__FUNCTION__];
-
-        $this->doAuthAndCapturePayment($this->payment);
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertArraySelectiveEquals($testData, $payment);
-
-        $wallet = $this->getLastEntity('wallet', true);
-
-        $this->assertTestResponse($wallet, 'testOtpPaymentWalletEntity');
-
-        $this->assertNotEmpty($wallet['gateway_payment_id']);
-
-        $this->assertNotEmpty($wallet['gateway_payment_id_2']);
-
-        $this->assertNotEmpty($wallet['contact']);
-    }
-
     public function testAuthPayment()
     {
         $testData = $this->testData[__FUNCTION__];
@@ -154,51 +133,6 @@ class MpesaGatewayTest extends TestCase
             {
                 $this->doAuthPayment($payment);
             });
-    }
-
-    public function testOtpCustomerValidationFailure()
-    {
-        $data = $this->testData['testOtpAuthFailure'];
-
-        $this->mockActionFailure();
-
-        $this->runRequestResponseFlow(
-            $data,
-            function()
-            {
-                $this->doAuthPayment($this->payment);
-            }
-        );
-    }
-
-    public function testOtpGenerationFailure()
-    {
-        $data = $this->testData['testOtpAuthFailure'];
-
-        $this->mockActionFailure();
-
-        $this->runRequestResponseFlow(
-            $data,
-            function()
-            {
-                $this->doAuthPayment($this->payment);
-            }
-        );
-    }
-
-    public function testCallbackOtpSubmitFailure()
-    {
-        $data = $this->testData['testOtpAuthFailure'];
-
-        $this->mockActionFailure(SoapAction::OTP_SUBMIT_API);
-
-        $this->runRequestResponseFlow(
-            $data,
-            function()
-            {
-                $this->doAuthPayment($this->payment);
-            }
-        );
     }
 
     public function testAuthPaymentVerify()
