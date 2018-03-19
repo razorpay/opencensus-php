@@ -4,6 +4,7 @@ import { saveAs } from 'file-saver';
 
 import { notifyError, notifySuccess } from 'common/modal';
 
+import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
 import Form from 'ui/Form';
 import { Field, RadioField, SelectField, DateField } from 'ui/Field';
 import fetch, { adminFetch } from 'common/fetch';
@@ -59,21 +60,19 @@ export default class GenerateReports extends Component {
 
     adminFetch({
       url: `live_${this.props.merchantId}/reporting/configs`,
-    }).then(configs => {
-      if (configs) {
-        this.prepareConfigs(configs);
-      }
+    }).then(configsResp => {
+      this.prepareConfigs(configsResp);
     });
   }
 
-  prepareConfigs(configResp) {
+  prepareConfigs(configsResp) {
     let hasConfigs =
-      !!configResp.data.items && configResp.data.items.length > 0;
+      configsResp && configsResp.items && configsResp.items.length > 0;
     let configs = [];
     let selectedConfig;
 
     if (hasConfigs) {
-      configResp.data.items.forEach(configItem => {
+      configsResp.items.forEach(configItem => {
         const config = {
           label: configItem.name,
           id: configItem.id,
@@ -86,14 +85,14 @@ export default class GenerateReports extends Component {
           selectedConfig = config.type;
         }
       });
-
-      let finalConfigs = configs.concat(this.state.configs);
-      this.setState({
-        configs: finalConfigs,
-        isLoading: false,
-        selectedConfig: selectedConfig || finalConfigs[0].type,
-      });
     }
+
+    let finalConfigs = configs.concat(this.state.configs);
+    this.setState({
+      configs: finalConfigs,
+      isLoading: false,
+      selectedConfig: selectedConfig || finalConfigs[0].type,
+    });
   }
 
   getConfigLabel(configType) {
@@ -227,39 +226,15 @@ export default class GenerateReports extends Component {
       });
   };
 
-  validateInvoiceMonthYear = current => {
-    const isGSTDisabled =
-      this.props.props.merchant.details.tags.indexOf('Gst_Invoice_Disabled') !==
-      -1;
-
-    const selectedDate = current.split('/');
-
-    const selectedMonth = selectedDate[0],
-      selectedYear = selectedDate[1];
-
-    const currDate = new Date();
-
-    if (
-      selectedYear === currDate.getFullYear() &&
-      selectedMonth > currDate.getMonth() - 1
-    ) {
-      return false;
-    }
-
-    // disable invoice download for july(6)  and august(7)
-    // for the year of 2017
-    const isValidMonth =
-      isGSTDisabled && selectedYear === 2017
-        ? selectedMonth !== 6 && selectedMonth !== 7
-        : true;
-
-    return validYear(current) && isValidMonth;
-  };
-
   render() {
-    const { selectedConfig, dateType, configs } = this.state;
+    const { selectedConfig, dateType, configs, isLoading } = this.state;
 
     const details = this.props.props.merchant.details;
+    const loader = (
+      <PlaceholderLoader
+        style={{ height: '12px', width: '100%', margin: '12px 0' }}
+      />
+    );
 
     return (
       <BaseModal header="Download Reports" customClass="reports-modal">
@@ -267,7 +242,13 @@ export default class GenerateReports extends Component {
           {/*Report Type Selection*/}
           <aside class="reports-list-panel">
             <div class="title">SELECT REPORT TYPE</div>
-            {
+            {isLoading ? (
+              <div style={{ margin: '0 24px' }}>
+                {loader}
+                {loader}
+                {loader}
+              </div>
+            ) : (
               <div>
                 {configs.map((option, index) => (
                   <div class="reports-entity-options" key={index}>
@@ -284,7 +265,7 @@ export default class GenerateReports extends Component {
                   </div>
                 ))}
               </div>
-            }
+            )}
           </aside>
 
           {/*Report Generate Panel*/}
