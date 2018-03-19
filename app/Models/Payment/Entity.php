@@ -263,6 +263,7 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
         self::DISPUTED,
         self::RECURRING_TYPE,
+        self::ACKNOWLEDGED_AT,
     ];
 
     protected $public = [
@@ -299,6 +300,7 @@ class Entity extends Base\PublicEntity
         self::EMI_PLAN,
         self::DISPUTES,
         self::CREATED_AT,
+        self::ACKNOWLEDGED_AT,
     ];
 
     /**
@@ -387,6 +389,7 @@ class Entity extends Base\PublicEntity
         self::DISPUTED             => false,
         self::RECURRING_TYPE       => null,
         self::AUTH_TYPE            => null,
+        self::ACKNOWLEDGED_AT      => null,
     ];
 
     protected $amounts = [

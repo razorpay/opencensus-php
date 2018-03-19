@@ -974,6 +974,7 @@ final class Route
         'dispute_fetch',
         'account_features_add',
         'account_features_get',
+        'payment_acknowledge',
     ];
 
     // Only routes defined in internalApps go here
