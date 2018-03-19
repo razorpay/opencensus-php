@@ -129,11 +129,12 @@ final class RequestContext
     {
         $this->request            = $app['request'];
         $this->repo               = $app['repo'];
-
-        $this->route              = $this->request->route()->getName();
         $this->isRunningUnitTests = $app->runningUnitTests();
         $this->applications       = $app['config']->get('applications');
+    }
 
+    public function init()
+    {
         $this->setAuthVars();
         $this->setAdditionalVars();
         $this->resolveKeyIdIfApplicable();
@@ -256,6 +257,8 @@ final class RequestContext
      */
     protected function setAuthVars()
     {
+        $this->route = $this->request->route()->getName();
+
         // Key can come
         // - as part of authentication header(http basic username)
         // - as part of route parameters for callback URLS
@@ -356,6 +359,9 @@ final class RequestContext
         $isPrivateRoute = in_array($this->route, Route::$private, true);
         $isProxyRoute   = in_array($this->route, Route::$proxy, true);
 
+        // In case of proxy auth, internal app is dashboard.
+        $this->setInternalAppName();
+
         if (($isPrivateRoute === true) and (empty($token = $this->getBearerTokenFromRequest()) === false))
         {
             $parsed              = (new Parser)->parse($token);
@@ -369,8 +375,7 @@ final class RequestContext
             $this->proxy = true;
             return true;
         }
-        else if (($isPrivateRoute === true) and
-                 ($this->isDashboard() === false))
+        else if (($isPrivateRoute === true) and ($this->isDashboard() === false))
         {
             $this->keyId = $this->keyWithoutPrefix;
             return true;

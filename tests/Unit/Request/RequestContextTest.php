@@ -3,6 +3,7 @@
 namespace RZP\Tests\Unit\Request;
 
 use RZP\Tests\TestCase;
+use RZP\Http\RequestContext;
 use RZP\Exception\BadRequestException;
 
 class RequestContextTest extends TestCase
@@ -20,10 +21,10 @@ class RequestContextTest extends TestCase
     {
         $this->expectException(BadRequestException::class);
 
-        $requestMock = $this->invokeRequestCase('publicRouteWithInvalidKeyLength');
+        $this->invokeRequestCase('publicRouteWithInvalidKeyLength');
 
-        $context = new Helpers\RequestContext;
-        $context->initRequestContextVars($requestMock);
+        $context = new RequestContext($this->app);
+        $context->init();
     }
 
     /**
@@ -41,15 +42,17 @@ class RequestContextTest extends TestCase
 
     protected function initRequestContextAndAssertForCase(string $case)
     {
-        $requestMock = $this->invokeRequestCase($case);
+        $this->invokeRequestCase($case);
 
-        $context = new Helpers\RequestContext;
-        $context->initRequestContextVars($requestMock);
+        $context = new RequestContext($this->app);
+        $context->init();
 
-        $expected = $this->testData[$case]['expected'];
-        foreach ($expected as $key => $value)
+        $testDataExpected = $this->testData[$case]['expected'];
+        foreach ($testDataExpected as $key => $expected)
         {
-            $this->assertEquals($value, $context->$key);
+            $accessor = 'get' . ucfirst($key);
+            $actual = $context->$accessor();
+            $this->assertEquals($expected, $actual);
         }
     }
 }

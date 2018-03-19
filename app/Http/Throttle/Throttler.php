@@ -18,25 +18,6 @@ use RZP\Http\Throttle\Constant as K;
 
 /**
  * Throttle requests to API
- *
- * Approach:
- * 1. Extract needed vars from requests. E.g. mode, route name, authentication
- * mode, merchant id, key id, oauth application id etc.
- * 2. Get settings from redis. These includes global settings, per route
- * settings and per identifier (e.g. specific merchant, specific oauth
- * application, specific admin email and other various combinations).
- * 3. From settings above and available requests context vars, prepare throttle
- * key and limits (leak rate, duration and burst) and call throttle package.
- *
- * Caveats:
- * 1. Because we get key id instead of mid(merchant id) in public and private
- * authentication mode we do a translation (redis hit else db call). This is
- * a decision taken considering pros/cons(details in spec). We use mid to have
- * all the settings(if any) and also it's easy to deal with one identifier than
- * two.
- *
- * Redis: In the whole process we end up making 3 redis call(all the time). In
- * case of cache miss for key id to mid remap there is 1 db call involved.
  */
 class Throttler
 {
@@ -75,7 +56,7 @@ class Throttler
         $this->reqctx = $app['request.ctx'];
     }
 
-    public function throttle($request)
+    public function throttle()
     {
         // For local and test env, we skip basis local configuration
         if ($this->config['skip'] === true)
@@ -171,19 +152,19 @@ class Throttler
 
     protected function getIdSettingsKey(): string
     {
-        return $this->reqctx->getInternalAppName() ?:
+        return $this->reqctx->getOauthClientId() ?:
                 $this->reqctx->getAdminEmail() ?:
-                $this->reqctx->getOauthClientId() ?:
                 $this->reqctx->getMid() ?:
+                $this->reqctx->getInternalAppName() ?:
                 '';
     }
 
     protected function getThrottleKey(): string
     {
-        $id = $this->reqctx->getInternalAppName() ?:
+        $id = $this->reqctx->getMid() ?:
                 $this->reqctx->getAdminEmail() ?:
-                $this->reqctx->getMid() ?:
-                $this->reqctx->getOauthPublicToken();
+                $this->reqctx->getOauthPublicToken() ?:
+                $this->reqctx->getInternalAppName();
 
         // Only use ip address for public and direct routes
         $ip = ($this->reqctx->isPublicAuth() or $this->reqctx->isDirectAuth()) ? $this->reqctx->getRequest()->ip() : '';
@@ -234,8 +215,6 @@ class Throttler
 
     protected function getThrottleValue(string $key, int $default): int
     {
-        // TODO: Move the data structure explanation to wiki
-
         // If mode is not available at this layer just pick live mode settings
         $mode  = $this->reqctx->getMode() ?: Mode::LIVE;
         // Boolean value doesn't get type-casted to string properly

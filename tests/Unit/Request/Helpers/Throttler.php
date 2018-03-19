@@ -10,6 +10,13 @@ use RZP\Http\Throttle\Throttler as BaseThrottler;
  */
 class Throttler extends BaseThrottler
 {
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->reqctx->init();
+    }
+
     public function __call(string $name, array $args)
     {
         return $this->$name(...$args);
