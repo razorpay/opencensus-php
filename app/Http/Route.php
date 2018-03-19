@@ -1973,6 +1973,7 @@ final class Route
 
         'hosted' => [
             'merchant_secret',
+            'payment_acknowledge',
         ],
 
         'h2h' => [
