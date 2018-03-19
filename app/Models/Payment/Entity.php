@@ -263,7 +263,6 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
         self::DISPUTED,
         self::RECURRING_TYPE,
-        self::ACKNOWLEDGED_AT,
     ];
 
     protected $public = [
