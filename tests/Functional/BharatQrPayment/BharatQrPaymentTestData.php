@@ -38,7 +38,7 @@ return [
     ],
 
     'testUpiQrPaymentProcess' => [
-        'url'     => '/payment/callback/bharatqr/icici',
+        'url'     => '/payment/callback/bharatqr/upi_icici',
         'method'  => 'post',
         'content' => [
             Fields::RESPONSE         => '92',

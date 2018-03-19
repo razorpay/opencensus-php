@@ -3,20 +3,16 @@
 namespace RZP\Models\BharatQr;
 
 use RZP\Constants;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\QrCode;
 use RZP\Constants\Mode;
-use RZP\Models\Payment\Action;
-use RZP\Models\Payment\Gateway;
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payment\Action;
 
 class Service extends Base\Service
 {
-    protected $gatewayMapping = [
-        'icici'   => Gateway::UPI_ICICI,
-        'hitachi' => Gateway::HITACHI,
-    ];
-
     protected $core;
 
     public function __construct()
@@ -35,7 +31,15 @@ class Service extends Base\Service
                 'gateway' => $gateway,
             ]);
 
-        $gateway = $this->gatewayMapping[$gateway];
+        if (Payment\Gateway::isValidGateway($gateway) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Gateway is invalid',
+                'gateway',
+                [
+                    'gateway' => $gateway
+                ]);
+        }
 
         $gatewayClass = $this->app['gateway']->gateway($gateway);
 

@@ -15,7 +15,7 @@ class BharatQrController extends Controller
             // in case of upi icici
             // input is in form of text
             //
-            case 'icici' :
+            case 'upi_icici' :
                 $input = Request::getContent();
 
                 break;

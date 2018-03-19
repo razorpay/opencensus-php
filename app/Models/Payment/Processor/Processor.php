@@ -951,7 +951,8 @@ class Processor
         {
             $terminal = $this->repo->terminal->fetchForPayment($this->payment);
 
-            if ($terminal === null) {
+            if ($terminal === null)
+            {
                 throw new Exception\LogicException(
                     'Terminal should not be null here',
                     null,

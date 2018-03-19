@@ -67,7 +67,7 @@ class Processor extends VirtualAccount\Processor
             $this->createAndSetVirtualAccount($this->gatewayInput[GatewayResponseParams::AMOUNT]);
         }
 
-        $this->processBharatQr($bharatQr, $this->gatewayInput);
+        $this->processBharatQr($bharatQr);
 
         $this->trace->info(
                 TraceCode::BHARAT_QR_PAYMENT_PROCESSING_SUCCESSFUL,

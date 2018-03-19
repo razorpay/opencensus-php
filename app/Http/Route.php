@@ -1710,7 +1710,6 @@ final class Route
         'shield_rules_delete'                    => Permission::DELETE_SHIELD_RULES,
         'shield_rules_evaluate'                  => Permission::EVALUATE_SHIELD_RULES,
         'user_fetch_admin'                       => '*',
-        'virtual_account_create'                 => '*',
         'refund_edit_status'                     => '*',
         'batch_create'                           => '*',
         'reporting_config_get'                   => '*',
@@ -2243,6 +2242,7 @@ final class Route
         'payment_topup_ajax',
         'payment_topup_post',
         'payment_redirect_callback',
+        'gateway_payment_callback_bharatqr',
     ];
 
     const WORKFLOW_EXECUTE_ROUTE_NAME = 'action_request_execute';
