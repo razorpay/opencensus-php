@@ -741,7 +741,8 @@ class Gateway extends Base\Gateway
 
         $content = $this->sendRefundVerifyRequest($input);
 
-        if ($content['status'] === Status::SUCCESS)
+        if (($content['status'] === Status::SUCCESS) or
+            ($content['status'] === Status::DEEMED))
         {
             return true;
         }

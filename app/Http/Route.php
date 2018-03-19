@@ -1178,6 +1178,7 @@ final class Route
         'merchant_get_tags',
         'account_fetch',
         'merchant_add_bank_account',
+        'merchant_bank_account_change_status',
         'tax_get_meta_gst_taxes',
     ];
 
@@ -1734,6 +1735,7 @@ final class Route
         'reporting_schedule_create'              => '*',
         'reporting_schedule_delete'              => '*',
         'ufh_get_file_signed_url'                => '*',
+        'merchant_bank_account_change_status'    => '*',
     ];
 
     public static $direct = [

@@ -421,6 +421,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
 
     // Gateway component error messages
+    const GATEWAY_MANDATE_CONTENT                   = 'GATEWAY_MANDATE_CONTENT';
+    const GATEWAY_MANDATE_REQUEST                   = 'GATEWAY_MANDATE_REQUEST';
+    const GATEWAY_MANDATE_RESPONSE                  = 'GATEWAY_MANDATE_RESPONSE';
     const GATEWAY_RESPONSE                          = 'GATEWAY_RESPONSE';
     const GATEWAY_ENROLL_REQUEST                    = 'GATEWAY_ENROLL_REQUEST';
     const GATEWAY_ENROLL_RESPONSE                   = 'GATEWAY_ENROLL_RESPONSE';
