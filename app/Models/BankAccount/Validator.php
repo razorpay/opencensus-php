@@ -2,6 +2,8 @@
 
 namespace RZP\Models\BankAccount;
 
+use App;
+
 use Razorpay\IFSC\IFSC;
 use RZP\Base;
 use RZP\Constants\Mode;
@@ -101,7 +103,9 @@ class Validator extends Base\Validator
         // Address proof URL will be passed only when merchant
         // is requesting for bank account change which will only
         // happen over proxy auth
-        if (($this->app['basicauth']->isProxyAuth() === false) or
+        $app = App::getFacadeRoot();
+
+        if (($app['basicauth']->isProxyAuth() === false) or
             (empty($input) === true))
         {
             throw new Exception\BadRequestValidationFailureException(
