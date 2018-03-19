@@ -721,7 +721,7 @@ class RecurringPaymentTest extends TestCase
         $payment = $this->getDefaultRecurringPaymentArray();
 
         // Need a mastercard number
-        $payment['card']['number'] = '5243730000000008';
+        $payment['card']['number'] = '5893163050216758';
 
         $data = $this->testData[__FUNCTION__];
 
