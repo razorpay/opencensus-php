@@ -385,7 +385,9 @@ class Gateway extends Base\Gateway
 
         $network = Network::getCode($input['card']['network']);
 
-        if ($network === Card\Network::VISA)
+        if (($network === Card\Network::VISA) or
+            (($network === Card\Network::MC) and
+             ($input['payment']['merchant_id'] === '6ZJzxyLFWrGs74')))
         {
             $content[RequestFields::ECI] = '02';
         }

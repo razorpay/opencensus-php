@@ -426,6 +426,7 @@ class Gateway
     public static $cardNetworkRecurringMap = [
         self::HITACHI => [
             Network::VISA,
+            Network::MC,
         ],
     ];
 
