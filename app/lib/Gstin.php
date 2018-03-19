@@ -92,6 +92,16 @@ class Gstin
         '19' => self::WB,
     ];
 
+    protected static $indianUnionTerritories = [
+        self::AN,
+        self::CH,
+        self::DD,
+        self::DL,
+        self::DN,
+        self::LD,
+        self::PY,
+    ];
+
     protected static $nameToStateCodeMap = [
         'Andaman and Nicobar Islands' => self::AN,
         'Andhra Pradesh'              => self::AP,
@@ -153,9 +163,12 @@ class Gstin
 
         foreach (self::$nameToStateCodeMap as $name => $stateCode)
         {
+            $isUnionTerritory = in_array($stateCode, self::$indianUnionTerritories, true);
+
             $data[] = [
-                'name' => $name,
-                'code' => (string) $stateToTinCodeMap[$stateCode],
+                'name'  => $name,
+                'code'  => (string) $stateToTinCodeMap[$stateCode],
+                'is_ut' => $isUnionTerritory
             ];
         }
 

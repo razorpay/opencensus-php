@@ -30,7 +30,7 @@ class Service extends Base\Service
         ];
     }
 
-    public function getMetaStates(): Base\PublicCollection
+    public function getMetaStates(): array
     {
         $data = Gstin::getGstinStateMetadata();
 
