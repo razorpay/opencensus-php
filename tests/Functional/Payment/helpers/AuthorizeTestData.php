@@ -17,7 +17,87 @@ return [
         ],
         'response' => [
             'content' => [
-                'http_status_code' => 200
+                'http_status_code' => 200,
+            ]
+        ],
+        'jsonp' => true
+    ],
+
+    'testMagicKeySet' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/payments/create/jsonp',
+            'content' => [
+                'card' => [
+                    'number' => '4012001037167778'
+                ],
+                'callback' => 'abcdefghijkl',
+                '_' => '',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'magic' => true,
+            ]
+        ],
+        'jsonp' => true
+    ],
+
+    'testMagicKeyFalseDisabledIin' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/payments/create/jsonp',
+            'content' => [
+                'card' => [
+                    'number' => '4012001037167778'
+                ],
+                'callback' => 'abcdefghijkl',
+                '_' => '',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'magic' => false,
+            ]
+        ],
+        'jsonp' => true
+    ],
+
+    'testMagicKeyFalseDisabledGlobally' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/payments/create/jsonp',
+            'content' => [
+                'card' => [
+                    'number' => '4012001037167778'
+                ],
+                'callback' => 'abcdefghijkl',
+                '_' => '',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'magic' => false,
+            ]
+        ],
+        'jsonp' => true
+    ],
+
+    'testMagicKeyFalseMerchantDisabled' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/payments/create/jsonp',
+            'content' => [
+                'card' => [
+                    'number' => '4012001037167778'
+                ],
+                'callback' => 'abcdefghijkl',
+                '_' => '',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'magic' => false,
             ]
         ],
         'jsonp' => true
