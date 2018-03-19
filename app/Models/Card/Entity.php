@@ -619,6 +619,17 @@ class Entity extends Base\PublicEntity
         return false;
     }
 
+    public function isMagicEnabled()
+    {
+        if (($this->iinRelation !== null) and
+            ($this->iinRelation->isMagicEnabled() === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     protected function getTokenRelevantAttributes()
     {
         $attributes = array(

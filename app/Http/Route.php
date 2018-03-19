@@ -622,6 +622,7 @@ final class Route
         'user_merchant_mapping_action'            => ['put',      'users/{id}/{action}',                            'UserController@updateUserMaping'                                   ],
 
         // Tax groups and taxes
+        'tax_get_meta_gst_taxes'                  => ['get',      'taxes/meta/gst_taxes',                           'TaxController@getMetaGstTaxes'                                     ],
         'tax_get'                                 => ['get',      'taxes/{id}',                                     'TaxController@get'                                                 ],
         'tax_list'                                => ['get',      'taxes',                                          'TaxController@list'                                                ],
         'tax_create'                              => ['post',     'taxes',                                          'TaxController@create'                                              ],
@@ -1188,6 +1189,8 @@ final class Route
         'merchant_add_bank_account',
         'merchant_requests_create',
         'merchant_requests_get_feature',
+        'merchant_bank_account_change_status',
+        'tax_get_meta_gst_taxes',
     ];
 
     // These will run on internal auth with the assurance
@@ -1755,6 +1758,7 @@ final class Route
         'merchant_requests_update'               => Permission::EDIT_MERCHANT_REQUESTS,
         'merchant_requests_bulk_update'          => Permission::EDIT_MERCHANT_REQUESTS,
         'merchant_requests_status_log'           => Permission::VIEW_MERCHANT_REQUESTS,
+        'merchant_bank_account_change_status'    => '*',
     ];
 
     public static $direct = [

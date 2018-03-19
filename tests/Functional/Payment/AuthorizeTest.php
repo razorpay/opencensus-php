@@ -3,15 +3,18 @@
 namespace RZP\Tests\Functional\Payment;
 
 use Mail;
+use Cache;
 
+use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Admin\ConfigKey;
+use RZP\Tests\Functional\TestCase;
+use RZP\Models\Payment as PaymentModel;
+use RZP\Exception\GatewayErrorException;
 use RZP\Mail\Payment\Authorized as AuthorizedMail;
 use RZP\Mail\Payment\Failed as PaymentFailedMail;
-use RZP\Models\Payment as PaymentModel;
-use RZP\Error\ErrorCode;
-use RZP\Tests\Functional\TestCase;
-use RZP\Exception\GatewayErrorException;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+
 
 class AuthorizeTest extends TestCase
 {
@@ -42,11 +45,6 @@ class AuthorizeTest extends TestCase
         $response->assertSessionHas('foo', 'bar');
     }
 
-    public function testInvalidEmailInPayment()
-    {
-        $this->startTest();
-    }
-
     public function testJsonpPayment()
     {
         Mail::fake();
@@ -56,6 +54,70 @@ class AuthorizeTest extends TestCase
         $this->assertArrayHasKey('razorpay_payment_id', $content);
 
         Mail::assertSent(AuthorizedMail::class);
+    }
+
+    public function testMagicKeyFalseMerchantDisabled()
+    {
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->edit('iin', 401200, ['flows' => ['magic' => '1']]);
+
+        $this->startTest();
+    }
+
+    public function testMagicKeySet()
+    {
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->merchant->enableMagic();
+
+        $this->fixtures->edit('iin', 401200, ['flows' => ['magic' => '1']]);
+
+        $this->startTest();
+    }
+
+    public function testMagicKeyFalseDisabledIin()
+    {
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->merchant->enableMagic();
+
+        $this->startTest();
+    }
+
+    public function testMagicKeyFalseDisabledGlobally()
+    {
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->merchant->enableMagic();
+
+        $this->fixtures->edit('iin', 401200, ['flows' => ['magic' => '1']]);
+
+        $store = Cache::store();
+
+        Cache::shouldReceive('store')
+            ->withAnyArgs()
+            ->andReturn($store);
+
+        Cache::shouldReceive('get')
+            ->once()
+            ->with(ConfigKey::DISABLE_MAGIC)
+            ->andReturn(true);
+
+        $this->startTest();
+    }
+
+    public function testInvalidEmailInPayment()
+    {
+        $this->startTest();
     }
 
     public function testEmailMissing()
