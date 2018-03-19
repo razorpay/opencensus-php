@@ -47,9 +47,6 @@
 <strong>IFSC Code</strong>  {{ $ifsc_code }}
 </p>
 
-<p>
-<strong>City</strong>  {{ $beneficiary_city }}
-</p>
   <p>
 Cheers,
 <br>
