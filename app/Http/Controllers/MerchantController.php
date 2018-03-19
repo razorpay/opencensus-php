@@ -953,4 +953,11 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function getMerchantActivationReviewers()
+    {
+        $response = $this->service(E::MERCHANT_DETAIL)->getMerchantActivationReviewers();
+
+        return ApiResponse::json($response);
+    }
 }

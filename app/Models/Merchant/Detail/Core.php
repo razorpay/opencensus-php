@@ -732,7 +732,7 @@ class Core extends Base\Core
 
         $failedItems = [];
 
-        foreach($merchants as $merchantId)
+        foreach ($merchants as $merchantId)
         {
             try
             {

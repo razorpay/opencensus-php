@@ -4,17 +4,17 @@ namespace RZP\Models\Merchant\Detail;
 
 use Carbon\Carbon;
 
-use RZP\Constants\Timezone;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\User;
+use RZP\Models\Admin;
 use RZP\Models\Merchant;
-use RZP\Trace\TraceCode;
+use RZP\Models\Admin\Org;
 use RZP\Models\FileStore;
+use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Constants;
-use RZP\Models\Merchant\Detail;
-use RZP\Models\Merchant\Detail\ValidationFields;
-use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\Action as Action;
+use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 use RZP\Models\Merchant\Detail\RejectionReasons as RejectionReasons;
 
@@ -106,7 +106,7 @@ class Service extends Base\Service
     }
 
     public function storeActivationFile(
-        Merchant\Detail\Entity $merchantDetails,
+        Entity $merchantDetails,
         array $input)
     {
         $params = [];
@@ -454,15 +454,14 @@ class Service extends Base\Service
 
         $phoneNumber = $input['contact_mobile'] ?? '';
 
-        $businessType = isset($input['business_type']) ?
-            Merchant\Detail\BusinessType::getType($input['business_type']) : '';
+        $businessType = isset($input['business_type']) ? BusinessType::getType($input['business_type']) : '';
 
         $transactionVolume = isset($input['transaction_volume']) ?
-            Merchant\Detail\TransactionVolume::getVolume($input['transaction_volume']) : '';
+            TransactionVolume::getVolume($input['transaction_volume']) : '';
 
-        $role = isset($input['role']) ? Merchant\Detail\Role::getType($input['role']) : '';
+        $role = isset($input['role']) ? Role::getType($input['role']) : '';
 
-        $department = isset($input['department']) ? Merchant\Detail\Department::getType($input['department']) : '';
+        $department = isset($input['department']) ? Department::getType($input['department']) : '';
 
         $referrer = $merchant->referrer ?? '';
 
@@ -526,5 +525,36 @@ class Service extends Base\Service
         $reviewerId = $input[Entity::REVIEWER_ID];
 
         return (new Core)->bulkAssignReviewer($reviewerId, $merchants);
+    }
+
+    public function getMerchantActivationReviewers()
+    {
+        $orgId = $this->auth->getOrgId();
+
+        Org\Entity::verifyIdAndStripSign($orgId);
+
+        $permissionIds = $this->repo
+                            ->permission
+                            ->retrieveIdsByNamesAndOrg(Admin\Permission\Name::REVIEW_MERCHANT_ACTIVATION, $orgId)
+                            ->toArray();
+
+        if (count($permissionIds) === 0)
+        {
+            throw new Exception\RuntimeException('Missing Permission');
+        }
+
+        $permissionId = array_first($permissionIds);
+
+        $admins = new Base\Collection;
+
+        foreach ($this->repo->permission->findOrFail($permissionId)->roles as $role)
+        {
+            foreach ($role->admins as $roleAdmin)
+            {
+                $admins->push($roleAdmin->toArrayPublic());
+            }
+        }
+
+        return $admins;
     }
 }

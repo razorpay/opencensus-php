@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Merchant\Detail;
 
-use function Aws\or_chain;
 use RZP\Base;
 use RZP\Exception;
 use Razorpay\IFSC\IFSC;
@@ -356,7 +355,7 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(self::INVALID_MERCHANTS);
         }
 
-        foreach($input[Entity::MERCHANTS] as $merchant)
+        foreach ($input[Entity::MERCHANTS] as $merchant)
         {
             if ((is_string($merchant) === false) or
                 (strlen($merchant) > 14))
