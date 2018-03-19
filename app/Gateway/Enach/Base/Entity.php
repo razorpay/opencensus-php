@@ -15,7 +15,6 @@ class Entity extends Base\Entity
     const BANK                  = 'bank';
     const AMOUNT                = 'amount';
     const STATUS                = 'status';
-    const RECEIVED              = 'received';
     const SIGNED_XML            = 'signed_xml';
     const UMRN                  = 'umrn';
     const GATEWAY_REFERENCE_ID  = 'gateway_reference_id';
@@ -33,7 +32,6 @@ class Entity extends Base\Entity
         self::AMOUNT,
         self::STATUS,
         self::GATEWAY_REFERENCE_ID,
-        self::RECEIVED,
         self::SIGNED_XML,
         self::UMRN,
     ];

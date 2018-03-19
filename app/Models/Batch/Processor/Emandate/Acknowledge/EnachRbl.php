@@ -10,7 +10,6 @@ use RZP\Gateway\Base\Action as GatewayAction;
 use RZP\Gateway\Enach\Base\Entity as EnachEntity;
 use RZP\Gateway\Enach\Base\AcknowledgeFileHeadings as Headings;
 
-
 class EnachRbl extends Base
 {
     const TRUE = 'true';
@@ -18,15 +17,10 @@ class EnachRbl extends Base
 
     protected $gateway = Gateway::ENACH_RBL;
 
-    protected static $statusMap = [
-        self::TRUE   => Token\RecurringStatus::INITIATED,
-        self::FALSE  => Token\RecurringStatus::REJECTED,
-     ];
-
     // Return single XML row as multiple entries
-    protected function parseFile(string $file)
+    protected function parseFile(string $filePath): array
     {
-        $xmlObject = simplexml_load_file($file);
+        $xmlObject = simplexml_load_file($filePath);
 
         return [
             ['data' => json_decode(json_encode($xmlObject), true)]
@@ -38,77 +32,104 @@ class EnachRbl extends Base
         $row = $entry['data'];
 
         $data = $this->getDataFromRow($row);
-
+        s($data);
         $this->updateEntities($data);
     }
 
+    /**
+     * @param  array $row
+     * @return array
+     */
     protected function getDataFromRow(array & $row): array
     {
-        $row = $row['MndtAccptncRpt']['UndrlygAccptncDtls'];
+        $details = $row['MndtAccptncRpt']['UndrlygAccptncDtls'];
+        $headerRow = $row['MndtAccptncRpt']['GrpHdr'];
 
-        $originalMandate = $row['OrgnlMndt']['OrgnlMndt'];
-        $parsedStatus = trim($row['AccptncRslt']['Accptd']);
+        $originalMandate = $details['OrgnlMndt']['OrgnlMndt'];
+        $status = trim($details['AccptncRslt']['Accptd']);
         $umrn = trim($originalMandate['MndtId']);
 
         return [
             'payment_id'         => trim($originalMandate['MndtReqId']),
             'umrn'               => $umrn,
-            'acknowledge_status' => $parsedStatus,
+            'reference_id'       => $headerRow['MsgId'],
+            'acknowledge_status' => $status,
             'account_number'     => trim($originalMandate['DbtrAcct']['Id']['Othr']['Id']),
-            'token_status'       => $this->getTokenStatus($parsedStatus),
+            'token_status'       => $this->getTokenStatus($status),
             'error_message'      => null,
         ];
     }
 
-    protected function updateEntities(array $parsedData)
+    /**
+     * @param array $parsedData
+     */
+    protected function updateEntities(array $content)
     {
-        $paymentId = $parsedData['payment_id'];
+        $paymentId = $content['payment_id'];
 
-        $accountNumber = $parsedData['account_number'];
-
-        // Update gateway payment
-        $gatewayPayment = $this->updateGatewayPayment($parsedData);
+        $accountNumber = $content['account_number'];
 
         // Get payment
-        $payment = $this->repo->payment->fetchDebitEmandatePaymentPendingAuth(
+        $payment = $this->repo->payment->fetchEmandatePaymentPendingRegistration(
                         $this->gateway,
                         $paymentId,
                         $accountNumber);
 
+        if (($payment->isFailed() === true) or
+            ($payment->isCaptured() === true))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Payment has been already processed',
+                ['payment_id'],
+                ['payment_id' => $payment->getId()]);
+        }
+
+        // Update gateway payment
+        $this->updateGatewayPaymentEntity($content);
+
         // Update token
-        $this->updateToken($parsedData, $payment);
+        $this->updateTokenEntity($payment, $content);
     }
 
     /**
-     * @param array $parsedData
-     * @param $parsedData['payment_id']
-     * @param $parsedData['status']
-     * @param $parsedData['error_message']
-     *
+     * @param array $content
+
      * @return EnachEntity
      */
-    protected function updateGatewayPayment(array $parsedData): EnachEntity
+    protected function updateGatewayPaymentEntity(array $content): EnachEntity
     {
-        $paymentId = $parsedData['payment_id'];
+        $paymentId = $content['payment_id'];
 
         $gatewayPayment = $this->repo->enach->findByPaymentIdAndActionOrFail(
             $paymentId, GatewayAction::AUTHORIZE);
 
-        $attrs = $this->getGatewayAttributes($parsedData);
+        $attributes = $this->getGatewayAttributes($content);
 
-        $gatewayPayment->fill($attrs);
+        $gatewayPayment->fill($attributes);
 
         $this->repo->saveOrFail($gatewayPayment);
 
         return $gatewayPayment;
     }
 
-    protected function updateToken(array $parsedData, Payment\Entity $payment)
+    /**
+     * @param  Payment\Entity $payment
+     * @param  array          $content
+     */
+    protected function updateTokenEntity(Payment\Entity $payment, array $content)
     {
         $token = $payment->getGlobalOrLocalTokenEntity();
 
+        if ($token === null)
+        {
+            $this->app['trace']->error(TraceCode::PAYMENT_TOKEN_NOT_FOUND,
+                [
+                    'payment_id' => $payment->getId()
+                ]);
+        }
+
         $currentRecurringStatus = $token->getRecurringStatus();
-        $parsedStatus = $parsedData['token_status'];
+        $parsedStatus = $content['token_status'];
 
         if (Token\RecurringStatus::isFinalStatus($currentRecurringStatus) === true)
         {
@@ -126,7 +147,7 @@ class EnachRbl extends Base
 
         $tokenParams = [
             Token\Entity::RECURRING_STATUS          => $parsedStatus,
-            Token\Entity::RECURRING_FAILURE_REASON  => $parsedData['error_message'],
+            Token\Entity::RECURRING_FAILURE_REASON  => $content['error_message'],
         ];
 
         (new Token\Core)->updateTokenFromEmandateGatewayData($token, $tokenParams);
@@ -138,32 +159,20 @@ class EnachRbl extends Base
     {
         $gatewayTokenStatus = strtolower($gatewayTokenStatus);
 
-        if (isset(self::$statusMap[$gatewayTokenStatus]) === false)
+        if ($gatewayTokenStatus === self::TRUE)
         {
-            throw new Exception\LogicException(
-                'Unrecognized gateway status: ' . $gatewayTokenStatus);
+            return Token\RecurringStatus::INITIATED;
         }
 
-        return self::$statusMap[$gatewayTokenStatus];
+        return Token\RecurringStatus::REJECTED;
     }
 
-    protected function getGatewayAttributes(array $parsedData): array
+    protected function getGatewayAttributes(array $content): array
     {
-        $gatewayStatus = $parsedData['status'];
-
-        if (in_array($gatewayStatus, [self::TRUE, self::FALSE], true) === false)
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_INVALID_STATUS,
-                '',
-                '',
-                ['parsed_data' => $parsedData]);
-        }
-
         return [
-            EnachEntity::RECEIVED           => true,
-            EnachEntity::ERROR_MESSAGE      => $parsedData['error_message'],
-            EnachEntity::ACKNOWLEDGE_STATUS => $gatewayStatus,
+            EnachEntity::ACKNOWLEDGE_STATUS   => $content['acknowledge_status'],
+            EnachEntity::UMRN                 => $content['umrn'],
+            EnachEntity::GATEWAY_REFERENCE_ID => $content['reference_id'],
         ];
     }
 }

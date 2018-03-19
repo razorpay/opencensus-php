@@ -86,7 +86,7 @@ class EnachRbl extends Base
 
         if ($data['status'] === self::ACTIVE)
         {
-            return $this->processAuthorizedPayment($payment);
+            return $this->capturePayment($payment);
         }
     }
 
@@ -97,6 +97,28 @@ class EnachRbl extends Base
         $processor = new Processor($merchant);
 
         $processor = $processor->setPayment($payment);
+
+        $paymentProcessor = (new PaymentProcessor($payment->merchant));
+
+        $amount = $payment->getAmount();
+
+        // The payment amount is inclusive of fees, so we need to capture with the original amount.
+        if ($payment->merchant->isFeeBearerCustomer() === true)
+        {
+            $amount = $amount - $payment->getFee();
+        }
+
+        $params = [
+            Payment\Entity::AMOUNT   => $amount,
+            Payment\Entity::CURRENCY => $payment->getCurrency()
+        ];
+
+        // We do not capture the payment if its already refunded
+        if (($payment->isPartiallyOrFullyRefunded() === false) and
+            ($payment->hasBeenCaptured() === false))
+        {
+            $paymentProcessor->capture($payment, $params);
+        }
 
         return $processor->processAuth($payment);
     }

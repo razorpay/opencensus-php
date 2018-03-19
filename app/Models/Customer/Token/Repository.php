@@ -116,15 +116,6 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
-    public function getTokenByGatewayTokenAndAccountNumber(string $gatewayToken, string $accountNumber)
-    {
-        return $this->newQuery()
-                    ->where(Entity::METHOD, Method::EMANDATE)
-                    ->where(Entity::GATEWAY_TOKEN, $gatewayToken)
-                    ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
-                    ->firstOrFail();
-    }
-
     public function isMerchantIdRequiredForFetch()
     {
         return false;

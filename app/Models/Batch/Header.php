@@ -181,6 +181,7 @@ class Header
     const ENACH_REGISTER_START_DATE         = 'START_DATE';
     const ENACH_REGISTER_END_DATE           = 'END_DATE';
     const ENACH_REGISTER_TEL_NO             = 'TEL_NO';
+    const ENACH_REGISTER_MOBILE_NO          = 'MOBILE_NO';
     const ENACH_REGISTER_MAIL_ID            = 'MAIL_ID';
     const ENACH_REGISTER_UPLOAD_BATCH       = 'UPLOAD_BATCH';
     const ENACH_REGISTER_UPLOAD_DATE        = 'UPLOAD_DATE';
