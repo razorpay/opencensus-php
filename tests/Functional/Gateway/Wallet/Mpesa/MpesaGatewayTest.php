@@ -25,8 +25,6 @@ class MpesaGatewayTest extends TestCase
 
     public function setUp()
     {
-        $this->markTestSkipped('Skipping for now');
-
         $this->testDataFilePath = __DIR__ . '/MpesaGatewayTestData.php';
 
         parent::setUp();
@@ -44,8 +42,6 @@ class MpesaGatewayTest extends TestCase
 
     public function testOtpPayment()
     {
-        $this->markTestSkipped();
-
         $testData = $this->testData[__FUNCTION__];
 
         $this->doAuthAndCapturePayment($this->payment);
@@ -162,8 +158,6 @@ class MpesaGatewayTest extends TestCase
 
     public function testOtpCustomerValidationFailure()
     {
-        $this->markTestSkipped();
-
         $data = $this->testData['testOtpAuthFailure'];
 
         $this->mockActionFailure();
@@ -179,8 +173,6 @@ class MpesaGatewayTest extends TestCase
 
     public function testOtpGenerationFailure()
     {
-        $this->markTestSkipped();
-
         $data = $this->testData['testOtpAuthFailure'];
 
         $this->mockActionFailure();
@@ -196,8 +188,6 @@ class MpesaGatewayTest extends TestCase
 
     public function testCallbackOtpSubmitFailure()
     {
-        $this->markTestSkipped();
-
         $data = $this->testData['testOtpAuthFailure'];
 
         $this->mockActionFailure(SoapAction::OTP_SUBMIT_API);
