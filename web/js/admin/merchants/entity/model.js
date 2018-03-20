@@ -360,8 +360,8 @@ export default class Model extends BaseModel {
   @action
   editIssuesList(selectedIssue) {
     //toggle issue from the issues list
-    const foundIndex = this.activationReview.issue_fields.findIndex(
-      issue => issue === selectedIssue
+    const foundIndex = this.activationReview.issue_fields.indexOf(
+      selectedIssue
     );
 
     if (foundIndex > -1) {
