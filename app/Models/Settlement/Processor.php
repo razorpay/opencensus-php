@@ -6,9 +6,9 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use Razorpay\Trace\Logger as Trace;
 
+use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
-use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 
@@ -320,13 +320,10 @@ class Processor extends Base\Core
         $settlements        = new Base\PublicCollection;
         $setlAttempts       = new Base\PublicCollection;
         $txnsSettledCount   = 0;
-        $allTxns            = new Base\PublicCollection;
 
         foreach ($groupedTxns as $key => $txns)
         {
             list($setl, $setlAttempt) = $this->createSettlementsFromTxns($txns, $channel);
-
-            $allTxns->push($txns);
 
             if ($setl !== null)
             {
@@ -338,12 +335,10 @@ class Processor extends Base\Core
 
                     $txnsSettledCount += $txns->count();
                 }
+
+                $this->updateSettlementIdInTransfer($txns);
             }
         }
-
-        $allTxns = $allTxns->flatten();
-
-        $this->updateSettlementIdInTransfer($allTxns);
 
         return [
             'settlement_count'  => $settlements->count(),

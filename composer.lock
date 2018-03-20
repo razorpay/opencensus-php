@@ -1333,16 +1333,16 @@
         },
         {
             "name": "giggsey/libphonenumber-for-php",
-            "version": "8.8.11",
+            "version": "8.9.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/giggsey/libphonenumber-for-php.git",
-                "reference": "919d24a13ff772b6af07d0f3ffefe8963cfb635c"
+                "reference": "dc06ec4f106568fcd79be56e2574a51759d73f67"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/919d24a13ff772b6af07d0f3ffefe8963cfb635c",
-                "reference": "919d24a13ff772b6af07d0f3ffefe8963cfb635c",
+                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/dc06ec4f106568fcd79be56e2574a51759d73f67",
+                "reference": "dc06ec4f106568fcd79be56e2574a51759d73f67",
                 "shasum": ""
             },
             "require": {
@@ -1356,7 +1356,7 @@
                 "pear/versioncontrol_git": "^0.5",
                 "phing/phing": "^2.7",
                 "phpunit/phpunit": "^4.8|^5.0",
-                "satooshi/php-coveralls": "^1.0",
+                "satooshi/php-coveralls": "^1.0|^2.0",
                 "symfony/console": "^2.8|^3.0"
             },
             "type": "library",
@@ -1397,7 +1397,7 @@
                 "phonenumber",
                 "validation"
             ],
-            "time": "2018-02-07T11:27:18+00:00"
+            "time": "2018-03-14T18:52:28+00:00"
         },
         {
             "name": "giggsey/locale",
@@ -5128,16 +5128,16 @@
         },
         {
             "name": "razorpay/ifsc",
-            "version": "1.0.15",
+            "version": "1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/ifsc.git",
-                "reference": "8a2904bb10d8bd3b0ba17a478dfecfe927dd5556"
+                "reference": "733dbf70dc2add1e3b3016562dbda02c08f96de0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/8a2904bb10d8bd3b0ba17a478dfecfe927dd5556",
-                "reference": "8a2904bb10d8bd3b0ba17a478dfecfe927dd5556",
+                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/733dbf70dc2add1e3b3016562dbda02c08f96de0",
+                "reference": "733dbf70dc2add1e3b3016562dbda02c08f96de0",
                 "shasum": ""
             },
             "require": {
@@ -5171,7 +5171,7 @@
                 }
             ],
             "description": "Razorpay IFSC Codes Library",
-            "time": "2018-02-08T18:52:15+00:00"
+            "time": "2018-03-19T14:00:07+00:00"
         },
         {
             "name": "razorpay/oauth",

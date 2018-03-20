@@ -22,6 +22,8 @@ class MailTags
 
     const HDFC_SETTLEMENT_FILES            = 'hdfc_settlement_files';
 
+    const RBL_SETTLEMENT                   = 'rbl_settlement';
+
     const SETTLEMENT_FAILURE_EMAIL         = 'settlement_failure_email';
 
     const NULL_UTR_REPORT                  = 'null_utr_report';

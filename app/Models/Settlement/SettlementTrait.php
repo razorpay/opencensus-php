@@ -121,7 +121,7 @@ trait SettlementTrait
 
     protected function skipForMutualFundsMarketplace($txn): bool
     {
-        // Settle only between 12pm and 1 pm
+        // Settle only between 1pm and 2pm
 
         // Is a submerchant of a mutual fund market place
         $isSubMerchantOfMf = false;
@@ -132,6 +132,17 @@ trait SettlementTrait
             Preferences::MID_GOALWISE_NON_TPV,
             Preferences::MID_WEALTHAPP,
             Preferences::MID_WEALTHY,
+            Preferences::MID_PAISABAZAAR,
+        ];
+
+        //
+        // Maps the mids that want to receive only 1 settlement per day,
+        // no matter what. They need all transactions till 1 pm to be
+        // settled by 3 pm.
+        //
+        $oneSetlPerDayMids = [
+            Preferences::MID_WEALTHY,
+//            Preferences::MID_PAISABAZAAR,
         ];
 
         if (($txn->isTypePayment() === true) and
@@ -153,11 +164,7 @@ trait SettlementTrait
 
             $twoTenPm = Carbon::today(Timezone::IST)->hour(14)->minute(10)->getTimestamp();
 
-            //
-            // Wealthy does not want any settlements to happen outside their given window,
-            // i.e. after 1pm. TODO: Better way to implement this.
-            //
-            if (($txn->merchant->getParentId() === Preferences::MID_WEALTHY) and
+            if ((in_array($txn->merchant->getParentId(), $oneSetlPerDayMids, true) === true) and
                 ($now > $oneThirtyPm))
             {
                 return true;
@@ -199,6 +206,7 @@ trait SettlementTrait
         {
             $this->trace->info(TraceCode::SETTLEMENT_SKIPPED,
                 [
+                    'balance'    => $balance,
                     'merchant'   => $merchant->getId(),
                     'setlAmount' => $setlAmount,
                 ]);
@@ -469,7 +477,7 @@ trait SettlementTrait
     {
         RuntimeManager::setMemoryLimit('1024M');
 
-        // Time limit of 9 mins
-        RuntimeManager::setTimeLimit(540);
+        // Time limit of 9 mins 55 seconds
+        RuntimeManager::setTimeLimit(599);
     }
 }

@@ -33,7 +33,7 @@ return [
     ],
 
     'testPaymentNetbankingEntity' => [
-        'bank_payment_id' => 'AB1234',
+        'bank_payment_id' => '12345678',
         'received'        => true,
         'bank'            => 'BARB_R',
         'status'          => 'S',
@@ -95,14 +95,14 @@ return [
     ],
 
     'testPaymentVerifySuccessEntity' => [
-        'bank_payment_id' => 'AB1234',
+        'bank_payment_id' => '12345678',
         'received'        => true,
         'bank'            => 'BARB_R',
         'status'          => Status::SUCCESS
     ],
 
     'testAuthFailedEntity' => [
-        'bank_payment_id' => 'AB1234',
+        'bank_payment_id' => '12345678',
         'received'        => true,
         'bank'            => 'BARB_R',
         'status'          => Status::SUCCESS

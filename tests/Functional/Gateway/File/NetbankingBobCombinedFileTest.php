@@ -113,7 +113,7 @@ class NetbankingBobCombinedFileTest extends TestCase
 
         // Since there is no delimiter and the number of characters of the payment id remains the same,
         // we can check the total character count in the refund file's line
-        $this->assertEquals(55, strlen($refundsFileContents[1]));
+        $this->assertEquals(63, strlen($refundsFileContents[1]));
     }
 
     protected function checkClaimsFile(array $claimsFileData)

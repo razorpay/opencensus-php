@@ -48,12 +48,6 @@ final class Constants
         Detail\Entity::BANK_BRANCH_IFSC            => 3,
         Detail\Entity::BANK_ACCOUNT_NUMBER         => 3,
         Detail\Entity::BANK_ACCOUNT_NAME           => 3,
-        Detail\Entity::BANK_BENEFICIARY_ADDRESS1   => 3,
-        Detail\Entity::BANK_BENEFICIARY_ADDRESS2   => 3,
-        Detail\Entity::BANK_BENEFICIARY_ADDRESS3   => 3,
-        Detail\Entity::BANK_BENEFICIARY_CITY       => 3,
-        Detail\Entity::BANK_BENEFICIARY_STATE      => 3,
-        Detail\Entity::BANK_BENEFICIARY_PIN        => 3,
 
         Detail\Entity::BUSINESS_PROOF_URL          => 4,
         Detail\Entity::BUSINESS_PAN_URL            => 4,

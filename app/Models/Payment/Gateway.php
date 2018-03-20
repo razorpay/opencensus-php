@@ -426,6 +426,7 @@ class Gateway
     public static $cardNetworkRecurringMap = [
         self::HITACHI => [
             Network::VISA,
+            Network::MC,
         ],
     ];
 
@@ -495,7 +496,6 @@ class Gateway
     public static $verifyDisabled = [
         self::WALLET_OPENWALLET,
         self::NETBANKING_RBL,
-        self::UPI_ICICI,
         self::ENACH_RBL,
     ];
 
