@@ -75,6 +75,7 @@ export default class ReviewNotesDetails extends Component {
 
     return (
       <div class="review-notes container">
+        {/* Show certain activation related action in this section also */}
         <header class="m-b">Activation Checklist: </header>
         <div class="activation-actions-btns">
           <ShowWhen permission="edit_merchant_methods">
@@ -153,6 +154,7 @@ export default class ReviewNotesDetails extends Component {
             customClass="table-bordered"
           />
         </div>
+        {/* form for saving issues reason & internal comments */}
         <div class="issue-section">
           <Form class="full-span full-elements limited">
             <TextAreaField
@@ -188,7 +190,10 @@ export default class ReviewNotesDetails extends Component {
     );
   }
 }
-
+/**
+ * Email preview with issues listed & comments in them.
+ * It's editable
+ */
 const EmailModal = ({ issues, comment }) => (
   <BaseModal header="Email Preview (editable)">
     <div class="email-preview" contentEditable={true}>
@@ -201,6 +206,7 @@ const EmailModal = ({ issues, comment }) => (
       </p>
       <div>
         Clarifications needed for :
+        {/* if issue doesn't exists in the map, then use snakeTitleCase*/}
         <ul class="issues-list">
           {issues.map(issue => (
             <li key={issue}>{issuesMap[issue] || snakeToTitleCase(issue)}</li>
@@ -230,6 +236,7 @@ const EmailModal = ({ issues, comment }) => (
   </BaseModal>
 );
 
+// mapping fields with there labels used in `merchant` activation form
 const issuesMap = {
   contact_name: 'Contact Name',
   contact_email: 'Email',

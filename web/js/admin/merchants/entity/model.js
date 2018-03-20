@@ -24,7 +24,7 @@ export default class Model extends BaseModel {
     adminsMap: {},
   };
 
-  //Following properties are depply nested into merchant details, hence create a diff observalble for it.
+  //Following properties are deeply nested into merchant details, hence create a diff observalble for it.
   @observable
   activationReview = {
     issue_fields: [],
@@ -57,6 +57,7 @@ export default class Model extends BaseModel {
         this.setAutoRefundDelay(data);
         this.merchant.details = data;
 
+        //pre-fill props related to review activation fields
         this.activationReview = {
           issue_fields: data.merchant_details.issue_fields
             ? data.merchant_details.issue_fields.split(',')
@@ -358,6 +359,7 @@ export default class Model extends BaseModel {
 
   @action
   editIssuesList(selectedIssue) {
+    //toggle issue from the issues list
     const foundIndex = this.activationReview.issue_fields.findIndex(
       issue => issue === selectedIssue
     );

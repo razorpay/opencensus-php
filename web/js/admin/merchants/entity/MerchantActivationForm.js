@@ -128,6 +128,7 @@ export default class MerchantActivationForm extends Component {
 
     body.issue_fields = issues.join(',');
 
+    // `issue_fields_reason` is a compulsary field
     if (!body.issue_fields_reason) {
       notifyError('Please enter a public comment.');
       return;
@@ -146,6 +147,7 @@ export default class MerchantActivationForm extends Component {
   };
 
   handleIssueExistence = currIssue => {
+    //check whether the issues exists & then wire chcekbox ui based on the issue existence
     const issues = this.model.activationReview.issue_fields;
     const found = issues.findIndex(issue => currIssue === issue);
     return found > -1;
