@@ -15,8 +15,6 @@ use RZP\Models\FundTransfer\Batch\BatchFundTransferTrait;
 
 class Initiator extends Base\Core
 {
-    use BatchFundTransferTrait;
-
     const MUTEX_RESOURCE        = 'FUND_TRANSFER_PROCESSING';
     const MUTEX_LOCK_TIMEOUT    = 900;
 
@@ -110,40 +108,11 @@ class Initiator extends Base\Core
             return $data;
         }
 
-        foreach ($attempts as $attempt)
-        {
-            $txnCount = $this->getTransactionsCount($attempt);
-
-            $this->createOrUpdateBatchFundTransferForEntity($attempt->source, $txnCount);
-
-            $attempt->batchFundTransfer()->associate($this->batchFundTransfer);
-
-            $attempt->setStatus(Status::INITIATED);
-
-            $attempt->source->batchFundTransfer()->associate($this->batchFundTransfer);
-
-            $attempt->source->setStatus(Status::INITIATED);
-        }
-
         $class = "RZP\\Models\\FundTransfer\\" . ucfirst($channel) . "\\NodalAccount";
 
-        $fileEntity = (new $class)->generateFundTransferFile($attempts);
+        $response = (new $class)->initiateTransfer($attempts);
 
-        $url = $fileEntity->getUrl();
-
-        $urls = ['file' => $url];
-
-        $fileDetails = $fileEntity->get();
-
-        $this->updateFileDetailsInBatchFundTransferEntity(
-            [
-                'urls'          => $urls,
-                'txt_file_id'   => $fileDetails['id'],
-            ]);
-
-        $this->saveEntitiesToDb($attempts);
-
-        $data['file'] = $fileDetails;
+        $data += $response;
 
         $this->trace->info(TraceCode::SETTLEMENT_INITIATED, $slackData);
 
@@ -166,16 +135,6 @@ class Initiator extends Base\Core
 
             default:
                 return 1;
-        }
-    }
-
-    protected function saveEntitiesToDb(Base\PublicCollection $attempts)
-    {
-        foreach ($attempts as $attempt)
-        {
-            $this->repo->saveOrFail($attempt);
-
-            $this->repo->saveOrFail($attempt->source);
         }
     }
 
