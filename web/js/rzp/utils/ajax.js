@@ -4,8 +4,8 @@ import { getMode } from 'merchant/store';
 export function merchantFetch(params) {
   if (typeof params === 'string') {
     params = {
-      url: params
-    }
+      url: params,
+    };
   }
 
   let mode = params.mode;
@@ -17,8 +17,8 @@ export function merchantFetch(params) {
 
   if (params.accountId) {
     params.headers = {
-      'X-Razorpay-Account': params.accountId
-    }
+      'X-Razorpay-Account': params.accountId,
+    };
   }
   delete params.accountId;
 
@@ -41,6 +41,11 @@ export default function ajax(params = {}) {
       params.params = params.data;
       delete params.data;
     }
+
+    params.paramsSerializer = function(params) {
+      const encodedParams = _flattenSearchParams(params);
+      return encodedParams.join('&'); // Build the encoded query string
+    };
 
     axios(params).then(
       ({ data }) => {
@@ -75,4 +80,40 @@ export default function ajax(params = {}) {
       }
     );
   });
-};
+}
+
+// Flatten Search Params to encodeURIComponent format
+function _flattenSearchParams(data) {
+  const searchParams = [];
+  function flattenObj(data, parentKey) {
+    for (var key in data) {
+      if (data.hasOwnProperty(key) && data[key]) {
+        if (data[key] instanceof Object) {
+          if (parentKey) {
+            flattenObj(data[key], parentKey + '[' + key + ']');
+          } else {
+            flattenObj(data[key], key);
+          }
+        } else {
+          // Check to ignore undefined values
+          if (data[key] != null) {
+            if (parentKey) {
+              searchParams.push(
+                encodeURIComponent(parentKey + '[' + key + ']') +
+                  '=' +
+                  encodeURIComponent(data[key])
+              );
+            } else {
+              searchParams.push(
+                encodeURIComponent(key) + '=' + encodeURIComponent(data[key])
+              );
+            }
+          }
+        }
+      }
+    }
+  }
+
+  flattenObj(data);
+  return searchParams;
+}
