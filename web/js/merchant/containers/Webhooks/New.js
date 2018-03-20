@@ -177,6 +177,9 @@ export default class AddWebhook extends Component {
                   </div>
                 </ShowWhen>
 
+                <ShowWhen apiFeatureEnabled="virtual_accounts">
+                  <WebhookEventCheckbox eventName="virtual_account.credited" />
+                </ShowWhen>
                 <ShowWhen apiFeatureEnabled="Marketplace">
                   <div>
                     <WebhookEventCheckbox eventName="settlement.processed" />
