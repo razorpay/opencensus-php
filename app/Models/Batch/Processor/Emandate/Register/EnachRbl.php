@@ -4,6 +4,8 @@ namespace RZP\Models\Batch\Processor\Emandate\Register;
 
 use Config;
 use RZP\Exception;
+use RZP\Models\Batch;
+use RZP\Models\Payment;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Gateway;
 use RZP\Gateway\Enach\Base\Entity as EnachEntity;
@@ -15,11 +17,6 @@ class EnachRbl extends Base
 
     const ACTIVE   = 'active';
     const REJECT   = 'reject';
-
-    protected static $statusMap = [
-        self::ACTIVE => Token\RecurringStatus::CONFIRMED,
-        self::REJECT => Token\RecurringStatus::REJECTED,
-     ];
 
     protected function processEntry(array & $entry)
     {
@@ -38,8 +35,6 @@ class EnachRbl extends Base
 
         $accountNumber = $parsedData['account_number'];
 
-        $remark = $parsedData['remark'];
-
         $gatewayPayment = $this->repo
                                ->enach
                                ->findByUmrnAndAckStatus($gatewayToken);
@@ -49,7 +44,7 @@ class EnachRbl extends Base
 
         $currentRecurringStatus = $token->getRecurringStatus();
 
-        $parsedStatus = $parsedData['status'];
+        $parsedStatus = $parsedData['token_status'];
 
         if (Token\RecurringStatus::isFinalStatus($currentRecurringStatus) === true)
         {
@@ -69,13 +64,14 @@ class EnachRbl extends Base
 
         $tokenParams = [
             Token\Entity::RECURRING_STATUS          => $parsedStatus,
-            Token\Entity::RECURRING_FAILURE_REASON  => $remark,
             Token\Entity::GATEWAY_TOKEN             => $gatewayToken
         ];
 
         (new Token\Core)->updateTokenFromEmandateGatewayData($token, $tokenParams);
 
         $this->repo->saveOrFail($token);
+
+        $entry[Batch\Header::STATUS] = Batch\Status::SUCCESS;
     }
 
     protected function updatePaymentEntities(Payment\Entity $payment, EnachEntity $gatewayPayment, array $data)
@@ -84,9 +80,9 @@ class EnachRbl extends Base
 
         $this->repo->saveOrFail($gatewayPayment);
 
-        if ($data['status'] === self::ACTIVE)
+        if ($data['registration_status'] === self::ACTIVE)
         {
-            return $this->capturePayment($payment);
+            return $this->processAuthorizedPayment($payment);
         }
     }
 
@@ -94,11 +90,9 @@ class EnachRbl extends Base
     {
         $merchant = $payment->merchant;
 
-        $processor = new Processor($merchant);
+        $paymentProcessor = (new Payment\Processor\Processor($payment->merchant));
 
-        $processor = $processor->setPayment($payment);
-
-        $paymentProcessor = (new PaymentProcessor($payment->merchant));
+        $paymentProcessor->setPayment($payment);
 
         $amount = $payment->getAmount();
 
@@ -120,36 +114,34 @@ class EnachRbl extends Base
             $paymentProcessor->capture($payment, $params);
         }
 
-        return $processor->processAuth($payment);
+        return $paymentProcessor->processAuth($payment);
     }
 
     protected function getDataFromRow(array & $entry): array
     {
         $gatewayToken = $entry['UMRN'];
 
-        $status = $entry['STATUS'];
-        $status = $this->getTokenStatus($status);
+        $registrationStatus = strtolower($entry['STATUS']);
+        $status = $this->getTokenStatus($registrationStatus);
 
         $accountNumber = $entry['ACNO'];
 
         return [
             'gateway_token'       => $gatewayToken,
             'token_status'        => $status,
-            'registration_status' => $entry['STATUS'],
+            'registration_status' => $registrationStatus,
             'account_number'      => $accountNumber,
         ];
     }
 
     protected function getTokenStatus(string $gatewayTokenStatus): string
     {
-        $gatewayTokenStatus = strtolower($gatewayTokenStatus);
-
-        if (isset(self::$statusMap[$gatewayTokenStatus]) === false)
+        if ($gatewayTokenStatus === self::ACTIVE)
         {
-            return Token\RecurringStatus::REJECTED;
+            return Token\RecurringStatus::CONFIRMED;
         }
 
-        return self::$statusMap[$gatewayTokenStatus];
+        return Token\RecurringStatus::REJECTED;
     }
 
     protected function parseExcelSheets($filePath)

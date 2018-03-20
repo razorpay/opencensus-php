@@ -57,7 +57,7 @@ class Entity extends Base\Entity
 
     public function payment()
     {
-        return $this->hasOne(\RZP\Models\Payment\Entity::class);
+        return $this->belongsTo(\RZP\Models\Payment\Entity::class);
     }
 
     protected function setSignedXmlAttribute($signedXml)

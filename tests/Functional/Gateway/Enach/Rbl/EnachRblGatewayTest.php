@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Gateway\Enach\Rbl;
 
+use Excel;
 use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Error\ErrorCode;
@@ -140,12 +141,83 @@ class EnachRblGatewayTest extends TestCase
         fseek($handle, 0);
         $file = (new TestingFile('MMS-CREATE-RATN-RATNA0001-06032018-ESIGN6000001-INP-ACK.xml', $handle));
 
+        $this->ba->proxyAuth('rzp_test_100000Razorpay');
+
+        $batch = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('emandate', $batch['type']);
+        $this->assertEquals('created', $batch['status']);
+
+        $enach = $this->getDbLastEntityToArray('enach');
+
+        $this->assertEquals('false', $enach['acknowledge_status']);
+        $this->assertNotNull($enach['umrn']);
+
+        $token = $this->getDbLastEntityToArray('token');
+
+        $this->assertEquals('rejected', $token['recurring_status']);
+    }
+
+    public function testRegisterSuccessReconciliation()
+    {
+        list($payment, $token, $order) = $this->createEmandatePayment();
+
+        $gatewayEntity = $this->getLastEntity('enach', true);
+
+        $this->fixtures->edit(
+            'enach',
+            $gatewayEntity['id'],
+            [
+                'umrn' => 'UTIB6000000005844847',
+                'acknowledge_status' => 'true',
+            ]);
+
+        $content = [
+            [
+                'SRNO'            => '1',
+                'MANDATE_DATE'    => Carbon::today()->format('m/d/Y'),
+                'MANDATE_ID'      => 'NEW',
+                'UMRN'            => 'UTIB6000000005844847',
+                'CUST_REFNO'      => '',
+                'SCH_REFNO'       => '',
+                'CUST_NAME'       => 'User name',
+                'BANK'            => '',
+                'BRANCH'          => '',
+                'BANK_CODE'       => 'UTIB0000123',
+                'AC_TYPE'         => 'SAVINGS',
+                'ACNO'            => '914010009305862',
+                'UPDATE_DATE'     => Carbon::now()->addDays(2)->format('m/d/Y'),
+                'AMOUNT'          => '99999',
+                'FREQUENCY'       => 'ADHO',
+                'COLLECTION_TYPE' => 'UPTO MAXIMUM',
+                'START_DATE'      => Carbon::now()->format('m/d/Y'),
+                'END_DATE'        => Carbon::now()->addYears(10)->format('m/d/Y'),
+                'TEL_NO'          => '',
+                'MOBILE_NO'       => '9999999999',
+                'MAIL_ID'         => '',
+                'UPLOAD_BATCH'    => 'ESIGN000001',
+                'UPLOAD_DATE'     => Carbon::now()->format('m/d/Y'),
+                'RESPONSE_DATE'   => Carbon::now()->addDays(2)->format('m/d/Y'),
+                'UTILITY_CODE'    => 'NACH00000000012323',
+                'UTILITY_NAME'    => 'RAZORPAY',
+                'NODAL_ACNO'      => 'RATN3234334',
+                'STATUS'          => 'Active',
+            ],
+        ];
+
+        $data = $this->getExcelString('Response Report-Response Report', $content, 'A2');
+
+        $handle = tmpfile();
+        fwrite($handle, $data);
+        fseek($handle, 0);
+        $file = (new TestingFile('Response Report-Response Report.xlsx', $handle));
+
         $request = [
             'url' => '/batches',
             'method' => 'POST',
             'content' => [
                 'type' => 'emandate',
-                'sub_type' => 'acknowledge',
+                'sub_type' => 'register',
                 'gateway' => 'enach_rbl',
             ],
             'files' => [
@@ -162,12 +234,16 @@ class EnachRblGatewayTest extends TestCase
 
         $enach = $this->getDbLastEntityToArray('enach');
 
-        $this->assertEquals('false', $enach['acknowledge_status']);
+        $this->assertEquals('active', $enach['registration_status']);
         $this->assertNotNull($enach['umrn']);
 
         $token = $this->getDbLastEntityToArray('token');
 
-        $this->assertEquals('rejected', $token['recurring_status']);
+        $this->assertEquals('confirmed', $token['recurring_status']);
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals('captured', $payment['status']);
     }
 
     protected function createEmandatePayment($amount = 0, $recurringType = 'initial')
@@ -197,6 +273,25 @@ class EnachRblGatewayTest extends TestCase
         $payment = $this->fixtures->create('payment:emandate_authorized', $payment);
 
         return [$payment, $token, $order];
+    }
+
+    protected function getExcelString($name, $data, $startCell = 'A1')
+    {
+        $excel = Excel::create(
+            $name,
+            function ($excel) use ($data, $startCell)
+            {
+                $excel->sheet(
+                    'Sheet 1',
+                    function ($sheet) use ($data, $startCell)
+                    {
+                        $sheet->fromArray($data, null, $startCell, true);
+                    }
+                );
+            }
+        );
+
+        return $excel->string('xlsx');
     }
 
     protected function runPaymentCallbackFlowEnachRbl($response, &$callback = null)
