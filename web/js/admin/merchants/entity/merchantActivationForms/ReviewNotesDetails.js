@@ -158,7 +158,7 @@ export default class ReviewNotesDetails extends Component {
         <div class="issue-section">
           <Form class="full-span full-elements limited">
             <TextAreaField
-              label="Public Comment"
+              label="Reason Details"
               name="issue_fields_reason"
               placeholder="Please give a brief explanation for the reasons."
               value={activationReview.issue_fields_reason}
@@ -173,8 +173,8 @@ export default class ReviewNotesDetails extends Component {
               onChange={this.handleInputChange}
             />
             <AsyncButton
-              text="Generate Email"
-              class="btn"
+              text="Preview Email"
+              class="btn btn-default"
               pendingClass="small spinner"
               onSubmit={this.handleEmailGeneration}
             />
