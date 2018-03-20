@@ -7,6 +7,7 @@ import Table from 'ui/Table';
 import Field, { CheckField, TextAreaField } from 'ui/Field';
 import AsyncButton from 'ui/AsyncButton';
 import { openModal } from 'common/modal';
+import BaseModal from 'ui/BaseModal';
 
 import { snakeToTitleCase } from 'common/util';
 import ShowWhen from 'admin/components/ShowWhen';
@@ -44,6 +45,17 @@ export default class ReviewNotesDetails extends Component {
 
   handleDeleteOfIssue = e => {
     this.props.onIssueSelection(null, e.target.dataset.issuename);
+  };
+
+  handleInputChange = e => {
+    this.props.activationReview[e.target.name] = e.target.value;
+  };
+
+  handleEmailGeneration = () => {
+    const { issue_fields, issue_fields_reason } = this.props.activationReview;
+    openModal(
+      <EmailModal issues={toJS(issue_fields)} comment={issue_fields_reason} />
+    );
   };
 
   render() {
@@ -147,14 +159,22 @@ export default class ReviewNotesDetails extends Component {
               label="Public Comment"
               name="issue_fields_reason"
               placeholder="Please give a brief explanation for the reasons."
-              defaultValue={activationReview.issue_fields_reason}
+              value={activationReview.issue_fields_reason}
+              onChange={this.handleInputChange}
               required={true}
             />
             <TextAreaField
               label="Internal notes"
               name="internal_notes"
               placeholder="Add an internal notes here."
-              defaultValue={activationReview.internal_notes}
+              value={activationReview.internal_notes}
+              onChange={this.handleInputChange}
+            />
+            <AsyncButton
+              text="Generate Email"
+              class="btn"
+              pendingClass="small spinner"
+              onSubmit={this.handleEmailGeneration}
             />
             <AsyncButton
               text="Save"
@@ -168,3 +188,84 @@ export default class ReviewNotesDetails extends Component {
     );
   }
 }
+
+const EmailModal = ({ issues, comment }) => (
+  <BaseModal header="Email Preview (editable)">
+    <div class="email-preview" contenteditable="true">
+      <p>
+        Hey,
+        <br />
+        <br />
+        Thanks for submitting your application to us. There are few requirements
+        that need to be completed before we can activate your account.
+      </p>
+      <p>
+        Clarifications needed for :
+        <ul class="issues-list">
+          {issues.map(issue => (
+            <li>{issuesMap[issue] || snakeToTitleCase(issue)}</li>
+          ))}
+        </ul>
+      </p>
+      <p>
+        <span>Details:</span>
+        <br />
+        <span class="issues-comment">{comment}</span>
+      </p>
+      <p>
+        Regards,
+        <br />
+        Team Razorpay
+      </p>
+      <p>
+        <strong>
+          P.S: We would need 24-48 working hours to get your responses validated
+          with our partner banks. Also, Kindly avoid in-line responses. If you
+          need any clarification, you can reach us on 9731958333/9980891333
+          between 11:00 AM to 06:00 PM. Please share the reference number when
+          you call.
+        </strong>
+      </p>
+    </div>
+  </BaseModal>
+);
+
+const issuesMap = {
+  contact_name: 'Contact Name',
+  contact_email: 'Email',
+  transaction_report_email: 'Transaction Report Email',
+  contact_mobile: 'Mobile',
+  business_type: 'Organisation Type',
+  business_name: 'Full Business Name',
+  business_dba: 'Billing Label',
+  business_paymentdetails: 'Payments Accepted for',
+  business_model: 'Business Model',
+  business_international: 'International Payments Required',
+  business_website: 'Website/App URL',
+  business_registered_address: 'Registered Address',
+  business_registered_pin: 'Registered Address Pincode',
+  business_registered_state: 'Registration Address State',
+  business_registered_city: 'Registered Address City',
+  business_operation_address: 'Operational Address',
+  business_operation_pin: 'Operational Address Pincode',
+  business_operation_state: 'Operational Address State',
+  business_operation_city: 'Operational Address City',
+  p_gstin: 'GST Identification Number',
+  company_cin: 'Company CIN',
+  company_pan: 'Company PAN',
+  company_pan_name: 'Name on PAN',
+  promoter_pan: 'PAN Number of Promoter',
+  promoter_pan_name: 'Name on PAN Card',
+  bank_branch_ifsc: 'IFSC Code of the Bank Branch',
+  bank_account_number: 'Bank Account Number',
+  bank_account_name: 'Beneficiary Name',
+  business_proof: 'Business Registration Proof',
+  business_operation_proof: 'Business Operation Proof',
+  business_pan_proof: 'Business PAN',
+  address_proof: "Company's Bank Account Statement with Address",
+  promoter_proof: 'Authorised Signatory Proof',
+  promoter_pan_proof: 'PAN Card',
+  promoter_address_proof: "Authorised Signatory's Address Proof",
+  form_12a_url: 'Form 12A Allotment Letter',
+  form_80g_url: 'Form 80G Allotment Letter',
+};
