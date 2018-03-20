@@ -31,7 +31,7 @@ class Service extends Base\Service
                 'gateway' => $gateway,
             ]);
 
-        if (Payment\Gateway::isValidGateway($gateway) === false)
+        if (Payment\Gateway::isValidBharatQrGateway($gateway) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Gateway is invalid',

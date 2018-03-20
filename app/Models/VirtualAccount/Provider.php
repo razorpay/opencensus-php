@@ -306,7 +306,7 @@ class Provider
         // In case of upi payments we need to send reference with
         // prefix. This is how they identify our payments
         //
-        $transactionReferenceTlv = Tags::UPI_VPA_REFERENCE_TR . $this->getLengthAndValue('PIL' . $qrCode->getId());
+        $transactionReferenceTlv = Tags::UPI_VPA_REFERENCE_TR . $this->getLengthAndValue(Constants::UPI_PREFIX . $qrCode->getId());
 
         $upiString = $rupayRidTlv . $transactionReferenceTlv;
 

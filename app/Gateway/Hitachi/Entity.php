@@ -57,7 +57,6 @@ class Entity extends Base\Entity
         self::RRN,
         self::RECEIVED,
         self::STATUS,
-        self::AMOUNT,
         self::MASKED_CARD_NUMBER,
         self::CARD_NETWORK,
         self::MERCHANT_REFERENCE,
@@ -88,16 +87,6 @@ class Entity extends Base\Entity
         $this->setAttribute(self::ACTION, $action);
     }
 
-    public function getAmount()
-    {
-        return $this->getAttribute(self::AMOUNT);
-    }
-
-    public function getCardNumber()
-    {
-        return $this->getAttribute(self::MASKED_CARD_NUMBER);
-    }
-
     public function getRrn()
     {
         return $this->getAttribute(self::RRN);
@@ -106,11 +95,6 @@ class Entity extends Base\Entity
     public function getAuthCode()
     {
         return $this->getAttribute(self::AUTH_ID);
-    }
-
-    public function getRequestId()
-    {
-        return $this->getAttribute(self::REQUEST_ID);
     }
 
     public function getMerchantReference()

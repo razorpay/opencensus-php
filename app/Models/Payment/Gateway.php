@@ -941,6 +941,11 @@ class Gateway
         return (defined(__CLASS__ . '::' . strtoupper($gateway)));
     }
 
+    public static function isValidBharatQrGateway($gateway)
+    {
+        return in_array($gateway , self::$bharatQrGateways, true);
+    }
+
     public static function isValidGatewayAcquirer(string $gatewayAcquirer)
     {
         return array_key_exists($gatewayAcquirer, self::GATEWAY_ACQUIRERS);

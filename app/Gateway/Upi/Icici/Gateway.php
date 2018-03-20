@@ -825,21 +825,26 @@ class Gateway extends Base\Gateway
 
         if ($isBharatQr === true)
         {
-            $qrData = [
-                BharatQr\GatewayResponseParams::AMOUNT                => $this->getIntegerFormattedAmount($response[Fields::PAYER_AMOUNT]),
-                BharatQr\GatewayResponseParams::VPA                   => $response[Fields::PAYER_VA],
-                BharatQr\GatewayResponseParams::METHOD                => Payment\Method::UPI,
-                BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => $response[Fields::MERCHANT_TRAN_ID],
-                BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => (string) $response[Fields::BANK_RRN],
-            ];
-
-            return [
-                'gateway_input' => $response,
-                'qr_data'       => $qrData
-            ];
+            $response = $this->getBharatQrResponse($response);
         }
 
         return $response;
+    }
+
+    protected function getBharatQrResponse(array $input)
+    {
+        $qrData = [
+            BharatQr\GatewayResponseParams::AMOUNT                => $this->getIntegerFormattedAmount($input[Fields::PAYER_AMOUNT]),
+            BharatQr\GatewayResponseParams::VPA                   => $input[Fields::PAYER_VA],
+            BharatQr\GatewayResponseParams::METHOD                => Payment\Method::UPI,
+            BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => $input[Fields::MERCHANT_TRAN_ID],
+            BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => (string) $input[Fields::BANK_RRN],
+        ];
+
+        return [
+            'gateway_input' => $input,
+            'qr_data'       => $qrData
+        ];
     }
 
     /**
@@ -946,7 +951,7 @@ class Gateway extends Base\Gateway
             Fields::TERMINAL_ID                     => $this->getTerminalId($input),
             Fields::ORIGINAL_BANK_RRN_REQ           => $gatewayPayment->getGatewayPaymentId(),
             Fields::MERCHANT_TRAN_ID                => $this->getRefundId($refund),
-            Fields::ORIGINAL_MERCHANT_TRAN_ID       => $gatewayPayment['merchant_reference'],
+            Fields::ORIGINAL_MERCHANT_TRAN_ID       => $gatewayPayment['merchant_reference'] ?? $payment['id'],
             Fields::REFUND_AMOUNT                   => $this->formatAmount($refund['amount']),
             Fields::NOTE                            => 'Razorpay Refund ' . $refund['id'],
             Fields::ONLINE_REFUND                   => $this->isOnlineRefund($refund),
