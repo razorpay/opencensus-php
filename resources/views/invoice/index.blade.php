@@ -977,15 +977,6 @@
                     escape: false
                   }
                 };
-                @if (isset($data['merchant']))
-                  @if ($data['merchant']['id'] === '6lGF5wNtCS8UA0')
-                    options.theme.branding = 'payzapp';
-                  @elseif (isset($data['merchant']['organization']))
-                    @if (isset($data['merchant']['organization']['invoice_logo_url']))
-                      options.theme.branding = merchant.organization.invoice_logo_url;
-                    @endif
-                  @endif
-                @endif
 
                 if (merchant) {
                   if (merchant.organization.business_name) {
