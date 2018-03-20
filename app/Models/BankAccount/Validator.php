@@ -20,15 +20,15 @@ class Validator extends Base\Validator
         Entity::IFSC_CODE                       => 'required|alpha_num|size:11',
         Entity::ACCOUNT_NUMBER                  => 'required|alpha_num|between:5,22',
         Entity::BENEFICIARY_NAME                => 'required|between:4,120|alpha_space_num',
-        Entity::BENEFICIARY_ADDRESS1            => 'required|max:30',
+        Entity::BENEFICIARY_ADDRESS1            => 'sometimes|max:30',
         Entity::BENEFICIARY_ADDRESS2            => 'sometimes|max:30',
         Entity::BENEFICIARY_ADDRESS3            => 'sometimes|max:30',
         Entity::BENEFICIARY_ADDRESS4            => 'sometimes|max:30',
         Entity::MOBILE_BANKING_ENABLED          => 'sometimes|in:0,1',
         Entity::MPIN                            => 'sometimes|max:6',
-        Entity::BENEFICIARY_CITY                => 'required|max:30|alpha_space',
-        Entity::BENEFICIARY_STATE               => 'required|max:2',
-        Entity::BENEFICIARY_PIN                 => 'required|integer|digits:6',
+        Entity::BENEFICIARY_CITY                => 'sometimes|max:30|alpha_space',
+        Entity::BENEFICIARY_STATE               => 'sometimes|max:2',
+        Entity::BENEFICIARY_PIN                 => 'sometimes|integer|digits:6',
         Entity::BENEFICIARY_COUNTRY             => 'sometimes|in:IN',
         Entity::BENEFICIARY_EMAIL               => 'required|email',
         Entity::BENEFICIARY_MOBILE              => 'required|numeric|digits_between:10,12',
@@ -72,7 +72,8 @@ class Validator extends Base\Validator
 
     protected function validateBeneficiaryState($input)
     {
-        if (in_array($input[Entity::BENEFICIARY_STATE], self::$beneficiaryStateCodes, true) === false)
+        if ((isset($input[Entity::BENEFICIARY_STATE]) === true) and
+            (in_array($input[Entity::BENEFICIARY_STATE], self::$beneficiaryStateCodes, true) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Not a valid state code');
