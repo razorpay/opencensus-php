@@ -34,7 +34,7 @@ function batchActions({ mode, sendAll, onDownloadClick }) {
         <button
           class="btn btn-default btn-xs"
           onClick={_ => sendAll(item)}
-          disabled={item.status === 'created'}
+          disabled={item.status === 'created' || item.is_sent_already}
         >
           Send all links
         </button>
