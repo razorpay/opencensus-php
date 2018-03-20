@@ -210,6 +210,7 @@ class ViewDataSerializer extends Base\Core
         }
 
         $merchantData = [
+            'tags'             => $this->merchant->tagNames(),
             'brand_color'      => get_rgb_value($merchantBrandColor),
             'brand_text_color' => get_brand_text_color($merchantBrandColor),
             'image'            => $this->merchant->getFullLogoUrlWithSize(Checkout::CHECKOUT_LOGO_SIZE),
