@@ -104,10 +104,7 @@ abstract class EntityProcessor extends Base\Core
             return;
         }
 
-        //
         // If the old and new status do not match
-        //
-
         if ($this->fta->isPendingReconciliation() === false)
         {
             throw new Exception\BadRequestValidationFailureException(
@@ -147,6 +144,7 @@ abstract class EntityProcessor extends Base\Core
         $sourceStatus = $this->getSourceStatusFromReconEntityStatus();
 
         $this->source->setStatus($sourceStatus);
+
         $this->source->setFailureReason($this->fta->getFailureReason());
 
         $this->repo->saveOrFail($this->source);
