@@ -9,6 +9,7 @@ use RZP\Base\Common;
 use RZP\Constants\Es;
 use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
+use RZP\Exception\LogicException;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\Detail\Status as DetailStatus;
@@ -254,7 +255,7 @@ class EsRepository extends Base\EsRepository
 
             default:
 
-                throw new \LogicException('Invalid value for account_status.');
+                throw new LogicException('Invalid value for account_status.');
         }
     }
 

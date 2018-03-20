@@ -171,12 +171,9 @@ class Core extends Base\Core
             $merchantDetail->reviewer()->associate($reviewer);
         }
 
-        if (empty($input) === false)
-        {
-            $merchantDetail->edit($input);
+        $merchantDetail->edit($input);
 
-            $this->repo->saveOrFail($merchantDetail);
-        }
+        $this->repo->saveOrFail($merchantDetail);
 
         return $merchantDetail;
     }
@@ -719,13 +716,6 @@ class Core extends Base\Core
         }
 
         $response['activated'] = (int) $merchant->isActivated();
-
-        $merchantReviewer = $merchantDetails->reviewer;
-
-        if (empty($merchantReviewer) === false)
-        {
-            $response[Entity::REVIEWER] = $merchantReviewer->toArrayPublic();
-        }
 
         return $response;
     }

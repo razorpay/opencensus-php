@@ -61,10 +61,19 @@ curl -XPUT "http://prod.es-audit.razorpay.vpc:9200/api_merchant_live/_mapping/ap
 php artisan rzp:index test merchant
 php artisan rzp:index live merchant
 
+# 16 Mar, 2018: Adds merchant_detail.reviewer_id in merchant index
+curl -XPUT "http://prod.es-audit.razorpay.vpc:9200/api_merchant_test/_mapping/api_merchant_test" -d '{
+    "properties": {
+        "merchant_detail.reviewer_id": {
+            "type": "keyword"
+        }
+    }
+}'
+
 curl -XPUT "http://prod.es-audit.razorpay.vpc:9200/api_merchant_live/_mapping/api_merchant_live" -d '{
     "properties": {
         "merchant_detail.reviewer_id": {
-            "type": "keyword",
+            "type": "keyword"
         }
     }
 }'

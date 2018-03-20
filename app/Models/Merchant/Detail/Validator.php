@@ -151,7 +151,6 @@ class Validator extends Base\Validator
         Entity::ISSUE_FIELDS                    => 'sometimes|string',
         Entity::ISSUE_FIELDS_REASON             => 'sometimes|string',
         Entity::INTERNAL_NOTES                  => 'sometimes|string',
-        Entity::REVIEWER_ID                     => 'sometimes|string|max:14',
     ];
 
     protected static $preSignupRules = [
