@@ -141,6 +141,19 @@ class EnachRblGatewayTest extends TestCase
         fseek($handle, 0);
         $file = (new TestingFile('MMS-CREATE-RATN-RATNA0001-06032018-ESIGN6000001-INP-ACK.xml', $handle));
 
+        $request = [
+            'url' => '/batches',
+            'method' => 'POST',
+            'content' => [
+                'type' => 'emandate',
+                'sub_type' => 'acknowledge',
+                'gateway' => 'enach_rbl',
+            ],
+            'files' => [
+                'file' => $file,
+            ]
+        ];
+
         $this->ba->proxyAuth('rzp_test_100000Razorpay');
 
         $batch = $this->makeRequestAndGetContent($request);
@@ -234,11 +247,12 @@ class EnachRblGatewayTest extends TestCase
 
         $enach = $this->getDbLastEntityToArray('enach');
 
-        $this->assertEquals('active', $enach['registration_status']);
         $this->assertNotNull($enach['umrn']);
+        $this->assertEquals('active', $enach['registration_status']);
 
         $token = $this->getDbLastEntityToArray('token');
 
+        $this->assertNotNull($token['gateway_token']);
         $this->assertEquals('confirmed', $token['recurring_status']);
 
         $payment = $this->getDbLastEntityToArray('payment');

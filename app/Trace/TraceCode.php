@@ -225,6 +225,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CUSTOMER_EDIT                                 = 'CUSTOMER_EDIT';
     const CUSTOMER_TOKEN_CREATE                         = 'CUSTOMER_TOKEN_CREATE';
     const CUSTOMER_TOKEN_EDIT                           = 'CUSTOMER_TOKEN_EDIT';
+    const CUSTOMER_TOKEN_STATUS_MISMATCH                = 'CUSTOMER_TOKEN_STATUS_MISMATCH';
     const CARD_NUMBER_SCRUBBED                          = 'CARD_NUMBER_SCRUBBED';
     const ORDERS_MULTIPLE_AUTHORIZED_REFUNDS            = 'ORDERS_MULTIPLE_AUTHORIZED_REFUNDS';
     const REFUND_EXCEPTION                              = 'REFUND_EXCEPTION';

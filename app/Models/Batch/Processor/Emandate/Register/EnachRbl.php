@@ -6,17 +6,15 @@ use Config;
 use RZP\Exception;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
+use RZP\Gateway\Enach\Rbl;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Gateway;
 use RZP\Gateway\Enach\Base\Entity as EnachEntity;
-// use RZP\Gateway\Enach\Rbl\EMandateRegisterFileHeadings as Headings;
 
 class EnachRbl extends Base
 {
     const GATEWAY   = Gateway::ENACH_RBL;
-
-    const ACTIVE   = 'active';
-    const REJECT   = 'reject';
 
     protected function processEntry(array & $entry)
     {
@@ -29,11 +27,11 @@ class EnachRbl extends Base
         // 'registration_status' : Corresponds to EnachEntity::REGISTRATION_STATUS
         // 'account_number'      : Corresponds to Token\Entity::ACCOUNT_NUMBER
         //
-        $parsedData = $this->getDataFromRow($entry);
+        $content = $this->getDataFromRow($entry);
 
-        $gatewayToken = $parsedData['gateway_token'];
+        $gatewayToken = $content['gateway_token'];
 
-        $accountNumber = $parsedData['account_number'];
+        $accountNumber = $content['account_number'];
 
         $gatewayPayment = $this->repo
                                ->enach
@@ -44,26 +42,26 @@ class EnachRbl extends Base
 
         $currentRecurringStatus = $token->getRecurringStatus();
 
-        $parsedStatus = $parsedData['token_status'];
+        $newRecurringStatus = $content['token_status'];
+
+        $this->updatePaymentEntities($payment, $gatewayPayment, $content);
 
         if (Token\RecurringStatus::isFinalStatus($currentRecurringStatus) === true)
         {
-            if ($currentRecurringStatus !== $parsedStatus)
+            if ($currentRecurringStatus !== $newRecurringStatus)
             {
-                throw new Exception\LogicException(
-                    'Token status mismatch: ' .
-                    PHP_EOL . 'current_status: ' .  $currentRecurringStatus .
-                    PHP_EOL . 'parsed_status: ' . $parsedStatus);
+                $this->trace->critical(TraceCode::CUSTOMER_TOKEN_STATUS_MISMATCH,
+                    [
+                        'new_status'     => $newRecurringStatus,
+                        'current_status' => $currentRecurringStatus,
+                    ]);
             }
 
-            // If the token has already been updated with the correct value
             return;
         }
 
-        $this->updatePaymentEntities($payment, $gatewayPayment, $parsedData);
-
         $tokenParams = [
-            Token\Entity::RECURRING_STATUS          => $parsedStatus,
+            Token\Entity::RECURRING_STATUS          => $newRecurringStatus,
             Token\Entity::GATEWAY_TOKEN             => $gatewayToken
         ];
 
@@ -80,7 +78,7 @@ class EnachRbl extends Base
 
         $this->repo->saveOrFail($gatewayPayment);
 
-        if ($data['registration_status'] === self::ACTIVE)
+        if ($data['registration_status'] === Rbl\Status::REGISTRATION_SUCCESS)
         {
             return $this->processAuthorizedPayment($payment);
         }
@@ -92,8 +90,6 @@ class EnachRbl extends Base
 
         $paymentProcessor = (new Payment\Processor\Processor($payment->merchant));
 
-        $paymentProcessor->setPayment($payment);
-
         $amount = $payment->getAmount();
 
         // The payment amount is inclusive of fees, so we need to capture with the original amount.
@@ -102,19 +98,13 @@ class EnachRbl extends Base
             $amount = $amount - $payment->getFee();
         }
 
-        $params = [
+        $parameters = [
             Payment\Entity::AMOUNT   => $amount,
             Payment\Entity::CURRENCY => $payment->getCurrency()
         ];
 
         // We do not capture the payment if its already refunded
-        if (($payment->isPartiallyOrFullyRefunded() === false) and
-            ($payment->hasBeenCaptured() === false))
-        {
-            $paymentProcessor->capture($payment, $params);
-        }
-
-        return $paymentProcessor->processAuth($payment);
+        $paymentProcessor->capture($payment, $parameters);
     }
 
     protected function getDataFromRow(array & $entry): array
@@ -136,7 +126,7 @@ class EnachRbl extends Base
 
     protected function getTokenStatus(string $gatewayTokenStatus): string
     {
-        if ($gatewayTokenStatus === self::ACTIVE)
+        if ($gatewayTokenStatus === Rbl\Status::REGISTRATION_SUCCESS)
         {
             return Token\RecurringStatus::CONFIRMED;
         }
