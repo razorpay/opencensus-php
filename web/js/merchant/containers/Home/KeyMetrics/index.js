@@ -19,6 +19,7 @@ import {
 import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
 import { showNotification } from 'rzp/modules/notifications';
 import { groupBy } from 'rzp/utils/pokedex';
+import Change from 'rzp/ui/Change';
 
 import { fetch } from 'merchant/modules/pokedex';
 import {
@@ -56,7 +57,7 @@ import Panel from './Panel';
 
 const csvDateFormat = 'DD-MM-YYYY';
 
-const gutterBetweenTabs = 24; // 24px
+const gutterBetweenTabs = 16; // 16px
 
 const TabContent = ({
   name,
@@ -66,6 +67,8 @@ const TabContent = ({
   title,
   isLoading,
   error,
+  trend,
+  histogram
 }) => {
   /*
    * Description:
@@ -82,6 +85,13 @@ const TabContent = ({
     formattedValue = getFixedNumber(percent) + '%';
   }
 
+  let trendValue = 0;
+
+  if (!trend.loading) {
+  
+    trendValue = trend.currentCount - trend.previousCount;
+  }
+
   /*
    * checks if the current tab is showing currency values and renders
    * content in the tab
@@ -89,6 +99,9 @@ const TabContent = ({
    */
   return (
     <div>
+      <span>
+        {!isLoading ? title : <PlaceholderLoader />}
+      </span>
       <h1>
         {!isLoading ? (
           <span>
@@ -105,7 +118,9 @@ const TabContent = ({
           <PlaceholderLoader />
         )}
       </h1>
-      <span>{!isLoading ? title : <PlaceholderLoader />}</span>
+      <div className="mini-chart">
+
+      </div>
     </div>
   );
 };
@@ -133,7 +148,7 @@ class KeyMetricsContainer extends Component {
       loading: true,
     };
 
-    this.requestId = this.trendRequestID = 0;
+    this.requestId = this.trendRequestID = this.otherTabsReqId = 0;
 
     // Populating default value
     tabsOrder.forEach(tabName => {
@@ -141,6 +156,8 @@ class KeyMetricsContainer extends Component {
         // assigment on R.H.S is intentional, puts value and declares
         // variable at the same time
         tabState = (this.state.tabsState[tabName] = {});
+
+      tabState.name = tabName;
 
       if (grouping.length > 0) {
         // default grouping selected in each tab
@@ -236,6 +253,230 @@ class KeyMetricsContainer extends Component {
     return tabsOrder.filter(tabName => tabsState[tabName].data.showTab);
   }
 
+  tabStateMixin ({tabState, histogram}) {
+
+    const {
+            selectedGrouping,
+            selectedBreakdown,
+            name:tabName,
+          }                 = tabState,
+          tabMeta           = tabsMeta[tabName],
+          {
+            title,
+            isCurrency,
+            noGrouping,
+            valueKey="value",
+            groupTitleMap={Mobile: 'mWeb'},
+          }                 = tabMeta,
+          groupByColumnName = !isDefined(tabMeta.groupByColumnName)
+                                ? selectedGrouping && selectedGrouping.value
+                                : tabMeta.groupByColumnName,
+          {
+            startDate,
+            endDate,
+            sectionTitle
+          }                 = this.props;
+
+    const options = {
+      data: histogram.result,
+      groupByColumnName,
+      startTime: startDate.unix(),
+      endTime: endDate.unix(),
+      breakdown: selectedBreakdown,
+      groupTitleMap: groupTitleMap,
+      isCurrency,
+      valueKey,
+      noGrouping: isDefined(noGrouping) 
+                    ? noGrouping
+                    : groupByColumnName === CUMULATIVE,
+    };
+
+    if (
+      [NUM_TRANSACTIONS, TRANSACTION_VOLUME, REFUNDS].indexOf(
+        tabName
+      ) >= 0
+    ) {
+      options.getColor =
+        selectedGrouping && selectedGrouping.value === PLATFORM
+          ? getPlatformColor
+          : getPaymentMethodColor;
+    }
+
+    // TODO: use constants
+    if (options.groupByColumnName === "method") {
+    
+      options.groupOrder = paymentMethodsOrder;
+    } else if (options.groupByColumnName === "platform") {
+    
+      options.groupOrder = platformsOrder;
+    }
+
+    const { labels, datasets, aggregates, csv } = getTimelineData(
+      options
+    );
+
+    // track in GA that no data found in this section for
+    // given daterange
+    if (labels.length === 0) {
+      trackNoData(
+        `${tabMeta.title} in ${sectionTitle} from ${startDate.format(
+          csvDateFormat
+        )} to ${endDate.format(csvDateFormat)}`
+      );
+    }
+
+    const downloadFileName = `${title}, ${startDate.format(
+      csvDateFormat
+    )} to ${endDate.format(csvDateFormat)}, ${titleCase(
+      selectedBreakdown
+    )}${selectedGrouping ? ' ' + selectedGrouping.text : ''}(Razorpay)`;
+
+    tabState.data.downloadFileName = downloadFileName;
+    tabState.data.histogram = { labels, datasets };
+    tabState.lastUpdatedAt = histogram.last_updated_at;
+    tabState.data.legendData = aggregates;
+    tabState.data.csv = {
+      name: `${downloadFileName}.csv`,
+      url: csv,
+    };
+    tabState.data.png = {
+      name: `${downloadFileName}.png`,
+      url: '',
+    };
+
+    return tabState;
+  }
+
+  makeQueryForTab(tabName, fetchAllCounts) {
+  
+    const {
+      selectedFilters,
+      selectedGrouping,
+      selectedBreakdown,
+    } = this.state.tabsState[tabName],
+    { startDate, endDate } = this.props;
+
+    let filterBy = null;
+
+    if (selectedFilters) {
+      filterBy = Object.keys(selectedFilters).reduce((result, filterName) => {
+        result[filterName] = selectedFilters[filterName].value;
+
+        return result;
+      }, {});
+    }
+
+    return getQuery({
+      tabName  : fetchAllCounts ? "all" : tabName,
+      breakdown: selectedBreakdown,
+      startTime: startDate.unix(),
+      endTime  : endDate.unix(),
+      groupBy  : !!selectedGrouping && selectedGrouping.value,
+      filterBy,
+      includeHistogramForTab: !!fetchAllCounts && tabName
+    });
+  }
+
+  fetchOtherTabsHistogram() {
+ 
+    const {
+            selectedTab,
+            tabsState
+          }         = this.state,
+          otherTabs = tabsOrder.filter(
+                        tabName => tabName !== selectedTab
+                      ),
+          {
+            mode,
+            analyticsFetch
+          }         = this.props;
+
+    const query = otherTabs.reduce((result, tabName) => {
+    
+      const query    = this.makeQueryForTab(tabName),
+            tabState = tabsState[tabName];
+
+      tabState.data.loading = true;
+      tabState.data.error   = '';
+
+      result.filters = {...result.filters, ...query.filters};
+
+      result.aggregations = {
+        ...result.aggregations,
+        [`${tabName}Histogram`]: query.aggregations[`${tabName}Histogram`]
+      };
+
+      return result;
+    }, { filters: {}, aggregations: {}});
+
+    const requestId = ++this.otherTabsReqId;
+
+    return (analyticsFetch || fetch)(query, mode).then((resp) => {
+   
+      if (requestId !== this.otherTabsReqId) {
+      
+        return;
+      }
+
+      if (!resp.data) {
+      
+        return API_INVALID_RESP;
+      }
+
+      return resp;
+    }).catch((e) => {
+  
+      console.error(e);
+
+      if (requestId !== this.otherTabsReqId) {
+      
+        return;
+      }
+
+      return e;
+    }).then((data) => {
+    
+      if (!data) {
+      
+        return;
+      }
+
+      if (data.error) {
+
+        trackError(
+          `Error while fetching data for Keymetrics - Remaining tabs data`
+        );
+
+        this.props.showNotification({
+          type: 'error',
+          message: data.error,
+          hidePrevious: true,
+        });
+      }
+
+      otherTabs.forEach((tabName) => {
+    
+        const tabState = tabsState[tabName];
+
+        if (!data.error) {
+
+          const histogram = data.data[`${tabName}Histogram`];
+
+          this.tabStateMixin({
+            tabState: tabsState[tabName],
+            histogram
+          });
+        }
+
+        tabState.data.loading = false;
+        tabState.data.fetchData = false;
+        tabState.data.error = data.error;
+      });
+
+      this.setState(this.state);
+    });
+  }
+
   fetchData(fetchAllCounts) {
     /*
 	 * Fetches data , if `fetchAllCounts` is true, fetches all tabs stats
@@ -252,30 +493,11 @@ class KeyMetricsContainer extends Component {
         startDate,
         endDate,
         mode,
-        sectionTitle,
         isAdmin,
         analyticsFetch,
       } = this.props;
 
-    let filterBy = null;
-
-    if (selectedFilters) {
-      filterBy = Object.keys(selectedFilters).reduce((result, filterName) => {
-        result[filterName] = selectedFilters[filterName].value;
-
-        return result;
-      }, {});
-    }
-
-    const query = getQuery({
-      tabName: fetchAllCounts ? 'all' : selectedTab,
-      breakdown: tabState.selectedBreakdown,
-      startTime: startDate.unix(),
-      endTime: endDate.unix(),
-      groupBy: selectedGrouping ? selectedGrouping.value : '',
-      fetchHistogramForTab: selectedTab,
-      filterBy,
-    });
+    const query = this.makeQueryForTab(selectedTab, fetchAllCounts);
 
     tabState.data.loading = true;
     tabState.data.error = '';
@@ -284,8 +506,11 @@ class KeyMetricsContainer extends Component {
 
     const requestId = ++this.requestId;
 
+    this.fetchOtherTabsHistogram();
+
     return (analyticsFetch || fetch)(query, mode)
       .then(resp => {
+
         if (requestId !== this.requestId) {
           return null;
         }
@@ -302,7 +527,6 @@ class KeyMetricsContainer extends Component {
               isCurrency,
               isPercent,
               title,
-              noGrouping,
               valueKey = 'value',
             } = tabMeta;
 
@@ -338,7 +562,7 @@ class KeyMetricsContainer extends Component {
               }
             } else {
               const value = mainStat.result[0]
-                ? mainStat.result[0][tabMeta.valueKey || 'value']
+                ? mainStat.result[0][valueKey]
                 : 0;
 
               tabState.data.count = value;
@@ -350,83 +574,20 @@ class KeyMetricsContainer extends Component {
           }
 
           // Timeline data
-          const histogram = resp.data[`${tabName}Histogram`],
-                groupByColumnName = !isDefined(tabMeta.groupByColumnName)
-                  ? selectedGrouping && selectedGrouping.value
-                  : tabMeta.groupByColumnName;
+          const histogram = resp.data[`${tabName}Histogram`];
+
           if (histogram) {
-            const options = {
-              data: histogram.result,
-              groupByColumnName,
-              startTime: startDate.unix(),
-              endTime: endDate.unix(),
-              breakdown: tabState.selectedBreakdown,
-              groupTitleMap: tabMeta.groupTitleMap || { Mobile: 'mWeb' },
-              isCurrency,
-              valueKey,
-              noGrouping: isDefined(noGrouping) 
-                            ? noGrouping
-                            : groupByColumnName === CUMULATIVE,
-            };
 
-            if (
-              [NUM_TRANSACTIONS, TRANSACTION_VOLUME, REFUNDS].indexOf(
-                selectedTab
-              ) >= 0
-            ) {
-              options.getColor =
-                selectedGrouping && selectedGrouping.value === PLATFORM
-                  ? getPlatformColor
-                  : getPaymentMethodColor;
-            }
-
-            if (options.groupByColumnName === 'method') {
-              options.groupOrder = paymentMethodsOrder;
-            } else if (options.groupByColumnName === 'platform') {
-              options.groupOrder = platformsOrder;
-            }
-
-            const { labels, datasets, aggregates, csv } = getTimelineData(
-              options
-            );
-
-            // track in GA that no data found in this section for
-            // given daterange
-            if (labels.length === 0) {
-              trackNoData(
-                `${tabMeta.title} in ${sectionTitle} from ${startDate.format(
-                  csvDateFormat
-                )} to ${endDate.format(csvDateFormat)}`
-              );
-            }
-
-            const downloadFileName = `${title}, ${startDate.format(
-              csvDateFormat
-            )} to ${endDate.format(csvDateFormat)}, ${titleCase(
-              selectedBreakdown
-            )}${selectedGrouping ? ' ' + selectedGrouping.text : ''}(Razorpay)`;
-
-            tabState.data.downloadFileName = downloadFileName;
-            tabState.data.histogram = { labels, datasets };
-            tabState.lastUpdatedAt = histogram.last_updated_at;
-            tabState.data.legendData = aggregates;
-            tabState.data.csv = {
-              name: `${downloadFileName}.csv`,
-              url: csv,
-            };
-            tabState.data.png = {
-              name: `${downloadFileName}.png`,
-              url: '',
-            };
+            this.tabStateMixin({
+              tabState,
+              histogram,
+            }); 
           }
         });
 
         if (isInitialLoad) {
           this.state.loading = false;
         }
-
-        tabState.data.loading = false;
-        tabState.data.fetchData = false;
 
         this.setState(this.state, () => {
           this.setTabWidth();
@@ -468,6 +629,7 @@ class KeyMetricsContainer extends Component {
           const tabState = tabsState[tabName];
 
           tabState.data.loading = false;
+          tabState.data.fetchData = false;
           tabState.data.error = data.error;
         });
 
@@ -528,8 +690,7 @@ class KeyMetricsContainer extends Component {
     const query = getQuery({
       tabName: 'all',
       startTime: startDate.unix(),
-      endTime: endDate.unix(),
-      countsOnly: true,
+      endTime: endDate.unix()
     });
 
     return (analyticsFetch || fetch)(query, this.props.mode)
@@ -616,7 +777,7 @@ class KeyMetricsContainer extends Component {
           tabsState: { ...tabsState },
         });
       });
-  }
+ }
 
   componentWillMount() {
     const fetchAllReq = (this.fetchAllReq = this.fetchData(true));
@@ -789,6 +950,8 @@ class KeyMetricsContainer extends Component {
                   isLoading={loading}
                   error={tabData.error}
                   percent={tabData.percent}
+                  trend={tabData.trend}
+                  histogram={tabData.histogram}
                 />
               </Tab>
             );

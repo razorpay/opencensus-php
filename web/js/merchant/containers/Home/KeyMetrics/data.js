@@ -267,10 +267,11 @@ export const getQuery = options => {
       filterBy,
       breakdown,
       countsOnly,
-      fetchHistogramForTab,
+      includeHistogramForTab,
     } = options,
     query = {};
 
+  // given tab name, returns query for only that tab
   if (tabsMeta[tabName]) {
     const tabMeta = tabsMeta[tabName];
 
@@ -292,12 +293,15 @@ export const getQuery = options => {
     };
   }
 
+  // if tabName is not given, get query for all tabs,
+  // by default only count queries are returned, if query for 
+  // histogram is needed , give the tab name in `tabName`
   return tabsOrder.reduce(
     (result, tabName) => {
       const query = getQuery({
         ...options,
         tabName,
-        countsOnly: tabName !== fetchHistogramForTab,
+        countsOnly: tabName !== includeHistogramForTab,
       });
 
       result.filters = { ...result.filters, ...query.filters };
