@@ -486,7 +486,7 @@ class VirtualAccountTest extends TestCase
         $this->createWebhook(
             [
                 'events' => [
-                    'payment.captured' => '1',
+                    'virtual_account.credited' => '1',
                 ]
             ]);
 
@@ -496,7 +496,7 @@ class VirtualAccountTest extends TestCase
         {
             $data['event'] = json_decode($data['event'], true);
 
-            $this->assertEquals('payment.captured', $data['event']['event']);
+            $this->assertEquals('virtual_account.credited', $data['event']['event']);
 
             $this->assertArraySelectiveEquals($testData, $data);
 
