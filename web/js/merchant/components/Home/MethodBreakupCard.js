@@ -3,9 +3,15 @@ import LoaderDots from 'rzp/ui/LoaderDots';
 
 export default ({ data, loading, error }) => {
   let methodBreakup = [null];
-  const methods = ['CARD', 'EMI', 'NETBANKING', 'WALLET', 'UPI'].filter(
-    method => data[method]
-  );
+  const methods = [
+    'CARD',
+    'EMI',
+    'NETBANKING',
+    'WALLET',
+    'UPI',
+    'EMANDATE',
+    'AEPS',
+  ].filter(method => data[method]);
   const total = methods.reduce((prev, cur) => {
     return prev + data[cur];
   }, 0);
@@ -25,44 +31,40 @@ export default ({ data, loading, error }) => {
       <div class="panel">
         <div class="panel-body">
           <h4 class="font-thin">Transaction Types</h4>
-          {
-            do {
-              if (loading) {
-                <div class="centered">
-                  <LoaderDots />
-                </div>;
-              } else if (error) {
-                <div class="centered">
-                  <div class="text-danger">Error occurred in loading data!</div>
-                </div>;
-              } else {
-                methodBreakup.map((methodData, index) => {
-                  return (
-                    <div key={index}>
-                      {methodData ? (
+          {do {
+            if (loading) {
+              <div class="centered">
+                <LoaderDots />
+              </div>;
+            } else if (error) {
+              <div class="centered">
+                <div class="text-danger">Error occurred in loading data!</div>
+              </div>;
+            } else {
+              methodBreakup.map((methodData, index) => {
+                return (
+                  <div key={index}>
+                    {methodData ? (
+                      <div>
                         <div>
-                          <div>
-                            <small class="pull-right">{methodData.value}</small>
-                            <small>{titleCase(methodData.title)}</small>
-                          </div>
-                          <div class="progress-xs progress">
-                            <div
-                              class={
-                                'progress-bar progress-bar-' + methodData.bg
-                              }
-                              style={{ width: methodData.value }}
-                            />
-                          </div>
+                          <small class="pull-right">{methodData.value}</small>
+                          <small>{titleCase(methodData.title)}</small>
                         </div>
-                      ) : (
-                        'No Data'
-                      )}
-                    </div>
-                  );
-                });
-              }
+                        <div class="progress-xs progress">
+                          <div
+                            class={'progress-bar progress-bar-' + methodData.bg}
+                            style={{ width: methodData.value }}
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      'No Data'
+                    )}
+                  </div>
+                );
+              });
             }
-          }
+          }}
         </div>
       </div>
     </div>
