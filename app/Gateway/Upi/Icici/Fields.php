@@ -21,6 +21,7 @@ class Fields
     const COLLECT_BY_DATE           = 'collectByDate';
     const BILL_NUMBER               = 'billNumber';
     const PAYEE_VA                  = 'payeeVA';
+    const VERIFY_AMOUNT             = 'Amount';
     const PAYER_AMOUNT              = 'PayerAmount';
     const PAYER_MOBILE              = 'PayerMobile';
     const PAYER_NAME                = 'PayerName';

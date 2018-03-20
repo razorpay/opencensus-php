@@ -84,6 +84,7 @@ class Name
     const EDIT_MERCHANT_DISABLE_RECEIPT       = 'edit_merchant_disable_receipt';
     const EDIT_BULK_MERCHANT                  = 'edit_bulk_merchant';
     const EDIT_BULK_MERCHANT_CHANNEL          = 'edit_bulk_merchant_channel';
+    const EDIT_MERCHANT_REQUESTS              = 'edit_merchant_requests';
     const ASSIGN_MERCHANT_TERMINAL            = 'assign_merchant_terminal';
     const ASSIGN_MERCHANT_BANKS               = 'assign_merchant_banks';
     const ADD_MERCHANT_ADJUSTMENT             = 'add_merchant_adjustment';
@@ -94,6 +95,7 @@ class Name
     const VIEW_MERCHANT_REFERRER              = 'view_merchant_referrer';
     const VIEW_MERCHANT_BALANCE_TEST          = 'view_merchant_balance_test';
     const VIEW_MERCHANT_BALANCE_LIVE          = 'view_merchant_balance_live';
+    const VIEW_MERCHANT_REQUESTS              = 'view_merchant_requests';
     const ADD_RECONCILIATION_FILE             = 'add_reconciliation_file';
     const ADD_SETTLEMENT_RECONCILIATION       = 'add_settlement_reconciliation';
     const SEND_NEWSLETTER                     = 'send_newsletter';

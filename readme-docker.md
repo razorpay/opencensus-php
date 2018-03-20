@@ -97,7 +97,7 @@ $ make build
 ```
 
 The above will take care of building a `Containerized api app` from your
-local file-system, spin up `mysql:5.6` container and establish connection
+local file-system, spin up `mysql:5.7` container and establish connection
 to run the app locally.
 
 You should be able to access the app at:

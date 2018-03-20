@@ -14,7 +14,7 @@ class Server extends Base\Mock\Server
     use Base\Mock\GatewayTrait;
 
     const CUSTOMER_ACCOUNT_NUMBER = '123000000345678';
-    const BANK_REF_NUMBER         = 'AB1234';
+    const BANK_REF_NUMBER         = '12345678';
 
     public function authorize($input)
     {

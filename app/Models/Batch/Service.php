@@ -73,4 +73,20 @@ class Service extends Base\Service
 
         return $batch->toArrayPublic();
     }
+
+    public function validateFile(array $input): array
+    {
+        $response = (new Core)->storeAndValidateInputFile($input, $this->merchant);
+
+        return $response;
+    }
+
+    public function fetchStatsOfBatch(string $id): array
+    {
+        $batch = $this->repo->batch->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $response = (new Core)->fetchStatsOfBatch($batch);
+
+        return $response;
+    }
 }

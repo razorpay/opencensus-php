@@ -16,9 +16,23 @@ class RefundReconciliate extends Base\RefundReconciliate
     const COLUMN_FEE                    = 'fee_amount';
     const COLUMN_REFUND_AMOUNT          = 'amount';
     const COLUMN_ISSETTLED              = 'issettled';
+    const COLUMN_DATETIME               = 'datetime';
+
+    const REFUND_RECON_SKIP_TIMESTAMP   = '2018-03-05 23:48:09';
 
     protected function getRefundId(array $row)
     {
+        /**
+         * In MIS files, for the refunds before 2018-03-05 23:48:09,
+         * we do not have refund id in invoice_number.
+         * Such rows will be skipped.
+         */
+
+        if ($row[self::COLUMN_DATETIME] < self::REFUND_RECON_SKIP_TIMESTAMP)
+        {
+            return null;
+        }
+
         $refundId = null;
         
         // Unsettled rows should be skipped while processing.

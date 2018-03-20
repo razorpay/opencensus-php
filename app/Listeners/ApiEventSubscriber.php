@@ -9,6 +9,7 @@ use RZP\Models\Base;
 use RZP\Jobs\WebHook;
 use RZP\Models\Event;
 use RZP\Models\Invoice;
+use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Jobs\DispatchRouter;
 use RZP\Models\Customer\Token;
@@ -193,6 +194,13 @@ class ApiEventSubscriber extends Base\Core
     protected function onOrderPaid($payment)
     {
         $payload = $this->getOrderPayload($payment);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onVirtualAccountCredited(Payment\Entity $payment)
+    {
+        $payload = $this->getVirtualAccountPayload($payment);
 
         $this->prepareAndDispatchWebhook($payload);
     }
@@ -407,6 +415,23 @@ class ApiEventSubscriber extends Base\Core
 
         $partialPayload[Constants\Entity::ORDER] = [
             'entity' => $order->toArrayPublic()
+        ];
+
+        return $partialPayload;
+    }
+
+    protected function getVirtualAccountPayload(Payment\Entity $payment)
+    {
+        $bankTransfer = $payment->bankTransfer;
+
+        $virtualAccount = $bankTransfer->virtualAccount;
+
+        $partialPayload[Constants\Entity::PAYMENT] = [
+            'entity' => $payment->toArrayPublic()
+        ];
+
+        $partialPayload[Constants\Entity::VIRTUAL_ACCOUNT] = [
+            'entity' => $virtualAccount->toArrayPublic()
         ];
 
         return $partialPayload;

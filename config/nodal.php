@@ -11,6 +11,7 @@ return [
         'username'                  => env('RBL_NODAL_USERNAME'),
         'password'                  => env('RBL_NODAL_PASSWORD'),
         'client_id'                 => env('RBL_NODAL_CLIENT_ID'),
+        'account_number'            => env('RBL_NODAL_ACCOUNT_NUMBER'),
         'client_password'           => env('RBL_NODAL_CLIENT_PASSWORD'),
         'client_certificate'        => env('RBL_NODAL_CLIENT_CERTIFICATE'),
         'client_certificate_key'    => env('RBL_NODAL_CLIENT_CERTIFICATE_KEY'),

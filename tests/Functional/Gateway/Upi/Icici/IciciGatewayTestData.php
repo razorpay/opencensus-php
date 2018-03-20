@@ -350,8 +350,6 @@ return [
         ],
     ],
 
-
-
     'testPaymentUpiEntity' => [
         'action'                => 'authorize',
         'amount'                => 50000,

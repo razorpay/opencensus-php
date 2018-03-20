@@ -36,6 +36,14 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         RequestProcessor\Base::HITACHI
     ];
 
+    /**
+     * Not receiving proper IIN information from Hitachi Recon,
+     * will not update database based on Hitachi Recon
+     */
+    const SKIP_IIN_SAVING_GATEWAYS = [
+        RequestProcessor\Base::HITACHI
+    ];
+
     /*******************
      * Instance objects
      *******************/
@@ -319,7 +327,9 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
                 break;
 
-            default:
+            case VerifyResult::ERROR:
+            case VerifyResult::TIMEOUT:
+            case VerifyResult::UNKNOWN:
 
                 $this->messenger->raiseReconAlert(
                     [
@@ -331,6 +341,26 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                     ]);
 
                 $authorizeSuccess = false;
+
+                break;
+
+            // If payment is already being authorized by other thread
+            // or any unexpected gateway error comes, null is returned. No slack
+            // message in this case, happens for all the payments in the file.
+            default:
+
+                $this->trace->info(
+                    TraceCode::RECON_FAILED_VERIFY,
+                    [
+                        'message'       => 'Verify command failed or unable to recognize the response.',
+                        'payment_id'    => $this->payment->getId(),
+                        'gateway'       => get_called_class(),
+                        'verify_status' => $verifyResponse,
+                    ]);
+
+                $authorizeSuccess = false;
+
+                break;
         }
 
         return $authorizeSuccess;
@@ -1032,6 +1062,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
     protected function persistCardLocale($reconCardLocale)
     {
+        $shouldPersistCardLocale = $this->shouldPersistCardLocale();
+
         // Assumption: This function will not be called if IIN is missing.
         // If IIN is missing, it will be created and this function will not be called.
 
@@ -1051,7 +1083,9 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $currentInternational = $this->paymentIin->isInternational();
 
-        if (($currentInternational === false) and ($reconInternational === true))
+        if (($shouldPersistCardLocale === true) and
+            ($currentInternational === false) and
+            ($reconInternational === true))
         {
             $this->paymentIin->setCountry($countryCode);
 
@@ -1071,15 +1105,17 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         }
         else if (($currentInternational === true) and ($reconInternational === false))
         {
-            $this->messenger->raiseReconAlert(
-                [
-                    'trace_code'  => TraceCode::RECON_MISMATCH,
-                    'message'     => 'DB says international but recon says domestic',
-                    'payment_id'  => $this->payment->getId(),
-                    'iin_id'      => $this->paymentIin->getKey(),
-                    'gateway'     => get_called_class()
-                ]);
+            $this->tracePaymentIinMismatchAndNotify(!$shouldPersistCardLocale);
         }
+    }
+
+    /**
+     * If we want to update IIN metadata
+     * based on current gateway's recon, return true.
+     */
+    protected function shouldPersistCardLocale(): bool
+    {
+        return (in_array($this->gateway, self::SKIP_IIN_SAVING_GATEWAYS, true) === false) ?: false;
     }
 
     /**
@@ -1618,5 +1654,26 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     protected function setGatewayPaymentDateInGateway(string $gatewayPaymentDate, PublicEntity $gatewayPayment)
     {
         $gatewayPayment->setDate($gatewayPaymentDate);
+    }
+
+    /**
+     * Traces and sends slack alert if mismatch in payment IIN found.
+     * Will not send slack alert if we are not saving IIN metadata in recon
+     */
+    protected function tracePaymentIinMismatchAndNotify($shouldSkipSlack = false)
+    {
+        $this->messenger->setSkipSlack($shouldSkipSlack);
+
+        $this->messenger->raiseReconAlert(
+            [
+                'trace_code'    => TraceCode::RECON_MISMATCH,
+                'message'       => 'DB says international but recon says domestic',
+                'payment_id'    => $this->payment->getId(),
+                'iin_id'        => $this->paymentIin->getKey(),
+                'gateway'       => get_called_class()
+            ]);
+
+        // Enabling slack messages for further alerts.
+        $this->messenger->setSkipSlack(false);
     }
 }

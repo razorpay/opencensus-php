@@ -51,7 +51,7 @@ trait TestsThrottle
         $this->redis = Redis::connection('throttle')->client();
     }
 
-    protected function setRedisGlobalSettings(array $parameters = ['skip' => 0, 'mock' => 0])
+    protected function setRedisGlobalSettings(array $parameters = [K::SKIP => 0, K::MOCK => 0])
     {
         $this->setRedisSettings(K::GLOBAL_SETTINGS_KEY, $parameters);
     }

@@ -76,6 +76,7 @@ class Table
     const MERCHANT_DETAIL       = 'merchant_details';
     const CUSTOMER_BALANCE      = 'customer_balance';
     const MERCHANT_TERMINAL     = 'merchant_terminal';
+    const MERCHANT_REQUEST      = 'merchant_requests';
     const MERCHANT_PROMOTION    = 'merchant_promotion';
     const MERCHANT_INVOICE      = 'merchant_invoice';
     const CREDIT_TRANSACTION    = 'credit_transaction';
@@ -132,6 +133,7 @@ class Table
     const ATOM                  = 'atom';
     const HDFC                  = 'hdfc';
     const MIGS                  = 'axis';
+    const ENACH                 = 'enach';
     const PAYTM                 = 'paytm';
     const WALLET                = 'wallet';
     const BILLDESK              = 'billdesk';
