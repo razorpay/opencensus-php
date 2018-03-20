@@ -356,6 +356,11 @@ export default class TerminalForm extends Component {
             name="type[ivr]"
             defaultChecked={entity && entity.type ? entity.type['ivr'] : ''}
           />
+          <CheckField
+            label="No 2FA"
+            name="type[no_2fa]"
+            defaultChecked={entity && entity.type ? entity.type['no_2fa'] : ''}
+          />
 
           <div class="m-t m-b" />
           <AsyncButton
