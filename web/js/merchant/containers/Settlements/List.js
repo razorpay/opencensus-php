@@ -10,7 +10,7 @@ import SettlementBreakupModal from './BreakupModal';
 import { fetchSettlements as fetchAll } from 'rzp/modules/collection';
 import * as ModalActions from 'rzp/modules/modals';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
-import { stringifyQueryParamsWithPipe } from 'rzp/utils/rzp-utils';
+import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 
 @connect(state => state.settlements, {
   fetchAll,
@@ -25,7 +25,7 @@ export default class SettlementsListContainer extends ListContainer {
   }
 
   onSearchAnalytics = params => {
-    const label = stringifyQueryParamsWithPipe(params);
+    const label = getKeysSeparatedByPipe(params);
     if (label && label.length > 0) {
       window.rzpAnalytics({
         eventCategory: 'Dashboard - Settlements',

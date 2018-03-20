@@ -8,7 +8,7 @@ import { showNotification } from 'rzp/modules/notifications';
 import { openModal } from 'rzp/modules/modals';
 import CreateTestPayment from './CreateTestPayment';
 import {
-  stringifyQueryParamsWithPipe,
+  getKeysSeparatedByPipe,
   getEventCategoryFromPath,
 } from 'rzp/utils/rzp-utils';
 
@@ -157,7 +157,7 @@ export default class VirtualAccountDetailsContainer extends Component {
       window.rzpAnalytics({
         eventCategory: eventCategory,
         eventAction: 'Submit Form - Make Test Payment',
-        eventLabel: stringifyQueryParamsWithPipe(params),
+        eventLabel: getKeysSeparatedByPipe(params),
       });
   };
 

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Pie } from 'react-chartjs-2';
+import { Doughnut } from 'react-chartjs-2';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
@@ -17,11 +17,15 @@ import GroupingDropdown from 'merchant/containers/Home/GroupingDropdown';
 import Legend from 'merchant/components/Home/Legend';
 import LastUpdated from 'merchant/components/Home/LastUpdated';
 import MoreOptionsButton from 'merchant/containers/Home/MoreOptionsButton';
-import { API_ERROR, API_INVALID_RESP } from 'merchant/components/Home/data';
+import {
+  API_ERROR,
+  API_INVALID_RESP,
+  getPlatformColor,
+} from 'merchant/components/Home/data';
 import {
   trackError,
   trackGoToLinks,
-  trackNoData
+  trackNoData,
 } from 'merchant/containers/Home/ga';
 
 const chartOptions = {
@@ -118,12 +122,14 @@ class Traffic extends Component {
           groupByColumnName: meta.groupBy,
           isCurrency: meta.isCurrency,
           groupTitleMap: { Mobile: 'mWeb' },
+          getColor: getPlatformColor,
         });
 
         if (labels.length === 0) {
           trackNoData(
-            `${sectionTitle} from ${startDate.format(csvDateFormat)
-             } to ${endDate.format(csvDateFormat)}`
+            `${sectionTitle} from ${startDate.format(
+              csvDateFormat
+            )} to ${endDate.format(csvDateFormat)}`
           );
         }
 
@@ -162,14 +168,16 @@ class Traffic extends Component {
         groupState.loading = false;
 
         if (data.error) {
-
-          trackError(`Error while fetching data for traffic section - ${
-                      selectedGrouping.value}`);
+          trackError(
+            `Error while fetching data for traffic section - ${
+              selectedGrouping.value
+            }`
+          );
 
           this.props.showNotification({
             type: 'error',
             message: data.error,
-            hidePrevious: true
+            hidePrevious: true,
           });
 
           groupState.error = data.error;
@@ -276,7 +284,9 @@ class Traffic extends Component {
                 ref={node => (this.chartContent = node)}
               >
                 {!groupState.loading &&
-                  chartData && <Pie options={chartOptions} data={chartData} />}
+                  chartData && (
+                    <Doughnut options={chartOptions} data={chartData} />
+                  )}
               </div>
             </div>
             <div className="column">
@@ -299,11 +309,10 @@ class Traffic extends Component {
           <div className="pull-right">
             <Link
               target="_blank"
-              to={`/payments?from=${
-                   startDate.unix()}&to=${endDate.unix()}&ref=home`}
+              to={`/payments?from=${startDate.unix()}&to=${endDate.unix()}&ref=home`}
               onClick={() => trackGoToLinks('Payments', sectionTitle)}
             >
-              View these Payments <i className="i i-chevron-right"></i>
+              View these Payments <i className="i i-chevron-right" />
             </Link>
           </div>
         </PanelFooter>

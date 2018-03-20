@@ -1,4 +1,4 @@
- import moment from 'moment';
+import moment from 'moment';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
@@ -20,11 +20,12 @@ import { API_ERROR, API_INVALID_RESP } from 'merchant/components/Home/data';
 import {
   trackGoToLinks,
   trackNoData,
-  trackError
+  trackError,
 } from 'merchant/containers/Home/ga';
+import GroupingDropdown from 'merchant/components/Home/GroupingDropdown';
 
 import { trackBreadcrumbClick } from './ga';
-import { getQuery, sampleData } from './data';
+import { getQuery, aggTypes } from './data';
 
 function getLevels(hierarchy, levels = []) {
   if (hierarchy.parent) {
@@ -54,21 +55,25 @@ class PaymentMethods extends Component {
       isLoading: false,
       error: '',
       hierarchy: { values: [] },
+      selectedAgg: aggTypes[0],
     };
 
     this.requestId = 0;
+
     this.onLevelChange = ::this.onLevelChange;
     this.onCSVData = ::this.onCSVData;
     this.openReportModal = ::this.openReportModal;
+    this.onAggChange = ::this.onAggChange;
   }
 
-  fetchData(startDate, endDate) {
+  fetchData(startDate, endDate, aggType) {
     this.setState({
       isLoading: true,
       error: '',
     });
 
-    const {sectionTitle, analyticsFetch} = this.props;
+    const { selectedAgg } = this.state,
+      { sectionTitle, analyticsFetch } = this.props;
 
     const requestId = ++this.requestId;
 
@@ -76,6 +81,7 @@ class PaymentMethods extends Component {
       getQuery({
         startTime: startDate.unix(),
         endTime: endDate.unix(),
+        aggType: aggType || selectedAgg.value,
       }),
       this.props.mode
     )
@@ -97,8 +103,9 @@ class PaymentMethods extends Component {
 
         if (!agg.result || agg.result.length === 0) {
           trackNoData(
-            `${sectionTitle} from ${startDate.format(csvDateFormat)
-             } to ${endDate.format(csvDateFormat)}`
+            `${sectionTitle} from ${startDate.format(
+              csvDateFormat
+            )} to ${endDate.format(csvDateFormat)}`
           );
         }
 
@@ -126,14 +133,13 @@ class PaymentMethods extends Component {
         this.state.isLoading = false;
 
         if (data.error) {
-
           trackError(`Error while fetching data for Payment Methods`);
 
           this.state.error = data.error;
           this.props.showNotification({
             type: 'error',
             message: data.error,
-            hidePrevious: true
+            hidePrevious: true,
           });
         }
 
@@ -142,13 +148,16 @@ class PaymentMethods extends Component {
   }
 
   onCSVData(csvUrl) {
-    const { startDate, endDate } = this.props;
+    const { startDate, endDate } = this.props,
+      { selectedAgg } = this.state;
 
     this.setState({
       csvData: {
         name: `Payment Insights, ${moment(startDate).format(
           csvDateFormat
-        )} to ${moment(endDate).format(csvDateFormat)}(Razorpay).csv`,
+        )} to ${moment(endDate).format(csvDateFormat)} ${
+          selectedAgg.text
+        }(Razorpay).csv`,
         url: csvUrl,
       },
     });
@@ -160,6 +169,16 @@ class PaymentMethods extends Component {
       currentLevel: hierarchy,
       hierarchy,
     });
+  }
+
+  onAggChange({ option }) {
+    const { startDate, endDate } = this.props;
+
+    this.setState({
+      selectedAgg: option,
+    });
+
+    this.fetchData(startDate, endDate, option.value);
   }
 
   componentWillMount() {
@@ -189,7 +208,7 @@ class PaymentMethods extends Component {
   }
 
   render() {
-    const { levels, csvData, isLoading, data, error } = this.state,
+    const { data, error, levels, csvData, isLoading, selectedAgg } = this.state,
       { startDate, endDate, sectionTitle } = this.props,
       levelsLength = levels.length,
       hasNoData = !data || data.length === 0;
@@ -210,12 +229,13 @@ class PaymentMethods extends Component {
                   <BreadcrumbItem
                     key={index}
                     onClick={() => {
-
                       trackBreadcrumbClick(level.data);
 
-                      return index + 1 !== levelsLength &&
-                             this.onLevelChange(level.data)}
-                    }
+                      return (
+                        index + 1 !== levelsLength &&
+                        this.onLevelChange(level.data)
+                      );
+                    }}
                   >
                     {level.name}
                   </BreadcrumbItem>
@@ -224,6 +244,13 @@ class PaymentMethods extends Component {
             )}
           </div>
           <div className="panel-actions pull-right">
+            <div className="panel-action-item">
+              <GroupingDropdown
+                grouping={aggTypes}
+                onGroupChange={this.onAggChange}
+                selectedGrouping={selectedAgg}
+              />
+            </div>
             <div className="panel-action-item">
               <MoreOptionsButton
                 csvData={csvData}
@@ -235,6 +262,7 @@ class PaymentMethods extends Component {
         <PanelBody>
           <Treemap
             data={this.state.data}
+            isCurrency={'isCurrency' in selectedAgg}
             onLevelChange={this.onLevelChange}
             currentLevel={this.state.currentLevel}
             onCSVData={this.onCSVData}
@@ -247,11 +275,10 @@ class PaymentMethods extends Component {
           <div className="pull-right">
             <Link
               target="_blank"
-              to={`/payments?from=${
-                    startDate.unix()}&to=${endDate.unix()}&ref=home`}
+              to={`/payments?from=${startDate.unix()}&to=${endDate.unix()}&ref=home`}
               onClick={() => trackGoToLinks('Payments', sectionTitle)}
             >
-              View these Payments <i className="i i-chevron-right"></i>
+              View these Payments <i className="i i-chevron-right" />
             </Link>
           </div>
         </PanelFooter>

@@ -23,7 +23,7 @@ import ActivationBanner from 'merchant/components/ActivationBanner';
 import FeatureOnboarding from 'merchant/containers/FeatureOnboarding/OnBoarding';
 import FeatureOnboardingModal from 'merchant/containers/FeatureOnboarding/OnBoardingModal';
 import {
-  stringifyQueryParamsWithPipe,
+  getKeysSeparatedByPipe,
   getEventCategoryFromPath,
 } from 'rzp/utils/rzp-utils';
 
@@ -60,7 +60,7 @@ export default class VirtualAccountsListContainer extends ListContainer {
   }
 
   onSearchAnalytics = params => {
-    const label = stringifyQueryParamsWithPipe(params);
+    const label = getKeysSeparatedByPipe(params);
     if (label && label.length > 0) {
       window.rzpAnalytics({
         eventCategory: 'Dashboard - Smart Collect',
@@ -119,7 +119,7 @@ export default class VirtualAccountsListContainer extends ListContainer {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Smart Collect',
       eventAction: 'Submit Form - Create Virtual Account',
-      eventLabel: stringifyQueryParamsWithPipe(params),
+      eventLabel: getKeysSeparatedByPipe(params),
     });
   };
 

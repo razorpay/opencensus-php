@@ -2,8 +2,9 @@ import moment from 'moment';
 
 import {
   titleCase,
-  arrayToCsvDataUrl,
+  isDefined,
   paiseToRupees,
+  arrayToCsvDataUrl,
 } from 'rzp/utils/rzp-utils';
 import colors from 'rzp/utils/chart/colors.js';
 import {
@@ -17,15 +18,24 @@ import { platformGroupingVals } from 'rzp/utils/pokedex';
 
 const dateFormat = 'Do MMM YYYY';
 
+const TRANSACTION_VOLUME = 'transactionVolume',
+  NUM_TRANSACTIONS = 'numTransactions',
+  REFUNDS = 'refunds',
+  SAVED_CARDS = 'savedCards',
+  SUCCESS_RATE = 'successRate',
+  PLATFORM = 'platform';
+
+export { TRANSACTION_VOLUME, NUM_TRANSACTIONS, SAVED_CARDS, REFUNDS, PLATFORM };
+
 const defaultGroupingVals = [
   {
     value: 'method',
-    text : 'By Payment Method',
+    text: 'By Payment Method',
     query: ['method'],
   },
   {
-    value: 'platform',
-    text : 'By Platforms',
+    value: PLATFORM,
+    text: 'By Platforms',
     query: platformGroupingVals,
   },
 ];
@@ -40,31 +50,38 @@ function getGroupQuery(value) {
   return (groupObj && groupObj.query) || [];
 }
 
-export const breakdownVals = [
-  {
+export const breakdownValsMap = {
+  hourly: {
+    value: 'hourly',
+    isEnabled: (startDate, endDate) => endDate.diff(startDate, 'days') <= 3,
+    title: 'Hourly',
+    disabledText: "Available for a date range within 3 days"
+  },
+  daily: {
     value: 'daily',
     isEnabled: (startDate, endDate) => !startDate.isSame(endDate, 'day'),
-    title: 'Daily',
+    title: 'Daily'
   },
-  {
+  weekly: {
     value: 'weekly',
     isEnabled: (startDate, endDate) => !startDate.isSame(endDate, 'isoWeek'),
     title: 'Weekly',
+    disabledText: "Available for a date range across multiple weeks"
   },
-  {
+  monthly: {
     value: 'monthly',
     isEnabled: (startDate, endDate) => !startDate.isSame(endDate, 'month'),
     title: 'Monthly',
+    disabledText: "Available for a date range across multiple months"
   },
+};
+
+export const breakdownVals = [
+  breakdownValsMap.hourly,
+  breakdownValsMap.daily,
+  breakdownValsMap.weekly,
+  breakdownValsMap.monthly,
 ];
-
-const TRANSACTION_VOLUME = 'transactionVolume',
-  NUM_TRANSACTIONS = 'numTransactions',
-  REFUNDS = 'refunds',
-  SAVED_CARDS = 'savedCards',
-  SUCCESS_RATE = 'successRate';
-
-export { TRANSACTION_VOLUME, NUM_TRANSACTIONS, SAVED_CARDS, REFUNDS };
 
 export const tabsOrder = [
   TRANSACTION_VOLUME,
@@ -94,7 +111,7 @@ export const tabsMeta = {
         },
       };
     },
-    getHistogramQuery: function({groupBy, breakdown}) {
+    getHistogramQuery: function({ groupBy, breakdown }) {
       groupBy = this.getGroupQuery(groupBy);
 
       return {
@@ -127,7 +144,7 @@ export const tabsMeta = {
         },
       };
     },
-    getHistogramQuery: function({groupBy, breakdown}) {
+    getHistogramQuery: function({ groupBy, breakdown }) {
       groupBy = this.getGroupQuery(groupBy);
 
       return {
@@ -159,7 +176,7 @@ export const tabsMeta = {
         },
       };
     },
-    getHistogramQuery: function({breakdown}) {
+    getHistogramQuery: function({ breakdown }) {
       return {
         [`${this.name}Histogram`]: {
           agg_type: 'count',
@@ -201,7 +218,7 @@ export const tabsMeta = {
         },
       };
     },
-    getHistogramQuery: function({breakdown}) {
+    getHistogramQuery: function({ breakdown }) {
       return {
         [`${this.name}Histogram`]: {
           agg_type: 'count',
@@ -252,12 +269,12 @@ export const getQuery = options => {
           },
       aggregations: {
         ...tabMeta.getCountQuery(filterBy),
-        ...(!countsOnly && tabMeta.getHistogramQuery({
-                             groupBy,
-                             breakdown,
-                             filterBy
-                           })
-           ),
+        ...(!countsOnly &&
+          tabMeta.getHistogramQuery({
+            groupBy,
+            breakdown,
+            filterBy,
+          })),
       },
     };
   }
@@ -280,11 +297,13 @@ export const getQuery = options => {
 };
 
 const momentDurationFuncMap = {
+    hourly: 'asHours',
     daily: 'asDays',
     weekly: 'asWeeks',
     monthly: 'asMonths',
   },
   momentDurationMap = {
+    hourly: 'hours',
     daily: 'days',
     weekly: 'weeks',
     monthly: 'months',
@@ -296,10 +315,12 @@ export const getTimelineData = ({
   startTime,
   endTime,
   noGrouping,
-  valueKey = 'value',
-  breakdown = 'daily',
-  groupTitleMap = {},
-  isCurrency = false
+  getColor,
+  groupOrder=null,
+  valueKey='value',
+  breakdown='daily',
+  groupTitleMap={},
+  isCurrency=false,
 }) => {
   /*
    * Pokedex data will be completely denormalized without any grouping
@@ -322,11 +343,11 @@ export const getTimelineData = ({
 
   // grouping by column, ex. group by payment method (card, netbanking)
   const groupedData = !noGrouping
-                        ? (groupByColumnName === 'platform'
-                             ? groupByPlatform(data)
-                             : groupBy(data, groupByColumnName))
-                        : {[groupByColumnName]: data},
-    groups = Object.keys(groupedData).sort(),
+      ? groupByColumnName === 'platform'
+        ? groupByPlatform(data)
+        : groupBy(data, groupByColumnName)
+      : { [groupByColumnName]: data },
+    groups = Object.keys(groupedData),
     /* `timelineGroupMap` is like
          * {
          *   "<timestamp1>": {
@@ -378,13 +399,13 @@ export const getTimelineData = ({
   // populates default data , avoids `if` conditions in next loop
   groups.forEach((groupName, index) => {
     const groupLabel =
-        groupTitleMap[groupName] ||
-        globalGroupTitleMap[groupName] ||
-        (groupByColumnName === 'platform' ? groupName : titleCase(groupName));
+      groupTitleMap[groupName] ||
+      globalGroupTitleMap[groupName] ||
+      (groupByColumnName === 'platform' ? groupName : titleCase(groupName));
 
     const dataset = {
       label: groupLabel,
-      data: []
+      data: [],
     };
 
     const aggregate = {
@@ -431,7 +452,34 @@ export const getTimelineData = ({
     firstMs = Number(timestamps[0]),
     lastMs = Number(timestamps[timestamps.length - 1]);
 
-  if (breakdown === 'daily') {
+  if (breakdown === 'hourly') {
+    const firstHour = moment(firstMs)
+        .startOf('hour')
+        .toDate(),
+      lastHour = moment(endTime)
+        .startOf('hour')
+        .toDate();
+
+    startMs = moment(startMs)
+      .startOf('day')
+      .toDate();
+    endMs = moment().isSame(endMs, 'day')
+      ? moment()
+          .startOf('hour')
+          .toDate()
+      : moment(endMs)
+          .endOf('day')
+          .startOf('hour')
+          .toDate();
+
+    if (firstHour > startMs) {
+      timestamps.unshift(startMs.getTime());
+    }
+
+    if (lastHour < endMs) {
+      timestamps.push(endMs.getTime());
+    }
+  } else if (breakdown === 'daily') {
     const firstDayStart = moment(firstMs)
         .startOf('day')
         .toDate(),
@@ -457,21 +505,17 @@ export const getTimelineData = ({
     // momentjs start of week is sunday, whereas
     // pokedex start of week is monday, so adding 1 day
     const firstWeekStart = moment(firstMs)
-        .startOf('week')
-        .add(1, 'days')
+        .startOf('isoWeek')
         .toDate(),
       lastWeekStart = moment(lastMs)
-        .startOf('week')
-        .add(1, 'days')
+        .startOf('isoWeek')
         .toDate();
 
     startMs = moment(startMs)
-      .startOf('week')
-      .add(1, 'days')
+      .startOf('isoWeek')
       .toDate();
     endMs = moment(endMs)
-      .startOf('week')
-      .add(1, 'days')
+      .startOf('isoWeek')
       .toDate();
 
     if (firstWeekStart > startMs) {
@@ -556,7 +600,11 @@ export const getTimelineData = ({
         yAxisVal = timelineGroupMap[timestamp][groupName],
         groupCsvData =
           groupsCsvData[tsIndex] ||
-          (groupsCsvData[tsIndex] = [moment(timestamp).format(dateFormat)]);
+          (groupsCsvData[tsIndex] = [
+            moment(timestamp).format(
+              `${dateFormat}${breakdown === 'hourly' ? ' HH:mm' : ''}`
+            ),
+          ]);
 
       // `datasets` variable will get populated due to reference
       groupData.push({
@@ -587,32 +635,67 @@ export const getTimelineData = ({
       : aggregate.value;
   });
 
-  csvHeader.push("Amount");
+  csvHeader.push('Amount');
 
   csvData.unshift(csvHeader);
 
-  // sorting aggregates by their value in descending order
-  const orderedGroups = aggregates.sort((item1, item2) => {
+  let groupOrderMap = null,
+      // default sorter is sort by value of the group
+      sorter = (item1, item2) => item2.value - item1.value;
 
-                           return item2.value - item1.value;
-                        }).reduce((result, item, index) => {
-                        
-                          result[item.label] = index;
-                          item.color = colors[index % colors.length];
-                          return result;
-                        }, {});
+  // if an order of groups is specified as an array, the groups will be 
+  // sorted in the same order
+  if (groupOrder && Array.isArray(groupOrder)) {
+  
+    groupOrderMap = groupOrder.reduce((result, groupName, index) => {
+    
+      result[groupName] = index;
+      return result;
+    }, {});
+
+    // use this index as the index of group names not specified in 
+    // groupOrder, basically the group name would appear at the end 
+    // of the order
+    let outlierIndex = groupOrder.length;
+
+    sorter = (item1, item2) => {
+   
+      const item1Label = item1.label.toLowerCase(),
+            item2Label = item2.label.toLowerCase(),
+            item1Index = isDefined(groupOrderMap[item1Label])
+                           ? groupOrderMap[item1Label]
+                           : (groupOrderMap[item1Label] = outlierIndex++),
+            item2Index = isDefined(groupOrderMap[item2Label])
+                           ? groupOrderMap[item2Label]
+                           : (groupOrderMap[item2Label] = outlierIndex++);
+
+      return item1Index - item2Index;
+    }
+  }
+
+  // sorting aggregates by their value in descending order
+  const orderedGroups = aggregates
+    .sort(sorter)
+    .reduce((result, item, index) => {
+      result[item.label] = index;
+      item.color = getColor
+        ? getColor(item.label)
+        : colors[index % colors.length];
+      return result;
+    }, {});
 
   // sorting datasets according to the order of aggregates
-  datasets.sort(({label:label1}, {label:label2}) => {
-  
-    return orderedGroups[label1] - orderedGroups[label2];
-  }).forEach((item, index) => {
-  
-    const groupColor = colors[index % colors.length];
+  datasets
+    .sort(({ label: label1 }, { label: label2 }) => {
+      return orderedGroups[label1] - orderedGroups[label2];
+    })
+    .forEach((item, index) => {
+      // getting the color assigned in the aggregate value
+      const groupColor = aggregates[orderedGroups[item.label]].color;
 
-    item.backgroundColor = groupColor;
-    item.borderColor     = groupColor;
-  });
+      item.backgroundColor = groupColor;
+      item.borderColor = groupColor;
+    });
 
   return {
     labels: timestamps,

@@ -175,15 +175,13 @@ export default props => {
                   )}
                 </EntityDetailRow>
 
-                <EntityDetailRow label="Invoice ID">
-                  {payment.invoice_id ? (
+                {payment.invoice_id && (
+                  <EntityDetailRow label="Invoice ID">
                     <Link to={`/invoices/${payment.invoice_id}`}>
                       <code>{payment.invoice_id}</code>
                     </Link>
-                  ) : (
-                    '--'
-                  )}
-                </EntityDetailRow>
+                  </EntityDetailRow>
+                )}
 
                 <EntityDetailRow label="Notes">
                   {Object.keys(payment.notes).length

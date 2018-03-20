@@ -6,6 +6,7 @@ import { saveAs } from 'file-saver';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 import moment from 'moment';
 
+import { titleCase } from 'rzp/utils/rzp-utils';
 import { prefixEntityValue } from 'common/data';
 import ReduxDatetime from 'rzp/ui/ReduxDatetime';
 import * as NotificationsActions from 'rzp/modules/notifications';
@@ -18,8 +19,10 @@ import {
   generateReport,
   generateReportV2,
 } from 'merchant/modules/reports';
-import { getCustomConfig, marketplaceConfigTypes } from './data';
 import SelectConfig from 'merchant/components/Reports/ReportsNew/SelectConfig';
+
+import { getCustomConfig, marketplaceConfigTypes } from './data';
+import { trackDownload } from './ga';
 
 const validYear = current => {
   return current._d.getTime() <= Date.now() && current.year() >= 2015;
@@ -234,64 +237,80 @@ export default class ReportsContainer extends Component {
 
   generateReport() {
     const { selectedConfig, selectedAccount } = this.state,
-      { date, type, invoiceDate } = this.props;
+      { date, type, invoiceDate } = this.props,
+      day = date.date(),
+      month = date.month() + 1, // Jan is 0 in moment library
+      year = date.year(),
+      titleForTracking = `${titleCase(type)} ${selectedConfig.label} Report`,
+      descForTracking = type === 'daily' ? `date` : `month`;
 
-    if (selectedConfig.type !== 'custom') {
-      const timeFactor = type === 'daily' ? 'day' : 'month',
-        startTime = date
-          .clone()
-          .startOf(timeFactor)
-          .unix(),
-        endTime = date
-          .clone()
-          .endOf(timeFactor)
-          .unix();
+    if (selectedConfig.value === 'monthlyInvoice') {
+      const month = invoiceDate.month() + 1,
+        year = invoiceDate.year();
 
-      this.props.showNotification(downloadStartedMessage);
+      trackDownload(titleForTracking, `month`);
 
-      const { user } = this.props,
-            selectedAccountId = ((selectedConfig.type in marketplaceConfigTypes)
-                                  ? selectedAccount.id
-                                  : this.defaultAccount.id).replace('acc_', ''),
-            isMerchantAccount = selectedAccountId === user.current,
-            reqData = {
-              config_id: selectedConfig._item.id,
-              generated_by: selectedAccountId,
-              start_time: startTime,
-              end_time: endTime,
-            };
-
-      return generateReportV2(
-        reqData,
-        isMerchantAccount
-      ).then(data => {
-        if (data.error) {
-          return this.props.showNotification({
-            type: 'error',
-            message: data.error,
-          });
-        }
-
-        window.location = data.url;
-      });
-    } else if (selectedConfig.value === 'monthlyInvoice') {
       return window.open(
         `/${this.props.mode}/reports/invoice` +
-          `?year=${invoiceDate.year()}` +
-          `&month=${invoiceDate.month() + 1}`,
+          `?year=${year}` +
+          `&month=${month}`,
         '_blank'
       );
     } else {
+      trackDownload(titleForTracking, descForTracking);
+
+      if (selectedConfig.type !== 'custom') {
+        const timeFactor = type === 'daily' ? 'day' : 'month',
+          startTime = date
+            .clone()
+            .startOf(timeFactor)
+            .unix(),
+          endTime = date
+            .clone()
+            .endOf(timeFactor)
+            .unix();
+
+        this.props.showNotification(downloadStartedMessage);
+
+        const { user } = this.props,
+          selectedAccountId = (selectedConfig.type in marketplaceConfigTypes
+            ? selectedAccount.id
+            : this.defaultAccount.id
+          ).replace('acc_', ''),
+          isMerchantAccount = selectedAccountId === user.current,
+          reqData = {
+            config_id: selectedConfig._item.id,
+            generated_by: selectedAccountId,
+            start_time: startTime,
+            end_time: endTime,
+          };
+
+        return generateReportV2(reqData, isMerchantAccount).then(data => {
+          if (data.error) {
+            return this.props.showNotification({
+              type: 'error',
+              message: data.error,
+            });
+          }
+
+          window.location = data.url;
+        });
+      }
+
+      /*
+       * Hardcoded - custom reports
+       */
+
       const account_id = selectedAccount.id,
         entity = selectedConfig.value;
 
       let data = {
-        month: date.month() + 1, // Jan is 0 in moment library
-        year: date.year(),
+        month,
+        year,
       };
 
       if (type === 'daily') {
-        data.day = date.date();
+        data.day = day;
       }
 
       const ajaxParams = {

@@ -33,19 +33,19 @@ export default class ListContainer extends Component {
          hasBlacklistQueryParams = blacklistQueryParams.length > 0;
 
     if (!hasBlacklistQueryParams) {
-    
+
       return params;
     }
 
     return Object.keys(params)
                  .reduce((result, paramKey) => {
-                 
+
                    const isParamBlacklisted = (
-                     blacklistQueryParams.indexOf(paramKey) >= 0 
+                     blacklistQueryParams.indexOf(paramKey) >= 0
                    );
 
                    if (!isParamBlacklisted) {
-                   
+
                      result[paramKey] = params[paramKey];
                    }
 
@@ -76,10 +76,14 @@ export default class ListContainer extends Component {
   }
 
   fetchAll = (params={}) => {
-
     params = { ...this.getDefaultPageParams(), ...params };
     params = this.removeBlacklistedParams(params);
+
     this.setState(params);
+
+    if (params.id) {
+      params.id = encodeURIComponent(params.id); // Encoding just id. Rest are query params, which is encoded while making axios request
+    }
 
     // props.fetchAll is available only when model is implemented. Addons doesn't have model hence calling 'fetchList' class fn.
     if (!this.props.fetchAll && this.fetchList) {

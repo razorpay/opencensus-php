@@ -12,7 +12,7 @@ import CreatePaymentLink from 'merchant/containers/Invoices/CreatePaymentLink';
 import * as InvoiceActions from 'merchant/modules/invoices/list';
 import * as ModalActions from 'rzp/modules/modals';
 import { luminateRow } from 'merchant/modules/app';
-import { stringifyQueryParamsWithPipe } from 'rzp/utils/rzp-utils';
+import { getKeysSeparatedByPipe } from 'rzp/utils/rzp-utils';
 
 @withRouter
 @connect(
@@ -51,7 +51,7 @@ export default class InvoicesListContainer extends ListContainer {
   };
 
   onSearchAnalytics = params => {
-    const label = stringifyQueryParamsWithPipe(params);
+    const label = getKeysSeparatedByPipe(params);
     if (label && label.length > 0) {
       window.rzpAnalytics({
         eventCategory: 'Dashboard - Invoices',

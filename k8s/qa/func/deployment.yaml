@@ -2,9 +2,9 @@ apiVersion: apps/v1beta2
 kind: Deployment
 metadata:
   name: dashboard
-  namespace: echo
+  namespace: func
 spec:
-  replicas: 2
+  replicas: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -16,12 +16,12 @@ spec:
   template:
     metadata:
       annotations:
-        iam.amazonaws.com/role: echo-dashboard
+        iam.amazonaws.com/role: func-dashboard
       labels:
         name: dashboard
     spec:
       nodeSelector:
-        node-role.kubernetes.io/node-services: ""
+        node-role.kubernetes.io/qa: ""
       imagePullSecrets:
       - name: registry
       containers:
@@ -31,8 +31,8 @@ spec:
             configMapKeyRef:
               name: dashboard
               key: APP_MODE
-        name: echo
-        image: razorpay/dashboard:latest
+        name: func
+        image: razorpay/dashboard:1dd5360f9c7b9639cc703d0304a39f562d24b642
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 80
@@ -61,6 +61,6 @@ spec:
       volumes:
       - name: trace
         hostPath:
-          path: /var/log/fluentd/splunk/echo/trace
+          path: /var/log/fluentd/splunk/func/trace
       dnsPolicy: Default
       restartPolicy: Always

@@ -2,6 +2,9 @@ import { Component } from 'react';
 import { DateRangePicker } from 'react-dates';
 import moment from 'moment';
 
+let numInstances = 1;
+const prefix = "drp";
+
 export default class DateRangePickerField extends Component {
   constructor(props) {
     super(props);
@@ -15,6 +18,8 @@ export default class DateRangePickerField extends Component {
           .subtract(30, 'days'),
       to: props.endDate || moment().endOf('day'),
     };
+
+    this.id = `drp-${numInstances++}`;
   }
 
   componentWillMount() {
@@ -100,6 +105,8 @@ export default class DateRangePickerField extends Component {
       >
         <i class="i i-date-range" />
         <DateRangePicker
+          startDateId={`${this.id}-startdate`}
+          endDateId={`${this.id}-enddate`}
           startDate={this.state.from}
           endDate={this.state.to}
           onDatesChange={this.onDatesChange}
