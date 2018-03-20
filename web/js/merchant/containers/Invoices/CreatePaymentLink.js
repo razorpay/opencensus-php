@@ -288,7 +288,7 @@ export default class CreatePaymentLink extends Component {
 
                 <div class="form-group">
                   <label class="col-md-3 control-label help-label label-required">
-                    Summary
+                    Payment For
                   </label>
                   <div class="col-md-8">
                     <Field
@@ -300,6 +300,10 @@ export default class CreatePaymentLink extends Component {
                       validate={required('Please enter the summary')}
                       disabled={isEdit}
                     />
+                    <span class="help-block label--secondary">
+                      <i class="i i-info-outline" />
+                      This will be visible to the customer
+                    </span>
                   </div>
                 </div>
 
