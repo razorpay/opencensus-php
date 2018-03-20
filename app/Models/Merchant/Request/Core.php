@@ -37,7 +37,7 @@ class Core extends Base\Core
 
         $request->build($input);
 
-        $this->transaction(function() use($request, $input, $submissions)
+        $this->repo->transactionOnLiveAndTest(function() use($request, $input, $submissions)
         {
             $this->repo->saveOrFail($request);
 
@@ -130,7 +130,7 @@ class Core extends Base\Core
 
         $status = $input[Entity::STATUS];
 
-        $this->transaction(function() use(
+        $this->repo->transactionOnLiveAndTest(function() use(
             $request,
             $oldRequestDetails,
             $newRequestDetails,
@@ -157,10 +157,9 @@ class Core extends Base\Core
             (new Reason\Core)->addRejectionReasons($rejectionReasons, $stateEntity);
 
             //
-            // Adding this part in last of transaction block, since `addFeatureIfNotEnabled` involves saving on both
-            // live and test, and the functions called above act only on live mode. This may have lead to erroneous
-            // data in case we were updating synced entities in between unsynced ones and if some exception happened
-            // after the synced entities were internally committed.
+            // `addFeatureIfNotEnabled` involves saving on both live and test, and the functions called above act
+            // only on live mode. This may have lead to erroneous data in case we were updating synced entities in
+            // between unsynced ones and if some exception happened after the synced entities were internally committed.
             // Elaborately :
             //
             // transactionOnLive {
@@ -176,7 +175,10 @@ class Core extends Base\Core
             // queries since the enclosing connection is of live only.
             //
             // }
-            // @todo: A more generic solution to this needs to be discussed and fixed across codebase.
+            // The issue is because the enclosing outer transaction is only set on live and not on both the
+            // connections. Hence for solving this problem we have wrapped the transaction on both live and test
+            // connections using `transactionOnLiveAndTest`, so that any rollback if it happens, happens on both the
+            // connections.
             //
             if ($status === Status::ACTIVATED)
             {
