@@ -7,25 +7,31 @@ const API_ERROR = {
     error: 'Got unexpected response from the server',
   },
   OLDEST_TXN_ERROR = {
-    error: 'Unable to get your first transaction date'
+    error: 'Unable to get your first transaction date',
   },
   isMobileDevice = window.outerWidth <= 768;
 
 const paymentMethodsOrder = [
-    "card",
-    "netbanking",
-    "upi",
-    "wallet",
-    "bank transfer",
-    "emi",
+    'card',
+    'netbanking',
+    'upi',
+    'wallet',
+    'bank transfer',
+    'emi',
+    'emandate',
   ],
-  platformColorMap = {
-    "desktop": namedColors.blue,
-    "mweb": namedColors.orange,
-    "android": namedColors.androidGreen,
-    "ios": namedColors.lightBlue,
-    "others": namedColors.red
-  },
+  platformsOrder = ['desktop', 'mweb', 'android', 'ios', 'others'],
+  platformColors = [
+    namedColors.blue,
+    namedColors.orange,
+    namedColors.androidGreen,
+    namedColors.lightBlue,
+    namedColors.red,
+  ],
+  platformColorMap = platformsOrder.reduce((result, platform, index) => {
+    result[platform] = platformColors[index];
+    return result;
+  }, {}),
   paymentMethodsColorMap = paymentMethodsOrder.reduce(
     (result, method, index) => {
       result[method] = colors[index];
@@ -35,11 +41,9 @@ const paymentMethodsOrder = [
   ),
   extraColors = colors.slice(paymentMethodsOrder.length);
 
-
 let extraColorsUsed = 0;
 
-const getPaymentMethodColor = (paymentMethod) => {
-
+const getPaymentMethodColor = paymentMethod => {
   paymentMethod = paymentMethod.toLowerCase();
 
   // see if color exists for the payment method or assign one from
@@ -47,7 +51,6 @@ const getPaymentMethodColor = (paymentMethod) => {
   let color = paymentMethodsColorMap[paymentMethod];
 
   if (!color) {
- 
     color = extraColors[extraColorsUsed++ % extraColors.length];
 
     paymentMethodsOrder.push(paymentMethod);
@@ -57,8 +60,7 @@ const getPaymentMethodColor = (paymentMethod) => {
   return color;
 };
 
-const getPlatformColor = (platform) => {
-
+const getPlatformColor = platform => {
   return platformColorMap[platform.toLowerCase()];
 };
 
@@ -67,6 +69,8 @@ export {
   API_INVALID_RESP,
   OLDEST_TXN_ERROR,
   isMobileDevice,
+  platformsOrder,
   getPlatformColor,
-  getPaymentMethodColor
+  paymentMethodsOrder,
+  getPaymentMethodColor,
 };

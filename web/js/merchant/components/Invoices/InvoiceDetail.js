@@ -160,8 +160,9 @@ export default props => {
                   )}
                 />
                 <EntityDetailRow
-                  label="Summary"
+                  label="Payment For"
                   value={invoice.description || '--'}
+                  style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}
                 />
                 <EntityDetailRow label="Receipt" value={invoice.receipt} />
                 <EntityDetailRow label="Customer Details">

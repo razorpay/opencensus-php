@@ -238,7 +238,7 @@ class SearchableSelect extends Component {
     } = this.props;
 
     return (
-      <div>
+      <div class="searchable-select">
         <input
           type="hidden"
           class="hide"

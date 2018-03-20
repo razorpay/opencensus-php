@@ -43,8 +43,7 @@ const requestFailedFunc = () => {
   downloadStartedMessage = {
     type: 'success',
     message: 'Your report will download shortly',
-  },
-  defaultSelectedConfigType = 'payments';
+  };
 
 @connect(
   state => {
@@ -173,11 +172,11 @@ export default class ReportsContainer extends Component {
     this.requests
       .then(resps => {
         const { 0: configResp, 1: accountsResp } = resps,
-          { configs, accounts } = this.state;
+          { accounts } = this.state;
+
+        let { configs } = this.state;
 
         if (configResp.success) {
-          let selectedConfig = null;
-
           if (this.isMarketplaceEnabled) {
             if (!accountsResp.success) {
               this.props.showNotification({
@@ -193,31 +192,25 @@ export default class ReportsContainer extends Component {
             !!configResp.data.items && configResp.data.items.length > 0;
 
           if (hasConfigs) {
-            configResp.data.items.forEach(configItem => {
-              const { type, description } = configItem,
-                config = {
-                  label: configItem.name,
-                  value: configItem.id,
-                  type,
-                  description,
-                  _item: configItem,
-                };
+            configs = configResp.data.items
+              .map(configItem => {
+                const { type, description } = configItem,
+                  config = {
+                    label: configItem.name,
+                    value: configItem.id,
+                    type,
+                    description,
+                    _item: configItem,
+                  };
 
-              configs.unshift(config);
-
-              if (type === defaultSelectedConfigType) {
-                selectedConfig = config;
-              }
-            });
-
-            if (!selectedConfig) {
-              selectedConfig = configs[0];
-            }
+                return config;
+              })
+              .concat(configs);
           }
 
           this.setState({
             configs,
-            selectedConfig,
+            selectedConfig: configs[0],
             accounts,
             selectedAccount: this.defaultAccount,
           });
@@ -242,16 +235,13 @@ export default class ReportsContainer extends Component {
       month = date.month() + 1, // Jan is 0 in moment library
       year = date.year(),
       titleForTracking = `${titleCase(type)} ${selectedConfig.label} Report`,
-      descForTracking = type === 'daily'
-                          ? `date=${day}-${month}-${year}`
-                          : `month=${month}`;
+      descForTracking = type === 'daily' ? `date` : `month`;
 
     if (selectedConfig.value === 'monthlyInvoice') {
-
       const month = invoiceDate.month() + 1,
-            year  = invoiceDate.year();
+        year = invoiceDate.year();
 
-      trackDownload(titleForTracking, `month=${month}-${year}`);
+      trackDownload(titleForTracking, `month`);
 
       return window.open(
         `/${this.props.mode}/reports/invoice` +
@@ -260,7 +250,6 @@ export default class ReportsContainer extends Component {
         '_blank'
       );
     } else {
-  
       trackDownload(titleForTracking, descForTracking);
 
       if (selectedConfig.type !== 'custom') {
@@ -277,21 +266,19 @@ export default class ReportsContainer extends Component {
         this.props.showNotification(downloadStartedMessage);
 
         const { user } = this.props,
-              selectedAccountId = ((selectedConfig.type in marketplaceConfigTypes)
-                                    ? selectedAccount.id
-                                    : this.defaultAccount.id).replace('acc_', ''),
-              isMerchantAccount = selectedAccountId === user.current,
-              reqData = {
-                config_id: selectedConfig._item.id,
-                generated_by: selectedAccountId,
-                start_time: startTime,
-                end_time: endTime,
-              };
+          selectedAccountId = (selectedConfig.type in marketplaceConfigTypes
+            ? selectedAccount.id
+            : this.defaultAccount.id
+          ).replace('acc_', ''),
+          isMerchantAccount = selectedAccountId === user.current,
+          reqData = {
+            config_id: selectedConfig._item.id,
+            generated_by: selectedAccountId,
+            start_time: startTime,
+            end_time: endTime,
+          };
 
-        return generateReportV2(
-          reqData,
-          isMerchantAccount
-        ).then(data => {
+        return generateReportV2(reqData, isMerchantAccount).then(data => {
           if (data.error) {
             return this.props.showNotification({
               type: 'error',
@@ -311,8 +298,8 @@ export default class ReportsContainer extends Component {
         entity = selectedConfig.value;
 
       let data = {
-        month, 
-        year
+        month,
+        year,
       };
 
       if (type === 'daily') {

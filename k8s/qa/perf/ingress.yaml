@@ -5,10 +5,10 @@ metadata:
     kubernetes.io/ingress.class: traefik
   generation: 1
   name: dashboard
-  namespace: echo
+  namespace: perf
 spec:
   rules:
-  - host: echo-dashboard.razorpay.in
+  - host: perf-dashboard.razorpay.in
     http:
       paths:
       - path: /

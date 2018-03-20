@@ -10,12 +10,13 @@
 |
 */
 
+Route::get('/status', 'AdminController@getStatus');
+
 // Everything in this group is a unauthenticated route
 // Please take care to not return any sensitive information
 // here
 Route::group(['middleware' => ['web']], function () {
     Route::get('/', 'UserController@getIndex')->name('dashboard');
-    Route::get('/status', 'AdminController@getStatus');
 
     // User (guest auth route)
     Route::any('/user/api/{mode}/{path?}', 'GenericController@handleAny')

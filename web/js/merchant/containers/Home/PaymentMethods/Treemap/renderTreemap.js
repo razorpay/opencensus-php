@@ -5,10 +5,10 @@ import {
 } from 'rzp/utils/rzp-utils';
 import {
   humanReadableIndian,
-  humanReadableIndianCurrency
+  humanReadableIndianCurrency,
 } from 'rzp/utils/numerals';
 
-import { getPaymentMethodColor} from 'merchant/components/Home/data';
+import { getPaymentMethodColor } from 'merchant/components/Home/data';
 import { paymentMethodsColumns } from 'merchant/containers/Home/PaymentMethods/data';
 
 import { trackTreemapClick } from '../ga';
@@ -36,10 +36,8 @@ function main(
   var root,
     opts = { ...defaults, ...o },
     formatNumber = isCurrency
-                     ? (value) => humanReadableIndianCurrency(
-                                    paiseToRupees(value)
-                                  )
-                     : humanReadableIndian,
+      ? value => humanReadableIndianCurrency(paiseToRupees(value))
+      : humanReadableIndian,
     rname = opts.rootname,
     margin = opts.margin;
 
@@ -106,8 +104,8 @@ function main(
     .sort((item1, item2) => {
       return item2.value - item1.value;
     })
-    .forEach(({key}, index) => {
-      colors[key] = getPaymentMethodColor(key);
+    .forEach(({ key }, index) => {
+      colors[key] = getPaymentMethodColor(titleCase(key));
     });
 
   Object.keys(aliases).forEach(key => {
@@ -226,7 +224,7 @@ function main(
         onShowTooltip({
           amount: d.value,
           percent: d.percent,
-          label: d.displayText
+          label: d.displayText,
         });
 
         if (canBeZoomed(d)) {
@@ -245,7 +243,6 @@ function main(
         }
       })
       .on('click', function(d) {
-
         trackTreemapClick(d);
 
         if (canBeZoomed(d) && typeof onTransition === 'function') {
@@ -505,9 +502,7 @@ export default function renderTreemap(
   groupTitleMap,
   bankNames
 ) {
-
   if (!d3 || !bankNames) {
-
     return {};
   }
 

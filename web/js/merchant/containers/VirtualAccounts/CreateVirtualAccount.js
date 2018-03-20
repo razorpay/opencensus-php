@@ -66,12 +66,10 @@ const selector = formValueSelector('createVirtualAccount');
     const customers = state.customers.items;
     return {
       descriptor: selector(state, 'descriptor'),
-      numeric: selector(state, 'numeric'),
       customers,
       customersLoading: state.customers.loading,
       customer: findBy(customers, 'id', selector(state, 'customer_id')),
       initialValues: {
-        numeric: true,
         receivers: {
           types: ['bank_account'],
         },
@@ -121,10 +119,9 @@ export default class CreateVirtualAccount extends Component {
         ...props,
         receivers: {
           ...receivers,
-          bank_account: !numeric
+          bank_account: descriptor
             ? {
-                numeric,
-                descriptor: descriptor || undefined,
+                descriptor,
               }
             : undefined,
         },
@@ -181,7 +178,6 @@ export default class CreateVirtualAccount extends Component {
       untouch,
       handle = '',
       descriptor = '',
-      numeric,
       customersLoading,
       customers = [],
       onCopy = () => {},
@@ -262,25 +258,9 @@ export default class CreateVirtualAccount extends Component {
                 </small>
               </div>
 
-              {handle && (
-                <div class="form-group checkbox rzpCheckbox">
-                  <Field
-                    name="numeric"
-                    id="numeric"
-                    class="form-control"
-                    component="input"
-                    type="checkbox"
-                    normalize={value => Number(value)}
-                  />
-                  <label for="numeric" class="icon i-check">
-                    Numeric
-                  </label>
-                </div>
-              )}
-
-              {handle && !numeric ? (
+              {!!handle && (
                 <div class="form-group">
-                  <label>Descriptor</label>
+                  <label>Descriptor (Optional)</label>
                   <Field
                     name="descriptor"
                     component="input"
@@ -305,7 +285,7 @@ export default class CreateVirtualAccount extends Component {
                     Descriptor will be a part of the account number generated.
                   </small>
                 </div>
-              ) : null}
+              )}
 
               <div class="Modal__actions clearfix">
                 <AsyncButton

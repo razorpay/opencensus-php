@@ -127,9 +127,9 @@ class TransactionController extends Controller
 
         $input = Input::all();
 
-        $month = intval($input['month']);
+        $month = (isset($input['month']) === true) ? intval($input['month']) : null;
 
-        $year = intval($input['year']);
+        $year = (isset($input['year']) === true) ? intval($input['year']) : null;
 
         // GST is applicable from 1st July 2017
         $isGstApplicable = ($year >= 2018 or ($year === 2017 and $month >= 7));
