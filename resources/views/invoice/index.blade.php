@@ -113,6 +113,7 @@
 
       #desktop-container {
         width: 100%;
+        min-width: 845px;
         display: none;
       }
 
@@ -178,6 +179,7 @@
         opacity: 0;
         z-index: 0;
         transition: 0.5s all ease-in-out;
+        pointer-events: none;
       }
 
       #payment-container iframe.razorpay-checkout-frame {
@@ -209,7 +211,7 @@
       }
 
       .inv-details .info {
-        color: #747474;
+        color: #a5a5a5;
         line-height: 22px;
         font-size: 13px;
       }
@@ -492,6 +494,15 @@
             display: none;
         }
 
+        .btn-link {
+            color: #528ff0;
+            background: transparent;
+            border: 0;
+            cursor: pointer;
+            padding: 0;
+            margin-left: 4px;
+        }
+
     </style>
     <script>
       function checkIsDesktop() {
@@ -512,6 +523,30 @@
               document.getElementById('mobile-container').style.display = 'block';
               document.getElementById('invoice-status-container').removeChild(document.getElementById('desktop-container'));
           }
+      }
+
+      function toggleTrimDescription(toTrim) {
+        var data = window.RZP_DATA.data;
+        desc = data['invoice']['description'];
+        var charLimit, button;
+
+        if (checkIsDesktop()) {
+            charLimit = 240;
+        } else {
+            charLimit = 125;
+        }
+
+        if (desc && (desc.length > charLimit)) {
+            if (toTrim) {
+              desc = desc.substr(0,charLimit);
+              desc += '...';
+              button = '<button class="btn-link" onclick="toggleTrimDescription(false)"> Show More </button'
+            } else {
+              button = '<button class="btn-link" onclick="toggleTrimDescription(true)">Show Less </button';
+            }
+        }
+
+        document.getElementById('payment-for').innerHTML = desc + button;
       }
 
     </script>
@@ -658,7 +693,7 @@
                                   <div id="inv-details-main">
                                       <div class="info" style="margin-top: 28px;">
                                           PAYMENT FOR
-                                          <div class="val" style="white-space: pre-wrap;word-wrap: break-word;">{{$data['invoice']['description']}}</div>
+                                          <div id="payment-for" class="val" style="white-space: pre-wrap;word-wrap: break-word;"></div>
                                       </div>
 
                                       @if($data['invoice']['expire_by'])
@@ -760,7 +795,7 @@
                           <div id="inv-details-main">
                               <div class="info">
                                   PAYMENT FOR
-                                  <div class="val" style="white-space: pre-wrap;word-wrap: break-word;">{{$data['invoice']['description']}}</div>
+                                  <div id="payment-for" class="val" style="white-space: pre-wrap;word-wrap: break-word;"></div>
                               </div>
 
                               <div class="info">
@@ -832,6 +867,9 @@
               var data = window.RZP_DATA.data;
               var color = data.merchant.color || '#168AFA';
               document.getElementById('chkout-header').style['background-color'] = color;
+
+
+              toggleTrimDescription(true);
 
               function fullPaid() {
                   var amount = data['invoice']['amount'];
