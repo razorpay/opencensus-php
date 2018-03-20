@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Payment;
 
 use Mail;
+use Mockery;
 
 use RZP\Mail\Payment\CardSaved as CardSavedMail;
 use RZP\Tests\Functional\TestCase;
@@ -209,6 +210,76 @@ class SavedCardsPaymentCreateTest extends TestCase
         $this->assertEquals($card[Card::GLOBAL_CARD_ID], '100000000gcard');
 
         $this->assertEquals($payment[Payment::GLOBAL_CUSTOMER_ID], '10000gcustomer');
+    }
+
+    public function testGlobalSavedCardWithCookieDisabled()
+    {
+        $this->ba->publicAuth();
+
+        $this->mockRaven();
+        $this->withSession(['test_checkcookie' => '0']);
+
+        // send OTP
+        $response = $this->sendOtp('9988776655');
+
+        // verify OTP
+        $content = $this->verifyOtp('9988776655', 'abc@razorpay.com', '233443', '123');
+
+        $this->assertArrayHasKey('session_id', $content);
+
+        $this->flushSession();
+        $this->app['session']->regenerate();
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment[Payment::CARD] = ['cvv' => 111];
+        $payment[Payment::TOKEN] = '1000gcardtoken';
+
+        $headers = [
+            'HTTP_X_RAZORPAY_SESSIONID' => $content['session_id'],
+        ];
+
+        $response = $this->doAuthPayment($payment, $headers);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+    }
+
+    public function testGlobalSavedCardCookieDisabledWithInvalidData()
+    {
+        $this->ba->publicAuth();
+
+        $this->mockRaven();
+        $this->withSession(['test_checkcookie' => '0']);
+
+        // send OTP
+        $response = $this->sendOtp('9988776655');
+
+        // verify OTP
+        $content = $this->verifyOtp('9988776655', 'abc@razorpay.com', '233443', '123');
+
+        $this->assertArrayHasKey('session_id', $content);
+
+        $this->flushSession();
+        $this->withSession(['test_checkcookie' => '0']);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment[Payment::CARD] = ['cvv' => 111];
+        $payment[Payment::TOKEN] = '1000gcardtoken';
+
+        $headers = [
+            'HTTP_X_RAZORPAY_SESSIONID' => $content['session_id'],
+        ];
+
+        \Cache::shouldReceive('get')
+                ->once()
+                ->with($content['session_id'])
+                ->andReturn([]);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment, $headers)
+        {
+            $this->doAuthPayment($payment, $headers);
+        });
     }
 
     public function testGlobalSavedCardPaymentCreateWithoutMethod()
@@ -695,5 +766,72 @@ class SavedCardsPaymentCreateTest extends TestCase
         $data = [ 'test_app_token' => $appToken ];
 
         $this->session($data);
+    }
+
+    protected function sendOtp($contact)
+    {
+        $request = array(
+            'url' => '/otp/create',
+            'method' => 'post',
+            'content' => [
+                'contact' => $contact
+            ],
+        );
+
+        $response = $this->sendRequest($request);
+
+        return $response;
+    }
+
+
+    protected function verifyOtp($contact, $email, $otp, $deviceToken = null, $metadata = false)
+    {
+        $content = [
+            'contact' => $contact,
+            'email' => $email,
+            'otp' => $otp
+        ];
+
+        if ($deviceToken !== null)
+        {
+            $content['device_token'] = $deviceToken;
+        }
+
+        if ($metadata)
+        {
+            $content['_']['platform'] = 'android';
+            $content['_']['library'] = 'checkoutjs';
+            $content['_']['version'] = '1.0.0';
+        }
+
+        $request = array(
+            'url' => '/otp/verify',
+            'method' => 'post',
+            'content' => $content
+        );
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
+    protected function mockRaven()
+    {
+        $raven = Mockery::mock('RZP\Services\Raven')->makePartial();
+
+        $this->app->instance('raven', $raven);
+
+        $raven->shouldReceive('sendRequest')
+              ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+              ->andReturnUsing(function ($route, $method, $input)
+                {
+                    $response = array(
+                        'success' => true,
+                    );
+
+                    return $response;
+                });
+
+        $this->app->instance('raven', $raven);
     }
 }

@@ -155,16 +155,16 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => ErrorCode::SERVER_ERROR,
-                    'description' => PublicErrorDescription::SERVER_ERROR,
+                    'code' => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_CARD_RECURRING_NOT_SUPPORTED,
                 ],
             ],
-            'status_code' => 500,
+            'status_code' => 400,
         ],
         'exception' => [
-            'class'               => \RZP\Exception\RuntimeException::class,
-            'message'             => 'Terminal should not be null',
-            'internal_error_code' => ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
+            'class'               => \RZP\Exception\BadRequestException::class,
+            'message'             => 'Recurring is not supported on this card',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_RECURRING_NOT_SUPPORTED,
         ],
     ]
 ];

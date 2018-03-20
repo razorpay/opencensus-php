@@ -3616,6 +3616,67 @@ return [
         ],
     ],
 
+    'testInvoiceNotifyForBatch' => [
+        'request' => [
+            'url'       => '/invoices/batch/batch_00000000000001/notify',
+            'method'    => 'put',
+            'content'   => [
+                'sms_notify'    => 1,
+                'email_notify'  => 1,
+            ],
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testInvoiceSmsNotifyForBatch' => [
+        'request' => [
+            'url'       => '/invoices/batch/batch_00000000000001/notify',
+            'method'    => 'put',
+            'content'   => [
+                'sms_notify'    => 1,
+                'email_notify'  => 0,
+            ],
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testInvoiceNotifyForBatchInputData'  => [
+        'attributes' => [
+            [
+                'invoiceAttributes' => [
+                    'id'                    => '1000001invoice',
+                    'batch_id'              => '00000000000001',
+                    'order_id'              => '100000001order',
+                    'status'                => 'issued',
+                    'email_status'          => null,
+                    'sms_status'            => null,
+                ],
+                'orderAttributes'   => [
+                    'id'                    => '100000001order'
+                ],
+            ],
+            [
+                'invoiceAttributes' => [
+                    'id'                    => '1000002invoice',
+                    'batch_id'              => '00000000000001',
+                    'order_id'              => '100000002order',
+                    'status'                => 'issued',
+                    'email_status'          => null,
+                    'sms_status'            => null,
+                ],
+                'orderAttributes'   => [
+                    'id'                    => '100000002order'
+                ],
+            ],
+        ],
+    ],
+
     // ----------------------------------------------------------------------
     // Expectations for ES
 

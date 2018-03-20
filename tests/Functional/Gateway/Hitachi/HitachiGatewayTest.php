@@ -523,9 +523,9 @@ class HitachiGatewayTest extends TestCase
             });
     }
 
-    public function testMismatchVerify()
+    public function testVerifyPaymentwithblankPrn()
     {
-        $this->mockAuthFormatError();
+        $this->mockBlankPrn();
 
         $data = $this->testData['testInvalidJson'];
 
@@ -546,10 +546,10 @@ class HitachiGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $data = $this->testData[__FUNCTION__];
+        $this->verifyPayment($payment['id']);
 
-        $this->runRequestResponseFlow($data, function() use ($payment) {
-            $this->verifyPayment($payment['id']);
-        });
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(1, $payment['verified']);
     }
 }

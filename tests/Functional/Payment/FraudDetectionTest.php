@@ -21,6 +21,7 @@ class FraudDetectionTest extends TestCase
         $this->ba->publicAuth();
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
     }
 
     public function testBlockedBin()
@@ -61,55 +62,6 @@ class FraudDetectionTest extends TestCase
         $paymentAnalytic = $this->getLastEntity('payment_analytics', true);
 
         $this->assertEquals('payment_analytics', $paymentAnalytic['entity']);
-    }
-
-    public function testRupayBin()
-    {
-        $this->ba->appAuth();
-
-        $this->fixtures->create(
-            'iin',
-            [
-                'iin'     => 607261,
-                'network' => 'Rupay',
-                'type'    => 'debit',
-                'country' => null,
-                'enabled' => 1
-            ]);
-
-        $payment = $this->getDefaultPaymentArray();
-
-        $payment['card']['number'] = '6072614025032721';
-
-        $response = $this->doAuthPayment($payment);
-
-        $this->assertArrayHasKey('razorpay_payment_id', $response);
-    }
-
-    public function testFailedRupayBin()
-    {
-        $this->mockMaxmind();
-
-        $payment                   = $this->getDefaultPaymentArray();
-        $payment['card']['number'] = '6070764025032726';
-
-        $data = $this->testData[__FUNCTION__];
-
-        $this->runRequestResponseFlow($data, function() use ($payment)
-        {
-            $this->doAuthPayment($payment);
-        });
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $riskEntity = $this->getLastEntity('risk', true);
-
-        $this->assertEquals($payment['id'], $riskEntity['payment_id']);
-
-        $this->assertEquals(
-            'PAYMENT_SUSPECTED_FRAUD_BY_MAXMIND', $riskEntity['reason']);
-
-        $this->assertNotNull($riskEntity['risk_score']);
     }
 
     public function testFraudDetected()

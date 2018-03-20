@@ -9,6 +9,7 @@ use Carbon\Carbon;
 
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Payment\Entity as Payment;
 use RZP\Mail\Payment\Refunded as RefundedMail;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -146,6 +147,51 @@ class RefundTest extends TestCase
             $dispute->payment->getPublicId(),
             (string) $dispute->payment->getAmount()
         );
+    }
+
+    public function testRefundDirectFraudDisputedPayment()
+    {
+        $dispute = $this->fixtures->create('dispute', ['phase' => 'fraud']);
+
+        $paymentId = $dispute->payment->getPublicId();
+
+        $refund = $this->refund(
+            [
+                'payment_id' => $paymentId,
+            ]);
+
+        $this->assertEquals('refund', $refund['entity']);
+        $this->assertEquals($paymentId, $refund['payment_id']);
+        $this->assertEquals(1000000, $refund['amount']);
+    }
+
+    public function testRefundDirectPaymentMultipleDisputesFraudOpen()
+    {
+        $dispute = $this->fixtures->create('dispute', ['phase' => 'fraud']);
+
+        $paymentId = $dispute->payment->getPublicId();
+
+        $this->fixtures->create('dispute', ['payment_id' => Payment::stripDefaultSign($paymentId), 'status' => 'lost']);
+
+        $refund = $this->refund(
+            [
+                'payment_id' => $paymentId,
+            ]);
+
+        $this->assertEquals('refund', $refund['entity']);
+        $this->assertEquals($paymentId, $refund['payment_id']);
+        $this->assertEquals(1000000, $refund['amount']);
+    }
+
+    public function testRefundDirectPaymentMultipleDisputesNonFraudOpen()
+    {
+        $dispute = $this->fixtures->create('dispute', ['phase' => 'fraud', 'status' => 'lost']);
+
+        $paymentId = $dispute->payment->getPublicId();
+
+        $this->fixtures->create('dispute', ['payment_id' => Payment::stripDefaultSign($paymentId)]);
+
+        $this->startTest($paymentId);
     }
 
     public function testRefundWithReceipt()
