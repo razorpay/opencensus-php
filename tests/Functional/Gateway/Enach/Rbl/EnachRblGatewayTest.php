@@ -58,7 +58,7 @@ class EnachRblGatewayTest extends TestCase
         $this->assertNotNull($enach['signed_xml']);
     }
 
-    public function testAcknowledgementReconciliation()
+    public function testAcknowledgementSuccessfulReconciliation()
     {
         list($payment, $token, $order) = $this->createEmandatePayment();
 
@@ -104,8 +104,70 @@ class EnachRblGatewayTest extends TestCase
         $this->assertEquals('emandate', $batch['type']);
         $this->assertEquals('created', $batch['status']);
 
-        sd($this->getDbLastEntityToArray('enach'));
-        s($token->reload()->toArray());
+        $enach = $this->getDbLastEntityToArray('enach');
+
+        $this->assertEquals('true', $enach['acknowledge_status']);
+        $this->assertNotNull($enach['umrn']);
+
+        $token = $this->getDbLastEntityToArray('token');
+
+        $this->assertEquals('initiated', $token['recurring_status']);
+    }
+
+    public function testAcknowledgementFailedReconciliation()
+    {
+        list($payment, $token, $order) = $this->createEmandatePayment();
+
+        $replacePair = [
+            '{$date}' => Carbon::now()->toIso8601String(),
+            '{$paymentId}' => $payment->getId(),
+            '{$status}' => 'false',
+            '{$mandateId}' => 'UTIB6000000005844847',
+            '{$firstCol}' => Carbon::now()->addDay()->format('Y-m-d'),
+            '{$finalCol}' => Carbon::now()->addDay()->addYears(5)->format('Y-m-d'),
+            '{$currency}' => 'INR',
+            '{$maxAmount}' => '0',
+            '{$accountNumber}' => $token->getAccountNumber(),
+            '{$ifsc}' => $token->getIfsc(),
+        ];
+
+        $reconFileStub = file_get_contents(__DIR__ . '/acknowledge.stub');
+
+        $reconFileContent = strtr($reconFileStub, $replacePair);
+
+        $handle = tmpfile();
+        fwrite($handle, $reconFileContent);
+        fseek($handle, 0);
+        $file = (new TestingFile('MMS-CREATE-RATN-RATNA0001-06032018-ESIGN6000001-INP-ACK.xml', $handle));
+
+        $request = [
+            'url' => '/batches',
+            'method' => 'POST',
+            'content' => [
+                'type' => 'emandate',
+                'sub_type' => 'acknowledge',
+                'gateway' => 'enach_rbl',
+            ],
+            'files' => [
+                'file' => $file,
+            ]
+        ];
+
+        $this->ba->proxyAuth('rzp_test_100000Razorpay');
+
+        $batch = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('emandate', $batch['type']);
+        $this->assertEquals('created', $batch['status']);
+
+        $enach = $this->getDbLastEntityToArray('enach');
+
+        $this->assertEquals('false', $enach['acknowledge_status']);
+        $this->assertNotNull($enach['umrn']);
+
+        $token = $this->getDbLastEntityToArray('token');
+
+        $this->assertEquals('rejected', $token['recurring_status']);
     }
 
     protected function createEmandatePayment($amount = 0, $recurringType = 'initial')

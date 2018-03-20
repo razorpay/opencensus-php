@@ -3,9 +3,10 @@
 namespace RZP\Models\Batch\Processor\Emandate\Acknowledge;
 
 use RZP\Exception;
+use RZP\Models\Batch;
+use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Customer\Token;
-use RZP\Models\Payment\Gateway;
 use RZP\Gateway\Base\Action as GatewayAction;
 use RZP\Gateway\Enach\Base\Entity as EnachEntity;
 use RZP\Gateway\Enach\Base\AcknowledgeFileHeadings as Headings;
@@ -15,7 +16,7 @@ class EnachRbl extends Base
     const TRUE = 'true';
     const FALSE = 'false';
 
-    protected $gateway = Gateway::ENACH_RBL;
+    protected $gateway = Payment\Gateway::ENACH_RBL;
 
     // Return single XML row as multiple entries
     protected function parseFile(string $filePath): array
@@ -32,8 +33,10 @@ class EnachRbl extends Base
         $row = $entry['data'];
 
         $data = $this->getDataFromRow($row);
-        s($data);
+
         $this->updateEntities($data);
+
+        $entry[Batch\Header::STATUS] = Batch\Status::SUCCESS;
     }
 
     /**
