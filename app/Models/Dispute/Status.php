@@ -16,6 +16,11 @@ class Status
         self::CLOSED,
     ];
 
+    protected static $openStatuses = [
+        self::OPEN,
+        self::UNDER_REVIEW
+    ];
+
     /**
      * $transactionalStatuses are statuses where adjustment transactions
      * should be done when a dispute reaches one of these statuses
@@ -33,6 +38,11 @@ class Status
     public static function getClosedStatuses(): array
     {
         return self::$closedStatuses;
+    }
+
+    public static function getOpenStatuses(): array
+    {
+        return self::$openStatuses;
     }
 
     public static function getTransactionalStatuses(): array
