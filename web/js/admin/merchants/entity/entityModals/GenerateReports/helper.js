@@ -15,8 +15,8 @@ export const getCustomConfig = key => {
 
   return {
     label: customConfigsMap[key],
-    type: key,
-    id: 'custom',
+    type: 'custom',
+    id: key,
   };
 };
 
@@ -32,14 +32,14 @@ const handleError = e => {
 
 const createLog = (data, merchantId) => {
   return adminPost({
-    url: `live/${merchantId}reporting/logs`,
+    url: `live_${merchantId}/reporting/logs`,
     data,
   });
 };
 
 const getLog = (logId, merchantId) => {
   return adminFetch({
-    url: `live/${merchantId}/reporting/logs/${logId}`,
+    url: `live_${merchantId}/reporting/logs/${logId}`,
   });
 };
 
@@ -61,14 +61,14 @@ export const generateReportV2 = params => {
 
   return createLog(params, merchantId)
     .then(resp => {
-      if (!resp.success || !resp.data || !resp.data.id) {
+      if (!resp || !resp.id) {
         return reportErrorMsg;
       }
 
-      const logId = resp.data.id;
+      const logId = resp.id;
 
       const logPoll = poll({
-        fetchFunc: () => getLog(resp.data.id, merchantId),
+        fetchFunc: () => getLog(resp.id, merchantId),
         validator: resp => {
           numCallsMade++;
           timeElapsed = new Date() - startTime;
@@ -80,11 +80,7 @@ export const generateReportV2 = params => {
            * 3) If the log is processed/failed
            */
 
-          return (
-            timeElapsed > timeout ||
-            resp.error ||
-            resp.data.status !== 'created'
-          );
+          return timeElapsed > timeout || resp.status !== 'created';
         },
         getNextCallWaitime: () => {
           /*
@@ -105,17 +101,13 @@ export const generateReportV2 = params => {
 
       return logPoll.promise
         .then(resp => {
-          // `resp.data.status` will be `created` in
+          // `resp.status` will be `created` in
           // case of timeout
-          if (
-            resp.error ||
-            resp.data.status === 'failed' ||
-            resp.data.status === 'created'
-          ) {
+          if (resp.status === 'failed' || resp.status === 'created') {
             return reportErrorMsg;
           }
 
-          const fileId = resp.data.file_id;
+          const fileId = resp.file_id;
 
           if (!fileId) {
             return {
@@ -125,12 +117,12 @@ export const generateReportV2 = params => {
 
           return getFile(fileId, merchantId)
             .then(resp => {
-              if (!resp.success) {
+              if (!resp) {
                 return reportErrorMsg;
               }
 
               return {
-                url: resp.data.signed_url,
+                url: resp.signed_url,
               };
             })
             .catch(handleError);

@@ -15,7 +15,7 @@ import { getCustomConfig, generateReportV2 } from './helper';
 
 const defaultDate = moment().subtract(1, 'day');
 const defaultMonth = moment().add(-1, 'month');
-const defaultSelectedConfig = 'payments';
+const defaultSelectedConfig = 'config_9EnBo04FFmkKmO'; // Name: Payments (id needed cuz Virtual Payments has same type as Payments)
 
 export default class GenerateReports extends Component {
   constructor(props) {
@@ -23,18 +23,18 @@ export default class GenerateReports extends Component {
 
     const { details } = props.props.merchant;
 
-    let configs = [];
+    let configs = [getCustomConfig('monthlyInvoice')];
     // populate custom configs
-    if (details.tags.indexOf('Broking_Report') !== -1) {
+    if (details.tags.indexOf('Broking_report') !== -1) {
       configs.push(getCustomConfig('broking'));
     }
 
     // DSP Report is only for DSP Blackrock Merchant. Should not be enabled for any other merchants
-    if (details.tags.indexOf('Dsp_Report') !== -1) {
+    if (details.tags.indexOf('Dsp_report') !== -1) {
       configs.push(getCustomConfig('dsp_report'));
     }
 
-    if (details.tags.indexOf('Rpp_Report') !== -1) {
+    if (details.tags.indexOf('Rpp_report') !== -1) {
       configs.push(getCustomConfig('rpp_report'));
     }
 
@@ -42,18 +42,11 @@ export default class GenerateReports extends Component {
       configs,
       merchantAccounts: [],
       dateType: 'daily',
-      configs: [getCustomConfig('monthlyInvoice')],
+      configs,
     };
   }
 
   componentWillMount() {
-    this.linkedAccountOptions = [
-      'transaction',
-      'payment',
-      'refund',
-      'settlement',
-    ];
-
     this.setState({
       isLoading: true,
     });
@@ -81,8 +74,8 @@ export default class GenerateReports extends Component {
 
         configs.push(config);
 
-        if (config.type === defaultSelectedConfig) {
-          selectedConfig = config.type;
+        if (config.id === defaultSelectedConfig) {
+          selectedConfig = config.id;
         }
       });
     }
@@ -91,13 +84,13 @@ export default class GenerateReports extends Component {
     this.setState({
       configs: finalConfigs,
       isLoading: false,
-      selectedConfig: selectedConfig || finalConfigs[0].type,
+      selectedConfig: selectedConfig || finalConfigs[0].id,
     });
   }
 
-  getConfigLabel(configType) {
+  getConfigLabel(configId) {
     let label = null;
-    label = this.state.configs.find(item => item.type === configType).label;
+    label = this.state.configs.find(item => item.id === configId).label;
 
     return label;
   }
@@ -108,9 +101,13 @@ export default class GenerateReports extends Component {
     let { calDate } = this.state;
     const mode = 'live';
 
+    const selectedConfigType = this.state.configs.find(
+      configItem => configItem.id === selectedConfig
+    ).type;
+
     /* Monthly Invoice */
 
-    if (selectedConfig === 'invoice') {
+    if (selectedConfig === 'monthlyInvoice') {
       if (!invoiceDate) {
         return notifyError('Please select valid month for invoice');
       }
@@ -126,10 +123,6 @@ export default class GenerateReports extends Component {
       return Promise.resolve(window.open(invoiceUrl, '_blank'));
     }
 
-    const selectedConfigId = this.state.configs.find(
-      configItem => configItem.type === selectedConfig
-    ).id;
-
     if (!calDate) {
       if (dateType === 'monthly') {
         calDate = defaultMonth;
@@ -138,9 +131,10 @@ export default class GenerateReports extends Component {
       }
     }
 
-    /* Polling - Custom Reports */
+    /* Polling - Non-custom Reports */
 
-    if (selectedConfigId === 'custom') {
+    if (selectedConfigType !== 'custom') {
+      const timeFactor = dateType === 'daily' ? 'day' : 'month';
       const startTime = calDate
         .clone()
         .startOf(timeFactor)
@@ -153,7 +147,7 @@ export default class GenerateReports extends Component {
       notifySuccess('Your report will download shortly');
 
       const reqData = {
-        config_id: selectedConfigId,
+        config_id: selectedConfig,
         generated_by: this.props.merchantId,
         start_time: startTime,
         end_time: endTime,
@@ -168,7 +162,7 @@ export default class GenerateReports extends Component {
       });
     }
 
-    /* Hardcoded, Other Custom Reports */
+    /* Hardcoded - custom reports */
 
     if (!date) {
       return notifyError('Invalid Dates selected');
@@ -255,7 +249,7 @@ export default class GenerateReports extends Component {
                     <RadioField
                       label={option.label}
                       name="selectedConfig"
-                      value={option.type}
+                      value={option.id}
                       defaultValue={selectedConfig}
                       onClick={e => {
                         this.setState({ selectedConfig: e.target.value });
@@ -330,12 +324,14 @@ export default class GenerateReports extends Component {
             </div>
 
             <div class="form-element">
-              <AsyncButton
-                text="Generate and Download Report"
-                class="btn"
-                pendingClass="small spinner"
-                onSubmit={this.prepareGenerateReport}
-              />
+              {!isLoading && (
+                <AsyncButton
+                  text="Generate and Download Report"
+                  class="btn"
+                  pendingClass="small spinner"
+                  onSubmit={this.prepareGenerateReport}
+                />
+              )}
 
               {selectedConfig === 'transaction' && (
                 <footer style={{ marginTop: '16' }}>
