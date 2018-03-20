@@ -20,27 +20,29 @@ export default class GenerateReports extends Component {
   constructor(props) {
     super(props);
 
-    const { details } = props.props.merchant;
+    let { tags } = props.props.merchant.details;
+
+    tags = tags.map(tag => tag.toLowerCase());
 
     let configs = [getCustomConfig('monthlyInvoice')];
     // populate custom configs
-    if (details.tags.indexOf('Broking_report') !== -1) {
+    if (tags.indexOf('broking_report') !== -1) {
       configs.push(getCustomConfig('broking'));
     }
 
     // DSP Report is only for DSP Blackrock Merchant. Should not be enabled for any other merchants
-    if (details.tags.indexOf('Dsp_report') !== -1) {
+    if (tags.indexOf('dsp_report') !== -1) {
       configs.push(getCustomConfig('dsp_report'));
     }
 
-    if (details.tags.indexOf('Rpp_report') !== -1) {
+    if (tags.indexOf('rpp_report') !== -1) {
       configs.push(getCustomConfig('rpp_report'));
     }
 
     this.state = {
       configs,
       merchantAccounts: [],
-      dateType: 'daily'
+      dateType: 'daily',
     };
   }
 
