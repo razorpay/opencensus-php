@@ -501,6 +501,7 @@
             cursor: pointer;
             padding: 0;
             margin-left: 4px;
+            font-size: 14px;
         }
 
     </style>

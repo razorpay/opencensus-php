@@ -8,6 +8,7 @@ use View;
 use ApiResponse;
 use RZP\Exception\BaseException;
 use Illuminate\Http\Response as ResponseCodes;
+use RZP\Models\Merchant;
 
 class InvoiceController extends Controller
 {
@@ -167,7 +168,18 @@ class InvoiceController extends Controller
             $data['error'] = $error;
         }
 
-        $view = 'invoice.index';
+        // Following is only for 10% rollout of new PL hosted page based on tag 'hostedplv2'
+        // If merchant has tag 'hostedplv2', then new PL hosted page would be shown
+
+        $merchantService = new Merchant\Service();
+        $merchantTags = $merchantService->getTags($data['merchant']['id']);
+        $useNewPL = in_array('Hostedplv2', $merchantTags, true);
+
+        if ($useNewPL) {
+            $view = 'invoice.index';
+        } else {
+            $view = 'invoice.index-old';
+        }
 
         //
         // Following is only temporary and is to be removed soon.
