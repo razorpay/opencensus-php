@@ -18,21 +18,15 @@ const paymentMethodsOrder = [
     'wallet',
     'bank transfer',
     'emi',
-    'emandate'
+    'emandate',
   ],
-  platformsOrder = [
-    'desktop',
-    'mweb',
-    'android',
-    'ios',
-    'others'
-  ],
+  platformsOrder = ['desktop', 'mweb', 'android', 'ios', 'others'],
   platformColors = [
     namedColors.blue,
     namedColors.orange,
     namedColors.androidGreen,
     namedColors.lightBlue,
-    namedColors.red
+    namedColors.red,
   ],
   platformColorMap = platformsOrder.reduce((result, platform, index) => {
     result[platform] = platformColors[index];

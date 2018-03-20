@@ -64,15 +64,13 @@ class Tooltip extends Component {
       tooltipTop = top;
 
       if (align === 'bottom') {
-
         if (!this.props.followPointer) {
           tooltipTop += height;
         }
 
         paddingTop = gutter;
       } else {
-      
-        tooltipTop -= (tooltipHeight + height);
+        tooltipTop -= tooltipHeight + height;
 
         paddingBottom = gutter;
       }

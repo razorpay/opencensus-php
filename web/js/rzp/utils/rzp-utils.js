@@ -11,8 +11,7 @@ moment.updateLocale('en', {
 });
 
 export function isDefined(value) {
-
-  return typeof value !== "undefined";
+  return typeof value !== 'undefined';
 }
 
 export function titleCase(sentence) {

@@ -27,7 +27,7 @@ import {
   getPlatformColor,
   getPaymentMethodColor,
   platformsOrder,
-  paymentMethodsOrder
+  paymentMethodsOrder,
 } from 'merchant/components/Home/data';
 import { trackNoData, trackError } from 'merchant/containers/Home/ga';
 import Tooltip from 'merchant/components/Home/Tooltip';
@@ -315,10 +315,9 @@ class KeyMetricsContainer extends Component {
           if (histogram) {
             const options = {
               data: histogram.result,
-              groupByColumnName:
-                !isDefined(tabMeta.groupByColumnName)
-                  ? selectedGrouping && selectedGrouping.value
-                  : tabMeta.groupByColumnName,
+              groupByColumnName: !isDefined(tabMeta.groupByColumnName)
+                ? selectedGrouping && selectedGrouping.value
+                : tabMeta.groupByColumnName,
               startTime: startDate.unix(),
               endTime: endDate.unix(),
               breakdown: tabState.selectedBreakdown,
@@ -339,11 +338,9 @@ class KeyMetricsContainer extends Component {
                   : getPaymentMethodColor;
             }
 
-            if (options.groupByColumnName === "method") {
-            
+            if (options.groupByColumnName === 'method') {
               options.groupOrder = paymentMethodsOrder;
-            } else if (options.groupByColumnName === "platform") {
-            
+            } else if (options.groupByColumnName === 'platform') {
               options.groupOrder = platformsOrder;
             }
 

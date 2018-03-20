@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 import { toJS } from 'mobx';
 
-import fetch, { adminFetch, adminPatch } from 'common/fetch';
-import { closeModal, confirm, notifySuccess } from 'common/modal';
+import fetch, { adminFetch, adminPatch, adminPut } from 'common/fetch';
+import { closeModal, confirm, notifySuccess, notifyError } from 'common/modal';
 import { isWorkflow } from 'common/util';
 
 import Model from './model';
@@ -16,6 +16,7 @@ import DocumentDetails from './merchantActivationForms/DocumentDetails';
 import ProductOnboarding from './merchantActivationForms/ProductOnboarding';
 import BusinessDetails from './merchantActivationForms/BusinessDetails';
 import ActivationDetails from './merchantActivationForms/ActivationDetails';
+import ReviewNotesDetails from './merchantActivationForms/ReviewNotesDetails';
 
 import { statusPill } from 'common/data';
 
@@ -118,10 +119,44 @@ export default class MerchantActivationForm extends Component {
     );
   }
 
+  handleIssueSelection = (e, resolvedIssue) => {
+    this.model.editIssuesList(resolvedIssue || e.target.dataset.issuename);
+  };
+
+  handleIssuesSubmition = body => {
+    const issues = this.model.activationReview.issue_fields;
+
+    body.issue_fields = issues.join(',');
+
+    // `issue_fields_reason` is a compulsary field
+    if (!body.issue_fields_reason) {
+      notifyError('Please enter a public comment.');
+      return;
+    }
+
+    return adminPut({
+      url: `live/merchant/activation/${this.merchantId}/update`,
+      data: body,
+    }).then(response => {
+      this.model.activationReview.issue_fields_reason =
+        body.issue_fields_reason;
+      this.model.activationReview.internal_notes = body.internal_notes;
+
+      notifySuccess('Review updated successfully.');
+    });
+  };
+
+  handleIssueExistence = currIssue => {
+    //check whether the issues exists & then wire chcekbox ui based on the issue existence
+    const issues = this.model.activationReview.issue_fields;
+    const found = issues.indexOf(currIssue);
+    return found > -1;
+  };
+
   render() {
     const { details } = this.model.merchant;
     return (
-      <div class="entity-container">
+      <div class="entity-container activation-form">
         <header class="heading">Activation Form</header>
         {this.getOverview()}
 
@@ -138,17 +173,43 @@ export default class MerchantActivationForm extends Component {
                 toJS(details.merchant_details.steps_finished)
               }
             >
-              <ContactDetails {...details} title={tabNames[0]} />
-              <BusinessDetails {...details} title={tabNames[1]} />
-              <BankAccountDetails {...details} title={tabNames[2]} />
+              <ContactDetails
+                {...details}
+                title={tabNames[0]}
+                onIssueSelection={this.handleIssueSelection}
+                doesIssueExist={this.handleIssueExistence}
+              />
+              <BusinessDetails
+                {...details}
+                title={tabNames[1]}
+                onIssueSelection={this.handleIssueSelection}
+                doesIssueExist={this.handleIssueExistence}
+              />
+              <BankAccountDetails
+                {...details}
+                title={tabNames[2]}
+                onIssueSelection={this.handleIssueSelection}
+                doesIssueExist={this.handleIssueExistence}
+              />
               <DocumentDetails
                 merchantId={this.merchantId}
                 {...details}
-                title={tabNames[4]}
+                title={tabNames[3]}
+                onIssueSelection={this.handleIssueSelection}
+                doesIssueExist={this.handleIssueExistence}
               />
               <ProductOnboarding
                 merchantId={this.merchantId}
+                title={tabNames[4]}
+                onIssueSelection={this.handleIssueSelection}
+              />
+              <ReviewNotesDetails
                 title={tabNames[5]}
+                onIssueSelection={this.handleIssueSelection}
+                onIssuesSubmition={this.handleIssuesSubmition}
+                activationReview={this.model.activationReview}
+                parentProps={this.model}
+                merchantId={this.merchantId}
               />
             </TabsContainer>
           }
@@ -207,4 +268,5 @@ const tabNames = [
   'Bank Account Details',
   'Document Uploads',
   'Product Onboading',
+  'Review Notes',
 ];

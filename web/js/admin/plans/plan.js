@@ -112,7 +112,7 @@ export const options = {
     '0-200000': '0-200000',
     '200000-1000000000': '200000-1000000000',
     '0-10000000': '0 - 1 lac',
-    '10000000-': '1 lac+'
+    '10000000-': '1 lac+',
   },
   emi_duration: {
     '': 'All',
@@ -298,9 +298,9 @@ class Rule extends CollectionItem {
     if (this.payment_method === 'emandate') {
       return this.selectField('payment_issuer', {
         '': 'All',
-        'initial': 'Initial',
-        'auto': 'Auto'
-      })
+        initial: 'Initial',
+        auto: 'Auto',
+      });
     }
     return this.selectField('payment_issuer');
   }
