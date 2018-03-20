@@ -191,7 +191,7 @@ export default class ReviewNotesDetails extends Component {
 
 const EmailModal = ({ issues, comment }) => (
   <BaseModal header="Email Preview (editable)">
-    <div class="email-preview" contenteditable="true">
+    <div class="email-preview" contentEditable={true}>
       <p>
         Hey,
         <br />
@@ -199,14 +199,14 @@ const EmailModal = ({ issues, comment }) => (
         Thanks for submitting your application to us. There are few requirements
         that need to be completed before we can activate your account.
       </p>
-      <p>
+      <div>
         Clarifications needed for :
         <ul class="issues-list">
           {issues.map(issue => (
-            <li>{issuesMap[issue] || snakeToTitleCase(issue)}</li>
+            <li key={issue}>{issuesMap[issue] || snakeToTitleCase(issue)}</li>
           ))}
         </ul>
-      </p>
+      </div>
       <p>
         <span>Details:</span>
         <br />
