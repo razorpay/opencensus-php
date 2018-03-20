@@ -15,7 +15,6 @@ import { getCustomConfig, generateReportV2 } from './helper';
 
 const defaultDate = moment().subtract(1, 'day');
 const defaultMonth = moment().add(-1, 'month');
-const defaultSelectedConfig = 'config_9EnBo04FFmkKmO'; // Name: Payments (id needed cuz Virtual Payments has same type as Payments)
 
 export default class GenerateReports extends Component {
   constructor(props) {
@@ -41,8 +40,7 @@ export default class GenerateReports extends Component {
     this.state = {
       configs,
       merchantAccounts: [],
-      dateType: 'daily',
-      configs,
+      dateType: 'daily'
     };
   }
 
@@ -62,7 +60,6 @@ export default class GenerateReports extends Component {
     let hasConfigs =
       configsResp && configsResp.items && configsResp.items.length > 0;
     let configs = [];
-    let selectedConfig;
 
     if (hasConfigs) {
       configsResp.items.forEach(configItem => {
@@ -73,10 +70,6 @@ export default class GenerateReports extends Component {
         };
 
         configs.push(config);
-
-        if (config.id === defaultSelectedConfig) {
-          selectedConfig = config.id;
-        }
       });
     }
 
@@ -84,7 +77,7 @@ export default class GenerateReports extends Component {
     this.setState({
       configs: finalConfigs,
       isLoading: false,
-      selectedConfig: selectedConfig || finalConfigs[0].id,
+      selectedConfig: finalConfigs[0].id,
     });
   }
 
