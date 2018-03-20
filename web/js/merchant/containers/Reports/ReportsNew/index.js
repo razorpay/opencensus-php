@@ -73,7 +73,7 @@ export default class ReportsContainer extends Component {
     super(props);
 
     const { user } = props,
-      tags = user.tags,
+      tags = user.tags.map(tag => tag.toLowerCase()),
       configs = [getCustomConfig('monthlyInvoice')],
       accounts = [],
       configRequest = getConfigs().catch(requestFailedFunc),
@@ -88,15 +88,15 @@ export default class ReportsContainer extends Component {
     };
 
     // populate custom configs
-    if (tags.indexOf('Broking_Report') !== -1) {
+    if (tags.indexOf('broking_report') !== -1) {
       configs.push(getCustomConfig('broking'));
     }
 
-    if (tags.indexOf('Rpp_Report') !== -1) {
+    if (tags.indexOf('rpp_report') !== -1) {
       configs.push(getCustomConfig('rpp_report'));
     }
 
-    if (tags.indexOf('Dsp_Report') !== -1) {
+    if (tags.indexOf('dsp_report') !== -1) {
       configs.push(getCustomConfig('dsp_report'));
     }
 
