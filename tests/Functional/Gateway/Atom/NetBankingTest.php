@@ -55,15 +55,6 @@ class NetbankingTest extends TestCase
         $this->assertTestResponse($refund);
     }
 
-    public function testAtomCardPayment()
-    {
-        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-
-        $payment = $this->doAuthAndCapturePayment();
-
-        $this->assertTestResponse($payment);
-    }
-
     public function testMockOnLiveMode()
     {
         $this->setMockGatewayTrue();
