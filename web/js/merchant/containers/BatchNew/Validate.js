@@ -5,6 +5,7 @@ import BatchValidateModal from 'merchant/components/BatchNew/ValidateModal';
 
 import { validatePaymentLinkBatch as validateBatch } from 'merchant/modules/batches';
 
+import { trackUploadBatchFile } from './ga';
 @connect(state => state.session, { validateBatch })
 export default class BatchValidate extends Component {
   state = {
@@ -29,6 +30,7 @@ export default class BatchValidate extends Component {
   handleBatchValidation = file => {
     this.handleStateChange('process');
     setTimeout(() => {
+      trackUploadBatchFile();
       this.props
         .validateBatch(file, this.props.mode)
         .then(response => {

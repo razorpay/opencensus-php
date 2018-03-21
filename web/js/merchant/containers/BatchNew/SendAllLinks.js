@@ -7,6 +7,7 @@ import CheckboxField from 'rzp/ui/Forms/CheckboxField';
 import { closeModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 import { notifyBatch } from 'merchant/modules/batches';
+import { trackSendAllLinks } from './ga';
 
 @connect(state => state.session, {
   showNotification,
@@ -22,6 +23,10 @@ import { notifyBatch } from 'merchant/modules/batches';
 })
 export default class SendAllLinksModal extends Component {
   sendLinks = props => {
+    trackSendAllLinks({
+      ...props,
+      batch_id: this.props.batchId,
+    });
     return this.props
       .notifyBatch(this.props.batchId, props)
       .then(() => {

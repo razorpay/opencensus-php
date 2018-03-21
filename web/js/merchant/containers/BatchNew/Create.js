@@ -6,6 +6,7 @@ import { showNotification } from 'rzp/modules/notifications';
 import BatchCreateModal from 'merchant/components/BatchNew/CreateModal';
 import { createPaymentLinkBatch as createBatch } from 'merchant/modules/batches';
 
+import { trackUploadBatch } from './ga';
 @connect(state => state.session, { createBatch, showNotification })
 export default class BatchCreate extends Component {
   formInitialValues = {
@@ -25,6 +26,7 @@ export default class BatchCreate extends Component {
       sms_notify: data.sms_notify,
       email_notify: data.email_notify,
     };
+    trackUploadBatch('Create');
     return this.props
       .createBatch(data)
       .then(response => {

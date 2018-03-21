@@ -10,6 +10,8 @@ import { titleCase } from 'rzp/utils/rzp-utils';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 
+import { trackSeeAllLinks } from 'merchant/containers/BatchNew/ga';
+
 import {
   BatchUploadStatusLabel,
   InvoiceStatusLabel,
@@ -97,6 +99,7 @@ export default function BatchDetails(props) {
                   <NavLink
                     to={`/paymentlinks?batch_id=${batch.id}`}
                     className="btn-link pull-right"
+                    onClick={() => trackSeeAllLinks(batch.id)}
                   >
                     View All <strong>{invoices.length}</strong> &gt;
                   </NavLink>
@@ -123,6 +126,7 @@ export default function BatchDetails(props) {
                 <NavLink
                   to={`/paymentlinks?batch_id=${batch.id}`}
                   className="btn btn-default btn-block"
+                  onClick={() => trackSeeAllLinks(batch.id)}
                 >
                   View All <strong>{invoices.length}</strong>
                 </NavLink>

@@ -12,6 +12,8 @@ import {
 
 import BatchDetails from 'merchant/components/BatchNew/BatchDetails';
 
+import { trackDetails } from './ga';
+
 @connect(null, {
   fetchBatch,
   batchDownload,
@@ -66,6 +68,14 @@ export default class BatchDetailsContainer extends Component {
           message: 'Failed to fetch batch.',
         });
       });
+  }
+
+  componentDidMount() {
+    trackDetails('Open', this.props.id);
+  }
+
+  componentWillUnmount() {
+    trackDetails('Close', this.props.id);
   }
   render() {
     return <BatchDetails onDownload={this.handleDownload} {...this.state} />;

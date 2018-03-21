@@ -19,6 +19,12 @@ import * as NotificationsActions from 'rzp/modules/notifications';
 import BatchUpload from './Upload';
 
 import { batchDownload, fetchBatch } from 'merchant/modules/batches';
+import {
+  trackGoToLinks,
+  trackSampleFileDownload,
+  trackSearchFilters,
+  trackDownloadProcessedBatchReport,
+} from './ga';
 
 function batchActions({ mode, sendAll, onDownloadClick }) {
   return {
@@ -53,6 +59,7 @@ function batchActions({ mode, sendAll, onDownloadClick }) {
 export default class BatchList extends Component {
   dowload = id => {
     let windowRef = window.open('', '_blank');
+    trackDownloadProcessedBatchReport();
     this.props
       .batchDownload(id)
       .then(response => {
@@ -85,6 +92,10 @@ export default class BatchList extends Component {
     this.props.fetchBatch(batchId);
   };
 
+  componentDidMount() {
+    trackGoToLinks('Batch Uploads');
+  }
+
   render() {
     let {
       mode,
@@ -103,7 +114,11 @@ export default class BatchList extends Component {
       <div class="content-wrapper batch-upload-wrapper">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
-            <a class="btn btn-link" href={sampleUrl}>
+            <a
+              class="btn btn-link"
+              href={sampleUrl}
+              onClick={trackSampleFileDownload}
+            >
               Download Sample File
             </a>
             {docUrl && (
@@ -126,6 +141,7 @@ export default class BatchList extends Component {
           form="batchListFilter"
           count={count}
           onSubmit={onSubmit}
+          onSearchAnalytics={trackSearchFilters}
         />
         <DataTable
           title="Batch Uploads"

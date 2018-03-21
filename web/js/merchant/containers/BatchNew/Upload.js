@@ -7,6 +7,8 @@ import { closeModal, openModal } from 'rzp/modules/modals';
 import BatchValidate from './Validate';
 import BatchCreate from './Create';
 
+import { trackUploadBatch } from './ga';
+
 /**
  * Container:  Switches between validation or creation of batch.
  */
@@ -35,13 +37,18 @@ export default class BatchUpload extends Component {
     this.props.onSave(batch);
   };
 
+  componentDidMount() {
+    trackUploadBatch('Open');
+  }
+
+  onModalClose = () => {
+    trackUploadBatch('Close');
+    this.props.closeModal();
+  };
   render() {
     return (
       <div class={`batch-upload-modal ${this.state.currentStatus}`}>
-        <ModalHeader
-          title="Batch Upload"
-          onCloseClick={this.props.closeModal}
-        />
+        <ModalHeader title="Batch Upload" onCloseClick={this.onModalClose} />
         {(() => {
           switch (this.state.currentStatus) {
             case 'validate':
