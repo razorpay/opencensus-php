@@ -19,7 +19,7 @@ pipeline:
       - echo -n "extension=nanotime.so" >> /etc/php7/conf.d/nanotime.ini
       - php -m
       - composer config --global github-oauth.github.com $GIT_TOKEN
-      - composer install --no-interaction --optimize-autoloader --classmap-authoritative
+      - composer install --no-interaction --optimize-autoloader
       - mkdir -p /opt/razorpay/certs/first_data
       - php -d memory_limit=2048M vendor/phpunit/phpunit/phpunit --debug --verbose
     when:

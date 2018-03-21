@@ -27,7 +27,7 @@ RUN apk --update add python py-pip openssl ca-certificates && \
 
 ## TODO: move the newrelic install to base-nginx-php7 image
 RUN composer config -g github-oauth.github.com ${GIT_TOKEN} \
-    && composer install --no-interaction --optimize-autoloader --classmap-authoritative \
+    && composer install --no-interaction --optimize-autoloader \
     && mkdir /opt && cd /opt \
     && wget https://download.newrelic.com/php_agent/release/newrelic-php5-${NR_VERSION}-linux-musl.tar.gz \
     && tar -xzvf newrelic-php5-${NR_VERSION}-linux-musl.tar.gz \
