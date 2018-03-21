@@ -479,6 +479,28 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
+    protected function sendRefundVerifyRequest(array $input)
+    {
+        $request = $this->getRefundVerifyRequestArray($input);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->response = $response;
+
+        $content = $this->parseGatewayResponse($response->body, Action::VERIFY);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_VERIFY_RESPONSE,
+            [
+                'raw_content' => $response->body,
+                'content'     => $content,
+                'gateway'     => 'upi_mindgate',
+                'refund_id'   => $input['refund']['id'],
+            ]);
+
+        return $content;
+    }
+
     protected function getValidateVpaRequestArray(array $input): array
     {
         $data = [
@@ -551,15 +573,10 @@ class Gateway extends Base\Gateway
 
     protected function getPaymentVerifyRequestArray($input)
     {
-        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-            $input['payment']['id'],
-            Action::AUTHORIZE
-        );
-
         $data = [
             $this->getMerchantId(),
             $input['payment']['id'],
-            $gatewayPayment->getGatewayPaymentId(),
+            '',
             // This is the Reference ID field
             // which is supposed to be empty for now
             // Non-empty values give error
@@ -584,6 +601,37 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
+    protected function getRefundVerifyRequestArray($input)
+    {
+        $data = [
+            $this->getMerchantId(),
+            $input['refund']['id'],
+            //As confirmed by hdfc team gateway payment id is not needed
+            '',
+            // This is the Reference ID field
+            // which is supposed to be empty for now
+            // Non-empty values give error
+            '',
+        ];
+
+        $content = $this->transformRequestArrayToContent($data);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $request['headers'] = [
+            'Content-Type' => 'text/plain'
+        ];
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            [
+                'request' => $request,
+                'decrypted_content' => $data
+            ]);
+
+        return $request;
+    }
+    
     protected function verifyPayment($verify)
     {
         $content = $verify->verifyResponseContent;
@@ -609,6 +657,8 @@ class Gateway extends Base\Gateway
 
     public function verifyRefund(array $input)
     {
+        parent::verifyRefund($input);
+
         if ($this->isUnprocessedRefund($input) === true)
         {
             return false;
@@ -619,7 +669,25 @@ class Gateway extends Base\Gateway
             return true;
         }
 
-        parent::verifyRefund($input);
+        $content = $this->sendRefundVerifyRequest($input);
+
+        if ($content['status'] === Status::SUCCESS)
+        {
+            return true;
+        }
+
+        if ($content['status'] === Status::FAILURE)
+        {
+            return false;
+        }
+
+        throw new Exception\LogicException(
+            'Shouldn\'t reach here',
+            null,
+            [
+                'gateway_status' => $content['status'],
+                'refund_id'      => $input['refund']['id'],
+            ]);
     }
 
     private function checkGatewaySuccess(Verify $verify)
