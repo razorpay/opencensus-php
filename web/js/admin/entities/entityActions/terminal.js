@@ -22,17 +22,6 @@ export default ({ entity, mode, updateEntity }) => {
       delete body.emi_duration;
     }
 
-    // Remove the unchanged keys inside body.type
-    for (let key in body.type) {
-      if (body.type[key] == '0') {
-        // Remove if value is 0
-        delete body.type[key];
-      }
-    }
-    if (!Object.keys(body.type).length) {
-      delete body.type;
-    }
-
     return adminPut({
       url: `${mode}/terminals/${entity.id}`,
       data: body,
