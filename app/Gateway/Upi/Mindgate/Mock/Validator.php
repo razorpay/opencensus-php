@@ -40,7 +40,7 @@ class Validator extends Base\Validator
         // RZP API Payment Id
         'required|alpha_num|max:50',
         // UPI Transaction Reference Id
-        'required|digits_between:3,18',
+        'sometimes',
         // Reference Id (Optional, empty string as of now)
         'sometimes'
     ];

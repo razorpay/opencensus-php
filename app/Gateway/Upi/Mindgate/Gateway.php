@@ -571,15 +571,10 @@ class Gateway extends Base\Gateway
 
     protected function getPaymentVerifyRequestArray($input)
     {
-        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-            $input['payment']['id'],
-            Action::AUTHORIZE
-        );
-
         $data = [
             $this->getMerchantId(),
             $input['payment']['id'],
-            $gatewayPayment->getGatewayPaymentId(),
+            '',
             // This is the Reference ID field
             // which is supposed to be empty for now
             // Non-empty values give error
@@ -606,14 +601,11 @@ class Gateway extends Base\Gateway
 
     protected function getRefundVerifyRequestArray($input)
     {
-        $gatewayPayment = $this->repo->fetchByRefundId(
-            $input['refund']['id']
-        );
-
         $data = [
             $this->getMerchantId(),
             $input['refund']['id'],
-            $gatewayPayment->getGatewayPaymentId(),
+            //As confirmed by hdfc team gateway payment id is not needed
+            '',
             // This is the Reference ID field
             // which is supposed to be empty for now
             // Non-empty values give error
