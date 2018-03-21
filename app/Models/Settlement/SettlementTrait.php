@@ -142,7 +142,7 @@ trait SettlementTrait
         //
         $oneSetlPerDayMids = [
             Preferences::MID_WEALTHY,
-//            Preferences::MID_PAISABAZAAR,
+            Preferences::MID_PAISABAZAAR,
         ];
 
         if (($txn->isTypePayment() === true) and
