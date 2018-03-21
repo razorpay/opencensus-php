@@ -90,7 +90,8 @@
         "php-http/mock-client": "^0.3.3",
         "symfony/dom-crawler": "3.*",
         "phpunit/phpunit": "^6.2",
-        "symfony/phpunit-bridge": "3.3.*@dev"
+        "symfony/phpunit-bridge": "3.3.*@dev",
+        "codedungeon/phpunit-result-printer": "^0.5.4"
     },
     "autoload": {
         "classmap": ["database", "tests", "app/Models/Customer"],
