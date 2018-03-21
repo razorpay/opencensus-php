@@ -5,13 +5,13 @@ namespace RZP\Models\FundTransfer\Rbl;
 use App;
 use Config;
 
-use RZP\Models\FundTransfer\rbl\Request\Beneficiary;
+use RZP\Models\FundTransfer\Rbl\Request\Beneficiary;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\PublicCollection;
-use RZP\Models\FundTransfer\rbl\Request\Transfer;
-use RZP\Models\FundTransfer\rbl\Reconciliation\Status;
+use RZP\Models\FundTransfer\Rbl\Request\Transfer;
+use RZP\Models\FundTransfer\Rbl\Reconciliation\Status;
 use RZP\Models\FundTransfer\Base\Initiator as NodalBase;
-use RZP\Models\FundTransfer\rbl\Reconciliation\ResponseProcessor;
+use RZP\Models\FundTransfer\Rbl\Reconciliation\ResponseProcessor;
 
 class NodalAccount extends NodalBase\NodalAccount
 {
