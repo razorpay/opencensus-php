@@ -209,8 +209,13 @@ class ViewDataSerializer extends Base\Core
             $merchantBrandColor = self::DEFAULT_MERCHANT_BRAND_COLOR;
         }
 
+        // Tags are always saved in live mode. Ensures to read from live mode only.
+        $tags = ($this->mode === Mode::LIVE) ?
+                    $this->merchant->tagNames() :
+                    (clone $this->merchant)->setConnection(Mode::LIVE)->tagNames();
+
         $merchantData = [
-            'tags'             => $this->merchant->tagNames(),
+            'tags'             => $tags,
             'brand_color'      => get_rgb_value($merchantBrandColor),
             'brand_text_color' => get_brand_text_color($merchantBrandColor),
             'image'            => $this->merchant->getFullLogoUrlWithSize(Checkout::CHECKOUT_LOGO_SIZE),
