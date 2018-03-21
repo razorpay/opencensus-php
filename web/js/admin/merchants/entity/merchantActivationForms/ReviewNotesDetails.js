@@ -226,11 +226,12 @@ const EmailModal = ({ issues, comment }) => (
       <p>
         <strong>
           P.S: We would need 24-48 working hours to get your responses validated
-          with our partner banks. Also, Kindly avoid in-line responses. If you
-          need any clarification, you can reach us on 9731958333/9980891333
-          between 11:00 AM to 06:00 PM. Please share the reference number when
-          you call.
+          with our partner banks. Also, Kindly avoid in-line responses. To
+          report a grievance, click here:{' '}
         </strong>
+        <a href="https://razorpay.com/grievances/" class="link grievance-link">
+          https://razorpay.com/grievances/
+        </a>
       </p>
     </div>
   </BaseModal>
