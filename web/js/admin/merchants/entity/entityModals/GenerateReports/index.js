@@ -284,7 +284,7 @@ export default class GenerateReports extends Component {
                 selectedConfig === 'monthlyInvoice') && (
                 <span>
                   <DateField
-                    onChange={calDate => this.setState(calDate)}
+                    onChange={calDate => this.setState({ calDate })}
                     format="MM/YYYY"
                     name={
                       selectedConfig === 'monthlyInvoice'
@@ -303,7 +303,7 @@ export default class GenerateReports extends Component {
                 selectedConfig !== 'monthlyInvoice' && (
                   <span>
                     <DateField
-                      onChange={calDate => this.setState(calDate)}
+                      onChange={calDate => this.setState({ calDate })}
                       format="DD/MM/YYYY"
                       name={
                         selectedConfig === 'monthlyInvoice'
