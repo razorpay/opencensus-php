@@ -1,20 +1,21 @@
 import React, { Component } from 'react';
 import { PageTable } from 'ui/Table';
-import { SelectField } from 'ui/Field';
+import { SelectField, FromField, ToField, CheckField } from 'ui/Field';
 import Collection from 'model/collection';
 import { adminFetch } from 'common/fetch';
 import { featuresAkaMap, showEntity } from './Entity';
 import { statusPill } from 'common/data';
+import { snakeToTitleCase } from 'common/util';
 
 const defaultFilters = {
-  status: 'pending',
+  status: 'under_review',
 };
 
 function fetchFn() {
   let currentFilter = this.filters.status;
   return adminFetch(...arguments).then(data => {
     if (data) {
-      return data.map(feature => ({
+      return data.items.map(feature => ({
         id: `${feature.merchant_id}_${feature.product}`,
         ...feature,
       }));
@@ -25,7 +26,7 @@ function fetchFn() {
 export default class PublicFeaturesList extends Component {
   collection = new Collection({
     data: {
-      url: 'live/onboarding/features/submissions/fetch',
+      url: 'live/merchant/requests',
     },
     fetchFn,
     filters: defaultFilters,
@@ -49,11 +50,13 @@ export default class PublicFeaturesList extends Component {
               onChange={this.filter}
               defaultValue={defaultFilters.status}
             >
-              <option value="pending">Pending</option>
-              <option value="approved">Approved</option>
-              <option value="rejected">Rejected</option>
+              {publicFeatureStatuses.map(status => (
+                <option value={status} key={status}>
+                  {snakeToTitleCase(status)}
+                </option>
+              ))}
             </SelectField>
-            <SelectField label="Product" name="product" onChange={this.filter}>
+            <SelectField label="Product" name="name" onChange={this.filter}>
               <option value="">All</option>
               {Object.keys(featuresAkaMap).map(feature => (
                 <option value={feature} key={feature}>
@@ -61,6 +64,8 @@ export default class PublicFeaturesList extends Component {
                 </option>
               ))}
             </SelectField>
+            <FromField format="X" allowToday={true} />
+            <ToField format="X" allowToday={true} />
           </div>
         </div>
         <PageTable
@@ -77,4 +82,11 @@ const fields = [
   ['Merchant ID', item => item.merchant_id],
   ['Product', item => item.product],
   ['Status', item => statusPill(item.status)],
+];
+
+const publicFeatureStatuses = [
+  'under_review',
+  'needs_clarification',
+  'activated',
+  'rejected',
 ];
