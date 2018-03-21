@@ -3251,3 +3251,14 @@ delete from tagging_tags
 where name = 'Ref-9aHC1hl4PNU3sn';
 
 # Airtel aggregator accounts breakup -- end
+
+# Invoice GST - item / line_items
+
+ALTER TABLE items
+    ADD COLUMN hsn_code VARCHAR(20) DEFAULT NULL AFTER tax_inclusive,
+    ADD COLUMN sac_code VARCHAR(20) DEFAULT NULL AFTER hsn_code,
+    ADD COLUMN tax_rate INTEGER UNSIGNED DEFAULT NULL AFTER sac_code;
+
+ALTER TABLE line_items
+    ADD COLUMN hsn_code VARCHAR(20) DEFAULT NULL AFTER tax_inclusive,
+    ADD COLUMN sac_code VARCHAR(20) DEFAULT NULL AFTER hsn_code;
