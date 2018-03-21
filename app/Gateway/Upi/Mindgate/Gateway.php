@@ -648,6 +648,17 @@ class Gateway extends Base\Gateway
             $status = VerifyResult::STATUS_MISMATCH;
         }
 
+        if ($verify->gatewaySuccess === true)
+        {
+            $input = $verify->input;
+
+            $paymentAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+
+            $actualAmount = number_format($content[ResponseFields::AMOUNT], 2, '.', '');
+
+            $verify->amountMismatch = ($paymentAmount !== $actualAmount);
+        }
+
         $verify->match = ($status === VerifyResult::STATUS_MATCH);
 
         $content[Entity::RECEIVED] = 1;
