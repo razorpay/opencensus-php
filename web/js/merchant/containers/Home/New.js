@@ -11,6 +11,7 @@ import Sticky from 'rzp/ui/Sticky';
 import Group, { GroupItem } from 'rzp/ui/Group';
 import { showNotification } from 'rzp/modules/notifications';
 import DateRangePicker, { customRangeText } from 'rzp/ui/DateRangePicker';
+import Tooltip from 'rzp/ui/Tooltip';
 import {
   oldestTransactionQuery,
   getDefaultPaymentFilter,
@@ -407,7 +408,12 @@ class HomeContainer extends Component {
 
           <div className="row">
             <div className="col-md-12">
-              <p className="section-title">{paymentInsightsTitle}</p>
+              <p className="section-title">
+                {paymentInsightsTitle}
+                <span>
+                  <i class="i i-info-circle"></i>
+                </span>
+              </p>
             </div>
             <div className="col-md-12">
               <PaymentMethods

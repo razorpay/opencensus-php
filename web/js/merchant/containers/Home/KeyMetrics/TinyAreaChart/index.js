@@ -2,6 +2,7 @@ import { Line } from 'react-chartjs-2';
 import { namedColors } from 'rzp/utils/chart/colors';
 
 const options = {
+  "responsive": true,
   "legend": {
     "display": false
   },
