@@ -40,13 +40,34 @@ function batchActions({ mode, sendAll, onDownloadClick }) {
         <button
           class="btn btn-default btn-xs"
           onClick={_ => sendAll(item)}
-          disabled={item.status === 'created' || item.is_sent_already}
+          disabled={!allowSendAllLinks(item)}
         >
-          Send all links
+          {allowSendAllLinks(item) ? 'Send all links' : 'All links sent'}
         </button>
       </div>
     ),
   };
+}
+
+function allowSendAllLinks(batch) {
+  if (batch.status === 'created') {
+    return false;
+  }
+  //config object will not be available for older batches
+  if (batch.config) {
+    if (
+      parseInt(batch.config.sms_notify) > 0 ||
+      parseInt(batch.config.email_notify) > 0
+    ) {
+      //if more than 0 payment link(s) has been sent, disabled the btn
+      return false;
+    } else {
+      return true;
+    }
+  } else {
+    //disable for older batches
+    false;
+  }
 }
 
 @connect(null, {

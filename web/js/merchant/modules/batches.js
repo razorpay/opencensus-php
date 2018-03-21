@@ -71,6 +71,9 @@ export const editIssuableBatchList = batchIdToRemove => {
 };
 
 export const fetchPaymentLinkBatches = params => {
+  //for new batches
+  params.with_config = '1';
+
   return dispatch => {
     return dispatch({
       type: getActionName(PAYMENT_LINK),
