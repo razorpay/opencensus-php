@@ -648,10 +648,11 @@ class Gateway extends Base\Gateway
             $status = VerifyResult::STATUS_MISMATCH;
         }
 
-        if ($verify->gatewaySuccess === true)
-        {
-            $input = $verify->input;
+        $input = $verify->input;
 
+        if (($verify->gatewaySuccess === true) and
+            ($input['merchant']['id'] === '6ZJzxyLFWrGs74'))
+        {
             $paymentAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
 
             $actualAmount = number_format($content[ResponseFields::AMOUNT], 2, '.', '');
