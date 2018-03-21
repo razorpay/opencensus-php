@@ -629,8 +629,7 @@ class Gateway extends Base\Gateway
 
         return $request;
     }
-
-
+    
     protected function verifyPayment($verify)
     {
         $content = $verify->verifyResponseContent;
