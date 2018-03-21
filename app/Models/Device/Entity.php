@@ -188,7 +188,7 @@ class Entity extends Base\PublicEntity
 
     protected function generateVerificationToken()
     {
-        $verificationToken = bin2hex(openssl_random_pseudo_bytes(20));
+        $verificationToken = bin2hex(random_bytes(20));
 
         if (empty($verificationToken))
         {
@@ -200,7 +200,7 @@ class Entity extends Base\PublicEntity
 
     protected function generateAuthToken()
     {
-        $authToken = bin2hex(openssl_random_pseudo_bytes(20));
+        $authToken = bin2hex(random_bytes(20));
 
         $this->setAttribute(self::AUTH_TOKEN, $authToken);
     }

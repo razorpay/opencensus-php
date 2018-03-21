@@ -43,7 +43,7 @@ class FirstServiceProvider extends ServiceProvider
 
         $request->macro('generateId', function()
         {
-            $this->requestId = bin2hex(openssl_random_pseudo_bytes(16));
+            $this->requestId = bin2hex(random_bytes(16));
 
             return $this->requestId;
         });

@@ -8,7 +8,7 @@ use Requests_Hooks;
 use RZP\Trace\TraceCode;
 use RZP\Exception\RuntimeException;
 use RZP\Models\FundTransfer\Base\Initiator\RequestProcessor;
-use RZP\Models\FundTransfer\rbl\Reconciliation\Status;
+use RZP\Models\FundTransfer\Rbl\Reconciliation\Status;
 
 abstract class Base extends RequestProcessor
 {
