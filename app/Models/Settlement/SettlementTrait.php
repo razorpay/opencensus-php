@@ -142,7 +142,7 @@ trait SettlementTrait
         //
         $oneSetlPerDayMids = [
             Preferences::MID_WEALTHY,
-            Preferences::MID_PAISABAZAAR,
+//            Preferences::MID_PAISABAZAAR,
         ];
 
         if (($txn->isTypePayment() === true) and
@@ -206,6 +206,7 @@ trait SettlementTrait
         {
             $this->trace->info(TraceCode::SETTLEMENT_SKIPPED,
                 [
+                    'balance'    => $balance,
                     'merchant'   => $merchant->getId(),
                     'setlAmount' => $setlAmount,
                 ]);

@@ -615,6 +615,7 @@ class Validator extends Base\Validator
             ($new->getType() === $existing->getType()) and
             ($new->getCurrency() === $existing->getCurrency()) and
             ($new->getNetworkCategory() === $existing->getNetworkCategory()) and
+            ($new->getCategory() === $existing->getCategory()) and
             ($new->getEmiSubvention() === $existing->getEmiSubvention()))
         {
             throw new Exception\BadRequestException(

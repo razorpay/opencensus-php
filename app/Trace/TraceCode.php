@@ -86,6 +86,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_UPDATE_HOLD                           = 'PAYMENT_UPDATE_HOLD';
     const PAYMENT_UPDATE_HOLD_CRON                      = 'PAYMENT_UPDATE_HOLD_CRON';
     const PAYMENT_HOLD_TOGGLE_UPDATE_TRANSACTION        = 'PAYMENT_HOLD_TOGGLE_UPDATE_TRANSACTION';
+    const PAYMENT_INVALID_TEMPORARY_SESSION             = 'PAYMENT_INVALID_TEMPORARY_SESSION';
     const TRANSACTION_CREATED_IN_VERIFY_CAPTURE         = 'TRANSACTION_CREATED_IN_VERIFY_CAPTURE';
     const TRANSACTION_AMOUNT_CREDITS                    = 'TRANSACTION_AMOUNT_CREDITS';
     const CREDITS_EXPIRED                               = 'CREDITS_EXPIRED';
@@ -194,7 +195,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RBL_NODAL_BEN_ADD_REQUEST                     = 'RBL_NODAL_BEN_ADD_REQUEST';
     const RBL_NODAL_TRANSFER_REQUEST                    = 'RBL_NODAL_TRANSFER_REQUEST';
     const RBL_NODAL_TRANSFER_RESPONSE                   = 'RBL_NODAL_TRANSFER_RESPONSE';
+    const RBL_NODAL_FAILURE_RESPONSE                    = 'RBL_NODAL_FAILURE_RESPONSE';
     const RBL_NODAL_BEN_ADD_RESPONSE                    = 'RBL_NODAL_BEN_ADD_RESPONSE';
+    const RBL_NODAL_FAILED_RESPONSE                     = 'RBL_NODAL_FAILED_RESPONSE';
+    const RBL_NODAL_TRANSFER_REQUEST_FAILED             = 'RBL_NODAL_TRANSFER_REQUEST_FAILED';
 
     const KOTAK_NODAL_BALANCE_REQUEST                   = 'KOTAK_NODAL_BALANCE_REQUEST';
     const KOTAK_NODAL_BALANCE_RESPONSE                  = 'KOTAK_NODAL_BALANCE_RESPONSE';
@@ -421,6 +425,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
 
     // Gateway component error messages
+    const GATEWAY_MANDATE_CONTENT                   = 'GATEWAY_MANDATE_CONTENT';
+    const GATEWAY_MANDATE_REQUEST                   = 'GATEWAY_MANDATE_REQUEST';
+    const GATEWAY_MANDATE_RESPONSE                  = 'GATEWAY_MANDATE_RESPONSE';
     const GATEWAY_RESPONSE                          = 'GATEWAY_RESPONSE';
     const GATEWAY_ENROLL_REQUEST                    = 'GATEWAY_ENROLL_REQUEST';
     const GATEWAY_ENROLL_RESPONSE                   = 'GATEWAY_ENROLL_RESPONSE';

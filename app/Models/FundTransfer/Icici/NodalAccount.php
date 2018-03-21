@@ -14,9 +14,9 @@ use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Encryption\AESEncryption;
 use RZP\Mail\Settlement as SettlementMail;
-use RZP\Models\FundTransfer\Base as NodalBase;
+use RZP\Models\FundTransfer\Base\Initiator as NodalBase;
 
-class NodalAccount extends NodalBase\NodalAccount
+class NodalAccount extends NodalBase\FileProcessor
 {
     // used in icici AES encrypter tool
     const ENCRYPTION_KEY = "1836204826394167";
@@ -192,7 +192,7 @@ class NodalAccount extends NodalBase\NodalAccount
     protected function sendIciciTransferMail(array $fileData, array $rows = null)
     {
         $data['body'] = 'PFA ICICI Settlement file';
-        
+
         if ($rows !== null)
         {
             $data['body'] = json_encode($rows, JSON_PRETTY_PRINT);
