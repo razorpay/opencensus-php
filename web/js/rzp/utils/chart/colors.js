@@ -9,8 +9,9 @@ const namedColors = {
   iosGrey: '#999999',
   darkBlue: '#1B3c97',
   lightBlue: '#00bbff',
+  blueishGrey: 'rgba(159, 177, 199, 1)',
   androidGreen: '#a4c639',
-  primaryColor: 'rgba(82, 143, 240, 1)'
+  primaryColor: 'rgba(82, 143, 240, 1)',
 };
 
 const colors = [

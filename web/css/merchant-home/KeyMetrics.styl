@@ -24,7 +24,6 @@ placeholder () {
       &.active > a > div {
 
         position: relative;
-        background-color: #ffffff;
         border: 1px solid $primary-color;
         box-shadow: 0px 1px 5px rgba(0,0,0,0.1);
 
@@ -47,6 +46,12 @@ placeholder () {
           border-top-color: $primary-color;
           border-style: solid;
         }
+
+        > h1 {
+
+          margin-bottom: 12px;
+          transition: margin 0.25s ease-out;
+        }
       }
 
       > a {
@@ -60,13 +65,18 @@ placeholder () {
         &:hover {
 
           padding-left: 0;
+
+          > div {
+
+            border: 1px solid $primary-color;
+          }
         }
 
         > div {
 
           padding: 16px 16px 8px;
           border: 1px solid rgba(0, 0, 0, 0.04);
-          background-color: #f5f7f8;
+          background-color: #ffffff;
 
           > h1 {
 
@@ -74,6 +84,7 @@ placeholder () {
             margin-bottom: 8px;
             font-size: 32px;
             line-height: 40px;
+            transition: 0.3s margin 0.1s ease-out;
 
             > .PlaceholderLoader {
 
@@ -86,9 +97,40 @@ placeholder () {
             width: 100%;
             height: 40px;
             background-color: transparent;
-            background-image: url('assets/loader.gif');
-            background-repeat: no-repeat;
-            background-position: 50% 50%;
+
+            &.loading {
+              background-image: url('assets/loader.gif');
+              background-repeat: no-repeat;
+              background-position: 50% 50%;
+
+              .min-chart-content {
+
+                opacity: 0;
+              }
+            }
+
+
+            &.no-data {
+
+              .min-chart-content {
+
+                border-bottom: 1px solid rgba(159, 177, 199, 1);
+              }
+
+              &.active {
+
+                .min-chart-content {
+                  border-bottom-color: $primary-color;
+                }
+              }
+            }
+
+            .min-chart-content {
+
+              width: 100%;
+              height: 100%;
+              opacity: 1;
+            }
           }
         }
 

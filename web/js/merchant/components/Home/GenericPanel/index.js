@@ -89,9 +89,9 @@ class PanelBody extends Component {
 
     return (
       <div {...otherProps}>
-        {(isLoading || noDataMsg) && (
+        {!isLoading && noDataMsg && (
           <Overlay>
-            {isLoading ? <Spinner /> : <span>{noDataMsg}</span>}
+            <span>{noDataMsg}</span>
           </Overlay>
         )}
         {children}
@@ -179,6 +179,10 @@ class Panel extends Component {
 
     if (error) {
       otherProps.className += ' has-error';
+    }
+
+    if (isLoading) {
+      otherProps.className += ' loading';
     }
 
     return (

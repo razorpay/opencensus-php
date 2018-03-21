@@ -54,6 +54,7 @@ import {
   trackSavedCardsHidden,
 } from './ga';
 import Panel from './Panel';
+import MiniChart from './TinyAreaChart';
 
 const csvDateFormat = 'DD-MM-YYYY';
 
@@ -68,7 +69,8 @@ const TabContent = ({
   isLoading,
   error,
   trend,
-  histogram
+  histogram,
+  isActive
 }) => {
   /*
    * Description:
@@ -118,8 +120,16 @@ const TabContent = ({
           <PlaceholderLoader />
         )}
       </h1>
-      <div className="mini-chart">
-
+      <div className={
+             `mini-chart${
+             !histogram ? " loading" : ""}${
+             value === 0 ? " no-data" : ""}${
+             isActive ? " active" : ""}`
+           }>
+        <div className="min-chart-content">
+          <MiniChart histogram={histogram}
+                     isActive={isActive}/>
+        </div>
       </div>
     </div>
   );
@@ -193,6 +203,9 @@ class KeyMetricsContainer extends Component {
         // calculated legend info is stored here
         legendData: [],
 
+        // data for small overview graphs shown in tabs
+        tinyGraphData: null,
+
         // trend data
         trend: {
           loading: true,
@@ -253,7 +266,7 @@ class KeyMetricsContainer extends Component {
     return tabsOrder.filter(tabName => tabsState[tabName].data.showTab);
   }
 
-  tabStateMixin ({tabState, histogram}) {
+  tabStateMixin ({tabState, histogram, refreshTinyGraphs}) {
 
     const {
             selectedGrouping,
@@ -344,6 +357,19 @@ class KeyMetricsContainer extends Component {
       url: '',
     };
 
+    if (refreshTinyGraphs) {
+    
+      const data = tabState.data.tinyGraphData = {
+                                                   labels,
+                                                   datasets: []
+                                                 };
+
+      if (datasets && datasets[0]) {
+      
+        data.datasets.push({...datasets[0]});
+      }
+    }
+
     return tabState;
   }
 
@@ -377,13 +403,13 @@ class KeyMetricsContainer extends Component {
     });
   }
 
-  fetchOtherTabsHistogram() {
+  fetchOtherTabsHistogram(refreshTinyGraphs) {
  
     const {
             selectedTab,
             tabsState
           }         = this.state,
-          otherTabs = tabsOrder.filter(
+          otherTabs = this.getVisibleTabs().filter(
                         tabName => tabName !== selectedTab
                       ),
           {
@@ -464,7 +490,8 @@ class KeyMetricsContainer extends Component {
 
           this.tabStateMixin({
             tabState: tabsState[tabName],
-            histogram
+            histogram,
+            refreshTinyGraphs
           });
         }
 
@@ -506,7 +533,7 @@ class KeyMetricsContainer extends Component {
 
     const requestId = ++this.requestId;
 
-    this.fetchOtherTabsHistogram();
+    this.fetchOtherTabsHistogram(fetchAllCounts);
 
     return (analyticsFetch || fetch)(query, mode)
       .then(resp => {
@@ -581,6 +608,7 @@ class KeyMetricsContainer extends Component {
             this.tabStateMixin({
               tabState,
               histogram,
+              refreshTinyGraphs: fetchAllCounts
             }); 
           }
         });
@@ -920,7 +948,7 @@ class KeyMetricsContainer extends Component {
   }
 
   render() {
-    const { tabsState, loading, tabWidth } = this.state,
+    const { tabsState, loading, tabWidth, selectedTab } = this.state,
       { startDate, endDate, showGroupingByPtfm, sectionTitle } = this.props,
       visibleTabs = this.getVisibleTabs();
 
@@ -951,7 +979,8 @@ class KeyMetricsContainer extends Component {
                   error={tabData.error}
                   percent={tabData.percent}
                   trend={tabData.trend}
-                  histogram={tabData.histogram}
+                  histogram={tabData.tinyGraphData}
+                  isActive={selectedTab === tabName}
                 />
               </Tab>
             );
