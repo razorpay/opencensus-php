@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "4bae8f82ebb30b99eb2049f1d62f30c9",
+    "content-hash": "5a6ebb21e5b40091235ec173d8cab6fa",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -5391,20 +5391,20 @@
         },
         {
             "name": "razorpay/oauth",
-            "version": "dev-laravel_5.5",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/oauth.git",
-                "reference": "57adc72a0352b4fcf2a5d3ce954fea774fe3ea12"
+                "reference": "5c54769ecb2569a9a24f3b58925fa0e0f8088c93"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/oauth/zipball/57adc72a0352b4fcf2a5d3ce954fea774fe3ea12",
-                "reference": "57adc72a0352b4fcf2a5d3ce954fea774fe3ea12",
+                "url": "https://api.github.com/repos/razorpay/oauth/zipball/5c54769ecb2569a9a24f3b58925fa0e0f8088c93",
+                "reference": "5c54769ecb2569a9a24f3b58925fa0e0f8088c93",
                 "shasum": ""
             },
             "require": {
-                "laravel/framework": "5.5.*",
+                "laravel/framework": "^5.0",
                 "league/oauth2-server": "^6.0",
                 "php": ">=5.6",
                 "razorpay/spine": "dev-master",
@@ -5436,10 +5436,10 @@
                 "service"
             ],
             "support": {
-                "source": "https://github.com/razorpay/oauth/tree/laravel_5.5",
+                "source": "https://github.com/razorpay/oauth/tree/master",
                 "issues": "https://github.com/razorpay/oauth/issues"
             },
-            "time": "2018-03-09T05:36:52+00:00"
+            "time": "2018-03-21T09:14:01+00:00"
         },
         {
             "name": "razorpay/razorpay",
@@ -7593,6 +7593,54 @@
             "description": "Sends PHP test coverage information to Codacy.",
             "homepage": "https://github.com/codacy/php-codacy-coverage",
             "time": "2017-08-09T14:23:33+00:00"
+        },
+        {
+            "name": "codedungeon/phpunit-result-printer",
+            "version": "0.5.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/mikeerickson/phpunit-pretty-result-printer.git",
+                "reference": "ce3b989eeb6d2b8cab367897275e120520bdca18"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/mikeerickson/phpunit-pretty-result-printer/zipball/ce3b989eeb6d2b8cab367897275e120520bdca18",
+                "reference": "ce3b989eeb6d2b8cab367897275e120520bdca18",
+                "shasum": ""
+            },
+            "require": {
+                "hassankhan/config": "^0.10.0",
+                "symfony/yaml": "^2.7|^3.0|^4.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": ">=5.2",
+                "spatie/phpunit-watcher": "^1.3"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Codedungeon\\PHPUnitPrettyResultPrinter\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Mike Erickson",
+                    "email": "codedungeon@gmail.com"
+                }
+            ],
+            "description": "PHPUnit Pretty Result Printer",
+            "keywords": [
+                "composer",
+                "package",
+                "phpunit",
+                "printer",
+                "result-printer"
+            ],
+            "time": "2018-01-24T00:13:26+00:00"
         },
         {
             "name": "fzaninotto/faker",

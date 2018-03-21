@@ -45,7 +45,7 @@
         "layershifter/tld-extract": "^1.2",
         "razorpay/hodor": "dev-master",
         "razorpay/trace": "~2.0",
-        "razorpay/oauth": "dev-laravel_5.5",
+        "razorpay/oauth": "dev-master",
         "fideloper/proxy": "~3.0"
     },
     "repositories": [
