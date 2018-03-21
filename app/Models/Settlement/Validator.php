@@ -89,5 +89,4 @@ class Validator extends Base\Validator
                 'Invalid Channel: ' . $value);
         }
     }
-
 }

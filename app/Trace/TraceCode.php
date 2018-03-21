@@ -195,7 +195,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RBL_NODAL_BEN_ADD_REQUEST                     = 'RBL_NODAL_BEN_ADD_REQUEST';
     const RBL_NODAL_TRANSFER_REQUEST                    = 'RBL_NODAL_TRANSFER_REQUEST';
     const RBL_NODAL_TRANSFER_RESPONSE                   = 'RBL_NODAL_TRANSFER_RESPONSE';
+    const RBL_NODAL_FAILURE_RESPONSE                    = 'RBL_NODAL_FAILURE_RESPONSE';
     const RBL_NODAL_BEN_ADD_RESPONSE                    = 'RBL_NODAL_BEN_ADD_RESPONSE';
+    const RBL_NODAL_FAILED_RESPONSE                     = 'RBL_NODAL_FAILED_RESPONSE';
+    const RBL_NODAL_TRANSFER_REQUEST_FAILED             = 'RBL_NODAL_TRANSFER_REQUEST_FAILED';
 
     const KOTAK_NODAL_BALANCE_REQUEST                   = 'KOTAK_NODAL_BALANCE_REQUEST';
     const KOTAK_NODAL_BALANCE_RESPONSE                  = 'KOTAK_NODAL_BALANCE_RESPONSE';

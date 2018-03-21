@@ -178,6 +178,21 @@ class Entity extends Base\PublicEntity
         $this->increment(self::TRANSACTION_COUNT, $value);
     }
 
+    public function setAmount($value)
+    {
+        $this->setAttribute(self::AMOUNT, $value);
+    }
+
+    public function setTotalCount($value)
+    {
+        $this->setAttribute(self::TOTAL_COUNT, $value);
+    }
+
+    public function setTransactionCount($value)
+    {
+        $this->setAttribute(self::TRANSACTION_COUNT, $value);
+    }
+
     public function setType($type)
     {
         $this->setAttribute(self::TYPE, $type);
