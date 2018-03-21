@@ -76,15 +76,16 @@ class Repository extends BaseRepository
         }
     }
 
-    public function getApplicationFeatures($applicationId): PublicCollection
+    /**
+     * Fetch features assigned to an application_id
+     *
+     * @param string $applicationId
+     *
+     * @return PublicCollection
+     */
+    public function getApplicationFeatures(string $applicationId): PublicCollection
     {
-        //
-        // Fetch all the features of the application
-        // that is trying to access the resource
-        //
-        $applicationFeatures = $this->fetchByEntityTypeAndEntityId(Constants::APPLICATION, $applicationId);
-
-        return $applicationFeatures;
+        return $this->fetchByEntityTypeAndEntityId(Constants::APPLICATION, $applicationId);
     }
 
     /**

@@ -83,7 +83,7 @@ class Authenticate
         // Post process after authentication completes
         $ret = (new FeatureAccess)->verifyFeatureAccess($ret, $bearerToken);
 
-        // non-null value indicates failure flow
+        // Non-null value indicates failure flow
         if ($ret !== null)
         {
             return $ret;
@@ -99,6 +99,7 @@ class Authenticate
      * @param string $route
      *
      * @return mixed
+     * @throws \RZP\Exception\LogicException
      */
     protected function authenticateBasicAuth(string $route)
     {
@@ -189,6 +190,7 @@ class Authenticate
      * Sample token: rzp_test_oauth_8P3XVPteKu4igS
      *
      * @return mixed|null ErrorResponse if error, else null
+     * @throws \RZP\Exception\LogicException
      */
     protected function authenticateOAuthPublicToken()
     {

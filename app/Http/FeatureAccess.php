@@ -50,24 +50,25 @@ class FeatureAccess
 
         $this->repo = $this->app['repo'];
 
-        $this->merchant = $this->app['basicauth']->getMerchant();
-
         $this->route = $this->app['api.route'];
+
+        $this->merchant = $this->ba->getMerchant();
     }
 
-
     /**
-     * Checks if the accessed route is a feature route, if yes
-     * checks if the merchant has access to the feature
-     * $authReturn will either be null or store an error object
+     * Checks if the accessed route is a feature route.
+     * If yes:
+     *  Checks if the merchant has access to the feature
+     *  $authReturn will either be null or store an error object
      *
      * Null return indicates available access
+     *
      * @param $authReturn
      * @param $bearerToken
      *
      * @return null
      */
-    public function verifyFeatureAccess($authReturn, $bearerToken = '')
+    public function verifyFeatureAccess($authReturn, string $bearerToken = null)
     {
         if ($authReturn !== null)
         {
