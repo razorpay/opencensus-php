@@ -229,11 +229,7 @@ const EmailModal = ({ issues, comment }) => (
           with our partner banks. Also, Kindly avoid in-line responses. To
           report a grievance, click here:{' '}
         </strong>
-        <a
-          href="https://razorpay.com/grievances/"
-          class="link"
-          style={{ borderBottom: 'none' }}
-        >
+        <a href="https://razorpay.com/grievances/" class="link grievance-link">
           https://razorpay.com/grievances/
         </a>
       </p>
