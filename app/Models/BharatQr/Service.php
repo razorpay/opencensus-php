@@ -128,7 +128,7 @@ class Service extends Base\Service
 
         if ($mode === null)
         {
-            $mode = Mode::LIVE;
+            $mode = Mode::TEST;
         }
 
         $this->app['basicauth']->setModeAndDbConnection($mode);
