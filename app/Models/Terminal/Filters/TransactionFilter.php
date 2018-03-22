@@ -262,12 +262,10 @@ class TransactionFilter extends Terminal\Filter
         // payments. Though, it would be applicable for shared terminals also,
         // we don't want to fallback on that just yet.
         //
-        // NOTE: It should be weak check only because array_diff returns back an array.
-        //
         if ((empty(array_diff($applicableTypes, $terminal->getType())) === true) or
             ($terminal->isNo2Fa() === true))
         {
-            if (($terminal->isShared() === false) and
+            if (($terminal->isDirectForMerchant($this->input['merchant']) === true) and
                 ($payment->isCard() === true))
             {
                 return true;
