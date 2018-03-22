@@ -103,7 +103,8 @@ class Gateway extends Base\Gateway
     protected function authorizeIntent(array $input)
     {
         $attributes = [
-            Entity::TYPE => Base\Type::PAY,
+            Entity::TYPE                => Base\Type::PAY,
+            Entity::GATEWAY_MERCHANT_ID => $this->getMerchantId(),
         ];
 
         $payment = $this->createGatewayPaymentEntity($attributes);
