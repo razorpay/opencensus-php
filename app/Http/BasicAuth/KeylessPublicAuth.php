@@ -86,6 +86,7 @@ final class KeylessPublicAuth
         if ($info !== null)
         {
             list($entity, $signedId) = $info;
+
             return $this->retrieveMerchantForEntity($entity, $signedId);
         }
     }
@@ -97,6 +98,7 @@ final class KeylessPublicAuth
     {
         // If found in request input against available map, returns that.
         $input = $this->request->all();
+
         foreach (self::INPUT_ENTITY_MAP as $key => $entity)
         {
             if (array_key_exists($key, $input) === true)
@@ -109,7 +111,7 @@ final class KeylessPublicAuth
         $signedId = $this->retrieveXEntityId();
         if ($signedId !== null)
         {
-            $sign = explode('_', $signedId)[0];
+            $sign   = explode('_', $signedId)[0];
             $entity = $this->getEntityFromSign($sign);
 
             return [$entity, $signedId];
