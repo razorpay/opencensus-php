@@ -5,7 +5,7 @@ import Form from 'ui/Form';
 import { notifySuccess, closeModal } from 'common/modal';
 import { adminPut } from 'common/fetch';
 
-BulkTransaction.permissions = 'settlement_bulk_update';
+BulkTransaction.permissions = 'edit_bulk_merchant_channel';
 BulkTransaction.title = 'Update Bulk Transaction';
 
 export default function BulkTransaction() {
@@ -27,7 +27,7 @@ export default function BulkTransaction() {
         pendingClass="small spinner"
         onSubmit={body => {
           return adminPut({
-            url: 'live/transactions/bulk',
+            url: 'live/merchants/channel/bulk',
             data: body,
           }).then(data => {
             if (data) {
