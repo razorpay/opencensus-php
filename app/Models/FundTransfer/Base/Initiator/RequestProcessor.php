@@ -175,7 +175,6 @@ abstract class RequestProcessor extends NodalAccount
             $this->requestTraceCode,
             [
                 'method'  => $this->method,
-                'url'     => $this->url,
                 'request' => $this->body,
             ]);
     }
