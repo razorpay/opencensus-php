@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import { observer } from 'mobx-react';
+
 import {
   openModal,
   notifyError,
@@ -10,37 +11,60 @@ import {
 import Form from 'ui/Form';
 import BaseModal from 'ui/BaseModal';
 import Field, { SelectField, TextAreaField, FileField } from 'ui/Field';
-import { adminFetch, adminPost, adminPut, adminFormUpload } from 'common/fetch';
+import Table from 'ui/Table';
+import { statusPill } from 'common/data';
 
+import {
+  adminFetch,
+  adminPost,
+  adminPut,
+  adminFormUpload,
+  adminPatch,
+} from 'common/fetch';
+import { snakeToTitleCase, formatDate } from 'common/util';
 @observer
 export default class EditPublicFeatures extends Component {
   state = {
     pending: true,
     agreement: null,
+    statusLogs: [],
   };
 
-  akaFeature = this.props.model.product;
+  akaFeature = this.props.model.name;
 
-  selectedStatus = this.props.model.collection.filters.status;
+  selectedStatus = this.props.model.status;
 
   // TODO: TEST Sending mode as live, not sent earlier
-  featureParams = {
-    url: `live_${this.props.model.merchant_id}/onboarding/features`,
-    params: {
-      features: [this.akaFeature],
-    },
-  };
+  featureRequestUrls = [
+    `live/merchant/requests/${this.props.model.id}`,
+    `live/merchant/requests/${this.props.model.id}/status_log`,
+    'live/merchant/requests/rejection_reasons',
+  ];
 
   componentWillMount() {
-    adminFetch(this.featureParams).then(response => {
-      if (response) {
-        this.submissions = response.submissions;
+    let requests = [];
+
+    requests = this.featureRequestUrls.map(url =>
+      adminFetch({
+        url,
+      })
+    );
+
+    Promise.all(requests).then(([feature, statusLogs, allRejectionReasons]) => {
+      if (feature) {
+        this.submissions = feature.submissions;
         this.setState({ pending: false });
-        if (response.submissions['marketplace']) {
+        if (feature.name === 'marketplace') {
           this.setState({
-            agreement: response.submissions['marketplace'].vendor_agreement,
+            agreement: feature.submissions.vendor_agreement,
           });
         }
+      }
+
+      if (statusLogs.items) {
+        this.setState({
+          statusLogs: statusLogs.items,
+        });
       }
     });
   }
@@ -52,57 +76,20 @@ export default class EditPublicFeatures extends Component {
   save = body => {
     let { akaFeature, selectedStatus } = this;
 
-    // TODO: TEST to send merchant id in data? Also, hard coded the mode as live, not sent earlier
-    body.merchant_id = this.props.model.merchant_id;
-    //send request if status changed
-    if (selectedStatus !== body.status) {
-      adminPut({
-        url: `live_${
-          body.merchant_id
-        }/onboarding/features/${akaFeature}/status`,
-        data: {
-          status: body.status,
-        },
-      }).then(response => {
-        if (response) {
-          notifySuccess('Status updated!');
-        }
-      });
-    } else {
-      delete body.status;
-    }
-
-    if (featuresAkaMap[akaFeature] === featuresAkaMap.marketplace) {
-      let form = {};
-
-      Object.keys(body).forEach(key => (form[`body[${key}]`] = body[key]));
-
-      return adminFormUpload(
-        form,
-        `/admin/api/live/onboarding/features/${akaFeature}/update`
-      ).then(response => {
-        if (response.data.success) {
-          notifySuccess('Submission edited successfully.');
-          closeModal();
-        } else {
-          notifyError(response.data.errors.join(', '));
-        }
-      });
-    } else {
-      return adminPost({
-        url: `live/onboarding/features/${akaFeature}/update`,
-        data: body,
-      }).then(response => {
-        if (response) {
-          notifySuccess('Submission edited successfully.');
-          closeModal();
-        }
-      });
-    }
+    return adminPatch({
+      url: `live/merchant/requests/${this.props.model.id}`,
+      data: body,
+    }).then(response => {
+      if (response) {
+        //TODO: update collection for the list view
+        notifySuccess('Submission edited successfully.');
+        closeModal();
+      }
+    });
   };
 
   render() {
-    let { product, merchant_id } = this.props.model;
+    let { merchant_id, name } = this.props.model;
     let {
       selectedStatus,
       akaFeature,
@@ -124,23 +111,25 @@ export default class EditPublicFeatures extends Component {
               </div>
               <div class="field">
                 <label>Feature</label>
-                <code>{product}</code>
+                <code>{name}</code>
               </div>
               <SelectField
                 label="Status"
                 name="status"
                 defaultValue={selectedStatus}
               >
-                <option value="pending">Pending</option>
-                <option value="approved">Approved</option>
-                <option value="rejected">Rejected</option>
+                {publicFeatureStatuses.map(status => (
+                  <option value={status} key={status}>
+                    {snakeToTitleCase(status)}
+                  </option>
+                ))}
               </SelectField>
               {featuresAkaMap[akaFeature] === featuresAkaMap.marketplace ||
               featuresAkaMap[akaFeature] === featuresAkaMap.virtual_accounts ? (
                 <TextAreaField
                   label="Use Case"
-                  name="use_case"
-                  defaultValue={submissions[akaFeature].use_case}
+                  name="submissions[use_case]"
+                  defaultValue={submissions.use_case}
                 />
               ) : null}
 
@@ -149,40 +138,38 @@ export default class EditPublicFeatures extends Component {
                 <Field
                   label="Expected Monthly Revenue"
                   type="number"
-                  name="expected_monthly_revenue"
-                  defaultValue={
-                    submissions[akaFeature].expected_monthly_revenue
-                  }
+                  name="submissions[expected_monthly_revenue]"
+                  defaultValue={submissions.expected_monthly_revenue}
                 />
               )}
 
               {featuresAkaMap[akaFeature] === featuresAkaMap.subscriptions && [
                 <TextAreaField
                   label="Business Model"
-                  name="business_model"
+                  name="submissions[business_model]"
                   key="business_model"
-                  defaultValue={submissions[akaFeature].business_model}
+                  defaultValue={submissions.business_model}
                 />,
                 <TextAreaField
                   label="Subscription Plans"
-                  name="sample_plans"
+                  name="submissions[sample_plans]"
                   key="sample_plans"
-                  defaultValue={submissions[akaFeature].sample_plans}
+                  defaultValue={submissions.sample_plans}
                 />,
                 <TextAreaField
                   label="Website Details"
-                  name="website_details"
+                  name="submissions[website_details]"
                   key="website_details"
-                  defaultValue={submissions[akaFeature].website_details}
+                  defaultValue={submissions.website_details}
                 />,
               ]}
 
               {featuresAkaMap[akaFeature] === featuresAkaMap.marketplace && [
                 <SelectField
                   label="Transferring to"
-                  name="settling_to"
+                  name="submissions[settling_to]"
                   key="settling_to"
-                  defaultValue={submissions[akaFeature].settling_to}
+                  defaultValue={submissions.settling_to}
                 >
                   {tranferToOptions.map(t => (
                     <option key={t[0]} value={t[0]}>
@@ -216,6 +203,7 @@ export default class EditPublicFeatures extends Component {
                   )}
                 </div>,
               ]}
+              <Table items={this.state.statusLogs} fields={statusLogsFields} />
 
               <button class="btn">Save</button>
             </div>
@@ -243,3 +231,15 @@ export const featuresAkaMap = {
   subscriptions: 'Subscriptions',
   virtual_accounts: 'Virtual Accounts',
 };
+
+const publicFeatureStatuses = [
+  'under_review',
+  'needs_clarification',
+  'activated',
+  'rejected',
+];
+
+const statusLogsFields = [
+  ['Created At', item => formatDate(item.created_at)],
+  ['Activation Status', item => statusPill(item.name)],
+];

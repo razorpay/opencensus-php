@@ -80,10 +80,10 @@ export default class PublicFeaturesList extends Component {
 
 const fields = [
   ['Merchant ID', item => item.merchant.id],
-  ['Merchant Name', item => item.merchant.name][
-    ('Product', item => item.product)
-  ],
-  ['Account Activation Status', item => statusPill(item.merchant.status)],
+  ['Merchant Name', item => item.merchant.name],
+  ['Product', item => item.name],
+  //TODO: merchant account status
+  ['Account Activation Status', item => item.merchant.activated.toString()],
   ['Product Activation Status', item => statusPill(item.status)],
 ];
 
