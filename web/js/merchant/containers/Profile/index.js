@@ -52,9 +52,10 @@ export default class Profile extends Component {
         this.setState({
           //if api response is true then the request is still in workflow
           isBankAccountChangeAllowed: !data,
-        }).catch(errors => {
-          console.log('ERROR: Failed to fetch bank account change status');
         });
+      })
+      .catch(errors => {
+        console.log('ERROR: Failed to fetch bank account change status');
       });
   }
 
@@ -172,6 +173,7 @@ export default class Profile extends Component {
           type: 'success',
           message: 'Bank Account change request updated succesfully. ',
         });
+        this.setState({ isBankAccountChangeAllowed: false });
       })
       .catch(({ errors }) => {
         this.props.showNotification({
