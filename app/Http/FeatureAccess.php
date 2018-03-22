@@ -135,13 +135,13 @@ class FeatureAccess
      * route should be given the access. Returns a boolean.
      *
      * @param array $routeFeatures
-     * @param array $routeFeaturesAvailableWithMerchant
+     * @param array $merchantRouteFeatures
      *
      * @return bool
      */
     protected function allowApplicationToAccessFeatureRoute(
         array $routeFeatures,
-        array $routeFeaturesAvailableWithMerchant): bool
+        array $merchantRouteFeatures): bool
     {
         //
         // 1. If the application has any of the route features required,
@@ -149,15 +149,13 @@ class FeatureAccess
         //
 
         // Fetch all the features of the application that is trying to access the resource
-        $applicationFeatures = $this->repo
-                                    ->feature
-                                    ->getApplicationFeatures($this->ba->applicationId)
-                                    ->toArray();
+        $appFeatures = $this->repo
+                            ->feature
+                            ->getApplicationFeatures($this->ba->getOAuthApplicationId())
+                            ->pluck(Feature\Entity::NAME)
+                            ->all();
 
-        // Get an array of features
-        $applicationFeatures = array_pluck($applicationFeatures, 'name');
-
-        $routeFeaturesAvailableWithApp = array_intersect($routeFeatures, $applicationFeatures);
+        $routeFeaturesAvailableWithApp = array_intersect($routeFeatures, $appFeatures);
 
         if (empty($routeFeaturesAvailableWithApp) === false)
         {
@@ -176,7 +174,7 @@ class FeatureAccess
         // From the features available with the merchant, remove the features using
         // which the applications should not be allowed to access the routes.
         //
-        $merchantRouteFeaturesWhitelisted = array_diff($routeFeaturesAvailableWithMerchant, $appBlacklistedFeatures);
+        $merchantRouteFeaturesWhitelisted = array_values(array_diff($merchantRouteFeatures, $appBlacklistedFeatures));
 
         return (empty($merchantRouteFeaturesWhitelisted) === false);
     }

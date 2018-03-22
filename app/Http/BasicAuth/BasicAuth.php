@@ -80,6 +80,13 @@ class BasicAuth
     protected $oauthClientId;
 
     /**
+     * OAuth application id
+     *
+     * @var string
+     */
+    protected $applicationId;
+
+    /**
      * OAuth's access token (public) id.
      *
      * @var string
@@ -1083,6 +1090,11 @@ class BasicAuth
         $cron = ($this->internalApp === 'cron');
 
         return $cron;
+    }
+
+    public function getOAuthApplicationId()
+    {
+        return $this->applicationId;
     }
 
 // --------------------- Getters Ends ------------------------------------------
