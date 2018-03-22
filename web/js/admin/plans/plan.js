@@ -176,7 +176,13 @@ class Rule extends CollectionItem {
     // if unsaved plan
     if (!this.collection.props.id) {
       this.define('readonly', true);
-      this.collection.items.push(new Rule(this.collection));
+
+      let nextRule = new Rule(this.collection);
+      if (this.international == 1) {
+        delete this['payment_method_type'];
+      }
+
+      this.collection.items.push(nextRule);
     } else {
       return this.request(
         'save',
@@ -276,7 +282,7 @@ class Rule extends CollectionItem {
 
   paymentMethodTypeField() {
     var data;
-    if (this.payment_method === 'card') {
+    if (this.payment_method === 'card' && this.international == 0) {
       data = options.payment_method_type;
     } else if (this.payment_method === 'emandate') {
       data = {
