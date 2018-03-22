@@ -270,18 +270,14 @@ const periods = {
   weekly: 'Week',
   monthly: 'Month',
   yearly: 'Year',
+  daily: 'Day',
 };
 
 export const getIntervalCycle = (interval, period) => {
-  switch (interval) {
-    case 1:
-      return `Every ${periods[period]}`;
-
-    case 2:
-      return `Bi-${titleCase(period)}`;
-
-    default:
-      return `Once in ${interval} ${periods[period]}s`;
+  if (interval === 1) {
+    return `Every ${periods[period]}`;
+  } else {
+    return `Once in ${interval} ${periods[period]}s`;
   }
 };
 
