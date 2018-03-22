@@ -64,6 +64,7 @@ export default class PlanEntity extends Component {
           <div class="spinner center" />
         ) : (
           <DataTable
+            animateRow={false}
             pending={pending}
             items={this.collection.items}
             fields={fields}
