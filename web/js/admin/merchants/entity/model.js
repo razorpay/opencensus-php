@@ -304,6 +304,17 @@ export default class Model extends BaseModel {
     this.merchant = { ...this.merchant }; // To force re-render the view
   }
 
+  updateScheduleTask(data) {
+    let scheduleTaskToUpdate = this.merchant.scheduleTasks.find(
+      task => task.method == data.method // double equal is to handle 'method:null - All' case
+    );
+
+    this.merchant.scheduleTasks.remove(scheduleTaskToUpdate);
+    this.merchant.scheduleTasks.push(data);
+
+    this.merchant = { ...this.merchant }; // To force re-render the view
+  }
+
   /**
    * Sets the auto refund delay value and type.
    * `data` is passed by reference.
