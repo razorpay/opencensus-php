@@ -288,7 +288,11 @@ class TransactionFilter extends Terminal\Filter
             {
                 $gateway = $terminal->getGateway();
 
-                return Gateway::isUpiIntentFlowSupported($gateway);
+                if ((Gateway::isUpiIntentFlowSupported($gateway) === true) and
+                    ($terminal->isPay() === true))
+                {
+                    return true;
+                }
             }
         }
 

@@ -45,6 +45,7 @@ class Gateway extends Base\Gateway
         Entity::VPA                       => Entity::VPA,
         Entity::RECEIVED                  => Entity::RECEIVED,
         Entity::EXPIRY_TIME               => Entity::EXPIRY_TIME,
+        Entity::TYPE                      => Entity::TYPE,
         ResponseFields::PAYER_VA          => Entity::VPA,
         ResponseFields::PAYER_NAME        => Entity::NAME,
         ResponseFields::STATUS            => Entity::STATUS_CODE,
@@ -256,7 +257,12 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
 
-        assertTrue($content[ResponseFields::UPI_TXN_ID] === $gatewayPayment->getGatewayPaymentId());
+        if ($gatewayPayment->getType() !== Base\Type::PAY)
+        {
+            assertTrue($content[ResponseFields::UPI_TXN_ID] === $gatewayPayment->getGatewayPaymentId());
+        }
+
+        assertTrue($input['payment']['id'] === $content[ResponseFields::PAYMENT_ID]);
 
         $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
         $actualAmount   = number_format($content[ResponseFields::AMOUNT], 2, '.', '');
