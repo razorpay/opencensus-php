@@ -3,7 +3,6 @@
 namespace RZP\Models\Batch\Processor\Emandate\Register;
 
 use Config;
-use RZP\Exception;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
@@ -14,7 +13,7 @@ use RZP\Gateway\Enach\Base\Entity as EnachEntity;
 
 class EnachRbl extends Base
 {
-    const GATEWAY   = Gateway::ENACH_RBL;
+    const GATEWAY = Gateway::ENACH_RBL;
 
     protected function processEntry(array & $entry)
     {
@@ -35,7 +34,7 @@ class EnachRbl extends Base
 
         $gatewayPayment = $this->repo
                                ->enach
-                               ->findByUmrnAndAckStatus($gatewayToken);
+                               ->findAuthorizedPaymentByUmrn($gatewayToken);
 
         $payment = $gatewayPayment->payment;
         $token = $payment->getGlobalOrLocalTokenEntity();
@@ -80,11 +79,11 @@ class EnachRbl extends Base
 
         if ($data['registration_status'] === Rbl\Status::REGISTRATION_SUCCESS)
         {
-            return $this->processAuthorizedPayment($payment);
+            return $this->captureAuthorizedPayment($payment);
         }
     }
 
-    protected function processAuthorizedPayment(Payment\Entity $payment)
+    protected function captureAuthorizedPayment(Payment\Entity $payment)
     {
         $merchant = $payment->merchant;
 
@@ -134,6 +133,12 @@ class EnachRbl extends Base
         return Token\RecurringStatus::REJECTED;
     }
 
+    /**
+     * Overriding parseExcelSheets() because of different startRow.
+     * Ideally, we should store `$startRow` in a variable and then use.
+     * @param  [type] $filePath [description]
+     * @return [type]           [description]
+     */
     protected function parseExcelSheets($filePath)
     {
         Config::set('excel.import.force_sheets_collection', true);

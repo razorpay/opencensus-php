@@ -2,20 +2,17 @@
 
 namespace RZP\Models\Batch\Processor\Emandate\Acknowledge;
 
+use RZP\Error;
 use RZP\Exception;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
-use RZP\Error\ErrorCode;
 use RZP\Models\Customer\Token;
+use RZP\Gateway\Enach\Rbl\Status;
 use RZP\Gateway\Base\Action as GatewayAction;
 use RZP\Gateway\Enach\Base\Entity as EnachEntity;
-use RZP\Gateway\Enach\Base\AcknowledgeFileHeadings as Headings;
 
 class EnachRbl extends Base
 {
-    const TRUE = 'true';
-    const FALSE = 'false';
-
     protected $gateway = Payment\Gateway::ENACH_RBL;
 
     // Return single XML row as multiple entries
@@ -50,11 +47,10 @@ class EnachRbl extends Base
 
         $originalMandate = $details['OrgnlMndt']['OrgnlMndt'];
         $status = trim($details['AccptncRslt']['Accptd']);
-        $umrn = trim($originalMandate['MndtId']);
 
         return [
             'payment_id'         => trim($originalMandate['MndtReqId']),
-            'umrn'               => $umrn,
+            'umrn'               => trim($originalMandate['MndtId']),
             'reference_id'       => $headerRow['MsgId'],
             'acknowledge_status' => $status,
             'account_number'     => trim($originalMandate['DbtrAcct']['Id']['Othr']['Id']),
@@ -71,19 +67,20 @@ class EnachRbl extends Base
         $paymentId = $content['payment_id'];
 
         $accountNumber = $content['account_number'];
-
+        s($paymentId);
         // Get payment
-        $payment = $this->repo->payment->fetchEmandatePaymentPendingRegistration(
-                        $this->gateway,
-                        $paymentId,
-                        $accountNumber);
+        $payment = $this->repo->payment->findOrFail($paymentId);
 
-        if (($payment->isFailed() === true) or
-            ($payment->isCaptured() === true))
+        $token = $payment->getGlobalOrLocalTokenEntity();
+        s($payment->getGateway(), $token === null, $token->getAccountNumber(), $accountNumber);
+        if (($payment->getGateway() !== $this->gateway) or
+            ($token === null) or
+            ($token->getAccountNumber() !== $accountNumber))
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Payment has been already processed',
-                ['payment_id'],
+            throw new Exception\GatewayErrorException(
+                Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+                null,
+                null,
                 ['payment_id' => $payment->getId()]);
         }
 
@@ -91,7 +88,7 @@ class EnachRbl extends Base
         $this->updateGatewayPaymentEntity($content);
 
         // Update token
-        $this->updateTokenEntity($payment, $content);
+        $this->updateTokenEntity($token, $content);
     }
 
     /**
@@ -119,29 +116,22 @@ class EnachRbl extends Base
      * @param  Payment\Entity $payment
      * @param  array          $content
      */
-    protected function updateTokenEntity(Payment\Entity $payment, array $content)
+    protected function updateTokenEntity(Token\Entity $token, array $content)
     {
-        $token = $payment->getGlobalOrLocalTokenEntity();
-
-        if ($token === null)
-        {
-            $this->app['trace']->error(TraceCode::PAYMENT_TOKEN_NOT_FOUND,
-                [
-                    'payment_id' => $payment->getId()
-                ]);
-        }
-
         $currentRecurringStatus = $token->getRecurringStatus();
-        $parsedStatus = $content['token_status'];
+        $newStatus = $content['token_status'];
 
         if (Token\RecurringStatus::isFinalStatus($currentRecurringStatus) === true)
         {
-            if ($currentRecurringStatus !== $parsedStatus)
+            if ($currentRecurringStatus !== $newStatus)
             {
                 throw new Exception\LogicException(
-                    'Token status mismatch: ' .
-                    PHP_EOL . 'current_status: ' .  $currentRecurringStatus .
-                    PHP_EOL . 'parsed_status: ' . $parsedStatus);
+                    'Token status mismatch',
+                    null,
+                    [
+                        'new_status' => $newStatus,
+                        'current_status' => $currentRecurringStatus,
+                    ]);
             }
 
             // If the token has already been updated with the correct value
@@ -149,7 +139,7 @@ class EnachRbl extends Base
         }
 
         $tokenParams = [
-            Token\Entity::RECURRING_STATUS          => $parsedStatus,
+            Token\Entity::RECURRING_STATUS          => $newStatus,
             Token\Entity::RECURRING_FAILURE_REASON  => $content['error_message'],
         ];
 
@@ -162,7 +152,7 @@ class EnachRbl extends Base
     {
         $gatewayTokenStatus = strtolower($gatewayTokenStatus);
 
-        if ($gatewayTokenStatus === self::TRUE)
+        if ($gatewayTokenStatus === Status::ACKNOWLEDGE_SUCCESS)
         {
             return Token\RecurringStatus::INITIATED;
         }
