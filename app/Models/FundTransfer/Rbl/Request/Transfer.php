@@ -59,6 +59,7 @@ class Transfer extends Base
 
         $this->transferMode = $this->getTransferMode($amount);
 
+        // Do not change the order of fields.
          return [
             'Single_Payment_Corp_Req' => [
                 'Header' => [
@@ -69,14 +70,14 @@ class Transfer extends Base
                     'Approver_ID' => self::APPROVER_ID,
                 ],
                 'Body' => [
-                    'Ben_ID'               => self::NODAL_BENE_CODE_MAP[$channel],
                     'Amount'               => $amount,
-                    'Remarks'              => 'Transfer',
-                    'Mode_of_Pay'          => $this->transferMode,
                     'Debit_Acct_No'        => $this->accountNumber,
                     'Debit_Acct_Name'      => self::ACCOUNT_NAME,
-                    'Debit_PartTrnRmks'    => '',
                     'Debit_TrnParticulars' => 'Nodal to nodal',
+                    'Debit_PartTrnRmks'    => '',
+                    'Mode_of_Pay'          => $this->transferMode,
+                    'Remarks'              => 'Transfer',
+                    'Ben_ID'               => self::NODAL_BENE_CODE_MAP[$channel],
                 ],
                 'Signature' => [
                     'Signature' => 'Signature'
