@@ -9,10 +9,11 @@ use RZP\Constants\Mode;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
 use RZP\Models\Order;
-use RZP\Models\Plan\Subscription;
 use RZP\Models\Merchant;
-use RZP\Constants\Entity as E;
 use RZP\Error\ErrorCode;
+use RZP\Models\Customer;
+use RZP\Constants\Entity as E;
+use RZP\Models\Plan\Subscription;
 use RZP\Exception\BadRequestException;
 
 /**
@@ -177,6 +178,10 @@ final class KeylessPublicAuth
         {
             $entity = E::SUBSCRIPTION;
         }
+        else if ($sign === Customer\Entity::getSign())
+        {
+            $entity = E::CUSTOMER;
+        }
 
         return $entity;
     }
@@ -189,21 +194,16 @@ final class KeylessPublicAuth
      */
     protected function retrieveMerchantForEntity(string $entity, string $signedId)
     {
-        if (E::isValidEntity($entity) === false)
-        {
-            return null;
-        }
-
         $entityClass = E::getEntityClass($entity);
 
-        $entityClass::verifyIdAndSilentlyStripSign($signedId);
+        $entityId = $entityClass::verifyIdAndSilentlyStripSign($signedId);
 
         // Try to retrieve merchant using LIVE mode
-        $merchant = $this->setModeAndRetrieveMerchantForEntity($entity, $signedId, Mode::LIVE);
+        $merchant = $this->setModeAndRetrieveMerchantForEntity($entity, $entityId, Mode::LIVE);
         // If we fail to retrieve merchant, try using TEST mode
         if ($merchant === null)
         {
-            $merchant = $this->setModeAndRetrieveMerchantForEntity($entity, $signedId, Mode::TEST);
+            $merchant = $this->setModeAndRetrieveMerchantForEntity($entity, $entityId, Mode::TEST);
         }
 
         return $merchant;
@@ -211,12 +211,12 @@ final class KeylessPublicAuth
 
     /**
      * @param  string               $entity
-     * @param  string               $signedId
+     * @param  string               $entityId
      * @param  string               $mode
      * @return Merchant\Entity|null
      * @throws BadRequestException
      */
-    protected function setModeAndRetrieveMerchantForEntity(string $entity, string $signedId, string $mode)
+    protected function setModeAndRetrieveMerchantForEntity(string $entity, string $entityId, string $mode)
     {
         $this->ba->setModeAndDbConnection($mode);
 
@@ -225,7 +225,7 @@ final class KeylessPublicAuth
 
         try
         {
-            $model = $repo->findOrFailPublic($signedId);
+            $model = $repo->findOrFailPublic($entityId);
 
             if ($model->getMerchantId() !== null)
             {
@@ -237,7 +237,7 @@ final class KeylessPublicAuth
             // As we will be querying in the LIVE mode first and then in the TEST mode,
             // catch exception for bad request invalid id incase of LIVE mode and
             // throw same exception incase of TEST mode or any other exception.
-            if (($ex->getCode() !== ErrorCode::BAD_REQUEST_INVALID_ID) or ($this->ba->getMode() === Mode::TEST))
+            if (($ex->getCode() !== ErrorCode::BAD_REQUEST_INVALID_ID) or ($mode === Mode::TEST))
             {
                 throw $ex;
             }
