@@ -35,6 +35,8 @@ build:
       - script:
           name: Export wercker DB env var to API environment variables
           code: >
+              export DB_LIVE_HOST="$MYSQL_PORT_3306_TCP_ADDR"
+              export DB_LIVE_PORT="$MYSQL_PORT_3306_TCP_PORT"
               export DB_TEST_HOST="$MYSQL_PORT_3306_TCP_ADDR"
               export DB_TEST_PORT="$MYSQL_PORT_3306_TCP_PORT"
               export DB_AUTH_HOST="$MYSQL_PORT_3306_TCP_ADDR"
