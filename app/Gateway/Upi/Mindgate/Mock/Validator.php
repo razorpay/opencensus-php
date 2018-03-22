@@ -31,7 +31,21 @@ class Validator extends Base\Validator
         // Timeout
         'required|integer|max:45|min:1',
         // MCC
-        'required|integer|max:9999|min:0'
+        'required|integer|max:9999|min:0',
+        // UDF
+        'sometimes',
+        // UDF
+        'sometimes',
+        // UDF
+        'sometimes',
+        // UDF
+        'sometimes',
+        // UDF
+        'sometimes',
+        // UDF
+        'sometimes',
+        // Account Number for TPV
+        'sometimes|alpha_num',
     ];
 
     protected static $verifyRules = [

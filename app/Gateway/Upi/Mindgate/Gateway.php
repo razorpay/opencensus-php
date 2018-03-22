@@ -370,7 +370,18 @@ class Gateway extends Base\Gateway
             $this->getPaymentRemark($input),
             $input['upi']['expiry_time'],
             $this->getMerchantCategoryCode($input),
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
         ];
+
+        if ($input['merchant']->isTPVRequired())
+        {
+            $data[] = $input['order']['account_number'];
+        }
 
         $content = $this->transformRequestArrayToContent($data);
 

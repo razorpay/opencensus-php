@@ -429,7 +429,8 @@ class TransactionFilter extends Terminal\Filter
      */
     public function tpvFilter($terminal)
     {
-        if ($this->input['payment']->isNetbanking() === true)
+        if (($this->input['payment']->isUpi() === true) or
+            ($this->input['payment']->isNetbanking() === true))
         {
             if ($this->input['merchant']->isFeatureEnabled(Feature\Constants::TPV))
             {

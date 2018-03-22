@@ -1235,7 +1235,8 @@ class Processor
     {
         if (empty($input[Payment\Entity::ORDER_ID]) === true)
         {
-            if ($payment->isNetbanking() === true)
+            if (($payment->isUpi() === true) or
+                ($payment->isNetbanking() === true))
             {
                 if (($this->merchant->isTPVRequired() === true) or
                     ($payment->isRecurring() === true))

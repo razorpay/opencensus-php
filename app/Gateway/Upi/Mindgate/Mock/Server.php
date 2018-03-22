@@ -21,7 +21,7 @@ class Server extends Base\Mock\Server
      * actual incoming request
      */
     const REQUEST_FIELD_COUNT = [
-        Action::COLLECT      => 7,
+        Action::COLLECT      => 13,
         Action::VERIFY       => 4,
         Action::REFUND       => 10,
         Action::VALIDATE_VPA => 4,
