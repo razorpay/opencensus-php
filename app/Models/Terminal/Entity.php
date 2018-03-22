@@ -824,6 +824,11 @@ class Entity extends Base\PublicEntity
         return ($this->isTypeApplicable(Type::IVR) === true);
     }
 
+    public function isPay()
+    {
+        return ($this->isTypeApplicable(Type::PAY) === true);
+    }
+
     public function isInternational()
     {
         return $this->getAttribute(self::INTERNATIONAL);
