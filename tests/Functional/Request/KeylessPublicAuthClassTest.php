@@ -18,6 +18,7 @@ use RZP\Tests\Unit\Request\Traits\MocksRequest;
 class KeylessPublicAuthClassTest extends TestCase
 {
     use MocksRequest;
+    use Traits\KeylessPublicAuthTrait;
 
     const DEFAULT_PAYMENT_ID      = 'pay_1000000payment';
     const DEFAULT_ORDER_ID        = 'order_100000000order';
@@ -193,26 +194,5 @@ class KeylessPublicAuthClassTest extends TestCase
         {
             $this->assertNull($merchant);
         }
-    }
-
-    protected function createPayment(string $connection = Mode::LIVE)
-    {
-        $this->fixtures->on($connection)->create('payment:captured', ['id' => '1000000payment']);
-    }
-
-    protected function createOrder(string $connection = Mode::LIVE)
-    {
-        $this->fixtures->on($connection)->create('order', ['id' => '100000000order']);
-    }
-
-    protected function createInvoice(string $connection = Mode::LIVE)
-    {
-        $this->fixtures->on($connection)->create('order', ['id' => '100000invorder']);
-        $this->fixtures->on($connection)->create('invoice', ['id' => '1000000invoice', 'order_id' => '100000invorder', 'customer_id' => null]);
-    }
-
-    protected function createCustomer(string $connection = Mode::LIVE)
-    {
-        $this->fixtures->on($connection)->create('customer', ['id' => '110000customer']);
     }
 }

@@ -155,35 +155,35 @@ final class KeylessPublicAuth
     }
 
     /**
-     * @param string       $sign
-     * @return string|null
+     * @param  string $sign
+     * @return string
      */
     protected function getEntityFromSign(string $sign)
     {
-        $entity = null;
-
         if ($sign === Order\Entity::getSign())
         {
-            $entity = E::ORDER;
+            return E::ORDER;
         }
         else if ($sign === Invoice\Entity::getSign())
         {
-            $entity = E::INVOICE;
+            return E::INVOICE;
         }
         else if ($sign === Payment\Entity::getSign())
         {
-            $entity = E::PAYMENT;
+            return E::PAYMENT;
         }
         else if ($sign === Subscription\Entity::getSign())
         {
-            $entity = E::SUBSCRIPTION;
+            return E::SUBSCRIPTION;
         }
         else if ($sign === Customer\Entity::getSign())
         {
-            $entity = E::CUSTOMER;
+            return E::CUSTOMER;
         }
-
-        return $entity;
+        else
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+        }
     }
 
     /**
