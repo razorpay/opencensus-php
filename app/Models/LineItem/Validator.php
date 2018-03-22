@@ -35,6 +35,8 @@ class Validator extends Base\Validator
         Entity::HSN_CODE            => 'sometimes|nullable|string|max:8',
         Entity::SAC_CODE            => 'sometimes|nullable|string|max:8',
         Entity::TAX_ID              => 'sometimes|nullable|public_id|size:18',
+        Entity::TAX_IDS             => 'sometimes|nullable|array',
+        Entity::TAX_IDS . '.*'      => 'filled|public_id|size:18',
         Entity::TAX_GROUP_ID        => 'sometimes|nullable|public_id|size:19',
     ];
 
@@ -57,6 +59,8 @@ class Validator extends Base\Validator
         Entity::HSN_CODE            => 'sometimes|nullable|string|max:8',
         Entity::SAC_CODE            => 'sometimes|nullable|string|max:8',
         Entity::TAX_ID              => 'sometimes|nullable|public_id|size:18',
+        Entity::TAX_IDS             => 'sometimes|nullable|array',
+        Entity::TAX_IDS . '.*'      => 'filled|public_id|size:18',
         Entity::TAX_GROUP_ID        => 'sometimes|nullable|public_id|size:19',
     ];
 

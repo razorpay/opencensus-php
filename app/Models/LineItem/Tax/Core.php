@@ -2,12 +2,12 @@
 
 namespace RZP\Models\LineItem\Tax;
 
+use RZP\Models\Tax;
 use RZP\Models\Base;
+use RZP\Error\ErrorCode;
 use RZP\Models\LineItem;
 use RZP\Models\Merchant;
-use RZP\Models\Tax;
 use RZP\Exception\BadRequestException;
-use RZP\Error\ErrorCode;
 
 class Core extends Base\Core
 {
@@ -18,11 +18,9 @@ class Core extends Base\Core
      * @param array           $input
      * @param Merchant\Entity $merchant
      *
+     * @throws BadRequestException
      */
-    public function createLineItemTaxes(
-        LineItem\Entity $lineItem,
-        array $input,
-        Merchant\Entity $merchant)
+    public function createLineItemTaxes(LineItem\Entity $lineItem, array $input, Merchant\Entity $merchant)
     {
         list($taxGroup, $taxes) = $this->getTaxGroupAndTaxes($input, $merchant);
 
@@ -49,6 +47,7 @@ class Core extends Base\Core
      * @param array           $input
      * @param Merchant\Entity $merchant
      *
+     * @throws BadRequestException
      */
     public function cleanUpAndCreateLineItemTaxes(
         LineItem\Entity $lineItem,
@@ -169,6 +168,8 @@ class Core extends Base\Core
      * Taxation is done only for Invoice and not other types - eg. link/ecod.
      *
      * @param LineItem\Entity $lineItem
+     *
+     * @throws BadRequestException
      */
     protected function validateLineItemIsOfAnInvoice(LineItem\Entity $lineItem)
     {
