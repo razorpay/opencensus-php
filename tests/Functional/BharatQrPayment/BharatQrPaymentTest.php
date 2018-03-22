@@ -61,6 +61,64 @@ class BharatQrPaymentTest extends TestCase
         $this->assertEquals($bharatQr['expected'], true);
     }
 
+    public function testHitachiVerifyAndRefund()
+    {
+        $request = $this->testData['testQrPaymentProcess'];
+
+        $this->qrCode = $this->createVirtualAccount();
+
+        $this->ba->directAuth();
+
+        $qrCodeId = substr($this->qrCode['id'], 3);
+
+        $content = $this->getMockServer('hitachi')->getBharatQrCallback($qrCodeId);
+
+        $request['content'] = $content;
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $xmlResponse = $response['original'];
+
+        $response = $this->parseResponseXml($xmlResponse);
+
+        $this->assertEquals('OK', $response[0]);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->verifyPayment($payment['id']);
+
+        $this->refundPayment($payment['id']);
+    }
+
+    public function testHitachiBadCheckSum()
+    {
+        $request = $this->testData['testQrPaymentProcess'];
+
+        $this->qrCode = $this->createVirtualAccount();
+
+        $this->ba->directAuth();
+
+        $qrCodeId = substr($this->qrCode['id'], 3);
+
+        $content = $this->getMockServer('hitachi')->getBharatQrCallback($qrCodeId);
+
+        $content['CheckSum'] = 'random';
+
+        $request['content'] = $content;
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $xmlResponse = $response['original'];
+
+        $response = $this->parseResponseXml($xmlResponse);
+
+        $this->assertEquals('NOK', $response[0]);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertNull($payment);
+    }
+
     public function testUnexpectedPayment()
     {
         $request = $this->testData['testQrPaymentProcess'];

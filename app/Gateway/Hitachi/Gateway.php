@@ -173,6 +173,20 @@ class Gateway extends Base\Gateway
         return $input;
     }
 
+    public function getStringToHashForBharatQr($content)
+    {
+        $salt = $this->config['bharatqr_salt'];
+
+        array_unshift($content, $salt);
+
+        return parent::getStringToHash($content, '|');
+    }
+
+    public function getHashOfString($str)
+    {
+        return hash(HashAlgo::SHA256, $str);
+    }
+
     protected function validateChecksumAndGetQrData($input)
     {
         $actualChecksum = array_pull($input, ResponseFields::CHECKSUM);
@@ -752,20 +766,6 @@ class Gateway extends Base\Gateway
         ];
 
         return parent::getStringToHash($array, $glue);
-    }
-
-    protected function getStringToHashForBharatQr($content)
-    {
-        $salt = $this->config['bharatqr_salt'];
-
-        array_unshift($content, $salt);
-
-        return parent::getStringToHash($content, '|');
-    }
-
-    protected function getHashOfString($str)
-    {
-        return hash(HashAlgo::SHA256, $str);
     }
 
     protected function getStandardRequestArray($content = [], $method = 'post', $type = null)
