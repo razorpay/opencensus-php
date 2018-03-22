@@ -32,6 +32,9 @@ export default ({ handleChange }) => {
           placeholder="Transferring Payments to?"
           validate={[required()]}
         >
+          <option value="" key="none" disabled>
+            --Select--
+          </option>
           <option value="Businesses" key="vendors">
             Third-party businesses
           </option>
