@@ -57,7 +57,7 @@ export default function AddIINRule() {
         class="btn"
         pendingClass="small spinner"
         onSubmit={body => {
-          body.emi = body.emi ? 1 : 0;
+          body.emi = parseInt(body.emi);
           return adminPost({
             url: 'live/iins',
             data: body,

@@ -35,25 +35,6 @@
     <script src="{{$cdnDashboardUrl}}/dist/raven-entry.js"></script>
   @endif
   <script src="{{$cdnDashboardUrl}}/dist/merchant-entry.js"></script>
-  <!-- smooch code -->
-  @if(env('APP_ENV') === 'production')
-    <script src='https://cdn.smooch.io/smooch.min.js'></script>
-    <script>
-      (function () {
-        var script = document.createElement("script");
-        script.onload = function() {
-          Smooch
-            .init({appToken: '02o6kuyoscqkwiqr3ld3lbehw'})
-            .then(function () {
-                Smooch._rzpReady = true; // custom prop
-            });
-        };
-        script.src = "https://cdn.smooch.io/smooch.min.js";
-
-        document.getElementsByTagName("head")[0].appendChild(script);
-      }());
-    </script>
-  @endif
 @else
   <script src='{{$cdnDashboardUrl}}/js/generated/signup.js'></script>
   <script async="true" src="https://static.helpninja.com/helpninja.js" id="oc_script" convid="-Kvx6dgy972KCFPlQR0s"></script>
