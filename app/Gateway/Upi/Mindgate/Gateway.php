@@ -110,12 +110,11 @@ class Gateway extends Base\Gateway
         return $this->getIntentRequest($input);
     }
 
-    protected function getIntentRequest($input, $response)
+    protected function getIntentRequest($input)
     {
         $content = [
             Base\IntentParams::PAYEE_ADDRESS => $input['terminal']->getGatewayMerchantId2() ?? self::DEFAULT_PAYEE_VPA,
             Base\IntentParams::PAYEE_NAME    => preg_replace('/\s+/', '', $input['merchant']->getFilteredDba()),
-            Base\IntentParams::TXN_ID        => $input['payment']['id'],
             Base\IntentParams::TXN_REF_ID    => $input['payment']['id'],
             Base\IntentParams::TXN_NOTE      => $this->getPaymentRemark($input),
             Base\IntentParams::TXN_AMOUNT    => $input['payment']['amount'] / 100,
