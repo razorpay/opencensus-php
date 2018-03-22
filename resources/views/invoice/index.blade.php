@@ -729,12 +729,9 @@
                                   <img src="https://cdn.razorpay.com/logo.svg" />
                               </div>
                               <div id="cancelled-invoice">
-                                  <div class="title">
-                                      Payment Link Expired<span style="color:#f54443">&nbsp;/ Cancelled</span>
-                                  </div>
+                                  <div class="title"></div>
                                   <div class="desc">
-                                      Oops! This payment links is expired on {{date('M d, Y (h:i A)', $data['invoice']['expire_by'])}} .<br/>
-                                      Please contact {{$data['merchant']['organization']['business_name']}} at {{$data['merchant']['organization']['email']}} or call at +91 9282882 for any queries.
+                                      <br/>Please reach out to us at {{$data['merchant']['organization']['email']}} for any further queries.
                                   </div>
                               </div>
                           </div>
@@ -836,12 +833,9 @@
                           </div>
                       </div>
                       <div id="cancelled-invoice">
-                         <div class="title" style="font-size:18px">
-                           Payment Link Expired<span style="color:#f54443">&nbsp;/ Cancelled</span>
-                         </div>
+                         <div class="title" style="font-size:18px"></div>
                          <div class="desc">
-                           Oops! This payment links is expired on {{date('M d, Y (h:i A)', $data['invoice']['expire_by'])}} .<br/>
-                           Please contact {{$data['merchant']['organization']['business_name']}} at {{$data['merchant']['organization']['email']}} or call at +91 9282882 for any queries.
+                           <br/>Please reach out to us at {{$data['merchant']['organization']['email']}} for any further queries.
                            </div>
                       </div>
                   </div>
@@ -892,6 +886,18 @@
               else if (data['invoice']['status'] === 'cancelled' || isExpired(data['invoice']['expire_by'])) {
                 document.getElementById('cancelled-invoice').style.display = 'block';
                 document.getElementById('inv-details-main').style.display = 'none';
+
+                if (data['invoice']['status'] === 'cancelled') {
+                  document.querySelector('#cancelled-invoice .title').innerHTML = "<span style='color:#f54443'>Payment Link Cancelled</span>";
+
+                  var description = document.querySelector('#cancelled-invoice .desc');
+                  description.innerHTML =  "Oops! This payment link was cancelled on {{date('M d, Y (h:i A)', $data['invoice']['cancelled_at'])}}." + description.innerHTML;
+                } else if (isExpired(data['invoice']['expire_by'])) {
+                  document.querySelector('#cancelled-invoice .title').innerHTML = "Payment Link Expired";
+
+                  var description = document.querySelector('#cancelled-invoice .desc');
+                  description.innerHTML =  "Oops! This payment link expired on {{date('M d, Y (h:i A)', $data['invoice']['expire_by'])}}." + description.innerHTML;
+                }
 
                 if (checkIsDesktop()) {
                     document.getElementsByClassName('footer')[0].style.display = 'none';
