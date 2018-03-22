@@ -62,6 +62,9 @@ iframe {
   iframe.open {
     display: block;
   }
+  .CodeFlask__pre, .CodeFlask__textarea {
+    width: 100%;
+  }
 }
 </style>
 </head>
@@ -101,12 +104,15 @@ var $ = document.querySelector.bind(document);
 if (localStorage.code) {
   $('#code').innerHTML = localStorage.code;
 }
-var flask=new CodeFlask;flask.run('#code',{language:'javascript'})
-var t = $('textarea')
-var i = $('iframe')
-var x = $('#target')
-t.setAttribute('spellcheck', 'false')
-t.oninput = () => {localStorage.code = t.value}
+var flask = new CodeFlask;flask.run('#code',{language:'javascript'});
+var t = $('textarea');
+var i = $('iframe');
+var x = $('#target');
+
+t.setAttribute('spellcheck', 'false');
+t.oninput = () => {
+  localStorage.code = t.value
+}
 
 $('#keys').onclick = t.onkeypress = e => {
   if (e.type === 'click' || (e.code === "Enter" && (e.ctrlKey||e.metaKey||e.shiftKey||e.altKey))) {
