@@ -623,7 +623,7 @@ trait Authorize
         Payment\Entity $payment,
         array $input)
     {
-        $cardChange = boolval($input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE] ?? false);
+        $cardChange = $payment->isRecurringTypeCardChange();
 
         if ($cardChange === true)
         {
