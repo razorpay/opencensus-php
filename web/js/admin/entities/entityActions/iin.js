@@ -14,7 +14,7 @@ export default ({ entity, updateEntity, mode }) => {
     const iin = {
       category: body.category,
       country: body.country,
-      emi: body.emi ? 1 : 0,
+      emi: parseInt(body.emi),
       issuer_name: body.issuer_name,
       issuer: body.issuer,
       trivia: body.trivia,
