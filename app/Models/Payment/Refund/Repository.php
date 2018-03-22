@@ -682,6 +682,6 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Refund\Entity::RECEIPT, '=', $receipt)
                     ->where(Refund\Entity::MERCHANT_ID, '=', $merchantId)
-                    ->get();
+                    ->first();
     }
 }
