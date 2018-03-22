@@ -128,7 +128,6 @@
         position: relative;
         display: none;
         background: #eaeaea;
-        height: 100vh;
       }
 
       #payment-container {
@@ -355,6 +354,7 @@
         margin: 0 auto;
         border: 1px solid #dfdfdf;
         box-shadow: 0 0 10px rgba(0,0,0,0.08);
+        min-height: 100vh;
       }
 
       #payment-container--mob .inv-details{
@@ -532,7 +532,7 @@
         var charLimit, button;
 
         if (checkIsDesktop()) {
-            charLimit = 240;
+            charLimit = 235;
         } else {
             charLimit = 125;
         }
@@ -540,6 +540,7 @@
         if (desc && (desc.length > charLimit)) {
             if (toTrim) {
               desc = desc.substr(0,charLimit);
+              desc =  desc.trim();
               desc += '...';
               button = '<button class="btn-link" onclick="toggleTrimDescription(false)"> Show More </button'
             } else {
@@ -700,7 +701,7 @@
                                       @if($data['invoice']['expire_by'])
                                           <div class="info">
                                               EXPIRES BY
-                                              <div class="val">{{date('M d, Y (H:i A)', $data['invoice']['expire_by'])}} </div>
+                                              <div class="val">{{date('M d, Y (h:i A)', $data['invoice']['expire_by'])}} </div>
                                           </div>
                                       @endif
 
@@ -732,7 +733,7 @@
                                       Payment Link Expired<span style="color:#f54443">&nbsp;/ Cancelled</span>
                                   </div>
                                   <div class="desc">
-                                      Oops! This payment links is expired on {{date('M d, Y (h:m A)', $data['invoice']['expire_by'])}} .<br/>
+                                      Oops! This payment links is expired on {{date('M d, Y (h:i A)', $data['invoice']['expire_by'])}} .<br/>
                                       Please contact {{$data['merchant']['organization']['business_name']}} at {{$data['merchant']['organization']['email']}} or call at +91 9282882 for any queries.
                                   </div>
                               </div>
@@ -817,8 +818,8 @@
 
                               @if($data['invoice']['expire_by'])
                                 <div class="info">
-                                    EXPIRES BY
-                                    <div class="val">{{date('M d, Y (h:m A)', $data['invoice']['expire_by'])}} </div>
+                                  EXPIRES BY
+                                  <div class="val">{{date('M d, Y (h:i A)', $data['invoice']['expire_by'])}} </div>
                                 </div>
                               @endif
                               @if($data['invoice']['customer_details']['customer_name'] or $data['invoice']['customer_details']['customer_email'])
@@ -839,7 +840,7 @@
                            Payment Link Expired<span style="color:#f54443">&nbsp;/ Cancelled</span>
                          </div>
                          <div class="desc">
-                           Oops! This payment links is expired on {{date('M d, Y (h:m A)', $data['invoice']['expire_by'])}} .<br/>
+                           Oops! This payment links is expired on {{date('M d, Y (h:i A)', $data['invoice']['expire_by'])}} .<br/>
                            Please contact {{$data['merchant']['organization']['business_name']}} at {{$data['merchant']['organization']['email']}} or call at +91 9282882 for any queries.
                            </div>
                       </div>
