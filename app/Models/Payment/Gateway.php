@@ -862,7 +862,8 @@ class Gateway
     ];
 
     public static $upiIntentGateways = [
-        Gateway::UPI_ICICI
+        Gateway::UPI_ICICI,
+        Gateway::UPI_MINDGATE,
     ];
 
     public static function getAcquirerName(string $acquirer)

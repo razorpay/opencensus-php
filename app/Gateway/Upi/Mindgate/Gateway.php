@@ -33,7 +33,7 @@ class Gateway extends Base\Gateway
      * This is what shows up as the payee
      * on the notification to the customer
      */
-    const DEFAULT_PAYEE_VPA = 'razorpay@hdfcbank';
+    const DEFAULT_PAYEE_VPA = 'razorpaypg@hdfcbank';
 
     // Transaction Types
     const P2P = 'P2P';
@@ -64,6 +64,12 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
+        if ((isset($input['upi']['flow']) === true) and
+            ($input['upi']['flow'] === 'intent'))
+        {
+            return $this->authorizeIntent($input);
+        }
+
         $attributes = $this->getGatewayEntityAttributes($input);
 
         $gatewayPayment = $this->createGatewayPaymentEntity($attributes);
@@ -91,6 +97,35 @@ class Gateway extends Base\Gateway
                 'vpa'   => $vpa
             ]
         ];
+    }
+
+    protected function authorizeIntent(array $input)
+    {
+        $attributes = [
+            Entity::TYPE => Base\Type::PAY,
+        ];
+
+        $payment = $this->createGatewayPaymentEntity($attributes);
+
+        return $this->getIntentRequest($input);
+    }
+
+    protected function getIntentRequest($input, $response)
+    {
+        $content = [
+            Base\IntentParams::PAYEE_ADDRESS => $input['terminal']->getGatewayMerchantId2() ?? self::DEFAULT_PAYEE_VPA,
+            Base\IntentParams::PAYEE_NAME    => preg_replace('/\s+/', '', $input['merchant']->getFilteredDba()),
+            Base\IntentParams::TXN_ID        => $input['payment']['id'],
+            Base\IntentParams::TXN_REF_ID    => $input['payment']['id'],
+            Base\IntentParams::TXN_NOTE      => $this->getPaymentRemark($input),
+            Base\IntentParams::TXN_AMOUNT    => $input['payment']['amount'] / 100,
+            Base\IntentParams::TXN_CURRENCY  => 'INR',
+            Base\IntentParams::MCC           => '5411',
+        ];
+
+        $query = str_replace(' ', '', urldecode(http_build_query($content)));
+
+        return ['data' => ['intent_url' => 'upi://pay?' . $query]];
     }
 
     /**
@@ -237,7 +272,11 @@ class Gateway extends Base\Gateway
         $this->updateGatewayPaymentEntity($gatewayPayment, $content);
 
         // Gateways must return array in callback
-        return [];
+        return [
+            'acquirer' => [
+                Payment\Entity::VPA => $gatewayPayment->getVpa()
+            ]
+        ];
     }
 
     /**
@@ -631,7 +670,7 @@ class Gateway extends Base\Gateway
 
         return $request;
     }
-    
+
     protected function verifyPayment($verify)
     {
         $content = $verify->verifyResponseContent;
