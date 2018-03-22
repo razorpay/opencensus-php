@@ -123,6 +123,8 @@ class Entity extends Base\PublicEntity
 
     const SUBSCRIPTION_ID       = 'subscription_id';
 
+    const PREFERRED_AUTHENTICATION = 'preferred_authentication';
+
     // Used by merchant dashboard to fetch payments based on utr
     const BANK_REFERENCE        = 'bank_reference';
 
@@ -346,7 +348,8 @@ class Entity extends Base\PublicEntity
         self::IFSC,
         self::VPA,
         'method_based_input',
-        'convert_empty_strings_to_null'
+        'convert_empty_strings_to_null',
+        self::PREFERRED_AUTHENTICATION,
     ];
 
     protected static $generators = [
@@ -587,6 +590,26 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    protected function modifyPreferredAuthentication(&$input)
+    {
+        if (isset($input[Entity::PREFERRED_AUTHENTICATION]) === false)
+        {
+            return;
+        }
+
+        $uniqueAuthentications = array_unique($input[Entity::PREFERRED_AUTHENTICATION]);
+
+        $merchant = $this->entity->merchant;
+
+        foreach ($uniqueAuthentications as $authentication)
+        {
+            if (AuthType::isFeatureBasedAuthEnabled($merchant, $input[Entity::AUTH_TYPE]) === true)
+            {
+                $input[Entity::PREFERRED_AUTHENTICATION][] = $authentication;
+            }
+        }
+    }
+
     // --------------------- Modifiers Ends ----------------------------------------
 
     // --------------------- Generators Ends ---------------------------------------
@@ -598,6 +621,7 @@ class Entity extends Base\PublicEntity
         // Overriding extra attributes for S2S integration
         $this->metadata['ip'] = $input['ip'] ?? null;
         $this->metadata['user_agent'] = $input['user_agent'] ?? null;
+        $this->metadata['preferred_authentication'] = $input['preferred_authentication'] ?? null;
 
         // We should only set referer if input['referer'] is defined
         // and metadata['referer'] is false because checkout also

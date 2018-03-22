@@ -10,6 +10,7 @@ class CardSorter extends Terminal\Sorter
 {
     protected $properties = [
         'gateway',
+        'auth_type',
     ];
 
     // Arrange card terminals in order of gateway
@@ -43,5 +44,62 @@ class CardSorter extends Terminal\Sorter
         }
 
         return $sortedTerminals;
+    }
+
+    // Arrange card terminals in order of gateway
+    public function authTypeSorter($terminals)
+    {
+        // No need to sort unless the method is either card or EMI.
+        if ($this->input['payment']->isMethodCardOrEmi() === false)
+        {
+            return $terminals;
+        }
+
+        $boostedTerminals = $unboostedTerminals = [];
+
+        $authType = (array) $this->input['payment']->getAuthType();
+
+        $preferredAuthentications = $this->input['metadata']->get('preferred_authentication', $authType);
+
+        if (empty($preferredAuthentications) === true)
+        {
+            return $terminals;
+        }
+
+        $i = 0;
+
+        foreach ($preferredAuthentications as $authType)
+        {
+            $i++;
+
+            // As the terminals are from the priority list
+            // append to the terminal
+            foreach ($terminals as $terminal)
+            {
+                switch ($authType)
+                {
+                    case Payment\AuthType::PIN:
+                        $boost = $terminal->isPinAuth();
+                        break;
+
+                    default:
+                        $boost = false;
+                        break;
+                }
+
+                if ($boost === true)
+                {
+                    $boostedTerminals[$i][] = $terminal;
+                }
+                else
+                {
+                    $unboostedTerminals[] = $terminal;
+                }
+            }
+        }
+
+        $boostedTerminals = call_user_func_array('array_merge', $boostedTerminals);
+
+        return array_unique(array_merge($boostedTerminals, $unboostedTerminals));
     }
 }

@@ -36,7 +36,7 @@ class TransactionFilter extends Terminal\Filter
         'pharma',
         'corporate',
         'mcc',
-        'auth_type',
+        'pin_authentication',
     ];
 
     public function methodFilter($terminal)
@@ -494,7 +494,7 @@ class TransactionFilter extends Terminal\Filter
         return true;
     }
 
-    public function authTypeFilter(Terminal\Entity $terminal)
+    public function pinAuthenticationFilter(Terminal\Entity $terminal)
     {
         $payment = $this->input['payment'];
 
@@ -503,20 +503,30 @@ class TransactionFilter extends Terminal\Filter
             return true;
         }
 
-        if ($payment->getAuthType() === Payment\AuthType::PIN)
+        $authType = (array) $payment->getAuthType();
+
+        $preferredAuthentications = $payment->getMetadata('preferred_authentication', $authType);
+
+        if (empty($preferredAuthentications) === false)
         {
-            $gateway = $terminal->getGateway();
-            $acquirer = $terminal->getGatewayAcquirer();
-
-            $issuer = $payment->card->iinRelation->getIssuer();
-
-            if (($terminal->isPin() === true) and
-                (Gateway::isIssuerSupportedForPinAuthType($issuer, $gateway, $acquirer) === true))
+            foreach ($preferredAuthentications as $authType)
             {
-                return true;
-            }
+                if ($authType === Payment\AuthType::PIN)
+                {
+                    $gateway = $terminal->getGateway();
+                    $acquirer = $terminal->getGatewayAcquirer();
 
-            return false;
+                    $issuer = $payment->card->iinRelation->getIssuer();
+
+                    if (($terminal->isPin() === true) and
+                        (Gateway::isIssuerSupportedForPinAuthType($issuer, $gateway, $acquirer) === true))
+                    {
+                        return true;
+                    }
+
+                    return false;
+                }
+            }
         }
 
         // Default terminals should always be the one which supports 3DS
