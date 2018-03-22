@@ -511,10 +511,6 @@
           return width > 853;
       }
 
-      function isExpired(date) {
-        return date ? new Date().getTime()/1000 > date : false;
-      }
-
       function cleanHTML() {
           // Show content according to width
           if (checkIsDesktop()) {
@@ -698,7 +694,7 @@
                                           <div id="payment-for" class="val" style="white-space: pre-wrap;word-wrap: break-word;"></div>
                                       </div>
 
-                                      @if($data['invoice']['expire_by'])
+                                      @if($data['invoice']['expire_by'] and $data['invoice']['status'] !== 'paid')
                                           <div class="info">
                                               EXPIRES BY
                                               <div class="val">{{date('M d, Y (h:i A)', $data['invoice']['expire_by'])}} </div>
@@ -728,12 +724,22 @@
                                   Powered by
                                   <img src="https://cdn.razorpay.com/logo.svg" />
                               </div>
-                              <div id="cancelled-invoice">
-                                  <div class="title"></div>
+                              @if($data['invoice']['status'] === 'cancelled')
+                                <div id="cancelled-invoice">
+                                  <div class="title" style='color:#f54443'>Payment Link Cancelled</div>
                                   <div class="desc">
-                                      <br/>Please reach out to us at {{$data['merchant']['organization']['email']}} for any further queries.
+                                    <br/>Oops! This payment link was cancelled on {{date('M d, Y (h:i A)', $data['invoice']['cancelled_at'])}}. Please reach out to us at {{$data['merchant']['organization']['email']}} for any further queries.
                                   </div>
-                              </div>
+                                </div>
+                              @elseif($data['invoice']['status'] === 'expired')
+                                <div id="cancelled-invoice">
+                                    <div class="title">Payment Link Expired</div>
+                                    <div class="desc">
+                                        <br/>Oops! This payment link expired on {{date('M d, Y (h:i A)', $data['invoice']['expire_by'])}}. Please reach out to us at {{$data['merchant']['organization']['email']}} for any further queries.
+                                    </div>
+                                </div>
+
+                              @endif
                           </div>
                       </div>
                       <div class="table-box" id="chkout-par">
@@ -813,7 +819,7 @@
                                   <div class="line-strike"></div>
                               </div>
 
-                              @if($data['invoice']['expire_by'])
+                              @if($data['invoice']['expire_by'] and $data['invoice']['status'] !== 'paid')
                                 <div class="info">
                                   EXPIRES BY
                                   <div class="val">{{date('M d, Y (h:i A)', $data['invoice']['expire_by'])}} </div>
@@ -832,12 +838,21 @@
                               @endif
                           </div>
                       </div>
-                      <div id="cancelled-invoice">
-                         <div class="title" style="font-size:18px"></div>
-                         <div class="desc">
-                           <br/>Please reach out to us at {{$data['merchant']['organization']['email']}} for any further queries.
-                           </div>
-                      </div>
+                      @if($data['invoice']['status'] === 'cancelled')
+                        <div id="cancelled-invoice">
+                          <div class="title" style='color:#f54443; font-size:18px'>Payment Link Cancelled</div>
+                          <div class="desc">
+                            <br/>Oops! This payment link was cancelled on {{date('M d, Y (h:i A)', $data['invoice']['cancelled_at'])}}. Please reach out to us at {{$data['merchant']['organization']['email']}} for any further queries.
+                          </div>
+                        </div>
+                      @elseif($data['invoice']['status'] === 'expired')
+                        <div id="cancelled-invoice">
+                          <div class="title" style="font-size:18px">Payment Link Expired</div>
+                            <div class="desc">
+                                Oops! This payment link expired on {{date('M d, Y (h:i A)', $data['invoice']['expire_by'])}}. <br/>Please reach out to us at {{$data['merchant']['organization']['email']}} for any further queries.
+                          </div>
+                        </div>
+                      @endif
                   </div>
 
                   <div id="footer">
@@ -883,21 +898,9 @@
                   fullPaid();
               }
               // Invoice cancelled/expired
-              else if (data['invoice']['status'] === 'cancelled' || isExpired(data['invoice']['expire_by'])) {
+              else if (data['invoice']['status'] === 'cancelled' || data['invoice']['status'] === 'expired') {
                 document.getElementById('cancelled-invoice').style.display = 'block';
                 document.getElementById('inv-details-main').style.display = 'none';
-
-                if (data['invoice']['status'] === 'cancelled') {
-                  document.querySelector('#cancelled-invoice .title').innerHTML = "<span style='color:#f54443'>Payment Link Cancelled</span>";
-
-                  var description = document.querySelector('#cancelled-invoice .desc');
-                  description.innerHTML =  "Oops! This payment link was cancelled on {{date('M d, Y (h:i A)', $data['invoice']['cancelled_at'])}}." + description.innerHTML;
-                } else if (isExpired(data['invoice']['expire_by'])) {
-                  document.querySelector('#cancelled-invoice .title').innerHTML = "Payment Link Expired";
-
-                  var description = document.querySelector('#cancelled-invoice .desc');
-                  description.innerHTML =  "Oops! This payment link expired on {{date('M d, Y (h:i A)', $data['invoice']['expire_by'])}}." + description.innerHTML;
-                }
 
                 if (checkIsDesktop()) {
                     document.getElementsByClassName('footer')[0].style.display = 'none';
@@ -907,7 +910,7 @@
               }
           </script>
 
-          @if ($data['invoice']['status'] !== 'paid' and ($data['invoice']['expire_by'] ? $data['invoice']['expire_by'] > time() : true))
+          @if ($data['invoice']['status'] !== 'paid' and ($data['invoice']['status'] !== 'expired' and $data['invoice']['status'] !== 'cancelled'))
             @if (isset($data['error']))
               <div id="failure" class="card">
                 {!! $error_icon !!}
