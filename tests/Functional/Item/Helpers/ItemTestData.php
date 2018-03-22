@@ -121,7 +121,7 @@ return [
     ],
 
     'testCreateItemWithTaxId' => [
-        'request' => [
+        'request'  => [
             'url'     => '/items',
             'method'  => 'post',
             'content' => [
@@ -142,6 +142,9 @@ return [
                 'unit'          => null,
                 'tax_inclusive' => false,
                 'tax_id'        => 'tax_00000000000001',
+                'tax'           => [
+                    'id' => 'tax_00000000000001',
+                ],
                 'tax_group_id'  => null,
             ],
         ],
@@ -270,6 +273,7 @@ return [
                 'unit'          => null,
                 'tax_inclusive' => false,
                 'tax_id'        => null,
+                'tax'           => null,
                 'tax_group_id'  => null,
             ],
         ],
@@ -295,6 +299,7 @@ return [
                         'unit'          => null,
                         'tax_inclusive' => false,
                         'tax_id'        => null,
+                        'tax'           => null,
                         'tax_group_id'  => null,
                     ],
                     [
@@ -307,6 +312,7 @@ return [
                         'unit'          => null,
                         'tax_inclusive' => false,
                         'tax_id'        => null,
+                        'tax'           => null,
                         'tax_group_id'  => null,
                     ],
                 ],
