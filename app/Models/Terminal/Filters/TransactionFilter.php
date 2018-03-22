@@ -265,7 +265,8 @@ class TransactionFilter extends Terminal\Filter
         if ((empty(array_diff($applicableTypes, $terminal->getType())) === true) or
             ($terminal->isNo2Fa() === true))
         {
-            if (($terminal->isDirectForMerchant($this->input['merchant']) === true) and
+
+            if (($terminal->isFallbackApplicable($this->input['merchant']) === true) and
                 ($payment->isCard() === true))
             {
                 return true;
@@ -440,6 +441,7 @@ class TransactionFilter extends Terminal\Filter
      * matching that of the merchant
      *
      * @param  Terminal\Entity $terminal
+     * @param array            $applicableTerminals
      *
      * @return bool
      */
