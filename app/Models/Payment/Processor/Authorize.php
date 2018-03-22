@@ -2797,7 +2797,7 @@ trait Authorize
                 ]);
         }
 
-        if ($this->isCardChangeFlow($payment) === true)
+        if ($payment->isRecurringTypeCardChange() === true)
         {
             $this->processCardChangeForSubscription($subscription, $payment);
 
@@ -2816,16 +2816,6 @@ trait Authorize
                                                                             $subscription,
                                                                             $oldStatus,
                                                                             $options);
-    }
-
-    /**
-     * @param Payment\Entity $payment
-     *
-     * @return bool
-     */
-    protected function isCardChangeFlow(Payment\Entity $payment)
-    {
-        return ($payment->isRecurringTypeCardChange() === true);
     }
 
     protected function processCardChangeForSubscription(
