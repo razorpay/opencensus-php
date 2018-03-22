@@ -46,6 +46,22 @@ iframe {
   color: rgba(255,255,255,.5);
   content: 'Press `Command + Return` to execute.';
 }
+@media (max-width: 600px) {
+  #keys {
+    color: #555;
+    background: #fff;
+    height: 40px;
+    width: 100px;
+  }
+  iframe {
+    z-index: 5;
+    display: none;
+    width: 100%;
+  }
+  iframe.open {
+    display: block;
+  }
+}
 </style>
 </head>
 <body>
@@ -90,11 +106,16 @@ var i = $('iframe')
 var x = $('#target')
 t.setAttribute('spellcheck', 'false')
 t.oninput = () => {localStorage.code = t.value}
-t.onkeypress = e => {if(e.code==="Enter"&&(e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)){
-  i.contentDocument.write(`
-<script>${t.value}<\/script>
-<script src="https://checkout.razorpay.com/v1/checkout.js" onload="Razorpay.open(options)"><\/script>
-`)
-  i.contentDocument.close();
-}}
+
+$('#keys').onclick = t.onkeypress = e => {
+  if (e.type === 'click' || (e.code === "Enter" && (e.ctrlKey||e.metaKey||e.shiftKey||e.altKey))) {
+    i.className = 'open';
+    i.contentDocument.write(`
+      <script>${t.value}<\/script>
+      <script>options['modal.ondismiss']=_=>parent.i.className=""<\/script>
+      <script src="https://checkout.razorpay.com/v1/checkout.js" onload="Razorpay.open(options)"><\/script>
+    `)
+    i.contentDocument.close();
+  }
+}
 </script>
