@@ -650,8 +650,7 @@ class Gateway extends Base\Gateway
 
         $input = $verify->input;
 
-        if (($verify->gatewaySuccess === true) and
-            ($input['merchant']['id'] === '6ZJzxyLFWrGs74'))
+        if ($verify->gatewaySuccess === true)
         {
             $paymentAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
 
