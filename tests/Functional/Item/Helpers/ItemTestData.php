@@ -273,7 +273,6 @@ return [
                 'unit'          => null,
                 'tax_inclusive' => false,
                 'tax_id'        => null,
-                'tax'           => null,
                 'tax_group_id'  => null,
             ],
         ],
@@ -282,6 +281,45 @@ return [
     'testGetMultipleItems' => [
         'request' => [
             'url'     => '/items',
+            'method'  => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 2,
+                'items' => [
+                    [
+                        'id'            => 'item_1000000001item',
+                        'active'        => true,
+                        'name'          => 'A different product',
+                        'description'   => 'Some item description',
+                        'amount'        => 100000,
+                        'currency'      => 'INR',
+                        'unit'          => null,
+                        'tax_inclusive' => false,
+                        'tax_id'        => null,
+                        'tax_group_id'  => null,
+                    ],
+                    [
+                        'id'            => 'item_1000000000item',
+                        'active'        => true,
+                        'name'          => 'Some item name',
+                        'description'   => 'Some item description',
+                        'amount'        => 100000,
+                        'currency'      => 'INR',
+                        'unit'          => null,
+                        'tax_inclusive' => false,
+                        'tax_id'        => null,
+                        'tax_group_id'  => null,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetMultipleItemsWithExpandTax' => [
+        'request'  => [
+            'url'     => '/items?expand[]=tax',
             'method'  => 'get',
             'content' => [],
         ],
@@ -311,8 +349,13 @@ return [
                         'currency'      => 'INR',
                         'unit'          => null,
                         'tax_inclusive' => false,
-                        'tax_id'        => null,
-                        'tax'           => null,
+                        'tax_id'        => 'tax_00000000000001',
+                        'tax'           => [
+                            'id'        => 'tax_00000000000001',
+                            'name'      => 'Tax #1',
+                            'rate_type' => 'percentage',
+                            'rate'      => 1000,
+                        ],
                         'tax_group_id'  => null,
                     ],
                 ],

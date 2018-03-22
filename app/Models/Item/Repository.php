@@ -3,9 +3,7 @@
 namespace RZP\Models\Item;
 
 use RZP\Models\Base;
-use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
-use RZP\Exception\BadRequestException;
 
 class Repository extends Base\Repository
 {
@@ -16,15 +14,12 @@ class Repository extends Base\Repository
     ];
 
     protected $proxyFetchParamRules = [
-        Entity::TYPE        => 'filled|custom'
+        Entity::TYPE        => 'filled|custom',
+        self::EXPAND . '.*' => 'filled|string|in:tax',
     ];
 
     protected $appFetchParamRules = [
         Entity::MERCHANT_ID => 'filled|alpha_num|size:14'
-    ];
-
-    protected $expands = [
-        Entity::TAX,
     ];
 
     protected function validateType($attribute, $value)
