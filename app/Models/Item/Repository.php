@@ -23,6 +23,10 @@ class Repository extends Base\Repository
         Entity::MERCHANT_ID => 'filled|alpha_num|size:14'
     ];
 
+    protected $expands = [
+        Entity::TAX,
+    ];
+
     protected function validateType($attribute, $value)
     {
         Type::checkType($value);
