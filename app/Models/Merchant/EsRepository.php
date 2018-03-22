@@ -129,17 +129,7 @@ class EsRepository extends Base\EsRepository
     {
         $attribute = E::MERCHANT_DETAIL . '.' . DetailEntity::REVIEWER_ID;
 
-        switch ($value)
-        {
-            case 'none':
-
-                $this->addNullFilterForField($query, $attribute);
-
-                break;
-
-            default :
-                $this->addMust($query, $this->getTermQuery($attribute, $value));
-        }
+        $this->addMust($query, $this->getTermQuery($attribute, $value));
     }
 
     public function buildQueryForAccountStatus(array & $query, string $value)

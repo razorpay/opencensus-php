@@ -319,10 +319,18 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $publicSetters = [
-        self::ARCHIVED_AT,
-        self::REVIEWER_ID,
         self::REVIEWER,
+        self::REVIEWER_ID,
+        self::ARCHIVED_AT,
         self::ALLOWED_NEXT_ACTIVATION_STATUSES,
+    ];
+
+    protected $adminOnlyPublic = [
+        self::REVIEWER,
+        self::REVIEWER_ID,
+        self::ISSUE_FIELDS,
+        self::INTERNAL_NOTES,
+        self::ISSUE_FIELDS_REASON,
     ];
 
     public function merchant()
@@ -654,9 +662,6 @@ class Entity extends Base\PublicEntity
     {
         $adminId = $this->getAttribute(Entity::REVIEWER_ID);
 
-        if ($adminId !== null)
-        {
-            $attributes[Entity::REVIEWER_ID] = Admin\Entity::getSignedId($adminId);
-        }
+        $attributes[Entity::REVIEWER_ID] = Admin\Entity::getSignedIdOrNull($adminId);
     }
 }
