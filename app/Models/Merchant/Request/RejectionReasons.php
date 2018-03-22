@@ -21,9 +21,9 @@ class RejectionReasons
     /*
      * Reason Descriptions
      */
-    const UNSUPPORTED_BUSINESS_MODEL_DESCRIPTION = 'Unsupported Business Model for the specific feature';
-    const INVALID_USE_CASE_DESCRIPTION           = 'Invalid Use Case for request of the feature';
-    const OTHERS_DESCRIPTION                     = 'Generic Rejection';
+    const UNSUPPORTED_BUSINESS_MODEL_DESCRIPTION = 'Unsupported business model for the specific feature';
+    const INVALID_USE_CASE_DESCRIPTION           = 'Invalid use case for request of the feature';
+    const OTHERS_DESCRIPTION                     = 'Generic rejection';
 
     //
     // Reason codes descriptions mapping
