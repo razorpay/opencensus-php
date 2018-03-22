@@ -92,7 +92,7 @@ export const fetchBankAccountChangeStatus = merchantId => {
     type: BANK_ACCOUNT_CHANGE_STATUS_FETCH,
     payload: merchantFetch({
       url: `merchants/${merchantId}/bank_account_change/status`,
-      mode: 'test',
+      mode: 'live',
     }),
   };
 };

@@ -50,7 +50,8 @@ export default class Profile extends Component {
       .fetchBankAccountChangeStatus(this.props.user.id)
       .then(({ data }) => {
         this.setState({
-          isBankAccountChangeAllowed: data,
+          //if api response is true then the request is still in workflow
+          isBankAccountChangeAllowed: !data,
         }).catch(errors => {
           console.log('ERROR: Failed to fetch bank account change status');
         });
