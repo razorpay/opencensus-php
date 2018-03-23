@@ -326,6 +326,19 @@ class UpiMindgateGatewayTest extends TestCase
 
     }
 
+    public function testRetryRefund()
+    {
+        $this->payment['vpa'] = 'failedrefund@hdfcbank';
+
+        $payment = $this->testPayment();
+
+        $refund = $this->refundPayment($payment['id'], 10000);
+
+        $refund = $this->retryFailedRefund($refund['id']);
+
+        $this->assertEquals($refund['status'], 'processed');
+    }
+
     protected function checkPaymentStatus($id, $expectedStatus)
     {
         $response = $this->getPaymentStatus($id);
