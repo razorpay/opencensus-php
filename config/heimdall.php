@@ -43,6 +43,17 @@ return [
             ]
         ],
 
+        PermissionCategory::MERCHANT_REQUEST => [
+            Permission::VIEW_MERCHANT_REQUESTS => [
+                'description' => 'View merchant requests',
+                'assignable'  => true,
+            ],
+            Permission::EDIT_MERCHANT_REQUESTS => [
+                'description' => 'Edit merchant requests',
+                'assignable'  => true,
+            ],
+        ],
+
         PermissionCategory::MERCHANT_DETAIL => [
             Permission::VIEW_MERCHANT_BALANCE => [
                 'description' => 'View merchant balance in merchant details',

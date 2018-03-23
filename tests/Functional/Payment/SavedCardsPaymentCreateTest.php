@@ -554,7 +554,7 @@ class SavedCardsPaymentCreateTest extends TestCase
 
         $this->assertNotEquals($token[Token::USED_AT], null);
 
-        Mail::assertSent(CardSavedMail::class);
+        Mail::assertQueued(CardSavedMail::class);
     }
 
     /**

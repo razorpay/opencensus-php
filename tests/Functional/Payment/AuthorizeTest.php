@@ -53,7 +53,7 @@ class AuthorizeTest extends TestCase
 
         $this->assertArrayHasKey('razorpay_payment_id', $content);
 
-        Mail::assertSent(AuthorizedMail::class);
+        Mail::assertQueued(AuthorizedMail::class);
     }
 
     public function testMagicKeyFalseMerchantDisabled()
@@ -497,7 +497,7 @@ class AuthorizeTest extends TestCase
             $this->doAuthPayment($payment);
         });
 
-        Mail::assertSent(PaymentFailedMail::class, function ($mail)
+        Mail::assertQueued(PaymentFailedMail::class, function ($mail)
         {
             $this->assertArrayHasKey('error_description', $mail->viewData['payment']);
 

@@ -25,7 +25,7 @@
         $amountPaidFormatted = number_format($amountPaid / 100, 2);
         $amountDueFormatted  = number_format($amountDue / 100, 2);
     @endphp
-  
+
   </p>
     <center style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121; max-width: 600px;">
         <table class="table" border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121; width: 100%; background-color: #fafafa;"><tbody style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
@@ -193,7 +193,7 @@
                                 </td>
                                 <td class="content" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
                                     <div class="footerRZP" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; text-align: right; padding-left: 10%; padding-bottom: 24px; font-size: 10px; color: #757575;">
-                                        Sign up at <a href="https://razorpay.com/" target="_blank" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">razorpay.com/invoices</a> to create invoices and accept payments for your business.
+                                        Sign up at <a href="https://razorpay.com/invoices" target="_blank" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">razorpay.com/invoices</a> to create invoices and accept payments for your business.
                                     </div>
                                 </td>
                             </tr></tbody></table>
@@ -207,6 +207,6 @@
             </tr>
 </tbody></table>
 </center>
-  
+
 </body>
 </html>

@@ -238,11 +238,15 @@ class Processor
         }
 
         //
-        // We need this flow only if either bank_account or auth_type is missing.
-        // TODO: Handle for aadhaar also
+        // We need this flow only if either:
+        //   - bank_account is missing
+        //   - auth_type is missing
+        //   - auth_type is aadhaar and aadhaar_number is missing
         //
         if ((empty($input[Payment\Entity::BANK_ACCOUNT]) === false) and
-            (empty($payment->getAuthType()) === false))
+            (empty($payment->getAuthType()) === false) and
+            (($payment->getAuthType() !== Payment\AuthType::AADHAAR) or
+             (empty($input[Payment\Entity::AADHAAR]['number']) === false)))
         {
             return null;
         }

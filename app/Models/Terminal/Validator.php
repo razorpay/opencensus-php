@@ -54,6 +54,7 @@ class Validator extends Base\Validator
         Payment\Gateway::ENACH_RBL,
         Payment\Gateway::FIRST_DATA,
         Payment\Gateway::CYBERSOURCE,
+        Payment\Gateway::UPI_MINDGATE,
         Payment\Gateway::NETBANKING_ICICI,
         Payment\Gateway::NETBANKING_INDUSIND,
     ];
@@ -218,6 +219,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY                    => 'sometimes|in:upi_icici',
         Entity::UPI                        => 'sometimes|boolean|in:1',
         Entity::GATEWAY_TERMINAL_ID        => 'sometimes',
+        Entity::TYPE                       => 'sometimes|array',
     ];
 
     protected static $netbankingIciciEditTerminalRules = [
@@ -301,6 +303,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID2       => 'required|string',
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
         Entity::UPI                        => 'sometimes|boolean|in:1',
+        Entity::TYPE                       => 'sometimes|array',
     ];
 
     protected static $upiSbiTerminalRules = [
@@ -615,6 +618,7 @@ class Validator extends Base\Validator
             ($new->getType() === $existing->getType()) and
             ($new->getCurrency() === $existing->getCurrency()) and
             ($new->getNetworkCategory() === $existing->getNetworkCategory()) and
+            ($new->getCategory() === $existing->getCategory()) and
             ($new->getEmiSubvention() === $existing->getEmiSubvention()))
         {
             throw new Exception\BadRequestException(

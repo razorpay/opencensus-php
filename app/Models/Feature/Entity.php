@@ -52,6 +52,16 @@ class Entity extends Base\PublicEntity
         self::NAME,
     ];
 
+    /**
+     * The routes of the features added here are not accessible by the OAuth applications, even if the feature is
+     * enabled on the merchant account.
+     *
+     * @var array
+     */
+    public static $appBlacklistedFeatures = [
+        Constants::S2S,
+    ];
+
     public function getName()
     {
         return $this->getAttribute(self::NAME);

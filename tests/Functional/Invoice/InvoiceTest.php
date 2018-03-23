@@ -99,14 +99,14 @@ class InvoiceTest extends TestCase
 
         $this->makePaymentForInvoiceAndAssert($invoice->toArrayPublic());
 
-        Mail::assertSent(InvoiceAuthorizedMail::class, function ($mail) use ($invoice)
+        Mail::assertQueued(InvoiceAuthorizedMail::class, function ($mail) use ($invoice)
         {
             $this->assertEquals($invoice->getPublicId(), $mail->viewData['invoice']['id']);
 
             return true;
         });
 
-        Mail::assertSent(InvoiceCapturedMail::class, function ($mail) use ($invoice)
+        Mail::assertQueued(InvoiceCapturedMail::class, function ($mail) use ($invoice)
         {
             $this->assertEquals($invoice->getPublicId(), $mail->viewData['invoice']['id']);
 

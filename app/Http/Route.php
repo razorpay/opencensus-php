@@ -693,6 +693,15 @@ final class Route
 
         'merchant_analytics'                      => ['post',     'merchant/analytics',                             'MerchantController@postAnalytics'                                  ],
 
+        // Merchant Requests Routes
+        'merchant_requests_get'                   => ['get',      'merchant/requests/{id}',                         'MerchantRequestController@get'                                     ],
+        'merchant_requests_status_log'            => ['get',      'merchant/requests/{id}/status_log',              'MerchantRequestController@getStatusLog'                            ],
+        'merchant_requests_get_feature'           => ['get',      'merchant/requests/{type}/{name}',                'MerchantRequestController@getForFeatureTypeAndName'                ],
+        'merchant_requests_list'                  => ['get',      'merchant/requests',                              'MerchantRequestController@getAll'                                  ],
+        'merchant_requests_create'                => ['post',     'merchant/requests',                              'MerchantRequestController@create'                                  ],
+        'merchant_requests_update'                => ['patch',    'merchant/requests/{id}',                         'MerchantRequestController@update'                                  ],
+        'merchant_requests_bulk_update'           => ['put',      'merchant/requests/bulk',                         'MerchantRequestController@bulkUpdate'                              ],
+
         'onboarding_features_fetch_details'       => ['get',      'onboarding/features',                            'FeatureController@getOnboardingDetails'                            ],
         'onboarding_features_fetch_submission'    => ['get',      'onboarding/features/{feature}',                  'FeatureController@getOnboardingSubmissions'                        ],
         'onboarding_features_create'              => ['post',     'onboarding/features/{feature}',                  'FeatureController@postOnboardingSubmissions'                       ],
@@ -1178,6 +1187,8 @@ final class Route
         'merchant_get_tags',
         'account_fetch',
         'merchant_add_bank_account',
+        'merchant_requests_create',
+        'merchant_requests_get_feature',
         'merchant_bank_account_change_status',
         'tax_get_meta_gst_taxes',
     ];
@@ -1440,6 +1451,11 @@ final class Route
         'shield_rules_evaluate',
 
         'user_fetch_admin',
+        'merchant_requests_list',
+        'merchant_requests_update',
+        'merchant_requests_status_log',
+        'merchant_requests_get',
+        'merchant_requests_bulk_update'
     ];
 
     public static $routePermission = [
@@ -1735,6 +1751,13 @@ final class Route
         'reporting_schedule_create'              => '*',
         'reporting_schedule_delete'              => '*',
         'ufh_get_file_signed_url'                => '*',
+        'merchant_requests_create'               => '*',
+        'merchant_requests_get'                  => '*',
+        'merchant_requests_list'                 => Permission::VIEW_MERCHANT_REQUESTS,
+        'merchant_requests_get'                  => Permission::VIEW_MERCHANT_REQUESTS,
+        'merchant_requests_update'               => Permission::EDIT_MERCHANT_REQUESTS,
+        'merchant_requests_bulk_update'          => Permission::EDIT_MERCHANT_REQUESTS,
+        'merchant_requests_status_log'           => Permission::VIEW_MERCHANT_REQUESTS,
         'merchant_bank_account_change_status'    => '*',
     ];
 
@@ -2541,5 +2564,22 @@ final class Route
         $features = self::$routeNameToFeaturesMap;
 
         return $features[$route] ?? [];
+    }
+
+    /**
+     * Returns the array of features, one of which is required to
+     * access the current route.
+     *
+     * @return array
+     */
+    public function getCurrentRouteFeatures(): array
+    {
+        $currentRoute = $this->getCurrentRouteName();
+
+        //
+        // A route can belong to multiple features
+        // This fetches an array of all features mapped to the route
+        //
+        return self::getFeaturesForRoute($currentRoute);
     }
 }

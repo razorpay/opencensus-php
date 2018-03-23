@@ -3,6 +3,7 @@
 namespace RZP\Mail;
 
 use RZP\Mail\Base\Mailable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Testing\Fakes\MailFake as BaseMailFake;
 
 class MailFake extends BaseMailFake
@@ -25,6 +26,30 @@ class MailFake extends BaseMailFake
 
         $mailable->build();
 
+        if ($mailable instanceof ShouldQueue)
+        {
+            return $this->queue($mailable, $data, $callback);
+        }
+
         $this->mailables[] = $mailable;
+    }
+
+    /**
+     * Queue a new e-mail message for sending.
+     *
+     * @param  string|array  $view
+     * @param  string|null  $queue
+     * @return mixed
+     */
+    public function queue($mailable, $queue = null)
+    {
+        if (($mailable instanceof Mailable) === false)
+        {
+            return;
+        }
+
+        $mailable->build();
+
+        $this->queuedMailables[] = $mailable;
     }
 }

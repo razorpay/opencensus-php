@@ -135,7 +135,7 @@ class AttemptReconcileTest extends TestCase
         $dataKey = 'matchAttemptForReconFailure' . ucfirst($channel);
         $this->assertTestResponse($settlementAttempt, $dataKey);
 
-        Mail::assertSent(ReconciliationMail::class);
+        Mail::assertQueued(ReconciliationMail::class);
     }
 
     public function testSettlementReconcileEntitiesSuccessForKotak()
@@ -198,7 +198,7 @@ class AttemptReconcileTest extends TestCase
         $merchant = $this->getEntityById('merchant', '10000000000000', true);
         $this->assertEquals(true, $merchant['hold_funds']);
 
-        Mail::assertSent(SettlementFailureMail::class);
+        Mail::assertQueued(SettlementFailureMail::class);
     }
 
     protected function verifyReconcileEntitiesFailureForIcici()
