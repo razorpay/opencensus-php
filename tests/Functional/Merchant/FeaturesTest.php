@@ -692,7 +692,7 @@ class FeaturesTest extends TestCase
         // Test the fetch status route
         $this->getMarketplaceOnboardingResponseStatus();
 
-        Mail::assertSent(FeatureEnabledEmail::class, function ($mail)
+        Mail::assertQueued(FeatureEnabledEmail::class, function ($mail)
         {
             $this->assertEquals('Route', $mail->viewData['feature']);
 

@@ -781,7 +781,7 @@ EOT;
         $this->assertEquals(3, $data['upi_icici']['count']);
         $this->assertTrue(file_exists($data['upi_icici']['file']));
 
-        Mail::assertSent(RefundFileMail::class, function ($mail)
+        Mail::assertQueued(RefundFileMail::class, function ($mail)
         {
             $body = 'Please find attached refunds information for UPI';
 

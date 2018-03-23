@@ -81,7 +81,7 @@ trait AttemptTrait
 
         $mailClass = 'RZP\\Mail\\Settlement\\' . ucfirst($channel) . 'Settlement';
 
-        Mail::assertSent($mailClass);
+        Mail::assertQueued($mailClass);
 
         return $content;
     }

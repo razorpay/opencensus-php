@@ -273,7 +273,7 @@ class NodalAccount extends NodalBase\FileProcessor
 
         $yesbankSettlementMail = new SettlementMail\KotakSettlement($data);
 
-        Mail::send($yesbankSettlementMail);
+        Mail::queue($yesbankSettlementMail);
     }
 
     protected function getFileToWriteNameWithoutExt()

@@ -31,7 +31,7 @@ class InvitationTest extends TestCase
 
         $this->startTest();
 
-        Mail::assertSent(InvitationMail::class, function ($mail)
+        Mail::assertQueued(InvitationMail::class, function ($mail)
         {
             $viewData = $mail->viewData;
 
@@ -57,7 +57,7 @@ class InvitationTest extends TestCase
 
         $this->startTest();
 
-        Mail::assertSent(InvitationMail::class, function ($mail)
+        Mail::assertQueued(InvitationMail::class, function ($mail)
         {
             $viewData = $mail->viewData;
 

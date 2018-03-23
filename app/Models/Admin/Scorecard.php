@@ -31,7 +31,7 @@ class Scorecard extends Base\Core
 
         $scoreCardMail = new ScorecardMail($data);
 
-        Mail::send($scoreCardMail);
+        Mail::queue($scoreCardMail);
 
         return ['success' => true];
     }

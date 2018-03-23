@@ -69,7 +69,7 @@ class AdminTest extends TestCase
 
         $this->assertEquals($result['groups'][0]['id'], $group);
 
-        Mail::assertSent(AdminMail\Create::class, function ($mail)
+        Mail::assertQueued(AdminMail\Create::class, function ($mail)
         {
             $testData = [
                 'user' => [
@@ -446,7 +446,7 @@ class AdminTest extends TestCase
 
         $this->startTest();
 
-        Mail::assertSent(AdminMail\ForgotPassword::class, function ($mail)
+        Mail::assertQueued(AdminMail\ForgotPassword::class, function ($mail)
         {
             $this->assertArrayHasKey('firstName', $mail->viewData);
 

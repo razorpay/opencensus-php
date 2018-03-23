@@ -34,7 +34,7 @@ class GenerateEmailTemplates extends Command
     /**
      * Execute the console command.
      */
-    public function fire()
+    public function handle()
     {
         // This is a map of templates and the rendered file names
         // Keep this list sorted

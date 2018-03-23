@@ -91,7 +91,7 @@ class Server extends Base\Mock\Server
 
         $response[F::MERCHANT_REFERENCE_CODE] = $input[F::MERCHANT_REFERENCE_CODE];
         $response[F::REQUEST_ID] = '4661468455432' . random_int(10000000, 99999999);
-        $response[F::REQUEST_TOKEN] = Str::quickRandom(40);
+        $response[F::REQUEST_TOKEN] = Str::random(40);
         $response[F::DECISION] = 'ACCEPT';
         $response[F::REASON_CODE] = 100;
         $response[F::RECEIPT_NUMBER] = random_int(100000, 999999);
@@ -113,7 +113,7 @@ class Server extends Base\Mock\Server
 
         $response[F::MERCHANT_REFERENCE_CODE] = $input[F::MERCHANT_REFERENCE_CODE];
         $response[F::REQUEST_ID] = '4661468455432' . random_int(10000000, 99999999);
-        $response[F::REQUEST_TOKEN] = Str::quickRandom(40);
+        $response[F::REQUEST_TOKEN] = Str::random(40);
         $response[F::DECISION] = 'ACCEPT';
         $response[F::REASON_CODE] = 100;
 
@@ -138,7 +138,7 @@ class Server extends Base\Mock\Server
 
         $response[F::MERCHANT_REFERENCE_CODE] = $input[F::MERCHANT_REFERENCE_CODE];
         $response[F::REQUEST_ID] = '4661468455432' . random_int(10000000, 99999999);
-        $response[F::REQUEST_TOKEN] = Str::quickRandom(40);
+        $response[F::REQUEST_TOKEN] = Str::random(40);
         $response[F::DECISION] = 'ACCEPT';
         $response[F::REASON_CODE] = 100;
 
@@ -165,7 +165,7 @@ class Server extends Base\Mock\Server
 
         $response[F::MERCHANT_REFERENCE_CODE] = $input[F::MERCHANT_REFERENCE_CODE];
         $response[F::REQUEST_ID] = '4661468455432' . random_int(10000000, 99999999);
-        $response[F::REQUEST_TOKEN] = Str::quickRandom(40);
+        $response[F::REQUEST_TOKEN] = Str::random(40);
         $response[F::DECISION] = 'ACCEPT';
         $response[F::REASON_CODE] = 100;
 
@@ -194,7 +194,7 @@ class Server extends Base\Mock\Server
 
         $response[F::MERCHANT_REFERENCE_CODE] = $input[F::MERCHANT_REFERENCE_CODE];
         $response[F::REQUEST_ID] = '4661468455432' . random_int(10000000, 99999999);
-        $response[F::REQUEST_TOKEN] = Str::quickRandom(40);
+        $response[F::REQUEST_TOKEN] = Str::random(40);
         $response[F::DECISION] = 'ACCEPT';
         $response[F::REASON_CODE] = 100;
 
@@ -224,7 +224,7 @@ class Server extends Base\Mock\Server
 
         $response[F::MERCHANT_REFERENCE_CODE] = $input[F::MERCHANT_REFERENCE_CODE];
         $response[F::REQUEST_ID] = '4661468455432' . random_int(10000000, 99999999);
-        $response[F::REQUEST_TOKEN] = Str::quickRandom(40);
+        $response[F::REQUEST_TOKEN] = Str::random(40);
         $response[F::DECISION] = 'ACCEPT';
         $response[F::REASON_CODE] = 100;
 
@@ -299,7 +299,7 @@ class Server extends Base\Mock\Server
         $cardNumber = $input[F::CARD][F::ACCOUNT_NUMBER];
 
         $this->acsUrl = $this->route->getUrl('mock_acs', ['gateway' => 'cybersource']);
-        $this->messageId = Str::quickRandom(20);
+        $this->messageId = Str::random(20);
         $this->proxyPan = (string) random_int(100000, 999999);
 
         switch ($cardNumber)
@@ -792,7 +792,7 @@ class Server extends Base\Mock\Server
 
         $ccAuthReply = [
             F::AMOUNT                 => $amount,
-            F::AUTHORIZATION_CODE     => strtoupper(Str::quickRandom(6)),
+            F::AUTHORIZATION_CODE     => strtoupper(Str::random(6)),
             F::AUTHORIZED_DATETIME    => Carbon::now('UTC')->format('Y-m-d\TH:i:s\Z'),
             F::AVS_CODE               => 'G',
             F::AVS_CODE_RAW           => 'G',
@@ -851,7 +851,7 @@ class Server extends Base\Mock\Server
             'ccAuthService' => [
                 'requestId' => '4661468455432' . random_int(10000000, 99999999),
                 'amount' => $amount,
-                'authCode' => strtoupper(Str::quickRandom(6)),
+                'authCode' => strtoupper(Str::random(6)),
                 'eci' => '2',
                 'RFlag' => Cybersource\ReplyFlag::SOK
             ],

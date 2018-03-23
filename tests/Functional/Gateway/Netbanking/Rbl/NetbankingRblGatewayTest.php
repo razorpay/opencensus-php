@@ -251,7 +251,7 @@ class NetbankingRblGatewayTest extends TestCase
 
     protected function checkMailQueue()
     {
-        Mail::assertSent(DailyFileMail::class, function ($mail)
+        Mail::assertQueued(DailyFileMail::class, function ($mail)
         {
             $this->assertEquals('3', $mail->viewData['count']['refunds']);
 
