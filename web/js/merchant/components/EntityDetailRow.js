@@ -1,10 +1,10 @@
-export default ({ label, value, children, ...otherProps }) => {
+export default ({ label, value, children, pairClass = '', ...otherProps }) => {
   if (value === null || value === undefined || value === '') {
     value = '--';
   }
 
   return (
-    <div class="pair-group-item" {...otherProps}>
+    <div class={`pair-group-item ${pairClass}`} {...otherProps}>
       {typeof label === 'function' ? (
         label()
       ) : (

@@ -376,6 +376,7 @@ export default class CreatePaymentLink extends Component {
               <div class="col-md-4">
                 <Field
                   name="customer[contact]"
+                  id="customer_contact"
                   component={InputField}
                   class="form-control"
                   placeholder="Phone"
@@ -390,6 +391,7 @@ export default class CreatePaymentLink extends Component {
               <div class="col-md-4 or-separator">
                 <Field
                   name="customer[email]"
+                  id="customer_email"
                   component={InputField}
                   class="form-control"
                   placeholder="Email"
@@ -459,6 +461,11 @@ export default class CreatePaymentLink extends Component {
                     name="sms_notify"
                     component="input"
                     type="checkbox"
+                    onChange={e => {
+                      if (e.target.checked) {
+                        document.getElementById('customer_contact').focus();
+                      }
+                    }}
                     disabled={isEdit}
                   />
                   SMS
@@ -467,6 +474,11 @@ export default class CreatePaymentLink extends Component {
                   <Field
                     name="email_notify"
                     component="input"
+                    onChange={e => {
+                      if (e.target.checked) {
+                        document.getElementById('customer_email').focus();
+                      }
+                    }}
                     type="checkbox"
                     disabled={isEdit}
                   />
