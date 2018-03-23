@@ -624,7 +624,16 @@ tr:hover .row-action.btn-group {
   padding: 8px;
   margin-bottom: -1px;
   position: relative;
-  clearfix()
+
+  &:not(.description) {
+    clearfix()
+  }
+
+  &.description {
+    white-space: 'pre-wrap';
+    word-wrap: 'break-word';
+    overflow: auto;
+  }
 
   .pair-label, .pair-value, .pair-separator {
     vertical-align: top;
@@ -650,13 +659,6 @@ tr:hover .row-action.btn-group {
     }
   }
 
-  /*
-  // Separator is colon as per old design. Currently not being used but will be removed once design is concretely confirmed all across
-  .pair-separator {
-    padding: 0 4px;
-    color: #afafaf;
-  }
-  */
   .pair-value {
     width: 60%;
     padding-left: 8px;
