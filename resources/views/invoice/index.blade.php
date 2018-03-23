@@ -783,7 +783,7 @@
                   <div id="chkout-header">
                     <div id="header-logo">
                         @if (isset($data['merchant']['image']))
-                            <img src={{$data['merchant']['image']}}>
+                            <img src={{$data['merchant']['image']}} width="100%">
                         @endif
                     </div>
                     <div id="header-details">
