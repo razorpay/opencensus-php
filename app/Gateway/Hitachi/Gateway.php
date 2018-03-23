@@ -177,9 +177,9 @@ class Gateway extends Base\Gateway
     {
         $salt = $this->config['bharatqr_salt'];
 
-        array_unshift($content, $salt);
+        $stringToHash =  urldecode(http_build_query($content));
 
-        return parent::getStringToHash($content, '&');
+        return $salt . '|' . $stringToHash . '&';
     }
 
     public function getHashOfString($str)
