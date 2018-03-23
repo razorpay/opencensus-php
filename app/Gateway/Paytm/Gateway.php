@@ -426,11 +426,7 @@ class Gateway extends Base\Gateway
 
             $secret = $this->getSecret();
 
-            // Fail if anyone tries to use Paytm
-            // so we can migrate to php7.1
-            $res = false;
-
-            // $res = Checksum::verifychecksum_e($content, $secret, $checksum);
+            $res = Checksum::verifychecksum_e($content, $secret, $checksum);
         }
 
         if ($res === false)
