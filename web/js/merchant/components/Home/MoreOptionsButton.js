@@ -28,7 +28,7 @@ export default ({
                 download={csvData.name}
                 onClick={handleCSVDownload}
               >
-                Export as CSV
+                Export CSV
               </a>
             </div>
           )}
@@ -39,7 +39,7 @@ export default ({
                 download={pngData.name}
                 href={pngData.url}
               >
-                Download as Image
+                Download Image
               </a>
             </div>
           )}

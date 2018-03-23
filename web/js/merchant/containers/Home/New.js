@@ -11,7 +11,7 @@ import Sticky from 'rzp/ui/Sticky';
 import Group, { GroupItem } from 'rzp/ui/Group';
 import { showNotification } from 'rzp/modules/notifications';
 import DateRangePicker, { customRangeText } from 'rzp/ui/DateRangePicker';
-import Tooltip from 'rzp/ui/Tooltip';
+import Popover, { PopoverTitle, PopoverBody } from 'rzp/ui/Popover';
 import {
   oldestTransactionQuery,
   getDefaultPaymentFilter,
@@ -408,12 +408,32 @@ class HomeContainer extends Component {
 
           <div className="row">
             <div className="col-md-12">
-              <p className="section-title">
-                {paymentInsightsTitle}
-                <span>
-                  <i class="i i-info-circle"></i>
-                </span>
-              </p>
+              <div className="section-title payment-insights-title">
+                {paymentInsightsTitle}&nbsp;
+                <small>
+                  <i class="i i-help"></i>
+                  <Popover align="top">
+                    <PopoverTitle>
+                      What's this?
+                    </PopoverTitle>
+                    <PopoverBody>
+                      <p>
+                        This graph helps you gain insights into your overall payments by seeing how different payment methods stack up against each other in your revenue pool.
+                      </p>
+                      <div>
+                        <span className="popover-highlight">
+                          Click tiles
+                        </span> to drill-down into the hierarchy.
+                      </div>
+                      <div>
+                        <span className="popover-highlight">
+                          Hover
+                        </span> to view information for smaller tiles.
+                      </div>
+                    </PopoverBody>
+                  </Popover>
+                </small>
+              </div>
             </div>
             <div className="col-md-12">
               <PaymentMethods

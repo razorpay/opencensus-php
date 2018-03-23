@@ -44,12 +44,12 @@ class Tooltip extends Component {
       top = screenY;
     }
 
-    const {
-        width: tooltipWidth,
-        height: tooltipHeight,
-      } = node.getBoundingClientRect(),
-      screenLeft = 0,
-      screenRight = document.body.clientWidth;
+    let tooltipWidth = this.nodeWidth ||
+                       (this.nodeWidth = this.node.clientWidth),
+        tooltipHeight = this.nodeHeight ||
+                        (this.nodeHeight = this.node.clientHeight), 
+        screenLeft = 0,
+        screenRight = document.body.clientWidth;
 
     let tooltipLeft = 0,
       tooltipTop = 0,
@@ -70,7 +70,12 @@ class Tooltip extends Component {
 
         paddingTop = gutter;
       } else {
-        tooltipTop -= tooltipHeight + height;
+        tooltipTop -= tooltipHeight;
+
+        if (!this.props.followPointer) {
+
+          tooltipTop -= gutter;
+        }
 
         paddingBottom = gutter;
       }
@@ -169,14 +174,23 @@ class Tooltip extends Component {
   }
 
   render() {
-    const { show } = this.state;
+    const { show } = this.state,
+          { children, align, followPointer, ...otherProps } = this.props;
+
+    otherProps.className = `${
+                             otherProps.className
+                               ? otherProps.className + " "
+                               : ""
+                            }rzp-tooltip${show ? ' show' : ''}`;
 
     return (
       <div
-        className={`rzp-tooltip ${show ? 'show' : ''}`}
+        {...otherProps}
         ref={node => (this.node = node)}
       >
-        <div className="rzp-tooltip-inner">{this.props.children}</div>
+        <div className="rzp-tooltip-inner">
+          {children}
+        </div>
       </div>
     );
   }
