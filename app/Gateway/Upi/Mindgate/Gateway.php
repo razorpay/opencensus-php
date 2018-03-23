@@ -174,6 +174,7 @@ class Gateway extends Base\Gateway
             Entity::GATEWAY_MERCHANT_ID => $this->getMerchantId(),
             Entity::VPA                 => $input['payment']['vpa'],
             Entity::ACTION              => $action,
+            Entity::TYPE                => Base\Type::COLLECT,
         ];
 
         if ($action === Action::REFUND)
@@ -272,10 +273,7 @@ class Gateway extends Base\Gateway
 
         $this->checkResponseStatus($content[ResponseFields::STATUS]);
 
-        // Authorization was successful
-        $content[Entity::RECEIVED] = 1;
-
-        $this->updateGatewayPaymentEntity($gatewayPayment, $content);
+        $this->updateGatewayPaymentResponse($gatewayPayment, $content);
 
         // Gateways must return array in callback
         return [
@@ -283,6 +281,20 @@ class Gateway extends Base\Gateway
                 Payment\Entity::VPA => $gatewayPayment->getVpa()
             ]
         ];
+    }
+
+    protected function updateGatewayPaymentResponse($payment, array $response)
+    {
+        $attributes = $this->getMappedAttributes($response);
+
+        // To mark that we have received a response for this request
+        $attributes[Entity::RECEIVED] = 1;
+
+        $payment->fill($attributes);
+
+        $payment->generatePspData($attributes);
+
+        $payment->saveOrFail();
     }
 
     /**

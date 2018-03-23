@@ -265,6 +265,39 @@ class UpiMindgateGatewayTest extends TestCase
         return $paymentId;
     }
 
+    public function testTpvPayment()
+    {
+        $this->fixtures->create('terminal:shared_upi_mindgate_tpv_terminal');
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->enableTPV();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $order = $this->startTest();
+
+        $order = $this->getLastEntity('order', true);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+        $payment['amount'] = $order['amount'];
+        $payment['bank'] = $order['bank'];
+        $payment['order_id'] = $order['id'];
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['terminal_id'], '100UPIMndgtTpv');
+
+        $this->fixtures->merchant->disableTPV();
+
+        $gatewayEntity = $this->getLastEntity('upi', true);
+
+        $this->assertEquals('collect', $gatewayEntity['type']);
+        $this->assertEquals('vishnu@icici', $gatewayEntity['vpa']);
+    }
+
     public function testVerifyPayment()
     {
         // First we test that verification works

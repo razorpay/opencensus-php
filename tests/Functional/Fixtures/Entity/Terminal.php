@@ -1510,6 +1510,16 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedUpiMindgateTpvTerminal(array $attributes = [])
+    {
+        $attributes = [
+            'id'               => Shared::UPI_MINDGATE_TPV_TERMINAL,
+            'tpv'              => 1,
+        ];
+
+        return $this->createSharedUpiMindgateTerminal($attributes);
+    }
+
     public function createSharedUpiMindgateSbiTerminal(array $attributes)
     {
         $termId = Shared::UPI_MINDGATE_SBI_RAZORPAY_TERMINAL;
