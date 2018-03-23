@@ -181,14 +181,6 @@ export default class Activation extends Entity {
   }
 
   serializeProperty(prop) {
-    // The below fields should not be sent if they are not set, as the api expects them only when they are set
-    if (
-      ['business_international'].indexOf(prop) !== -1 &&
-      isBlank(this[prop])
-    ) {
-      return undefined;
-    }
-
     if (prop === 'business_international') {
       return normalizeBoolean(this.business_international);
     }

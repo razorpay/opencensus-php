@@ -83,9 +83,12 @@ export default ({
       </Definition>
     );
   } else if (paymentStatus === 'captured') {
-    const openDisputes = payment.disputes && payment.disputes.items.filter(
-      ({ status }) => ['open', 'under_review'].indexOf(status) > -1
-    ).length;
+    const openNonFraudDisputes =
+      payment.disputes &&
+      payment.disputes.items.filter(
+        ({ status, phase }) =>
+          ['open', 'under_review'].indexOf(status) > -1 && phase !== 'fraud'
+      ).length;
     return (
       <div>
         <div className="m-b">
@@ -114,15 +117,15 @@ export default ({
               <button
                 className="btn btn-default"
                 onClick={openRefundModal}
-                disabled={openDisputes}
+                disabled={openNonFraudDisputes}
               >
                 {`Issue${refundStatus === 'partial' ? ' another' : ''} Refund`}
               </button>
             </p>
-            {openDisputes ? (
+            {openNonFraudDisputes ? (
               <span class="text-danger">
                 Refunds are disabled as there{' '}
-                {openDisputes > 1 ? 'are ' : 'is an '} open dispute{openDisputes >
+                {openNonFraudDisputes > 1 ? 'are ' : 'is an '} open dispute{openNonFraudDisputes >
                   1 && 's'}{' '}
                 on this payment
               </span>
