@@ -95,6 +95,7 @@ export default class BandAccountDetailsChange extends Component {
                     type={this.isWebkit ? 'text' : 'password'}
                     autoComplete="off"
                     validate={[required()]}
+                    autoComplete="new-password"
                   />
                 </div>
               </div>
