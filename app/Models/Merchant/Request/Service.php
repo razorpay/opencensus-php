@@ -32,7 +32,7 @@ class Service extends Base\Service
 
     public function getAll(array $input)
     {
-        $input[Constants::EXPAND] = [Entity::MERCHANT];
+        $input[Constants::EXPAND] = [Entity::MERCHANT, 'merchant.merchantDetail'];
 
         return (new Core)->fetch($input);
     }

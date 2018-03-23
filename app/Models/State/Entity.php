@@ -16,6 +16,7 @@ class Entity extends Base\PublicEntity
     const NAME                 = 'name';
     const ENTITY_TYPE          = 'entity_type';
     const ENTITY_ID            = 'entity_id';
+    const REJECTION_REASONS    = 'rejection_reasons';
 
     protected static $sign = 'state';
 
@@ -32,6 +33,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::ENTITY_ID,
         self::ENTITY_TYPE,
+        self::REJECTION_REASONS,
         self::ACTION_ID,
         self::NAME,
         self::CREATED_AT,
@@ -43,6 +45,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::ENTITY_ID,
         self::ENTITY_TYPE,
+        self::REJECTION_REASONS,
         self::ACTION_ID,
         self::NAME,
         self::CREATED_AT,
