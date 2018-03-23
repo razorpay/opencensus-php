@@ -525,7 +525,7 @@
       function toggleTrimDescription(toTrim) {
         var data = window.RZP_DATA.data;
         desc = data['invoice']['description'];
-        var charLimit, button;
+        var charLimit, button = '';
 
         if (checkIsDesktop()) {
             charLimit = 235;
