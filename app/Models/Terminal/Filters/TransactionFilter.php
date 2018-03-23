@@ -293,6 +293,8 @@ class TransactionFilter extends Terminal\Filter
                 {
                     return true;
                 }
+
+                return false;
             }
         }
 
