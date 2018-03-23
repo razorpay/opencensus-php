@@ -269,7 +269,7 @@ export default class RefundModal extends Component {
                     type="checkbox"
                     class="form-control"
                   />
-                  <label for="reverse_all">
+                  <label class="icon i-check" for="reverse_all">
                     Reverse all{' '}
                     <a
                       href="https://razorpay.com/docs/route/operations/#reversals"
