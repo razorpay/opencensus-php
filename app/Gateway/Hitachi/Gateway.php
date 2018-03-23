@@ -179,7 +179,7 @@ class Gateway extends Base\Gateway
 
         array_unshift($content, $salt);
 
-        return parent::getStringToHash($content, '|');
+        return parent::getStringToHash($content, '&');
     }
 
     public function getHashOfString($str)
