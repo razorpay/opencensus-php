@@ -1576,3 +1576,10 @@ WHERE payments.transfer_id IS NOT NULL
 AND txn.settled = 1
 AND txn.type='payment'
 AND tr.recipient_settlement_id IS NULL
+
+# Batches status set to failed with error - A function with return type must return a value.
+UPDATE batches SET status = 'processed' , failure_reason = NULL where id = '9mgioKH3k2uIF1';
+
+UPDATE batches SET status = 'processed' , failure_reason = NULL where id = '9mgXmUTz5fuSNH';
+
+UPDATE batches SET status = 'processed' , failure_reason = NULL where id = '9mjTnhhc1GygE1';

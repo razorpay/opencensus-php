@@ -861,5 +861,11 @@ final class FactoryData
             'created_at'  => Carbon::now()->getTimestamp(),
             'updated_at'  => Carbon::now()->getTimestamp(),
         ]);
+
+        $factory(\RZP\Models\Merchant\Request\Entity::class, [
+            'id'         => $faker->uniqueid,
+            'created_at' => $faker->timestamp,
+            'updated_at' => $faker->timestamp,
+        ]);
     }
 }

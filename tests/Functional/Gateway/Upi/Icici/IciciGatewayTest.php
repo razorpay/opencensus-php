@@ -109,6 +109,7 @@ class IciciGatewayTest extends TestCase
         $upiEntity = $this->getLastEntity('upi_icici', true);
         $payment = $this->getEntityById('payment', $paymentId, true);
 
+        $this->assertEquals('100UPIICICITml', $payment['terminal_id']);
         $this->assertNull($payment['vpa']);
 
         $content = $this->getMockServer()->getAsyncCallbackContent($upiEntity, $payment);
@@ -130,25 +131,12 @@ class IciciGatewayTest extends TestCase
 
         $payment['_']['flow'] = 'intent';
 
-        $this->mockServerContentFunction(function (& $content, $action = null)
-        {
-            if ($action === 'authorize')
-            {
-                $content['refId'] = 'ICICIRefId';
-            }
-            else
-            {
-                $content['PayerVA'] = 'crims0n@icici';
-            }
-        });
-
         $data = $this->testData[__FUNCTION__];
 
         $this->runRequestResponseFlow($data, function() use ($payment)
         {
             $this->doAuthPaymentViaAjaxRoute($payment);
         });
-
     }
 
     public function testPaymentWithExpiryPublicAuth()
@@ -793,7 +781,7 @@ EOT;
         $this->assertEquals(3, $data['upi_icici']['count']);
         $this->assertTrue(file_exists($data['upi_icici']['file']));
 
-        Mail::assertSent(RefundFileMail::class, function ($mail)
+        Mail::assertQueued(RefundFileMail::class, function ($mail)
         {
             $body = 'Please find attached refunds information for UPI';
 

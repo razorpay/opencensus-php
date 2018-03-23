@@ -556,7 +556,7 @@ class Base extends BaseModel\Core
         $this->batch->setProcessing(false);
     }
 
-    protected function createSetOutputFileAndSave(array & $entries): FileStore\Creator
+    protected function createSetOutputFileAndSave(array & $entries)
     {
         $type = $this->batch->getType();
 
@@ -584,7 +584,7 @@ class Base extends BaseModel\Core
         }
     }
 
-    protected function createValidatedFileAndSave(array & $entries): FileStore\Creator
+    protected function createValidatedFileAndSave(array & $entries)
     {
         $type = $this->batch->getType();
 

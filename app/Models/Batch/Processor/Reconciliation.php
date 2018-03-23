@@ -157,7 +157,7 @@ class Reconciliation extends Base
         return;
     }
 
-    protected function createSetOutputFileAndSave(array & $entries): FileStore\Creator
+    protected function createSetOutputFileAndSave(array & $entries)
     {
         //
         // For recon batch procesing we don't need to create any output file.

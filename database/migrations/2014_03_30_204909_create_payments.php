@@ -257,6 +257,7 @@ class CreatePayments extends Migration
             $table->index(Payment::AUTH_TYPE);
 
             $table->index(Payment::DISPUTED);
+            $table->index(Payment::RECURRING);
             $table->index(Payment::UPDATED_AT);
             $table->index(Payment::CAPTURED_AT);
             $table->index(Payment::MERCHANT_ID);

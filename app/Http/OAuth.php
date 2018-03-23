@@ -182,6 +182,15 @@ class OAuth
         return $this->parseOAuthServerResponse($response);
     }
 
+    /**
+     * Parse the OAuth server response received.
+     * Returns an error object, if there is an error.
+     * Returns null otherwise.
+     *
+     * @param array $response
+     *
+     * @return array
+     */
     protected function parseOAuthServerResponse(array $response)
     {
         $tokenScopes = $response[OAuthToken::SCOPES];
@@ -203,6 +212,14 @@ class OAuth
         $this->ba->setMode($mode);
         \Database\DefaultConnection::set($mode);
 
+        //
+        // Public key is used to generate the callback URL parameter that is
+        // being sent with the payment create request to the gateway.
+        //
+        $publicKey = 'rzp_' . $mode . '_oauth_' . $response[OAuthToken::PUBLIC_TOKEN];
+
+        $this->ba->setPublicKey($publicKey);
+
         try
         {
             $this->ba->checkMerchantActivatedForLive();
@@ -217,6 +234,7 @@ class OAuth
         // Sets the identifiers that are sent in trace logs
         $this->ba->setAccessTokenId($response[OAuthToken::ID]);
         $this->ba->setOAuthClientId($response[OAuthToken::CLIENT_ID]);
+        $this->ba->setOAuthApplicationId($response[OAuthToken::APPLICATION][OAuthToken::ID]);
     }
 
     /**

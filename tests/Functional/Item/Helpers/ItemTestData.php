@@ -15,6 +15,8 @@ return [
                 'description' => 'Item 1 description :) ..',
                 'amount'      => 100,
                 'currency'    => 'INR',
+                'hsn_code'    => '00110022',
+                'tax_rate'    => 1800,
                 'type'        => 'invoice',
             ],
         ],
@@ -25,6 +27,8 @@ return [
                 'description'   => 'Item 1 description :) ..',
                 'amount'        => 100,
                 'currency'      => 'INR',
+                'hsn_code'      => '00110022',
+                'tax_rate'      => 1800,
                 'unit'          => null,
                 'tax_inclusive' => false,
                 'tax_id'        => null,
@@ -42,6 +46,7 @@ return [
                 'description' => 'Item 1 description :) ..',
                 'unit_amount' => 100,
                 'currency'    => 'INR',
+                'sac_code'    => '914566',
                 'type'        => 'invoice',
             ],
         ],
@@ -53,6 +58,8 @@ return [
                 'amount'        => 100,
                 'unit_amount'   => 100,
                 'currency'      => 'INR',
+                'sac_code'      => '914566',
+                'tax_rate'      => null,
                 'unit'          => null,
                 'tax_inclusive' => false,
                 'tax_id'        => null,
@@ -76,6 +83,33 @@ return [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'The currency field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateItemWithInvalidTaxRate' => [
+        'request' => [
+            'url'     => '/items',
+            'method'  => 'post',
+            'content' => [
+                'name'        => 'Item 1',
+                'description' => 'Item 1 description :) ..',
+                'amount'      => 100,
+                'currency'    => 'INR',
+                'tax_rate'    => 15000,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The tax rate must be a valid integer between 0 and 10000',
                 ],
             ],
             'status_code' => 400,
@@ -158,6 +192,57 @@ return [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Both tax_id and tax_group_id cannot be present',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateItemWithHsnAndSacCode' => [
+        'request'   => [
+            'url'     => '/items',
+            'method'  => 'post',
+            'content' => [
+                'name'        => 'Item 1',
+                'description' => 'Item 1 description :) ..',
+                'amount'      => 100,
+                'currency'    => 'INR',
+                'hsn_code'    => '00110022',
+                'sac_code'    => '914600',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Both hsn_code and sac_code cannot be present',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testUpdateItemToContainBothHsnAndSacCode' => [
+        'request'   => [
+            'url'     => '/items/item_1000000001item',
+            'method'  => 'patch',
+            'content' => [
+                'sac_code' => '914600',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Both hsn_code and sac_code cannot be present',
                 ],
             ],
             'status_code' => 400,

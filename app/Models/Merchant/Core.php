@@ -638,9 +638,7 @@ class Core extends Base\Core
             {
                 $body = $body . '<br />' . $payoutBankAccount->getBeneficiaryName() . '<br />';
                 $body = $body . 'Bank Account Number : ' . $payoutBankAccount->getAccountNumber() . '<br />';
-                $body = $body . $payoutBankAccount->getBeneficiaryAddress1() . '<br />';
-                $body = $body . $payoutBankAccount->getBeneficiaryAddress2() . '<br />';
-                $body = $body . $payoutBankAccount->getBeneficiaryAddress3() . '<br />';
+                $body = $body . $payoutBankAccount->source->merchantDetail->getBusinessRegisteredAddress() . '<br />';
             }
 
             $body = $body . '<br />'

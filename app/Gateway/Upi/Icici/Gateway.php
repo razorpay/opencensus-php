@@ -29,7 +29,7 @@ class Gateway extends Base\Gateway
      * Default request timeout duration in seconds.
      * @var  integer
      */
-    const TIMEOUT = 120;
+    const TIMEOUT = 60;
 
     protected $gateway = 'upi_icici';
 
@@ -680,10 +680,20 @@ class Gateway extends Base\Gateway
 
         $input = $verify->input;
 
-        $paymentAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
-        $actualAmount  = number_format($content[Fields::VERIFY_AMOUNT], 2, '.', '');
+        //
+        // If gatewaySuccess is false
+        // we don't need to check for amount
+        // also in case the gateway says merchant trans id
+        // not availble it doesn't give us amount
+        //
+        if ($verify->gatewaySuccess === true)
+        {
+            $paymentAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
 
-        $verify->amountMismatch = ($paymentAmount !== $actualAmount);
+            $actualAmount  = number_format($content[Fields::VERIFY_AMOUNT], 2, '.', '');
+
+            $verify->amountMismatch = ($paymentAmount !== $actualAmount);
+        }
 
         // If payment status is either failed or created,
         // this is an api failure
@@ -731,7 +741,8 @@ class Gateway extends Base\Gateway
 
         $content = $this->sendRefundVerifyRequest($input);
 
-        if ($content['status'] === Status::SUCCESS)
+        if (($content['status'] === Status::SUCCESS) or
+            ($content['status'] === Status::DEEMED))
         {
             return true;
         }

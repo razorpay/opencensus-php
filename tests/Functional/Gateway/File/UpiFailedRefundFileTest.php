@@ -63,7 +63,7 @@ class UpiFailedRefundFileTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
 
-        Mail::assertSent(FailedRefundMail::class, function ($mail)
+        Mail::assertQueued(FailedRefundMail::class, function ($mail)
         {
             $this->assertNotEmpty($mail->attachments);
 

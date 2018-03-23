@@ -164,7 +164,7 @@ class MerchantCreateTest extends TestCase
 
         $this->startTest();
 
-        Mail::assertSent(CreateSubMerchantMail::class, function ($mail)
+        Mail::assertQueued(CreateSubMerchantMail::class, function ($mail)
         {
             return $mail->hasTo('test@razorpay.com', 'Submerchant');
         });

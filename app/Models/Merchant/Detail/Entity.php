@@ -536,6 +536,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CONTACT_MOBILE);
     }
 
+    public function getContactEmail()
+    {
+        return $this->getAttribute(self::CONTACT_EMAIL);
+    }
+
     public function getContactLandline()
     {
         return $this->getAttribute(self::CONTACT_LANDLINE);

@@ -306,7 +306,7 @@ class RecurringPaymentTest extends TestCase
         });
     }
 
-    public function testRecurringPaymentAmexCardNotSupported()
+    public function hitachi_subtestRecurringPaymentAmexCardNotSupported()
     {
         $payment = $this->getDefaultRecurringPaymentArray();
 
@@ -624,6 +624,8 @@ class RecurringPaymentTest extends TestCase
 
     public function testRecurringPaymentsWithMultipleNormalAndFallbackTerminals()
     {
+        $this->markTestSkipped('Not de-prioritizing fallback terminals for now');
+
         // - Create first data recurring terminals
         // - First payment to go via first data recurring terminal
         // - Create Axis recurring terminal with type 6
@@ -718,8 +720,7 @@ class RecurringPaymentTest extends TestCase
 
         $payment = $this->getDefaultRecurringPaymentArray();
 
-        // Need a mastercard number
-        $payment['card']['number'] = '5243730000000008';
+        $payment['card']['number'] = '5893163050216758';
 
         $data = $this->testData[__FUNCTION__];
 

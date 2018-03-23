@@ -34,6 +34,7 @@ class Event
     const TOKEN_CONFIRMED           = 'token.confirmed';
     const TOKEN_REJECTED            = 'token.rejected';
     const SETTLEMENT_PROCESSED      = 'settlement.processed';
+    const VIRTUAL_ACCOUNT_CREDITED  = 'virtual_account.credited';
 
     protected static $events = [
         self::PAYMENT_AUTHORIZED,
@@ -57,7 +58,8 @@ class Event
         // self::SUBSCRIPTION_EXPIRED,
         self::TOKEN_CONFIRMED,
         self::TOKEN_REJECTED,
-        self::SETTLEMENT_PROCESSED
+        self::SETTLEMENT_PROCESSED,
+        self::VIRTUAL_ACCOUNT_CREDITED,
     ];
 
     /**
@@ -87,7 +89,8 @@ class Event
         // self::SUBSCRIPTION_EXPIRED,
         self::TOKEN_CONFIRMED,
         self::TOKEN_REJECTED,
-        self::SETTLEMENT_PROCESSED
+        self::SETTLEMENT_PROCESSED,
+        self::VIRTUAL_ACCOUNT_CREDITED,
     ];
 
     protected static $bitPosition = [
@@ -113,6 +116,7 @@ class Event
         self::TOKEN_REJECTED            => 20,
         self::SETTLEMENT_PROCESSED      => 21,
         self::PAYMENT_DISPUTE_CREATED   => 22,
+        self::VIRTUAL_ACCOUNT_CREDITED  => 23,
     ];
 
     /**
@@ -143,6 +147,7 @@ class Event
         self::TOKEN_CONFIRMED,
         self::TOKEN_REJECTED,
         self::SETTLEMENT_PROCESSED,
+        self::VIRTUAL_ACCOUNT_CREDITED,
     ];
 
     /**
@@ -156,6 +161,7 @@ class Event
         self::PAYMENT_CAPTURED          => Entity::PAYMENT,
         self::PAYMENT_FAILED            => Entity::PAYMENT,
         self::PAYMENT_DISPUTE_CREATED   => Entity::PAYMENT,
+        self::VIRTUAL_ACCOUNT_CREDITED  => Entity::PAYMENT,
         self::INVOICE_PAID              => Entity::INVOICE,
         self::INVOICE_PARTIALLY_PAID    => Entity::INVOICE,
         self::INVOICE_EXPIRED           => Entity::INVOICE,
@@ -183,6 +189,7 @@ class Event
         self::INVOICE_PARTIALLY_PAID    => Feature\Constants::INVOICE_PARTIAL_PAYMENTS,
         self::TOKEN_CONFIRMED           => Feature\Constants::E_MANDATE,
         self::TOKEN_REJECTED            => Feature\Constants::E_MANDATE,
+        self::VIRTUAL_ACCOUNT_CREDITED  => Feature\Constants::VIRTUAL_ACCOUNTS,
     ];
 
     /**

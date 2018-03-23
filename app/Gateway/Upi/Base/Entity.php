@@ -137,6 +137,11 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::VPA);
     }
 
+    public function getType()
+    {
+        return $this->getAttribute(self::TYPE);
+    }
+
     public function setNpciReferenceId(string $value)
     {
         $this->setAttribute(self::NPCI_REFERENCE_ID, $value);
