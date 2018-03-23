@@ -686,7 +686,7 @@
                           <div id="inv-info-box">
                               <div class="inv-details">
                                   <div class="inv-for">
-                                    Payment Request from {{$data['merchant']['organization']['business_name']}}
+                                    Payment Request from {{$data['merchant']['name']}}
                                   </div>
                                   <div id="inv-details-main">
                                       <div class="info" style="margin-top: 28px;">
@@ -728,14 +728,14 @@
                                 <div id="cancelled-invoice">
                                   <div class="title" style='color:#f54443'>Payment Link Cancelled</div>
                                   <div class="desc">
-                                    <br/>Oops! This payment link was cancelled on {{date('M d, Y (h:i A)', $data['invoice']['cancelled_at'])}}. Please reach out to us at {{$data['merchant']['organization']['email']}} for any further queries.
+                                    <br/>Oops! This payment link was cancelled on {{date('M d, Y (h:i A)', $data['invoice']['cancelled_at'])}}. Please reach out to us at {{$data['merchant']['name']}} support for any further queries.
                                   </div>
                                 </div>
                               @elseif($data['invoice']['status'] === 'expired')
                                 <div id="cancelled-invoice">
                                     <div class="title">Payment Link Expired</div>
                                     <div class="desc">
-                                        <br/>Oops! This payment link expired on {{date('M d, Y (h:i A)', $data['invoice']['expire_by'])}}. Please reach out to us at {{$data['merchant']['organization']['email']}} for any further queries.
+                                        <br/>Oops! This payment link expired on {{date('M d, Y (h:i A)', $data['invoice']['expire_by'])}}. Please reach out to us at {{$data['merchant']['name']}} support for any further queries.
                                     </div>
                                 </div>
 
@@ -746,11 +746,16 @@
                         <div id="overlay"></div>
                         <div id="chkout-box">
                             <div id="chkout-header">
-                                <div id="header-logo"></div>
+                                <div id="header-logo">
+                                    @if (isset($data['merchant']['image']))
+                                        <img src={{$data['merchant']['image']}} width="100%">
+                                    @endif
+                                </div>
+
                                 <div id="header-details">
                                     @if (isset($data['merchant']))
                                         <div id="merchant">
-                                            <div id="merchant-name">{{$data['merchant']['organization']['business_name']}}</div>
+                                            <div id="merchant-name">{{$data['merchant']['name']}}</div>
                                             <div id="merchant-desc">Invoice #{{$data['invoice']['id']}}</div>
                                         </div>
                                     @endif
@@ -789,7 +794,7 @@
                     <div id="header-details">
                         @if (isset($data['merchant']))
                             <div id="merchant">
-                                <div id="merchant-name">{{$data['merchant']['organization']['business_name']}}</div>
+                                <div id="merchant-name">{{$data['merchant']['name']}}</div>
                                 <div id="merchant-desc">Invoice #{{$data['invoice']['id']}}</div>
                             </div>
                         @endif
@@ -842,14 +847,14 @@
                         <div id="cancelled-invoice">
                           <div class="title" style='color:#f54443; font-size:18px'>Payment Link Cancelled</div>
                           <div class="desc">
-                            <br/>Oops! This payment link was cancelled on {{date('M d, Y (h:i A)', $data['invoice']['cancelled_at'])}}. Please reach out to us at {{$data['merchant']['organization']['email']}} for any further queries.
+                            <br/>Oops! This payment link was cancelled on {{date('M d, Y (h:i A)', $data['invoice']['cancelled_at'])}}. Please reach out to us at {{$data['merchant']['name']}} support for any further queries.
                           </div>
                         </div>
                       @elseif($data['invoice']['status'] === 'expired')
                         <div id="cancelled-invoice">
                           <div class="title" style="font-size:18px">Payment Link Expired</div>
                             <div class="desc">
-                                Oops! This payment link expired on {{date('M d, Y (h:i A)', $data['invoice']['expire_by'])}}. <br/>Please reach out to us at {{$data['merchant']['organization']['email']}} for any further queries.
+                                Oops! This payment link expired on {{date('M d, Y (h:i A)', $data['invoice']['expire_by'])}}. <br/>Please reach out to us at {{$data['merchant']['name']}} support for any further queries.
                           </div>
                         </div>
                       @endif
@@ -990,8 +995,8 @@
                 };
 
                 if (merchant) {
-                  if (merchant.organization.business_name) {
-                        options.name = merchant.organization.business_name;
+                  if (merchant.name) {
+                        options.name = merchant.name;
                   }
 
                   var color = merchant.color || '#168AFA';
