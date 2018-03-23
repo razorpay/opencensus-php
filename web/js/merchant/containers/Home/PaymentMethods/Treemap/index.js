@@ -154,10 +154,18 @@ export default class Treemap extends Component {
 
         <Tooltip followPointer={true}>
           <div>
-            <p>
-              {amount} <small>{'(' + tooltip.data.percent + '%)'}</small>
+            <p className="payment-amount">
+              {amount}{' '}
+              <small>
+                {'(' + tooltip.data.percent + '%)'}
+              </small>
             </p>
-            <small>{tooltip.data.label}</small>
+            <span className="payment-label">
+              {tooltip.data.label}
+            </span>
+          </div>
+          <div className="tooltip-footer">
+            <i className="i i-hand"></i> Click to drill down
           </div>
         </Tooltip>
       </div>
