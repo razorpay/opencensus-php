@@ -85,6 +85,64 @@ class UpiMindgateGatewayTest extends TestCase
         return $payment;
     }
 
+    public function testIntentPayment()
+    {
+        unset($this->payment['description']);
+        unset($this->payment['vpa']);
+
+        $this->payment['_']['flow'] = 'intent';
+
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+        $paymentId = $response['payment_id'];
+
+        // Co Proto must be working
+        $this->assertEquals('intent', $response['type']);
+        $this->assertArrayHasKey('intent_url', $response['data']);
+
+        $this->checkPaymentStatus($paymentId, 'created');
+
+        $upiEntity = $this->getLastEntity('upi_mindgate', true);
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertEquals('pay', $upiEntity['type']);
+        $this->assertEquals('100UPIMindgate', $payment['terminal_id']);
+        $this->assertNull($payment['vpa']);
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'callback')
+            {
+                $content[8] = 'crims0n@hdfcbank';
+            }
+        });
+
+        $content = $this->getMockServer()->getAsyncCallbackContent($upiEntity, $payment);
+
+        $response = $this->makeS2SCallbackAndGetContent($content);
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertEquals($payment['vpa'], 'crims0n@hdfcbank');
+    }
+
+    public function testIntentPaymentWithVpa()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['vpa'] = 'crims0n@hdfcbank';
+
+        unset($payment['description']);
+
+        $payment['_']['flow'] = 'intent';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPaymentViaAjaxRoute($payment);
+        });
+    }
+
     public function testUpiAmountCap()
     {
         $this->payment['vpa'] = 'vishnu@upi';
