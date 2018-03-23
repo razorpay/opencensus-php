@@ -185,40 +185,57 @@ class EnachRblGatewayTest extends TestCase
                 'acknowledge_status' => 'true',
             ]);
 
-        $content = [
-            [
-                'SRNO'            => '1',
-                'MANDATE_DATE'    => Carbon::today()->format('m/d/Y'),
-                'MANDATE_ID'      => 'NEW',
-                'UMRN'            => 'UTIB6000000005844847',
-                'CUST_REFNO'      => '',
-                'SCH_REFNO'       => '',
-                'CUST_NAME'       => 'User name',
-                'BANK'            => '',
-                'BRANCH'          => '',
-                'BANK_CODE'       => 'UTIB0000123',
-                'AC_TYPE'         => 'SAVINGS',
-                'ACNO'            => '914010009305862',
-                'UPDATE_DATE'     => Carbon::now()->addDays(2)->format('m/d/Y'),
-                'AMOUNT'          => '99999',
-                'FREQUENCY'       => 'ADHO',
-                'COLLECTION_TYPE' => 'UPTO MAXIMUM',
-                'START_DATE'      => Carbon::now()->format('m/d/Y'),
-                'END_DATE'        => Carbon::now()->addYears(10)->format('m/d/Y'),
-                'TEL_NO'          => '',
-                'MOBILE_NO'       => '9999999999',
-                'MAIL_ID'         => '',
-                'UPLOAD_BATCH'    => 'ESIGN000001',
-                'UPLOAD_DATE'     => Carbon::now()->format('m/d/Y'),
-                'RESPONSE_DATE'   => Carbon::now()->addDays(2)->format('m/d/Y'),
-                'UTILITY_CODE'    => 'NACH00000000012323',
-                'UTILITY_NAME'    => 'RAZORPAY',
-                'NODAL_ACNO'      => 'RATN3234334',
-                'STATUS'          => 'Active',
+        $sheets = [
+            'sheet1' => [
+                'config' => [
+                    'start_cell' => 'A1',
+                ],
+                'items' => [
+                    [
+                        'random' => '1'
+                    ]
+                ]
             ],
+            'sheet2' => [
+                'config' => [
+                    'start_cell' => 'A2',
+                ],
+                'items' => [
+                    [
+                        'SRNO'            => '1',
+                        'MANDATE_DATE'    => Carbon::today()->format('m/d/Y'),
+                        'MANDATE_ID'      => 'NEW',
+                        'UMRN'            => 'UTIB6000000005844847',
+                        'CUST_REFNO'      => '',
+                        'SCH_REFNO'       => '',
+                        'CUST_NAME'       => 'User name',
+                        'BANK'            => '',
+                        'BRANCH'          => '',
+                        'BANK_CODE'       => 'UTIB0000123',
+                        'AC_TYPE'         => 'SAVINGS',
+                        'ACNO'            => '914010009305862',
+                        'UPDATE_DATE'     => Carbon::now()->addDays(2)->format('m/d/Y'),
+                        'AMOUNT'          => '99999',
+                        'FREQUENCY'       => 'ADHO',
+                        'COLLECTION_TYPE' => 'UPTO MAXIMUM',
+                        'START_DATE'      => Carbon::now()->format('m/d/Y'),
+                        'END_DATE'        => Carbon::now()->addYears(10)->format('m/d/Y'),
+                        'TEL_NO'          => '',
+                        'MOBILE_NO'       => '9999999999',
+                        'MAIL_ID'         => '',
+                        'UPLOAD_BATCH'    => 'ESIGN000001',
+                        'UPLOAD_DATE'     => Carbon::now()->format('m/d/Y'),
+                        'RESPONSE_DATE'   => Carbon::now()->addDays(2)->format('m/d/Y'),
+                        'UTILITY_CODE'    => 'NACH00000000012323',
+                        'UTILITY_NAME'    => 'RAZORPAY',
+                        'NODAL_ACNO'      => 'RATN3234334',
+                        'STATUS'          => 'Active',
+                    ]
+                ]
+            ]
         ];
 
-        $data = $this->getExcelString('Response Report-Response Report', $content, 'A2');
+        $data = $this->getExcelString('Response Report-Response Report', $sheets);
 
         $handle = tmpfile();
         fwrite($handle, $data);
@@ -289,19 +306,23 @@ class EnachRblGatewayTest extends TestCase
         return [$payment, $token, $order];
     }
 
-    protected function getExcelString($name, $data, $startCell = 'A1')
+    protected function getExcelString($name, $sheets)
     {
         $excel = Excel::create(
             $name,
-            function ($excel) use ($data, $startCell)
+            function ($excel) use ($sheets)
             {
-                $excel->sheet(
-                    'Sheet 1',
-                    function ($sheet) use ($data, $startCell)
-                    {
-                        $sheet->fromArray($data, null, $startCell, true);
-                    }
-                );
+                foreach ($sheets as $sheetName => $data)
+                {
+                    $excel->sheet(
+                        $sheetName,
+                        function ($sheet) use ($data)
+                        {
+                            $sheet->fromArray($data['items'], null, $data['config']['start_cell'], true);
+                        }
+                    );
+                }
+
             }
         );
 

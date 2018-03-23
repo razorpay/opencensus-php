@@ -147,15 +147,15 @@ class EnachRbl extends Base
 
         $sheets = $this->parseExcelFile($filePath);
 
-        $hasSingleSheet  = (count($sheets) === 1);
+        $hasSingleSheet  = (count($sheets) === 2);
         $errorMessage    = 'Sheets keys: ' . implode('.', array_keys($sheets));
 
         assertTrue($hasSingleSheet, $errorMessage);
 
         //
-        // We use head() instead of integer index as sheets might be
-        // an associative array.
+        // We use 2nd index as 1st sheet contains the summary and
+        // 2nd sheet contains th actual recon data
         //
-        return head($sheets);
+        return $sheets[1];
     }
 }
