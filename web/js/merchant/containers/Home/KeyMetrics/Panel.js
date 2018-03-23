@@ -12,7 +12,7 @@ import {
   isDefined,
   titleCase,
   paiseToRupees,
-  getPercentage
+  getPercentage,
 } from 'rzp/utils/rzp-utils';
 import { timeScale } from 'rzp/utils/chart/new.js';
 import takeScreenshot from 'rzp/utils/screenshot';
@@ -36,10 +36,7 @@ import GenericPanel, {
   PanelFooter,
 } from 'merchant/components/Home/GenericPanel';
 import Tooltip from 'merchant/components/Home/Tooltip';
-import {
-  PLATFORM,
-  CUMULATIVE
-} from 'merchant/containers/Home/KeyMetrics/data';
+import { PLATFORM, CUMULATIVE } from 'merchant/containers/Home/KeyMetrics/data';
 
 import { trackGoToLinks } from './ga';
 import customToolTip, { positioner } from './customTooltip';
@@ -53,6 +50,7 @@ const globalChartOptions = {
       top: 0,
       left: 0,
       right: 0,
+      bottom: 0,
     },
   },
   tooltips: {
@@ -78,8 +76,7 @@ class Panel extends Component {
     this.meta = tabsMeta[props.tabName];
 
     this.state = {
-    
-      visibleGroups: this.getVisibleGroups(props.showGroupingByPtfm)
+      visibleGroups: this.getVisibleGroups(props.showGroupingByPtfm),
     };
 
     this.handleGroupingChange = ::this.handleGroupingChange;
@@ -89,24 +86,22 @@ class Panel extends Component {
   }
 
   getVisibleGroups(showGroupingByPtfm) {
-
-    const {grouping=[]} = this.meta;
+    const { grouping = [] } = this.meta;
 
     return showGroupingByPtfm || grouping.length === 0
-             ? grouping
-             : grouping.filter((groupItem) => {
-                 return groupItem.value !== PLATFORM
-               });
+      ? grouping
+      : grouping.filter(groupItem => {
+          return groupItem.value !== PLATFORM;
+        });
   }
 
-  setVisibleGroups(showGroupingByPtfm)  {
-
+  setVisibleGroups(showGroupingByPtfm) {
     showGroupingByPtfm = isDefined(showGroupingByPtfm)
-                           ? showGroupingByPtfm
-                           : this.props.showGroupingByPtfm;
+      ? showGroupingByPtfm
+      : this.props.showGroupingByPtfm;
 
     this.setState({
-      visibleGroups: this.getVisibleGroups(showGroupingByPtfm)
+      visibleGroups: this.getVisibleGroups(showGroupingByPtfm),
     });
   }
 
@@ -146,9 +141,7 @@ class Panel extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-  
     if (nextProps.showGroupingByPtfm !== this.props.showGroupingByPtfm) {
-    
       this.setVisibleGroups(nextProps.showGroupingByPtfm);
     }
   }
@@ -168,16 +161,18 @@ class Panel extends Component {
         tabName,
         sectionTitle,
       } = this.props,
-      { visibleGroups:grouping } = this.state,
+      { visibleGroups: grouping } = this.state,
       dateFormat = 'DD MMM YYYY',
       { options, filters } = this.meta,
       { loading, histogram, trend } = data;
 
     const hasNoData = !histogram || histogram.datasets.length === 0;
 
-    const noGrouping = selectedGrouping &&
-	                   selectedGrouping.value === CUMULATIVE ||
-					   this.meta.noGrouping;
+    const noGrouping =
+      (selectedGrouping && selectedGrouping.value === CUMULATIVE) ||
+      this.meta.noGrouping;
+
+    const hasLegends = !noGrouping && !loading && data.legendData;
 
     let trendValue = 0,
       trendText = '',
@@ -218,19 +213,19 @@ class Panel extends Component {
     chartOptions.graphEndDate = endDate.toDate();
     chartOptions.noGrouping = noGrouping;
 
-    const getChartData = (canvas) => {
-
-      if (!data.histogram ||
-          !selectedGrouping ||
-          selectedGrouping.value !== CUMULATIVE) {
-
+    const getChartData = canvas => {
+      if (
+        !data.histogram ||
+        !selectedGrouping ||
+        selectedGrouping.value !== CUMULATIVE
+      ) {
         return data.histogram;
       }
 
-      const ctx      = canvas.getContext("2d"),
-            gradient = ctx.createLinearGradient(0,0,0,250),
-			// reducing opacity of primary color
-			startColor = namedColors.primaryColor.replace(/1\)$/, "0.5)");
+      const ctx = canvas.getContext('2d'),
+        gradient = ctx.createLinearGradient(0, 0, 0, 250),
+        // reducing opacity of primary color
+        startColor = namedColors.primaryColor.replace(/1\)$/, '0.5)');
 
       gradient.addColorStop(0, startColor);
       gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
@@ -238,10 +233,9 @@ class Panel extends Component {
       const { datasets } = data.histogram;
 
       if (datasets && datasets[0]) {
-
         datasets[0].backgroundColor = gradient;
         datasets[0].borderColor = namedColors.primaryColor;
-		datasets[0].borderWidth = 2;
+        datasets[0].borderWidth = 2;
       }
 
       return data.histogram;
@@ -249,7 +243,9 @@ class Panel extends Component {
 
     return (
       <GenericPanel
-        className="key-metrics-container"
+        className={`key-metrics-container${
+          !loading && noGrouping ? ' no-legends' : ''
+        }`}
         isLoading={data.loading}
         hasNoData={hasNoData}
         error={data.error}
@@ -327,15 +323,15 @@ class Panel extends Component {
               })}
             </BtnGroup>
             {grouping.length > 0 && (
-                <div className="panel-action-item">
-                  <GroupingDropdown
-                    onGroupChange={this.handleGroupingChange}
-                    grouping={grouping}
-                    selectedGrouping={selectedGrouping}
-                    sectionTitle={`${sectionTitle} | ${this.meta.title}`}
-                  />
-                </div>
-              )}
+              <div className="panel-action-item">
+                <GroupingDropdown
+                  onGroupChange={this.handleGroupingChange}
+                  grouping={grouping}
+                  selectedGrouping={selectedGrouping}
+                  sectionTitle={`${sectionTitle} | ${this.meta.title}`}
+                />
+              </div>
+            )}
             {filters &&
               filters.length > 0 && (
                 <div className="panel-action-item">

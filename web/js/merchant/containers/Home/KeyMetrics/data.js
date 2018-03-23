@@ -32,14 +32,14 @@ export {
   SAVED_CARDS,
   REFUNDS,
   PLATFORM,
-  CUMULATIVE
+  CUMULATIVE,
 };
 
 const defaultGroupingVals = [
   {
     value: CUMULATIVE,
     text: 'By Total Volume',
-    query: []
+    query: [],
   },
   {
     value: 'method',
@@ -174,10 +174,11 @@ export const tabsMeta = {
   [REFUNDS]: {
     name: REFUNDS,
     title: 'Number of Refunds',
-    grouping: [],
+    grouping: [...defaultGroupingVals.slice(0, 2)],
     options: [],
     index: 'refunds',
-    groupByColumnName: 'method',
+    getGroupObj,
+    getGroupQuery,
     getCountQuery: function() {
       return {
         [this.name]: {
@@ -189,14 +190,16 @@ export const tabsMeta = {
         },
       };
     },
-    getHistogramQuery: function({ breakdown }) {
+    getHistogramQuery: function({ groupBy, breakdown }) {
+      groupBy = this.getGroupQuery(groupBy);
+
       return {
         [`${this.name}Histogram`]: {
           agg_type: 'count',
           filter_key: 'refunds',
           details: {
             index: this.index,
-            group_by: [this.groupByColumnName, `histogram_${breakdown}`],
+            group_by: [...groupBy, `histogram_${breakdown}`],
           },
         },
       };
@@ -294,7 +297,7 @@ export const getQuery = options => {
   }
 
   // if tabName is not given, get query for all tabs,
-  // by default only count queries are returned, if query for 
+  // by default only count queries are returned, if query for
   // histogram is needed , give the tab name in `tabName`
   return tabsOrder.reduce(
     (result, tabName) => {

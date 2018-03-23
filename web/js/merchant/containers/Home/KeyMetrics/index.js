@@ -70,7 +70,7 @@ const TabContent = ({
   error,
   trend,
   histogram,
-  isActive
+  isActive,
 }) => {
   /*
    * Description:
@@ -90,7 +90,6 @@ const TabContent = ({
   let trendValue = 0;
 
   if (!trend.loading) {
-  
     trendValue = trend.currentCount - trend.previousCount;
   }
 
@@ -101,9 +100,7 @@ const TabContent = ({
    */
   return (
     <div>
-      <span>
-        {!isLoading ? title : <PlaceholderLoader />}
-      </span>
+      <span>{!isLoading ? title : <PlaceholderLoader />}</span>
       <h1>
         {!isLoading ? (
           <span>
@@ -120,15 +117,13 @@ const TabContent = ({
           <PlaceholderLoader />
         )}
       </h1>
-      <div className={
-             `mini-chart${
-             !histogram ? " loading" : ""}${
-             value === 0 ? " no-data" : ""}${
-             isActive ? " active" : ""}`
-           }>
+      <div
+        className={`mini-chart${!histogram ? ' loading' : ''}${
+          value === 0 ? ' no-data' : ''
+        }${isActive ? ' active' : ''}`}
+      >
         <div className="min-chart-content">
-          <MiniChart histogram={histogram}
-                     isActive={isActive}/>
+          <MiniChart histogram={histogram} isActive={isActive} />
         </div>
       </div>
     </div>
@@ -223,7 +218,7 @@ class KeyMetricsContainer extends Component {
       };
     });
 
-    this.state.tabWidth = 100 / tabsOrder.length + "%";
+    this.state.tabWidth = 100 / tabsOrder.length + '%';
 
     this.node = null;
 
@@ -235,60 +230,45 @@ class KeyMetricsContainer extends Component {
   }
 
   setTabWidth() {
-  
     if (!this.node) {
-    
       return;
     }
 
     const nodeWidth = this.node.clientWidth,
-          numVisibleTabs = this.getVisibleTabs().length;
+      numVisibleTabs = this.getVisibleTabs().length;
 
     if (!numVisibleTabs) {
-    
       return;
     }
 
-    const tabWidth = (
-      (nodeWidth - gutterBetweenTabs * (numVisibleTabs - 1)) /
-      numVisibleTabs
-    );
+    const tabWidth =
+      (nodeWidth - gutterBetweenTabs * (numVisibleTabs - 1)) / numVisibleTabs;
 
     this.setState({
-      tabWidth: tabWidth + "px"
+      tabWidth: tabWidth + 'px',
     });
-  } 
+  }
 
-  getVisibleTabs () {
-  
-    const {tabsState} = this.state;
+  getVisibleTabs() {
+    const { tabsState } = this.state;
 
     return tabsOrder.filter(tabName => tabsState[tabName].data.showTab);
   }
 
-  tabStateMixin ({tabState, histogram, refreshTinyGraphs}) {
-
-    const {
-            selectedGrouping,
-            selectedBreakdown,
-            name:tabName,
-          }                 = tabState,
-          tabMeta           = tabsMeta[tabName],
-          {
-            title,
-            isCurrency,
-            noGrouping,
-            valueKey="value",
-            groupTitleMap={Mobile: 'mWeb'},
-          }                 = tabMeta,
-          groupByColumnName = !isDefined(tabMeta.groupByColumnName)
-                                ? selectedGrouping && selectedGrouping.value
-                                : tabMeta.groupByColumnName,
-          {
-            startDate,
-            endDate,
-            sectionTitle
-          }                 = this.props;
+  tabStateMixin({ tabState, histogram, refreshTinyGraphs }) {
+    const { selectedGrouping, selectedBreakdown, name: tabName } = tabState,
+      tabMeta = tabsMeta[tabName],
+      {
+        title,
+        isCurrency,
+        noGrouping,
+        valueKey = 'value',
+        groupTitleMap = { Mobile: 'mWeb' },
+      } = tabMeta,
+      groupByColumnName = !isDefined(tabMeta.groupByColumnName)
+        ? selectedGrouping && selectedGrouping.value
+        : tabMeta.groupByColumnName,
+      { startDate, endDate, sectionTitle } = this.props;
 
     const options = {
       data: histogram.result,
@@ -299,16 +279,12 @@ class KeyMetricsContainer extends Component {
       groupTitleMap: groupTitleMap,
       isCurrency,
       valueKey,
-      noGrouping: isDefined(noGrouping) 
-                    ? noGrouping
-                    : groupByColumnName === CUMULATIVE,
+      noGrouping: isDefined(noGrouping)
+        ? noGrouping
+        : groupByColumnName === CUMULATIVE,
     };
 
-    if (
-      [NUM_TRANSACTIONS, TRANSACTION_VOLUME, REFUNDS].indexOf(
-        tabName
-      ) >= 0
-    ) {
+    if ([NUM_TRANSACTIONS, TRANSACTION_VOLUME, REFUNDS].indexOf(tabName) >= 0) {
       options.getColor =
         selectedGrouping && selectedGrouping.value === PLATFORM
           ? getPlatformColor
@@ -316,17 +292,13 @@ class KeyMetricsContainer extends Component {
     }
 
     // TODO: use constants
-    if (options.groupByColumnName === "method") {
-    
+    if (options.groupByColumnName === 'method') {
       options.groupOrder = paymentMethodsOrder;
-    } else if (options.groupByColumnName === "platform") {
-    
+    } else if (options.groupByColumnName === 'platform') {
       options.groupOrder = platformsOrder;
     }
 
-    const { labels, datasets, aggregates, csv } = getTimelineData(
-      options
-    );
+    const { labels, datasets, aggregates, csv } = getTimelineData(options);
 
     // track in GA that no data found in this section for
     // given daterange
@@ -340,9 +312,9 @@ class KeyMetricsContainer extends Component {
 
     const downloadFileName = `${title}, ${startDate.format(
       csvDateFormat
-    )} to ${endDate.format(csvDateFormat)}, ${titleCase(
-      selectedBreakdown
-    )}${selectedGrouping ? ' ' + selectedGrouping.text : ''}(Razorpay)`;
+    )} to ${endDate.format(csvDateFormat)}, ${titleCase(selectedBreakdown)}${
+      selectedGrouping ? ' ' + selectedGrouping.text : ''
+    }(Razorpay)`;
 
     tabState.data.downloadFileName = downloadFileName;
     tabState.data.histogram = { labels, datasets };
@@ -358,15 +330,13 @@ class KeyMetricsContainer extends Component {
     };
 
     if (refreshTinyGraphs) {
-    
-      const data = tabState.data.tinyGraphData = {
-                                                   labels,
-                                                   datasets: []
-                                                 };
+      const data = (tabState.data.tinyGraphData = {
+        labels,
+        datasets: [],
+      });
 
       if (datasets && datasets[0]) {
-      
-        data.datasets.push({...datasets[0]});
+        data.datasets.push({ ...datasets[0] });
       }
     }
 
@@ -374,13 +344,12 @@ class KeyMetricsContainer extends Component {
   }
 
   makeQueryForTab(tabName, fetchAllCounts) {
-  
     const {
-      selectedFilters,
-      selectedGrouping,
-      selectedBreakdown,
-    } = this.state.tabsState[tabName],
-    { startDate, endDate } = this.props;
+        selectedFilters,
+        selectedGrouping,
+        selectedBreakdown,
+      } = this.state.tabsState[tabName],
+      { startDate, endDate } = this.props;
 
     let filterBy = null;
 
@@ -393,115 +362,103 @@ class KeyMetricsContainer extends Component {
     }
 
     return getQuery({
-      tabName  : fetchAllCounts ? "all" : tabName,
+      tabName: fetchAllCounts ? 'all' : tabName,
       breakdown: selectedBreakdown,
       startTime: startDate.unix(),
-      endTime  : endDate.unix(),
-      groupBy  : !!selectedGrouping && selectedGrouping.value,
+      endTime: endDate.unix(),
+      groupBy: !!selectedGrouping && selectedGrouping.value,
       filterBy,
-      includeHistogramForTab: !!fetchAllCounts && tabName
+      includeHistogramForTab: !!fetchAllCounts && tabName,
     });
   }
 
   fetchOtherTabsHistogram(refreshTinyGraphs) {
- 
-    const {
-            selectedTab,
-            tabsState
-          }         = this.state,
-          otherTabs = this.getVisibleTabs().filter(
-                        tabName => tabName !== selectedTab
-                      ),
-          {
-            mode,
-            analyticsFetch
-          }         = this.props;
+    const { selectedTab, tabsState } = this.state,
+      otherTabs = this.getVisibleTabs().filter(
+        tabName => tabName !== selectedTab
+      ),
+      { mode, analyticsFetch } = this.props;
 
-    const query = otherTabs.reduce((result, tabName) => {
-    
-      const query    = this.makeQueryForTab(tabName),
-            tabState = tabsState[tabName];
+    const query = otherTabs.reduce(
+      (result, tabName) => {
+        const query = this.makeQueryForTab(tabName),
+          tabState = tabsState[tabName];
 
-      tabState.data.loading = true;
-      tabState.data.error   = '';
+        tabState.data.loading = true;
+        tabState.data.error = '';
 
-      result.filters = {...result.filters, ...query.filters};
+        result.filters = { ...result.filters, ...query.filters };
 
-      result.aggregations = {
-        ...result.aggregations,
-        [`${tabName}Histogram`]: query.aggregations[`${tabName}Histogram`]
-      };
+        result.aggregations = {
+          ...result.aggregations,
+          [`${tabName}Histogram`]: query.aggregations[`${tabName}Histogram`],
+        };
 
-      return result;
-    }, { filters: {}, aggregations: {}});
+        return result;
+      },
+      { filters: {}, aggregations: {} }
+    );
 
     const requestId = ++this.otherTabsReqId;
 
-    return (analyticsFetch || fetch)(query, mode).then((resp) => {
-   
-      if (requestId !== this.otherTabsReqId) {
-      
-        return;
-      }
+    return (analyticsFetch || fetch)(query, mode)
+      .then(resp => {
+        if (requestId !== this.otherTabsReqId) {
+          return;
+        }
 
-      if (!resp.data) {
-      
-        return API_INVALID_RESP;
-      }
+        if (!resp.data) {
+          return API_INVALID_RESP;
+        }
 
-      return resp;
-    }).catch((e) => {
-  
-      console.error(e);
+        return resp;
+      })
+      .catch(e => {
+        console.error(e);
 
-      if (requestId !== this.otherTabsReqId) {
-      
-        return;
-      }
+        if (requestId !== this.otherTabsReqId) {
+          return;
+        }
 
-      return e;
-    }).then((data) => {
-    
-      if (!data) {
-      
-        return;
-      }
+        return e;
+      })
+      .then(data => {
+        if (!data) {
+          return;
+        }
 
-      if (data.error) {
+        if (data.error) {
+          trackError(
+            `Error while fetching data for Keymetrics - Remaining tabs data`
+          );
 
-        trackError(
-          `Error while fetching data for Keymetrics - Remaining tabs data`
-        );
-
-        this.props.showNotification({
-          type: 'error',
-          message: data.error,
-          hidePrevious: true,
-        });
-      }
-
-      otherTabs.forEach((tabName) => {
-    
-        const tabState = tabsState[tabName];
-
-        if (!data.error) {
-
-          const histogram = data.data[`${tabName}Histogram`];
-
-          this.tabStateMixin({
-            tabState: tabsState[tabName],
-            histogram,
-            refreshTinyGraphs
+          this.props.showNotification({
+            type: 'error',
+            message: data.error,
+            hidePrevious: true,
           });
         }
 
-        tabState.data.loading = false;
-        tabState.data.fetchData = false;
-        tabState.data.error = data.error;
-      });
+        otherTabs.forEach(tabName => {
+          const tabState = tabsState[tabName];
 
-      this.setState(this.state);
-    });
+          if (!data.error) {
+            const histogram = data.data[`${tabName}Histogram`];
+
+            this.tabStateMixin({
+              tabState: tabsState[tabName],
+              histogram,
+              refreshTinyGraphs,
+            });
+          }
+
+          tabState.data.loading = false;
+          tabState.data.fetchData = false;
+          tabState.data.error = data.error;
+        });
+
+        this.setState(this.state);
+      });
   }
 
   fetchData(fetchAllCounts) {
@@ -516,13 +473,7 @@ class KeyMetricsContainer extends Component {
     const { tabsState, selectedTab } = this.state,
       tabState = tabsState[selectedTab],
       { selectedGrouping, selectedFilters } = tabState,
-      {
-        startDate,
-        endDate,
-        mode,
-        isAdmin,
-        analyticsFetch,
-      } = this.props;
+      { startDate, endDate, mode, isAdmin, analyticsFetch } = this.props;
 
     const query = this.makeQueryForTab(selectedTab, fetchAllCounts);
 
@@ -533,11 +484,12 @@ class KeyMetricsContainer extends Component {
 
     const requestId = ++this.requestId;
 
-    this.fetchOtherTabsHistogram(fetchAllCounts);
+    if (fetchAllCounts) {
+      this.fetchOtherTabsHistogram(fetchAllCounts);
+    }
 
     return (analyticsFetch || fetch)(query, mode)
       .then(resp => {
-
         if (requestId !== this.requestId) {
           return null;
         }
@@ -550,12 +502,7 @@ class KeyMetricsContainer extends Component {
           const tabState = tabsState[tabName],
             { selectedBreakdown } = tabState,
             tabMeta = tabsMeta[tabName],
-            {
-              isCurrency,
-              isPercent,
-              title,
-              valueKey = 'value',
-            } = tabMeta;
+            { isCurrency, isPercent, title, valueKey = 'value' } = tabMeta;
 
           // Main stat showin in the taib
           const mainStat = resp.data[tabName];
@@ -604,12 +551,11 @@ class KeyMetricsContainer extends Component {
           const histogram = resp.data[`${tabName}Histogram`];
 
           if (histogram) {
-
             this.tabStateMixin({
               tabState,
               histogram,
-              refreshTinyGraphs: fetchAllCounts
-            }); 
+              refreshTinyGraphs: fetchAllCounts,
+            });
           }
         });
 
@@ -718,7 +664,7 @@ class KeyMetricsContainer extends Component {
     const query = getQuery({
       tabName: 'all',
       startTime: startDate.unix(),
-      endTime: endDate.unix()
+      endTime: endDate.unix(),
     });
 
     return (analyticsFetch || fetch)(query, this.props.mode)
@@ -805,7 +751,7 @@ class KeyMetricsContainer extends Component {
           tabsState: { ...tabsState },
         });
       });
- }
+  }
 
   componentWillMount() {
     const fetchAllReq = (this.fetchAllReq = this.fetchData(true));
@@ -816,7 +762,6 @@ class KeyMetricsContainer extends Component {
   }
 
   componentDidMount() {
- 
     this.setTabWidth();
   }
 
@@ -953,9 +898,8 @@ class KeyMetricsContainer extends Component {
       visibleTabs = this.getVisibleTabs();
 
     return (
-      <div ref={node => this.node = node}>
-        <Tabs className="keymetrics"
-              justified={true}>
+      <div ref={node => (this.node = node)}>
+        <Tabs className="keymetrics" justified={true}>
           {visibleTabs.map((tabName, index) => {
             const tabData = tabsState[tabName].data,
               { isCurrency, title } = tabsMeta[tabName];
@@ -966,8 +910,8 @@ class KeyMetricsContainer extends Component {
                 onClick={() => this.handleTabChange(tabName)}
                 style={{
                   width: tabWidth,
-                  marginLeft: (index === 0 ? 0 : gutterBetweenTabs) + "px",
-                  marginBottom: gutterBetweenTabs + "px"
+                  marginLeft: (index === 0 ? 0 : gutterBetweenTabs) + 'px',
+                  marginBottom: gutterBetweenTabs + 'px',
                 }}
               >
                 <TabContent
