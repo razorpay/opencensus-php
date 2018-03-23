@@ -35,7 +35,7 @@ export default class Treemap extends Component {
     this.onHideTooltip = ::this.onHideTooltip;
   }
 
-  showTooltip({ amount, percent, label }) {
+  showTooltip({ amount, percent, label, canBeZoomed }) {
     this.setState({
       tooltip: {
         show: true,
@@ -44,6 +44,7 @@ export default class Treemap extends Component {
           percent,
           label,
         },
+        canBeZoomed,
       },
     });
   }
@@ -56,11 +57,12 @@ export default class Treemap extends Component {
     });
   }
 
-  onShowTooltip({ amount, percent, label }) {
+  onShowTooltip({ amount, percent, label, canBeZoomed }) {
     this.showTooltip({
       amount,
       percent,
       label,
+      canBeZoomed,
     });
   }
 
@@ -161,9 +163,11 @@ export default class Treemap extends Component {
               {amount} <small>{'(' + tooltip.data.percent + '%)'}</small>
             </span>
           </div>
-          <div className="tooltip-footer">
-            <i className="i i-hand" />Click to drill down
-          </div>
+          {tooltip.canBeZoomed && (
+            <div className="tooltip-footer">
+              <i className="i i-hand" />Click to drill down
+            </div>
+          )}
         </Tooltip>
       </div>
     );

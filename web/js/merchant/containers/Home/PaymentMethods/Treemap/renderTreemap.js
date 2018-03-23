@@ -221,13 +221,16 @@ function main(
         return Math.min((y(d.y + d.dy) - y(d.y)) * 0.2, maxFontSize) + 'px';
       })
       .on('mouseenter', function(d) {
+        var hasZoom = canBeZoomed(d);
+
         onShowTooltip({
           amount: d.value,
           percent: d.percent,
           label: d.displayText,
+          canBeZoomed: hasZoom,
         });
 
-        if (canBeZoomed(d)) {
+        if (hasZoom) {
           d3
             .select(this)
             .selectAll('rect.parent')
