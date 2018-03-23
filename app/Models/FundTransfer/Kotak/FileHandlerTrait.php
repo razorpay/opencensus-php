@@ -486,6 +486,13 @@ trait FileHandlerTrait
         return $fullpath;
     }
 
+    protected function generateTextWithHeadings($data, $glue = '~', $ignoreLastNewline = false, array $headings = [])
+    {
+        array_unshift($data, array_combine($headings, $headings));
+
+        return $this->generateText($data, $glue, $ignoreLastNewline);
+    }
+
     protected function generateText($data, $glue = '~', $ignoreLastNewline = false)
     {
         $txt = '';
@@ -665,7 +672,15 @@ trait FileHandlerTrait
                 continue;
             }
 
-            $data[] = $this->parseTextRow($row, $ix, $delimiter);
+            $parsedRow = $this->parseTextRow($row, $ix, $delimiter);
+
+            // Optionally, a CSV can have first row as header values.
+            if (array_keys($parsedRow) === array_values($parsedRow))
+            {
+                continue;
+            }
+
+            $data[] = $parsedRow;
         }
 
         return $data;

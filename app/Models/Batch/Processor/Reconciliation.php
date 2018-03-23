@@ -106,7 +106,7 @@ class Reconciliation extends Base
         return $ufh;
     }
 
-    protected function validateInputFileEntries(string $filePath, array $input): array
+    protected function validateInputFileEntries(array $input): array
     {
         //
         // Not doing anything here as in recon we don't need to validate / parse
