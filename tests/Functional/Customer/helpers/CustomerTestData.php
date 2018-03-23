@@ -250,12 +250,14 @@ return [
             'content' => [
                 'name'    => 'test1',
                 'contact' => '1234567809',
+                'email'   => 'test@rzp.com'
             ],
         ],
         'response' => [
             'content' => [
                 'name'    => 'test1',
                 'contact' => '1234567809',
+                'email'   => 'test@rzp.com'
             ],
         ],
     ],
