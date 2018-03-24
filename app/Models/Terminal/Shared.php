@@ -50,9 +50,11 @@ class Shared
     const HITACHI_TERMINAL                   = '100HitachiTmnl';
     const FIRST_DATA_RAZORPAY_TERMINAL       = '1000FrstDataTl';
     const UPI_MINDGATE_RAZORPAY_TERMINAL     = '100UPIMindgate';
+    const UPI_MINDGATE_INTENT_TERMINAL       = '1UpiIntMndgate';
     const UPI_MINDGATE_TPV_TERMINAL          = '100UPIMndgtTpv';
     const UPI_MINDGATE_SBI_RAZORPAY_TERMINAL = '100UPIMgateSbi';
     const UPI_ICICI_RAZORPAY_TERMINAL        = '100UPIICICITml';
+    const UPI_ICICI_INTENT_TERMINAL          = '1UpiIntICICTml';
     const AEPS_ICICI_RAZORPAY_TERMINAL       = '1000AepsShared';
     const AIRTELMONEY_RAZORPAY_TERMINAL      = '100ArtlMnyTmnl';
     const JIOMONEY_RAZORPAY_TERMINAL         = '1000JioMnyTmnl';

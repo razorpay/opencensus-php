@@ -41,6 +41,13 @@ class Gateway extends Base\Gateway
 
     const PAY = 'PAY';
 
+    const FIELD_LENGTH = [
+        Action::AUTHORIZE    => 17,
+        Action::VALIDATE_VPA => 15,
+        Action::REFUND       => 20,
+        Action::VERIFY       => 13,
+    ];
+
     protected $map = [
         Entity::VPA                       => Entity::VPA,
         Entity::RECEIVED                  => Entity::RECEIVED,
@@ -382,17 +389,19 @@ class Gateway extends Base\Gateway
             $this->getPaymentRemark($input),
             $input['upi']['expiry_time'],
             $this->getMerchantCategoryCode($input),
-            '',
-            '',
-            '',
-            '',
-            '',
-            '',
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'NA',
+            'NA',
         ];
 
-        if ($input['merchant']->isTPVRequired())
+        if ($input['merchant']->isTPVRequired() === true)
         {
-            $data[] = $input['order']['account_number'];
+            // MEBR is the request type for TPV
+            $data[12] = 'MEBR';
+            $data[13] = $input['order']['account_number'];
         }
 
         $content = $this->transformRequestArrayToContent($data);
@@ -465,8 +474,10 @@ class Gateway extends Base\Gateway
      */
     protected function transformRequestArrayToContent(array $data)
     {
+        $extraFields = self::FIELD_LENGTH[$this->action] - count($data);
+
         // We have space for 10 extra fields that we don't use
-        $suffixArray = array_fill(0, 10, 'NA');
+        $suffixArray = array_fill(0, $extraFields, 'NA');
 
         $data = array_merge($data, $suffixArray);
 

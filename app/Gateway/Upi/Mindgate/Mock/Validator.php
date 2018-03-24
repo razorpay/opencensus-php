@@ -15,6 +15,18 @@ class Validator extends Base\Validator
         'required|string|max:255',
         // Request Type
         'required|string|in:T',
+        //UDF
+        'sometimes|in:NA',
+        'sometimes|in:NA',
+        'sometimes|in:NA',
+        'sometimes|in:NA',
+        'sometimes|in:NA',
+        'sometimes|in:NA',
+        'sometimes|in:NA',
+        'sometimes|in:NA',
+        'sometimes|in:NA',
+        'sometimes|in:NA',
+        'sometimes|in:NA',
     ];
 
     protected static $authRules = [
@@ -33,19 +45,17 @@ class Validator extends Base\Validator
         // MCC
         'required|integer|max:9999|min:0',
         // UDF
-        'sometimes',
-        // UDF
-        'sometimes',
-        // UDF
-        'sometimes',
-        // UDF
-        'sometimes',
-        // UDF
-        'sometimes',
-        // UDF
-        'sometimes',
-        // Account Number for TPV
-        'sometimes|alpha_num',
+        'sometimes|in:NA',
+        'sometimes|in:NA',
+        'sometimes|in:NA',
+        'sometimes|in:NA',
+        'sometimes|in:NA',
+        // Fields for TPV request type
+        'sometimes|in:NA,MEBR',
+        'sometimes|string|alpha_num',
+        'sometimes|in:NA',
+        'sometimes|in:NA',
+        'sometimes|in:NA',
     ];
 
     protected static $verifyRules = [
@@ -56,6 +66,15 @@ class Validator extends Base\Validator
         // UPI Transaction Reference Id
         'sometimes',
         // Reference Id (Optional, empty string as of now)
-        'sometimes'
+        'sometimes',
+        'sometimes',
+        'sometimes',
+        'sometimes',
+        'sometimes',
+        'sometimes',
+        'sometimes',
+        'sometimes',
+        'sometimes',
+        'sometimes',
     ];
 }
