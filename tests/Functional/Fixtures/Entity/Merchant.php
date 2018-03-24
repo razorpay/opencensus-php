@@ -131,7 +131,16 @@ class Merchant extends Base
 
         $this->fixtures->on('test')->create('bank_account', ['merchant_id' => $accountId, 'entity_id' => $accountId]);
 
-        $this->fixtures->create('merchant:schedule_task', ['merchant_id' => $accountId]);
+        $this->fixtures->create(
+            'merchant:schedule_task',
+            [
+                'merchant_id' => $accountId,
+                'schedule'    => [
+                    'interval' => 1,
+                    'delay'    => 3,
+                    'hour'     => 0,
+                ],
+            ]);
 
         return $merchant;
     }
@@ -476,6 +485,13 @@ class Merchant extends Base
     public function editPricingPlanId($planId, $id = '10000000000000')
     {
         return $this->edit($id, ['pricing_plan_id' => $planId]);
+    }
+
+    public function enableMagic($id = '10000000000000')
+    {
+        $this->addFeatures(['magic'], $id);
+
+        return true;
     }
 
     public function enableTPV($id = '10000000000000')

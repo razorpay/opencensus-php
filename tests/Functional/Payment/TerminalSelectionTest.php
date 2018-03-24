@@ -1328,7 +1328,7 @@ class TerminalSelectionTest extends TestCase
     public function testUpiFilterRejectsMindgate()
     {
         $iciciTerminal = $this->fixtures->create('terminal:shared_upi_icici_terminal', ['enabled' => false]);
-        $mgTerminal = $this->fixtures->create('terminal:shared_upi_mindgate_terminal', ['gateway' => 'upi_mindgate']);
+        $mgTerminal = $this->fixtures->create('terminal:shared_upi_mindgate_terminal', ['gateway' => 'upi_mindgate', 'type' => []]);
 
         $this->fixtures->merchant->enableUpi();
 

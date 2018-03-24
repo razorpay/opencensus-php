@@ -17,8 +17,7 @@ class CombinedReconciliate extends Base\CombinedReconciliate
 
     const MESSAGE_TYPE_TO_RECONCILIATION_TYPE_MAP = [
         self::PURCHASE_TXN => BaseReconciliate::PAYMENT,
-        // Refund Recon is disabled temporary
-        // self::REFUND_TXN   => BaseReconciliate::REFUND
+        self::REFUND_TXN   => BaseReconciliate::REFUND
     ];
 
     /**

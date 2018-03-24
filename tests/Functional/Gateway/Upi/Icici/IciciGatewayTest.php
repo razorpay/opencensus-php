@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use Mail;
 
+use RZP\Exception\RuntimeException;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -108,6 +109,7 @@ class IciciGatewayTest extends TestCase
         $upiEntity = $this->getLastEntity('upi_icici', true);
         $payment = $this->getEntityById('payment', $paymentId, true);
 
+        $this->assertEquals('100UPIICICITml', $payment['terminal_id']);
         $this->assertNull($payment['vpa']);
 
         $content = $this->getMockServer()->getAsyncCallbackContent($upiEntity, $payment);
@@ -129,25 +131,12 @@ class IciciGatewayTest extends TestCase
 
         $payment['_']['flow'] = 'intent';
 
-        $this->mockServerContentFunction(function (& $content, $action = null)
-        {
-            if ($action === 'authorize')
-            {
-                $content['refId'] = 'ICICIRefId';
-            }
-            else
-            {
-                $content['PayerVA'] = 'crims0n@icici';
-            }
-        });
-
         $data = $this->testData[__FUNCTION__];
 
         $this->runRequestResponseFlow($data, function() use ($payment)
         {
             $this->doAuthPaymentViaAjaxRoute($payment);
         });
-
     }
 
     public function testPaymentWithExpiryPublicAuth()
@@ -670,6 +659,29 @@ EOT;
         $this->assertSame($this->payment['payment']['verified'], 1);
     }
 
+    public function testVerifyPaymentWithAmountMismatch()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['notes']['amount'] = 'mismatch';
+
+        $authPayment = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $upiEntity = $this->getLastEntity('upi', true);
+        $payment = $this->getEntityById('payment', $authPayment['payment_id'], true);
+
+        $payment['notes']['amount'] = 'mismatch';
+
+        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
+        $response = $this->makeS2SCallbackAndGetContent($content);
+
+        $this->expectException(RuntimeException::class);
+
+        $this->payment = $this->verifyPayment($payment['id']);
+
+        $this->assertSame($this->payment['payment']['verified'], 1);
+    }
+
     /**
      * Make sure a 5006 is taken as a gateway failure
      */
@@ -769,7 +781,7 @@ EOT;
         $this->assertEquals(3, $data['upi_icici']['count']);
         $this->assertTrue(file_exists($data['upi_icici']['file']));
 
-        Mail::assertSent(RefundFileMail::class, function ($mail)
+        Mail::assertQueued(RefundFileMail::class, function ($mail)
         {
             $body = 'Please find attached refunds information for UPI';
 

@@ -16,11 +16,11 @@ use RZP\Models\FileStore;
 use RZP\Models\FundTransfer;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\FundTransfer\Attempt\Type;
-use RZP\Models\FundTransfer\Base as NodalBase;
+use RZP\Models\FundTransfer\Base\Initiator as NodalBase;
 use RZP\Models\Settlement;
 use RZP\Constants\Mode;
 
-class NodalAccount extends NodalBase\NodalAccount
+class NodalAccount extends NodalBase\FileProcessor
 {
     use FileHandlerTrait;
 
@@ -37,7 +37,7 @@ class NodalAccount extends NodalBase\NodalAccount
 
     public function __construct()
     {
-        //parent::__construct();
+        parent::__construct();
 
         // Date format is DD/MM/YYYY in human representation
         $this->date = Carbon::today(Timezone::IST)->format('d/m/Y');
@@ -344,7 +344,7 @@ class NodalAccount extends NodalBase\NodalAccount
 
         $kotakSettlementMail = new SettlementMail\KotakSettlement($data);
 
-        Mail::send($kotakSettlementMail);
+        Mail::queue($kotakSettlementMail);
     }
 
     protected function getFileToWriteNameWithoutExt()

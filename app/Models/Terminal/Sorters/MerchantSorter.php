@@ -20,7 +20,7 @@ class MerchantSorter extends Terminal\Sorter
      * above generic terminals.
      *
      * @param $terminals
-     * @param array $input
+     *
      * @return array
      */
     public function categorySorter($terminals)

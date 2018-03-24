@@ -277,39 +277,12 @@
         var callback_url = '{{$data["api"]}}/v1/payments/{{$data["data"]["payment_id"]}}/redirect_callback?key_id='+key_id;
         var gel =  document.getElementById.bind(document);
 
-        function each(iteratee, eachFunc, thisArg) {
-          var i;
-          if (arguments.length < 3) {
-            thisArg = this;
-          }
-          if (iteratee) {
-            if (iteratee.length) { // not using instanceof Array, to iterate over array-like objects
-              for (i = 0; i < iteratee.length; i++) {
-                eachFunc.call(thisArg, i, iteratee[i]);
-              }
-            } else {
-              for (i in iteratee) {
-                if (iteratee.hasOwnProperty(i)) {
-                  eachFunc.call(thisArg, i, iteratee[i]);
-                }
-              }
-            }
-          }
-        }
-
         function ajax (opts) {
           var xhr = new XMLHttpRequest();
           if (!opts.method) {
             opts.method = 'get';
           }
           xhr.open(opts.method, opts.url, true);
-
-          each(
-            opts.headers,
-            function(header, value){
-              xhr.setRequestHeader(header, value);
-            }
-          )
 
           if(opts.callback) {
             xhr.onreadystatechange = function() {
@@ -464,7 +437,7 @@
                 addCls(gel('retry-btn'), 'hide');
             }
         } else {
-            start_delay = 5000; end_delay = 1000; normalize_time = 60000; delay = start_delay;
+            start_delay = 8000; end_delay = 4000; normalize_time = 60000; delay = start_delay;
             modDelay =  function() {
                 if (delay <= end_delay){
                     delay = end_delay;

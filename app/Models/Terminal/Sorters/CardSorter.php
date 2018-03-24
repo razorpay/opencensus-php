@@ -3,9 +3,8 @@
 namespace RZP\Models\Terminal\Sorters;
 
 use RZP\Models\Terminal;
-use RZP\Models\Gateway\Priority as GatewayPriority;
 use RZP\Models\Payment\Method;
-use RZP\Models\Payment\Gateway;
+use RZP\Models\Gateway\Priority as GatewayPriority;
 
 class CardSorter extends Terminal\Sorter
 {

@@ -55,12 +55,14 @@ final class Route
         'payment_payout'                          => ['post',     'payments/{id}/payouts',                          'PaymentController@postPayout'                                      ],
         'payment_bank_transfer_fetch'             => ['get',      'payments/{id}/bank_transfer',                    'BankTransferController@fetchBankTransferForPayment'                ],
         'batch_create'                            => ['post',     'batches',                                        'BatchController@createBatch'                                       ],
+        'batch_validate_file'                     => ['post',     'batches/validate',                               'BatchController@validateFile'                                      ],
         'batch_fetch_multiple'                    => ['get',      'batches',                                        'BatchController@getBatches'                                        ],
         'batch_fetch_by_id'                       => ['get',      'batches/{id}',                                   'BatchController@getBatchById'                                      ],
         'batch_process_file'                      => ['post',     'batches/process',                                'BatchController@processBatches'                                    ],
         'batch_process_by_id'                     => ['post',     'batches/{id}/process',                           'BatchController@processBatch'                                      ],
         'batch_retry_output_file'                 => ['post',     'batches/{id}/retry_output_file',                 'BatchController@retryBatchOutputFile'                              ],
         'batch_download_file'                     => ['get',      'batches/{id}/download',                          'BatchController@downloadBatch'                                     ],
+        'batch_stats'                             => ['get',      'batches/{id}/stats',                             'BatchController@getStats'                                          ],
         'payment_capture'                         => ['post',     'payments/{id}/capture',                          'PaymentController@postCapture'                                     ],
         'payment_bulk_capture'                    => ['post',     'payments/capture/bulk',                          'PaymentController@postBulkCapture'                                 ],
         'payment_fetch_transfers'                 => ['get',      'payments/{id}/transfers',                        'PaymentController@getTransfers'                                    ],
@@ -299,6 +301,7 @@ final class Route
         'mock_mobikwik_payment'                   => ['post',     'gateway/mockmobikwik/payment',                   'MockGatewayController@postMobikwikPayment'                         ],
         'mock_billdesk_payment'                   => ['post',     'gateway/mockbilldesk/payment',                   'MockGatewayController@postBilldeskPayment'                         ],
         'mock_ebs_payment'                        => ['post',     'gateway/mockebs/payment',                        'MockGatewayController@postEbsPayment'                              ],
+        'mock_esigner_payment'                    => ['get',      'gateway/mock/esigner/{signer}',                  'MockGatewayController@postEsignerPayment'                          ],
         'mock_sharp_payment_post'                 => ['post',     'gateway/mocksharp/payment',                      'MockGatewayController@getSharpPayment'                             ],
         'mock_sharp_payment_get'                  => ['get',      'gateway/mocksharp/payment',                      'MockGatewayController@getSharpPayment'                             ],
         'mock_amex_payment'                       => ['post',     'gateway/mockamex/payment',                       'MockGatewayController@postAmexPayment'                             ],
@@ -400,6 +403,7 @@ final class Route
         'invoice_cancel'                          => ['post',     'invoices/{id}/cancel',                           'InvoiceController@cancelInvoice'                                   ],
         'invoice_expire_bulk'                     => ['post',     'invoices/expire',                                'InvoiceController@expireInvoices'                                  ],
         'invoice_issue_by_batch'                  => ['post',     'invoices/batch/{batchId}/issue',                 'InvoiceController@issueInvoicesOfBatch'                            ],
+        'invoice_notify_by_batch'                 => ['put',      'invoices/batch/{batchId}/notify',                'InvoiceController@notifyInvoicesOfBatch'                           ],
         'invoice_get_stats_by_batch_ids'          => ['get',      'invoices/batches/issuable',                      'InvoiceController@getIssuableByBatchIds'                           ],
         'invoice_view_live_post'                  => ['post',     'l/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
         'invoice_view_test_post'                  => ['post',     't/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
@@ -618,6 +622,7 @@ final class Route
         'user_merchant_mapping_action'            => ['put',      'users/{id}/{action}',                            'UserController@updateUserMaping'                                   ],
 
         // Tax groups and taxes
+        'tax_get_meta_gst_taxes'                  => ['get',      'taxes/meta/gst_taxes',                           'TaxController@getMetaGstTaxes'                                     ],
         'tax_get'                                 => ['get',      'taxes/{id}',                                     'TaxController@get'                                                 ],
         'tax_list'                                => ['get',      'taxes',                                          'TaxController@list'                                                ],
         'tax_create'                              => ['post',     'taxes',                                          'TaxController@create'                                              ],
@@ -687,6 +692,15 @@ final class Route
         'oauth_application_update'                => ['post',     'oauth/applications/{id}',                        'OAuthApplicationController@update'                                 ],
 
         'merchant_analytics'                      => ['post',     'merchant/analytics',                             'MerchantController@postAnalytics'                                  ],
+
+        // Merchant Requests Routes
+        'merchant_requests_get'                   => ['get',      'merchant/requests/{id}',                         'MerchantRequestController@get'                                     ],
+        'merchant_requests_status_log'            => ['get',      'merchant/requests/{id}/status_log',              'MerchantRequestController@getStatusLog'                            ],
+        'merchant_requests_get_feature'           => ['get',      'merchant/requests/{type}/{name}',                'MerchantRequestController@getForFeatureTypeAndName'                ],
+        'merchant_requests_list'                  => ['get',      'merchant/requests',                              'MerchantRequestController@getAll'                                  ],
+        'merchant_requests_create'                => ['post',     'merchant/requests',                              'MerchantRequestController@create'                                  ],
+        'merchant_requests_update'                => ['patch',    'merchant/requests/{id}',                         'MerchantRequestController@update'                                  ],
+        'merchant_requests_bulk_update'           => ['put',      'merchant/requests/bulk',                         'MerchantRequestController@bulkUpdate'                              ],
 
         'onboarding_features_fetch_details'       => ['get',      'onboarding/features',                            'FeatureController@getOnboardingDetails'                            ],
         'onboarding_features_fetch_submission'    => ['get',      'onboarding/features/{feature}',                  'FeatureController@getOnboardingSubmissions'                        ],
@@ -1097,10 +1111,13 @@ final class Route
         'credits_fetch_multiple',
         'credits_fetch_by_id',
         'batch_create',
+        'batch_validate_file',
         'batch_fetch_multiple',
         'batch_fetch_by_id',
         'batch_download_file',
+        'batch_stats',
         'invoice_issue_by_batch',
+        'invoice_notify_by_batch',
         'invoice_get_stats_by_batch_ids',
         'invoice_add_line_items',
         'invoice_update_line_item',
@@ -1170,6 +1187,10 @@ final class Route
         'merchant_get_tags',
         'account_fetch',
         'merchant_add_bank_account',
+        'merchant_requests_create',
+        'merchant_requests_get_feature',
+        'merchant_bank_account_change_status',
+        'tax_get_meta_gst_taxes',
     ];
 
     // These will run on internal auth with the assurance
@@ -1430,6 +1451,11 @@ final class Route
         'shield_rules_evaluate',
 
         'user_fetch_admin',
+        'merchant_requests_list',
+        'merchant_requests_update',
+        'merchant_requests_status_log',
+        'merchant_requests_get',
+        'merchant_requests_bulk_update'
     ];
 
     public static $routePermission = [
@@ -1725,6 +1751,14 @@ final class Route
         'reporting_schedule_create'              => '*',
         'reporting_schedule_delete'              => '*',
         'ufh_get_file_signed_url'                => '*',
+        'merchant_requests_create'               => '*',
+        'merchant_requests_get'                  => '*',
+        'merchant_requests_list'                 => Permission::VIEW_MERCHANT_REQUESTS,
+        'merchant_requests_get'                  => Permission::VIEW_MERCHANT_REQUESTS,
+        'merchant_requests_update'               => Permission::EDIT_MERCHANT_REQUESTS,
+        'merchant_requests_bulk_update'          => Permission::EDIT_MERCHANT_REQUESTS,
+        'merchant_requests_status_log'           => Permission::VIEW_MERCHANT_REQUESTS,
+        'merchant_bank_account_change_status'    => '*',
     ];
 
     public static $direct = [
@@ -1760,6 +1794,7 @@ final class Route
         'upi_npci_request',
         'upi_zero_call',
         'mock_billdesk_payment',
+        'mock_esigner_payment',
         'qr_code_download_live',
         'qr_code_download_test',
         'gateway_payment_callback_bharatqr',
@@ -2138,16 +2173,6 @@ final class Route
         'merchant_public_get_banks',
         'merchant_methods',
         'merchant_methods_downtime',
-    ];
-
-    /**
-     * This will not be needed once we have rate limiting on all routes.
-     * Adding now to test throttling on just a few routes at a time.
-     *
-     * @var array
-     */
-    public static $throttledRoutes = [
-        'dummy_route',
     ];
 
     /**
@@ -2539,5 +2564,22 @@ final class Route
         $features = self::$routeNameToFeaturesMap;
 
         return $features[$route] ?? [];
+    }
+
+    /**
+     * Returns the array of features, one of which is required to
+     * access the current route.
+     *
+     * @return array
+     */
+    public function getCurrentRouteFeatures(): array
+    {
+        $currentRoute = $this->getCurrentRouteName();
+
+        //
+        // A route can belong to multiple features
+        // This fetches an array of all features mapped to the route
+        //
+        return self::getFeaturesForRoute($currentRoute);
     }
 }

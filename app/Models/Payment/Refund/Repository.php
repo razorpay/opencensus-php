@@ -676,4 +676,12 @@ class Repository extends Base\Repository
 
         return $query->get();
     }
+
+    public function findByReceiptAndMerchant(string $receipt, string $merchantId)
+    {
+        return $this->newQuery()
+                    ->where(Refund\Entity::RECEIPT, '=', $receipt)
+                    ->where(Refund\Entity::MERCHANT_ID, '=', $merchantId)
+                    ->first();
+    }
 }

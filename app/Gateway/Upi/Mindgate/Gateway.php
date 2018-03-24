@@ -27,11 +27,13 @@ class Gateway extends Base\Gateway
 
     const BANK = 'hdfc';
 
+    const TIMEOUT = 20;
+
     /**
      * This is what shows up as the payee
      * on the notification to the customer
      */
-    const DEFAULT_PAYEE_VPA = 'razorpay@hdfcbank';
+    const DEFAULT_PAYEE_VPA = 'razorpaypg@hdfcbank';
 
     // Transaction Types
     const P2P = 'P2P';
@@ -43,6 +45,7 @@ class Gateway extends Base\Gateway
         Entity::VPA                       => Entity::VPA,
         Entity::RECEIVED                  => Entity::RECEIVED,
         Entity::EXPIRY_TIME               => Entity::EXPIRY_TIME,
+        Entity::TYPE                      => Entity::TYPE,
         ResponseFields::PAYER_VA          => Entity::VPA,
         ResponseFields::PAYER_NAME        => Entity::NAME,
         ResponseFields::STATUS            => Entity::STATUS_CODE,
@@ -61,6 +64,12 @@ class Gateway extends Base\Gateway
     public function authorize(array $input)
     {
         parent::authorize($input);
+
+        if ((isset($input['upi']['flow']) === true) and
+            ($input['upi']['flow'] === 'intent'))
+        {
+            return $this->authorizeIntent($input);
+        }
 
         $attributes = $this->getGatewayEntityAttributes($input);
 
@@ -89,6 +98,35 @@ class Gateway extends Base\Gateway
                 'vpa'   => $vpa
             ]
         ];
+    }
+
+    protected function authorizeIntent(array $input)
+    {
+        $attributes = [
+            Entity::TYPE                => Base\Type::PAY,
+            Entity::GATEWAY_MERCHANT_ID => $this->getMerchantId(),
+        ];
+
+        $payment = $this->createGatewayPaymentEntity($attributes);
+
+        return $this->getIntentRequest($input);
+    }
+
+    protected function getIntentRequest($input)
+    {
+        $content = [
+            Base\IntentParams::PAYEE_ADDRESS => $input['terminal']->getGatewayMerchantId2() ?? self::DEFAULT_PAYEE_VPA,
+            Base\IntentParams::PAYEE_NAME    => preg_replace('/\s+/', '', $input['merchant']->getFilteredDba()),
+            Base\IntentParams::TXN_REF_ID    => $input['payment']['id'],
+            Base\IntentParams::TXN_NOTE      => $this->getPaymentRemark($input),
+            Base\IntentParams::TXN_AMOUNT    => $input['payment']['amount'] / 100,
+            Base\IntentParams::TXN_CURRENCY  => $input['payment']['currency'],
+            Base\IntentParams::MCC           => '5411',
+        ];
+
+        $query = str_replace(' ', '', urldecode(http_build_query($content)));
+
+        return ['data' => ['intent_url' => 'upi://pay?' . $query]];
     }
 
     /**
@@ -220,7 +258,12 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
 
-        assertTrue($content[ResponseFields::UPI_TXN_ID] === $gatewayPayment->getGatewayPaymentId());
+        if ($gatewayPayment->getType() !== Base\Type::PAY)
+        {
+            assertTrue($content[ResponseFields::UPI_TXN_ID] === $gatewayPayment->getGatewayPaymentId());
+        }
+
+        assertTrue($input['payment']['id'] === $content[ResponseFields::PAYMENT_ID]);
 
         $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
         $actualAmount   = number_format($content[ResponseFields::AMOUNT], 2, '.', '');
@@ -235,7 +278,11 @@ class Gateway extends Base\Gateway
         $this->updateGatewayPaymentEntity($gatewayPayment, $content);
 
         // Gateways must return array in callback
-        return [];
+        return [
+            'acquirer' => [
+                Payment\Entity::VPA => $gatewayPayment->getVpa()
+            ]
+        ];
     }
 
     /**
@@ -477,6 +524,28 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
+    protected function sendRefundVerifyRequest(array $input)
+    {
+        $request = $this->getRefundVerifyRequestArray($input);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->response = $response;
+
+        $content = $this->parseGatewayResponse($response->body, Action::VERIFY);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_VERIFY_RESPONSE,
+            [
+                'raw_content' => $response->body,
+                'content'     => $content,
+                'gateway'     => 'upi_mindgate',
+                'refund_id'   => $input['refund']['id'],
+            ]);
+
+        return $content;
+    }
+
     protected function getValidateVpaRequestArray(array $input): array
     {
         $data = [
@@ -549,15 +618,41 @@ class Gateway extends Base\Gateway
 
     protected function getPaymentVerifyRequestArray($input)
     {
-        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-            $input['payment']['id'],
-            Action::AUTHORIZE
-        );
-
         $data = [
             $this->getMerchantId(),
             $input['payment']['id'],
-            $gatewayPayment->getGatewayPaymentId(),
+            '',
+            // This is the Reference ID field
+            // which is supposed to be empty for now
+            // Non-empty values give error
+            '',
+        ];
+
+        $content = $this->transformRequestArrayToContent($data);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $request['headers'] = [
+            'Content-Type' => 'text/plain'
+        ];
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            [
+                'request' => $request,
+                'decrypted_content' => $data
+            ]);
+
+        return $request;
+    }
+
+    protected function getRefundVerifyRequestArray($input)
+    {
+        $data = [
+            $this->getMerchantId(),
+            $input['refund']['id'],
+            //As confirmed by hdfc team gateway payment id is not needed
+            '',
             // This is the Reference ID field
             // which is supposed to be empty for now
             // Non-empty values give error
@@ -598,6 +693,17 @@ class Gateway extends Base\Gateway
             $status = VerifyResult::STATUS_MISMATCH;
         }
 
+        $input = $verify->input;
+
+        if ($verify->gatewaySuccess === true)
+        {
+            $paymentAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+
+            $actualAmount = number_format($content[ResponseFields::AMOUNT], 2, '.', '');
+
+            $verify->amountMismatch = ($paymentAmount !== $actualAmount);
+        }
+
         $verify->match = ($status === VerifyResult::STATUS_MATCH);
 
         $content[Entity::RECEIVED] = 1;
@@ -607,6 +713,8 @@ class Gateway extends Base\Gateway
 
     public function verifyRefund(array $input)
     {
+        parent::verifyRefund($input);
+
         if ($this->isUnprocessedRefund($input) === true)
         {
             return false;
@@ -617,7 +725,25 @@ class Gateway extends Base\Gateway
             return true;
         }
 
-        parent::verifyRefund($input);
+        $content = $this->sendRefundVerifyRequest($input);
+
+        if ($content['status'] === Status::SUCCESS)
+        {
+            return true;
+        }
+
+        if ($content['status'] === Status::FAILURE)
+        {
+            return false;
+        }
+
+        throw new Exception\LogicException(
+            'Shouldn\'t reach here',
+            null,
+            [
+                'gateway_status' => $content['status'],
+                'refund_id'      => $input['refund']['id'],
+            ]);
     }
 
     private function checkGatewaySuccess(Verify $verify)

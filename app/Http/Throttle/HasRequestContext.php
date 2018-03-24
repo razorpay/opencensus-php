@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 
 use RZP\Http\OAuth;
 use RZP\Http\Route;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Http\RequestHeader;
 use RZP\Http\BasicAuth\Type;
@@ -81,9 +82,10 @@ trait HasRequestContext
     protected $mid;
 
     /**
+     * Every oauth application has dev & prod clients.
      * @var string
      */
-    protected $oauthAppId;
+    protected $oauthClientId;
 
     /**
      * @var string
@@ -134,8 +136,10 @@ trait HasRequestContext
 
         $this->key              = $key;
         $this->keyWithoutPrefix = substr($key, 9) ?: null;
-        $this->mode             = substr($key, 4, 4) ?: null;
         $this->secret           = $this->request->getPassword();
+
+        $mode       = substr($key, 4, 4) ?: null;
+        $this->mode = Mode::exists($mode) ? $mode : null;
     }
 
     protected function setAdditionalVars()
@@ -171,21 +175,25 @@ trait HasRequestContext
         $isPublicRoute         = in_array($this->route, Route::$public, true);
         $isPublicCallbackRoute = in_array($this->route, Route::$publicCallback, true);
 
-        if (($isPublicRoute === true) and
-            ($this->isKeyOAuthPublicToken() === true))
+        // Route belongs neither to public or public callback group
+        if (($isPublicRoute === false) and ($isPublicCallbackRoute === false))
+        {
+            return false;
+        }
+
+        // Route belongs to one of 2 groups and accessed via oauth public token
+        if ($this->isKeyOAuthPublicToken() === true)
         {
             // Further excludes "oauth_" part
             $this->oauthPublicToken = substr($this->keyWithoutPrefix, 6);
-            return true;
         }
-        else if (($isPublicRoute === true) or
-                 ($isPublicCallbackRoute === true))
+        // Route belongs to one of 2 groups and accessed normally via key id
+        else
         {
             $this->keyId = $this->keyWithoutPrefix;
-            return true;
         }
 
-        return false;
+        return true;
     }
 
     protected function setAdditionalVarsForPrivateAuth()
@@ -196,9 +204,9 @@ trait HasRequestContext
         if (($isPrivateRoute === true) and
             (empty($token = $this->getBearerToken()) === false))
         {
-            $parsed           = (new Parser)->parse($token);
-            $this->oauthAppId = $parsed->getClaim('aud');
-            $this->mid        = $parsed->getClaim('merchant_id');
+            $parsed              = (new Parser)->parse($token);
+            $this->oauthClientId = $parsed->getClaim('aud');
+            $this->mid           = $parsed->getClaim('merchant_id');
             return true;
         }
         else if ((($isPrivateRoute === true) and ($this->isDashboard() === true)) or

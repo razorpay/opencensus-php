@@ -6,6 +6,7 @@ use Mail;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Settlement\SlackNotification;
@@ -27,6 +28,8 @@ class Report extends Base\Core
         'Merchant Email'
     ];
 
+    const LIMIT             = 2000;
+
     protected $fileName     = null;
 
     protected $fileHandler  = null;
@@ -34,6 +37,10 @@ class Report extends Base\Core
     protected $channel      = null;
 
     protected $count        = 0;
+
+    protected $startTime    = null;
+
+    protected $endTime      = null;
 
     public function __construct()
     {
@@ -52,6 +59,10 @@ class Report extends Base\Core
         $this->fileName    = $this->getFileNameForReport();
 
         $this->fileHandler = $this->initiateFileHandler();
+
+        $this->startTime = Carbon::today(Timezone::IST)->startOfDay()->getTimestamp();
+
+        $this->endTime   = Carbon::now(Timezone::IST)->subHour(3)->getTimestamp();
     }
 
     public function sendNullUtrReport()
@@ -59,6 +70,11 @@ class Report extends Base\Core
         $channels = Channel::getChannels();
 
         $this->init();
+
+        $this->trace->info(TraceCode::NULL_UTR_REPORT_INITIATED, [
+            'start_time'    => $this->startTime,
+            'end_time'      => $this->endTime,
+        ]);
 
         foreach ($channels as $channel)
         {
@@ -68,6 +84,10 @@ class Report extends Base\Core
         }
 
         fclose($this->fileHandler);
+
+        $this->trace->info(TraceCode::NULL_UTR_REPORT_FILE_CREATED, [
+            'record_count'  => $this->count,
+        ]);
 
         $this->sendEmail();
     }
@@ -83,12 +103,6 @@ class Report extends Base\Core
 
     protected function createReport()
     {
-        $startTime = Carbon::yesterday(Timezone::IST)->startOfDay()->timestamp;
-
-        $endTime   = Carbon::yesterday(Timezone::IST)->endOfDay()->timestamp;
-
-        $limit     = 2000;
-
         $offset    = 0;
 
         $recordCount = 0;
@@ -99,12 +113,12 @@ class Report extends Base\Core
                             ->fund_transfer_attempt
                             ->getSettlementsWithNoUtr(
                                 $this->channel,
-                                $startTime,
-                                $endTime,
-                                $limit,
+                                $this->startTime,
+                                $this->endTime,
+                                self::LIMIT,
                                 $offset);
 
-            $offset += $limit;
+            $offset += self::LIMIT;
 
             $this->createOrUpdateFile($records);
 
@@ -114,7 +128,7 @@ class Report extends Base\Core
 
             $this->count += $count;
 
-        } while ($count === $limit);
+        } while ($count === self::LIMIT);
 
         $this->notify($recordCount);
     }
@@ -143,7 +157,7 @@ class Report extends Base\Core
 
         $data = [
             'file'      => $this->fileName,
-            'date'      => Carbon::yesterday(Timezone::IST)->format('Y-m-d')
+            'date'      => Carbon::today(Timezone::IST)->format('Y-m-d')
         ];
 
         $reportEmail = new ReportEmail($data);
@@ -157,7 +171,7 @@ class Report extends Base\Core
     {
         $dir  = storage_path('files/settlement');
 
-        $date = Carbon::yesterday(Timezone::IST)->format('Y-M-d');
+        $date = Carbon::today(Timezone::IST)->format('Y-M-d');
 
         return $dir . DIRECTORY_SEPARATOR . 'null_utr_report_' . $date . '.csv';
     }

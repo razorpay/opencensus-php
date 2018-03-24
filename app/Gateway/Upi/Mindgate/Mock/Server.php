@@ -169,6 +169,8 @@ class Server extends Base\Mock\Server
 
         $content = $this->callbackResponseContent($upiEntity, $payment);
 
+        $this->content($content,'callback');
+
         $response = $this->makeResponse($content);
 
         return [
