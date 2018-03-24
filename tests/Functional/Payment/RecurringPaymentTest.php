@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Payment;
 
 use Redis;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Payment\Entity as Payment;
@@ -12,6 +13,7 @@ use RZP\Models\Feature\Constants as Feature;
 class RecurringPaymentTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     public function setUp()
     {
@@ -109,6 +111,26 @@ class RecurringPaymentTest extends TestCase
         $this->ba->publicAuth();
 
         $payment = $this->getDefaultRecurringPaymentArray();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testEmandatePaymentCreateFeatureDisabled()
+    {
+        $this->ba->publicAuth();
+
+        $payment = $this->getEmandateNetbankingRecurringPaymentArray('UTIB', 0);
+
+        $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => 0]);
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = 0;
 
         $data = $this->testData[__FUNCTION__];
 

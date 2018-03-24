@@ -53,6 +53,21 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_URL_NOT_FOUND,
         ],
     ],
+    'testEmandatePaymentCreateFeatureDisabled' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Emandate is disabled for this merchant.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 
     'testRecurringSecondPaymentCreatePublicAuth' => [
         'response' => [
