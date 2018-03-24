@@ -195,9 +195,6 @@ class Gateway extends Base\Gateway
 
         $expectedChecksum = $this->getHashOfString($hashString);
 
-        // TODO: remove this after testing
-        //$actualChecksum = $expectedChecksum;
-
         $this->compareHashes($actualChecksum, $expectedChecksum);
 
         $qrData = [
