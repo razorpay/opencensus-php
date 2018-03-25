@@ -611,20 +611,20 @@ class Validator extends Base\Validator
         $id    = $invoice->getPublicId();
         $label = $invoice->getTypeLabel();
 
-        $useNewPlView = (in_array('Hostedplv2', $invoice->merchant->liveTagNames(), true) === true);
-        $isPlAndHasNewViewEnabled = (($invoice->isTypeLink() === true) and ($useNewPlView === true));
+        $newViewEnabled          = (in_array('Hostedplv2', $invoice->merchant->liveTagNames(), true) === true);
+        $isLinkAndNewViewEnabled = (($invoice->isTypeLink() === true) and ($newViewEnabled === true));
 
         if ($invoice->isDraft() === true)
         {
             throw new BadRequestValidationFailureException("$label with id $id is not issued yet");
         }
-        else if (($invoice->isCancelled() === true) and ($isPlAndHasNewViewEnabled === false))
+        else if (($invoice->isCancelled() === true) and ($isLinkAndNewViewEnabled === false))
         {
             throw new BadRequestValidationFailureException("$label with id $id is cancelled");
         }
         else if (($invoice->isExpired() === true) and
                  ($invoice->isTypeInvoice() === false) and
-                 ($isPlAndHasNewViewEnabled === false))
+                 ($isLinkAndNewViewEnabled === false))
         {
             throw new BadRequestValidationFailureException("$label with id $id is expired");
         }
