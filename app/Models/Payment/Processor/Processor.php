@@ -347,6 +347,13 @@ class Processor
 
     public function processAndReturnFees(array & $input)
     {
+        // Validate if customer is fee bearer then only move forward
+        if ($this->merchant->isFeeBearerCustomer() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+        }
+
         if (isset($input['method']) === false)
         {
             $input['method'] = Payment\Method::CARD;
