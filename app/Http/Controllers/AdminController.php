@@ -152,11 +152,11 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function explainQuery()
+    public function dbQuery()
     {
         $input = Request::all();
 
-        $data = $this->service()->explainQuery($input);
+        $data = $this->service()->dbQuery($input);
 
         return ApiResponse::json($data);
     }

@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\DbAdmin;
+namespace RZP\Models\Admin\Query;
 
 use RZP\Models\Base;
 use Illuminate\Support\Facades\DB;
@@ -15,13 +15,13 @@ class Service extends Base\Service
      *
      * @return array
      */
-    public function explainQuery(array $input): array
+    public function dbQuery(array $input): array
     {
-        (new Validator)->validateInput('explainQuery', $input);
-
-        $mode = $input['mode'];
+        (new Validator)->validateInput('dbQuery', $input);
 
         $query = $input['query'];
+
+        $mode = $this->app['rzp.mode'];
 
         // using slave connection
         \Database\DefaultConnection::setSlaveConnection($mode);

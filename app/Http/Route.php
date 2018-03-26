@@ -756,7 +756,7 @@ final class Route
 
         // Pincode Service
         'pincode_get'                             => ['get',      'pincodes/{id}',                                  'PincodeSearchController@get'                                       ],
-        'query_explainer'                         => ['post',     'query_explainer',                                'AdminController@explainQuery'                                      ],
+        'db_query'                                => ['post',     'db_query',                                       'AdminController@dbQuery'                                           ],
         // Deprecated feature routes - maintaining for BC - Remove after dashboard changes
         'feature_get_multiple'                    => ['get',      'features/{entityId}',                            'FeatureController@getMerchantFeatures'                             ],
         'feature_delete'                          => ['delete',   'features/{entityId}/{featureName}',              'FeatureController@deleteFeature'                                   ],
@@ -1445,7 +1445,7 @@ final class Route
         'upi_psp_disallow',
         'user_confirm',
         'user_create',
-        'query_explainer',
+        'db_query',
         'admin_get_app_auth',
         'nodal_get_account_balance',
         'enable_emi_merchant_sub',
@@ -1768,7 +1768,7 @@ final class Route
         'merchant_requests_bulk_update'          => Permission::EDIT_MERCHANT_REQUESTS,
         'merchant_requests_status_log'           => Permission::VIEW_MERCHANT_REQUESTS,
         'merchant_bank_account_change_status'    => '*',
-        'query_explainer'                        => Permission::QUERY_EXPLAINER,
+        'db_query'                               => Permission::DB_QUERY,
     ];
 
     public static $direct = [

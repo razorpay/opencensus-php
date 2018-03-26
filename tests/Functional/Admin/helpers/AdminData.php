@@ -845,21 +845,26 @@ return [
         ],
     ],
 
-    'testExplainQuery' => [
+    'testDbQuery' => [
         'request' => [
             'method'  => 'post',
-            'url'     => '/query_explainer',
+            'url'     => '/db_query',
             'content' => [
-                'mode'  => 'test',
-                'query' => 'show indexes from merchants;',
+                'query' => 'truncate table merchants;',
             ],
         ],
-        'response' => [
-            'content' => [
-                [
-                    'Key_name'   => 'PRIMARY',
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The query is invalid or is not allowed',
                 ],
             ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 ];

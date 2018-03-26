@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\DbAdmin;
+namespace RZP\Models\Admin\Query;
 
 class QueryPrefix
 {
