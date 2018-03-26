@@ -753,7 +753,8 @@ class Gateway extends Base\Gateway
             return true;
         }
 
-        if ($content['status'] === Status::FAILURE)
+        if (($content['status'] === Status::FAILURE) or
+            ($content['status'] === Status::FAILED))
         {
             return false;
         }
