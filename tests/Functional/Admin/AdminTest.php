@@ -1000,4 +1000,13 @@ class AdminTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testExplainQuery()
+    {
+        $testData = & $this->testData[__FUNCTION__];
+
+        $this->ba->adminAuth('test', null, Org::RZP_ORG_SIGNED);
+
+        $this->startTest();
+    }
 }

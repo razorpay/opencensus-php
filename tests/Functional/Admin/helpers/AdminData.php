@@ -843,5 +843,23 @@ return [
                 'success' => 1
             ]
         ],
-    ]
+    ],
+
+    'testExplainQuery' => [
+        'request' => [
+            'method'  => 'post',
+            'url'     => '/query_explainer',
+            'content' => [
+                'mode'  => 'test',
+                'query' => 'show indexes from merchants;',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'Key_name'   => 'PRIMARY',
+                ],
+            ],
+        ],
+    ],
 ];
