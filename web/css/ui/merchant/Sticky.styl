@@ -1,4 +1,12 @@
-.rzp-sticky > .sticky-content {
+.rzp-sticky {
 
-  z-index: 1;
+  &.sticky > .sticky-content {
+
+    position: fixed;
+  }
+
+  > .sticky-content {
+
+    z-index: 1;
+  }
 }

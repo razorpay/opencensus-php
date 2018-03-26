@@ -8,6 +8,7 @@ class Sticky extends Component {
       isSticky: false,
     };
 
+    this.timer = null;
     this.handleScroll = this.handleScroll.bind(this);
   }
 
@@ -15,7 +16,6 @@ class Sticky extends Component {
     const node = this.node,
       borderBox = node.getBoundingClientRect(),
       styles = {
-        position: 'fixed',
         width: `${node.clientWidth}px`,
         left: `${borderBox.left}px`,
         top: `${this.props.stickAt}px`,
@@ -23,6 +23,7 @@ class Sticky extends Component {
 
     this.node.style.width = styles.width;
     this.node.style.height = this.contentElement.clientHeight + 'px';
+
     Object.keys(styles).forEach(styleName => {
       this.contentElement.style[styleName] = styles[styleName];
     });
@@ -49,7 +50,11 @@ class Sticky extends Component {
   }
 
   handleScroll() {
-    return this.toggleSticky(window.scrollY);
+    window.clearTimeout(this.timer);
+
+    this.timer = window.setTimeout(() => {
+      return this.toggleSticky(window.scrollY);
+    });
   }
 
   componentDidMount() {
