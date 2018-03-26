@@ -6,7 +6,7 @@ import { notifySuccess, closeModal } from 'common/modal';
 import { adminPut } from 'common/fetch';
 
 BulkTransaction.permissions = 'edit_bulk_merchant_channel';
-BulkTransaction.title = 'Update Bulk Transaction';
+BulkTransaction.title = 'Merchant Bulk Update Channel';
 
 export default function BulkTransaction() {
   return (
