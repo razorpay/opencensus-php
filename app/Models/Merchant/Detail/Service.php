@@ -117,7 +117,15 @@ class Service extends Base\Service
         {
             $merchantDetails->getValidator()->validateFileType($value);
 
-            $fileName = 'api/' . $merchant->getId() .'/' .$key;
+            // Adding a prefix hash for filename to avoid overwrites to the same fileName on S3.
+            $partial = substr(
+                strtr(
+                    bin2hex(random_bytes(6)),
+                    ['+' => '', '/' => '', '=' => '']),
+                0,
+                3);
+
+            $fileName = 'api/' . $merchant->getId() .'/' . $partial . '/' . $key;
 
             $file = $this->createFile(
                 $merchantDetails,
