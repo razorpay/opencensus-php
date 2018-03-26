@@ -579,12 +579,13 @@ class Gateway extends Base\Gateway
             Action::AUTHORIZE
         );
 
+        $refund = $input['refund'];
         // The order is defined in the docs
         // See README.md
 
         $data = [
             $this->getMerchantId(),
-            $input['refund']['id'],
+            $this->getRefundId($refund),
             $input['payment']['id'],
             $gatewayPayment->getGatewayPaymentId(),
             $gatewayPayment->getNpciReferenceId(),
@@ -615,6 +616,19 @@ class Gateway extends Base\Gateway
 
         return $request;
     }
+
+    /**
+     * This is done in order to fix duplicate
+     * merchant transaction id issue in case
+     * refund is retried multiple times
+     *
+     * @return string
+     */
+    protected function getRefundId(array $refund)
+    {
+        return $refund['id'] . ($refund['attempts'] ?: '');
+    }
+
 
     protected function getPaymentVerifyRequestArray($input)
     {
@@ -648,9 +662,16 @@ class Gateway extends Base\Gateway
 
     protected function getRefundVerifyRequestArray($input)
     {
+        $attempts = $input['refund']['attempts'] - 1;
+
+        if ($input['refund']['attempts'] === 1)
+        {
+            $attempts = '';
+        }
+
         $data = [
             $this->getMerchantId(),
-            $input['refund']['id'],
+            $input['refund']['id'] . $attempts,
             //As confirmed by hdfc team gateway payment id is not needed
             '',
             // This is the Reference ID field
