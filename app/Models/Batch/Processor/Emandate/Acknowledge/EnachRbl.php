@@ -60,19 +60,21 @@ class EnachRbl extends Base
     }
 
     /**
-     * @param array $parsedData
+     * @param array $content
+     *
+     * @throws Exception\GatewayErrorException
+     * @throws Exception\LogicException
      */
     protected function updateEntities(array $content)
     {
         $paymentId = $content['payment_id'];
 
         $accountNumber = $content['account_number'];
-        s($paymentId);
         // Get payment
         $payment = $this->repo->payment->findOrFail($paymentId);
 
         $token = $payment->getGlobalOrLocalTokenEntity();
-        s($payment->getGateway(), $token === null, $token->getAccountNumber(), $accountNumber);
+
         if (($payment->getGateway() !== $this->gateway) or
             ($token === null) or
             ($token->getAccountNumber() !== $accountNumber))
@@ -93,7 +95,7 @@ class EnachRbl extends Base
 
     /**
      * @param array $content
-
+     *
      * @return EnachEntity
      */
     protected function updateGatewayPaymentEntity(array $content): EnachEntity
@@ -113,8 +115,10 @@ class EnachRbl extends Base
     }
 
     /**
-     * @param  Payment\Entity $payment
-     * @param  array          $content
+     * @param Token\Entity $token
+     * @param array       $content
+     *
+     * @throws Exception\LogicException
      */
     protected function updateTokenEntity(Token\Entity $token, array $content)
     {

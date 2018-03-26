@@ -85,8 +85,6 @@ class EnachRbl extends Base
 
     protected function captureAuthorizedPayment(Payment\Entity $payment)
     {
-        $merchant = $payment->merchant;
-
         $paymentProcessor = (new Payment\Processor\Processor($payment->merchant));
 
         $amount = $payment->getAmount();
