@@ -1,3 +1,8 @@
+/*
+ * TODO( pending things ):
+ * Handle Bottom Position
+ */
+
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
@@ -44,12 +49,12 @@ class Tooltip extends Component {
       top = screenY;
     }
 
-    let tooltipWidth = this.nodeWidth ||
-                       (this.nodeWidth = this.node.clientWidth),
-        tooltipHeight = this.nodeHeight ||
-                        (this.nodeHeight = this.node.clientHeight), 
-        screenLeft = 0,
-        screenRight = document.body.clientWidth;
+    let tooltipWidth =
+        this.nodeWidth || (this.nodeWidth = this.node.clientWidth),
+      tooltipHeight =
+        this.nodeHeight || (this.nodeHeight = this.node.clientHeight),
+      screenLeft = 0,
+      screenRight = document.body.clientWidth;
 
     let tooltipLeft = 0,
       tooltipTop = 0,
@@ -57,7 +62,6 @@ class Tooltip extends Component {
       paddingLeft = 0,
       paddingBottom = 0;
 
-    // TODO: need to handle other alignment options also
     if (align === 'bottom' || align === 'top') {
       tooltipLeft = left + width / 2 - tooltipWidth / 2;
 
@@ -73,7 +77,6 @@ class Tooltip extends Component {
         tooltipTop -= tooltipHeight;
 
         if (!this.props.followPointer) {
-
           tooltipTop -= gutter;
         }
 
@@ -175,22 +178,15 @@ class Tooltip extends Component {
 
   render() {
     const { show } = this.state,
-          { children, align, followPointer, ...otherProps } = this.props;
+      { children, align, followPointer, ...otherProps } = this.props;
 
     otherProps.className = `${
-                             otherProps.className
-                               ? otherProps.className + " "
-                               : ""
-                            }rzp-tooltip${show ? ' show' : ''}`;
+      otherProps.className ? otherProps.className + ' ' : ''
+    }rzp-tooltip${show ? ' show' : ''}`;
 
     return (
-      <div
-        {...otherProps}
-        ref={node => (this.node = node)}
-      >
-        <div className="rzp-tooltip-inner">
-          {children}
-        </div>
+      <div {...otherProps} ref={node => (this.node = node)}>
+        <div className="rzp-tooltip-inner">{children}</div>
       </div>
     );
   }

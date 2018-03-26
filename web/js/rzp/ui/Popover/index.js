@@ -1,93 +1,70 @@
-import React, { Component } from "react";
+/*
+ * TODO( pending things ):
+ * Popover caret Position
+ * Popover right position
+ * Multiple trigger events, click, hover ... etc
+ */
 
-import {
-  isChildSameType,
-  checkChildrenType
-} from "rzp/utils/rzp-react-utils";
-import Tooltip from "rzp/ui/Tooltip";
+import React, { Component } from 'react';
+
+import { isChildSameType, checkChildrenType } from 'rzp/utils/rzp-react-utils';
+import Tooltip from 'rzp/ui/Tooltip';
 
 class PopoverTitle extends Component {
-
-  constructor (props) {
-  
+  constructor(props) {
     super(props);
   }
 
-  render () {
+  render() {
+    const { children, ...otherProps } = this.props;
 
-    const {children, ...otherProps} = this.props;
+    otherProps.className =
+      (otherProps.className ? otherProps.className + ' ' : '') +
+      'rzp-popover-title';
 
-    otherProps.className = (
-                             otherProps.className
-                               ? otherProps.className + " "
-                               : ""
-                           ) + "rzp-popover-title";
-
-    return (
-      <div {...otherProps}>
-        {children}
-      </div>
-    );
+    return <div {...otherProps}>{children}</div>;
   }
 }
 
 class PopoverBody extends Component {
-
-  constructor (props) {
-  
+  constructor(props) {
     super(props);
   }
 
-  render () {
+  render() {
+    const { children, ...otherProps } = this.props;
 
-    const {children, ...otherProps} = this.props;
+    otherProps.className =
+      (otherProps.className ? otherProps.className + ' ' : '') +
+      'rzp-popover-body';
 
-    otherProps.className = (
-                             otherProps.className
-                               ? otherProps.className + " "
-                               : ""
-                           ) + "rzp-popover-body";
-
-    return (
-      <div {...otherProps}>
-        {children}
-      </div>
-    );
+    return <div {...otherProps}>{children}</div>;
   }
 }
 
 class Popover extends Component {
-
-  constructor (props) {
-  
+  constructor(props) {
     super(props);
   }
 
-  render () {
-
-    const {children, ...otherProps} = this.props;
+  render() {
+    const { children, ...otherProps } = this.props;
 
     let popoverTitle = null,
-        popoverBody = null;
+      popoverBody = null;
 
-    React.Children.forEach(children, (child) => {
-    
+    React.Children.forEach(children, child => {
       if (!popoverTitle && isChildSameType(child, PopoverTitle)) {
-      
         popoverTitle = child;
       }
 
       if (!popoverBody && isChildSameType(child, PopoverBody)) {
-      
         popoverBody = child;
       }
     });
 
-    otherProps.className = (
-                             otherProps.className
-                               ? otherProps.className + " "
-                               : ""
-                           ) + "rzp-popover";
+    otherProps.className =
+      (otherProps.className ? otherProps.className + ' ' : '') + 'rzp-popover';
 
     return (
       <Tooltip {...otherProps}>
@@ -109,16 +86,15 @@ class Popover extends Component {
 }
 
 Popover.propTypes = {
-  children: ({ children }) => checkChildrenType(
-    children, [PopoverTitle, PopoverBody]
-  ),
-  ...Tooltip.propTypes
+  children: ({ children }) =>
+    checkChildrenType(children, [PopoverTitle, PopoverBody]),
+  ...Tooltip.propTypes,
 };
 
 Popover.defaultProps = {
-  ...Tooltip.defaultProps
+  ...Tooltip.defaultProps,
 };
 
-export {PopoverTitle, PopoverBody, Popover};
+export { PopoverTitle, PopoverBody, Popover };
 
 export default Popover;
