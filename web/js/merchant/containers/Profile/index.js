@@ -139,10 +139,15 @@ export default class Profile extends Component {
   };
 
   openChangeBankDetailsModal = () => {
+    const { bankAccount } = this.props.profile;
+
     this.props.openModal({
       size: 'large',
       component: (
-        <BankAccountDetailsChange onSave={this.saveBankAccountChanges} />
+        <BankAccountDetailsChange
+          currentBankAccount={bankAccount}
+          onSave={this.saveBankAccountChanges}
+        />
       ),
     });
   };
@@ -165,7 +170,7 @@ export default class Profile extends Component {
       }
     }
 
-    this.props
+    return this.props
       .saveBankAccountChanges(user.id, formdata)
       .then(response => {
         this.props.closeModal();
@@ -221,9 +226,7 @@ export default class Profile extends Component {
             <BankAccountDetails
               bankAccount={bankAccount}
               isBankAccountChangeAllowed={this.state.isBankAccountChangeAllowed}
-              onChangeBankAccountDetails={() =>
-                this.openChangeBankDetailsModal(bankAccount)
-              }
+              onChangeBankAccountDetails={this.openChangeBankDetailsModal}
             />
           ) : null}
 

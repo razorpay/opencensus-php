@@ -39,17 +39,29 @@ export default class BandAccountDetailsChange extends Component {
   };
 
   handleSubmission = body => {
+    const { currentBankAccount } = this.props;
+
     if (!this.state.file) {
       this.props.showNotification({
         type: 'error',
-        message: 'Please upload address proof for Bank Account changes.',
+        message: 'Please upload a valid address proof of the new Bank Account.',
+      });
+      return;
+    }
+
+    // If entered details is same as previous one, throw error modal
+    if (currentBankAccount.account_number === body.account_number) {
+      this.props.showNotification({
+        type: 'error',
+        message:
+          'The entered account number is same as your previous Bank Account number.',
       });
       return;
     }
 
     body.address_proof_url = this.state.file;
 
-    this.props.onSave(body);
+    return this.props.onSave(body);
   };
 
   render() {
@@ -139,6 +151,16 @@ export default class BandAccountDetailsChange extends Component {
                   Company's Bank Account Statement with Address
                 </label>
                 <div class="col-md-9">
+                  <span class="help-block">
+                    Upload following:
+                    <ul>
+                      <li>
+                        Bank Account Statement (last three months or since
+                        opening of account) OR cancelled cheque issued in the
+                        name of the registered business
+                      </li>
+                    </ul>
+                  </span>
                   <FileUploadInputButton
                     accept="image/jpeg,image/png,application/pdf,application/x-pdf"
                     maxSize="8000000"
