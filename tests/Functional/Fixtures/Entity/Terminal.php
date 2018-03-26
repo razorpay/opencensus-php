@@ -1442,6 +1442,10 @@ class Terminal extends Base
             'gateway_merchant_id2'      => 'razorpay@eazypay',
             'gateway_terminal_password' => 'razorpay_password',
             'upi'                       => true,
+            'type'                      => [
+                'non_recurring' => '1',
+                'pay'           => '1',
+            ]
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -1495,6 +1499,10 @@ class Terminal extends Base
             'gateway_terminal_password' => 'razorpay_password',
             'upi'                       => 1,
             'gateway_acquirer'          => 'hdfc',
+            'type'                      => [
+                'non_recurring' => '1',
+                'pay'           => '1',
+            ]
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

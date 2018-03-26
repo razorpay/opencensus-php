@@ -11,7 +11,8 @@ class Fetch extends BaseFetch
         self::DEFAULTS => [
             Entity::ACTIVE      => 'filled|boolean',
             Entity::TYPE        => 'filled|custom',
-            Entity::MERCHANT_ID => 'filled|alpha_num|size:14'
+            Entity::MERCHANT_ID => 'filled|alpha_num|size:14',
+            self::EXPAND_EACH   => 'filled|string|in:tax',
         ],
     ];
 
@@ -21,6 +22,7 @@ class Fetch extends BaseFetch
         ],
         AuthType::PROXY_AUTH => [
             Entity::TYPE,
+            self::EXPAND_EACH,
         ],
         AuthType::PRIVATE_AUTH => [
             Entity::ACTIVE,
