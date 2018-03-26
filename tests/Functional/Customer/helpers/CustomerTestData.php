@@ -262,6 +262,21 @@ return [
         ],
     ],
 
+    'testUpdateCustomerEmail' => [
+        'request' => [
+            'url' => '/customers/cust_100000customer',
+            'method' => 'put',
+            'content' => [
+                'email'   => 'test@rzp.com'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email'   => 'test@rzp.com'
+            ],
+        ],
+    ],
+
     'testUpdateCustomerName' => [
         'request' => [
             'url' => '/customers/cust_100000customer',
