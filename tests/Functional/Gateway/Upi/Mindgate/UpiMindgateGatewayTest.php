@@ -186,6 +186,50 @@ class UpiMindgateGatewayTest extends TestCase
         $this->assertNull($upiEntity[Entity::NPCI_REFERENCE_ID]);
     }
 
+
+    public function testVpaWithCapitalPspValidation($status = 'created')
+    {
+        $this->payment['vpa'] = 'vishnu@ICiCI';
+
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $paymentId = $response['payment_id'];
+
+        // Co Proto must be working
+        $this->assertEquals('async', $response['type']);
+
+        $this->checkPaymentStatus($paymentId, $status);
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
+
+        $response = $this->makeS2SCallbackAndGetContent($content);
+
+        // We should have gotten a successful response
+        $this->assertEquals(['success' => true], $response);
+        $this->assertEquals('vishnu@icici', $upiEntity[Entity::VPA]);
+
+    }
+
+    public function testVpaWithoutPspValidation()
+    {
+        $this->payment['vpa'] = 'invalidvpa';
+
+        $payment = $this->payment;
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthPaymentViaAjaxRoute($payment);
+            });
+    }
+
     /**
      * Force the gateway to raise a failure on trying
      * to initiate web collect

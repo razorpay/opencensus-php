@@ -450,9 +450,14 @@ class Entity extends Base\PublicEntity
         {
             $vpaParts = explode('@', $input[self::VPA]);
 
-            $vpaParts[1] = strtolower($vpaParts[1]);
+            if (count($vpaParts) > 1)
+            {
+                $lastElement = count($vpaParts) - 1;
 
-            $input[self::VPA] = implode('@', $vpaParts);
+                $vpaParts[$lastElement] = strtolower($vpaParts[$lastElement]);
+
+                $input[self::VPA] = implode('@', $vpaParts);
+            }
         }
     }
 
