@@ -754,7 +754,7 @@ class Gateway extends Base\Gateway
         }
 
         if (($content['status'] === Status::FAILURE) or
-            ($content['status'] === Status::FAILED))
+            ($content['status'] === Status::REFUND_FAILED))
         {
             return false;
         }
