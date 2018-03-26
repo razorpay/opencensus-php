@@ -70,8 +70,8 @@ class Transfer extends Base
                     'Approver_ID' => self::APPROVER_ID,
                 ],
                 'Body' => [
-                    'Amount'               => $amount,
-                    'Debit_Acct_No'        => $this->accountNumber,
+                    'Amount'               => (string) $amount,
+                    'Debit_Acct_No'        => (string) $this->accountNumber,
                     'Debit_Acct_Name'      => self::ACCOUNT_NAME,
                     'Debit_TrnParticulars' => 'Nodal to nodal',
                     'Debit_PartTrnRmks'    => '',
