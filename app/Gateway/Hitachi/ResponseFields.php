@@ -29,20 +29,20 @@ class ResponseFields
     const STATUS              = 'pStatus';
 
     //Bharat Qr Fields
-    const F002        = 'F002';
-    const F003        = 'F003';
-    const F004        = 'F004';
-    const F011        = 'F011';
-    const F012        = 'F012';
-    const F013        = 'F013';
-    const F037        = 'F037';
-    const F038        = 'F038';
-    const F039        = 'F039';
-    const F041        = 'F041';
-    const F042        = 'F042';
-    const F043        = 'F043';
-    const F102        = 'F102';
-    const PURCHASE_ID = 'PurchaseID';
-    const SENDER_NAME = 'SenderName';
-    const CHECKSUM    = 'CheckSum';
+    const MASKED_CARD_NUMBER = 'F002';
+    const CARD_NETWORK       = 'F003';
+    const AMOUNT             = 'F004';
+    const AUDIT_TRACE_NUMBER = 'F011';
+    const TRANSACTION_TIME   = 'F012';
+    const TRANSACTION_DATE   = 'F013';
+    const RRN                = 'F037';
+    const AUTHORIZATION_ID   = 'F038';
+    const STATUS_CODE        = 'F039';
+    const TERMINAL_ID        = 'F041';
+    const MID                = 'F042';
+    const MERCHANT_NAME      = 'F043';
+    const TERMINAL_ID_DESC   = 'F102';
+    const PURCHASE_ID        = 'PurchaseID';
+    const SENDER_NAME        = 'SenderName';
+    const CHECKSUM           = 'CheckSum';
 }

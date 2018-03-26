@@ -23,8 +23,10 @@ class Core extends Base\Core
         $this->mutex = $this->app['api.mutex'];
     }
 
-    public function processPayment(array $input, array $gatewayInput)
+    public function processPayment(array $gatewayInput)
     {
+        $input = $this->getBharatQrInputParams($gatewayInput);
+
         $this->trace->info(
             TraceCode::BHARAT_QR_PAYMENT_PROCESS_REQUEST,
             $input
@@ -57,5 +59,15 @@ class Core extends Base\Core
         }
 
         return [$valid, $bharatQr];
+    }
+
+    protected function getBharatQrInputParams(array $gatewayInput)
+    {
+        return [
+            Entity::PROVIDER_REFERENCE_ID => $gatewayInput[Entity::PROVIDER_REFERENCE_ID],
+            Entity::MERCHANT_REFERENCE    => $gatewayInput[Entity::MERCHANT_REFERENCE],
+            Entity::METHOD                => $gatewayInput[Entity::METHOD],
+            Entity::AMOUNT                => $gatewayInput[Entity::AMOUNT],
+        ];
     }
 }

@@ -130,7 +130,7 @@ class Processor extends VirtualAccount\Processor
 
                             $bharatQr->payment()->associate($payment);
 
-                            $payment->setGatewayBharatQr($this->gatewayInput[GatewayResponseParams::GATEWAY]);
+                            $payment->setGatewayForBharatQr($this->gatewayInput[GatewayResponseParams::GATEWAY]);
 
                             $bharatQr->virtualAccount()->associate($this->virtualAccount);
 
@@ -186,11 +186,9 @@ class Processor extends VirtualAccount\Processor
     /**
      * TODO: Need a better way to handle this
      *
-     * @param Entity $bharatQr
-     *
      * @return string
      */
-    protected function getLuhnValidCardNumberFromBharatQr()
+    protected function getLuhnValidCardNumber()
     {
         $firstSix = $this->gatewayInput[GatewayResponseParams::CARD_FIRST6];
 
@@ -202,7 +200,7 @@ class Processor extends VirtualAccount\Processor
 
         $checksum = Luhn::computeCheckDigitWithPart($part1, $part2);
 
-        $finalCardNumber =  $firstSix . self::RANDOM_CARD_PADDING . $checksum . $lastFour;
+        $finalCardNumber =  $part1 . $checksum . $part2;
 
         return $finalCardNumber;
     }
@@ -242,7 +240,7 @@ class Processor extends VirtualAccount\Processor
     {
         // TODO: Handle the null checks in card validation
         $card = [
-            Card\Entity::NUMBER       => $this->getLuhnValidCardNumberFromBharatQr($this->gatewayInput),
+            Card\Entity::NUMBER       => $this->getLuhnValidCardNumber(),
             Card\Entity::CVV          => Constants::CARD_CVV,
             Card\Entity::NAME         => Constants::CARD_NAME,
             Card\Entity::EXPIRY_MONTH => Constants::CARD_EXPIRY_MONTH,

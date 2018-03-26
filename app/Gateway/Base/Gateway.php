@@ -1109,11 +1109,7 @@ class Gateway
 
     protected function isBharatQrPayment(): bool
     {
-        if ($this->input['bharat_qr'] === null)
-        {
-            return false;
-        }
+        return (empty($this->input['bharat_qr']) === false);
 
-        return true;
     }
 }

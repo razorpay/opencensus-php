@@ -957,8 +957,9 @@ class Processor
 
         $terminal = null;
 
+        // This will be removed after terminal association with bharat qr payments
         if (($terminalId !== null) or
-            (in_array($gateway, Payment\Gateway::$noTerminalGateways, true) === false))
+            (Payment\Gateway::isValidBharatQrGateway($gateway) === false))
         {
             $terminal = $this->repo->terminal->fetchForPayment($this->payment);
 
@@ -975,7 +976,7 @@ class Processor
 
         $gatewayData['merchant'] = $this->payment->merchant;
 
-        if (in_array($this->payment->getGateway(), Payment\Gateway::$bharatQrGateways, true) === true)
+        if (Payment\Gateway::isValidBharatQrGateway($this->payment->getGateway()) === true)
         {
             $gatewayData['bharat_qr'] = $this->repo->bharat_qr->findByPaymentId($this->payment->getId());
         }

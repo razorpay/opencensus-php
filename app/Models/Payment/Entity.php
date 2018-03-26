@@ -660,7 +660,7 @@ class Entity extends Base\PublicEntity
     // to set gateway for bharat qr payment
     // so a new method
     //
-    public function setGatewayBharatQr(string $gateway)
+    public function setGatewayForBharatQr(string $gateway)
     {
         $this->setGateway($gateway);
     }

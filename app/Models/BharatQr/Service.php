@@ -57,15 +57,15 @@ class Service extends Base\Service
         $qrData = $callbackData['qr_data'];
         $gatewayInput = $callbackData['gateway_input'];
 
+        (new Validator)->validateInput('gateway_response', $qrData);
+
         $qrCodeId = $qrData[GatewayResponseParams::MERCHANT_REFERENCE];
 
         $this->determineAndSetModeForQr($qrCodeId);
 
         $qrData[GatewayResponseParams::GATEWAY] = $gateway;
 
-        $bharatQrInputParams = $this->getBharatQrInputParams($qrData);
-
-        list($valid, $bharatQr) = $this->core->processPayment($bharatQrInputParams, $qrData);
+        list($valid, $bharatQr) = $this->core->processPayment($qrData);
 
         //
         // In case of duplicate notification
@@ -83,21 +83,13 @@ class Service extends Base\Service
         return $response;
     }
 
+    // This will be removed from here after terminal association with bharat qr
+    // payments
     protected function callGatewayAuthorize(string $gateway, array $gatewayInput)
     {
         $gatewayInput['qr_notification'] = true;
 
         return $this->app['gateway']->call($gateway, Action::AUTHORIZE, $gatewayInput, null);
-    }
-
-    protected function getBharatQrInputParams(array $gatewayInput)
-    {
-        return [
-            Entity::PROVIDER_REFERENCE_ID => $gatewayInput[Entity::PROVIDER_REFERENCE_ID],
-            Entity::MERCHANT_REFERENCE    => $gatewayInput[Entity::MERCHANT_REFERENCE],
-            Entity::METHOD                => $gatewayInput[Entity::METHOD],
-            Entity::AMOUNT                => $gatewayInput[Entity::AMOUNT],
-        ];
     }
 
     protected function getResponse(bool $valid)
@@ -122,6 +114,9 @@ class Service extends Base\Service
 
     protected function determineAndSetModeForQr(string $merchantReference)
     {
+        // We are not using verifyIdAndSilentlyStripSign here because in case
+        // of unexpected payments reference id will be random and this will throw
+        // exception.
         (new QrCode\Entity)->stripSignWithoutValidation($merchantReference);
 
         $mode = $this->repo->determineLiveOrTestModeForEntity($merchantReference, Constants\Entity::QR_CODE);

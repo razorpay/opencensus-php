@@ -21,4 +21,11 @@ class Repository extends Base\Repository
                     ->where(Entity::PAYMENT_ID, '=', $paymentId)
                     ->first();
     }
+
+    public function findByMerchantReference(string $merchantReference)
+    {
+        return $this->newQuery()
+            ->where(Entity::MERCHANT_REFERENCE, '=', $merchantReference)
+            ->first();
+    }
 }

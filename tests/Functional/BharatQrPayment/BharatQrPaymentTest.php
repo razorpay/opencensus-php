@@ -259,7 +259,9 @@ class BharatQrPaymentTest extends TestCase
 
         $qrCodeId = substr($this->qrCode['id'], 3);
 
-        $request['content']['PurchaseID'] = $qrCodeId;
+        $content = $this->getMockServer('hitachi')->getBharatQrCallback($qrCodeId);
+
+        $request['content'] = $content;
 
         $response = $this->makeRequestAndGetContent($request);
 

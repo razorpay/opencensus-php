@@ -114,6 +114,13 @@ class Server extends Base\Mock\Server
 
         $payment = $app['repo']->payment->find($input['merchantTranId']);
 
+        if ($payment === NULL)
+        {
+            $bharatQr = $app['repo']->bharat_qr->findByMerchantReference($input['merchantTranId']);
+
+            $payment = $bharatQr->payment;
+        }
+
         $status = 'SUCCESS';
         $message = 'Transaction Successful';
 
