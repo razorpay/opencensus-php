@@ -217,6 +217,7 @@ return [
             Permission::SEND_NEWSLETTER => '',
             Permission::TRIGGER_DUMMY_ERROR => '',
             Permission::MAKE_API_CALL => '',
+            Permission::QUERY_EXPLAINER => '',
             Permission::SCHEDULE_CREATE => '',
             Permission::SCHEDULE_FETCH => '',
             Permission::SCHEDULE_FETCH_MULTIPLE => '',

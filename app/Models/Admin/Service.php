@@ -10,6 +10,7 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Constants\AdminFetch;
 use RZP\Models\GeoIP\Service as GeoIP;
+use RZP\Models\DbAdmin\Service as DbAdmin;
 use RZP\Models\Base\QueryCache\Constants as QueryCacheConstants;
 
 class Service extends Base\Service
@@ -216,5 +217,10 @@ class Service extends Base\Service
     public function updateGeoIps(array $input)
     {
         return (new GeoIP)->updateGeoIps($input);
+    }
+
+    public function explainQuery(array $input): array
+    {
+        return (new DbAdmin)->explainQuery($input);
     }
 }
