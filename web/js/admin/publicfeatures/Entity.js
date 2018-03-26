@@ -59,8 +59,8 @@ export default class EditPublicFeatures extends Component {
         }
       }
 
-      (this.statusLogs = statusLogs.items),
-        (this.allRejectionReasons = allRejectionReasons);
+      this.statusLogs = feature.states.items;
+      this.allRejectionReasons = allRejectionReasons;
 
       this.setState({
         pending: false,
@@ -85,6 +85,8 @@ export default class EditPublicFeatures extends Component {
         //TODO: update collection for the list view
         notifySuccess('Submission edited successfully.');
         closeModal();
+        //reload for list updation
+        setTimeout(() => location.reload(), 0);
       }
     });
   };
@@ -284,5 +286,26 @@ const publicFeatureStatuses = [
 
 const statusLogsFields = [
   ['Created At', item => formatDate(item.created_at)],
-  ['Activation Status', item => statusPill(item.name)],
+  [
+    'Activation Status',
+    item =>
+      item.name === 'rejected' && item.rejection_reasons ? (
+        <div>
+          <div>{statusPill(item.name)}</div>
+          <div>
+            {/* Show rejection reasons */}
+            <span class="square-pills label-semi-muted">
+              <strong>
+                {snakeToTitleCase(
+                  item.rejection_reasons.items[0]['reason_category']
+                )}:{' '}
+              </strong>
+              {snakeToTitleCase(item.rejection_reasons.items[0]['reason_code'])}
+            </span>
+          </div>
+        </div>
+      ) : (
+        statusPill(item.name)
+      ),
+  ],
 ];

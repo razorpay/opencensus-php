@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
+
+import Form from 'ui/Form';
 import { PageTable } from 'ui/Table';
 import { SelectField, FromField, ToField, CheckField } from 'ui/Field';
+
 import Collection from 'model/collection';
 import { adminFetch } from 'common/fetch';
 import { featuresAkaMap, showEntity } from './Entity';
@@ -8,7 +11,7 @@ import { statusPill } from 'common/data';
 import { snakeToTitleCase } from 'common/util';
 
 const defaultFilters = {
-  status: 'under_review',
+  status: '',
 };
 
 function fetchFn() {
@@ -38,12 +41,16 @@ export default class PublicFeaturesList extends Component {
     });
   };
 
+  onSubmit = filters => {
+    return this.collection.applyFilters(filters);
+  };
+
   render() {
     return (
       <div class="list-container">
         <div class="box">
           <header>Public Features</header>
-          <div class="filters">
+          <Form onSubmit={this.onSubmit} class="filters">
             <SelectField
               label="Status"
               name="status"
@@ -67,7 +74,8 @@ export default class PublicFeaturesList extends Component {
             </SelectField>
             <FromField format="X" allowToday={true} />
             <ToField format="X" allowToday={true} />
-          </div>
+            <button class="pull-right">Apply</button>
+          </Form>
         </div>
         <PageTable
           model={this.collection}
@@ -83,7 +91,6 @@ const fields = [
   ['Merchant ID', item => item.merchant.id],
   ['Merchant Name', item => item.merchant.name],
   ['Product', item => item.name],
-  //TODO: merchant account status
   ['Account Activation Status', item => item.merchant.activated.toString()],
   ['Product Activation Status', item => statusPill(item.status)],
 ];
