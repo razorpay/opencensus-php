@@ -167,6 +167,8 @@ class Gateway
 
     protected $sortRequestContent = true;
 
+    protected $mockUrl ;
+
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -189,6 +191,8 @@ class Gateway
         $this->request = $this->app['request'];
 
         $this->cache = $this->app['cache'];
+
+        $this->mockUrl = env('EXTERNAL_MOCK_URL');
     }
 
     public function authorize(array $input)
@@ -792,6 +796,11 @@ class Gateway
         $type = $type ?? $this->action;
 
         $type = strtoupper($type);
+
+        //handling for mock server URL in func environment
+        if( $this->env === 'func' && isset($this->mockUrl)){
+          return $this->mockUrl."/".$this->gateway.$this->getRelativeUrl($type);
+        }
 
         return $urlDomain . $this->getRelativeUrl($type);
     }
