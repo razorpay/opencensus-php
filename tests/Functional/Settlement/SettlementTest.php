@@ -12,6 +12,7 @@ use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Models\Settlement\Entity as SettlementEntity;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
@@ -442,7 +443,7 @@ class SettlementTest extends TestCase
         Carbon::setTestNow();
     }
 
-    public function testSeparateSettlement1()
+    public function testDailySettlement()
     {
         Carbon::setTestNow(Carbon::now(Timezone::IST));
 
@@ -500,7 +501,7 @@ class SettlementTest extends TestCase
         $content = $this->initiateDailySettlements();
 
         $txn = $this->getEntityById('transaction', $paymentTxns['items'][0]['id'], true);
-        $this->assertEquals($tomorrow->addDay()->getTimestamp(), $txn['settled_at']);
+        $this->assertNotNull($txn['settled_at']);
 
         $this->assertEquals(2, $content[$channel]['count']);
         $this->assertEquals(4, $content[$channel]['txnCount']);
@@ -1134,9 +1135,10 @@ class SettlementTest extends TestCase
 
         // Validate settlement txn entity
         $setlTxn = $this->getLastEntity('transaction', true);
-        $this->assertEquals('settlement', $setlTxn['type']);
-        $this->assertEquals($setl['id'], $setlTxn['entity_id']);
-        $this->assertNull($setlTxn['reconciled_at']);
+        $this->assertEquals('settlement', $setlTxn[TransactionEntity::TYPE]);
+        $this->assertEquals($setl['id'], $setlTxn[TransactionEntity::ENTITY_ID]);
+        $this->assertNull($setlTxn[TransactionEntity::RECONCILED_AT]);
+        $this->assertNotNull($setlTxn[TransactionEntity::SETTLED_AT]);
 
         // Validate settlement details entity
         $content = $this->getEntities('settlement_details', ['settlement_id' => $setl['id']], true);

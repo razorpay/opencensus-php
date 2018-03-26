@@ -1,9 +1,8 @@
 <?php
 
-use RZP\Gateway\Hdfc;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
-use RZP\Error\PublicErrorDescription;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Merchant\Detail\RejectionReasons as RejectionReasons;
 
 return [
@@ -344,6 +343,22 @@ return [
                     'disabled_reason' => 'required_fields',
                 ],
                 'can_submit' => false,
+            ],
+        ],
+    ],
+
+    'testMerchantReviewer' => [
+        'request' => [
+            'content' => [
+                'reviewer_id' => Org::SUPER_ADMIN_SIGNED
+            ],
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                'reviewer' => [
+                    'id' => Org::SUPER_ADMIN_SIGNED
+                ],
             ],
         ],
     ],
