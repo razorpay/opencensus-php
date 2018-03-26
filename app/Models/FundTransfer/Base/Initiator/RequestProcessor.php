@@ -31,9 +31,9 @@ abstract class RequestProcessor extends NodalAccount
     /**
      * Holds the request body
      *
-     * @var array
+     * @var string
      */
-    protected $body = [];
+    protected $body = null;
 
     /**
      * Holds the options data for request
@@ -88,7 +88,7 @@ abstract class RequestProcessor extends NodalAccount
         return $this;
     }
 
-    public function body(array $body): self
+    public function body(string $body): self
     {
         $this->body = $body;
 
@@ -190,9 +190,9 @@ abstract class RequestProcessor extends NodalAccount
     /**
      * Should give the request body for the current request class
      *
-     * @return array
+     * @return string
      */
-    public abstract function requestBody(): array;
+    public abstract function requestBody(): string;
 
     /**
      * Should give the request method for current request
