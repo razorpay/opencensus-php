@@ -207,7 +207,7 @@ class EMIPaymentTest extends TestCase
         $this->assertEquals(false, $zip->extractTo($pathinfo['dirname']));
         $this->deleteExtractedFile($pathinfo);
 
-        $zip->setPassword(Str::quickRandom(10));
+        $zip->setPassword(Str::random(10));
         // Extraction fails, incorrect password
 
         // This doesn't always work. extractTo() sometimes returns true

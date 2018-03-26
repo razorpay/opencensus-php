@@ -8,6 +8,7 @@ use RZP\Models\Emi;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\State;
+use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
@@ -245,6 +246,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::WHITELISTED_IPS_LIVE,
         self::WHITELISTED_IPS_TEST,
+        self::MERCHANT_DETAIL,
      ];
 
     protected $defaults = [
@@ -1337,9 +1339,25 @@ class Entity extends Base\PublicEntity
                     ->orderBy(Invitation\Entity::CREATED_AT, 'desc');
     }
 
+    /**
+     * Returns tag names for merchant, ensures to read from LIVE mode.
+     * @return array
+     */
+    public function liveTagNames(): array
+    {
+        return $this->getConnectionName() === Mode::LIVE ?
+                $this->tagNames() :
+                (clone $this)->setConnection(Mode::LIVE)->tagNames();
+    }
+
     public function isEmailOptional()
     {
         return $this->isFeatureEnabled(Feature\Constants::EMAIL_OPTIONAL);
+    }
+
+    public function isMagicEnabled()
+    {
+        return $this->isFeatureEnabled(Feature\Constants::MAGIC);
     }
 
     public function isPhoneOptional()

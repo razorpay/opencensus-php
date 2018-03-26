@@ -27,9 +27,9 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TOKEN2      => 'sometimes|string',
         // We generate it if expired_at is not present and method is emandate
         Entity::EXPIRED_AT          => 'sometimes|epoch|nullable|custom',
-        Entity::ACCOUNT_NUMBER      => 'sometimes|alpha_num|between:5,20',
-        Entity::BENEFICIARY_NAME    => 'sometimes|alpha_space_num|between:4,120',
-        Entity::IFSC                => 'sometimes|alpha_num|size:11',
+        Entity::ACCOUNT_NUMBER      => 'sometimes|nullable|alpha_num|between:5,20',
+        Entity::BENEFICIARY_NAME    => 'sometimes|nullable|alpha_space_num|between:4,120',
+        Entity::IFSC                => 'sometimes|nullable|alpha_num|size:11',
         Entity::AADHAAR_NUMBER      => 'sometimes|nullable|string|size:12',
     ];
 

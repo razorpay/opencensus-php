@@ -24,6 +24,8 @@ class Gateway
     const BLADE                  = 'blade';
     const CYBERSOURCE            = 'cybersource';
     const EBS                    = 'ebs';
+    const ESIGNER_DIGIO          = 'esigner_digio';
+    const ENACH_RBL              = 'enach_rbl';
     const FIRST_DATA             = 'first_data';
     const HDFC                   = 'hdfc';
     const HITACHI                = 'hitachi';
@@ -78,6 +80,7 @@ class Gateway
         self::AEPS_ICICI  => [self::ACQUIRER_ICIC],
         self::CARD_FSS    => [self::ACQUIRER_FSS, self::ACQUIRER_BARB],
         self::HITACHI     => [self::ACQUIRER_RATN],
+        self::ENACH_RBL   => [self::ACQUIRER_RATN],
     ];
 
     const POWER_WALLETS = [
@@ -175,6 +178,7 @@ class Gateway
         self::BLADE               => Settlement\Channel::KOTAK,
         self::BILLDESK            => Settlement\Channel::KOTAK,
         self::EBS                 => Settlement\Channel::KOTAK,
+        self::ENACH_RBL           => Settlement\Channel::KOTAK,
         self::HDFC                => Settlement\Channel::KOTAK,
         self::MOBIKWIK            => Settlement\Channel::KOTAK,
         self::PAYTM               => Settlement\Channel::KOTAK,
@@ -419,6 +423,13 @@ class Gateway
         ],
     ];
 
+    public static $cardNetworkRecurringMap = [
+        self::HITACHI => [
+            Network::VISA,
+            Network::MC,
+        ],
+    ];
+
     public static $walletToGatewayMap = [
         Wallet::OLAMONEY    => Gateway::WALLET_OLAMONEY,
         Wallet::PAYTM       => Gateway::PAYTM,
@@ -480,12 +491,12 @@ class Gateway
         self::WALLET_JIOMONEY,
         self::WALLET_SBIBUDDY,
         self::WALLET_MPESA,
-        self::UPI_ICICI,
     ];
 
     public static $verifyDisabled = [
         self::WALLET_OPENWALLET,
         self::NETBANKING_RBL,
+        self::ENACH_RBL,
     ];
 
     /**
@@ -502,6 +513,8 @@ class Gateway
         Gateway::NETBANKING_ICICI,
         Gateway::NETBANKING_AXIS,
         Gateway::NETBANKING_HDFC,
+        Gateway::ESIGNER_DIGIO,
+        Gateway::ENACH_RBL,
     ];
 
     public static $recurringCardNetworks = [
@@ -581,7 +594,11 @@ class Gateway
             Gateway::NETBANKING_ICICI,
             Gateway::NETBANKING_HDFC,
         ],
-        AuthType::AADHAAR => [],
+        // Esigner Digio is added here just for test cases
+        AuthType::AADHAAR => [
+            Gateway::ESIGNER_DIGIO,
+            Gateway::ENACH_RBL,
+        ],
     ];
 
     /**
@@ -641,6 +658,50 @@ class Gateway
         Gateway::NETBANKING_ICICI   => [IFSC::ICIC],
         Gateway::NETBANKING_AXIS    => [IFSC::UTIB],
         Gateway::NETBANKING_HDFC    => [IFSC::HDFC],
+        // This is added here just for test cases
+        // We are using UTIB in test cases
+        Gateway::ESIGNER_DIGIO      => [
+            IFSC::UTIB,
+        ],
+        Gateway::ENACH_RBL      => [
+            IFSC::ABHY,
+            IFSC::ANDB,
+            IFSC::UTIB,
+            IFSC::BKID,
+            IFSC::MAHB,
+            IFSC::BCBM,
+            IFSC::BCBX,
+            IFSC::CNRB,
+            IFSC::CBIN,
+            IFSC::CITI,
+            IFSC::DCBL,
+            IFSC::FDRL,
+            IFSC::HDFC,
+            IFSC::ICIC,
+            IFSC::IBKL,
+            IFSC::IDFB,
+            IFSC::INDB,
+            IFSC::KKBK,
+            IFSC::ORBC,
+            IFSC::PUNB,
+            IFSC::RATN,
+            IFSC::SRCB,
+            IFSC::SCBL,
+            IFSC::SVCB,
+            IFSC::SYNB,
+            IFSC::ADCC,
+            IFSC::COSB,
+            IFSC::HSBC,
+            IFSC::SUTB,
+            IFSC::UCBA,
+            IFSC::UBIN,
+            IFSC::YESB,
+            IFSC::DBSS,
+            IFSC::BGBX,
+            IFSC::CORP,
+            IFSC::VARA,
+            IFSC::KVBL,
+        ],
     ];
 
     /**
@@ -651,6 +712,7 @@ class Gateway
     public static $fileBasedEMandateDebitGateways = [
         Gateway::NETBANKING_HDFC,
         Gateway::NETBANKING_AXIS,
+        Gateway::ENACH_RBL,
     ];
 
     /**
@@ -660,6 +722,7 @@ class Gateway
      */
     public static $fileBasedEMandateRegistrationGateways = [
         Gateway::NETBANKING_HDFC,
+        Gateway::ENACH_RBL,
     ];
 
     /**
@@ -812,7 +875,8 @@ class Gateway
     ];
 
     public static $upiIntentGateways = [
-        Gateway::UPI_ICICI
+        Gateway::UPI_ICICI,
+        Gateway::UPI_MINDGATE,
     ];
 
     public static function getAcquirerName(string $acquirer)
@@ -1081,10 +1145,34 @@ class Gateway
         return (in_array($gateway, self::TOPUP_GATEWAYS));
     }
 
-    public static function isCardNetworkSupported($network, $gateway)
+    /**
+     * - If the gateway is not present in the cardNetworkMap OR if gateway
+     *   is present but does not support the network, [supported = false]
+     * - If supported = true AND recurring = true and if gateway is present in cardNetworkRecurringMap,
+     *     - supported = true/false based on whether the gateway supports the network.
+     *   The reason why we let it be true even if the gateway is not present in cardNetworkRecurringMap
+     *   is because there are very few gateways which would have a different set of networks for
+     *   supporting recurring. Most gateways support the same set of networks as present in cardNetworkMap.
+     *
+     * @param      $network
+     * @param      $gateway
+     * @param bool $recurring
+     *
+     * @return bool
+     */
+    public static function isCardNetworkSupported(string $network, string $gateway, bool $recurring = false)
     {
-        return ((array_key_exists($gateway, self::$cardNetworkMap)) and
-                (in_array($network, self::$cardNetworkMap[$gateway])));
+        $supported = ((array_key_exists($gateway, self::$cardNetworkMap) === true) and
+                      (in_array($network, self::$cardNetworkMap[$gateway], true) === true));
+
+        if (($supported === true) and
+            ($recurring === true) and
+            (isset(self::$cardNetworkRecurringMap[$gateway]) === true))
+        {
+            $supported = (in_array($network, self::$cardNetworkRecurringMap[$gateway], true) === true);
+        }
+
+        return $supported;
     }
 
     public static function getExclusiveNetworksForGateway(string $gateway)

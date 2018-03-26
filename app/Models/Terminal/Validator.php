@@ -51,8 +51,10 @@ class Validator extends Base\Validator
         Payment\Gateway::BILLDESK,
         Payment\Gateway::AXIS_MIGS,
         Payment\Gateway::UPI_ICICI,
+        Payment\Gateway::ENACH_RBL,
         Payment\Gateway::FIRST_DATA,
         Payment\Gateway::CYBERSOURCE,
+        Payment\Gateway::UPI_MINDGATE,
         Payment\Gateway::NETBANKING_ICICI,
         Payment\Gateway::NETBANKING_INDUSIND,
     ];
@@ -199,8 +201,10 @@ class Validator extends Base\Validator
     ];
 
     protected static $firstDataEditTerminalRules = [
+        Entity::GATEWAY                    => 'sometimes|in:first_data',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
         Entity::TYPE                       => 'sometimes|array',
+        Entity::MODE                       => 'sometimes|in:2,3',
     ];
 
     protected static $cybersourceEditTerminalRules = [
@@ -216,6 +220,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY                    => 'sometimes|in:upi_icici',
         Entity::UPI                        => 'sometimes|boolean|in:1',
         Entity::GATEWAY_TERMINAL_ID        => 'sometimes',
+        Entity::TYPE                       => 'sometimes|array',
     ];
 
     protected static $netbankingIciciEditTerminalRules = [
@@ -299,6 +304,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID2       => 'required|string',
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
         Entity::UPI                        => 'sometimes|boolean|in:1',
+        Entity::TYPE                       => 'sometimes|array',
     ];
 
     protected static $upiSbiTerminalRules = [
@@ -357,6 +363,20 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACCESS_CODE         => 'sometimes',
         Entity::GATEWAY_MERCHANT_ID         => 'required',
         Entity::GATEWAY_TERMINAL_ID         => 'sometimes',
+    ];
+
+    protected static $enachRblTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:enach_rbl',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string|size:18',
+        Entity::GATEWAY_MERCHANT_ID2        => 'required|string',
+        Entity::GATEWAY_TERMINAL_ID         => 'required|string',
+        Entity::GATEWAY_ACCESS_CODE         => 'required|size:11',
+    ];
+
+    protected static $enachRblEditTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:enach_rbl',
+        Entity::GATEWAY_ACQUIRER            => 'sometimes|in:ratn',
+        Entity::GATEWAY_TERMINAL_ID         => 'sometimes|string',
     ];
 
     protected function validateGateway($input)
@@ -599,6 +619,7 @@ class Validator extends Base\Validator
             ($new->getType() === $existing->getType()) and
             ($new->getCurrency() === $existing->getCurrency()) and
             ($new->getNetworkCategory() === $existing->getNetworkCategory()) and
+            ($new->getCategory() === $existing->getCategory()) and
             ($new->getEmiSubvention() === $existing->getEmiSubvention()))
         {
             throw new Exception\BadRequestException(

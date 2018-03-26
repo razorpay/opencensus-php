@@ -4,6 +4,7 @@ namespace RZP\Models\Payment\Processor;
 
 use App;
 use Mail;
+use Cache;
 use Crypt;
 use Config;
 use Route;
@@ -37,6 +38,7 @@ use RZP\Models\Transaction;
 use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Method;
 use RZP\Models\Customer\Token;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Payment\Analytics;
@@ -1614,21 +1616,49 @@ trait Authorize
 
         $payment->setInternational();
 
-        $this->processEmandatePayments($payment);
+        $this->setRecurringType($payment, $input);
     }
 
-    protected function processEmandatePayments(Payment\Entity $payment)
+    protected function setRecurringType(Payment\Entity $payment, array $input)
     {
-        $token = $payment->getGlobalOrLocalTokenEntity();
+        $type = null;
 
         if ($payment->isEmandate() === true)
         {
+            $token = $payment->getGlobalOrLocalTokenEntity();
+
             // True => auto, False => initial
             // TODO: Add support for when we allow recurring tokens for first payments
-            $type = ($token->isRecurring() === true) ? Payment\RecurringType::AUTO : Payment\RecurringType::INITIAL;
-
-            $payment->setRecurringType($type);
+            $type = ($token->isRecurring() === true) ?
+                    Payment\RecurringType::AUTO :
+                    Payment\RecurringType::INITIAL;
         }
+
+        //
+        // TODO: Will have to figure out the recurring type when we allow
+        // the end-users to pay for the subscription themselves manually
+        // before we charge. This can happen when we create an invoice first
+        // and then an hour later, we auto-charge. In that 1 hr gap, the
+        // customer can make a payment (via public auth and all)
+        //
+        if ($payment->hasSubscription() === true)
+        {
+            $subscription = $payment->subscription;
+
+            $type = Payment\RecurringType::AUTO;
+
+            if ($subscription->hasBeenAuthenticated() === false)
+            {
+                $type = Payment\RecurringType::INITIAL;
+            }
+            else if ((isset($input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE]) === true) and
+                     (boolval($input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE]) === true))
+            {
+                $type = Payment\RecurringType::CARD_CHANGE;
+            }
+        }
+
+        $payment->setRecurringType($type);
     }
 
     protected function addTestSuccessFlagToGatewayInput(array $input, array & $gatewayInput)
@@ -2364,6 +2394,8 @@ trait Authorize
 
         $data['image'] = $payment->merchant->getFullLogoUrlWithSize(Merchant\Logo::MEDIUM_SIZE);
 
+        $data['magic'] = $this->isMagicEnabled($payment);
+
         $segmentData = $data;
 
         // this might log sensitive data. Remove it
@@ -2765,7 +2797,7 @@ trait Authorize
                 ]);
         }
 
-        if ($this->isCardChangeFlow($subscription, $payment) === true)
+        if ($this->isCardChangeFlow($subscription) === true)
         {
             $this->processCardChangeForSubscription($subscription, $payment);
 
@@ -2790,11 +2822,10 @@ trait Authorize
      * TODO: This needs to be fixed!!!!!
      *
      * @param Subscription\Entity $subscription
-     * @param Payment\Entity      $payment
      *
      * @return bool
      */
-    protected function isCardChangeFlow(Subscription\Entity $subscription, Payment\Entity $payment)
+    protected function isCardChangeFlow(Subscription\Entity $subscription)
     {
         if ($subscription->hasBeenAuthenticated() === false)
         {
@@ -2824,17 +2855,18 @@ trait Authorize
         //     return true;
         // }
 
-        // NOTE: 2FA WILL NOT WORK FOR INTERNATIONAL. TRUST ME.
+        // NOTE: 2FA WILL NOT WORK FOR INTERNATIONAL.
 
-        // TODO: Public auth check does not work!!!! Use redis or something here. FIX ASAP!
-        if ($this->ba->isPublicAuth() === true)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        //
+        // TODO: Public auth check does not work! Use Redis or something here. FIX ASAP!
+        // Ideally we should have gotten this from subscription_card_change
+        // attribute which would have been sent in payment create input.
+        // But, since we don't store that attribute and this would be in
+        // the callback flow, we don't know whether this is card change flow.
+        // So, what we can do instead is rely on recurring_type attribute of payment
+        // entity. recurring_type can be set to initial or card_change or something.
+        //
+        return ($this->ba->isPublicAuth() === true);
     }
 
     protected function processCardChangeForSubscription(
@@ -4095,5 +4127,35 @@ trait Authorize
                     'iin'     => $card->getIin()
                 ]);
         }
+    }
+
+    protected function isMagicEnabled(Payment\Entity $payment)
+    {
+        if ($payment->isMethodCardOrEmi() === false)
+        {
+            return false;
+        }
+
+        try
+        {
+            $cache = Cache::getFacadeRoot();
+
+            $magicDisabledGlobally = (bool) $cache->get(ConfigKey::DISABLE_MAGIC);
+        }
+        catch (\Throwable $e)
+        {
+            $magicDisabledGlobally = true;
+
+            $this->trace->traceException($e);
+        }
+
+        if (($magicDisabledGlobally === false) and
+            ($this->merchant->isMagicEnabled() === true) and
+            ($payment->card->isMagicEnabled() === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

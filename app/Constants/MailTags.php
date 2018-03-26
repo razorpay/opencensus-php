@@ -22,6 +22,8 @@ class MailTags
 
     const HDFC_SETTLEMENT_FILES            = 'hdfc_settlement_files';
 
+    const RBL_SETTLEMENT                   = 'rbl_settlement';
+
     const SETTLEMENT_FAILURE_EMAIL         = 'settlement_failure_email';
 
     const NULL_UTR_REPORT                  = 'null_utr_report';
@@ -115,6 +117,9 @@ class MailTags
 
     // Merchant feature tags
     const FEATURE_ENABLED                  = 'feature_enabled';
+
+    // Merchant Request tags
+    const MERCHANT_REQUEST_REJECTED        = 'merchant_request_rejected';
 
     // Dispute tags
     const DISPUTE_CREATED                  = 'dispute_created';

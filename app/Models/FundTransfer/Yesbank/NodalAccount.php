@@ -16,11 +16,11 @@ use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Models\FundTransfer;
 use RZP\Models\FundTransfer\Attempt;
-use RZP\Models\FundTransfer\Base as NodalBase;
+use RZP\Models\FundTransfer\Base\Initiator as NodalBase;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Models\Settlement;
 
-class NodalAccount extends NodalBase\NodalAccount
+class NodalAccount extends NodalBase\FileProcessor
 {
     use FileHandlerTrait;
 
@@ -273,7 +273,7 @@ class NodalAccount extends NodalBase\NodalAccount
 
         $yesbankSettlementMail = new SettlementMail\KotakSettlement($data);
 
-        Mail::send($yesbankSettlementMail);
+        Mail::queue($yesbankSettlementMail);
     }
 
     protected function getFileToWriteNameWithoutExt()

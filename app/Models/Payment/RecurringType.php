@@ -6,8 +6,9 @@ use RZP\Exception\InvalidArgumentException;
 
 class RecurringType
 {
-    const INITIAL     = 'initial';
-    const AUTO        = 'auto';
+    const INITIAL       = 'initial';
+    const AUTO          = 'auto';
+    const CARD_CHANGE   = 'card_change';
 
     public static function isRecurringTypeValid($type)
     {

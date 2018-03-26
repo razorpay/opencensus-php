@@ -238,19 +238,7 @@ class Service extends Base\Service
 
         $features = $input[Constants::FEATURES];
 
-        $response = [];
-
-        foreach ($features as $feature)
-        {
-            $questionMap = Constants::getFeatureQuestions($feature);
-
-            if (count($questionMap) > 0)
-            {
-                $response[$feature] = $questionMap;
-            }
-        }
-
-        return $response;
+        return (new Core)->getOnboardingQuestions($features);
     }
 
     /**

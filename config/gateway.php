@@ -16,14 +16,16 @@ return [
         'axis_migs',
         'billdesk',
         'blade',
+        'card_fss',
         'cybersource',
-        'hitachi',
-        'first_data',
+        'esigner_digio',
+        'enach_rbl',
         'ebs',
+        'first_data',
         'hdfc',
+        'hitachi',
         'kotak',
         'mobikwik',
-        'paytm',
         'netbanking_hdfc',
         'netbanking_bob',
         'netbanking_corporation',
@@ -35,13 +37,14 @@ return [
         'netbanking_rbl',
         'netbanking_indusind',
         'netbanking_pnb',
+        'paytm',
         'sharp',
-        'wallet_olamoney',
         'upi_icici',
         'upi_mindgate',
         'upi_sbi',
         'upi_npci',
         'aeps_icici',
+        'wallet_olamoney',
         'wallet_payzapp',
         'wallet_payumoney',
         'wallet_airtelmoney',
@@ -50,7 +53,6 @@ return [
         'wallet_sbibuddy',
         'wallet_openwallet',
         'wallet_mpesa',
-        'card_fss',
     ],
 
     'mock_amex'                   => env('AMEX_MOCK'),
@@ -59,6 +61,8 @@ return [
     'mock_first_data'             => env('FIRST_DATA_MOCK'),
     'mock_atom'                   => env('ATOM_MOCK'),
     'mock_hitachi'                => env('HITACHI_MOCK'),
+    'mock_esigner_digio'          => env('ESIGNER_DIGIO_MOCK'),
+    'mock_enach_rbl'              => env('ENACH_RBL_MOCK'),
     'mock_axis_migs'              => env('AXIS_MIGS_MOCK'),
     'mock_axis_genius'            => env('AXIS_GENIUS_MOCK'),
     'mock_kotak'                  => env('KOTAK_MOCK'),
@@ -198,6 +202,17 @@ return [
         'test_merchant_id' => env('EBS_GATEWAY_TEST_MERCHANT_ID', 'random'),
         'test_hash_secret' => env('EBS_GATEWAY_TEST_HASH_SECRET', 'secret'),
     ],
+
+    'esigner_digio' => [
+        'client_id'         => env('DIGIO_ESIGNER_GATEWAY_CLIENT_ID'),
+        'client_password'   => env('DIGIO_ESIGNER_GATEWAY_CLIENT_PASSWORD'),
+        'test_access_code'  => env('DIGIO_ESIGNER_GATEWAY_TEST_ACCESS_CODE'),
+        'test_merchant_id'  => env('DIGIO_ESIGNER_GATEWAY_TEST_MERCHANT_ID'),
+        'test_merchant_id2' => env('DIGIO_ESIGNER_GATEWAY_TEST_MERCHANT_ID2'),
+        'test_terminal_id'  => env('DIGIO_ESIGNER_GATEWAY_TEST_TERMINAL_ID')
+    ],
+
+    'enach_rbl' => [],
 
     'card_fss' => [
         'barb' => [
@@ -361,7 +376,7 @@ return [
     'netbanking_bob' => [
         'test_merchant_id'       => env('NETBANKING_BOB_GATEWAY_TEST_MERCHANT_ID'),
         'test_hash_secret'       => env('NETBANKING_BOB_GATEWAY_TEST_HASH_SECRET'),
-        'pooling_account_number' => env('KOTAK_NODAL_ACCOUNT_NUMBER'),
+        'pooling_account_number' => env('BOB_POOLING_ACCOUNT_NUMBER'),
     ],
 
     'netbanking_icici' => [
@@ -402,7 +417,6 @@ return [
         'test_hash_secret_rec'       => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET_REC'),
         'test_hash_secret_encrec'    => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET_ENCREC'),
         'test_merchant_id_rec'       => env('NETBANKING_AXIS_GATEWAY_TEST_MERCHANT_ID_REC'),
-
     ],
 
     'netbanking_airtel' => [

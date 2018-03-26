@@ -13,12 +13,12 @@ use RZP\Encryption\Type;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\BankAccount;
-use RZP\Models\FundTransfer\Base as NodalBase;
+use RZP\Models\FundTransfer\Base\Initiator as NodalBase;
 use RZP\Encryption\AESEncryption;
 use RZP\Mail\Settlement\AxisSettlement;
 use RZP\Models\FundTransfer\Mode;
 
-class NodalAccount extends NodalBase\NodalAccount
+class NodalAccount extends NodalBase\FileProcessor
 {
     const SIGNED_URL_DURATION = '1440';
 

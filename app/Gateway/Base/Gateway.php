@@ -505,7 +505,7 @@ class Gateway
 
         if (isset($request['options']['timeout']) === false)
         {
-            $request['options']['timeout'] = self::TIMEOUT;
+            $request['options']['timeout'] = static::TIMEOUT;
         }
 
         try

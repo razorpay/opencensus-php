@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Payment;
 
+use Redis;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Payment\Entity as Payment;
@@ -203,7 +204,7 @@ class RecurringPaymentTest extends TestCase
 
         $this->ba->privateAuth();
 
-        $content = $this->doS2sRecurringPayment($payment);
+        $content = $this->doS2SRecurringPayment($payment);
 
         $paymentEntity = $this->getLastEntity('payment', true);
 
@@ -253,7 +254,7 @@ class RecurringPaymentTest extends TestCase
 
         $this->ba->privateAuth();
 
-        $content = $this->doS2sRecurringPayment($payment);
+        $content = $this->doS2SRecurringPayment($payment);
 
         $paymentEntity = $this->getLastEntity('payment', true);
 
@@ -305,7 +306,7 @@ class RecurringPaymentTest extends TestCase
         });
     }
 
-    public function testRecurringPaymentAmexCardNotSupported()
+    public function hitachi_subtestRecurringPaymentAmexCardNotSupported()
     {
         $payment = $this->getDefaultRecurringPaymentArray();
 
@@ -362,11 +363,11 @@ class RecurringPaymentTest extends TestCase
                 'terminal_id' => '1000CybrsTrmnl'
             ]);
 
-        $content = $this->doS2sRecurringPayment($payment);
+        $content = $this->doS2SRecurringPayment($payment);
 
         $payment[Payment::CARD] = [];
 
-        $content = $this->doS2sRecurringPayment($payment);
+        $content = $this->doS2SRecurringPayment($payment);
 
         $paymentEntity = $this->getLastEntity('payment', true);
 
@@ -419,8 +420,6 @@ class RecurringPaymentTest extends TestCase
         $this->fixtures->terminal->disableTerminal('1000CybrsTrmnl');
         $this->fixtures->terminal->disableTerminal('1RecurringTerm');
         $this->fixtures->terminal->disableTerminal('3RecurringTerm');
-
-        $tokens = $this->getEntities('token', [], true);
 
         list($firstDataTerminal1, $firstDataTerminal2) = $this->fixtures->create('terminal:shared_first_data_recurring_terminals');
 
@@ -559,7 +558,7 @@ class RecurringPaymentTest extends TestCase
         $data = $this->testData[__FUNCTION__];
 
         $this->runRequestResponseFlow($data, function() use ($payment) {
-            $this->doS2sRecurringPayment($payment);
+            $this->doS2SRecurringPayment($payment);
         });
 
         $this->fixtures->terminal->enableTerminal($firstDataTerminal2['id']);
@@ -617,10 +616,118 @@ class RecurringPaymentTest extends TestCase
         $data = $this->testData[__FUNCTION__];
 
         $this->runRequestResponseFlow($data, function() use ($payment) {
-            $this->doS2sRecurringPayment($payment);
+            $this->doS2SRecurringPayment($payment);
         });
 
         $this->ba->publicAuth();
+    }
+
+    public function testRecurringPaymentsWithMultipleNormalAndFallbackTerminals()
+    {
+        $this->markTestSkipped('Not de-prioritizing fallback terminals for now');
+
+        // - Create first data recurring terminals
+        // - First payment to go via first data recurring terminal
+        // - Create Axis recurring terminal with type 6
+        // - Prioritize Axis over all other gateways
+        // - Second recurring payment to go via first data recurring terminal
+        //   - The above happens because the fallback sorter ensures that terminals with gateway
+        //     tokens is prioritized over terminals without gateway tokens (fallback terminals)
+
+        // For some reason, we create shared Cybersource terminal with recurring 3DS
+        $this->fixtures->terminal->disableTerminal('1000CybrsTrmnl');
+        $this->fixtures->terminal->disableTerminal('1RecurringTerm');
+        $this->fixtures->terminal->disableTerminal('3RecurringTerm');
+
+        list($firstDataTerminal1, $firstDataTerminal2) = $this->fixtures->create('terminal:shared_first_data_recurring_terminals');
+
+        $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $response = $this->doAuthPayment($payment);
+
+        $paymentId = $response['razorpay_payment_id'];
+
+        $firstDataGatewayToken = $this->getLastEntity('gateway_token', true);
+
+        $this->assertEquals($firstDataTerminal1['id'], $firstDataGatewayToken['terminal_id']);
+
+        $paymentEntity = $this->getEntityById('payment', $paymentId, true);
+
+        $this->fixtures->create('terminal:migs_recurring_terminal_with_both_recurring_types', ['merchant_id' => '10000000000000']);
+
+        $this->ba->adminAuth();
+
+        Redis::shouldReceive('zadd')
+             ->once()
+             ->andReturnUsing(function ()
+             {
+                 return 5;
+             });
+
+        $data = $this->testData['testSaveGatewayPriority'];
+
+        $this->startTest($data);
+
+        // Switch to private auth for second recurring payment
+        $this->ba->privateAuth();
+
+        // Set payment for second recurring payment
+        unset($payment['card']);
+        $payment['token'] = $paymentEntity['token_id'];
+
+        $response = $this->doS2SRecurringPayment($payment);
+
+        $paymentId = $response['razorpay_payment_id'];
+
+        $paymentEntity = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertNotNull($paymentEntity['token_id']);
+        $this->assertEquals(true, $paymentEntity['recurring']);
+        $this->assertEquals($firstDataTerminal2['id'], $paymentEntity['terminal_id']);
+
+        $gatewayTokens = $this->getEntities('gateway_token', [], true);
+        // There should be only one gateway_token created for the two recurring payments
+        // since the second recurring payment went through the same gateway and terminal (first data).
+        $this->assertEquals(1, $gatewayTokens['count']);
+
+        $tokens = $this->getEntities('token', ['recurring' => 1], true);
+        $this->assertEquals(1, $tokens['count']);
+
+        $token = $this->getEntityById('token', $paymentEntity['token_id'], true);
+        // The terminal should have gotten updated with the latest one.
+        // We don't use this terminal anywhere. So doesn't really matter.
+        $this->assertEquals($firstDataTerminal2['id'], $token['terminal_id']);
+        $this->assertEquals(2, $token['used_count']);
+        $this->assertEquals(true, $token['recurring']);
+    }
+
+    public function testRecurringPaymentCardNetworkNotSupported()
+    {
+        // Create hitachi recurring terminal
+        // Create Visa recurring payment
+        // It should fail saying no terminal found
+
+        // For some reason, we create shared Cybersource terminal with recurring 3DS
+        $this->fixtures->terminal->disableTerminal('1000CybrsTrmnl');
+        $this->fixtures->terminal->disableTerminal('1RecurringTerm');
+        $this->fixtures->terminal->disableTerminal('3RecurringTerm');
+
+        $this->fixtures->create('terminal:hitachi_recurring_terminal_with_both_recurring_types', ['merchant_id' => '10000000000000']);
+
+        $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $payment['card']['number'] = '5893163050216758';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
     }
 
     protected function assignSubMerchant(string $tid, string $mid)

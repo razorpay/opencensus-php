@@ -41,6 +41,7 @@ class Workflow
         Permission::EDIT_MERCHANT_INVOICE_GSTIN,
         Permission::CREATE_ADMIN,
         Permission::DELETE_ADMIN,
+        Permission::EDIT_MERCHANT_REQUESTS,
     ];
 
     protected $app;

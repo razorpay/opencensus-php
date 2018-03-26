@@ -334,6 +334,7 @@ class Entity extends Base\PublicEntity
         self::BANK,
         self::RECURRING,
         self::IFSC,
+        self::VPA,
         'method_based_input',
         'convert_empty_strings_to_null'
     ];
@@ -440,6 +441,18 @@ class Entity extends Base\PublicEntity
             {
                 $input['email'] = self::DUMMY_EMAIL;
             }
+        }
+    }
+
+    protected function modifyVpa(& $input)
+    {
+        if (empty($input[self::VPA]) === false)
+        {
+            $vpaParts = explode('@', $input[self::VPA]);
+
+            $vpaParts[1] = strtolower($vpaParts[1]);
+
+            $input[self::VPA] = implode('@', $vpaParts);
         }
     }
 
@@ -712,9 +725,12 @@ class Entity extends Base\PublicEntity
      * @param $type
      * @throws Exception\InvalidArgumentException
      */
-    public function setRecurringType($type)
+    public function setRecurringType(string $type = null)
     {
-        RecurringType::validateRecurringType($type);
+        if ($type !== null)
+        {
+            RecurringType::validateRecurringType($type);
+        }
 
         $this->setAttribute(self::RECURRING_TYPE, $type);
     }
@@ -727,6 +743,11 @@ class Entity extends Base\PublicEntity
     public function isRecurringTypeInitial()
     {
         return ($this->getAttribute(self::RECURRING_TYPE) === RecurringType::INITIAL);
+    }
+
+    public function isRecurringTypeCardChange()
+    {
+        return ($this->getAttribute(self::RECURRING_TYPE) === RecurringType::CARD_CHANGE);
     }
 
     public function setSigned($signed = true)
@@ -2486,8 +2507,7 @@ class Entity extends Base\PublicEntity
         }
 
         return (($this->card->isInternational() === true) or
-                ($this->card->isAmex() === true) or
-                ($this->card->isRuPay() === true));
+                ($this->card->isAmex() === true));
     }
 
     public static function getFilteredDescription(string $description = null)

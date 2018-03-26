@@ -4,7 +4,8 @@ namespace RZP\Models\State\Reason;
 
 use RZP\Base;
 use RZP\Exception;
-use RZP\Models\Merchant\Detail\RejectionReasons as RejectionReasons;
+use RZP\Models\State\Entity as StateEntity;
+use RZP\Models\Merchant\Detail\RejectionReasons as MerchantDetailRejectionReasons;
 
 class Validator extends Base\Validator
 {
@@ -12,6 +13,7 @@ class Validator extends Base\Validator
     const INVALID_REASON_CATEGORY_MESSAGE      = 'Invalid reason category';
     const INVALID_REASON_CODE_MESSAGE          = 'Invalid reason code';
     const INVALID_REASON_CATEGORY_CODE_MESSAGE = 'Invalid reason code for given reason category';
+    const INVALID_ENTITY_FOR_REJECTION_REASONS = 'Invalid entity for marking rejection reasons against';
 
     protected static $createRules = [
         Entity::REASON_TYPE     => 'required|string|max:255',
@@ -32,16 +34,18 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 self::INVALID_REASON_TYPE_MESSAGE);
         }
-
-        if ($reasonType === ReasonType::REJECTION)
-        {
-            $this->checkValidRejectionReason($input);
-        }
     }
 
-    protected function checkValidRejectionReason(array $input)
+    public function checkValidRejectionReason(array $input, StateEntity $state)
     {
-        $rejectionReasonsMapping = RejectionReasons::REJECTION_REASONS_MAPPING;
+        $reasonType = $input[Entity::REASON_TYPE];
+
+        if ($reasonType !== ReasonType::REJECTION)
+        {
+            return;
+        }
+
+        $rejectionReasonsMapping = Constants::getValidRejectionReasonsMappingForEntity($state->entity->getEntity());
 
         $allowedRejectionReasonCategories = array_keys($rejectionReasonsMapping);
 
@@ -55,7 +59,8 @@ class Validator extends Base\Validator
                 self::INVALID_REASON_CATEGORY_MESSAGE);
         }
 
-        $allowedRejectionReasonCodes = array_keys(RejectionReasons::REASON_CODES_DESCRIPTIONS_MAPPING);
+        $allowedRejectionReasonCodes = array_keys(
+            Constants::getValidRejectionReasonsCodesDescriptionsMappingForEntity($state->entity->getEntity()));
 
         if (in_array($rejectionReasonCode, $allowedRejectionReasonCodes, true) === false)
         {
@@ -69,7 +74,8 @@ class Validator extends Base\Validator
 
         foreach ($rejectionReasonCategoryCodes as $rejectionReasonCategoryCode)
         {
-            $validRejectionReasonCodesForCategory[] = $rejectionReasonCategoryCode[RejectionReasons::CODE];
+            $validRejectionReasonCodesForCategory[] =
+                $rejectionReasonCategoryCode[MerchantDetailRejectionReasons::CODE];
         }
 
         if (in_array($rejectionReasonCode, $validRejectionReasonCodesForCategory, true) === false)

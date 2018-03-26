@@ -9,9 +9,9 @@ use Illuminate\Support\Str;
 use ApiResponse;
 use RZP\Http\Route;
 use RZP\Http\OAuth;
-use RZP\Http\BasicAuth\Type;
+use RZP\Http\Throttle;
+use RZP\Http\FeatureAccess;
 use RZP\Http\BasicAuth\BasicAuth;
-use RZP\Models\Base\PublicCollection;
 
 class Authenticate
 {
@@ -80,9 +80,10 @@ class Authenticate
             $ret = $this->authenticateBasicAuth($route);
         }
 
-        // Post process after auth completes
-        $ret = $this->postAuthenticationProcessing($ret);
+        // Post process after authentication completes
+        $ret = (new FeatureAccess)->verifyFeatureAccess($ret, $bearerToken);
 
+        // Non-null value indicates failure flow
         if ($ret !== null)
         {
             return $ret;
@@ -93,10 +94,12 @@ class Authenticate
 
     /**
      * Authenticate the request with Basic auth
+     * non-null return value indicates a failure
      *
      * @param string $route
      *
      * @return mixed
+     * @throws \RZP\Exception\LogicException
      */
     protected function authenticateBasicAuth(string $route)
     {
@@ -187,6 +190,7 @@ class Authenticate
      * Sample token: rzp_test_oauth_8P3XVPteKu4igS
      *
      * @return mixed|null ErrorResponse if error, else null
+     * @throws \RZP\Exception\LogicException
      */
     protected function authenticateOAuthPublicToken()
     {
@@ -194,30 +198,10 @@ class Authenticate
     }
 
     /**
-     * Post process after auth completes
-     * Function returns non-null value for failure flow
+     * @param $request
      *
-     * @param $authReturn
-     *
-     * @return mixed
+     * @return string|null
      */
-    protected function postAuthenticationProcessing($authReturn)
-    {
-        if ($authReturn !== null)
-        {
-            return $authReturn;
-        }
-
-        $featureCheck = $this->ba->feature();
-
-        if ($featureCheck !== null)
-        {
-            return $featureCheck;
-        }
-
-        return null;
-    }
-
     private function getBearerTokenFromHeaders($request)
     {
         //
@@ -239,6 +223,7 @@ class Authenticate
 
         if ($this->app->runningUnitTests() === true)
         {
+            // Returns string or null
             return $request->bearerToken();
         }
 

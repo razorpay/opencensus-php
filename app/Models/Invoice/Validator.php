@@ -6,10 +6,12 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
 use RZP\Base;
+use RZP\Models\Batch;
 use RZP\Models\Feature;
 use RZP\Models\Customer;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\Settings;
 use RZP\Exception\LogicException;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -39,6 +41,12 @@ class Validator extends Base\Validator
      * issue and expired by timestamps.
      */
     const MIN_EXPIRY_SECS = 900;
+
+    /**
+     * With this constant there is validation rule for
+     * "notify invoices of batch" request.
+     */
+    const NOTIFY_INVOICES_OF_BATCH = 'notify_invoices_of_batch';
 
     protected static $createRules = [
         Entity::SMS_NOTIFY          => 'sometimes|boolean',
@@ -158,6 +166,11 @@ class Validator extends Base\Validator
         Entity::PARTIAL_PAYMENT     => 'filled|boolean|custom',
         Entity::CALLBACK_URL        => 'sometimes|url|nullable',
         Entity::CALLBACK_METHOD     => 'required_with:callback_url|sometimes|string|in:get|nullable',
+    ];
+
+    protected static $notifyInvoicesOfBatchRules = [
+        Entity::SMS_NOTIFY          => 'required|boolean',
+        Entity::EMAIL_NOTIFY        => 'required|boolean',
     ];
 
     /**
@@ -597,40 +610,22 @@ class Validator extends Base\Validator
         $id    = $invoice->getPublicId();
         $label = $invoice->getTypeLabel();
 
-        switch ($invoice->getStatus())
+        $useNewPlView = (in_array('Hostedplv2', $invoice->merchant->liveTagNames(), true) === true);
+        $isPlAndHasNewViewEnabled = (($invoice->isTypeLink() === true) and ($useNewPlView === true));
+
+        if ($invoice->isDraft() === true)
         {
-            //
-            // If invoice is in draft, cancelled state we don't send any data
-            // but just following error message to view.
-            //
-
-            case Status::DRAFT:
-
-                throw new BadRequestValidationFailureException("$label with id $id is not issued yet");
-
-            case Status::CANCELLED:
-
-                throw new BadRequestValidationFailureException("$label with id $id is cancelled");
-
-            //
-            // If invoice type is expired we still send the data and JS code
-            // shows a torn page with other basic attributes. But in case of
-            // other types we would throw error so the error page with proper
-            // message is rendered.
-            //
-
-            case Status::EXPIRED:
-
-                if ($invoice->isTypeInvoice() === false)
-                {
-                    throw new BadRequestValidationFailureException("$label with id $id is expired");
-                }
-
-                break;
-
-            default:
-
-                break;
+            throw new BadRequestValidationFailureException("$label with id $id is not issued yet");
+        }
+        else if (($invoice->isCancelled() === true) and ($isPlAndHasNewViewEnabled === false))
+        {
+            throw new BadRequestValidationFailureException("$label with id $id is cancelled");
+        }
+        else if (($invoice->isExpired() === true) and
+                 ($invoice->isTypeInvoice() === false) and
+                 ($isPlAndHasNewViewEnabled === false))
+        {
+            throw new BadRequestValidationFailureException("$label with id $id is expired");
         }
     }
 
@@ -651,6 +646,30 @@ class Validator extends Base\Validator
                             'max_allowed_line_items'  => self::MAX_ALLOWED_LINE_ITEMS,
                             'actual_line_items_count' => $count,
                         ]);
+        }
+    }
+
+    public function validateNotifyInvoicesOfBatch(
+        Settings\Accessor $settingsAccessor,
+        Batch\Entity $batch,
+        array $input)
+    {
+        // 1. Validates the input
+        $this->validateInput(Validator::NOTIFY_INVOICES_OF_BATCH, $input);
+
+        // 2. Validates that batch notification request was already sent or not
+        $smsNotified      = $settingsAccessor->get(Entity::SMS_NOTIFY);
+        $emailNotified    = $settingsAccessor->get(Entity::EMAIL_NOTIFY);
+
+        if (($smsNotified === true) or ($emailNotified === true))
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_BATCH_NOTIFICATIONS_SENT_ALREADY,
+                Entity::BATCH_ID,
+                [
+                    Entity::BATCH_ID => $batch->getId(),
+                    'input'          => $input,
+                ]);
         }
     }
 
