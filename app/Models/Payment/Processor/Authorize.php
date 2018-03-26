@@ -11,21 +11,18 @@ use Route;
 use Carbon\Carbon;
 use Lib\PhoneBook;
 
-use RZP\Error;
 use RZP\Exception;
+use RZP\Jobs\Shield;
 use RZP\Models\Upi;
 use RZP\Models\Emi;
 use RZP\Models\Risk;
 use RZP\Models\Card;
-use RZP\Models\Admin;
 use RZP\Models\Offer;
-use RZP\Models\Order;
 use RZP\Constants\TLD;
 use RZP\Http\BasicAuth;
 use RZP\Models\Pricing;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
-use RZP\Models\Invoice;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -35,6 +32,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Models\Card\IIN;
 use RZP\Models\Transaction;
+use RZP\Jobs\DispatchRouter;
 use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Method;
 use RZP\Models\Customer\Token;
@@ -1215,6 +1213,12 @@ trait Authorize
 
         $this->tracePaymentInfo(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
         $this->segment->trackPayment($payment, TraceCode::PAYMENT_CREATED);
+
+        $paymentCreateEvent = $this->segment->createPaymentEventForShield($payment);
+
+        $job = new Shield($this->mode, $paymentCreateEvent);
+
+        (new DispatchRouter)->dispatchOn($job, DispatchRouter::SHIELD);
 
         //
         // Call gateway input

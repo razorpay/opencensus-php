@@ -92,15 +92,15 @@ class EventTrackerClient extends AbstractEventClient
     }
 
     /**
-     *
-     * Forms an event object with properites
+     * Forms an event object with properties
      * appends it to $this->events array
      *
      * @param Payment\Entity $payment
      * @param string $eventName
      * @param array $customProperties
+     * @return array
      */
-    protected function appendEvent(Payment\Entity $payment, string $eventName, array $customProperties = [])
+    protected function createEvent(Payment\Entity $payment, string $eventName, array $customProperties = [])
     {
         // payment-related properties
         $properties = $this->getPaymentProperties($payment);
@@ -136,6 +136,22 @@ class EventTrackerClient extends AbstractEventClient
             'timestamp'     => Carbon::now(self::TIMEZONE)->timestamp,
             'properties'    => $properties,
         ];
+
+        return $event;
+    }
+
+    /**
+     *
+     * Forms an event object with properties
+     * appends it to $this->events array
+     *
+     * @param Payment\Entity $payment
+     * @param string $eventName
+     * @param array $customProperties
+     */
+    protected function appendEvent(Payment\Entity $payment, string $eventName, array $customProperties = [])
+    {
+        $event = $this->createEvent($payment, $eventName, $customProperties);
 
         $this->events[] = $event;
     }
@@ -376,6 +392,17 @@ class EventTrackerClient extends AbstractEventClient
         {
             $this->trace->traceException($e, Trace::ERROR, TraceCode::EVENT_TRACK_FAILED);
         }
+    }
+
+    /**
+     * Create PAYMENT_CREATED event for Shield
+     *
+     * @param Payment\Entity $payment
+     * @return array
+     */
+    public function createPaymentEventForShield(Payment\Entity $payment)
+    {
+        return $this->createEvent($payment, TraceCode::PAYMENT_CREATED);
     }
 
     /**
