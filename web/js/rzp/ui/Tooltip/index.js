@@ -60,7 +60,8 @@ class Tooltip extends Component {
       tooltipTop = 0,
       paddingTop = 0,
       paddingLeft = 0,
-      paddingBottom = 0;
+      paddingBottom = 0,
+      paddingRight = 0;
 
     if (align === 'bottom' || align === 'top') {
       tooltipLeft = left + width / 2 - tooltipWidth / 2;
@@ -68,29 +69,25 @@ class Tooltip extends Component {
       tooltipTop = top;
 
       if (align === 'bottom') {
-        if (!this.props.followPointer) {
-          tooltipTop += height;
-        }
-
+        tooltipTop += height;
         paddingTop = gutter;
       } else {
         tooltipTop -= tooltipHeight;
-
-        if (!this.props.followPointer) {
-          tooltipTop -= gutter;
-        }
-
+        tooltipTop -= gutter;
         paddingBottom = gutter;
       }
-    } else if (align === 'right') {
+    } else if (align === 'right' || align === 'left') {
       tooltipLeft = left;
 
-      if (!this.props.followPointer) {
-        tooltipLeft += width;
-      }
-
       tooltipTop = top + height / 2 - tooltipHeight / 2;
-      paddingLeft = gutter;
+
+      if (align === 'right') {
+        tooltipLeft += width;
+        paddingLeft = gutter;
+      } else {
+        tooltipLeft -= tooltipWidth;
+        paddingRight = gutter;
+      }
     }
 
     if (tooltipLeft < screenLeft) {
@@ -105,9 +102,10 @@ class Tooltip extends Component {
       node.style.paddingLeft = paddingLeft + 'px';
       node.style.paddingTop = paddingTop + 'px';
       node.style.paddingBottom = paddingBottom + 'px';
+      node.style.paddingRight = paddingRight + 'px';
     } else {
       node.style.top = tooltipTop + paddingTop - paddingBottom + 'px';
-      node.style.left = tooltipLeft + paddingLeft + 'px';
+      node.style.left = tooltipLeft + paddingLeft - paddingRight + 'px';
     }
 
     this.setState({

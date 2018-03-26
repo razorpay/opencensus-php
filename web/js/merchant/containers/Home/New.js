@@ -7,6 +7,7 @@ import moment from 'moment';
 import { Redirect } from 'react-router-dom';
 
 import Amount from 'rzp/ui/Amount';
+import Banner from 'rzp/ui/Banner';
 import Sticky from 'rzp/ui/Sticky';
 import Group, { GroupItem } from 'rzp/ui/Group';
 import { showNotification } from 'rzp/modules/notifications';
@@ -110,6 +111,7 @@ class HomeContainer extends Component {
       },
       dateRangePresets,
       showGroupingByPtfm: false,
+      hasNewAnalyticsTour: true,
     };
 
     this.oldestTxnReqId = 0;
@@ -159,13 +161,12 @@ class HomeContainer extends Component {
       })
       .then(data => {
         if (data.error) {
-
           trackError(`While Fetching Txns Grouped by Ptfm`);
 
           return this.props.showNotification({
             type: 'error',
             message: data.error,
-            hidePrevious: true
+            hidePrevious: true,
           });
         }
 
@@ -230,10 +231,8 @@ class HomeContainer extends Component {
       oldestTransactionDate: { ...oldestTransactionDate },
     });
 
-    return (analyticsFetch || fetch)(
-        oldestTransactionQuery,
-        this.props.mode
-      ).then(data => {
+    return (analyticsFetch || fetch)(oldestTransactionQuery, this.props.mode)
+      .then(data => {
         if (oldestTxnReqId !== this.oldestTxnReqId) {
           return null;
         }
@@ -268,7 +267,7 @@ class HomeContainer extends Component {
             this.props.showNotification({
               type: 'error',
               message: data.error,
-              hidePrevious: true
+              hidePrevious: true,
             });
           }
 
@@ -349,11 +348,36 @@ class HomeContainer extends Component {
       oldestTransactionDate,
       dateRangePresets,
       showGroupingByPtfm,
+      hasNewAnalyticsTour,
     } = this.state;
+
+    let scrollAmountToStickHeader = 0;
+
+    if (hasNewAnalyticsTour) {
+      scrollAmountToStickHeader += 64;
+    }
 
     return (
       <div class="react-root dashboard-home">
-        <Sticky stickWhen={0} stickAt={50}>
+        {hasNewAnalyticsTour && (
+          <div className="v2-tour-banner">
+            <div className="banner-icon">
+              <i className="i i-loudspeaker" />
+            </div>
+            <div className="banner-content">
+              <Banner cta="View Tour" ctaOnClick={() => {}}>
+                <span>
+                  Hey! We have redesigned the dashboard for an improved Razorpay
+                  experience. Please take a quick tour before you get started.
+                </span>
+              </Banner>
+            </div>
+            <div className="banner-close">
+              <i className="i i-close" />
+            </div>
+          </div>
+        )}
+        <Sticky stickWhen={scrollAmountToStickHeader} stickAt={50}>
           <Header className="clearfix" title="" showMode={false}>
             <div className="pull-left date-range-container">
               <DateRangePicker
@@ -411,24 +435,22 @@ class HomeContainer extends Component {
               <div className="section-title payment-insights-title">
                 {paymentInsightsTitle}&nbsp;
                 <small>
-                  <i class="i i-help"></i>
+                  <i class="i i-help" />
                   <Popover align="top">
-                    <PopoverTitle>
-                      What's this?
-                    </PopoverTitle>
+                    <PopoverTitle>What's this?</PopoverTitle>
                     <PopoverBody>
                       <p>
-                        This graph helps you gain insights into your overall payments by seeing how different payment methods stack up against each other in your revenue pool.
+                        This graph helps you gain insights into your overall
+                        payments by seeing how different payment methods stack
+                        up against each other in your revenue pool.
                       </p>
                       <div>
-                        <span className="popover-highlight">
-                          Click tiles
-                        </span> to drill-down into the hierarchy.
+                        <span className="popover-highlight">Click tiles</span>{' '}
+                        to drill-down into the hierarchy.
                       </div>
                       <div>
-                        <span className="popover-highlight">
-                          Hover
-                        </span> to view information for smaller tiles.
+                        <span className="popover-highlight">Hover</span> to view
+                        information for smaller tiles.
                       </div>
                     </PopoverBody>
                   </Popover>

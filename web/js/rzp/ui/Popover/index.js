@@ -64,7 +64,10 @@ class Popover extends Component {
     });
 
     otherProps.className =
-      (otherProps.className ? otherProps.className + ' ' : '') + 'rzp-popover';
+      (otherProps.className ? otherProps.className + ' ' : '') +
+      'rzp-popover ' +
+      ' align-' +
+      otherProps.align;
 
     return (
       <Tooltip {...otherProps}>

@@ -24,6 +24,57 @@ traffic-responsive() {
 
 .dashboard-home {
 
+  .v2-tour-banner {
+
+    width: 100%;
+    display: table;
+    background: linear-gradient(223.96deg, #5D89E5 0%, #3059C0 100%);
+    color: white;
+
+    > div {
+
+      display: table-cell;
+      vertical-align: middle;
+
+      &.banner-icon, &.banner-close {
+
+        padding: 0 16px;
+        font-size: 24px;
+      }
+
+      &.banner-icon {
+
+        background-color: $primary-color;
+      }
+
+      &.banner-close {
+
+        padding-left: 0;
+      }
+
+      .rzp-banner {
+
+        background-color: transparent; 
+        border: none;
+        margin-bottom: 0;
+        color: inherit;
+
+        .rzp-banner-cta button.btn {
+
+          background-color: #ffffff;
+          color: $primary-color;
+          border: none;
+          box-shadow: inset 0 1px 3px 0 rgba(0,0,0,0.14);
+
+          &:hover {
+
+            box-shadow: inset 0 1px 3px 0 rgba(0,0,0,0.24);
+          }
+        }
+      }
+    }
+  }
+
   > .rzp-sticky > .sticky-content {
 
     z-index: 2;
