@@ -168,6 +168,10 @@
         margin-left: -15px;
       }
 
+      .short#chkout-box {
+        min-height: 460px;
+      }
+
       #overlay {
         position: fixed;
         width: 100%;
@@ -284,7 +288,7 @@
         display: none;
       }
 
-      #cancelled-invoice {
+      #mobile-container #cancelled-invoice {
         width: 100%;
         top: -12px;
         background-image: url(http://i.imgur.com/4c9Zkf4.png);
@@ -293,23 +297,32 @@
         font-size: 20px;
         padding: 40px;
         line-height: 20px;
-        min-height: 260px;
+        min-height: 225px;
         display: none;
       }
 
-      #payment-container--mob #cancelled-invoice {
-        padding: 40px 24px;
+      #cancelled-invoice {
+        text-align: center;
+        line-height: 20px;
+      }
+
+      #mobile-container #cancelled-invoice {
+        padding: 45px 24px;
+      }
+
+      #desktop-container #cancelled-invoice {
+        padding: 30px;
       }
 
       #cancelled-invoice .title {
-       font-weight: 600;
-        margin-top: 30px;
+        font-weight: 600;
+        margin-top: 16px;
       }
 
       #cancelled-invoice .desc {
         font-size: 14px;
         color: #777777;
-        margin-top: 8px;
+        margin-top: 16px;
       }
 
       #inv-info-box .footer img {
@@ -357,24 +370,21 @@
         min-height: 100vh;
       }
 
-      #payment-container--mob .inv-details{
-          background-color: #fff;
-          border-radius: 4px;
-          padding: 28px 24px;
+      #mobile-container .inv-details{
+        background-color: #fff;
+        border-radius: 4px;
+        padding: 22px 24px;
       }
 
-        #payment-container--mob #inv-info-container {
-            box-shadow: 0 0 20px rgba(0,0,0,0.08);
-            border-radius: 4px;
-            //min-height: 300px;
-            margin: 12px;
-            border: 1px solid #dfdfdf;
-            background: #f5f5f5;
-        }
+      #payment-container--mob #inv-info-container {
+        box-shadow: 0 0 20px rgba(0,0,0,0.08);
+        border-radius: 4px;
+        margin: 12px;
+        border: 1px solid #dfdfdf;
+        background: #f5f5f5;
+      }
 
-        #payment-container--mob #cancelled-invoice .title {
-            margin-top: 0;
-        }
+
 
         #chkout-header {
             padding: 24px;
@@ -471,11 +481,8 @@
             margin-bottom: 0;
         }
 
-        #scs-box svg {
-            display: block;
-            fill: #16bc56;
+        #scs-box img {
             padding-left: 2px;
-            height: 48px;
             width: 48px;
             margin: 4px auto;
         }
@@ -492,6 +499,11 @@
             position: absolute;
             margin: 128px auto 0;
             display: none;
+            background: #effff6;
+        }
+
+        .short #scs-box {
+          margin: 175px auto 0;
         }
 
         .btn-link {
@@ -696,7 +708,7 @@
 
                                       @if($data['invoice']['expire_by'] and $data['invoice']['status'] !== 'paid')
                                           <div class="info">
-                                              EXPIRES BY
+                                              {{$data['invoice']['status'] === 'expired' ? 'EXPIRED ON' : 'EXPIRES BY'}}
                                               <div class="val">{{date('M d, Y (h:i A)', $data['invoice']['expire_by'])}} </div>
                                           </div>
                                       @endif
@@ -724,27 +736,12 @@
                                   Powered by
                                   <img src="https://cdn.razorpay.com/logo.svg" />
                               </div>
-                              @if($data['invoice']['status'] === 'cancelled')
-                                <div id="cancelled-invoice">
-                                  <div class="title" style='color:#f54443'>Payment Link Cancelled</div>
-                                  <div class="desc">
-                                    <br/>Oops! This payment link was cancelled on {{date('M d, Y (h:i A)', $data['invoice']['cancelled_at'])}}. Please reach out to us at {{$data['merchant']['name']}} support for any further queries.
-                                  </div>
-                                </div>
-                              @elseif($data['invoice']['status'] === 'expired')
-                                <div id="cancelled-invoice">
-                                    <div class="title">Payment Link Expired</div>
-                                    <div class="desc">
-                                        <br/>Oops! This payment link expired on {{date('M d, Y (h:i A)', $data['invoice']['expire_by'])}}. Please reach out to us at {{$data['merchant']['name']}} support for any further queries.
-                                    </div>
-                                </div>
-
-                              @endif
                           </div>
                       </div>
                       <div class="table-box" id="chkout-par">
                         <div id="overlay"></div>
-                        <div id="chkout-box">
+
+                        <div id="chkout-box" class={{(in_array($data['invoice']['status'], ['paid', 'expired', 'cancelled'], true) === true) ? 'short' : ''}}>
                             <div id="chkout-header">
                                 <div id="header-logo">
                                     @if (isset($data['merchant']['image']))
@@ -762,11 +759,27 @@
                                 </div>
                             </div>
                             <div id="scs-box">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"><path d="M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm0-2c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm-1.959 17l-4.5-4.319 1.395-1.435 3.08 2.937 7.021-7.183 1.422 1.409-8.418 8.591z"/></svg>
-                                <span style="font-weight: 500">Payment Completed</span>
+                                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACUAAAAlCAMAAADyQNAxAAAASFBMVEUAAADD+tvD+tvD+tvD+tvD+dvD+trD+dvE+9vE/NvG+9zD/+HH/+H////C+doewGBj2JOW6rojwmOo8MeL5rF/4qh03qBm2ZW6Mr7TAAAADnRSTlMA6JrxzLKRiHlOOiIUAmMEAH8AAADOSURBVDjLlZRZDoMwDERtSAgEMizd7n/TSi0qSerE8P6QniwM46GY4J01DDbW+UAyY8M44GYUnKlDTjfl0tDin3ZIpR4yfSw1KNFkk7RpA2oM+3YtarTfTTvU6T4fExpjvF9tz8CQWR/Y4UC+JG3zih1PrigtvwdHVpdgyegSDLEugQkHt0w6iGa9trUgcfRey7ytogRDFokmSbDkkGhPQYIjj0SbBQk++4+LJHHIM3GXMnE6X3pWT+dev6EL96jftt4TZztH76/rXaj36ht1cjrNdgCxBgAAAABJRU5ErkJggg==" />
+                                <div style="font-weight: 600; font-size: 18px">Payment Completed</div>
                                 <div id="scs-msg"style="color:#9b9b9b"></div>
                             </div>
                             <div id="cancelled-crack"></div>
+                              @if($data['invoice']['status'] === 'cancelled')
+                                <div id="cancelled-invoice">
+                                  <div class="title" style='color:#f54443; font-size: 18px;'>Payment Link Cancelled</div>
+                                  <div class="desc">
+                                    Oops! This payment link was cancelled on {{date('M d, Y (h:i A)', $data['invoice']['cancelled_at'])}}. Please contact {{$data['merchant']['name']}} support in case you have any queries.
+                                  </div>
+                                </div>
+                              @elseif($data['invoice']['status'] === 'expired')
+                                <div id="cancelled-invoice">
+                                    <div class="title" style='color:#f54443; font-size:18px'>Payment Link Expired</div>
+                                    <div class="desc">
+                                        Oops! This payment link expired on {{date('M d, Y (h:i A)', $data['invoice']['expire_by'])}}. Please contact {{$data['merchant']['name']}} support in case you have any queries.
+                                    </div>
+                                </div>
+                              @endif
+
                         </div>
                         </div>
                       </div>
@@ -826,7 +839,7 @@
 
                               @if($data['invoice']['expire_by'] and $data['invoice']['status'] !== 'paid')
                                 <div class="info">
-                                  EXPIRES BY
+                                  {{$data['invoice']['status'] === 'expired' ? 'EXPIRED ON' : 'EXPIRES BY'}}
                                   <div class="val">{{date('M d, Y (h:i A)', $data['invoice']['expire_by'])}} </div>
                                 </div>
                               @endif
@@ -847,14 +860,14 @@
                         <div id="cancelled-invoice">
                           <div class="title" style='color:#f54443; font-size:18px'>Payment Link Cancelled</div>
                           <div class="desc">
-                            <br/>Oops! This payment link was cancelled on {{date('M d, Y (h:i A)', $data['invoice']['cancelled_at'])}}. Please reach out to us at {{$data['merchant']['name']}} support for any further queries.
+                            Oops! This payment link was cancelled on {{date('M d, Y (h:i A)', $data['invoice']['cancelled_at'])}}. Please contact {{$data['merchant']['name']}} support in case you have any queries.
                           </div>
                         </div>
                       @elseif($data['invoice']['status'] === 'expired')
                         <div id="cancelled-invoice">
-                          <div class="title" style="font-size:18px">Payment Link Expired</div>
+                          <div class="title" style='color:#f54443; font-size:18px'>Payment Link Expired</div>
                             <div class="desc">
-                                Oops! This payment link expired on {{date('M d, Y (h:i A)', $data['invoice']['expire_by'])}}. <br/>Please reach out to us at {{$data['merchant']['name']}} support for any further queries.
+                              Oops! This payment link expired on {{date('M d, Y (h:i A)', $data['invoice']['expire_by'])}}. Please contact {{$data['merchant']['name']}} support in case you have any queries.
                           </div>
                         </div>
                       @endif
@@ -889,12 +902,14 @@
 
               function fullPaid() {
                   var amount = data['invoice']['amount'];
-                  document.getElementById('pay-title').innerHTML = 'AMOUNT PAYABLE';
-                  document.getElementById('display-pay-amt').innerHTML = '<span> ₹' + (amount/100).toFixed(2) + '<span id="paid-tag">PAID</span></span>';
+                  document.getElementById('pay-title').innerHTML = 'AMOUNT PAID';
 
                   if (checkIsDesktop()) {
                       document.getElementById('scs-box').style.display = 'block';
-                      document.getElementById('scs-msg').innerHTML = "Your payment of ₹ " +  (amount/100).toFixed(2) + " is received!"
+                      document.getElementById('scs-msg').innerHTML = "You have successfully paid of ₹ " +  (amount/100).toFixed(2);
+                      document.getElementById('display-pay-amt').innerHTML = '<span> ₹' + (amount/100).toFixed(2);
+                  } else {
+                    document.getElementById('display-pay-amt').innerHTML = '<span> ₹' + (amount/100).toFixed(2) + '<span id="paid-tag">PAID</span></span>';
                   }
               }
 
@@ -905,12 +920,12 @@
               // Invoice cancelled/expired
               else if (data['invoice']['status'] === 'cancelled' || data['invoice']['status'] === 'expired') {
                 document.getElementById('cancelled-invoice').style.display = 'block';
-                document.getElementById('inv-details-main').style.display = 'none';
 
                 if (checkIsDesktop()) {
-                    document.getElementsByClassName('footer')[0].style.display = 'none';
                     document.getElementById('cancelled-crack').style.display = 'block';
                     document.getElementById('chkout-box').style.background = '#f5f5f5';
+                } else {
+                    document.getElementById('inv-details-main').style.display = 'none';
                 }
               }
           </script>
