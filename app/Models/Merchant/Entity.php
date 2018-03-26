@@ -246,6 +246,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::WHITELISTED_IPS_LIVE,
         self::WHITELISTED_IPS_TEST,
+        self::MERCHANT_DETAIL,
      ];
 
     protected $defaults = [

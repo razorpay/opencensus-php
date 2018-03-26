@@ -189,6 +189,13 @@ class CustomerTest extends TestCase
         $this->startTest();
     }
 
+    public function testUpdateCustomerEmail()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     public function testUpdateCustomerName()
     {
         $this->ba->privateAuth();

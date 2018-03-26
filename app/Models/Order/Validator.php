@@ -21,7 +21,8 @@ class Validator extends Base\Validator
         Entity::METHOD          => 'sometimes|in:netbanking,emandate',
         Entity::BANK            => 'sometimes|filled',
         Entity::ACCOUNT_NUMBER  => 'sometimes|filled|string|max:50|min:5',
-        Entity::OFFER_ID        => 'sometimes|string|size:20'
+        Entity::DISCOUNT        => 'sometimes|boolean',
+        Entity::OFFER_ID        => 'sometimes|string|size:20',
     );
 
     protected static $createValidators = [
@@ -30,6 +31,7 @@ class Validator extends Base\Validator
         Entity::BANK,
         'method_fee_bearer',
         Entity::CURRENCY,
+        'offer',
     ];
 
     protected function validateAmount($input)
@@ -380,6 +382,21 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_METHOD_DOES_NOT_MATCH_ORDER_METHOD);
+        }
+    }
+
+    protected function validateOffer($input)
+    {
+        if (isset($input[Entity::DISCOUNT]) === false)
+        {
+            return;
+        }
+
+        if (($input[Entity::DISCOUNT] === true) and
+            (isset($input[Entity::OFFER_ID]) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                    'Discount without offer_id is not supported');
         }
     }
 }

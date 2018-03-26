@@ -27,7 +27,11 @@ class CreateOrders extends Migration
 
             $table->char(Order::MERCHANT_ID, Order::ID_LENGTH);
 
-            $table->char(Order::OFFER_ID, Order::ID_LENGTH)->nullable();
+            $table->char(Order::OFFER_ID, Order::ID_LENGTH)
+                  ->nullable();
+
+            $table->tinyInteger(Order::DISCOUNT)
+                  ->default(false);
 
             $table->tinyInteger(Order::PARTIAL_PAYMENT)
                   ->default(false);
