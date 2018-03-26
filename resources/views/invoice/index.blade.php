@@ -514,8 +514,7 @@
             position: relative;
         }
         .btn-link {
-          position: absolute;
-          width: 110px;
+          width: 95px;
           color: #528ff0;
           background: linear-gradient(transparent, #fff);
           border: 0;
@@ -523,16 +522,17 @@
           padding: 0;
           font-size: 14px;
           outline: none;
+          margin-left: -8px;
         }
 
         #mobile-container .btn-link{
-          right: 2px;
-          bottom: 3px;
+          //right: 2px;
+          //bottom: 3px;
         }
 
         #desktop-container .btn-link {
-          right: 85px;
-          bottom: 3px;
+          //right: 85px;
+          //bottom: 3px;
         }
 
     </style>
@@ -556,17 +556,32 @@
       function toggleTrimDescription(toTrim) {
         var data = window.RZP_DATA.data;
         desc = data['invoice']['description'];
-        var charLimit, button = '';
+        var charLimit, pseudoChar, button = '';
 
         if (checkIsDesktop()) {
             charLimit = 200;
+            pseudoChar = 45;
+
         } else {
             charLimit = 125;
+            pseudoChar = 35;
         }
 
         if (desc && (desc.length > charLimit)) {
             if (toTrim) {
-              desc = desc.substr(0,charLimit);
+              var newLines = 0;
+              newLines = (desc.match(new RegExp("\n", "g")) || []).length;
+
+              if (newLines) {
+                for(let i = 0; i < newLines; i++) {
+                    if ((charLimit - i * pseudoChar) < 0.6 * charLimit) {
+                        desc = desc.substr(0, charLimit - i*pseudoChar);
+                        break;
+                    }
+                }
+              } else {
+                desc = desc.substr(0,charLimit);
+              }
               desc =  desc.trim();
               desc += '...';
               button = '<button class="btn-link" onclick="toggleTrimDescription(false)"> Show More </button'
@@ -921,7 +936,7 @@
                   var amount = data['invoice']['amount'];
                   document.getElementById('pay-title').innerHTML = 'AMOUNT PAID';
 
-                  if (checkIsDesktop()) {``
+                  if (checkIsDesktop()) {
                       document.getElementById('scs-box').style.display = 'block';
                       document.getElementById('scs-msg').innerHTML = "You have successfully paid of ₹ " +  (amount/100).toFixed(2);
                       document.getElementById('display-pay-amt').innerHTML = '<span> ₹' + (amount/100).toFixed(2);
