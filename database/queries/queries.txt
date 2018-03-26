@@ -3265,3 +3265,6 @@ ALTER TABLE line_items
 
 ALTER TABLE `merchant_details`
     ADD COLUMN `reviewer_id` char(14) NULL DEFAULT NULL AFTER `archived_at`;
+
+ALTER TABLE orders
+    ADD COLUMN discount TINYINT(4) NOT NULL DEFAULT 0 AFTER offer_id;

@@ -1554,6 +1554,37 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetCheckoutPreferencesWithOrderRelatedUndiscountedOffer()
+    {
+        $this->ba->publicAuth();
+
+        $startsAt = Carbon::yesterday(Timezone::IST)->timestamp;
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $request = $testData['request'];
+
+        foreach ($testData['tests'] as $test)
+        {
+            $data = [
+                'request' => $request,
+                'response' => $test['response'],
+            ];
+
+            $fixtureData = $test['offer'];
+            $fixtureData['starts_at'] = $startsAt;
+
+            $offer = $this->fixtures->create('offer', $fixtureData);
+            $order = $this->fixtures->create('order:with_undiscounted_offer_applied', [
+                'offer_id' => $offer->getId()
+            ]);
+
+            $data['request']['url'] = '/preferences?order_id=' . $order->getPublicId();
+
+            $this->runRequestResponseFlow($data);
+        }
+    }
+
     public function testGetCheckoutPreferencesWithOrderRelatedOffer()
     {
         $this->ba->publicAuth();
@@ -1575,7 +1606,9 @@ class MerchantTest extends TestCase
             $fixtureData['starts_at'] = $startsAt;
 
             $offer = $this->fixtures->create('offer', $fixtureData);
-            $order = $this->fixtures->create('order:with_offer_applied', ['offer_id' => $offer->getId()]);
+            $order = $this->fixtures->create('order:with_offer_applied', [
+                'offer_id' => $offer->getId()
+            ]);
 
             $data['request']['url'] = '/preferences?order_id=' . $order->getPublicId();
 
