@@ -224,6 +224,10 @@
       }
 
       #mobile-container .inv-details .info {
+        margin-top: 8px;
+      }
+
+      #mobile-container .inv-details .info {
         margin-bottom: 16px;
       }
 
@@ -506,14 +510,29 @@
           margin: 175px auto 0;
         }
 
+        #payment-for {
+            position: relative;
+        }
         .btn-link {
-            color: #528ff0;
-            background: transparent;
-            border: 0;
-            cursor: pointer;
-            padding: 0;
-            margin-left: 4px;
-            font-size: 14px;
+          position: absolute;
+          width: 110px;
+          color: #528ff0;
+          background: linear-gradient(transparent, #fff);
+          border: 0;
+          cursor: pointer;
+          padding: 0;
+          font-size: 14px;
+          outline: none;
+        }
+
+        #mobile-container .btn-link{
+          right: 2px;
+          bottom: 3px;
+        }
+
+        #desktop-container .btn-link {
+          right: 85px;
+          bottom: 3px;
         }
 
     </style>
@@ -540,7 +559,7 @@
         var charLimit, button = '';
 
         if (checkIsDesktop()) {
-            charLimit = 235;
+            charLimit = 200;
         } else {
             charLimit = 125;
         }
@@ -551,8 +570,6 @@
               desc =  desc.trim();
               desc += '...';
               button = '<button class="btn-link" onclick="toggleTrimDescription(false)"> Show More </button'
-            } else {
-              button = '<button class="btn-link" onclick="toggleTrimDescription(true)">Show Less </button';
             }
         }
 
@@ -904,7 +921,7 @@
                   var amount = data['invoice']['amount'];
                   document.getElementById('pay-title').innerHTML = 'AMOUNT PAID';
 
-                  if (checkIsDesktop()) {
+                  if (checkIsDesktop()) {``
                       document.getElementById('scs-box').style.display = 'block';
                       document.getElementById('scs-msg').innerHTML = "You have successfully paid of ₹ " +  (amount/100).toFixed(2);
                       document.getElementById('display-pay-amt').innerHTML = '<span> ₹' + (amount/100).toFixed(2);
