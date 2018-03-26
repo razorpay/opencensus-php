@@ -292,9 +292,9 @@ const statusLogsFields = [
       item.name === 'rejected' && item.rejection_reasons ? (
         <div>
           <div>{statusPill(item.name)}</div>
-          <div>
+          <div style={{ maxWidth: '385px' }}>
             {/* Show rejection reasons */}
-            <span class="square-pills label-semi-muted">
+            <span style={{ fontSize: '12px' }}>
               <strong>
                 {snakeToTitleCase(
                   item.rejection_reasons.items[0]['reason_category']
