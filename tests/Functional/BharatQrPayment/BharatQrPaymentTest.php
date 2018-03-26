@@ -29,15 +29,17 @@ class BharatQrPaymentTest extends TestCase
 
     public function testQrPaymentProcess()
     {
+        $request = $this->testData[__FUNCTION__];
+
         $this->qrCode = $this->createVirtualAccount();
 
         $this->ba->directAuth();
 
-        $request = $this->testData[__FUNCTION__];
-
         $qrCodeId = substr($this->qrCode['id'], 3);
 
-        $request['content']['PurchaseID'] = $qrCodeId;
+        $content = $this->getMockServer('hitachi')->getBharatQrCallback($qrCodeId);
+
+        $request['content'] = $content;
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -123,7 +125,15 @@ class BharatQrPaymentTest extends TestCase
     {
         $request = $this->testData['testQrPaymentProcess'];
 
-        $this->ba->noAuth();
+        $this->qrCode = $this->createVirtualAccount();
+
+        $this->ba->directAuth();
+
+        $qrCodeId = substr($this->qrCode['id'], 3);
+
+        $content = $this->getMockServer('hitachi')->getBharatQrCallback('tobefilled');
+
+        $request['content'] = $content;
 
         $response = $this->makeRequestAndGetContent($request);
 
