@@ -145,6 +145,8 @@ class Core extends Base\Core
 
     protected function uploadAddressProof($merchant, $input)
     {
+        (new Validator)->validateAddressProofUploadOverProxyAuth($input);
+
         $merchantDetailService = new Detail\Service();
 
         $merchantDetails = $merchantDetailService->core()->getMerchantDetails($merchant);
