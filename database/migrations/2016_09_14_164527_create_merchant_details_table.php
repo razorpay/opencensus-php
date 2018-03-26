@@ -227,6 +227,9 @@ class CreateMerchantDetailsTable extends Migration
             $table->integer(MerchantDetail::ARCHIVED_AT)
                   ->nullable();
 
+            $table->char(MerchantDetail::REVIEWER_ID, MerchantDetail::ID_LENGTH)
+                  ->nullable();
+
             $table->text(MerchantDetail::ISSUE_FIELDS)
                   ->nullable();
 
