@@ -50,6 +50,7 @@ export default class PublicFeaturesList extends Component {
               onChange={this.filter}
               defaultValue={defaultFilters.status}
             >
+              <option value="">All</option>
               {publicFeatureStatuses.map(status => (
                 <option value={status} key={status}>
                   {snakeToTitleCase(status)}
