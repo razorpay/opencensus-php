@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { withRouter } from 'react-router-dom';
 import { observer } from 'mobx-react';
 
@@ -27,12 +27,11 @@ export default class EditPublicFeatures extends Component {
   state = {
     pending: true,
     agreement: null,
-    statusLogs: [],
+    selectedStatus: this.props.model.status,
+    selectedReasonCategory: null,
   };
 
   akaFeature = this.props.model.name;
-
-  selectedStatus = this.props.model.status;
 
   // TODO: TEST Sending mode as live, not sent earlier
   featureRequestUrls = [
@@ -53,7 +52,6 @@ export default class EditPublicFeatures extends Component {
     Promise.all(requests).then(([feature, statusLogs, allRejectionReasons]) => {
       if (feature) {
         this.submissions = feature.submissions;
-        this.setState({ pending: false });
         if (feature.name === 'marketplace') {
           this.setState({
             agreement: feature.submissions.vendor_agreement,
@@ -61,11 +59,13 @@ export default class EditPublicFeatures extends Component {
         }
       }
 
-      if (statusLogs.items) {
-        this.setState({
-          statusLogs: statusLogs.items,
-        });
-      }
+      (this.statusLogs = statusLogs.items),
+        (this.allRejectionReasons = allRejectionReasons);
+
+      this.setState({
+        pending: false,
+        selectedReasonCategory: Object.keys(allRejectionReasons)[0],
+      });
     });
   }
 
@@ -74,7 +74,8 @@ export default class EditPublicFeatures extends Component {
   };
 
   save = body => {
-    let { akaFeature, selectedStatus } = this;
+    let { akaFeature } = this;
+    let { selectedStatus } = this.state;
 
     return adminPatch({
       url: `live/merchant/requests/${this.props.model.id}`,
@@ -88,13 +89,26 @@ export default class EditPublicFeatures extends Component {
     });
   };
 
+  handleStatusChange = e => {
+    this.setState({
+      selectedStatus: e.target.value,
+    });
+  };
+
+  handleRejectionCategoryChange = e => {
+    this.setState({
+      selectedReasonCategory: e.target.value,
+    });
+  };
+
   render() {
+    let { selectedStatus, selectedReasonCategory } = this.state;
     let { merchant_id, name } = this.props.model;
     let {
-      selectedStatus,
       akaFeature,
       submissions,
       changeAgreement,
+      allRejectionReasons,
       save,
     } = this;
 
@@ -116,7 +130,8 @@ export default class EditPublicFeatures extends Component {
               <SelectField
                 label="Status"
                 name="status"
-                defaultValue={selectedStatus}
+                value={selectedStatus}
+                onChange={this.handleStatusChange}
               >
                 {publicFeatureStatuses.map(status => (
                   <option value={status} key={status}>
@@ -124,6 +139,34 @@ export default class EditPublicFeatures extends Component {
                   </option>
                 ))}
               </SelectField>
+
+              {/* rejection functionality for product activation */}
+              {selectedStatus === 'rejected' && (
+                <Fragment>
+                  <SelectField
+                    label="Select Rejection Category:"
+                    name="rejection_reason[reason_category]"
+                    value={selectedReasonCategory}
+                    onChange={this.handleRejectionCategoryChange}
+                  >
+                    {Object.keys(allRejectionReasons).map(reasonCategory => (
+                      <option value={reasonCategory} key={reasonCategory}>
+                        {snakeToTitleCase(reasonCategory)}
+                      </option>
+                    ))}
+                  </SelectField>
+                  <SelectField
+                    label="Select Rejection Reasons:"
+                    name="rejection_reason[reason_code]"
+                  >
+                    {allRejectionReasons[selectedReasonCategory].map(reason => (
+                      <option value={reason.code} key={reason.code}>
+                        {reason.description}
+                      </option>
+                    ))}
+                  </SelectField>
+                </Fragment>
+              )}
               {featuresAkaMap[akaFeature] === featuresAkaMap.marketplace ||
               featuresAkaMap[akaFeature] === featuresAkaMap.virtual_accounts ? (
                 <TextAreaField
@@ -203,7 +246,7 @@ export default class EditPublicFeatures extends Component {
                   )}
                 </div>,
               ]}
-              <Table items={this.state.statusLogs} fields={statusLogsFields} />
+              <Table items={this.statusLogs} fields={statusLogsFields} />
 
               <button class="btn">Save</button>
             </div>
