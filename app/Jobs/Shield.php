@@ -2,6 +2,7 @@
 
 namespace RZP\Jobs;
 
+use App;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
@@ -60,7 +61,6 @@ class Shield extends Job implements ShouldQueue
                 Risk\Entity::SOURCE     => Risk\Source::SHIELD,
                 Risk\Entity::REASON     => 'Blocked by shield',
             ]);
-
         }
         catch (\Throwable $e)
         {
