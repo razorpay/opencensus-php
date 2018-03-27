@@ -58,6 +58,12 @@ class CreateUpi extends Migration
             $table->mediumInteger(Upi::EXPIRY_TIME)
                   ->nullable();
 
+            $table->string(Upi::ACCOUNT_NUMBER)
+                  ->nullable();
+
+            $table->string(Upi::IFSC)
+                  ->nullable();
+
             $table->tinyInteger(Upi::RECEIVED)
                   ->default(0);
 
