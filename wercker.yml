@@ -26,7 +26,7 @@ build:
       - script:
         name: Install dependencies
         code: >
-          apk add --no-cache imagemagick zip php7-dev &&
+          apk add --no-cache imagemagick zip php7-dev gpgmepp gpgme &&
           pecl install gnupg &&
           echo 'extension=gnupg.so' > /etc/php7/conf.d/gnupg.ini
       - script:
