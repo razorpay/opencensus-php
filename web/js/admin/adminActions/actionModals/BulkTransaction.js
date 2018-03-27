@@ -11,7 +11,7 @@ BulkTransaction.title = 'Merchant Bulk Update Channel';
 export default function BulkTransaction() {
   return (
     <Form>
-      <Field label="Merchand IDs (Comma Separated)" name="merchant_ids" />
+      <Field required label="Merchand IDs (Comma Separated)" name="merchant_ids" />
       <SelectField name="channel" label="Channel">
         <option value="">Select</option>
         <option value="kotak">kotak</option>
@@ -25,10 +25,11 @@ export default function BulkTransaction() {
         text="Generate"
         class="btn"
         pendingClass="small spinner"
-        onSubmit={body => {
+        onSubmit={data => {
+          data.merchant_ids = data.merchant_ids.split(',').map(m => m.trim()).filter(Boolean);
           return adminPut({
             url: 'live/merchants/channel/bulk',
-            data: body,
+            data,
           }).then(data => {
             if (data) {
               notifySuccess('Updated successfully.');
