@@ -11,7 +11,7 @@ BulkTransaction.title = 'Merchant Bulk Update Channel';
 export default function BulkTransaction() {
   return (
     <Form>
-      <Field label="Merchand ID" name="merchant_id" />
+      <Field label="Merchand IDs (Comma Separated)" name="merchant_ids" />
       <SelectField name="channel" label="Channel">
         <option value="">Select</option>
         <option value="kotak">kotak</option>
