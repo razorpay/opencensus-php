@@ -72,7 +72,6 @@ class EnachRbl extends Base
      * @param array $content
      *
      * @throws Exception\GatewayErrorException
-     * @throws Exception\LogicException
      */
     protected function updateEntities(array $content)
     {
@@ -84,7 +83,7 @@ class EnachRbl extends Base
 
         $token = $payment->getGlobalOrLocalTokenEntity();
 
-        if (($payment->hasBeenAuthorized() === true) and
+        if (($payment->hasBeenAuthorized() === false) or
             ($payment->getGateway() !== $this->gateway) or
             ($token === null) or
             ($token->getAccountNumber() !== $accountNumber))
@@ -103,10 +102,8 @@ class EnachRbl extends Base
 
         $this->repo->transaction(function() use ($token, $content)
         {
-            // Update gateway payment
             $this->updateGatewayPaymentEntity($content);
 
-            // Update token
             $this->updateTokenEntity($token, $content);
         });
     }

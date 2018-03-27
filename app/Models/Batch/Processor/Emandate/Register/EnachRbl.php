@@ -99,7 +99,10 @@ class EnachRbl extends Base
         $this->repo->saveOrFail($token);
     }
 
-    protected function updateGatewayPaymentEntityAndCapturePayment(Payment\Entity $payment, EnachEntity $gatewayPayment, array $data)
+    protected function updateGatewayPaymentEntityAndCapturePayment(
+        Payment\Entity $payment,
+        EnachEntity $gatewayPayment,
+        array $data)
     {
         $gatewayPayment->fill($data);
 
@@ -107,13 +110,13 @@ class EnachRbl extends Base
 
         if (Rbl\Status::isRegistrationSuccess($data[self::REGISTRATION_STATUS]) === true)
         {
-            return $this->captureAuthorizedPayment($payment);
+            $this->captureAuthorizedPayment($payment);
         }
     }
 
     protected function captureAuthorizedPayment(Payment\Entity $payment)
     {
-        if ($payment->isCaptured() === true)
+        if ($payment->isAuthorized() === false)
         {
             $this->trace->critical(TraceCode::PAYMENT_RECURRING_INVALID_STATUS,
                     [
@@ -150,18 +153,18 @@ class EnachRbl extends Base
 
     protected function getDataFromRow(array & $entry): array
     {
-        $gatewayToken = $entry['UMRN'];
+        $gatewayToken = $entry[Batch\Header::ENACH_REGISTER_UMRN];
 
-        $status = $this->getTokenStatus($entry['STATUS']);
+        $status = $this->getTokenStatus($entry[Batch\Header::ENACH_REGISTER_STATUS]);
 
-        $accountNumber = $entry['ACNO'];
+        $accountNumber = $entry[Batch\Header::ENACH_REGISTER_ACNO];
 
         return [
             self::GATEWAY_TOKEN       => $gatewayToken,
             self::TOKEN_STATUS        => $status,
-            self::REGISTRATION_STATUS => $entry['STATUS'],
+            self::REGISTRATION_STATUS => $entry[Batch\Header::ENACH_REGISTER_STATUS],
             self::ACCOUNT_NUMBER      => $accountNumber,
-            self::ERROR_MESSAGE       => $this->getTokenErrorMessage($entry['STATUS']),
+            self::ERROR_MESSAGE       => $this->getTokenErrorMessage($entry[Batch\Header::ENACH_REGISTER_STATUS]),
         ];
     }
 
