@@ -22,7 +22,12 @@ final class Route
         'account'                                 => ['get',      'account',                                        'PublicController@getAccount'                                       ],
         'checkout'                                => ['get',      'checkout',                                       'MerchantController@getCheckout'                                    ],
         'checkout_public'                         => ['get',      'checkout/public',                                'MerchantController@getCheckoutPublic'                              ],
+
+        // callback_url case handler for automatic checkout
         'checkout_onyx'                           => ['post',     'checkout/onyx',                                  'PublicController@postCallbackUrlWithParams'                        ],
+
+        // hosted checkout for IRCTC and Bescom
+        'checkout_embedded'                       => ['post',     'checkout/embedded',                              'PublicController@renderEmbedded'                                   ],
         'checkout_hosted'                         => ['post',     'checkout/hosted',                                'PublicController@renderCheckoutHosted'                             ],
         'checkout_hosted_get'                     => ['get',      'checkout/hosted',                                'PublicController@renderCheckoutHosted'                             ],
         // TODO: Check Splunk and remove the write here
@@ -1791,6 +1796,7 @@ final class Route
         'mailgun_webhook',
         'gateway_downtime_source_webhook',
         'checkout_onyx',
+        'checkout_embedded',
         'checkout_hosted',
         'checkout_hosted_get',
         'mock_event_tracker',
