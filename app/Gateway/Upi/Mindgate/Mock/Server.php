@@ -22,9 +22,9 @@ class Server extends Base\Mock\Server
      */
     const REQUEST_FIELD_COUNT = [
         Action::COLLECT      => 17,
-        Action::VERIFY       => 13,
+        Action::VERIFY       => 14,
         Action::REFUND       => 20,
-        Action::VALIDATE_VPA => 15,
+        Action::VALIDATE_VPA => 14,
     ];
 
     /**

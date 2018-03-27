@@ -43,9 +43,9 @@ class Gateway extends Base\Gateway
 
     const FIELD_LENGTH = [
         Action::AUTHORIZE    => 17,
-        Action::VALIDATE_VPA => 15,
+        Action::VALIDATE_VPA => 14,
         Action::REFUND       => 20,
-        Action::VERIFY       => 13,
+        Action::VERIFY       => 14,
     ];
 
     protected $map = [
