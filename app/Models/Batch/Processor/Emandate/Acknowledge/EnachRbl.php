@@ -13,6 +13,14 @@ use RZP\Gateway\Enach\Base\Entity as EnachEntity;
 
 class EnachRbl extends Base
 {
+    const PAYMENT_ID         = 'payment_id';
+    const UMRN               = 'umrn';
+    const REFERENCE_ID       = 'reference_id';
+    const ACKNOWLEDGE_STATUS = 'acknowledge_status';
+    const ACCOUNT_NUMBER     = 'account_number';
+    const TOKEN_STATUS       = 'token_status';
+    const ERROR_MESSAGE      = 'error_message';
+
     protected $gateway = Payment\Gateway::ENACH_RBL;
 
     // Return single XML row as multiple entries
@@ -49,13 +57,13 @@ class EnachRbl extends Base
         $status = trim($details['AccptncRslt']['Accptd']);
 
         return [
-            'payment_id'         => trim($originalMandate['MndtReqId']),
-            'umrn'               => trim($originalMandate['MndtId']),
-            'reference_id'       => $headerRow['MsgId'],
-            'acknowledge_status' => $status,
-            'account_number'     => trim($originalMandate['DbtrAcct']['Id']['Othr']['Id']),
-            'token_status'       => $this->getTokenStatus($status),
-            'error_message'      => null,
+            self::PAYMENT_ID         => trim($originalMandate['MndtReqId']),
+            self::UMRN               => trim($originalMandate['MndtId']),
+            self::REFERENCE_ID       => $headerRow['MsgId'],
+            self::ACKNOWLEDGE_STATUS => $status,
+            self::ACCOUNT_NUMBER     => trim($originalMandate['DbtrAcct']['Id']['Othr']['Id']),
+            self::TOKEN_STATUS       => $this->getTokenStatus($status),
+            self::ERROR_MESSAGE      => 'failure',
         ];
     }
 
@@ -67,9 +75,9 @@ class EnachRbl extends Base
      */
     protected function updateEntities(array $content)
     {
-        $paymentId = $content['payment_id'];
+        $paymentId = $content[self::PAYMENT_ID];
 
-        $accountNumber = $content['account_number'];
+        $accountNumber = $content[self::ACCOUNT_NUMBER];
         // Get payment
         $payment = $this->repo->payment->findOrFail($paymentId);
 
@@ -80,10 +88,15 @@ class EnachRbl extends Base
             ($token->getAccountNumber() !== $accountNumber))
         {
             throw new Exception\GatewayErrorException(
-                Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+                Error\ErrorCode::GATEWAY_ERROR_TOKEN_ABSENT_RECURRING_PAYMENT,
                 null,
                 null,
-                ['payment_id' => $payment->getId()]);
+                [
+                    'payment_id' => $payment->getId(),
+                    'account_number' => $accountNumber,
+                    'token_id' => $token->getId(),
+                    'gateway' => 'enach_rbl'
+                ]);
         }
 
         // Update gateway payment
@@ -100,7 +113,7 @@ class EnachRbl extends Base
      */
     protected function updateGatewayPaymentEntity(array $content): EnachEntity
     {
-        $paymentId = $content['payment_id'];
+        $paymentId = $content[self::PAYMENT_ID];
 
         $gatewayPayment = $this->repo->enach->findByPaymentIdAndActionOrFail(
             $paymentId, GatewayAction::AUTHORIZE);
@@ -123,7 +136,7 @@ class EnachRbl extends Base
     protected function updateTokenEntity(Token\Entity $token, array $content)
     {
         $currentRecurringStatus = $token->getRecurringStatus();
-        $newStatus = $content['token_status'];
+        $newStatus = $content[self::TOKEN_STATUS];
 
         if (Token\RecurringStatus::isFinalStatus($currentRecurringStatus) === true)
         {
@@ -132,7 +145,7 @@ class EnachRbl extends Base
                 throw new Exception\LogicException(
                     'Token status mismatch',
                     null,
-                    [
+                [
                         'new_status' => $newStatus,
                         'current_status' => $currentRecurringStatus,
                     ]);
@@ -144,7 +157,7 @@ class EnachRbl extends Base
 
         $tokenParams = [
             Token\Entity::RECURRING_STATUS          => $newStatus,
-            Token\Entity::RECURRING_FAILURE_REASON  => $content['error_message'],
+            Token\Entity::RECURRING_FAILURE_REASON  => $content[self::ERROR_MESSAGE],
         ];
 
         (new Token\Core)->updateTokenFromEmandateGatewayData($token, $tokenParams);
@@ -156,7 +169,7 @@ class EnachRbl extends Base
     {
         $gatewayTokenStatus = strtolower($gatewayTokenStatus);
 
-        if ($gatewayTokenStatus === Status::ACKNOWLEDGE_SUCCESS)
+        if (Status::isAcknowledgeSuccess($gatewayTokenStatus) === true)
         {
             return Token\RecurringStatus::INITIATED;
         }
@@ -167,9 +180,9 @@ class EnachRbl extends Base
     protected function getGatewayAttributes(array $content): array
     {
         return [
-            EnachEntity::ACKNOWLEDGE_STATUS   => $content['acknowledge_status'],
-            EnachEntity::UMRN                 => $content['umrn'],
-            EnachEntity::GATEWAY_REFERENCE_ID => $content['reference_id'],
+            EnachEntity::ACKNOWLEDGE_STATUS   => $content[self::ACKNOWLEDGE_STATUS],
+            EnachEntity::UMRN                 => $content[self::UMRN],
+            EnachEntity::GATEWAY_REFERENCE_ID => $content[self::REFERENCE_ID],
         ];
     }
 }

@@ -3,6 +3,7 @@
 namespace RZP\Models\Batch\Processor\Emandate\Register;
 
 use Config;
+use RZP\Exception;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
@@ -14,6 +15,12 @@ use RZP\Gateway\Enach\Base\Entity as EnachEntity;
 class EnachRbl extends Base
 {
     const GATEWAY = Gateway::ENACH_RBL;
+
+    const GATEWAY_TOKEN       = 'gateway_token';
+    const TOKEN_STATUS        = 'token_status';
+    const REGISTRATION_STATUS = 'registration_status';
+    const ACCOUNT_NUMBER      = 'account_number';
+    const ERROR_MESSAGE       = 'error_message';
 
     protected function processEntry(array & $entry)
     {
@@ -28,9 +35,7 @@ class EnachRbl extends Base
         //
         $content = $this->getDataFromRow($entry);
 
-        $gatewayToken = $content['gateway_token'];
-
-        $accountNumber = $content['account_number'];
+        $gatewayToken = $content[self::GATEWAY_TOKEN];
 
         $gatewayPayment = $this->repo
                                ->enach
@@ -39,11 +44,21 @@ class EnachRbl extends Base
         $payment = $gatewayPayment->payment;
         $token = $payment->getGlobalOrLocalTokenEntity();
 
+        $this->repo->transaction(function() use ($payment, $token, $gatewayPayment, $gatewayToken, $content)
+        {
+            $this->updateGatewayPaymentEntity($payment, $gatewayPayment, $content);
+
+            $this->updateTokenEntity($token, $gatewayToken, $content);
+        });
+
+        $entry[Batch\Header::STATUS] = Batch\Status::SUCCESS;
+    }
+
+    protected function updateTokenEntity(Token\Entity $token, $gatewayToken, array $content)
+    {
         $currentRecurringStatus = $token->getRecurringStatus();
 
-        $newRecurringStatus = $content['token_status'];
-
-        $this->updatePaymentEntities($payment, $gatewayPayment, $content);
+        $newRecurringStatus = $content[self::TOKEN_STATUS];
 
         if (Token\RecurringStatus::isFinalStatus($currentRecurringStatus) === true)
         {
@@ -61,23 +76,22 @@ class EnachRbl extends Base
 
         $tokenParams = [
             Token\Entity::RECURRING_STATUS          => $newRecurringStatus,
-            Token\Entity::GATEWAY_TOKEN             => $gatewayToken
+            Token\Entity::GATEWAY_TOKEN             => $gatewayToken,
+            Token\Entity::RECURRING_FAILURE_REASON  => $content[self::ERROR_MESSAGE],
         ];
 
         (new Token\Core)->updateTokenFromEmandateGatewayData($token, $tokenParams);
 
         $this->repo->saveOrFail($token);
-
-        $entry[Batch\Header::STATUS] = Batch\Status::SUCCESS;
     }
 
-    protected function updatePaymentEntities(Payment\Entity $payment, EnachEntity $gatewayPayment, array $data)
+    protected function updateGatewayPaymentEntity(Payment\Entity $payment, EnachEntity $gatewayPayment, array $data)
     {
         $gatewayPayment->fill($data);
 
         $this->repo->saveOrFail($gatewayPayment);
 
-        if ($data['registration_status'] === Rbl\Status::REGISTRATION_SUCCESS)
+        if (Rbl\Status::isRegistrationSuccess($data[self::REGISTRATION_STATUS]) === true)
         {
             return $this->captureAuthorizedPayment($payment);
         }
@@ -85,6 +99,18 @@ class EnachRbl extends Base
 
     protected function captureAuthorizedPayment(Payment\Entity $payment)
     {
+        if (($payment->isFailed() === true) or
+            ($payment->isPartiallyOrFullyRefunded() === true))
+        {
+            $this->trace->critical(TraceCode::PAYMENT_RECURRING_INVALID_STATUS,
+                    [
+                        'status' => $payment->getStatus(),
+                        'payment_id' => $payment->getId(),
+                    ]);
+
+            return;
+        }
+
         $paymentProcessor = (new Payment\Processor\Processor($payment->merchant));
 
         $amount = $payment->getAmount();
@@ -108,22 +134,22 @@ class EnachRbl extends Base
     {
         $gatewayToken = $entry['UMRN'];
 
-        $registrationStatus = strtolower($entry['STATUS']);
-        $status = $this->getTokenStatus($registrationStatus);
+        $status = $this->getTokenStatus($entry['STATUS']);
 
         $accountNumber = $entry['ACNO'];
 
         return [
-            'gateway_token'       => $gatewayToken,
-            'token_status'        => $status,
-            'registration_status' => $registrationStatus,
-            'account_number'      => $accountNumber,
+            self::GATEWAY_TOKEN       => $gatewayToken,
+            self::TOKEN_STATUS        => $status,
+            self::REGISTRATION_STATUS => $entry['STATUS'],
+            self::ACCOUNT_NUMBER      => $accountNumber,
+            self::ERROR_MESSAGE       => (($status === Token\RecurringStatus::REJECTED) ? $entry['STATUS'] : '')
         ];
     }
 
     protected function getTokenStatus(string $gatewayTokenStatus): string
     {
-        if ($gatewayTokenStatus === Rbl\Status::REGISTRATION_SUCCESS)
+        if (Rbl\Status::isRegistrationSuccess($gatewayTokenStatus) === true)
         {
             return Token\RecurringStatus::CONFIRMED;
         }
@@ -134,8 +160,8 @@ class EnachRbl extends Base
     /**
      * Overriding parseExcelSheets() because of different startRow.
      * Ideally, we should store `$startRow` in a variable and then use.
-     * @param  [type] $filePath [description]
-     * @return [type]           [description]
+     * @param  string $filePath
+     * @return array
      */
     protected function parseExcelSheets($filePath)
     {
@@ -145,10 +171,15 @@ class EnachRbl extends Base
 
         $sheets = $this->parseExcelFile($filePath);
 
-        $hasSingleSheet  = (count($sheets) === 2);
+        //
+        // Resetting startRow to 1 again
+        //
+        Config::set('excel.import.startRow', 1);
+
+        $hasDoubleSheets  = (count($sheets) === 2);
         $errorMessage    = 'Sheets keys: ' . implode('.', array_keys($sheets));
 
-        assertTrue($hasSingleSheet, $errorMessage);
+        assertTrue($hasDoubleSheets, $errorMessage);
 
         //
         // We use 2nd index as 1st sheet contains the summary and

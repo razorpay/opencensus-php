@@ -265,7 +265,7 @@ class EnachRblGatewayTest extends TestCase
         $enach = $this->getDbLastEntityToArray('enach');
 
         $this->assertNotNull($enach['umrn']);
-        $this->assertEquals('active', $enach['registration_status']);
+        $this->assertEquals('Active', $enach['registration_status']);
 
         $token = $this->getDbLastEntityToArray('token');
 
