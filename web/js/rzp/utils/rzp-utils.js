@@ -488,5 +488,5 @@ export const getKeysSeparatedByPipe = params => {
  * Remove all white spaces from a given string
  **/
 export const trim = str => {
-  return str.replace(/\s+/, '');
+  return str.replace(/\s+/g, '');
 };
