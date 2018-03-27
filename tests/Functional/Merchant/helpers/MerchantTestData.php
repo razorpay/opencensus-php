@@ -700,9 +700,9 @@ return [
     'testEditMerchantConfig' => [
         'request'  => [
             'content' => [
-                'brand_color'        => '00bcd4',
-                'handle'             => 'LOLO',
-                'invoice_name_field' => 'name',
+                'brand_color'         => '00bcd4',
+                'handle'              => 'LOLO',
+                'invoice_label_field' => 'name',
             ],
             'url'     => '/account/config',
             'method'  => 'put',
@@ -713,10 +713,10 @@ return [
         ],
         'response' => [
             'content' => [
-                'id'                 => '10000000000000',
-                'brand_color'        => '#00BCD4',
-                'handle'             => 'LOLO',
-                'invoice_name_field' => 'name',
+                'id'                  => '10000000000000',
+                'brand_color'         => '#00BCD4',
+                'handle'              => 'LOLO',
+                'invoice_label_field' => 'name',
             ]
         ]
     ],
@@ -746,7 +746,7 @@ return [
     'testEditMerchantInvalidInvoiceNameField' => [
         'request'   => [
             'content' => [
-                'invoice_name_field' => 'random',
+                'invoice_label_field' => 'random',
             ],
             'url'     => '/account/config',
             'method'  => 'put',
@@ -755,7 +755,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The selected invoice name field is invalid.',
+                    'description' => 'The selected invoice label field is invalid.',
                 ],
             ],
             'status_code' => 400,

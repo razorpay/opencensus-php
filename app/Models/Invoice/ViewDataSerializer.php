@@ -116,23 +116,28 @@ class ViewDataSerializer extends Base\Core
 
     protected function getFormattedInvoiceDataForView(): array
     {
+        //
         // Reload is needed as from Payment\Processor\Notify, the invoice
         // object passed as part of construct does not have relations loaded.
+        //
         $this->repo->loadRelations($this->invoice);
 
         $invoiceData = $this->invoice->toArrayPublic();
 
         $invoiceData[Entity::IS_PAID] = $this->invoice->isPaid();
 
-        // Puts callback_url, callback_method in view data. Those are not
-        // exposed in route response as of now.
-
+        //
+        // Puts callback_url, callback_method and merchant_label in view data.
+        // These are not exposed in route response as of now.
+        //
         $invoiceData[Entity::CALLBACK_URL]    = $this->invoice->getCallbackUrl();
         $invoiceData[Entity::CALLBACK_METHOD] = $this->invoice->getCallbackMethod();
+        $invoiceData[Entity::MERCHANT_LABEL]  = $this->invoice->getMerchantLabel();
 
+        //
         // Gets public view attributes of all payments against this invoice
         // in descending order.
-
+        //
         $invoiceData[Entity::PAYMENTS] = $this->invoice
                                               ->load(Entity::PAYMENTS)
                                               ->payments

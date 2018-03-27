@@ -304,7 +304,8 @@
                       return location.reload();
                     }
                     if (data.merchant && data.merchant.name) {
-                      document.querySelector('#success h3').innerHTML = 'Thank you for your payment on ' + data.merchant.name;
+                      var name = data.invoice.merchant_label || data.merchant.name;
+                      document.querySelector('#success h3').innerHTML = 'Thank you for your payment on ' + name;
                     }
                     document.querySelector('#pay_id').innerHTML = response.razorpay_payment_id;
                     document.body.className = 'paid';
@@ -333,7 +334,7 @@
                 @endif
                 if (merchant) {
                   if (merchant.name) {
-                    options.name = merchant.name;
+                    options.name = invoiceObj.merchant_label || merchant.name;
                   }
                   if (merchant.color) {
                     options.theme.color = merchant.color;
