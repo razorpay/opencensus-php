@@ -167,7 +167,7 @@ class Gateway
 
     protected $sortRequestContent = true;
 
-    protected $mockUrl ;
+    protected $mockUrl;
 
     public function __construct()
     {
@@ -798,8 +798,9 @@ class Gateway
         $type = strtoupper($type);
 
         //handling for mock server URL in func environment
-        if( $this->env === 'func' && isset($this->mockUrl)){
-          return $this->mockUrl."/".$this->gateway.$this->getRelativeUrl($type);
+        if( $this->env != 'prod' and isset($this->mockUrl))
+        {
+          return $this->mockUrl.$this->gateway.$this->getRelativeUrl($type);
         }
 
         return $urlDomain . $this->getRelativeUrl($type);
