@@ -115,7 +115,7 @@ return [
                 'invoice' => [
                     'order_id' => 'order_100000invorder',
                     'url'      =>  'http://bitly.dev/2eZ11Vn',
-                    'amount'   =>  100000,
+                    'amount'   =>  1000000,
                 ],
                 'order' => [
                     'partial_payment' => false,

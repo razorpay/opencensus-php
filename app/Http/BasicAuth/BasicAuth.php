@@ -453,6 +453,10 @@ class BasicAuth
         }
 
         $this->setMerchant($merchant);
+        $this->checkMerchantActivatedForLive();
+
+        // Sets the key as well if exists
+        $this->key = $this->repo->key->getLatestActiveKeyForMerchant($merchant->getId());
     }
 
     public function directAuth()
@@ -1023,6 +1027,11 @@ class BasicAuth
     public function getMode()
     {
         return $this->mode;
+    }
+
+    public function getKeyEntity()
+    {
+        return $this->key;
     }
 
     public function getMerchant()

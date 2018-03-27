@@ -23,9 +23,9 @@ trait KeylessPublicAuthTrait
 
     protected function createInvoice(string $connection = Mode::LIVE)
     {
-        $this->fixtures->on($connection)->create('order', ['id' => '100000invorder']);
+        $this->fixtures->on($connection)->create('order', ['id' => '100000invorder', 'payment_capture' => true]);
 
-        $invoiceAttributes = ['id' => '1000000invoice', 'order_id' => '100000invorder', 'customer_id' => null];
+        $invoiceAttributes = ['id' => '1000000invoice', 'order_id' => '100000invorder', 'customer_id' => null, 'amount' => 1000000];
 
         return $this->fixtures->on($connection)->create('invoice', $invoiceAttributes);
     }

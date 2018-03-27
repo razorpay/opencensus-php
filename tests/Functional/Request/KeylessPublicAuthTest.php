@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Request;
 
+use RZP\Models\Key;
 use RZP\Constants\Mode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -22,6 +23,13 @@ class KeylessPublicAuthTest extends TestCase
         $this->testDataFilePath = __DIR__ . '/helpers/KeylessPublicAuthTestData.php';
 
         parent::setUp();
+
+        // For all keyless auth tests, the test merchant should not have any keys, so marking the
+        // keys created by test fixtures expired.
+        $this->fixtures->key->edit('TheTestAuthKey', ['expired_at' => time()]);
+
+        // Also activates the merchant so he is able to make live requests for the tests.
+        $this->fixtures->merchant->activate();
     }
 
     public function testGetInvoiceStatus()
@@ -71,24 +79,102 @@ class KeylessPublicAuthTest extends TestCase
         $this->startTest();
     }
 
-    // TODO: After discussion about signature.
 
-    public function testPaymentCreateWithXEntityIdInInput()
+    public function testPaymentCreateWithXEntityIdInInputWhenKeyExists()
     {
-        // $order = $this->createOrder(Mode::TEST);
+        $this->fixtures->key->edit('TheTestAuthKey', ['expired_at' => null]);
 
-        // $request = $this->buildAuthPaymentRequest();
-        // $request['content']['order_id'] = 'order_100000000order';
-        // $request['content']['amount'] = $order->getAmount();
+        $order = $this->createOrder(Mode::TEST);
 
-        // $response = $this->makeRequestAndGetContent($request);
+        $request = $this->buildAuthPaymentRequest();
+        $request['content']['order_id'] = 'order_100000000order';
+        $request['content']['amount'] = $order->getAmount();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('order_100000000order', $response['razorpay_order_id']);
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+        $this->assertArrayHasKey('razorpay_signature', $response);
+        $this->assertCount(3, $response);
     }
 
-    public function testPaymentCreateWithOrderIdInQuery()
+    public function testPaymentCreateWithOrderIdInInput()
     {
+        $order = $this->createOrder(Mode::TEST);
+
+        $request = $this->buildAuthPaymentRequest();
+
+        $request['content']['order_id'] = 'order_100000000order';
+        $request['content']['amount']   = $order->getAmount();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('order_100000000order', $response['razorpay_order_id']);
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+        $this->assertCount(2, $response);
     }
 
-    public function testPaymentCreateWithInvoiceIdInQuery()
+    /**
+     * When key exists and payment create request is made against order, in response we must also include the signature.
+     */
+    public function testPaymentCreateWithOrderIdInInputWhenKeyExists()
     {
+        $this->fixtures->key->edit('TheTestAuthKey', ['expired_at' => null]);
+
+        $order = $this->createOrder(Mode::TEST);
+
+        $request = $this->buildAuthPaymentRequest();
+
+        $request['content']['order_id'] = 'order_100000000order';
+        $request['content']['amount']   = $order->getAmount();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('order_100000000order', $response['razorpay_order_id']);
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+        $this->assertArrayHasKey('razorpay_signature', $response);
+        $this->assertCount(3, $response);
+    }
+
+    public function testPaymentCreateWithInvoicesOrderIdInInput()
+    {
+        $invoice = $this->createInvoice(Mode::TEST);
+
+        $request = $this->buildAuthPaymentRequest();
+
+        $request['content']['order_id'] = 'order_100000invorder';
+        $request['content']['amount']   = $invoice->getAmount();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('inv_1000000invoice', $response['razorpay_invoice_id']);
+        $this->assertEquals('paid', $response['razorpay_invoice_status']);
+        $this->assertEquals(null, $response['razorpay_invoice_receipt']);
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+        $this->assertCount(4, $response);
+    }
+
+    /**
+     * When key exists and payment create request is made against invoice, in response we must also include the signature.
+     */
+    public function testPaymentCreateWithInvoicesOrderIdInInputWhenKeyExists()
+    {
+        $this->fixtures->key->edit('TheTestAuthKey', ['expired_at' => null]);
+
+        $invoice = $this->createInvoice(Mode::TEST);
+
+        $request = $this->buildAuthPaymentRequest();
+
+        $request['content']['order_id'] = 'order_100000invorder';
+        $request['content']['amount']   = $invoice->getAmount();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('inv_1000000invoice', $response['razorpay_invoice_id']);
+        $this->assertEquals('paid', $response['razorpay_invoice_status']);
+        $this->assertEquals(null, $response['razorpay_invoice_receipt']);
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+        $this->assertArrayHasKey('razorpay_signature', $response);
+        $this->assertCount(5, $response);
     }
 }

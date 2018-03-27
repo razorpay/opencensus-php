@@ -3230,7 +3230,7 @@ trait Authorize
     {
         $data['razorpay_subscription_id'] = $payment->subscription->getPublicId();
 
-        $data['razorpay_signature'] = $this->getSignature($data);
+        $this->fillReturnDataWithSignatureIfApplicable($data);
     }
 
     protected function fillReturnDataWithInvoice(Payment\Entity $payment, array & $data)
@@ -3251,12 +3251,23 @@ trait Authorize
         $data['razorpay_invoice_status']  = $invoice->getStatus();
         $data['razorpay_invoice_receipt'] = $invoice->getReceipt();
 
-        $data['razorpay_signature'] = $this->getSignature($data);
+        $this->fillReturnDataWithSignatureIfApplicable($data);
     }
 
     protected function fillReturnDataWithOrder(Payment\Entity $payment, array & $data)
     {
         $data['razorpay_order_id'] = $payment->order->getPublicId();
+
+        $this->fillReturnDataWithSignatureIfApplicable($data);
+    }
+
+    protected function fillReturnDataWithSignatureIfApplicable(array & $data)
+    {
+        // If the accessed via keyless flow(public auth routes) and key doesn't exists, skips calculating signatures.
+        if (($this->ba->isPublicAuth() === true) and ($this->ba->getKeyEntity() === null))
+        {
+            return;
+        }
 
         $data['razorpay_signature'] = $this->getSignature($data);
     }
