@@ -36,9 +36,13 @@ class OffersPaymentTest extends TestCase
 
         $payment = $this->getOfferPaymentArray($order);
 
-        $payment['amount'] = 90000;
+        $this->doAuthPayment($payment);
 
-        $this->doAuthAndCapturePayment($payment, $order->getAmount());
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals(90000, $payment['amount']);
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->capturePayment($payment['id'], 100000, 'INR', 90000);
 
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals(90000, $payment['amount']);
@@ -46,9 +50,9 @@ class OffersPaymentTest extends TestCase
 
         $order = $this->getLastEntity('order', true);
         $this->assertEquals(100000, $order['amount']);
+        $this->assertEquals('paid', $order['status']);
 
         $offer = $this->getLastEntity('offer', true);
-
         $discount = $this->getLastEntity('discount', true);
         $this->assertEquals(10000, $discount['amount']);
         $this->assertEquals($payment['id'], $discount['payment_id']);
@@ -58,6 +62,8 @@ class OffersPaymentTest extends TestCase
 
     public function testOfferPaymentCustomerFeeBearer()
     {
+        $this->markTestSkipped('discounting for cust_fee_bearer flow is currently not supported');
+
         $this->fixtures->merchant->setFeeBearer('customer');
 
         $offer = $this->fixtures->create('offer');

@@ -2282,6 +2282,11 @@ class Entity extends Base\PublicEntity
         return $this->hasMany(\RZP\Models\Dispute\Entity::class);
     }
 
+    public function discount()
+    {
+        return $this->hasOne('RZP\Models\Discount\Entity');
+    }
+
 // --------------- Relation to other entity section ends -----------------------
 
     public function refundAmount($amount, $baseAmount)
