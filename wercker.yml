@@ -26,8 +26,12 @@ build:
       - script:
         name: Install dependencies
         code: >
-          apk add --no-cache imagemagick zip php7-dev gpgmepp gpgme &&
-          pecl install gnupg &&
+          apk add --no-cache imagemagick zip php7-dev php7-pear autoconf gcc alpine-sdk gnupg gpgme gpgme-dev sed bash
+      - script:
+        name: install gnupg extension
+        code: >
+          sed -i -e '/^exec/s/ -n / /' $(which pecl) && \
+          pecl install gnupg
           echo 'extension=gnupg.so' > /etc/php7/conf.d/gnupg.ini
       - script:
           name: copy env file
