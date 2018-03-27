@@ -8,6 +8,7 @@ use Razorpay\OAuth\Client;
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\Helpers\MocksDnsTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
 /**
  * @group dns-sensitive
@@ -17,6 +18,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
     use OAuthTrait;
     use PaymentTrait;
     use MocksDnsTrait;
+    use VirtualAccountTrait;
 
     public function setUp()
     {
@@ -82,6 +84,8 @@ class OAuthBearerAuthTest extends OAuthTestCase
     }
 
     /**
+     * Please refer to the GitHub wiki page on middlewares before making any changes here.
+     *
      * Tests that the route (feature route) is accessible if
      *      the app hits the route on behalf of the merchant, and,
      *      the app has the feature enabled
@@ -115,6 +119,8 @@ class OAuthBearerAuthTest extends OAuthTestCase
     }
 
     /**
+     * Please refer to the GitHub wiki page on middlewares before making any changes here.
+     *
      * Tests that the route (feature route) is accessible if
      *      the app hits the route on behalf of the merchant, and,
      *      the app has the feature enabled
@@ -145,6 +151,8 @@ class OAuthBearerAuthTest extends OAuthTestCase
     }
 
     /**
+     * Please refer to the GitHub wiki page on middlewares before making any changes here.
+     *
      * Tests that the route (feature route) is not accessible if
      *      the app hits the route on behalf of the merchant, and,
      *      the app does not have the feature enabled, and,
@@ -181,6 +189,8 @@ class OAuthBearerAuthTest extends OAuthTestCase
     }
 
     /**
+     * Please refer to the GitHub wiki page on middlewares before making any changes here.
+     *
      * Tests that the route (feature route) is accessible if
      *      the app hits the route on behalf of the merchant, and,
      *      the app has the feature enabled, and,
@@ -219,6 +229,8 @@ class OAuthBearerAuthTest extends OAuthTestCase
     }
 
     /**
+     * Please refer to the GitHub wiki page on middlewares before making any changes here.
+     *
      * Tests that the route (feature route) is accessible if
      *      the app hits the route on behalf of the merchant, and,
      *      the app has the feature enabled, and,
@@ -265,6 +277,8 @@ class OAuthBearerAuthTest extends OAuthTestCase
     }
 
     /**
+     * Please refer to the GitHub wiki page on middlewares before making any changes here.
+     *
      * Tests that the route (feature route) is not accessible if
      *      the app hits the route on behalf of the merchant, and,
      *      the app does not have the feature enabled, and,
@@ -349,5 +363,119 @@ class OAuthBearerAuthTest extends OAuthTestCase
         $this->fixtures->create('payment', ['id' => '10000000000000']);
 
         $this->startTest();
+    }
+
+    public function testRestrictedAccessFeatureEnabledOnMerchant()
+    {
+        $client = factory(Client\Entity::class)->create();
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_id' => '10000000000000',
+                'name' => 'virtual_accounts'
+            ]);
+
+        $accessToken = $this->generateOAuthAccessToken(
+            [
+                'scopes' => ['read_write'],
+                'client_id' => $client->getId()
+            ]);
+
+        $this->ba->oauthBearerAuth($accessToken);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = $this->getDefaultVirtualAccountRequestArray();
+
+        $this->startTest($testData);
+    }
+
+    public function testRestrictedAccessFeatureEnabledOnApp()
+    {
+        $client = factory(Client\Entity::class)->create();
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_type' => 'application',
+                'entity_id'   => $client->application_id,
+                'name'        => 'virtual_accounts'
+            ]);
+
+        $accessToken = $this->generateOAuthAccessToken(
+            [
+                'scopes' => ['read_write'],
+                'client_id' => $client->getId()
+            ]);
+
+        $this->ba->oauthBearerAuth($accessToken);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = $this->getDefaultVirtualAccountRequestArray();
+
+        $this->startTest($testData);
+    }
+
+    public function testRestrictedAccessFeatureEnabledOnMerchantAndApp()
+    {
+        $client = factory(Client\Entity::class)->create();
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_id' => '10000000000000',
+                'name' => 'virtual_accounts'
+            ]);
+
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_type' => 'application',
+                'entity_id'   => $client->application_id,
+                'name'        => 'virtual_accounts'
+            ]);
+
+        $accessToken = $this->generateOAuthAccessToken(
+            [
+                'scopes' => ['read_write'],
+                'client_id' => $client->getId()
+            ]);
+
+        $this->ba->oauthBearerAuth($accessToken);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = $this->getDefaultVirtualAccountRequestArray();
+
+        $this->startTest($testData);
+    }
+
+    public function testRestrictedAccessFeatureEnabledOnNone()
+    {
+        $client = factory(Client\Entity::class)->create();
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        $accessToken = $this->generateOAuthAccessToken(
+            [
+                'scopes' => ['read_write'],
+                'client_id' => $client->getId()
+            ]);
+
+        $this->ba->oauthBearerAuth($accessToken);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = $this->getDefaultVirtualAccountRequestArray();
+
+        $this->startTest($testData);
     }
 }
