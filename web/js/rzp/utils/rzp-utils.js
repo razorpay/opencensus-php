@@ -455,4 +455,12 @@ export const autoPrefixUrls = url => {
   return url;
 };
 
+// Check if webkit browsers
+export const isWebkit =
+  typeof window.getComputedStyle(document.documentElement)[
+    '-webkit-text-security'
+  ] === 'string'
+    ? true
+    : false;
+
 export { acronyms, shortenText };

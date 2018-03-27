@@ -12,6 +12,8 @@ import { required } from 'rzp/utils/validators';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationsActions from 'rzp/modules/notifications';
 
+import { isWebkit } from 'rzp/utils/rzp-utils';
+
 const verifyAccountNumber = (value, allValues, props) => {
   return value !== allValues.account_number
     ? "Bank Number doesn't match"
@@ -29,7 +31,7 @@ export default class BandAccountDetailsChange extends Component {
   state = {
     addressProof: null,
   };
-
+  componentWillMount() {}
   handleFileChange = event => {
     if (event) {
       this.setState({
@@ -102,12 +104,11 @@ export default class BandAccountDetailsChange extends Component {
                   <Field
                     name="account_number"
                     component={InputField}
-                    class={`form-control ${this.isWebkit ? 'webkit-sec' : ''}`}
+                    class={`form-control ${isWebkit ? 'webkit-sec' : ''}`}
                     placeholder="Bank Account Number"
-                    type={this.isWebkit ? 'text' : 'password'}
+                    type={isWebkit ? 'text' : 'password'}
                     autoComplete="off"
                     validate={[required()]}
-                    autoComplete="new-password"
                   />
                 </div>
               </div>

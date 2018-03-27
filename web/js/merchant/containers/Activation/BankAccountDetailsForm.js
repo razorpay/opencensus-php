@@ -5,6 +5,7 @@ import InputField from 'rzp/ui/Forms/InputField';
 import Fieldset from 'rzp/ui/Forms/Fieldset';
 import { required, validatePincodeLength } from 'rzp/utils/validators';
 import { states } from 'rzp/utils/constants';
+import { isWebkit } from 'rzp/utils/rzp-utils';
 
 import { getPincodeDetails } from 'merchant/modules/activation';
 
@@ -21,16 +22,6 @@ function validationAddressLength(value) {
 }
 
 export default class BankDetailsForm extends Component {
-  componentWillMount() {
-    // Check if webkit browsers
-    this.isWebkit =
-      typeof window.getComputedStyle(document.documentElement)[
-        '-webkit-text-security'
-      ] === 'string'
-        ? true
-        : false;
-  }
-
   //Fetch state/city details based on pincode.
   fetchPincodeDetails = e => {
     const pincode = e.target.value;
@@ -79,9 +70,9 @@ export default class BankDetailsForm extends Component {
               <Field
                 name="bank_account_number"
                 component={InputField}
-                class={`form-control ${this.isWebkit ? 'webkit-sec' : ''}`}
+                class={`form-control ${isWebkit ? 'webkit-sec' : ''}`}
                 placeholder="Bank Account Number"
-                type={this.isWebkit ? 'text' : 'password'}
+                type={isWebkit ? 'text' : 'password'}
                 autoComplete="off"
                 validate={[required()]}
               />
