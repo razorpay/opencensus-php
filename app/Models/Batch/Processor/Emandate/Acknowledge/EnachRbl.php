@@ -63,7 +63,7 @@ class EnachRbl extends Base
             self::ACKNOWLEDGE_STATUS => $status,
             self::ACCOUNT_NUMBER     => trim($originalMandate['DbtrAcct']['Id']['Othr']['Id']),
             self::TOKEN_STATUS       => $this->getTokenStatus($status),
-            self::ERROR_MESSAGE      => 'failure',
+            self::ERROR_MESSAGE      => $this->getTokenErrorMessage($status),
         ];
     }
 
@@ -167,14 +167,22 @@ class EnachRbl extends Base
 
     protected function getTokenStatus(string $gatewayTokenStatus): string
     {
-        $gatewayTokenStatus = strtolower($gatewayTokenStatus);
-
         if (Status::isAcknowledgeSuccess($gatewayTokenStatus) === true)
         {
             return Token\RecurringStatus::INITIATED;
         }
 
         return Token\RecurringStatus::REJECTED;
+    }
+
+    protected function getTokenErrorMessage(string $gatewayTokenStatus): string
+    {
+        if (Status::isAcknowledgeSuccess($gatewayTokenStatus) === true)
+        {
+            return null;
+        }
+
+        return 'FAILED';
     }
 
     protected function getGatewayAttributes(array $content): array

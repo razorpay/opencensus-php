@@ -4,9 +4,6 @@ namespace RZP\Gateway\Enach\Rbl;
 
 class Status
 {
-    const DEBIT_SUCCESS = '';
-    const DEBIT_REJECT  = 'REJECT';
-
     const ACKNOWLEDGE_SUCCESS = 'true';
     const ACKNOWLEDGE_FAILURE = 'false';
 
@@ -25,12 +22,5 @@ class Status
         $status = strtolower($status);
 
         return ($status === self::REGISTRATION_SUCCESS);
-    }
-
-    public static function isDebitSuccess($status)
-    {
-        $status = strtolower($status);
-
-        return ($status === self::DEBIT_SUCCESS);
     }
 }

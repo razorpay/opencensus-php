@@ -3,7 +3,6 @@
 namespace RZP\Models\Batch\Processor\Emandate\Register;
 
 use Config;
-use RZP\Exception;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
@@ -46,7 +45,7 @@ class EnachRbl extends Base
 
         $this->repo->transaction(function() use ($payment, $token, $gatewayPayment, $gatewayToken, $content)
         {
-            $this->updateGatewayPaymentEntity($payment, $gatewayPayment, $content);
+            $this->updateGatewayPaymentEntityAndCapturePayment($payment, $gatewayPayment, $content);
 
             $this->updateTokenEntity($token, $gatewayToken, $content);
         });
@@ -85,7 +84,7 @@ class EnachRbl extends Base
         $this->repo->saveOrFail($token);
     }
 
-    protected function updateGatewayPaymentEntity(Payment\Entity $payment, EnachEntity $gatewayPayment, array $data)
+    protected function updateGatewayPaymentEntityAndCapturePayment(Payment\Entity $payment, EnachEntity $gatewayPayment, array $data)
     {
         $gatewayPayment->fill($data);
 
@@ -126,7 +125,12 @@ class EnachRbl extends Base
             Payment\Entity::CURRENCY => $payment->getCurrency()
         ];
 
+        //
         // We do not capture the payment if its already refunded
+        // We are not putting it inside a try-catch block as
+        // it's already under transaction and we don't want
+        // token to be confirmed if there is any bug on our end
+        //
         $paymentProcessor->capture($payment, $parameters);
     }
 
@@ -143,7 +147,7 @@ class EnachRbl extends Base
             self::TOKEN_STATUS        => $status,
             self::REGISTRATION_STATUS => $entry['STATUS'],
             self::ACCOUNT_NUMBER      => $accountNumber,
-            self::ERROR_MESSAGE       => (($status === Token\RecurringStatus::REJECTED) ? $entry['STATUS'] : '')
+            self::ERROR_MESSAGE       => $this->getTokenErrorMessage($entry['STATUS']),
         ];
     }
 
@@ -155,6 +159,20 @@ class EnachRbl extends Base
         }
 
         return Token\RecurringStatus::REJECTED;
+    }
+
+    protected function getTokenErrorMessage(string $gatewayTokenStatus): string
+    {
+        if (Rbl\Status::isRegistrationSuccess($gatewayTokenStatus) === true)
+        {
+            return null;
+        }
+
+        //
+        // Return status in case of failure, we are keeping it
+        // as failure status
+        //
+        return $gatewayTokenStatus;
     }
 
     /**
