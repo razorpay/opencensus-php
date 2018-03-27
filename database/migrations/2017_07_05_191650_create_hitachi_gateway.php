@@ -52,7 +52,7 @@ class CreateHitachiGateway extends Migration
             $table->char(Hitachi::AUTH_STATUS, 1)
                   ->nullable();
 
-            $table->char(Hitachi::RRN, 20)
+            $table->char(Hitachi::RRN, 12)
                   ->nullable();
 
             $table->string(Hitachi::STATUS)

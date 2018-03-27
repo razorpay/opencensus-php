@@ -2988,7 +2988,6 @@ ALTER TABLE virtual_accounts
     ADD INDEX virtual_accounts_updated_at_index (updated_at);
 
 ALTER TABLE hitachi
-    MODIFY COLUMN pRRN char(20) DEFAULT NULL,
     ADD COLUMN masked_card_number varchar(255) DEFAULT NULL after pStatus,
     ADD COLUMN card_network varchar(255) DEFAULT NULL after masked_card_number,
     ADD COLUMN merchant_reference varchar(255) DEFAULT NULL after card_network;
