@@ -1,88 +1,57 @@
 <?php
 
 namespace RZP\Gateway\Paytm;
-
 use RZP\Constants\HashAlgo;
 
+// Adapted for php7.1 using code at
+// https://github.com/Paytm-Payments/Paytm_App_Checksum_Kit_PHP/issues/1
 class Checksum
 {
+    const CHECKSUMHASH = 'CHECKSUMHASH';
+    const IV = '@@@@&&&&####$$$$';
+    const AES_128_CBC = 'AES-128-CBC';
+    const TRUE = 'TRUE';
+    const FALSE = 'FALSE';
+    const REFUND = 'REFUND';
+    const STR_NULL = 'null';
+
     public static function encrypt_e($input, $ky)
     {
-        $key = $ky;
-        $size = mcrypt_get_block_size(MCRYPT_RIJNDAEL_128, 'cbc');
-        $input = self::pkcs5_pad_e($input, $size);
-        $td = mcrypt_module_open(MCRYPT_RIJNDAEL_128, '', 'cbc', '');
-        $iv = "@@@@&&&&####$$$$";
-        mcrypt_generic_init($td, $key, $iv);
-        $data = mcrypt_generic($td, $input);
-        mcrypt_generic_deinit($td);
-        mcrypt_module_close($td);
-        $data = base64_encode($data);
+        $iv   = self::IV;
+        $data = openssl_encrypt($input, self::AES_128_CBC, $ky, 0, $iv);
         return $data;
     }
 
     public static function decrypt_e($crypt, $ky)
     {
-
-        $crypt = base64_decode($crypt);
-        $key = $ky;
-        $td = mcrypt_module_open(MCRYPT_RIJNDAEL_128, '', 'cbc', '');
-        $iv = "@@@@&&&&####$$$$";
-        mcrypt_generic_init($td, $key, $iv);
-        $decrypted_data = mdecrypt_generic($td, $crypt);
-        mcrypt_generic_deinit($td);
-        mcrypt_module_close($td);
-        $decrypted_data = self::pkcs5_unpad_e($decrypted_data);
-        $decrypted_data = rtrim($decrypted_data);
-        return $decrypted_data;
-    }
-
-    public static function pkcs5_pad_e($text, $blocksize)
-    {
-        $pad = $blocksize - (strlen($text) % $blocksize);
-        return $text . str_repeat(chr($pad), $pad);
-    }
-
-    public static function pkcs5_unpad_e($text)
-    {
-        $pad = ord($text{strlen($text) - 1});
-
-        if ($pad > strlen($text))
-        {
-            return false;
-        }
-
-        return substr($text, 0, -1 * $pad);
+        $iv   = self::IV;
+        $data = openssl_decrypt($crypt, self::AES_128_CBC, $ky, 0, $iv);
+        return $data;
     }
 
     public static function generateSalt_e($length)
     {
         $random = "";
-        srand((double) microtime() * 1000000);
 
-        $data = "AbcDE123IJKLMN67QRSTUVWXYZ";
-        $data .= "aBCdefghijklmn123opq45rs67tuv89wxyz";
-        $data .= "0FGH45OP89";
+        srand((double) microtime() * 1000000);
+        $charset = "AbcDE123IJKLMN67QRSTUVWXYZ";
+        $charset .= "aBCdefghijklmn123opq45rs67tuv89wxyz";
+        $charset .= "0FGH45OP89";
 
         for ($i = 0; $i < $length; $i++)
         {
-            $random .= substr($data, (rand() % (strlen($data))), 1);
+            $random .= substr($charset, (rand() % (strlen($charset))), 1);
         }
-
         return $random;
     }
 
     public static function checkString_e($value)
     {
-        $myvalue = ltrim($value);
-        $myvalue = rtrim($myvalue);
-
-        if ($myvalue == 'null')
+        if ($value === self::STR_NULL)
         {
-            $myvalue = '';
+            $value = '';
         }
-
-        return $myvalue;
+        return $value;
     }
 
     public static function getChecksumFromArray($arrayList, $key, $sort = 1)
@@ -92,12 +61,12 @@ class Checksum
             ksort($arrayList);
         }
 
-        $str = self::getArray2Str($arrayList);
-        $salt = self::generateSalt_e(4);
+        $str         = self::getArray2Str($arrayList);
+        $salt        = self::generateSalt_e(4);
         $finalString = $str . "|" . $salt;
-        $hash = hash(HashAlgo::SHA256, $finalString);
-        $hashString = $hash . $salt;
-        $checksum = self::encrypt_e($hashString, $key);
+        $hash        = hash(HashAlgo::SHA256, $finalString);
+        $hashString  = $hash . $salt;
+        $checksum    = self::encrypt_e($hashString, $key);
         return $checksum;
     }
 
@@ -105,81 +74,50 @@ class Checksum
     {
         $arrayList = self::removeCheckSumParam($arrayList);
         ksort($arrayList);
-        $str = self::getArray2Str($arrayList);
-        $paytm_hash = self::decrypt_e($checksumvalue, $key);
-        $salt = substr($paytm_hash, -4);
-
-        $finalString = $str . "|" . $salt;
-
+        $str          = self::getArray2Str($arrayList);
+        $paytm_hash   = self::decrypt_e($checksumvalue, $key);
+        $salt         = substr($paytm_hash, -4);
+        $finalString  = $str . "|" . $salt;
         $website_hash = hash(HashAlgo::SHA256, $finalString);
         $website_hash .= $salt;
-
-        return hash_equals($website_hash, $paytm_hash);
+        $validFlag = self::FALSE;
+        if ($website_hash == $paytm_hash) {
+            $validFlag = self::TRUE;
+        } else {
+            $validFlag = self::FALSE;
+        }
+        return $validFlag;
     }
 
     public static function getArray2Str($arrayList)
     {
-        $paramStr = "";
-        $flag = 1;
-        foreach ($arrayList as $key => $value)
-        {
-            if ($flag)
-            {
+        $findme     = self::REFUND;
+        $findmepipe = '|';
+        $paramStr   = "";
+        $flag       = 1;
+        foreach ($arrayList as $key => $value) {
+            $pos     = strpos($value, $findme);
+            $pospipe = strpos($value, $findmepipe);
+            if ($pos !== false || $pospipe !== false) {
+                continue;
+            }
+
+            if ($flag) {
                 $paramStr .= self::checkString_e($value);
                 $flag = 0;
-            } else
-            {
-                $paramStr .= "|" . self::checkString_e($value);
+            } else {
+                $paramStr .= " | " . self::checkString_e($value);
             }
         }
         return $paramStr;
     }
 
-    public static function redirect2PG($paramList, $key)
-    {
-        $hashString = self::getChecksumFromArray($paramList);
-        $checksum = self::encrypt_e($hashString, $key);
-    }
-
     protected static function removeCheckSumParam($arrayList)
     {
-        if (isset($arrayList["CHECKSUMHASH"]))
+        if (isset($arrayList[self::CHECKSUMHASH]))
         {
-            unset($arrayList["CHECKSUMHASH"]);
+            unset($arrayList[self::CHECKSUMHASH]);
         }
         return $arrayList;
-    }
-
-    function getTxnStatus($requestParamList)
-    {
-        return callAPI(PAYTM_STATUS_QUERY_URL, $requestParamList);
-    }
-
-    function initiateTxnRefund($requestParamList)
-    {
-        $CHECKSUM = getChecksumFromArray($requestParamList,PAYTM_MERCHANT_KEY,0);
-        $requestParamList["CHECKSUM"] = $CHECKSUM;
-        return callAPI(PAYTM_REFUND_URL, $requestParamList);
-    }
-
-    function callAPI($apiURL, $requestParamList)
-    {
-        $jsonResponse = "";
-        $responseParamList = array();
-        $JsonData =json_encode($requestParamList);
-        $postData = 'JsonData='.urlencode($JsonData);
-        $ch = curl_init($apiURL);
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt ($ch, CURLOPT_SSL_VERIFYHOST, 0);
-        curl_setopt ($ch, CURLOPT_SSL_VERIFYPEER, 0);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-        'Content-Type: application/json',
-        'Content-Length: ' . strlen($postData))
-        );
-        $jsonResponse = curl_exec($ch);
-        $responseParamList = json_decode($jsonResponse,true);
-        return $responseParamList;
     }
 }
