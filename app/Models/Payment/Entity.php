@@ -1290,6 +1290,12 @@ class Entity extends Base\PublicEntity
                 ($this->isMethod(Payment\Method::EMI)));
     }
 
+    public function isTpvMethod()
+    {
+        return (($this->isMethod(Payment\Method::UPI)) or
+                ($this->isMethod(Payment\Method::NETBANKING)));
+    }
+
     public function isSigned()
     {
         return ($this->getAttribute(self::SIGNED) === true);

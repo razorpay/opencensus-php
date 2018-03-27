@@ -301,7 +301,7 @@ class Gateway extends Base\Gateway
 
         $payment->generatePspData($attributes);
 
-        $payment->saveOrFail();
+        $this->repo->saveOrFail($payment);
     }
 
     /**

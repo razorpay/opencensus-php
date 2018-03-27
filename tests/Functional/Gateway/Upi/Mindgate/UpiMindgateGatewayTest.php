@@ -253,7 +253,7 @@ class UpiMindgateGatewayTest extends TestCase
 
     public function testTpvPayment()
     {
-        $this->fixtures->create('terminal:shared_upi_mindgate_tpv_terminal');
+        $this->fixtures->create('terminal:shared_upi_mindgate_tpv_terminal', ['tpv' => 3]);
 
         $this->ba->privateAuth();
 

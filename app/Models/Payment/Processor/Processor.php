@@ -1235,11 +1235,9 @@ class Processor
     {
         if (empty($input[Payment\Entity::ORDER_ID]) === true)
         {
-            if (($payment->isUpi() === true) or
-                ($payment->isNetbanking() === true))
+            if ($payment->isTpvMethod() === true)
             {
-                if (($this->merchant->isTPVRequired() === true) or
-                    ($payment->isRecurring() === true))
+                if ($this->merchant->isTPVRequired() === true)
                 {
                     throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED,
