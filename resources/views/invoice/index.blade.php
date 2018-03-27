@@ -746,8 +746,10 @@
                                       @endif
 
                                       <div class="info">
-                                          <span id="pay-title"></span>
-                                          <div class="val" id="display-pay-amt"></div>
+                                          <span id="pay-title">AMOUNT PAYABLE</span>
+                                          <div class="val" id="display-pay-amt">
+                                          ₹{{number_format($data['invoice']['amount']/100, 2, '.', ',')}}
+                                          </div>
 
                                           <div class="info" id="partial-payment-info">
                                               <div class="val">
@@ -800,7 +802,7 @@
                                 <div id="cancelled-invoice">
                                   <div class="title" style='color:#f54443; font-size: 18px;'>Payment Link Cancelled</div>
                                   <div class="desc">
-                                    Oops! This payment link was cancelled on {{date('M d, Y (h:i A)', $data['invoice']['cancelled_at'])}}. Please contact {{$data['merchant']['name']}} support in case you have any queries.
+                                    Oops! This payment link was cancelled. Please contact {{$data['merchant']['name']}} support in case you have any queries.
                                   </div>
                                 </div>
                               @elseif($data['invoice']['status'] === 'expired')
@@ -854,8 +856,10 @@
                               </div>
 
                               <div class="info">
-                                  <span id="pay-title"></span>
-                                  <div class="val" id="display-pay-amt"></div>
+                                  <span id="pay-title">AMOUNT PAYABLE</span>
+                                  <div class="val" id="display-pay-amt">
+                                    ₹{{number_format($data['invoice']['amount']/100, 2, '.', ',')}}
+                                  </div>
                                   <div class="info" id="partial-payment-info">
                                       <div class="val">
                                           <b>₹{{number_format($data['invoice']['amount_due']/ 100, 2, '.', ',')}}</b>
@@ -892,7 +896,7 @@
                         <div id="cancelled-invoice">
                           <div class="title" style='color:#f54443; font-size:18px'>Payment Link Cancelled</div>
                           <div class="desc">
-                            Oops! This payment link was cancelled on {{date('M d, Y (h:i A)', $data['invoice']['cancelled_at'])}}. Please contact {{$data['merchant']['name']}} support in case you have any queries.
+                            Oops! This payment link was cancelled. Please contact {{$data['merchant']['name']}} support in case you have any queries.
                           </div>
                         </div>
                       @elseif($data['invoice']['status'] === 'expired')
@@ -945,6 +949,10 @@
                   }
               }
 
+              if (data['invoice']['partial_payment'] && data['invoice']['status'] !== 'paid' && data['invoice']['amount_paid'] != 0) {
+                document.getElementById('partial-payment-info').style.display = 'block';
+              }
+
               // Invoice full paid
               if (data['invoice']['amount_due'] === 0 && data['invoice']['status'] === 'paid') {
                   fullPaid();
@@ -972,9 +980,6 @@
               </div>
             @endif
             <script>
-              document.getElementById('pay-title').innerHTML = 'AMOUNT PAYABLE';
-              document.getElementById('display-pay-amt').innerHTML = "<span> ₹" + (data['invoice']['amount']/100).toFixed(2) + "</span>";
-
               if (checkIsDesktop()) {
                   function showOverlay() {
                       document.getElementById('overlay').style.opacity = 1;
@@ -988,10 +993,6 @@
                   var payBtn = document.getElementById('mob-payment-btn');
                   payBtn.style['background-color'] = color;
                   payBtn.style['display'] = 'block';
-              }
-
-              if (data['invoice']['partial_payment'] && data['invoice']['status'] !== 'paid' && data['invoice']['amount_paid'] != 0) {
-                  document.getElementById('partial-payment-info').style.display = 'block';
               }
 
               (function (globalScope) {
