@@ -98,7 +98,7 @@ class CreateMerchants extends Migration
             $table->text(Merchant::LOGO_URL)
                   ->nullable();
 
-            $table->string(Merchant::INVOICE_NAME_FIELD, 50)
+            $table->string(Merchant::INVOICE_LABEL_FIELD, 50)
                   ->nullable();
 
             $table->tinyInteger(Merchant::RISK_RATING);

@@ -3271,7 +3271,7 @@ ALTER TABLE orders
 
 # Invoice GST changes
 ALTER TABLE merchants
-    ADD COLUMN invoice_name_field varchar(50) DEFAULT NULL AFTER logo_url;
+    ADD COLUMN invoice_label_field varchar(50) DEFAULT NULL AFTER logo_url;
 
 ALTER TABLE invoices
-    ADD COLUMN merchant_label varchar(255) DEFAULT NULL AFTER date;
+    ADD COLUMN merchant_label varchar(255) DEFAULT NULL AFTER customer_contact;

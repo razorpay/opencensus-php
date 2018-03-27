@@ -65,7 +65,7 @@ class Entity extends Base\PublicEntity
     const RISK_RATING              = 'risk_rating';
     const RISK_THRESHOLD           = 'risk_threshold';
     const LOGO_URL                 = 'logo_url';
-    const INVOICE_NAME_FIELD       = 'invoice_name_field';
+    const INVOICE_LABEL_FIELD      = 'invoice_label_field';
     const AWS_LOGO_URL             = 'aws_logo_url';
     const MAX_PAYMENT_AMOUNT       = 'max_payment_amount';
     const AUTO_REFUND_DELAY        = 'auto_refund_delay';
@@ -184,7 +184,7 @@ class Entity extends Base\PublicEntity
         self::CONVERT_CURRENCY,
         self::AUTO_REFUND_DELAY,
         self::MAX_PAYMENT_AMOUNT,
-        self::INVOICE_NAME_FIELD,
+        self::INVOICE_LABEL_FIELD,
         self::LINKED_ACCOUNT_KYC,
         self::RECEIPT_EMAIL_ENABLED,
         self::AUTO_CAPTURE_LATE_AUTH,
@@ -200,7 +200,7 @@ class Entity extends Base\PublicEntity
         self::HANDLE,
         self::TRANSACTION_REPORT_EMAIL,
         self::LOGO_URL,
-        self::INVOICE_NAME_FIELD,
+        self::INVOICE_LABEL_FIELD,
         self::AUTO_CAPTURE_LATE_AUTH,
     ];
 
@@ -227,7 +227,7 @@ class Entity extends Base\PublicEntity
         self::BILLING_LABEL,
         self::RECEIPT_EMAIL_ENABLED,
         self::TRANSACTION_REPORT_EMAIL,
-        self::INVOICE_NAME_FIELD,
+        self::INVOICE_LABEL_FIELD,
         self::CHANNEL,
         self::METHODS,
         self::CONVERT_CURRENCY,
@@ -809,7 +809,7 @@ class Entity extends Base\PublicEntity
 
     public function getInvoiceNameField()
     {
-        return $this->getAttribute(self::INVOICE_NAME_FIELD);
+        return $this->getAttribute(self::INVOICE_LABEL_FIELD);
     }
 
     public function getAutoRefundDelay()
