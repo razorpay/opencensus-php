@@ -41,7 +41,7 @@
 
 ### Common Instruction
 
-*PHP*: Please make sure you have the `gmp`, `bcmath` extensions installed. This is on top of what [laravel requires](https://laravel.com/docs/5.2/installation#server-requirements):
+*PHP*: Please make sure you have the `gmp`, `bcmath` extensions installed. This is on top of what [laravel requires](https://laravel.com/docs/5.5/installation#server-requirements):
 
 - PHP >= 5.5.9
 - OpenSSL PHP Extension
