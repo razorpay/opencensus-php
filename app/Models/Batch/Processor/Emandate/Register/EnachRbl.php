@@ -3,6 +3,8 @@
 namespace RZP\Models\Batch\Processor\Emandate\Register;
 
 use Config;
+use RZP\Error;
+use RZP\Exception;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
@@ -42,6 +44,19 @@ class EnachRbl extends Base
 
         $payment = $gatewayPayment->payment;
         $token = $payment->getGlobalOrLocalTokenEntity();
+
+        if ($payment->hasBeenAuthorized() === false)
+        {
+            throw new Exception\GatewayErrorException(
+                Error\ErrorCode::GATEWAY_ERROR_RECURRING_PAYMENT_NOT_FOUND,
+                null,
+                null,
+                [
+                    'gateway'    => 'enach_rbl',
+                    'token_id'   => $token->getId(),
+                    'payment_id' => $payment->getId(),
+                ]);
+        }
 
         $this->repo->transaction(function() use ($payment, $token, $gatewayPayment, $gatewayToken, $content)
         {
@@ -98,8 +113,7 @@ class EnachRbl extends Base
 
     protected function captureAuthorizedPayment(Payment\Entity $payment)
     {
-        if (($payment->isFailed() === true) or
-            ($payment->isPartiallyOrFullyRefunded() === true))
+        if ($payment->isCaptured() === true)
         {
             $this->trace->critical(TraceCode::PAYMENT_RECURRING_INVALID_STATUS,
                     [
@@ -172,7 +186,7 @@ class EnachRbl extends Base
         // Return status in case of failure, we are keeping it
         // as failure status
         //
-        return $gatewayTokenStatus;
+        return 'FAILED';
     }
 
     /**

@@ -6,6 +6,7 @@ use RZP\Error;
 use RZP\Exception;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 use RZP\Models\Customer\Token;
 use RZP\Gateway\Enach\Rbl\Status;
 use RZP\Gateway\Base\Action as GatewayAction;
@@ -83,12 +84,13 @@ class EnachRbl extends Base
 
         $token = $payment->getGlobalOrLocalTokenEntity();
 
-        if (($payment->getGateway() !== $this->gateway) or
+        if (($payment->hasBeenAuthorized() === true) and
+            ($payment->getGateway() !== $this->gateway) or
             ($token === null) or
             ($token->getAccountNumber() !== $accountNumber))
         {
             throw new Exception\GatewayErrorException(
-                Error\ErrorCode::GATEWAY_ERROR_TOKEN_ABSENT_RECURRING_PAYMENT,
+                Error\ErrorCode::GATEWAY_ERROR_RECURRING_PAYMENT_NOT_FOUND,
                 null,
                 null,
                 [
@@ -99,11 +101,14 @@ class EnachRbl extends Base
                 ]);
         }
 
-        // Update gateway payment
-        $this->updateGatewayPaymentEntity($content);
+        $this->repo->transaction(function() use ($token, $content)
+        {
+            // Update gateway payment
+            $this->updateGatewayPaymentEntity($content);
 
-        // Update token
-        $this->updateTokenEntity($token, $content);
+            // Update token
+            $this->updateTokenEntity($token, $content);
+        });
     }
 
     /**
@@ -124,6 +129,7 @@ class EnachRbl extends Base
             $this->trace->critical(TraceCode::GATEWAY_TOKEN_MISMATCH, [
                 'umrn' => $content[self::UMRN],
                 'gateway' => 'enach_rbl',
+                'payment_id' => $paymentId,
             ]);
         }
 
