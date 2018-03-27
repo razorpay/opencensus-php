@@ -5,20 +5,15 @@ namespace RZP\Jobs;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
-use Illuminate\Queue\SerializesModels;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Contracts\Queue\ShouldQueue;
 
-class Dashboard extends Job implements ShouldQueue
+class Dashboard extends Job
 {
-    use InteractsWithQueue, SerializesModels;
-
+    const ROUTE                = 'dashboard';
     const MAX_ALLOWED_ATTEMPTS = 5;
     const RELEASE_WAIT_SECS    = 60;
 
     const JOB_DELETED          = 'job_deleted';
     const JOB_RELEASED         = 'job_released';
-
 
     protected $data;
 

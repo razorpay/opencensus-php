@@ -299,9 +299,7 @@ class Core extends Base\Core
         ];
 
         // Dispatching the job into the queue
-        $job = new RequestJob($request);
-
-        $this->dispatch($job);
+        RequestJob::dispatch($request);
     }
 
     protected function merchantNotifyActivationSubmission(Entity $merchantDetails, Merchant\Entity $merchant)

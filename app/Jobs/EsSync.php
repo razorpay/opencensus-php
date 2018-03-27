@@ -2,9 +2,6 @@
 
 namespace RZP\Jobs;
 
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Contracts\Queue\ShouldQueue;
-
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
@@ -14,10 +11,9 @@ use Razorpay\Trace\Logger as Trace;
  * Es sync job class.
  * Receives insert/update/delete events of models and syncs the same change to ES.
  */
-class EsSync extends Job implements ShouldQueue
+class EsSync extends Job
 {
-    use InteractsWithQueue;
-
+    const ROUTE            = 'es';
     const MAX_JOB_ATTEMPTS = 3;
     const JOB_RELEASE_WAIT = 30;
 

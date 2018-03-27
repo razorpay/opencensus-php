@@ -6,13 +6,10 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Gateway\File;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Contracts\Queue\ShouldQueue;
 
-class GatewayFile extends Job implements ShouldQueue
+class GatewayFile extends Job
 {
-    use InteractsWithQueue;
-
+    const ROUTE                = 'gateway_file';
     const MAX_ALLOWED_ATTEMPTS = 2;
     const RELEASE_WAIT_SECS    = 10;
 

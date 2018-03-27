@@ -2,9 +2,6 @@
 
 namespace RZP\Jobs;
 
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Contracts\Queue\ShouldQueue;
-
 use RZP\Constants\Es;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
@@ -19,10 +16,9 @@ use RZP\Models\Base\EsRepository;
  * This job listens for these changes and finds affected merchant ids which
  * need to be re-indexed and then pushes EsSync job to re-index those ids.
  */
-class MerchantSync extends Job implements ShouldQueue
+class MerchantSync extends Job
 {
-    use InteractsWithQueue;
-
+    const ROUTE            = 'es';
     const MAX_JOB_ATTEMPTS = 3;
     const JOB_RELEASE_WAIT = 30;
 
@@ -144,9 +140,7 @@ class MerchantSync extends Job implements ShouldQueue
     {
         foreach ($ids as $id)
         {
-            $job = new EsSync($this->mode, EsRepository::UPDATE, E::MERCHANT, $id);
-
-            (new DispatchRouter)->dispatchOn($job, DispatchRouter::ES_V2);
+            EsSync::dispatch($this->mode, EsRepository::UPDATE, E::MERCHANT, $id)->for(EsSync::ES);
         }
     }
 

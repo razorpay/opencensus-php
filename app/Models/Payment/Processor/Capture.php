@@ -2,23 +2,21 @@
 
 namespace RZP\Models\Payment\Processor;
 
-use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Jobs\DispatchRouter;
+use RZP\Models\Order;
+use RZP\Models\Invoice;
+use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
+use RZP\Models\Currency;
+use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
+use RZP\Models\Transaction;
+use RZP\Models\VirtualAccount;
+use RZP\Models\Plan\Subscription;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\Capture as CaptureJob;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Base\PublicCollection;
-use RZP\Models\Currency;
-use RZP\Models\Invoice;
-use RZP\Models\Merchant;
-use RZP\Models\Emi;
-use RZP\Models\Order;
-use RZP\Models\Payment;
-use RZP\Models\VirtualAccount;
-use RZP\Models\Plan\Subscription;
-use RZP\Models\Transaction;
-use RZP\Trace\TraceCode;
-use Razorpay\Trace\Logger as Trace;
 
 trait Capture
 {
@@ -444,9 +442,7 @@ trait Capture
         // Example : HDFC sends FS00002 error if capture request is sent within 20 seconds of the
         // previous capture request.
         //
-        $job = new CaptureJob($data);
-
-        (new DispatchRouter)->dispatchOn($job, DispatchRouter::CAPTURE);
+        CaptureJob::dispatch($data);
     }
 
     /**

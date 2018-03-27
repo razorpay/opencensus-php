@@ -4,9 +4,18 @@ namespace RZP\Jobs;
 
 use App;
 use Illuminate\Bus\Queueable;
+use Illuminate\Queue\SerializesModels;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
-class Job
+class Job implements ShouldQueue
 {
+    use Extended\Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    // If a key is specified, it's value would be used from config/queue_route.php to
+    // choose proper queue connection and route.
+    const ROUTE = '';
+
     /**
      * Mode as received from pushed job payload. We set the basic auth's mode
      * and db connection to this value for convenience.
@@ -41,19 +50,6 @@ class Job
 
     protected $taskId;
 
-    /*
-    |--------------------------------------------------------------------------
-    | Queueable Jobs
-    |--------------------------------------------------------------------------
-    |
-    | This job base class provides a central location to place any logic that
-    | is shared across all of your jobs. The trait included with the class
-    | provides access to the "onQueue" and "delay" queue helper methods.
-    |
-    */
-
-    use Queueable;
-
     public function __construct(string $mode = null)
     {
         $this->mode = $mode;
@@ -83,6 +79,11 @@ class Job
     public function getPreviousMode()
     {
         return $this->previousMode;
+    }
+
+    public function getRoute()
+    {
+        return static::ROUTE;
     }
 
     /**

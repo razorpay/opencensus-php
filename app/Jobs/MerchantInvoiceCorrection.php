@@ -2,17 +2,12 @@
 
 namespace RZP\Jobs;
 
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Contracts\Queue\ShouldQueue;
-
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Invoice\Correction;
 
-class MerchantInvoiceCorrection extends Job implements ShouldQueue
+class MerchantInvoiceCorrection extends Job
 {
-    use InteractsWithQueue;
-
     protected $merchantId;
 
     protected $month;
