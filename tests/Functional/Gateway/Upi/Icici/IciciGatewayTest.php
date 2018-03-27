@@ -107,6 +107,7 @@ class IciciGatewayTest extends TestCase
         $this->checkPaymentStatus($paymentId, 'created');
 
         $upiEntity = $this->getLastEntity('upi_icici', true);
+
         $payment = $this->getEntityById('payment', $paymentId, true);
 
         $this->assertEquals('100UPIICICITml', $payment['terminal_id']);

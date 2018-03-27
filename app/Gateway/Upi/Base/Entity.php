@@ -16,6 +16,7 @@ class Entity extends Base\Entity
     const PROVIDER              = 'provider';
     const EMAIL                 = 'email';
     const CONTACT               = 'contact';
+    const MERCHANT_REFERENCE    = 'merchant_reference';
     const GATEWAY_MERCHANT_ID   = 'gateway_merchant_id';
     const GATEWAY_PAYMENT_ID    = 'gateway_payment_id';
     const NPCI_REFERENCE_ID     = 'npci_reference_id';
@@ -41,6 +42,7 @@ class Entity extends Base\Entity
         self::CONTACT,
         self::EMAIL,
         self::NAME,
+        self::MERCHANT_REFERENCE,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_PAYMENT_ID,
         self::NPCI_REFERENCE_ID,
@@ -62,6 +64,7 @@ class Entity extends Base\Entity
         self::CONTACT,
         self::EMAIL,
         self::NAME,
+        self::MERCHANT_REFERENCE,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_PAYMENT_ID,
         self::NPCI_REFERENCE_ID,
