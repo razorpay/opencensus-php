@@ -7,6 +7,7 @@ class ResponseFields
     const TRANSACTION_TYPE    = 'pTranType';
     const MERCHANT_ID         = 'pMercID';
     const MERCHANT_REF_NUMBER = 'pMerchantRefNr';
+    const MERCHANT_REFERENCE  = 'pTranID';
     const ENROLLED            = 'pEnrolled';
     const BANK_URL            = 'pURL';
     const ACCOUNT_ID          = 'pAccountId';

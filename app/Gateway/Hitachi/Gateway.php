@@ -675,7 +675,7 @@ class Gateway extends Base\Gateway
             Entity::RRN                => $response[ResponseFields::RETRIEVAL_REF_NUM] ?? null,
             Entity::RESPONSE_CODE      => $response[ResponseFields::RESPONSE_CODE] ?? null,
             Entity::AUTH_ID            => $response[ResponseFields::AUTH_ID] ?? null,
-            Entity::MERCHANT_REFERENCE => $response[ResponseFields::MERCHANT_REF_NUMBER] ?? null,
+            Entity::MERCHANT_REFERENCE => $response[ResponseFields::MERCHANT_REFERENCE] ?? null,
         ];
 
         return $attributes;
