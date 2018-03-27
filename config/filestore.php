@@ -33,7 +33,7 @@ return [
         ],
         'customer_bucket_config' => [
             'name'   => env('AWS_S3_CUSTOMER_BUCKET'),
-            'region' => env('AWS_BUCKET_REGION', 'us-east-1')
+            'region' => env('AWS_BUCKET_REGION', 'ap-south-1')
         ],
         'test_bucket_config' => [
             'name'   => env('AWS_S3_TEST_BUCKET'),
