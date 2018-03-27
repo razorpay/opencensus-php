@@ -223,6 +223,13 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
     ];
 
+     protected static $upiMindgateEditTerminalRules = [
+        Entity::GATEWAY                    => 'sometimes|in:upi_mindgate',
+        Entity::UPI                        => 'sometimes|boolean|in:1',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::TPV                        => 'sometimes|in:0,2',
+    ];
+
     protected static $netbankingIciciEditTerminalRules = [
         Entity::GATEWAY_MERCHANT_ID2    => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET   => 'sometimes|alpha_num|size:16',
@@ -305,6 +312,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
         Entity::UPI                        => 'sometimes|boolean|in:1',
         Entity::TYPE                       => 'sometimes|array',
+        Entity::TPV                        => 'sometimes|in:0,2',
     ];
 
     protected static $upiSbiTerminalRules = [
