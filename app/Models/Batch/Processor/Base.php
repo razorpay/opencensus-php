@@ -226,7 +226,7 @@ class Base extends BaseModel\Core
 
         $parsedData = array_slice($correctEntries, 0, self::MAX_PARSED_ROWS);
 
-        $this->removeErrorColumnsFromEntries($parsedData);
+        $this->cleanEntriesFromInputFile($parsedData);
 
         $response = [
             Constants::PROCESSABLE_COUNT     => count($correctEntries),
@@ -673,8 +673,8 @@ class Base extends BaseModel\Core
 
     protected function deleteLocalFiles()
     {
-//        $this->deleteFile($this->inputFileLocalPath);
-//        $this->deleteFile($this->outputFileLocalPath);
+        $this->deleteFile($this->inputFileLocalPath);
+        $this->deleteFile($this->outputFileLocalPath);
     }
 
     protected function deleteFile(string $filePath = null)
@@ -707,7 +707,7 @@ class Base extends BaseModel\Core
 
         // This cleanup is required because when we validate
         // the entries, we check the headers in the entries
-        $this->removeErrorColumnsFromEntries($entries);
+        $this->cleanEntriesFromInputFile($entries);
 
         $this->validateEntries($entries, $input);
 
@@ -737,19 +737,50 @@ class Base extends BaseModel\Core
      *
      * @param array $entries
      */
-    protected function removeErrorColumnsFromEntries(array & $entries)
+    protected function cleanEntriesFromInputFile(array & $entries)
     {
+        $expectedHeaders = $this->getInputHeadings();
+
+        $headerTemplate = array_combine($expectedHeaders, array_fill(0, count($expectedHeaders), null));
+
         $entries = array_map(
 
-            function ($entry)
+            function ($entry) use ($headerTemplate)
             {
-                unset($entry[Batch\Header::ERROR_CODE]);
-                unset($entry[Batch\Header::ERROR_DESCRIPTION]);
+                // Removing extra columns
+                $extraEntry = array_diff_key($entry, $headerTemplate);
+
+                $entry = array_diff_key($entry, $extraEntry);
+
+                // Making empty space or whitespace as null
+                $entry = array_map(
+
+                    function ($item) {
+
+                        if (($item !== null) and (trim($item) === ''))
+                        {
+                            return null;
+                        }
+
+                        return $item;
+                    },
+
+                    $entry
+                );
+
+                if ($entry === $headerTemplate)
+                {
+                    // Marking empty rows as null
+                    return null;
+                }
 
                 return $entry;
             },
 
             $entries);
+
+        // Removing empty rows (marked earlier as null)
+        $entries = array_filter($entries);
     }
 
     /**
