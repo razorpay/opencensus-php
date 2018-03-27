@@ -108,7 +108,7 @@
         <div class='td r'><span>₹{{$data['originalAmount']}}</span></div>
         <div class='td'><span>Gateway Fees</span></div>
         <div class='td r'><span>₹{{$data['razorpay_fee']}}</span></div>
-        <div class='td'><span>GST</span></div>
+        <div class='td'><span>GST on Fees</span></div>
         <div class='td r'><span>₹{{$data['tax']}}</span></div>
         <div class='td b'><span>Total</span></div>
         <div class='td r b'><span>₹{{$data['amount']}}</span></div>
