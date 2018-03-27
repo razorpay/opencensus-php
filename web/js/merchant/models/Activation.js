@@ -5,6 +5,7 @@ import {
   isBlank,
   arrayDiff,
   autoPrefixUrls,
+  trim,
 } from 'rzp/utils/rzp-utils';
 
 // Used for Activation
@@ -183,6 +184,11 @@ export default class Activation extends Entity {
   serializeProperty(prop) {
     if (prop === 'business_international') {
       return normalizeBoolean(this.business_international);
+    }
+
+    // remove all white spaces from multiple email inputs
+    if (prop === 'transaction_report_email') {
+      return trim(this.transaction_report_email);
     }
 
     return super.serializeProperty(prop);
