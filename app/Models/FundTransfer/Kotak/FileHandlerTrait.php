@@ -688,7 +688,7 @@ trait FileHandlerTrait
 
     protected function parseTextRow($row, $ix, $delimiter)
     {
-        $headings = $this->getHeadings();
+        $headings = $this->getInputHeadings();
 
         $values = explode($delimiter, $row);
 

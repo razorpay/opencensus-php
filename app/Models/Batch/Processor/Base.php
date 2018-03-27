@@ -90,6 +90,9 @@ class Base extends BaseModel\Core
     protected $inputFileLocalPath;
     protected $outputFileLocalPath;
 
+    /**
+     * Holds filetype of input & output file respectively.
+     */
     protected $inputFileType;
     protected $outputFileType;
 
@@ -171,7 +174,9 @@ class Base extends BaseModel\Core
     {
         list($inputUfhFile, $entries) = $this->saveInputFileAndValidateEntries($input);
 
-        $validatedUfhFile = $this->createSetOutputFileAndSave($entries, FileStore\Type::BATCH_VALIDATED);
+        $validatedUfhFile = $this->createSetOutputFileAndSave($entries,
+                                                             FileStore\Type::BATCH_VALIDATED,
+                                                             false);
 
         $response = $this->getValidatedEntriesStatsAndPreview($entries);
 
@@ -555,18 +560,22 @@ class Base extends BaseModel\Core
         $this->batch->setProcessing(false);
     }
 
-    protected function createSetOutputFileAndSave(array $entries, string $fileType = FileStore\Type::BATCH_OUTPUT)
+    protected function createSetOutputFileAndSave(
+                                                  array $entries,
+                                                  string $fileType = FileStore\Type::BATCH_OUTPUT,
+                                                  bool $associateBatch = true)
     {
         $this->outputFileType = $fileType;
 
         $this->trace->debug(TraceCode::MISC_TRACE_CODE, [$this->outputFileType]);
 
         $cleanedEntries = $this->cleanEntriesForOutputFile($entries);
+
         $this->outputFileLocalPath = $this->createAndSetFileByExt($cleanedEntries);
 
         try
         {
-            return $this->saveOutputFile();
+            return $this->saveOutputFile($associateBatch);
         }
         catch (\Throwable $e)
         {
@@ -580,8 +589,6 @@ class Base extends BaseModel\Core
 
     protected function cleanEntriesForOutputFile(array $entries): array
     {
-        $headers = $this->getOutputFileHeadings();
-
         //
         // Constructs final input using updated $entries set. This things
         // is used to create output file. Below we fill in the empty headers
@@ -589,11 +596,11 @@ class Base extends BaseModel\Core
         //
         $cleanedEntries = [];
 
-        $fieldsCount = count($headers);
+        $headers = $this->getOutputFileHeadings();
 
         foreach ($entries as $entry)
         {
-            $dict = array_combine($headers, array_fill(0, $fieldsCount, null));
+            $dict = array_combine($headers, array_fill(0, count($headers), null));
 
             foreach ($entry as $key => $value)
             {
@@ -602,8 +609,6 @@ class Base extends BaseModel\Core
 
             $cleanedEntries[] = $dict;
         }
-
-        unset($entries);
 
         return $cleanedEntries;
     }
@@ -623,6 +628,7 @@ class Base extends BaseModel\Core
         // to be same of input file.
         //
         $ext = pathinfo($this->inputFileLocalPath, PATHINFO_EXTENSION);
+
         $dir = $this->batch->getLocalSaveDir(self::FILE_TYPE_PREFIX_MAP[$this->outputFileType]);
 
         switch ($ext)
@@ -632,7 +638,6 @@ class Base extends BaseModel\Core
                 return $this->createTxtFile($this->batch->getFileKeyWithExt($ext), $txt, $dir);
 
             case FileStore\Format::CSV:
-                $this->trace->debug(TraceCode::MISC_TRACE_CODE, [$this->getOutputFileHeadings()]);
                 $txt = $this->generateTextWithHeadings($entries, ',', false, $this->getOutputFileHeadings());
                 return $this->createTxtFile($this->batch->getFileKeyWithExt($ext), $txt, $dir);
 
@@ -668,13 +673,12 @@ class Base extends BaseModel\Core
 
     protected function deleteLocalFiles()
     {
-        $this->deleteFile($this->inputFileLocalPath);
-        $this->deleteFile($this->outputFileLocalPath);
+//        $this->deleteFile($this->inputFileLocalPath);
+//        $this->deleteFile($this->outputFileLocalPath);
     }
 
     protected function deleteFile(string $filePath = null)
     {
-        return;
         if (($filePath !== null) and (file_exists($filePath) === true))
         {
             $success = unlink($filePath);
@@ -709,7 +713,6 @@ class Base extends BaseModel\Core
 
         return $entries;
     }
-
 
     /**
      * Updates batch with details extracted from the input file
@@ -832,9 +835,9 @@ class Base extends BaseModel\Core
         return $ufh;
     }
 
-    protected function saveOutputFile(): FileStore\Creator
+    protected function saveOutputFile(bool $associateBatch = true): FileStore\Creator
     {
-        return $this->saveFile($this->outputFileLocalPath, $this->outputFileType, true);
+        return $this->saveFile($this->outputFileLocalPath, $this->outputFileType, $associateBatch);
     }
 
     public function getFileIdAndSignedUrl(FileStore\Creator $ufh): array
@@ -917,12 +920,18 @@ class Base extends BaseModel\Core
                           ->first();
 
         $filePath = (new FileStore\Accessor)
-                        ->id($inputFile->getId())
-                        ->merchantId($this->batch->getMerchantId())
-                        ->getFile();
+                          ->id($inputFile->getId())
+                          ->merchantId($this->batch->getMerchantId())
+                          ->getFile();
 
         $this->inputFileLocalPath = $filePath;
+
         $this->inputFileType = $inputFile->getType();
+    }
+
+    public function getHeadings(string $fileType)
+    {
+        return Batch\Header::getHeadersForFileTypeAndBatchType($fileType, $this->batch->getType());
     }
 
     /**
@@ -930,15 +939,14 @@ class Base extends BaseModel\Core
      *
      * @return array
      */
-    public function getHeadings(): array
+    public function getInputHeadings(): array
     {
-        return Batch\Header::getHeadersForFileTypeAndBatchType($this->inputFileType, $this->batch->getType());
+        return $this->getHeadings($this->inputFileType);
     }
 
     public function getOutputFileHeadings(): array
     {
-        $this->trace->debug(TraceCode::MISC_TRACE_CODE, [$this->outputFileType, $this->batch->getType()]);
-        return Batch\Header::getHeadersForFileTypeAndBatchType($this->outputFileType, $this->batch->getType());
+        return $this->getHeadings($this->outputFileType);
     }
 
     /**
