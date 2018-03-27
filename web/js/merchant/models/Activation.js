@@ -187,7 +187,7 @@ export default class Activation extends Entity {
     }
 
     // remove all white spaces from multiple email inputs
-    if (prop === 'transaction_report_email') {
+    if (prop === 'transaction_report_email' && this.transaction_report_email) {
       return trim(this.transaction_report_email);
     }
 
