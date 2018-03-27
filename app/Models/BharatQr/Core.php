@@ -23,27 +23,30 @@ class Core extends Base\Core
         $this->mutex = $this->app['api.mutex'];
     }
 
-    public function processPayment(array $input)
+    public function processPayment(array $gatewayInput)
     {
+        $input = $this->getBharatQrInputParams($gatewayInput);
+
         $this->trace->info(
             TraceCode::BHARAT_QR_PAYMENT_PROCESS_REQUEST,
             $input
         );
 
+        $bharatQr = null;
+
         try
         {
             $bharatQr = (new Entity)->build($input);
 
-            $this->determineAndSetMode($bharatQr);
-
-            $this->mutex->acquireAndRelease(
+            $bharatQr = $this->mutex->acquireAndRelease(
                 $input[Entity::MERCHANT_REFERENCE],
-                function() use ($bharatQr)
+                function() use ($bharatQr, $gatewayInput)
                 {
-                    (new Processor)->process($bharatQr);
-                },
-                Constants::MUTEX_TIMEOUT,
-                ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
+                    $bharatQr = (new Processor($gatewayInput))->process($bharatQr);
+
+                    // This will be null in case it's a duplicate notification
+                    return $bharatQr;
+                });
 
             $valid = true;
         }
@@ -55,22 +58,16 @@ class Core extends Base\Core
             $valid = false;
         }
 
-        return $valid;
+        return [$valid, $bharatQr];
     }
 
-    protected function determineAndSetMode(Entity $bharatQr)
+    protected function getBharatQrInputParams(array $gatewayInput)
     {
-        $merchantReference = $bharatQr->getMerchantReference();
-
-        (new QrCode\Entity)->stripSignWithoutValidation($merchantReference);
-
-        $mode = $this->app['repo']->determineLiveOrTestModeForEntity($merchantReference, 'qr_code');
-
-        if ($mode === null)
-        {
-            $mode = Mode::LIVE;
-        }
-
-        $this->app['basicauth']->setModeAndDbConnection($mode);
+        return [
+            Entity::PROVIDER_REFERENCE_ID => $gatewayInput[Entity::PROVIDER_REFERENCE_ID],
+            Entity::MERCHANT_REFERENCE    => $gatewayInput[Entity::MERCHANT_REFERENCE],
+            Entity::METHOD                => $gatewayInput[Entity::METHOD],
+            Entity::AMOUNT                => $gatewayInput[Entity::AMOUNT],
+        ];
     }
 }

@@ -2987,6 +2987,14 @@ ALTER TABLE bank_transfers
 ALTER TABLE virtual_accounts
     ADD INDEX virtual_accounts_updated_at_index (updated_at);
 
+ALTER TABLE hitachi
+    ADD COLUMN masked_card_number varchar(255) DEFAULT NULL after pStatus,
+    ADD COLUMN card_network varchar(255) DEFAULT NULL after masked_card_number,
+    ADD COLUMN merchant_reference varchar(255) DEFAULT NULL after card_network;
+
+ALTER TABLE upi
+    ADD COLUMN merchant_reference varchar(255) DEFAULT NULL after received;
+
 ALTER TABLE fund_transfer_attempts
     ADD COLUMN initiate_at INT(11) AFTER batch_fund_transfer_id;
 

@@ -52,7 +52,7 @@ class Generator extends Base\Core
 
         $this->elfin = $this->app['elfin'];
 
-        $this->baseQrCodeUrl = $this->app['config']->get('app.url');
+        $this->baseQrCodeUrl = $this->app['config']->get('app.url') .'/v1';
     }
 
     public function generate(array $input, VirtualAccount\Entity $virtualAccount): Entity

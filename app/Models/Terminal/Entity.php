@@ -360,7 +360,7 @@ class Entity extends Base\PublicEntity
      * - terminal's primary merchant is given merchant
      * - any of the sub-merchants of the terminal has this merchant
      *
-     * @param  Merchant\Entity $merchant    Merchant entity for which we wantto check
+     * @param  Merchant\Entity $merchant    Merchant entity for which we want to check
      * @return boolean
      */
     public function isDirectForMerchant(Merchant\Entity $merchant): bool
