@@ -18,6 +18,18 @@ build:
     # The steps that will be executed on build
     steps:
       - script:
+        name: remove-env-binary
+        code: >
+          # Since this container is used for CI builds, do not let anyone print env easily
+          # https://github.com/razorpay/security/issues/21
+          cp scripts/env.sh /usr/bin/env
+      - script:
+        name: Install dependencies
+        code: >
+          apk add --no-cache imagemagick zip php7-dev &&
+          pecl install gnupg &&
+          echo 'extension=gnupg.so' > /etc/php7/conf.d/gnupg.ini
+      - script:
           name: copy env file
           code: cp ./environment/.env.wercker ./environment/.env.testing
       - add-ssh-key:
