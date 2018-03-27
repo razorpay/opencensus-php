@@ -47,7 +47,7 @@ export default class Profile extends Component {
 
     // fetch status whether the merchant can change their bank account details or not
     this.props
-      .fetchBankAccountChangeStatus(this.props.user.id)
+      .fetchBankAccountChangeStatus(this.props.user.id) //user.id is merchant_id not user_id
       .then(({ data }) => {
         this.setState({
           //if api response is true then the request is still in workflow
@@ -171,7 +171,7 @@ export default class Profile extends Component {
     }
 
     return this.props
-      .saveBankAccountChanges(user.id, formdata)
+      .saveBankAccountChanges(user.id, formdata) //user.id is merchant_id not user_id
       .then(response => {
         this.props.closeModal();
         this.props.showNotification({
